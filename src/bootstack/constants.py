@@ -246,7 +246,7 @@ PAGES: Final[ViewArg] = "pages"
 # Themes / ttk themes
 # ---------------------------
 DEFAULT: Final[str] = "default"
-DEFAULT_THEME: Final[str] = "litera"
+DEFAULT_THEME: Final[str] = "bootstrap-light"
 # Shared minimum column width default for form layouts
 DEFAULT_MIN_COL_WIDTH: Final[int] = 275
 

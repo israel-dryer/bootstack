@@ -210,7 +210,7 @@ class ThemeProvider:
         The result is a list of dictionaries in the form:
 
         ```python
-        {"name": "cosmo", "display_name": "Cosmo"}
+        {"name": "bootstrap-light", "display_name": "Bootstrap Light"}
         ```
 
         Aliases such as `\"light\"` and `\"dark\"` are not included; only the

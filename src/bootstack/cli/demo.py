@@ -1171,7 +1171,7 @@ def run_demo():
     """Run the bootstack widget gallery as an AppShell application."""
     shell = ttk.AppShell(
         title="bootstack Widget Gallery",
-        theme="cosmo",
+        theme="bootstrap-light",
         size=(1100, 750),
     )
 

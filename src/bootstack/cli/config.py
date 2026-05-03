@@ -67,7 +67,7 @@ class AppConfig:
 class SettingsConfig:
     """The [settings] section of ttkb.toml."""
 
-    theme: str = "cosmo"
+    theme: str = "bootstrap-light"
     language: str = "en"
     appearance: str = "system"  # system | light | dark
 
@@ -129,7 +129,7 @@ class TtkbConfig:
         )
 
         settings = SettingsConfig(
-            theme=settings_data.get("theme", "cosmo"),
+            theme=settings_data.get("theme", "bootstrap-light"),
             language=settings_data.get("language", "en"),
             appearance=settings_data.get("appearance", "system"),
         )
@@ -225,7 +225,7 @@ def generate_config(
     name: str,
     app_id: Optional[str] = None,
     entry: Optional[str] = None,
-    theme: str = "cosmo",
+    theme: str = "bootstrap-light",
     template: str = "basic",
     include_build: bool = False,
 ) -> str:
@@ -267,7 +267,7 @@ def write_config(
     name: str,
     app_id: Optional[str] = None,
     entry: Optional[str] = None,
-    theme: str = "cosmo",
+    theme: str = "bootstrap-light",
     template: str = "basic",
     include_build: bool = False,
 ) -> None:

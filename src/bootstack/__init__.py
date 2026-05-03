@@ -7,7 +7,7 @@ Examples:
     ```python
     import bootstack as ttk
 
-    app = ttk.App(title="My App", themename="flatly")
+    app = ttk.App(title="My App", themename="bootstrap-light")
     ttk.Label(app, text="Hello, world!").pack(padx=20, pady=20)
     app.mainloop()
     ```

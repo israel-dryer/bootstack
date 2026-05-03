@@ -38,8 +38,8 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     parser.add_argument(
         "--theme",
-        default="cosmo",
-        help="Theme name for the application (default: cosmo)",
+        default="bootstrap-light",
+        help="Theme name for the application (default: bootstrap-light)",
     )
     parser.add_argument(
         "--dir",

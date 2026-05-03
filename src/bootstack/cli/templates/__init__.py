@@ -640,7 +640,7 @@ def create_project(
     name: str,
     target_dir: Path,
     container: ContainerType = "grid",
-    theme: str = "cosmo",
+    theme: str = "bootstrap-light",
     template: TemplateType = "basic",
     simple: bool = False,
 ) -> None:
