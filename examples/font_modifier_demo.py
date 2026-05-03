@@ -1,7 +1,7 @@
 """
 Font Modifier Syntax Demo
 
-Demonstrates the new font modifier syntax for ttkbootstrap widgets.
+Demonstrates the new font modifier syntax for bootstack widgets.
 This allows inline font customization using bracket notation.
 
 Syntax: family[size][weight][style]
@@ -14,8 +14,8 @@ Examples shown in this demo:
 - Size token shortcuts
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 
 
 def create_demo_window():

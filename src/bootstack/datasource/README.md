@@ -1,4 +1,4 @@
-# ttkbootstrap DataSource Module
+# bootstack DataSource Module
 
 A flexible, extensible data management system providing unified interfaces for working with data from various sources (memory, databases, files) with built-in support for pagination, filtering, sorting, and CRUD operations.
 
@@ -51,7 +51,7 @@ Built-in datasources that inherit from `BaseDataSource`:
 Best for small to medium datasets that fit comfortably in memory.
 
 ```python
-from ttkbootstrap.datasource import MemoryDataSource
+from bootstack.datasource import MemoryDataSource
 
 ds = MemoryDataSource(page_size=20)
 ds.set_data([
@@ -75,7 +75,7 @@ page = ds.get_page(0)
 Best for large datasets requiring persistence or SQL capabilities.
 
 ```python
-from ttkbootstrap.datasource import SqliteDataSource
+from bootstack.datasource import SqliteDataSource
 
 # Persistent database
 ds = SqliteDataSource("mydata.db", page_size=50)
@@ -96,7 +96,7 @@ ds = SqliteDataSource(":memory:", page_size=50)
 Best for loading data from files with preprocessing needs.
 
 ```python
-from ttkbootstrap.datasource import FileDataSource, FileSourceConfig
+from bootstack.datasource import FileDataSource, FileSourceConfig
 
 # Simple CSV loading
 ds = FileDataSource("data.csv")
@@ -125,7 +125,7 @@ ds.load()
 This is the easiest and most common approach. You get utility methods for free and only need to implement storage-specific logic.
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 from typing import Any, Dict, List, Optional
 
 class RedisDataSource(BaseDataSource):
@@ -216,7 +216,7 @@ class RedisDataSource(BaseDataSource):
 For maximum flexibility, implement the `DataSourceProtocol` without inheritance. This is useful when you need to integrate with existing classes or have complex inheritance requirements.
 
 ```python
-from ttkbootstrap.datasource import DataSourceProtocol
+from bootstack.datasource import DataSourceProtocol
 from typing import List, Dict, Any, Optional
 
 class APIDataSource:
@@ -369,7 +369,7 @@ Override these to add custom behavior:
 ### Example 1: MongoDB DataSource
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 from pymongo import MongoClient
 
 class MongoDataSource(BaseDataSource):
@@ -433,7 +433,7 @@ class MongoDataSource(BaseDataSource):
 ### Example 2: Cached API DataSource
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 import requests
 from functools import lru_cache
 from datetime import datetime, timedelta
@@ -490,7 +490,7 @@ class CachedAPIDataSource(BaseDataSource):
 ### Example 3: Multi-Source DataSource
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 
 class MultiSourceDataSource(BaseDataSource):
     """Aggregates data from multiple datasources."""
@@ -586,7 +586,7 @@ class MyDataSource:
 ### After (Inheriting BaseDataSource)
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 
 class MyDataSource(BaseDataSource):
     def __init__(self, page_size=10):
@@ -599,9 +599,9 @@ class MyDataSource(BaseDataSource):
 ## Support
 
 For questions, issues, or feature requests, please visit:
-- GitHub Issues: https://github.com/israel-dryer/ttkbootstrap/issues
-- Documentation: https://ttkbootstrap.readthedocs.io/
+- GitHub Issues: https://github.com/israel-dryer/bootstack/issues
+- Documentation: https://bootstack.readthedocs.io/
 
 ## License
 
-This module is part of ttkbootstrap and follows the same license terms.
+This module is part of bootstack and follows the same license terms.

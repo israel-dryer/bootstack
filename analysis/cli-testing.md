@@ -24,8 +24,8 @@ source .venv/Scripts/activate
 # Linux/macOS:
 source .venv/bin/activate
 
-# 4. Install ttkbootstrap in editable mode from the dev folder
-pip install -e D:/Development/ttkbootstrap
+# 4. Install bootstack in editable mode from the dev folder
+pip install -e D:/Development/bootstack
 
 # 5. Test CLI commands
 ttkb --version
@@ -41,7 +41,7 @@ ttkb build
 ### Why editable mode works well
 
 - `pip install -e` creates a symlink — your CLI code changes take effect immediately
-- No files are created inside `D:/Development/ttkbootstrap`
+- No files are created inside `D:/Development/bootstack`
 - Generated projects land in `D:/ttkb-test/`
 - You can blow away `D:/ttkb-test/` anytime and start fresh
 
@@ -58,14 +58,14 @@ Useful for testing the actual install experience (closer to what users get).
 
 ```bash
 # Build from the project
-cd D:/Development/ttkbootstrap
+cd D:/Development/bootstack
 python -m build --wheel
 
 # Install in a separate venv
 mkdir D:/ttkb-test && cd D:/ttkb-test
 python -m venv .venv
 source .venv/Scripts/activate
-pip install D:/Development/ttkbootstrap/dist/ttkbootstrap-2.0.0a1-py3-none-any.whl
+pip install D:/Development/bootstack/dist/bootstack-2.0.0a1-py3-none-any.whl
 
 # Test
 ttkb start MyApp
@@ -89,7 +89,7 @@ Useful for testing the full install-from-registry experience.
 
 ```bash
 # Build
-cd D:/Development/ttkbootstrap
+cd D:/Development/bootstack
 python -m build
 
 # Upload to TestPyPI (requires a TestPyPI account + token)
@@ -99,7 +99,7 @@ twine upload --repository testpypi dist/*
 mkdir D:/ttkb-test && cd D:/ttkb-test
 python -m venv .venv
 source .venv/Scripts/activate
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ ttkbootstrap==2.0.0a1
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ bootstack==2.0.0a1
 ```
 
 ### When to use this
@@ -128,7 +128,7 @@ pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://
 
 ## Tips
 
-- **Always `cd` out of the ttkbootstrap project** before running `ttkb start` — otherwise the generated project lands inside the repo.
+- **Always `cd` out of the bootstack project** before running `ttkb start` — otherwise the generated project lands inside the repo.
 - **Keep a cleanup script** in your test folder:
   ```bash
   # reset.sh — wipe all generated projects

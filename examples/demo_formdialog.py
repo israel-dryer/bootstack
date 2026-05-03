@@ -9,10 +9,10 @@ Shows various uses of FormDialog for data entry in modal dialogs:
 
 from datetime import date
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import FormDialog, DialogButton
-from ttkbootstrap.widgets.composites.form import FieldItem, GroupItem, TabItem, TabsItem
+import bootstack as ttk
+from bootstack.constants import *
+from bootstack.dialogs import FormDialog, DialogButton
+from bootstack.widgets.composites.form import FieldItem, GroupItem, TabItem, TabsItem
 
 
 def demo_simple_form(parent):

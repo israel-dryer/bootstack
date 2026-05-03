@@ -1,3 +1,3 @@
 # FloodGauge
 
-::: ttkbootstrap.widgets.composites.floodgauge.FloodGauge
+::: bootstack.widgets.composites.floodgauge.FloodGauge

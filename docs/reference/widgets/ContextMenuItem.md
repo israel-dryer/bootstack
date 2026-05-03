@@ -1,3 +1,3 @@
 # ContextMenuItem
 
-::: ttkbootstrap.widgets.composites.contextmenu.ContextMenuItem
+::: bootstack.widgets.composites.contextmenu.ContextMenuItem

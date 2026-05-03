@@ -1,3 +1,3 @@
 # Record
 
-::: ttkbootstrap.datasource.types.Record
+::: bootstack.datasource.types.Record

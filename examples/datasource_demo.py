@@ -11,9 +11,9 @@ Demonstrates:
 - Integration with Treeview widget
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap.datasource import MemoryDataSource, SqliteDataSource
+import bootstack as ttk
+from bootstack.constants import *
+from bootstack.datasource import MemoryDataSource, SqliteDataSource
 
 
 def create_sample_data():

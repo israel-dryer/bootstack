@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import NumericEntry
+import bootstack as ttk
+from bootstack import NumericEntry
 
 
 app = ttk.Window()

@@ -8,8 +8,8 @@ Demonstrates various features of the ContextMenu widget including:
 - Item click callbacks
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap import ContextMenu
+import bootstack as ttk
+from bootstack import ContextMenu
 
 
 def main():

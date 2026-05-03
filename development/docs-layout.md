@@ -1,6 +1,6 @@
-# ttkbootstrap 2 Docs - Final Navigation & Information Architecture
+# bootstack 2 Docs - Final Navigation & Information Architecture
 
-This document captures the finalized navigation design for the ttkbootstrap 2 documentation site, reflecting decisions aligned with discoverability while remaining Tk-native.
+This document captures the finalized navigation design for the bootstack 2 documentation site, reflecting decisions aligned with discoverability while remaining Tk-native.
 
 ## Core principles
 
@@ -24,8 +24,8 @@ Getting Started | Widgets | Design | Guides | Reference | Showcase
 ## Getting Started (sidebar)
 ```
 Getting Started
-- What is ttkbootstrap 2?
-- Why ttkbootstrap 2?
+- What is bootstack 2?
+- Why bootstack 2?
 - Quickstart (5-Minute App)
 - Installation
 - First Application
@@ -161,4 +161,4 @@ Showcase
 - Categories never nest widgets.
 - Dialogs never create subtrees.
 
-This structure is designed to scale with ttkbootstrap 2 while remaining approachable, discoverable, and professional.
+This structure is designed to scale with bootstack 2 while remaining approachable, discoverable, and professional.

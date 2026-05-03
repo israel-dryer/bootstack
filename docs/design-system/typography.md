@@ -4,7 +4,7 @@ title: Typography
 
 # Typography
 
-Typography in ttkbootstrap is defined through **font tokens** rather than
+Typography in bootstack is defined through **font tokens** rather than
 individual font selections.
 
 Font tokens describe *intent*—such as body text or headings—while the framework

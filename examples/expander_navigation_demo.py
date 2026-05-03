@@ -8,8 +8,8 @@ Tests the enhanced Expander widget with:
 """
 
 import tkinter as tk
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.expander import Expander
+import bootstack as ttk
+from bootstack.widgets.composites.expander import Expander
 
 
 class ExpanderNavigationDemo:

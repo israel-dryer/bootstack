@@ -1,6 +1,6 @@
 # App
 
-::: ttkbootstrap.runtime.app.App
+::: bootstack.runtime.app.App
     options:
         inherited_members:
             # Window manager pass-throughs

@@ -13,8 +13,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mbox
 
-import ttkbootstrap as tb
-from ttkbootstrap.core.localization import MessageCatalog
+import bootstack as tb
+from bootstack.core.localization import MessageCatalog
 
 
 def main():

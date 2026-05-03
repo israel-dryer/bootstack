@@ -1,9 +1,9 @@
 # Tk vs ttk
 
 Tkinter exposes two closely related widget systems: **Tk** and **ttk**.
-Understanding the distinction between them is critical to using ttkbootstrap effectively.
+Understanding the distinction between them is critical to using bootstack effectively.
 
-This page explains what Tk and ttk are, how they differ, and why ttkbootstrap is built
+This page explains what Tk and ttk are, how they differ, and why bootstack is built
 primarily on top of ttk.
 
 ---
@@ -51,16 +51,16 @@ ttk widgets are styled declaratively through styles rather than direct color set
 
 ---
 
-## Why ttkbootstrap is ttk-first
+## Why bootstack is ttk-first
 
-ttkbootstrap is designed around ttk because:
+bootstack is designed around ttk because:
 
 - ttk supports a centralized styling system
 - themes can be swapped dynamically
 - widget appearance is consistent across platforms
 - styles can be layered and extended
 
-Most ttkbootstrap widgets are ttk widgets or composites built from ttk primitives.
+Most bootstack widgets are ttk widgets or composites built from ttk primitives.
 
 ---
 
@@ -74,7 +74,7 @@ Examples include:
 - `tk.Text`
 - low-level drawing or custom rendering
 
-ttkbootstrap supports these widgets but wraps them carefully to integrate with
+bootstack supports these widgets but wraps them carefully to integrate with
 themes, fonts, and capabilities.
 
 ---
@@ -87,13 +87,13 @@ The Tk vs ttk distinction affects how widgets are styled:
 - ttk widgets are styled declaratively
 - ttk styles are resolved by name, not by instance
 
-ttkbootstrap’s design system builds on ttk’s style model rather than overriding it.
+bootstack’s design system builds on ttk’s style model rather than overriding it.
 
 ---
 
 ## Practical guidance
 
-When building ttkbootstrap applications:
+When building bootstack applications:
 
 - prefer ttk widgets whenever possible
 - use Tk widgets only when necessary
@@ -106,5 +106,5 @@ This keeps applications consistent and themeable.
 ## Next steps
 
 - See [ttk Styles & Elements](ttk-styles-elements.md) for how ttk styling works internally.
-- See [Guides → Styling](../guides/styling.md) for how ttkbootstrap extends ttk themes.
+- See [Guides → Styling](../guides/styling.md) for how bootstack extends ttk themes.
 - See [Widgets](../widgets/index.md) for user-facing components built on these systems.

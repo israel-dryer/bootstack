@@ -22,7 +22,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -153,4 +153,4 @@ Use validation when:
 
 ### API reference
 
-- [`ttkbootstrap.DateDialog`](../../reference/dialogs/DateDialog.md)
+- [`bootstack.DateDialog`](../../reference/dialogs/DateDialog.md)

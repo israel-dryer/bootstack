@@ -1,3 +1,3 @@
 # TableView
 
-::: ttkbootstrap.widgets.composites.tableview.TableView
+::: bootstack.widgets.composites.tableview.TableView

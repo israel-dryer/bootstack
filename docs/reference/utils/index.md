@@ -1,6 +1,6 @@
 # Utils
 
-Small reusable primitives used across ttkbootstrap.
+Small reusable primitives used across bootstack.
 
 These utilities are part of the public API when you need shared behavior outside a widget.
 

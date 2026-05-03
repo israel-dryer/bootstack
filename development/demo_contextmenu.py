@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import DropdownButton
+import bootstack as ttk
+from bootstack import DropdownButton
 
 app = ttk.Window(theme="darkly")
 

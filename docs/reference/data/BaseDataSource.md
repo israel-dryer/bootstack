@@ -4,4 +4,4 @@ Abstract base class for datasource implementations. Enforces [DataSourceProtocol
 
 Extend this class to create custom datasources. See the [DataSource Guide](../../guides/datasource.md#creating-a-custom-datasource) for examples.
 
-::: ttkbootstrap.datasource.base.BaseDataSource
+::: bootstack.datasource.base.BaseDataSource

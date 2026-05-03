@@ -2,8 +2,8 @@
 
 Shows how to use FilterDialog with and without the frameless option.
 """
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import FilterDialog
+import bootstack as ttk
+from bootstack.dialogs import FilterDialog
 
 
 app = ttk.Window(theme="dark", size=(500, 500))

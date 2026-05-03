@@ -19,7 +19,7 @@ consistent field events. If you are building forms or dialogs, `NumericEntry` is
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -273,4 +273,4 @@ size.insert_addon(ttk.Label, position="after", text="cm", font="label[9]")
 
 ### API reference
 
-- [`ttkbootstrap.NumericEntry`](../../reference/widgets/NumericEntry.md)
+- [`bootstack.NumericEntry`](../../reference/widgets/NumericEntry.md)

@@ -3,8 +3,8 @@
 This script demonstrates the various features of the NumberEntryPart widget
 including numeric constraints, stepping, wrapping, and formatting.
 """
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.parts.numberentry_part import NumberEntryPart
+import bootstack as ttk
+from bootstack.widgets.parts.numberentry_part import NumberEntryPart
 
 
 def create_demo():

@@ -2,9 +2,9 @@
 
 Layout in Tk is controlled by **geometry managers**.
 Understanding how geometry works is essential for building interfaces that resize,
-align, and behave predictably in ttkbootstrap applications.
+align, and behave predictably in bootstack applications.
 
-This page explains how Tk layout works at a conceptual level and how ttkbootstrap
+This page explains how Tk layout works at a conceptual level and how bootstack
 expects you to structure layouts.
 
 ---
@@ -20,7 +20,7 @@ Tk provides three geometry managers:
 Only **one geometry manager may be used per container**.
 Mixing geometry managers within the same container leads to undefined behavior.
 
-ttkbootstrap does not change this rule.
+bootstack does not change this rule.
 
 ---
 
@@ -50,7 +50,7 @@ Containers:
 - determine how children expand or contract
 - define scroll behavior
 
-ttkbootstrap encourages designing layouts by composing containers,
+bootstack encourages designing layouts by composing containers,
 rather than fine-tuning individual widgets.
 See [Guides → Layout](../guides/layout.md) for the recommended layout approach using PackFrame and GridFrame.
 
@@ -66,7 +66,7 @@ Resizing is governed by:
 
 Predictable resizing requires explicitly defining how extra space is distributed.
 
-ttkbootstrap favors explicit layout intent over implicit defaults.
+bootstack favors explicit layout intent over implicit defaults.
 
 ---
 
@@ -78,14 +78,14 @@ Scrollable layouts introduce additional constraints:
 - geometry must adapt dynamically
 - scrollbars must stay synchronized
 
-ttkbootstrap provides standardized scroll container patterns to
+bootstack provides standardized scroll container patterns to
 avoid re-implementing these behaviors repeatedly.
 
 ---
 
-## ttkbootstrap layout conventions
+## bootstack layout conventions
 
-While Tk allows many layout styles, ttkbootstrap promotes a few conventions:
+While Tk allows many layout styles, bootstack promotes a few conventions:
 
 - prefer `grid` for structured layouts
 - use containers to manage spacing consistently

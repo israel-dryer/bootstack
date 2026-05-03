@@ -19,7 +19,7 @@ validation, localization, and consistent field events like other entry controls.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -164,4 +164,4 @@ Typing is always allowed unless you set the underlying entry to readonly.
 
 ### API reference
 
-- [`ttkbootstrap.SpinnerEntry`](../../reference/widgets/SpinnerEntry.md)
+- [`bootstack.SpinnerEntry`](../../reference/widgets/SpinnerEntry.md)

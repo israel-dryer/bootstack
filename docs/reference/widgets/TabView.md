@@ -1,3 +1,3 @@
 # TabView
 
-::: ttkbootstrap.widgets.composites.tabs.tabview.TabView
+::: bootstack.widgets.composites.tabs.tabview.TabView

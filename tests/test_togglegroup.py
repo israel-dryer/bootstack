@@ -1,8 +1,8 @@
 import unittest
 import tkinter as tk
-from ttkbootstrap.widgets.composites.togglegroup import ToggleGroup
-from ttkbootstrap.core.variables import SetVar
-from ttkbootstrap.core.signals import Signal
+from bootstack.widgets.composites.togglegroup import ToggleGroup
+from bootstack.core.variables import SetVar
+from bootstack.core.signals import Signal
 
 class TestToggleGroup(unittest.TestCase):
 

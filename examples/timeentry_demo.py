@@ -9,8 +9,8 @@ Demonstrates various configurations of the TimeEntry widget including:
 
 import datetime
 
-import ttkbootstrap as ttk
-from ttkbootstrap import TimeEntry
+import bootstack as ttk
+from bootstack import TimeEntry
 
 
 def main():

@@ -1,6 +1,6 @@
 from typing import Literal
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 app = ttk.App("ButtonGroup Demo")

@@ -4,7 +4,7 @@ title: Icons
 
 # Icons
 
-Icons in ttkbootstrap are **symbolic UI elements**, not static image files.
+Icons in bootstack are **symbolic UI elements**, not static image files.
 
 They are part of the design system and behave consistently across themes,
 widgets, and screen densities.
@@ -13,7 +13,7 @@ widgets, and screen densities.
 
 ## Icon model
 
-An icon in ttkbootstrap is:
+An icon in bootstack is:
 
 - referenced by name (not file path)
 - resolved through an icon provider

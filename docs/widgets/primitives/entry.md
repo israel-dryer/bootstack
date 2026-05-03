@@ -4,9 +4,9 @@ title: Entry
 
 # Entry
 
-`Entry` is the low-level, single-line text input primitive in ttkbootstrap.
+`Entry` is the low-level, single-line text input primitive in bootstack.
 
-It wraps `ttk.Entry` and integrates ttkbootstrap styling plus reactive text support. `Entry` is also the building block
+It wraps `ttk.Entry` and integrates bootstack styling plus reactive text support. `Entry` is also the building block
 used by higher-level controls like `TextEntry`, `NumericEntry`, `DateEntry`, and `PasswordEntry`.
 
 ---
@@ -14,7 +14,7 @@ used by higher-level controls like `TextEntry`, `NumericEntry`, `DateEntry`, and
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -173,4 +173,4 @@ If you want user-friendly validation messages and commit-based validation, prefe
 
 ### API reference
 
-- [`ttkbootstrap.Entry`](../../reference/widgets/Entry.md)
+- [`bootstack.Entry`](../../reference/widgets/Entry.md)

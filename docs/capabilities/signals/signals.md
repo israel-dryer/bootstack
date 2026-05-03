@@ -1,11 +1,11 @@
 # Signals
 
-Signals are ttkbootstrap’s **reactive state mechanism**.
+Signals are bootstack’s **reactive state mechanism**.
 
 They provide a high-level, framework-oriented way for widgets and application
 logic to communicate **state changes** without relying on low-level Tk events.
 
-Signals are central to ttkbootstrap’s philosophy: *build modern, reactive
+Signals are central to bootstack’s philosophy: *build modern, reactive
 desktop applications with clear data flow and minimal wiring.*
 
 
@@ -115,7 +115,7 @@ This keeps UI and logic cleanly separated.
 
 ## Signals and widgets
 
-Many ttkbootstrap widgets accept a `signal` argument:
+Many bootstack widgets accept a `signal` argument:
 
 ```python
 signal = Signal()
@@ -188,7 +188,7 @@ Signals are intentionally:
 - predictable (no implicit side effects)
 - framework-level (not Tk-specific)
 
-They support ttkbootstrap’s goals:
+They support bootstack’s goals:
 
 - modern UI patterns
 - reactive data flow
@@ -211,4 +211,4 @@ signals should feel immediately familiar.
 
 **API reference**
 
-- **Signal** — `ttkbootstrap.utils.Signal`
+- **Signal** — `bootstack.utils.Signal`

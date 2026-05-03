@@ -1,3 +1,3 @@
 # Separator
 
-::: ttkbootstrap.widgets.primitives.separator.Separator
+::: bootstack.widgets.primitives.separator.Separator

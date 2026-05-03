@@ -3,7 +3,7 @@
 State and interaction describe how widgets and applications respond over time
 to user input, internal changes, and system events.
 
-This capability explains how ttkbootstrap models interaction beyond simple
+This capability explains how bootstack models interaction beyond simple
 callbacks, tying together widget state, signals, and events.
 
 ---
@@ -47,7 +47,7 @@ Common states:
 - `selected`
 - `pressed`
 
-ttkbootstrap builds on this model rather than replacing it.
+bootstack builds on this model rather than replacing it.
 
 ---
 
@@ -91,9 +91,9 @@ Clear propagation paths prevent inconsistent UI behavior.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - modeling meaningful state explicitly
 - using signals for shared state

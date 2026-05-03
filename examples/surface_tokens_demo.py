@@ -7,7 +7,7 @@ Demonstrates the new semantic surface tokens for container backgrounds:
 - titlebar - window title bars
 """
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def create_demo():

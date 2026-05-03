@@ -13,7 +13,7 @@ It's ideal for dashboards, summaries, and status panels where visual emphasis ma
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -152,4 +152,4 @@ usage.set(75)  # Meter updates automatically
 
 ### API reference
 
-- [`ttkbootstrap.Meter`](../../reference/widgets/Meter.md)
+- [`bootstack.Meter`](../../reference/widgets/Meter.md)

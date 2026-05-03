@@ -4,7 +4,7 @@ title: Navigation
 
 # Navigation
 
-Navigation is how users move between different views in your application. ttkbootstrap provides
+Navigation is how users move between different views in your application. bootstack provides
 several patterns for organizing and switching between content areas.
 
 This guide covers:
@@ -38,7 +38,7 @@ need more control over layout, or to a custom sidebar if your requirements are t
 a `Toolbar`, `SideNav`, and `PageStack` automatically:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(title="My App", size=(1000, 650))
 
@@ -96,7 +96,7 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 but want full control over the surrounding layout:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="SideNav Demo", size=(900, 600))
 
@@ -119,7 +119,7 @@ app.mainloop()
 When using SideNav outside of AppShell, you wire it to a PageStack manually:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="SideNav + PageStack", size=(900, 600))
 
@@ -184,7 +184,7 @@ Use `Notebook` when users need **random access** to related views. Tabs are visi
 making it easy to switch between categories.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -224,7 +224,7 @@ Use `PageStack` when navigation is **sequential or flow-based**. It maintains a 
 enabling back/forward navigation like a web browser.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -277,7 +277,7 @@ You can combine navigation patterns. For example, an AppShell for top-level sect
 with tabs inside one of the pages:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(title="Combined Navigation", size=(1000, 650))
 
@@ -308,7 +308,7 @@ For layouts where `SideNav` doesn't fit, you can build a custom sidebar with but
 controlling a `PageStack`:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="Custom Sidebar", size=(800, 500))
 

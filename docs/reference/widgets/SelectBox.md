@@ -1,3 +1,3 @@
 # SelectBox
 
-::: ttkbootstrap.widgets.composites.selectbox.SelectBox
+::: bootstack.widgets.composites.selectbox.SelectBox

@@ -1,6 +1,6 @@
 # API Reference
 
-This section documents the **public API surface** of ttkbootstrap v2.
+This section documents the **public API surface** of bootstack v2.
 
 Use these pages when you need exact signatures, supported options, and return values.
 For conceptual explanations and patterns, see **Platform** and **Capabilities**.
@@ -30,6 +30,6 @@ For conceptual explanations and patterns, see **Platform** and **Capabilities**.
 
 ## Notes
 
-- Reference pages target the **public import path** (for example `ttkbootstrap.Button`) even when
+- Reference pages target the **public import path** (for example `bootstack.Button`) even when
   the implementation lives in internal modules.
 - Capability pages document behavior built into widgets; you typically won’t import capability mixins directly.

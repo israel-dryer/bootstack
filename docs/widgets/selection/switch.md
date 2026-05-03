@@ -15,7 +15,7 @@ a feature, turning on notifications, or activating a mode.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -171,7 +171,7 @@ ttk.Switch(app, text="Dark Mode", localize=False)
 Prefer a reactive `signal=...` in v2 apps:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -225,4 +225,4 @@ Choose based on the visual context and whether you need tri-state support.
 
 ### API reference
 
-- [`ttkbootstrap.Switch`](../../reference/widgets/Switch.md)
+- [`bootstack.Switch`](../../reference/widgets/Switch.md)

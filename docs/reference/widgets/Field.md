@@ -1,3 +1,3 @@
 # Field
 
-::: ttkbootstrap.widgets.composites.field.Field
+::: bootstack.widgets.composites.field.Field

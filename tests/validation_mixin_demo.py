@@ -1,6 +1,6 @@
-import ttkbootstrap as ttk
+import bootstack as ttk
 
-from ttkbootstrap.widgets.mixins.validation_mixin import ValidationMixin
+from bootstack.widgets.mixins.validation_mixin import ValidationMixin
 
 
 class ValidatedEntry(ValidationMixin, ttk.Entry):

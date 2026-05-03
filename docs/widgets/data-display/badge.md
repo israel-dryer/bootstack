@@ -13,7 +13,7 @@ It's designed for short, scannable values like **counts**, **statuses**, and **t
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -150,4 +150,4 @@ count.set(10)  # Badge updates automatically
 
 ### API reference
 
-- [`ttkbootstrap.Badge`](../../reference/widgets/Badge.md)
+- [`bootstack.Badge`](../../reference/widgets/Badge.md)

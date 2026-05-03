@@ -1,3 +1,3 @@
 # RadioGroup
 
-::: ttkbootstrap.widgets.composites.radiogroup.RadioGroup
+::: bootstack.widgets.composites.radiogroup.RadioGroup

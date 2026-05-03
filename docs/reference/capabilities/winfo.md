@@ -1,7 +1,7 @@
 # Winfo
 
-This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + ttkbootstrap extensions).
+This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + bootstack extensions).
 
-> **Note**: You typically won’t use `ttkbootstrap.core.capabilities.winfo` directly. This page describes the behavior that widgets expose.
+> **Note**: You typically won’t use `bootstack.core.capabilities.winfo` directly. This page describes the behavior that widgets expose.
 
-::: ttkbootstrap.core.capabilities.winfo.WinfoMixin
+::: bootstack.core.capabilities.winfo.WinfoMixin

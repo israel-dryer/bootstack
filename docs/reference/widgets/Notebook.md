@@ -1,3 +1,3 @@
 # Notebook
 
-::: ttkbootstrap.widgets.primitives.notebook.Notebook
+::: bootstack.widgets.primitives.notebook.Notebook

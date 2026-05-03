@@ -19,7 +19,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -167,4 +167,4 @@ for i in range(20):
 
 ### API reference
 
-- [`ttkbootstrap.ScrollView`](../../reference/widgets/ScrollView.md)
+- [`bootstack.ScrollView`](../../reference/widgets/ScrollView.md)

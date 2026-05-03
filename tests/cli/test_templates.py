@@ -24,19 +24,19 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib  # type: ignore
 
-from ttkbootstrap.cli.add import (
+from bootstack.cli.add import (
     _get_dark_theme_template,
     _get_light_theme_template,
 )
-from ttkbootstrap.cli.config import TtkbConfig
-from ttkbootstrap.cli.pyinstaller import SPEC_TEMPLATE, generate_spec
-from ttkbootstrap.cli.templates import (
+from bootstack.cli.config import TtkbConfig
+from bootstack.cli.pyinstaller import SPEC_TEMPLATE, generate_spec
+from bootstack.cli.templates import (
     create_dialog,
     create_page,
     create_project,
     create_view,
 )
-from ttkbootstrap.style.theme_provider import load_user_defined_theme
+from bootstack.style.theme_provider import load_user_defined_theme
 
 
 # ---------------------------------------------------------------------------
@@ -252,13 +252,13 @@ def test_spec_template_format_is_safe() -> None:
 
 
 def test_default_launch_icon_is_packaged() -> None:
-    """The spec template falls back to ttkbootstrap/assets/ttkbootstrap.ico
+    """The spec template falls back to bootstack/assets/bootstack.ico
     when no [build.icon] is set; the file must ship with the package."""
-    import ttkbootstrap
-    icon = Path(ttkbootstrap.__file__).parent / "assets" / "ttkbootstrap.ico"
+    import bootstack
+    icon = Path(bootstack.__file__).parent / "assets" / "bootstack.ico"
     assert icon.is_file(), f"missing default launch icon: {icon}"
     rendered = SPEC_TEMPLATE.format(app_name="Demo")
-    assert "ttkbootstrap.ico" in rendered, (
+    assert "bootstack.ico" in rendered, (
         "spec template no longer references the bundled default icon — "
         "the previous path 'assets/icons/app.ico' silently failed because "
         "that file never existed in the package"
@@ -266,11 +266,11 @@ def test_default_launch_icon_is_packaged() -> None:
 
 
 def test_spec_template_bundles_icon_package_assets() -> None:
-    """Until ttkbootstrap-icons publishes its pyinstaller40 entry point and
+    """Until bootstack-icons publishes its pyinstaller40 entry point and
     a hook for the _bs provider, the spec must bundle icon assets directly,
     or frozen apps fail with ``No module named 'ttkbootstrap_icons_bs.assets'``.
 
-    Tracked: https://github.com/israel-dryer/ttkbootstrap-icons (upstream).
+    Tracked: https://github.com/israel-dryer/bootstack-icons (upstream).
     """
     rendered = SPEC_TEMPLATE.format(app_name="Demo")
     assert "collect_data_files" in rendered
@@ -282,7 +282,7 @@ def test_spec_template_uses_specpath_not_dunder_file() -> None:
     """Spec files are exec'd by PyInstaller without ``__file__`` in the
     namespace; ``SPECPATH`` is the supported way to locate the spec dir.
 
-    ``module.__file__`` references (e.g. ``ttkbootstrap.__file__``) are
+    ``module.__file__`` references (e.g. ``bootstack.__file__``) are
     fine — only a bare ``__file__`` lookup is broken.
     """
     rendered = SPEC_TEMPLATE.format(app_name="Demo")

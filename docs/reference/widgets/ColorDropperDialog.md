@@ -1,3 +1,3 @@
 # ColorDropperDialog
 
-::: ttkbootstrap.dialogs.colordropper.ColorDropperDialog
+::: bootstack.dialogs.colordropper.ColorDropperDialog

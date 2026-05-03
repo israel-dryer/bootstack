@@ -22,7 +22,7 @@ Theme variants: light / dark
 Create a tabbed view with pages:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -237,4 +237,4 @@ tabview.on_page_changed(on_page_change)
 
 ### API reference
 
-- [`ttkbootstrap.TabView`](../../reference/widgets/TabView.md)
+- [`bootstack.TabView`](../../reference/widgets/TabView.md)

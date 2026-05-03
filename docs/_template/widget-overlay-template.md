@@ -191,6 +191,6 @@ Prescriptive advice:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.OverlayWidgetName`
+- **API Reference:** `bootstack.OverlayWidgetName`
 
 - **Related guides:** Feedback, UX Patterns, Accessibility

@@ -6,7 +6,7 @@ title: GridFrame
 
 `GridFrame` is a **layout container** with simplified grid-based layout management and auto-placement.
 
-It extends the ttkbootstrap Frame with automatic grid-based layout management, including support for row/column definitions, gap spacing, auto-placement, and default sticky behavior. Use `GridFrame` when you need a CSS Grid-like layout experience without manually managing grid options.
+It extends the bootstack Frame with automatic grid-based layout management, including support for row/column definitions, gap spacing, auto-placement, and default sticky behavior. Use `GridFrame` when you need a CSS Grid-like layout experience without manually managing grid options.
 
 Children simply call the standard `grid()` method and automatically receive the frame's default layout options and auto-placement.
 
@@ -15,7 +15,7 @@ Children simply call the standard `grid()` method and automatically receive the 
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -225,4 +225,4 @@ grid.configure_column(1, weight=2, minsize=100)
 
 ### API reference
 
-- [`ttkbootstrap.GridFrame`](../../reference/widgets/GridFrame.md)
+- [`bootstack.GridFrame`](../../reference/widgets/GridFrame.md)

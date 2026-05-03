@@ -1,3 +1,3 @@
 # toggle_theme
 
-::: ttkbootstrap.style.style.toggle_theme
+::: bootstack.style.style.toggle_theme

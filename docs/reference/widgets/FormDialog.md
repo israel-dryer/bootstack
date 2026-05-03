@@ -1,3 +1,3 @@
 # FormDialog
 
-::: ttkbootstrap.dialogs.formdialog.FormDialog
+::: bootstack.dialogs.formdialog.FormDialog

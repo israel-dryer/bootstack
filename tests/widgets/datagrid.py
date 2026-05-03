@@ -2,7 +2,7 @@
 import time
 from pathlib import Path
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 p = Path(__file__).parent / "people-1000.csv"
 with open(p, encoding="utf-8") as f:

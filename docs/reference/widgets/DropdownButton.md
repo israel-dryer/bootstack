@@ -1,3 +1,3 @@
 # DropdownButton
 
-::: ttkbootstrap.widgets.composites.dropdownbutton.DropdownButton
+::: bootstack.widgets.composites.dropdownbutton.DropdownButton

@@ -2,9 +2,9 @@
 
 from datetime import date
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import BOTH, W, X
-from ttkbootstrap import Calendar
+import bootstack as ttk
+from bootstack.constants import BOTH, W, X
+from bootstack import Calendar
 
 
 def main():

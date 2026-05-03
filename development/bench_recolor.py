@@ -15,7 +15,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ttkbootstrap.style.utility import ELEMENTS_DIR  # noqa: E402
+from bootstack.style.utility import ELEMENTS_DIR  # noqa: E402
 from verify_recolor_equivalence import recolor_old, recolor_new_raw  # noqa: E402
 
 

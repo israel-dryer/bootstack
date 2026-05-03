@@ -1,3 +1,3 @@
 # PasswordEntry
 
-::: ttkbootstrap.widgets.composites.passwordentry.PasswordEntry
+::: bootstack.widgets.composites.passwordentry.PasswordEntry

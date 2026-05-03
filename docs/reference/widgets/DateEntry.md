@@ -1,3 +1,3 @@
 # DateEntry
 
-::: ttkbootstrap.widgets.composites.dateentry.DateEntry
+::: bootstack.widgets.composites.dateentry.DateEntry

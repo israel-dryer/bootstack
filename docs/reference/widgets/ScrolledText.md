@@ -1,3 +1,3 @@
 # ScrolledText
 
-::: ttkbootstrap.widgets.composites.scrolledtext.ScrolledText
+::: bootstack.widgets.composites.scrolledtext.ScrolledText

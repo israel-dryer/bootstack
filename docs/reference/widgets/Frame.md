@@ -1,3 +1,3 @@
 # Frame
 
-::: ttkbootstrap.widgets.primitives.frame.Frame
+::: bootstack.widgets.primitives.frame.Frame

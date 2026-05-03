@@ -1,6 +1,6 @@
 """Debug centering issue - check actual image dimensions and widget sizes."""
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 from tkinter import font
 from PIL import ImageGrab
 
@@ -24,8 +24,8 @@ def debug_info():
     print(f"Caption font: ascent={metrics['ascent']}, descent={metrics['descent']}, linespace={metrics['linespace']}")
 
     # Get image scale info
-    from ttkbootstrap.runtime.utility import _ScalingState
-    from ttkbootstrap.style.utility import _load_manifest
+    from bootstack.runtime.utility import _ScalingState
+    from bootstack.style.utility import _load_manifest
 
     manifest = _load_manifest()
     source_res = manifest.get("default_dpi", 2.0)

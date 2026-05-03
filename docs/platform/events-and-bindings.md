@@ -2,9 +2,9 @@
 
 Tk delivers user input and system notifications through an **event and binding system**.
 Understanding how events are generated, propagated, and handled is essential for building
-predictable interfaces with ttkbootstrap.
+predictable interfaces with bootstack.
 
-This page focuses on **how Tk events work** and how ttkbootstrap expects you to use them.
+This page focuses on **how Tk events work** and how bootstack expects you to use them.
 See [Guides → Reactivity](../guides/reactivity.md) for higher-level reactive patterns.
 
 ---
@@ -47,7 +47,7 @@ Bindings can be attached at different scopes:
 - **class bindings**: apply to all widgets of a given class
 - **application bindings**: apply to all widgets in the application
 
-ttkbootstrap does not change this model, but it encourages **explicit, localized bindings**
+bootstack does not change this model, but it encourages **explicit, localized bindings**
 rather than global ones when possible.
 
 ---
@@ -103,14 +103,14 @@ They are especially useful when:
 - multiple inputs should trigger the same behavior
 - application-level state changes need to notify many components
 
-ttkbootstrap strongly encourages virtual events for semantic communication.
+bootstack strongly encourages virtual events for semantic communication.
 See [Capabilities → Virtual Events](../capabilities/signals/virtual-events.md) for the framework's virtual event patterns.
 
 ---
 
-## ttkbootstrap's guidance on events
+## bootstack's guidance on events
 
-ttkbootstrap treats events as a **low-level mechanism**:
+bootstack treats events as a **low-level mechanism**:
 
 - use direct bindings for immediate UI interactions
 - use virtual events for semantic signals

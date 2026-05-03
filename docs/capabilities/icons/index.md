@@ -1,6 +1,6 @@
 # Icons & Images
 
-Icons and images are core visual resources in ttkbootstrap applications.
+Icons and images are core visual resources in bootstack applications.
 They require careful handling to ensure consistent appearance, good performance,
 and correct behavior across platforms and DPI settings.
 
@@ -30,7 +30,7 @@ Icons are used across many widgets:
 - toggles
 - indicators
 
-Rather than embedding icon logic into each widget, ttkbootstrap treats icon usage
+Rather than embedding icon logic into each widget, bootstack treats icon usage
 as a shared capability with consistent behavior.
 
 ---
@@ -72,13 +72,13 @@ Centralized management:
 - improves rendering performance
 - avoids subtle bugs
 
-ttkbootstrap’s abstractions exist to address these concerns.
+bootstack’s abstractions exist to address these concerns.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - centralized asset management
 - reuse over recreation

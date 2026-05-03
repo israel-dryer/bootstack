@@ -19,7 +19,7 @@ localization, and consistent field events. If you're building forms or dialogs, 
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -225,4 +225,4 @@ search.insert_addon(ttk.Button, position="after", icon="search", command=handle_
 
 ### API reference
 
-- [`ttkbootstrap.TextEntry`](../../reference/widgets/TextEntry.md)
+- [`bootstack.TextEntry`](../../reference/widgets/TextEntry.md)

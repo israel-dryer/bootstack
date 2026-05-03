@@ -80,7 +80,7 @@ See the [DataSource Guide](../../guides/datasource.md) for usage examples.
 
 ---
 
-::: ttkbootstrap.datasource.file_source.FileSourceConfig
+::: bootstack.datasource.file_source.FileSourceConfig
     options:
       show_docstring_description: true
       show_docstring_examples: true

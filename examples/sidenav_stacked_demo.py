@@ -8,8 +8,8 @@ This demonstrates using multiple SideNav widgets side-by-side:
 This pattern is common in apps like Outlook, Teams, and Discord.
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites import SideNav, ListView
+import bootstack as ttk
+from bootstack.widgets.composites import SideNav, ListView
 
 
 def main():

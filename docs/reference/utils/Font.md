@@ -1,3 +1,3 @@
 # Font
 
-::: ttkbootstrap.style.typography.Font
+::: bootstack.style.typography.Font

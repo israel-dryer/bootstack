@@ -1,3 +1,3 @@
 # Dialog
 
-::: ttkbootstrap.dialogs.dialog.Dialog
+::: bootstack.dialogs.dialog.Dialog

@@ -1,3 +1,3 @@
 # LabeledScale
 
-::: ttkbootstrap.widgets.composites.labeledscale.LabeledScale
+::: bootstack.widgets.composites.labeledscale.LabeledScale

@@ -1,3 +1,3 @@
 # Button
 
-::: ttkbootstrap.widgets.primitives.button.Button
+::: bootstack.widgets.primitives.button.Button

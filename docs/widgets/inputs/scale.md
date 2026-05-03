@@ -18,7 +18,7 @@ ideal for volume, zoom, thresholds, and any setting where users benefit from imm
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -166,4 +166,4 @@ scale.on_input(update_value)
 
 ### API reference
 
-- [`ttkbootstrap.Scale`](../../reference/widgets/Scale.md)
+- [`bootstack.Scale`](../../reference/widgets/Scale.md)

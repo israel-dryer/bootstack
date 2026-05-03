@@ -1,3 +1,3 @@
 # Entry
 
-::: ttkbootstrap.widgets.primitives.entry.Entry
+::: bootstack.widgets.primitives.entry.Entry

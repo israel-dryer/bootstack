@@ -1,7 +1,7 @@
 """Test the refactored DateDialog using the new Dialog class."""
 
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import DateDialog
+import bootstack as ttk
+from bootstack.dialogs import DateDialog
 from datetime import date
 
 

@@ -1,3 +1,3 @@
 # Image
 
-::: ttkbootstrap.core.images.Image
+::: bootstack.core.images.Image

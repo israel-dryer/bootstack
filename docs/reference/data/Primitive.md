@@ -1,3 +1,3 @@
 # Primitive
 
-::: ttkbootstrap.datasource.types.Primitive
+::: bootstack.datasource.types.Primitive

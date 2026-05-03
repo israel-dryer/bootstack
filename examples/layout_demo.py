@@ -1,6 +1,6 @@
 """Simple demonstration of PackFrame and GridFrame layout containers."""
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def main():

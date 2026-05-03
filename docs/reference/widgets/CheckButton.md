@@ -1,3 +1,3 @@
 # CheckButton
 
-::: ttkbootstrap.widgets.primitives.checkbutton.CheckButton
+::: bootstack.widgets.primitives.checkbutton.CheckButton

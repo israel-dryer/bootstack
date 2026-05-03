@@ -4,13 +4,13 @@ title: Icons
 
 # Icons
 
-This guide explains how to use icons effectively in ttkbootstrap applications—from simple buttons to state-aware toolbar actions.
+This guide explains how to use icons effectively in bootstack applications—from simple buttons to state-aware toolbar actions.
 
 ---
 
 ## Icons as framework infrastructure
 
-In ttkbootstrap, icons are **named resources**, not file paths.
+In bootstack, icons are **named resources**, not file paths.
 
 When you specify an icon:
 
@@ -191,7 +191,7 @@ For most cases, the string form is sufficient.
 
 ## DPI and scaling
 
-ttkbootstrap handles icon scaling automatically.
+bootstack handles icon scaling automatically.
 
 When you specify `size=16`, the framework:
 

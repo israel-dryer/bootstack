@@ -1,7 +1,7 @@
 """Demo for QueryDialog and Querybox with various input types."""
 
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import QueryBox
+import bootstack as ttk
+from bootstack.dialogs import QueryBox
 
 
 def demo_get_string():

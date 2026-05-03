@@ -6,7 +6,7 @@ title: LabelFrame
 
 `LabelFrame` is a **layout container** that groups related widgets under a **visible label**.
 
-It wraps `ttk.Labelframe`, participates in ttkbootstrap styling, and is ideal for labeled sections (settings groups,
+It wraps `ttk.Labelframe`, participates in bootstack styling, and is ideal for labeled sections (settings groups,
 form clusters, option panels) where the title improves scanability.
 
 <!--
@@ -20,7 +20,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -141,4 +141,4 @@ ttk.LabelFrame(app, text="Options", padding=(16, 12))
 
 ### API reference
 
-- [`ttkbootstrap.LabelFrame`](../../reference/widgets/LabelFrame.md)
+- [`bootstack.LabelFrame`](../../reference/widgets/LabelFrame.md)

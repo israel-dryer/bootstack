@@ -1,8 +1,8 @@
 """Demonstrate ContextMenu configuration helpers (configure_item, insert_item, remove_item, move_item)."""
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap import ContextMenu
+import bootstack as ttk
+from bootstack.constants import *
+from bootstack import ContextMenu
 
 
 def main():

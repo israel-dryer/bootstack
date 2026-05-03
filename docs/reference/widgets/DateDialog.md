@@ -1,3 +1,3 @@
 # DateDialog
 
-::: ttkbootstrap.dialogs.datedialog.DateDialog
+::: bootstack.dialogs.datedialog.DateDialog

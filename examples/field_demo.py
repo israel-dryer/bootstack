@@ -1,14 +1,14 @@
 """Demo showcasing Field widgets (TextEntry, SpinnerEntry, NumberEntry, etc.)."""
 
-from ttkbootstrap import Window
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.textentry import TextEntry
-from ttkbootstrap.widgets.composites.spinnerentry import SpinnerEntry
-from ttkbootstrap.widgets.composites.numericentry import NumericEntry
-from ttkbootstrap.widgets.composites.passwordentry import PasswordEntry
-from ttkbootstrap.widgets.composites.dateentry import DateEntry
-from ttkbootstrap.widgets.composites.timeentry import TimeEntry
-from ttkbootstrap.widgets.composites.pathentry import PathEntry
+from bootstack import Window
+import bootstack as ttk
+from bootstack.widgets.composites.textentry import TextEntry
+from bootstack.widgets.composites.spinnerentry import SpinnerEntry
+from bootstack.widgets.composites.numericentry import NumericEntry
+from bootstack.widgets.composites.passwordentry import PasswordEntry
+from bootstack.widgets.composites.dateentry import DateEntry
+from bootstack.widgets.composites.timeentry import TimeEntry
+from bootstack.widgets.composites.pathentry import PathEntry
 
 
 def main(density='default'):

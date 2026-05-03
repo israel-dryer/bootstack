@@ -1,3 +1,3 @@
 # Signal
 
-::: ttkbootstrap.core.signals.signal.Signal
+::: bootstack.core.signals.signal.Signal

@@ -1,3 +1,3 @@
 # LV
 
-::: ttkbootstrap.core.localization.specs.LV
+::: bootstack.core.localization.specs.LV

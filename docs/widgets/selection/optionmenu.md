@@ -7,7 +7,7 @@ title: OptionMenu
 `OptionMenu` is a **selection control** that lets users pick **one value from a short list** using a
 menu-style dropdown.
 
-In ttkbootstrap v2, `OptionMenu` wraps Tkinter's `ttk.Menubutton` and adds theming, icons, signals,
+In bootstack v2, `OptionMenu` wraps Tkinter's `ttk.Menubutton` and adds theming, icons, signals,
 and standardized change events. It is best suited for **compact, known option sets**.
 
 Use `OptionMenu` when the list is small and users already know the available choices.
@@ -34,7 +34,7 @@ It is intentionally simpler than `SelectBox` and does not support search or cust
 ## Basic usage
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -262,4 +262,4 @@ Prefer **RadioButton / RadioGroup** when:
 
 ### API reference
 
-- [`ttkbootstrap.OptionMenu`](../../reference/widgets/OptionMenu.md)
+- [`bootstack.OptionMenu`](../../reference/widgets/OptionMenu.md)

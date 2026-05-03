@@ -4,7 +4,7 @@ title: Theming
 
 # Theming
 
-This guide explains how ttkbootstrap's theming system works—palettes, color generation, and creating custom themes.
+This guide explains how bootstack's theming system works—palettes, color generation, and creating custom themes.
 
 ---
 
@@ -13,7 +13,7 @@ This guide explains how ttkbootstrap's theming system works—palettes, color ge
 A theme defines the **complete color system** for your application. Instead of hardcoding colors, you work with semantic tokens (`primary`, `danger`, etc.) that resolve to actual colors based on the active theme.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 # Theme determines what "primary" means
 app = ttk.App(theme="ocean-light")
@@ -60,7 +60,7 @@ Shades define the raw colors available to the theme:
 }
 ```
 
-From each shade, ttkbootstrap generates a **full spectrum** of 9 variants:
+From each shade, bootstack generates a **full spectrum** of 9 variants:
 
 ```
 blue[100] → lightest tint
@@ -103,7 +103,7 @@ This indirection is powerful:
 
 ## Built-in Themes
 
-ttkbootstrap includes paired light/dark themes:
+bootstack includes paired light/dark themes:
 
 | Theme Family | Light | Dark |
 |--------------|-------|------|
@@ -118,7 +118,7 @@ ttkbootstrap includes paired light/dark themes:
 ### Listing Available Themes
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -141,7 +141,7 @@ app = ttk.App(theme="ocean-dark")
 ### At Runtime
 
 ```python
-from ttkbootstrap import set_theme, toggle_theme, get_theme
+from bootstack import set_theme, toggle_theme, get_theme
 
 # Switch to a specific theme
 set_theme("forest-light")
@@ -157,7 +157,7 @@ print(f"Current theme: {current}")
 ### Theme Toggle Button
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(theme="ocean-light")
 
@@ -173,7 +173,7 @@ app.mainloop()
 
 ## Light and Dark Aliases
 
-ttkbootstrap provides `"light"` and `"dark"` aliases that resolve to configured themes:
+bootstack provides `"light"` and `"dark"` aliases that resolve to configured themes:
 
 ```python
 # These are equivalent when ocean-light is configured as the light theme
@@ -286,7 +286,7 @@ For a complete theme, create both variants. The key differences:
 ## Registering Custom Themes
 
 ```python
-from ttkbootstrap.style.theme_provider import register_user_theme
+from bootstack.style.theme_provider import register_user_theme
 
 # Register before creating the App
 register_user_theme("acme-light", "path/to/acme-light.json")
@@ -320,7 +320,7 @@ With this configuration:
 
 ## Color Spectrum Generation
 
-When you define a shade like `"blue": "#0d6efd"`, ttkbootstrap generates the full spectrum:
+When you define a shade like `"blue": "#0d6efd"`, bootstack generates the full spectrum:
 
 ```
 blue[100] ← 80% tint (lightest)
@@ -339,7 +339,7 @@ This means you only define 11 base colors, and the system generates 99 usable sh
 ### Accessing Generated Colors
 
 ```python
-from ttkbootstrap import get_theme_provider
+from bootstack import get_theme_provider
 
 provider = get_theme_provider()
 
@@ -355,7 +355,7 @@ blue_300 = provider.colors["blue[300]"]
 ### Checking Theme Mode
 
 ```python
-from ttkbootstrap import get_theme_provider
+from bootstack import get_theme_provider
 
 provider = get_theme_provider()
 
@@ -370,7 +370,7 @@ else:
 ### Responding to Theme Changes
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 

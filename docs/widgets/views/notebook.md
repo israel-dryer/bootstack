@@ -8,11 +8,11 @@ title: Notebook
     `Notebook` is included as a wrapper around the native `ttk.Notebook` widget.
     For new projects, consider using [TabView](tabview.md) instead, which offers
     a more modern appearance, closable tabs, dynamic tab creation, and better
-    integration with ttkbootstrap's design system.
+    integration with bootstack's design system.
 
 `Notebook` is a **tabbed view container** that shows one page at a time and lets users switch views by clicking tabs.
 
-ttkbootstrap's `Notebook` extends `ttk.Notebook` with:
+bootstack's `Notebook` extends `ttk.Notebook` with:
 
 - **key-based tab references** (stable, human-friendly)
 
@@ -35,7 +35,7 @@ Theme variants: light / dark
 Create a notebook and add tabs using `add()`:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -243,4 +243,4 @@ For `on_tab_changed(...)`, `event.data` includes:
 
 ### API reference
 
-- [`ttkbootstrap.Notebook`](../../reference/widgets/Notebook.md)
+- [`bootstack.Notebook`](../../reference/widgets/Notebook.md)

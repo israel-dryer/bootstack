@@ -1,3 +1,3 @@
 # MessageDialog
 
-::: ttkbootstrap.dialogs.message.MessageDialog
+::: bootstack.dialogs.message.MessageDialog

@@ -6,7 +6,7 @@ title: Containers
 
 Containers are widgets whose primary role is to **organize layout** for child widgets.
 
-In ttkbootstrap, containers are more than “a place to put widgets” — they are where you express **layout intent**:
+In bootstack, containers are more than “a place to put widgets” — they are where you express **layout intent**:
 spacing rules, scrolling behavior, and consistent resizing patterns. That keeps individual widgets simpler and makes
 UIs easier to evolve.
 
@@ -62,7 +62,7 @@ data access, and presentation state).
 
 ## Composition over per-widget tuning
 
-ttkbootstrap encourages composing layouts from **simple containers** rather than “micro-tuning” each widget.
+bootstack encourages composing layouts from **simple containers** rather than “micro-tuning” each widget.
 
 Instead of:
 
@@ -78,7 +78,7 @@ Prefer:
 
 This reduces layout bugs and makes UIs easier to refactor.
 
-See [Layout Properties](../layout-props.md) for the ttkbootstrap layout convenience options used across widgets.
+See [Layout Properties](../layout-props.md) for the bootstack layout convenience options used across widgets.
 
 ---
 
@@ -90,7 +90,7 @@ Tk’s geometry managers are powerful, but verbose:
 - `pack` and `grid` require different mental models and options
 - small inconsistencies (padding, sticky/anchor, expand/fill) accumulate
 
-ttkbootstrap provides two *opinionated* containers that make layout intent explicit and consistent:
+bootstack provides two *opinionated* containers that make layout intent explicit and consistent:
 
 - **PackFrame** — an opinionated “row/column” pack container with a `direction` and a `gap`
 - **GridFrame** — an opinionated grid container with `rows`, `columns`, and `gap` rules

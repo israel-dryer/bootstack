@@ -3,7 +3,7 @@
 At the core of every Tk application is the **event loop**.
 
 Understanding how the event loop works is essential for building responsive,
-predictable applications with ttkbootstrap.
+predictable applications with bootstack.
 
 ---
 
@@ -51,16 +51,16 @@ This means:
 - long-running operations block the event loop
 - blocking the event loop freezes the UI
 
-ttkbootstrap does not change this rule.
+bootstack does not change this rule.
 
 Instead, it provides **patterns and capabilities** that make working within this
 constraint easier and more predictable.
 
 ---
 
-## ttkbootstrap’s position on the event loop
+## bootstack’s position on the event loop
 
-ttkbootstrap treats the event loop as a **platform boundary**, not something to hide.
+bootstack treats the event loop as a **platform boundary**, not something to hide.
 
 The framework:
 
@@ -84,7 +84,7 @@ Tk provides mechanisms for scheduling work without blocking the UI:
 
 These APIs integrate directly with the event loop.
 
-ttkbootstrap builds on these primitives rather than replacing them.
+bootstack builds on these primitives rather than replacing them.
 
 ---
 
@@ -104,9 +104,9 @@ where events are delivered.
 
 ---
 
-## Where ttkbootstrap adds structure
+## Where bootstack adds structure
 
-While ttkbootstrap does not replace the event loop, it layers structure on top of it:
+While bootstack does not replace the event loop, it layers structure on top of it:
 
 - **Signals** provide declarative, event-driven state propagation
 - **Capabilities** standardize event-related behaviors across widgets

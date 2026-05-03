@@ -13,7 +13,7 @@ Use it when you want a standard "pick a color -> OK/Cancel" flow for theming, dr
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -86,4 +86,4 @@ Color chooser dialogs typically return:
 
 ### API reference
 
-- [`ttkbootstrap.ColorChooser`](../../reference/dialogs/ColorChooser.md)
+- [`bootstack.ColorChooser`](../../reference/dialogs/ColorChooser.md)

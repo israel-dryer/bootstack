@@ -1,3 +1,3 @@
 # TimeEntry
 
-::: ttkbootstrap.widgets.composites.timeentry.TimeEntry
+::: bootstack.widgets.composites.timeentry.TimeEntry

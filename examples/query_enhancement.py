@@ -1,8 +1,8 @@
 """Test script for enhanced QueryDialog with value_format support."""
 
 from datetime import date
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import QueryBox
+import bootstack as ttk
+from bootstack.dialogs import QueryBox
 
 
 def enhanced_query_dialogs(root):

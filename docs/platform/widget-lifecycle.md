@@ -2,9 +2,9 @@
 
 Widgets in Tk are created, configured, displayed, and eventually destroyed.
 Understanding this **lifecycle** is important for managing resources, bindings,
-and state correctly in ttkbootstrap applications.
+and state correctly in bootstack applications.
 
-This page describes how widget lifecycle works in Tk and how ttkbootstrap
+This page describes how widget lifecycle works in Tk and how bootstack
 expects widgets to be created and managed.
 
 ---
@@ -74,7 +74,7 @@ Configuration changes:
 - may trigger layout recalculation
 - are processed asynchronously by the event loop
 
-ttkbootstrap encourages configuration through **constructor arguments**
+bootstack encourages configuration through **constructor arguments**
 and **capabilities**, rather than repeated imperative updates.
 
 ---
@@ -106,7 +106,7 @@ Destruction:
 
 After destruction, most widget methods should not be called.
 
-ttkbootstrap does not automatically resurrect destroyed widgets.
+bootstack does not automatically resurrect destroyed widgets.
 
 ---
 
@@ -120,14 +120,14 @@ This is especially important for:
 - fonts
 - top-level windows
 
-ttkbootstrap provides abstractions to help manage lifetime correctly, but
+bootstack provides abstractions to help manage lifetime correctly, but
 explicit destruction is still required.
 
 ---
 
-## ttkbootstrap lifecycle guidance
+## bootstack lifecycle guidance
 
-ttkbootstrap encourages a clear lifecycle pattern:
+bootstack encourages a clear lifecycle pattern:
 
 1. create widgets
 2. configure behavior and capabilities

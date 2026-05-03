@@ -13,7 +13,7 @@ Use it for quick questions like "Name?", "Quantity?", or "Search term?", where y
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -107,4 +107,4 @@ For more complex validation or multiple fields, use [FormDialog](formdialog.md).
 
 ### API reference
 
-- [`ttkbootstrap.QueryBox`](../../reference/dialogs/QueryBox.md)
+- [`bootstack.QueryBox`](../../reference/dialogs/QueryBox.md)

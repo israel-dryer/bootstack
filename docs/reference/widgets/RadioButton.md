@@ -1,3 +1,3 @@
 # RadioButton
 
-::: ttkbootstrap.widgets.primitives.radiobutton.RadioButton
+::: bootstack.widgets.primitives.radiobutton.RadioButton

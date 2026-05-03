@@ -9,8 +9,8 @@ This demo showcases various features of the ListItem widget including:
 - Drag and drop handles
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.list import ListItem
+import bootstack as ttk
+from bootstack.widgets.composites.list import ListItem
 
 
 def main():

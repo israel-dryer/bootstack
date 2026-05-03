@@ -10,7 +10,7 @@ This guide explains how to connect widgets and application state using signals, 
 
 ## Three Mechanisms
 
-ttkbootstrap provides three ways to respond to changes:
+bootstack provides three ways to respond to changes:
 
 | Mechanism | Purpose | Use For |
 |-----------|---------|---------|
@@ -27,7 +27,7 @@ Each has its place. Understanding when to use each makes applications cleaner.
 Signals represent **state that can be observed**.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -120,7 +120,7 @@ When the entry changes, the label updates automatically.
 Create **derived signals** by mapping a source signal through a transform function:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -230,7 +230,7 @@ area = combine([width, height], lambda w, h: w * h)
 ```
 
 !!! link "Signal API"
-    See [`ttkbootstrap.Signal`](../reference/utils/Signal.md) for all methods.
+    See [`bootstack.Signal`](../reference/utils/Signal.md) for all methods.
 
 ---
 
@@ -239,7 +239,7 @@ area = combine([width, height], lambda w, h: w * h)
 Callbacks handle **discrete actions**.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -301,7 +301,7 @@ The callback reads the signal's current value when invoked.
 Events handle **low-level input** like keyboard and mouse.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -354,7 +354,7 @@ listview.bind("<<SelectionChange>>", on_selection_changed)
 
 #### Convenience Methods
 
-Many ttkbootstrap widgets provide `on_*` and `off_*` methods that abstract common event bindings. **Prefer these over manual binding when available**:
+Many bootstack widgets provide `on_*` and `off_*` methods that abstract common event bindings. **Prefer these over manual binding when available**:
 
 ```python
 # Preferred: use convenience methods
@@ -399,7 +399,7 @@ This enables loose coupling: children emit events, parents handle them.
 
 #### Enhanced Virtual Events with Data
 
-ttkbootstrap extends Tk's virtual events to support **passing data** through the event object:
+bootstack extends Tk's virtual events to support **passing data** through the event object:
 
 ```python
 # Generate event with data
@@ -484,7 +484,7 @@ app.bind("<Control-s>", lambda e: save_file())
 ### Form with Submit
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -514,7 +514,7 @@ app.mainloop()
 ### Live Preview
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -544,7 +544,7 @@ app.mainloop()
 ### Keyboard Shortcuts
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 

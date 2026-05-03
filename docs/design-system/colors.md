@@ -4,7 +4,7 @@ title: Colors
 
 # Colors
 
-Colors in ttkbootstrap are **semantic**, not literal.
+Colors in bootstack are **semantic**, not literal.
 
 Instead of choosing colors by appearance (blue, green, red), applications use
 color *intent*—such as *primary*, *success*, or *danger*. The active theme

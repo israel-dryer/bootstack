@@ -4,7 +4,7 @@ title: Guides
 
 # Guides
 
-Guides teach you **how to build applications** with ttkbootstrap.
+Guides teach you **how to build applications** with bootstack.
 
 While other documentation sections explain *what things are*, Guides show you *how to use them together* to solve real problems.
 
@@ -44,7 +44,7 @@ Guides show you *how to apply* that knowledge.
 
 ### Application
 
-- **[App Structure](app-structure.md)** — How a ttkbootstrap application is organized—windows, layout, state, and lifecycle.
+- **[App Structure](app-structure.md)** — How a bootstack application is organized—windows, layout, state, and lifecycle.
 - **[App Settings](app-settings.md)** — Configuring application-wide settings and preferences.
 
 ### Layout
@@ -97,7 +97,7 @@ Guides are not tutorials—they assume you can read code and explore on your own
 
 ## Next Steps
 
-If you're new to ttkbootstrap:
+If you're new to bootstack:
 
 1. Read [App Structure](app-structure.md) to understand how applications are organized
 2. Read [Layout](layout.md) to learn the recommended approach to building UIs

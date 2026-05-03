@@ -60,7 +60,7 @@ Six phases, ordered by dependency and impact. Phases 1A-1D can be done in parall
 
 `APPSHELL_MAIN_PY_TEMPLATE`:
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 from {module_name}.pages.home_page import HomePage
 from {module_name}.pages.settings_page import SettingsPage
 
@@ -86,7 +86,7 @@ def main() -> None:
 
 `APPSHELL_PAGE_TEMPLATE` (generic, for `ttkb add page`):
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 class {class_name}:
     def __init__(self, parent):

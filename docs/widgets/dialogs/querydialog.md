@@ -13,8 +13,8 @@ Use `QueryDialog` when you need to prompt the user for a single value (text, num
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import QueryDialog
+import bootstack as ttk
+from bootstack.dialogs import QueryDialog
 
 app = ttk.App()
 
@@ -136,4 +136,4 @@ dialog.show()
 
 ### API reference
 
-- [`ttkbootstrap.dialogs.QueryDialog`](../../reference/dialogs/QueryDialog.md)
+- [`bootstack.dialogs.QueryDialog`](../../reference/dialogs/QueryDialog.md)

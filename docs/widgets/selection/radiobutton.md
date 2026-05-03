@@ -17,10 +17,10 @@ Use `RadioButton` when all options are short and should be visible at once (sett
 
 ## Quick start
 
-In ttkbootstrap v2, the shared value is typically managed using a `signal`.
+In bootstack v2, the shared value is typically managed using a `signal`.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -76,7 +76,7 @@ ttk.RadioToggle(app, text="List", signal=view, value="list")
 
 ### Colors and styling
 
-RadioButtons support standard ttkbootstrap color tokens.
+RadioButtons support standard bootstack color tokens.
 
 ```python
 ttk.RadioButton(app)  # primary is default
@@ -215,7 +215,7 @@ Signals are generally preferred in v2 applications, but Tk variables are fully s
 ### Using a Signal (preferred)
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -231,7 +231,7 @@ app.mainloop()
 ### Using a Tk variable
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -266,4 +266,4 @@ app.mainloop()
 
 ### API reference
 
-- [`ttkbootstrap.RadioButton`](../../reference/widgets/RadioButton.md)
+- [`bootstack.RadioButton`](../../reference/widgets/RadioButton.md)

@@ -13,7 +13,7 @@ Use it for dialogs, tool palettes, inspectors, or any auxiliary window.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="Main Window")
 
@@ -54,4 +54,4 @@ Consider a different control when:
 
 ### API reference
 
-- [`ttkbootstrap.Toplevel`](../../reference/app/Toplevel.md)
+- [`bootstack.Toplevel`](../../reference/app/Toplevel.md)

@@ -4,4 +4,4 @@ File-based datasource for CSV, JSON, and JSONL files. Extends [MemoryDataSource]
 
 Configure loading behavior with [FileSourceConfig](FileSourceConfig.md). See the [DataSource Guide](../../guides/datasource.md) for usage examples.
 
-::: ttkbootstrap.datasource.file_source.FileDataSource
+::: bootstack.datasource.file_source.FileDataSource

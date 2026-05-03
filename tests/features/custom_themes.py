@@ -1,5 +1,5 @@
-from ttkbootstrap import Window, Button
-from ttkbootstrap.style import ThemeDefinition
+from bootstack import Window, Button
+from bootstack.style import ThemeDefinition
 
 root = Window()
 

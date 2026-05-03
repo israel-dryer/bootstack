@@ -1,5 +1,5 @@
 """
-Demonstrates ttkbootstrap localization with MessageCatalog on common widgets.
+Demonstrates bootstack localization with MessageCatalog on common widgets.
 
 What this shows:
 - Initialize the i18n bridge (Babel/gettext + Tcl msgcat)
@@ -12,12 +12,12 @@ Run:
 
 Tip:
     Make sure you've compiled catalogs first:
-        python tools/make_i18n.py compile -d locales -D ttkbootstrap
+        python tools/make_i18n.py compile -d locales -D bootstack
 """
 from __future__ import annotations
-import ttkbootstrap as tb
-from ttkbootstrap.dialogs import MessageBox
-from ttkbootstrap.core.localization import MessageCatalog
+import bootstack as tb
+from bootstack.dialogs import MessageBox
+from bootstack.core.localization import MessageCatalog
 
 
 def main():

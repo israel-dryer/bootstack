@@ -1,10 +1,10 @@
 # Localization
 
-This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + ttkbootstrap extensions).
+This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + bootstack extensions).
 
-> **Note**: You typically won’t use `ttkbootstrap.core.capabilities.localization` directly. This page describes the behavior that widgets expose.
+> **Note**: You typically won’t use `bootstack.core.capabilities.localization` directly. This page describes the behavior that widgets expose.
 
-::: ttkbootstrap.core.capabilities.localization
+::: bootstack.core.capabilities.localization
     options:
       show_root_heading: false
       show_source: false

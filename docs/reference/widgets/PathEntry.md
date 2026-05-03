@@ -1,3 +1,3 @@
 # PathEntry
 
-::: ttkbootstrap.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.pathentry.PathEntry

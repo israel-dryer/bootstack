@@ -1,9 +1,9 @@
 """Demo showcasing Entry, Combobox, Spinbox, and Field widgets with density options."""
 
-from ttkbootstrap import Window
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.textentry import TextEntry
-from ttkbootstrap.widgets.composites.spinnerentry import SpinnerEntry
+from bootstack import Window
+import bootstack as ttk
+from bootstack.widgets.composites.textentry import TextEntry
+from bootstack.widgets.composites.spinnerentry import SpinnerEntry
 
 
 def main():

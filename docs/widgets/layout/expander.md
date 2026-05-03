@@ -19,7 +19,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -245,4 +245,4 @@ exp.configure(icon_expanded={'name': 'caret-up', 'size': 14})
 
 ### API reference
 
-- [`ttkbootstrap.Expander`](../../reference/widgets/Expander.md)
+- [`bootstack.Expander`](../../reference/widgets/Expander.md)

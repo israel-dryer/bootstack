@@ -16,7 +16,7 @@ A `CheckButton` represents an on/off (or mixed) choice. You can control its **in
 using the `value` option.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -161,7 +161,7 @@ ttk.Checkbutton(text="Enable alerts", localize=False)
 You can bind the label text to a signal (so the checkbutton text updates automatically).
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 

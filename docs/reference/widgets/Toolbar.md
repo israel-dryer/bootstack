@@ -1,3 +1,3 @@
 # Toolbar
 
-::: ttkbootstrap.widgets.composites.toolbar.Toolbar
+::: bootstack.widgets.composites.toolbar.Toolbar

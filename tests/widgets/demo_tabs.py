@@ -1,8 +1,8 @@
 """Demo for Tabs and TabView widgets."""
 import tkinter as tk
-import ttkbootstrap as ttk
+import bootstack as ttk
 
-from ttkbootstrap.widgets.composites.tabs import Tabs, TabView
+from bootstack.widgets.composites.tabs import Tabs, TabView
 
 app = ttk.App("Tabs Demo", size=(900, 800))
 

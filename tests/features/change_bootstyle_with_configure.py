@@ -1,5 +1,5 @@
 import tkinter as tk
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 """
     Test that the `Widget.configure` method is able to change the widget

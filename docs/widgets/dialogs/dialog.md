@@ -4,7 +4,7 @@ title: Dialog
 
 # Dialog
 
-`Dialog` is the base class for building **modal** and **popover** dialogs in ttkbootstrap.
+`Dialog` is the base class for building **modal** and **popover** dialogs in bootstack.
 
 Use dialogs when you need users to **make a decision** or **provide input** before continuing.
 
@@ -15,7 +15,7 @@ Use dialogs when you need users to **make a decision** or **provide input** befo
 Most dialogs follow a pattern like this:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -115,4 +115,4 @@ Dialogs produce a **single committed outcome**:
 
 ### API reference
 
-- [`ttkbootstrap.Dialog`](../../reference/dialogs/Dialog.md)
+- [`bootstack.Dialog`](../../reference/dialogs/Dialog.md)

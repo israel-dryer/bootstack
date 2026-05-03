@@ -8,7 +8,7 @@ Demonstrates the difference between building a complex grid layout with:
 Both produce the same visual result, but GridFrame requires less boilerplate.
 """
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def create_with_frame(parent: ttk.Frame) -> ttk.Frame:

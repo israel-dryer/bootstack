@@ -13,8 +13,8 @@ It renders only the visible rows (plus a small overscan), making it suitable for
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.list import ListView
+import bootstack as ttk
+from bootstack.widgets.composites.list import ListView
 
 app = ttk.App()
 
@@ -85,8 +85,8 @@ lv = ListView(
 ### Selection + events
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.list import ListView
+import bootstack as ttk
+from bootstack.widgets.composites.list import ListView
 
 app = ttk.App()
 
@@ -283,4 +283,4 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 
 ### API reference
 
-- [`ttkbootstrap.ListView`](../../reference/widgets/ListView.md)
+- [`bootstack.ListView`](../../reference/widgets/ListView.md)

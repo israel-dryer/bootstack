@@ -1,3 +1,3 @@
 # App
 
-::: ttkbootstrap.runtime.app.App
+::: bootstack.runtime.app.App

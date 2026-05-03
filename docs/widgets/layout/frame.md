@@ -6,7 +6,7 @@ title: Frame
 
 `Frame` is a **basic layout container** for grouping widgets and creating structure.
 
-It's a themed wrapper around `ttk.Frame`, so it participates in ttkbootstrap styling while behaving like a standard ttk container. Use `Frame` when you need a simple container without automatic layout management.
+It's a themed wrapper around `ttk.Frame`, so it participates in bootstack styling while behaving like a standard ttk container. Use `Frame` when you need a simple container without automatic layout management.
 
 !!! tip "Prefer PackFrame or GridFrame for most layouts"
     For building layouts with automatic child management, use [PackFrame](packframe.md) (vertical/horizontal stacks with gap spacing) or [GridFrame](gridframe.md) (CSS Grid-like 2D layouts). These provide a more declarative, less error-prone layout experience.
@@ -22,7 +22,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -142,4 +142,4 @@ pane.pack_propagate(False)
 
 ### API reference
 
-- [`ttkbootstrap.Frame`](../../reference/widgets/Frame.md)
+- [`bootstack.Frame`](../../reference/widgets/Frame.md)

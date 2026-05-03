@@ -13,7 +13,7 @@ It communicates how much work has completed (determinate) or that work is ongoin
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -158,4 +158,4 @@ progress.set(50)  # Progressbar updates automatically
 
 ### API reference
 
-- [`ttkbootstrap.Progressbar`](../../reference/widgets/Progressbar.md)
+- [`bootstack.Progressbar`](../../reference/widgets/Progressbar.md)

@@ -1,3 +1,3 @@
 # Label
 
-::: ttkbootstrap.widgets.primitives.label.Label
+::: bootstack.widgets.primitives.label.Label

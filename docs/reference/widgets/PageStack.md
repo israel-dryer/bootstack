@@ -1,3 +1,3 @@
 # PageStack
 
-::: ttkbootstrap.widgets.composites.pagestack.PageStack
+::: bootstack.widgets.composites.pagestack.PageStack

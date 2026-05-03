@@ -1,3 +1,3 @@
 # Meter
 
-::: ttkbootstrap.widgets.composites.meter.Meter
+::: bootstack.widgets.composites.meter.Meter

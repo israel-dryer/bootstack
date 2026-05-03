@@ -1,3 +1,3 @@
 # ColorChooserDialog
 
-::: ttkbootstrap.dialogs.colorchooser.ColorChooserDialog
+::: bootstack.dialogs.colorchooser.ColorChooserDialog

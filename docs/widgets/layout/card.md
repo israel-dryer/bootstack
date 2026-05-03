@@ -13,7 +13,7 @@ It is a convenience wrapper around `Frame` with `surface='card'` and `show_borde
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -87,4 +87,4 @@ card2.pack(side="left", fill="both", expand=True, padx=(5, 0))
 
 ### API reference
 
-- [`ttkbootstrap.Card`](../../reference/widgets/Card.md)
+- [`bootstack.Card`](../../reference/widgets/Card.md)

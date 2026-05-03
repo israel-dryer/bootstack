@@ -13,7 +13,7 @@ It's a fundamental building block used for headings, captions, instructions, and
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -48,7 +48,7 @@ Use Label when:
 
 ### Styling with `accent`
 
-Labels participate fully in ttkbootstrap theming:
+Labels participate fully in bootstack theming:
 
 ```python
 ttk.Label(app, text="Info", accent="info")
@@ -147,4 +147,4 @@ message.set("Updated text")  # Label updates automatically
 
 ### API reference
 
-- [`ttkbootstrap.Label`](../../reference/widgets/Label.md)
+- [`bootstack.Label`](../../reference/widgets/Label.md)

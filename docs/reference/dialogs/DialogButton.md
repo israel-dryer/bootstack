@@ -1,3 +1,3 @@
 # DialogButton
 
-::: ttkbootstrap.dialogs.dialog.DialogButton
+::: bootstack.dialogs.dialog.DialogButton

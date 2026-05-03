@@ -1,9 +1,9 @@
 # Bind
 
-This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + ttkbootstrap
+This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + bootstack
 extensions).
 
-> **Note**: You typically won’t use `ttkbootstrap.core.capabilities.bind` directly. This page describes the behavior
+> **Note**: You typically won’t use `bootstack.core.capabilities.bind` directly. This page describes the behavior
 > that widgets expose.
 
-::: ttkbootstrap.core.capabilities.bind.BindingsMixin
+::: bootstack.core.capabilities.bind.BindingsMixin

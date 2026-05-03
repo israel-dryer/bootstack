@@ -1,3 +1,3 @@
 # SideNavHeader
 
-::: ttkbootstrap.widgets.composites.sidenav.header.SideNavHeader
+::: bootstack.widgets.composites.sidenav.header.SideNavHeader

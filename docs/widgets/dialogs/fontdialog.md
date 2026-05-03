@@ -13,7 +13,7 @@ Use it for editor-like features (rich text, labels, code editors) where users ne
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -82,4 +82,4 @@ Font dialogs typically return:
 
 ### API reference
 
-- [`ttkbootstrap.FontDialog`](../../reference/dialogs/FontDialog.md)
+- [`bootstack.FontDialog`](../../reference/dialogs/FontDialog.md)

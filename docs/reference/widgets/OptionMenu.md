@@ -1,3 +1,3 @@
 # OptionMenu
 
-::: ttkbootstrap.widgets.primitives.optionmenu.OptionMenu
+::: bootstack.widgets.primitives.optionmenu.OptionMenu

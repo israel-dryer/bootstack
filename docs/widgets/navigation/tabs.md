@@ -22,7 +22,7 @@ Theme variants: light / dark
 Create a tab bar with selectable tabs:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -239,4 +239,4 @@ tabs.bind("<<TabSelect>>", lambda e: print("Tab selected"))
 
 ### API reference
 
-- [`ttkbootstrap.Tabs`](../../reference/widgets/Tabs.md)
+- [`bootstack.Tabs`](../../reference/widgets/Tabs.md)

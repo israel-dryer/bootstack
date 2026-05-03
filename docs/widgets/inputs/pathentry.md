@@ -14,7 +14,7 @@ validation, and event model as other v2 field controls.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -188,4 +188,4 @@ p.add_validation_rule("path_exists", message="Path does not exist")
 
 ### API reference
 
-- [`ttkbootstrap.PathEntry`](../../reference/widgets/PathEntry.md)
+- [`bootstack.PathEntry`](../../reference/widgets/PathEntry.md)

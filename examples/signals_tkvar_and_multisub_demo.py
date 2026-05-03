@@ -10,7 +10,7 @@ Shows:
 import time
 import tkinter as tk
 
-from ttkbootstrap.core.signals import Signal
+from bootstack.core.signals import Signal
 
 
 def main() -> None:

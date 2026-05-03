@@ -17,7 +17,7 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
-from ttkbootstrap.style.utility import (
+from bootstack.style.utility import (
     ELEMENTS_DIR,
     color_to_rgb,
     recolor_element_image,
@@ -78,7 +78,7 @@ def recolor_new_raw(
 ) -> Image.Image:
     """Reproduces the new PIL-vectorized path WITHOUT scale or PhotoImage wrap.
 
-    Mirrors src/ttkbootstrap/style/utility.py exactly so we compare like to
+    Mirrors src/bootstack/style/utility.py exactly so we compare like to
     like. (Calling recolor_element_image directly returns a PhotoImage tied
     to a Tk root, which isn't what we want for a byte comparison.)
     """

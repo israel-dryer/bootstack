@@ -8,7 +8,7 @@ Demonstrates the SideNav container with actual page navigation:
 - Display mode switching (expanded, compact, minimal)
 """
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def create_page(parent, title, description):

@@ -21,7 +21,7 @@ Use `ScrolledText` for logs, notes, editors, and any situation where **text cont
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -125,7 +125,7 @@ If you need validation/messages, use field-based controls like **TextEntry** (si
 `ScrolledText` is designed specifically for text content (not arbitrary widgets).
 
 - scrolling and mouse wheel behavior are handled internally for cross-platform consistency
-- the container and scrollbars participate in ttkbootstrap theming via `accent`
+- the container and scrollbars participate in bootstack theming via `accent`
 
 For scrolling arbitrary widgets, use **ScrollView** instead.
 
@@ -142,4 +142,4 @@ For scrolling arbitrary widgets, use **ScrollView** instead.
 
 ### API reference
 
-- [`ttkbootstrap.ScrolledText`](../../reference/widgets/ScrolledText.md)
+- [`bootstack.ScrolledText`](../../reference/widgets/ScrolledText.md)

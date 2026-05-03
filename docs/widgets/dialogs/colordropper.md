@@ -13,7 +13,7 @@ It's useful for design tools, theme editors, and workflows where the desired col
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -75,4 +75,4 @@ Common interaction pattern:
 
 ### API reference
 
-- [`ttkbootstrap.ColorDropper`](../../reference/dialogs/ColorDropper.md)
+- [`bootstack.ColorDropper`](../../reference/dialogs/ColorDropper.md)

@@ -1,3 +1,3 @@
 # TextEntry
 
-::: ttkbootstrap.widgets.composites.textentry.TextEntry
+::: bootstack.widgets.composites.textentry.TextEntry

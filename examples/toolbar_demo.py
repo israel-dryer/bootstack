@@ -9,8 +9,8 @@ Demonstrates the Toolbar widget with:
 - Custom titlebar with window dragging
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.toolbar import Toolbar
+import bootstack as ttk
+from bootstack.widgets.composites.toolbar import Toolbar
 
 
 def main():

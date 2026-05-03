@@ -22,7 +22,7 @@ Theme variants: light / dark
 ### Horizontal separator
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -122,4 +122,4 @@ ttk.Separator(app, orient="vertical")
 
 ### API reference
 
-- [`ttkbootstrap.Separator`](../../reference/widgets/Separator.md)
+- [`bootstack.Separator`](../../reference/widgets/Separator.md)

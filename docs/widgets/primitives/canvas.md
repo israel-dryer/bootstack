@@ -18,7 +18,7 @@ It's the foundation for many custom UI patterns:
 
 - virtual scrolling for custom content
 
-ttkbootstrap exposes `Canvas` as a first-class widget so you can build high-performance, interactive views with consistent theming and practical patterns.
+bootstack exposes `Canvas` as a first-class widget so you can build high-performance, interactive views with consistent theming and practical patterns.
 
 !!! tip "Prefer higher-level widgets when they fit"
     If your UI is primarily structured data, prefer **ListView**, **TableView**, or **TreeView**.
@@ -31,7 +31,7 @@ ttkbootstrap exposes `Canvas` as a first-class widget so you can build high-perf
 Draw a few shapes:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -193,7 +193,7 @@ def zoom(factor: float, origin=(0, 0)):
 Canvas uses `xscrollcommand`/`yscrollcommand` and `xview`/`yview` like Text.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -312,4 +312,4 @@ c.bind("<ButtonRelease-1>", on_up)
 
 ### API reference
 
-- [`ttkbootstrap.Canvas`](../../reference/widgets/Canvas.md)
+- [`bootstack.Canvas`](../../reference/widgets/Canvas.md)

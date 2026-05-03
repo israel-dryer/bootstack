@@ -1,6 +1,6 @@
 # Widgets
 
-Widget classes and composites exposed by ttkbootstrap.
+Widget classes and composites exposed by bootstack.
 
 For conceptual usage, styling guidance, and examples, see the **Widgets** section of the docs.
 This reference is focused on signatures and options.

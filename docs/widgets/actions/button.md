@@ -11,7 +11,7 @@ Buttons allow users to take actions with a single click. They communicate availa
 Create a button by providing `text` and a `command` callback.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -238,4 +238,4 @@ label.set("Stop")
 
 ### API reference
 
-- [`ttkbootstrap.Button`](../../reference/widgets/Button.md)
+- [`bootstack.Button`](../../reference/widgets/Button.md)

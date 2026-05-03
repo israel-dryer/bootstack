@@ -1,5 +1,5 @@
 """Debug script to verify ButtonGroup density handling."""
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 class DebugApp(ttk.App):

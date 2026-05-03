@@ -3,7 +3,7 @@
 Layout properties control how widgets participate in layout within their
 containers.
 
-Rather than treating layout options as incidental arguments, ttkbootstrap
+Rather than treating layout options as incidental arguments, bootstack
 documents them as a capability to clarify intent and behavior.
 
 ---
@@ -51,7 +51,7 @@ This separation keeps layout predictable.
 
 ## Declarative layout intent
 
-ttkbootstrap promotes expressing layout intent declaratively.
+bootstack promotes expressing layout intent declaratively.
 
 Instead of:
 
@@ -93,9 +93,9 @@ Understanding this interaction avoids layout bugs.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - consistent use of layout properties
 - container-driven layout decisions

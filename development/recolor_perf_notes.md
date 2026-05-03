@@ -7,7 +7,7 @@ revisited with real numbers in hand.
 
 ## The bug
 
-`src/ttkbootstrap/style/utility.py` had a pure-Python double loop touching
+`src/bootstack/style/utility.py` had a pure-Python double loop touching
 every pixel — each iteration unpacked a tuple, called `getpixel()` on a
 grayscale layer, did three `round()` calls, and re-assigned a tuple. For a
 button at 2x source resolution that's ~32k iterations of interpreted

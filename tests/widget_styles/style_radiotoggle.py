@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 
 def create_radio_toggle_test(bootstyle, name):
     frame = ttk.Frame(padding=10)

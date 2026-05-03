@@ -1,3 +1,3 @@
 # IntlFormatter
 
-::: ttkbootstrap.core.localization.intl_format.IntlFormatter
+::: bootstack.core.localization.intl_format.IntlFormatter

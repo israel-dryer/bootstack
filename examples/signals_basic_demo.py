@@ -1,4 +1,4 @@
-"""Basic usage of ttkbootstrap.signals.Signal without visible UI.
+"""Basic usage of bootstack.signals.Signal without visible UI.
 
 Demonstrates:
 - Creating a Signal
@@ -11,7 +11,7 @@ Demonstrates:
 import time
 import tkinter as tk
 
-from ttkbootstrap.core.signals import Signal
+from bootstack.core.signals import Signal
 
 
 def main() -> None:

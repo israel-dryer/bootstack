@@ -4,12 +4,12 @@ Cross-platform keyboard shortcut management.
 
 ## get_shortcuts
 
-::: ttkbootstrap.runtime.shortcuts.get_shortcuts
+::: bootstack.runtime.shortcuts.get_shortcuts
 
 ## Shortcuts
 
-::: ttkbootstrap.runtime.shortcuts.Shortcuts
+::: bootstack.runtime.shortcuts.Shortcuts
 
 ## Shortcut
 
-::: ttkbootstrap.runtime.shortcuts.Shortcut
+::: bootstack.runtime.shortcuts.Shortcut

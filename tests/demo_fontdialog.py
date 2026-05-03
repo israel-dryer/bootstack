@@ -1,7 +1,7 @@
 """Test the refactored FontDialog using the new Dialog class."""
 
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import FontDialog
+import bootstack as ttk
+from bootstack.dialogs import FontDialog
 
 
 def demo_fontdialog():

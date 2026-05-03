@@ -4,7 +4,7 @@ title: Spinbox
 
 # Spinbox
 
-`Spinbox` is a **primitive input** that wraps `ttk.Spinbox` with ttkbootstrap styling and reactive text support.
+`Spinbox` is a **primitive input** that wraps `ttk.Spinbox` with bootstack styling and reactive text support.
 
 It provides low-level spin behavior (range or list stepping) while still allowing direct typing. Use `Spinbox` when you want
 native ttk options like `format` and `command`. For a form-ready field with labels/messages/validation and standardized events,
@@ -17,7 +17,7 @@ prefer [SpinnerEntry](/widgets/inputs/spinnerentry.md).
 ### Numeric range
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -30,7 +30,7 @@ app.mainloop()
 ### Fixed list of values
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -64,7 +64,7 @@ Use `Spinbox` when:
 
 ### `accent`
 
-Applies ttkbootstrap theme styling.
+Applies bootstack theme styling.
 
 ```python
 ttk.Spinbox(app, from_=0, to=10, accent="primary")
@@ -181,4 +181,4 @@ For validated, commit-based workflows, prefer [SpinnerEntry](/widgets/inputs/spi
 
 ### API reference
 
-- [`ttkbootstrap.Spinbox`](../../reference/widgets/Spinbox.md)
+- [`bootstack.Spinbox`](../../reference/widgets/Spinbox.md)

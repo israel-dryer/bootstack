@@ -1,3 +1,3 @@
 # SetVar
 
-::: ttkbootstrap.core.variables.SetVar
+::: bootstack.core.variables.SetVar

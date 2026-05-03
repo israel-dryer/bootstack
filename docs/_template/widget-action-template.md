@@ -14,7 +14,7 @@ title: WidgetName
 
 ## Framework integration
 
-Explain how this widget participates in ttkbootstrap’s framework capabilities.
+Explain how this widget participates in bootstack’s framework capabilities.
 
 **Design System**
 
@@ -144,6 +144,6 @@ Link to:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.WidgetName`
+- **API Reference:** `bootstack.WidgetName`
 
 - **Related guides:** …

@@ -4,7 +4,7 @@ Configuration describes how applications and widgets are configured at creation
 time and how those settings influence runtime behavior.
 
 Rather than treating configuration as a loose collection of keyword arguments,
-ttkbootstrap formalizes configuration as a **capability** with clear scope and
+bootstack formalizes configuration as a **capability** with clear scope and
 lifecycle.
 
 ---
@@ -37,7 +37,7 @@ Understanding scope helps avoid unintended side effects.
 
 ## Declarative intent
 
-ttkbootstrap encourages declarative configuration.
+bootstack encourages declarative configuration.
 
 Instead of:
 
@@ -76,9 +76,9 @@ Dynamic configuration should be explicit and intentional.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - clear separation of configuration and state
 - minimal mutation after construction

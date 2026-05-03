@@ -1,3 +1,3 @@
 # ValidationRule
 
-::: ttkbootstrap.core.validation.ValidationRule
+::: bootstack.core.validation.ValidationRule

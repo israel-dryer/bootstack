@@ -1,3 +1,3 @@
 # set_theme
 
-::: ttkbootstrap.style.style.set_theme
+::: bootstack.style.style.set_theme

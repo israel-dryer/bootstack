@@ -231,6 +231,6 @@ Prescriptive advice:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.FormWidgetName`
+- **API Reference:** `bootstack.FormWidgetName`
 
 - **Related guides:** Forms, Validation, Layout

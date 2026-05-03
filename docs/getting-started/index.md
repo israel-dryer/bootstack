@@ -1,16 +1,16 @@
 # Getting Started
 
-This section helps you get productive with ttkbootstrap quickly—without requiring deep knowledge
+This section helps you get productive with bootstack quickly—without requiring deep knowledge
 of Tkinter or ttk internals.
 
-ttkbootstrap is a **framework**, not just a styling layer. The recommended approach is to embrace
+bootstack is a **framework**, not just a styling layer. The recommended approach is to embrace
 its defaults and patterns rather than treating it like raw tkinter.
 
 ---
 
-## The ttkbootstrap mindset
+## The bootstack mindset
 
-When using ttkbootstrap, you should expect:
+When using bootstack, you should expect:
 
 - **Opinionated defaults**  
   Fonts, colors, spacing, and widget behavior are chosen for you.
@@ -45,7 +45,7 @@ your application first. You can always dive deeper later if needed.
 
 ## Typical workflow
 
-A typical ttkbootstrap application looks like this:
+A typical bootstack application looks like this:
 
 1. Create an application (`App`)
 2. Choose a theme and configuration
@@ -60,7 +60,7 @@ Each step is explicitly supported by the framework and explored in more depth th
 
 ## How this section is organized
 
-- [Installation](installation.md) — installing ttkbootstrap
+- [Installation](installation.md) — installing bootstack
 - [Quick Start](quick-start.md) — building a minimal application
 
 After that, explore:

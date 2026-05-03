@@ -4,7 +4,7 @@ Validation capabilities provide a structured way to verify, constrain, and
 communicate the correctness of user input and application state.
 
 Rather than embedding validation logic ad hoc in widgets or callbacks,
-ttkbootstrap formalizes validation as a shared capability with clear roles and
+bootstack formalizes validation as a shared capability with clear roles and
 lifecycles.
 
 ---
@@ -85,13 +85,13 @@ Validation results often drive UI feedback:
 - disabled actions
 - focus management
 
-ttkbootstrap encourages consistent feedback patterns rather than ad-hoc styling.
+bootstack encourages consistent feedback patterns rather than ad-hoc styling.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - reusable validation rules
 - explicit validation results

@@ -1,4 +1,4 @@
-"""Demonstration of the ttkbootstrap Form widget.
+"""Demonstration of the bootstack Form widget.
 
 Shows both inferred field generation from data and an explicit form layout
 using groups and tabs.
@@ -6,9 +6,9 @@ using groups and tabs.
 
 from datetime import date
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap.widgets.composites.form import (
+import bootstack as ttk
+from bootstack.constants import *
+from bootstack.widgets.composites.form import (
     FieldItem,
     Form,
     GroupItem,

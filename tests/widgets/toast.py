@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import Toast
+import bootstack as ttk
+from bootstack import Toast
 
 root = ttk.Window()
 
@@ -12,7 +12,7 @@ ttk.Button(
     root,
     text="Normal Toast",
     command=lambda: toast.show(
-        title="ttkbootstrap",
+        title="bootstack",
         icon='bootstrap-fill',
         message="Hello world! This is a toast message",
         memo='Just now')
@@ -31,7 +31,7 @@ ttk.Button(
     root,
     text="Long Message",
     command=lambda: toast.show(
-        title="ttkbootstrap",
+        title="bootstack",
         icon='bootstrap-fill',
         message=message)
 ).pack(side='right', padx=20, pady=20)
@@ -64,7 +64,7 @@ ttk.Button(
     root,
     text="Normal With Buttons",
     command=lambda: toast.show(
-        title="ttkbootstrap",
+        title="bootstack",
         merge=False,
         icon='bootstrap-fill',
         message="Hello world! This is a toast message",
@@ -79,7 +79,7 @@ ttk.Button(
     root,
     text="Primary Toast",
     command=lambda: toast.show(
-        title="ttkbootstrap",
+        title="bootstack",
         icon='bootstrap-fill',
         message="Hello world! This is a toast message",
         accent="primary",

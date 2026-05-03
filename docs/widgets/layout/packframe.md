@@ -6,7 +6,7 @@ title: PackFrame
 
 `PackFrame` is a **layout container** with simplified pack-based layout management.
 
-It extends the ttkbootstrap Frame with automatic pack-based layout management, including support for direction, gap spacing, and default fill/expand behavior. Use `PackFrame` when you want a flex-like layout experience without manually managing pack options.
+It extends the bootstack Frame with automatic pack-based layout management, including support for direction, gap spacing, and default fill/expand behavior. Use `PackFrame` when you want a flex-like layout experience without manually managing pack options.
 
 Children simply call the standard `pack()` method and automatically receive the frame's default layout options.
 
@@ -15,7 +15,7 @@ Children simply call the standard `pack()` method and automatically receive the 
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -205,4 +205,4 @@ btn.pack_forget()
 
 ### API reference
 
-- [`ttkbootstrap.PackFrame`](../../reference/widgets/PackFrame.md)
+- [`bootstack.PackFrame`](../../reference/widgets/PackFrame.md)

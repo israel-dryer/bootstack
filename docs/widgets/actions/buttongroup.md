@@ -14,7 +14,7 @@ It is most common in toolbars, segmented controls, and compact "action clusters"
 Create a group and add buttons. The group handles spacing, connection visuals, and consistent styling.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -106,4 +106,4 @@ bg.add(text="Disabled", command=lambda: ...)
 
 ### API reference
 
-- [`ttkbootstrap.ButtonGroup`](../../reference/widgets/ButtonGroup.md)
+- [`bootstack.ButtonGroup`](../../reference/widgets/ButtonGroup.md)

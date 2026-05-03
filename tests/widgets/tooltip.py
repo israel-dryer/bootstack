@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 
 app = ttk.App(size=(400, 100))
 

@@ -3,9 +3,9 @@
 Tk applications are composed of one or more **windows**.
 Understanding how windows behave — and how they interact with focus, modality,
 and the event loop — is essential for building correct desktop applications
-with ttkbootstrap.
+with bootstack.
 
-This page explains window behavior at a platform level and how ttkbootstrap
+This page explains window behavior at a platform level and how bootstack
 expects windows to be used.
 
 ---
@@ -22,7 +22,7 @@ The root window:
 - manages global state such as styles and images
 - serves as the parent for all other windows
 
-ttkbootstrap formalizes this role through the `App` object.
+bootstack formalizes this role through the `App` object.
 See [Guides → App Structure](../guides/app-structure.md) for application organization patterns.
 
 ---
@@ -66,7 +66,7 @@ In Tk, modality is implemented through a combination of:
 - focus management
 - event waiting (`wait_window`, `wait_visibility`)
 
-ttkbootstrap encourages explicit modal patterns rather than implicit blocking.
+bootstack encourages explicit modal patterns rather than implicit blocking.
 
 ---
 
@@ -81,7 +81,7 @@ Windows have an explicit lifetime:
 Destroying a window releases its resources.
 Hidden windows still consume resources and retain state.
 
-ttkbootstrap favors explicit destruction when windows are no longer needed.
+bootstack favors explicit destruction when windows are no longer needed.
 
 ---
 
@@ -98,9 +98,9 @@ Correct focus handling is especially important for dialogs and forms.
 
 ---
 
-## ttkbootstrap guidance on windows
+## bootstack guidance on windows
 
-ttkbootstrap promotes the following patterns:
+bootstack promotes the following patterns:
 
 - use a single root window per application
 - associate dialogs with a parent window

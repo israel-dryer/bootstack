@@ -12,9 +12,9 @@ Each surface has matching foreground tokens (on_chrome, on_content, etc.)
 that provide correct text contrast automatically.
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.style.theme_provider import use_theme
-from ttkbootstrap.style.style import set_theme
+import bootstack as ttk
+from bootstack.style.theme_provider import use_theme
+from bootstack.style.style import set_theme
 
 
 def create_surface_swatch(parent, surface_name: str, description: str):

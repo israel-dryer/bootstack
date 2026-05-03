@@ -1,4 +1,4 @@
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 

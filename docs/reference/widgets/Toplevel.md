@@ -1,3 +1,3 @@
 # Toplevel
 
-::: ttkbootstrap.runtime.toplevel.Toplevel
+::: bootstack.runtime.toplevel.Toplevel

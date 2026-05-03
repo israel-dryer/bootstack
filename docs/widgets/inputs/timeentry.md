@@ -14,7 +14,7 @@ localization/formatting, and consistent events.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -184,4 +184,4 @@ See [Guides → Formatting](../../guides/formatting.md) for all time presets and
 
 ### API reference
 
-- [`ttkbootstrap.TimeEntry`](../../reference/widgets/TimeEntry.md)
+- [`bootstack.TimeEntry`](../../reference/widgets/TimeEntry.md)

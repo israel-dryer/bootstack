@@ -1,6 +1,6 @@
 """Debug centering - specifically measure text position within button."""
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 from tkinter import font
 from PIL import ImageGrab
 

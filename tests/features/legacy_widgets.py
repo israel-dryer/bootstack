@@ -1,12 +1,12 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.style.style import get_style
+import bootstack as ttk
+from bootstack.style.style import get_style
 
 TTKBOOTSTRAP_DEBUG = 1
 
 import tkinter as tk
 from this import s as ZEN
 
-from ttkbootstrap.constants import *
+from bootstack.constants import *
 
 app = ttk.Window("Legacy Widgets")
 

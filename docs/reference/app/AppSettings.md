@@ -1,3 +1,3 @@
 # AppSettings
 
-::: ttkbootstrap.runtime.app.AppSettings
+::: bootstack.runtime.app.AppSettings

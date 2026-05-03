@@ -1,3 +1,3 @@
 # TraceOperation
 
-::: ttkbootstrap.core.signals.signal.TraceOperation
+::: bootstack.core.signals.signal.TraceOperation

@@ -1,3 +1,3 @@
 # PanedWindow
 
-::: ttkbootstrap.widgets.primitives.panedwindow.PanedWindow
+::: bootstack.widgets.primitives.panedwindow.PanedWindow

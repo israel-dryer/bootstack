@@ -1,5 +1,5 @@
-from ttkbootstrap.dialogs import MessageBox, QueryBox
-import ttkbootstrap as ttk
+from bootstack.dialogs import MessageBox, QueryBox
+import bootstack as ttk
 
 
 def run_test():

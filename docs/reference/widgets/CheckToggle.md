@@ -1,3 +1,3 @@
 # CheckToggle
 
-::: ttkbootstrap.widgets.primitives.checktoggle.CheckToggle
+::: bootstack.widgets.primitives.checktoggle.CheckToggle

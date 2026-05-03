@@ -1,3 +1,3 @@
 # QueryBox
 
-::: ttkbootstrap.dialogs.query.QueryBox
+::: bootstack.dialogs.query.QueryBox

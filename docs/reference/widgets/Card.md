@@ -1,3 +1,3 @@
 # Card
 
-::: ttkbootstrap.widgets.primitives.card.Card
+::: bootstack.widgets.primitives.card.Card

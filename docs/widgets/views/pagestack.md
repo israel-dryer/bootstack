@@ -22,7 +22,7 @@ Theme variants: light / dark
 Create a PageStack, add pages, and navigate between them:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -240,4 +240,4 @@ Navigation events include:
 
 ### API reference
 
-- [`ttkbootstrap.PageStack`](../../reference/widgets/PageStack.md)
+- [`bootstack.PageStack`](../../reference/widgets/PageStack.md)

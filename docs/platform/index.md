@@ -1,6 +1,6 @@
 # Platform
 
-The **Platform** section explains how ttkbootstrap builds on top of Tk and ttk to provide
+The **Platform** section explains how bootstack builds on top of Tk and ttk to provide
 a consistent, modern application foundation.
 
 If you're trying to build an interface, start with [Guides](../guides/index.md). Platform pages explain *why* things behave the way they do.
@@ -8,17 +8,17 @@ If you're trying to build an interface, start with [Guides](../guides/index.md).
 This section is not widget documentation.
 Instead, it describes the **runtime model**, **event system**, **styling architecture**,
 and **system-level behaviors** that apply across all widgets and applications built with
-ttkbootstrap.
+bootstack.
 
 If you are new to Tk or ttk, these pages will help you understand the underlying concepts.
-If you are experienced with Tk, this section explains what ttkbootstrap standardizes,
+If you are experienced with Tk, this section explains what bootstack standardizes,
 extends, or intentionally constrains.
 
 ---
 
-## What ttkbootstrap is (and is not)
+## What bootstack is (and is not)
 
-ttkbootstrap is **not** just a theme.
+bootstack is **not** just a theme.
 
 It is a framework that provides:
 
@@ -28,7 +28,7 @@ It is a framework that provides:
 - built-in localization and formatting support
 - predictable interaction and layout behavior
 
-ttkbootstrap does **not** replace Tk or ttk.
+bootstack does **not** replace Tk or ttk.
 It builds on them and embraces their strengths, while smoothing over their rough edges.
 
 ---
@@ -59,7 +59,7 @@ Where appropriate, these pages reference external resources such as:
 - the TkDocs tutorial
 
 Those resources explain *how Tk works*.
-The Platform section explains **how ttkbootstrap expects you to work with Tk**.
+The Platform section explains **how bootstack expects you to work with Tk**.
 
 ---
 
@@ -83,4 +83,4 @@ The Platform section covers:
     - performance considerations
       - debugging techniques
 
-Together, these topics define the foundation on which all ttkbootstrap applications are built.
+Together, these topics define the foundation on which all bootstack applications are built.

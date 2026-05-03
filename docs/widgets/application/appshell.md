@@ -12,7 +12,7 @@ together a `Toolbar`, `SideNav`, and `PageStack` into the standard desktop app l
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(title="My App", size=(1000, 650))
 
@@ -122,7 +122,7 @@ automatically gains window control buttons (minimize, maximize, close) and
 becomes draggable, giving you a fully custom window.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(
     title="Custom Window",
@@ -172,4 +172,4 @@ AppShell exposes its internal widgets as properties:
 
 ### API reference
 
-- [`ttkbootstrap.AppShell`](../../reference/app/AppShell.md)
+- [`bootstack.AppShell`](../../reference/app/AppShell.md)

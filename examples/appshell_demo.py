@@ -13,7 +13,7 @@ Features shown:
 - Page change event handling
 """
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def create_page_content(parent, title, description):

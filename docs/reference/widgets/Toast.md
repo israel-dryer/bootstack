@@ -1,3 +1,3 @@
 # Toast
 
-::: ttkbootstrap.widgets.composites.toast.Toast
+::: bootstack.widgets.composites.toast.Toast

@@ -1,3 +1,3 @@
 # ToggleGroup
 
-::: ttkbootstrap.widgets.composites.togglegroup.ToggleGroup
+::: bootstack.widgets.composites.togglegroup.ToggleGroup

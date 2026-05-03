@@ -1,3 +1,3 @@
 # ValidationResult
 
-::: ttkbootstrap.core.validation.ValidationResult
+::: bootstack.core.validation.ValidationResult

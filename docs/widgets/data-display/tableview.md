@@ -13,7 +13,7 @@ It is suitable for datasets where users need to scan, sort, and select structure
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -67,7 +67,7 @@ tv = ttk.TableView(
 
 ### Styling
 
-TableView supports theming through ttkbootstrap:
+TableView supports theming through bootstack:
 
 ```python
 ttk.TableView(app, accent="primary")
@@ -321,4 +321,4 @@ tv.reload()
 
 ### API reference
 
-- [`ttkbootstrap.TableView`](../../reference/widgets/TableView.md)
+- [`bootstack.TableView`](../../reference/widgets/TableView.md)

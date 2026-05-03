@@ -24,7 +24,7 @@ Use `ToggleGroup` for segmented controls, mode switches, toolbar filters, and co
 ## Basic usage
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -116,7 +116,7 @@ You can control the group selection with either:
 If neither is provided, `ToggleGroup` creates an internal variable.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -229,4 +229,4 @@ Prefer **ButtonGroup** when:
 
 ### API reference
 
-- [`ttkbootstrap.ToggleGroup`](../../reference/widgets/ToggleGroup.md)
+- [`bootstack.ToggleGroup`](../../reference/widgets/ToggleGroup.md)

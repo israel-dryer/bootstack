@@ -3,7 +3,7 @@
 Icons are symbolic visual elements used to communicate actions, states, and
 affordances within the user interface.
 
-In ttkbootstrap, icons are treated as a **shared capability** rather than a
+In bootstack, icons are treated as a **shared capability** rather than a
 per-widget feature, allowing consistent behavior across the framework.
 
 ---
@@ -43,7 +43,7 @@ Examples:
 - active icons appear emphasized
 - selected icons reflect current state
 
-ttkbootstrap integrates icon behavior with widget state to ensure visual feedback
+bootstack integrates icon behavior with widget state to ensure visual feedback
 matches interaction.
 
 ---
@@ -64,7 +64,7 @@ Icons should avoid hardcoded colors unless required.
 
 ## Icon sources
 
-ttkbootstrap supports multiple icon sources, including:
+bootstack supports multiple icon sources, including:
 
 - bundled icon sets
 - third-party icon libraries
@@ -102,9 +102,9 @@ Centralized management improves performance.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - semantic icon usage
 - theme-driven coloring

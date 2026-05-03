@@ -2,9 +2,9 @@
 
 Images in Tk are first-class objects with lifetimes independent of widgets.
 Understanding how images behave — especially under high-DPI displays — is essential
-for building correct and visually consistent ttkbootstrap applications.
+for building correct and visually consistent bootstack applications.
 
-This page explains how Tk handles images, common pitfalls, and how ttkbootstrap
+This page explains how Tk handles images, common pitfalls, and how bootstack
 provides structure around image usage.
 
 ---
@@ -34,7 +34,7 @@ Because images outlive widgets:
 - destroying a widget does not destroy its image
 - losing the last Python reference can invalidate the image
 
-ttkbootstrap encourages treating images as **application-level resources**
+bootstack encourages treating images as **application-level resources**
 rather than widget-local objects.
 
 ---
@@ -53,9 +53,9 @@ incorrectly sized on high-DPI screens.
 
 ---
 
-## ttkbootstrap’s approach to images
+## bootstack’s approach to images
 
-ttkbootstrap introduces conventions and helpers to manage images consistently:
+bootstack introduces conventions and helpers to manage images consistently:
 
 - centralized image creation and caching
 - explicit DPI-aware sizing
@@ -75,7 +75,7 @@ Caching images:
 - ensures consistent appearance
 - simplifies lifetime management
 
-ttkbootstrap provides an `Image` abstraction to manage caching and reuse.
+bootstack provides an `Image` abstraction to manage caching and reuse.
 See [Guides → Icons](../guides/icons.md) for using framework-managed icons.
 
 ---
@@ -84,7 +84,7 @@ See [Guides → Icons](../guides/icons.md) for using framework-managed icons.
 
 Tk natively supports a limited set of image formats.
 
-ttkbootstrap encourages using Pillow-backed images when broader format
+bootstack encourages using Pillow-backed images when broader format
 support is required, while still integrating with Tk’s image model.
 
 This allows applications to use modern image assets without sacrificing

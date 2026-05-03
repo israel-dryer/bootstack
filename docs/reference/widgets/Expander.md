@@ -1,3 +1,3 @@
 # Expander
 
-::: ttkbootstrap.widgets.composites.expander.Expander
+::: bootstack.widgets.composites.expander.Expander

@@ -1,7 +1,7 @@
 """Demo for MessageDialog and Messagebox with icon provider integration."""
 
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import MessageBox, MessageDialog
+import bootstack as ttk
+from bootstack.dialogs import MessageBox, MessageDialog
 
 
 def demo_show_info():

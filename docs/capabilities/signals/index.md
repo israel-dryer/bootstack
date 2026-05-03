@@ -1,9 +1,9 @@
 # Signals & Events
 
 Signals and events describe how information and interaction flow through a
-ttkbootstrap application.
+bootstack application.
 
-Tk provides a powerful but low-level event system. ttkbootstrap builds on this
+Tk provides a powerful but low-level event system. bootstack builds on this
 by introducing **signals** and encouraging the use of **virtual events** to make
 application behavior more declarative, composable, and easier to reason about.
 
@@ -13,7 +13,7 @@ This section explains these mechanisms and how they work together.
 
 ## Interaction models
 
-ttkbootstrap supports three complementary interaction models:
+bootstack supports three complementary interaction models:
 
 - **Callbacks** — imperative responses to user actions
 - **Virtual events** — semantic notifications of meaningful transitions
@@ -90,9 +90,9 @@ They are complementary, not exclusive.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - minimizing complex logic in callbacks
 - using signals to model state

@@ -1,7 +1,7 @@
-import ttkbootstrap as ttk
+import bootstack as ttk
 from tkinter import messagebox, Menu
 
-from ttkbootstrap import ContextMenu, ContextMenuItem
+from bootstack import ContextMenu, ContextMenuItem
 
 
 class ButtonGroupDemo(ttk.App):

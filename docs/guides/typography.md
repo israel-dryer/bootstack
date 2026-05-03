@@ -4,13 +4,13 @@ title: Typography
 
 # Typography
 
-This guide shows how to use ttkbootstrap's typography system—font tokens, modifiers, and the `Font` class for creating reusable named fonts.
+This guide shows how to use bootstack's typography system—font tokens, modifiers, and the `Font` class for creating reusable named fonts.
 
 ---
 
 ## Font Tokens
 
-ttkbootstrap defines **semantic font tokens** rather than raw font tuples. Tokens represent typographic roles:
+bootstack defines **semantic font tokens** rather than raw font tuples. Tokens represent typographic roles:
 
 | Token | Purpose |
 |-------|---------|
@@ -33,7 +33,7 @@ ttkbootstrap defines **semantic font tokens** rather than raw font tuples. Token
 Tokens are registered as named Tk fonts, so you can use them directly:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -53,7 +53,7 @@ Tokens adapt to the platform—using Segoe UI on Windows, SF Pro on macOS, and D
 The `Font` class provides a powerful way to create fonts with modifiers:
 
 ```python
-from ttkbootstrap import Font
+from bootstack import Font
 
 # Create a font from a token
 body_font = Font("body")
@@ -139,7 +139,7 @@ Font("body[14][16]")         # Results in 16pt
 ### Complete Examples
 
 ```python
-from ttkbootstrap import Font
+from bootstack import Font
 
 # Common patterns
 title_font = Font("heading-xl")
@@ -170,8 +170,8 @@ emphasized_link = Font("body[bold][underline]")
 Pass `Font` objects directly to widgets:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import Font
+import bootstack as ttk
+from bootstack import Font
 
 app = ttk.App()
 
@@ -204,7 +204,7 @@ ttk.Label(app, text="Italic caption", font="caption[italic]")
 For fonts you'll reuse across your application, create them once and reference by name:
 
 ```python
-from ttkbootstrap import Font
+from bootstack import Font
 
 # Create reusable fonts at app startup
 class AppFonts:
@@ -231,7 +231,7 @@ font = Font("body[bold]")
 tk_font = font.tkfont
 
 # Get the registered font name
-name = font.name  # e.g., "ttkbootstrap.font.abc123"
+name = font.name  # e.g., "bootstack.font.abc123"
 
 # Font can be used as a string (returns name)
 str(font)  # Same as font.name
@@ -244,7 +244,7 @@ str(font)  # Same as font.name
 The `Font` class provides measurement utilities:
 
 ```python
-from ttkbootstrap import Font
+from bootstack import Font
 
 font = Font("body")
 
@@ -281,7 +281,7 @@ line_height = font.metrics()["linespace"]
 For advanced use, access the typography system directly:
 
 ```python
-from ttkbootstrap.style.typography import Typography, FontSpec
+from bootstack.style.typography import Typography, FontSpec
 
 # Get a token's specification
 spec = Typography.get_token("heading-lg")
@@ -297,7 +297,7 @@ Typography.set_global_family("Arial")
 ### Available Token Names
 
 ```python
-from ttkbootstrap.style.typography import FontTokenNames
+from bootstack.style.typography import FontTokenNames
 
 # Access token name constants
 FontTokenNames.body       # "body"
@@ -312,7 +312,7 @@ FontTokenNames.code       # "code"
 ### Consistent Headings
 
 ```python
-from ttkbootstrap import Font
+from bootstack import Font
 
 # Define heading hierarchy
 h1 = Font("heading-xl")

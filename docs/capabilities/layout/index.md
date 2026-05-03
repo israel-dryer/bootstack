@@ -4,10 +4,10 @@ Layout capabilities describe how widgets participate in layout, spacing, and
 scrolling behavior.
 
 Rather than documenting geometry behavior repeatedly on individual widgets,
-ttkbootstrap formalizes layout concerns as shared capabilities that apply
+bootstack formalizes layout concerns as shared capabilities that apply
 consistently across the framework.
 
-This section explains layout behavior conceptually and how ttkbootstrap guides
+This section explains layout behavior conceptually and how bootstack guides
 layout usage.
 
 ---
@@ -37,7 +37,7 @@ Tk provides three geometry managers:
 
 Each manager has different trade-offs.
 
-ttkbootstrap does not replace these managers, but provides structure and
+bootstack does not replace these managers, but provides structure and
 conventions around their use.
 
 ---
@@ -58,7 +58,7 @@ Containers:
 - control expansion
 - define scrolling behavior
 
-ttkbootstrap encourages composing layouts from containers rather than tuning
+bootstack encourages composing layouts from containers rather than tuning
 individual widgets.
 
 ---
@@ -67,7 +67,7 @@ individual widgets.
 
 Layout bugs often come from implicit behavior.
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - explicit spacing
 - clear expansion rules
@@ -87,7 +87,7 @@ Scrollable containers:
 - synchronize scrollbars
 - adapt to dynamic content
 
-ttkbootstrap provides standardized scrolling patterns to avoid ad-hoc solutions.
+bootstack provides standardized scrolling patterns to avoid ad-hoc solutions.
 
 ---
 

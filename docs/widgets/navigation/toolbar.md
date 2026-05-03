@@ -13,7 +13,7 @@ It optionally supports window control buttons (minimize, maximize, close) and wi
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -114,4 +114,4 @@ toolbar.close_button     # Button or None
 
 ### API reference
 
-- [`ttkbootstrap.Toolbar`](../../reference/widgets/Toolbar.md)
+- [`bootstack.Toolbar`](../../reference/widgets/Toolbar.md)

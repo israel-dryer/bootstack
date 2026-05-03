@@ -8,7 +8,7 @@ Demonstrates FileDataSource capabilities:
 - Filtering and sorting
 - Pagination
 - CRUD operations
-- Integration with ttkbootstrap widgets
+- Integration with bootstack widgets
 """
 
 import csv
@@ -18,9 +18,9 @@ import random
 import tempfile
 from pathlib import Path
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from ttkbootstrap.datasource import FileDataSource, FileSourceConfig
+import bootstack as ttk
+from bootstack.constants import *
+from bootstack.datasource import FileDataSource, FileSourceConfig
 
 
 # Sample data generator

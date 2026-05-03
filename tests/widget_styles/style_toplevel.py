@@ -1,4 +1,4 @@
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 if __name__ == '__main__':

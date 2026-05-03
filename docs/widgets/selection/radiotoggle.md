@@ -14,7 +14,7 @@ than the classic radio indicator (common in toolbars, view switches, or mode pic
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -151,4 +151,4 @@ Bind a shared `signal` (preferred) or `variable` to enable reactive updates acro
 
 ### API reference
 
-- [`ttkbootstrap.RadioToggle`](../../reference/widgets/RadioToggle.md)
+- [`bootstack.RadioToggle`](../../reference/widgets/RadioToggle.md)

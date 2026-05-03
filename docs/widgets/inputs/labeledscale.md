@@ -13,7 +13,7 @@ Use `LabeledScale` when users need visual feedback of the exact value as they dr
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -130,4 +130,4 @@ scale.value = 75
 
 ### API reference
 
-- [`ttkbootstrap.LabeledScale`](../../reference/widgets/LabeledScale.md)
+- [`bootstack.LabeledScale`](../../reference/widgets/LabeledScale.md)

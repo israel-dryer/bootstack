@@ -1,3 +1,3 @@
 # SizeGrip
 
-::: ttkbootstrap.widgets.primitives.sizegrip.SizeGrip
+::: bootstack.widgets.primitives.sizegrip.SizeGrip

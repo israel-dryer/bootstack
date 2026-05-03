@@ -1,3 +1,3 @@
 # ToolTip
 
-::: ttkbootstrap.widgets.composites.tooltip.ToolTip
+::: bootstack.widgets.composites.tooltip.ToolTip

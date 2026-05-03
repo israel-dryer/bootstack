@@ -1,3 +1,3 @@
 # FilterDialog
 
-::: ttkbootstrap.dialogs.filterdialog.FilterDialog
+::: bootstack.dialogs.filterdialog.FilterDialog

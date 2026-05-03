@@ -2,20 +2,20 @@
 title: Home
 ---
 
-# ttkbootstrap
+# bootstack
 
-**ttkbootstrap** is a **modern, opinionated desktop UI framework for Python**, built on top of Tk.
+**bootstack** is a **modern, opinionated desktop UI framework for Python**, built on top of Tk.
 
 It provides clear conventions for **layout**, **styling**, **state**, and **reactivity**, allowing you to build
 polished, maintainable desktop applications without reinventing common UI patterns.
 
-ttkbootstrap is designed to feel familiar to Tk users—but it goes far beyond theming or widget wrappers.
+bootstack is designed to feel familiar to Tk users—but it goes far beyond theming or widget wrappers.
 
 ---
 
-## What ttkbootstrap is
+## What bootstack is
 
-ttkbootstrap is a **framework**, not just a toolkit.
+bootstack is a **framework**, not just a toolkit.
 
 It provides:
 
@@ -29,15 +29,15 @@ These pieces work together to support **modern application workflows**, not just
 
 ---
 
-## What ttkbootstrap is not
+## What bootstack is not
 
-ttkbootstrap is **not**:
+bootstack is **not**:
 
 - a thin skin on top of Tkinter
 - a collection of unrelated helper widgets
 - a low-level “figure it out yourself” UI layer
 
-You *can* adopt ttkbootstrap incrementally, but its real value appears when you follow its conventions for
+You *can* adopt bootstack incrementally, but its real value appears when you follow its conventions for
 layout, styling, and state.
 
 ---
@@ -46,7 +46,7 @@ layout, styling, and state.
 
 ### Opinionated, but flexible
 
-ttkbootstrap makes intentional choices about how applications are structured.
+bootstack makes intentional choices about how applications are structured.
 These opinions reduce boilerplate and ambiguity while still allowing escape hatches when needed.
 
 ### Containers express layout intent
@@ -72,7 +72,7 @@ The documentation is structured by **intent**, not by inheritance or module layo
 
 ### Getting Started
 
-Learn how to create your first ttkbootstrap application and understand the core mental model.
+Learn how to create your first bootstack application and understand the core mental model.
 
 → [Start here if you’re new](getting-started/index.md)
 
@@ -108,21 +108,21 @@ Complete, auto-generated reference for classes, methods, and functions.
 
 ## Where to start
 
-If you’re new to ttkbootstrap:
+If you’re new to bootstack:
 
 1. Begin with **Getting Started**
 2. Read the **Guides** relevant to your task
 3. Refer to **Widgets** for specifics
 4. Use **Platform** and **Capabilities** when you need deeper understanding
 
-If you already know Tkinter, resist the urge to jump straight to the API—ttkbootstrap rewards learning its
+If you already know Tkinter, resist the urge to jump straight to the API—bootstack rewards learning its
 structure first.
 
 ---
 
 ## Philosophy
 
-ttkbootstrap exists to make **desktop UI development productive again**.
+bootstack exists to make **desktop UI development productive again**.
 
 It embraces the stability of Tk while adding the structure, consistency, and ergonomics expected from
 modern UI frameworks.

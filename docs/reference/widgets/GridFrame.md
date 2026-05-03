@@ -1,3 +1,3 @@
 # GridFrame
 
-::: ttkbootstrap.widgets.primitives.gridframe.GridFrame
+::: bootstack.widgets.primitives.gridframe.GridFrame

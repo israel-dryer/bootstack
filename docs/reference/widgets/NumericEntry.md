@@ -1,3 +1,3 @@
 # NumericEntry
 
-::: ttkbootstrap.widgets.composites.numericentry.NumericEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry

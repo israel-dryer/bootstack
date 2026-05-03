@@ -176,6 +176,6 @@ Point to concrete alternatives.
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.LayoutWidgetName`
+- **API Reference:** `bootstack.LayoutWidgetName`
 
 - **Related guides:** Layout, Design System

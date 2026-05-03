@@ -1,3 +1,3 @@
 # MessageCatalog
 
-::: ttkbootstrap.core.localization.msgcat.MessageCatalog
+::: bootstack.core.localization.msgcat.MessageCatalog

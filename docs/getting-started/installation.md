@@ -4,7 +4,7 @@ title: Installation
 
 # Installation
 
-ttkbootstrap is a **framework** for building Tkinter applications with a modern design system and convenience APIs
+bootstack is a **framework** for building Tkinter applications with a modern design system and convenience APIs
 (reactive state, icons, layout containers, localization, and more).
 
 It runs anywhere Tk runs — Windows, macOS, and Linux — and installs like any other Python package.
@@ -29,13 +29,13 @@ It runs anywhere Tk runs — Windows, macOS, and Linux — and installs like any
 ## Install with pip
 
 ```bash
-python -m pip install ttkbootstrap
+python -m pip install bootstack
 ```
 
 If you’re upgrading:
 
 ```bash
-python -m pip install --upgrade ttkbootstrap
+python -m pip install --upgrade bootstack
 ```
 
 ---
@@ -45,10 +45,10 @@ python -m pip install --upgrade ttkbootstrap
 Create a quick smoke test:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
-ttk.Label(app, text="Hello ttkbootstrap").pack(padx=20, pady=20)
+ttk.Label(app, text="Hello bootstack").pack(padx=20, pady=20)
 app.mainloop()
 ```
 
@@ -60,7 +60,7 @@ If a window appears, you’re ready.
 
 ## Included image support (Pillow)
 
-ttkbootstrap includes Pillow as a dependency to support modern image workflows, including
+bootstack includes Pillow as a dependency to support modern image workflows, including
 theme-aware icons, DPI scaling, caching, and recoloring.
 
 No additional installation is required.
@@ -71,10 +71,10 @@ No additional installation is required.
 
 ## Optional: Command-line tooling
 
-ttkbootstrap includes an optional CLI that can scaffold projects, add views or dialogs, and help with
+bootstack includes an optional CLI that can scaffold projects, add views or dialogs, and help with
 building and distribution.
 
-You do **not** need the CLI to use ttkbootstrap, but it can simplify larger projects.
+You do **not** need the CLI to use bootstack, but it can simplify larger projects.
 
 !!! link "See [Platform → CLI](../platform/cli.md) for available commands."
 

@@ -217,6 +217,6 @@ Always point to another concrete widget as the alternative.
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.DialogName`
+- **API Reference:** `bootstack.DialogName`
 
 - **Related guides:** Dialogs, UX Patterns, Localization

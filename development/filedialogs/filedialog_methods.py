@@ -1,8 +1,8 @@
 from json import load
 from pathlib import Path
 import pathlib
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 from PIL import Image, ImageTk
 import ctypes
 import string

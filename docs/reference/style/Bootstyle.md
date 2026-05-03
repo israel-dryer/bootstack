@@ -1,3 +1,3 @@
 # Bootstyle
 
-::: ttkbootstrap.style.bootstyle.Bootstyle
+::: bootstack.style.bootstyle.Bootstyle

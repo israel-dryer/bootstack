@@ -4,10 +4,10 @@ ttk widgets separate **behavior** from **appearance**.
 This separation is implemented through ttk’s **style and element system**.
 
 Understanding how styles and elements work is essential for understanding how
-ttkbootstrap themes, color tokens, and variants function.
+bootstack themes, color tokens, and variants function.
 
 This page explains the ttk styling model at a conceptual level and how
-ttkbootstrap builds on top of it.
+bootstack builds on top of it.
 
 ---
 
@@ -94,13 +94,13 @@ Common states include:
 
 Styles may define different visuals for different states.
 
-ttkbootstrap uses this state model extensively to implement variants and interactions.
+bootstack uses this state model extensively to implement variants and interactions.
 
 ---
 
-## How ttkbootstrap uses styles
+## How bootstack uses styles
 
-ttkbootstrap builds on ttk’s styling system rather than replacing it.
+bootstack builds on ttk’s styling system rather than replacing it.
 
 The framework:
 
@@ -109,7 +109,7 @@ The framework:
 - creates reusable element layouts
 - applies consistent state behavior
 
-This allows ttkbootstrap to offer expressive styling while remaining compatible
+This allows bootstack to offer expressive styling while remaining compatible
 with ttk’s underlying engine.
 
 ---
@@ -123,7 +123,7 @@ Instead of working directly with style names, users specify:
 - semantic color (via `accent` parameter)
 - visual variant (via `variant` parameter)
 
-ttkbootstrap resolves these into concrete ttk style names and layouts.
+bootstack resolves these into concrete ttk style names and layouts.
 
 This keeps styling declarative and consistent:
 

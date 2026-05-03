@@ -1,3 +1,3 @@
 # Form
 
-::: ttkbootstrap.widgets.composites.form.Form
+::: bootstack.widgets.composites.form.Form

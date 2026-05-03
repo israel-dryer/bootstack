@@ -1,8 +1,8 @@
 from typing import Any, Literal
 
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import Dialog, DialogButton
-from ttkbootstrap import ScrollView
+import bootstack as ttk
+from bootstack.dialogs import Dialog, DialogButton
+from bootstack import ScrollView
 
 
 class FilterDialogContent(ttk.Frame):

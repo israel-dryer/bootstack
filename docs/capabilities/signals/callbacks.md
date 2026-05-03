@@ -4,7 +4,7 @@ Callbacks are the primary **imperative event-handling mechanism** in Tk and ttk.
 They represent functions that are invoked in direct response to user actions
 or system events.
 
-This page explains how callbacks work, how ttkbootstrap uses them, and how they
+This page explains how callbacks work, how bootstack uses them, and how they
 relate to signals and virtual events.
 
 ---
@@ -116,9 +116,9 @@ Use `after()` or background threads for non-UI work.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - using callbacks for direct user actions
 - using signals for shared state

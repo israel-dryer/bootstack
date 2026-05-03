@@ -1,3 +1,3 @@
 # MenuManager
 
-::: ttkbootstrap.runtime.menu.MenuManager
+::: bootstack.runtime.menu.MenuManager

@@ -1,3 +1,3 @@
 # PackFrame
 
-::: ttkbootstrap.widgets.primitives.packframe.PackFrame
+::: bootstack.widgets.primitives.packframe.PackFrame

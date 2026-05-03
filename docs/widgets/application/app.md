@@ -4,7 +4,7 @@ title: App
 
 # App
 
-`App` is the **root application window** — the starting point for every ttkbootstrap application.
+`App` is the **root application window** — the starting point for every bootstack application.
 
 It wraps Tk with sensible defaults: theme initialization, DPI awareness, window sizing, and shortcut management.
 
@@ -13,7 +13,7 @@ It wraps Tk with sensible defaults: theme initialization, DPI awareness, window 
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="My App", theme="cosmo-light", size=(800, 600))
 
@@ -74,4 +74,4 @@ ttk.toggle_theme()  # switches between light and dark
 
 ### API reference
 
-- [`ttkbootstrap.App`](../../reference/app/App.md)
+- [`bootstack.App`](../../reference/app/App.md)

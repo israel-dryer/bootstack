@@ -1,8 +1,8 @@
 [project]
-site_name = "ttkbootstrap"
+site_name = "bootstack"
 site_description = "A modern framework for building Tkinter applications with Bootstrap-inspired themes."
 site_author = "Israel Dryer"
-site_url = "https://www.ttkbootstrap.com"
+site_url = "https://www.bootstack.com"
 copyright = "Copyright &copy; 2021 - 2026 Israel Dryer"
 
 docs_dir = "docs"

@@ -4,13 +4,13 @@ title: Styling
 
 # Styling
 
-This guide explains how to work with ttkbootstrap's design system—semantic colors, variants, and consistent styling across widgets.
+This guide explains how to work with bootstack's design system—semantic colors, variants, and consistent styling across widgets.
 
 ---
 
 ## Design System Thinking
 
-ttkbootstrap styling is **intent-based**, not value-based.
+bootstack styling is **intent-based**, not value-based.
 
 Instead of:
 
@@ -292,7 +292,7 @@ Themes define **how tokens become colors**. The same `accent="primary"` resolves
 app = ttk.App(theme="ocean-dark")
 
 # Switch themes at runtime
-from ttkbootstrap import set_theme, toggle_theme
+from bootstack import set_theme, toggle_theme
 set_theme("forest-light")
 toggle_theme()  # Toggle between light and dark
 ```
@@ -348,7 +348,7 @@ entry.configure(accent="success")
 
 ## Typography
 
-ttkbootstrap uses semantic typography where supported:
+bootstack uses semantic typography where supported:
 
 ```python
 # Heading style
@@ -364,7 +364,7 @@ ttk.Label(app, text="Last updated: Today", font="caption")
 Font choices should come from the design system, not hardcoded values.
 
 !!! link "Typography"
-    See [Typography](typography.md) to learn how to use ttkbootstrap typography.
+    See [Typography](typography.md) to learn how to use bootstack typography.
 
 ---
 
@@ -417,7 +417,7 @@ ttk.PackFrame(app, gap=SPACING_MD, padding=SPACING_LG)
 ## Example: Styled Form
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(theme="flatly")
 

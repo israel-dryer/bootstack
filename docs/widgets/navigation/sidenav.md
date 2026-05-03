@@ -14,7 +14,7 @@ It supports three display modes: expanded (full width with text), compact (icons
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="Nav Demo", size=(900, 600))
 
@@ -178,4 +178,4 @@ SideNav uses a shared `Variable` for radio-group selection across all items. Sel
 
 ### API reference
 
-- [`ttkbootstrap.SideNav`](../../reference/widgets/SideNav.md)
+- [`bootstack.SideNav`](../../reference/widgets/SideNav.md)

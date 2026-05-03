@@ -1,3 +1,3 @@
 # MessageBox
 
-::: ttkbootstrap.dialogs.message.MessageBox
+::: bootstack.dialogs.message.MessageBox

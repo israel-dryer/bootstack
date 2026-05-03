@@ -1,6 +1,6 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import Entry, Frame, Label
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack import Entry, Frame, Label
+from bootstack.constants import *
 from tkinter import Event
 
 class InputGroup(Frame):

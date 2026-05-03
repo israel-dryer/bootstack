@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import Expander, Label, CheckButton, Entry, Button
+import bootstack as ttk
+from bootstack import Expander, Label, CheckButton, Entry, Button
 
 
 app = ttk.Window(theme="darkly")

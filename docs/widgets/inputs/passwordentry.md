@@ -7,14 +7,14 @@ title: PasswordEntry
 `PasswordEntry` is a secure, form-ready text input control for passwords, PINs, and other sensitive values.
 
 It builds on `TextEntry`, adding masking, optional reveal behavior, and password-specific validation patterns—while preserving
-the same label/message, localization, and event model used throughout ttkbootstrap v2.
+the same label/message, localization, and event model used throughout bootstack v2.
 
 ---
 
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -187,4 +187,4 @@ Common patterns include:
 
 ### API reference
 
-- [`ttkbootstrap.PasswordEntry`](../../reference/widgets/PasswordEntry.md)
+- [`bootstack.PasswordEntry`](../../reference/widgets/PasswordEntry.md)

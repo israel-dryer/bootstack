@@ -4,7 +4,7 @@ title: DataSource
 
 # DataSource
 
-This guide explains how to use ttkbootstrap's DataSource system for managing data with pagination, filtering, sorting, and CRUD operations.
+This guide explains how to use bootstack's DataSource system for managing data with pagination, filtering, sorting, and CRUD operations.
 
 ---
 
@@ -25,7 +25,7 @@ DataSources decouple data management from widgets, making it easy to switch betw
 
 ## Built-in DataSource types
 
-ttkbootstrap provides three DataSource implementations:
+bootstack provides three DataSource implementations:
 
 | Type | Best for |
 |------|----------|
@@ -43,7 +43,7 @@ Stores all data in memory. Fast and simple for small datasets.
     See [MemoryDataSource](../reference/data/MemoryDataSource.md) for full API details.
 
 ```python
-from ttkbootstrap.datasource import MemoryDataSource
+from bootstack.datasource import MemoryDataSource
 
 # Create datasource with page size
 ds = MemoryDataSource(page_size=10)
@@ -71,7 +71,7 @@ Stores data in a SQLite database. Ideal for large datasets or when persistence i
     See [SqliteDataSource](../reference/data/SqliteDataSource.md) for full API details.
 
 ```python
-from ttkbootstrap.datasource import SqliteDataSource
+from bootstack.datasource import SqliteDataSource
 
 # Create with database file (or ":memory:" for in-memory)
 ds = SqliteDataSource("data.db", page_size=50)
@@ -98,7 +98,7 @@ Loads data from CSV, JSON, or JSONL files with configurable loading strategies.
     See [FileDataSource](../reference/data/FileDataSource.md) and [FileSourceConfig](../reference/data/FileSourceConfig.md) for full API details.
 
 ```python
-from ttkbootstrap.datasource import FileDataSource
+from bootstack.datasource import FileDataSource
 
 # Load from CSV
 ds = FileDataSource("employees.csv", page_size=20)
@@ -120,7 +120,7 @@ FileDataSource supports multiple loading strategies for different file sizes:
 | `"auto"` | Automatically select based on file size |
 
 ```python
-from ttkbootstrap.datasource import FileDataSource, FileSourceConfig
+from bootstack.datasource import FileDataSource, FileSourceConfig
 
 config = FileSourceConfig(
     loading_strategy="lazy",
@@ -284,8 +284,8 @@ ds.export_to_csv("selected.csv", include_all=False)
 DataSources integrate with data-aware widgets like ListView:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.datasource import MemoryDataSource
+import bootstack as ttk
+from bootstack.datasource import MemoryDataSource
 
 app = ttk.App()
 
@@ -315,7 +315,7 @@ To create a custom DataSource, extend `BaseDataSource` and implement the require
 ### Using BaseDataSource
 
 ```python
-from ttkbootstrap.datasource import BaseDataSource
+from bootstack.datasource import BaseDataSource
 
 class RedisDataSource(BaseDataSource):
     """Custom datasource backed by Redis."""
@@ -405,7 +405,7 @@ Available hooks:
 For maximum flexibility, implement `DataSourceProtocol` directly:
 
 ```python
-from ttkbootstrap.datasource import DataSourceProtocol
+from bootstack.datasource import DataSourceProtocol
 
 class APIDataSource:
     """DataSource backed by a REST API."""

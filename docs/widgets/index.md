@@ -1,6 +1,6 @@
 # Widgets
 
-Widgets in **ttkbootstrap** are **framework components**, not raw Tk or ttk primitives.
+Widgets in **bootstack** are **framework components**, not raw Tk or ttk primitives.
 
 They are designed to work together under a shared design system, consistent interaction patterns,
 and built-in framework capabilities—so you can compose applications quickly without reinventing
@@ -8,9 +8,9 @@ UI behavior or visual structure.
 
 ---
 
-## What makes ttkbootstrap widgets different
+## What makes bootstack widgets different
 
-Every ttkbootstrap widget is built with the assumption that:
+Every bootstack widget is built with the assumption that:
 
 - visual consistency matters
 
@@ -72,7 +72,7 @@ You can override defaults when needed, but you don’t have to start from zero.
 
 ## Declarative usage
 
-ttkbootstrap encourages **declarative composition**.
+bootstack encourages **declarative composition**.
 
 Instead of:
 
@@ -134,7 +134,7 @@ If you find yourself reaching for primitives often, consider whether:
 
 - a new composite widget would better serve your use case
 
-ttkbootstrap favors composition over customization.
+bootstack favors composition over customization.
 
 ---
 

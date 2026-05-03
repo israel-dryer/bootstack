@@ -1,5 +1,5 @@
 import tkinter as tk
-from ttkbootstrap import Style
+from bootstack import Style
 from random import choice
 
 root = tk.Tk()

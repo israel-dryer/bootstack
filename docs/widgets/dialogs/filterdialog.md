@@ -13,7 +13,7 @@ Use it when filtering options are too dense for inline controls, or when you wan
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -94,4 +94,4 @@ Popover mode (if supported) works well for quick filter panels.
 
 ### API reference
 
-- [`ttkbootstrap.FilterDialog`](../../reference/dialogs/FilterDialog.md)
+- [`bootstack.FilterDialog`](../../reference/dialogs/FilterDialog.md)

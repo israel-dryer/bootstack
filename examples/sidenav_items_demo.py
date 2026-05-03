@@ -8,8 +8,8 @@ This demo showcases the SideNav item widgets:
 """
 
 import tkinter as tk
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.sidenav import (
+import bootstack as ttk
+from bootstack.widgets.composites.sidenav import (
     SideNavItem,
     SideNavHeader,
     SideNavSeparator,

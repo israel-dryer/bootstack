@@ -1,7 +1,7 @@
 """
 Demo: Signals Integration with Widgets
 
-This example demonstrates the reactive signal system integrated into ttkbootstrap widgets.
+This example demonstrates the reactive signal system integrated into bootstack widgets.
 Signals provide automatic two-way binding between widgets and data sources, enabling
 reactive UI patterns without manual variable management.
 
@@ -12,8 +12,8 @@ Features demonstrated:
 - Dynamic UI updates based on signal changes
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.core.signals import Signal
+import bootstack as ttk
+from bootstack.core.signals import Signal
 
 
 class SignalsDemo(ttk.Window):
@@ -21,7 +21,7 @@ class SignalsDemo(ttk.Window):
 
     def __init__(self):
         super().__init__(theme="darkly")
-        self.title("ttkbootstrap Signals Demo")
+        self.title("bootstack Signals Demo")
         self.geometry("800x600")
 
         # Create signals for reactive data

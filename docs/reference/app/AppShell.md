@@ -1,3 +1,3 @@
 # AppShell
 
-::: ttkbootstrap.widgets.composites.appshell.AppShell
+::: bootstack.widgets.composites.appshell.AppShell

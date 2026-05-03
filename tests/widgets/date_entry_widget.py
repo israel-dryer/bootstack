@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 
 root = ttk.App(
     theme="dark",

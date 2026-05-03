@@ -5,7 +5,7 @@ Demonstrates the Card widget — a bordered, elevated container
 for grouping related content.
 """
 
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 
 def main():

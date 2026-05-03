@@ -4,13 +4,13 @@ title: Formatting
 
 # Formatting
 
-This guide explains how to format numbers, dates, and times in ttkbootstrap applications using locale-aware formatting—both in widgets and as a standalone utility.
+This guide explains how to format numbers, dates, and times in bootstack applications using locale-aware formatting—both in widgets and as a standalone utility.
 
 ---
 
 ## Overview
 
-ttkbootstrap provides `IntlFormatter`, a locale-aware formatter that handles:
+bootstack provides `IntlFormatter`, a locale-aware formatter that handles:
 
 - **Numbers** — decimals, percentages, currency, large numbers
 - **Dates** — various date formats from short to long
@@ -228,7 +228,7 @@ value_format="EEEE, MMMM d, yyyy 'at' h:mm a"
 Formatting adapts to the active locale:
 
 ```python
-from ttkbootstrap.api.i18n import IntlFormatter
+from bootstack.api.i18n import IntlFormatter
 
 # German formatting
 fmt_de = IntlFormatter(locale="de_DE")
@@ -262,7 +262,7 @@ Use `IntlFormatter` directly for labels, computed values, or any formatting need
 
 ```python
 from datetime import date, datetime
-from ttkbootstrap.api.i18n import IntlFormatter
+from bootstack.api.i18n import IntlFormatter
 
 fmt = IntlFormatter()  # Uses system locale
 
@@ -307,7 +307,7 @@ fmt.parse("3:30 PM", "shortTime")            # time(15, 30)
 Format values for display in labels:
 
 ```python
-from ttkbootstrap.api.i18n import IntlFormatter
+from bootstack.api.i18n import IntlFormatter
 
 fmt = IntlFormatter()
 revenue = 1234567.89

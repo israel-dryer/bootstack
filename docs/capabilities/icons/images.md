@@ -1,10 +1,10 @@
 # Images
 
 Images represent visual content and decorative assets used throughout
-ttkbootstrap applications.
+bootstack applications.
 
 Because Tk treats images as global interpreter objects with independent
-lifetimes, image usage requires careful management. ttkbootstrap formalizes
+lifetimes, image usage requires careful management. bootstack formalizes
 image usage as a capability to ensure correctness, performance, and consistency.
 
 ---
@@ -34,7 +34,7 @@ Correct image usage requires:
 - controlling when images are created
 - avoiding premature destruction
 
-ttkbootstrap encourages centralized image creation and reuse to make lifetime
+bootstack encourages centralized image creation and reuse to make lifetime
 explicit and predictable.
 
 ---
@@ -49,7 +49,7 @@ Caching:
 - reduces memory usage
 - avoids subtle rendering bugs
 
-ttkbootstrap provides an `Image` abstraction to manage caching and reuse of
+bootstack provides an `Image` abstraction to manage caching and reuse of
 images across widgets.
 
 ---
@@ -64,7 +64,7 @@ Images may:
 - render at incorrect sizes
 - require different assets for different scales
 
-ttkbootstrap integrates image usage with DPI awareness to provide consistent
+bootstack integrates image usage with DPI awareness to provide consistent
 visual results across platforms.
 
 ---
@@ -112,9 +112,9 @@ Centralized management improves responsiveness.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - centralized image creation
 - explicit caching

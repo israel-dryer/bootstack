@@ -13,7 +13,7 @@ Use it when a workflow needs a small set of inputs (2-8 fields) with an explicit
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -118,4 +118,4 @@ For complex "live" forms, prefer an inline [Form](../forms/form.md) in a normal 
 
 ### API reference
 
-- [`ttkbootstrap.FormDialog`](../../reference/dialogs/FormDialog.md)
+- [`bootstack.FormDialog`](../../reference/dialogs/FormDialog.md)

@@ -1,3 +1,3 @@
 # Progressbar
 
-::: ttkbootstrap.widgets.primitives.progressbar.Progressbar
+::: bootstack.widgets.primitives.progressbar.Progressbar

@@ -6,7 +6,7 @@ title: ContextMenu
 
 `ContextMenu` is a widget-backed pop-up menu for right-click and contextual actions.
 
-Unlike Tk’s native `Menu`, it is composed of ttkbootstrap widgets. This makes it fully
+Unlike Tk’s native `Menu`, it is composed of bootstack widgets. This makes it fully
 themeable (light/dark), enables icons, and allows richer layout and interaction patterns.
 
 ---
@@ -16,7 +16,7 @@ themeable (light/dark), enables icons, and allows richer layout and interaction 
 Create a menu, add items, and show it in response to a right-click.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -90,13 +90,13 @@ menu.add_radiobutton(text="Sort by date", value="date", variable=sort_var)
 
 !!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
 
-!!! link "See [Virtual Events](../../capabilities/virtual-events.md) for interaction events emitted by ttkbootstrap widgets."
+!!! link "See [Virtual Events](../../capabilities/virtual-events.md) for interaction events emitted by bootstack widgets."
 
 ---
 
 ## Icons
 
-Menu items use the same icon system as other ttkbootstrap widgets.
+Menu items use the same icon system as other bootstack widgets.
 
 ```python
 menu.add_command(text="Settings", icon="gear", command=on_settings)
@@ -189,5 +189,5 @@ menu.on_item_click(on_item_click)
 
 ### API reference
 
-- [`ttkbootstrap.ContextMenu`](../../reference/widgets/ContextMenu.md)
-- [`ttkbootstrap.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)
+- [`bootstack.ContextMenu`](../../reference/widgets/ContextMenu.md)
+- [`bootstack.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)

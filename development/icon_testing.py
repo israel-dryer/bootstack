@@ -4,7 +4,7 @@ from ttkbootstrap_icons_bs import BootstrapIcon
 import tkinter as tk
 from tkinter import ttk
 
-# import ttkbootstrap as ttk
+# import bootstack as ttk
 #
 #
 # app = ttk.Window()

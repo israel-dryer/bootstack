@@ -2,7 +2,7 @@
 
 Tk is a single-threaded, event-driven UI toolkit.
 Understanding where performance costs come from — and how to avoid common traps —
-is essential for building responsive ttkbootstrap applications.
+is essential for building responsive bootstack applications.
 
 This page explains performance considerations at the platform level.
 
@@ -52,7 +52,7 @@ Costs increase with:
 - frequent geometry changes
 - repeated calls to geometry managers
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - container-based layout
 - minimizing unnecessary relayouts
@@ -72,7 +72,7 @@ Performance tips:
 - reuse named fonts
 - avoid repeated image scaling
 
-ttkbootstrap’s Image and typography systems exist partly to address these concerns.
+bootstack’s Image and typography systems exist partly to address these concerns.
 
 ---
 
@@ -102,9 +102,9 @@ Performance issues are often localized and can be addressed incrementally.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes the following performance practices:
+bootstack promotes the following performance practices:
 
 - keep callbacks short
 - cache reusable resources

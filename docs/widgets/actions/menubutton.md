@@ -14,7 +14,7 @@ Use it for classic menu patterns (File/Edit/View), or when the options list is t
 `MenuButton` uses a standard Tk `Menu`.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 from tkinter import Menu
 
 app = ttk.App()
@@ -100,4 +100,4 @@ ttk.MenuButton(app, text="button.file", menu=m).pack()
 
 ### API reference
 
-- [`ttkbootstrap.MenuButton`](../../reference/widgets/MenuButton.md)
+- [`bootstack.MenuButton`](../../reference/widgets/MenuButton.md)

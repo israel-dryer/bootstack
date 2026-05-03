@@ -2,8 +2,8 @@
 Simple test to verify font modifier syntax works correctly.
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import bootstack as ttk
+from bootstack.constants import *
 
 # Create window
 root = ttk.Window(title="Font Modifier Test", theme="cosmo")

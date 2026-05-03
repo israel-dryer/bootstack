@@ -1,3 +1,3 @@
 # LabelFrame
 
-::: ttkbootstrap.widgets.primitives.labelframe.LabelFrame
+::: bootstack.widgets.primitives.labelframe.LabelFrame

@@ -1,3 +1,3 @@
 # TreeView
 
-::: ttkbootstrap.widgets.primitives.treeview.TreeView
+::: bootstack.widgets.primitives.treeview.TreeView

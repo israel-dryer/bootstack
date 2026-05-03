@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.style.style import get_style
+import bootstack as ttk
+from bootstack.style.style import get_style
 
 root = ttk.Window()
 
@@ -81,7 +81,7 @@ message = "This is a really long message and one that I think will cause the pag
 
 ttk.Button(
     root, text="Normal Toast", command=lambda: show_toast(
-        "ttkbootstrap",
+        "bootstack",
         'bootstrap-fill',
         "Hello world! This is a toast message",
         'Just now')).pack(side='right', padx=20, pady=20)
@@ -94,7 +94,7 @@ ttk.Button(
 
 ttk.Button(
     root, text="Long Message", command=lambda: show_toast(
-        "ttkbootstrap",
+        "bootstack",
         'bootstrap-fill',
         message)).pack(side='right', padx=20, pady=20)
 
@@ -118,7 +118,7 @@ ttk.Button(
 
 ttk.Button(
     root, text="Normal With Buttons", command=lambda: show_toast(
-        "ttkbootstrap",
+        "bootstack",
         'bootstrap-fill',
         "Hello world! This is a toast message",
         show_close_button=False,
@@ -128,7 +128,7 @@ ttk.Button(
 
 ttk.Button(
     root, text="Primary Toast", command=lambda: show_toast(
-        "ttkbootstrap",
+        "bootstack",
         'bootstrap-fill',
         "Hello world! This is a toast message",
         bootstyle="primary",

@@ -1,3 +1,3 @@
 # RadioToggle
 
-::: ttkbootstrap.widgets.primitives.radiotoggle.RadioToggle
+::: bootstack.widgets.primitives.radiotoggle.RadioToggle

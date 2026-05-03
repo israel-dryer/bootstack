@@ -9,15 +9,15 @@ The config system (`ttkb.toml`), PyInstaller integration, and project scaffoldin
 
 | File | Purpose |
 |------|---------|
-| `src/ttkbootstrap/cli/__init__.py` | Main dispatcher, argparse setup |
-| `src/ttkbootstrap/cli/start.py` | `ttkb start` — project scaffolding |
-| `src/ttkbootstrap/cli/run.py` | `ttkb run` — launch app |
-| `src/ttkbootstrap/cli/add.py` | `ttkb add view/dialog/theme/i18n` |
-| `src/ttkbootstrap/cli/promote.py` | `ttkb promote --pyinstaller` |
-| `src/ttkbootstrap/cli/build.py` | `ttkb build` — PyInstaller build |
-| `src/ttkbootstrap/cli/demo.py` | `ttkb demo` — widget showcase |
-| `src/ttkbootstrap/cli/config.py` | `ttkb.toml` loader/writer |
-| `src/ttkbootstrap/cli/templates/__init__.py` | All code-generation templates |
+| `src/bootstack/cli/__init__.py` | Main dispatcher, argparse setup |
+| `src/bootstack/cli/start.py` | `ttkb start` — project scaffolding |
+| `src/bootstack/cli/run.py` | `ttkb run` — launch app |
+| `src/bootstack/cli/add.py` | `ttkb add view/dialog/theme/i18n` |
+| `src/bootstack/cli/promote.py` | `ttkb promote --pyinstaller` |
+| `src/bootstack/cli/build.py` | `ttkb build` — PyInstaller build |
+| `src/bootstack/cli/demo.py` | `ttkb demo` — widget showcase |
+| `src/bootstack/cli/config.py` | `ttkb.toml` loader/writer |
+| `src/bootstack/cli/templates/__init__.py` | All code-generation templates |
 
 ---
 

@@ -3,7 +3,7 @@
 Spacing controls the visual separation between widgets and layout regions.
 Consistent spacing is critical for readable, professional user interfaces.
 
-This page explains how spacing works in Tk and how ttkbootstrap promotes
+This page explains how spacing works in Tk and how bootstack promotes
 clear and consistent spacing practices.
 
 ---
@@ -30,7 +30,7 @@ Instead:
 - padding is usually applied via container options
 - external spacing is controlled by geometry manager parameters
 
-ttkbootstrap adopts a conceptual distinction even when the underlying mechanism
+bootstack adopts a conceptual distinction even when the underlying mechanism
 is the same.
 
 ---
@@ -39,7 +39,7 @@ is the same.
 
 Inconsistent spacing is a common UI problem.
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - using container-level spacing
 - defining spacing once per layout region
@@ -92,9 +92,9 @@ Avoid absolute assumptions about spacing in resizable layouts.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - spacing as a layout concern
 - container-managed spacing

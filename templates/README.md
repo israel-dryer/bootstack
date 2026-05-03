@@ -1,5 +1,5 @@
 Below is a **design-first Markdown document** you can drop directly into a `templates/README.md`.
-It explains the **app paradigms**, *when to use each*, and the **intended ttkbootstrap v2 building blocks**, without
+It explains the **app paradigms**, *when to use each*, and the **intended bootstack v2 building blocks**, without
 prescribing implementation details yet.
 
 You can treat this as the contract you’ll implement against.
@@ -8,7 +8,7 @@ You can treat this as the contract you’ll implement against.
 
 # Application Templates
 
-ttkbootstrap v2 supports multiple **application paradigms** rather than a single “one-true” layout.
+bootstack v2 supports multiple **application paradigms** rather than a single “one-true” layout.
 Modern desktop applications no longer all center around a global menu bar; instead, navigation, commands,
 and context are often scoped to views.
 

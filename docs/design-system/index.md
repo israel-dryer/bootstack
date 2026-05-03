@@ -4,13 +4,13 @@ title: Design System
 
 # Design System
 
-ttkbootstrap includes a built-in **design system** that defines how applications
+bootstack includes a built-in **design system** that defines how applications
 look, feel, and behave visually—independent of individual widgets.
 
 The design system establishes a shared visual language across the framework,
 covering color semantics, variants, typography, and icons.
 
-Rather than styling widgets individually, ttkbootstrap applications express
+Rather than styling widgets individually, bootstack applications express
 *intent* using design tokens. The framework ensures those intentions are rendered
 consistently across themes, platforms, and screen densities.
 
@@ -45,9 +45,9 @@ Those topics are covered elsewhere:
 
 ---
 
-## Why ttkbootstrap Is Opinionated
+## Why bootstack Is Opinionated
 
-ttkbootstrap intentionally constrains visual choices to reduce inconsistency
+bootstack intentionally constrains visual choices to reduce inconsistency
 and design drift.
 
 By adopting the design system:

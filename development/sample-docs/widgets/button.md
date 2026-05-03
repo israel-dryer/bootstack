@@ -13,7 +13,7 @@ A widget that issues a command when pressed.
 You create a button by providing text and a command. The command is a function that is called when the user clicks the button. The label describes the button's action and can also be accompanied or replaced by an icon.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 ttk.Button(text='Submit', command=submit)
 ```
@@ -35,7 +35,7 @@ ttk.Button(icon='check', icon_only=True, command=submit)
 ## Basic usage
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -158,7 +158,7 @@ ttk.Button(text="OK", localize=False)
 You can bind the label text to a signal (so the button text updates automatically).
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 

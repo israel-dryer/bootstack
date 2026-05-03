@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from ttkbootstrap.core.localization import MessageCatalog
-from ttkbootstrap.runtime.app import App
+from bootstack.core.localization import MessageCatalog
+from bootstack.runtime.app import App
 
 # Initialize Babel/gettext bridge for tests using absolute locales path
 _ROOT = Path(__file__).resolve().parents[2]
-_LOCALES = str(_ROOT / "src/ttkbootstrap/assets/locales")
+_LOCALES = str(_ROOT / "src/bootstack/assets/locales")
 app = App()
-MessageCatalog.init(locales_dir=_LOCALES, domain="ttkbootstrap", default_locale="en")
+MessageCatalog.init(locales_dir=_LOCALES, domain="bootstack", default_locale="en")
 
 
 def test_msgcat():

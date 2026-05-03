@@ -4,14 +4,14 @@ title: Overview
 
 # Overview
 
-Localization in ttkbootstrap is designed to make applications **language-aware, region-aware, and culturally adaptable**
+Localization in bootstack is designed to make applications **language-aware, region-aware, and culturally adaptable**
 without complicating widget logic or application structure.
 
-Rather than hardcoding text, formats, or language-specific behavior into widgets, ttkbootstrap encourages you to treat
+Rather than hardcoding text, formats, or language-specific behavior into widgets, bootstack encourages you to treat
 localization as a **cross-cutting system concern** that integrates cleanly with the application runtime, theming, and
 widgets.
 
-This page explains the **design philosophy and architectural intent** behind localization in ttkbootstrap so new users
+This page explains the **design philosophy and architectural intent** behind localization in bootstack so new users
 understand how internationalization is meant to work before applying it in code.
 
 Practical usage, APIs, and workflows are covered in the Guides and Reference sections.
@@ -37,7 +37,7 @@ The localization system is built around the following goals:
 - **Desktop-first behavior**  
   Localization should respect platform conventions for dates, numbers, and text direction.
 
-To support these goals, ttkbootstrap treats localization as a **first-class application capability** rather than an
+To support these goals, bootstack treats localization as a **first-class application capability** rather than an
 optional add-on.
 
 ---
@@ -46,7 +46,7 @@ optional add-on.
 
 Text localization focuses on translating **user-facing strings**.
 
-Rather than embedding literal strings directly into widgets, ttkbootstrap encourages defining messages externally and
+Rather than embedding literal strings directly into widgets, bootstack encourages defining messages externally and
 resolving them at runtime based on the active language.
 
 This approach:
@@ -85,7 +85,7 @@ Desktop applications must also adapt how values are displayed, including:
 - measurement units,
 - pluralization rules.
 
-ttkbootstrap integrates locale-aware formatting so values are rendered appropriately for the user’s region without
+bootstack integrates locale-aware formatting so values are rendered appropriately for the user’s region without
 requiring manual formatting logic throughout the application.
 
 Formatting is treated as **presentation**, not business logic.
@@ -103,7 +103,7 @@ Localization-aware applications must consider:
 - icon mirroring,
 - layout flow.
 
-While Tkinter provides the underlying support for text direction, ttkbootstrap ensures that localization concerns are *
+While Tkinter provides the underlying support for text direction, bootstack ensures that localization concerns are *
 *explicitly acknowledged in design**, even when full RTL adaptation is platform-dependent.
 
 ---
@@ -141,9 +141,9 @@ This ensures applications feel native while remaining portable.
 
 ---
 
-## ttkbootstrap’s Role
+## bootstack’s Role
 
-In v2, ttkbootstrap does not invent a new internationalization standard.
+In v2, bootstack does not invent a new internationalization standard.
 
 Instead, it:
 
@@ -175,7 +175,7 @@ Those topics are covered in:
 
 ## Summary
 
-The ttkbootstrap localization system is designed to make applications **globally usable without global complexity**.
+The bootstack localization system is designed to make applications **globally usable without global complexity**.
 
 By treating localization as a system-level concern:
 

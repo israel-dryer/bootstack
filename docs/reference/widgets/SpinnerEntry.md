@@ -1,3 +1,3 @@
 # SpinnerEntry
 
-::: ttkbootstrap.widgets.composites.spinnerentry.SpinnerEntry
+::: bootstack.widgets.composites.spinnerentry.SpinnerEntry

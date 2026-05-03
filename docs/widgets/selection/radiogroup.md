@@ -14,7 +14,7 @@ multiple `RadioButton` instances to the same signal or variable.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -183,7 +183,7 @@ You can control the group selection with either:
 If neither is provided, `RadioGroup` creates an internal variable.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -224,4 +224,4 @@ app.mainloop()
 
 ### API reference
 
-- [`ttkbootstrap.RadioGroup`](../../reference/widgets/RadioGroup.md)
+- [`bootstack.RadioGroup`](../../reference/widgets/RadioGroup.md)

@@ -183,6 +183,6 @@ Prescriptive advice:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.NavigationWidgetName`
+- **API Reference:** `bootstack.NavigationWidgetName`
 
 - **Related guides:** Navigation, Layout, UX Patterns

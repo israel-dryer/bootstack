@@ -8,8 +8,8 @@ Demonstrates the Expander widget features:
 - Programmatic control
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites import Expander
+import bootstack as ttk
+from bootstack.widgets.composites import Expander
 
 
 def main():

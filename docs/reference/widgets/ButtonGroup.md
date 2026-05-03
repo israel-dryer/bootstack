@@ -1,3 +1,3 @@
 # ButtonGroup
 
-::: ttkbootstrap.widgets.composites.buttongroup.ButtonGroup
+::: bootstack.widgets.composites.buttongroup.ButtonGroup

@@ -4,7 +4,7 @@ title: Build & Ship
 
 # Build & Ship
 
-This guide shows how to **package and distribute** a ttkbootstrap application.
+This guide shows how to **package and distribute** a bootstack application.
 
 It is designed to work with the `ttkb` CLI workflow:
 
@@ -123,7 +123,7 @@ Shipping a desktop app usually requires bundling:
 - **images** (PNG/SVG sources, runtime-generated caches if any)
 - **localization** (message catalogs / language packs)
 
-If you’re using ttkbootstrap’s built-in asset systems, the CLI/build integration should include the relevant folders.
+If you’re using bootstack’s built-in asset systems, the CLI/build integration should include the relevant folders.
 
 !!! link "See [Capabilities → Icons & Imagery](../capabilities/icons-and-imagery.md) for how icons and images behave at runtime (DPI, caching, recoloring)."
 
@@ -215,7 +215,7 @@ runs locally, but it is **not yet ready for distribution**: modern macOS
 "\"MyApp.app\" is damaged and can't be opened" Gatekeeper dialog.
 
 To ship a `.app` to other users, you need four additional steps that
-ttkbootstrap intentionally does **not** perform itself:
+bootstack intentionally does **not** perform itself:
 
 1. **Code-sign** the bundle with an Apple Developer ID certificate
    ($99/yr Apple Developer Program membership).

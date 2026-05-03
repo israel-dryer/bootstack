@@ -1,4 +1,4 @@
-# Semantic Message IDs for ttkbootstrap
+# Semantic Message IDs for bootstack
 
 This document explains how to use semantic message IDs instead of English text as translation keys.
 
@@ -19,7 +19,7 @@ This means:
 
 ## Key Feature: Automatic Widget Localization
 
-**ttkbootstrap widgets automatically localize their text** - you don't need to manually call `_()`:
+**bootstack widgets automatically localize their text** - you don't need to manually call `_()`:
 
 ```python
 # Just pass the semantic key directly!
@@ -231,8 +231,8 @@ _("help.documentation") # Documentation
 ## Usage Example
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import MessageCatalog
+import bootstack as ttk
+from bootstack import MessageCatalog
 
 app = ttk.App()
 
@@ -246,7 +246,7 @@ ttk.Label(app, text='font.family').pack()
 
 # No need to call _() on widget text - localization is built-in!
 # But you can still use _() for manual translation if needed:
-from ttkbootstrap import MessageCatalog
+from bootstack import MessageCatalog
 _ = MessageCatalog.translate
 message = _('validation.invalid_type')  # For non-widget text
 
@@ -285,7 +285,7 @@ print(_('button.save'))
 
 To add custom semantic keys:
 
-1. Edit `src/ttkbootstrap/assets/locales/en/LC_MESSAGES/ttkbootstrap.po`
+1. Edit `src/bootstack/assets/locales/en/LC_MESSAGES/bootstack.po`
 2. Add your entries:
    ```
    msgid "myapp.welcome"
@@ -357,4 +357,4 @@ ttk.Button(app, text='button.save')
 
 ## See Full List
 
-Check `src/ttkbootstrap/assets/locales/en/LC_MESSAGES/ttkbootstrap.po` for the complete list of available semantic keys.
+Check `src/bootstack/assets/locales/en/LC_MESSAGES/bootstack.po` for the complete list of available semantic keys.

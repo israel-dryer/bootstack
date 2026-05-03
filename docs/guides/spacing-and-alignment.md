@@ -6,7 +6,7 @@ title: Spacing & Alignment
 
 This guide explains the underlying layout model for spacing and alignment—how widgets occupy space inside a container and how they respond when that space changes.
 
-In ttkbootstrap, most layouts should be expressed using higher-level containers like `PackFrame` and `GridFrame`, which centralize spacing rules and reduce per-widget configuration. This guide is for when you need to reason about layout behavior directly—especially when working with `Frame`, debugging complex layouts, or integrating legacy Tk code.
+In bootstack, most layouts should be expressed using higher-level containers like `PackFrame` and `GridFrame`, which centralize spacing rules and reduce per-widget configuration. This guide is for when you need to reason about layout behavior directly—especially when working with `Frame`, debugging complex layouts, or integrating legacy Tk code.
 
 ---
 
@@ -16,7 +16,7 @@ If you are using:
 
 - `PackFrame` with `gap`
 - `GridFrame` with `gap`, row/column definitions
-- standard ttkbootstrap layout patterns
+- standard bootstack layout patterns
 
 Then you typically **do not need to manage spacing manually**.
 
@@ -143,9 +143,9 @@ This makes it easy to:
 
 ---
 
-## Why ttkbootstrap introduces layout containers
+## Why bootstack introduces layout containers
 
-ttkbootstrap promotes **centralized spacing decisions**.
+bootstack promotes **centralized spacing decisions**.
 
 ### Instead of repeating spacing:
 
@@ -200,7 +200,7 @@ In these cases, understanding the underlying model is essential.
 - Spacing is a **layout concern**, not styling
 - Most apps should centralize spacing using layout containers
 - Understanding spacing helps you reason about layout behavior
-- ttkbootstrap abstractions exist to reduce geometry noise—not hide it
+- bootstack abstractions exist to reduce geometry noise—not hide it
 
 ---
 

@@ -16,8 +16,8 @@ If you want a compact, form-friendly input (typed + popup), prefer **DateEntry**
 
 ```python
 from datetime import date
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.calendar import Calendar
+import bootstack as ttk
+from bootstack.widgets.composites.calendar import Calendar
 
 app = ttk.App()
 
@@ -70,8 +70,8 @@ Range mode displays **two months side-by-side** to make cross-month selection ea
 #### Single date
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.calendar import Calendar
+import bootstack as ttk
+from bootstack.widgets.composites.calendar import Calendar
 
 app = ttk.App()
 Calendar(app, value="2025-12-25").pack(padx=12, pady=12)
@@ -81,8 +81,8 @@ app.mainloop()
 #### Date range
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites.calendar import Calendar
+import bootstack as ttk
+from bootstack.widgets.composites.calendar import Calendar
 
 app = ttk.App()
 Calendar(app, selection_mode="range", start_date="2025-12-01", end_date="2025-12-12").pack(padx=12, pady=12)
@@ -308,4 +308,4 @@ It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 ### API reference
 
-- [`ttkbootstrap.Calendar`](../../reference/widgets/Calendar.md)
+- [`bootstack.Calendar`](../../reference/widgets/Calendar.md)

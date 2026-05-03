@@ -18,7 +18,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -95,4 +95,4 @@ a UX hint.
 
 ### API reference
 
-- [`ttkbootstrap.SizeGrip`](../../reference/widgets/SizeGrip.md)
+- [`bootstack.SizeGrip`](../../reference/widgets/SizeGrip.md)

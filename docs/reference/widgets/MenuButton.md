@@ -1,3 +1,3 @@
 # MenuButton
 
-::: ttkbootstrap.widgets.primitives.menubutton.MenuButton
+::: bootstack.widgets.primitives.menubutton.MenuButton

@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import ContextMenuItem
+import bootstack as ttk
+from bootstack import ContextMenuItem
 
 
 def main():

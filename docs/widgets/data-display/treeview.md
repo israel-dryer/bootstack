@@ -13,7 +13,7 @@ It's ideal for representing parent/child relationships like folders, categories,
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -50,7 +50,7 @@ Use TreeView when:
 
 ### Styling
 
-TreeView supports theming through ttkbootstrap:
+TreeView supports theming through bootstack:
 
 ```python
 ttk.Treeview(app, accent="primary")
@@ -196,4 +196,4 @@ for item in new_data:
 
 ### API reference
 
-- [`ttkbootstrap.TreeView`](../../reference/widgets/TreeView.md)
+- [`bootstack.TreeView`](../../reference/widgets/TreeView.md)

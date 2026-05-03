@@ -1,3 +1,3 @@
 # FontDialog
 
-::: ttkbootstrap.dialogs.fontdialog.FontDialog
+::: bootstack.dialogs.fontdialog.FontDialog

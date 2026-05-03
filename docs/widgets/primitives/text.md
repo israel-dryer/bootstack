@@ -16,7 +16,7 @@ It supports rich behavior that typical entry widgets don't:
 
 - undo/redo, search, marks, and selections
 
-ttkbootstrap exposes `Text` as a first-class widget so you can build editors, logs, and rich text UIs with a consistent theme and a clear set of usage patterns.
+bootstack exposes `Text` as a first-class widget so you can build editors, logs, and rich text UIs with a consistent theme and a clear set of usage patterns.
 
 !!! tip "Prefer Field-based inputs when possible"
     For most form input, prefer [TextEntry](/widgets/inputs/textentry.md), [PasswordEntry](/widgets/inputs/passwordentry.md), [NumericEntry](/widgets/inputs/numericentry.md), etc.
@@ -29,7 +29,7 @@ ttkbootstrap exposes `Text` as a first-class widget so you can build editors, lo
 Create a text widget, insert content, and read it back:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -120,7 +120,7 @@ These options matter most for light/dark theme consistency:
 
 - `inactiveselectbackground`
 
-If ttkbootstrap applies defaults, you can usually rely on them. If you manually override, set the full set so the control stays readable in both themes.
+If bootstack applies defaults, you can usually rely on them. If you manually override, set the full set so the control stays readable in both themes.
 
 ---
 
@@ -234,7 +234,7 @@ text.tag_bind("link", "<Leave>", lambda e: text.configure(cursor="xterm"))
 Text uses `yscrollcommand` / `yview` to connect a scrollbar.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -315,4 +315,4 @@ def trim():
 
 ### API reference
 
-- [`ttkbootstrap.Text`](../../reference/widgets/Text.md)
+- [`bootstack.Text`](../../reference/widgets/Text.md)

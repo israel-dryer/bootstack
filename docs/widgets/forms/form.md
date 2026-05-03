@@ -15,7 +15,7 @@ It makes it easy to build consistent data-entry UIs by composing the standard v2
 Define fields and read the committed data:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -346,4 +346,4 @@ Form data can be bound to reactive signals for automatic UI updates when values 
 
 ### API reference
 
-- [`ttkbootstrap.Form`](../../reference/widgets/Form.md)
+- [`bootstack.Form`](../../reference/widgets/Form.md)

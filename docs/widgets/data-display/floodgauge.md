@@ -13,7 +13,7 @@ It's especially useful for capacity, utilization, or threshold-based indicators.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -171,4 +171,4 @@ level.set(90)  # FloodGauge updates automatically
 
 ### API reference
 
-- [`ttkbootstrap.FloodGauge`](../../reference/widgets/FloodGauge.md)
+- [`bootstack.FloodGauge`](../../reference/widgets/FloodGauge.md)

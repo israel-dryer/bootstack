@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import PathEntry
+import bootstack as ttk
+from bootstack import PathEntry
 
 app = ttk.Window()
 

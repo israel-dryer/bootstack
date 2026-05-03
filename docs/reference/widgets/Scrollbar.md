@@ -1,3 +1,3 @@
 # Scrollbar
 
-::: ttkbootstrap.widgets.primitives.scrollbar.Scrollbar
+::: bootstack.widgets.primitives.scrollbar.Scrollbar

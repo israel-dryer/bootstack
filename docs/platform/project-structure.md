@@ -4,14 +4,14 @@ title: Project Structure
 
 # Project Structure
 
-ttkbootstrap is designed to be used like a **framework**, not a loose collection of widgets.
+bootstack is designed to be used like a **framework**, not a loose collection of widgets.
 A good project structure makes it easy to:
 
 - grow from a prototype into a real application
 - keep UI code maintainable (views, state, services)
 - package reliably with **PyInstaller** (assets, icons, translations)
 
-This guide shows a structure that works well for ttkbootstrap apps and avoids the most common packaging pitfalls.
+This guide shows a structure that works well for bootstack apps and avoids the most common packaging pitfalls.
 
 ---
 
@@ -83,7 +83,7 @@ Keep `main()` small and explicit.
 
 ```python
 # src/my_app/app.py
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 from .settings import settings
 from .views.main_window import MainWindow
@@ -97,7 +97,7 @@ def main() -> None:
 
 ---
 
-## Where ttkbootstrap concepts live
+## Where bootstack concepts live
 
 ### Settings
 
@@ -129,7 +129,7 @@ Signals represent shared state and keep UI reactive without tangled callbacks.
 
 ```python
 # src/my_app/state.py
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 status = ttk.Signal("Ready")
 ```
@@ -144,7 +144,7 @@ Views assemble widgets into real screens. Think “page” or “window content�
 
 ```python
 # src/my_app/views/main_window.py
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 class MainWindow(ttk.Frame):
     def __init__(self, master):

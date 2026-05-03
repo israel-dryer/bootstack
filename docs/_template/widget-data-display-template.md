@@ -228,6 +228,6 @@ Prescriptive guidance:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.DataDisplayWidgetName`
+- **API Reference:** `bootstack.DataDisplayWidgetName`
 
 - **Related guides:** Data Display, Styling, Performance

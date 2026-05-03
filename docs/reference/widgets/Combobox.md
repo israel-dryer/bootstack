@@ -1,3 +1,3 @@
 # Combobox
 
-::: ttkbootstrap.widgets.primitives.combobox.Combobox
+::: bootstack.widgets.primitives.combobox.Combobox

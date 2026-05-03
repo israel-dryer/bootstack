@@ -24,7 +24,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -144,4 +144,4 @@ Use the ttk panedwindow API (varies by implementation/version).
 
 ### API reference
 
-- [`ttkbootstrap.PanedWindow`](../../reference/widgets/PanedWindow.md)
+- [`bootstack.PanedWindow`](../../reference/widgets/PanedWindow.md)

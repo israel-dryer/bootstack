@@ -20,7 +20,7 @@ Use `CheckButton` when users can enable multiple options independently (settings
 Use `value` to set the initial state.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -201,7 +201,7 @@ ttk.CheckButton(app, text="Notifications", localize=False)
 Prefer a reactive `signal=...` in v2 apps:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -244,4 +244,4 @@ You can also bind a Tk variable with `variable=...`.
 
 ### API reference
 
-- [`ttkbootstrap.CheckButton`](../../reference/widgets/CheckButton.md)
+- [`bootstack.CheckButton`](../../reference/widgets/CheckButton.md)

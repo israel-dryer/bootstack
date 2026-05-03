@@ -3,7 +3,7 @@
 Validation results represent the **outcome** of applying one or more validation
 rules to a value.
 
-Rather than returning raw booleans, ttkbootstrap models validation outcomes
+Rather than returning raw booleans, bootstack models validation outcomes
 explicitly so that applications can react consistently and provide meaningful
 user feedback.
 
@@ -105,9 +105,9 @@ Good timing improves usability.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap promotes:
+bootstack promotes:
 
 - explicit result objects
 - consistent severity levels

@@ -1,7 +1,7 @@
 """Demo for Accordion widget."""
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites import Accordion
-from ttkbootstrap.widgets.primitives import Label, Button
+import bootstack as ttk
+from bootstack.widgets.composites import Accordion
+from bootstack.widgets.primitives import Label, Button
 
 app = ttk.App(title="Accordion Demo", size=(400, 500), theme="dark")
 

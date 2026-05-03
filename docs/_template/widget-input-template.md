@@ -129,6 +129,6 @@ Prefer OtherWidget when:
 
 ## Reference
 
-- **API Reference:** `ttkbootstrap.WidgetName`
+- **API Reference:** `bootstack.WidgetName`
 
 - **Related guides:** …

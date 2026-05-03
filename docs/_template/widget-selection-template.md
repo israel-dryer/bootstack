@@ -225,6 +225,6 @@ Prefer OtherWidget when:
 
 **API reference**
 
-- **API Reference:** `ttkbootstrap.SelectionWidgetName`
+- **API Reference:** `bootstack.SelectionWidgetName`
 
 - **Related guides:** Selection, Forms, Localization

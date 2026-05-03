@@ -1,12 +1,12 @@
-"""Using Signal with ttkbootstrap widgets.
+"""Using Signal with bootstack widgets.
 
 Demonstrates binding a Signal to widget textvariables and reacting to
 changes with a subscriber.
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.core.signals import Signal
-from ttkbootstrap.core.signals.integration import enable_widget_integration
+import bootstack as ttk
+from bootstack.core.signals import Signal
+from bootstack.core.signals.integration import enable_widget_integration
 
 
 def main() -> None:

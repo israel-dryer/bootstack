@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from ttkbootstrap.style.theme_provider import ThemeProvider
+from bootstack.style.theme_provider import ThemeProvider
 
 tk.Tk()
 

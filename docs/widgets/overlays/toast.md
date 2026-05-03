@@ -13,7 +13,7 @@ Use Toast for messages like "Saved", "Copied", or "Connected". Toasts should dis
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -100,4 +100,4 @@ Toast supports different visual intents through the `accent` parameter:
 
 ### API reference
 
-- [`ttkbootstrap.Toast`](../../reference/widgets/Toast.md)
+- [`bootstack.Toast`](../../reference/widgets/Toast.md)

@@ -28,7 +28,7 @@ Suggested: 3 small dialogs (info/warning/error) in light/dark
 ### Information
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -156,4 +156,4 @@ Keep messages short, actionable, and avoid putting long text in the main message
 
 ### API reference
 
-- [`ttkbootstrap.MessageBox`](../../reference/dialogs/MessageBox.md)
+- [`bootstack.MessageBox`](../../reference/dialogs/MessageBox.md)

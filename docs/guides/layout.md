@@ -4,16 +4,16 @@ title: Layout
 
 # Layout
 
-This guide explains how to organize widgets on the screen—grouping, alignment, spacing, and resizing using ttkbootstrap's layout containers.
+This guide explains how to organize widgets on the screen—grouping, alignment, spacing, and resizing using bootstack's layout containers.
 
-ttkbootstrap takes an **opinionated approach to layout**. Instead of asking you to manage low‑level geometry flags everywhere,
+bootstack takes an **opinionated approach to layout**. Instead of asking you to manage low‑level geometry flags everywhere,
 it encourages expressing **layout intent** using purpose‑built containers.
 
 ---
 
 ## Recommended approach
 
-For most applications, you should start with ttkbootstrap's layout containers:
+For most applications, you should start with bootstack's layout containers:
 
 - **PackFrame** — for linear layouts (vertical or horizontal)
 - **GridFrame** — for structured, row/column layouts
@@ -47,7 +47,7 @@ PackFrame lets you describe *what you want*:
 Instead of *how* to pack each widget.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -89,7 +89,7 @@ GridFrame allows you to declare:
 without manually configuring every cell.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -117,7 +117,7 @@ Use **Card** to group related content in a visually elevated container with a bo
 Card is a convenience wrapper around Frame with `accent='card'`, `show_border=True`, and `padding=16` by default.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -216,7 +216,7 @@ ttk.Button(form, text="Submit").pack().configure(command=submit)
 
 Scrolling is a **container responsibility**, not a widget responsibility.
 
-ttkbootstrap provides composite containers such as `ScrollView` that:
+bootstack provides composite containers such as `ScrollView` that:
 
 - manage viewport and content sizing
 - coordinate scrollbars
@@ -259,5 +259,5 @@ Most layout issues disappear when containers are used intentionally.
   behave under the hood when using raw `pack` and `grid`.
 - [ScrollView](../widgets/layout/scrollview.md) - how scrolling is handled as a container responsibility.
 
-If you're new to ttkbootstrap layout, start with **PackFrame** or **GridFrame**, then return to Spacing & Alignment
+If you're new to bootstack layout, start with **PackFrame** or **GridFrame**, then return to Spacing & Alignment
 only when you need finer control.

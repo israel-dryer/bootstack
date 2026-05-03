@@ -9,7 +9,7 @@ title: Combobox
     keyboard navigation, hover states, search/filtering, form integration (labels, messages, validation), and
     standardized events. Use Combobox only when you need direct access to the underlying `ttk.Combobox` API.
 
-`Combobox` is a **primitive selection widget** that wraps `ttk.Combobox` with ttkbootstrap styling and reactive text support.
+`Combobox` is a **primitive selection widget** that wraps `ttk.Combobox` with bootstack styling and reactive text support.
 
 It provides a familiar dropdown list with optional typing. Use `Combobox` when you need low-level ttk behavior or direct
 access to `ttk.Combobox` methods. Use [SelectBox](/widgets/selection/selectbox.md) for most selection use cases.
@@ -19,7 +19,7 @@ access to `ttk.Combobox` methods. Use [SelectBox](/widgets/selection/selectbox.m
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -65,7 +65,7 @@ It is best for compact, low-complexity pickers.
 
 ### `accent`
 
-Applies ttkbootstrap theme styling.
+Applies bootstack theme styling.
 
 ```python
 ttk.Combobox(app, values=["A", "B"], accent="primary")
@@ -225,4 +225,4 @@ If you need localization-aware field labels and messaging, prefer [SelectBox](/w
 
 ### API reference
 
-- [`ttkbootstrap.Combobox`](../../reference/widgets/Combobox.md)
+- [`bootstack.Combobox`](../../reference/widgets/Combobox.md)

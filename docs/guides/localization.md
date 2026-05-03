@@ -4,7 +4,7 @@ title: Localization
 
 # Localization
 
-This guide shows how to make ttkbootstrap applications language-aware with message catalogs and locale-aware formatting.
+This guide shows how to make bootstack applications language-aware with message catalogs and locale-aware formatting.
 
 ---
 
@@ -16,7 +16,7 @@ Localization makes applications usable worldwide:
 - **Dates and numbers** follow regional conventions
 - **UI** can adapt to RTL languages
 
-ttkbootstrap treats localization as a framework-level concern, not widget-by-widget configuration.
+bootstack treats localization as a framework-level concern, not widget-by-widget configuration.
 
 ---
 
@@ -25,7 +25,7 @@ ttkbootstrap treats localization as a framework-level concern, not widget-by-wid
 A localized application:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(locale="es")
 
@@ -71,8 +71,8 @@ Each file contains key-value pairs:
 ### Loading Catalogs
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import MessageCatalog
+import bootstack as ttk
+from bootstack import MessageCatalog
 
 # Load catalog from file
 MessageCatalog.load("locales/en.json")
@@ -120,7 +120,7 @@ Messages can include placeholders:
 Resolve with values:
 
 ```python
-from ttkbootstrap import L
+from bootstack import L
 
 # L() resolves messages with substitution
 text = L("greeting.welcome", name="Alice")  # "Welcome, Alice!"
@@ -130,7 +130,7 @@ text = L("items.count", count=5)  # "5 items"
 For reactive updates with signals:
 
 ```python
-from ttkbootstrap import LV
+from bootstack import LV
 
 name = ttk.Signal("Guest")
 
@@ -149,8 +149,8 @@ When `name` changes, `greeting` updates automatically.
 Switch languages without restarting:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import set_locale, get_locale
+import bootstack as ttk
+from bootstack import set_locale, get_locale
 
 app = ttk.App(locale="en")
 
@@ -180,7 +180,7 @@ Localization extends beyond text to **how values are displayed**.
 ### Date Formatting
 
 ```python
-from ttkbootstrap import IntlFormatter
+from bootstack import IntlFormatter
 from datetime import date
 
 formatter = IntlFormatter(locale="de")
@@ -219,8 +219,8 @@ ttk.NumericEntry(app).pack()
 ### Language Selector
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import set_locale
+import bootstack as ttk
+from bootstack import set_locale
 
 app = ttk.App(locale="en")
 
@@ -241,7 +241,7 @@ app.mainloop()
 ### Localized Form
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(locale="en")
 
@@ -264,8 +264,8 @@ app.mainloop()
 ### Dynamic Messages
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import LV
+import bootstack as ttk
+from bootstack import LV
 
 app = ttk.App()
 

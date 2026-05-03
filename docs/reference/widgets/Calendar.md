@@ -1,3 +1,3 @@
 # Calendar
 
-::: ttkbootstrap.widgets.composites.calendar.Calendar
+::: bootstack.widgets.composites.calendar.Calendar

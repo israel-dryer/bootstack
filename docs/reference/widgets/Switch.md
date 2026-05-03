@@ -1,3 +1,3 @@
 # Switch
 
-::: ttkbootstrap.widgets.primitives.switch.Switch
+::: bootstack.widgets.primitives.switch.Switch

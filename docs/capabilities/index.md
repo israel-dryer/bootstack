@@ -1,8 +1,8 @@
 # Capabilities
 
-Capabilities describe **shared behaviors** that widgets expose in ttkbootstrap.
+Capabilities describe **shared behaviors** that widgets expose in bootstack.
 
-Rather than documenting behavior repeatedly on every widget, ttkbootstrap
+Rather than documenting behavior repeatedly on every widget, bootstack
 formalizes common Tk/ttk behaviors as *capabilities* that can be mixed into
 widgets consistently.
 
@@ -26,7 +26,7 @@ Capabilities:
 
 - mirror underlying Tk/ttk functionality
 - provide a consistent Python interface
-- integrate with ttkbootstrap conventions
+- integrate with bootstack conventions
 
 They are not standalone features — they describe **what widgets can do**.
 
@@ -76,7 +76,7 @@ Examples:
 - `grab` → modal input handling
 - `winfo` → widget introspection
 
-ttkbootstrap does not invent new behavior — it organizes existing behavior.
+bootstack does not invent new behavior — it organizes existing behavior.
 
 ---
 
@@ -100,7 +100,7 @@ Capability pages:
 
 - describe behavior conceptually
 - explain common pitfalls
-- note ttkbootstrap-specific guidance
+- note bootstack-specific guidance
 
 They are intentionally widget-agnostic.
 
@@ -115,13 +115,13 @@ You should read Capabilities when:
 - you want to understand widget behavior deeply
 - you need precise control over interaction
 - you are debugging complex UI issues
-- you are extending or contributing to ttkbootstrap
+- you are extending or contributing to bootstack
 
 ---
 
 ## Next steps
 
-Start with [Signals & Events](signals/index.md) to understand how user interaction flows through ttkbootstrap.
+Start with [Signals & Events](signals/index.md) to understand how user interaction flows through bootstack.
 
 Then explore:
 

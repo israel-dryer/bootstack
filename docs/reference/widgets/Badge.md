@@ -1,3 +1,3 @@
 # Badge
 
-::: ttkbootstrap.widgets.primitives.badge.Badge
+::: bootstack.widgets.primitives.badge.Badge

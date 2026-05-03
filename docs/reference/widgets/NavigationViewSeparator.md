@@ -1,3 +1,3 @@
 # SideNavSeparator
 
-::: ttkbootstrap.widgets.composites.sidenav.separator.SideNavSeparator
+::: bootstack.widgets.composites.sidenav.separator.SideNavSeparator

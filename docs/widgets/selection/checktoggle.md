@@ -31,7 +31,7 @@ a pressed/unpressed control than a checkbox indicator.
 ## Basic usage
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -78,7 +78,7 @@ Once bound, the signal or variable becomes the source of truth.
 - `variable=...` (Tk variable)
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -198,4 +198,4 @@ Prefer **Switch** when:
 
 ### API reference
 
-- [`ttkbootstrap.CheckToggle`](../../reference/widgets/CheckToggle.md)
+- [`bootstack.CheckToggle`](../../reference/widgets/CheckToggle.md)

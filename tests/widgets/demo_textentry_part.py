@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.parts.textentry_part import TextEntryPart
+import bootstack as ttk
+from bootstack.widgets.parts.textentry_part import TextEntryPart
 
 root = ttk.Window()
 

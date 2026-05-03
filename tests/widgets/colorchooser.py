@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import ColorChooserDialog
+import bootstack as ttk
+from bootstack.dialogs import ColorChooserDialog
 
 app = ttk.App(theme="dark", settings=ttk.AppSettings(locale="ja"))
 

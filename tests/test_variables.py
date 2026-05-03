@@ -1,6 +1,6 @@
 import unittest
 import tkinter as tk
-from ttkbootstrap.core.variables import SetVar
+from bootstack.core.variables import SetVar
 
 class TestSetVar(unittest.TestCase):
 

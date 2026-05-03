@@ -21,7 +21,7 @@ Tooltips should be short, readable, and optional.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -99,4 +99,4 @@ Tooltips can be styled using the `accent` parameter (if supported).
 
 ### API reference
 
-- [`ttkbootstrap.Tooltip`](../../reference/widgets/Tooltip.md)
+- [`bootstack.Tooltip`](../../reference/widgets/Tooltip.md)

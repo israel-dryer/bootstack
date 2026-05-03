@@ -19,7 +19,7 @@ field patterns like labels, messages, and validation.
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -284,4 +284,4 @@ If the field label participates in localization, it follows your global field/wi
 
 ### API reference
 
-- [`ttkbootstrap.SelectBox`](../../reference/widgets/SelectBox.md)
+- [`bootstack.SelectBox`](../../reference/widgets/SelectBox.md)

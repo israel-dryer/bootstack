@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    import ttkbootstrap as ttk
+    import bootstack as ttk
 
     root = ttk.Window(theme="dark", size=(200, 200))
 

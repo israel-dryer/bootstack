@@ -5,7 +5,7 @@ is managed by the Tcl/Tk engine behind the scenes.
 However, there are reliable techniques for understanding what the UI is doing
 and why.
 
-This page focuses on **practical debugging strategies** for ttkbootstrap applications.
+This page focuses on **practical debugging strategies** for bootstack applications.
 
 ---
 
@@ -127,9 +127,9 @@ Small reproductions make issues obvious.
 
 ---
 
-## ttkbootstrap-specific guidance
+## bootstack-specific guidance
 
-ttkbootstrap provides structure to reduce debugging effort:
+bootstack provides structure to reduce debugging effort:
 
 - centralized styling
 - explicit capabilities

@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import DateEntry
+import bootstack as ttk
+from bootstack import DateEntry
 
 
 app = ttk.App()

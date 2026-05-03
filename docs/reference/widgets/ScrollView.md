@@ -1,3 +1,3 @@
 # ScrollView
 
-::: ttkbootstrap.widgets.composites.scrollview.ScrollView
+::: bootstack.widgets.composites.scrollview.ScrollView

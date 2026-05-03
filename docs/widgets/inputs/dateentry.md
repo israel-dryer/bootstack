@@ -19,7 +19,7 @@ using a calendar picker when needed. If you are building forms or dialogs, `Date
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -213,4 +213,4 @@ d.add_validation_rule("required", message="A date is required")
 
 ### API reference
 
-- [`ttkbootstrap.DateEntry`](../../reference/widgets/DateEntry.md)
+- [`bootstack.DateEntry`](../../reference/widgets/DateEntry.md)

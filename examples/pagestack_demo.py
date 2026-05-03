@@ -10,8 +10,8 @@ This demo showcases the PageStack widget's navigation features including:
 """
 
 import tkinter as tk
-import ttkbootstrap as ttk
-from ttkbootstrap import PageStack
+import bootstack as ttk
+from bootstack import PageStack
 
 
 class PageStackDemo:

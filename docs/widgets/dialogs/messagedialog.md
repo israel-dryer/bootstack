@@ -13,8 +13,8 @@ Use `MessageDialog` when you need a simple message popup with custom button labe
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.dialogs import MessageDialog
+import bootstack as ttk
+from bootstack.dialogs import MessageDialog
 
 app = ttk.App()
 
@@ -122,4 +122,4 @@ dialog.show()
 
 ### API reference
 
-- [`ttkbootstrap.dialogs.MessageDialog`](../../reference/dialogs/MessageDialog.md)
+- [`bootstack.dialogs.MessageDialog`](../../reference/dialogs/MessageDialog.md)

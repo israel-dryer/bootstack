@@ -1,4 +1,4 @@
-# ttkbootstrap architecture and import layering
+# bootstack architecture and import layering
 
 This library is growing toward a framework-style surface. To keep imports sane, prevent circulars, and preserve a stable public API, we group modules into layers and keep dependencies flowing in one direction.
 
@@ -13,13 +13,13 @@ This library is growing toward a framework-style surface. To keep imports sane, 
 Import direction: Core → Runtime → Style → Widgets (primitives) → Widgets (composites) → API.
 
 ## Current modules mapped to layers
-- Core: `ttkbootstrap.core.exceptions`, `ttkbootstrap.core.localization`, `ttkbootstrap.core.colorutils`, `ttkbootstrap.core.validation`, `ttkbootstrap.core.signals`, `ttkbootstrap.core.publisher`.
-- Runtime: `ttkbootstrap.runtime.utility`, `ttkbootstrap.style.tk_patch`, (shims point to these layers).
-- Runtime: `ttkbootstrap.style.theme_provider`, `ttkbootstrap.style.utility`, `ttkbootstrap.style.tk_patch`, `ttkbootstrap.style.element`, `ttkbootstrap.style.bootstyle_builder_base`.
-- Style: `ttkbootstrap.style.bootstyle`, `ttkbootstrap.style.style`, `ttkbootstrap.style.builders.*`, `ttkbootstrap.style.bootstyle_builder_ttk`, `ttkbootstrap.style.token_maps`.
-- Widgets – primitives: `ttkbootstrap.widgets.*` wrappers that subclass ttk directly (button, label, frame, entry, combobox, etc.).
-- Widgets – composites: `ttkbootstrap.widgets` that compose primitives (datepicker, dateentry, tableview, toast, dialogs, form helpers).
-- API: `ttkbootstrap.__init__` re-exports and any future `ttkbootstrap.api` facades.
+- Core: `bootstack.core.exceptions`, `bootstack.core.localization`, `bootstack.core.colorutils`, `bootstack.core.validation`, `bootstack.core.signals`, `bootstack.core.publisher`.
+- Runtime: `bootstack.runtime.utility`, `bootstack.style.tk_patch`, (shims point to these layers).
+- Runtime: `bootstack.style.theme_provider`, `bootstack.style.utility`, `bootstack.style.tk_patch`, `bootstack.style.element`, `bootstack.style.bootstyle_builder_base`.
+- Style: `bootstack.style.bootstyle`, `bootstack.style.style`, `bootstack.style.builders.*`, `bootstack.style.bootstyle_builder_ttk`, `bootstack.style.token_maps`.
+- Widgets – primitives: `bootstack.widgets.*` wrappers that subclass ttk directly (button, label, frame, entry, combobox, etc.).
+- Widgets – composites: `bootstack.widgets` that compose primitives (datepicker, dateentry, tableview, toast, dialogs, form helpers).
+- API: `bootstack.__init__` re-exports and any future `bootstack.api` facades.
 
 ## Rules to avoid circular imports
 - Do not import widgets from Style or Runtime layers. Builders work only with style primitives and images, not widget classes.
@@ -29,9 +29,9 @@ Import direction: Core → Runtime → Style → Widgets (primitives) → Widget
 - Cross-layer helpers should live in Core; if two modules start importing each other, extract the shared interface into Core and refactor both to depend on it.
 
 ## Public API guidance
-- `ttkbootstrap.__init__` should import from API/lower layers only and remain free of implementation logic.
+- `bootstack.__init__` should import from API/lower layers only and remain free of implementation logic.
 - Maintain an explicit `__all__` for the public surface. Anything not exported there is considered private.
-- Examples and docs should import from `ttkbootstrap` (public API), not from deep modules, to keep the surface honest.
+- Examples and docs should import from `bootstack` (public API), not from deep modules, to keep the surface honest.
 
 ## Migration checkpoints
 - When adding a new module, pick its layer and verify its imports point only to allowed lower layers.

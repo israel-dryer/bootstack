@@ -4,7 +4,7 @@ Scrolling is a layout capability that allows content larger than its viewport
 to remain accessible without resizing the entire window.
 
 In Tk, scrolling is not automatic — it must be designed explicitly.
-ttkbootstrap formalizes scrolling as a shared layout capability to avoid
+bootstack formalizes scrolling as a shared layout capability to avoid
 repeated, error-prone implementations.
 
 ---
@@ -72,7 +72,7 @@ Mouse wheel behavior:
 - must be bound explicitly
 - interacts with focus and grabs
 
-ttkbootstrap provides standardized patterns to normalize scrolling behavior
+bootstack provides standardized patterns to normalize scrolling behavior
 across platforms.
 
 ---
@@ -93,9 +93,9 @@ Efficient scrolling favors:
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - using provided scroll container patterns
 - centralizing scroll logic

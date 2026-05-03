@@ -4,7 +4,7 @@ title: App Structure
 
 # App Structure
 
-This guide explains how a ttkbootstrap application is organized—the `App` class, windows, layout, state, and lifecycle.
+This guide explains how a bootstack application is organized—the `App` class, windows, layout, state, and lifecycle.
 
 Use `ttkb start MyApp` to scaffold a new project with the recommended structure.
 
@@ -12,13 +12,13 @@ Use `ttkb start MyApp` to scaffold a new project with the recommended structure.
 
 ## The App Class
 
-Every ttkbootstrap application starts with either `App` or `AppShell`:
+Every bootstack application starts with either `App` or `AppShell`:
 
 - **`App`** — a blank window. You build the layout from scratch.
 - **`AppShell`** — an `App` with a toolbar, sidebar navigation, and page stack already wired together.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 # Option A: blank window
 app = ttk.App(title="My Application", theme="darkly")
@@ -36,11 +36,11 @@ Both create the main window, initialize theming, set up the application context,
 A complete, runnable application:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(title="Hello", size=(400, 300))
 
-ttk.Label(app, text="Hello, ttkbootstrap!").pack(padx=20, pady=20)
+ttk.Label(app, text="Hello, bootstack!").pack(padx=20, pady=20)
 ttk.Button(app, text="Close", command=app.destroy).pack(pady=10)
 
 app.mainloop()
@@ -59,7 +59,7 @@ This demonstrates the core pattern:
 Most desktop applications follow the same layout: toolbar at the top, sidebar on the left, page content on the right. `AppShell` gives you that in one call:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(title="My App", theme="cosmo-light", size=(1000, 650))
 
@@ -186,7 +186,7 @@ Use `ttkb start MyApp` to scaffold a new project with this structure.
 
 ## Layout Hierarchy
 
-ttkbootstrap applications follow a **container hierarchy**:
+bootstack applications follow a **container hierarchy**:
 
 ```
 App (blank window)
@@ -227,7 +227,7 @@ Key principles:
 
 ## Application Settings
 
-ttkbootstrap applications are configured through a centralized settings object
+bootstack applications are configured through a centralized settings object
 that defines application-wide behavior, rather than scattered flags and globals.
 
 Configuration typically includes:
@@ -246,10 +246,10 @@ throughout the app lifecycle.
 
 ## State Management
 
-ttkbootstrap encourages **signals** for state that multiple widgets share:
+bootstack encourages **signals** for state that multiple widgets share:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -273,7 +273,7 @@ For larger applications, group related signals in a `state.py` module:
 
 ```python
 # src/myapp/state.py
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 current_user = ttk.Signal("")
 is_logged_in = ttk.Signal(False)
@@ -319,8 +319,8 @@ ttk.Button(app, text="Settings", command=open_settings).pack(pady=10)
 Themes can be changed at runtime:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap import toggle_theme
+import bootstack as ttk
+from bootstack import toggle_theme
 
 app = ttk.App(theme="litera")
 
@@ -341,7 +341,7 @@ All widgets update automatically when the theme changes.
 For internationalized applications:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(
     title="My App",
@@ -362,7 +362,7 @@ ttk.Label(app, text="greeting.hello").pack()  # Resolved from catalog
 A structured application example:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 # State
 counter = ttk.Signal(0)
@@ -402,7 +402,7 @@ This demonstrates:
 For navigation-based applications, `AppShell` replaces the manual layout wiring:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 shell = ttk.AppShell(title="My App", size=(900, 600))
 

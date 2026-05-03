@@ -4,8 +4,8 @@ from PIL import Image
 import os
 
 # Load the original
-src_path = "src/ttkbootstrap/assets/elements/button-xs.png"
-dst_path = "src/ttkbootstrap/assets/elements/button-xs-64.png"
+src_path = "src/bootstack/assets/elements/button-xs.png"
+dst_path = "src/bootstack/assets/elements/button-xs-64.png"
 
 img = Image.open(src_path)
 print(f"Original size: {img.size}")
@@ -19,7 +19,7 @@ img_64.save(dst_path)
 print(f"Saved to: {dst_path}")
 
 # Also create backup and update original
-backup_path = "src/ttkbootstrap/assets/elements/button-xs-60.png"
+backup_path = "src/bootstack/assets/elements/button-xs-60.png"
 img.save(backup_path)
 print(f"Backed up original to: {backup_path}")
 

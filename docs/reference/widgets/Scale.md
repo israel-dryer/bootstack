@@ -1,3 +1,3 @@
 # Scale
 
-::: ttkbootstrap.widgets.primitives.scale.Scale
+::: bootstack.widgets.primitives.scale.Scale

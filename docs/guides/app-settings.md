@@ -4,13 +4,13 @@ title: App Settings
 
 # App Settings
 
-This guide explains how to configure a ttkbootstrap application using `AppSettings`—the centralized configuration object for themes, localization, and application metadata.
+This guide explains how to configure a bootstack application using `AppSettings`—the centralized configuration object for themes, localization, and application metadata.
 
 ---
 
 ## Overview
 
-ttkbootstrap applications are configured through `AppSettings` rather than scattered flags and globals. This provides:
+bootstack applications are configured through `AppSettings` rather than scattered flags and globals. This provides:
 
 - **Centralized configuration** — all settings in one place
 - **Type safety** — IDE autocomplete and validation
@@ -34,7 +34,7 @@ they react to framework state derived from these settings.
 The simplest approach—pass settings as a dict:
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App(
     settings={
@@ -53,8 +53,8 @@ app.mainloop()
 For better IDE support and validation:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.runtime.app import AppSettings
+import bootstack as ttk
+from bootstack.runtime.app import AppSettings
 
 settings = AppSettings(
     app_name="My Application",
@@ -199,7 +199,7 @@ app.settings.app_name = "New Name"
 Or use the global accessor:
 
 ```python
-from ttkbootstrap.runtime.app import get_app_settings
+from bootstack.runtime.app import get_app_settings
 
 settings = get_app_settings()
 print(settings.locale)
@@ -212,8 +212,8 @@ print(settings.locale)
 A fully configured application:
 
 ```python
-import ttkbootstrap as ttk
-from ttkbootstrap.runtime.app import AppSettings
+import bootstack as ttk
+from bootstack.runtime.app import AppSettings
 
 # Define settings
 settings = AppSettings(
@@ -301,7 +301,7 @@ When no settings are provided, `AppSettings` uses sensible defaults:
 
 | Setting | Default Value |
 |---------|---------------|
-| `app_name` | `None` (falls back to `"ttkbootstrap"`) |
+| `app_name` | `None` (falls back to `"bootstack"`) |
 | `theme` | `"light"` |
 | `light_theme` | `"bootstrap-light"` |
 | `dark_theme` | `"bootstrap-dark"` |

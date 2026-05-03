@@ -1,3 +1,3 @@
 # SideNavGroup
 
-::: ttkbootstrap.widgets.composites.sidenav.group.SideNavGroup
+::: bootstack.widgets.composites.sidenav.group.SideNavGroup

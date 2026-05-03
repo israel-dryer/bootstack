@@ -1,5 +1,5 @@
-import ttkbootstrap as ttk
-from ttkbootstrap import SelectBox
+import bootstack as ttk
+from bootstack import SelectBox
 
 
 app = ttk.Window(theme="darkly")

@@ -7,7 +7,7 @@ They allow applications and widgets to communicate intent without binding
 directly to specific mouse or keyboard actions.
 
 This page explains what virtual events are, how they work in Tk, and how
-ttkbootstrap encourages their use.
+bootstack encourages their use.
 
 ---
 
@@ -120,9 +120,9 @@ Consistent naming improves discoverability.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - using virtual events for composite widgets
 - emitting events for meaningful state transitions

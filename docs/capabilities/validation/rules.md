@@ -3,7 +3,7 @@
 Validation rules define the conditions that input values must satisfy.
 They encapsulate validation logic in a reusable, composable form.
 
-This page explains how validation rules work conceptually in ttkbootstrap
+This page explains how validation rules work conceptually in bootstack
 and how they are intended to be used.
 
 ---
@@ -105,9 +105,9 @@ Choosing the right timing avoids user frustration.
 
 ---
 
-## ttkbootstrap guidance
+## bootstack guidance
 
-ttkbootstrap encourages:
+bootstack encourages:
 
 - small, focused rules
 - explicit composition

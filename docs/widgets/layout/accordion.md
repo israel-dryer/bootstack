@@ -19,7 +19,7 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -234,4 +234,4 @@ accordion.on_accordion_changed(on_accordion_changed)
 
 ### API reference
 
-- [`ttkbootstrap.Accordion`](../../reference/widgets/Accordion.md)
+- [`bootstack.Accordion`](../../reference/widgets/Accordion.md)

@@ -7,7 +7,7 @@ title: Scrollbar
 `Scrollbar` is the themed scrollbar primitive used to scroll content such as `Text`, `Canvas`, and ttk widgets that support
 `xview` / `yview`.
 
-It wraps `ttk.Scrollbar` and participates in ttkbootstrap styling.
+It wraps `ttk.Scrollbar` and participates in bootstack styling.
 
 <!--
 IMAGE: Vertical + horizontal scrollbar next to a Text or Canvas
@@ -22,7 +22,7 @@ Theme variants: light / dark
 
 ```python
 import tkinter as tk
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -126,4 +126,4 @@ ttk.Scrollbar(app, orient="vertical", command=widget.yview)
 
 ### API reference
 
-- [`ttkbootstrap.Scrollbar`](../../reference/widgets/Scrollbar.md)
+- [`bootstack.Scrollbar`](../../reference/widgets/Scrollbar.md)

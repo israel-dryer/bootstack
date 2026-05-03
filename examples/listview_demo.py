@@ -10,8 +10,8 @@ This demo showcases the ListView widget's features including:
 - Interactive features (chevron, drag handles)
 """
 
-import ttkbootstrap as ttk
-from ttkbootstrap.widgets.composites import ListView, MemoryDataSource
+import bootstack as ttk
+from bootstack.widgets.composites import ListView, MemoryDataSource
 
 
 def create_sample_data(count=1000):

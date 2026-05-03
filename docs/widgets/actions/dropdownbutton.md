@@ -14,7 +14,7 @@ Use it when the primary action is still a button click, but you want a secondary
 Provide menu items as `ContextMenuItem` entries. The button can also have its own `command` for the "main" action.
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as ttk
 
 app = ttk.App()
 
@@ -95,7 +95,7 @@ btn = ttk.DropdownButton(app, text="Actions", items=items).pack(pady=10)
 btn.on_item_click(lambda item: print("Clicked:", item.text))
 ```
 
-!!! link "See [Callbacks](../../capabilities/callbacks.md) for how ttkbootstrap command callbacks are structured."
+!!! link "See [Callbacks](../../capabilities/callbacks.md) for how bootstack command callbacks are structured."
 
 ---
 
@@ -143,5 +143,5 @@ ttk.DropdownButton(app, text="button.file", items=items).pack()
 
 ### API reference
 
-- [`ttkbootstrap.DropdownButton`](../../reference/widgets/DropdownButton.md)
-- [`ttkbootstrap.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)
+- [`bootstack.DropdownButton`](../../reference/widgets/DropdownButton.md)
+- [`bootstack.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)
