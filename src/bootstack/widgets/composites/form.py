@@ -29,6 +29,7 @@ from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
     from bootstack.dialogs.dialog import DialogButton
+    ButtonInput = str | Mapping[str, Any] | DialogButton
 
 DType = Literal['int', 'float', 'bool', 'date', 'datetime', 'password', 'str'] | type | None
 
@@ -105,7 +106,6 @@ class TabsItem:
 
 
 FormItem = FieldItem | GroupItem | TabsItem
-ButtonInput = str | Mapping[str, Any] | "DialogButton"
 
 
 class Form(Frame):
