@@ -14,8 +14,8 @@
 
 It's a **framework**, not just themed widgets. bootstack provides conventions for layout, styling, state, and reactivity that work together—so you can focus on building applications instead of wrestling with low-level UI mechanics.
 
-> **v2 is under active development.**
-> See the [documentation](https://bootstack.readthedocs.io) for guides, API reference, and migration info.
+> **This project is under active development.** APIs and features may change before the first stable release.
+> See the [documentation](https://bootstack.readthedocs.io) for guides and API reference.
 
 ## Installation
 
