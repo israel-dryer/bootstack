@@ -1,40 +1,37 @@
-![](https://img.shields.io/github/release/israel-dryer/ttkbootstrap.svg)
-[![Downloads](https://pepy.tech/badge/ttkbootstrap)](https://pepy.tech/project/ttkbootstrap)
-[![Downloads](https://pepy.tech/badge/ttkbootstrap/month)](https://pepy.tech/project/ttkbootstrap)
-![](https://img.shields.io/github/issues/israel-dryer/ttkbootstrap.svg)
-![](https://img.shields.io/github/issues-closed/israel-dryer/ttkbootstrap.svg)
-![](https://img.shields.io/github/license/israel-dryer/ttkbootstrap.svg)
-![](https://img.shields.io/github/stars/israel-dryer/ttkbootstrap.svg)
-![](https://img.shields.io/github/forks/israel-dryer/ttkbootstrap.svg)
+![](https://img.shields.io/github/release/israel-dryer/bootstack.svg)
+[![Downloads](https://pepy.tech/badge/bootstack)](https://pepy.tech/project/bootstack)
+[![Downloads](https://pepy.tech/badge/bootstack/month)](https://pepy.tech/project/bootstack)
+![](https://img.shields.io/github/issues/israel-dryer/bootstack.svg)
+![](https://img.shields.io/github/issues-closed/israel-dryer/bootstack.svg)
+![](https://img.shields.io/github/license/israel-dryer/bootstack.svg)
+![](https://img.shields.io/github/stars/israel-dryer/bootstack.svg)
+![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
 
-![](assets/ttkbootstrap-logo-horizontal-dark.png#only-dark)
-![](assets/ttkbootstrap-logo-horizontal-light.png#only-light)
+**bootstack** is a full UI framework for building desktop applications with Python and Tkinter.
 
-**ttkbootstrap** is a modern, opinionated UI framework for building desktop applications with Python and Tkinter.
-
-It's a **framework**, not just themed widgets. ttkbootstrap provides conventions for layout, styling, state, and reactivity that work together—so you can focus on building applications instead of wrestling with low-level UI mechanics.
+It's a **framework**, not just themed widgets. bootstack provides conventions for layout, styling, state, and reactivity that work together—so you can focus on building applications instead of wrestling with low-level UI mechanics.
 
 > **v2 is under active development.**
-> See the [documentation](https://ttkbootstrap.com) for guides, API reference, and migration info.
+> See the [documentation](https://bootstack.readthedocs.io) for guides, API reference, and migration info.
 
 ## Installation
 
 ```bash
-pip install ttkbootstrap
+pip install bootstack
 ```
 
 ## Quick Start
 
 ```python
-import ttkbootstrap as ttk
+import bootstack as bs
 
-app = ttk.App(theme="dark")
+app = bs.App(theme="dark")
 
-ttk.Label(app, text="Hello from ttkbootstrap!").pack(pady=10)
-ttk.Button(app, text="Primary", bootstyle="primary").pack(pady=5)
-ttk.Button(app, text="Success", bootstyle="success").pack(pady=5)
-ttk.Button(app, text="Danger Outline", bootstyle="danger-outline").pack(pady=5)
+bs.Label(app, text="Hello from bootstack!").pack(pady=10)
+bs.Button(app, text="Primary", accent="primary").pack(pady=5)
+bs.Button(app, text="Success", accent="success").pack(pady=5)
+bs.Button(app, text="Danger Outline", accent="danger", variant="outline").pack(pady=5)
 
 app.mainloop()
 ```
@@ -46,24 +43,24 @@ app.mainloop()
 Build layouts with purpose-built containers, not scattered geometry calls:
 
 ```python
-form = ttk.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
+form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
 form.pack(fill="both", expand=True)
 
-form.add(ttk.Label(form, text="Name"))
-form.add(ttk.Entry(form))
-form.add(ttk.Label(form, text="Email"))
-form.add(ttk.Entry(form))
-form.add(ttk.Button(form, text="Submit", bootstyle="primary"), columnspan=2)
+form.add(bs.Label(form, text="Name"))
+form.add(bs.Entry(form))
+form.add(bs.Label(form, text="Email"))
+form.add(bs.Entry(form))
+form.add(bs.Button(form, text="Submit", accent="primary"), columnspan=2)
 ```
 
 ### Styling is semantic
 
-Widgets use semantic tokens—not hardcoded colors. Applications stay consistent across themes.
+Widgets use semantic tokens — not hardcoded colors. Applications stay consistent across themes.
 
 ```python
-ttk.Button(app, text="Primary", bootstyle="primary")
-ttk.Button(app, text="Outline", bootstyle="success-outline")
-ttk.Label(app, text="Heading", font="heading-lg")
+bs.Button(app, text="Primary", accent="primary")
+bs.Button(app, text="Outline", accent="success", variant="outline")
+bs.Label(app, text="Heading", font="heading-lg")
 ```
 
 ### Reactivity is optional and explicit
@@ -71,18 +68,18 @@ ttk.Label(app, text="Heading", font="heading-lg")
 Use simple callbacks when that's enough. Introduce signals when state needs to flow.
 
 ```python
-counter = ttk.Signal(0)
+counter = bs.Signal(0)
 
 def increment():
     counter.set(counter.get() + 1)
 
-label = ttk.Label(app)
+label = bs.Label(app)
 counter.subscribe(lambda v: label.configure(text=f"Count: {v}"))
 ```
 
 ## Features
 
-- **Modern UI Defaults** — Consistent colors, typography, spacing, and Bootstrap-inspired variants
+- **Modern UI Defaults** — Consistent colors, typography, spacing, and theme variants
 - **60+ Widgets** — Buttons, dialogs, forms, tables, navigation, and more
 - **Layout Containers** — PackFrame and GridFrame for declarative, maintainable layouts
 - **Reactive Signals** — Observable state management for declarative applications
@@ -98,10 +95,10 @@ counter.subscribe(lambda v: label.configure(text=f"Count: {v}"))
 Scaffold new projects and add components quickly:
 
 ```bash
-ttkb start MyApp          # Create new project
-ttkb add view dashboard   # Add a view
-ttkb add dialog settings  # Add a dialog
-ttkb build                # Package for distribution
+bootstack start MyApp          # Create new project
+bootstack add view dashboard   # Add a view
+bootstack add dialog settings  # Add a dialog
+bootstack build                # Package for distribution
 ```
 
 ## Widget Categories
@@ -118,9 +115,9 @@ ttkb build                # Package for distribution
 | **Overlays** | Toast, Tooltip |
 | **Forms** | Form, Field with validation support |
 
-## Why ttkbootstrap?
+## Why bootstack?
 
-ttkbootstrap is for developers who want to:
+bootstack is for developers who want to:
 
 - Build desktop apps that feel modern and intentional
 - Move fast without reinventing UI patterns
@@ -128,12 +125,12 @@ ttkbootstrap is for developers who want to:
 - Apply reactive and declarative patterns in Tk
 - Ship polished tools to end users
 
-You don't need to deeply understand Tk or ttk internals to be productive with ttkbootstrap.
+You don't need to deeply understand Tk or ttk internals to be productive with bootstack.
 
 ## Links
 
-- **Documentation**: https://ttkbootstrap.com
-- **GitHub**: https://github.com/israel-dryer/ttkbootstrap
+- **Documentation**: https://bootstack.readthedocs.io
+- **GitHub**: https://github.com/israel-dryer/bootstack
 - **Icons**: https://github.com/israel-dryer/ttkbootstrap-icons
 
 ## Support
