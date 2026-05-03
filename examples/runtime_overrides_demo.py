@@ -13,12 +13,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox as mbox
 
-import bootstack as tb
+import bootstack as bs
 from bootstack.core.localization import MessageCatalog
 
 
 def main():
-    app = tb.Window(theme="flatly")
+    app = bs.Window(theme="flatly")
     _ = MessageCatalog.translate
 
     # UI

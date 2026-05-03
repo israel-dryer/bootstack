@@ -1,17 +1,17 @@
 """Test the refactored DateDialog using the new Dialog class."""
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import DateDialog
 from datetime import date
 
 
 def demo_datedialog():
     """Test DateDialog with the new Dialog-based implementation."""
-    root = ttk.Window()
+    root = bs.Window()
     root.title("DateDialog Test")
     root.geometry("600x400")
 
-    result_label = ttk.Label(
+    result_label = bs.Label(
         root,
         text="Click the button to select a date",
         padding=20,
@@ -39,7 +39,7 @@ def demo_datedialog():
         else:
             result_label.configure(text="Date selection cancelled")
 
-    button = ttk.Button(
+    button = bs.Button(
         root,
         text="Select Date",
         command=show_date_dialog,
@@ -47,7 +47,7 @@ def demo_datedialog():
     )
     button.pack(pady=10)
 
-    info_label = ttk.Label(
+    info_label = bs.Label(
         root,
         text=(
             "Features:\n"

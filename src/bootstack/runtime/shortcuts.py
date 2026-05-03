@@ -5,10 +5,10 @@ automatic platform detection and modifier key translation.
 
 Examples:
     ```python
-    import bootstack as ttk
+    import bootstack as bs
 
-    app = ttk.App()
-    shortcuts = ttk.get_shortcuts()
+    app = bs.App()
+    shortcuts = bs.get_shortcuts()
 
     # Register shortcuts
     shortcuts.register("save", "Mod+S", save_file)
@@ -356,9 +356,9 @@ def get_shortcuts() -> Shortcuts:
 
     Examples:
         ```python
-        import bootstack as ttk
+        import bootstack as bs
 
-        shortcuts = ttk.get_shortcuts()
+        shortcuts = bs.get_shortcuts()
         shortcuts.register("save", "Mod+S", save_file)
         shortcuts.bind_to(app)
         ```

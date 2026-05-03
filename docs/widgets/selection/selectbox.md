@@ -19,11 +19,11 @@ field patterns like labels, messages, and validation.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-sb = ttk.SelectBox(
+sb = bs.SelectBox(
     app,
     label="Status",
     items=["New", "In Progress", "Blocked", "Done"],
@@ -52,7 +52,7 @@ Use `SelectBox` when:
 
 - You need single selection among visible options — use [RadioGroup](radiogroup.md)
 
-- You need direct access to `ttk.Combobox` API — use [Combobox](../primitives/combobox.md)
+- You need direct access to `bs.Combobox` API — use [Combobox](../primitives/combobox.md)
 
 ---
 
@@ -75,7 +75,7 @@ See **Allowing custom values** in the Behavior section below.
 Apply `accent` at the field level as needed:
 
 ```python
-ttk.SelectBox(app, label="Status", items=["New", "Done"], accent="secondary")
+bs.SelectBox(app, label="Status", items=["New", "Done"], accent="secondary")
 ```
 
 !!! link "Design System"
@@ -126,7 +126,7 @@ print(sb.selected_index)    # returns -1 if value not in items
 Enable typing to filter the popup list.
 
 ```python
-sb = ttk.SelectBox(
+sb = bs.SelectBox(
     app,
     label="Assignee",
     items=["Alice", "Bob", "Charlie", "Diana"],
@@ -139,7 +139,7 @@ sb = ttk.SelectBox(
 Allow values not present in `items`.
 
 ```python
-sb = ttk.SelectBox(
+sb = bs.SelectBox(
     app,
     label="Tag",
     items=["Bug", "Feature", "Docs"],
@@ -150,7 +150,7 @@ sb = ttk.SelectBox(
 #### Dropdown button options
 
 ```python
-sb = ttk.SelectBox(
+sb = bs.SelectBox(
     app,
     label="Priority",
     items=["Low", "Medium", "High"],

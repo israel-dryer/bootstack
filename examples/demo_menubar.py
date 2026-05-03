@@ -1,12 +1,12 @@
 """Demo for the MenuBar composite widget."""
-import bootstack as ttk
+import bootstack as bs
 from bootstack import ContextMenuItem
 
 
 def main():
-    root = ttk.App(title="MenuBar Demo", size=(600, 400), theme='docs-dark')
+    root = bs.App(title="MenuBar Demo", size=(600, 400), theme='docs-dark')
 
-    status = ttk.Label(root, text="Select a menu item...", anchor="w")
+    status = bs.Label(root, text="Select a menu item...", anchor="w")
 
     def on_item(data):
         status.configure(text=f"Selected: {data['type']} - {data['text']}")
@@ -45,7 +45,7 @@ def main():
 
     # Register keyboard shortcuts
     # Uses 'Mod' which becomes Ctrl on Windows/Linux, Command on Mac
-    shortcuts = ttk.get_shortcuts()
+    shortcuts = bs.get_shortcuts()
     shortcuts.register("new", "Mod+N", new_file)
     shortcuts.register("open", "Mod+O", open_file)
     shortcuts.register("save", "Mod+S", save_file)
@@ -58,7 +58,7 @@ def main():
     shortcuts.bind_to(root)
 
     # Create menubar
-    menubar = ttk.MenuBar(root)
+    menubar = bs.MenuBar(root)
     menubar.pack(fill="both")
 
     # File menu (before/left region)
@@ -91,7 +91,7 @@ def main():
     edit_menu.on_item_click(on_item)
 
     # View menu (before/left region)
-    view_var = ttk.StringVar(value="normal")
+    view_var = bs.StringVar(value="normal")
     view_menu = menubar.add_menu(
         "View",
         items=[
@@ -132,16 +132,16 @@ def main():
 
 
     # Main content area
-    content = ttk.Frame(root)
+    content = bs.Frame(root)
     content.pack(fill="both", expand=True, padx=16, pady=16)
 
-    ttk.Label(
+    bs.Label(
         content,
         text="MenuBar Demo",
         font="caption[bold]",
     ).pack()
 
-    ttk.Label(
+    bs.Label(
         content,
         text="The MenuBar widget provides a flexible horizontal bar with three regions:\n"
              "- 'before' (left): File, Edit, View menus\n"
@@ -151,7 +151,7 @@ def main():
     ).pack()
 
     # Status bar
-    ttk.Separator(root).pack(fill="x", padx=8)
+    bs.Separator(root).pack(fill="x", padx=8)
     status.pack(fill="x", padx=16, pady=8)
 
     root.mainloop()

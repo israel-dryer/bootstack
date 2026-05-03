@@ -23,7 +23,7 @@ Use semantic tokens:
 
 ```python
 # Do this
-ttk.Button(app, text="Delete", accent="danger")
+bs.Button(app, text="Delete", accent="danger")
 ```
 
 The theme resolves `"danger"` to appropriate colors. Change the theme, and all `"danger"` widgets update.
@@ -48,9 +48,9 @@ The `accent` parameter accepts semantic color tokens:
 ### Basic Usage
 
 ```python
-ttk.Button(app, text="Save", accent="primary")
-ttk.Button(app, text="Cancel", accent="secondary")
-ttk.Button(app, text="Delete", accent="danger")
+bs.Button(app, text="Save", accent="primary")
+bs.Button(app, text="Cancel", accent="secondary")
+bs.Button(app, text="Delete", accent="danger")
 ```
 
 ### On Any Widget
@@ -58,9 +58,9 @@ ttk.Button(app, text="Delete", accent="danger")
 Most widgets accept `accent`:
 
 ```python
-ttk.Label(app, text="Success!", accent="success")
-ttk.Progressbar(app, accent="info")
-ttk.Entry(app, accent="warning")
+bs.Label(app, text="Success!", accent="success")
+bs.Progressbar(app, accent="info")
+bs.Entry(app, accent="warning")
 ```
 
 ---
@@ -180,9 +180,9 @@ elevation with `background[+1]`, use theme-defined surface ramps:
 For main content areas (pages, cards, panels):
 
 ```python
-ttk.Frame(app, surface="content")      # Base content (same as background)
-ttk.Frame(app, surface="content[1]")   # Raised content (cards, panels)
-ttk.Frame(app, surface="content[2]")   # Higher elevation
+bs.Frame(app, surface="content")      # Base content (same as background)
+bs.Frame(app, surface="content[1]")   # Raised content (cards, panels)
+bs.Frame(app, surface="content[2]")   # Higher elevation
 ```
 
 ### Chrome Surfaces
@@ -190,8 +190,8 @@ ttk.Frame(app, surface="content[2]")   # Higher elevation
 For UI chrome (sidebars, toolbars, navigation):
 
 ```python
-ttk.Frame(app, surface="chrome")       # Sidebar/navigation background
-ttk.Frame(app, surface="chrome[1]")    # Toolbar background
+bs.Frame(app, surface="chrome")       # Sidebar/navigation background
+bs.Frame(app, surface="chrome[1]")    # Toolbar background
 ```
 
 ### Overlay Surfaces
@@ -199,9 +199,9 @@ ttk.Frame(app, surface="chrome[1]")    # Toolbar background
 For floating elements (menus, dialogs, tooltips):
 
 ```python
-ttk.Frame(app, surface="overlay")      # Menus, dropdowns
-ttk.Frame(app, surface="overlay[2]")   # Dialogs
-ttk.Frame(app, surface="overlay[3]")   # Tooltips, toasts
+bs.Frame(app, surface="overlay")      # Menus, dropdowns
+bs.Frame(app, surface="overlay[2]")   # Dialogs
+bs.Frame(app, surface="overlay[3]")   # Tooltips, toasts
 ```
 
 ### Titlebar
@@ -209,7 +209,7 @@ ttk.Frame(app, surface="overlay[3]")   # Tooltips, toasts
 For window title bars:
 
 ```python
-ttk.Frame(app, surface="titlebar")
+bs.Frame(app, surface="titlebar")
 ```
 
 !!! note "Why Surface Tokens?"
@@ -225,10 +225,10 @@ Frames support a simple `show_border` option that adds a subtle, rounded border:
 
 ```python
 # Frame with border
-ttk.Frame(app, show_border=True, padding=20)
+bs.Frame(app, show_border=True, padding=20)
 
 # Card-style layout
-card = ttk.Frame(app, surface="content[1]", show_border=True, padding=20)
+card = bs.Frame(app, surface="content[1]", show_border=True, padding=20)
 card.pack(padx=20, pady=20)
 ```
 
@@ -251,22 +251,22 @@ Widgets support **variant** modifiers to control visual emphasis:
 Use `accent` and `variant` together:
 
 ```python
-ttk.Button(app, text="Learn More", accent="info", variant="link")
-ttk.Button(app, text="Options", accent="secondary", variant="outline")
-ttk.CheckButton(app, text="Enable", accent="success", variant="toggle")
+bs.Button(app, text="Learn More", accent="info", variant="link")
+bs.Button(app, text="Options", accent="secondary", variant="outline")
+bs.CheckButton(app, text="Enable", accent="success", variant="toggle")
 ```
 
 ### Button Variants
 
 ```python
 # Solid (default)
-ttk.Button(app, text="Primary", accent="primary")
+bs.Button(app, text="Primary", accent="primary")
 
 # Outline
-ttk.Button(app, text="Primary", accent="primary", variant="outline")
+bs.Button(app, text="Primary", accent="primary", variant="outline")
 
 # Link
-ttk.Button(app, text="Primary", accent="primary", variant="link")
+bs.Button(app, text="Primary", accent="primary", variant="link")
 ```
 
 ### Toggle Variant
@@ -274,8 +274,8 @@ ttk.Button(app, text="Primary", accent="primary", variant="link")
 For checkbuttons and radiobuttons:
 
 ```python
-ttk.CheckButton(app, text="Dark Mode", variant="toggle")
-ttk.CheckButton(app, text="Notifications", accent="success", variant="toggle")
+bs.CheckButton(app, text="Dark Mode", variant="toggle")
+bs.CheckButton(app, text="Notifications", accent="success", variant="toggle")
 ```
 
 !!! link "Variants Reference"
@@ -289,7 +289,7 @@ Themes define **how tokens become colors**. The same `accent="primary"` resolves
 
 ```python
 # Set theme at startup
-app = ttk.App(theme="ocean-dark")
+app = bs.App(theme="ocean-dark")
 
 # Switch themes at runtime
 from bootstack import set_theme, toggle_theme
@@ -308,34 +308,34 @@ toggle_theme()  # Toggle between light and dark
 
 ```python
 # Actions
-ttk.Button(form, text="Submit", accent="primary")
-ttk.Button(form, text="Cancel", accent="secondary")
-ttk.Button(form, text="Delete", accent="danger")
+bs.Button(form, text="Submit", accent="primary")
+bs.Button(form, text="Cancel", accent="secondary")
+bs.Button(form, text="Delete", accent="danger")
 
 # Status
-ttk.Label(status_bar, text="Connected", accent="success")
-ttk.Label(status_bar, text="Warning: Low disk", accent="warning")
-ttk.Label(status_bar, text="Error", accent="danger")
+bs.Label(status_bar, text="Connected", accent="success")
+bs.Label(status_bar, text="Warning: Low disk", accent="warning")
+bs.Label(status_bar, text="Error", accent="danger")
 ```
 
 ### Progress Indicators
 
 ```python
 # Normal progress
-ttk.Progressbar(app, value=50, accent="primary")
+bs.Progressbar(app, value=50, accent="primary")
 
 # Success state
-ttk.Progressbar(app, value=100, accent="success")
+bs.Progressbar(app, value=100, accent="success")
 
 # Warning state
-ttk.Progressbar(app, value=90, accent="warning")
+bs.Progressbar(app, value=90, accent="warning")
 ```
 
 ### Form Validation
 
 ```python
 # Normal state
-entry = ttk.Entry(app)
+entry = bs.Entry(app)
 
 # Error state
 entry.configure(accent="danger")
@@ -352,13 +352,13 @@ bootstack uses semantic typography where supported:
 
 ```python
 # Heading style
-ttk.Label(app, text="Settings", font="heading-xl")
+bs.Label(app, text="Settings", font="heading-xl")
 
 # Body text (default)
-ttk.Label(app, text="Configure your preferences below.")
+bs.Label(app, text="Configure your preferences below.")
 
 # Caption/small text
-ttk.Label(app, text="Last updated: Today", font="caption")
+bs.Label(app, text="Last updated: Today", font="caption")
 ```
 
 Font choices should come from the design system, not hardcoded values.
@@ -373,8 +373,8 @@ Font choices should come from the design system, not hardcoded values.
 Icons reinforce meaning alongside color:
 
 ```python
-ttk.Button(app, text="Save", accent="primary", image=save_icon, compound="left")
-ttk.Button(app, text="Delete", accent="danger", image=trash_icon, compound="left")
+bs.Button(app, text="Save", accent="primary", image=save_icon, compound="left")
+bs.Button(app, text="Delete", accent="danger", image=trash_icon, compound="left")
 ```
 
 Icons and color work together—use `danger` styling with a warning/delete icon.
@@ -389,15 +389,15 @@ Icons and color work together—use `danger` styling with a warning/delete icon.
 ### Widget Padding
 
 ```python
-ttk.Button(app, text="Compact", padding=(5, 2))
-ttk.Button(app, text="Roomy", padding=(20, 10))
+bs.Button(app, text="Compact", padding=(5, 2))
+bs.Button(app, text="Roomy", padding=(20, 10))
 ```
 
 ### Container Padding
 
 ```python
-ttk.Frame(app, padding=20)
-ttk.PackFrame(app, padding=(20, 10), gap=15)
+bs.Frame(app, padding=20)
+bs.PackFrame(app, padding=(20, 10), gap=15)
 ```
 
 ### Consistent Spacing
@@ -409,7 +409,7 @@ SPACING_SM = 5
 SPACING_MD = 10
 SPACING_LG = 20
 
-ttk.PackFrame(app, gap=SPACING_MD, padding=SPACING_LG)
+bs.PackFrame(app, gap=SPACING_MD, padding=SPACING_LG)
 ```
 
 ---
@@ -417,41 +417,41 @@ ttk.PackFrame(app, gap=SPACING_MD, padding=SPACING_LG)
 ## Example: Styled Form
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(theme="flatly")
+app = bs.App(theme="flatly")
 
 # Form container
-form = ttk.LabelFrame(app, text="User Settings", padding=20)
+form = bs.LabelFrame(app, text="User Settings", padding=20)
 form.pack(padx=20, pady=20, fill="x")
 
 # Form grid
-grid = ttk.GridFrame(form, columns=["auto", 1], gap=(10, 8))
+grid = bs.GridFrame(form, columns=["auto", 1], gap=(10, 8))
 grid.pack(fill="x")
 
 # Fields
-ttk.Label(grid, text="Username:").grid()
-ttk.Entry(grid).grid(sticky="ew")
+bs.Label(grid, text="Username:").grid()
+bs.Entry(grid).grid(sticky="ew")
 
-ttk.Label(grid, text="Email:").grid()
-ttk.Entry(grid).grid(sticky="ew")
+bs.Label(grid, text="Email:").grid()
+bs.Entry(grid).grid(sticky="ew")
 
-ttk.Label(grid, text="Role:").grid()
-ttk.OptionMenu(grid, values=["User", "Admin", "Guest"]).grid(sticky="ew")
+bs.Label(grid, text="Role:").grid()
+bs.OptionMenu(grid, values=["User", "Admin", "Guest"]).grid(sticky="ew")
 
 # Toggles
-toggles = ttk.PackFrame(form, direction="vertical", gap=5)
+toggles = bs.PackFrame(form, direction="vertical", gap=5)
 toggles.pack(fill="x", pady=(15, 0))
 
-ttk.CheckButton(toggles, text="Email notifications", variant="toggle").pack()
-ttk.CheckButton(toggles, text="Two-factor auth", accent="success", variant="toggle").pack()
+bs.CheckButton(toggles, text="Email notifications", variant="toggle").pack()
+bs.CheckButton(toggles, text="Two-factor auth", accent="success", variant="toggle").pack()
 
 # Actions
-actions = ttk.PackFrame(form, direction="horizontal", gap=10)
+actions = bs.PackFrame(form, direction="horizontal", gap=10)
 actions.pack(anchor="e", pady=(20, 0))
 
-ttk.Button(actions, text="Cancel", accent="secondary", variant="outline").pack()
-ttk.Button(actions, text="Save Changes", accent="primary").pack()
+bs.Button(actions, text="Cancel", accent="secondary", variant="outline").pack()
+bs.Button(actions, text="Save Changes", accent="primary").pack()
 
 app.mainloop()
 ```
@@ -474,22 +474,22 @@ label.configure(accent="danger")
 
 ```python
 # Bad: inconsistent
-ttk.Button(app, text="OK", accent="success")
-ttk.Button(app, text="Cancel", background="gray")  # Won't work with ttk
+bs.Button(app, text="OK", accent="success")
+bs.Button(app, text="Cancel", background="gray")  # Won't work with ttk
 
 # Good: consistent
-ttk.Button(app, text="OK", accent="success")
-ttk.Button(app, text="Cancel", accent="secondary")
+bs.Button(app, text="OK", accent="success")
+bs.Button(app, text="Cancel", accent="secondary")
 ```
 
 ### Use Appropriate Tokens
 
 ```python
 # Bad: using "danger" for non-destructive action
-ttk.Button(app, text="Next", accent="danger")
+bs.Button(app, text="Next", accent="danger")
 
 # Good: using appropriate token
-ttk.Button(app, text="Next", accent="primary")
+bs.Button(app, text="Next", accent="primary")
 ```
 
 ---

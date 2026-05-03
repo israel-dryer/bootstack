@@ -1,8 +1,8 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import NumericEntry
 
 
-app = ttk.Window()
+app = bs.Window()
 
 
 ne = NumericEntry(app, accent='danger')

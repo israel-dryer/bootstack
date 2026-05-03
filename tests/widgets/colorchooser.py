@@ -1,10 +1,10 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import ColorChooserDialog
 
-app = ttk.App(theme="dark", settings=ttk.AppSettings(locale="ja"))
+app = bs.App(theme="dark", settings=bs.AppSettings(locale="ja"))
 
 cd = ColorChooserDialog(app, initial_color='#adadad')
 cd.on_dialog_result(print)
 
-ttk.Button(app, text="Show Dialog", command=cd.show).pack()
+bs.Button(app, text="Show Dialog", command=cd.show).pack()
 app.mainloop()

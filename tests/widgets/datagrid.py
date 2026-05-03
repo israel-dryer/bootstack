@@ -2,7 +2,7 @@
 import time
 from pathlib import Path
 
-import bootstack as ttk
+import bootstack as bs
 
 p = Path(__file__).parent / "people-1000.csv"
 with open(p, encoding="utf-8") as f:
@@ -25,10 +25,10 @@ with open(p, encoding="utf-8") as f:
 # Keep the sample size modest for demo purposes
 print(f"Preparing {len(rows)} records")
 
-app = ttk.App(
+app = bs.App(
     theme="dark",
     size=(1200, 800),
-    # settings=ttk.AppSettings(locale='ja')
+    # settings=bs.AppSettings(locale='ja')
 )
 
 columns = [
@@ -44,7 +44,7 @@ columns = [
 ]
 
 start = time.perf_counter()
-grid = ttk.TableView(
+grid = bs.TableView(
     app,
     columns=columns,
     rows=rows,

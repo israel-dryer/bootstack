@@ -16,11 +16,11 @@ A `CheckButton` represents an on/off (or mixed) choice. You can control its **in
 using the `value` option.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.CheckButton(
+bs.CheckButton(
     app,
     text="Enable notifications",
     value=True,
@@ -29,7 +29,7 @@ ttk.CheckButton(
 
 Set to unchecked by default:
 ```python
-ttk.CheckButton(
+bs.CheckButton(
     app,
     text="Send anonymous usage data",
     value=False,
@@ -38,7 +38,7 @@ ttk.CheckButton(
 
 Set to indeterminate (mixed) by default:
 ```python
-ttk.CheckButton(
+bs.CheckButton(
     app,
     text="Apply to all",
     value=None,
@@ -58,15 +58,15 @@ Variants describe the control’s appearance and interaction style, not its mean
 The supported variants for the checkbutton are default and toggle:
 
 ```python
-ttk.Checkbutton(text="Option")
-ttk.Checkbutton(text="Option", bootstyle="toggle")
+bs.Checkbutton(text="Option")
+bs.Checkbutton(text="Option", bootstyle="toggle")
 ```
 
 **Color** and **variant** tokens can be combined to create the desired result (`color-variant`):
 
 ```python
-ttk.Checkbutton(text="Option", bootstyle="primary")
-ttk.Checkbutton(text="Option", bootstyle="success-toggle")
+bs.Checkbutton(text="Option", bootstyle="primary")
+bs.Checkbutton(text="Option", bootstyle="success-toggle")
 ```
 
 ---
@@ -76,8 +76,8 @@ ttk.Checkbutton(text="Option", bootstyle="success-toggle")
 You can set the initial selected state using the associated signal:
 
 ```python
-enable = ttk.Signal(True)
-ttk.Checkbutton(text="Enable alerts", signal=enable)
+enable = bs.Signal(True)
+bs.Checkbutton(text="Enable alerts", signal=enable)
 ```
 
 Or change it at runtime:
@@ -104,7 +104,7 @@ Once bound, the signal or variable becomes the source of truth.
 The checkbutton can be disabled by setting the disabled state in the constructor:
 
 ```python
-ttk.Checkbutton(text="Enable alerts", state="disabled")
+bs.Checkbutton(text="Enable alerts", state="disabled")
 ```
 
 Or at runtime:
@@ -135,19 +135,19 @@ widget falls back to using the value as **plain text**. You can override this be
 Use the global localization settings:
 
 ```python
-ttk.Checkbutton(text="option.enable_alerts")
+bs.Checkbutton(text="option.enable_alerts")
 ```
 
 Enable localization explicitly:
 
 ```python
-ttk.Checkbutton(text="option.enable_alerts", localize=True)
+bs.Checkbutton(text="option.enable_alerts", localize=True)
 ```
 
 Disable localization explicitly (always treat the text as a literal):
 
 ```python
-ttk.Checkbutton(text="Enable alerts", localize=False)
+bs.Checkbutton(text="Enable alerts", localize=False)
 ```
 
 !!! tip "Literal text is safe"
@@ -161,13 +161,13 @@ ttk.Checkbutton(text="Enable alerts", localize=False)
 You can bind the label text to a signal (so the checkbutton text updates automatically).
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-label = ttk.Signal("Enable alerts")
+label = bs.Signal("Enable alerts")
 
-cb = ttk.Checkbutton(app, textsignal=label)
+cb = bs.Checkbutton(app, textsignal=label)
 cb.pack(padx=20, pady=20)
 
 label.set("Disable alerts")

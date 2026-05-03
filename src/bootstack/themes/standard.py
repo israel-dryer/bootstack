@@ -25,10 +25,10 @@ Each theme dictionary contains:
 Example:
     Themes are automatically loaded by the Style class:
     ```python
-    import bootstack as ttk
+    import bootstack as bs
 
     # Use a standard theme
-    root = ttk.Window(themename="darkly")
+    root = bs.Window(themename="darkly")
     root.mainloop()
     ```
 """

@@ -1,8 +1,8 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import DateEntry
 
 
-app = ttk.App()
+app = bs.App()
 
 de = DateEntry()
 de.pack(padx=20, pady=20)

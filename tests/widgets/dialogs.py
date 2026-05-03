@@ -1,5 +1,5 @@
 from bootstack.dialogs import MessageBox, QueryBox
-import bootstack as ttk
+import bootstack as bs
 
 
 def run_test():
@@ -29,7 +29,7 @@ def run_test():
         position=(500, 500))
 
 
-root = ttk.App(settings=ttk.AppSettings(locale='ko'))
+root = bs.App(settings=bs.AppSettings(locale='ko'))
 
 root.after(100, run_test)
 

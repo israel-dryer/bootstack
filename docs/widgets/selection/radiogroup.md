@@ -14,11 +14,11 @@ multiple `RadioButton` instances to the same signal or variable.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-group = ttk.RadioGroup(app, text="Choose a plan", orient="vertical", value="basic")
+group = bs.RadioGroup(app, text="Choose a plan", orient="vertical", value="basic")
 group.add("Basic", "basic")
 group.add("Pro", "pro")
 group.add("Enterprise", "enterprise")
@@ -56,8 +56,8 @@ Use `RadioGroup` when:
 #### Orientation
 
 ```python
-ttk.RadioGroup(app, orient="horizontal")
-ttk.RadioGroup(app, orient="vertical")
+bs.RadioGroup(app, orient="horizontal")
+bs.RadioGroup(app, orient="vertical")
 ```
 
 #### Label placement
@@ -69,7 +69,7 @@ ttk.RadioGroup(app, orient="vertical")
 - compound anchors like `'nw'`, `'se'` are accepted and normalized
 
 ```python
-ttk.RadioGroup(app, text="Pick one", labelanchor="w", orient="horizontal")
+bs.RadioGroup(app, text="Pick one", labelanchor="w", orient="horizontal")
 ```
 
 ### Colors and styling
@@ -107,7 +107,7 @@ print(group.get())
 Applies to the child `RadioButton` widgets (defaults to `"primary"`).
 
 ```python
-group = ttk.RadioGroup(app, accent="success")
+group = bs.RadioGroup(app, accent="success")
 ```
 
 #### `state`
@@ -115,7 +115,7 @@ group = ttk.RadioGroup(app, accent="success")
 Sets the state for all buttons (`"normal"` or `"disabled"`).
 
 ```python
-group = ttk.RadioGroup(app, state="disabled")
+group = bs.RadioGroup(app, state="disabled")
 ```
 
 #### `add(text, value, key=None, **kwargs)`
@@ -183,13 +183,13 @@ You can control the group selection with either:
 If neither is provided, `RadioGroup` creates an internal variable.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-choice = ttk.Signal("opt2")
+choice = bs.Signal("opt2")
 
-group = ttk.RadioGroup(app, text="Select:", signal=choice, orient="vertical")
+group = bs.RadioGroup(app, text="Select:", signal=choice, orient="vertical")
 group.add("Option 1", "opt1")
 group.add("Option 2", "opt2")
 group.pack(padx=20, pady=20)

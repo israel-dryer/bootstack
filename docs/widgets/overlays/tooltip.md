@@ -21,14 +21,14 @@ Tooltips should be short, readable, and optional.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-btn = ttk.Button(app, text="Refresh")
+btn = bs.Button(app, text="Refresh")
 btn.pack(padx=20, pady=20)
 
-ttk.Tooltip(btn, text="Reload the current view")
+bs.Tooltip(btn, text="Reload the current view")
 app.mainloop()
 ```
 

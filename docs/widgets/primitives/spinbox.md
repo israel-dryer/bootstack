@@ -4,7 +4,7 @@ title: Spinbox
 
 # Spinbox
 
-`Spinbox` is a **primitive input** that wraps `ttk.Spinbox` with bootstack styling and reactive text support.
+`Spinbox` is a **primitive input** that wraps `bs.Spinbox` with bootstack styling and reactive text support.
 
 It provides low-level spin behavior (range or list stepping) while still allowing direct typing. Use `Spinbox` when you want
 native ttk options like `format` and `command`. For a form-ready field with labels/messages/validation and standardized events,
@@ -17,11 +17,11 @@ prefer [SpinnerEntry](../inputs/spinnerentry.md).
 ### Numeric range
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-spin = ttk.Spinbox(app, from_=0, to=10, increment=1, width=8)
+spin = bs.Spinbox(app, from_=0, to=10, increment=1, width=8)
 spin.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -30,11 +30,11 @@ app.mainloop()
 ### Fixed list of values
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-spin = ttk.Spinbox(app, values=("XS", "S", "M", "L", "XL"), wrap=True, width=8)
+spin = bs.Spinbox(app, values=("XS", "S", "M", "L", "XL"), wrap=True, width=8)
 spin.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -67,7 +67,7 @@ Use `Spinbox` when:
 Applies bootstack theme styling.
 
 ```python
-ttk.Spinbox(app, from_=0, to=10, accent="primary")
+bs.Spinbox(app, from_=0, to=10, accent="primary")
 ```
 
 !!! link "Design System"
@@ -96,13 +96,13 @@ Bind with:
 #### Range mode: `from_`, `to`, `increment`
 
 ```python
-ttk.Spinbox(app, from_=1, to=31, increment=1)
+bs.Spinbox(app, from_=1, to=31, increment=1)
 ```
 
 #### Values mode: `values`
 
 ```python
-ttk.Spinbox(app, values=("Low", "Medium", "High"))
+bs.Spinbox(app, values=("Low", "Medium", "High"))
 ```
 
 If `values` is provided, it takes precedence over the numeric range.
@@ -110,8 +110,8 @@ If `values` is provided, it takes precedence over the numeric range.
 #### `wrap`
 
 ```python
-ttk.Spinbox(app, from_=0, to=5, wrap=True)
-ttk.Spinbox(app, values=("A", "B", "C"), wrap=True)
+bs.Spinbox(app, from_=0, to=5, wrap=True)
+bs.Spinbox(app, values=("A", "B", "C"), wrap=True)
 ```
 
 #### `state="readonly"`
@@ -119,13 +119,13 @@ ttk.Spinbox(app, values=("A", "B", "C"), wrap=True)
 Use readonly mode when you want pick-only interaction.
 
 ```python
-ttk.Spinbox(app, values=("A", "B", "C"), state="readonly")
+bs.Spinbox(app, values=("A", "B", "C"), state="readonly")
 ```
 
 #### `format` (range mode)
 
 ```python
-ttk.Spinbox(app, from_=0, to=1, increment=0.05, format="%.2f")
+bs.Spinbox(app, from_=0, to=1, increment=0.05, format="%.2f")
 ```
 
 ### Events
@@ -136,7 +136,7 @@ ttk.Spinbox(app, from_=0, to=1, increment=0.05, format="%.2f")
 def on_change():
     print(spin.get())
 
-spin = ttk.Spinbox(app, from_=0, to=10, command=on_change)
+spin = bs.Spinbox(app, from_=0, to=10, command=on_change)
 ```
 
 If you need to respond to typing, bind key events:

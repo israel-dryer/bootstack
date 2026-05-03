@@ -1,15 +1,15 @@
-import bootstack as ttk
+import bootstack as bs
 
 from bootstack.widgets.mixins.validation_mixin import ValidationMixin
 
 
-class ValidatedEntry(ValidationMixin, ttk.Entry):
+class ValidatedEntry(ValidationMixin, bs.Entry):
 
     def __init__(self, master=None, *args, **kwargs):
         super().__init__(master=None, *args, **kwargs)
 
 
-root = ttk.Window()
+root = bs.Window()
 
 ValidatedEntry(root).pack()
 

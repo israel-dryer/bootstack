@@ -14,9 +14,9 @@ Features:
 Examples:
     ```python
     import tkinter as tk
-    import bootstack as ttk
+    import bootstack as bs
 
-    root = ttk.Window()
+    root = bs.Window()
 
     def handler(event):
         print(f"Received: {event.data}")
@@ -293,10 +293,10 @@ def enable_periodic_cache_cleanup(
 
     Examples:
         ```python
-        import bootstack as ttk
+        import bootstack as bs
         from bootstack.events import enable_periodic_cache_cleanup
 
-        root = ttk.Window()
+        root = bs.Window()
         enable_periodic_cache_cleanup(root, interval=30000)  # Check every 30 seconds
         root.mainloop()
         ```

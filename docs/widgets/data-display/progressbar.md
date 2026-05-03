@@ -13,11 +13,11 @@ It communicates how much work has completed (determinate) or that work is ongoin
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-pb = ttk.Progressbar(app, maximum=100, value=40)
+pb = bs.Progressbar(app, maximum=100, value=40)
 pb.pack(fill="x", padx=20, pady=20)
 
 app.mainloop()
@@ -52,9 +52,9 @@ Use Progressbar when:
 Use `accent` to indicate intent or severity:
 
 ```python
-ttk.Progressbar(app, accent="success")
-ttk.Progressbar(app, accent="warning")
-ttk.Progressbar(app, accent="danger")
+bs.Progressbar(app, accent="success")
+bs.Progressbar(app, accent="warning")
+bs.Progressbar(app, accent="danger")
 ```
 
 !!! link "Design System"
@@ -90,7 +90,7 @@ pb.start()
 ### Updating progress
 
 ```python
-pb = ttk.Progressbar(app, maximum=100)
+pb = bs.Progressbar(app, maximum=100)
 pb.pack()
 
 # Update progress programmatically
@@ -128,8 +128,8 @@ pb.stop()
 Progressbar can be updated dynamically by binding to signals:
 
 ```python
-progress = ttk.Signal(0)
-pb = ttk.Progressbar(app, value=progress)
+progress = bs.Signal(0)
+pb = bs.Progressbar(app, value=progress)
 
 # Update progress
 progress.set(50)  # Progressbar updates automatically

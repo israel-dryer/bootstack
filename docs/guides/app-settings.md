@@ -34,9 +34,9 @@ they react to framework state derived from these settings.
 The simplest approach—pass settings as a dict:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(
+app = bs.App(
     settings={
         "app_name": "My Application",
         "app_version": "1.0.0",
@@ -53,7 +53,7 @@ app.mainloop()
 For better IDE support and validation:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.runtime.app import AppSettings
 
 settings = AppSettings(
@@ -63,7 +63,7 @@ settings = AppSettings(
     locale="en_US",
 )
 
-app = ttk.App(settings=settings)
+app = bs.App(settings=settings)
 app.mainloop()
 ```
 
@@ -160,7 +160,7 @@ settings = AppSettings(
 )
 
 # title and theme override the settings values
-app = ttk.App(
+app = bs.App(
     settings=settings,
     title="Overridden Title",  # Overrides app_name
     theme="dark",              # Overrides theme
@@ -181,7 +181,7 @@ This is useful for:
 Access the current settings through the app instance:
 
 ```python
-app = ttk.App(settings={"locale": "fr_FR"})
+app = bs.App(settings={"locale": "fr_FR"})
 
 # Read settings
 print(app.settings.locale)        # "fr_FR"
@@ -212,7 +212,7 @@ print(settings.locale)
 A fully configured application:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.runtime.app import AppSettings
 
 # Define settings
@@ -233,7 +233,7 @@ settings = AppSettings(
 )
 
 # Create app with settings and window options
-app = ttk.App(
+app = bs.App(
     settings=settings,
     size=(800, 600),
     minsize=(400, 300),
@@ -241,14 +241,14 @@ app = ttk.App(
 )
 
 # Build UI
-main = ttk.PackFrame(app, direction="vertical", padding=20, gap=10)
+main = bs.PackFrame(app, direction="vertical", padding=20, gap=10)
 main.pack(fill="both", expand=True)
 
-ttk.Label(main, text=f"Welcome to {app.settings.app_name}").pack()
-ttk.Label(main, text=f"Version: {app.settings.app_version}").pack()
-ttk.Label(main, text=f"Locale: {app.settings.locale}").pack()
+bs.Label(main, text=f"Welcome to {app.settings.app_name}").pack()
+bs.Label(main, text=f"Version: {app.settings.app_version}").pack()
+bs.Label(main, text=f"Locale: {app.settings.locale}").pack()
 
-ttk.Button(main, text="Toggle Theme", command=ttk.toggle_theme).pack(pady=20)
+bs.Button(main, text="Toggle Theme", command=bs.toggle_theme).pack(pady=20)
 
 app.mainloop()
 ```
@@ -270,7 +270,7 @@ import json
 with open("config.json") as f:
     config = json.load(f)
 
-app = ttk.App(settings=config)
+app = bs.App(settings=config)
 ```
 
 ### Use AppSettings When:
@@ -290,7 +290,7 @@ print(f"Language: {settings.language}")
 if some_condition:
     settings.theme = "dark"
 
-app = ttk.App(settings=settings)
+app = bs.App(settings=settings)
 ```
 
 ---

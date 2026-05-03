@@ -1,5 +1,5 @@
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 from random import choice
 
 """
@@ -8,7 +8,7 @@ from random import choice
     - only one instance of `BootStyle` or `Tk`
 """
 
-style = ttk.Style(theme="darkly")
+style = bs.Style(theme="darkly")
 
 root = style.master
 

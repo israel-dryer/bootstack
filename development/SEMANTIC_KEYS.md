@@ -8,8 +8,8 @@ This document explains how to use semantic message IDs instead of English text a
 
 ```python
 # Both of these work identically:
-ttk.Button(app, text='button.ok')  # NEW: Semantic key
-ttk.Button(app, text='OK')          # OLD: Legacy text (still works!)
+bs.Button(app, text='button.ok')  # NEW: Semantic key
+bs.Button(app, text='OK')          # OLD: Legacy text (still works!)
 ```
 
 This means:
@@ -23,8 +23,8 @@ This means:
 
 ```python
 # Just pass the semantic key directly!
-ttk.Button(app, text='button.ok')        # Automatically shows "OK"
-ttk.Label(app, text='font.family')       # Automatically shows "Family"
+bs.Button(app, text='button.ok')        # Automatically shows "OK"
+bs.Label(app, text='font.family')       # Automatically shows "Family"
 ```
 
 The `LocalizationMixin` built into widgets handles translation automatically.
@@ -231,18 +231,18 @@ _("help.documentation") # Documentation
 ## Usage Example
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import MessageCatalog
 
-app = ttk.App()
+app = bs.App()
 
 # Set locale to English (to use semantic keys)
 MessageCatalog.locale('en')
 
 # Use semantic keys in your UI - widgets automatically localize!
-ttk.Button(app, text='button.ok').pack()
-ttk.Button(app, text='button.cancel').pack()
-ttk.Label(app, text='font.family').pack()
+bs.Button(app, text='button.ok').pack()
+bs.Button(app, text='button.cancel').pack()
+bs.Label(app, text='font.family').pack()
 
 # No need to call _() on widget text - localization is built-in!
 # But you can still use _() for manual translation if needed:
@@ -258,9 +258,9 @@ app.mainloop()
 ### Use Direct Keys (Automatic Localization)
 For widget text parameters - localization happens automatically:
 ```python
-ttk.Button(app, text='button.ok')           # ✓ Automatic
-ttk.Label(app, text='font.family')          # ✓ Automatic
-ttk.LabelFrame(app, text='dialog.confirm')  # ✓ Automatic
+bs.Button(app, text='button.ok')           # ✓ Automatic
+bs.Label(app, text='font.family')          # ✓ Automatic
+bs.LabelFrame(app, text='dialog.confirm')  # ✓ Automatic
 ```
 
 ### Use `_()` (Manual Translation)
@@ -323,24 +323,24 @@ You can migrate from legacy English text to semantic keys at your own pace:
 ### Option 1: Keep Using Legacy Text (No Migration)
 ```python
 # Your existing code continues to work
-ttk.Button(app, text='OK')
-ttk.Label(app, text='Cancel')
+bs.Button(app, text='OK')
+bs.Label(app, text='Cancel')
 ```
 
 ### Option 2: Gradual Migration
 ```python
 # Mix old and new - both work!
-ttk.Button(app, text='button.ok')      # NEW: Semantic
-ttk.Label(app, text='Cancel')          # OLD: Legacy
-ttk.Button(app, text='button.save')   # NEW: Semantic
+bs.Button(app, text='button.ok')      # NEW: Semantic
+bs.Label(app, text='Cancel')          # OLD: Legacy
+bs.Button(app, text='button.save')   # NEW: Semantic
 ```
 
 ### Option 3: Full Migration (Recommended for New Projects)
 ```python
 # Use semantic keys everywhere
-ttk.Button(app, text='button.ok')
-ttk.Button(app, text='button.cancel')
-ttk.Button(app, text='button.save')
+bs.Button(app, text='button.ok')
+bs.Button(app, text='button.cancel')
+bs.Button(app, text='button.save')
 ```
 
 ### Why Migrate to Semantic Keys?

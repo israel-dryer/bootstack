@@ -20,13 +20,13 @@ Use `CheckButton` when users can enable multiple options independently (settings
 Use `value` to set the initial state.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.CheckButton(app, text="Enable notifications", value=True).pack(padx=20, pady=6)
-ttk.CheckButton(app, text="Send anonymous usage data", value=False).pack(padx=20, pady=6)
-ttk.CheckButton(app, text="Apply to all", value=None).pack(padx=20, pady=6)
+bs.CheckButton(app, text="Enable notifications", value=True).pack(padx=20, pady=6)
+bs.CheckButton(app, text="Send anonymous usage data", value=False).pack(padx=20, pady=6)
+bs.CheckButton(app, text="Apply to all", value=None).pack(padx=20, pady=6)
 
 app.mainloop()
 ```
@@ -64,11 +64,11 @@ Use `CheckButton` when:
 Use semantic color tokens with `accent`.
 
 ```python
-ttk.CheckButton(app)
-ttk.CheckButton(app, accent="secondary")
-ttk.CheckButton(app, accent="success")
-ttk.CheckButton(app, accent="warning")
-ttk.CheckButton(app, accent="danger")
+bs.CheckButton(app)
+bs.CheckButton(app, accent="secondary")
+bs.CheckButton(app, accent="success")
+bs.CheckButton(app, accent="warning")
+bs.CheckButton(app, accent="danger")
 ```
 
 <figure markdown>
@@ -105,7 +105,7 @@ Once bound, the signal or variable becomes the source of truth.
 Label shown next to the indicator.
 
 ```python
-ttk.CheckButton(app, text="Auto-sync")
+bs.CheckButton(app, text="Auto-sync")
 ```
 
 #### `command`
@@ -113,12 +113,12 @@ ttk.CheckButton(app, text="Auto-sync")
 Run a callback when the value toggles.
 
 ```python
-flag = ttk.BooleanVar(value=True)
+flag = bs.BooleanVar(value=True)
 
 def on_toggle():
     print("now:", flag.get())
 
-ttk.CheckButton(app, text="Send notifications", variable=flag, command=on_toggle).pack(padx=20, pady=20)
+bs.CheckButton(app, text="Send notifications", variable=flag, command=on_toggle).pack(padx=20, pady=20)
 ```
 
 #### `state`
@@ -126,7 +126,7 @@ ttk.CheckButton(app, text="Send notifications", variable=flag, command=on_toggle
 Disable or enable the widget.
 
 ```python
-cb = ttk.CheckButton(app, text="Locked", state="disabled")
+cb = bs.CheckButton(app, text="Locked", state="disabled")
 cb.pack()
 
 cb.configure(state="normal")
@@ -135,8 +135,8 @@ cb.configure(state="normal")
 #### `padding`, `width`, `underline`
 
 ```python
-ttk.CheckButton(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
-ttk.CheckButton(app, text="E_xport", underline=1).pack(pady=6)
+bs.CheckButton(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
+bs.CheckButton(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
 ### Reacting to changes
@@ -148,11 +148,11 @@ Use `command` for immediate callbacks, or subscribe to the signal/variable for r
 def on_toggle():
     print("toggled!")
 
-cb = ttk.CheckButton(app, text="Option", command=on_toggle)
+cb = bs.CheckButton(app, text="Option", command=on_toggle)
 
 # Using signal subscription
-enabled = ttk.Signal(False)
-cb = ttk.CheckButton(app, text="Option", signal=enabled)
+enabled = bs.Signal(False)
+cb = bs.CheckButton(app, text="Option", signal=enabled)
 enabled.subscribe(lambda v: print(f"Value: {v}"))
 ```
 
@@ -184,9 +184,9 @@ By default, widgets use `localize="auto"`:
 - otherwise, the label is treated as a literal string
 
 ```python
-ttk.CheckButton(app, text="settings.notifications")
-ttk.CheckButton(app, text="settings.notifications", localize=True)
-ttk.CheckButton(app, text="Notifications", localize=False)
+bs.CheckButton(app, text="settings.notifications")
+bs.CheckButton(app, text="settings.notifications", localize=True)
+bs.CheckButton(app, text="Notifications", localize=False)
 ```
 
 !!! tip "Safe to pass literal text"
@@ -201,13 +201,13 @@ ttk.CheckButton(app, text="Notifications", localize=False)
 Prefer a reactive `signal=...` in v2 apps:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-v = ttk.Signal("no")
+v = bs.Signal("no")
 
-cb = ttk.CheckButton(
+cb = bs.CheckButton(
     app,
     text="Enable feature",
     signal=v,

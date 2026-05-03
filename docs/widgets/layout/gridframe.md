@@ -15,19 +15,19 @@ Children simply call the standard `grid()` method and automatically receive the 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # 2x2 grid with gap
-grid = ttk.GridFrame(app, columns=2, rows=2, gap=10, padding=20)
+grid = bs.GridFrame(app, columns=2, rows=2, gap=10, padding=20)
 grid.pack(fill="both", expand=True)
 
 # Widgets are auto-placed in row-major order using standard grid()
-ttk.Button(grid, text="Top-Left").grid()
-ttk.Button(grid, text="Top-Right").grid()
-ttk.Button(grid, text="Bottom-Left").grid()
-ttk.Button(grid, text="Bottom-Right").grid()
+bs.Button(grid, text="Top-Left").grid()
+bs.Button(grid, text="Top-Right").grid()
+bs.Button(grid, text="Bottom-Left").grid()
+bs.Button(grid, text="Bottom-Right").grid()
 
 app.mainloop()
 ```
@@ -58,7 +58,7 @@ Use `GridFrame` when:
 `GridFrame` inherits all styling options from Frame. Use `accent` for semantic tokens.
 
 ```python
-ttk.GridFrame(app, accent="secondary", padding=20)
+bs.GridFrame(app, accent="secondary", padding=20)
 ```
 
 !!! link "Design System"
@@ -74,13 +74,13 @@ Define the grid structure. Can be an integer (number of equal-weight rows/column
 
 ```python
 # Simple 3x3 grid
-ttk.GridFrame(app, rows=3, columns=3)
+bs.GridFrame(app, rows=3, columns=3)
 
 # Custom column weights
-ttk.GridFrame(app, columns=[1, 2, 1])  # Middle column gets 2x weight
+bs.GridFrame(app, columns=[1, 2, 1])  # Middle column gets 2x weight
 
 # Fixed-size and auto columns
-ttk.GridFrame(app, columns=["200px", 1, "auto"])
+bs.GridFrame(app, columns=["200px", 1, "auto"])
 ```
 
 Size specs:
@@ -95,10 +95,10 @@ Spacing between cells. Can be uniform or separate column/row gaps.
 
 ```python
 # Uniform 10px gap
-ttk.GridFrame(app, gap=10)
+bs.GridFrame(app, gap=10)
 
 # Different column and row gaps
-ttk.GridFrame(app, gap=(8, 12))  # (column_gap, row_gap)
+bs.GridFrame(app, gap=(8, 12))  # (column_gap, row_gap)
 ```
 
 ### `sticky_items`
@@ -107,7 +107,7 @@ Default sticky value for all children.
 
 ```python
 # All widgets stretch to fill their cell
-ttk.GridFrame(app, columns=2, sticky_items="nsew")
+bs.GridFrame(app, columns=2, sticky_items="nsew")
 ```
 
 ### `auto_flow`
@@ -116,13 +116,13 @@ Control how widgets are auto-placed. Options: `"row"`, `"column"`, `"row-dense"`
 
 ```python
 # Fill by rows (default)
-ttk.GridFrame(app, columns=3, auto_flow="row")
+bs.GridFrame(app, columns=3, auto_flow="row")
 
 # Fill by columns
-ttk.GridFrame(app, columns=3, auto_flow="column")
+bs.GridFrame(app, columns=3, auto_flow="column")
 
 # Dense packing (fills gaps)
-ttk.GridFrame(app, columns=3, auto_flow="row-dense")
+bs.GridFrame(app, columns=3, auto_flow="row-dense")
 ```
 
 ### `propagate`
@@ -130,7 +130,7 @@ ttk.GridFrame(app, columns=3, auto_flow="row-dense")
 Control whether the frame resizes to fit its contents.
 
 ```python
-grid = ttk.GridFrame(app, width=400, height=300, propagate=False)
+grid = bs.GridFrame(app, width=400, height=300, propagate=False)
 ```
 
 ### Adding widgets
@@ -138,22 +138,22 @@ grid = ttk.GridFrame(app, width=400, height=300, propagate=False)
 Children use standard `grid()` to add themselves. The frame automatically applies its defaults and handles auto-placement.
 
 ```python
-grid = ttk.GridFrame(app, columns=3, gap=8, sticky_items="nsew")
+grid = bs.GridFrame(app, columns=3, gap=8, sticky_items="nsew")
 
 # Auto-placed widgets (row-major order by default)
-ttk.Button(grid, text="A").grid()  # row=0, col=0
-ttk.Button(grid, text="B").grid()  # row=0, col=1
-ttk.Button(grid, text="C").grid()  # row=0, col=2
-ttk.Button(grid, text="D").grid()  # row=1, col=0
+bs.Button(grid, text="A").grid()  # row=0, col=0
+bs.Button(grid, text="B").grid()  # row=0, col=1
+bs.Button(grid, text="C").grid()  # row=0, col=2
+bs.Button(grid, text="D").grid()  # row=1, col=0
 
 # Explicit position
-ttk.Button(grid, text="Footer").grid(row=2, column=0, columnspan=3)
+bs.Button(grid, text="Footer").grid(row=2, column=0, columnspan=3)
 
 # With spanning
-ttk.Label(grid, text="Wide").grid(columnspan=2)
+bs.Label(grid, text="Wide").grid(columnspan=2)
 
 # Override default sticky
-ttk.Label(grid, text="Centered").grid(sticky="")
+bs.Label(grid, text="Centered").grid(sticky="")
 ```
 
 ### Method chaining
@@ -161,11 +161,11 @@ ttk.Label(grid, text="Centered").grid(sticky="")
 The `grid()` method returns the widget for chaining:
 
 ```python
-btn = ttk.Button(grid, text="Click").grid()
+btn = bs.Button(grid, text="Click").grid()
 btn.configure(command=my_callback)
 
 # Or chain further
-ttk.Entry(grid).grid(columnspan=2).focus()
+bs.Entry(grid).grid(columnspan=2).focus()
 ```
 
 ### Removing widgets
@@ -173,7 +173,7 @@ ttk.Entry(grid).grid(columnspan=2).focus()
 Use standard `grid_forget()` to remove widgets:
 
 ```python
-btn = ttk.Button(grid, text="Removable").grid()
+btn = bs.Button(grid, text="Removable").grid()
 
 # Later, remove it
 btn.grid_forget()

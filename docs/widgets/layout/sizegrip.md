@@ -6,7 +6,7 @@ title: Sizegrip
 
 `Sizegrip` is a small **resize handle** that indicates a window (or pane) can be resized.
 
-It wraps `ttk.Sizegrip` and is typically placed in the bottom-right corner of a resizable window, status bar, or footer.
+It wraps `bs.Sizegrip` and is typically placed in the bottom-right corner of a resizable window, status bar, or footer.
 
 <!--
 IMAGE: Sizegrip in a status bar (bottom-right)
@@ -18,17 +18,17 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-content = ttk.Frame(app, padding=20)
+content = bs.Frame(app, padding=20)
 content.pack(fill="both", expand=True)
 
-status = ttk.Frame(app, padding=(8, 4))
+status = bs.Frame(app, padding=(8, 4))
 status.pack(fill="x", side="bottom")
 
-grip = ttk.Sizegrip(status)
+grip = bs.Sizegrip(status)
 grip.pack(side="right")
 
 app.mainloop()

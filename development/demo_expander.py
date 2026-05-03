@@ -1,8 +1,8 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import Expander, Label, CheckButton, Entry, Button
 
 
-app = ttk.Window(theme="darkly")
+app = bs.Window(theme="darkly")
 app.title("Expander Demo")
 
 # Basic expander with add() returning a frame
@@ -51,7 +51,7 @@ def on_toggle(event):
 exp5.on_toggled(on_toggle)
 
 # Control buttons
-control_frame = ttk.Frame(app)
+control_frame = bs.Frame(app)
 control_frame.pack(fill='x', padx=10, pady=10)
 
 Button(control_frame, text="Expand All", command=lambda: [e.expand() for e in [exp1, exp2, exp3, exp5]]).pack(side='left', padx=5)

@@ -13,11 +13,11 @@ Use it when filtering options are too dense for inline controls, or when you wan
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dlg = ttk.FilterDialog(
+dlg = bs.FilterDialog(
     title="Filters",
     filters=[
         {"key": "status", "label": "Status", "options": ["New", "In Progress", "Done"]},

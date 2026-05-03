@@ -7,7 +7,7 @@ title: Scrollbar
 `Scrollbar` is the themed scrollbar primitive used to scroll content such as `Text`, `Canvas`, and ttk widgets that support
 `xview` / `yview`.
 
-It wraps `ttk.Scrollbar` and participates in bootstack styling.
+It wraps `bs.Scrollbar` and participates in bootstack styling.
 
 <!--
 IMAGE: Vertical + horizontal scrollbar next to a Text or Canvas
@@ -22,20 +22,20 @@ Theme variants: light / dark
 
 ```python
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-frame = ttk.Frame(app)
+frame = bs.Frame(app)
 frame.pack(fill="both", expand=True, padx=20, pady=20)
 
 text = tk.Text(frame, wrap="none")
 text.grid(row=0, column=0, sticky="nsew")
 
-ys = ttk.Scrollbar(frame, orient="vertical", command=text.yview)
+ys = bs.Scrollbar(frame, orient="vertical", command=text.yview)
 ys.grid(row=0, column=1, sticky="ns")
 
-xs = ttk.Scrollbar(frame, orient="horizontal", command=text.xview)
+xs = bs.Scrollbar(frame, orient="horizontal", command=text.xview)
 xs.grid(row=1, column=0, sticky="ew")
 
 text.configure(xscrollcommand=xs.set, yscrollcommand=ys.set)
@@ -71,7 +71,7 @@ Use `Scrollbar` when:
 Use `accent` (or `style=`) to match your theme:
 
 ```python
-ttk.Scrollbar(app, accent="secondary")
+bs.Scrollbar(app, accent="secondary")
 ```
 
 !!! link "Design System"
@@ -84,8 +84,8 @@ ttk.Scrollbar(app, accent="secondary")
 ### `orient`
 
 ```python
-ttk.Scrollbar(app, orient="vertical")
-ttk.Scrollbar(app, orient="horizontal")
+bs.Scrollbar(app, orient="vertical")
+bs.Scrollbar(app, orient="horizontal")
 ```
 
 ### `command`
@@ -93,7 +93,7 @@ ttk.Scrollbar(app, orient="horizontal")
 Hook to the target widget's view method (`xview` or `yview`).
 
 ```python
-ttk.Scrollbar(app, orient="vertical", command=widget.yview)
+bs.Scrollbar(app, orient="vertical", command=widget.yview)
 ```
 
 ---

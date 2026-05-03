@@ -60,17 +60,17 @@ Six phases, ordered by dependency and impact. Phases 1A-1D can be done in parall
 
 `APPSHELL_MAIN_PY_TEMPLATE`:
 ```python
-import bootstack as ttk
+import bootstack as bs
 from {module_name}.pages.home_page import HomePage
 from {module_name}.pages.settings_page import SettingsPage
 
 def main() -> None:
-    shell = ttk.AppShell(
+    shell = bs.AppShell(
         title="{app_name}",
         theme="{theme}",
         size=(1000, 650),
     )
-    shell.toolbar.add_button(icon='sun', command=ttk.toggle_theme)
+    shell.toolbar.add_button(icon='sun', command=bs.toggle_theme)
 
     home = shell.add_page('home', text='Home', icon='house')
     HomePage(home)
@@ -86,7 +86,7 @@ def main() -> None:
 
 `APPSHELL_PAGE_TEMPLATE` (generic, for `ttkb add page`):
 ```python
-import bootstack as ttk
+import bootstack as bs
 
 class {class_name}:
     def __init__(self, parent):
@@ -94,11 +94,11 @@ class {class_name}:
         self._build()
 
     def _build(self):
-        ttk.Label(
+        bs.Label(
             self.parent, text="{page_title}", font="heading-xl"
         ).pack(anchor="w", padx=20, pady=(20, 10))
 
-        content = ttk.LabelFrame(self.parent, text="Content", padding=20)
+        content = bs.LabelFrame(self.parent, text="Content", padding=20)
         content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         # Add your widgets to content here

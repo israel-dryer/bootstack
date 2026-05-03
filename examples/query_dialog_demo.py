@@ -1,6 +1,6 @@
 """Demo for QueryDialog and Querybox with various input types."""
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import QueryBox
 
 
@@ -191,14 +191,14 @@ def demo_positioned_dialog():
 
 
 # Create main application window
-root = ttk.Window(theme="cosmo")
+root = bs.Window(theme="cosmo")
 root.title("Query Dialog Demo")
 root.geometry("700x700")
 
 # Header
-header = ttk.Frame(root, accent="primary")
+header = bs.Frame(root, accent="primary")
 header.pack(fill='x', pady=(0, 20))
-title_label = ttk.Label(
+title_label = bs.Label(
     header,
     text="Query Dialog & Querybox Demo",
     font='TkDefaultFont 16 bold',
@@ -207,11 +207,11 @@ title_label = ttk.Label(
 title_label.pack(pady=15)
 
 # Main content
-content = ttk.Frame(root, padding=20)
+content = bs.Frame(root, padding=20)
 content.pack(fill='both', expand=True)
 
 # Instructions
-instructions = ttk.Label(
+instructions = bs.Label(
     content,
     text="Click buttons below to test different input dialog types with validation:",
     font='TkDefaultFont 10'
@@ -219,11 +219,11 @@ instructions = ttk.Label(
 instructions.pack(pady=(0, 15))
 
 # Create notebook for organized demos
-notebook = ttk.Notebook(content)
+notebook = bs.Notebook(content)
 notebook.pack(fill='both', expand=True)
 
 # Tab 1: String Inputs
-string_frame = ttk.Frame(notebook, padding=10)
+string_frame = bs.Frame(notebook, padding=10)
 notebook.add(string_frame, text="String Input")
 
 string_demos = [
@@ -232,7 +232,7 @@ string_demos = [
 ]
 
 for label, command, style in string_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         string_frame,
         text=label,
         accent=style,
@@ -242,7 +242,7 @@ for label, command, style in string_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 2: Item Selection
-item_frame = ttk.Frame(notebook, padding=10)
+item_frame = bs.Frame(notebook, padding=10)
 notebook.add(item_frame, text="Item Selection")
 
 item_demos = [
@@ -251,7 +251,7 @@ item_demos = [
 ]
 
 for label, command, style in item_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         item_frame,
         text=label,
         accent=style,
@@ -261,7 +261,7 @@ for label, command, style in item_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 3: Numeric Inputs
-numeric_frame = ttk.Frame(notebook, padding=10)
+numeric_frame = bs.Frame(notebook, padding=10)
 notebook.add(numeric_frame, text="Numeric Input")
 
 numeric_demos = [
@@ -272,7 +272,7 @@ numeric_demos = [
 ]
 
 for label, command, style in numeric_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         numeric_frame,
         text=label,
         accent=style,
@@ -282,7 +282,7 @@ for label, command, style in numeric_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 4: Special Pickers
-picker_frame = ttk.Frame(notebook, padding=10)
+picker_frame = bs.Frame(notebook, padding=10)
 notebook.add(picker_frame, text="Special Pickers")
 
 picker_demos = [
@@ -292,7 +292,7 @@ picker_demos = [
 ]
 
 for label, command, style in picker_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         picker_frame,
         text=label,
         accent=style,
@@ -302,7 +302,7 @@ for label, command, style in picker_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 5: Advanced
-advanced_frame = ttk.Frame(notebook, padding=10)
+advanced_frame = bs.Frame(notebook, padding=10)
 notebook.add(advanced_frame, text="Advanced")
 
 advanced_demos = [
@@ -310,7 +310,7 @@ advanced_demos = [
 ]
 
 for label, command, style in advanced_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         advanced_frame,
         text=label,
         accent=style,
@@ -320,10 +320,10 @@ for label, command, style in advanced_demos:
     btn.pack(pady=5, fill='x')
 
 # Result display
-result_frame = ttk.LabelFrame(content, text="Last Dialog Result", padding=15)
+result_frame = bs.LabelFrame(content, text="Last Dialog Result", padding=15)
 result_frame.pack(fill='x', pady=(20, 0))
 
-result_label = ttk.Label(
+result_label = bs.Label(
     result_frame,
     text="No dialog shown yet",
     font='TkDefaultFont 10',
@@ -332,10 +332,10 @@ result_label = ttk.Label(
 result_label.pack()
 
 # Footer
-footer_frame = ttk.Frame(root)
+footer_frame = bs.Frame(root)
 footer_frame.pack(pady=10)
 
-footer1 = ttk.Label(
+footer1 = bs.Label(
     footer_frame,
     text="Press ESC to cancel • Press ENTER to submit",
     font='TkDefaultFont 9 italic',
@@ -343,7 +343,7 @@ footer1 = ttk.Label(
 )
 footer1.pack()
 
-footer2 = ttk.Label(
+footer2 = bs.Label(
     footer_frame,
     text="Validation errors will show inline dialogs",
     font='TkDefaultFont 8 italic',

@@ -15,11 +15,11 @@ It makes it easy to build consistent data-entry UIs by composing the standard v2
 Define fields and read the committed data:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-form = ttk.Form(
+form = bs.Form(
     app,
     items=[
         {"key": "name", "label": "Name", "editor": "text"},
@@ -35,7 +35,7 @@ def submit():
     else:
         print("invalid")
 
-ttk.Button(app, text="Submit", command=submit).pack(pady=(0, 20))
+bs.Button(app, text="Submit", command=submit).pack(pady=(0, 20))
 
 app.mainloop()
 ```
@@ -132,7 +132,7 @@ Some editors accept additional options:
 For wide forms, you can specify a column count:
 
 ```python
-form = ttk.Form(app, columns=2, items=[...])
+form = bs.Form(app, columns=2, items=[...])
 ```
 
 #### Explicit placement (advanced)

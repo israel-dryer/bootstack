@@ -22,11 +22,11 @@ Theme variants: light / dark
 Create a tab bar with selectable tabs:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-tabs = ttk.Tabs(app)
+tabs = bs.Tabs(app)
 tabs.pack(fill="x", padx=10, pady=10)
 
 tabs.add(text="Home", icon="house")
@@ -74,10 +74,10 @@ Tabs supports two visual variants:
 
 ```python
 # Bar variant (default)
-tabs = ttk.Tabs(app, variant="bar")
+tabs = bs.Tabs(app, variant="bar")
 
 # Pill variant
-tabs = ttk.Tabs(app, variant="pill")
+tabs = bs.Tabs(app, variant="pill")
 ```
 
 ### Orientation
@@ -86,10 +86,10 @@ Tabs can be horizontal or vertical:
 
 ```python
 # Horizontal (default)
-tabs = ttk.Tabs(app, orient="horizontal")
+tabs = bs.Tabs(app, orient="horizontal")
 
 # Vertical
-tabs = ttk.Tabs(app, orient="vertical")
+tabs = bs.Tabs(app, orient="vertical")
 ```
 
 ### Tab width
@@ -98,13 +98,13 @@ Control how tabs size themselves:
 
 ```python
 # Auto-size to content (default)
-tabs = ttk.Tabs(app, tab_width=None)
+tabs = bs.Tabs(app, tab_width=None)
 
 # Fixed character width
-tabs = ttk.Tabs(app, tab_width=12)
+tabs = bs.Tabs(app, tab_width=12)
 
 # Stretch to fill available space
-tabs = ttk.Tabs(app, tab_width="stretch")
+tabs = bs.Tabs(app, tab_width="stretch")
 ```
 
 !!! link "Design System"
@@ -165,10 +165,10 @@ Enable close buttons on tabs:
 
 ```python
 # Always visible close buttons
-tabs = ttk.Tabs(app, enable_closing=True)
+tabs = bs.Tabs(app, enable_closing=True)
 
 # Close buttons visible on hover only
-tabs = ttk.Tabs(app, enable_closing="hover")
+tabs = bs.Tabs(app, enable_closing="hover")
 ```
 
 Handle close events:
@@ -185,7 +185,7 @@ tabs.add(text="Document", close_command=on_close)
 Show an "add" button for dynamic tab creation:
 
 ```python
-tabs = ttk.Tabs(app, enable_adding=True)
+tabs = bs.Tabs(app, enable_adding=True)
 
 def on_add(event):
     tabs.add(text="New Tab")

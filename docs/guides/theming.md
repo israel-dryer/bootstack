@@ -13,13 +13,13 @@ This guide explains how bootstack's theming system works—palettes, color gener
 A theme defines the **complete color system** for your application. Instead of hardcoding colors, you work with semantic tokens (`primary`, `danger`, etc.) that resolve to actual colors based on the active theme.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
 # Theme determines what "primary" means
-app = ttk.App(theme="ocean-light")
+app = bs.App(theme="ocean-light")
 
 # Same code, different colors per theme
-ttk.Button(app, text="Submit", accent="primary")
+bs.Button(app, text="Submit", accent="primary")
 ```
 
 ---
@@ -118,12 +118,12 @@ bootstack includes paired light/dark themes:
 ### Listing Available Themes
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # Get all registered themes
-themes = ttk.get_themes()
+themes = bs.get_themes()
 for theme in themes:
     print(f"{theme['name']}: {theme['display_name']}")
 ```
@@ -135,7 +135,7 @@ for theme in themes:
 ### At Startup
 
 ```python
-app = ttk.App(theme="ocean-dark")
+app = bs.App(theme="ocean-dark")
 ```
 
 ### At Runtime
@@ -157,14 +157,14 @@ print(f"Current theme: {current}")
 ### Theme Toggle Button
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(theme="ocean-light")
+app = bs.App(theme="ocean-light")
 
 def on_toggle():
-    ttk.toggle_theme()
+    bs.toggle_theme()
 
-ttk.Button(app, text="Toggle Dark Mode", command=on_toggle).pack(pady=20)
+bs.Button(app, text="Toggle Dark Mode", command=on_toggle).pack(pady=20)
 
 app.mainloop()
 ```
@@ -177,8 +177,8 @@ bootstack provides `"light"` and `"dark"` aliases that resolve to configured the
 
 ```python
 # These are equivalent when ocean-light is configured as the light theme
-app = ttk.App(theme="light")
-app = ttk.App(theme="ocean-light")
+app = bs.App(theme="light")
+app = bs.App(theme="ocean-light")
 ```
 
 Configure aliases in your app settings (see [App Settings](#configuring-theme-preferences)).
@@ -293,7 +293,7 @@ register_user_theme("acme-light", "path/to/acme-light.json")
 register_user_theme("acme-dark", "path/to/acme-dark.json")
 
 # Now use the theme
-app = ttk.App(theme="acme-light")
+app = bs.App(theme="acme-light")
 ```
 
 ---
@@ -303,7 +303,7 @@ app = ttk.App(theme="acme-light")
 Configure default themes when creating the App:
 
 ```python
-app = ttk.App(
+app = bs.App(
     theme="light",  # Start with light theme
     light_theme="ocean-light",  # "light" alias resolves to this
     dark_theme="ocean-dark",    # "dark" alias resolves to this
@@ -370,12 +370,12 @@ else:
 ### Responding to Theme Changes
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 def on_theme_changed():
-    current = ttk.get_theme()
+    current = bs.get_theme()
     print(f"Theme changed to: {current}")
     # Update any theme-dependent state
 
@@ -397,10 +397,10 @@ Don't hardcode colors. Use `accent="primary"` so themes work correctly:
 
 ```python
 # Good
-ttk.Button(app, text="Submit", accent="primary")
+bs.Button(app, text="Submit", accent="primary")
 
 # Bad - ignores theming
-ttk.Button(app, text="Submit", background="#0066cc")
+bs.Button(app, text="Submit", background="#0066cc")
 ```
 
 ### 3. Test Both Modes
@@ -416,7 +416,7 @@ import darkdetect
 
 # Start with system preference
 initial_theme = "dark" if darkdetect.isDark() else "light"
-app = ttk.App(theme=initial_theme)
+app = bs.App(theme=initial_theme)
 ```
 
 ### 5. Keep Semantic Mappings Logical

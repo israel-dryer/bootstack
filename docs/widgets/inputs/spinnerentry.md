@@ -19,11 +19,11 @@ validation, localization, and consistent field events like other entry controls.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-qty = ttk.SpinnerEntry(
+qty = bs.SpinnerEntry(
     app,
     label="Quantity",
     value=1,
@@ -73,13 +73,13 @@ Commit-time parsing/formatting happens on blur or Enter.
 Controls step size for buttons/keys/wheel.
 
 ```python
-ttk.SpinnerEntry(app, label="Retry limit", value=3, increment=1)
+bs.SpinnerEntry(app, label="Retry limit", value=3, increment=1)
 ```
 
 ### Formatting: `value_format`
 
 ```python
-ttk.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="currency").pack()
+bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="currency").pack()
 ```
 
 <figure markdown>
@@ -93,8 +93,8 @@ ttk.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="c
 ### Add-ons
 
 ```python
-amount = ttk.SpinnerEntry(app, label="Amount", value=0, increment=1)
-amount.insert_addon(ttk.Label, position="before", text="$")
+amount = bs.SpinnerEntry(app, label="Amount", value=0, increment=1)
+amount.insert_addon(bs.Label, position="before", text="$")
 ```
 
 <figure markdown>
@@ -132,7 +132,7 @@ qty.on_increment(on_increment)
 Use validation rules for business constraints:
 
 ```python
-limit = ttk.SpinnerEntry(app, label="Retry limit", value=3, increment=1, required=True)
+limit = bs.SpinnerEntry(app, label="Retry limit", value=3, increment=1, required=True)
 limit.add_validation_rule("required", message="A value is required")
 ```
 

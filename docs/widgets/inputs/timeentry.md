@@ -14,11 +14,11 @@ localization/formatting, and consistent events.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-t = ttk.TimeEntry(
+t = bs.TimeEntry(
     app,
     label="Start time",
     value="08:30",
@@ -53,10 +53,10 @@ Consider a different control when:
 ### `accent`
 
 ```python
-ttk.TimeEntry(app, label="Start time")  # primary (default)
-ttk.TimeEntry(app, label="Start time", accent="secondary")
-ttk.TimeEntry(app, label="Start time", accent="success")
-ttk.TimeEntry(app, label="Start time", accent="warning")
+bs.TimeEntry(app, label="Start time")  # primary (default)
+bs.TimeEntry(app, label="Start time", accent="secondary")
+bs.TimeEntry(app, label="Start time", accent="success")
+bs.TimeEntry(app, label="Start time", accent="warning")
 ```
 
 !!! link "Design System"
@@ -94,7 +94,7 @@ Common field options include:
 - time formatting options (if supported by your implementation)
 
 ```python
-ttk.TimeEntry(app, label="End time", required=True, accent="secondary")
+bs.TimeEntry(app, label="End time", required=True, accent="secondary")
 ```
 
 ### Events
@@ -147,9 +147,9 @@ If your implementation supports a picker-style interaction, it should be treated
 `TimeEntry` supports locale-aware time formatting through the `value_format` option. Times are displayed according to the current locale's conventions (12-hour vs 24-hour format, AM/PM indicators).
 
 ```python
-ttk.TimeEntry(app, label="Short Time", value_format="shortTime")  # "3:30 PM"
-ttk.TimeEntry(app, label="Long Time", value_format="longTime")    # "3:30:45 PM PST"
-ttk.TimeEntry(app, label="24-Hour", value_format="HH:mm")         # "15:30"
+bs.TimeEntry(app, label="Short Time", value_format="shortTime")  # "3:30 PM"
+bs.TimeEntry(app, label="Long Time", value_format="longTime")    # "3:30:45 PM PST"
+bs.TimeEntry(app, label="24-Hour", value_format="HH:mm")         # "15:30"
 ```
 
 See [Guides → Formatting](../../guides/formatting.md) for all time presets and custom patterns.

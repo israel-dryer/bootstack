@@ -6,7 +6,7 @@ title: Entry
 
 `Entry` is the low-level, single-line text input primitive in bootstack.
 
-It wraps `ttk.Entry` and integrates bootstack styling plus reactive text support. `Entry` is also the building block
+It wraps `bs.Entry` and integrates bootstack styling plus reactive text support. `Entry` is also the building block
 used by higher-level controls like `TextEntry`, `NumericEntry`, `DateEntry`, and `PasswordEntry`.
 
 ---
@@ -14,11 +14,11 @@ used by higher-level controls like `TextEntry`, `NumericEntry`, `DateEntry`, and
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-entry = ttk.Entry(app)
+entry = bs.Entry(app)
 entry.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -30,7 +30,7 @@ app.mainloop()
 
 Use `Entry` when:
 
-- you need direct, low-level access to `ttk.Entry` options
+- you need direct, low-level access to `bs.Entry` options
 
 - you are building your own composite control
 
@@ -53,8 +53,8 @@ Use `Entry` when:
 Use semantic tokens via `accent`, or provide a concrete ttk style via `style=`.
 
 ```python
-ttk.Entry(app, accent="primary")
-ttk.Entry(app, accent="secondary")
+bs.Entry(app, accent="primary")
+bs.Entry(app, accent="secondary")
 ```
 
 !!! link "Design System"
@@ -79,8 +79,8 @@ Unlike field controls such as `TextEntry`, `Entry` does not define "text vs comm
 Bind to a Tk variable.
 
 ```python
-name = ttk.StringVar(value="Ada")
-ttk.Entry(app, textvariable=name).pack()
+name = bs.StringVar(value="Ada")
+bs.Entry(app, textvariable=name).pack()
 ```
 
 ### `textsignal`
@@ -88,7 +88,7 @@ ttk.Entry(app, textvariable=name).pack()
 Bind to a reactive signal (no Tk variable needed).
 
 ```python
-entry = ttk.Entry(app, textsignal=my_signal)
+entry = bs.Entry(app, textsignal=my_signal)
 ```
 
 ### `show`
@@ -96,7 +96,7 @@ entry = ttk.Entry(app, textsignal=my_signal)
 Mask input characters (useful for basic password-style entry).
 
 ```python
-ttk.Entry(app, show="*")
+bs.Entry(app, show="*")
 ```
 
 !!! note "Password input"
@@ -112,7 +112,7 @@ def validate_text(new_value: str) -> bool:
 
 vcmd = (app.register(validate_text), "%P")
 
-entry = ttk.Entry(app, validate="key", validatecommand=vcmd)
+entry = bs.Entry(app, validate="key", validatecommand=vcmd)
 entry.pack(padx=20, pady=20)
 ```
 

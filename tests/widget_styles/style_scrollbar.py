@@ -1,18 +1,18 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_scrollbar_frame(orient, bootstyle=''):
-    frame = ttk.Frame(root, padding=5)
+    frame = bs.Frame(root, padding=5)
 
     # title
-    title = ttk.Label(frame, text=bootstyle.title() + ' Scrollbar', anchor=CENTER)
+    title = bs.Label(frame, text=bootstyle.title() + ' Scrollbar', anchor=CENTER)
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
     # default
-    ttk.Label(frame, text='default').pack(fill=X)
-    sb = ttk.Scrollbar(frame, orient=orient, variant=bootstyle)
+    bs.Label(frame, text='default').pack(fill=X)
+    sb = bs.Scrollbar(frame, orient=orient, variant=bootstyle)
     sb.set(0.1, 0.9)
     if orient == HORIZONTAL:
         sb.pack(padx=5, pady=5, fill=X)
@@ -21,8 +21,8 @@ def create_scrollbar_frame(orient, bootstyle=''):
 
     # colored
     for _, color in enumerate(['primary', 'secondary', 'success', 'info', 'warning', 'danger']):
-        ttk.Label(frame, text=color).pack(fill=X)
-        sb = ttk.Scrollbar(frame, accent=color, variant=bootstyle, orient=orient)
+        bs.Label(frame, text=color).pack(fill=X)
+        sb = bs.Scrollbar(frame, accent=color, variant=bootstyle, orient=orient)
         sb.set(0.1, 0.3)
         if orient == HORIZONTAL:
             sb.pack(padx=5, pady=5, fill=X, expand=YES)
@@ -35,11 +35,11 @@ def create_scrollbar_frame(orient, bootstyle=''):
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.Window()
+    root = bs.Window()
     root.geometry('1000x500')
-    style = ttk.Style()
+    style = bs.Style()
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
     test1 = create_scrollbar_frame(orient=HORIZONTAL, bootstyle='default')
     test1.pack(side=LEFT, anchor=N, fill=BOTH, expand=YES)
 

@@ -14,18 +14,18 @@ Use it when the primary action is still a button click, but you want a secondary
 Provide menu items as `ContextMenuItem` entries. The button can also have its own `command` for the "main" action.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 items = [
-    ttk.ContextMenuItem(text="Open", command=lambda: print("Open")),
-    ttk.ContextMenuItem(text="Rename", command=lambda: print("Rename")),
-    ttk.ContextMenuItem(separator=True),
-    ttk.ContextMenuItem(text="Delete", accent="danger", command=lambda: print("Delete")),
+    bs.ContextMenuItem(text="Open", command=lambda: print("Open")),
+    bs.ContextMenuItem(text="Rename", command=lambda: print("Rename")),
+    bs.ContextMenuItem(separator=True),
+    bs.ContextMenuItem(text="Delete", accent="danger", command=lambda: print("Delete")),
 ]
 
-ttk.DropdownButton(
+bs.DropdownButton(
     app,
     text="File",
     items=items,
@@ -60,9 +60,9 @@ Use `DropdownButton` when:
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how variants map consistently across widgets."
 
 ```python
-ttk.DropdownButton(app, text="Primary", accent="primary", items=[]).pack(pady=4)
-ttk.DropdownButton(app, text="Outline", accent="primary", variant="outline", items=[]).pack(pady=4)
-ttk.DropdownButton(app, text="Ghost", accent="primary", variant="ghost", items=[]).pack(pady=4)
+bs.DropdownButton(app, text="Primary", accent="primary", items=[]).pack(pady=4)
+bs.DropdownButton(app, text="Outline", accent="primary", variant="outline", items=[]).pack(pady=4)
+bs.DropdownButton(app, text="Ghost", accent="primary", variant="ghost", items=[]).pack(pady=4)
 ```
 
 ---
@@ -75,10 +75,10 @@ ttk.DropdownButton(app, text="Ghost", accent="primary", variant="ghost", items=[
 
 ```python
 items = [
-    ttk.ContextMenuItem(text="Settings", icon="gear", command=lambda: print("Settings")),
-    ttk.ContextMenuItem(text="Help", icon="circle-help", command=lambda: print("Help")),
+    bs.ContextMenuItem(text="Settings", icon="gear", command=lambda: print("Settings")),
+    bs.ContextMenuItem(text="Help", icon="circle-help", command=lambda: print("Help")),
 ]
-ttk.DropdownButton(app, text="More", items=items).pack(pady=10)
+bs.DropdownButton(app, text="More", items=items).pack(pady=10)
 ```
 
 !!! link "See [Icons & Imagery](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
@@ -88,7 +88,7 @@ ttk.DropdownButton(app, text="More", items=items).pack(pady=10)
 You can attach callbacks at item creation time, or subscribe to item-click events on the widget.
 
 ```python
-btn = ttk.DropdownButton(app, text="Actions", items=items).pack(pady=10)
+btn = bs.DropdownButton(app, text="Actions", items=items).pack(pady=10)
 
 # Optional: listen for item clicks at the widget level
 # (useful if you want centralized routing/logging).
@@ -114,10 +114,10 @@ If localization is enabled, menu labels can be message tokens just like widget `
 
 ```python
 items = [
-    ttk.ContextMenuItem(text="menu.open", command=lambda: ...),
-    ttk.ContextMenuItem(text="menu.delete", command=lambda: ...),
+    bs.ContextMenuItem(text="menu.open", command=lambda: ...),
+    bs.ContextMenuItem(text="menu.delete", command=lambda: ...),
 ]
-ttk.DropdownButton(app, text="button.file", items=items).pack()
+bs.DropdownButton(app, text="button.file", items=items).pack()
 ```
 
 !!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."

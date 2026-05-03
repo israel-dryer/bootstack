@@ -14,10 +14,10 @@ Use it for classic menu patterns (File/Edit/View), or when the options list is t
 `MenuButton` uses a standard Tk `Menu`.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from tkinter import Menu
 
-app = ttk.App()
+app = bs.App()
 
 m = Menu(app, tearoff=0)
 m.add_command(label="Open", command=lambda: print("Open"))
@@ -25,7 +25,7 @@ m.add_command(label="Save", command=lambda: print("Save"))
 m.add_separator()
 m.add_command(label="Exit", command=app.destroy)
 
-ttk.MenuButton(app, text="File", menu=m).pack(padx=20, pady=20)
+bs.MenuButton(app, text="File", menu=m).pack(padx=20, pady=20)
 
 app.mainloop()
 ```
@@ -55,8 +55,8 @@ Use `MenuButton` when:
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how variants map consistently across widgets."
 
 ```python
-ttk.MenuButton(app, text="Menu", accent="primary").pack(pady=4)
-ttk.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4)
+bs.MenuButton(app, text="Menu", accent="primary").pack(pady=4)
+bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4)
 ```
 
 ---
@@ -77,7 +77,7 @@ Tk `Menu` labels can be localized by passing message tokens (or resolved strings
 ```python
 m = Menu(app, tearoff=0)
 m.add_command(label="menu.open", command=lambda: ...)
-ttk.MenuButton(app, text="button.file", menu=m).pack()
+bs.MenuButton(app, text="button.file", menu=m).pack()
 ```
 
 !!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."

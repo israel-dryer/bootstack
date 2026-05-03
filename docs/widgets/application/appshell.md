@@ -12,17 +12,17 @@ together a `Toolbar`, `SideNav`, and `PageStack` into the standard desktop app l
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-shell = ttk.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", size=(1000, 650))
 
 # Create a page frame and add a nav item for it
 home = shell.add_page("home", text="Home", icon="house")
-ttk.Label(home, text="Welcome!").pack(padx=20, pady=20)
+bs.Label(home, text="Welcome!").pack(padx=20, pady=20)
 
 # Each add_page() returns a Frame you can populate with any widgets
 docs = shell.add_page("docs", text="Documents", icon="file-earmark-text")
-ttk.Label(docs, text="Your documents.").pack(padx=20, pady=20)
+bs.Label(docs, text="Your documents.").pack(padx=20, pady=20)
 
 shell.mainloop()
 ```
@@ -54,13 +54,13 @@ Consider a different control when:
 The toolbar is shown by default. Disable it with `show_toolbar=False`.
 
 ```python
-shell = ttk.AppShell(title="My App", show_toolbar=False)
+shell = bs.AppShell(title="My App", show_toolbar=False)
 ```
 
 Add buttons to the toolbar:
 
 ```python
-shell.toolbar.add_button(icon="sun", command=ttk.toggle_theme)
+shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 shell.toolbar.add_button(icon="gear", command=open_settings)
 ```
 
@@ -73,7 +73,7 @@ shell.toolbar.add_button(icon="gear", command=open_settings)
 | `minimal` | Hidden until toggled |
 
 ```python
-shell = ttk.AppShell(title="My App", nav_display_mode="compact")
+shell = bs.AppShell(title="My App", nav_display_mode="compact")
 ```
 
 ---
@@ -86,7 +86,7 @@ Each call to `add_page()` creates both a nav item and a page frame:
 
 ```python
 page = shell.add_page("settings", text="Settings", icon="gear")
-ttk.Label(page, text="Settings content").pack()
+bs.Label(page, text="Settings content").pack()
 ```
 
 ### Groups
@@ -122,9 +122,9 @@ automatically gains window control buttons (minimize, maximize, close) and
 becomes draggable, giving you a fully custom window.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-shell = ttk.AppShell(
+shell = bs.AppShell(
     title="Custom Window",
     theme="cosmo-dark",
     size=(1000, 650),
@@ -132,13 +132,13 @@ shell = ttk.AppShell(
 )
 
 # Toolbar buttons are added after the built-in window controls
-shell.toolbar.add_button(icon="sun", command=ttk.toggle_theme)
+shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 
 home = shell.add_page("home", text="Home", icon="house")
-ttk.Label(home, text="No OS chrome — fully custom!").pack(padx=20, pady=20)
+bs.Label(home, text="No OS chrome — fully custom!").pack(padx=20, pady=20)
 
 settings = shell.add_page("settings", text="Settings", icon="gear", is_footer=True)
-ttk.Label(settings, text="Settings page").pack(padx=20, pady=20)
+bs.Label(settings, text="Settings page").pack(padx=20, pady=20)
 
 shell.mainloop()
 ```

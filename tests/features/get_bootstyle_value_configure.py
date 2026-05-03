@@ -1,5 +1,5 @@
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 
 """
     Test that the `Widget.configure` method is able to change the widget
@@ -7,10 +7,10 @@ import bootstack as ttk
 """
 
 root = tk.Tk()
-style = ttk.Style()
+style = bs.Style()
 colors = style.theme.colors
 
-btn = ttk.Button(root, text="Push Button", bootstyle='outline-danger')
+btn = bs.Button(root, text="Push Button", bootstyle='outline-danger')
 btn.pack(padx=10, pady=10)
 
 ttkstyle = btn.configure('style')

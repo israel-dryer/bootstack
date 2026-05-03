@@ -13,11 +13,11 @@ Use it when a workflow needs a small set of inputs (2-8 fields) with an explicit
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dlg = ttk.FormDialog(
+dlg = bs.FormDialog(
     title="New connection",
     fields=[
         {"key": "host", "label": "Host", "required": True},

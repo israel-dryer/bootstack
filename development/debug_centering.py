@@ -1,17 +1,17 @@
 """Debug centering issue - check actual image dimensions and widget sizes."""
 
-import bootstack as ttk
+import bootstack as bs
 from tkinter import font
 from PIL import ImageGrab
 
-app = ttk.App(theme="dark")
+app = bs.App(theme="dark")
 app.geometry("200x200")
 
 # Create xs button like the user's test
-xs_btn = ttk.Button(app, text='Button', style_options={'size': 'xs'})
+xs_btn = bs.Button(app, text='Button', style_options={'size': 'xs'})
 xs_btn.pack(padx=20, pady=20)
 
-xs_btn_icon = ttk.Button(app, text='Button', icon='bootstrap', style_options={'size': 'xs'})
+xs_btn_icon = bs.Button(app, text='Button', icon='bootstrap', style_options={'size': 'xs'})
 xs_btn_icon.pack(padx=20, pady=20)
 
 

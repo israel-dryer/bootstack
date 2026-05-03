@@ -1,23 +1,23 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_checkbutton_test(name):
-    frame = ttk.Frame(padding=10)
+    frame = bs.Frame(padding=10)
 
     # title
-    title = ttk.Label(frame, text=name, anchor=CENTER)
+    title = bs.Label(frame, text=name, anchor=CENTER)
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
     # default style
-    cb = ttk.Switch(frame, text='default')
+    cb = bs.Switch(frame, text='default')
     cb.pack(padx=5, pady=5, fill=BOTH)
     cb.invoke()
 
     # color styles
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        cb = ttk.Switch(
+        cb = bs.Switch(
             master=frame,
             text=color,
             accent=color,
@@ -27,7 +27,7 @@ def create_checkbutton_test(name):
         cb.invoke()
 
     # disabled style
-    cb = ttk.Switch(
+    cb = bs.Switch(
         master=frame,
         text='disabled',
         state=DISABLED
@@ -40,12 +40,12 @@ def create_checkbutton_test(name):
 
 if __name__ == '__main__':
     # create visual widget style tests
-    app = ttk.App("CheckButton Demo")
+    app = bs.App("CheckButton Demo")
 
     test3 = create_checkbutton_test( 'Switch')
     test3.pack(side='left', fill=BOTH)
 
-    btn = ttk.Button(text="Change Theme", command=ttk.toggle_theme)
+    btn = bs.Button(text="Change Theme", command=bs.toggle_theme)
     btn.pack(padx=10, pady=10)
 
     app.mainloop()

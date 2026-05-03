@@ -12,11 +12,11 @@ Features demonstrated:
 - Dynamic UI updates based on signal changes
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.core.signals import Signal
 
 
-class SignalsDemo(ttk.Window):
+class SignalsDemo(bs.Window):
     """Demo application showcasing signal integration with widgets."""
 
     def __init__(self):
@@ -49,11 +49,11 @@ class SignalsDemo(ttk.Window):
         """Set up the user interface with signal-connected widgets."""
 
         # Main container with padding
-        container = ttk.Frame(self, padding=20)
+        container = bs.Frame(self, padding=20)
         container.pack(fill="both", expand=True)
 
         # Title
-        title = ttk.Label(
+        title = bs.Label(
             container,
             text="Widget Signals Demo",
             font="[24][bold]"
@@ -80,17 +80,17 @@ class SignalsDemo(ttk.Window):
 
     def _create_entry_section(self, parent):
         """Create entry widget section with signal binding."""
-        frame = ttk.LabelFrame(parent, text="Entry Widget with Signal", padding=15)
+        frame = bs.LabelFrame(parent, text="Entry Widget with Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
-        ttk.Label(frame, text="Username:").grid(row=0, column=0, sticky="w", padx=(0, 10))
+        bs.Label(frame, text="Username:").grid(row=0, column=0, sticky="w", padx=(0, 10))
 
         # Entry widget connected to username signal
-        entry = ttk.Entry(frame, width=30, textsignal=self.username)
+        entry = bs.Entry(frame, width=30, textsignal=self.username)
         entry.grid(row=0, column=1, sticky="ew")
 
         # Display current signal value
-        value_label = ttk.Label(frame, text="", foreground="gray")
+        value_label = bs.Label(frame, text="", foreground="gray")
         value_label.grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
 
         def update_display(*args):
@@ -103,13 +103,13 @@ class SignalsDemo(ttk.Window):
 
     def _create_spinbox_section(self, parent):
         """Create spinbox widget section with signal binding."""
-        frame = ttk.LabelFrame(parent, text="Spinbox Widget with Signal", padding=15)
+        frame = bs.LabelFrame(parent, text="Spinbox Widget with Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
-        ttk.Label(frame, text="Age:").grid(row=0, column=0, sticky="w", padx=(0, 10))
+        bs.Label(frame, text="Age:").grid(row=0, column=0, sticky="w", padx=(0, 10))
 
         # Spinbox widget connected to age signal
-        spinbox = ttk.Spinbox(
+        spinbox = bs.Spinbox(
             frame,
             from_=1,
             to=120,
@@ -119,7 +119,7 @@ class SignalsDemo(ttk.Window):
         spinbox.grid(row=0, column=1, sticky="w")
 
         # Display current signal value
-        value_label = ttk.Label(frame, text="", foreground="gray")
+        value_label = bs.Label(frame, text="", foreground="gray")
         value_label.grid(row=1, column=0, columnspan=2, sticky="w", pady=(5, 0))
 
         def update_display(*args):
@@ -132,15 +132,15 @@ class SignalsDemo(ttk.Window):
 
     def _create_combobox_section(self, parent):
         """Create combobox widget section with signal binding."""
-        frame = ttk.LabelFrame(parent, text="Combobox Widget with Signal", padding=15)
+        frame = bs.LabelFrame(parent, text="Combobox Widget with Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
-        ttk.Label(frame, text="Theme Color:").grid(row=0, column=0, sticky="w", padx=(0, 10))
+        bs.Label(frame, text="Theme Color:").grid(row=0, column=0, sticky="w", padx=(0, 10))
 
         colors = ["primary", "secondary", "success", "info", "warning", "danger"]
 
         # Combobox widget connected to color_choice signal
-        combobox = ttk.Combobox(
+        combobox = bs.Combobox(
             frame,
             values=colors,
             state="readonly",
@@ -150,11 +150,11 @@ class SignalsDemo(ttk.Window):
         combobox.grid(row=0, column=1, sticky="w")
 
         # Button that changes color based on signal
-        demo_button = ttk.Button(frame, text="Themed Button")
+        demo_button = bs.Button(frame, text="Themed Button")
         demo_button.grid(row=0, column=2, padx=(10, 0))
 
         # Display current signal value
-        value_label = ttk.Label(frame, text="", foreground="gray")
+        value_label = bs.Label(frame, text="", foreground="gray")
         value_label.grid(row=1, column=0, columnspan=3, sticky="w", pady=(5, 0))
 
         def update_display(*args):
@@ -169,13 +169,13 @@ class SignalsDemo(ttk.Window):
 
     def _create_scale_section(self, parent):
         """Create scale widget section with signal binding."""
-        frame = ttk.LabelFrame(parent, text="Scale Widget with Signal", padding=15)
+        frame = bs.LabelFrame(parent, text="Scale Widget with Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
-        ttk.Label(frame, text="Volume:").grid(row=0, column=0, sticky="w", padx=(0, 10))
+        bs.Label(frame, text="Volume:").grid(row=0, column=0, sticky="w", padx=(0, 10))
 
         # Scale widget connected to volume signal
-        scale = ttk.Scale(
+        scale = bs.Scale(
             frame,
             from_=0,
             to=100,
@@ -185,11 +185,11 @@ class SignalsDemo(ttk.Window):
         scale.grid(row=0, column=1, sticky="ew", padx=(0, 10))
 
         # Label showing current value
-        value_display = ttk.Label(frame, text="50", width=5, anchor="e")
+        value_display = bs.Label(frame, text="50", width=5, anchor="e")
         value_display.grid(row=0, column=2)
 
         # Display current signal value
-        value_label = ttk.Label(frame, text="", foreground="gray")
+        value_label = bs.Label(frame, text="", foreground="gray")
         value_label.grid(row=1, column=0, columnspan=3, sticky="w", pady=(5, 0))
 
         def update_display(*args):
@@ -204,11 +204,11 @@ class SignalsDemo(ttk.Window):
 
     def _create_progressbar_section(self, parent):
         """Create progressbar section synced with volume signal."""
-        frame = ttk.LabelFrame(parent, text="Progressbar with Signal (Synced to Volume)", padding=15)
+        frame = bs.LabelFrame(parent, text="Progressbar with Signal (Synced to Volume)", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
         # Progressbar connected to the same signal as the scale
-        progressbar = ttk.Progressbar(
+        progressbar = bs.Progressbar(
             frame,
             maximum=100,
             signal=self.volume,
@@ -217,7 +217,7 @@ class SignalsDemo(ttk.Window):
         )
         progressbar.pack(fill="x")
 
-        info_label = ttk.Label(
+        info_label = bs.Label(
             frame,
             text="This progressbar is automatically synchronized with the volume scale above",
             foreground="gray",
@@ -227,11 +227,11 @@ class SignalsDemo(ttk.Window):
 
     def _create_derived_section(self, parent):
         """Create section displaying derived signal value."""
-        frame = ttk.LabelFrame(parent, text="Derived Signal", padding=15)
+        frame = bs.LabelFrame(parent, text="Derived Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
         # Label that updates from computed signal
-        greeting_label = ttk.Label(
+        greeting_label = bs.Label(
             frame,
             text="",
             font=("Helvetica", 14),
@@ -239,7 +239,7 @@ class SignalsDemo(ttk.Window):
         )
         greeting_label.pack(fill="x")
 
-        info_label = ttk.Label(
+        info_label = bs.Label(
             frame,
             text="This greeting is derived from the username and age signals above",
             foreground="gray",
@@ -254,10 +254,10 @@ class SignalsDemo(ttk.Window):
         update_greeting_display()
 
         # Add buttons to demonstrate programmatic signal updates
-        button_frame = ttk.Frame(frame)
+        button_frame = bs.Frame(frame)
         button_frame.pack(fill="x", pady=(10, 0))
 
-        ttk.Label(button_frame, text="Quick Actions:").pack(side="left", padx=(0, 10))
+        bs.Label(button_frame, text="Quick Actions:").pack(side="left", padx=(0, 10))
 
         def set_alice():
             self.username.set("Alice")
@@ -271,9 +271,9 @@ class SignalsDemo(ttk.Window):
             self.username.set("")
             self.age.set(25)
 
-        ttk.Button(button_frame, text="Set to Alice (30)", command=set_alice).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Set to Bob (25)", command=set_bob).pack(side="left", padx=2)
-        ttk.Button(button_frame, text="Reset", command=reset, bootstyle="secondary").pack(side="left", padx=2)
+        bs.Button(button_frame, text="Set to Alice (30)", command=set_alice).pack(side="left", padx=2)
+        bs.Button(button_frame, text="Set to Bob (25)", command=set_bob).pack(side="left", padx=2)
+        bs.Button(button_frame, text="Reset", command=reset, bootstyle="secondary").pack(side="left", padx=2)
 
 
 def main():

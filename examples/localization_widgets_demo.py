@@ -15,7 +15,7 @@ Tip:
         python tools/make_i18n.py compile -d locales -D bootstack
 """
 from __future__ import annotations
-import bootstack as tb
+import bootstack as bs
 from bootstack.dialogs import MessageBox
 from bootstack.core.localization import MessageCatalog
 

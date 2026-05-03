@@ -1,11 +1,11 @@
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.Window()
+app = bs.Window()
 
-sf = ttk.ScrollView(app, padding=16, scrollbar_variant='rounded')
+sf = bs.ScrollView(app, padding=16, scrollbar_variant='rounded')
 sf.pack(fill='both', expand=True)
 
-text = ttk.Text(sf)
+text = bs.Text(sf)
 
 text.insert('end', 'Hello world')
 

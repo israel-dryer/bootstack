@@ -1,17 +1,17 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_labelframe_style():
-    frame = ttk.Frame(root, padding=5)
+    frame = bs.Frame(root, padding=5)
 
     # title
-    title = ttk.Label(frame, text='Labelframe', anchor=CENTER)
+    title = bs.Label(frame, text='Labelframe', anchor=CENTER)
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
     # default
-    lbl = ttk.LabelFrame(
+    lbl = bs.LabelFrame(
         master=frame,
         text='default',
         width=150,
@@ -21,7 +21,7 @@ def create_labelframe_style():
 
     # colored
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        lbl = ttk.LabelFrame(
+        lbl = bs.LabelFrame(
             master=frame,
             text=color,
             accent=color,
@@ -35,9 +35,9 @@ def create_labelframe_style():
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.Window()
+    root = bs.Window()
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
 
     create_labelframe_style().pack(side=LEFT)
 

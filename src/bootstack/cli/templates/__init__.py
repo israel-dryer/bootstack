@@ -22,14 +22,14 @@ Run with: python -m {module_name}
 
 import os
 
-import bootstack as ttk
+import bootstack as bs
 
 from {module_name}.views.main_view import MainView
 
 
 def main() -> None:
     """Application entry point."""
-    app = ttk.App(
+    app = bs.App(
         title="{app_name}",
         theme=os.environ.get("TTKB_THEME", "{theme}"),
         size=(800, 600),
@@ -53,10 +53,10 @@ if __name__ == "__main__":
 MAIN_VIEW_GRID_TEMPLATE = '''\
 """Main application view."""
 
-import bootstack as ttk
+import bootstack as bs
 
 
-class MainView(ttk.GridFrame):
+class MainView(bs.GridFrame):
     """Main view using GridFrame layout."""
 
     def __init__(self, master, **kwargs):
@@ -72,23 +72,23 @@ class MainView(ttk.GridFrame):
     def _create_widgets(self) -> None:
         """Create and layout widgets."""
         # Header
-        ttk.Label(
+        bs.Label(
             self,
             text="Welcome to {app_name}",
             font=("TkDefaultFont", 18, "bold"),
         ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 20))
 
         # Example form layout
-        ttk.Label(self, text="Name:").grid(row=1, column=0, sticky="e")
-        self.name_entry = ttk.Entry(self)
+        bs.Label(self, text="Name:").grid(row=1, column=0, sticky="e")
+        self.name_entry = bs.Entry(self)
         self.name_entry.grid(row=1, column=1, sticky="ew")
 
-        ttk.Label(self, text="Email:").grid(row=2, column=0, sticky="e")
-        self.email_entry = ttk.Entry(self)
+        bs.Label(self, text="Email:").grid(row=2, column=0, sticky="e")
+        self.email_entry = bs.Entry(self)
         self.email_entry.grid(row=2, column=1, sticky="ew")
 
         # Action button
-        ttk.Button(
+        bs.Button(
             self,
             text="Get Started",
             accent="primary",
@@ -106,10 +106,10 @@ class MainView(ttk.GridFrame):
 MAIN_VIEW_PACK_TEMPLATE = '''\
 """Main application view."""
 
-import bootstack as ttk
+import bootstack as bs
 
 
-class MainView(ttk.PackFrame):
+class MainView(bs.PackFrame):
     """Main view using PackFrame layout."""
 
     def __init__(self, master, **kwargs):
@@ -125,7 +125,7 @@ class MainView(ttk.PackFrame):
     def _create_widgets(self) -> None:
         """Create and layout widgets."""
         # Header
-        header = ttk.Label(
+        header = bs.Label(
             self,
             text="Welcome to {app_name}",
             font=("TkDefaultFont", 18, "bold"),
@@ -133,25 +133,25 @@ class MainView(ttk.PackFrame):
         self.add(header)
 
         # Spacer
-        self.add(ttk.Frame(self, height=10))
+        self.add(bs.Frame(self, height=10))
 
         # Name field
-        name_frame = ttk.PackFrame(self, direction="horizontal", gap=10)
-        ttk.Label(name_frame, text="Name:", width=10).pack(side="left")
-        self.name_entry = ttk.Entry(name_frame)
+        name_frame = bs.PackFrame(self, direction="horizontal", gap=10)
+        bs.Label(name_frame, text="Name:", width=10).pack(side="left")
+        self.name_entry = bs.Entry(name_frame)
         self.name_entry.pack(side="left", fill="x", expand=True)
         self.add(name_frame, fill_items="x")
 
         # Email field
-        email_frame = ttk.PackFrame(self, direction="horizontal", gap=10)
-        ttk.Label(email_frame, text="Email:", width=10).pack(side="left")
-        self.email_entry = ttk.Entry(email_frame)
+        email_frame = bs.PackFrame(self, direction="horizontal", gap=10)
+        bs.Label(email_frame, text="Email:", width=10).pack(side="left")
+        self.email_entry = bs.Entry(email_frame)
         self.email_entry.pack(side="left", fill="x", expand=True)
         self.add(email_frame, fill_items="x")
 
         # Action button
-        self.add(ttk.Frame(self, height=10))
-        btn = ttk.Button(
+        self.add(bs.Frame(self, height=10))
+        btn = bs.Button(
             self,
             text="Get Started",
             accent="primary",
@@ -176,10 +176,10 @@ VIEW_GRID_TEMPLATE = '''\
 {class_name} view.
 """
 
-import bootstack as ttk
+import bootstack as bs
 
 
-class {class_name}(ttk.GridFrame):
+class {class_name}(bs.GridFrame):
     """{class_name} using GridFrame layout."""
 
     def __init__(self, master, **kwargs):
@@ -194,7 +194,7 @@ class {class_name}(ttk.GridFrame):
 
     def _create_widgets(self) -> None:
         """Create and layout widgets."""
-        ttk.Label(
+        bs.Label(
             self,
             text="{class_name}",
             font=("TkDefaultFont", 14, "bold"),
@@ -209,10 +209,10 @@ VIEW_PACK_TEMPLATE = '''\
 {class_name} view.
 """
 
-import bootstack as ttk
+import bootstack as bs
 
 
-class {class_name}(ttk.PackFrame):
+class {class_name}(bs.PackFrame):
     """{class_name} using PackFrame layout."""
 
     def __init__(self, master, **kwargs):
@@ -227,7 +227,7 @@ class {class_name}(ttk.PackFrame):
 
     def _create_widgets(self) -> None:
         """Create and layout widgets."""
-        header = ttk.Label(
+        header = bs.Label(
             self,
             text="{class_name}",
             font=("TkDefaultFont", 14, "bold"),
@@ -243,7 +243,7 @@ DIALOG_TEMPLATE = '''\
 {class_name} dialog.
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import Dialog
 
 
@@ -253,28 +253,28 @@ class {class_name}(Dialog):
     def __init__(self, parent, title: str = "{class_name}", **kwargs):
         super().__init__(parent, title=title, **kwargs)
 
-    def create_body(self, master) -> ttk.Frame:
+    def create_body(self, master) -> bs.Frame:
         """Create the dialog body."""
-        body = ttk.Frame(master, padding=20)
+        body = bs.Frame(master, padding=20)
 
-        ttk.Label(
+        bs.Label(
             body,
             text="Dialog content goes here",
         ).pack(pady=10)
 
         return body
 
-    def create_buttonbox(self, master) -> ttk.Frame:
+    def create_buttonbox(self, master) -> bs.Frame:
         """Create the dialog buttons."""
-        box = ttk.Frame(master, padding=(20, 10))
+        box = bs.Frame(master, padding=(20, 10))
 
-        ttk.Button(
+        bs.Button(
             box,
             text="Cancel",
             command=self.cancel,
         ).pack(side="right", padx=5)
 
-        ttk.Button(
+        bs.Button(
             box,
             text="OK",
             accent="primary",
@@ -373,7 +373,7 @@ Run with: python -m {module_name}
 
 import os
 
-import bootstack as ttk
+import bootstack as bs
 
 from {module_name}.pages.home_page import HomePage
 from {module_name}.pages.settings_page import SettingsPage
@@ -381,14 +381,14 @@ from {module_name}.pages.settings_page import SettingsPage
 
 def main() -> None:
     """Application entry point."""
-    shell = ttk.AppShell(
+    shell = bs.AppShell(
         title="{app_name}",
         theme=os.environ.get("TTKB_THEME", "{theme}"),
         size=(1000, 650),
     )
 
     # Add a theme toggle button to the toolbar
-    shell.toolbar.add_button(icon="sun", command=ttk.toggle_theme)
+    shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 
     # Navigation pages
     home = shell.add_page("home", text="Home", icon="house")
@@ -413,7 +413,7 @@ if __name__ == "__main__":
 APPSHELL_HOME_PAGE_TEMPLATE = '''\
 """Home page."""
 
-import bootstack as ttk
+import bootstack as bs
 
 
 class HomePage:
@@ -428,22 +428,22 @@ class HomePage:
         self._build()
 
     def _build(self):
-        ttk.Label(
+        bs.Label(
             self.parent,
             text="Welcome to {app_name}",
             font="heading-xl",
         ).pack(anchor="w", padx=20, pady=(20, 10))
 
-        ttk.Label(
+        bs.Label(
             self.parent,
             text="This is your home page. Edit this file to get started.",
             wraplength=500,
         ).pack(anchor="w", padx=20, pady=(0, 20))
 
-        content = ttk.LabelFrame(self.parent, text="Getting Started", padding=20)
+        content = bs.LabelFrame(self.parent, text="Getting Started", padding=20)
         content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
-        ttk.Label(
+        bs.Label(
             content,
             text=(
                 "Add your widgets here.\\n\\n"
@@ -460,7 +460,7 @@ class HomePage:
 APPSHELL_SETTINGS_PAGE_TEMPLATE = '''\
 """Settings page."""
 
-import bootstack as ttk
+import bootstack as bs
 
 
 class SettingsPage:
@@ -475,29 +475,29 @@ class SettingsPage:
         self._build()
 
     def _build(self):
-        ttk.Label(
+        bs.Label(
             self.parent,
             text="Settings",
             font="heading-xl",
         ).pack(anchor="w", padx=20, pady=(20, 10))
 
-        ttk.Label(
+        bs.Label(
             self.parent,
             text="Configure your application preferences.",
             wraplength=500,
         ).pack(anchor="w", padx=20, pady=(0, 20))
 
-        content = ttk.LabelFrame(self.parent, text="Preferences", padding=20)
+        content = bs.LabelFrame(self.parent, text="Preferences", padding=20)
         content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         # Example settings
-        theme_frame = ttk.Frame(content)
+        theme_frame = bs.Frame(content)
         theme_frame.pack(fill="x", pady=(0, 10))
-        ttk.Label(theme_frame, text="Theme:", width=15).pack(side="left")
-        ttk.Button(
+        bs.Label(theme_frame, text="Theme:", width=15).pack(side="left")
+        bs.Button(
             theme_frame,
             text="Toggle Light/Dark",
-            command=ttk.toggle_theme,
+            command=bs.toggle_theme,
         ).pack(side="left")
 '''
 
@@ -505,7 +505,7 @@ class SettingsPage:
 APPSHELL_PAGE_TEMPLATE = '''\
 """{page_title} page."""
 
-import bootstack as ttk
+import bootstack as bs
 
 
 class {class_name}:
@@ -520,13 +520,13 @@ class {class_name}:
         self._build()
 
     def _build(self):
-        ttk.Label(
+        bs.Label(
             self.parent,
             text="{page_title}",
             font="heading-xl",
         ).pack(anchor="w", padx=20, pady=(20, 10))
 
-        content = ttk.LabelFrame(self.parent, text="Content", padding=20)
+        content = bs.LabelFrame(self.parent, text="Content", padding=20)
         content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         # Add your widgets here

@@ -1,9 +1,9 @@
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 
-pe = ttk.PasswordEntry(accent='info')
+pe = bs.PasswordEntry(accent='info')
 pe.pack(padx=10, pady=10, fill='x')
 
 

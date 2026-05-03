@@ -1,18 +1,18 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
-root = ttk.App(
+root = bs.App(
     theme="dark",
-    settings=ttk.AppSettings(locale="ko"),
+    settings=bs.AppSettings(locale="ko"),
 )
 
-frame = ttk.Frame(root, padding=10)
+frame = bs.Frame(root, padding=10)
 frame.pack(padx=10, pady=10)
 
-inner_frame = ttk.Frame(frame, padding=10)
+inner_frame = bs.Frame(frame, padding=10)
 inner_frame.pack(padx=10, pady=10)
 
-de = ttk.DateEntry(
+de = bs.DateEntry(
     inner_frame, label="Registration Date", show_picker_button=True, value_format="longDate", message="Enter the registration date")
 
 de.pack(fill=X)

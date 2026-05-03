@@ -19,17 +19,17 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-exp = ttk.Expander(app, title="Settings")
+exp = bs.Expander(app, title="Settings")
 exp.pack(fill="x", padx=10, pady=5)
 
 content = exp.add()
-ttk.CheckButton(content, text="Enable notifications").pack(anchor="w")
-ttk.CheckButton(content, text="Dark mode").pack(anchor="w")
-ttk.CheckButton(content, text="Auto-save").pack(anchor="w")
+bs.CheckButton(content, text="Enable notifications").pack(anchor="w")
+bs.CheckButton(content, text="Dark mode").pack(anchor="w")
+bs.CheckButton(content, text="Auto-save").pack(anchor="w")
 
 app.mainloop()
 ```
@@ -64,7 +64,7 @@ The chevron button uses `foreground-ghost` by default for a subtle appearance.
 When `accent` is provided, the chevron inherits that style.
 
 ```python
-ttk.Expander(app, title="Primary Section", accent="primary")
+bs.Expander(app, title="Primary Section", accent="primary")
 ```
 
 ### Border
@@ -72,7 +72,7 @@ ttk.Expander(app, title="Primary Section", accent="primary")
 Use `show_border=True` to add a visible border around the expander.
 
 ```python
-ttk.Expander(app, title="Bordered", show_border=True)
+bs.Expander(app, title="Bordered", show_border=True)
 ```
 
 ### Custom icons
@@ -80,7 +80,7 @@ ttk.Expander(app, title="Bordered", show_border=True)
 Override the default chevron icons with custom ones.
 
 ```python
-ttk.Expander(
+bs.Expander(
     app,
     title="Custom Icons",
     icon_expanded={'name': 'dash', 'size': 16},
@@ -93,8 +93,8 @@ ttk.Expander(
 Place the chevron before or after the title.
 
 ```python
-ttk.Expander(app, title="Icon Before", icon_position="before")
-ttk.Expander(app, title="Icon After", icon_position="after")  # default
+bs.Expander(app, title="Icon Before", icon_position="before")
+bs.Expander(app, title="Icon After", icon_position="after")  # default
 ```
 
 ---
@@ -106,12 +106,12 @@ ttk.Expander(app, title="Icon After", icon_position="after")  # default
 Use `add()` to get a content frame for placing widgets.
 
 ```python
-exp = ttk.Expander(app, title="Options")
+exp = bs.Expander(app, title="Options")
 exp.pack(fill="x", padx=10, pady=5)
 
 content = exp.add()  # Returns a Frame
-ttk.Label(content, text="Option 1").pack()
-ttk.Entry(content).pack(fill="x")
+bs.Label(content, text="Option 1").pack()
+bs.Entry(content).pack(fill="x")
 ```
 
 Frame options (padding, color, etc.) can be passed directly:
@@ -127,7 +127,7 @@ Calling `add()` multiple times returns the same frame (idempotent).
 Set `expanded=False` to start in collapsed state.
 
 ```python
-exp = ttk.Expander(app, title="Advanced", expanded=False)
+exp = bs.Expander(app, title="Advanced", expanded=False)
 ```
 
 ### Non-collapsible section
@@ -135,7 +135,7 @@ exp = ttk.Expander(app, title="Advanced", expanded=False)
 Set `collapsible=False` to create a section that cannot be toggled (always visible, no chevron).
 
 ```python
-exp = ttk.Expander(app, title="Always Visible", collapsible=False)
+exp = bs.Expander(app, title="Always Visible", collapsible=False)
 ```
 
 ### Highlight mode
@@ -143,7 +143,7 @@ exp = ttk.Expander(app, title="Always Visible", collapsible=False)
 Set `highlight=True` to show a visual 'selected' state on the header when expanded. This is useful for accordion-style interfaces where the open section should be visually distinct.
 
 ```python
-exp = ttk.Expander(
+exp = bs.Expander(
     app,
     title="Highlighted Section",
     highlight=True,

@@ -29,11 +29,11 @@ bootstack exposes `Text` as a first-class widget so you can build editors, logs,
 Create a text widget, insert content, and read it back:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-text = ttk.Text(app, width=60, height=12, wrap="word")
+text = bs.Text(app, width=60, height=12, wrap="word")
 text.pack(fill="both", expand=True, padx=20, pady=20)
 
 text.insert("end", "Hello from Text\n")
@@ -77,7 +77,7 @@ Use `Text` when:
 - `wrap` - `"none"`, `"char"`, `"word"`
 
 ```python
-ttk.Text(app, width=80, height=24, wrap="word")
+bs.Text(app, width=80, height=24, wrap="word")
 ```
 
 !!! note "Width/height are character/line counts"
@@ -95,7 +95,7 @@ ttk.Text(app, width=80, height=24, wrap="word")
 - `autoseparators` - automatically insert undo separators
 
 ```python
-text = ttk.Text(app, undo=True, maxundo=200, autoseparators=True)
+text = bs.Text(app, undo=True, maxundo=200, autoseparators=True)
 ```
 
 ### Padding and paragraph spacing
@@ -105,7 +105,7 @@ text = ttk.Text(app, undo=True, maxundo=200, autoseparators=True)
 - `spacing1`, `spacing2`, `spacing3` - spacing above/between/below lines
 
 ```python
-ttk.Text(app, padx=10, pady=8, spacing1=2, spacing2=2, spacing3=2)
+bs.Text(app, padx=10, pady=8, spacing1=2, spacing2=2, spacing3=2)
 ```
 
 ### Theme-critical colors
@@ -234,17 +234,17 @@ text.tag_bind("link", "<Leave>", lambda e: text.configure(cursor="xterm"))
 Text uses `yscrollcommand` / `yview` to connect a scrollbar.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-frame = ttk.Frame(app)
+frame = bs.Frame(app)
 frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-text = ttk.Text(frame, wrap="word")
+text = bs.Text(frame, wrap="word")
 text.pack(side="left", fill="both", expand=True)
 
-sb = ttk.Scrollbar(frame, orient="vertical", command=text.yview)
+sb = bs.Scrollbar(frame, orient="vertical", command=text.yview)
 sb.pack(side="right", fill="y")
 
 text.configure(yscrollcommand=sb.set)

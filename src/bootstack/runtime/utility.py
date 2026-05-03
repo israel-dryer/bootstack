@@ -14,12 +14,12 @@ Functions:
 Example:
     ```python
     from bootstack.utility import enable_high_dpi_awareness
-    import bootstack as ttk
+    import bootstack as bs
 
     # Enable high-DPI before creating window
     enable_high_dpi_awareness()
 
-    root = ttk.Window()
+    root = bs.Window()
     root.mainloop()
     ```
 """

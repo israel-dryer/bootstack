@@ -29,14 +29,14 @@
 #
 # Example:
 #     ```python
-#     import bootstack as ttk
+#     import bootstack as bs
 #     from bootstack.constants import *
 #
 #     # Create window with theme
-#     app = ttk.Window(themename="darkly")
+#     app = bs.Window(themename="darkly")
 #
 #     # Access style instance
-#     style = ttk.Style.get_instance()
+#     style = bs.Style.get_instance()
 #
 #     # Get theme colors
 #     primary_color = style.colors.primary
@@ -46,8 +46,8 @@
 #     style.theme_use("flatly")
 #
 #     # Create styled widgets
-#     btn = ttk.Button(app, text="Success", bootstyle="success")
-#     btn_outline = ttk.Button(app, text="Danger", bootstyle="danger-outline")
+#     btn = bs.Button(app, text="Success", bootstyle="success")
+#     btn_outline = bs.Button(app, text="Danger", bootstyle="danger-outline")
 #
 #     app.mainloop()
 #     ```
@@ -549,11 +549,11 @@
 #         )
 #
 #
-# class Style(ttk.Style):
+# class Style(bs.Style):
 #     """A singleton class for creating and managing the application
 #     theme and widget styles.
 #
-#     This class is meant to be a drop-in replacement for `ttk.Style` and
+#     This class is meant to be a drop-in replacement for `bs.Style` and
 #     inherits all of it's methods and properties. However, in
 #     bootstack, this class is implemented as a singleton. Subclassing
 #     is not recommended and may have unintended consequences.
@@ -1347,7 +1347,7 @@
 #         style methods.
 #         """
 #         self.style.theme_create(self.theme.name, TTK_CLAM)
-#         ttk.Style.theme_use(self.style, self.theme.name)
+#         bs.Style.theme_use(self.style, self.theme.name)
 #         self.update_ttk_theme_settings()
 #
 #     def update_ttk_theme_settings(self):
@@ -1395,7 +1395,7 @@
 #         )
 #
 #     def create_combobox_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Combobox widget.
+#         """Create a style for the bs.Combobox widget.
 #
 #         Parameters:
 #
@@ -1521,7 +1521,7 @@
 #             pass
 #
 #     def create_separator_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Separator widget.
+#         """Create a style for the bs.Separator widget.
 #
 #         Parameters:
 #
@@ -1622,7 +1622,7 @@
 #         return h_name, v_name
 #
 #     def create_striped_progressbar_style(self, colorname=DEFAULT):
-#         """Create a striped style for the ttk.Progressbar widget.
+#         """Create a striped style for the bs.Progressbar widget.
 #
 #         Parameters:
 #
@@ -1726,7 +1726,7 @@
 #         self.style._register_ttkstyle(v_ttkstyle)
 #
 #     def create_progressbar_style(self, colorname=DEFAULT):
-#         """Create a solid ttk style for the ttk.Progressbar widget.
+#         """Create a solid ttk style for the bs.Progressbar widget.
 #
 #         Parameters:
 #
@@ -1832,7 +1832,7 @@
 #         self.style._register_ttkstyle(v_ttkstyle)
 #
 #     def create_scale_assets(self, colorname=DEFAULT, size=14):
-#         """Create the assets used for the ttk.Scale widget.
+#         """Create the assets used for the bs.Scale widget.
 #
 #         The slider handle is automatically adjusted to fit the
 #         screen resolution.
@@ -1934,7 +1934,7 @@
 #         )
 #
 #     def create_scale_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Scale widget.
+#         """Create a style for the bs.Scale widget.
 #
 #         Parameters:
 #
@@ -2275,7 +2275,7 @@
 #         )
 #
 #     def create_round_scrollbar_style(self, colorname=DEFAULT):
-#         """Create a round style for the ttk.Scrollbar widget.
+#         """Create a round style for the bs.Scrollbar widget.
 #
 #         Parameters:
 #
@@ -2469,7 +2469,7 @@
 #         )
 #
 #     def create_scrollbar_style(self, colorname=DEFAULT):
-#         """Create a standard style for the ttk.Scrollbar widget.
+#         """Create a standard style for the bs.Scrollbar widget.
 #
 #         Parameters:
 #
@@ -2616,7 +2616,7 @@
 #         self.style._register_ttkstyle(v_ttkstyle)
 #
 #     def create_spinbox_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Spinbox widget.
+#         """Create a style for the bs.Spinbox widget.
 #
 #         Parameters:
 #
@@ -2875,7 +2875,7 @@
 #         self.style._register_ttkstyle(body_style)
 #
 #     def create_treeview_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Treeview widget.
+#         """Create a style for the bs.Treeview widget.
 #
 #         Parameters:
 #
@@ -2994,7 +2994,7 @@
 #         self.style._register_ttkstyle(body_style)
 #
 #     def create_frame_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Frame widget.
+#         """Create a style for the bs.Frame widget.
 #
 #         Parameters:
 #
@@ -3016,7 +3016,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_button_style(self, colorname=DEFAULT):
-#         """Create a solid style for the ttk.Button widget.
+#         """Create a solid style for the bs.Button widget.
 #
 #         Parameters:
 #
@@ -3078,7 +3078,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_outline_button_style(self, colorname=DEFAULT):
-#         """Create an outline style for the ttk.Button widget.
+#         """Create an outline style for the bs.Button widget.
 #
 #         Parameters:
 #
@@ -3148,7 +3148,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_link_button_style(self, colorname=DEFAULT):
-#         """Create a link button style for the ttk.Button widget.
+#         """Create a link button style for the bs.Button widget.
 #
 #         Parameters:
 #
@@ -3307,7 +3307,7 @@
 #         return off_name, on_name, disabled_name, on_disabled_name
 #
 #     def create_toggle_style(self, colorname=DEFAULT):
-#         """Create a round toggle style for the ttk.Checkbutton widget.
+#         """Create a round toggle style for the bs.Checkbutton widget.
 #
 #         Parameters:
 #
@@ -3415,7 +3415,7 @@
 #         return off_name, on_name, disabled_name, on_disabled_name
 #
 #     def create_round_toggle_style(self, colorname=DEFAULT):
-#         """Create a round toggle style for the ttk.Checkbutton widget.
+#         """Create a round toggle style for the bs.Checkbutton widget.
 #
 #         Parameters:
 #
@@ -3502,7 +3502,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_square_toggle_style(self, colorname=DEFAULT):
-#         """Create a square toggle style for the ttk.Checkbutton widget.
+#         """Create a square toggle style for the bs.Checkbutton widget.
 #
 #         Parameters:
 #
@@ -3580,8 +3580,8 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_toolbutton_style(self, colorname=DEFAULT):
-#         """Create a solid toolbutton style for the ttk.Checkbutton
-#         and ttk.Radiobutton widgets.
+#         """Create a solid toolbutton style for the bs.Checkbutton
+#         and bs.Radiobutton widgets.
 #
 #         Parameters:
 #
@@ -3661,8 +3661,8 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_outline_toolbutton_style(self, colorname=DEFAULT):
-#         """Create an outline toolbutton style for the ttk.Checkbutton
-#         and ttk.Radiobutton widgets.
+#         """Create an outline toolbutton style for the bs.Checkbutton
+#         and bs.Radiobutton widgets.
 #
 #         Parameters:
 #
@@ -3738,7 +3738,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_entry_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Entry widget.
+#         """Create a style for the bs.Entry widget.
 #
 #         Parameters:
 #
@@ -3873,7 +3873,7 @@
 #         return off_name, on_name, disabled_name, on_disabled_name
 #
 #     def create_radiobutton_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Radiobutton widget.
+#         """Create a style for the bs.Radiobutton widget.
 #
 #         Parameters:
 #
@@ -3993,7 +3993,7 @@
 #         return tk_name
 #
 #     def create_date_button_style(self, colorname=DEFAULT):
-#         """Create a date button style for the ttk.Button widget.
+#         """Create a date button style for the bs.Button widget.
 #
 #         Parameters:
 #
@@ -4248,7 +4248,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_label_style(self, colorname=DEFAULT):
-#         """Create a standard style for the ttk.Label widget.
+#         """Create a standard style for the bs.Label widget.
 #
 #         Parameters:
 #
@@ -4274,7 +4274,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_inverse_label_style(self, colorname=DEFAULT):
-#         """Create an inverted style for the ttk.Label.
+#         """Create an inverted style for the bs.Label.
 #
 #         The foreground and background are inverted versions of that
 #         used in the standard label style.
@@ -4302,7 +4302,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_labelframe_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Labelframe widget.
+#         """Create a style for the bs.Labelframe widget.
 #
 #         Parameters:
 #
@@ -4346,7 +4346,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_checkbutton_style(self, colorname=DEFAULT):
-#         """Create a standard style for the ttk.Checkbutton widget.
+#         """Create a standard style for the bs.Checkbutton widget.
 #
 #         Parameters:
 #
@@ -4581,7 +4581,7 @@
 #         return off_name, on_name, disabled_name, alt_name, on_dis_name, alt_dis_name
 #
 #     def create_menubutton_style(self, colorname=DEFAULT):
-#         """Create a solid style for the ttk.Menubutton widget.
+#         """Create a solid style for the bs.Menubutton widget.
 #
 #         Parameters:
 #
@@ -4648,7 +4648,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_outline_menubutton_style(self, colorname=DEFAULT):
-#         """Create an outline button style for the ttk.Menubutton widget
+#         """Create an outline button style for the bs.Menubutton widget
 #
 #         Parameters:
 #
@@ -4721,7 +4721,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_notebook_style(self, colorname=DEFAULT):
-#         """Create a standard style for the ttk.Notebook widget.
+#         """Create a standard style for the bs.Notebook widget.
 #
 #         Parameters:
 #
@@ -4781,7 +4781,7 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def create_panedwindow_style(self, colorname=DEFAULT):
-#         """Create a standard style for the ttk.Panedwindow widget.
+#         """Create a standard style for the bs.Panedwindow widget.
 #
 #         Parameters:
 #
@@ -4865,7 +4865,7 @@
 #         return _name
 #
 #     def create_sizegrip_style(self, colorname=DEFAULT):
-#         """Create a style for the ttk.Sizegrip widget.
+#         """Create a style for the bs.Sizegrip widget.
 #
 #         Parameters:
 #
@@ -4903,19 +4903,19 @@
 #         self.style._register_ttkstyle(ttkstyle)
 #
 #     def update_combobox_popdown_style(self, widget):
-#         """Update the legacy ttk.Combobox elements. This method is
+#         """Update the legacy bs.Combobox elements. This method is
 #         called every time the theme is changed in order to ensure
 #         that the legacy tkinter components embedded in this ttk widget
 #         are styled appropriate to the current theme.
 #
-#         The ttk.Combobox contains several elements that are not styled
+#         The bs.Combobox contains several elements that are not styled
 #         using the ttk theme engine. This includes the **popdownwindow**
 #         and the **scrollbar**. Both of these widgets are configured
 #         manually using calls to tcl/tk.
 #
 #         Parameters:
 #
-#             widget (ttk.Combobox):
+#             widget (bs.Combobox):
 #                 The combobox element to be updated.
 #         """
 #         if self.is_light_theme:
@@ -5375,13 +5375,13 @@
 #
 #     @staticmethod
 #     def update_ttk_widget_style(
-#             widget: ttk.Widget = None, style_string: str = None, **kwargs
+#             widget: bs.Widget = None, style_string: str = None, **kwargs
 #     ):
 #         """Update the ttk style or create if not existing.
 #
 #         Parameters:
 #
-#             widget (ttk.Widget):
+#             widget (bs.Widget):
 #                 The widget instance being updated.
 #
 #             style_string (str):

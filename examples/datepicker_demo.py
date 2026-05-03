@@ -2,13 +2,13 @@
 
 from datetime import date
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import BOTH, W, X
 from bootstack import Calendar
 
 
 def main():
-    app = ttk.Window(title="Calendar Demo", theme="light")
+    app = bs.Window(title="Calendar Demo", theme="light")
 
     picker = Calendar(app, start_date=date.today())#, selection_mode="range")
     picker.pack(fill=BOTH, expand=True)

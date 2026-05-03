@@ -10,7 +10,7 @@ This demo showcases the ListView widget's features including:
 - Interactive features (chevron, drag handles)
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites import ListView, MemoryDataSource
 
 
@@ -29,15 +29,15 @@ def create_sample_data(count=1000):
 
 def main():
     """Main demo application."""
-    root = ttk.App(title="ListView Widget Demo", theme="docs-dark", size=(1200, 700))
+    root = bs.App(title="ListView Widget Demo", theme="docs-dark", size=(1200, 700))
     root.geometry("1200x700")
 
     # Main container
-    main_container = ttk.Frame(root, padding=20)
+    main_container = bs.Frame(root, padding=20)
     main_container.pack(fill='both', expand=True)
 
     # Title
-    title = ttk.Label(
+    title = bs.Label(
         main_container,
         text="ListView Widget Demo",
         font=('Helvetica', 18, 'bold')
@@ -45,15 +45,15 @@ def main():
     title.pack(pady=(0, 15), anchor='w')
 
     # Create three columns for different ListView examples
-    columns = ttk.Frame(main_container)
+    columns = bs.Frame(main_container)
     columns.pack(fill='both', expand=True)
 
     # Column 1: Simple ListView
-    col1 = ttk.Frame(columns, padding=10)
+    col1 = bs.Frame(columns, padding=10)
     col1.pack(side='left', fill='both', expand=True)
 
-    ttk.Label(col1, text="Simple ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
-    ttk.Label(col1, text="Basic list with 1000 items", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
+    bs.Label(col1, text="Simple ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
+    bs.Label(col1, text="Basic list with 1000 items", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
 
     simple_data = create_sample_data(1000)
     simple_list = ListView(
@@ -65,15 +65,15 @@ def main():
     simple_list.pack(fill='both', expand=True)
 
     # Add counter for simple list
-    simple_label = ttk.Label(col1, text=f"Total: {len(simple_data)} items")
+    simple_label = bs.Label(col1, text=f"Total: {len(simple_data)} items")
     simple_label.pack(pady=(5, 0), anchor='w')
 
     # Column 2: Multi-select ListView
-    col2 = ttk.Frame(columns, padding=10)
+    col2 = bs.Frame(columns, padding=10)
     col2.pack(side='left', fill='both', expand=True)
 
-    ttk.Label(col2, text="Multi-Select ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
-    ttk.Label(col2, text="Select multiple items", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
+    bs.Label(col2, text="Multi-Select ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
+    bs.Label(col2, text="Select multiple items", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
 
     multi_data = create_sample_data(500)
     multi_list = ListView(
@@ -88,10 +88,10 @@ def main():
     multi_list.pack(fill='both', expand=True)
 
     # Add controls for multi-select list
-    multi_controls = ttk.Frame(col2)
+    multi_controls = bs.Frame(col2)
     multi_controls.pack(pady=(5, 0), fill='x')
 
-    selected_label = ttk.Label(multi_controls, text="Selected: 0")
+    selected_label = bs.Label(multi_controls, text="Selected: 0")
     selected_label.pack(side='left')
 
     def update_multi_selection(event=None):
@@ -100,7 +100,7 @@ def main():
 
     multi_list.bind('<<SelectionChange>>', update_multi_selection)
 
-    ttk.Button(
+    bs.Button(
         multi_controls,
         text="Select All",
         command=lambda: (multi_list.select_all(), update_multi_selection()),
@@ -109,7 +109,7 @@ def main():
         width=12
     ).pack(side='right', padx=(5, 0))
 
-    ttk.Button(
+    bs.Button(
         multi_controls,
         text="Clear",
         command=lambda: (multi_list.clear_selection(), update_multi_selection()),
@@ -119,11 +119,11 @@ def main():
     ).pack(side='right')
 
     # Column 3: Feature-rich ListView
-    col3 = ttk.Frame(columns, padding=10)
+    col3 = bs.Frame(columns, padding=10)
     col3.pack(side='left', fill='both', expand=True)
 
-    ttk.Label(col3, text="Feature-rich ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
-    ttk.Label(col3, text="With remove & single-select", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
+    bs.Label(col3, text="Feature-rich ListView", font=('Helvetica', 12, 'bold')).pack(anchor='w', pady=(0, 5))
+    bs.Label(col3, text="With remove & single-select", font=('Helvetica', 9)).pack(anchor='w', pady=(0, 10))
 
     feature_data = create_sample_data(300)
     feature_list = ListView(
@@ -140,10 +140,10 @@ def main():
     feature_list.pack(fill='both', expand=True)
 
     # Add controls for feature list
-    feature_controls = ttk.Frame(col3)
+    feature_controls = bs.Frame(col3)
     feature_controls.pack(pady=(5, 0), fill='x')
 
-    feature_label = ttk.Label(feature_controls, text=f"Total: {len(feature_data)} items")
+    feature_label = bs.Label(feature_controls, text=f"Total: {len(feature_data)} items")
     feature_label.pack(side='left')
 
     def update_feature_count(event=None):
@@ -153,7 +153,7 @@ def main():
 
     feature_list.bind('<<ItemDelete>>', update_feature_count)
 
-    ttk.Button(
+    bs.Button(
         feature_controls,
         text="Add Item",
         command=lambda: (
@@ -169,7 +169,7 @@ def main():
         width=12
     ).pack(side='right', padx=(5, 0))
 
-    ttk.Button(
+    bs.Button(
         feature_controls,
         text="Scroll Top",
         command=feature_list.scroll_to_top,
@@ -178,7 +178,7 @@ def main():
         width=12
     ).pack(side='right', padx=(5, 0))
 
-    ttk.Button(
+    bs.Button(
         feature_controls,
         text="Scroll Bottom",
         command=feature_list.scroll_to_bottom,
@@ -188,12 +188,12 @@ def main():
     ).pack(side='right')
 
     # Instructions
-    ttk.Separator(main_container).pack(fill='x', pady=(15, 10))
+    bs.Separator(main_container).pack(fill='x', pady=(15, 10))
 
-    instructions_frame = ttk.Frame(main_container)
+    instructions_frame = bs.Frame(main_container)
     instructions_frame.pack(fill='x')
 
-    ttk.Label(
+    bs.Label(
         instructions_frame,
         text="Features:",
         font=('Helvetica', 11, 'bold')
@@ -208,7 +208,7 @@ def main():
     ]
 
     for instruction in instructions:
-        ttk.Label(instructions_frame, text=instruction, font=('Helvetica', 9)).pack(anchor='w', padx=10)
+        bs.Label(instructions_frame, text=instruction, font=('Helvetica', 9)).pack(anchor='w', padx=10)
 
     # Demonstrate click events (fires when item is clicked, before selection changes)
     simple_list.on_item_click(lambda x: print(f"[Click] {x.data['title']} - selected: {x.data['selected']}"))

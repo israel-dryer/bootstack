@@ -14,11 +14,11 @@ validation, and event model as other v2 field controls.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-path = ttk.PathEntry(
+path = bs.PathEntry(
     app,
     label="Input file",
     message="Select a CSV file to import",
@@ -69,10 +69,10 @@ multi-file selections) is available via `path.dialog_result`.
 ### Dialog type: `dialog`
 
 ```python
-ttk.PathEntry(app, dialog="openfilename")   # choose existing file (default)
-ttk.PathEntry(app, dialog="directory")      # choose folder
-ttk.PathEntry(app, dialog="saveasfilename") # choose save-as path
-ttk.PathEntry(app, dialog="openfilenames")  # choose multiple files
+bs.PathEntry(app, dialog="openfilename")   # choose existing file (default)
+bs.PathEntry(app, dialog="directory")      # choose folder
+bs.PathEntry(app, dialog="saveasfilename") # choose save-as path
+bs.PathEntry(app, dialog="openfilenames")  # choose multiple files
 ```
 
 Available dialog types:
@@ -89,7 +89,7 @@ Available dialog types:
 ### File type filters: `dialog_options`
 
 ```python
-ttk.PathEntry(
+bs.PathEntry(
     app,
     label="Document",
     dialog="openfilename",
@@ -109,8 +109,8 @@ Common `dialog_options` keys: `title`, `initialdir`, `initialfile`, `filetypes`,
 ### Button text: `button_text`
 
 ```python
-ttk.PathEntry(app, label="File", button_text="Choose...")
-ttk.PathEntry(app, label="Folder", dialog="directory", button_text="Select Folder")
+bs.PathEntry(app, label="File", button_text="Choose...")
+bs.PathEntry(app, label="Folder", dialog="directory", button_text="Select Folder")
 ```
 
 The button text can be changed at runtime via `configure(button_text=...)`.
@@ -118,9 +118,9 @@ The button text can be changed at runtime via `configure(button_text=...)`.
 ### Add-ons
 
 ```python
-p = ttk.PathEntry(app, label="File")
+p = bs.PathEntry(app, label="File")
 p.insert_addon(
-    ttk.Button,
+    bs.Button,
     position="after",
     text="Clear",
     command=lambda: setattr(p, "value", ""),
@@ -162,7 +162,7 @@ Common validation patterns include:
 - is file / is directory
 
 ```python
-p = ttk.PathEntry(app, label="File", required=True)
+p = bs.PathEntry(app, label="File", required=True)
 p.add_validation_rule("required", message="Please choose a file")
 p.add_validation_rule("path_exists", message="Path does not exist")
 ```

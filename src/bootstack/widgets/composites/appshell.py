@@ -47,15 +47,15 @@ class AppShell(App):
 
     Example:
         ```python
-        import bootstack as ttk
+        import bootstack as bs
 
-        shell = ttk.AppShell(title='My App', size=(1000, 650))
+        shell = bs.AppShell(title='My App', size=(1000, 650))
 
         home = shell.add_page('home', text='Home', icon='house')
-        ttk.Label(home, text='Welcome!').pack(padx=20, pady=20)
+        bs.Label(home, text='Welcome!').pack(padx=20, pady=20)
 
         docs = shell.add_page('docs', text='Documents', icon='file-earmark-text')
-        ttk.Label(docs, text='Your documents.').pack(padx=20, pady=20)
+        bs.Label(docs, text='Your documents.').pack(padx=20, pady=20)
 
         shell.mainloop()
         ```

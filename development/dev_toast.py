@@ -1,7 +1,7 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.style.style import get_style
 
-root = ttk.Window()
+root = bs.Window()
 
 
 def show_toast(
@@ -9,7 +9,7 @@ def show_toast(
         bootstyle=None, position=None, alert=None):
     style = get_style()
 
-    top = ttk.Toplevel()
+    top = bs.Toplevel()
     top.minsize(400, 30)
 
     # windows, mac "-25-75", linux "-25-25"
@@ -17,7 +17,7 @@ def show_toast(
     top.geometry(geometry)
     top.attributes('-alpha', 0.97)
     top.overrideredirect(True)
-    container = ttk.Frame(top, padding=4, bootstyle=bootstyle)
+    container = bs.Frame(top, padding=4, bootstyle=bootstyle)
     container.pack(fill='both', expand=True)
 
     has_title = title is not None
@@ -25,30 +25,30 @@ def show_toast(
     resolved_message = message if has_title else message
     resolved_title_font = "label" if has_title else "body"
 
-    header = ttk.Frame(container, padding=(8, 0, 0, 0))
+    header = bs.Frame(container, padding=(8, 0, 0, 0))
     header.pack(side='top', fill='x')
 
     if icon:
-        ttk.Label(header, icon=icon).pack(side='left', padx=(0, 8))
+        bs.Label(header, icon=icon).pack(side='left', padx=(0, 8))
 
-    ttk.Label(
+    bs.Label(
         header, text=resolved_message if not has_title else title, font=resolved_title_font, wraplength=380,
         justify="left").pack(side='left', fill='x')
 
     muted_foreground = "background[muted]" if bootstyle is None else f"{bootstyle}[muted]"
 
     if show_close_button:
-        ttk.Button(
+        bs.Button(
             header, icon="x-lg", bootstyle=f"{muted_foreground}-text", style_options={"icon_only": True},
             command=top.destroy).pack(side='right')
 
     if memo:
-        ttk.Label(header, text=memo, font="caption", bootstyle=muted_foreground).pack(
+        bs.Label(header, text=memo, font="caption", bootstyle=muted_foreground).pack(
             side='right', pady=8, padx=(0, 0 if show_close_button else 12))
 
     if has_title_and_message:
-        ttk.Separator(container).pack(side='top', fill='x')
-        ttk.Label(container, text=message, wraplength=400, justify="left").pack(side='top', fill='x', pady=8, padx=8)
+        bs.Separator(container).pack(side='top', fill='x')
+        bs.Label(container, text=message, wraplength=400, justify="left").pack(side='top', fill='x', pady=8, padx=8)
 
     if duration:
         top.after(duration, lambda _: top.destroy(), None)
@@ -64,13 +64,13 @@ def show_toast(
         return inner
 
     if buttons:
-        ttk.Separator(container).pack(side='top', fill='x', pady=4)
-        button_frame = ttk.Frame(container)
+        bs.Separator(container).pack(side='top', fill='x', pady=4)
+        button_frame = bs.Frame(container)
         button_frame.pack(side='top', fill='x')
         for i, button_options in enumerate(buttons):
             func = button_options.pop('command', None)
             cmd = execute_command(button_options, func)
-            ttk.Button(button_frame, **button_options, command=cmd).grid(column=i, row=0, sticky='ew')
+            bs.Button(button_frame, **button_options, command=cmd).grid(column=i, row=0, sticky='ew')
 
     if alert:
         top.bell()
@@ -79,44 +79,44 @@ def show_toast(
 title = "This is a really long title and probably it should not be a title if you are going to include this much text."
 message = "This is a really long message and one that I think will cause the page to wrap hopefully if it gets too long."
 
-ttk.Button(
+bs.Button(
     root, text="Normal Toast", command=lambda: show_toast(
         "bootstack",
         'bootstrap-fill',
         "Hello world! This is a toast message",
         'Just now')).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Long Title", command=lambda: show_toast(
         title,
         'bootstrap-fill',
         "Hello world! This is a toast message")).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Long Message", command=lambda: show_toast(
         "bootstack",
         'bootstrap-fill',
         message)).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Message with Icon", command=lambda: show_toast(
         icon='bootstrap-fill',
         message="You have new messages"
     )).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Message Only", command=lambda: show_toast(
         message="You have new messages",
         bootstyle="danger"
     )).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="With Timeout", command=lambda: show_toast(
         message="This will only last for 2 seconds",
         duration=2000
     )).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Normal With Buttons", command=lambda: show_toast(
         "bootstack",
         'bootstrap-fill',
@@ -126,7 +126,7 @@ ttk.Button(
                  {"text": "Cancel", "bootstyle": "secondary"}],
         memo="Just Now")).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root, text="Primary Toast", command=lambda: show_toast(
         "bootstack",
         'bootstrap-fill',

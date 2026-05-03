@@ -13,11 +13,11 @@ It optionally supports window control buttons (minimize, maximize, close) and wi
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-toolbar = ttk.Toolbar(app, surface="chrome")
+toolbar = bs.Toolbar(app, surface="chrome")
 toolbar.pack(fill="x")
 
 toolbar.add_button(icon="list", command=lambda: print("menu"))
@@ -55,16 +55,16 @@ Consider a different control when:
 
 ```python
 # Standard buttons
-toolbar = ttk.Toolbar(app, density="default")
+toolbar = bs.Toolbar(app, density="default")
 
 # Smaller buttons
-toolbar = ttk.Toolbar(app, density="compact")
+toolbar = bs.Toolbar(app, density="compact")
 ```
 
 ### Window controls
 
 ```python
-toolbar = ttk.Toolbar(
+toolbar = bs.Toolbar(
     app,
     show_window_controls=True,
     draggable=True,
@@ -84,13 +84,13 @@ toolbar.add_button(icon="arrow-left", command=go_back)
 toolbar.add_separator()
 toolbar.add_label(text="Page Title", font="heading-md")
 toolbar.add_spacer()
-toolbar.add_button(icon="sun", command=ttk.toggle_theme)
+toolbar.add_button(icon="sun", command=bs.toggle_theme)
 ```
 
 ### Custom widgets
 
 ```python
-search = ttk.Entry(toolbar.content)
+search = bs.Entry(toolbar.content)
 toolbar.add_widget(search)
 ```
 

@@ -1,27 +1,27 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_menubutton_frame(bootstyle, testname):
-    frame = ttk.Frame(root, padding=5)
+    frame = bs.Frame(root, padding=5)
 
-    title = ttk.Label(
+    title = bs.Label(
         master=frame,
         text=testname,
         anchor=CENTER
     )
     title.pack(padx=5, pady=2, fill=BOTH)
 
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
-    btn = ttk.MenuButton(
+    btn = bs.MenuButton(
         master=frame,
         variant=bootstyle,
         text='default',
     )
     btn.pack(padx=5, pady=5, fill=BOTH)
 
-    btn = ttk.MenuButton(
+    btn = bs.MenuButton(
         master=frame,
         variant=bootstyle,
         density='compact',
@@ -30,7 +30,7 @@ def create_menubutton_frame(bootstyle, testname):
     btn.pack(padx=5, pady=5, fill=BOTH)
 
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        btn = ttk.MenuButton(
+        btn = bs.MenuButton(
             master=frame,
             text=color,
             accent=color,
@@ -38,7 +38,7 @@ def create_menubutton_frame(bootstyle, testname):
         )
         btn.pack(padx=5, pady=5, fill=BOTH)
 
-    btn = ttk.MenuButton(
+    btn = bs.MenuButton(
         master=frame,
         text='disabled',
         state=DISABLED,
@@ -51,9 +51,9 @@ def create_menubutton_frame(bootstyle, testname):
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.Window()
+    root = bs.Window()
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
 
     create_menubutton_frame("default", 'Solid Menubutton').pack(side=LEFT)
     create_menubutton_frame('outline', 'Outline Menubutton').pack(side=LEFT)

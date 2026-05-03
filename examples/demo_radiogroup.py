@@ -1,18 +1,18 @@
-import bootstack as ttk
+import bootstack as bs
 
 
-class RadioGroupDemo(ttk.App):
+class RadioGroupDemo(bs.App):
     def __init__(self):
         super().__init__(title="RadioGroup Demo")
         self.geometry("900x700")
         self.pack_propagate(False)
 
         # --- 1. Basic RadioGroup with Signal ---
-        ttk.Label(self, text="Basic RadioGroup (Label on Top)", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="Basic RadioGroup (Label on Top)", font="-weight bold").pack(pady=(10, 5))
 
-        size_signal = ttk.Signal("medium")
+        size_signal = bs.Signal("medium")
 
-        size_group = ttk.RadioGroup(
+        size_group = bs.RadioGroup(
             self,
             text="Select Size:",
             signal=size_signal,
@@ -24,18 +24,18 @@ class RadioGroupDemo(ttk.App):
         size_group.pack(pady=5)
 
         # Live update label
-        size_label = ttk.Label(self, text=f"Selected Size: {size_signal.get()}")
+        size_label = bs.Label(self, text=f"Selected Size: {size_signal.get()}")
         size_label.pack()
         size_signal.subscribe(lambda v: size_label.configure(text=f"Selected Size: {v}"))
 
         # --- 2. Different Label Positions ---
-        ttk.Label(self, text="Different Label Positions", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="Different Label Positions", font="-weight bold").pack(pady=(10, 5))
 
-        label_frame = ttk.Frame(self)
+        label_frame = bs.Frame(self)
         label_frame.pack(pady=5, fill='x', padx=20)
 
         # Left label
-        left_group = ttk.RadioGroup(
+        left_group = bs.RadioGroup(
             label_frame,
             text="Color:",
             labelanchor='w',
@@ -48,7 +48,7 @@ class RadioGroupDemo(ttk.App):
         left_group.pack(side='left', padx=10, pady=5)
 
         # Right label
-        right_group = ttk.RadioGroup(
+        right_group = bs.RadioGroup(
             label_frame,
             text="Theme:",
             labelanchor='e',
@@ -60,9 +60,9 @@ class RadioGroupDemo(ttk.App):
         right_group.pack(side='left', padx=10, pady=5)
 
         # --- 3. Vertical Orientation with Bottom Label ---
-        ttk.Label(self, text="Vertical Orientation (Label on Bottom)", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="Vertical Orientation (Label on Bottom)", font="-weight bold").pack(pady=(10, 5))
 
-        priority_group = ttk.RadioGroup(
+        priority_group = bs.RadioGroup(
             self,
             text="Select Priority Level",
             labelanchor='s',
@@ -77,13 +77,13 @@ class RadioGroupDemo(ttk.App):
         priority_group.pack(pady=5)
 
         # --- 4. Different Bootstyles ---
-        ttk.Label(self, text="Different Bootstyles", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="Different Bootstyles", font="-weight bold").pack(pady=(10, 5))
 
-        style_frame = ttk.Frame(self)
+        style_frame = bs.Frame(self)
         style_frame.pack(pady=5)
 
         # Primary style
-        primary_group = ttk.RadioGroup(
+        primary_group = bs.RadioGroup(
             style_frame,
             text="Primary:",
             labelanchor='w',
@@ -96,7 +96,7 @@ class RadioGroupDemo(ttk.App):
         primary_group.pack(side='left', padx=10)
 
         # Success style
-        success_group = ttk.RadioGroup(
+        success_group = bs.RadioGroup(
             style_frame,
             text="Success:",
             labelanchor='w',
@@ -108,7 +108,7 @@ class RadioGroupDemo(ttk.App):
         success_group.pack(side='left', padx=10)
 
         # Danger style
-        danger_group = ttk.RadioGroup(
+        danger_group = bs.RadioGroup(
             style_frame,
             text="Danger:",
             labelanchor='w',
@@ -120,15 +120,15 @@ class RadioGroupDemo(ttk.App):
         danger_group.pack(side='left', padx=10)
 
         # --- 5. With Callbacks (on_changed / off_changed) ---
-        ttk.Label(self, text="With Event Callbacks", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="With Event Callbacks", font="-weight bold").pack(pady=(10, 5))
 
-        callback_label = ttk.Label(self, text="Callback not triggered yet")
+        callback_label = bs.Label(self, text="Callback not triggered yet")
         callback_label.pack()
 
         def on_preference_change(value):
             callback_label.configure(text=f"Callback triggered! New value: {value}")
 
-        preference_group = ttk.RadioGroup(
+        preference_group = bs.RadioGroup(
             self,
             text="Email Preference:",
             labelanchor='n',
@@ -146,9 +146,9 @@ class RadioGroupDemo(ttk.App):
         sub_id = preference_group.on_changed(on_preference_change)
 
         # --- 6. Dynamic Configuration ---
-        ttk.Label(self, text="Dynamic Configuration", font="-weight bold").pack(pady=(10, 5))
+        bs.Label(self, text="Dynamic Configuration", font="-weight bold").pack(pady=(10, 5))
 
-        config_group = ttk.RadioGroup(
+        config_group = bs.RadioGroup(
             self,
             text="Mode:",
             labelanchor='n',
@@ -161,28 +161,28 @@ class RadioGroupDemo(ttk.App):
         config_group.pack(pady=5)
 
         # Buttons to dynamically change configuration
-        button_frame = ttk.Frame(self)
+        button_frame = bs.Frame(self)
         button_frame.pack(pady=5)
 
-        ttk.Button(
+        bs.Button(
             button_frame,
             text="Switch to Vertical",
             command=lambda: config_group.configure(orient='vertical')
         ).pack(side='left', padx=5)
 
-        ttk.Button(
+        bs.Button(
             button_frame,
             text="Switch to Horizontal",
             command=lambda: config_group.configure(orient='horizontal')
         ).pack(side='left', padx=5)
 
-        ttk.Button(
+        bs.Button(
             button_frame,
             text="Change to Success Style",
             command=lambda: config_group.configure(accent='success')
         ).pack(side='left', padx=5)
 
-        ttk.Button(
+        bs.Button(
             button_frame,
             text="Move Label to Left",
             command=lambda: config_group.configure(labelanchor='w')

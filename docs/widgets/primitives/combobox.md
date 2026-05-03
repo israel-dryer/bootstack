@@ -7,23 +7,23 @@ title: Combobox
 !!! tip "Prefer SelectBox"
     [SelectBox](../selection/selectbox.md) provides all the functionality of Combobox plus additional features:
     keyboard navigation, hover states, search/filtering, form integration (labels, messages, validation), and
-    standardized events. Use Combobox only when you need direct access to the underlying `ttk.Combobox` API.
+    standardized events. Use Combobox only when you need direct access to the underlying `bs.Combobox` API.
 
-`Combobox` is a **primitive selection widget** that wraps `ttk.Combobox` with bootstack styling and reactive text support.
+`Combobox` is a **primitive selection widget** that wraps `bs.Combobox` with bootstack styling and reactive text support.
 
 It provides a familiar dropdown list with optional typing. Use `Combobox` when you need low-level ttk behavior or direct
-access to `ttk.Combobox` methods. Use [SelectBox](../selection/selectbox.md) for most selection use cases.
+access to `bs.Combobox` methods. Use [SelectBox](../selection/selectbox.md) for most selection use cases.
 
 ---
 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-combo = ttk.Combobox(
+combo = bs.Combobox(
     app,
     values=["Low", "Medium", "High"],
     state="readonly",
@@ -39,9 +39,9 @@ app.mainloop()
 
 Use `Combobox` when:
 
-- you need direct access to `ttk.Combobox` methods (e.g., `current()`, `postcommand`)
+- you need direct access to `bs.Combobox` methods (e.g., `current()`, `postcommand`)
 
-- you're integrating with existing code that expects a `ttk.Combobox`
+- you're integrating with existing code that expects a `bs.Combobox`
 
 ### Consider a different control when...
 
@@ -68,8 +68,8 @@ It is best for compact, low-complexity pickers.
 Applies bootstack theme styling.
 
 ```python
-ttk.Combobox(app, values=["A", "B"], accent="primary")
-ttk.Combobox(app, values=["A", "B"], accent="secondary")
+bs.Combobox(app, values=["A", "B"], accent="primary")
+bs.Combobox(app, values=["A", "B"], accent="secondary")
 ```
 
 !!! link "Design System"
@@ -91,7 +91,7 @@ to theme changes.
 Users must pick from the list.
 
 ```python
-ttk.Combobox(app, values=["One", "Two", "Three"], state="readonly")
+bs.Combobox(app, values=["One", "Two", "Three"], state="readonly")
 ```
 
 #### Editable (type + suggestions)
@@ -99,7 +99,7 @@ ttk.Combobox(app, values=["One", "Two", "Three"], state="readonly")
 Users can type any text, or pick from the list.
 
 ```python
-ttk.Combobox(app, values=["Apple", "Banana", "Cherry"], state="normal")
+bs.Combobox(app, values=["Apple", "Banana", "Cherry"], state="normal")
 ```
 
 ### How the value works
@@ -130,15 +130,15 @@ The meaning of the text depends on `state`:
 #### Tk variables
 
 ```python
-choice = ttk.StringVar(value="Medium")
+choice = bs.StringVar(value="Medium")
 
-combo = ttk.Combobox(app, textvariable=choice, values=["Low", "Medium", "High"], state="readonly")
+combo = bs.Combobox(app, textvariable=choice, values=["Low", "Medium", "High"], state="readonly")
 ```
 
 #### Reactive signals
 
 ```python
-combo = ttk.Combobox(app, textsignal=my_signal, values=["Low", "Medium", "High"], state="readonly")
+combo = bs.Combobox(app, textsignal=my_signal, values=["Low", "Medium", "High"], state="readonly")
 ```
 
 ### Common options

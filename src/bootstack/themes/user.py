@@ -36,8 +36,8 @@ Example:
     }
 
     # Use in application
-    import bootstack as ttk
-    root = ttk.Window(themename="mytheme")
+    import bootstack as bs
+    root = bs.Window(themename="mytheme")
     root.mainloop()
     ```
 """

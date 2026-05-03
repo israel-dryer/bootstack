@@ -8,17 +8,17 @@ This demonstrates using multiple SideNav widgets side-by-side:
 This pattern is common in apps like Outlook, Teams, and Discord.
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites import SideNav, ListView
 
 
 def main():
-    root = ttk.Window(theme="light")
+    root = bs.Window(theme="light")
     root.title("Stacked SideNavs Demo")
     root.geometry("1100x600")
 
     # Shared selection signal for primary nav
-    primary_var = ttk.StringVar(value='mail')
+    primary_var = bs.StringVar(value='mail')
 
     # --- Primary Navigation (icon-only with dark background) ---
     primary_nav = SideNav(
@@ -38,7 +38,7 @@ def main():
     primary_nav.add_item('settings', icon='gear')
 
     # --- Secondary Navigation Container ---
-    secondary_container = ttk.Frame(root, width=200)
+    secondary_container = bs.Frame(root, width=200)
     secondary_container.pack(side='left', fill='y')
     secondary_container.pack_propagate(False)
 
@@ -101,7 +101,7 @@ def main():
     primary_var.trace_add('write', on_primary_changed)
 
     # --- Third Level: ListView with title, text, caption ---
-    list_container = ttk.Frame(root, width=280)
+    list_container = bs.Frame(root, width=280)
     list_container.pack(side='left', fill='y')
     list_container.pack_propagate(False)
 
@@ -161,13 +161,13 @@ def main():
     email_list.pack(fill='both', expand=True)
 
     # --- Content Area ---
-    content = ttk.Frame(root, padding=20)
+    content = bs.Frame(root, padding=20)
     content.pack(side='right', fill='both', expand=True)
 
-    title = ttk.Label(content, text="Stacked SideNavs Demo", font='title')
+    title = bs.Label(content, text="Stacked SideNavs Demo", font='title')
     title.pack(anchor='nw', pady=(0, 10))
 
-    description = ttk.Label(
+    description = bs.Label(
         content,
         text="This demo shows how to stack navigation widgets:\n\n"
              "1. Icon-only SideNav for primary categories\n"
@@ -180,10 +180,10 @@ def main():
     description.pack(anchor='nw')
 
     # Show selection info
-    info_frame = ttk.Frame(content)
+    info_frame = bs.Frame(content)
     info_frame.pack(anchor='nw', pady=20)
 
-    primary_label = ttk.Label(info_frame, text="Primary: mail")
+    primary_label = bs.Label(info_frame, text="Primary: mail")
     primary_label.pack(anchor='w')
 
     def update_info(*args):

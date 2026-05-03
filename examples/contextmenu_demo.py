@@ -8,16 +8,16 @@ Demonstrates various features of the ContextMenu widget including:
 - Item click callbacks
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack import ContextMenu
 
 
 def main():
-    root = ttk.Window()
+    root = bs.Window()
     root.title("ContextMenu Demo")
     root.geometry("500x400")
 
-    ttk.Label(
+    bs.Label(
         root,
         text="ContextMenu Widget Demo",
         font=("Helvetica", 16, "bold")
@@ -45,7 +45,7 @@ def main():
     menu.add_separator()
 
     # Add radiobuttons with shared variable
-    view_var = ttk.StringVar(value="list")
+    view_var = bs.StringVar(value="list")
     menu.add_radiobutton(text="List View", value="list", variable=view_var, command=lambda: print("List view"))
     menu.add_radiobutton(text="Grid View", value="grid", variable=view_var, command=lambda: print("Grid view"))
     menu.add_radiobutton(text="Details View", value="details", variable=view_var, command=lambda: print("Details view"))
@@ -70,24 +70,24 @@ def main():
     root.bind('<Button-3>', show_context_menu)
 
     # Instructions
-    instructions = ttk.LabelFrame(root, text="Instructions", padding=10)
+    instructions = bs.LabelFrame(root, text="Instructions", padding=10)
     instructions.pack(fill='x', padx=20, pady=10)
 
-    ttk.Label(
+    bs.Label(
         instructions,
         text="- Right-click anywhere to show the context menu"
     ).pack(anchor='w')
-    ttk.Label(
+    bs.Label(
         instructions,
         text="- Click menu items to see callbacks in action"
     ).pack(anchor='w')
-    ttk.Label(
+    bs.Label(
         instructions,
         text="- Click outside the menu to hide it"
     ).pack(anchor='w')
 
     # Status label
-    status_label = ttk.Label(
+    status_label = bs.Label(
         root,
         text="Right-click to open context menu",
         font=("Helvetica", 10),
@@ -96,15 +96,15 @@ def main():
     status_label.pack(pady=20)
 
     # Example: Create menu programmatically with items list
-    frame2 = ttk.LabelFrame(root, text="Programmatic Menu", padding=10)
+    frame2 = bs.LabelFrame(root, text="Programmatic Menu", padding=10)
     frame2.pack(fill='x', padx=20, pady=10)
 
-    ttk.Label(
+    bs.Label(
         frame2,
         text="Click the button to show a programmatically created menu"
     ).pack()
 
-    btn = ttk.Button(
+    btn = bs.Button(
         frame2,
         text="Show Dynamic Menu",
         command=lambda: show_dynamic_menu(),

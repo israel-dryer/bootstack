@@ -13,11 +13,11 @@ Use `LabeledScale` when users need visual feedback of the exact value as they dr
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-scale = ttk.LabeledScale(
+scale = bs.LabeledScale(
     app,
     value=50,
     minvalue=0,
@@ -56,7 +56,7 @@ Label position relative to the scale:
 - `"after"` - label below the scale
 
 ```python
-ttk.LabeledScale(app, compound="after")
+bs.LabeledScale(app, compound="after")
 ```
 
 ### `accent`
@@ -64,7 +64,7 @@ ttk.LabeledScale(app, compound="after")
 Accent color applied to both the scale and label.
 
 ```python
-ttk.LabeledScale(app, accent="success")
+bs.LabeledScale(app, accent="success")
 ```
 
 !!! link "Design System"
@@ -83,8 +83,8 @@ Initial value for the scale. Defaults to 0.
 Range of the scale. Defaults to 0-100.
 
 ```python
-ttk.LabeledScale(app, minvalue=0, maxvalue=255)  # RGB range
-ttk.LabeledScale(app, minvalue=-50, maxvalue=50)  # Centered range
+bs.LabeledScale(app, minvalue=0, maxvalue=255)  # RGB range
+bs.LabeledScale(app, minvalue=-50, maxvalue=50)  # Centered range
 ```
 
 ### `dtype`
@@ -92,7 +92,7 @@ ttk.LabeledScale(app, minvalue=-50, maxvalue=50)  # Centered range
 Data type for the value: `int` (default) or `float`.
 
 ```python
-ttk.LabeledScale(app, dtype=float, minvalue=0.0, maxvalue=1.0)
+bs.LabeledScale(app, dtype=float, minvalue=0.0, maxvalue=1.0)
 ```
 
 ### `variable`

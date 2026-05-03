@@ -1,19 +1,19 @@
 """Test the refactored FontDialog using the new Dialog class."""
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import FontDialog
 
 
 def demo_fontdialog():
     """Test FontDialog with the new Dialog-based implementation."""
-    root = ttk.App(
+    root = bs.App(
         theme="darkly",
         title="FontDialog Text",
         size=(400, 300),
-        settings=ttk.AppSettings(locale="he")
+        settings=bs.AppSettings(locale="he")
     )
 
-    result_label = ttk.Label(
+    result_label = bs.Label(
         root,
         text="Click the button to select a font",
         padding=20,
@@ -45,7 +45,7 @@ def demo_fontdialog():
         else:
             result_label.configure(text="Font selection cancelled")
 
-    button = ttk.Button(
+    button = bs.Button(
         root,
         text="Select Font",
         command=show_font_dialog

@@ -13,10 +13,10 @@ Use `MessageDialog` when you need a simple message popup with custom button labe
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import MessageDialog
 
-app = ttk.App()
+app = bs.App()
 
 dialog = MessageDialog(
     message="Are you sure you want to proceed?",

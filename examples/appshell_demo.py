@@ -13,35 +13,35 @@ Features shown:
 - Page change event handling
 """
 
-import bootstack as ttk
+import bootstack as bs
 
 
 def create_page_content(parent, title, description):
     """Create demo content for a page."""
-    ttk.Label(parent, text=title, font='heading-xl').pack(
+    bs.Label(parent, text=title, font='heading-xl').pack(
         anchor='w', padx=20, pady=(20, 10)
     )
-    ttk.Label(parent, text=description, wraplength=500).pack(
+    bs.Label(parent, text=description, wraplength=500).pack(
         anchor='w', padx=20, pady=(0, 20)
     )
 
-    content = ttk.LabelFrame(parent, text='Page Content', padding=20)
+    content = bs.LabelFrame(parent, text='Page Content', padding=20)
     content.pack(fill='both', expand=True, padx=20, pady=(0, 20))
-    ttk.Label(
+    bs.Label(
         content,
         text=f'This is the {title} page.\n\nAdd your content here.',
     ).pack(expand=True)
 
 
 def main():
-    shell = ttk.AppShell(
+    shell = bs.AppShell(
         title='AppShell Demo',
         theme='rose-light',
         size=(1000, 650),
     )
 
     # Add a theme toggle button to the toolbar (after the auto-spacer)
-    shell.toolbar.add_button(icon='sun', command=ttk.toggle_theme)
+    shell.toolbar.add_button(icon='sun', command=bs.toggle_theme)
 
     # --- Main navigation items ---
     home = shell.add_page('home', text='Home', icon='house')

@@ -1,10 +1,10 @@
-import bootstack as ttk
+import bootstack as bs
 
 
-app = ttk.App()
+app = bs.App()
 
-f = ttk.Frame(app, padding=16).pack(fill='both')
+f = bs.Frame(app, padding=16).pack(fill='both')
 
-btn = ttk.CheckToggle(f, icon='bootstrap', text='Destination', accent='primary', variant='ghost', padding=(64, 4, 16, 4)).pack()
+btn = bs.CheckToggle(f, icon='bootstrap', text='Destination', accent='primary', variant='ghost', padding=(64, 4, 16, 4)).pack()
 
 app.mainloop()

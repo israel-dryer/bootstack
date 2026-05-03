@@ -22,26 +22,26 @@ Theme variants: light / dark
 Create a PageStack, add pages, and navigate between them:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-stack = ttk.PageStack(app, padding=10)
+stack = bs.PageStack(app, padding=10)
 stack.pack(fill="both", expand=True)
 
 page1 = stack.add("start", padding=10)
 page2 = stack.add("details", padding=10)
 page3 = stack.add("confirm", padding=10)
 
-ttk.Label(page1, text="Start page").pack()
-ttk.Button(page1, text="Next", command=lambda: stack.navigate("details")).pack()
+bs.Label(page1, text="Start page").pack()
+bs.Button(page1, text="Next", command=lambda: stack.navigate("details")).pack()
 
-ttk.Label(page2, text="Details page").pack()
-ttk.Button(page2, text="Next", command=lambda: stack.navigate("confirm")).pack()
-ttk.Button(page2, text="Back", command=stack.back).pack()
+bs.Label(page2, text="Details page").pack()
+bs.Button(page2, text="Next", command=lambda: stack.navigate("confirm")).pack()
+bs.Button(page2, text="Back", command=stack.back).pack()
 
-ttk.Label(page3, text="Confirm page").pack()
-ttk.Button(page3, text="Back", command=stack.back).pack()
+bs.Label(page3, text="Confirm page").pack()
+bs.Button(page3, text="Back", command=stack.back).pack()
 
 app.mainloop()
 ```
@@ -109,7 +109,7 @@ page = stack.add("settings", padding=10, accent="primary")
 Or add an existing widget as a page:
 
 ```python
-frame = ttk.Frame(stack, padding=10)
+frame = bs.Frame(stack, padding=10)
 stack.add("custom", frame)
 ```
 
@@ -157,7 +157,7 @@ Pages automatically fill the entire stack using pack layout with `fill='both'` a
 
 ```python
 page = stack.add("full")
-ttk.Label(page, text="This page fills the stack").pack(fill="both", expand=True)
+bs.Label(page, text="This page fills the stack").pack(fill="both", expand=True)
 ```
 
 ### Removing pages

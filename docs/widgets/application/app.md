@@ -13,11 +13,11 @@ It wraps Tk with sensible defaults: theme initialization, DPI awareness, window 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(title="My App", theme="cosmo-light", size=(800, 600))
+app = bs.App(title="My App", theme="cosmo-light", size=(800, 600))
 
-ttk.Label(app, text="Hello, world!").pack(padx=20, pady=20)
+bs.Label(app, text="Hello, world!").pack(padx=20, pady=20)
 
 app.mainloop()
 ```
@@ -45,7 +45,7 @@ Consider a different control when:
 ### Window configuration
 
 ```python
-app = ttk.App(
+app = bs.App(
     title="My App",
     theme="cosmo-dark",
     size=(1024, 768),
@@ -58,8 +58,8 @@ app = ttk.App(
 ### Theme switching
 
 ```python
-ttk.set_theme("flatly-dark")
-ttk.toggle_theme()  # switches between light and dark
+bs.set_theme("flatly-dark")
+bs.toggle_theme()  # switches between light and dark
 ```
 
 ---

@@ -6,7 +6,7 @@ title: Frame
 
 `Frame` is a **basic layout container** for grouping widgets and creating structure.
 
-It's a themed wrapper around `ttk.Frame`, so it participates in bootstack styling while behaving like a standard ttk container. Use `Frame` when you need a simple container without automatic layout management.
+It's a themed wrapper around `bs.Frame`, so it participates in bootstack styling while behaving like a standard ttk container. Use `Frame` when you need a simple container without automatic layout management.
 
 !!! tip "Prefer PackFrame or GridFrame for most layouts"
     For building layouts with automatic child management, use [PackFrame](packframe.md) (vertical/horizontal stacks with gap spacing) or [GridFrame](gridframe.md) (CSS Grid-like 2D layouts). These provide a more declarative, less error-prone layout experience.
@@ -22,15 +22,15 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-section = ttk.Frame(app, padding=20)
+section = bs.Frame(app, padding=20)
 section.pack(fill="both", expand=True)
 
-ttk.Label(section, text="Account").pack(anchor="w")
-ttk.Entry(section).pack(fill="x", pady=(8, 0))
+bs.Label(section, text="Account").pack(anchor="w")
+bs.Entry(section).pack(fill="x", pady=(8, 0))
 
 app.mainloop()
 ```
@@ -76,8 +76,8 @@ If your theme supports bordered/card styles, prefer named styles like `Card.TFra
 Use `accent` for semantic tokens, or `style=` for a concrete ttk style name.
 
 ```python
-ttk.Frame(app, accent="secondary")
-ttk.Frame(app, style="Card.TFrame")
+bs.Frame(app, accent="secondary")
+bs.Frame(app, style="Card.TFrame")
 ```
 
 ---
@@ -89,8 +89,8 @@ ttk.Frame(app, style="Card.TFrame")
 Apply inner spacing to the container.
 
 ```python
-ttk.Frame(app, padding=20)
-ttk.Frame(app, padding=(16, 12))
+bs.Frame(app, padding=20)
+bs.Frame(app, padding=(16, 12))
 ```
 
 ### `width` / `height`
@@ -99,7 +99,7 @@ Useful for fixed regions (tool palettes, sidebars). Note: geometry managers may 
 based on content unless propagation is disabled.
 
 ```python
-pane = ttk.Frame(app, width=240, height=400)
+pane = bs.Frame(app, width=240, height=400)
 pane.pack_propagate(False)
 ```
 

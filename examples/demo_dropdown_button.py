@@ -1,13 +1,13 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import ContextMenuItem
 
 
 def main():
-    root = ttk.Window(title="DropdownButton Demo", size=(420, 320))
+    root = bs.Window(title="DropdownButton Demo", size=(420, 320))
 
-    ttk.Label(root, text="DropdownButton", font="heading-md").pack(pady=12)
+    bs.Label(root, text="DropdownButton", font="heading-md").pack(pady=12)
 
-    status = ttk.Label(root, text="Select an item...", anchor="w")
+    status = bs.Label(root, text="Select an item...", anchor="w")
     status.pack(fill="x", padx=16, pady=(0, 12))
 
     def on_item(data):
@@ -21,12 +21,12 @@ def main():
         ContextMenuItem(type="checkbutton", text="Show Grid", value=True),
         ContextMenuItem(type="checkbutton", text="Snap to Grid", value=False),
         ContextMenuItem(type="separator"),
-        ContextMenuItem(type="radiobutton", text="List View", value="list", variable=ttk.StringVar(value="list")),
-        ContextMenuItem(type="radiobutton", text="Grid View", value="grid", variable=ttk.StringVar(value="list")),
-        ContextMenuItem(type="radiobutton", text="Detail View", value="detail", variable=ttk.StringVar(value="list")),
+        ContextMenuItem(type="radiobutton", text="List View", value="list", variable=bs.StringVar(value="list")),
+        ContextMenuItem(type="radiobutton", text="Grid View", value="grid", variable=bs.StringVar(value="list")),
+        ContextMenuItem(type="radiobutton", text="Detail View", value="detail", variable=bs.StringVar(value="list")),
     ]
 
-    dd = ttk.DropdownButton(
+    dd = bs.DropdownButton(
         root,
         text="Actions",
         items=items,
@@ -38,7 +38,7 @@ def main():
     dd.on_item_click(on_item)
 
     # Ghost style, icon-only, custom chevron, and popdown options
-    alt = ttk.DropdownButton(
+    alt = bs.DropdownButton(
         root,
         text="More",
         items=[
@@ -63,7 +63,7 @@ def main():
         dd['show_dropdown_button'] = not current
         status.configure(text=f"Chevron visible: {not current}")
 
-    ttk.Button(root, text="Toggle Chevron", command=toggle_chevron).pack(padx=16, pady=12)
+    bs.Button(root, text="Toggle Chevron", command=toggle_chevron).pack(padx=16, pady=12)
 
     root.mainloop()
 

@@ -14,11 +14,11 @@ the same label/message, localization, and event model used throughout bootstack 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-pwd = ttk.PasswordEntry(
+pwd = bs.PasswordEntry(
     app,
     label="Password",
     required=True,
@@ -52,10 +52,10 @@ Consider a different control when:
 ### `accent`
 
 ```python
-ttk.PasswordEntry(app, label="Password")  # primary (default)
-ttk.PasswordEntry(app, label="Password", accent="secondary")
-ttk.PasswordEntry(app, label="Password", accent="success")
-ttk.PasswordEntry(app, label="Password", accent="warning")
+bs.PasswordEntry(app, label="Password")  # primary (default)
+bs.PasswordEntry(app, label="Password", accent="secondary")
+bs.PasswordEntry(app, label="Password", accent="success")
+bs.PasswordEntry(app, label="Password", accent="warning")
 ```
 
 !!! link "Design System"
@@ -86,19 +86,19 @@ The reveal toggle changes only the display, never the underlying value.
 #### `required`, `message`, `accent`
 
 ```python
-ttk.PasswordEntry(app, label="Password", required=True, message="Minimum 8 characters")
+bs.PasswordEntry(app, label="Password", required=True, message="Minimum 8 characters")
 ```
 
 #### Reveal toggle: `show_visibility_toggle`
 
 ```python
-pwd = ttk.PasswordEntry(app, label="Password", show_visibility_toggle=False)
+pwd = bs.PasswordEntry(app, label="Password", show_visibility_toggle=False)
 ```
 
 #### Add-ons
 
 ```python
-pwd.insert_addon(ttk.Label, position="before", icon="lock", icon_only=True)
+pwd.insert_addon(bs.Label, position="before", icon="lock", icon_only=True)
 ```
 
 ### Events
@@ -127,7 +127,7 @@ pwd.on_changed(handle_changed)
 Password validation is typically applied **on commit**, not per keystroke.
 
 ```python
-pwd = ttk.PasswordEntry(app, label="Password", required=True)
+pwd = bs.PasswordEntry(app, label="Password", required=True)
 pwd.add_validation_rule("min_length", 8, message="Minimum 8 characters")
 ```
 

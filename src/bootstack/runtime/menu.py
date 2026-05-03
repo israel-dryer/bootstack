@@ -5,10 +5,10 @@ theme-aware color updates.
 
 Examples:
     ```python
-    import bootstack as ttk
+    import bootstack as bs
     from bootstack.menu import create_menu
 
-    app = ttk.Window()
+    app = bs.Window()
 
     menu_items = [
         {
@@ -416,9 +416,9 @@ def create_menu(parent: Any, items: list[dict]) -> tk.Menu:
     Examples:
         Basic menubar with icons:
             ```python
-            import bootstack as ttk
+            import bootstack as bs
 
-            app = ttk.App()
+            app = bs.App()
 
             menu_items = [
                 {
@@ -439,7 +439,7 @@ def create_menu(parent: Any, items: list[dict]) -> tk.Menu:
                 }
             ]
 
-            ttk.create_menu(app, menu_items)
+            bs.create_menu(app, menu_items)
             app.mainloop()
             ```
 
@@ -464,8 +464,8 @@ def create_menu(parent: Any, items: list[dict]) -> tk.Menu:
 
         Menu with checkbuttons and radiobuttons:
             ```python
-            view_var = ttk.BooleanVar(value=True)
-            theme_var = ttk.StringVar(value="light")
+            view_var = bs.BooleanVar(value=True)
+            theme_var = bs.StringVar(value="light")
 
             menu_items = [
                 {

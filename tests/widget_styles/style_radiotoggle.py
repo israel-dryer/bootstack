@@ -1,24 +1,24 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 def create_radio_toggle_test(bootstyle, name):
-    frame = ttk.Frame(padding=10)
+    frame = bs.Frame(padding=10)
 
     # title
-    title = ttk.Label(frame, text=name, anchor=CENTER)
+    title = bs.Label(frame, text=name, anchor=CENTER)
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
-    sig = ttk.Signal('primary')
+    sig = bs.Signal('primary')
 
     # default style
-    cb = ttk.RadioToggle(frame, text='default', variant=bootstyle)
+    cb = bs.RadioToggle(frame, text='default', variant=bootstyle)
     cb.pack(padx=5, pady=5, fill=BOTH)
     cb.invoke()
 
     # color styles
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        cb = ttk.RadioToggle(
+        cb = bs.RadioToggle(
             master=frame,
             text=color,
             signal=sig,
@@ -31,7 +31,7 @@ def create_radio_toggle_test(bootstyle, name):
         cb.invoke()
 
     # disabled style
-    cb = ttk.RadioToggle(
+    cb = bs.RadioToggle(
         master=frame,
         text='disabled',
         value='disabled',
@@ -46,7 +46,7 @@ def create_radio_toggle_test(bootstyle, name):
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.App(title="RadioToggle Test")
+    root = bs.App(title="RadioToggle Test")
 
     test4 = create_radio_toggle_test('default','Default')
     test4.pack(side='left', fill=BOTH)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     test6 = create_radio_toggle_test('ghost','Ghost')
     test6.pack(side='left', fill=BOTH)
 
-    btn = ttk.Button(text="Change Theme", command=ttk.toggle_theme)
+    btn = bs.Button(text="Change Theme", command=bs.toggle_theme)
     btn.pack(padx=10, pady=10)
 
     root.mainloop()

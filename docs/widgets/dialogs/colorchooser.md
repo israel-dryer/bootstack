@@ -13,11 +13,11 @@ Use it when you want a standard "pick a color -> OK/Cancel" flow for theming, dr
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-color = ttk.ColorChooser(
+color = bs.ColorChooser(
     title="Choose a color",
     initial="#3b82f6",
 ).show()

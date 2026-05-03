@@ -1,11 +1,11 @@
 from typing import Any, Literal
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import Dialog, DialogButton
 from bootstack import ScrollView
 
 
-class FilterDialogContent(ttk.Frame):
+class FilterDialogContent(bs.Frame):
 
     def __init__(
             self,
@@ -26,9 +26,9 @@ class FilterDialogContent(ttk.Frame):
 
         self._filter: str | dict | None = None
 
-        self._check_buttons: dict[str, ttk.CheckButton] = {}
-        self._select_all_cb: ttk.CheckButton | None = None
-        self._scroll_container: ttk.Frame | None = None
+        self._check_buttons: dict[str, bs.CheckButton] = {}
+        self._select_all_cb: bs.CheckButton | None = None
+        self._scroll_container: bs.Frame | None = None
         self._build_content()
 
     def _normalize_items(self, items: list[str | dict[str, Any]] | None) -> list[dict[str, Any]]:
@@ -56,19 +56,19 @@ class FilterDialogContent(ttk.Frame):
 
         # add search
         if self._allow_search:
-            search_entry = ttk.TextEntry(self)
-            search_entry.insert_addon(ttk.Label, 'before', icon='search')
+            search_entry = bs.TextEntry(self)
+            search_entry.insert_addon(bs.Label, 'before', icon='search')
             search_entry.pack(fill='x')
             search_entry.on_input(self._on_search_input)
 
         # add select all
         if self._allow_select_all:
-            self._select_all_cb = ttk.CheckButton(self, text='Select All')
+            self._select_all_cb = bs.CheckButton(self, text='Select All')
             self._select_all_cb.invoke()
             self._select_all_cb.invoke()
             self._select_all_cb['command'] = self._handle_select_all
             self._select_all_cb.pack(fill='x', padx=8, pady=(12, 8))
-            ttk.Separator(self).pack(fill='x')
+            bs.Separator(self).pack(fill='x')
 
         # Create scrollable container for checkboxes
         scroll_view = ScrollView(
@@ -81,12 +81,12 @@ class FilterDialogContent(ttk.Frame):
         scroll_view.configure(height=230)
 
         # Container frame inside scroll view
-        self._scroll_container = ttk.Frame(scroll_view.canvas)
+        self._scroll_container = bs.Frame(scroll_view.canvas)
         scroll_view.add(self._scroll_container)
 
         # add items to scrollable container
         for item in self._items:
-            cb = ttk.CheckButton(self._scroll_container, text=item['text'])
+            cb = bs.CheckButton(self._scroll_container, text=item['text'])
             cb.invoke()
             if not item['selected']:
                 cb.invoke()

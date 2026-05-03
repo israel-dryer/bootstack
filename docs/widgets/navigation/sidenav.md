@@ -14,11 +14,11 @@ It supports three display modes: expanded (full width with text), compact (icons
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(title="Nav Demo", size=(900, 600))
+app = bs.App(title="Nav Demo", size=(900, 600))
 
-nav = ttk.SideNav(app, title="My App")
+nav = bs.SideNav(app, title="My App")
 nav.pack(side="left", fill="y")
 
 nav.add_item("home", text="Home", icon="house")
@@ -66,13 +66,13 @@ Consider a different control when:
 | `minimal` | Hidden until toggled open |
 
 ```python
-nav = ttk.SideNav(app, display_mode="compact")
+nav = bs.SideNav(app, display_mode="compact")
 ```
 
 ### Accent color
 
 ```python
-nav = ttk.SideNav(app, accent="success")
+nav = bs.SideNav(app, accent="success")
 ```
 
 ---
@@ -140,9 +140,9 @@ nav.on_selection_changed(lambda e: print(e.data["key"]))
 Hide the internal header and control the nav from an external toolbar:
 
 ```python
-nav = ttk.SideNav(app, show_header=False, collapsible=False)
+nav = bs.SideNav(app, show_header=False, collapsible=False)
 
-toolbar = ttk.Toolbar(app, surface="chrome")
+toolbar = bs.Toolbar(app, surface="chrome")
 toolbar.add_button(icon="list", command=nav.toggle_pane)
 ```
 

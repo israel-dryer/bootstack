@@ -1,7 +1,7 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import PathEntry
 
-app = ttk.Window()
+app = bs.Window()
 
 
 pe = PathEntry(label="Manager Files", accent='success')

@@ -16,10 +16,10 @@ If you want a compact, form-friendly input (typed + popup), prefer **DateEntry**
 
 ```python
 from datetime import date
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.calendar import Calendar
 
-app = ttk.App()
+app = bs.App()
 
 cal = Calendar(app, value=date.today(), accent="primary")
 cal.pack(padx=12, pady=12)
@@ -70,10 +70,10 @@ Range mode displays **two months side-by-side** to make cross-month selection ea
 #### Single date
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.calendar import Calendar
 
-app = ttk.App()
+app = bs.App()
 Calendar(app, value="2025-12-25").pack(padx=12, pady=12)
 app.mainloop()
 ```
@@ -81,10 +81,10 @@ app.mainloop()
 #### Date range
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.calendar import Calendar
 
-app = ttk.App()
+app = bs.App()
 Calendar(app, selection_mode="range", start_date="2025-12-01", end_date="2025-12-12").pack(padx=12, pady=12)
 app.mainloop()
 ```

@@ -1,7 +1,7 @@
 from json import load
 from pathlib import Path
 import pathlib
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from PIL import Image, ImageTk
 import ctypes
@@ -53,7 +53,7 @@ def get_folder_contents(pathname):
     return contents
 
 def load_treeview_items(pathname):
-    treeview: ttk.TreeView = app.nametowidget('contentsview')
+    treeview: bs.TreeView = app.nametowidget('contentsview')
     # remove existing items
     children  = treeview.get_children('')
     treeview.delete(*children)
@@ -116,9 +116,9 @@ def load_sidebar():
     ]
 
     if app.winsys == 'x11':
-        sidebar: ttk.Frame = app.nametowidget('sidebar')
+        sidebar: bs.Frame = app.nametowidget('sidebar')
         home = pathlib.Path.home()
-        b_ = ttk.Button(
+        b_ = bs.Button(
             master=sidebar, 
             text=home.parent.name, 
             image=images['Home'], 
@@ -128,9 +128,9 @@ def load_sidebar():
         )
         b_.pack(anchor=W)
 
-        sidebar: ttk.Frame = app.nametowidget('sidebar')
+        sidebar: bs.Frame = app.nametowidget('sidebar')
         home = pathlib.Path.home()
-        b_ = ttk.Button(
+        b_ = bs.Button(
             master=sidebar, 
             text=home.parent.name, 
             image=images['User'], 
@@ -140,9 +140,9 @@ def load_sidebar():
         )
         b_.pack(anchor=W)
     else:
-        sidebar: ttk.Frame = app.nametowidget('sidebar')
+        sidebar: bs.Frame = app.nametowidget('sidebar')
         home = pathlib.Path.home()
-        b_ = ttk.Button(
+        b_ = bs.Button(
             master=sidebar, 
             text=home.name, 
             image=images['Home'], 
@@ -155,7 +155,7 @@ def load_sidebar():
     for folder in folders:
         p = Path(home / folder)
         if p.exists():
-            b_ = ttk.Button(
+            b_ = bs.Button(
                 master=sidebar,
                 text=p.name,
                 image=images[p.name],
@@ -167,7 +167,7 @@ def load_sidebar():
                 
 if __name__ == '__main__':
 
-    app = ttk.Window(theme='darkly')
+    app = bs.Window(theme='darkly')
     item_path = Path.home()
     img_path = Path(__file__).parent
     app.setvar(name='contentspath', value=item_path.absolute())
@@ -190,11 +190,11 @@ if __name__ == '__main__':
     }
 
 
-    sidebar = ttk.Frame(name='sidebar')
+    sidebar = bs.Frame(name='sidebar')
     sidebar.pack(side=LEFT, fill=X, anchor=N)
 
-    contents_tv = ttk.TreeView(name='contentsview', show=TREEHEADINGS, columns=[0, 1, 2])
-    contents_tv.pack(side=LEFT, fill=ttk.BOTH, expand=ttk.YES)    
+    contents_tv = bs.TreeView(name='contentsview', show=TREEHEADINGS, columns=[0, 1, 2])
+    contents_tv.pack(side=LEFT, fill=bs.BOTH, expand=bs.YES)    
     contents_tv.column('#0', width=500)
     contents_tv.heading('#0', text='Name', anchor=W)
     contents_tv.heading(0, text='Date modified', anchor=W)
@@ -206,14 +206,14 @@ if __name__ == '__main__':
 
     contents_tv.tag_configure('dir', image=images['File'])
     contents_tv.tag_configure('file', image=images['Dir'])
-    ttk.Button(text='Prev', command=on_click_parent_dir).pack()
+    bs.Button(text='Prev', command=on_click_parent_dir).pack()
 
-    # crumbframe = ttk.Frame()
+    # crumbframe = bs.Frame()
     # crumbframe.pack(side=BOTTOM, fill=X)
-    # ttk.Button(crumbframe, name='crumb1', text='crumb1', bootstyle=LINK, padding=0).pack(side=LEFT)
-    # ttk.Button(crumbframe, name='crumb2', text='crumb2', bootstyle=LINK, padding=0).pack(side=LEFT)
-    # ttk.Button(crumbframe, name='crumb3', text='crumb3', bootstyle=LINK, padding=0).pack(side=LEFT)
-    # ttk.Button(crumbframe, name='crumb4', text='crumb4', bootstyle=LINK, padding=0).pack(side=LEFT)
+    # bs.Button(crumbframe, name='crumb1', text='crumb1', bootstyle=LINK, padding=0).pack(side=LEFT)
+    # bs.Button(crumbframe, name='crumb2', text='crumb2', bootstyle=LINK, padding=0).pack(side=LEFT)
+    # bs.Button(crumbframe, name='crumb3', text='crumb3', bootstyle=LINK, padding=0).pack(side=LEFT)
+    # bs.Button(crumbframe, name='crumb4', text='crumb4', bootstyle=LINK, padding=0).pack(side=LEFT)
 
     load_sidebar()
     app.update_idletasks()

@@ -19,21 +19,21 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-accordion = ttk.Accordion(app, accent="primary", variant="solid")
+accordion = bs.Accordion(app, accent="primary", variant="solid")
 accordion.pack(fill="x", padx=10, pady=10)
 
 section1 = accordion.add(title="General Settings")
-ttk.CheckButton(section1.content, text="Enable feature").pack(anchor="w")
+bs.CheckButton(section1.content, text="Enable feature").pack(anchor="w")
 
 section2 = accordion.add(title="Advanced Settings")
-ttk.Label(section2.content, text="Advanced options here").pack()
+bs.Label(section2.content, text="Advanced options here").pack()
 
 section3 = accordion.add(title="About")
-ttk.Label(section3.content, text="Version 1.0").pack()
+bs.Label(section3.content, text="Version 1.0").pack()
 
 app.mainloop()
 ```
@@ -67,7 +67,7 @@ Use `Accordion` when:
 Pass `accent` and `variant` to apply a consistent style to all managed expanders.
 
 ```python
-ttk.Accordion(app, accent="success", variant="solid")
+bs.Accordion(app, accent="success", variant="solid")
 ```
 
 ### Border
@@ -75,7 +75,7 @@ ttk.Accordion(app, accent="success", variant="solid")
 Use `show_border=True` to add a visible border around the accordion container.
 
 ```python
-ttk.Accordion(app, show_border=True)
+bs.Accordion(app, show_border=True)
 ```
 
 ### Separators
@@ -83,7 +83,7 @@ ttk.Accordion(app, show_border=True)
 Use `show_separators=True` to add horizontal separators between sections.
 
 ```python
-ttk.Accordion(app, show_separators=True)
+bs.Accordion(app, show_separators=True)
 ```
 
 ---
@@ -95,11 +95,11 @@ ttk.Accordion(app, show_separators=True)
 Use `add()` to create new expander sections. It returns the `Expander` widget.
 
 ```python
-accordion = ttk.Accordion(app)
+accordion = bs.Accordion(app)
 accordion.pack(fill="x")
 
 section = accordion.add(title="Section Title", icon={'name': 'gear', 'size': 16})
-ttk.Label(section.content, text="Section content").pack()
+bs.Label(section.content, text="Section content").pack()
 ```
 
 ### Adding existing expanders
@@ -107,7 +107,7 @@ ttk.Label(section.content, text="Section content").pack()
 You can add pre-created `Expander` widgets:
 
 ```python
-exp = ttk.Expander(accordion, title="Custom Expander")
+exp = bs.Expander(accordion, title="Custom Expander")
 accordion.add(exp)
 ```
 
@@ -132,7 +132,7 @@ for key in accordion.keys():
 By default, only one section can be open at a time. Set `allow_multiple=True` to allow multiple sections to be open simultaneously.
 
 ```python
-accordion = ttk.Accordion(app, allow_multiple=True)
+accordion = bs.Accordion(app, allow_multiple=True)
 ```
 
 ### Non-collapsible mode
@@ -140,7 +140,7 @@ accordion = ttk.Accordion(app, allow_multiple=True)
 Set `allow_collapse_all=False` to require at least one section to remain open. The first section is automatically expanded.
 
 ```python
-accordion = ttk.Accordion(app, allow_collapse_all=False)
+accordion = bs.Accordion(app, allow_collapse_all=False)
 ```
 
 ### Starting with a section expanded

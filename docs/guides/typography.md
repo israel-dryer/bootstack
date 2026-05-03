@@ -33,13 +33,13 @@ bootstack defines **semantic font tokens** rather than raw font tuples. Tokens r
 Tokens are registered as named Tk fonts, so you can use them directly:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Label(app, text="Body text", font="body").pack()
-ttk.Label(app, text="Large heading", font="heading-lg").pack()
-ttk.Label(app, text="Code snippet", font="code").pack()
+bs.Label(app, text="Body text", font="body").pack()
+bs.Label(app, text="Large heading", font="heading-lg").pack()
+bs.Label(app, text="Code snippet", font="code").pack()
 
 app.mainloop()
 ```
@@ -62,7 +62,7 @@ body_font = Font("body")
 bold_body = Font("body[bold]")
 
 # Use in widgets
-ttk.Label(app, text="Bold text", font=bold_body)
+bs.Label(app, text="Bold text", font=bold_body)
 ```
 
 The `Font` class:
@@ -170,10 +170,10 @@ emphasized_link = Font("body[bold][underline]")
 Pass `Font` objects directly to widgets:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import Font
 
-app = ttk.App()
+app = bs.App()
 
 # Define fonts
 title = Font("heading-xl")
@@ -181,9 +181,9 @@ body = Font("body")
 code = Font("code")
 
 # Apply to widgets
-ttk.Label(app, text="Welcome", font=title).pack(pady=10)
-ttk.Label(app, text="This is body text.", font=body).pack()
-ttk.Label(app, text="print('Hello')", font=code).pack(pady=10)
+bs.Label(app, text="Welcome", font=title).pack(pady=10)
+bs.Label(app, text="This is body text.", font=body).pack()
+bs.Label(app, text="print('Hello')", font=code).pack(pady=10)
 
 app.mainloop()
 ```
@@ -193,8 +193,8 @@ app.mainloop()
 Many widgets also accept the font string directly:
 
 ```python
-ttk.Label(app, text="Bold heading", font="heading-lg[bold]")
-ttk.Label(app, text="Italic caption", font="caption[italic]")
+bs.Label(app, text="Bold heading", font="heading-lg[bold]")
+bs.Label(app, text="Italic caption", font="caption[italic]")
 ```
 
 ---
@@ -216,8 +216,8 @@ class AppFonts:
     code = Font("code")
 
 # Use throughout the application
-ttk.Label(app, text="Title", font=AppFonts.title)
-ttk.Label(app, text="Description", font=AppFonts.body)
+bs.Label(app, text="Title", font=AppFonts.title)
+bs.Label(app, text="Description", font=AppFonts.body)
 ```
 
 ### Accessing the Underlying Tk Font
@@ -268,7 +268,7 @@ text = "This is a long label"
 font = Font("body")
 required_width = font.measure(text) + 20  # Add padding
 
-ttk.Label(app, text=text, font=font, width=required_width)
+bs.Label(app, text=text, font=font, width=required_width)
 
 # Get line height for layout calculations
 line_height = font.metrics()["linespace"]
@@ -320,10 +320,10 @@ h2 = Font("heading-lg")
 h3 = Font("heading-md")
 h4 = Font("body-lg[bold]")
 
-ttk.Label(app, text="Main Title", font=h1).pack()
-ttk.Label(app, text="Section", font=h2).pack()
-ttk.Label(app, text="Subsection", font=h3).pack()
-ttk.Label(app, text="Minor Heading", font=h4).pack()
+bs.Label(app, text="Main Title", font=h1).pack()
+bs.Label(app, text="Section", font=h2).pack()
+bs.Label(app, text="Subsection", font=h3).pack()
+bs.Label(app, text="Minor Heading", font=h4).pack()
 ```
 
 ### Form Labels and Values
@@ -332,13 +332,13 @@ ttk.Label(app, text="Minor Heading", font=h4).pack()
 label_font = Font("body[bold]")
 value_font = Font("body")
 
-grid = ttk.GridFrame(app, columns=2, gap=10, padding=20)
+grid = bs.GridFrame(app, columns=2, gap=10, padding=20)
 
-ttk.Label(grid, text="Name:", font=label_font).grid()
-ttk.Label(grid, text="Alice", font=value_font).grid()
+bs.Label(grid, text="Name:", font=label_font).grid()
+bs.Label(grid, text="Alice", font=value_font).grid()
 
-ttk.Label(grid, text="Email:", font=label_font).grid()
-ttk.Label(grid, text="alice@example.com", font=value_font).grid()
+bs.Label(grid, text="Email:", font=label_font).grid()
+bs.Label(grid, text="alice@example.com", font=value_font).grid()
 ```
 
 ### Code Display
@@ -348,8 +348,8 @@ code_font = Font("code")
 line_number_font = Font("code[bold]")
 
 # Code editor style
-ttk.Label(app, text="1", font=line_number_font)
-ttk.Label(app, text="def hello():", font=code_font)
+bs.Label(app, text="1", font=line_number_font)
+bs.Label(app, text="def hello():", font=code_font)
 ```
 
 ### Status Messages
