@@ -1,4 +1,4 @@
-"""Project templates for ttkb start command."""
+"""Project templates for bootstack start command."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def main() -> None:
     """Application entry point."""
     app = bs.App(
         title="{app_name}",
-        theme=os.environ.get("TTKB_THEME", "{theme}"),
+        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
         size=(800, 600),
     )
 
@@ -322,17 +322,17 @@ A bootstack application.
 python -m {module_name}
 
 # Or use the CLI
-ttkb run
+bootstack run
 ```
 
 ### Building for Distribution
 
 ```bash
 # Promote to packaging-ready (adds PyInstaller support)
-ttkb promote --pyinstaller
+bootstack promote --pyinstaller
 
 # Build the executable
-ttkb build
+bootstack build
 ```
 
 ## Project Structure
@@ -345,18 +345,18 @@ ttkb build
 │   └── views/
 │       └── main_view.py
 ├── assets/
-├── ttkb.toml
+├── bootstack.toml
 └── README.md
 ```
 
 ## Configuration
 
-Application settings are defined in `ttkb.toml`:
+Application settings are defined in `bootstack.toml`:
 
 - `[app]` - Application metadata
 - `[settings]` - Runtime settings (theme, language)
 - `[layout]` - Default layout preferences
-- `[build]` - Build/packaging configuration (after `ttkb promote`)
+- `[build]` - Build/packaging configuration (after `bootstack promote`)
 '''
 
 
@@ -383,7 +383,7 @@ def main() -> None:
     """Application entry point."""
     shell = bs.AppShell(
         title="{app_name}",
-        theme=os.environ.get("TTKB_THEME", "{theme}"),
+        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
         size=(1000, 650),
     )
 
@@ -448,7 +448,7 @@ class HomePage:
             text=(
                 "Add your widgets here.\\n\\n"
                 "To add another page:\\n"
-                "  1. Run 'ttkb add page <Name>' to generate the file under pages/.\\n"
+                "  1. Run 'bootstack add page <Name>' to generate the file under pages/.\\n"
                 "  2. In main.py, import it, call shell.add_page(...), and pass\\n"
                 "     the returned frame to your page class. The CLI prints the\\n"
                 "     exact lines to paste."
@@ -547,14 +547,14 @@ A bootstack application using AppShell navigation.
 python -m {module_name}
 
 # Or use the CLI
-ttkb run
+bootstack run
 ```
 
 ### Adding Pages
 
 ```bash
 # Scaffold a new page
-ttkb add page DashboardPage
+bootstack add page DashboardPage
 
 # Then wire it up in main.py:
 #   from {module_name}.pages.dashboard_page import DashboardPage
@@ -566,10 +566,10 @@ ttkb add page DashboardPage
 
 ```bash
 # Promote to packaging-ready (adds PyInstaller support)
-ttkb promote --pyinstaller
+bootstack promote --pyinstaller
 
 # Build the executable
-ttkb build
+bootstack build
 ```
 
 ## Project Structure
@@ -584,18 +584,18 @@ ttkb build
 \u2502       \u251c\u2500\u2500 home_page.py
 \u2502       \u2514\u2500\u2500 settings_page.py
 \u251c\u2500\u2500 assets/
-\u251c\u2500\u2500 ttkb.toml
+\u251c\u2500\u2500 bootstack.toml
 \u2514\u2500\u2500 README.md
 ```
 
 ## Configuration
 
-Application settings are defined in `ttkb.toml`:
+Application settings are defined in `bootstack.toml`:
 
 - `[app]` - Application metadata
 - `[settings]` - Runtime settings (theme, language)
 - `[layout]` - Default layout preferences
-- `[build]` - Build/packaging configuration (after `ttkb promote`)
+- `[build]` - Build/packaging configuration (after `bootstack promote`)
 '''
 
 
@@ -710,9 +710,9 @@ def _create_basic_project(
     view_content = view_template.format(app_name=name)
     (views_dir / "main_view.py").write_text(view_content, encoding="utf-8")
 
-    # Write ttkb.toml
+    # Write bootstack.toml
     write_config(
-        path=target_dir / "ttkb.toml",
+        path=target_dir / "bootstack.toml",
         name=name,
         entry=f"src/{module_name}/main.py",
         theme=theme,
@@ -779,9 +779,9 @@ def _create_appshell_project(
         APPSHELL_SETTINGS_PAGE_TEMPLATE, encoding="utf-8"
     )
 
-    # Write ttkb.toml
+    # Write bootstack.toml
     write_config(
-        path=target_dir / "ttkb.toml",
+        path=target_dir / "bootstack.toml",
         name=name,
         entry=f"src/{module_name}/main.py",
         theme=theme,

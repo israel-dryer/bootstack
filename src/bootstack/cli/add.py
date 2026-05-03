@@ -1,4 +1,4 @@
-"""ttkb add command - Add views, dialogs, themes, and i18n to a project."""
+"""bootstack add command - Add views, dialogs, themes, and i18n to a project."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     add_subparsers = parser.add_subparsers(dest="component")
 
-    # ttkb add page <ClassName>
+    # bootstack add page <ClassName>
     page_parser = add_subparsers.add_parser(
         "page",
         help="Add a new page (for AppShell projects)",
@@ -40,7 +40,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     page_parser.set_defaults(func=run_add_page)
 
-    # ttkb add view <ClassName>
+    # bootstack add view <ClassName>
     view_parser = add_subparsers.add_parser(
         "view",
         help="Add a new view",
@@ -53,7 +53,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         "--container",
         choices=["grid", "pack"],
         default=None,
-        help="Container type (default: from ttkb.toml or 'grid')",
+        help="Container type (default: from bootstack.toml or 'grid')",
     )
     view_parser.add_argument(
         "--dir",
@@ -63,7 +63,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     view_parser.set_defaults(func=run_add_view)
 
-    # ttkb add dialog <ClassName>
+    # bootstack add dialog <ClassName>
     dialog_parser = add_subparsers.add_parser(
         "dialog",
         help="Add a new dialog",
@@ -80,7 +80,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     dialog_parser.set_defaults(func=run_add_dialog)
 
-    # ttkb add theme <name>
+    # bootstack add theme <name>
     theme_parser = add_subparsers.add_parser(
         "theme",
         help="Add a custom theme",
@@ -97,7 +97,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     theme_parser.set_defaults(func=run_add_theme)
 
-    # ttkb add i18n
+    # bootstack add i18n
     i18n_parser = add_subparsers.add_parser(
         "i18n",
         help="Add internationalization support",
@@ -125,7 +125,7 @@ def run_add_view(args: argparse.Namespace) -> None:
     # Find project configuration
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found. Are you in a bootstack project?")
+        print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
 
     project_root = config_path.parent
@@ -133,8 +133,8 @@ def run_add_view(args: argparse.Namespace) -> None:
 
     # Reject in AppShell projects — views belong to the basic template
     if config.app.template == "appshell":
-        print("Error: 'ttkb add view' is for basic-template projects.")
-        print("This project uses the 'appshell' template. Use 'ttkb add page' instead.")
+        print("Error: 'bootstack add view' is for basic-template projects.")
+        print("This project uses the 'appshell' template. Use 'bootstack add page' instead.")
         return
 
     # Determine container type
@@ -179,7 +179,7 @@ def run_add_page(args: argparse.Namespace) -> None:
     # Find project configuration
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found. Are you in a bootstack project?")
+        print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
 
     project_root = config_path.parent
@@ -187,8 +187,8 @@ def run_add_page(args: argparse.Namespace) -> None:
 
     # Check that this is an AppShell project
     if config.app.template != "appshell":
-        print("Error: 'ttkb add page' is for AppShell projects.")
-        print("This project uses the 'basic' template. Use 'ttkb add view' instead.")
+        print("Error: 'bootstack add page' is for AppShell projects.")
+        print("This project uses the 'basic' template. Use 'bootstack add view' instead.")
         return
 
     # Determine target directory and module name for the import hint
@@ -237,7 +237,7 @@ def run_add_dialog(args: argparse.Namespace) -> None:
     # Find project configuration
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found. Are you in a bootstack project?")
+        print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
 
     project_root = config_path.parent
@@ -276,7 +276,7 @@ def run_add_theme(args: argparse.Namespace) -> None:
     # Find project configuration
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found. Are you in a bootstack project?")
+        print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
 
     project_root = config_path.parent
@@ -315,7 +315,7 @@ def run_add_i18n(args: argparse.Namespace) -> None:
     # Find project configuration
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found. Are you in a bootstack project?")
+        print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
 
     project_root = config_path.parent

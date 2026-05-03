@@ -6,10 +6,10 @@ title: Build & Ship
 
 This guide shows how to **package and distribute** a bootstack application.
 
-It is designed to work with the `ttkb` CLI workflow:
+It is designed to work with the `bootstack` CLI workflow:
 
-- `ttkb promote --pyinstaller` to enable packaging support
-- `ttkb build` to produce a distributable bundle
+- `bootstack promote --pyinstaller` to enable packaging support
+- `bootstack build` to produce a distributable bundle
 
 !!! link "See [Platform → CLI](cli.md) for the full command reference."
 
@@ -35,19 +35,19 @@ Create a project in the style you want:
 
 ```bash
 # Default: a single-view App with assets/, README.md, and a starter view
-ttkb start MyApp
+bootstack start MyApp
 
 # AppShell with sidebar navigation and starter pages
-ttkb start MyApp --template appshell
+bootstack start MyApp --template appshell
 
-# Pick the starting theme (any value from `ttkb list themes`)
-ttkb start MyApp --theme superhero
+# Pick the starting theme (any value from `bootstack list themes`)
+bootstack start MyApp --theme superhero
 
 # Minimal: skip assets/ and README.md
-ttkb start MyApp --simple
+bootstack start MyApp --simple
 ```
 
-Packaging support is opt-in — you'll add it via `ttkb promote --pyinstaller`
+Packaging support is opt-in — you'll add it via `bootstack promote --pyinstaller`
 in step 3 once the app is working.
 
 ---
@@ -57,7 +57,7 @@ in step 3 once the app is working.
 Run the app in development mode:
 
 ```bash
-ttkb run
+bootstack run
 ```
 
 You can also run directly with Python during early prototyping.
@@ -69,14 +69,14 @@ You can also run directly with Python during early prototyping.
 Enable PyInstaller support (adds/updates the packaging assets):
 
 ```bash
-ttkb promote --pyinstaller
+bootstack promote --pyinstaller
 ```
 
 This step is intentionally **opt-in**, so a simple local app stays simple.
 
 What this typically does:
 
-- writes or updates `ttkb.toml`
+- writes or updates `bootstack.toml`
 - creates or updates a PyInstaller spec file
 - adds build-related defaults (icon, app name, entrypoint, data files)
 
@@ -87,20 +87,20 @@ What this typically does:
 Build the distributable bundle:
 
 ```bash
-ttkb build
+bootstack build
 ```
 
 For a clean rebuild:
 
 ```bash
-ttkb build --clean
+bootstack build --clean
 ```
 
 ---
 
-## Configuration via `ttkb.toml`
+## Configuration via `bootstack.toml`
 
-The CLI uses a single source of truth: `ttkb.toml`.
+The CLI uses a single source of truth: `bootstack.toml`.
 
 A typical configuration includes:
 
@@ -110,7 +110,7 @@ A typical configuration includes:
 - localization settings
 - build configuration (PyInstaller options, included files)
 
-!!! link "If you’re using `ttkb` for project scaffolding, `ttkb.toml` becomes the central place to keep app and build defaults together."
+!!! link "If you’re using `bootstack` for project scaffolding, `bootstack.toml` becomes the central place to keep app and build defaults together."
 
 ---
 
@@ -134,7 +134,7 @@ If you’re using bootstack’s built-in asset systems, the CLI/build integratio
 If you enable i18n with the CLI:
 
 ```bash
-ttkb add i18n
+bootstack add i18n
 ```
 
 Make sure your build step includes the message catalog assets.
@@ -202,14 +202,14 @@ Advanced users may want to edit the spec file directly.
 
 That’s fine — but the recommended path is:
 
-- keep config in `ttkb.toml`
-- let `ttkb build` generate/update the spec when possible
+- keep config in `bootstack.toml`
+- let `bootstack build` generate/update the spec when possible
 
 ---
 
 ## Shipping to macOS
 
-`ttkb build` produces a `.app` bundle on macOS via PyInstaller. That bundle
+`bootstack build` produces a `.app` bundle on macOS via PyInstaller. That bundle
 runs locally, but it is **not yet ready for distribution**: modern macOS
 (10.15+) refuses to launch unsigned, unnotarized apps with the
 "\"MyApp.app\" is damaged and can't be opened" Gatekeeper dialog.
@@ -226,7 +226,7 @@ bootstack intentionally does **not** perform itself:
 4. **Package** the result into a DMG (or PKG) for distribution.
 
 Apple's notarization toolchain changes often enough that wrapping it
-into `ttkb build` would mean ongoing maintenance for a feature only a
+into `bootstack build` would mean ongoing maintenance for a feature only a
 fraction of users need. The recommended path instead is to hand off to
 **[Briefcase](https://briefcase.readthedocs.io/)** (BeeWare), which
 handles the full chain — signing, notarization, stapling, and DMG
@@ -235,9 +235,9 @@ creation — across macOS, Linux (`.deb`/AppImage), and Windows (MSI).
 A typical workflow:
 
 ```bash
-# Develop and iterate with ttkb
-ttkb start MyApp
-ttkb run
+# Develop and iterate with bootstack
+bootstack start MyApp
+bootstack run
 
 # When you're ready to ship to macOS:
 pip install briefcase
@@ -246,7 +246,7 @@ briefcase build macOS
 briefcase package macOS --identity "Developer ID Application: Your Name (TEAMID)"
 ```
 
-The Briefcase project layout is independent of the `ttkb start` layout,
+The Briefcase project layout is independent of the `bootstack start` layout,
 so you'll typically point Briefcase at your existing `src/` package and
 reuse your assets. See the
 [Briefcase macOS docs](https://briefcase.readthedocs.io/en/stable/reference/platforms/macOS.html)

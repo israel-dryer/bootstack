@@ -1,4 +1,4 @@
-"""Configuration loader and writer for ttkb.toml."""
+"""Configuration loader and writer for bootstack.toml."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ else:
     except ImportError:
         tomllib = None  # type: ignore
 
-# Default ttkb.toml template
+# Default bootstack.toml template
 DEFAULT_CONFIG_TEMPLATE = """\
 [app]
 name = "{name}"
@@ -48,14 +48,14 @@ include = [
     "assets/**",
     "locales/**",
     "themes/**",
-    "ttkb.toml",
+    "bootstack.toml",
 ]
 """
 
 
 @dataclass
 class AppConfig:
-    """The [app] section of ttkb.toml."""
+    """The [app] section of bootstack.toml."""
 
     name: str = "MyApp"
     id: str = "com.example.myapp"
@@ -65,7 +65,7 @@ class AppConfig:
 
 @dataclass
 class SettingsConfig:
-    """The [settings] section of ttkb.toml."""
+    """The [settings] section of bootstack.toml."""
 
     theme: str = "bootstrap-light"
     language: str = "en"
@@ -74,28 +74,28 @@ class SettingsConfig:
 
 @dataclass
 class LayoutConfig:
-    """The [layout] section of ttkb.toml."""
+    """The [layout] section of bootstack.toml."""
 
     default_container: str = "grid"  # grid | pack
 
 
 @dataclass
 class BuildIconConfig:
-    """The [build.icon] section of ttkb.toml."""
+    """The [build.icon] section of bootstack.toml."""
 
     path: Optional[str] = None
 
 
 @dataclass
 class BuildDatasConfig:
-    """The [build.datas] section of ttkb.toml."""
+    """The [build.datas] section of bootstack.toml."""
 
     include: list[str] = field(default_factory=list)
 
 
 @dataclass
 class BuildConfig:
-    """The [build] section of ttkb.toml."""
+    """The [build] section of bootstack.toml."""
 
     backend: str = "pyinstaller"
     windowed: bool = True
@@ -106,7 +106,7 @@ class BuildConfig:
 
 @dataclass
 class TtkbConfig:
-    """Complete ttkb.toml configuration."""
+    """Complete bootstack.toml configuration."""
 
     app: AppConfig = field(default_factory=AppConfig)
     settings: SettingsConfig = field(default_factory=SettingsConfig)
@@ -154,8 +154,8 @@ class TtkbConfig:
         return cls(app=app, settings=settings, layout=layout, build=build)
 
     @classmethod
-    def load(cls, path: Path | str = "ttkb.toml") -> TtkbConfig:
-        """Load configuration from a ttkb.toml file.
+    def load(cls, path: Path | str = "bootstack.toml") -> TtkbConfig:
+        """Load configuration from a bootstack.toml file.
 
         Args:
             path: Path to the configuration file.
@@ -177,7 +177,7 @@ class TtkbConfig:
         return cls.from_dict(data)
 
     @classmethod
-    def load_or_default(cls, path: Path | str = "ttkb.toml") -> TtkbConfig:
+    def load_or_default(cls, path: Path | str = "bootstack.toml") -> TtkbConfig:
         """Load configuration from file, or return defaults if not found.
 
         Args:
@@ -193,13 +193,13 @@ class TtkbConfig:
 
 
 def find_config(start_dir: Path | str | None = None) -> Path | None:
-    """Find ttkb.toml by walking up from start_dir.
+    """Find bootstack.toml by walking up from start_dir.
 
     Args:
         start_dir: Starting directory (defaults to current working directory).
 
     Returns:
-        Path to ttkb.toml if found, None otherwise.
+        Path to bootstack.toml if found, None otherwise.
     """
     if start_dir is None:
         start_dir = Path.cwd()
@@ -208,13 +208,13 @@ def find_config(start_dir: Path | str | None = None) -> Path | None:
 
     current = start_dir.resolve()
     while current != current.parent:
-        config_path = current / "ttkb.toml"
+        config_path = current / "bootstack.toml"
         if config_path.exists():
             return config_path
         current = current.parent
 
     # Check root
-    config_path = current / "ttkb.toml"
+    config_path = current / "bootstack.toml"
     if config_path.exists():
         return config_path
 
@@ -229,7 +229,7 @@ def generate_config(
     template: str = "basic",
     include_build: bool = False,
 ) -> str:
-    """Generate ttkb.toml content.
+    """Generate bootstack.toml content.
 
     Args:
         name: Application name.
@@ -271,7 +271,7 @@ def write_config(
     template: str = "basic",
     include_build: bool = False,
 ) -> None:
-    """Write ttkb.toml to disk.
+    """Write bootstack.toml to disk.
 
     Args:
         path: Path to write the configuration file.

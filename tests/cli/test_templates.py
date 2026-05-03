@@ -1,4 +1,4 @@
-"""Tests for the ttkb CLI templating mechanism.
+"""Tests for the bootstack CLI templating mechanism.
 
 These tests exercise create_project / create_view / create_page /
 create_dialog plus the theme JSON templates. Each generated file is
@@ -78,7 +78,7 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
     assert (target / "src" / "myapp" / "__init__.py").is_file()
     assert (target / "src" / "myapp" / "views" / "main_view.py").is_file()
     assert (target / "src" / "myapp" / "views" / "__init__.py").is_file()
-    assert (target / "ttkb.toml").is_file()
+    assert (target / "bootstack.toml").is_file()
 
     # Simple flag controls README and assets/
     assert (target / "README.md").is_file() != simple
@@ -88,18 +88,18 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
     for py in (target / "src" / "myapp").rglob("*.py"):
         _assert_python_parses(py)
 
-    # ttkb.toml round-trips and carries the right fields
-    cfg = _load_toml(target / "ttkb.toml")
+    # bootstack.toml round-trips and carries the right fields
+    cfg = _load_toml(target / "bootstack.toml")
     assert cfg["app"]["name"] == "MyApp"
     assert cfg["app"]["template"] == "basic"
     assert cfg["app"]["entry"] == "src/myapp/main.py"
     assert cfg["settings"]["theme"] == "cosmo"
     assert "build" not in cfg  # promote adds it later
 
-    # main.py respects TTKB_THEME (env override path) and references the
+    # main.py respects BOOTSTACK_THEME (env override path) and references the
     # right view subclass for the chosen container.
     main_src = (target / "src" / "myapp" / "main.py").read_text(encoding="utf-8")
-    assert 'os.environ.get("TTKB_THEME", "cosmo")' in main_src
+    assert 'os.environ.get("BOOTSTACK_THEME", "cosmo")' in main_src
     assert "from myapp.views.main_view import MainView" in main_src
 
     view_src = (target / "src" / "myapp" / "views" / "main_view.py").read_text(encoding="utf-8")
@@ -136,13 +136,13 @@ def test_create_appshell_project(tmp_path: Path, simple: bool) -> None:
     for py in (target / "src" / "myshell").rglob("*.py"):
         _assert_python_parses(py)
 
-    cfg = _load_toml(target / "ttkb.toml")
+    cfg = _load_toml(target / "bootstack.toml")
     assert cfg["app"]["template"] == "appshell"
     assert cfg["settings"]["theme"] == "superhero"
 
     main_src = (target / "src" / "myshell" / "main.py").read_text(encoding="utf-8")
     assert "ttk.AppShell" in main_src
-    assert 'os.environ.get("TTKB_THEME", "superhero")' in main_src
+    assert 'os.environ.get("BOOTSTACK_THEME", "superhero")' in main_src
     assert "HomePage" in main_src and "SettingsPage" in main_src
 
 
@@ -161,7 +161,7 @@ def test_create_project_normalizes_hyphenated_name(tmp_path: Path) -> None:
     )
     # Module dir uses snake_case derived from the name
     assert (target / "src" / "my_cool_app" / "main.py").is_file()
-    cfg = _load_toml(target / "ttkb.toml")
+    cfg = _load_toml(target / "bootstack.toml")
     assert cfg["app"]["entry"] == "src/my_cool_app/main.py"
 
 
@@ -248,7 +248,7 @@ def test_spec_template_format_is_safe() -> None:
     # Generated spec is parseable Python
     ast.parse(rendered)
     # Spot-check that the literal Python f-string survived as f-string
-    assert "f\"ttkb.toml not found at {CONFIG_PATH}\"" in rendered
+    assert "f\"bootstack.toml not found at {CONFIG_PATH}\"" in rendered
 
 
 def test_default_launch_icon_is_packaged() -> None:
@@ -297,7 +297,7 @@ def test_spec_template_uses_specpath_not_dunder_file() -> None:
 def test_generate_spec_writes_parseable_file(tmp_path: Path) -> None:
     target = tmp_path / "proj"
     create_project(name="SpecApp", target_dir=target, template="basic", simple=True)
-    cfg = TtkbConfig.load(target / "ttkb.toml")
+    cfg = TtkbConfig.load(target / "bootstack.toml")
     spec_path = target / "build" / "pyinstaller" / "app.spec"
     generate_spec(cfg, target, spec_path)
     assert spec_path.is_file()

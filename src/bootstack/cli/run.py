@@ -1,4 +1,4 @@
-"""ttkb run command - Run a bootstack application."""
+"""bootstack run command - Run a bootstack application."""
 
 from __future__ import annotations
 
@@ -15,13 +15,13 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     parser = subparsers.add_parser(
         "run",
         help="Run the bootstack application",
-        description="Run the application using the entry point defined in ttkb.toml.",
+        description="Run the application using the entry point defined in bootstack.toml.",
     )
     parser.add_argument(
         "path",
         nargs="?",
         default=None,
-        help="Path to entry point or directory containing ttkb.toml (default: current directory)",
+        help="Path to entry point or directory containing bootstack.toml (default: current directory)",
     )
     parser.set_defaults(func=run_run)
 
@@ -39,10 +39,10 @@ def run_run(args: argparse.Namespace) -> None:
             entry_point = path
             project_root = path.parent
         elif path.is_dir():
-            # Directory - look for ttkb.toml
-            config_path = path / "ttkb.toml"
+            # Directory - look for bootstack.toml
+            config_path = path / "bootstack.toml"
             if not config_path.exists():
-                print(f"Error: No ttkb.toml found in '{path}'")
+                print(f"Error: No bootstack.toml found in '{path}'")
                 return
             config = TtkbConfig.load(config_path)
             entry_point = path / config.app.entry
@@ -51,11 +51,11 @@ def run_run(args: argparse.Namespace) -> None:
             print(f"Error: '{path}' is not a valid file or directory")
             return
     else:
-        # No path specified - find ttkb.toml
+        # No path specified - find bootstack.toml
         config_path = find_config()
         if config_path is None:
-            print("Error: No ttkb.toml found in current directory or parents.")
-            print("Run 'ttkb start <appname>' to create a new project.")
+            print("Error: No bootstack.toml found in current directory or parents.")
+            print("Run 'bootstack start <appname>' to create a new project.")
             return
 
         config = TtkbConfig.load(config_path)
@@ -85,7 +85,7 @@ def run_run(args: argparse.Namespace) -> None:
 
     # Pass theme from config so the app can pick it up
     if config is not None and config.settings.theme:
-        env["TTKB_THEME"] = config.settings.theme
+        env["BOOTSTACK_THEME"] = config.settings.theme
 
     try:
         result = subprocess.run(

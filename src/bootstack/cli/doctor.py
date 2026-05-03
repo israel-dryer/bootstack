@@ -1,4 +1,4 @@
-"""ttkb doctor command - Validate project structure and environment."""
+"""bootstack doctor command - Validate project structure and environment."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         "doctor",
         help="Diagnose project and environment health",
         description=(
-            "Validate ttkb.toml, check the project layout, and report "
+            "Validate bootstack.toml, check the project layout, and report "
             "environment versions relevant to building and running."
         ),
     )
@@ -53,8 +53,8 @@ def run_doctor(args: argparse.Namespace) -> None:
     config_path = find_config()
     if config_path is None:
         print("Project:")
-        print(f"{_WARN}No ttkb.toml found in current directory or parents.")
-        print("         (Run 'ttkb start <name>' to create a project, or 'cd' into one.)")
+        print(f"{_WARN}No bootstack.toml found in current directory or parents.")
+        print("         (Run 'bootstack start <name>' to create a project, or 'cd' into one.)")
         return
 
     project_root = config_path.parent
@@ -63,9 +63,9 @@ def run_doctor(args: argparse.Namespace) -> None:
     try:
         config = TtkbConfig.load(config_path)
     except Exception as e:
-        print(f"{_FAIL}ttkb.toml failed to parse: {e}")
+        print(f"{_FAIL}bootstack.toml failed to parse: {e}")
         sys.exit(1)
-    print(f"{_OK}ttkb.toml parses ([app] name={config.app.name!r}, template={config.app.template!r})")
+    print(f"{_OK}bootstack.toml parses ([app] name={config.app.name!r}, template={config.app.template!r})")
 
     # Entry point exists
     entry_path = project_root / config.app.entry
@@ -87,7 +87,7 @@ def run_doctor(args: argparse.Namespace) -> None:
 
     # Packaging — always reported. If [build] exists we run the full check;
     # otherwise we still flag a missing PyInstaller as a heads-up so users
-    # discover it before they reach 'ttkb build'.
+    # discover it before they reach 'bootstack build'.
     if config.build is not None:
         warnings += _check_build(config, project_root)
     else:
@@ -131,18 +131,18 @@ def _check_packaging_readiness() -> int:
     """Report packaging-tool availability for un-promoted projects.
 
     Never fails — just warns if PyInstaller is missing so users know
-    they have an install ahead of them before 'ttkb build' will work.
+    they have an install ahead of them before 'bootstack build' will work.
     Returns the number of warnings.
     """
     print()
     print("Packaging (project not yet promoted):")
     try:
         import PyInstaller  # noqa: F401
-        print(f"{_OK}PyInstaller is available (run 'ttkb promote --pyinstaller' to enable builds)")
+        print(f"{_OK}PyInstaller is available (run 'bootstack promote --pyinstaller' to enable builds)")
         return 0
     except ImportError:
         print(f"{_WARN}PyInstaller is not installed")
-        print("         Install it before 'ttkb build': pip install pyinstaller")
+        print("         Install it before 'bootstack build': pip install pyinstaller")
         return 1
 
 
@@ -158,7 +158,7 @@ def _check_build(config: TtkbConfig, project_root: Path) -> int:
         if spec.exists():
             print(f"{_OK}spec file: {spec.relative_to(project_root)}")
         else:
-            print(f"{_WARN}spec file missing — run 'ttkb promote --pyinstaller --force'")
+            print(f"{_WARN}spec file missing — run 'bootstack promote --pyinstaller --force'")
             warnings += 1
         try:
             import PyInstaller  # noqa: F401

@@ -6,7 +6,7 @@ title: App Structure
 
 This guide explains how a bootstack application is organized—the `App` class, windows, layout, state, and lifecycle.
 
-Use `ttkb start MyApp` to scaffold a new project with the recommended structure.
+Use `bootstack start MyApp` to scaffold a new project with the recommended structure.
 
 ---
 
@@ -122,11 +122,11 @@ app = bs.App(
 
 ## Project Structure
 
-`ttkb start` generates one of two layouts depending on the template you
+`bootstack start` generates one of two layouts depending on the template you
 choose. The **basic** template (default) produces a single-view `App`:
 
 ```
-myapp/                       # ttkb start MyApp
+myapp/                       # bootstack start MyApp
 ├── src/myapp/
 │   ├── __init__.py
 │   ├── main.py              # App entry point
@@ -134,7 +134,7 @@ myapp/                       # ttkb start MyApp
 │       ├── __init__.py
 │       └── main_view.py
 ├── assets/                  # Images, icons
-├── ttkb.toml                # Project configuration
+├── bootstack.toml                # Project configuration
 └── README.md
 ```
 
@@ -142,7 +142,7 @@ The **appshell** template produces an `AppShell` with sidebar navigation
 and one file per page:
 
 ```
-myapp/                       # ttkb start MyApp --template appshell
+myapp/                       # bootstack start MyApp --template appshell
 ├── src/myapp/
 │   ├── __init__.py
 │   ├── main.py
@@ -151,12 +151,12 @@ myapp/                       # ttkb start MyApp --template appshell
 │       ├── home_page.py
 │       └── settings_page.py
 ├── assets/
-├── ttkb.toml
+├── bootstack.toml
 └── README.md
 ```
 
-The chosen template is recorded in `ttkb.toml` as `[app].template`, so
-`ttkb add view` and `ttkb add page` know which scaffold is appropriate for
+The chosen template is recorded in `bootstack.toml` as `[app].template`, so
+`bootstack add view` and `bootstack add page` know which scaffold is appropriate for
 the project.
 
 As your project grows:
@@ -174,10 +174,10 @@ myapp/
 │   └── services/        # IO, data, persistence
 ├── assets/
 ├── locales/             # Translation files
-└── ttkb.toml
+└── bootstack.toml
 ```
 
-Use `ttkb start MyApp` to scaffold a new project with this structure.
+Use `bootstack start MyApp` to scaffold a new project with this structure.
 
 !!! link "Project Structure"
     See [Platform → Project Structure](../platform/project-structure.md) for detailed guidance on file organization, packaging, and PyInstaller.
