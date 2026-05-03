@@ -37,7 +37,6 @@ class FieldOptions(TypedDict, total=False):
         accent: Accent token for the focus ring and active border of the input.
         density: Widget density. 'default' for normal size, 'compact' for smaller size.
         variant: Style variant (if applicable).
-        bootstyle: DEPRECATED - Use accent instead.
         cursor: Cursor to display when hovering over the widget.
         value_format: ICU format pattern for parsing/formatting (e.g., '$#,##0.00' for currency).
         exportselection: If True, selected text is exported to X selection.
@@ -58,7 +57,6 @@ class FieldOptions(TypedDict, total=False):
         localize: Determines the field label localization mode. 'auto', True, False.
     """
     allow_blank: bool
-    bootstyle: str  # DEPRECATED: Use accent instead
     accent: str
     density: Literal['default', 'compact']
     variant: str
@@ -182,9 +180,7 @@ class Field(EntryMixin, Frame):
         if message and not show_message_explicit:
             show_message = True
 
-        # Extract accent - support legacy 'bootstyle' parameter
         accent = kwargs.pop('accent', None)
-        bootstyle = kwargs.pop('bootstyle', None)  # Legacy support
         self._density = kwargs.pop('density', 'default')
         self._localize = cast(bool | Literal['auto'], kwargs.pop('localize', 'auto'))
 
@@ -192,7 +188,7 @@ class Field(EntryMixin, Frame):
         super().__init__(master)
 
         # Set accent AFTER super().__init__ to avoid being overwritten by wrapper
-        self._accent = accent or bootstyle
+        self._accent = accent
 
         # configuration
         self._message_text = message
@@ -331,15 +327,6 @@ class Field(EntryMixin, Frame):
             self._field['accent'] = value
         return None
 
-    @configure_delegate
-    def _config_bootstyle(self, value=None):
-        """DEPRECATED: Use accent instead."""
-        if value is None:
-            return self._accent
-        else:
-            self._accent = value
-            self._field['accent'] = value
-        return None
 
     def disable(self):
         """Disable the field, preventing user input."""

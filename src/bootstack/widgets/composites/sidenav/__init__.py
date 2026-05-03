@@ -15,23 +15,10 @@ from bootstack.widgets.composites.sidenav.header import SideNavHeader
 from bootstack.widgets.composites.sidenav.separator import SideNavSeparator
 from bootstack.widgets.composites.sidenav.view import SideNav
 
-# Backward compatibility aliases
-NavigationView = SideNav
-NavigationViewItem = SideNavItem
-NavigationViewGroup = SideNavGroup
-NavigationViewHeader = SideNavHeader
-NavigationViewSeparator = SideNavSeparator
-
 __all__ = [
     'SideNav',
     'SideNavGroup',
     'SideNavItem',
     'SideNavHeader',
     'SideNavSeparator',
-    # Backward compatibility
-    'NavigationView',
-    'NavigationViewItem',
-    'NavigationViewGroup',
-    'NavigationViewHeader',
-    'NavigationViewSeparator',
 ]

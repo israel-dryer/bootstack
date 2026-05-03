@@ -195,7 +195,6 @@ class DateDialog:
             initial_date: Optional[date] = None,
             first_weekday: int = 6,
             accent: str = None,
-            bootstyle: str = None,
             disabled_dates: Optional[Iterable[date | datetime | str]] = None,
             min_date: Optional[date | datetime | str] = None,
             max_date: Optional[date | datetime | str] = None,
@@ -212,7 +211,6 @@ class DateDialog:
             initial_date: Initial date shown; defaults to `date.today()`.
             first_weekday: First weekday index (0=Monday, 6=Sunday).
             accent: Calendar accent token (e.g., `primary`, `secondary`).
-            bootstyle: DEPRECATED - Use `accent` instead.
             disabled_dates: Iterable of dates to disable selection.
             min_date: Lower bound for selectable dates.
             max_date: Upper bound for selectable dates.
@@ -227,7 +225,7 @@ class DateDialog:
         self._master = master
         self._first_weekday = first_weekday
         self._initial_date = initial_date or datetime.today().date()
-        self._accent = accent or bootstyle or PRIMARY
+        self._accent = accent or PRIMARY
         self._disabled_dates = disabled_dates
         self._min_date = min_date
         self._max_date = max_date

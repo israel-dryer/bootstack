@@ -44,7 +44,6 @@ class DialogButton:
         command (Callable[[Dialog], None] | None): Callback called when clicked.
         accent (str | None): Accent token for styling (e.g., 'primary', 'danger').
         variant (str | None): Style variant (e.g., 'outline', 'link').
-        bootstyle (str | None): DEPRECATED - Use accent and variant instead.
         icon (str | dict | None): Optional icon specification for the button.
     """
     text: str
@@ -55,7 +54,6 @@ class DialogButton:
     command: Callable[[Dialog], None] | None = None
     accent: str | None = None  # accent token (e.g., 'primary', 'danger')
     variant: str | None = None  # style variant (e.g., 'outline', 'link')
-    bootstyle: str | None = None  # DEPRECATED: use accent/variant instead
     icon: str | dict[str, Any] | None = None  # passed straight to ttk.Button(icon=...)
 
 
@@ -367,12 +365,7 @@ class Dialog:
         for spec in reversed(self._buttons):
             # Get accent/variant from spec or derive from role
             if spec.accent or spec.variant:
-                # Use explicitly provided accent/variant
                 accent, variant = spec.accent, spec.variant
-            elif spec.bootstyle:
-                # Legacy: spec has bootstyle - parse it
-                from bootstack.style.bootstyle import convert_bootstyle_to_accent_variant
-                accent, variant = convert_bootstyle_to_accent_variant(spec.bootstyle, 'TButton', warn=False)
             else:
                 accent, variant = self._style_for_role(spec.role)
 

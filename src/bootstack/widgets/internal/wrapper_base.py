@@ -19,8 +19,6 @@ from bootstack.style.bootstyle import (
     Bootstyle,
     extract_accent_from_style,
     extract_variant_from_style,
-    parse_bootstyle,
-    convert_bootstyle_to_accent_variant,
 )
 from bootstack.style.token_maps import CONTAINER_CLASSES, ORIENT_CLASSES
 from bootstack.widgets.mixins.configure_mixin import (
@@ -140,73 +138,6 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
         return self._ttk_base.configure(self, style=ttk_style)  # type: ignore[misc]
 
     # ----- Built-in delegated handlers -----
-    @configure_delegate("bootstyle")
-    def _delegate_bootstyle(self, value: Any = None):
-        """Get or set the bootstack bootstyle for this widget.
-
-        DEPRECATED: Use 'accent' and 'variant' parameters instead.
-
-        - Query: returns a best-effort "accent-variant" string based on the
-          current style (or None if not set). No deprecation warning for reads.
-        - Set: generates/apply a ttk style using the style engine; preserves
-          surface color and orientation when applicable. Issues deprecation warning.
-        """
-        # Query path - no deprecation warning for reads
-        if value is None:
-            accent = self._delegate_accent(None)
-            variant = self._delegate_variant(None)
-            parts = []
-            if accent:
-                parts.append(accent)
-            if variant:
-                parts.append(variant)
-            return "-".join(parts) if parts else None
-
-        # Set path - issue deprecation warning
-        import warnings
-        warnings.warn(
-            "Setting 'bootstyle' at runtime is deprecated. "
-            "Use widget.configure(accent='...', variant='...') instead.",
-            FutureWarning,
-            stacklevel=3
-        )
-
-        # Use stored _ttk_class if available (for custom style class like ButtonGroup)
-        widget_class = getattr(self, '_ttk_class', None) or self.winfo_class()
-        accent, variant = convert_bootstyle_to_accent_variant(
-            str(value), widget_class, warn=False  # Already warned above
-        )
-
-        # Store both
-        setattr(self, '_accent', accent)
-        setattr(self, '_variant', variant)
-
-        # Use stored style_options if available, otherwise create new dict
-        style_options = getattr(self, '_style_options', {}).copy()
-
-        surface = getattr(self, "_surface", None)
-        if surface and surface != "content":
-            style_options["surface"] = surface
-
-        if widget_class in ORIENT_CLASSES:
-            try:
-                style_options["orient"] = str(self.cget("orient"))
-            except Exception:
-                pass
-
-        if widget_class in CONTAINER_CLASSES:
-            if accent:
-                style_options["surface"] = accent
-                setattr(self, "_surface", accent)
-
-        ttk_style = Bootstyle.create_ttk_style(
-            widget_class=widget_class,
-            style_options=style_options or None,
-            accent=accent,
-            variant=variant,
-        )
-        return self._ttk_base.configure(self, style=ttk_style)  # type: ignore[misc]
-
     @configure_delegate("accent")
     def _delegate_accent(self, value: Any = None):
         """Get or set the accent token for this widget.

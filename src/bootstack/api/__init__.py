@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from bootstack.api.style import (
     BootstrapIcon,
-    Bootstyle,
     Style,
     get_style,
     get_style_builder,
@@ -69,7 +68,6 @@ from bootstack.runtime.menu import MenuManager, create_menu
 
 __all__ = [
     "BootstrapIcon",
-    "Bootstyle",
     "Style",
     "Button",
     "CheckButton",

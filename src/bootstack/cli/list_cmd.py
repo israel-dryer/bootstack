@@ -31,7 +31,7 @@ def run_list_themes(args: argparse.Namespace) -> None:
 
     themes: list[dict[str, str]] = []
 
-    for package in ("bootstack.assets.themes", "bootstack.assets.themes.legacy"):
+    for package in ("bootstack.assets.themes",):
         try:
             base = resources.files(package)
         except (ModuleNotFoundError, FileNotFoundError):

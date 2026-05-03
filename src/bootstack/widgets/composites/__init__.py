@@ -16,13 +16,6 @@ from bootstack.widgets.composites.tabs import Tabs, TabView
 from bootstack.widgets.composites.selectbox import SelectBox
 from bootstack.widgets.composites.toolbar import Toolbar
 
-# Backward compatibility aliases
-NavigationView = SideNav
-NavigationViewItem = SideNavItem
-NavigationViewGroup = SideNavGroup
-NavigationViewHeader = SideNavHeader
-NavigationViewSeparator = SideNavSeparator
-
 __all__ = [
     'Accordion',
     'Composite',
@@ -42,10 +35,4 @@ __all__ = [
     'TabView',
     'SelectBox',
     'Toolbar',
-    # Backward compatibility
-    'NavigationView',
-    'NavigationViewGroup',
-    'NavigationViewItem',
-    'NavigationViewHeader',
-    'NavigationViewSeparator',
 ]

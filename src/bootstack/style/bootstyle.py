@@ -6,69 +6,12 @@ user-friendly bootstyle syntax and TTK style names.
 
 from __future__ import annotations
 
-import warnings
 from typing import Optional
 
 from bootstack.runtime.app import get_app_settings
 from bootstack.core.exceptions import BootstyleParsingError
 from bootstack.style.token_maps import (COLOR_TOKENS, CONTAINER_CLASSES, ORIENT_CLASSES, WIDGET_CLASS_MAP)
 
-
-def _warn_bootstyle_deprecated():
-    """Issue deprecation warning for bootstyle parameter usage.
-
-    Uses dynamic stack level detection to find the user's code,
-    accounting for variable MRO depths across different widget types.
-    """
-    import sys
-    import os
-
-    # Walk up the stack to find the first frame outside bootstack package
-    frame = sys._getframe(1)
-    level = 2  # Start at 2 (1 for this function, 1 for caller)
-
-    # Get the actual bootstack package path (src/bootstack), normalized
-    bootstack_pkg_path = os.path.normpath(os.path.dirname(os.path.dirname(__file__)))
-
-    while frame.f_back is not None:
-        frame = frame.f_back
-        level += 1  # Increment BEFORE checking, so level points to this frame
-        filepath = os.path.normpath(frame.f_code.co_filename)
-        # Stop when we find code outside bootstack package
-        if bootstack_pkg_path not in filepath:
-            break
-
-    warnings.warn(
-        "The 'bootstyle' parameter is deprecated. "
-        "Use 'accent' and 'variant' parameters instead.",
-        FutureWarning,
-        stacklevel=level
-    )
-
-
-def convert_bootstyle_to_accent_variant(
-        bootstyle: str,
-        widget_class: str,
-        warn: bool = True
-) -> tuple[Optional[str], Optional[str]]:
-    """Convert bootstyle string to separate accent and variant.
-
-    Args:
-        bootstyle: Bootstyle string (e.g., "success-outline", "primary")
-        widget_class: TTK widget class for variant validation
-        warn: Whether to issue deprecation warning
-
-    Returns:
-        Tuple of (accent, variant) where either may be None
-    """
-    if not bootstyle:
-        return None, None
-
-    if warn:
-        _warn_bootstyle_deprecated()
-
-    parsed = parse_bootstyle(bootstyle, widget_class)
-    return parsed.get('accent'), parsed.get('variant')
 
 
 def parse_bootstyle_v2(bootstyle: str, widget_class: str) -> dict:
@@ -199,13 +142,6 @@ def normalize_orientation(orient: str):
         return 'Horizontal'
 
 
-def parse_bootstyle_legacy(bootstyle: str, widget_class: str) -> dict:
-    """Parse bootstyle using legacy V1 regex syntax (deprecated).
-
-    Currently falls back to V2 parsing. TODO: Extract actual legacy logic.
-    """
-    return parse_bootstyle_v2(bootstyle, widget_class)
-
 
 def parse_bootstyle(bootstyle: str, widget_class: str) -> dict:
     """Parse bootstyle string using configured parsing method.
@@ -314,7 +250,6 @@ class Bootstyle:
     @staticmethod
     def create_ttk_style(
             widget_class: str,
-            bootstyle: Optional[str] = None,
             style_options: Optional[dict] = None,
             *,
             accent: Optional[str] = None,
@@ -322,12 +257,8 @@ class Bootstyle:
     ) -> str:
         """Create or get TTK style name for a widget.
 
-        Parses bootstyle string OR uses accent/variant directly to generate
-        TTK style name and trigger style creation.
-
         Args:
             widget_class: TTK widget class (e.g., "TButton")
-            bootstyle: DEPRECATED - Use accent and variant instead
             style_options: Custom style options dict
             accent: Accent token (e.g., "success", "primary[subtle]")
             variant: Variant name (e.g., "outline", "solid")
@@ -336,19 +267,6 @@ class Bootstyle:
             Generated TTK style name
         """
         from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
-
-        # Handle legacy bootstyle parameter
-        if bootstyle:
-            if accent is not None or variant is not None:
-                raise ValueError(
-                    "Cannot use 'bootstyle' together with 'accent' or 'variant'. "
-                    "Use either bootstyle (deprecated) OR accent/variant."
-                )
-            # Parse bootstyle (warning already issued at widget level)
-            parsed = parse_bootstyle(bootstyle, widget_class)
-            accent = parsed['accent']
-            variant = parsed['variant']
-            widget_class = parsed['widget_class']  # May be cross-widget
 
         # If no accent and no variant, return base widget class
         if not accent and not variant:
@@ -399,20 +317,11 @@ class Bootstyle:
 
         def __init__wrapper(self, *args, **kwargs):
 
-            # Extract new accent/variant parameters
+            # Extract accent/variant parameters
             accent = kwargs.pop("accent", None)
             variant = kwargs.pop("variant", None)
 
-            # Extract legacy bootstyle parameter
             had_style_kwarg = 'style' in kwargs
-            bootstyle = kwargs.pop("bootstyle", "")
-
-            # Check for conflicting params (bootstyle with accent/variant)
-            if bootstyle and (accent is not None or variant is not None):
-                raise ValueError(
-                    "Cannot use 'bootstyle' together with 'accent' or 'variant'. "
-                    "Use either bootstyle (deprecated) OR accent/variant."
-                )
 
             style_options = kwargs.pop("style_options", {})
             inherit_surface = kwargs.pop('inherit_surface', None)
@@ -428,16 +337,6 @@ class Bootstyle:
             # Use ttk_class for style lookup if provided, otherwise use widget's actual class
             widget_class = self.winfo_class()
             style_class = ttk_class or widget_class
-
-            # Handle bootstyle -> accent/variant conversion AFTER widget constructor
-            # so we have the correct style_class for variant validation
-            if bootstyle:
-                _warn_bootstyle_deprecated()
-                bs_accent, bs_variant = convert_bootstyle_to_accent_variant(
-                    bootstyle, style_class, warn=False  # Already warned above
-                )
-                accent = bs_accent
-                variant = bs_variant
 
             # ===== Surface color inheritance =====
 
@@ -599,11 +498,9 @@ class Bootstyle:
 __all__ = [
     'parse_bootstyle',
     'parse_bootstyle_v2',
-    'parse_bootstyle_legacy',
     'generate_ttk_style_name',
     'extract_accent_from_style',
     'extract_variant_from_style',
     'extract_widget_class_from_style',
-    'convert_bootstyle_to_accent_variant',
     'Bootstyle',
 ]

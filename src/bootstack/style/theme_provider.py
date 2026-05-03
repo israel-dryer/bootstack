@@ -84,9 +84,8 @@ def get_theme(name):
 def load_system_themes():
     """Load system themes from the package.
 
-    Loads all v2 themes from `bootstack.assets.themes` and all legacy
-    themes from `bootstack.assets.themes.legacy`. Themes matching
-    app settings dark_theme or .light_theme are also registered with
+    Loads all v2 themes from `bootstack.assets.themes`. Themes matching
+    app settings dark_theme or light_theme are also registered with
     'dark' and 'light' aliases for convenience.
     """
     from importlib import resources
@@ -94,14 +93,12 @@ def load_system_themes():
     global _registered_themes
 
     base_package = 'bootstack.assets.themes'
-    legacy_package = 'bootstack.assets.themes.legacy'
 
     # Get configured theme names for dark/light aliases
     app_settings = get_app_settings()
     dark_theme_name = app_settings.dark_theme
     light_theme_name = app_settings.light_theme
 
-    # Always load all v2 JSON themes from the primary themes package.
     try:
         base_dir = resources.files(base_package)
     except ModuleNotFoundError:
@@ -121,21 +118,6 @@ def load_system_themes():
                 _registered_themes['dark'] = data
             elif name == light_theme_name:
                 _registered_themes['light'] = data
-
-    # Always supplement with legacy themes (if present)
-    try:
-        legacy_dir = resources.files(legacy_package)
-    except ModuleNotFoundError:
-        legacy_dir = None
-    if legacy_dir is not None:
-        for theme_file in legacy_dir.iterdir():
-            if not theme_file.name.endswith(".json"):
-                continue
-            data = load_package_theme(theme_file.name, legacy_package)
-            name = data.get("name")
-            if not name:
-                continue
-            _registered_themes[name] = data
 
 
 def load_user_defined_theme(path):

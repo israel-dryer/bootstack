@@ -21,12 +21,7 @@ from bootstack.widgets.composites.sidenav import (
     SideNavSeparator,
 )
 
-# Backward compatibility aliases
-NavigationView = SideNav
-NavigationViewItem = SideNavItem
-NavigationViewGroup = SideNavGroup
-NavigationViewHeader = SideNavHeader
-NavigationViewSeparator = SideNavSeparator
+
 from bootstack.widgets.composites.toolbar import Toolbar
 from bootstack.widgets.composites.dateentry import DateEntry
 from bootstack.widgets.composites.dropdownbutton import DropdownButton
@@ -104,11 +99,7 @@ __all__ = [
     "SideNavGroup",
     "SideNavHeader",
     "SideNavSeparator",
-    "NavigationView",
-    "NavigationViewGroup",
-    "NavigationViewItem",
-    "NavigationViewHeader",
-    "NavigationViewSeparator",
+
     "MenuButton",
     "Meter",
     "Notebook",

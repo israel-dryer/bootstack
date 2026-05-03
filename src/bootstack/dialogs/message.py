@@ -154,17 +154,17 @@ class MessageDialog:
             # Determine if this is the default button
             is_default = (text == default) if default else (i == len(button_labels) - 1)
 
-            # Parse or infer bootstyle
+            # Determine accent
             if len(cnf) == 2:
-                bootstyle = cnf[1]
+                accent = cnf[1]
             elif is_default:
-                bootstyle = "primary"
+                accent = "primary"
             else:
-                bootstyle = "secondary"
+                accent = "secondary"
 
             # Determine button role
             role: ButtonRole
-            if bootstyle == "primary":
+            if accent == "primary":
                 role = "primary"
             elif i == 0 and "cancel" in text.lower():
                 role = "cancel"
@@ -177,7 +177,7 @@ class MessageDialog:
                     text=text,
                     role=role,
                     result=text,
-                    bootstyle=bootstyle if bootstyle != role else None,
+                    accent=accent if accent != role else None,
                     default=is_default,
                     command=self._make_command_callback() if self._command else None,
                 )

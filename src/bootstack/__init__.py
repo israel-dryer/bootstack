@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     from bootstack.api.menu import MenuManager, create_menu
     from bootstack.api.app import App, AppShell, App as Window, Toplevel, AppSettings, get_app_settings, get_current_app, Shortcuts, Shortcut, get_shortcuts
     from bootstack.api.style import (
-        Bootstyle,
         Font,
         Style,
         get_style,
@@ -123,20 +122,6 @@ if TYPE_CHECKING:
     from bootstack.api.utils import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
 
-_DEPRECATED_ALIASES = {
-    "Checkbutton": "CheckButton",
-    "Radiobutton": "RadioButton",
-    "Labelframe": "LabelFrame",
-    "Panedwindow": "PanedWindow",
-    "Treeview": "TreeView",
-    "Tableview": "TableView",
-    "DatePicker": "Calendar",
-    "NavigationView": "SideNav",
-    "NavigationViewItem": "SideNavItem",
-    "NavigationViewGroup": "SideNavGroup",
-    "NavigationViewHeader": "SideNavHeader",
-    "NavigationViewSeparator": "SideNavSeparator",
-}
 
 _TK_EXPORTS = [
     "Tk",
@@ -170,7 +155,7 @@ _MODULE_EXPORTS = {
     ],
     # Style & Theming
     "bootstack.api.style": [
-        "BootstrapIcon", "Bootstyle", "Font", "Style",
+        "BootstrapIcon", "Font", "Style",
         "get_style", "get_style_builder", "get_theme",
         "get_theme_provider", "set_theme", "get_theme_color",
         "toggle_theme", "get_themes",
@@ -222,40 +207,18 @@ _MODULE_EXPORTS = {
 # Auto-generate lazy exports and categorized export lists
 _LAZY_EXPORTS = {}
 _TTK_EXPORTS = _TTK_PRIMITIVES.copy()
-_TTKBOOTSTRAP_EXPORTS = []
+_BOOTSTACK_EXPORTS = []
 
 for module, exports in _MODULE_EXPORTS.items():
     for name in exports:
         _LAZY_EXPORTS[name] = module
-        if name not in _TTK_EXPORTS:  # Already added TTK primitives
-            _TTKBOOTSTRAP_EXPORTS.append(name)
+        if name not in _TTK_EXPORTS:
+            _BOOTSTACK_EXPORTS.append(name)
 
-__all__ = [*_TK_EXPORTS, *_TTK_EXPORTS, *_TTKBOOTSTRAP_EXPORTS, *_DEPRECATED_ALIASES]
-
-import warnings as _warnings
-
+__all__ = [*_TK_EXPORTS, *_TTK_EXPORTS, *_BOOTSTACK_EXPORTS]
 
 def __getattr__(name):
     """Lazily import top-level attributes to avoid circular imports and speed import."""
-    # Deprecated aliases
-    if name in _DEPRECATED_ALIASES:
-        new_name = _DEPRECATED_ALIASES[name]
-        _warnings.warn(
-            f"bootstack.{name} is deprecated and will be removed in a future version; "
-            f"use {new_name} instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        # Look up the canonical class lazily
-        module = _importlib.import_module(_LAZY_EXPORTS[new_name])
-        value = getattr(module, new_name)
-
-        # Cache the alias so subsequent access is just a dict lookup
-        globals()[name] = value
-        return value
-
-    # Lazy exports
     if name in _LAZY_EXPORTS:
         module = _importlib.import_module(_LAZY_EXPORTS[name])
         value = getattr(module, name)
