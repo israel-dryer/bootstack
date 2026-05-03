@@ -36,7 +36,7 @@ Every theme defines:
 | `foreground` | Default text color |
 | `background` | Default surface color |
 | `shades` | Base color palette (blue, red, green, etc.) |
-| `semantic` | Role mappings (primary → cyan[600]) |
+| `semantic` | Role mappings (primary → `cyan[600]`) |
 
 ### Shades: The Color Palette
 

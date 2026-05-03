@@ -206,8 +206,8 @@ signals should feel immediately familiar.
 
 - [Callbacks](callbacks.md)
 - [Virtual Events](virtual-events.md)
-- [Configuration](configuration.md)
-- [State & Interaction](state-and-interaction.md)
+- [Configuration](../configuration.md)
+- [State & Interaction](../state-and-interaction.md)
 
 **API reference**
 

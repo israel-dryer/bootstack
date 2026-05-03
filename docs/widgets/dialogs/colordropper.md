@@ -75,4 +75,4 @@ Common interaction pattern:
 
 ### API reference
 
-- [`bootstack.ColorDropper`](../../reference/dialogs/ColorDropper.md)
+- [`bootstack.ColorDropper`](../../reference/dialogs/ColorDropperDialog.md)

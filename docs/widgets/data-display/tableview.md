@@ -309,7 +309,7 @@ tv.reload()
 
 - [ListView](listview.md) — virtual scrolling list
 
-- [ContextMenu](../navigation/contextmenu.md) — right-click menus
+- [ContextMenu](../actions/contextmenu.md) — right-click menus
 
 ### Framework concepts
 

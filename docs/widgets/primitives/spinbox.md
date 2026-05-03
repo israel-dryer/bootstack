@@ -8,7 +8,7 @@ title: Spinbox
 
 It provides low-level spin behavior (range or list stepping) while still allowing direct typing. Use `Spinbox` when you want
 native ttk options like `format` and `command`. For a form-ready field with labels/messages/validation and standardized events,
-prefer [SpinnerEntry](/widgets/inputs/spinnerentry.md).
+prefer [SpinnerEntry](../inputs/spinnerentry.md).
 
 ---
 
@@ -54,9 +54,9 @@ Use `Spinbox` when:
 
 ### Consider a different control when...
 
-- **you want a form-ready field (labels/messages/validation/events)** - prefer [SpinnerEntry](/widgets/inputs/spinnerentry.md)
+- **you want a form-ready field (labels/messages/validation/events)** - prefer [SpinnerEntry](../inputs/spinnerentry.md)
 
-- **the choices are better expressed as a dropdown list** - prefer [SelectBox](/widgets/selection/selectbox.md)
+- **the choices are better expressed as a dropdown list** - prefer [SelectBox](../selection/selectbox.md)
 
 ---
 
@@ -159,7 +159,7 @@ spin.bind("<KeyRelease>", lambda e: print(spin.get()))
 
 Spinbox does not provide control-level parsing/validation by default. It is a primitive widget.
 
-For validated, commit-based workflows, prefer [SpinnerEntry](/widgets/inputs/spinnerentry.md) or [NumericEntry](/widgets/inputs/numericentry.md).
+For validated, commit-based workflows, prefer [SpinnerEntry](../inputs/spinnerentry.md) or [NumericEntry](../inputs/numericentry.md).
 
 ---
 
@@ -167,13 +167,13 @@ For validated, commit-based workflows, prefer [SpinnerEntry](/widgets/inputs/spi
 
 ### Related widgets
 
-- [SpinnerEntry](/widgets/inputs/spinnerentry.md) - form-ready stepper control
+- [SpinnerEntry](../inputs/spinnerentry.md) - form-ready stepper control
 
-- [NumericEntry](/widgets/inputs/numericentry.md) - validated numeric input
+- [NumericEntry](../inputs/numericentry.md) - validated numeric input
 
-- [Scale](/widgets/inputs/scale.md) - continuous adjustment
+- [Scale](../inputs/scale.md) - continuous adjustment
 
-- [Combobox](/widgets/primitives/combobox.md) - selection + optional typing
+- [Combobox](combobox.md) - selection + optional typing
 
 ### Framework concepts
 

@@ -5,14 +5,14 @@ title: Combobox
 # Combobox
 
 !!! tip "Prefer SelectBox"
-    [SelectBox](/widgets/selection/selectbox.md) provides all the functionality of Combobox plus additional features:
+    [SelectBox](../selection/selectbox.md) provides all the functionality of Combobox plus additional features:
     keyboard navigation, hover states, search/filtering, form integration (labels, messages, validation), and
     standardized events. Use Combobox only when you need direct access to the underlying `ttk.Combobox` API.
 
 `Combobox` is a **primitive selection widget** that wraps `ttk.Combobox` with bootstack styling and reactive text support.
 
 It provides a familiar dropdown list with optional typing. Use `Combobox` when you need low-level ttk behavior or direct
-access to `ttk.Combobox` methods. Use [SelectBox](/widgets/selection/selectbox.md) for most selection use cases.
+access to `ttk.Combobox` methods. Use [SelectBox](../selection/selectbox.md) for most selection use cases.
 
 ---
 
@@ -45,9 +45,9 @@ Use `Combobox` when:
 
 ### Consider a different control when...
 
-- **for most selection use cases** - prefer [SelectBox](/widgets/selection/selectbox.md), which provides keyboard navigation, hover states, search/filtering, and form integration
+- **for most selection use cases** - prefer [SelectBox](../selection/selectbox.md), which provides keyboard navigation, hover states, search/filtering, and form integration
 
-- **you want the simplest menu-style single selection picker** - prefer [OptionMenu](/widgets/selection/optionmenu.md)
+- **you want the simplest menu-style single selection picker** - prefer [OptionMenu](../selection/optionmenu.md)
 
 ---
 
@@ -197,7 +197,7 @@ Combobox is a primitive widget and does not provide built-in validation semantic
 
 Use `state="readonly"` to constrain values to the list, or apply your own validation rules externally.
 
-If you want validation messages, required behavior, and commit semantics, prefer [SelectBox](/widgets/selection/selectbox.md).
+If you want validation messages, required behavior, and commit semantics, prefer [SelectBox](../selection/selectbox.md).
 
 ---
 
@@ -205,7 +205,7 @@ If you want validation messages, required behavior, and commit semantics, prefer
 
 Combobox does not automatically localize `values`. If you supply localized strings, they will be displayed as-is.
 
-If you need localization-aware field labels and messaging, prefer [SelectBox](/widgets/selection/selectbox.md).
+If you need localization-aware field labels and messaging, prefer [SelectBox](../selection/selectbox.md).
 
 ---
 
@@ -213,11 +213,11 @@ If you need localization-aware field labels and messaging, prefer [SelectBox](/w
 
 ### Related widgets
 
-- [SelectBox](/widgets/selection/selectbox.md) - form-ready selection control with validation and optional search
+- [SelectBox](../selection/selectbox.md) - form-ready selection control with validation and optional search
 
-- [OptionMenu](/widgets/selection/optionmenu.md) - simple menu-based picker
+- [OptionMenu](../selection/optionmenu.md) - simple menu-based picker
 
-- [DropdownButton](/widgets/actions/dropdownbutton.md) - action menu (not value selection)
+- [DropdownButton](../actions/dropdownbutton.md) - action menu (not value selection)
 
 ### Framework concepts
 

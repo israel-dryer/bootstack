@@ -59,9 +59,9 @@ Use `Canvas` when:
 
 ### Consider a different control when...
 
-- **you're laying out regular widgets in a scrolling container** - prefer [ScrollView](/widgets/layout/scrollview.md) + [Frame](/widgets/layout/frame.md)
+- **you're laying out regular widgets in a scrolling container** - prefer [ScrollView](../layout/scrollview.md) + [Frame](../layout/frame.md)
 
-- **the content is primarily structured records** - prefer [ListView](/widgets/data-display/listview.md), [TableView](/widgets/data-display/tableview.md), or [TreeView](/widgets/data-display/treeview.md)
+- **the content is primarily structured records** - prefer [ListView](../data-display/listview.md), [TableView](../data-display/tableview.md), or [TreeView](../data-display/treeview.md)
 
 ---
 
@@ -302,14 +302,14 @@ c.bind("<ButtonRelease-1>", on_up)
 
 ### Related widgets
 
-- [ScrollView](/widgets/layout/scrollview.md) / [Scrollbar](/widgets/layout/scrollbar.md) - scrolling primitives
+- [ScrollView](../layout/scrollview.md) / [Scrollbar](../layout/scrollbar.md) - scrolling primitives
 
-- [Text](/widgets/primitives/text.md) - tag-based content editing
+- [Text](text.md) - tag-based content editing
 
-- [ListView](/widgets/data-display/listview.md) - virtual scrolling for record lists
+- [ListView](../data-display/listview.md) - virtual scrolling for record lists
 
-- [PageStack](/widgets/views/pagestack.md) - complex view composition
+- [PageStack](../views/pagestack.md) - complex view composition
 
 ### API reference
 
-- [`bootstack.Canvas`](../../reference/widgets/Canvas.md)
+- `bootstack.Canvas`

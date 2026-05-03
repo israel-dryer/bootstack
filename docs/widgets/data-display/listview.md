@@ -263,8 +263,6 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 
 ### Related widgets
 
-- [ListItem](../primitives/listitem.md) — the default row widget used by ListView
-
 - [TableView](tableview.md) — tabular record display
 
 - [TreeView](treeview.md) — hierarchical record display
@@ -283,4 +281,4 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 
 ### API reference
 
-- [`bootstack.ListView`](../../reference/widgets/ListView.md)
+- `bootstack.ListView`

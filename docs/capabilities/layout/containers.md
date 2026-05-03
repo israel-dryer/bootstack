@@ -24,9 +24,9 @@ A container is any widget that:
 
 Common examples:
 
-- [Frame](../widgets/layout/frame.md) / [LabelFrame](../widgets/layout/labelframe.md)
-- [PanedWindow](../widgets/layout/panedwindow.md) (resizable regions)
-- [ScrollView](../widgets/layout/scrollview.md) (scrollable region)
+- [Frame](../../widgets/layout/frame.md) / [LabelFrame](../../widgets/layout/labelframe.md)
+- [PanedWindow](../../widgets/layout/panedwindow.md) (resizable regions)
+- [ScrollView](../../widgets/layout/scrollview.md) (scrollable region)
 
 ---
 

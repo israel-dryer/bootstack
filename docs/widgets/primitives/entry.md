@@ -38,11 +38,11 @@ Use `Entry` when:
 
 ### Consider a different control when...
 
-- **you want labels, helper text, and standardized events** - prefer [TextEntry](/widgets/inputs/textentry.md)
+- **you want labels, helper text, and standardized events** - prefer [TextEntry](../inputs/textentry.md)
 
-- **you want commit-based validation with messages** - prefer [TextEntry](/widgets/inputs/textentry.md)
+- **you want commit-based validation with messages** - prefer [TextEntry](../inputs/textentry.md)
 
-- **you are building application forms** - prefer [TextEntry](/widgets/inputs/textentry.md) or specialized input controls
+- **you are building application forms** - prefer [TextEntry](../inputs/textentry.md) or specialized input controls
 
 ---
 
@@ -100,7 +100,7 @@ ttk.Entry(app, show="*")
 ```
 
 !!! note "Password input"
-    For a full-featured password field (reveal toggle, validation, messages), prefer [PasswordEntry](/widgets/inputs/passwordentry.md).
+    For a full-featured password field (reveal toggle, validation, messages), prefer [PasswordEntry](../inputs/passwordentry.md).
 
 ### Tk validation (`validate` / `validatecommand`)
 
@@ -117,7 +117,7 @@ entry.pack(padx=20, pady=20)
 ```
 
 !!! tip "Prefer field controls for forms"
-    For most form UX, prefer [TextEntry](/widgets/inputs/textentry.md) (commit-time parsing + validation messages + consistent events).
+    For most form UX, prefer [TextEntry](../inputs/textentry.md) (commit-time parsing + validation messages + consistent events).
 
 ---
 
@@ -139,13 +139,13 @@ entry.bind("<KeyRelease>", lambda e: print(entry.get()))
 
 `Entry` emits standard Tk events, not structured v2 field events.
 
-If you want standardized field events like `on_input` / `on_changed`, use [TextEntry](/widgets/inputs/textentry.md).
+If you want standardized field events like `on_input` / `on_changed`, use [TextEntry](../inputs/textentry.md).
 
 ### Validation and constraints
 
 Use `Entry` validation when you need low-level, immediate constraints while typing.
 
-If you want user-friendly validation messages and commit-based validation, prefer [TextEntry](/widgets/inputs/textentry.md) (or a specialized `*Entry` control).
+If you want user-friendly validation messages and commit-based validation, prefer [TextEntry](../inputs/textentry.md) (or a specialized `*Entry` control).
 
 ---
 
@@ -153,15 +153,15 @@ If you want user-friendly validation messages and commit-based validation, prefe
 
 ### Related widgets
 
-- [TextEntry](/widgets/inputs/textentry.md) - form-ready text control with labels, messages, and events
+- [TextEntry](../inputs/textentry.md) - form-ready text control with labels, messages, and events
 
-- [PasswordEntry](/widgets/inputs/passwordentry.md) - specialized masked input control
+- [PasswordEntry](../inputs/passwordentry.md) - specialized masked input control
 
-- [NumericEntry](/widgets/inputs/numericentry.md) - numeric input with bounds and stepping
+- [NumericEntry](../inputs/numericentry.md) - numeric input with bounds and stepping
 
-- [DateEntry](/widgets/inputs/dateentry.md) / [TimeEntry](/widgets/inputs/timeentry.md) - structured date/time inputs
+- [DateEntry](../inputs/dateentry.md) / [TimeEntry](../inputs/timeentry.md) - structured date/time inputs
 
-- [Combobox](/widgets/primitives/combobox.md) - selection with optional text entry
+- [Combobox](combobox.md) - selection with optional text entry
 
 ### Framework concepts
 

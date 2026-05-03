@@ -452,5 +452,5 @@ For complete API documentation, see:
 
 ## Next steps
 
-- [ListView](../widgets/composites/listview.md) — data-aware list widget
-- [TableView](../widgets/composites/tableview.md) — data-aware table widget
+- [ListView](../widgets/data-display/listview.md) — data-aware list widget
+- [TableView](../widgets/data-display/tableview.md) — data-aware table widget

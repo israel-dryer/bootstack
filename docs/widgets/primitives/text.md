@@ -19,7 +19,7 @@ It supports rich behavior that typical entry widgets don't:
 bootstack exposes `Text` as a first-class widget so you can build editors, logs, and rich text UIs with a consistent theme and a clear set of usage patterns.
 
 !!! tip "Prefer Field-based inputs when possible"
-    For most form input, prefer [TextEntry](/widgets/inputs/textentry.md), [PasswordEntry](/widgets/inputs/passwordentry.md), [NumericEntry](/widgets/inputs/numericentry.md), etc.
+    For most form input, prefer [TextEntry](../inputs/textentry.md), [PasswordEntry](../inputs/passwordentry.md), [NumericEntry](../inputs/numericentry.md), etc.
     Use `Text` when you need **multi-line editing** or **tag-based formatting**.
 
 ---
@@ -58,9 +58,9 @@ Use `Text` when:
 
 ### Consider a different control when...
 
-- **you want the standard "Text + scrollbar" composite with less wiring** - prefer [ScrolledText](/widgets/inputs/scrolledtext.md)
+- **you want the standard "Text + scrollbar" composite with less wiring** - prefer [ScrolledText](../inputs/scrolledtext.md)
 
-- **input is part of a form and you want label/message/validation and `on_input/on_changed`** - prefer [TextEntry](/widgets/inputs/textentry.md) (and other Field widgets)
+- **input is part of a form and you want label/message/validation and `on_input/on_changed`** - prefer [TextEntry](../inputs/textentry.md) (and other Field widgets)
 
 ---
 
@@ -303,16 +303,16 @@ def trim():
 
 ### Related widgets
 
-- [ScrolledText](/widgets/inputs/scrolledtext.md) - Text with built-in scrolling
+- [ScrolledText](../inputs/scrolledtext.md) - Text with built-in scrolling
 
-- [TextEntry](/widgets/inputs/textentry.md) - Field-based single-line input
+- [TextEntry](../inputs/textentry.md) - Field-based single-line input
 
-- [Form](/widgets/forms/form.md) - spec-driven form builder (usually uses Field-based inputs)
+- [Form](../forms/form.md) - spec-driven form builder (usually uses Field-based inputs)
 
-- [Scrollbar](/widgets/layout/scrollbar.md) / [ScrollView](/widgets/layout/scrollview.md) - scrolling primitives
+- [Scrollbar](../layout/scrollbar.md) / [ScrollView](../layout/scrollview.md) - scrolling primitives
 
-- [Canvas](/widgets/primitives/canvas.md) - drawing/virtualization primitive (often used for custom editors)
+- [Canvas](canvas.md) - drawing/virtualization primitive (often used for custom editors)
 
 ### API reference
 
-- [`bootstack.Text`](../../reference/widgets/Text.md)
+- `bootstack.Text`

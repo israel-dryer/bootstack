@@ -20,7 +20,7 @@ If you are using:
 
 Then you typically **do not need to manage spacing manually**.
 
-!!! link "See [Layout → Containers](containers.md) for recommended layout containers and patterns."
+!!! link "See [Layout → Containers](../capabilities/layout/containers.md) for recommended layout containers and patterns."
 
 ---
 
@@ -169,7 +169,7 @@ Benefits:
 - clearer intent
 - easier refactoring
 
-!!! link "See [Layout → Containers](containers.md) for `PackFrame` and `GridFrame` usage."
+!!! link "See [Layout → Containers](../capabilities/layout/containers.md) for `PackFrame` and `GridFrame` usage."
 
 ---
 

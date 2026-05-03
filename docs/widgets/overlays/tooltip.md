@@ -95,8 +95,8 @@ Tooltips can be styled using the `accent` parameter (if supported).
 
 ### Framework concepts
 
-- [Overlays](./index.md) — overview of overlay widgets
+- [Widgets](../index.md) — overview of all widgets
 
 ### API reference
 
-- [`bootstack.Tooltip`](../../reference/widgets/Tooltip.md)
+- [`bootstack.Tooltip`](../../reference/widgets/ToolTip.md)

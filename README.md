@@ -10,14 +10,34 @@
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
 
-**bootstack** is a full UI framework for building desktop applications with Python and Tkinter.
+> **The desktop UI framework Tkinter never had — picking up where ttkbootstrap left off.**
 
-It's a **framework**, not just themed widgets. bootstack provides conventions for layout, styling, state, and reactivity that work together—so you can focus on building applications instead of wrestling with low-level UI mechanics.
+**bootstack** is a complete desktop UI framework for Python, built on Tk. It is the spiritual successor to [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap): where that project added Bootstrap-style theming to ttk widgets, bootstack delivers the full framework around them — application scaffolding, layout containers, semantic styling, reactive state, validation, localization, data sources, and a CLI for going from prototype to packaged app.
 
-> **This project is under active development.** APIs and features may change before the first stable release.
-> See the [documentation](https://bootstack.readthedocs.io) for guides and API reference.
+If ttkbootstrap made Tkinter look modern, bootstack makes it *feel* modern.
+
+> **This project is in active alpha development.** APIs and features may change before the first stable release.
+> See the [documentation](https://bootstack.readthedocs.io) for guides and the API reference.
+
+## Why bootstack?
+
+| Capability | Tkinter | ttkbootstrap | **bootstack** |
+|---|---|---|---|
+| Modern visuals | — | ✓ | ✓ |
+| Paired light/dark themes with runtime switching | — | partial | ✓ |
+| Semantic styling tokens (`accent`, `variant`) | — | partial | ✓ |
+| Layout containers (`PackFrame`, `GridFrame`) | — | — | ✓ |
+| Reactive state via signals | — | — | ✓ |
+| Built-in form & input validation | — | — | ✓ |
+| Localization (i18n) and locale-aware formatting | — | — | ✓ |
+| `DataSource` abstraction (memory, SQLite, file) | — | — | ✓ |
+| `AppShell` with sidebar + page navigation | — | — | ✓ |
+| Project scaffolding & build CLI | — | — | ✓ |
+| 60+ widgets out of the box | — | — | ✓ |
 
 ## Installation
+
+Requires Python 3.12+.
 
 ```bash
 pip install bootstack
@@ -26,112 +46,135 @@ pip install bootstack
 ## Quick Start
 
 ```python
-import bootstack as bs
+import bootstack as ttk
 
-app = bs.App(theme="dark")
+app = ttk.App(title="Hello bootstack", theme="bootstrap-light")
 
-bs.Label(app, text="Hello from bootstack!").pack(pady=10)
-bs.Button(app, text="Primary", accent="primary").pack(pady=5)
-bs.Button(app, text="Success", accent="success").pack(pady=5)
-bs.Button(app, text="Danger Outline", accent="danger", variant="outline").pack(pady=5)
+ttk.Label(app, text="Hello from bootstack!").pack(pady=10)
+ttk.Button(app, text="Primary", accent="primary").pack(pady=5)
+ttk.Button(app, text="Success", accent="success").pack(pady=5)
+ttk.Button(app, text="Danger Outline", accent="danger", variant="outline").pack(pady=5)
 
 app.mainloop()
+```
+
+For navigation-based apps, use `AppShell` — it gives you a toolbar, sidebar, and page stack in one call:
+
+```python
+import bootstack as ttk
+
+shell = ttk.AppShell(title="My App", size=(1000, 650))
+
+home = shell.add_page("home", text="Home", icon="house")
+ttk.Label(home, text="Welcome!").pack(padx=20, pady=20)
+
+docs = shell.add_page("docs", text="Documents", icon="file-earmark-text")
+ttk.Label(docs, text="Your documents.").pack(padx=20, pady=20)
+
+shell.mainloop()
 ```
 
 ## Core Ideas
 
 ### Containers express layout intent
 
-Build layouts with purpose-built containers, not scattered geometry calls:
+Build layouts with purpose-built containers instead of scattered geometry calls:
 
 ```python
-form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
+form = ttk.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
 form.pack(fill="both", expand=True)
 
-form.add(bs.Label(form, text="Name"))
-form.add(bs.Entry(form))
-form.add(bs.Label(form, text="Email"))
-form.add(bs.Entry(form))
-form.add(bs.Button(form, text="Submit", accent="primary"), columnspan=2)
+form.add(ttk.Label(form, text="Name"))
+form.add(ttk.Entry(form))
+form.add(ttk.Label(form, text="Email"))
+form.add(ttk.Entry(form))
+form.add(ttk.Button(form, text="Submit", accent="primary"), columnspan=2)
 ```
 
 ### Styling is semantic
 
-Widgets use semantic tokens — not hardcoded colors. Applications stay consistent across themes.
+Widgets use semantic tokens — `accent` for color intent, `variant` for visual weight — never hard-coded colors. Applications stay consistent across themes and light/dark modes:
 
 ```python
-bs.Button(app, text="Primary", accent="primary")
-bs.Button(app, text="Outline", accent="success", variant="outline")
-bs.Label(app, text="Heading", font="heading-lg")
+ttk.Button(app, text="Save", accent="primary")                       # solid (default)
+ttk.Button(app, text="Cancel", accent="secondary", variant="outline")
+ttk.Button(app, text="Learn more", accent="info", variant="link")
+ttk.Label(app, text="Heading", font="heading-lg")
 ```
 
 ### Reactivity is optional and explicit
 
-Use simple callbacks when that's enough. Introduce signals when state needs to flow.
+Use plain callbacks when that's enough. Reach for signals when state needs to flow between widgets:
 
 ```python
-counter = bs.Signal(0)
+counter = ttk.Signal(0)
 
-def increment():
-    counter.set(counter.get() + 1)
-
-label = bs.Label(app)
+label = ttk.Label(app)
 counter.subscribe(lambda v: label.configure(text=f"Count: {v}"))
+
+ttk.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 ```
 
 ## Features
 
-- **Modern UI Defaults** — Consistent colors, typography, spacing, and theme variants
-- **60+ Widgets** — Buttons, dialogs, forms, tables, navigation, and more
-- **Layout Containers** — PackFrame and GridFrame for declarative, maintainable layouts
-- **Reactive Signals** — Observable state management for declarative applications
-- **Design Tokens** — Semantic colors and typography that adapt across themes
-- **DataSource System** — Pagination, filtering, sorting, and CRUD for data-driven widgets
-- **Built-in Validation** — Form validation without reinventing the wheel
-- **Icons & Images** — First-class icon handling and image utilities
-- **Localization** — i18n support for global applications
-- **CLI Tools** — Project scaffolding, building, and packaging
-
-## CLI
-
-Scaffold new projects and add components quickly:
-
-```bash
-bootstack start MyApp          # Create new project
-bootstack add view dashboard   # Add a view
-bootstack add dialog settings  # Add a dialog
-bootstack build                # Package for distribution
-```
+- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, frameless windows with custom chrome
+- **60+ widgets** — ttk-derived primitives plus higher-level composites (TableView, Calendar, DateEntry, Form, FloodGauge, Meter, ToggleGroup, PageStack, Toast, Tooltip, and more)
+- **9 dialogs** — Message, Query, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog, plus a `Dialog` base
+- **Layout containers** — `PackFrame` and `GridFrame` for declarative layouts; `ScrollView`, `PanedWindow`, `Accordion`, `Card`, `Expander`
+- **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost, link, text), consistent across widgets
+- **Built-in themes** — paired light/dark variants (amber, aurora, bootstrap, classic, docs, forest, ocean, rose) with runtime theme switching and a custom-theme API
+- **Reactive signals** — observable state with subscribe/get/set, integrates with widgets via `signal=` / `textvariable=`
+- **Forms & validation** — `Form` and `Field` with a built-in validation framework, no glue code required
+- **DataSource system** — unified data interface with pagination, filtering, sorting, CRUD, and CSV export across in-memory, SQLite, and file backends
+- **Localization (i18n)** — 23 bundled message catalogs, locale-aware number/date/time formatting via Babel, runtime language switching
+- **Icons & images** — first-class icon handling, theme-aware recoloring, DPI scaling, caching
+- **Platform niceties** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
+- **CLI (`bootstack`)** — project scaffolding, run, add components, theme/i18n setup, doctor, build/package
 
 ## Widget Categories
 
 | Category | Widgets |
 |----------|---------|
-| **Actions** | Button, DropdownButton, MenuButton, ContextMenu, ButtonGroup |
-| **Inputs** | TextEntry, PasswordEntry, PathEntry, NumericEntry, Scale, DateEntry, TimeEntry |
-| **Selection** | CheckButton, RadioButton, ToggleGroup, OptionMenu, SelectBox, Calendar |
-| **Data Display** | Label, ListView, TreeView, TableView, Badge, Progressbar, Meter, FloodGauge |
-| **Layout** | Frame, PackFrame, GridFrame, LabelFrame, PanedWindow, ScrollView |
-| **Navigation** | Notebook, PageStack |
-| **Dialogs** | MessageDialog, ColorChooser, FontDialog, DateDialog, FormDialog, QueryDialog |
+| **Actions** | Button, ButtonGroup, MenuButton, DropdownButton, ContextMenu |
+| **Inputs** | TextEntry, PasswordEntry, PathEntry, NumericEntry, SpinnerEntry, Scale, ScrolledText, DateEntry, TimeEntry |
+| **Selection** | CheckButton, CheckToggle, RadioButton, RadioToggle, RadioGroup, ToggleGroup, OptionMenu, SelectBox, Calendar, Switch |
+| **Data Display** | Label, Badge, ListView, TreeView, TableView, Progressbar, Meter, FloodGauge |
+| **Layout** | Frame, PackFrame, GridFrame, LabelFrame, PanedWindow, ScrollView, Accordion, Card, Expander, Separator, SizeGrip |
+| **Navigation** | AppShell, Toolbar, SideNav, Tabs, PageStack |
+| **Dialogs** | MessageDialog, QueryDialog, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog |
 | **Overlays** | Toast, Tooltip |
-| **Forms** | Form, Field with validation support |
+| **Forms** | Form, Field (with validation) |
 
-## Why bootstack?
+## CLI
 
-bootstack is for developers who want to:
+bootstack ships with an optional CLI for scaffolding, running, and packaging applications:
 
-- Build desktop apps that feel modern and intentional
-- Move fast without reinventing UI patterns
-- Maintain visual consistency across applications
-- Apply reactive and declarative patterns in Tk
-- Ship polished tools to end users
+```bash
+bootstack start MyApp                       # Create a new project (basic template)
+bootstack start MyApp --template appshell   # ...or with sidebar navigation
+bootstack run                               # Run the app defined in the project config
+bootstack add page Dashboard                # Add a new page (appshell)
+bootstack add view Settings                 # Add a new view (basic)
+bootstack add dialog Preferences            # Add a new dialog
+bootstack add theme my-brand                # Scaffold a custom theme
+bootstack add i18n --languages en es fr     # Add i18n support
+bootstack list themes                       # List available themes
+bootstack doctor                            # Diagnose project & environment
+bootstack build                             # Package for distribution
+```
 
-You don't need to deeply understand Tk or ttk internals to be productive with bootstack.
+## Documentation
+
+- **Documentation**: https://bootstack.readthedocs.io
+- **Getting Started**: https://bootstack.readthedocs.io/en/latest/getting-started/
+- **Guides**: https://bootstack.readthedocs.io/en/latest/guides/
+- **Widgets**: https://bootstack.readthedocs.io/en/latest/widgets/
 
 ## Links
 
-- **Documentation**: https://bootstack.readthedocs.io
 - **GitHub**: https://github.com/israel-dryer/bootstack
 - **Icons**: https://github.com/israel-dryer/ttkbootstrap-icons
 
+## Acknowledgements
+
+bootstack is derived from [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) and continues that project's mission. See [`NOTICE`](NOTICE) for license attribution.

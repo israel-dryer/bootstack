@@ -278,9 +278,9 @@ If the field label participates in localization, it follows your global field/wi
 
 ### Framework concepts
 
-- [Validation](../../capabilities/validation.md) — form and field validation patterns
+- [Validation](../../capabilities/validation/index.md) — form and field validation patterns
 
-- [Events and callbacks](../../capabilities/events.md) — handling widget events
+- [Events and callbacks](../../capabilities/signals/index.md) — handling widget events
 
 ### API reference
 

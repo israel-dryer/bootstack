@@ -7,7 +7,7 @@ name = "bootstack"
 version = "2.0.0a1"
 description = "A full UI framework for Python desktop apps built on tkinter — rich widgets, theming, and application structure out of the box."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = "MIT"
 authors = [
     { name = "Israel Dryer", email = "israel.dryer@gmail.com" }
@@ -34,10 +34,9 @@ classifiers = [
     "Environment :: X11 Applications :: GTK",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: User Interfaces",
     "Operating System :: OS Independent",
 ]
@@ -47,13 +46,13 @@ dependencies = [
     "ttkbootstrap-icons>=4",
     "ttkbootstrap-icons-bs>=1",
 
+    # Backported typing primitives (Self, Unpack, ParamSpec, etc.)
+    "typing-extensions>=4.10",
+
     # Runtime localization/formatting stack
     "Babel>=2.12",
-    "python-dateutil>=2.8",
+    "python-dateutil>=2.9",
     "dateparser>=1.1",
-
-    # TOML parsing for Python < 3.11
-    "tomli>=2.0; python_version < '3.11'",
 
     # Windows-specific: modern window effects (mica, acrylic, etc.)
     "pywinstyles>=1.8; sys_platform == 'win32'",

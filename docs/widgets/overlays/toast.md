@@ -96,7 +96,7 @@ Toast supports different visual intents through the `accent` parameter:
 
 ### Framework concepts
 
-- [Overlays](./index.md) — overview of overlay widgets
+- [Widgets](../index.md) — overview of all widgets
 
 ### API reference
 
