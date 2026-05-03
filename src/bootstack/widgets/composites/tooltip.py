@@ -36,7 +36,6 @@ class ToolTip:
             padding: int = 10,
             justify: Literal["left", "center", "right"] = "left",
             accent: Optional[str] = None,
-            bootstyle: Optional[Union[str, tuple[str, ...]]] = None,
             wraplength: Optional[int] = None,
             delay: int = 250,  # milliseconds
             image: Any = None,
@@ -95,7 +94,7 @@ class ToolTip:
         self._text = text
         self._padding = padding
         self._justify = justify
-        self._accent = accent or bootstyle  # Support legacy bootstyle parameter
+        self._accent = accent
         self._wraplength = wraplength if wraplength is not None else scale_size(self._widget, 300)
         self._delay = delay
         self._image = image

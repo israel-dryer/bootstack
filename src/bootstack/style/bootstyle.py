@@ -320,6 +320,7 @@ class Bootstyle:
             # Extract accent/variant parameters
             accent = kwargs.pop("accent", None)
             variant = kwargs.pop("variant", None)
+            kwargs.pop("bootstyle", None)  # removed param — discard silently
 
             had_style_kwarg = 'style' in kwargs
 

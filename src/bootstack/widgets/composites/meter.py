@@ -37,7 +37,6 @@ class Meter(Frame):
             self,
             master: Master = None,
             accent: str = None,
-            bootstyle: str = None,
 
             # value parameters
             value: int | float = 0,
@@ -129,7 +128,7 @@ class Meter(Frame):
         self._value_font = legacy.get('value_font', value_font or '-size 36 -weight bold')
         self._value_prefix = legacy.get('value_prefix', value_prefix)
         self._value_suffix = legacy.get('value_suffix', value_suffix)
-        self._accent = accent or bootstyle or 'primary'
+        self._accent = accent or 'primary'
 
         self._subtitle = legacy.get('subtitle', subtitle)
         self._secondary_font = legacy.get('secondary_font', secondary_font or '-size 9')

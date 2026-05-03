@@ -69,8 +69,7 @@ class ToggleGroup(Frame):
         # Extract ToggleGroup-specific options before super().__init__
         self._mode = kwargs.pop('mode', 'single')
         self._orientation = kwargs.pop('orient', 'horizontal')
-        # Support both 'accent' and legacy 'bootstyle'
-        accent = kwargs.pop('accent', None) or kwargs.pop('bootstyle', 'primary')
+        accent = kwargs.pop('accent', None) or 'primary'
         variant = kwargs.pop('variant', None)  # None (default), 'outline', or 'ghost'
 
         # Handle signal/variable/value similar to CheckToggle pattern
@@ -159,8 +158,7 @@ class ToggleGroup(Frame):
 
         btn_kwargs = kwargs.copy()
         # Set the ButtonGroup ttk_class - position will be updated by _update_button_positions
-        # Use accent (or legacy bootstyle) for styling
-        custom_accent = btn_kwargs.pop('accent', None) or btn_kwargs.pop('bootstyle', self._accent)
+        custom_accent = btn_kwargs.pop('accent', None) or self._accent
         btn_kwargs['accent'] = custom_accent
         btn_kwargs['ttk_class'] = 'ButtonGroup'
         # variant can be None (default), 'outline', or 'ghost' - use group's variant if not specified
