@@ -3,9 +3,9 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ttkbootstrap"
+name = "bootstack"
 version = "2.0.0a1"
-description = "A supercharged theme extension for tkinter that enables on-demand modern flat style themes inspired by Bootstrap."
+description = "A full UI framework for Python desktop apps built on tkinter — rich widgets, theming, and application structure out of the box."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -14,9 +14,7 @@ authors = [
 ]
 keywords = [
     "tkinter",
-    "theme",
     "ttk",
-    "bootstrap",
     "gui",
     "desktop",
     "python3",
@@ -25,7 +23,9 @@ keywords = [
     "theming",
     "cross-platform",
     "modern",
-    "responsive",
+    "framework",
+    "application-framework",
+    "desktop-ui",
     "python-gui"
 ]
 classifiers = [
@@ -65,17 +65,17 @@ dependencies = [
 [project.optional-dependencies]
 
 [project.urls]
-Homepage = "https://github.com/israel-dryer/ttkbootstrap"
-Documentation = "https://ttkbootstrap.readthedocs.io/en/latest/"
+Homepage = "https://github.com/israel-dryer/bootstack"
+Documentation = "https://bootstack.readthedocs.io/en/latest/"
 
 [project.scripts]
-ttkb = "ttkbootstrap.cli:main"
+bootstack = "bootstack.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"ttkbootstrap" = [
+"bootstack" = [
     "themes/*.json",
     "assets/*",
     # ship compiled gettext catalogs within the package

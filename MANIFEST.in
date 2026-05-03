@@ -1,6 +1,6 @@
 include LICENSE
 include README.md
 
-graft src/ttkbootstrap
+graft src/bootstack
 
 global-exclude *.py[cod] __pycache__/* .DS_Store

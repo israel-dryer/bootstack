@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 
 
-DEFAULT_DOMAIN = "ttkbootstrap"
+DEFAULT_DOMAIN = "bootstack"
 # Compile catalogs directly into the package assets so wheels include them.
-DEFAULT_LOCALES_DIR = "src/ttkbootstrap/assets/locales"
+DEFAULT_LOCALES_DIR = "src/bootstack/assets/locales"
 
 
 def which_babel() -> list[str] | None:
@@ -45,7 +45,7 @@ def compile_catalog(locales_dir: Path, domain: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Babel i18n helper for ttkbootstrap")
+    p = argparse.ArgumentParser(description="Babel i18n helper for bootstack")
     p.add_argument("-d", "--locales-dir", default=DEFAULT_LOCALES_DIR)
     p.add_argument("-D", "--domain", default=DEFAULT_DOMAIN)
 

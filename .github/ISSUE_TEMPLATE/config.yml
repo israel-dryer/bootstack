@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions
-    url: https://github.com/israel-dryer/ttkbootstrap/discussions/new
+    url: https://github.com/israel-dryer/bootstack/discussions/new
     about: "Ask a question in the discussion forum"
   - name: Documentation
-    url: https://ttkbootstrap.readthedocs.io/en/latest/
-    about: "ttkbootstrap's documentation"
+    url: https://bootstack.readthedocs.io/en/latest/
+    about: "bootstack's documentation"

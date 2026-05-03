@@ -9,7 +9,7 @@ body:
     attributes:
       label: "Desktop (please complete the following information):"
       description: |
-        ttkbootstrap Version [e.g. 1.6.2]
+        bootstack Version [e.g. 1.6.2]
         OS: [e.g. Linux]
     validations:
       required: true

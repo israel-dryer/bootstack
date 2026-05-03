@@ -32,13 +32,13 @@ def read_po(path: Path):
 def main():
     # Prefer in-package assets; fall back to repo-level locales for dev
     candidates = [
-        Path("src/ttkbootstrap/assets/locales"),
+        Path("src/bootstack/assets/locales"),
         Path("locales"),
     ]
     root = next((p for p in candidates if p.exists()), candidates[-1])
     per_locale = defaultdict(list)
     for loc_dir in root.iterdir():
-        po = loc_dir / "LC_MESSAGES" / "ttkbootstrap.po"
+        po = loc_dir / "LC_MESSAGES" / "bootstack.po"
         if po.exists():
             per_locale[loc_dir.name].extend(read_po(po))
 

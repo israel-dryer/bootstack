@@ -1,4 +1,4 @@
-# ttkbootstrap v2 Library Structure Reference
+# bootstack v2 Library Structure Reference
 
 ## Project Overview
 
@@ -13,8 +13,8 @@
 ## Directory Structure
 
 ```
-ttkbootstrap/
-├── src/ttkbootstrap/           # Main package
+bootstack/
+├── src/bootstack/           # Main package
 │   ├── api/                    # Public API surface
 │   ├── assets/                 # Themes (35 JSON) + locales (22 languages)
 │   ├── cli/                    # Command-line interface
@@ -197,7 +197,7 @@ cosmo, flatly, litera, minty, lumen, pulse, sandstone, united, yeti, morph, jour
 | Package | Version | Purpose |
 |---------|---------|---------|
 | pillow | >=10, <=12 | Image processing |
-| ttkbootstrap-icons | >=4 | Bootstrap icons |
+| bootstack-icons | >=4 | Bootstrap icons |
 | Babel | >=2.12 | Internationalization |
 | python-dateutil | >=2.8 | Date utilities |
 | dateparser | >=1.1 | Date parsing |
