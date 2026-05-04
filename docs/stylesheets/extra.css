@@ -12,19 +12,13 @@
   margin: 0 0 3rem;
   border-radius: 1rem;
   background:
-    radial-gradient(ellipse at 80% 30%, rgba(13, 110, 253, 0.30), transparent 60%),
-    radial-gradient(ellipse at 30% 90%, rgba(102, 16, 242, 0.28), transparent 60%),
-    #0b0d12;
-  color: #fff;
+    radial-gradient(ellipse at 80% 20%, rgba(13, 110, 253, 0.10), transparent 60%),
+    radial-gradient(ellipse at 20% 85%, rgba(102, 16, 242, 0.08), transparent 60%),
+    #f0f4ff;
+  border: 1px solid rgba(13, 110, 253, 0.12);
+  box-shadow: 0 2px 12px rgba(13, 110, 253, 0.07);
+  color: #1a1a2e;
   overflow: hidden;
-}
-
-.bs-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
-  pointer-events: none;
 }
 
 @media (max-width: 900px) {
@@ -47,8 +41,7 @@
   line-height: 1.05;
   letter-spacing: -0.02em;
   margin: 0 0 1.25rem;
-  color: #fff;
-  background: linear-gradient(135deg, #ffffff 0%, #b3c7ff 100%);
+  background: linear-gradient(135deg, #0047cc 0%, #5500d4 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -57,7 +50,7 @@
 .bs-hero__lede {
   font-size: 1.125rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.78);
+  color: #374151;
   margin: 0 0 0.75rem;
   max-width: 42ch;
 }
@@ -69,12 +62,12 @@
 .bs-hero__byline {
   font-style: italic;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7280;
   margin: 0 0 2rem;
 }
 
 .bs-hero__byline a {
-  color: rgba(255, 255, 255, 0.85);
+  color: #0047cc;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -121,15 +114,15 @@
 
 .md-typeset .bs-hero__btn--ghost,
 .bs-hero__btn--ghost {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: #fff;
+  color: #0047cc;
+  border: 1px solid rgba(0, 71, 204, 0.25);
 }
 
 .md-typeset .bs-hero__btn--ghost:hover,
 .bs-hero__btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: #eef2ff;
+  color: #0047cc;
 }
 
 .bs-hero__visual {
@@ -145,8 +138,8 @@
   position: absolute;
   inset: 10%;
   background:
-    radial-gradient(circle at 50% 50%, rgba(13, 110, 253, 0.55), transparent 60%),
-    radial-gradient(circle at 30% 70%, rgba(102, 16, 242, 0.45), transparent 65%);
+    radial-gradient(circle at 50% 50%, rgba(13, 110, 253, 0.15), transparent 60%),
+    radial-gradient(circle at 30% 70%, rgba(102, 16, 242, 0.10), transparent 65%);
   filter: blur(50px);
   border-radius: 50%;
   z-index: 0;
@@ -157,7 +150,7 @@
   z-index: 1;
   width: min(60%, 260px);
   height: auto;
-  filter: drop-shadow(0 0 30px rgba(102, 16, 242, 0.55));
+  filter: drop-shadow(0 4px 24px rgba(13, 110, 253, 0.20));
 }
 
 @media (max-width: 900px) {
