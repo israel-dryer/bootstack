@@ -65,7 +65,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/israel-dryer/bootstack"
-Documentation = "https://bootstack.readthedocs.io/en/latest/"
+Documentation = "https://bootstack.org/"
 
 [project.scripts]
 bootstack = "bootstack.cli:main"

@@ -356,6 +356,7 @@ nav = [
 [project.theme]
 language = "en"
 favicon = "assets/favicon.ico"
+logo = "assets/bootstack-icon.png"
 
 features = [
     "navigation.tabs",
@@ -367,9 +368,6 @@ features = [
     "content.code.copy",
     "search.highlight",
 ]
-
-[project.theme.icon]
-logo = "fontawesome/solid/feather-pointed"
 
 [[project.theme.palette]]
 media = "(prefers-color-scheme)"
