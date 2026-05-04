@@ -13,7 +13,10 @@ Examples:
     ```
 """
 import importlib as _importlib
+from importlib.metadata import version as _pkg_version
 from typing import TYPE_CHECKING
+
+__version__ = _pkg_version("bootstack")
 
 from tkinter import (
     BooleanVar,

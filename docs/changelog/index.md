@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.1.0 — initial release
+## 0.1.0a1 — first alpha
 
-**Breaking changes:**
+First publicly tagged alpha of bootstack. Install with `pip install --pre bootstack`. APIs are not yet stable.
+
+**Differences from ttkbootstrap:**
 
 - Package renamed from `ttkbootstrap` to `bootstack`. Update all imports:
   ```python
