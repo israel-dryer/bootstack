@@ -311,7 +311,14 @@ class Toast:
 
         # ------ Positioning -------
 
-        # Update layout to get final window size
+        # Deiconify off-screen first so the geometry manager runs a full
+        # layout pass on a mapped window. winfo_height() returns 1 on a
+        # withdrawn window, causing the toast to be placed with ~0 height
+        # and therefore positioned flush against the screen edge.
+        top.deiconify()
+        top.geometry(
+            f"+{top.winfo_screenwidth() * 2}+{top.winfo_screenheight() * 2}"
+        )
         top.update_idletasks()
 
         # Apply positioning using WindowPositioning utilities

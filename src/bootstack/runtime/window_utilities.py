@@ -224,11 +224,18 @@ import bootstack.runtime.toplevel            >>> parent = tkinter.Tk()
         w_width = window.winfo_reqwidth()
         w_height = window.winfo_reqheight()
 
-        # Use virtual root for multi-monitor support
-        screen_x0 = window.winfo_vrootx()
-        screen_y0 = window.winfo_vrooty()
-        screen_width = window.winfo_vrootwidth()
-        screen_height = window.winfo_vrootheight()
+        # Use the monitor containing the proposed position when screeninfo is
+        # available — on Windows, winfo_vroot* only covers the primary monitor,
+        # so clamping with it moves windows that legitimately belong on a
+        # secondary monitor back onto the primary.
+        monitor = WindowPositioning._get_monitor_at_point(x, y)
+        if monitor:
+            screen_x0, screen_y0, screen_width, screen_height = monitor
+        else:
+            screen_x0 = window.winfo_vrootx()
+            screen_y0 = window.winfo_vrooty()
+            screen_width = window.winfo_vrootwidth()
+            screen_height = window.winfo_vrootheight()
 
         # Calculate screen boundaries
         screen_x1 = screen_x0 + screen_width
