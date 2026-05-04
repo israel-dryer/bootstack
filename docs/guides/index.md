@@ -80,6 +80,11 @@ Guides show you *how to apply* that knowledge.
 - **[Formatting](formatting.md)** — Locale-aware number, date, and time formatting.
 - **[Localization](localization.md)** — Making applications language-aware with message catalogs.
 
+### Operations
+
+- **[Debugging](debugging.md)** — Practical debugging strategies for bootstack applications.
+- **[Performance](performance.md)** — Performance considerations and event-loop awareness.
+
 ---
 
 ## How to Use Guides

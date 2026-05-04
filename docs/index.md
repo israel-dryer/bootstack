@@ -4,128 +4,78 @@ title: Home
 
 # bootstack
 
-**bootstack** is a **modern, opinionated desktop UI framework for Python**, built on top of Tk.
+**bootstack** is a batteries-included desktop application framework for Python, built on Tk. It grew out of [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) — which brought Bootstrap-style theming to ttk widgets — and bundles the layers you'd expect from a modern framework around it: app scaffolding, layout containers, semantic styling, reactive signals, forms and validation, i18n, a data layer, and a CLI for scaffolding and packaging.
 
-It provides clear conventions for **layout**, **styling**, **state**, and **reactivity**, allowing you to build
-polished, maintainable desktop applications without reinventing common UI patterns.
-
-bootstack is designed to feel familiar to Tk users—but it goes far beyond theming or widget wrappers.
+The aim is to take you from `pip install` to a working, themed application without wiring those pieces together yourself or dropping down to raw Tk geometry calls.
 
 ---
 
-## What bootstack is
+## What bootstack provides
 
-bootstack is a **framework**, not just a toolkit.
-
-It provides:
-
-- a structured application root (`App`)
-- container-first layout patterns
+- a structured application root (`App`, `AppShell`)
+- container-first layout (`PackFrame`, `GridFrame`, `ScrollView`)
 - a design system with semantic colors, variants, and typography
 - optional reactivity via signals
-- integrated localization, icons, and styling conventions
+- forms and validation, localization, icons, and theming as first-class concerns
+- a CLI for scaffolding new projects and packaging applications
 
-These pieces work together to support **modern application workflows**, not just individual widgets.
-
----
-
-## What bootstack is not
-
-bootstack is **not**:
-
-- a thin skin on top of Tkinter
-- a collection of unrelated helper widgets
-- a low-level “figure it out yourself” UI layer
-
-You *can* adopt bootstack incrementally, but its real value appears when you follow its conventions for
-layout, styling, and state.
-
----
-
-## Core ideas
-
-### Opinionated, but flexible
-
-bootstack makes intentional choices about how applications are structured.
-These opinions reduce boilerplate and ambiguity while still allowing escape hatches when needed.
-
-### Containers express layout intent
-
-Layout is driven by **containers**, not scattered geometry calls.
-Spacing, alignment, scrolling, and resizing are handled at the container level.
-
-### Styling is semantic
-
-Widgets are styled using **semantic tokens**—not hardcoded colors or fonts.
-This keeps applications consistent across themes and appearance modes.
-
-### Reactivity is optional and explicit
-
-Signals, callbacks, and events coexist.
-Use simple callbacks when that’s enough; introduce signals when state needs to flow.
+These pieces are designed to work together. You can adopt them incrementally, but most of the leverage comes from following the framework's conventions for layout, styling, and state.
 
 ---
 
 ## How the documentation is organized
 
-The documentation is structured by **intent**, not by inheritance or module layout.
+The documentation is structured by intent, not by inheritance or module layout.
 
 ### Getting Started
 
-Learn how to create your first bootstack application and understand the core mental model.
+Create your first bootstack application and learn the core mental model.
 
-→ [Start here if you’re new](getting-started/index.md)
+→ [Start here if you're new](getting-started/index.md)
 
 ### Guides
 
-Workflow-oriented documentation that shows **how to build real applications**:
+Workflow-oriented documentation that shows how to build real applications:
 layout patterns, reactivity, styling, localization, and structure.
 
 ### Widgets
 
-Practical documentation for each widget:
-when to use it, how it behaves, and how it fits into the framework.
+Practical documentation for each widget: when to use it, how it behaves, and how it fits into the framework.
 
 ### Design System
 
-Semantic colors, variants, typography, icons, and theming—how visual consistency is achieved.
+Semantic colors, variants, typography, icons, and theming.
 
 ### Platform
 
-How Tk and ttk work under the hood.
-This section explains behavior, constraints, and mechanics—not usage patterns.
+How Tk and ttk work under the hood — behavior, constraints, and mechanics rather than usage patterns.
 
 ### Capabilities
 
-Framework features such as signals, localization, layout properties, and state handling.
-These pages explain **what a capability is**, not how to apply it in an app.
+Reference pages for framework features such as signals, localization, layout properties, and state handling — what each capability is and how it's defined.
+
+### Tooling
+
+The CLI, project structure, and packaging — everything you need to scaffold, run, and distribute a bootstack application.
 
 ### API Reference
 
-Complete, auto-generated reference for classes, methods, and functions.
+Auto-generated reference for classes, methods, and functions.
+
+### Showcase
+
+Example applications and a gallery of what's been built with bootstack.
 
 ---
 
 ## Where to start
 
-If you’re new to bootstack:
+If you're new to bootstack:
 
 1. Begin with **Getting Started**
 2. Read the **Guides** relevant to your task
 3. Refer to **Widgets** for specifics
-4. Use **Platform** and **Capabilities** when you need deeper understanding
+4. Reach for **Capabilities** and **Platform** when you need deeper understanding
+5. See **Tooling** when you're ready to ship
 
-If you already know Tkinter, resist the urge to jump straight to the API—bootstack rewards learning its
-structure first.
-
----
-
-## Philosophy
-
-bootstack exists to make **desktop UI development productive again**.
-
-It embraces the stability of Tk while adding the structure, consistency, and ergonomics expected from
-modern UI frameworks.
-
-If you follow its conventions, you’ll write less code, debug fewer layout issues, and ship more cohesive
-applications.
+If you're coming from Tkinter, the layout, styling, and state conventions are where bootstack diverges most — those are worth reading before reaching for the API reference.

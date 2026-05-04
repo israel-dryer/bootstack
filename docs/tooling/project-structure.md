@@ -218,7 +218,7 @@ When you plan to distribute, structure with these in mind:
 - No dynamic imports that depend on working directory
 - Avoid writing files next to the executable (use user data dirs)
 
-!!! link "See [Platform → Build & Distribute](build-and-ship.md) for runtime behavior and distribution patterns."
+!!! link "See [Tooling → Build & Distribute](build-and-ship.md) for runtime behavior and distribution patterns."
 !!! link "See [Guides → App Settings](../guides/app-settings.md) for configuration and environment-aware settings."
 
 ---

@@ -1,35 +1,10 @@
 # Platform
 
-The **Platform** section explains how bootstack builds on top of Tk and ttk to provide
-a consistent, modern application foundation.
+The **Platform** section explains how Tk and ttk work underneath bootstack — the runtime model, event system, styling architecture, and system-level behaviors that apply to every widget you use.
 
 If you're trying to build an interface, start with [Guides](../guides/index.md). Platform pages explain *why* things behave the way they do.
 
-This section is not widget documentation.
-Instead, it describes the **runtime model**, **event system**, **styling architecture**,
-and **system-level behaviors** that apply across all widgets and applications built with
-bootstack.
-
-If you are new to Tk or ttk, these pages will help you understand the underlying concepts.
-If you are experienced with Tk, this section explains what bootstack standardizes,
-extends, or intentionally constrains.
-
----
-
-## What bootstack is (and is not)
-
-bootstack is **not** just a theme.
-
-It is a framework that provides:
-
-- a structured application runtime
-- a unified styling and theming system
-- consistent handling of images, fonts, and DPI
-- built-in localization and formatting support
-- predictable interaction and layout behavior
-
-bootstack does **not** replace Tk or ttk.
-It builds on them and embraces their strengths, while smoothing over their rough edges.
+If you're new to Tk or ttk, these pages will help you build a mental model. If you already know Tk, this section explains what bootstack standardizes, extends, or intentionally constrains.
 
 ---
 
@@ -37,50 +12,29 @@ It builds on them and embraces their strengths, while smoothing over their rough
 
 Start here if you want to understand:
 
-- how applications are created and managed
 - how the event loop and event delivery work
 - how widgets are created, updated, and destroyed
 - how layout and geometry behave at runtime
-- how styles, assets, and localization are applied
+- how ttk styles and elements are composed
+- how images, fonts, and DPI are handled
 
-- See [Widgets](../widgets/index.md) for how to use specific widgets.
-- See [API Reference](../reference/index.md) for exact APIs and signatures.
+For day-to-day workflow concerns — the CLI, project layout, packaging, debugging, performance — see [Tooling](../tooling/cli.md) and the relevant Guides.
+
+For exact APIs, see the [API Reference](../reference/index.md).
 
 ---
 
 ## Relationship to Tk and ttk
 
-Many concepts described here originate in Tk itself:
-the event loop, geometry managers, widget lifecycles, and windowing behavior.
-
-Where appropriate, these pages reference external resources such as:
-
-- Python’s `tkinter` documentation
-- the TkDocs tutorial
-
-Those resources explain *how Tk works*.
-The Platform section explains **how bootstack expects you to work with Tk**.
+Many concepts described here originate in Tk itself: the event loop, geometry managers, widget lifecycles, and windowing behavior. External resources such as Python's `tkinter` documentation and the TkDocs tutorial cover *how Tk works*. The Platform section explains **how bootstack expects you to work with Tk**.
 
 ---
 
 ## Platform topics
 
-The Platform section covers:
-
-- **Fundamentals**
-    - Tk vs ttk
-      - the event loop
-      - event delivery and bindings
-      - widget lifecycle
-      - geometry and layout
-- **Styling internals**
-    - ttk styles and elements
-- **Windows**
-    - top-level windows and modality
-- **Rendering**
-    - images, DPI, and scaling
-- **Operations**
-    - performance considerations
-      - debugging techniques
+- **Fundamentals** — Tk vs ttk, the event loop, events and bindings, widget lifecycle, geometry and layout
+- **Styling internals** — ttk styles and elements
+- **Windows** — top-level windows and modality
+- **Images & DPI** — image handling, DPI awareness, scaling
 
 Together, these topics define the foundation on which all bootstack applications are built.

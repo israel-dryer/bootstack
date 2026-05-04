@@ -10,30 +10,12 @@
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
 
-> **The desktop UI framework Tkinter never had — picking up where ttkbootstrap left off.**
+**bootstack** is a batteries-included desktop application framework for Python, built on Tk. It grew out of [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) — which brought Bootstrap-style theming to ttk widgets — and bundles the layers you'd expect from a modern framework around it: app scaffolding, layout containers, semantic styling, reactive signals, forms and validation, i18n, a data layer, and a CLI for scaffolding and packaging.
 
-**bootstack** is a complete desktop UI framework for Python, built on Tk. It is the spiritual successor to [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap): where that project added Bootstrap-style theming to ttk widgets, bootstack delivers the full framework around them — application scaffolding, layout containers, semantic styling, reactive state, validation, localization, data sources, and a CLI for going from prototype to packaged app.
+The aim is to take you from `pip install` to a working, themed application without wiring those pieces together yourself or dropping down to raw Tk geometry calls.
 
-If ttkbootstrap made Tkinter look modern, bootstack makes it *feel* modern.
-
-> **This project is in active alpha development.** APIs and features may change before the first stable release.
+> **Active alpha.** APIs may change before the first stable release.
 > See the [documentation](https://bootstack.readthedocs.io) for guides and the API reference.
-
-## Why bootstack?
-
-| Capability | Tkinter | ttkbootstrap | **bootstack** |
-|---|---|---|---|
-| Modern visuals | — | ✓ | ✓ |
-| Paired light/dark themes with runtime switching | — | partial | ✓ |
-| Semantic styling tokens (`accent`, `variant`) | — | partial | ✓ |
-| Layout containers (`PackFrame`, `GridFrame`) | — | — | ✓ |
-| Reactive state via signals | — | — | ✓ |
-| Built-in form & input validation | — | — | ✓ |
-| Localization (i18n) and locale-aware formatting | — | — | ✓ |
-| `DataSource` abstraction (memory, SQLite, file) | — | — | ✓ |
-| `AppShell` with sidebar + page navigation | — | — | ✓ |
-| Project scaffolding & build CLI | — | — | ✓ |
-| 60+ widgets out of the box | — | — | ✓ |
 
 ## Installation
 
@@ -74,11 +56,11 @@ bs.Label(docs, text="Your documents.").pack(padx=20, pady=20)
 shell.mainloop()
 ```
 
-## Core Ideas
+## How it works
 
-### Containers express layout intent
+### Layout containers
 
-Build layouts with purpose-built containers instead of scattered geometry calls:
+`PackFrame` and `GridFrame` let you describe a layout once instead of repeating geometry calls on each child:
 
 ```python
 form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
@@ -91,9 +73,9 @@ form.add(bs.Entry(form))
 form.add(bs.Button(form, text="Submit", accent="primary"), columnspan=2)
 ```
 
-### Styling is semantic
+### Semantic styling
 
-Widgets use semantic tokens — `accent` for color intent, `variant` for visual weight — never hard-coded colors. Applications stay consistent across themes and light/dark modes:
+Widgets take an `accent` (color intent) and `variant` (visual weight) instead of hard-coded colors, so the same code looks right across themes and light/dark modes:
 
 ```python
 bs.Button(app, text="Save", accent="primary")                       # solid (default)
@@ -102,9 +84,9 @@ bs.Button(app, text="Learn more", accent="info", variant="link")
 bs.Label(app, text="Heading", font="heading-lg")
 ```
 
-### Reactivity is optional and explicit
+### Signals (optional)
 
-Use plain callbacks when that's enough. Reach for signals when state needs to flow between widgets:
+Plain callbacks work fine for most things. When state needs to flow between widgets, signals give you a small subscribe/get/set primitive:
 
 ```python
 counter = bs.Signal(0)
@@ -124,11 +106,11 @@ bs.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost, link, text), consistent across widgets
 - **Built-in themes** — paired light/dark variants (amber, aurora, bootstrap, classic, docs, forest, ocean, rose) with runtime theme switching and a custom-theme API
 - **Reactive signals** — observable state with subscribe/get/set, integrates with widgets via `signal=` / `textvariable=`
-- **Forms & validation** — `Form` and `Field` with a built-in validation framework, no glue code required
-- **DataSource system** — unified data interface with pagination, filtering, sorting, CRUD, and CSV export across in-memory, SQLite, and file backends
+- **Forms & validation** — `Form` and `Field` with built-in validators
+- **DataSource** — common interface over in-memory, SQLite, and file backends, with pagination, filtering, sorting, CRUD, and CSV export
 - **Localization (i18n)** — 23 bundled message catalogs, locale-aware number/date/time formatting via Babel, runtime language switching
-- **Icons & images** — first-class icon handling, theme-aware recoloring, DPI scaling, caching
-- **Platform niceties** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
+- **Icons & images** — icon handling with theme-aware recoloring, DPI scaling, and caching
+- **Platform support** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
 - **CLI (`bootstack`)** — project scaffolding, run, add components, theme/i18n setup, doctor, build/package
 
 ## Widget Categories
