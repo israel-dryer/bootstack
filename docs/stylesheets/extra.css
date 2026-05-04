@@ -157,3 +157,27 @@
   .bs-hero__visual { min-height: 220px; }
 }
 
+/* =============================================================
+   Homepage gallery preview
+   ============================================================= */
+
+.bs-gallery {
+  text-align: center;
+  margin: 0 0 3rem;
+}
+
+.bs-gallery img {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(13, 110, 253, 0.12);
+  box-shadow: 0 4px 24px rgba(13, 110, 253, 0.10);
+}
+
+.bs-gallery__caption {
+  margin-top: 0.875rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+

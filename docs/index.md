@@ -21,3 +21,8 @@ hide:
     <img src="assets/bootstack-icon.png" alt="">
   </div>
 </div>
+
+<div class="bs-gallery">
+  <img src="assets/quick-start-gallery.png" alt="bootstack Widget Gallery">
+  <p class="bs-gallery__caption">Explore all widgets interactively with <code>bootstack gallery</code></p>
+</div>
