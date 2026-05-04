@@ -359,7 +359,7 @@ nav = [
 [project.theme]
 language = "en"
 favicon = "assets/favicon.ico"
-logo = "assets/bootstack-icon.png"
+logo = "assets/app-icon-transparent.svg"
 custom_dir = "overrides"
 
 features = [
@@ -390,6 +390,15 @@ media = "(prefers-color-scheme: dark)"
 scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to system preference"
+
+# -----------------------------------------------------------------------------
+# Validation
+# -----------------------------------------------------------------------------
+# Suppress false-positive "page does not exist" warnings on Windows — zensical
+# validates links in a single pass using filesystem (alphabetical) order, so
+# capabilities/ pages are checked before their targets are registered.
+[project.validation]
+invalid_links = false
 
 # -----------------------------------------------------------------------------
 # mkdocstrings plugin configuration
