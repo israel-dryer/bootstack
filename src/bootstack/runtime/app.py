@@ -540,6 +540,16 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         if self._hdpi:
             enable_high_dpi_awareness()
 
+        # Tell Windows this is a distinct app so the taskbar uses our icon
+        # instead of the generic python.exe icon.
+        if sys.platform == 'win32':
+            try:
+                import ctypes
+                app_id = f"bootstack.{(self.settings.app_name or 'app').lower().replace(' ', '.')}"
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+            except Exception:
+                pass
+
         # Initialize Tk
         tkinter.Tk.__init__(self, **kwargs)
         self.withdraw()  # hide immediately until ready to show.

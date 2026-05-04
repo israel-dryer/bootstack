@@ -252,10 +252,10 @@ class BaseWindow:
                     import bootstack
                     assets = Path(bootstack.__file__).parent / 'assets'
                     if sys.platform == 'win32':
-                        ico = assets / 'bootstack-dark.ico'
+                        ico = assets / 'bootstack-light.ico'
                         if not ico.exists():
                             ico = assets / 'bootstack.ico'
-                        self._set_win32_icon(str(ico))
+                        self.wm_iconbitmap(str(ico))
                     else:
                         self._icon = tkinter.PhotoImage(file=str(assets / 'bootstack.png'), master=self)
                         self.iconphoto(True, self._icon)
@@ -268,12 +268,11 @@ class BaseWindow:
             if isinstance(iconphoto, tkinter.PhotoImage):
                 self._icon = iconphoto
                 self.iconphoto(True, self._icon)
+            elif str(iconphoto).lower().endswith('.ico'):
+                self.wm_iconbitmap(str(iconphoto))
             else:
-                if sys.platform == 'win32' and str(iconphoto).lower().endswith('.ico'):
-                    self._set_win32_icon(str(iconphoto))
-                else:
-                    self._icon = tkinter.PhotoImage(file=iconphoto, master=self)
-                    self.iconphoto(True, self._icon)
+                self._icon = tkinter.PhotoImage(file=iconphoto, master=self)
+                self.iconphoto(True, self._icon)
         except (tkinter.TclError, Exception) as e:
             print(f'Failed to load icon: {iconphoto} - {e}')
             if default_icon_enabled:
@@ -282,42 +281,15 @@ class BaseWindow:
                     import bootstack
                     assets = Path(bootstack.__file__).parent / 'assets'
                     if sys.platform == 'win32':
-                        ico = assets / 'bootstack-dark.ico'
+                        ico = assets / 'bootstack-light.ico'
                         if not ico.exists():
                             ico = assets / 'bootstack.ico'
-                        self._set_win32_icon(str(ico))
+                        self.wm_iconbitmap(str(ico))
                     else:
                         self._icon = tkinter.PhotoImage(file=str(assets / 'bootstack.png'), master=self)
                         self.iconphoto(True, self._icon)
                 except (ImportError, FileNotFoundError, tkinter.TclError, Exception):
                     pass
-
-    def _set_win32_icon(self, ico_path: str) -> None:
-        self.wm_iconbitmap(ico_path)
-        try:
-            import ctypes
-            WM_SETICON = 0x0080
-            ICON_SMALL = 0
-            ICON_BIG = 1
-            IMAGE_ICON = 1
-            LR_LOADFROMFILE = 0x0010
-            user32 = ctypes.windll.user32
-            user32.LoadImageW.restype = ctypes.c_void_p
-            user32.LoadImageW.argtypes = [
-                ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_uint,
-                ctypes.c_int, ctypes.c_int, ctypes.c_uint,
-            ]
-            hwnd = self.winfo_id()
-            sm_small = user32.GetSystemMetrics(49)
-            sm_large = user32.GetSystemMetrics(11)
-            hicon_small = user32.LoadImageW(None, ico_path, IMAGE_ICON, sm_small, sm_small, LR_LOADFROMFILE)
-            hicon_large = user32.LoadImageW(None, ico_path, IMAGE_ICON, sm_large, sm_large, LR_LOADFROMFILE)
-            if hicon_small:
-                user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
-            if hicon_large:
-                user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_large)
-        except Exception:
-            pass
 
     def _handle_locale_changed(self, *_):
         """Handle locale change events by updating the localized title."""
