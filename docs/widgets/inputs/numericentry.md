@@ -19,11 +19,11 @@ consistent field events. If you are building forms or dialogs, `NumericEntry` is
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-qty = ttk.NumericEntry(
+qty = bs.NumericEntry(
     app,
     label="Quantity",
     value=1,
@@ -64,10 +64,10 @@ Consider a different control when:
 ### `accent`
 
 ```python
-ttk.NumericEntry(app, label="Quantity")  # primary (default)
-ttk.NumericEntry(app, label="Quantity", accent="secondary")
-ttk.NumericEntry(app, label="Quantity", accent="success")
-ttk.NumericEntry(app, label="Quantity", accent="warning")
+bs.NumericEntry(app, label="Quantity")  # primary (default)
+bs.NumericEntry(app, label="Quantity", accent="secondary")
+bs.NumericEntry(app, label="Quantity", accent="success")
+bs.NumericEntry(app, label="Quantity", accent="warning")
 ```
 
 !!! link "Design System"
@@ -102,7 +102,7 @@ qty.value = 42
 #### Bounds: `minvalue` / `maxvalue`
 
 ```python
-age = ttk.NumericEntry(app, label="Age", value=25, minvalue=0, maxvalue=120)
+age = bs.NumericEntry(app, label="Age", value=25, minvalue=0, maxvalue=120)
 ```
 
 #### Stepping: `increment`
@@ -116,7 +116,7 @@ Stepping is supported via:
 - mouse wheel (platform-dependent)
 
 ```python
-price = ttk.NumericEntry(
+price = bs.NumericEntry(
     app,
     label="Unit Price",
     value=9.99,
@@ -133,7 +133,7 @@ price = ttk.NumericEntry(
 - set `wrap=True` to cycle through the range
 
 ```python
-percent = ttk.NumericEntry(
+percent = bs.NumericEntry(
     app,
     label="Percent",
     value=50,
@@ -147,7 +147,7 @@ percent = ttk.NumericEntry(
 #### Spin buttons: `show_spin_buttons`
 
 ```python
-field = ttk.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
+field = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
 ```
 
 #### Formatting: `value_format`
@@ -155,9 +155,9 @@ field = ttk.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False
 Commit-time, locale-aware formatting:
 
 ```python
-ttk.NumericEntry(app, label="Currency", value=1234.56, value_format="currency").pack()
-ttk.NumericEntry(app, label="Fixed Point", value=15422354, value_format="fixedPoint").pack()
-ttk.NumericEntry(app, label="Percent", value=0.35, value_format="percent").pack()
+bs.NumericEntry(app, label="Currency", value=1234.56, value_format="currency").pack()
+bs.NumericEntry(app, label="Fixed Point", value=15422354, value_format="fixedPoint").pack()
+bs.NumericEntry(app, label="Percent", value=0.35, value_format="percent").pack()
 ```
 
 <figure markdown>
@@ -209,7 +209,7 @@ Use numeric options for guardrails:
 Use validation rules for business logic:
 
 ```python
-qty = ttk.NumericEntry(app, label="Quantity", minvalue=0, maxvalue=999, required=True)
+qty = bs.NumericEntry(app, label="Quantity", minvalue=0, maxvalue=999, required=True)
 qty.add_validation_rule("required", message="Quantity is required")
 ```
 
@@ -222,11 +222,11 @@ qty.add_validation_rule("required", message="Quantity is required")
 Like other field controls, `NumericEntry` supports prefix and suffix add-ons.
 
 ```python
-salary = ttk.NumericEntry(app, label="Salary")
-salary.insert_addon(ttk.Label, position="before", icon="currency-euro")
+salary = bs.NumericEntry(app, label="Salary")
+salary.insert_addon(bs.Label, position="before", icon="currency-euro")
 
-size = ttk.NumericEntry(app, label="Size", show_spin_buttons=False)
-size.insert_addon(ttk.Label, position="after", text="cm", font="label[9]")
+size = bs.NumericEntry(app, label="Size", show_spin_buttons=False)
+size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 ```
 
 <figure markdown>

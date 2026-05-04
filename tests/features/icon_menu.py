@@ -1,6 +1,6 @@
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.Window(size=(400, 300))
+app = bs.Window(size=(400, 300))
 
 
 def change_theme(theme_name):
@@ -39,11 +39,11 @@ menu_items = [
     }
 ]
 
-ttk.create_menu(app, menu_items)
+bs.create_menu(app, menu_items)
 
 # Add a menubutton as well
-mb = ttk.MenuButton(app, bootstyle="danger", text="Menubutton")
-mb['menu'] = ttk.create_menu(mb, menu_items)
+mb = bs.MenuButton(app, bootstyle="danger", text="Menubutton")
+mb['menu'] = bs.create_menu(mb, menu_items)
 mb.pack(padx=10, pady=10)
 
 app.mainloop()

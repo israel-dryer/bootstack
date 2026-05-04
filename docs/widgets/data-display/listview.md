@@ -13,10 +13,10 @@ It renders only the visible rows (plus a small overscan), making it suitable for
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.list import ListView
 
-app = ttk.App()
+app = bs.App()
 
 items = [
     {"id": 1, "title": "Item 1", "text": "Description 1"},
@@ -85,10 +85,10 @@ lv = ListView(
 ### Selection + events
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.list import ListView
 
-app = ttk.App()
+app = bs.App()
 
 lv = ListView(
     app,
@@ -171,7 +171,7 @@ Use `row_factory` to supply your own `ListItem`-compatible row widget.
 
 ```python
 def make_row(master, **kwargs):
-    return ttk.ListItem(master, **kwargs)  # or your custom widget
+    return bs.ListItem(master, **kwargs)  # or your custom widget
 
 lv = ListView(app, datasource=my_source, row_factory=make_row)
 ```
@@ -247,7 +247,7 @@ Common methods:
 ListView can work with reactive data sources:
 
 ```python
-items = ttk.Signal([{"id": 1, "title": "Item 1"}])
+items = bs.Signal([{"id": 1, "title": "Item 1"}])
 lv = ListView(app, items=items)
 
 # Add new item

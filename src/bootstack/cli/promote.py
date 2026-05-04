@@ -1,4 +1,4 @@
-"""ttkb promote command - Upgrade project to packaging-ready."""
+"""bootstack promote command - Upgrade project to packaging-ready."""
 
 from __future__ import annotations
 
@@ -37,14 +37,14 @@ def run_promote(args: argparse.Namespace) -> None:
     """Execute the promote command."""
     if not args.pyinstaller:
         print("Error: Please specify a build backend.")
-        print("  ttkb promote --pyinstaller")
+        print("  bootstack promote --pyinstaller")
         return
 
     # Find project root
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found in current directory or parents.")
-        print("Run 'ttkb start <appname>' to create a new project first.")
+        print("Error: No bootstack.toml found in current directory or parents.")
+        print("Run 'bootstack start <appname>' to create a new project first.")
         return
 
     project_root = config_path.parent
@@ -58,7 +58,7 @@ def run_promote(args: argparse.Namespace) -> None:
 
     print(f"Promoting project '{config.app.name}' for PyInstaller...")
 
-    # Update ttkb.toml with build section
+    # Update bootstack.toml with build section
     _add_build_section(config_path)
 
     # Create build directory
@@ -79,26 +79,26 @@ def run_promote(args: argparse.Namespace) -> None:
     print(f"  - {spec_path.relative_to(project_root)}")
     print()
     print("Updated:")
-    print(f"  - ttkb.toml (added [build] section)")
+    print(f"  - bootstack.toml (added [build] section)")
     print()
 
-    # Warn early if PyInstaller isn't on this interpreter — `ttkb build`
+    # Warn early if PyInstaller isn't on this interpreter — `bootstack build`
     # needs it but the promote step itself only writes config.
     try:
         import PyInstaller  # noqa: F401
     except ImportError:
         print("Note: PyInstaller is not installed in this environment.")
-        print("      Install it before running 'ttkb build':")
+        print("      Install it before running 'bootstack build':")
         print("      pip install pyinstaller")
         print()
 
     print("Next steps:")
-    print("  1. (Optional) Edit ttkb.toml [build] section")
-    print("  2. Run 'ttkb build' to create executable")
+    print("  1. (Optional) Edit bootstack.toml [build] section")
+    print("  2. Run 'bootstack build' to create executable")
 
 
 def _add_build_section(config_path: Path) -> None:
-    """Add [build] section to existing ttkb.toml."""
+    """Add [build] section to existing bootstack.toml."""
     content = config_path.read_text(encoding="utf-8")
 
     # Check if [build] section already exists

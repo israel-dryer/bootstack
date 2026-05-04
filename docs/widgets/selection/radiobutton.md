@@ -20,15 +20,15 @@ Use `RadioButton` when all options are short and should be visible at once (sett
 In bootstack v2, the shared value is typically managed using a `signal`.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-choice = ttk.Signal("medium")
+choice = bs.Signal("medium")
 
-ttk.RadioButton(app, text="Low", signal=choice, value="low").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="Medium", signal=choice, value="medium").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="High", signal=choice, value="high").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Low", signal=choice, value="low").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Medium", signal=choice, value="medium").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="High", signal=choice, value="high").pack(anchor="w", padx=20, pady=2)
 
 app.mainloop()
 ```
@@ -62,7 +62,7 @@ Use `RadioButton` when:
 The standard radio indicator + label.
 
 ```python
-ttk.RadioButton(app, text="Option", signal=choice, value="opt")
+bs.RadioButton(app, text="Option", signal=choice, value="opt")
 ```
 
 #### RadioToggle
@@ -70,8 +70,8 @@ ttk.RadioButton(app, text="Option", signal=choice, value="opt")
 If you want a button-like "badge" look for mutually exclusive choices, use `RadioToggle`.
 
 ```python
-ttk.RadioToggle(app, text="Grid", signal=view, value="grid")
-ttk.RadioToggle(app, text="List", signal=view, value="list")
+bs.RadioToggle(app, text="Grid", signal=view, value="grid")
+bs.RadioToggle(app, text="List", signal=view, value="list")
 ```
 
 ### Colors and styling
@@ -79,12 +79,12 @@ ttk.RadioToggle(app, text="List", signal=view, value="list")
 RadioButtons support standard bootstack color tokens.
 
 ```python
-ttk.RadioButton(app)  # primary is default
-ttk.RadioButton(app, accent="secondary")
-ttk.RadioButton(app, accent="success")
-ttk.RadioButton(app, accent="info")
-ttk.RadioButton(app, accent="warning")
-ttk.RadioButton(app, accent="danger")
+bs.RadioButton(app)  # primary is default
+bs.RadioButton(app, accent="secondary")
+bs.RadioButton(app, accent="success")
+bs.RadioButton(app, accent="info")
+bs.RadioButton(app, accent="warning")
+bs.RadioButton(app, accent="danger")
 ```
 
 <figure markdown>
@@ -112,10 +112,10 @@ A radio selection is defined by a **shared value** plus a distinct `value=` for 
 - selection is the option whose `value` matches the shared signal or variable
 
 ```python
-choice = ttk.Signal("low")
+choice = bs.Signal("low")
 
-ttk.RadioButton(app, text="Low", signal=choice, value="low")
-ttk.RadioButton(app, text="High", signal=choice, value="high")
+bs.RadioButton(app, text="Low", signal=choice, value="low")
+bs.RadioButton(app, text="High", signal=choice, value="high")
 ```
 
 Updating the shared state changes the selected option:
@@ -135,13 +135,13 @@ choice.set("high")
 Use `command=` to react when the selection changes.
 
 ```python
-choice = ttk.Signal("low")
+choice = bs.Signal("low")
 
 def on_change():
     print("selected:", choice.get())
 
-ttk.RadioButton(app, text="Low", signal=choice, value="low", command=on_change)
-ttk.RadioButton(app, text="High", signal=choice, value="high", command=on_change)
+bs.RadioButton(app, text="Low", signal=choice, value="low", command=on_change)
+bs.RadioButton(app, text="High", signal=choice, value="high", command=on_change)
 ```
 
 #### `state`
@@ -149,10 +149,10 @@ ttk.RadioButton(app, text="High", signal=choice, value="high", command=on_change
 Disable individual options when they are not available.
 
 ```python
-choice = ttk.Signal("basic")
+choice = bs.Signal("basic")
 
-ttk.RadioButton(app, text="Basic", signal=choice, value="basic")
-ttk.RadioButton(app, text="Pro (unavailable)", signal=choice, value="pro", state="disabled")
+bs.RadioButton(app, text="Basic", signal=choice, value="basic")
+bs.RadioButton(app, text="Pro (unavailable)", signal=choice, value="pro", state="disabled")
 ```
 
 ### Events
@@ -160,7 +160,7 @@ ttk.RadioButton(app, text="Pro (unavailable)", signal=choice, value="pro", state
 Use `command=` for per-button callbacks, or subscribe to the shared signal for group-level changes.
 
 ```python
-choice = ttk.Signal("low")
+choice = bs.Signal("low")
 
 def on_selected(value):
     print("selected:", value)
@@ -196,9 +196,9 @@ By default, widgets use `localize="auto"`:
 - otherwise, the label is treated as a literal string
 
 ```python
-ttk.RadioButton(app, text="settings.mode.basic")
-ttk.RadioButton(app, text="settings.mode.basic", localize=True)
-ttk.RadioButton(app, text="Basic", localize=False)
+bs.RadioButton(app, text="settings.mode.basic")
+bs.RadioButton(app, text="settings.mode.basic", localize=True)
+bs.RadioButton(app, text="Basic", localize=False)
 ```
 
 !!! tip "Safe to pass literal text"
@@ -215,15 +215,15 @@ Signals are generally preferred in v2 applications, but Tk variables are fully s
 ### Using a Signal (preferred)
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-choice = ttk.Signal("medium")
+choice = bs.Signal("medium")
 
-ttk.RadioButton(app, text="Low", signal=choice, value="low").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="Medium", signal=choice, value="medium").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="High", signal=choice, value="high").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Low", signal=choice, value="low").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Medium", signal=choice, value="medium").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="High", signal=choice, value="high").pack(anchor="w", padx=20, pady=2)
 
 app.mainloop()
 ```
@@ -231,15 +231,15 @@ app.mainloop()
 ### Using a Tk variable
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-choice = ttk.StringVar(value="medium")
+choice = bs.StringVar(value="medium")
 
-ttk.RadioButton(app, text="Low", variable=choice, value="low").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="Medium", variable=choice, value="medium").pack(anchor="w", padx=20, pady=2)
-ttk.RadioButton(app, text="High", variable=choice, value="high").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Low", variable=choice, value="low").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="Medium", variable=choice, value="medium").pack(anchor="w", padx=20, pady=2)
+bs.RadioButton(app, text="High", variable=choice, value="high").pack(anchor="w", padx=20, pady=2)
 
 app.mainloop()
 ```

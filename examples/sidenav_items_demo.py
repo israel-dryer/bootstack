@@ -8,7 +8,7 @@ This demo showcases the SideNav item widgets:
 """
 
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.sidenav import (
     SideNavItem,
     SideNavHeader,
@@ -30,18 +30,18 @@ class SideNavItemsDemo:
 
     def _setup_ui(self):
         # Main container with two columns
-        main = ttk.Frame(self.root, padding=10)
+        main = bs.Frame(self.root, padding=10)
         main.pack(fill='both', expand=True)
 
         # Left panel - Navigation items
-        nav_frame = ttk.LabelFrame(main, text="Navigation Items", padding=10)
+        nav_frame = bs.LabelFrame(main, text="Navigation Items", padding=10)
         nav_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
 
         # Right panel - Event log
-        log_frame = ttk.LabelFrame(main, text="Event Log", padding=10)
+        log_frame = bs.LabelFrame(main, text="Event Log", padding=10)
         log_frame.pack(side='right', fill='both', expand=True, padx=(5, 0))
 
-        self.log_text = ttk.Text(log_frame, width=25, height=20, state='disabled')
+        self.log_text = bs.Text(log_frame, width=25, height=20, state='disabled')
         self.log_text.pack(fill='both', expand=True)
 
         # Track selection changes
@@ -52,7 +52,7 @@ class SideNavItemsDemo:
 
     def _create_nav_items(self, parent):
         # Container for items
-        container = ttk.Frame(parent)
+        container = bs.Frame(parent)
         container.pack(fill='both', expand=True)
 
         # --- Main items ---
@@ -178,7 +178,7 @@ class SideNavItemsDemo:
 
 
 def main():
-    root = ttk.Window(theme="cosmo")
+    root = bs.Window(theme="cosmo")
     app = SideNavItemsDemo(root)
     root.mainloop()
 

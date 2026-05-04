@@ -27,15 +27,15 @@ Each has its place. Understanding when to use each makes applications cleaner.
 Signals represent **state that can be observed**.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # Create a signal
-name = ttk.Signal("")
+name = bs.Signal("")
 
 # Connect an entry to the signal
-entry = ttk.TextEntry(app, signal=name)
+entry = bs.TextEntry(app, signal=name)
 entry.pack(padx=20, pady=10)
 
 # React to signal changes
@@ -58,16 +58,16 @@ Key characteristics:
 
 ```python
 # String signal
-name = ttk.Signal("")
+name = bs.Signal("")
 
 # Boolean signal
-enabled = ttk.Signal(False)
+enabled = bs.Signal(False)
 
 # Numeric signal
-count = ttk.Signal(0)
+count = bs.Signal(0)
 
 # Any type
-selection = ttk.Signal(None)
+selection = bs.Signal(None)
 ```
 
 ### Reading and Writing
@@ -104,13 +104,13 @@ Subscribers receive the new value whenever it changes.
 Many widgets accept a `signal` parameter:
 
 ```python
-name = ttk.Signal("")
+name = bs.Signal("")
 
 # Entry updates the signal
-entry = ttk.TextEntry(app, signal=name)
+entry = bs.TextEntry(app, signal=name)
 
 # Label displays the signal
-label = ttk.Label(app, textvariable=name)
+label = bs.Label(app, textvariable=name)
 ```
 
 When the entry changes, the label updates automatically.
@@ -120,22 +120,22 @@ When the entry changes, the label updates automatically.
 Create **derived signals** by mapping a source signal through a transform function:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # Source signal
-celsius = ttk.Signal(0)
+celsius = bs.Signal(0)
 
 # Derived signal: transforms celsius to fahrenheit
 fahrenheit = celsius.map(lambda c: c * 9/5 + 32)
 
 # UI
-ttk.Label(app, text="Celsius:").pack()
-ttk.Scale(app, from_=0, to=100, variable=celsius).pack(fill="x", padx=20)
+bs.Label(app, text="Celsius:").pack()
+bs.Scale(app, from_=0, to=100, variable=celsius).pack(fill="x", padx=20)
 
-ttk.Label(app, text="Fahrenheit:").pack(pady=(20, 0))
-ttk.Label(app, textvariable=fahrenheit).pack()
+bs.Label(app, text="Fahrenheit:").pack(pady=(20, 0))
+bs.Label(app, textvariable=fahrenheit).pack()
 
 app.mainloop()
 ```
@@ -147,29 +147,29 @@ When `celsius` changes, `fahrenheit` updates automatically with the transformed 
 **Formatting for display:**
 
 ```python
-price = ttk.Signal(29.99)
+price = bs.Signal(29.99)
 
 # Format as currency
 display_price = price.map(lambda p: f"${p:.2f}")
 
-ttk.Label(app, textvariable=display_price)  # Shows "$29.99"
+bs.Label(app, textvariable=display_price)  # Shows "$29.99"
 ```
 
 **Boolean to text:**
 
 ```python
-is_enabled = ttk.Signal(True)
+is_enabled = bs.Signal(True)
 
 # Map boolean to descriptive text
 status_text = is_enabled.map(lambda v: "Enabled" if v else "Disabled")
 
-ttk.Label(app, textvariable=status_text)
+bs.Label(app, textvariable=status_text)
 ```
 
 **Validation state:**
 
 ```python
-username = ttk.Signal("")
+username = bs.Signal("")
 
 # Derive validity
 is_valid = username.map(lambda u: len(u) >= 3)
@@ -183,7 +183,7 @@ validation_msg = username.map(
 **Chaining transforms:**
 
 ```python
-raw_input = ttk.Signal("  hello world  ")
+raw_input = bs.Signal("  hello world  ")
 
 # Chain multiple transforms
 cleaned = raw_input.map(str.strip).map(str.title)
@@ -196,9 +196,9 @@ cleaned = raw_input.map(str.strip).map(str.title)
 For transformations that depend on multiple signals, use `subscribe` with manual updates:
 
 ```python
-width = ttk.Signal(10)
-height = ttk.Signal(20)
-area = ttk.Signal(0)
+width = bs.Signal(10)
+height = bs.Signal(20)
+area = bs.Signal(0)
 
 def update_area(*_):
     area.set(width.get() * height.get())
@@ -213,7 +213,7 @@ Or create a helper for common cases:
 ```python
 def combine(signals, transform):
     """Create a signal that combines multiple source signals."""
-    result = ttk.Signal(transform(*[s.get() for s in signals]))
+    result = bs.Signal(transform(*[s.get() for s in signals]))
 
     def update(*_):
         result.set(transform(*[s.get() for s in signals]))
@@ -224,8 +224,8 @@ def combine(signals, transform):
     return result
 
 # Usage
-width = ttk.Signal(10)
-height = ttk.Signal(20)
+width = bs.Signal(10)
+height = bs.Signal(20)
 area = combine([width, height], lambda w, h: w * h)
 ```
 
@@ -239,14 +239,14 @@ area = combine([width, height], lambda w, h: w * h)
 Callbacks handle **discrete actions**.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 def on_submit():
     print("Form submitted!")
 
-ttk.Button(app, text="Submit", command=on_submit).pack(pady=20)
+bs.Button(app, text="Submit", command=on_submit).pack(pady=20)
 
 app.mainloop()
 ```
@@ -266,7 +266,7 @@ def save_file():
     # ... save logic ...
     pass
 
-ttk.Button(app, text="Save", command=save_file)
+bs.Button(app, text="Save", command=save_file)
 ```
 
 #### With Arguments
@@ -276,20 +276,20 @@ def delete_item(item_id):
     print(f"Deleting {item_id}")
 
 # Use lambda to pass arguments
-ttk.Button(app, text="Delete", command=lambda: delete_item(42))
+bs.Button(app, text="Delete", command=lambda: delete_item(42))
 ```
 
 #### Reading State in Callbacks
 
 ```python
-name = ttk.Signal("")
+name = bs.Signal("")
 
 def on_submit():
     current_name = name.get()
     print(f"Submitting: {current_name}")
 
-entry = ttk.TextEntry(app, signal=name)
-button = ttk.Button(app, text="Submit", command=on_submit)
+entry = bs.TextEntry(app, signal=name)
+button = bs.Button(app, text="Submit", command=on_submit)
 ```
 
 The callback reads the signal's current value when invoked.
@@ -301,11 +301,11 @@ The callback reads the signal's current value when invoked.
 Events handle **low-level input** like keyboard and mouse.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-entry = ttk.Entry(app)
+entry = bs.Entry(app)
 entry.pack(padx=20, pady=20)
 
 def on_key(event):
@@ -420,7 +420,7 @@ This is particularly useful for:
 
 ```python
 # Real-world example: custom list widget
-class ItemList(ttk.Frame):
+class ItemList(bs.Frame):
     def select_item(self, item):
         self._selected = item
         # Emit event with the selected item as data
@@ -450,9 +450,9 @@ item_list.bind("<<ItemSelected>>", on_selected)
 
 ```python
 # Good: shared username across form
-username = ttk.Signal("")
-entry = ttk.TextEntry(app, signal=username)
-preview = ttk.Label(app, textvariable=username)
+username = bs.Signal("")
+entry = bs.TextEntry(app, signal=username)
+preview = bs.Label(app, textvariable=username)
 ```
 
 ### Use Callbacks When
@@ -463,7 +463,7 @@ preview = ttk.Label(app, textvariable=username)
 
 ```python
 # Good: button submits form
-ttk.Button(app, text="Submit", command=submit_form)
+bs.Button(app, text="Submit", command=submit_form)
 ```
 
 ### Use Events When
@@ -484,29 +484,29 @@ app.bind("<Control-s>", lambda e: save_file())
 ### Form with Submit
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # State
-username = ttk.Signal("")
-password = ttk.Signal("")
+username = bs.Signal("")
+password = bs.Signal("")
 
 # UI
-form = ttk.PackFrame(app, direction="vertical", gap=10, padding=20)
+form = bs.PackFrame(app, direction="vertical", gap=10, padding=20)
 form.pack(fill="both", expand=True)
 
-ttk.Label(form, text="Username:").pack()
-ttk.TextEntry(form, signal=username).pack()
+bs.Label(form, text="Username:").pack()
+bs.TextEntry(form, signal=username).pack()
 
-ttk.Label(form, text="Password:").pack()
-ttk.PasswordEntry(form, signal=password).pack()
+bs.Label(form, text="Password:").pack()
+bs.PasswordEntry(form, signal=password).pack()
 
 # Submit reads current signal values
 def on_submit():
     print(f"Login: {username.get()} / {password.get()}")
 
-ttk.Button(form, text="Login", command=on_submit).pack()
+bs.Button(form, text="Login", command=on_submit).pack()
 
 app.mainloop()
 ```
@@ -514,22 +514,22 @@ app.mainloop()
 ### Live Preview
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # Signal for shared state
-content = ttk.Signal("Type here...")
+content = bs.Signal("Type here...")
 
-main = ttk.PackFrame(app, direction="horizontal", gap=20, padding=20)
+main = bs.PackFrame(app, direction="horizontal", gap=20, padding=20)
 main.pack(fill="both", expand=True)
 
 # Editor
-editor = ttk.ScrolledText(main, width=40, height=10)
+editor = bs.ScrolledText(main, width=40, height=10)
 editor.pack(fill="both", expand=True)
 
 # Preview updates reactively
-preview = ttk.Label(main, wraplength=200)
+preview = bs.Label(main, wraplength=200)
 preview.pack()
 
 # Connect editor changes to preview
@@ -544,9 +544,9 @@ app.mainloop()
 ### Keyboard Shortcuts
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 def save():
     print("Saving...")
@@ -558,7 +558,7 @@ def quit_app():
 app.bind("<Control-s>", lambda e: save())
 app.bind("<Control-q>", lambda e: quit_app())
 
-ttk.Label(app, text="Press Ctrl+S to save, Ctrl+Q to quit").pack(pady=20)
+bs.Label(app, text="Press Ctrl+S to save, Ctrl+Q to quit").pack(pady=20)
 
 app.mainloop()
 ```

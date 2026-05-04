@@ -31,12 +31,12 @@ a pressed/unpressed control than a checkbox indicator.
 ## Basic usage
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.CheckToggle(app, text="Bold", value=False).pack(side="left", padx=4, pady=10)
-ttk.CheckToggle(app, text="Italic", value=True).pack(side="left", padx=4, pady=10)
+bs.CheckToggle(app, text="Bold", value=False).pack(side="left", padx=4, pady=10)
+bs.CheckToggle(app, text="Italic", value=True).pack(side="left", padx=4, pady=10)
 
 app.mainloop()
 ```
@@ -78,13 +78,13 @@ Once bound, the signal or variable becomes the source of truth.
 - `variable=...` (Tk variable)
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-enabled = ttk.Signal(False)
+enabled = bs.Signal(False)
 
-t = ttk.CheckToggle(app, text="Snap", signal=enabled)
+t = bs.CheckToggle(app, text="Snap", signal=enabled)
 t.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -154,11 +154,11 @@ Use validation when:
 Use semantic color tokens with the `accent` parameter.
 
 ```python
-ttk.CheckToggle(app, accent="primary")
-ttk.CheckToggle(app, accent="secondary")
-ttk.CheckToggle(app, accent="success")
-ttk.CheckToggle(app, accent="warning")
-ttk.CheckToggle(app, accent="danger")
+bs.CheckToggle(app, accent="primary")
+bs.CheckToggle(app, accent="secondary")
+bs.CheckToggle(app, accent="success")
+bs.CheckToggle(app, accent="warning")
+bs.CheckToggle(app, accent="danger")
 ```
 
 ---

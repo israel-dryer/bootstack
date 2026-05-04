@@ -15,12 +15,12 @@ a feature, turning on notifications, or activating a mode.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Switch(app, text="Enable dark mode", value=True).pack(padx=20, pady=6)
-ttk.Switch(app, text="Send notifications", value=False).pack(padx=20, pady=6)
+bs.Switch(app, text="Enable dark mode", value=True).pack(padx=20, pady=6)
+bs.Switch(app, text="Send notifications", value=False).pack(padx=20, pady=6)
 
 app.mainloop()
 ```
@@ -51,11 +51,11 @@ Use `Switch` when:
 Use semantic color tokens with the `accent` parameter.
 
 ```python
-ttk.Switch(app, text="Primary", accent="primary")
-ttk.Switch(app, text="Secondary", accent="secondary")
-ttk.Switch(app, text="Success", accent="success")
-ttk.Switch(app, text="Warning", accent="warning")
-ttk.Switch(app, text="Danger", accent="danger")
+bs.Switch(app, text="Primary", accent="primary")
+bs.Switch(app, text="Secondary", accent="secondary")
+bs.Switch(app, text="Success", accent="success")
+bs.Switch(app, text="Warning", accent="warning")
+bs.Switch(app, text="Danger", accent="danger")
 ```
 
 !!! link "See [Design System - Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
@@ -84,7 +84,7 @@ The `value` option sets the **initial state**. Once bound, the signal or variabl
 Label shown next to the switch.
 
 ```python
-ttk.Switch(app, text="Auto-save")
+bs.Switch(app, text="Auto-save")
 ```
 
 #### `command`
@@ -92,12 +92,12 @@ ttk.Switch(app, text="Auto-save")
 Run a callback when the switch toggles.
 
 ```python
-enabled = ttk.BooleanVar(value=True)
+enabled = bs.BooleanVar(value=True)
 
 def on_toggle():
     print("now:", enabled.get())
 
-ttk.Switch(app, text="Enable feature", variable=enabled, command=on_toggle).pack(padx=20, pady=20)
+bs.Switch(app, text="Enable feature", variable=enabled, command=on_toggle).pack(padx=20, pady=20)
 ```
 
 #### `state`
@@ -105,7 +105,7 @@ ttk.Switch(app, text="Enable feature", variable=enabled, command=on_toggle).pack
 Disable or enable the widget.
 
 ```python
-sw = ttk.Switch(app, text="Locked", state="disabled")
+sw = bs.Switch(app, text="Locked", state="disabled")
 sw.pack()
 
 sw.configure(state="normal")
@@ -114,8 +114,8 @@ sw.configure(state="normal")
 #### `padding`, `width`, `underline`
 
 ```python
-ttk.Switch(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
-ttk.Switch(app, text="E_xport", underline=1).pack(pady=6)
+bs.Switch(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
+bs.Switch(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
 ### Reacting to changes
@@ -127,11 +127,11 @@ Use `command` for immediate callbacks, or subscribe to the signal/variable for r
 def on_toggle():
     print("toggled!")
 
-sw = ttk.Switch(app, text="Feature", command=on_toggle)
+sw = bs.Switch(app, text="Feature", command=on_toggle)
 
 # Using signal subscription
-enabled = ttk.Signal(False)
-sw = ttk.Switch(app, text="Feature", signal=enabled)
+enabled = bs.Signal(False)
+sw = bs.Switch(app, text="Feature", signal=enabled)
 enabled.subscribe(lambda v: print(f"Value: {v}"))
 ```
 
@@ -154,9 +154,9 @@ By default, widgets use `localize="auto"`:
 - otherwise, the label is treated as a literal string
 
 ```python
-ttk.Switch(app, text="settings.dark_mode")
-ttk.Switch(app, text="settings.dark_mode", localize=True)
-ttk.Switch(app, text="Dark Mode", localize=False)
+bs.Switch(app, text="settings.dark_mode")
+bs.Switch(app, text="settings.dark_mode", localize=True)
+bs.Switch(app, text="Dark Mode", localize=False)
 ```
 
 !!! tip "Safe to pass literal text"
@@ -171,13 +171,13 @@ ttk.Switch(app, text="Dark Mode", localize=False)
 Prefer a reactive `signal=...` in v2 apps:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dark_mode = ttk.Signal(False)
+dark_mode = bs.Signal(False)
 
-sw = ttk.Switch(
+sw = bs.Switch(
     app,
     text="Dark mode",
     signal=dark_mode,

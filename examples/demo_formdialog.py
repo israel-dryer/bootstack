@@ -9,7 +9,7 @@ Shows various uses of FormDialog for data entry in modal dialogs:
 
 from datetime import date
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from bootstack.dialogs import FormDialog, DialogButton
 from bootstack.widgets.composites.form import FieldItem, GroupItem, TabItem, TabsItem
@@ -36,7 +36,7 @@ def demo_simple_form(parent):
 
     if dialog.result:
         print("Simple form result:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Form Submitted",
             message=f"User {dialog.result['first_name']} {dialog.result['last_name']} updated!",
             duration=3000,
@@ -109,7 +109,7 @@ def demo_explicit_layout(parent):
 
     if dialog.result:
         print("Explicit layout result:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Settings Saved",
             message="Profile settings have been updated",
             duration=3000,
@@ -128,7 +128,7 @@ def demo_with_validation(parent):
 
         # Check required fields
         if not data.get("product_name"):
-            ttk.Toast(
+            bs.Toast(
                 title="Validation Error",
                 message="Product name is required!",
                 duration=3000,
@@ -137,7 +137,7 @@ def demo_with_validation(parent):
             return  # Don't set result, keep dialog open
 
         if data.get("price", 0) <= 0:
-            ttk.Toast(
+            bs.Toast(
                 title="Validation Error",
                 message="Price must be greater than 0!",
                 duration=3000,
@@ -182,7 +182,7 @@ def demo_with_validation(parent):
 
     if dialog.result:
         print("Product saved:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Product Added",
             message=f"Product '{dialog.result['product_name']}' has been added",
             duration=3000,
@@ -201,7 +201,7 @@ def demo_registration_form(parent):
 
         # Check all required fields
         if not data.get("email") or "@" not in data.get("email", ""):
-            ttk.Toast(
+            bs.Toast(
                 title="Invalid Email",
                 message="Please enter a valid email address",
                 duration=3000,
@@ -210,7 +210,7 @@ def demo_registration_form(parent):
             return
 
         if not data.get("password") or len(data.get("password", "")) < 8:
-            ttk.Toast(
+            bs.Toast(
                 title="Weak Password",
                 message="Password must be at least 8 characters",
                 duration=3000,
@@ -219,7 +219,7 @@ def demo_registration_form(parent):
             return
 
         if data.get("password") != data.get("confirm_password"):
-            ttk.Toast(
+            bs.Toast(
                 title="Password Mismatch",
                 message="Passwords do not match",
                 duration=3000,
@@ -289,7 +289,7 @@ def demo_registration_form(parent):
 
     if dialog.result:
         print("Registration successful:", {k: v for k, v in dialog.result.items() if k not in ["password", "confirm_password"]})
-        ttk.Toast(
+        bs.Toast(
             title="Registration Complete",
             message=f"Welcome, {dialog.result['first_name']}!",
             duration=3000,
@@ -300,11 +300,11 @@ def demo_registration_form(parent):
 
 
 def main():
-    app = ttk.Window(title="FormDialog Demo", theme="flatly")
+    app = bs.Window(title="FormDialog Demo", theme="flatly")
     #app.geometry("600x400")
 
     # Title
-    title = ttk.Label(
+    title = bs.Label(
         app,
         text="FormDialog Examples",
         font=("TkDefaultFont", 16, "bold"),
@@ -312,7 +312,7 @@ def main():
     title.pack(pady=20)
 
     # Description
-    desc = ttk.Label(
+    desc = bs.Label(
         app,
         text="Click a button to open a FormDialog demonstration",
         font=("TkDefaultFont", 10),
@@ -320,11 +320,11 @@ def main():
     desc.pack(pady=(0, 30))
 
     # Button container
-    button_frame = ttk.Frame(app)
+    button_frame = bs.Frame(app)
     button_frame.pack(expand=True)
 
     # Demo buttons
-    ttk.Button(
+    bs.Button(
         button_frame,
         text="Simple Form (Auto-Inferred)",
         command=lambda: demo_simple_form(app),
@@ -332,7 +332,7 @@ def main():
         width=30,
     ).pack(pady=8)
 
-    ttk.Button(
+    bs.Button(
         button_frame,
         text="Explicit Layout (Groups & Tabs)",
         command=lambda: demo_explicit_layout(app),
@@ -340,7 +340,7 @@ def main():
         width=30,
     ).pack(pady=8)
 
-    ttk.Button(
+    bs.Button(
         button_frame,
         text="Form with Validation",
         command=lambda: demo_with_validation(app),
@@ -348,7 +348,7 @@ def main():
         width=30,
     ).pack(pady=8)
 
-    ttk.Button(
+    bs.Button(
         button_frame,
         text="Registration Form",
         command=lambda: demo_registration_form(app),
@@ -357,7 +357,7 @@ def main():
     ).pack(pady=8)
 
     # Exit button
-    ttk.Button(
+    bs.Button(
         app,
         text="Exit",
         command=app.destroy,

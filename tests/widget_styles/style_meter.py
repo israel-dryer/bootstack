@@ -1,12 +1,12 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
-root = ttk.Window()
+root = bs.Window()
 
-frame = ttk.Frame(padding=10)
+frame = bs.Frame(padding=10)
 frame.pack(padx=10, pady=10)
 
-m = ttk.Meter(
+m = bs.Meter(
     master=frame,
     size=180,
     padding=5,
@@ -19,7 +19,7 @@ m = ttk.Meter(
 m.pack(side=LEFT, padx=10)
 m.on_changed(print)
 
-ttk.Meter(
+bs.Meter(
     master=frame,
     size=180,
     padding=5,
@@ -32,7 +32,7 @@ ttk.Meter(
     interactive=True
 ).pack(side=LEFT, padx=10)
 
-ttk.Meter(
+bs.Meter(
     master=frame,
     size=180,
     padding=5,
@@ -44,7 +44,7 @@ ttk.Meter(
     interactive=True
 ).pack(side=LEFT, padx=10)
 
-ttk.Meter(
+bs.Meter(
     master=frame,
     size=180,
     padding=5,
@@ -59,6 +59,6 @@ ttk.Meter(
     interactive=True
 ).pack(side='left', padx=10)
 
-ttk.Button(root, text='Change style', command=ttk.toggle_theme).pack(padx=10, pady=10)
+bs.Button(root, text='Change style', command=bs.toggle_theme).pack(padx=10, pady=10)
 
 root.mainloop()

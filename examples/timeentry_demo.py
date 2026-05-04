@@ -9,16 +9,16 @@ Demonstrates various configurations of the TimeEntry widget including:
 
 import datetime
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack import TimeEntry
 
 
 def main():
-    root = ttk.Window()
+    root = bs.Window()
     root.title("TimeEntry Demo")
     root.geometry("400x550")
 
-    ttk.Label(
+    bs.Label(
         root,
         text="TimeEntry Widget Demo",
         font=("Helvetica", 16, "bold")
@@ -72,7 +72,7 @@ def main():
         print(f"Business Hours: {te3.value}")
         print(f"Long Format: {te4.value}")
 
-    ttk.Button(
+    bs.Button(
         root,
         text="Show Values",
         command=show_values

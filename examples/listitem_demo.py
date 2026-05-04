@@ -9,21 +9,21 @@ This demo showcases various features of the ListItem widget including:
 - Drag and drop handles
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.list import ListItem
 
 
 def main():
     """Main demo application"""
-    root = ttk.Window(title="ListItem Widget Demo", theme="darkly")
+    root = bs.Window(title="ListItem Widget Demo", theme="darkly")
     root.geometry("700x650")
 
     # Create main container with padding
-    container = ttk.Frame(root, padding=20)
+    container = bs.Frame(root, padding=20)
     container.pack(fill='both', expand=True)
 
     # Title
-    title = ttk.Label(
+    title = bs.Label(
         container,
         text="ListItem Widget Demo",
         font=('Helvetica', 18, 'bold')
@@ -31,7 +31,7 @@ def main():
     title.pack(pady=(0, 15), anchor='w')
 
     # Basic Items Section
-    ttk.Label(container, text="Basic Items", font=('Helvetica', 12, 'bold')).pack(pady=(5, 5), anchor='w')
+    bs.Label(container, text="Basic Items", font=('Helvetica', 12, 'bold')).pack(pady=(5, 5), anchor='w')
 
     item1 = ListItem(container, focusable=True)
     item1.update_data({'title': 'Simple Item', 'item_index': 0})
@@ -64,7 +64,7 @@ def main():
     item4.pack(fill='x', pady=2)
 
     # Selection Mode Section
-    ttk.Label(container, text="Selection Modes", font=('Helvetica', 12, 'bold')).pack(pady=(15, 5), anchor='w')
+    bs.Label(container, text="Selection Modes", font=('Helvetica', 12, 'bold')).pack(pady=(15, 5), anchor='w')
 
     # Single selection
     for i in range(2):
@@ -98,7 +98,7 @@ def main():
         item.pack(fill='x', pady=2)
 
     # Features Section
-    ttk.Label(container, text="Features", font=('Helvetica', 12, 'bold')).pack(pady=(15, 5), anchor='w')
+    bs.Label(container, text="Features", font=('Helvetica', 12, 'bold')).pack(pady=(15, 5), anchor='w')
 
     chevron_item = ListItem(container, show_chevron=True, focusable=True)
     chevron_item.update_data({
@@ -138,8 +138,8 @@ def main():
     separator_item.pack(fill='x', pady=2)
 
     # Instructions
-    ttk.Separator(container).pack(fill='x', pady=15)
-    ttk.Label(container, text="Try clicking, hovering, and using Tab to navigate!",
+    bs.Separator(container).pack(fill='x', pady=15)
+    bs.Label(container, text="Try clicking, hovering, and using Tab to navigate!",
               font=('Helvetica', 10, 'italic')).pack(anchor='w')
 
     root.mainloop()

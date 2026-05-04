@@ -1,4 +1,4 @@
-import bootstack as ttk
+import bootstack as bs
 
 DARK = 'dark'
 LIGHT = 'light'
@@ -30,15 +30,15 @@ def populate_tree(tree):
 
 def create_treeview_demo(root):
     """Create side-by-side comparison of default and compact density."""
-    container = ttk.Frame(root, padding=10)
+    container = bs.Frame(root, padding=10)
 
     # Left side - Default density
-    left_frame = ttk.Frame(container)
+    left_frame = bs.Frame(container)
     left_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
 
-    ttk.Label(left_frame, text="Default Density", font="-weight bold").pack(anchor='w', pady=(0, 5))
+    bs.Label(left_frame, text="Default Density", font="-weight bold").pack(anchor='w', pady=(0, 5))
 
-    tree_default = ttk.TreeView(
+    tree_default = bs.TreeView(
         left_frame,
         show='tree',
         density='default',
@@ -48,12 +48,12 @@ def create_treeview_demo(root):
     populate_tree(tree_default)
 
     # Right side - Compact density
-    right_frame = ttk.Frame(container)
+    right_frame = bs.Frame(container)
     right_frame.pack(side='right', fill='both', expand=True, padx=(5, 0))
 
-    ttk.Label(right_frame, text="Compact Density", font="-weight bold").pack(anchor='w', pady=(0, 5))
+    bs.Label(right_frame, text="Compact Density", font="-weight bold").pack(anchor='w', pady=(0, 5))
 
-    tree_compact = ttk.TreeView(
+    tree_compact = bs.TreeView(
         right_frame,
         show='tree',
         density='compact',
@@ -66,9 +66,9 @@ def create_treeview_demo(root):
 
 
 if __name__ == '__main__':
-    root = ttk.Window(title="Treeview Density Demo", size=(800, 500))
+    root = bs.Window(title="Treeview Density Demo", size=(800, 500))
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
 
     create_treeview_demo(root).pack(fill='both', expand=True)
 

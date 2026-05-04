@@ -2,9 +2,9 @@
 title: Command Line Interface
 ---
 
-# Command Line Interface (`ttkb`)
+# Command Line Interface (`bootstack`)
 
-The `ttkb` command-line interface is an **optional productivity tool** that
+The `bootstack` command-line interface is an **optional productivity tool** that
 helps you scaffold, develop, diagnose, and distribute bootstack
 applications. You can use bootstack with or without it — the CLI exists to
 reduce boilerplate, encourage a consistent project layout, and provide a
@@ -29,32 +29,32 @@ For one-off scripts or experiments, manual setup may be simpler.
 ## Top-level options
 
 ```
-ttkb [--version] [--verbose] <command> [args]
+bootstack [--version] [--verbose] <command> [args]
 ```
 
 | Option | Description |
 |---|---|
 | `--version` | Print the installed `bootstack` version and exit |
 | `-v`, `--verbose` | Print full Python tracebacks on error (default: one-line message) |
-| `-h`, `--help` | Show help; works on every subcommand too (e.g. `ttkb add --help`) |
+| `-h`, `--help` | Show help; works on every subcommand too (e.g. `bootstack add --help`) |
 
 ---
 
 ## Commands
 
-### `ttkb start`
+### `bootstack start`
 
 Scaffold a new project.
 
 ```
-ttkb start <name> [--template basic|appshell] [--theme <name>]
+bootstack start <name> [--template basic|appshell] [--theme <name>]
                    [--container grid|pack] [--simple] [--dir <path>]
 ```
 
 | Option | Default | Description |
 |---|---|---|
 | `--template` | `basic` | `basic` for a single-view `App`, `appshell` for an `AppShell` with sidebar nav |
-| `--theme` | `cosmo` | Starting theme — see `ttkb list themes` |
+| `--theme` | `cosmo` | Starting theme — see `bootstack list themes` |
 | `--container` | `grid` | `grid` or `pack` (the geometry manager used by the generated view; ignored for `appshell`) |
 | `--simple` | off | Skip the `assets/` directory and `README.md` |
 | `--dir` | `./<name_lowercased>` | Target directory |
@@ -71,53 +71,53 @@ my_app/                               my_app/
 │       ├── __init__.py               │       ├── __init__.py
 │       └── main_view.py              │       ├── home_page.py
 ├── assets/                           │       └── settings_page.py
-├── ttkb.toml                         ├── assets/
-└── README.md                         ├── ttkb.toml
+├── bootstack.toml                         ├── assets/
+└── README.md                         ├── bootstack.toml
                                       └── README.md
 ```
 
-The chosen template is recorded in `ttkb.toml` as `[app].template` so other
-commands (like `ttkb add page` and `ttkb add view`) know which scaffolds are
+The chosen template is recorded in `bootstack.toml` as `[app].template` so other
+commands (like `bootstack add page` and `bootstack add view`) know which scaffolds are
 appropriate.
 
 ---
 
-### `ttkb run`
+### `bootstack run`
 
-Run the application defined in `ttkb.toml`, or a specific Python file.
+Run the application defined in `bootstack.toml`, or a specific Python file.
 
 ```
-ttkb run [path]
+bootstack run [path]
 ```
 
 - With no argument, walks up from the current directory until it finds a
-  `ttkb.toml`, then runs `[app].entry`.
-- With a directory, looks for `ttkb.toml` there.
+  `bootstack.toml`, then runs `[app].entry`.
+- With a directory, looks for `bootstack.toml` there.
 - With a `.py` file, runs that file directly.
 
-`ttkb run` adds `<project>/src` to `PYTHONPATH` and exports `TTKB_THEME` from
+`bootstack run` adds `<project>/src` to `PYTHONPATH` and exports `BOOTSTACK_THEME` from
 `[settings].theme` so generated `main.py` files can pick the configured theme
 without hard-coding it.
 
 ---
 
-### `ttkb add`
+### `bootstack add`
 
 Scaffold components inside an existing project.
 
 ```
-ttkb add page <ClassName>      [--scrollable] [--dir <path>]   # appshell only
-ttkb add view <ClassName>      [--container grid|pack] [--dir <path>]   # basic only
-ttkb add dialog <ClassName>    [--dir <path>]
-ttkb add theme <name>          [--mode light|dark]
-ttkb add i18n                  [--languages <lang> ...]
+bootstack add page <ClassName>      [--scrollable] [--dir <path>]   # appshell only
+bootstack add view <ClassName>      [--container grid|pack] [--dir <path>]   # basic only
+bootstack add dialog <ClassName>    [--dir <path>]
+bootstack add theme <name>          [--mode light|dark]
+bootstack add i18n                  [--languages <lang> ...]
 ```
 
 `add page` and `add view` are gated by `[app].template` — running the wrong
 one in the wrong project type prints a clear error directing you to the
 other.
 
-#### `ttkb add page`
+#### `bootstack add page`
 
 Scaffolds a class-based page module under `src/<module>/pages/`. The command
 **only creates the file** — it does *not* modify `main.py`. After scaffolding
@@ -133,7 +133,7 @@ DashboardPage(page)
 `--scrollable` adjusts the printed hint so the suggested `add_page()` call
 includes `scrollable=True`.
 
-#### `ttkb add theme`
+#### `bootstack add theme`
 
 Writes `themes/<name>.json` using the v2 theme schema (`mode`, `shades`,
 `semantic`, top-level `foreground`/`background`). To use the theme:
@@ -145,7 +145,7 @@ register_user_theme("mytheme", "themes/mytheme.json")
 app = ttk.App(theme="mytheme")
 ```
 
-#### `ttkb add i18n`
+#### `bootstack add i18n`
 
 Creates `locales/<lang>/LC_MESSAGES/messages.po` files for each language
 listed in `--languages` (defaults to `en`). Compile them with `msgfmt` before
@@ -153,34 +153,34 @@ shipping.
 
 ---
 
-### `ttkb list`
+### `bootstack list`
 
 Discover resources known to the framework.
 
 ```
-ttkb list themes
+bootstack list themes
 ```
 
 Prints a table of every theme bundled with `bootstack` (canonical and
 legacy), including its display name and mode. Useful for picking a value to
-pass to `ttkb start --theme` or to set in `[settings].theme`.
+pass to `bootstack start --theme` or to set in `[settings].theme`.
 
 ---
 
-### `ttkb promote --pyinstaller`
+### `bootstack promote --pyinstaller`
 
 Add packaging support to an existing project.
 
 ```
-ttkb promote --pyinstaller [--force]
+bootstack promote --pyinstaller [--force]
 ```
 
 This step:
 
-1. Adds a `[build]` section to `ttkb.toml` (backend, windowed/console mode,
+1. Adds a `[build]` section to `bootstack.toml` (backend, windowed/console mode,
    onefile vs. onedir, icon path, asset-include patterns).
 2. Generates `build/pyinstaller/app.spec` — a PyInstaller spec file that
-   reads `ttkb.toml` at build time.
+   reads `bootstack.toml` at build time.
 
 If PyInstaller isn't installed in the current interpreter, `promote` prints a
 note pointing at `pip install pyinstaller`. The promote step itself only
@@ -190,12 +190,12 @@ writes config — it doesn't need PyInstaller to run.
 
 ---
 
-### `ttkb build`
+### `bootstack build`
 
 Build the application.
 
 ```
-ttkb build [--clean]
+bootstack build [--clean]
 ```
 
 Runs PyInstaller against the spec generated by `promote`. `--clean` wipes
@@ -203,30 +203,30 @@ Runs PyInstaller against the spec generated by `promote`. `--clean` wipes
 
 The default Windows launch icon (visible in Explorer and on the taskbar) is
 the bundled `bootstack` icon. To override it, set `[build.icon].path` in
-`ttkb.toml` to a `.ico` (Windows) or `.icns` (macOS) file.
+`bootstack.toml` to a `.ico` (Windows) or `.icns` (macOS) file.
 
 !!! note "macOS distribution"
-    `ttkb build` produces a `.app` bundle on macOS, but it is **not yet
+    `bootstack build` produces a `.app` bundle on macOS, but it is **not yet
     distributable** — modern macOS requires code-signing, notarization, and
-    stapling, none of which `ttkb build` performs. See
+    stapling, none of which `bootstack build` performs. See
     [Build & Ship → Shipping to macOS](build-and-ship.md#shipping-to-macos)
     for the recommended Briefcase handoff.
 
 ---
 
-### `ttkb doctor`
+### `bootstack doctor`
 
 Diagnose project and environment health.
 
 ```
-ttkb doctor
+bootstack doctor
 ```
 
 Reports:
 
 - Python and Tcl/Tk versions
 - bootstack version
-- Whether `ttkb.toml` exists and parses
+- Whether `bootstack.toml` exists and parses
 - Whether the entry point file exists
 - Whether the directory layout matches `[app].template` (`pages/` for
   appshell, `views/` for basic)
@@ -238,12 +238,12 @@ installed) never fail the command.
 
 ---
 
-### `ttkb demo`
+### `bootstack demo`
 
 Launch the AppShell-based widget gallery.
 
 ```
-ttkb demo
+bootstack demo
 ```
 
 Useful for browsing every widget category, trying themes, and seeing example
@@ -251,10 +251,10 @@ spec values for buttons, forms, tables, and dialogs.
 
 ---
 
-## Configuration: `ttkb.toml`
+## Configuration: `bootstack.toml`
 
-When present, the CLI reads configuration from `ttkb.toml` at the project
-root. The default layout produced by `ttkb start`:
+When present, the CLI reads configuration from `bootstack.toml` at the project
+root. The default layout produced by `bootstack start`:
 
 ```toml
 [app]
@@ -271,7 +271,7 @@ appearance = "system"        # system | light | dark
 [layout]
 default_container = "grid"   # grid | pack
 
-# Added by `ttkb promote --pyinstaller`:
+# Added by `bootstack promote --pyinstaller`:
 [build]
 backend = "pyinstaller"
 windowed = true
@@ -281,10 +281,10 @@ onefile = false
 # path = "assets/icon.ico"
 
 [build.datas]
-include = ["assets/**", "locales/**", "themes/**", "ttkb.toml"]
+include = ["assets/**", "locales/**", "themes/**", "bootstack.toml"]
 ```
 
-If no `ttkb.toml` exists, the CLI uses defaults and your application code
+If no `bootstack.toml` exists, the CLI uses defaults and your application code
 remains authoritative at runtime via `AppSettings`.
 
 !!! link "See [Guides → App Settings](../guides/app-settings.md) for the runtime configuration model."

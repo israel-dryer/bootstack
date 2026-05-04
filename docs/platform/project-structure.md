@@ -83,14 +83,14 @@ Keep `main()` small and explicit.
 
 ```python
 # src/my_app/app.py
-import bootstack as ttk
+import bootstack as bs
 
 from .settings import settings
 from .views.main_window import MainWindow
 
 
 def main() -> None:
-    app = ttk.App(title=settings.title, theme=settings.theme)
+    app = bs.App(title=settings.title, theme=settings.theme)
     MainWindow(app).pack(fill="both", expand=True)
     app.mainloop()
 ```
@@ -129,9 +129,9 @@ Signals represent shared state and keep UI reactive without tangled callbacks.
 
 ```python
 # src/my_app/state.py
-import bootstack as ttk
+import bootstack as bs
 
-status = ttk.Signal("Ready")
+status = bs.Signal("Ready")
 ```
 
 !!! link "See [Guides → Reactivity](../guides/reactivity.md) and [Capabilities → Signals](../capabilities/signals/signals.md)."
@@ -144,14 +144,14 @@ Views assemble widgets into real screens. Think “page” or “window content�
 
 ```python
 # src/my_app/views/main_window.py
-import bootstack as ttk
+import bootstack as bs
 
-class MainWindow(ttk.Frame):
+class MainWindow(bs.Frame):
     def __init__(self, master):
         super().__init__(master, padding=20)
 
-        ttk.Label(self, text="Welcome").pack(anchor="w")
-        ttk.Button(self, text="Continue", accent="primary").pack(pady=(12, 0))
+        bs.Label(self, text="Welcome").pack(anchor="w")
+        bs.Button(self, text="Continue", accent="primary").pack(pady=(12, 0))
 ```
 
 !!! link "See [Guides → Layout](../guides/layout.md) for recommended containers and structure."

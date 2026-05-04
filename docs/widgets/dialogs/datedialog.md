@@ -22,11 +22,11 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dialog = ttk.DateDialog(
+dialog = bs.DateDialog(
     title="Choose a date",
     initial_date="2025-12-31",
 )
@@ -70,7 +70,7 @@ Use `DateDialog` when:
 #### `title`
 
 ```python
-ttk.DateDialog(title="Due date")
+bs.DateDialog(title="Due date")
 ```
 
 #### `initial_date`
@@ -78,7 +78,7 @@ ttk.DateDialog(title="Due date")
 Sets the date shown/selected when the dialog opens.
 
 ```python
-ttk.DateDialog(initial_date="2025-01-01")
+bs.DateDialog(initial_date="2025-01-01")
 ```
 
 #### `min_date` / `max_date` (if supported)
@@ -86,7 +86,7 @@ ttk.DateDialog(initial_date="2025-01-01")
 Constrain selectable dates.
 
 ```python
-ttk.DateDialog(min_date="2025-01-01", max_date="2025-12-31")
+bs.DateDialog(min_date="2025-01-01", max_date="2025-12-31")
 ```
 
 #### Locale / formatting (if supported)

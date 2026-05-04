@@ -13,11 +13,11 @@ Use Toast for messages like "Saved", "Copied", or "Connected". Toasts should dis
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Toast(
+bs.Toast(
     app,
     title="Saved",
     message="Your changes were saved successfully.",

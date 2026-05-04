@@ -19,11 +19,11 @@ using a calendar picker when needed. If you are building forms or dialogs, `Date
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-due = ttk.DateEntry(
+due = bs.DateEntry(
     app,
     label="Due date",
     value="2025-12-31",
@@ -61,10 +61,10 @@ Consider a different control when:
 ### `accent`
 
 ```python
-ttk.DateEntry(app, label="Due date")  # primary (default)
-ttk.DateEntry(app, label="Due date", accent="secondary")
-ttk.DateEntry(app, label="Due date", accent="success")
-ttk.DateEntry(app, label="Due date", accent="warning")
+bs.DateEntry(app, label="Due date")  # primary (default)
+bs.DateEntry(app, label="Due date", accent="secondary")
+bs.DateEntry(app, label="Due date", accent="success")
+bs.DateEntry(app, label="Due date", accent="warning")
 ```
 
 !!! link "Design System"
@@ -99,8 +99,8 @@ raw = due.get()
 Commit-time formatting shared with other field controls:
 
 ```python
-ttk.DateEntry(app, label="Short Date", value="March 14, 1981", value_format="shortDate").pack()
-ttk.DateEntry(app, label="ISO Format", value="2025-01-15", value_format="yyyy-MM-dd").pack()
+bs.DateEntry(app, label="Short Date", value="March 14, 1981", value_format="shortDate").pack()
+bs.DateEntry(app, label="ISO Format", value="2025-01-15", value_format="yyyy-MM-dd").pack()
 ```
 
 <figure markdown>
@@ -113,8 +113,8 @@ See [Guides → Formatting](../../guides/formatting.md) for all date presets and
 #### Add-ons
 
 ```python
-d = ttk.DateEntry(app, label="Birthday")
-d.insert_addon(ttk.Label, position="before", icon="cake-fill")
+d = bs.DateEntry(app, label="Birthday")
+d.insert_addon(bs.Label, position="before", icon="cake-fill")
 ```
 
 <figure markdown>
@@ -153,7 +153,7 @@ Common validation patterns:
 - within a window (e.g., next 90 days)
 
 ```python
-d = ttk.DateEntry(app, label="Date", required=True)
+d = bs.DateEntry(app, label="Date", required=True)
 d.add_validation_rule("required", message="A date is required")
 ```
 

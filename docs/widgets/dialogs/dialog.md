@@ -15,11 +15,11 @@ Use dialogs when you need users to **make a decision** or **provide input** befo
 Most dialogs follow a pattern like this:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dialog = ttk.Dialog(
+dialog = bs.Dialog(
     title="Dialog title",
     message="Explain what the user needs to do.",
 )

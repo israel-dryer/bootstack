@@ -14,22 +14,22 @@ Examples shown in this demo:
 - Size token shortcuts
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_demo_window():
     """Create a demo window showing various font modifier examples."""
 
-    root = ttk.Window(title="Font Modifier Syntax Demo", theme="cosmo")
+    root = bs.Window(title="Font Modifier Syntax Demo", theme="cosmo")
     root.geometry("800x900")
 
     # Main container
-    container = ttk.Frame(root, padding=20)
+    container = bs.Frame(root, padding=20)
     container.pack(fill=BOTH, expand=YES)
 
     # Title
-    title = ttk.Label(
+    title = bs.Label(
         container,
         text="Font Modifier Syntax Examples",
         font="heading-xl[bold]",
@@ -38,7 +38,7 @@ def create_demo_window():
     title.pack(pady=(0, 20))
 
     # Description
-    desc = ttk.Label(
+    desc = bs.Label(
         container,
         text="The font modifier syntax allows you to customize fonts inline using bracket notation:",
         font="body",
@@ -46,7 +46,7 @@ def create_demo_window():
     )
     desc.pack(pady=(0, 10))
 
-    syntax = ttk.Label(
+    syntax = bs.Label(
         container,
         text="Syntax: family[size][weight][style]",
         font="code[bold]",
@@ -55,7 +55,7 @@ def create_demo_window():
     syntax.pack(pady=(0, 20))
 
     # Examples Frame
-    examples_frame = ttk.Frame(container)
+    examples_frame = bs.Frame(container)
     examples_frame.pack(fill=BOTH, expand=YES)
 
     # Create a list of examples
@@ -81,11 +81,11 @@ def create_demo_window():
     # Create labels for each example
     for i, (font_spec, description) in enumerate(examples):
         # Create a frame for each example
-        example_frame = ttk.Frame(examples_frame)
+        example_frame = bs.Frame(examples_frame)
         example_frame.pack(fill=X, pady=5)
 
         # Font spec label (left side)
-        spec_label = ttk.Label(
+        spec_label = bs.Label(
             example_frame,
             text=f'font="{font_spec}"',
             font="code",
@@ -95,7 +95,7 @@ def create_demo_window():
         spec_label.pack(side=LEFT, padx=(0, 10))
 
         # Demo label (right side)
-        demo_label = ttk.Label(
+        demo_label = bs.Label(
             example_frame,
             text=description,
             font=font_spec
@@ -103,11 +103,11 @@ def create_demo_window():
         demo_label.pack(side=LEFT, fill=X, expand=YES)
 
     # Separator
-    sep = ttk.Separator(container, orient=HORIZONTAL)
+    sep = bs.Separator(container, orient=HORIZONTAL)
     sep.pack(fill=X, pady=20)
 
     # Interactive section
-    interactive_title = ttk.Label(
+    interactive_title = bs.Label(
         container,
         text="Interactive Font Test",
         font="heading-md[bold]",
@@ -116,17 +116,17 @@ def create_demo_window():
     interactive_title.pack(pady=(0, 10))
 
     # Input frame
-    input_frame = ttk.Frame(container)
+    input_frame = bs.Frame(container)
     input_frame.pack(fill=X, pady=10)
 
-    ttk.Label(input_frame, text="Enter font spec:", font="body").pack(side=LEFT, padx=(0, 10))
+    bs.Label(input_frame, text="Enter font spec:", font="body").pack(side=LEFT, padx=(0, 10))
 
-    font_var = ttk.StringVar(value="helvetica[16][bold]")
-    font_entry = ttk.Entry(input_frame, textvariable=font_var, width=30)
+    font_var = bs.StringVar(value="helvetica[16][bold]")
+    font_entry = bs.Entry(input_frame, textvariable=font_var, width=30)
     font_entry.pack(side=LEFT, padx=(0, 10))
 
     # Preview label
-    preview_label = ttk.Label(
+    preview_label = bs.Label(
         container,
         text="This is a preview of your font specification",
         font=font_var.get(),
@@ -143,7 +143,7 @@ def create_demo_window():
         except Exception as e:
             status_label.configure(text=f"✗ Error: {str(e)}", accent="danger")
 
-    update_btn = ttk.Button(
+    update_btn = bs.Button(
         input_frame,
         text="Apply Font",
         command=update_preview,
@@ -152,11 +152,11 @@ def create_demo_window():
     update_btn.pack(side=LEFT)
 
     # Status label
-    status_label = ttk.Label(container, text="", font="caption")
+    status_label = bs.Label(container, text="", font="caption")
     status_label.pack(pady=5)
 
     # Additional info
-    info_frame = ttk.Frame(container)
+    info_frame = bs.Frame(container)
     info_frame.pack(fill=X, pady=20)
 
     info_text = """
@@ -167,7 +167,7 @@ Style: italic, roman
 Modifiers: underline, overstrike
     """.strip()
 
-    info_label = ttk.Label(
+    info_label = bs.Label(
         info_frame,
         text=info_text,
         font="caption",

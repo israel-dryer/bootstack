@@ -24,11 +24,11 @@ Use `ToggleGroup` for segmented controls, mode switches, toolbar filters, and co
 ## Basic usage
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-group = ttk.ToggleGroup(app, mode="single", value="grid")
+group = bs.ToggleGroup(app, mode="single", value="grid")
 group.add("Grid", value="grid")
 group.add("List", value="list")
 group.add("Cards", value="cards")
@@ -62,7 +62,7 @@ Use `ToggleGroup` when:
 Only one option can be selected at a time (radio button behavior).
 
 ```python
-group = ttk.ToggleGroup(app, mode="single", value="day")
+group = bs.ToggleGroup(app, mode="single", value="day")
 group.add("Day", value="day")
 group.add("Week", value="week")
 group.add("Month", value="month")
@@ -73,7 +73,7 @@ group.add("Month", value="month")
 Multiple options can be selected simultaneously (checkbox behavior).
 
 ```python
-group = ttk.ToggleGroup(app, mode="multi", value={"bold"})
+group = bs.ToggleGroup(app, mode="multi", value={"bold"})
 group.add("Bold", value="bold")
 group.add("Italic", value="italic")
 group.add("Underline", value="underline")
@@ -82,8 +82,8 @@ group.add("Underline", value="underline")
 ### Orientation
 
 ```python
-ttk.ToggleGroup(app, orient="horizontal")  # default
-ttk.ToggleGroup(app, orient="vertical")
+bs.ToggleGroup(app, orient="horizontal")  # default
+bs.ToggleGroup(app, orient="vertical")
 ```
 
 ---
@@ -116,13 +116,13 @@ You can control the group selection with either:
 If neither is provided, `ToggleGroup` creates an internal variable.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-view = ttk.Signal("grid")
+view = bs.Signal("grid")
 
-group = ttk.ToggleGroup(app, mode="single", signal=view)
+group = bs.ToggleGroup(app, mode="single", signal=view)
 group.add("Grid", value="grid")
 group.add("List", value="list")
 group.pack(padx=20, pady=20)
@@ -147,7 +147,7 @@ Layout orientation: `"horizontal"` (default) or `"vertical"`.
 Applies to all child buttons (defaults to `"primary"`).
 
 ```python
-group = ttk.ToggleGroup(app, accent="secondary")
+group = bs.ToggleGroup(app, accent="secondary")
 ```
 
 ### `add(text, value, key=None, **kwargs)`
@@ -193,9 +193,9 @@ Callbacks receive the new value directly (string in single mode, set in multi mo
 `ToggleGroup` forwards `accent` to its child buttons with buttongroup styling.
 
 ```python
-ttk.ToggleGroup(app, accent="primary")
-ttk.ToggleGroup(app, accent="secondary")
-ttk.ToggleGroup(app, accent="success")
+bs.ToggleGroup(app, accent="primary")
+bs.ToggleGroup(app, accent="secondary")
+bs.ToggleGroup(app, accent="success")
 ```
 
 ---

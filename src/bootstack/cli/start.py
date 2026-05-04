@@ -1,4 +1,4 @@
-"""ttkb start command - Create a new bootstack project."""
+"""bootstack start command - Create a new bootstack project."""
 
 from __future__ import annotations
 
@@ -93,13 +93,13 @@ def run_start(args: argparse.Namespace) -> None:
     print()
     print("Next steps:")
     print(f"  cd {target_dir.name}")
-    print("  ttkb run")
+    print("  bootstack run")
     print()
     if template == "appshell":
         print("To add a new page:")
-        print("  ttkb add page DashboardPage")
+        print("  bootstack add page DashboardPage")
         print()
     if not simple:
         print("To build for distribution:")
-        print("  ttkb promote --pyinstaller")
-        print("  ttkb build")
+        print("  bootstack promote --pyinstaller")
+        print("  bootstack build")

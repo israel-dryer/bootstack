@@ -13,10 +13,10 @@ Use `QueryDialog` when you need to prompt the user for a single value (text, num
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import QueryDialog
 
-app = ttk.App()
+app = bs.App()
 
 dialog = QueryDialog(
     prompt="Enter your name:",

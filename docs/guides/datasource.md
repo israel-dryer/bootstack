@@ -284,10 +284,10 @@ ds.export_to_csv("selected.csv", include_all=False)
 DataSources integrate with data-aware widgets like ListView:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack.datasource import MemoryDataSource
 
-app = ttk.App()
+app = bs.App()
 
 # Create datasource
 ds = MemoryDataSource(page_size=20)
@@ -297,7 +297,7 @@ ds.set_data([
 ])
 
 # Use with ListView
-listview = ttk.ListView(app, datasource=ds)
+listview = bs.ListView(app, datasource=ds)
 listview.pack(fill="both", expand=True)
 
 app.mainloop()

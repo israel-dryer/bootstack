@@ -9,7 +9,7 @@ This demo focuses specifically on GroupItem functionality, showing:
 
 from datetime import date
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from bootstack.dialogs import FormDialog, DialogButton
 from bootstack.widgets.composites.form import FieldItem, GroupItem
@@ -71,7 +71,7 @@ def demo_basic_groups(parent):
 
     if dialog.result:
         print("Basic groups result:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Profile Updated",
             message="Your profile has been saved successfully",
             duration=3000,
@@ -152,7 +152,7 @@ def demo_multicolumn_groups(parent):
 
     if dialog.result:
         print("Multi-column groups result:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Employee Record Updated",
             message=f"Record for {dialog.result['first_name']} {dialog.result['last_name']} saved",
             duration=3000,
@@ -248,7 +248,7 @@ def demo_nested_groups(parent):
 
     if dialog.result:
         print("Nested groups result:", dialog.result)
-        ttk.Toast(
+        bs.Toast(
             title="Project Settings Saved",
             message=f"Configuration for '{dialog.result['project_name']}' has been saved",
             duration=3000,
@@ -331,7 +331,7 @@ def demo_mixed_layout(parent):
         total = dialog.result['quantity'] * dialog.result['unit_price']
         total_with_tax = total * (1 + dialog.result['tax'] / 100)
         total_final = total_with_tax * (1 - dialog.result['discount'] / 100)
-        ttk.Toast(
+        bs.Toast(
             title="Order Submitted",
             message=f"Order {dialog.result['order_id']} total: ${total_final:.2f}",
             duration=3000,
@@ -340,10 +340,10 @@ def demo_mixed_layout(parent):
 
 
 def main():
-    app = ttk.Window(title="Grouped Form Demo", theme="flatly", size=(650, 500))
+    app = bs.Window(title="Grouped Form Demo", theme="flatly", size=(650, 500))
 
     # Title
-    title = ttk.Label(
+    title = bs.Label(
         app,
         text="Grouped Form Examples",
         font=("TkDefaultFont", 18, "bold"),
@@ -351,7 +351,7 @@ def main():
     title.pack(pady=20)
 
     # Description
-    desc = ttk.Label(
+    desc = bs.Label(
         app,
         text="Explore different GroupItem layouts and configurations",
         font=("TkDefaultFont", 11),
@@ -360,10 +360,10 @@ def main():
     desc.pack(pady=(0, 10))
 
     # Separator
-    ttk.Separator(app, orient=HORIZONTAL).pack(fill=X, padx=40, pady=15)
+    bs.Separator(app, orient=HORIZONTAL).pack(fill=X, padx=40, pady=15)
 
     # Button container with grid layout
-    button_frame = ttk.Frame(app)
+    button_frame = bs.Frame(app)
     button_frame.pack(expand=True, pady=20)
 
     # Demo buttons in a grid
@@ -379,10 +379,10 @@ def main():
     ]
 
     for i, (text, command, style, tooltip) in enumerate(demos):
-        btn_container = ttk.Frame(button_frame)
+        btn_container = bs.Frame(button_frame)
         btn_container.pack(pady=6, fill=X, padx=30)
 
-        btn = ttk.Button(
+        btn = bs.Button(
             btn_container,
             text=text,
             command=lambda cmd=command: cmd(app),
@@ -391,7 +391,7 @@ def main():
         )
         btn.pack(side=LEFT)
 
-        desc_label = ttk.Label(
+        desc_label = bs.Label(
             btn_container,
             text=f"  —  {tooltip}",
             font=("TkDefaultFont", 9),
@@ -400,10 +400,10 @@ def main():
         desc_label.pack(side=LEFT, padx=(10, 0))
 
     # Separator
-    ttk.Separator(app, orient=HORIZONTAL).pack(fill=X, padx=40, pady=20)
+    bs.Separator(app, orient=HORIZONTAL).pack(fill=X, padx=40, pady=20)
 
     # Exit button
-    ttk.Button(
+    bs.Button(
         app,
         text="Exit Demo",
         command=app.destroy,

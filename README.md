@@ -46,14 +46,14 @@ pip install bootstack
 ## Quick Start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(title="Hello bootstack", theme="bootstrap-light")
+app = bs.App(title="Hello bootstack", theme="bootstrap-light")
 
-ttk.Label(app, text="Hello from bootstack!").pack(pady=10)
-ttk.Button(app, text="Primary", accent="primary").pack(pady=5)
-ttk.Button(app, text="Success", accent="success").pack(pady=5)
-ttk.Button(app, text="Danger Outline", accent="danger", variant="outline").pack(pady=5)
+bs.Label(app, text="Hello from bootstack!").pack(pady=10)
+bs.Button(app, text="Primary", accent="primary").pack(pady=5)
+bs.Button(app, text="Success", accent="success").pack(pady=5)
+bs.Button(app, text="Danger Outline", accent="danger", variant="outline").pack(pady=5)
 
 app.mainloop()
 ```
@@ -61,15 +61,15 @@ app.mainloop()
 For navigation-based apps, use `AppShell` — it gives you a toolbar, sidebar, and page stack in one call:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-shell = ttk.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", size=(1000, 650))
 
 home = shell.add_page("home", text="Home", icon="house")
-ttk.Label(home, text="Welcome!").pack(padx=20, pady=20)
+bs.Label(home, text="Welcome!").pack(padx=20, pady=20)
 
 docs = shell.add_page("docs", text="Documents", icon="file-earmark-text")
-ttk.Label(docs, text="Your documents.").pack(padx=20, pady=20)
+bs.Label(docs, text="Your documents.").pack(padx=20, pady=20)
 
 shell.mainloop()
 ```
@@ -81,14 +81,14 @@ shell.mainloop()
 Build layouts with purpose-built containers instead of scattered geometry calls:
 
 ```python
-form = ttk.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
+form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
 form.pack(fill="both", expand=True)
 
-form.add(ttk.Label(form, text="Name"))
-form.add(ttk.Entry(form))
-form.add(ttk.Label(form, text="Email"))
-form.add(ttk.Entry(form))
-form.add(ttk.Button(form, text="Submit", accent="primary"), columnspan=2)
+form.add(bs.Label(form, text="Name"))
+form.add(bs.Entry(form))
+form.add(bs.Label(form, text="Email"))
+form.add(bs.Entry(form))
+form.add(bs.Button(form, text="Submit", accent="primary"), columnspan=2)
 ```
 
 ### Styling is semantic
@@ -96,10 +96,10 @@ form.add(ttk.Button(form, text="Submit", accent="primary"), columnspan=2)
 Widgets use semantic tokens — `accent` for color intent, `variant` for visual weight — never hard-coded colors. Applications stay consistent across themes and light/dark modes:
 
 ```python
-ttk.Button(app, text="Save", accent="primary")                       # solid (default)
-ttk.Button(app, text="Cancel", accent="secondary", variant="outline")
-ttk.Button(app, text="Learn more", accent="info", variant="link")
-ttk.Label(app, text="Heading", font="heading-lg")
+bs.Button(app, text="Save", accent="primary")                       # solid (default)
+bs.Button(app, text="Cancel", accent="secondary", variant="outline")
+bs.Button(app, text="Learn more", accent="info", variant="link")
+bs.Label(app, text="Heading", font="heading-lg")
 ```
 
 ### Reactivity is optional and explicit
@@ -107,12 +107,12 @@ ttk.Label(app, text="Heading", font="heading-lg")
 Use plain callbacks when that's enough. Reach for signals when state needs to flow between widgets:
 
 ```python
-counter = ttk.Signal(0)
+counter = bs.Signal(0)
 
-label = ttk.Label(app)
+label = bs.Label(app)
 counter.subscribe(lambda v: label.configure(text=f"Count: {v}"))
 
-ttk.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
+bs.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 ```
 
 ## Features

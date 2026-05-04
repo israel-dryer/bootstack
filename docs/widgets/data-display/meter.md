@@ -13,11 +13,11 @@ It's ideal for dashboards, summaries, and status panels where visual emphasis ma
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-meter = ttk.Meter(app, amountused=65, amounttotal=100)
+meter = bs.Meter(app, amountused=65, amounttotal=100)
 meter.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -52,9 +52,9 @@ Use Meter when:
 Meters are highly visual and often color-coded:
 
 ```python
-ttk.Meter(app, accent="success")
-ttk.Meter(app, accent="danger")
-ttk.Meter(app, accent="info")
+bs.Meter(app, accent="success")
+bs.Meter(app, accent="danger")
+bs.Meter(app, accent="info")
 ```
 
 !!! link "Design System"
@@ -73,7 +73,7 @@ Meters display:
 - optional text/label overlays
 
 ```python
-meter = ttk.Meter(
+meter = bs.Meter(
     app,
     amountused=75,
     amounttotal=100,
@@ -97,7 +97,7 @@ meter.pack()
 ### With subtext
 
 ```python
-ttk.Meter(
+bs.Meter(
     app,
     amountused=42,
     amounttotal=100,
@@ -122,8 +122,8 @@ ttk.Meter(
 Meter can be updated dynamically by binding to signals:
 
 ```python
-usage = ttk.Signal(50)
-meter = ttk.Meter(app, amountused=usage, amounttotal=100)
+usage = bs.Signal(50)
+meter = bs.Meter(app, amountused=usage, amounttotal=100)
 
 # Update value
 usage.set(75)  # Meter updates automatically

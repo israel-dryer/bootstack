@@ -1,4 +1,4 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import Entry, Frame, Label
 from bootstack.constants import *
 from tkinter import Event
@@ -64,7 +64,7 @@ class InputGroup(Frame):
 
 if __name__ == '__main__':
 
-    app = ttk.Window()
+    app = bs.Window()
 
     g = InputGroup(app, labeltext='First Name', activemessage='Enter your first name')
     g.pack(padx=10, pady=10)

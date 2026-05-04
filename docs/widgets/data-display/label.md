@@ -13,11 +13,11 @@ It's a fundamental building block used for headings, captions, instructions, and
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Label(app, text="Hello world").pack(padx=20, pady=20)
+bs.Label(app, text="Hello world").pack(padx=20, pady=20)
 
 app.mainloop()
 ```
@@ -51,9 +51,9 @@ Use Label when:
 Labels participate fully in bootstack theming:
 
 ```python
-ttk.Label(app, text="Info", accent="info")
-ttk.Label(app, text="Muted", accent="secondary")
-ttk.Label(app, text="Warning", accent="warning")
+bs.Label(app, text="Info", accent="info")
+bs.Label(app, text="Muted", accent="secondary")
+bs.Label(app, text="Warning", accent="warning")
 ```
 
 !!! link "Design System"
@@ -80,15 +80,15 @@ ttk.Label(app, text="Warning", accent="warning")
 ### Text alignment
 
 ```python
-ttk.Label(app, text="Left aligned", anchor="w").pack(fill="x")
-ttk.Label(app, text="Centered", anchor="center").pack(fill="x")
-ttk.Label(app, text="Right aligned", anchor="e").pack(fill="x")
+bs.Label(app, text="Left aligned", anchor="w").pack(fill="x")
+bs.Label(app, text="Centered", anchor="center").pack(fill="x")
+bs.Label(app, text="Right aligned", anchor="e").pack(fill="x")
 ```
 
 ### Image with text
 
 ```python
-ttk.Label(app, text="Status", image=icon, compound="left").pack()
+bs.Label(app, text="Status", image=icon, compound="left").pack()
 ```
 
 ---
@@ -104,7 +104,7 @@ Label is a static display widget. It does not respond to user interaction by def
 Label supports localization through the `localize` parameter:
 
 ```python
-ttk.Label(app, text="greeting.hello", localize=True)
+bs.Label(app, text="greeting.hello", localize=True)
 ```
 
 !!! link "Localization"
@@ -117,8 +117,8 @@ ttk.Label(app, text="greeting.hello", localize=True)
 Label can be updated dynamically by binding to signals:
 
 ```python
-message = ttk.Signal("Initial text")
-label = ttk.Label(app, text=message)
+message = bs.Signal("Initial text")
+label = bs.Label(app, text=message)
 message.set("Updated text")  # Label updates automatically
 ```
 

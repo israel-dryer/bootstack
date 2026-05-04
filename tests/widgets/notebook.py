@@ -1,25 +1,25 @@
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.Window()
+app = bs.Window()
 
 colors = ['default', 'primary', 'secondary', 'success', 'info', 'warning', 'danger']
 
-nb = ttk.Notebook(app)
+nb = bs.Notebook(app)
 nb.pack(padx=20, pady=20)
 
 for c in colors:
-    nb.insert('end', ttk.Frame(nb, width=100, height=100), text=c)
+    nb.insert('end', bs.Frame(nb, width=100, height=100), text=c)
 
-nb = ttk.Notebook(app, bootstyle="success-underline")
+nb = bs.Notebook(app, bootstyle="success-underline")
 nb.pack(padx=20, pady=20)
 
 for c in colors:
-    nb.insert('end', ttk.Frame(nb, width=100, height=100), text=c)
+    nb.insert('end', bs.Frame(nb, width=100, height=100), text=c)
 
-nb = ttk.Notebook(app, bootstyle="danger-underline")
+nb = bs.Notebook(app, bootstyle="danger-underline")
 nb.pack(padx=20, pady=20)
 
 for c in colors:
-    nb.insert('end', ttk.Frame(nb, width=100, height=100), text=c)
+    nb.insert('end', bs.Frame(nb, width=100, height=100), text=c)
 
 app.mainloop()

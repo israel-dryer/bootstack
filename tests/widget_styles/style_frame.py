@@ -1,28 +1,28 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_frame_test():
-    frame = ttk.PackFrame(gap=4, padding=4)
+    frame = bs.PackFrame(gap=4, padding=4)
 
     # title
-    title = ttk.Label(frame, text='Frame', anchor=CENTER)
+    title = bs.Label(frame, text='Frame', anchor=CENTER)
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(fill=X)
+    bs.Separator(frame).pack(fill=X)
 
     # color
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        frm = ttk.Frame(frame, accent=color, width=150, height=100, padding=2).pack()
+        frm = bs.Frame(frame, accent=color, width=150, height=100, padding=2).pack()
         frm.pack_propagate(False)
-        ttk.Label(master=frm, text=color).pack(fill=BOTH)
+        bs.Label(master=frm, text=color).pack(fill=BOTH)
 
     return frame
 
 
 if __name__ == '__main__':
-    root = ttk.Window()
+    root = bs.Window()
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
 
     test1 = create_frame_test()
     test1.pack(side=LEFT, fill=BOTH)

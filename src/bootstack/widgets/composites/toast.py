@@ -210,7 +210,7 @@ class Toast:
         self._toplevel = None
 
     def _build_toast(self) -> None:
-        import bootstack as ttk
+        import bootstack as bs
         # ----- Configuration Options -------
 
         has_title = self._title is not None
@@ -236,18 +236,18 @@ class Toast:
 
         # ------ Toast Layout ------
 
-        container = ttk.Frame(top, padding=4, accent=self._accent)
+        container = bs.Frame(top, padding=4, accent=self._accent)
         container.pack(fill='both', expand=True)
 
-        header = ttk.Frame(container, padding=(8, 0, 0, 0))
+        header = bs.Frame(container, padding=(8, 0, 0, 0))
         header.pack(side='top', fill='x')
 
         # icon
         if self._icon:
-            ttk.Label(header, icon=self._icon).pack(side='left', padx=(0, 8))
+            bs.Label(header, icon=self._icon).pack(side='left', padx=(0, 8))
 
         # title
-        ttk.Label(
+        bs.Label(
             header,
             text=self._title if has_title else self._message,
             font=resolved_title_font,
@@ -257,7 +257,7 @@ class Toast:
 
         # close
         if self._show_close_button:
-            ttk.Button(
+            bs.Button(
                 header,
                 icon="x-lg",
                 accent=muted_foreground,
@@ -268,7 +268,7 @@ class Toast:
 
         # memo
         if self._memo:
-            ttk.Label(
+            bs.Label(
                 header,
                 text=self._memo,
                 font="caption",
@@ -277,8 +277,8 @@ class Toast:
 
         # message
         if has_title_and_message:
-            ttk.Separator(container).pack(side='top', fill='x')
-            ttk.Label(
+            bs.Separator(container).pack(side='top', fill='x')
+            bs.Label(
                 container,
                 text=self._message,
                 wraplength=400,
@@ -296,14 +296,14 @@ class Toast:
 
                 return inner
 
-            ttk.Separator(container).pack(side='top', fill='x', pady=4)
-            button_frame = ttk.Frame(container)
+            bs.Separator(container).pack(side='top', fill='x', pady=4)
+            button_frame = bs.Frame(container)
             button_frame.pack(side='top', fill='x')
 
             for i, button_options in enumerate(self._buttons):
                 func = button_options.get('command', None)
                 button_opts = {k: v for k, v in button_options.items() if k != 'command'}
-                ttk.Button(
+                bs.Button(
                     button_frame,
                     **button_opts,
                     command=execute_command(button_options, func)

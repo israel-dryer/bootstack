@@ -31,11 +31,11 @@ bootstack exposes `Canvas` as a first-class widget so you can build high-perform
 Draw a few shapes:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-c = ttk.Canvas(app, width=520, height=260, background="white")
+c = bs.Canvas(app, width=520, height=260, background="white")
 c.pack(fill="both", expand=True, padx=20, pady=20)
 
 c.create_rectangle(20, 20, 220, 120, fill="#0d6efd", outline="")
@@ -78,7 +78,7 @@ Canvas has a large option surface. These are the ones you'll use most.
 - `confine` - constrain view to `scrollregion` when scrolling
 
 ```python
-c = ttk.Canvas(app, width=600, height=400, scrollregion=(0, 0, 2000, 1200))
+c = bs.Canvas(app, width=600, height=400, scrollregion=(0, 0, 2000, 1200))
 ```
 
 !!! note "Resetting scrollregion"
@@ -193,20 +193,20 @@ def zoom(factor: float, origin=(0, 0)):
 Canvas uses `xscrollcommand`/`yscrollcommand` and `xview`/`yview` like Text.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-frame = ttk.Frame(app)
+frame = bs.Frame(app)
 frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-c = ttk.Canvas(frame, scrollregion=(0, 0, 2000, 1200))
+c = bs.Canvas(frame, scrollregion=(0, 0, 2000, 1200))
 c.grid(row=0, column=0, sticky="nsew")
 
-ysb = ttk.Scrollbar(frame, orient="vertical", command=c.yview)
+ysb = bs.Scrollbar(frame, orient="vertical", command=c.yview)
 ysb.grid(row=0, column=1, sticky="ns")
 
-xsb = ttk.Scrollbar(frame, orient="horizontal", command=c.xview)
+xsb = bs.Scrollbar(frame, orient="horizontal", command=c.xview)
 xsb.grid(row=1, column=0, sticky="ew")
 
 c.configure(yscrollcommand=ysb.set, xscrollcommand=xsb.set)

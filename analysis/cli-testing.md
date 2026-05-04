@@ -65,7 +65,7 @@ python -m build --wheel
 mkdir D:/ttkb-test && cd D:/ttkb-test
 python -m venv .venv
 source .venv/Scripts/activate
-pip install D:/Development/bootstack/dist/bootstack-2.0.0a1-py3-none-any.whl
+pip install D:/Development/bootstack/dist/bootstack-0.1.0-py3-none-any.whl
 
 # Test
 ttkb start MyApp
@@ -99,7 +99,7 @@ twine upload --repository testpypi dist/*
 mkdir D:/ttkb-test && cd D:/ttkb-test
 python -m venv .venv
 source .venv/Scripts/activate
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ bootstack==2.0.0a1
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ bootstack==0.1.0
 ```
 
 ### When to use this

@@ -13,12 +13,12 @@ It's designed for short, scannable values like **counts**, **statuses**, and **t
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Badge(app, text="New").pack(padx=20, pady=10)
-ttk.Badge(app, text="3", accent="primary").pack(padx=20, pady=10)
+bs.Badge(app, text="New").pack(padx=20, pady=10)
+bs.Badge(app, text="3", accent="primary").pack(padx=20, pady=10)
 
 app.mainloop()
 ```
@@ -52,10 +52,10 @@ Use `Badge` when:
 `Badge` defaults to `variant="badge"` and uses the badge styling automatically.
 
 ```python
-ttk.Badge(app, text="Beta")                    # default badge styling
-ttk.Badge(app, text="Beta", accent="primary")   # primary colored badge
-ttk.Badge(app, text="Beta", accent="success")   # success colored badge
-ttk.Badge(app, text="Beta", accent="danger")    # danger colored badge
+bs.Badge(app, text="Beta")                    # default badge styling
+bs.Badge(app, text="Beta", accent="primary")   # primary colored badge
+bs.Badge(app, text="Beta", accent="success")   # success colored badge
+bs.Badge(app, text="Beta", accent="danger")    # danger colored badge
 ```
 
 !!! link "Design System"
@@ -70,8 +70,8 @@ ttk.Badge(app, text="Beta", accent="danger")    # danger colored badge
 Because `Badge` subclasses `Label`, you can use icons the same way:
 
 ```python
-ttk.Badge(app, text="Verified", icon="check").pack(pady=6)
-ttk.Badge(app, icon="bell", icon_only=True, accent="info").pack(pady=6)
+bs.Badge(app, text="Verified", icon="check").pack(pady=6)
+bs.Badge(app, icon="bell", icon_only=True, accent="info").pack(pady=6)
 ```
 
 ### Common options
@@ -103,7 +103,7 @@ Badge is a static display widget that shows text or icons. It does not respond t
 Badge inherits localization support from `Label`:
 
 ```python
-ttk.Badge(app, text="status.new", localize=True)
+bs.Badge(app, text="status.new", localize=True)
 ```
 
 !!! link "Localization"
@@ -116,8 +116,8 @@ ttk.Badge(app, text="status.new", localize=True)
 Badge can be updated dynamically by binding to signals:
 
 ```python
-count = ttk.Signal(5)
-badge = ttk.Badge(app, text=count)
+count = bs.Signal(5)
+badge = bs.Badge(app, text=count)
 count.set(10)  # Badge updates automatically
 ```
 

@@ -9,15 +9,15 @@ Demonstrates the Toolbar widget with:
 - Custom titlebar with window dragging
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.toolbar import Toolbar
 
 
 def main():
-    root = ttk.Window(theme="cosmo", title="Toolbar Demo", size=(800, 500))
+    root = bs.Window(theme="cosmo", title="Toolbar Demo", size=(800, 500))
 
     # --- Example 1: Basic toolbar ---
-    ttk.Label(root, text="Basic Toolbar", font='heading').pack(anchor='w', padx=10, pady=(10, 5))
+    bs.Label(root, text="Basic Toolbar", font='heading').pack(anchor='w', padx=10, pady=(10, 5))
 
     toolbar1 = Toolbar(root, show_border=True, density='default', padding=3)
     toolbar1.pack(fill='x', padx=8)
@@ -32,7 +32,7 @@ def main():
     toolbar1.add_button(icon='gear', command=lambda: print("Settings"))
 
     # --- Example 2: Toolbar with labels ---
-    ttk.Label(root, text="Toolbar with Labels", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
+    bs.Label(root, text="Toolbar with Labels", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
 
     toolbar2 = Toolbar(root, show_border=True)
     toolbar2.pack(fill='x', padx=10, pady=5)
@@ -46,7 +46,7 @@ def main():
     toolbar2.add_button(icon='person-circle', command=lambda: print("Profile"))
 
     # --- Example 3: Toolbar with window controls ---
-    ttk.Label(root, text="Toolbar with Window Controls", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
+    bs.Label(root, text="Toolbar with Window Controls", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
 
     toolbar3 = Toolbar(root, show_window_controls=True, show_border=True, density='compact', surface='success')
     toolbar3.pack(fill='x', padx=10, pady=5)
@@ -56,11 +56,11 @@ def main():
     toolbar3.add_spacer()
 
     # --- Example 4: Custom titlebar demo button ---
-    ttk.Label(root, text="Custom Titlebar Demo", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
+    bs.Label(root, text="Custom Titlebar Demo", font='heading').pack(anchor='w', padx=10, pady=(20, 5))
 
     def open_custom_titlebar_window():
         """Open a window with hidden native titlebar and custom toolbar."""
-        win = ttk.Toplevel(root)
+        win = bs.Toplevel(root)
         win.title("Custom Titlebar Window")
         win.geometry("500x300")
         win.overrideredirect(True)  # Hide native titlebar
@@ -78,16 +78,16 @@ def main():
         titlebar.add_spacer()
 
         # Content
-        content = ttk.Frame(win, padding=20)
+        content = bs.Frame(win, padding=20)
         content.pack(fill='both', expand=True)
 
-        ttk.Label(
+        bs.Label(
             content,
             text="This window has a custom titlebar.\n\nDrag the toolbar to move the window.\nUse the window controls to minimize, maximize, or close.",
             wraplength=400,
         ).pack(expand=True)
 
-    btn = ttk.Button(
+    btn = bs.Button(
         root,
         text="Open Custom Titlebar Window",
         command=open_custom_titlebar_window,

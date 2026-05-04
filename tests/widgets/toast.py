@@ -1,14 +1,14 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import Toast
 
-root = ttk.Window()
+root = bs.Window()
 
 toast = Toast()
 
 title = "This is a really long title and probably it should not be a title if you are going to include this much text."
 message = "This is a really long message and one that I think will cause the page to wrap hopefully if it gets too long."
 
-ttk.Button(
+bs.Button(
     root,
     text="Normal Toast",
     command=lambda: toast.show(
@@ -18,7 +18,7 @@ ttk.Button(
         memo='Just now')
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Long Title",
     command=lambda: toast.show(
@@ -27,7 +27,7 @@ ttk.Button(
         message="Hello world! This is a toast message")
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Long Message",
     command=lambda: toast.show(
@@ -36,7 +36,7 @@ ttk.Button(
         message=message)
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Message with Icon",
     command=lambda: toast.show(
@@ -44,7 +44,7 @@ ttk.Button(
         message="You have new messages")
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Message Only",
     command=lambda: toast.show(
@@ -52,7 +52,7 @@ ttk.Button(
         accent="danger")
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="With Timeout",
     command=lambda: toast.show(
@@ -60,7 +60,7 @@ ttk.Button(
         duration=2000)
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Normal With Buttons",
     command=lambda: toast.show(
@@ -75,7 +75,7 @@ ttk.Button(
         memo="Just Now")
 ).pack(side='right', padx=20, pady=20)
 
-ttk.Button(
+bs.Button(
     root,
     text="Primary Toast",
     command=lambda: toast.show(

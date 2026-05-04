@@ -18,11 +18,11 @@ ideal for volume, zoom, thresholds, and any setting where users benefit from imm
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-scale = ttk.Scale(app, from_=0, to=100, value=50)
+scale = bs.Scale(app, from_=0, to=100, value=50)
 scale.pack(fill="x", padx=20, pady=10)
 
 app.mainloop()
@@ -53,7 +53,7 @@ Use `Scale` when:
 Controls orientation.
 
 ```python
-ttk.Scale(app, from_=0, to=100, orient="horizontal")  # or "vertical"
+bs.Scale(app, from_=0, to=100, orient="horizontal")  # or "vertical"
 ```
 
 !!! note "Orientation"
@@ -82,7 +82,7 @@ If your app treats "live preview" differently from "final commit", use the appro
 Defines the numeric range.
 
 ```python
-ttk.Scale(app, from_=10, to=200)
+bs.Scale(app, from_=10, to=200)
 ```
 
 ### `value`
@@ -90,7 +90,7 @@ ttk.Scale(app, from_=10, to=200)
 Sets the initial value.
 
 ```python
-ttk.Scale(app, from_=0, to=100, value=25)
+bs.Scale(app, from_=0, to=100, value=25)
 ```
 
 ### `step`
@@ -98,7 +98,7 @@ ttk.Scale(app, from_=0, to=100, value=25)
 If supported by your implementation, constrains values to discrete increments.
 
 ```python
-ttk.Scale(app, from_=0, to=10, step=1)
+bs.Scale(app, from_=0, to=10, step=1)
 ```
 
 !!! note "Continuous vs stepped"
@@ -144,7 +144,7 @@ Validation is most useful when:
 Scales are commonly paired with a label or preview to reflect the current value.
 
 ```python
-value_label = ttk.Label(app, text="50")
+value_label = bs.Label(app, text="50")
 
 def update_value(event):
     value_label.config(text=str(int(event.data)))

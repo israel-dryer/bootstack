@@ -6,7 +6,7 @@ title: TextEntry
 
 `TextEntry` is a form-ready text input control that combines a **label**, **input field**, and **message region**.
 
-It builds on `ttk.Entry`, but adds the features you typically need in real applications: validation, messages, formatting,
+It builds on `bs.Entry`, but adds the features you typically need in real applications: validation, messages, formatting,
 localization, and consistent field events. If you're building forms or dialogs, `TextEntry` is usually your default text input.
 
 <figure markdown>
@@ -19,11 +19,11 @@ localization, and consistent field events. If you're building forms or dialogs, 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-name = ttk.TextEntry(
+name = bs.TextEntry(
     app,
     label="Name",
     message="Enter your full name",
@@ -48,7 +48,7 @@ Use `TextEntry` when:
 
 Consider a different control when:
 
-- you need the lowest-level `ttk.Entry` behavior and options — use [Entry](../primitives/entry.md)
+- you need the lowest-level `bs.Entry` behavior and options — use [Entry](../primitives/entry.md)
 
 - you are building your own composite control — use [Entry](../primitives/entry.md)
 
@@ -59,10 +59,10 @@ Consider a different control when:
 ### `accent`
 
 ```python
-ttk.TextEntry(app)  # primary (default)
-ttk.TextEntry(app, accent="secondary")
-ttk.TextEntry(app, accent="success")
-ttk.TextEntry(app, accent="warning")
+bs.TextEntry(app)  # primary (default)
+bs.TextEntry(app, accent="secondary")
+bs.TextEntry(app, accent="success")
+bs.TextEntry(app, accent="warning")
 ```
 
 !!! link "Design System"
@@ -97,7 +97,7 @@ name.value = "Ada Lovelace"
 #### `label`, `message`, `required`
 
 ```python
-ttk.TextEntry(app, label="Email", message="We'll never share it.", required=True)
+bs.TextEntry(app, label="Email", message="We'll never share it.", required=True)
 ```
 
 #### `value_format`
@@ -105,8 +105,8 @@ ttk.TextEntry(app, label="Email", message="We'll never share it.", required=True
 Commit-time formatting using semantic format names.
 
 ```python
-ttk.TextEntry(app, label="Currency", value=1234.56, value_format="currency").pack()
-ttk.TextEntry(app, label="Short Date", value="March 14, 1981", value_format="shortDate").pack()
+bs.TextEntry(app, label="Currency", value=1234.56, value_format="currency").pack()
+bs.TextEntry(app, label="Short Date", value="March 14, 1981", value_format="shortDate").pack()
 ```
 
 <figure markdown>
@@ -147,7 +147,7 @@ Use validation rules when:
 - multiple fields must be consistent (cross-field rules)
 
 ```python
-email = ttk.TextEntry(app, label="Email", required=True)
+email = bs.TextEntry(app, label="Email", required=True)
 
 email.add_validation_rule(
     "email",
@@ -168,14 +168,14 @@ If you need immediate, per-keystroke constraints, use low-level Tk validation on
 You can insert widgets into the field as add-ons.
 
 ```python
-email = ttk.TextEntry(app, label="Email")
-email.insert_addon(ttk.Label, position="before", icon="envelope")
+email = bs.TextEntry(app, label="Email")
+email.insert_addon(bs.Label, position="before", icon="envelope")
 
 def handle_search():
     ...
 
-search = ttk.TextEntry(app)
-search.insert_addon(ttk.Button, position="after", icon="search", command=handle_search)
+search = bs.TextEntry(app)
+search.insert_addon(bs.Button, position="after", icon="search", command=handle_search)
 ```
 
 <figure markdown>

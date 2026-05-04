@@ -5,10 +5,10 @@ accessible directly from this namespace via lazy imports.
 
 Examples:
     ```python
-    import bootstack as ttk
+    import bootstack as bs
 
-    app = ttk.App(title="My App", themename="bootstrap-light")
-    ttk.Label(app, text="Hello, world!").pack(padx=20, pady=20)
+    app = bs.App(title="My App", themename="bootstrap-light")
+    bs.Label(app, text="Hello, world!").pack(padx=20, pady=20)
     app.mainloop()
     ```
 """
@@ -34,7 +34,7 @@ Tk = _tkTk
 Menu = _tkMenu
 Text = _tkText
 Canvas = _tkCanvas
-TkFrame = _tkFrame  # Exported as TkFrame to avoid conflict with ttk.Frame
+TkFrame = _tkFrame  # Exported as TkFrame to avoid conflict with bs.Frame
 # Eagerly import BootstrapIcon to prevent circular import during style bootstrapping
 from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 

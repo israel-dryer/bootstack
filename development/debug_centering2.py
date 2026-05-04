@@ -1,14 +1,14 @@
 """Debug centering - specifically measure text position within button."""
 
-import bootstack as ttk
+import bootstack as bs
 from tkinter import font
 from PIL import ImageGrab
 
-app = ttk.App(theme="dark")
+app = bs.App(theme="dark")
 app.geometry("200x200")
 
 # Create xs button
-xs_btn = ttk.Button(app, text='Button', style_options={'size': 'xs'})
+xs_btn = bs.Button(app, text='Button', style_options={'size': 'xs'})
 xs_btn.pack(padx=20, pady=20)
 
 

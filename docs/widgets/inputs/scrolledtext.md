@@ -21,11 +21,11 @@ Use `ScrolledText` for logs, notes, editors, and any situation where **text cont
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-st = ttk.ScrolledText(app, height=10, scrollbar_visibility="scroll")
+st = bs.ScrolledText(app, height=10, scrollbar_visibility="scroll")
 st.pack(fill="both", expand=True, padx=20, pady=20)
 
 st.insert("end", "Insert your text here.\n" * 20)
@@ -70,7 +70,7 @@ text = st.get("1.0", "end-1c")
 - `"both"`
 
 ```python
-st = ttk.ScrolledText(app, scroll_direction="both")  # wrap defaults to 'none'
+st = bs.ScrolledText(app, scroll_direction="both")  # wrap defaults to 'none'
 ```
 
 ### Wrapping: `wrap`
@@ -78,7 +78,7 @@ st = ttk.ScrolledText(app, scroll_direction="both")  # wrap defaults to 'none'
 When horizontal scrolling is enabled, `wrap` typically should be `"none"`.
 
 ```python
-code = ttk.ScrolledText(app, scroll_direction="both", wrap="none")
+code = bs.ScrolledText(app, scroll_direction="both", wrap="none")
 ```
 
 Horizontal scrolling uses **Shift + Mouse Wheel**.
@@ -91,10 +91,10 @@ Horizontal scrolling uses **Shift + Mouse Wheel**.
 - `"scroll"` (auto-hide after `autohide_delay`)
 
 ```python
-st = ttk.ScrolledText(app, scrollbar_visibility="hover")
+st = bs.ScrolledText(app, scrollbar_visibility="hover")
 st.configure(scrollbar_visibility="always")
 
-st = ttk.ScrolledText(app, scrollbar_visibility="scroll", autohide_delay=1200)
+st = bs.ScrolledText(app, scrollbar_visibility="scroll", autohide_delay=1200)
 ```
 
 ### Access underlying Text: `text`

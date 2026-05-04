@@ -26,13 +26,13 @@ Type Aliases:
 
 Example:
     ```python
-    import bootstack as ttk
+    import bootstack as bs
     from bootstack.constants import *
 
-    root = ttk.Window()
+    root = bs.Window()
 
     # Use constants for cleaner code
-    btn = ttk.Button(root, text="OK", bootstyle=SUCCESS)
+    btn = bs.Button(root, text="OK", bootstyle=SUCCESS)
     btn.pack(side=LEFT, fill=X, padx=10)
 
     root.mainloop()

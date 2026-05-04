@@ -13,11 +13,11 @@ Use it for quick questions like "Name?", "Quantity?", or "Search term?", where y
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-value = ttk.QueryBox.get_string(
+value = bs.QueryBox.get_string(
     title="Rename",
     prompt="Enter a new name",
     initial="Untitled",
@@ -50,7 +50,7 @@ Use `QueryBox` when:
 ### Password prompt
 
 ```python
-pwd = ttk.QueryBox.get_password(
+pwd = bs.QueryBox.get_password(
     title="Unlock",
     prompt="Enter your password",
 )
@@ -59,7 +59,7 @@ pwd = ttk.QueryBox.get_password(
 ### Numeric prompt
 
 ```python
-qty = ttk.QueryBox.get_integer(
+qty = bs.QueryBox.get_integer(
     title="Quantity",
     prompt="How many?",
     initial=1,

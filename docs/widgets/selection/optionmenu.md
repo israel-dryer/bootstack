@@ -7,7 +7,7 @@ title: OptionMenu
 `OptionMenu` is a **selection control** that lets users pick **one value from a short list** using a
 menu-style dropdown.
 
-In bootstack v2, `OptionMenu` wraps Tkinter's `ttk.Menubutton` and adds theming, icons, signals,
+In bootstack v2, `OptionMenu` wraps Tkinter's `bs.Menubutton` and adds theming, icons, signals,
 and standardized change events. It is best suited for **compact, known option sets**.
 
 Use `OptionMenu` when the list is small and users already know the available choices.
@@ -34,11 +34,11 @@ It is intentionally simpler than `SelectBox` and does not support search or cust
 ## Basic usage
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-menu = ttk.OptionMenu(
+menu = bs.OptionMenu(
     app,
     value="Medium",
     options=["Low", "Medium", "High"],
@@ -79,9 +79,9 @@ You can bind selection state in several ways.
 ### Using a Tk variable
 
 ```python
-color = ttk.StringVar(value="Green")
+color = bs.StringVar(value="Green")
 
-menu = ttk.OptionMenu(
+menu = bs.OptionMenu(
     app,
     textvariable=color,
     options=["Red", "Green", "Blue"],
@@ -91,9 +91,9 @@ menu = ttk.OptionMenu(
 ### Using a signal
 
 ```python
-selected = ttk.Signal("Medium")
+selected = bs.Signal("Medium")
 
-menu = ttk.OptionMenu(
+menu = bs.OptionMenu(
     app,
     textsignal=selected,
     options=["Low", "Medium", "High"],
@@ -134,7 +134,7 @@ menu.configure(state="normal")
 ### `width` and `padding`
 
 ```python
-ttk.OptionMenu(
+bs.OptionMenu(
     app,
     value="A",
     options=["A", "B"],
@@ -194,10 +194,10 @@ Validation is typically unnecessary, but may be useful when:
 `OptionMenu` supports the same `accent` and `variant` options as `MenuButton`.
 
 ```python
-ttk.OptionMenu(app, value="A", options=["A", "B"], accent="primary")
-ttk.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="outline")
-ttk.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="ghost")
-ttk.OptionMenu(app, value="A", options=["A", "B"], variant="text")
+bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary")
+bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="outline")
+bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="ghost")
+bs.OptionMenu(app, value="A", options=["A", "B"], variant="text")
 ```
 
 ---
@@ -207,7 +207,7 @@ ttk.OptionMenu(app, value="A", options=["A", "B"], variant="text")
 Use `icon=...` to attach a theme-aware icon.
 
 ```python
-ttk.OptionMenu(
+bs.OptionMenu(
     app,
     value="Dark",
     options=["Light", "Dark", "Auto"],

@@ -1,4 +1,4 @@
-"""ttkb list command - List available themes and other resources."""
+"""bootstack list command - List available themes and other resources."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     )
     list_subparsers = parser.add_subparsers(dest="resource")
 
-    # ttkb list themes
+    # bootstack list themes
     themes_parser = list_subparsers.add_parser(
         "themes",
         help="List available themes",

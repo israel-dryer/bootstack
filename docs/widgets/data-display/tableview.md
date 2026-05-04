@@ -13,11 +13,11 @@ It is suitable for datasets where users need to scan, sort, and select structure
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=["Name", "Status"],
     rows=[("Item A", "Ready"), ("Item B", "Pending")],
@@ -56,7 +56,7 @@ Use TableView when:
 Enable alternating row colors for better readability:
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,
@@ -70,7 +70,7 @@ tv = ttk.TableView(
 TableView supports theming through bootstack:
 
 ```python
-ttk.TableView(app, accent="primary")
+bs.TableView(app, accent="primary")
 ```
 
 !!! link "Design System"
@@ -91,7 +91,7 @@ ttk.TableView(app, accent="primary")
 ### Column definitions
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=[
         {"text": "Name", "key": "name", "width": 150},
@@ -113,7 +113,7 @@ Control selection behavior with `selection_mode`:
 - `"multi"` — multiple rows can be selected
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,
@@ -127,7 +127,7 @@ tv = ttk.TableView(
 Enable inline editing, adding, and deleting:
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,
@@ -142,7 +142,7 @@ tv = ttk.TableView(
 Enable filtering and search capabilities:
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,
@@ -159,7 +159,7 @@ tv = ttk.TableView(
 Configure pagination for large datasets:
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,
@@ -174,7 +174,7 @@ tv = ttk.TableView(
 Enable data export functionality:
 
 ```python
-tv = ttk.TableView(
+tv = bs.TableView(
     app,
     columns=columns,
     rows=data,

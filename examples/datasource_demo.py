@@ -11,7 +11,7 @@ Demonstrates:
 - Integration with Treeview widget
 """
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from bootstack.datasource import MemoryDataSource, SqliteDataSource
 
@@ -34,7 +34,7 @@ def create_sample_data():
     ]
 
 
-class DataSourceDemo(ttk.Window):
+class DataSourceDemo(bs.Window):
     def __init__(self):
         super().__init__(title="DataSource Demo", theme="cosmo")
         self.geometry("1000x700")
@@ -50,11 +50,11 @@ class DataSourceDemo(ttk.Window):
         """Setup the user interface."""
 
         # Main container
-        container = ttk.Frame(self, padding=20)
+        container = bs.Frame(self, padding=20)
         container.pack(fill=BOTH, expand=YES)
 
         # Title
-        title = ttk.Label(
+        title = bs.Label(
             container,
             text="DataSource Demo - Employee Management",
             font="heading-lg[bold]",
@@ -63,27 +63,27 @@ class DataSourceDemo(ttk.Window):
         title.pack(pady=(0, 20))
 
         # Control panel
-        control_frame = ttk.LabelFrame(container, text="Controls", padding=10)
+        control_frame = bs.LabelFrame(container, text="Controls", padding=10)
         control_frame.pack(fill=X, pady=(0, 10))
 
         # Filter controls
-        filter_frame = ttk.Frame(control_frame)
+        filter_frame = bs.Frame(control_frame)
         filter_frame.pack(fill=X, pady=5)
 
-        ttk.Label(filter_frame, text="Filter:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
+        bs.Label(filter_frame, text="Filter:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
 
-        self.filter_var = ttk.StringVar()
-        filter_entry = ttk.Entry(filter_frame, textvariable=self.filter_var, width=40)
+        self.filter_var = bs.StringVar()
+        filter_entry = bs.Entry(filter_frame, textvariable=self.filter_var, width=40)
         filter_entry.pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             filter_frame,
             text="Apply Filter",
             command=self.apply_filter,
             bootstyle="info"
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             filter_frame,
             text="Clear",
             command=self.clear_filter,
@@ -91,12 +91,12 @@ class DataSourceDemo(ttk.Window):
         ).pack(side=LEFT)
 
         # Add preset filters
-        preset_frame = ttk.Frame(control_frame)
+        preset_frame = bs.Frame(control_frame)
         preset_frame.pack(fill=X, pady=5)
 
-        ttk.Label(preset_frame, text="Presets:", font="caption").pack(side=LEFT, padx=(0, 10))
+        bs.Label(preset_frame, text="Presets:", font="caption").pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             preset_frame,
             text="Engineering",
             command=lambda: self.set_preset("department = 'Engineering'"),
@@ -104,7 +104,7 @@ class DataSourceDemo(ttk.Window):
             width=12
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             preset_frame,
             text="Age > 30",
             command=lambda: self.set_preset("age > 30"),
@@ -112,7 +112,7 @@ class DataSourceDemo(ttk.Window):
             width=12
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             preset_frame,
             text="Salary >= 80k",
             command=lambda: self.set_preset("salary >= 80000"),
@@ -121,23 +121,23 @@ class DataSourceDemo(ttk.Window):
         ).pack(side=LEFT, padx=2)
 
         # Sort controls
-        sort_frame = ttk.Frame(control_frame)
+        sort_frame = bs.Frame(control_frame)
         sort_frame.pack(fill=X, pady=5)
 
-        ttk.Label(sort_frame, text="Sort:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
+        bs.Label(sort_frame, text="Sort:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
 
-        self.sort_var = ttk.StringVar()
-        sort_entry = ttk.Entry(sort_frame, textvariable=self.sort_var, width=40)
+        self.sort_var = bs.StringVar()
+        sort_entry = bs.Entry(sort_frame, textvariable=self.sort_var, width=40)
         sort_entry.pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             sort_frame,
             text="Apply Sort",
             command=self.apply_sort,
             bootstyle="info"
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             sort_frame,
             text="Clear",
             command=self.clear_sort,
@@ -145,16 +145,16 @@ class DataSourceDemo(ttk.Window):
         ).pack(side=LEFT)
 
         # Data display
-        data_frame = ttk.LabelFrame(container, text="Employee Data", padding=10)
+        data_frame = bs.LabelFrame(container, text="Employee Data", padding=10)
         data_frame.pack(fill=BOTH, expand=YES, pady=(0, 10))
 
         # Treeview with scrollbar
-        tree_frame = ttk.Frame(data_frame)
+        tree_frame = bs.Frame(data_frame)
         tree_frame.pack(fill=BOTH, expand=YES)
 
         # Create Treeview
         columns = ("id", "name", "age", "department", "salary")
-        self.tree = ttk.TreeView(
+        self.tree = bs.TreeView(
             tree_frame,
             columns=columns,
             show="headings",
@@ -176,47 +176,47 @@ class DataSourceDemo(ttk.Window):
         self.tree.column("salary", width=100, anchor=E)
 
         # Scrollbar
-        scrollbar = ttk.Scrollbar(tree_frame, orient=VERTICAL, command=self.tree.yview)
+        scrollbar = bs.Scrollbar(tree_frame, orient=VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
 
         self.tree.pack(side=LEFT, fill=BOTH, expand=YES)
         scrollbar.pack(side=RIGHT, fill=Y)
 
         # Pagination controls
-        pagination_frame = ttk.Frame(data_frame)
+        pagination_frame = bs.Frame(data_frame)
         pagination_frame.pack(fill=X, pady=(10, 0))
 
-        self.page_label = ttk.Label(pagination_frame, text="Page 1", font="body")
+        self.page_label = bs.Label(pagination_frame, text="Page 1", font="body")
         self.page_label.pack(side=LEFT, padx=(0, 20))
 
-        ttk.Button(
+        bs.Button(
             pagination_frame,
             text="◄ Previous",
             command=self.prev_page,
             bootstyle="secondary"
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             pagination_frame,
             text="Next ►",
             command=self.next_page,
             bootstyle="secondary"
         ).pack(side=LEFT, padx=2)
 
-        self.count_label = ttk.Label(pagination_frame, text="", font="caption")
+        self.count_label = bs.Label(pagination_frame, text="", font="caption")
         self.count_label.pack(side=RIGHT)
 
         # Action panel
-        action_frame = ttk.LabelFrame(container, text="Actions", padding=10)
+        action_frame = bs.LabelFrame(container, text="Actions", padding=10)
         action_frame.pack(fill=X)
 
         # Selection actions
-        selection_frame = ttk.Frame(action_frame)
+        selection_frame = bs.Frame(action_frame)
         selection_frame.pack(fill=X, pady=5)
 
-        ttk.Label(selection_frame, text="Selection:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
+        bs.Label(selection_frame, text="Selection:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             selection_frame,
             text="Select All (Page)",
             command=lambda: self.select_all(True),
@@ -224,7 +224,7 @@ class DataSourceDemo(ttk.Window):
             width=15
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             selection_frame,
             text="Select All",
             command=lambda: self.select_all(False),
@@ -232,7 +232,7 @@ class DataSourceDemo(ttk.Window):
             width=15
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             selection_frame,
             text="Unselect All",
             command=lambda: self.unselect_all(False),
@@ -240,16 +240,16 @@ class DataSourceDemo(ttk.Window):
             width=15
         ).pack(side=LEFT, padx=2)
 
-        self.selection_label = ttk.Label(selection_frame, text="", font="caption")
+        self.selection_label = bs.Label(selection_frame, text="", font="caption")
         self.selection_label.pack(side=RIGHT)
 
         # CRUD actions
-        crud_frame = ttk.Frame(action_frame)
+        crud_frame = bs.Frame(action_frame)
         crud_frame.pack(fill=X, pady=5)
 
-        ttk.Label(crud_frame, text="CRUD:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
+        bs.Label(crud_frame, text="CRUD:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             crud_frame,
             text="Add Random Record",
             command=self.add_random_record,
@@ -257,7 +257,7 @@ class DataSourceDemo(ttk.Window):
             width=18
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             crud_frame,
             text="Delete Selected",
             command=self.delete_selected,
@@ -266,12 +266,12 @@ class DataSourceDemo(ttk.Window):
         ).pack(side=LEFT, padx=2)
 
         # Export actions
-        export_frame = ttk.Frame(action_frame)
+        export_frame = bs.Frame(action_frame)
         export_frame.pack(fill=X, pady=5)
 
-        ttk.Label(export_frame, text="Export:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
+        bs.Label(export_frame, text="Export:", font="body[bold]").pack(side=LEFT, padx=(0, 10))
 
-        ttk.Button(
+        bs.Button(
             export_frame,
             text="Export All to CSV",
             command=lambda: self.export_csv(True),
@@ -279,7 +279,7 @@ class DataSourceDemo(ttk.Window):
             width=18
         ).pack(side=LEFT, padx=2)
 
-        ttk.Button(
+        bs.Button(
             export_frame,
             text="Export Selected",
             command=lambda: self.export_csv(False),
@@ -288,7 +288,7 @@ class DataSourceDemo(ttk.Window):
         ).pack(side=LEFT, padx=2)
 
         # Status bar
-        self.status_label = ttk.Label(container, text="Ready", font="caption", bootstyle="secondary")
+        self.status_label = bs.Label(container, text="Ready", font="caption", bootstyle="secondary")
         self.status_label.pack(pady=(10, 0))
 
         # Bind Enter key to filter/sort entries

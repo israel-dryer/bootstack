@@ -1,6 +1,6 @@
 """Demo for MessageDialog and Messagebox with icon provider integration."""
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.dialogs import MessageBox, MessageDialog
 
 
@@ -176,17 +176,17 @@ def demo_no_icon():
 
 
 # Create main application window
-app = ttk.App(
+app = bs.App(
     theme="cosmo",
     title="Message Dialog Demo",
     size=(700, 650),
-    settings=ttk.AppSettings(locale='fr')
+    settings=bs.AppSettings(locale='fr')
 )
 
 # Header
-header = ttk.Frame(app, accent="primary")
+header = bs.Frame(app, accent="primary")
 header.pack(fill='x', pady=(0, 20))
-title_label = ttk.Label(
+title_label = bs.Label(
     header,
     text="Message Dialog & Messagebox Demo",
     font='TkDefaultFont 16 bold',
@@ -195,11 +195,11 @@ title_label = ttk.Label(
 title_label.pack(pady=15)
 
 # Main content
-content = ttk.Frame(app, padding=20)
+content = bs.Frame(app, padding=20)
 content.pack(fill='both', expand=True)
 
 # Instructions
-instructions = ttk.Label(
+instructions = bs.Label(
     content,
     text="Click buttons below to test different message dialog types with icon provider:",
     font='TkDefaultFont 10'
@@ -207,11 +207,11 @@ instructions = ttk.Label(
 instructions.pack(pady=(0, 15))
 
 # Create notebook for organized demos
-notebook = ttk.Notebook(content)
+notebook = bs.Notebook(content)
 notebook.pack(fill='both', expand=True)
 
 # Tab 1: Standard Dialogs
-standard_frame = ttk.Frame(notebook, padding=10)
+standard_frame = bs.Frame(notebook, padding=10)
 notebook.add(standard_frame, text="Standard Dialogs")
 
 standard_demos = [
@@ -222,7 +222,7 @@ standard_demos = [
 ]
 
 for label, command, style in standard_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         standard_frame,
         text=label,
         accent=style,
@@ -232,7 +232,7 @@ for label, command, style in standard_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 2: Button Variations
-buttons_frame = ttk.Frame(notebook, padding=10)
+buttons_frame = bs.Frame(notebook, padding=10)
 notebook.add(buttons_frame, text="Button Variations")
 
 button_demos = [
@@ -244,7 +244,7 @@ button_demos = [
 ]
 
 for label, command, style in button_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         buttons_frame,
         text=label,
         accent=style,
@@ -254,7 +254,7 @@ for label, command, style in button_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 3: Custom Options
-custom_frame = ttk.Frame(notebook, padding=10)
+custom_frame = bs.Frame(notebook, padding=10)
 notebook.add(custom_frame, text="Custom Options")
 
 custom_demos = [
@@ -266,7 +266,7 @@ custom_demos = [
 ]
 
 for label, command, style in custom_demos:
-    btn = ttk.Button(
+    btn = bs.Button(
         custom_frame,
         text=label,
         accent=style,
@@ -276,10 +276,10 @@ for label, command, style in custom_demos:
     btn.pack(pady=5, fill='x')
 
 # Result display
-result_frame = ttk.LabelFrame(content, text="Last Dialog Result", padding=15)
+result_frame = bs.LabelFrame(content, text="Last Dialog Result", padding=15)
 result_frame.pack(fill='x', pady=(15, 0))
 
-result_label = ttk.Label(
+result_label = bs.Label(
     result_frame,
     text="No dialog shown yet",
     font='TkDefaultFont 10',
@@ -288,7 +288,7 @@ result_label = ttk.Label(
 result_label.pack()
 
 # Footer
-footer = ttk.Label(
+footer = bs.Label(
     app,
     text="Press ESC in any dialog to cancel • Icons provided by icon provider",
     font='TkDefaultFont 9 italic',

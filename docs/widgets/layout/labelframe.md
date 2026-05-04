@@ -6,7 +6,7 @@ title: LabelFrame
 
 `LabelFrame` is a **layout container** that groups related widgets under a **visible label**.
 
-It wraps `ttk.Labelframe`, participates in bootstack styling, and is ideal for labeled sections (settings groups,
+It wraps `bs.Labelframe`, participates in bootstack styling, and is ideal for labeled sections (settings groups,
 form clusters, option panels) where the title improves scanability.
 
 <!--
@@ -20,15 +20,15 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-group = ttk.LabelFrame(app, text="Network", padding=16)
+group = bs.LabelFrame(app, text="Network", padding=16)
 group.pack(fill="x", padx=20, pady=20)
 
-ttk.CheckButton(group, text="Use proxy").pack(anchor="w")
-ttk.Entry(group).pack(fill="x", pady=(8, 0))
+bs.CheckButton(group, text="Use proxy").pack(anchor="w")
+bs.Entry(group).pack(fill="x", pady=(8, 0))
 
 app.mainloop()
 ```
@@ -71,8 +71,8 @@ For more "modern card" layouts where the label is separate, you may prefer:
 Apply semantic styling (or a specific style name).
 
 ```python
-ttk.LabelFrame(app, text="Group", accent="secondary")
-ttk.LabelFrame(app, text="Group", style="Card.TLabelframe")
+bs.LabelFrame(app, text="Group", accent="secondary")
+bs.LabelFrame(app, text="Group", style="Card.TLabelframe")
 ```
 
 ---
@@ -84,7 +84,7 @@ ttk.LabelFrame(app, text="Group", style="Card.TLabelframe")
 Sets the group label.
 
 ```python
-ttk.LabelFrame(app, text="Appearance")
+bs.LabelFrame(app, text="Appearance")
 ```
 
 ### `labelanchor`
@@ -92,9 +92,9 @@ ttk.LabelFrame(app, text="Appearance")
 Controls where the label appears relative to the frame.
 
 ```python
-ttk.LabelFrame(app, text="Network", labelanchor="n")   # top (common)
-ttk.LabelFrame(app, text="Network", labelanchor="w")   # left
-ttk.LabelFrame(app, text="Network", labelanchor="s")   # bottom
+bs.LabelFrame(app, text="Network", labelanchor="n")   # top (common)
+bs.LabelFrame(app, text="Network", labelanchor="w")   # left
+bs.LabelFrame(app, text="Network", labelanchor="s")   # bottom
 ```
 
 ### `padding`
@@ -102,7 +102,7 @@ ttk.LabelFrame(app, text="Network", labelanchor="s")   # bottom
 Inner spacing for the content region.
 
 ```python
-ttk.LabelFrame(app, text="Options", padding=(16, 12))
+bs.LabelFrame(app, text="Options", padding=(16, 12))
 ```
 
 ---

@@ -1,4 +1,4 @@
-"""ttkb build command - Build the application for distribution."""
+"""bootstack build command - Build the application for distribution."""
 
 from __future__ import annotations
 
@@ -31,8 +31,8 @@ def run_build(args: argparse.Namespace) -> None:
     # Find project root
     config_path = find_config()
     if config_path is None:
-        print("Error: No ttkb.toml found in current directory or parents.")
-        print("Run 'ttkb start <appname>' to create a new project first.")
+        print("Error: No bootstack.toml found in current directory or parents.")
+        print("Run 'bootstack start <appname>' to create a new project first.")
         return
 
     project_root = config_path.parent
@@ -41,7 +41,7 @@ def run_build(args: argparse.Namespace) -> None:
     # Check if project has been promoted
     if config.build is None:
         print("Error: Project has not been promoted for building.")
-        print("Run 'ttkb promote --pyinstaller' first.")
+        print("Run 'bootstack promote --pyinstaller' first.")
         return
 
     backend = config.build.backend
@@ -70,7 +70,7 @@ def _build_pyinstaller(
     spec_path = project_root / "build" / "pyinstaller" / "app.spec"
     if not spec_path.exists():
         print("Error: PyInstaller spec file not found.")
-        print("Run 'ttkb promote --pyinstaller' to generate it.")
+        print("Run 'bootstack promote --pyinstaller' to generate it.")
         return
 
     # Clean if requested

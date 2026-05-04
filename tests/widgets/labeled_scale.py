@@ -1,12 +1,12 @@
-import bootstack as ttk
+import bootstack as bs
 
-root = ttk.Window()
+root = bs.Window()
 
 # Create labeled scales with different compounds
-scale1 = ttk.LabeledScale(root, minvalue=0, maxvalue=100, compound='before')
+scale1 = bs.LabeledScale(root, minvalue=0, maxvalue=100, compound='before')
 scale1.pack(padx=10, pady=10, fill='x')
 
-scale2 = ttk.LabeledScale(root, minvalue=0, maxvalue=100, compound='after')
+scale2 = bs.LabeledScale(root, minvalue=0, maxvalue=100, compound='after')
 scale2.pack(padx=10, pady=10, fill='x')
 
 # Access the current value

@@ -1,21 +1,21 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 
 
 def create_combobox_test(test_name):
-    frame = ttk.Frame(padding=10)
+    frame = bs.Frame(padding=10)
 
     # title
-    title = ttk.Label(
+    title = bs.Label(
         master=frame,
         text=test_name,
         anchor=CENTER
     )
     title.pack(padx=5, pady=2, fill=BOTH)
-    ttk.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
 
     # default
-    cbo = ttk.Combobox(
+    cbo = bs.Combobox(
         master=frame,
         values=['default', 'other']
     )
@@ -24,7 +24,7 @@ def create_combobox_test(test_name):
 
     # color
     for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        cbo = ttk.Combobox(
+        cbo = bs.Combobox(
             master=frame,
             values=[color, 'other'],
             accent=color,
@@ -33,7 +33,7 @@ def create_combobox_test(test_name):
         cbo.current(0)
 
     # disabled
-    cbo = ttk.Combobox(
+    cbo = bs.Combobox(
         master=frame,
         values=['None', 'other'],
         state=DISABLED
@@ -45,17 +45,17 @@ def create_combobox_test(test_name):
 
 
 def change_style():
-    if ttk.get_theme() == 'light':
-        ttk.set_theme('dark')
+    if bs.get_theme() == 'light':
+        bs.set_theme('dark')
     else:
-        ttk.set_theme('light')
+        bs.set_theme('light')
 
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.App("ComboBox Demo")
+    root = bs.App("ComboBox Demo")
 
-    ttk.Button(text="Change Theme", command=change_style).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=change_style).pack(padx=10, pady=10)
 
     test1 = create_combobox_test('Combobox')
     test1.pack(side=LEFT, fill=BOTH)

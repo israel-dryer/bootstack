@@ -8,7 +8,7 @@ Tests the enhanced Expander widget with:
 """
 
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.composites.expander import Expander
 
 
@@ -25,18 +25,18 @@ class ExpanderNavigationDemo:
 
     def _setup_ui(self):
         # Main container
-        main = ttk.Frame(self.root, padding=10)
+        main = bs.Frame(self.root, padding=10)
         main.pack(fill='both', expand=True)
 
         # Left panel - Navigation using Expanders
-        nav_frame = ttk.LabelFrame(main, text="Navigation (Expander)", padding=10)
+        nav_frame = bs.LabelFrame(main, text="Navigation (Expander)", padding=10)
         nav_frame.pack(side='left', fill='both', expand=True, padx=(0, 5))
 
         # Right panel - Info display
-        info_frame = ttk.LabelFrame(main, text="Selection Info", padding=10)
+        info_frame = bs.LabelFrame(main, text="Selection Info", padding=10)
         info_frame.pack(side='right', fill='both', expand=True, padx=(5, 0))
 
-        self.info_label = ttk.Label(info_frame, text="Selected: home")
+        self.info_label = bs.Label(info_frame, text="Selected: home")
         self.info_label.pack(anchor='w', pady=5)
 
         # Track selection changes
@@ -46,7 +46,7 @@ class ExpanderNavigationDemo:
         self._create_nav_items(nav_frame)
 
     def _create_nav_items(self, parent):
-        container = ttk.Frame(parent)
+        container = bs.Frame(parent)
         container.pack(fill='both', expand=True)
 
         # Home - leaf item (not collapsible, no chevron)
@@ -86,7 +86,7 @@ class ExpanderNavigationDemo:
         downloads.on_selected(self._on_item_selected)
 
         # Separator
-        ttk.Separator(container, orient='horizontal').pack(fill='x', pady=8)
+        bs.Separator(container, orient='horizontal').pack(fill='x', pady=8)
 
         # Files - parent item with children (collapsible)
         files = Expander(
@@ -127,7 +127,7 @@ class ExpanderNavigationDemo:
         cloud.on_selected(self._on_item_selected)
 
         # Separator
-        ttk.Separator(container, orient='horizontal').pack(fill='x', pady=8)
+        bs.Separator(container, orient='horizontal').pack(fill='x', pady=8)
 
         # Settings - leaf item
         settings = Expander(
@@ -152,7 +152,7 @@ class ExpanderNavigationDemo:
 
 
 def main():
-    root = ttk.Window(theme="cosmo")
+    root = bs.Window(theme="cosmo")
     app = ExpanderNavigationDemo(root)
     root.mainloop()
 

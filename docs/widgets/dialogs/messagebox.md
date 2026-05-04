@@ -28,11 +28,11 @@ Suggested: 3 small dialogs (info/warning/error) in light/dark
 ### Information
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.MessageBox.ok(
+bs.MessageBox.ok(
     title="Saved",
     message="Your changes have been saved.",
 )
@@ -43,7 +43,7 @@ app.mainloop()
 ### Confirm / question
 
 ```python
-result = ttk.MessageBox.yesno(
+result = bs.MessageBox.yesno(
     title="Delete file?",
     message="This action can't be undone.",
 )
@@ -91,7 +91,7 @@ Use the highest-level helper that matches your intent (e.g., `ok`, `yesno`, `okc
 #### `title` and `message`
 
 ```python
-ttk.MessageBox.ok(title="Notice", message="Hello!")
+bs.MessageBox.ok(title="Notice", message="Hello!")
 ```
 
 #### Detail / secondary text (if supported)
@@ -99,7 +99,7 @@ ttk.MessageBox.ok(title="Notice", message="Hello!")
 Use detail text for stack traces or extra explanation.
 
 ```python
-ttk.MessageBox.show(
+bs.MessageBox.show(
     title="Import failed",
     message="Could not import the file.",
     detail="The file format was not recognized.",
@@ -113,7 +113,7 @@ ttk.MessageBox.show(
 Pass a parent to keep the dialog on top of the correct window.
 
 ```python
-ttk.MessageBox.ok(parent=app, title="Saved", message="Done.")
+bs.MessageBox.ok(parent=app, title="Saved", message="Done.")
 ```
 
 ### Value model

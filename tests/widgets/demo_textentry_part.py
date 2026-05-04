@@ -1,7 +1,7 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.widgets.parts.textentry_part import TextEntryPart
 
-root = ttk.Window()
+root = bs.Window()
 
 # Currency entry with formatting
 entry = TextEntryPart(

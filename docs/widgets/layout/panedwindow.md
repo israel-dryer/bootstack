@@ -6,7 +6,7 @@ title: PanedWindow
 
 `PanedWindow` is a **resizable split container** that arranges child panes with draggable separators.
 
-It wraps `ttk.Panedwindow` and is used to build layouts like:
+It wraps `bs.Panedwindow` and is used to build layouts like:
 
 - sidebar + content
 
@@ -24,21 +24,21 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-pw = ttk.PanedWindow(app, orient="horizontal")
+pw = bs.PanedWindow(app, orient="horizontal")
 pw.pack(fill="both", expand=True)
 
-sidebar = ttk.Frame(pw, padding=12, width=220)
-content = ttk.Frame(pw, padding=12)
+sidebar = bs.Frame(pw, padding=12, width=220)
+content = bs.Frame(pw, padding=12)
 
 pw.add(sidebar, weight=0)
 pw.add(content, weight=1)
 
-ttk.Label(sidebar, text="Sidebar").pack(anchor="w")
-ttk.Label(content, text="Content").pack(anchor="w")
+bs.Label(sidebar, text="Sidebar").pack(anchor="w")
+bs.Label(content, text="Content").pack(anchor="w")
 
 app.mainloop()
 ```
@@ -91,8 +91,8 @@ The draggable separators between panes are called *sashes*. Users drag sashes to
 ### `orient`
 
 ```python
-ttk.PanedWindow(app, orient="horizontal")  # left/right
-ttk.PanedWindow(app, orient="vertical")    # top/bottom
+bs.PanedWindow(app, orient="horizontal")  # left/right
+bs.PanedWindow(app, orient="vertical")    # top/bottom
 ```
 
 ### Adding panes: `add(...)`

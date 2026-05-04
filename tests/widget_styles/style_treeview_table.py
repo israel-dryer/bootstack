@@ -1,4 +1,4 @@
-import bootstack as ttk
+import bootstack as bs
 
 DARK = 'dark'
 LIGHT = 'light'
@@ -6,13 +6,13 @@ LIGHT = 'light'
 
 def create_treeview_style():
     # Create frame for padding
-    container = ttk.Frame(root)
+    container = bs.Frame(root)
     container.pack(fill="both", expand=True, padx=10, pady=10)
 
     # Create the Treeview
     columns = ("first_name", "last_name", "email")
 
-    tree = ttk.TreeView(
+    tree = bs.TreeView(
         container,
         columns=columns,
         show="headings",
@@ -56,9 +56,9 @@ def create_treeview_style():
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = ttk.Window(theme="docs-light")
+    root = bs.Window(theme="docs-light")
 
-    ttk.Button(text="Change Theme", command=ttk.toggle_theme).pack(padx=10, pady=10)
+    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
 
     create_treeview_style().pack(side='left')
 

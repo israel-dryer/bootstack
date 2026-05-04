@@ -1,38 +1,38 @@
 """Debug script to verify ButtonGroup density handling."""
-import bootstack as ttk
+import bootstack as bs
 
 
-class DebugApp(ttk.App):
+class DebugApp(bs.App):
     def __init__(self):
         super().__init__(title="ButtonGroup Density Debug")
         self.geometry("600x400")
 
         # Row 1: Default density
-        ttk.Label(self, text="Default density:").pack(pady=(10, 2))
-        default_group = ttk.ButtonGroup(self, accent='primary', density='default')
+        bs.Label(self, text="Default density:").pack(pady=(10, 2))
+        default_group = bs.ButtonGroup(self, accent='primary', density='default')
         default_group.add("Save")
         default_group.add("Open")
         dropdown = default_group.add(
-            widget_type=ttk.DropdownButton,
+            widget_type=bs.DropdownButton,
             icon="caret-down-fill",
             compound="center"
         )
         default_group.pack(pady=5)
 
         # Row 2: Compact density
-        ttk.Label(self, text="Compact density:").pack(pady=(10, 2))
-        compact_group = ttk.ButtonGroup(self, accent='primary', density='compact')
+        bs.Label(self, text="Compact density:").pack(pady=(10, 2))
+        compact_group = bs.ButtonGroup(self, accent='primary', density='compact')
         compact_group.add("Save")
         compact_group.add("Open")
         dropdown2 = compact_group.add(
-            widget_type=ttk.DropdownButton,
+            widget_type=bs.DropdownButton,
             icon="caret-down-fill",
             compound="center"
         )
         compact_group.pack(pady=5)
 
         # Debug: Print style info for each button
-        ttk.Label(self, text="Debug info (check console):").pack(pady=(20, 5))
+        bs.Label(self, text="Debug info (check console):").pack(pady=(20, 5))
 
         print("\n=== Default density buttons ===")
         for i, widget in enumerate(default_group.items()):

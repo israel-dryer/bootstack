@@ -13,11 +13,11 @@ Use it for editor-like features (rich text, labels, code editors) where users ne
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-dlg = ttk.FontDialog(title="Choose a font")
+dlg = bs.FontDialog(title="Choose a font")
 result = dlg.show()
 
 print("font:", result)  # font string/object or None

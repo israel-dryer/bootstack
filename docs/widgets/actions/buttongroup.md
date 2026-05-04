@@ -14,11 +14,11 @@ It is most common in toolbars, segmented controls, and compact "action clusters"
 Create a group and add buttons. The group handles spacing, connection visuals, and consistent styling.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-bg = ttk.ButtonGroup(app, accent="primary")
+bg = bs.ButtonGroup(app, accent="primary")
 bg.pack(padx=20, pady=20)
 
 bg.add(text="Cut", icon="scissors", command=lambda: print("Cut"))
@@ -52,9 +52,9 @@ The group style is driven by `accent` and `variant`. This sets the default for c
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how variants map consistently across widgets."
 
 ```python
-ttk.ButtonGroup(app, accent="primary").pack(pady=4)
-ttk.ButtonGroup(app, accent="primary", variant="outline").pack(pady=4)
-ttk.ButtonGroup(app, accent="primary", variant="ghost").pack(pady=4)
+bs.ButtonGroup(app, accent="primary").pack(pady=4)
+bs.ButtonGroup(app, accent="primary", variant="outline").pack(pady=4)
+bs.ButtonGroup(app, accent="primary", variant="ghost").pack(pady=4)
 ```
 
 ---
@@ -64,7 +64,7 @@ ttk.ButtonGroup(app, accent="primary", variant="ghost").pack(pady=4)
 ### Icon-only toolbar group
 
 ```python
-bg = ttk.ButtonGroup(app, accent="secondary", variant="ghost")
+bg = bs.ButtonGroup(app, accent="secondary", variant="ghost")
 bg.pack(pady=10)
 
 bg.add(icon="undo", icon_only=True, command=lambda: print("Undo"))
@@ -79,7 +79,7 @@ bg.add(icon="trash", icon_only=True, command=lambda: print("Delete"))
 You can disable individual buttons, or set the group `state` so all children inherit it.
 
 ```python
-bg = ttk.ButtonGroup(app, accent="primary", state="disabled")
+bg = bs.ButtonGroup(app, accent="primary", state="disabled")
 bg.pack(pady=10)
 
 bg.add(text="Disabled", command=lambda: ...)

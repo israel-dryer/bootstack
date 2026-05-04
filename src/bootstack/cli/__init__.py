@@ -1,6 +1,6 @@
 """CLI entry point for bootstack.
 
-The ttkb CLI provides commands for:
+The bootstack CLI provides commands for:
 - Creating new projects (start)
 - Running applications (run)
 - Building for distribution (build)
@@ -8,18 +8,18 @@ The ttkb CLI provides commands for:
 - Listing resources (list)
 
 Usage:
-    ttkb start <appname>        Create a new project
-    ttkb run [path]             Run the application
-    ttkb promote --pyinstaller  Enable PyInstaller support
-    ttkb build                  Build for distribution
-    ttkb add page <ClassName>   Add a new page (AppShell)
-    ttkb add view <ClassName>   Add a new view
-    ttkb add dialog <ClassName> Add a new dialog
-    ttkb add theme <name>       Add a custom theme
-    ttkb add i18n               Add i18n support
-    ttkb list themes            List available themes
-    ttkb doctor                 Diagnose project and environment health
-    ttkb demo                   Launch the widget demo
+    bootstack start <appname>        Create a new project
+    bootstack run [path]             Run the application
+    bootstack promote --pyinstaller  Enable PyInstaller support
+    bootstack build                  Build for distribution
+    bootstack add page <ClassName>   Add a new page (AppShell)
+    bootstack add view <ClassName>   Add a new view
+    bootstack add dialog <ClassName> Add a new dialog
+    bootstack add theme <name>       Add a custom theme
+    bootstack add i18n               Add i18n support
+    bootstack list themes            List available themes
+    bootstack doctor                 Diagnose project and environment health
+    bootstack demo                   Launch the widget demo
 """
 
 from __future__ import annotations
@@ -35,24 +35,24 @@ from bootstack.cli.demo import run_demo
 def main(argv: Sequence[str] | None = None) -> None:
     """Dispatch CLI commands registered in bootstack."""
     parser = argparse.ArgumentParser(
-        prog="ttkb",
+        prog="bootstack",
         description="bootstack command line interface",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 Examples:
-  ttkb start MyApp              Create a new project
-  ttkb start MyApp --template appshell  Create an AppShell project
-  ttkb start MyApp --theme superhero    Use a specific theme
-  ttkb run                      Run the application
-  ttkb promote --pyinstaller    Enable PyInstaller support
-  ttkb build                    Build for distribution
-  ttkb add view SettingsView    Add a new view
-  ttkb list themes              List available themes
-  ttkb doctor                   Diagnose project and environment health
-  ttkb demo                     Launch the widget demo
+  bootstack start MyApp              Create a new project
+  bootstack start MyApp --template appshell  Create an AppShell project
+  bootstack start MyApp --theme superhero    Use a specific theme
+  bootstack run                      Run the application
+  bootstack promote --pyinstaller    Enable PyInstaller support
+  bootstack build                    Build for distribution
+  bootstack add view SettingsView    Add a new view
+  bootstack list themes              List available themes
+  bootstack doctor                   Diagnose project and environment health
+  bootstack demo                     Launch the widget demo
 
 For more information on a command:
-  ttkb <command> --help
+  bootstack <command> --help
 """,
     )
 

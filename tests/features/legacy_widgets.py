@@ -1,4 +1,4 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack.style.style import get_style
 
 TTKBOOTSTRAP_DEBUG = 1
@@ -8,7 +8,7 @@ from this import s as ZEN
 
 from bootstack.constants import *
 
-app = ttk.Window("Legacy Widgets")
+app = bs.Window("Legacy Widgets")
 
 
 def change_theme():
@@ -18,10 +18,10 @@ def change_theme():
     print("changing theme in app", themename)
 
 
-frame = ttk.TkFrame(app, padx=10, pady=10)
+frame = bs.TkFrame(app, padx=10, pady=10)
 frame.pack(fill=BOTH, expand=YES)
 
-ttk.Button(frame, text='TTk Button').pack()
+bs.Button(frame, text='TTk Button').pack()
 
 themes = ['light', 'dark']
 

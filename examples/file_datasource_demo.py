@@ -18,7 +18,7 @@ import random
 import tempfile
 from pathlib import Path
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from bootstack.datasource import FileDataSource, FileSourceConfig
 
@@ -106,23 +106,23 @@ class FileDataSourceDemo:
     def _create_layout(self):
         """Create the UI layout."""
         # Main container
-        main = ttk.Frame(self.root, padding=10)
+        main = bs.Frame(self.root, padding=10)
         main.pack(fill=BOTH, expand=YES)
 
         # Control panel
-        control_frame = ttk.LabelFrame(main, text="File Loading Options", padding=10)
+        control_frame = bs.LabelFrame(main, text="File Loading Options", padding=10)
         control_frame.pack(fill=X, padx=5, pady=5)
 
         self._create_controls(control_frame)
 
         # Data display
-        data_frame = ttk.LabelFrame(main, text="Data View", padding=10)
+        data_frame = bs.LabelFrame(main, text="Data View", padding=10)
         data_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
 
         self._create_treeview(data_frame)
 
         # Status and pagination
-        bottom_frame = ttk.Frame(main)
+        bottom_frame = bs.Frame(main)
         bottom_frame.pack(fill=X, padx=5, pady=5)
 
         self._create_pagination(bottom_frame)
@@ -131,71 +131,71 @@ class FileDataSourceDemo:
     def _create_controls(self, parent):
         """Create control buttons."""
         # File type buttons
-        file_frame = ttk.Frame(parent)
+        file_frame = bs.Frame(parent)
         file_frame.pack(fill=X, pady=5)
 
-        ttk.Label(file_frame, text="Load File:").pack(side=LEFT, padx=5)
-        ttk.Button(file_frame, text="CSV (Basic)", command=self.load_csv_basic, bootstyle=PRIMARY).pack(side=LEFT, padx=2)
-        ttk.Button(file_frame, text="CSV (Transformed)", command=self.load_csv_transformed, bootstyle=INFO).pack(side=LEFT, padx=2)
-        ttk.Button(file_frame, text="JSON", command=self.load_json, bootstyle=SUCCESS).pack(side=LEFT, padx=2)
-        ttk.Button(file_frame, text="JSONL", command=self.load_jsonl, bootstyle=WARNING).pack(side=LEFT, padx=2)
-        ttk.Button(file_frame, text="Large CSV (Chunked)", command=self.load_large_csv, bootstyle=DANGER).pack(side=LEFT, padx=2)
+        bs.Label(file_frame, text="Load File:").pack(side=LEFT, padx=5)
+        bs.Button(file_frame, text="CSV (Basic)", command=self.load_csv_basic, bootstyle=PRIMARY).pack(side=LEFT, padx=2)
+        bs.Button(file_frame, text="CSV (Transformed)", command=self.load_csv_transformed, bootstyle=INFO).pack(side=LEFT, padx=2)
+        bs.Button(file_frame, text="JSON", command=self.load_json, bootstyle=SUCCESS).pack(side=LEFT, padx=2)
+        bs.Button(file_frame, text="JSONL", command=self.load_jsonl, bootstyle=WARNING).pack(side=LEFT, padx=2)
+        bs.Button(file_frame, text="Large CSV (Chunked)", command=self.load_large_csv, bootstyle=DANGER).pack(side=LEFT, padx=2)
 
         # Filter presets
-        filter_frame = ttk.Frame(parent)
+        filter_frame = bs.Frame(parent)
         filter_frame.pack(fill=X, pady=5)
 
-        ttk.Label(filter_frame, text="Filter:").pack(side=LEFT, padx=5)
-        ttk.Button(filter_frame, text="All", command=lambda: self.apply_filter(""), bootstyle=SECONDARY).pack(side=LEFT, padx=2)
-        ttk.Button(filter_frame, text="Engineering", command=lambda: self.apply_filter("department = 'Engineering'")).pack(side=LEFT, padx=2)
-        ttk.Button(filter_frame, text="Age > 40", command=lambda: self.apply_filter("age > 40")).pack(side=LEFT, padx=2)
-        ttk.Button(filter_frame, text="Salary > 80k", command=lambda: self.apply_filter("salary > 80000")).pack(side=LEFT, padx=2)
-        ttk.Button(filter_frame, text="Active Only", command=lambda: self.apply_filter("status = 'active'")).pack(side=LEFT, padx=2)
+        bs.Label(filter_frame, text="Filter:").pack(side=LEFT, padx=5)
+        bs.Button(filter_frame, text="All", command=lambda: self.apply_filter(""), bootstyle=SECONDARY).pack(side=LEFT, padx=2)
+        bs.Button(filter_frame, text="Engineering", command=lambda: self.apply_filter("department = 'Engineering'")).pack(side=LEFT, padx=2)
+        bs.Button(filter_frame, text="Age > 40", command=lambda: self.apply_filter("age > 40")).pack(side=LEFT, padx=2)
+        bs.Button(filter_frame, text="Salary > 80k", command=lambda: self.apply_filter("salary > 80000")).pack(side=LEFT, padx=2)
+        bs.Button(filter_frame, text="Active Only", command=lambda: self.apply_filter("status = 'active'")).pack(side=LEFT, padx=2)
 
         # Sort options
-        sort_frame = ttk.Frame(parent)
+        sort_frame = bs.Frame(parent)
         sort_frame.pack(fill=X, pady=5)
 
-        ttk.Label(sort_frame, text="Sort:").pack(side=LEFT, padx=5)
-        ttk.Button(sort_frame, text="Name ↑", command=lambda: self.apply_sort("last_name ASC")).pack(side=LEFT, padx=2)
-        ttk.Button(sort_frame, text="Age ↑", command=lambda: self.apply_sort("age ASC")).pack(side=LEFT, padx=2)
-        ttk.Button(sort_frame, text="Salary ↓", command=lambda: self.apply_sort("salary DESC")).pack(side=LEFT, padx=2)
-        ttk.Button(sort_frame, text="Department ↑", command=lambda: self.apply_sort("department ASC")).pack(side=LEFT, padx=2)
+        bs.Label(sort_frame, text="Sort:").pack(side=LEFT, padx=5)
+        bs.Button(sort_frame, text="Name ↑", command=lambda: self.apply_sort("last_name ASC")).pack(side=LEFT, padx=2)
+        bs.Button(sort_frame, text="Age ↑", command=lambda: self.apply_sort("age ASC")).pack(side=LEFT, padx=2)
+        bs.Button(sort_frame, text="Salary ↓", command=lambda: self.apply_sort("salary DESC")).pack(side=LEFT, padx=2)
+        bs.Button(sort_frame, text="Department ↑", command=lambda: self.apply_sort("department ASC")).pack(side=LEFT, padx=2)
 
         # Custom filter/sort
-        custom_frame = ttk.Frame(parent)
+        custom_frame = bs.Frame(parent)
         custom_frame.pack(fill=X, pady=5)
 
-        ttk.Label(custom_frame, text="Custom Filter:").pack(side=LEFT, padx=5)
-        self.filter_entry = ttk.Entry(custom_frame, width=30)
+        bs.Label(custom_frame, text="Custom Filter:").pack(side=LEFT, padx=5)
+        self.filter_entry = bs.Entry(custom_frame, width=30)
         self.filter_entry.pack(side=LEFT, padx=2)
         self.filter_entry.bind('<Return>', lambda e: self.apply_filter(self.filter_entry.get()))
 
-        ttk.Label(custom_frame, text="Custom Sort:").pack(side=LEFT, padx=10)
-        self.sort_entry = ttk.Entry(custom_frame, width=20)
+        bs.Label(custom_frame, text="Custom Sort:").pack(side=LEFT, padx=10)
+        self.sort_entry = bs.Entry(custom_frame, width=20)
         self.sort_entry.pack(side=LEFT, padx=2)
         self.sort_entry.bind('<Return>', lambda e: self.apply_sort(self.sort_entry.get()))
 
         # Progress bar
-        self.progress_var = ttk.IntVar()
-        self.progress = ttk.Progressbar(parent, variable=self.progress_var, maximum=100, bootstyle="success-striped")
+        self.progress_var = bs.IntVar()
+        self.progress = bs.Progressbar(parent, variable=self.progress_var, maximum=100, bootstyle="success-striped")
         self.progress.pack(fill=X, pady=5)
 
     def _create_treeview(self, parent):
         """Create the treeview widget."""
         # Treeview with scrollbars
-        tree_frame = ttk.Frame(parent)
+        tree_frame = bs.Frame(parent)
         tree_frame.pack(fill=BOTH, expand=YES)
 
         # Scrollbars
-        vsb = ttk.Scrollbar(tree_frame, orient=VERTICAL)
+        vsb = bs.Scrollbar(tree_frame, orient=VERTICAL)
         vsb.pack(side=RIGHT, fill=Y)
 
-        hsb = ttk.Scrollbar(tree_frame, orient=HORIZONTAL)
+        hsb = bs.Scrollbar(tree_frame, orient=HORIZONTAL)
         hsb.pack(side=BOTTOM, fill=X)
 
         # Treeview
-        self.tree = ttk.TreeView(
+        self.tree = bs.TreeView(
             tree_frame,
             yscrollcommand=vsb.set,
             xscrollcommand=hsb.set,
@@ -212,22 +212,22 @@ class FileDataSourceDemo:
 
     def _create_pagination(self, parent):
         """Create pagination controls."""
-        pag_frame = ttk.Frame(parent)
+        pag_frame = bs.Frame(parent)
         pag_frame.pack(side=LEFT, padx=5)
 
-        ttk.Button(pag_frame, text="⏮ First", command=self.first_page, width=8).pack(side=LEFT, padx=2)
-        ttk.Button(pag_frame, text="◀ Prev", command=self.prev_page, width=8).pack(side=LEFT, padx=2)
+        bs.Button(pag_frame, text="⏮ First", command=self.first_page, width=8).pack(side=LEFT, padx=2)
+        bs.Button(pag_frame, text="◀ Prev", command=self.prev_page, width=8).pack(side=LEFT, padx=2)
 
-        self.page_label = ttk.Label(pag_frame, text="Page: 0 / 0")
+        self.page_label = bs.Label(pag_frame, text="Page: 0 / 0")
         self.page_label.pack(side=LEFT, padx=10)
 
-        ttk.Button(pag_frame, text="Next ▶", command=self.next_page, width=8).pack(side=LEFT, padx=2)
-        ttk.Button(pag_frame, text="Last ⏭", command=self.last_page, width=8).pack(side=LEFT, padx=2)
+        bs.Button(pag_frame, text="Next ▶", command=self.next_page, width=8).pack(side=LEFT, padx=2)
+        bs.Button(pag_frame, text="Last ⏭", command=self.last_page, width=8).pack(side=LEFT, padx=2)
 
         # Page size
-        ttk.Label(pag_frame, text="Page size:").pack(side=LEFT, padx=10)
-        self.page_size_var = ttk.IntVar(value=25)
-        page_size_spin = ttk.Spinbox(
+        bs.Label(pag_frame, text="Page size:").pack(side=LEFT, padx=10)
+        self.page_size_var = bs.IntVar(value=25)
+        page_size_spin = bs.Spinbox(
             pag_frame,
             from_=10,
             to=100,
@@ -240,10 +240,10 @@ class FileDataSourceDemo:
 
     def _create_status(self, parent):
         """Create status display."""
-        status_frame = ttk.Frame(parent)
+        status_frame = bs.Frame(parent)
         status_frame.pack(side=RIGHT, padx=5)
 
-        self.status_label = ttk.Label(status_frame, text="Ready", bootstyle=INFO)
+        self.status_label = bs.Label(status_frame, text="Ready", bootstyle=INFO)
         self.status_label.pack()
 
     def _setup_treeview_columns(self, columns):
@@ -511,7 +511,7 @@ class FileDataSourceDemo:
 
 
 if __name__ == '__main__':
-    app = ttk.Window(theme="superhero")
+    app = bs.Window(theme="superhero")
     demo = FileDataSourceDemo(app)
 
     # Cleanup temp files on close

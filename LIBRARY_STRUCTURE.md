@@ -4,7 +4,7 @@
 
 | Property | Value |
 |----------|-------|
-| **Version** | 2.0.0a1 (Alpha) |
+| **Version** | 0.1.0 (Alpha) |
 | **Python** | 3.10+ |
 | **License** | MIT |
 

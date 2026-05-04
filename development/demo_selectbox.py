@@ -1,8 +1,8 @@
-import bootstack as ttk
+import bootstack as bs
 from bootstack import SelectBox
 
 
-app = ttk.Window(theme="darkly")
+app = bs.Window(theme="darkly")
 
 languages = [
     'Python', 'JavaScript', 'TypeScript', 'Java', 'C#', 'C++', 'C',

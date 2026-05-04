@@ -45,10 +45,10 @@ python -m pip install --upgrade bootstack
 Create a quick smoke test:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
-ttk.Label(app, text="Hello bootstack").pack(padx=20, pady=20)
+app = bs.App()
+bs.Label(app, text="Hello bootstack").pack(padx=20, pady=20)
 app.mainloop()
 ```
 

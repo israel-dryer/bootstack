@@ -4,17 +4,17 @@ from ttkbootstrap_icons_bs import BootstrapIcon
 import tkinter as tk
 from tkinter import ttk
 
-# import bootstack as ttk
+# import bootstack as bs
 #
 #
-# app = ttk.Window()
+# app = bs.Window()
 #
 # img = Image.new('RGBA', (14, 14), (0, 0, 0, 255))
 # pm = ImageTk.PhotoImage(image=img)
 #
 # icon = BootstrapIcon('bootstrap')
-# lbl = ttk.Label(font='caption', text='Icon', image=pm, anchor='center', compound='left', background='red', padding=5).pack(fill='both', expand=True)
-# btn = ttk.Button(text='Icon', image=pm, anchor='center', compound='left', style_options={'size': 'xs'}).pack()
+# lbl = bs.Label(font='caption', text='Icon', image=pm, anchor='center', compound='left', background='red', padding=5).pack(fill='both', expand=True)
+# btn = bs.Button(text='Icon', image=pm, anchor='center', compound='left', style_options={'size': 'xs'}).pack()
 #
 # app.mainloop()
 

@@ -6,7 +6,7 @@ title: Separator
 
 `Separator` is a **layout utility** for creating a subtle visual divider between regions.
 
-It wraps `ttk.Separator` and is used to separate content sections without adding heavy visual noise -- common in
+It wraps `bs.Separator` and is used to separate content sections without adding heavy visual noise -- common in
 forms, panels, tool areas, and menus.
 
 <!--
@@ -22,13 +22,13 @@ Theme variants: light / dark
 ### Horizontal separator
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-ttk.Label(app, text="Section A").pack(anchor="w", padx=20, pady=(20, 8))
-ttk.Separator(app, orient="horizontal").pack(fill="x", padx=20, pady=8)
-ttk.Label(app, text="Section B").pack(anchor="w", padx=20, pady=(8, 20))
+bs.Label(app, text="Section A").pack(anchor="w", padx=20, pady=(20, 8))
+bs.Separator(app, orient="horizontal").pack(fill="x", padx=20, pady=8)
+bs.Label(app, text="Section B").pack(anchor="w", padx=20, pady=(8, 20))
 
 app.mainloop()
 ```
@@ -36,7 +36,7 @@ app.mainloop()
 ### Vertical separator
 
 ```python
-sep = ttk.Separator(app, orient="vertical")
+sep = bs.Separator(app, orient="vertical")
 sep.pack(side="left", fill="y", padx=8, pady=8)
 ```
 
@@ -76,7 +76,7 @@ Separators are best used sparingly to:
 If your theme exposes separator variants, apply them via `accent` or `style`.
 
 ```python
-ttk.Separator(app, accent="secondary")
+bs.Separator(app, accent="secondary")
 ```
 
 ---
@@ -90,8 +90,8 @@ ttk.Separator(app, accent="secondary")
 - `"vertical"`
 
 ```python
-ttk.Separator(app, orient="horizontal")
-ttk.Separator(app, orient="vertical")
+bs.Separator(app, orient="horizontal")
+bs.Separator(app, orient="vertical")
 ```
 
 ---

@@ -13,11 +13,11 @@ It's ideal for representing parent/child relationships like folders, categories,
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-tree = ttk.Treeview(app)
+tree = bs.Treeview(app)
 tree.pack(fill="both", expand=True)
 
 tree.insert("", "end", text="Root")
@@ -53,7 +53,7 @@ Use TreeView when:
 TreeView supports theming through bootstack:
 
 ```python
-ttk.Treeview(app, accent="primary")
+bs.Treeview(app, accent="primary")
 ```
 
 !!! link "Design System"
@@ -74,7 +74,7 @@ ttk.Treeview(app, accent="primary")
 ### Building a tree
 
 ```python
-tree = ttk.Treeview(app)
+tree = bs.Treeview(app)
 tree.pack(fill="both", expand=True)
 
 # Insert root item
@@ -100,7 +100,7 @@ tree.insert(subfolder, "end", text="photo.jpg")
 ### With columns
 
 ```python
-tree = ttk.Treeview(app, columns=("size", "modified"))
+tree = bs.Treeview(app, columns=("size", "modified"))
 tree.heading("#0", text="Name")
 tree.heading("size", text="Size")
 tree.heading("modified", text="Modified")

@@ -11,14 +11,14 @@ Buttons allow users to take actions with a single click. They communicate availa
 Create a button by providing `text` and a `command` callback.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 def on_save():
     print("Saved!")
 
-ttk.Button(app, text="Save", command=on_save).pack(padx=20, pady=20)
+bs.Button(app, text="Save", command=on_save).pack(padx=20, pady=20)
 
 app.mainloop()
 ```
@@ -54,11 +54,11 @@ The `accent` parameter accepts semantic color tokens:
 </figure>
 
 ```python
-ttk.Button(app, text="Primary", accent="primary").pack(pady=4)
-ttk.Button(app, text="Outline", accent="primary", variant="outline").pack(pady=4)
-ttk.Button(app, text="Ghost", accent="primary", variant="ghost").pack(pady=4)
-ttk.Button(app, text="Link", accent="primary", variant="link").pack(pady=4)
-ttk.Button(app, text="Text", accent="secondary", variant="text").pack(pady=4)
+bs.Button(app, text="Primary", accent="primary").pack(pady=4)
+bs.Button(app, text="Outline", accent="primary", variant="outline").pack(pady=4)
+bs.Button(app, text="Ghost", accent="primary", variant="ghost").pack(pady=4)
+bs.Button(app, text="Link", accent="primary", variant="link").pack(pady=4)
+bs.Button(app, text="Text", accent="secondary", variant="text").pack(pady=4)
 ```
 
 ### Variants
@@ -74,7 +74,7 @@ Use for the primary, highest-emphasis action on a view (e.g., "Save", "Submit", 
 </figure>
 
 ```python
-ttk.Button(app, text="Solid")
+bs.Button(app, text="Solid")
 ```
 
 **Outline**
@@ -86,7 +86,7 @@ Use for secondary actions that should stay visible but clearly defer to the prim
 </figure>
 
 ```python
-ttk.Button(app, text="Outline", variant="outline")
+bs.Button(app, text="Outline", variant="outline")
 ```
 
 **Ghost**
@@ -98,7 +98,7 @@ Use for low-emphasis, contextual actions embedded in panels, lists, or toolbars 
 </figure>
 
 ```python
-ttk.Button(app, text="Ghost", variant="ghost")
+bs.Button(app, text="Ghost", variant="ghost")
 ```
 
 **Link**
@@ -110,7 +110,7 @@ Use for navigation or "take me somewhere" actions that should read like text (e.
 </figure>
 
 ```python
-ttk.Button(app, text="Link", variant="link")
+bs.Button(app, text="Link", variant="link")
 ```
 
 **Text**
@@ -122,7 +122,7 @@ Use for the lowest-emphasis utility actions—especially in dense UIs—where yo
 </figure>
 
 ```python
-ttk.Button(app, text="Text", variant="text")
+bs.Button(app, text="Text", variant="text")
 ```
 
 ---
@@ -141,10 +141,10 @@ where the icon/image is positioned relative to the label, and this is `"left"` b
 
 ```python
 # button with label & icon
-ttk.Button(app, text="Settings", icon="gear").pack(pady=6)
+bs.Button(app, text="Settings", icon="gear").pack(pady=6)
 
 # icon-only button
-ttk.Button(app, icon="gear", icon_only=True).pack(pady=6)
+bs.Button(app, icon="gear", icon_only=True).pack(pady=6)
 ```
 
 !!! link "See [Icons & Images](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
@@ -159,7 +159,7 @@ ttk.Button(app, icon="gear", icon_only=True).pack(pady=6)
 Disable a button until the user has completed a step.
 
 ```python
-btn = ttk.Button(app, text="Continue", accent="primary", state="disabled")
+btn = bs.Button(app, text="Continue", accent="primary", state="disabled")
 btn.pack()
 
 # later…
@@ -169,8 +169,8 @@ btn.configure(state="normal")
 ### Size and emphasis (`padding`, `width`, `underline`)
 
 ```python
-ttk.Button(app, text="Wide", width=18, padding=(12, 6)).pack(pady=6)
-ttk.Button(app, text="Exit", underline=1).pack(pady=6)
+bs.Button(app, text="Wide", width=18, padding=(12, 6)).pack(pady=6)
+bs.Button(app, text="Exit", underline=1).pack(pady=6)
 ```
 
 ---
@@ -193,7 +193,7 @@ If your application localization is enabled, you can pass a **message token** as
 through the active message catalog.
 
 ```python
-ttk.Button(app, text="button.save").pack()
+bs.Button(app, text="button.save").pack()
 ```
 
 !!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."
@@ -205,8 +205,8 @@ ttk.Button(app, text="button.save").pack()
 Use a signal when the label should update dynamically at runtime (for example, Start/Stop, Connect/Disconnect).
 
 ```python
-label = ttk.Signal("Start")
-ttk.Button(app, textsignal=label).pack()
+label = bs.Signal("Start")
+bs.Button(app, textsignal=label).pack()
 
 label.set("Stop")
 ```

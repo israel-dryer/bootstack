@@ -13,11 +13,11 @@ It's useful for design tools, theme editors, and workflows where the desired col
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-color = ttk.ColorDropper().show()
+color = bs.ColorDropper().show()
 print("color:", color)  # hex / rgb / None
 
 app.mainloop()

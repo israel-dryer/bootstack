@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0a1 — bootstack rebrand
+## 0.1.0 — initial release
 
 **Breaking changes:**
 

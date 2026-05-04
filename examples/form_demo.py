@@ -6,7 +6,7 @@ using groups and tabs.
 
 from datetime import date
 
-import bootstack as ttk
+import bootstack as bs
 from bootstack.constants import *
 from bootstack.widgets.composites.form import (
     FieldItem,
@@ -18,7 +18,7 @@ from bootstack.widgets.composites.form import (
 
 
 def main():
-    app = ttk.Window(title="Form Demo", theme="flatly")
+    app = bs.Window(title="Form Demo", theme="flatly")
     app.geometry("900x520")
 
     # --- inferred form -------------------------------------------------
@@ -32,7 +32,7 @@ def main():
         "start_date": date.today(),
     }
 
-    ttk.Label(app, text="Inferred Form").pack(anchor=W, padx=20, pady=(15, 4))
+    bs.Label(app, text="Inferred Form").pack(anchor=W, padx=20, pady=(15, 4))
     inferred_form = Form(
         app,
         data=inferred_data,
@@ -47,7 +47,7 @@ def main():
     inferred_form.pack(fill=X, padx=20)
 
     # --- explicit layout ----------------------------------------------
-    ttk.Label(app, text="Explicit Form Layout").pack(anchor=W, padx=20, pady=(16, 4))
+    bs.Label(app, text="Explicit Form Layout").pack(anchor=W, padx=20, pady=(16, 4))
 
     explicit_items = [
         GroupItem(
@@ -107,7 +107,7 @@ def main():
         print("Inferred result:", inferred_form.data)
         print("Explicit result:", explicit_form.data)
 
-    ttk.Button(app, text="Print Results", command=show_results, accent="secondary").pack(pady=(0, 15))
+    bs.Button(app, text="Print Results", command=show_results, accent="secondary").pack(pady=(0, 15))
 
     app.mainloop()
 

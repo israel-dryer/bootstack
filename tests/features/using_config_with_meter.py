@@ -1,12 +1,12 @@
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 
 root = tk.Tk()
-style = ttk.Style()
+style = bs.Style()
 colors = style.theme.colors
 
 # setup meter
-m = ttk.Meter(
+m = bs.Meter(
     master=root,
     metersize=180,
     amountused=25,

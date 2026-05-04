@@ -10,7 +10,7 @@ This demo showcases the PageStack widget's navigation features including:
 """
 
 import tkinter as tk
-import bootstack as ttk
+import bootstack as bs
 from bootstack import PageStack
 
 
@@ -28,53 +28,53 @@ class PageStackDemo:
 
     def _setup_ui(self):
         # Main container
-        container = ttk.Frame(self.root, padding=10)
+        container = bs.Frame(self.root, padding=10)
         container.pack(fill='both', expand=True)
 
         # Navigation controls at top
-        nav_frame = ttk.Frame(container)
+        nav_frame = bs.Frame(container)
         nav_frame.pack(fill='x', pady=(0, 10))
 
-        ttk.Label(nav_frame, text="Navigation Controls:",
+        bs.Label(nav_frame, text="Navigation Controls:",
                  font=('TkDefaultFont', 10, 'bold')).pack(side='left', padx=(0, 10))
 
-        self.back_btn = ttk.Button(nav_frame, text="← Back",
+        self.back_btn = bs.Button(nav_frame, text="← Back",
                                    command=self._on_back, state='disabled')
         self.back_btn.pack(side='left', padx=2)
 
-        self.forward_btn = ttk.Button(nav_frame, text="Forward →",
+        self.forward_btn = bs.Button(nav_frame, text="Forward →",
                                       command=self._on_forward, state='disabled')
         self.forward_btn.pack(side='left', padx=2)
 
-        ttk.Separator(nav_frame, orient='vertical').pack(side='left',
+        bs.Separator(nav_frame, orient='vertical').pack(side='left',
                                                          fill='y', padx=10)
 
         # Quick navigation buttons
-        ttk.Button(nav_frame, text="Home",
+        bs.Button(nav_frame, text="Home",
                   command=lambda: self.stack.navigate('home')).pack(side='left', padx=2)
-        ttk.Button(nav_frame, text="Profile",
+        bs.Button(nav_frame, text="Profile",
                   command=lambda: self.stack.navigate('profile',
                                                      data={'user': 'John Doe'})).pack(side='left', padx=2)
-        ttk.Button(nav_frame, text="Settings",
+        bs.Button(nav_frame, text="Settings",
                   command=lambda: self.stack.navigate('settings')).pack(side='left', padx=2)
-        ttk.Button(nav_frame, text="Details",
+        bs.Button(nav_frame, text="Details",
                   command=lambda: self.stack.navigate('details',
                                                      data={'item': 'Widget Demo'})).pack(side='left', padx=2)
 
         # History display
-        history_label = ttk.Label(container, textvariable=self.history_var,
+        history_label = bs.Label(container, textvariable=self.history_var,
                                  relief='sunken', padding=5)
         history_label.pack(fill='x', pady=(0, 10))
 
         # Event log
-        log_frame = ttk.LabelFrame(container, text="Event Log", padding=5)
+        log_frame = bs.LabelFrame(container, text="Event Log", padding=5)
         log_frame.pack(fill='x', pady=(0, 10))
 
         self.event_log = tk.Text(log_frame, height=6, wrap='word',
                                 state='disabled', font=('Courier', 9))
         self.event_log.pack(fill='both', expand=True)
 
-        scrollbar = ttk.Scrollbar(log_frame, orient='vertical',
+        scrollbar = bs.Scrollbar(log_frame, orient='vertical',
                                  command=self.event_log.yview)
         scrollbar.pack(side='right', fill='y')
         self.event_log.configure(yscrollcommand=scrollbar.set)
@@ -100,17 +100,17 @@ class PageStackDemo:
         home.columnconfigure(0, weight=1)
         home.rowconfigure(1, weight=1)
 
-        ttk.Label(home, text="🏠 Home Page",
+        bs.Label(home, text="🏠 Home Page",
                  font=('TkDefaultFont', 24, 'bold')).grid(row=0, column=0, pady=20)
 
-        info = ttk.Frame(home)
+        info = bs.Frame(home)
         info.grid(row=1, column=0, sticky='nsew', padx=20)
 
-        ttk.Label(info, text="Welcome to the PageStack Demo!",
+        bs.Label(info, text="Welcome to the PageStack Demo!",
                  font=('TkDefaultFont', 12)).pack(pady=10)
-        ttk.Label(info, text="Use the navigation buttons above to explore different pages.",
+        bs.Label(info, text="Use the navigation buttons above to explore different pages.",
                  wraplength=400).pack(pady=5)
-        ttk.Label(info, text="The PageStack widget manages page history like a web browser.",
+        bs.Label(info, text="The PageStack widget manages page history like a web browser.",
                  wraplength=400).pack(pady=5)
 
         # Profile Page
@@ -118,17 +118,17 @@ class PageStackDemo:
         profile.columnconfigure(0, weight=1)
         profile.rowconfigure(1, weight=1)
 
-        ttk.Label(profile, text="👤 Profile Page",
+        bs.Label(profile, text="👤 Profile Page",
                  font=('TkDefaultFont', 24, 'bold')).grid(row=0, column=0, pady=20)
 
-        profile_info = ttk.Frame(profile)
+        profile_info = bs.Frame(profile)
         profile_info.grid(row=1, column=0, sticky='nsew', padx=20)
 
-        self.profile_label = ttk.Label(profile_info, text="Profile data will appear here",
+        self.profile_label = bs.Label(profile_info, text="Profile data will appear here",
                                        font=('TkDefaultFont', 12))
         self.profile_label.pack(pady=10)
 
-        ttk.Button(profile_info, text="Edit Profile",
+        bs.Button(profile_info, text="Edit Profile",
                   command=lambda: self.stack.navigate('settings',
                                                      data={'from': 'profile'})).pack(pady=5)
 
@@ -140,21 +140,21 @@ class PageStackDemo:
         settings.columnconfigure(0, weight=1)
         settings.rowconfigure(1, weight=1)
 
-        ttk.Label(settings, text="⚙️ Settings Page",
+        bs.Label(settings, text="⚙️ Settings Page",
                  font=('TkDefaultFont', 24, 'bold')).grid(row=0, column=0, pady=20)
 
-        settings_info = ttk.Frame(settings)
+        settings_info = bs.Frame(settings)
         settings_info.grid(row=1, column=0, sticky='nsew', padx=20)
 
-        self.settings_label = ttk.Label(settings_info, text="Settings options",
+        self.settings_label = bs.Label(settings_info, text="Settings options",
                                         font=('TkDefaultFont', 12))
         self.settings_label.pack(pady=10)
 
-        ttk.CheckButton(settings_info, text="Enable notifications").pack(pady=5, anchor='w')
-        ttk.CheckButton(settings_info, text="Dark mode").pack(pady=5, anchor='w')
-        ttk.CheckButton(settings_info, text="Auto-save").pack(pady=5, anchor='w')
+        bs.CheckButton(settings_info, text="Enable notifications").pack(pady=5, anchor='w')
+        bs.CheckButton(settings_info, text="Dark mode").pack(pady=5, anchor='w')
+        bs.CheckButton(settings_info, text="Auto-save").pack(pady=5, anchor='w')
 
-        ttk.Button(settings_info, text="Save & Return",
+        bs.Button(settings_info, text="Save & Return",
                   command=lambda: self.stack.back()).pack(pady=10)
 
         settings.bind('<<PageWillMount>>', self._on_settings_mount)
@@ -164,20 +164,20 @@ class PageStackDemo:
         details.columnconfigure(0, weight=1)
         details.rowconfigure(1, weight=1)
 
-        ttk.Label(details, text="📄 Details Page",
+        bs.Label(details, text="📄 Details Page",
                  font=('TkDefaultFont', 24, 'bold')).grid(row=0, column=0, pady=20)
 
-        details_info = ttk.Frame(details)
+        details_info = bs.Frame(details)
         details_info.grid(row=1, column=0, sticky='nsew', padx=20)
 
-        self.details_label = ttk.Label(details_info, text="Details will appear here",
+        self.details_label = bs.Label(details_info, text="Details will appear here",
                                        font=('TkDefaultFont', 12))
         self.details_label.pack(pady=10)
 
-        ttk.Button(details_info, text="Navigate with Replace",
+        bs.Button(details_info, text="Navigate with Replace",
                   command=lambda: self.stack.navigate('home', replace=True),
                   accent='warning').pack(pady=5)
-        ttk.Label(details_info, text="(Replace won't add to history)",
+        bs.Label(details_info, text="(Replace won't add to history)",
                  font=('TkDefaultFont', 8)).pack()
 
         details.bind('<<PageWillMount>>', self._on_details_mount)
@@ -255,7 +255,7 @@ class PageStackDemo:
 
 
 def main():
-    root = ttk.Window(theme="cosmo")
+    root = bs.Window(theme="cosmo")
     app = PageStackDemo(root)
     root.mainloop()
 

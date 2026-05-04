@@ -16,11 +16,11 @@ themeable (light/dark), enables icons, and allows richer layout and interaction 
 Create a menu, add items, and show it in response to a right-click.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-menu = ttk.ContextMenu(app)
+menu = bs.ContextMenu(app)
 menu.add_command(text="Open", icon="folder-open", command=lambda: print("Open"))
 menu.add_command(text="Rename", command=lambda: print("Rename"))
 menu.add_separator()
@@ -74,7 +74,7 @@ menu.add_checkbutton(text="Pin to sidebar", value=False)
 Use radio items for selecting one option from a set.
 
 ```python
-sort_var = ttk.StringVar(value="name")
+sort_var = bs.StringVar(value="name")
 menu.add_radiobutton(text="Sort by name", value="name", variable=sort_var)
 menu.add_radiobutton(text="Sort by date", value="date", variable=sort_var)
 ```
@@ -124,7 +124,7 @@ menu.add_command(text="menu.delete", command=on_delete)
 ### Attach to a target widget
 
 ```python
-menu = ttk.ContextMenu(
+menu = bs.ContextMenu(
     app,
     target=my_button,
     anchor="nw",
@@ -150,7 +150,7 @@ Build context-sensitive menus by creating a new menu or conditionally adding ite
 
 ```python
 def on_right_click(event):
-    menu = ttk.ContextMenu(root)
+    menu = bs.ContextMenu(root)
     menu.add_command(text="Open", command=on_open)
     if can_delete():
         menu.add_command(text="Delete", command=on_delete)

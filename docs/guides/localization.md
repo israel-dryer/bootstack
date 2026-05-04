@@ -25,13 +25,13 @@ bootstack treats localization as a framework-level concern, not widget-by-widget
 A localized application:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(locale="es")
+app = bs.App(locale="es")
 
 # Use message keys instead of literal text
-ttk.Label(app, text="greeting.hello").pack(pady=20)
-ttk.Button(app, text="actions.save").pack(pady=10)
+bs.Label(app, text="greeting.hello").pack(pady=20)
+bs.Button(app, text="actions.save").pack(pady=10)
 
 app.mainloop()
 ```
@@ -71,14 +71,14 @@ Each file contains key-value pairs:
 ### Loading Catalogs
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import MessageCatalog
 
 # Load catalog from file
 MessageCatalog.load("locales/en.json")
 MessageCatalog.load("locales/es.json")
 
-app = ttk.App(locale="en")
+app = bs.App(locale="en")
 ```
 
 ### Using Message Keys
@@ -88,20 +88,20 @@ Widgets automatically resolve message keys:
 ```python
 # If "greeting.hello" exists in catalog, it's resolved
 # If not, the literal string is displayed
-ttk.Label(app, text="greeting.hello")
+bs.Label(app, text="greeting.hello")
 ```
 
 This behavior uses `localize="auto"` (the default):
 
 ```python
 # Auto: resolve if key exists, otherwise use literal
-ttk.Label(app, text="greeting.hello")  # localize="auto"
+bs.Label(app, text="greeting.hello")  # localize="auto"
 
 # Force localization (error if key missing)
-ttk.Label(app, text="greeting.hello", localize=True)
+bs.Label(app, text="greeting.hello", localize=True)
 
 # Disable localization (always literal)
-ttk.Label(app, text="Hello, World!", localize=False)
+bs.Label(app, text="Hello, World!", localize=False)
 ```
 
 ---
@@ -132,12 +132,12 @@ For reactive updates with signals:
 ```python
 from bootstack import LV
 
-name = ttk.Signal("Guest")
+name = bs.Signal("Guest")
 
 # LV() returns a signal that updates when inputs change
 greeting = LV("greeting.welcome", name=name)
 
-label = ttk.Label(app, textvariable=greeting)
+label = bs.Label(app, textvariable=greeting)
 ```
 
 When `name` changes, `greeting` updates automatically.
@@ -149,10 +149,10 @@ When `name` changes, `greeting` updates automatically.
 Switch languages without restarting:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import set_locale, get_locale
 
-app = ttk.App(locale="en")
+app = bs.App(locale="en")
 
 def switch_to_spanish():
     set_locale("es")
@@ -160,11 +160,11 @@ def switch_to_spanish():
 def switch_to_english():
     set_locale("en")
 
-ttk.Button(app, text="Español", command=switch_to_spanish).pack()
-ttk.Button(app, text="English", command=switch_to_english).pack()
+bs.Button(app, text="Español", command=switch_to_spanish).pack()
+bs.Button(app, text="English", command=switch_to_english).pack()
 
 # This label updates when locale changes
-ttk.Label(app, text="greeting.hello").pack(pady=20)
+bs.Label(app, text="greeting.hello").pack(pady=20)
 
 app.mainloop()
 ```
@@ -203,13 +203,13 @@ formatted = formatter.format_currency(99.99, "EUR")  # "99,99 €"
 Some widgets format values automatically based on locale:
 
 ```python
-app = ttk.App(locale="de")
+app = bs.App(locale="de")
 
 # DateEntry displays dates in German format
-ttk.DateEntry(app).pack()
+bs.DateEntry(app).pack()
 
 # NumericEntry uses locale decimal separator
-ttk.NumericEntry(app).pack()
+bs.NumericEntry(app).pack()
 ```
 
 ---
@@ -219,14 +219,14 @@ ttk.NumericEntry(app).pack()
 ### Language Selector
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import set_locale
 
-app = ttk.App(locale="en")
+app = bs.App(locale="en")
 
 languages = [("English", "en"), ("Español", "es"), ("Français", "fr")]
 
-selector = ttk.OptionMenu(
+selector = bs.OptionMenu(
     app,
     values=[name for name, _ in languages],
     command=lambda name: set_locale(
@@ -241,22 +241,22 @@ app.mainloop()
 ### Localized Form
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(locale="en")
+app = bs.App(locale="en")
 
-form = ttk.GridFrame(app, columns=["auto", 1], gap=10, padding=20)
+form = bs.GridFrame(app, columns=["auto", 1], gap=10, padding=20)
 form.pack(fill="both", expand=True)
 
 # Labels use message keys
-ttk.Label(form, text="form.username").grid()
-ttk.Entry(form).grid(sticky="ew")
+bs.Label(form, text="form.username").grid()
+bs.Entry(form).grid(sticky="ew")
 
-ttk.Label(form, text="form.password").grid()
-ttk.Entry(form, show="*").grid(sticky="ew")
+bs.Label(form, text="form.password").grid()
+bs.Entry(form, show="*").grid(sticky="ew")
 
 # Button uses message key
-ttk.Button(form, text="actions.login").grid(column=1, sticky="e")
+bs.Button(form, text="actions.login").grid(column=1, sticky="e")
 
 app.mainloop()
 ```
@@ -264,23 +264,23 @@ app.mainloop()
 ### Dynamic Messages
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 from bootstack import LV
 
-app = ttk.App()
+app = bs.App()
 
 # Reactive count
-count = ttk.Signal(0)
+count = bs.Signal(0)
 
 # Message updates when count changes
 status = LV("items.selected", count=count)
 
-ttk.Label(app, textvariable=status).pack(pady=20)
+bs.Label(app, textvariable=status).pack(pady=20)
 
 def add_item():
     count.set(count.get() + 1)
 
-ttk.Button(app, text="Add", command=add_item).pack()
+bs.Button(app, text="Add", command=add_item).pack()
 
 app.mainloop()
 ```

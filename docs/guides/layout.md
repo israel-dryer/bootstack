@@ -47,18 +47,18 @@ PackFrame lets you describe *what you want*:
 Instead of *how* to pack each widget.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-form = ttk.PackFrame(app, direction="vertical", gap=8, padding=12)
+form = bs.PackFrame(app, direction="vertical", gap=8, padding=12)
 form.pack(fill="both", expand=True)
 
-ttk.Label(form, text="Username").pack()
-ttk.Entry(form).pack()
-ttk.Label(form, text="Password").pack()
-ttk.Entry(form, show="*").pack()
-ttk.Button(form, text="Login", accent="primary").pack()
+bs.Label(form, text="Username").pack()
+bs.Entry(form).pack()
+bs.Label(form, text="Password").pack()
+bs.Entry(form, show="*").pack()
+bs.Button(form, text="Login", accent="primary").pack()
 
 app.mainloop()
 ```
@@ -89,19 +89,19 @@ GridFrame allows you to declare:
 without manually configuring every cell.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-grid = ttk.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12, sticky_items="e")
+grid = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12, sticky_items="e")
 grid.pack(fill="both", expand=True)
 
 # Auto-placement: wraps to next row after filling columns
-ttk.Label(grid, text="Name").grid()
-ttk.Entry(grid).grid()
-ttk.Label(grid, text="Email").grid()
-ttk.Entry(grid).grid()
-ttk.Button(grid, text="Save", accent="primary").grid(columnspan=2)
+bs.Label(grid, text="Name").grid()
+bs.Entry(grid).grid()
+bs.Label(grid, text="Email").grid()
+bs.Entry(grid).grid()
+bs.Button(grid, text="Save", accent="primary").grid(columnspan=2)
 
 app.mainloop()
 ```
@@ -117,16 +117,16 @@ Use **Card** to group related content in a visually elevated container with a bo
 Card is a convenience wrapper around Frame with `accent='card'`, `show_border=True`, and `padding=16` by default.
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-card = ttk.Card(app)
+card = bs.Card(app)
 card.pack(fill="x", padx=12, pady=12)
 
-ttk.Label(card, text="User Settings", font="label").pack(anchor="w")
-ttk.CheckButton(card, text="Enable notifications").pack(anchor="w")
-ttk.CheckButton(card, text="Dark mode").pack(anchor="w")
+bs.Label(card, text="User Settings", font="label").pack(anchor="w")
+bs.CheckButton(card, text="Enable notifications").pack(anchor="w")
+bs.CheckButton(card, text="Dark mode").pack(anchor="w")
 
 app.mainloop()
 ```
@@ -153,10 +153,10 @@ You may choose this approach when:
 This approach gives you maximum control — but requires deeper knowledge of geometry flags and interactions.
 
 ```python
-frame = ttk.Frame(app)
+frame = bs.Frame(app)
 frame.pack(fill="both", expand=True)
 
-label = ttk.Label(frame, text="Hello")
+label = bs.Label(frame, text="Hello")
 label.grid(row=0, column=0, sticky="w", padx=8, pady=4)
 ```
 
@@ -177,20 +177,20 @@ Use nesting to:
 Prefer **shallow, intentional nesting** over deeply nested widget‑level configuration.
 
 ```python
-grid = ttk.GridFrame(app, columns=[1, 1], gap=12, padding=12, sticky_items="nsew")
+grid = bs.GridFrame(app, columns=[1, 1], gap=12, padding=12, sticky_items="nsew")
 grid.pack(fill="both", expand=True)
 
 # Left column
-left = ttk.PackFrame(grid, direction="vertical", gap=6)
+left = bs.PackFrame(grid, direction="vertical", gap=6)
 left.grid()
-ttk.Label(left, text="General", font="label").pack()
-ttk.CheckButton(left, text="Enable feature").pack()
+bs.Label(left, text="General", font="label").pack()
+bs.CheckButton(left, text="Enable feature").pack()
 
 # Right column
-right = ttk.PackFrame(grid, direction="vertical", gap=6)
+right = bs.PackFrame(grid, direction="vertical", gap=6)
 right.grid()
-ttk.Label(right, text="Advanced", font="label").pack()
-ttk.CheckButton(right, text="Verbose logging").pack()
+bs.Label(right, text="Advanced", font="label").pack()
+bs.CheckButton(right, text="Verbose logging").pack()
 ```
 
 ---
@@ -200,14 +200,14 @@ ttk.CheckButton(right, text="Verbose logging").pack()
 Both `pack()` and `grid()` return the widget for method chaining:
 
 ```python
-form = ttk.PackFrame(app, direction="vertical", gap=8)
+form = bs.PackFrame(app, direction="vertical", gap=8)
 form.pack(fill="both", expand=True)
 
 # Create and pack in one line, store reference
-entry = ttk.Entry(form).pack()
+entry = bs.Entry(form).pack()
 
 # Chain further calls
-ttk.Button(form, text="Submit").pack().configure(command=submit)
+bs.Button(form, text="Submit").pack().configure(command=submit)
 ```
 
 ---

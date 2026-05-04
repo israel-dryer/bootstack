@@ -5,14 +5,14 @@ title: Notebook
 # Notebook
 
 !!! note "Consider TabView"
-    `Notebook` is included as a wrapper around the native `ttk.Notebook` widget.
+    `Notebook` is included as a wrapper around the native `bs.Notebook` widget.
     For new projects, consider using [TabView](tabview.md) instead, which offers
     a more modern appearance, closable tabs, dynamic tab creation, and better
     integration with bootstack's design system.
 
 `Notebook` is a **tabbed view container** that shows one page at a time and lets users switch views by clicking tabs.
 
-bootstack's `Notebook` extends `ttk.Notebook` with:
+bootstack's `Notebook` extends `bs.Notebook` with:
 
 - **key-based tab references** (stable, human-friendly)
 
@@ -35,19 +35,19 @@ Theme variants: light / dark
 Create a notebook and add tabs using `add()`:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-nb = ttk.Notebook(app, accent="primary")
+nb = bs.Notebook(app, accent="primary")
 nb.pack(fill="both", expand=True, padx=20, pady=20)
 
 # add() creates a Frame and returns it
 home = nb.add(text="Home", key="home")
 settings = nb.add(text="Settings", key="settings")
 
-ttk.Label(home, text="Home content").pack(anchor="w", padx=10, pady=10)
-ttk.Label(settings, text="Settings content").pack(anchor="w", padx=10, pady=10)
+bs.Label(home, text="Home content").pack(anchor="w", padx=10, pady=10)
+bs.Label(settings, text="Settings content").pack(anchor="w", padx=10, pady=10)
 
 app.mainloop()
 ```
@@ -55,8 +55,8 @@ app.mainloop()
 You can also add an existing widget as a tab:
 
 ```python
-page = ttk.Frame(nb, padding=10)
-ttk.Label(page, text="I was created outside the notebook").pack(anchor="w")
+page = bs.Frame(nb, padding=10)
+bs.Label(page, text="I was created outside the notebook").pack(anchor="w")
 
 nb.add(page, key="external", text="External")
 ```
@@ -90,7 +90,7 @@ Consider a different control when:
 Apply an accent to change the tab accent color:
 
 ```python
-nb = ttk.Notebook(app, accent="primary")
+nb = bs.Notebook(app, accent="primary")
 ```
 
 !!! link "Design System"
@@ -125,7 +125,7 @@ Use `add()` without a child to create a Frame automatically:
 
 ```python
 page = nb.add(text="Logs", key="logs")
-ttk.Label(page, text="Log content").pack()
+bs.Label(page, text="Log content").pack()
 ```
 
 Use `insert()` to add at a specific position:

@@ -22,22 +22,22 @@ Theme variants: light / dark
 Create a tabbed view with pages:
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-tabview = ttk.TabView(app, height=200)
+tabview = bs.TabView(app, height=200)
 tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
 # Add tabs with content
 home = tabview.add("home", text="Home", icon="house")
-ttk.Label(home, text="Welcome to the Home page!").pack(padx=20, pady=20)
+bs.Label(home, text="Welcome to the Home page!").pack(padx=20, pady=20)
 
 files = tabview.add("files", text="Files", icon="folder2")
-ttk.Label(files, text="Browse your files here.").pack(padx=20, pady=20)
+bs.Label(files, text="Browse your files here.").pack(padx=20, pady=20)
 
 settings = tabview.add("settings", text="Settings", icon="gear")
-ttk.Label(settings, text="Configure your settings.").pack(padx=20, pady=20)
+bs.Label(settings, text="Configure your settings.").pack(padx=20, pady=20)
 
 app.mainloop()
 ```
@@ -77,10 +77,10 @@ TabView supports two visual variants:
 
 ```python
 # Bar variant (default)
-tabview = ttk.TabView(app, variant="bar")
+tabview = bs.TabView(app, variant="bar")
 
 # Pill variant
-tabview = ttk.TabView(app, variant="pill")
+tabview = bs.TabView(app, variant="pill")
 ```
 
 ### Orientation
@@ -89,10 +89,10 @@ Tabs can appear above or beside the content:
 
 ```python
 # Horizontal tabs above content (default)
-tabview = ttk.TabView(app, orient="horizontal")
+tabview = bs.TabView(app, orient="horizontal")
 
 # Vertical tabs beside content
-tabview = ttk.TabView(app, orient="vertical")
+tabview = bs.TabView(app, orient="vertical")
 ```
 
 !!! link "Design System"
@@ -109,7 +109,7 @@ Use `add()` to create a tab and its content page:
 ```python
 page = tabview.add("profile", text="Profile", icon="person")
 # page is a Frame - add widgets to it
-ttk.Label(page, text="User profile").pack()
+bs.Label(page, text="User profile").pack()
 ```
 
 The `key` uniquely identifies each tab/page pair.
@@ -119,7 +119,7 @@ The `key` uniquely identifies each tab/page pair.
 Enable close buttons to allow users to remove tabs:
 
 ```python
-tabview = ttk.TabView(app, enable_closing=True)
+tabview = bs.TabView(app, enable_closing=True)
 ```
 
 With `enable_closing=True`, clicking the close button automatically removes
@@ -138,7 +138,7 @@ tabview.add("doc1", text="Document", closable=True, close_command=on_close)
 Show an "add" button for creating new tabs:
 
 ```python
-tabview = ttk.TabView(app, enable_adding=True)
+tabview = bs.TabView(app, enable_adding=True)
 
 counter = [0]
 
@@ -146,7 +146,7 @@ def on_add(event):
     counter[0] += 1
     key = f"doc{counter[0]}"
     page = tabview.add(key, text=f"Document {counter[0]}", icon="file-text")
-    ttk.Label(page, text=f"Content for Document {counter[0]}").pack()
+    bs.Label(page, text=f"Content for Document {counter[0]}").pack()
 
 tabview.on_tab_added(on_add)
 ```

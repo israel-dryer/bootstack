@@ -19,17 +19,17 @@ Theme variants: light / dark
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-sv = ttk.ScrollView(app)
+sv = bs.ScrollView(app)
 sv.pack(fill="both", expand=True, padx=20, pady=20)
 
 # Get the content frame and add widgets to it
 content = sv.add()
 for i in range(30):
-    ttk.Label(content, text=f"Row {i+1}").pack(anchor="w", pady=4)
+    bs.Label(content, text=f"Row {i+1}").pack(anchor="w", pady=4)
 
 app.mainloop()
 ```
@@ -76,12 +76,12 @@ Use `ScrollView` when:
 Use `add()` to get a content frame for placing widgets.
 
 ```python
-sv = ttk.ScrollView(app)
+sv = bs.ScrollView(app)
 sv.pack(fill="both", expand=True)
 
 content = sv.add()  # Returns a Frame
 for i in range(30):
-    ttk.Label(content, text=f"Item {i+1}").pack(anchor="w", pady=4)
+    bs.Label(content, text=f"Item {i+1}").pack(anchor="w", pady=4)
 ```
 
 Frame options (padding, color, etc.) can be passed directly:
@@ -97,10 +97,10 @@ Calling `add()` multiple times returns the same frame (idempotent).
 You can also pass your own widget to `add()`:
 
 ```python
-my_frame = ttk.Frame(sv.canvas, padding=16)
+my_frame = bs.Frame(sv.canvas, padding=16)
 sv.add(my_frame)
 
-ttk.Label(my_frame, text="Custom frame with padding").pack()
+bs.Label(my_frame, text="Custom frame with padding").pack()
 ```
 
 ### Scroll direction
@@ -108,9 +108,9 @@ ttk.Label(my_frame, text="Custom frame with padding").pack()
 Choose vertical, horizontal, or both scrolling depending on content.
 
 ```python
-ttk.ScrollView(app, scroll_direction='vertical')    # default
-ttk.ScrollView(app, scroll_direction='horizontal')
-ttk.ScrollView(app, scroll_direction='both')
+bs.ScrollView(app, scroll_direction='vertical')    # default
+bs.ScrollView(app, scroll_direction='horizontal')
+bs.ScrollView(app, scroll_direction='both')
 ```
 
 ### Scrollbar visibility
@@ -118,10 +118,10 @@ ttk.ScrollView(app, scroll_direction='both')
 Use auto-hide policies to keep UI clean.
 
 ```python
-ttk.ScrollView(app, scrollbar_visibility='always')    # default
-ttk.ScrollView(app, scrollbar_visibility='never')     # hidden but scrolling works
-ttk.ScrollView(app, scrollbar_visibility='hover')     # appear on mouse enter
-ttk.ScrollView(app, scrollbar_visibility='scroll')    # appear when scrolling
+bs.ScrollView(app, scrollbar_visibility='always')    # default
+bs.ScrollView(app, scrollbar_visibility='never')     # hidden but scrolling works
+bs.ScrollView(app, scrollbar_visibility='hover')     # appear on mouse enter
+bs.ScrollView(app, scrollbar_visibility='scroll')    # appear when scrolling
 ```
 
 ### Padding
@@ -130,11 +130,11 @@ Add padding to your content frame:
 
 ```python
 content = sv.add()
-inner = ttk.Frame(content, padding=16)
+inner = bs.Frame(content, padding=16)
 inner.pack(fill="both", expand=True)
 
 for i in range(20):
-    ttk.Label(inner, text=f"Item {i+1}").pack(anchor="w", pady=4)
+    bs.Label(inner, text=f"Item {i+1}").pack(anchor="w", pady=4)
 ```
 
 ---

@@ -12,10 +12,10 @@ This package exposes Bootstrap-styled dialogs for common interactions:
 
 Example:
 
-    import bootstack as ttk
+    import bootstack as bs
     from bootstack.dialogs import MessageBox, QueryBox
 
-    root = ttk.Window()
+    root = bs.Window()
     MessageBox.ok("Operation completed successfully!")
     answer = MessageBox.yesno("Do you want to continue?")
     name = QueryBox.get_string("Enter your name:")

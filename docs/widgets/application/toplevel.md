@@ -13,15 +13,15 @@ Use it for dialogs, tool palettes, inspectors, or any auxiliary window.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App(title="Main Window")
+app = bs.App(title="Main Window")
 
 def open_window():
-    win = ttk.Toplevel(title="Settings", size=(400, 300))
-    ttk.Label(win, text="Secondary window").pack(padx=20, pady=20)
+    win = bs.Toplevel(title="Settings", size=(400, 300))
+    bs.Label(win, text="Secondary window").pack(padx=20, pady=20)
 
-ttk.Button(app, text="Open Window", command=open_window).pack(pady=20)
+bs.Button(app, text="Open Window", command=open_window).pack(pady=20)
 
 app.mainloop()
 ```

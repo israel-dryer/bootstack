@@ -15,18 +15,18 @@ Children simply call the standard `pack()` method and automatically receive the 
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
 # Vertical stack with gap
-stack = ttk.PackFrame(app, direction="vertical", gap=10, padding=20)
+stack = bs.PackFrame(app, direction="vertical", gap=10, padding=20)
 stack.pack(fill="both", expand=True)
 
 # Add widgets using standard pack()
-ttk.Button(stack, text="First").pack()
-ttk.Button(stack, text="Second").pack()
-ttk.Button(stack, text="Third").pack()
+bs.Button(stack, text="First").pack()
+bs.Button(stack, text="Second").pack()
+bs.Button(stack, text="Third").pack()
 
 app.mainloop()
 ```
@@ -57,7 +57,7 @@ Use `PackFrame` when:
 `PackFrame` inherits all styling options from Frame. Use `accent` for semantic tokens.
 
 ```python
-ttk.PackFrame(app, accent="secondary", padding=20)
+bs.PackFrame(app, accent="secondary", padding=20)
 ```
 
 !!! link "Design System"
@@ -73,13 +73,13 @@ Controls the layout direction. Options: `"vertical"`, `"horizontal"`, `"row"`, `
 
 ```python
 # Vertical stack (top to bottom)
-ttk.PackFrame(app, direction="vertical")
+bs.PackFrame(app, direction="vertical")
 
 # Horizontal row (left to right)
-ttk.PackFrame(app, direction="horizontal")
+bs.PackFrame(app, direction="horizontal")
 
 # Reverse order (bottom to top)
-ttk.PackFrame(app, direction="column-reverse")
+bs.PackFrame(app, direction="column-reverse")
 ```
 
 ### `gap`
@@ -87,7 +87,7 @@ ttk.PackFrame(app, direction="column-reverse")
 Spacing between children in pixels.
 
 ```python
-ttk.PackFrame(app, direction="vertical", gap=12)
+bs.PackFrame(app, direction="vertical", gap=12)
 ```
 
 ### `fill_items` / `expand_items`
@@ -96,10 +96,10 @@ Default fill and expand behavior for all children.
 
 ```python
 # All children fill horizontally
-stack = ttk.PackFrame(app, direction="vertical", fill_items="x")
+stack = bs.PackFrame(app, direction="vertical", fill_items="x")
 
 # All children expand to fill available space
-stack = ttk.PackFrame(app, direction="vertical", expand_items=True)
+stack = bs.PackFrame(app, direction="vertical", expand_items=True)
 ```
 
 ### `anchor_items`
@@ -107,7 +107,7 @@ stack = ttk.PackFrame(app, direction="vertical", expand_items=True)
 Default anchor for children.
 
 ```python
-ttk.PackFrame(app, direction="vertical", anchor_items="w")
+bs.PackFrame(app, direction="vertical", anchor_items="w")
 ```
 
 ### `propagate`
@@ -116,7 +116,7 @@ Control whether the frame resizes to fit its contents.
 
 ```python
 # Fixed size frame
-stack = ttk.PackFrame(app, width=300, height=400, propagate=False)
+stack = bs.PackFrame(app, width=300, height=400, propagate=False)
 ```
 
 ### Adding widgets
@@ -124,15 +124,15 @@ stack = ttk.PackFrame(app, width=300, height=400, propagate=False)
 Children use standard `pack()` to add themselves. The frame automatically applies its defaults.
 
 ```python
-stack = ttk.PackFrame(app, direction="vertical", gap=8, fill_items="x")
+stack = bs.PackFrame(app, direction="vertical", gap=8, fill_items="x")
 
 # These all use the frame's defaults (fill="x", gap spacing)
-ttk.Button(stack, text="Button 1").pack()
-ttk.Button(stack, text="Button 2").pack()
-ttk.Button(stack, text="Button 3").pack()
+bs.Button(stack, text="Button 1").pack()
+bs.Button(stack, text="Button 2").pack()
+bs.Button(stack, text="Button 3").pack()
 
 # Override defaults for specific widgets
-ttk.Label(stack, text="Centered").pack(fill="none", anchor="center")
+bs.Label(stack, text="Centered").pack(fill="none", anchor="center")
 ```
 
 ### Method chaining
@@ -140,11 +140,11 @@ ttk.Label(stack, text="Centered").pack(fill="none", anchor="center")
 The `pack()` method returns the widget for chaining:
 
 ```python
-btn = ttk.Button(stack, text="Click").pack()
+btn = bs.Button(stack, text="Click").pack()
 btn.configure(command=my_callback)
 
 # Or chain further
-ttk.Entry(stack).pack().focus()
+bs.Entry(stack).pack().focus()
 ```
 
 ### Insertion order
@@ -152,13 +152,13 @@ ttk.Entry(stack).pack().focus()
 Use `before` and `after` to control widget placement:
 
 ```python
-stack = ttk.PackFrame(app, direction="vertical", gap=10)
+stack = bs.PackFrame(app, direction="vertical", gap=10)
 
-first = ttk.Label(stack, text="First").pack()
-last = ttk.Label(stack, text="Last").pack()
+first = bs.Label(stack, text="First").pack()
+last = bs.Label(stack, text="Last").pack()
 
 # Insert between existing widgets
-ttk.Label(stack, text="Middle").pack(after=first)
+bs.Label(stack, text="Middle").pack(after=first)
 ```
 
 ### Removing widgets
@@ -166,7 +166,7 @@ ttk.Label(stack, text="Middle").pack(after=first)
 Use standard `pack_forget()` to remove widgets:
 
 ```python
-btn = ttk.Button(stack, text="Removable").pack()
+btn = bs.Button(stack, text="Removable").pack()
 
 # Later, remove it
 btn.pack_forget()

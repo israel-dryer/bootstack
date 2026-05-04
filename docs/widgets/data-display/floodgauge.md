@@ -13,11 +13,11 @@ It's especially useful for capacity, utilization, or threshold-based indicators.
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-fg = ttk.FloodGauge(app, value=75)
+fg = bs.FloodGauge(app, value=75)
 fg.pack(fill="x", padx=20, pady=20)
 
 app.mainloop()
@@ -52,9 +52,9 @@ Use FloodGauge when:
 Flood gauges often change color as thresholds are crossed:
 
 ```python
-ttk.FloodGauge(app, accent="warning")
-ttk.FloodGauge(app, accent="danger")
-ttk.FloodGauge(app, accent="success")
+bs.FloodGauge(app, accent="warning")
+bs.FloodGauge(app, accent="danger")
+bs.FloodGauge(app, accent="success")
 ```
 
 !!! link "Design System"
@@ -71,14 +71,14 @@ ttk.FloodGauge(app, accent="success")
 - optional thresholds can alter styling
 
 ```python
-fg = ttk.FloodGauge(app, value=80, maximum=100)
+fg = bs.FloodGauge(app, value=80, maximum=100)
 fg.pack()
 ```
 
 ### Programmatic control
 
 ```python
-fg = ttk.FloodGauge(app, value=50)
+fg = bs.FloodGauge(app, value=50)
 fg.pack()
 
 # Get/set methods
@@ -107,7 +107,7 @@ print(fg.cget('value')) # Returns 100
 ### With text label
 
 ```python
-ttk.FloodGauge(
+bs.FloodGauge(
     app,
     value=65,
     text="Storage"
@@ -117,7 +117,7 @@ ttk.FloodGauge(
 ### Vertical orientation
 
 ```python
-ttk.FloodGauge(
+bs.FloodGauge(
     app,
     value=50,
     orient="vertical"
@@ -141,8 +141,8 @@ ttk.FloodGauge(
 FloodGauge can be updated dynamically by binding to signals:
 
 ```python
-level = ttk.Signal(25)
-fg = ttk.FloodGauge(app, value=level)
+level = bs.Signal(25)
+fg = bs.FloodGauge(app, value=level)
 
 # Update value
 level.set(90)  # FloodGauge updates automatically

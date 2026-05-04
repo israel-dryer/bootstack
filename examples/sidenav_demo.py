@@ -8,20 +8,20 @@ Demonstrates the SideNav container with actual page navigation:
 - Display mode switching (expanded, compact, minimal)
 """
 
-import bootstack as ttk
+import bootstack as bs
 
 
 def create_page(parent, title, description):
     """Create a demo page with title and content."""
-    page = ttk.Frame(parent, padding=20)
+    page = bs.Frame(parent, padding=20)
 
-    ttk.Label(page, text=title, font='heading-xl').pack(anchor='w', pady=(0, 10))
-    ttk.Label(page, text=description, wraplength=500).pack(anchor='w', pady=(0, 20))
+    bs.Label(page, text=title, font='heading-xl').pack(anchor='w', pady=(0, 10))
+    bs.Label(page, text=description, wraplength=500).pack(anchor='w', pady=(0, 20))
 
     # Add some demo content
-    demo_frame = ttk.LabelFrame(page, text='Page Content', padding=20)
+    demo_frame = bs.LabelFrame(page, text='Page Content', padding=20)
     demo_frame.pack(fill='both', expand=True)
-    ttk.Label(
+    bs.Label(
         demo_frame,
         text=f'This is the {title} page.\n\nAdd your content here.',
     ).pack(expand=True)
@@ -30,20 +30,20 @@ def create_page(parent, title, description):
 
 
 def main():
-    root = ttk.App(theme="rose-light", title="SideNav Demo", size=(1000, 650))
+    root = bs.App(theme="rose-light", title="SideNav Demo", size=(1000, 650))
 
-    container = ttk.Frame(root).pack(fill='both', expand=True)
+    container = bs.Frame(root).pack(fill='both', expand=True)
 
     # --- Toolbar at the top (spans full width) ---
-    toolbar = ttk.Toolbar(container, padding=(5, 0), surface='chrome', show_window_controls=False)
+    toolbar = bs.Toolbar(container, padding=(5, 0), surface='chrome', show_window_controls=False)
     toolbar.pack(fill='x')
 
     # --- Main container below toolbar ---
-    main_container = ttk.Frame(container)
+    main_container = bs.Frame(container)
     main_container.pack(fill='both', expand=True)
 
     # SideNav on the left (no internal header - using external toolbar)
-    nav = ttk.SideNav(main_container, show_header=False, collapsible=False)
+    nav = bs.SideNav(main_container, show_header=False, collapsible=False)
     nav.pack(side='left', fill='y')
 
     # Add toolbar buttons that control the navigation
@@ -53,10 +53,10 @@ def main():
     )
 
     toolbar.add_spacer()
-    toolbar.add_button(icon='sun', command=ttk.toggle_theme)
+    toolbar.add_button(icon='sun', command=bs.toggle_theme)
 
     # Content container on the right (routed page content)
-    content_container = ttk.Frame(main_container, surface='content')
+    content_container = bs.Frame(main_container, surface='content')
     content_container.pack(side='right', fill='both', expand=True)
 
     # Page definitions (lazy creation for better startup performance)

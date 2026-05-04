@@ -14,14 +14,14 @@ than the classic radio indicator (common in toolbars, view switches, or mode pic
 ## Quick start
 
 ```python
-import bootstack as ttk
+import bootstack as bs
 
-app = ttk.App()
+app = bs.App()
 
-view = ttk.Signal("grid")
+view = bs.Signal("grid")
 
-ttk.RadioToggle(app, text="Grid", signal=view, value="grid").pack(side="left", padx=4, pady=10)
-ttk.RadioToggle(app, text="List", signal=view, value="list").pack(side="left", padx=4, pady=10)
+bs.RadioToggle(app, text="Grid", signal=view, value="grid").pack(side="left", padx=4, pady=10)
+bs.RadioToggle(app, text="List", signal=view, value="list").pack(side="left", padx=4, pady=10)
 
 app.mainloop()
 ```
@@ -61,9 +61,9 @@ The difference is purely presentational: `RadioToggle` uses the toolbutton-style
 Use semantic color tokens with the `accent` parameter.
 
 ```python
-ttk.RadioToggle(app, accent="primary")
-ttk.RadioToggle(app, accent="secondary")
-ttk.RadioToggle(app, accent="success")
+bs.RadioToggle(app, accent="primary")
+bs.RadioToggle(app, accent="secondary")
+bs.RadioToggle(app, accent="success")
 ```
 
 !!! link "Design System"
@@ -88,9 +88,9 @@ Same as `RadioButton`:
 Bind a shared `signal` (preferred) or `variable` just like a radio button.
 
 ```python
-mode = ttk.Signal("basic")
-ttk.RadioToggle(app, text="Basic", signal=mode, value="basic")
-ttk.RadioToggle(app, text="Pro", signal=mode, value="pro")
+mode = bs.Signal("basic")
+bs.RadioToggle(app, text="Basic", signal=mode, value="basic")
+bs.RadioToggle(app, text="Pro", signal=mode, value="pro")
 ```
 
 ### Common options
