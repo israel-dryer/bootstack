@@ -26,7 +26,9 @@ jobs:
           cache: pip
 
       - name: Install docs dependencies
-        run: pip install -r requirements-dev.txt
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
 
       - name: Build site
         run: zensical build
