@@ -1261,7 +1261,7 @@ def setup_demo(master):
 
     bs.Label(
         master,
-        text="Use 'bootstack demo' to launch the full Widget Gallery.",
+        text="Use 'bootstack gallery' to launch the Widget Gallery.",
         font="heading-lg",
         padding=40,
     ).pack(fill=BOTH, expand=YES)

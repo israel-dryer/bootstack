@@ -17,7 +17,7 @@ know Tkinter.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Quick Start")
+app = bs.App(title="Quick Start", size=(300, 200))
 
 frame = bs.Frame(app, padding=20)
 frame.pack(fill="both", expand=True)
@@ -40,6 +40,8 @@ app.mainloop()
 Nothing here is bootstack-specific magic — this example behaves the same way
 across platforms and looks correct in both light and dark themes.
 
+![quick start](../assets/light/quick-start-hello-world.png)
+
 ---
 
 ## Where to go next
@@ -54,6 +56,18 @@ From here you can:
   **[Widgets → Layout](../widgets/layout/frame.md)**
 - Understand how themes, colors, and variants work  
   **[Design System → Overview](../design-system/index.md)**
+
+---
+
+## Explore the Widget Gallery
+
+To browse all available widgets interactively, run:
+
+```
+bootstack gallery
+```
+
+![widget gallery](../assets/light/quick-start-gallery.png)
 
 ---
 

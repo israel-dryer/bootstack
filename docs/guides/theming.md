@@ -159,12 +159,14 @@ print(f"Current theme: {current}")
 ```python
 import bootstack as bs
 
-app = bs.App(theme="ocean-light")
+app = bs.App(
+    settings={
+        "light_theme": "ocean-light",
+        "dark_theme": "ocean-dark",
+    }
+)
 
-def on_toggle():
-    bs.toggle_theme()
-
-bs.Button(app, text="Toggle Dark Mode", command=on_toggle).pack(pady=20)
+bs.Button(app, text="Toggle Dark Mode", command=bs.toggle_theme).pack(pady=20)
 
 app.mainloop()
 ```
@@ -173,15 +175,22 @@ app.mainloop()
 
 ## Light and Dark Aliases
 
-bootstack provides `"light"` and `"dark"` aliases that resolve to configured themes:
+The `"light"` and `"dark"` aliases resolve to whichever themes are registered as `light_theme` and `dark_theme` in the app settings. This binding applies both when setting the initial theme and when calling `toggle_theme()`:
 
 ```python
-# These are equivalent when ocean-light is configured as the light theme
-app = bs.App(theme="light")
-app = bs.App(theme="ocean-light")
+app = bs.App(
+    settings={
+        "theme": "dark",           # starts on the dark variant
+        "light_theme": "ocean-light",
+        "dark_theme": "ocean-dark",
+    }
+)
+
+# toggle_theme() switches between ocean-light and ocean-dark
+bs.toggle_theme()
 ```
 
-Configure aliases in your app settings (see [App Settings](#configuring-theme-preferences)).
+Without custom settings, `"light"` and `"dark"` resolve to the built-in defaults (`docs-light` and `docs-dark`).
 
 ---
 

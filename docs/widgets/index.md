@@ -120,6 +120,14 @@ Widgets are organized by **intent**, not by underlying Tk class:
 
 This categorization reflects how widgets are *used*, not how they are implemented.
 
+To browse all categories interactively, run:
+
+```
+bootstack gallery
+```
+
+![widget gallery](../assets/light/quick-start-gallery.png)
+
 ---
 
 ## When to use primitives
