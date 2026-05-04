@@ -11,7 +11,7 @@ It is designed to work with the `bootstack` CLI workflow:
 - `bootstack promote --pyinstaller` to enable packaging support
 - `bootstack build` to produce a distributable bundle
 
-!!! link "See [Platform → CLI](cli.md) for the full command reference."
+!!! link "See [Tooling → CLI](cli.md) for the full command reference."
 
 ---
 
@@ -192,7 +192,7 @@ In development, your environment may not match target systems.
 - Test on multiple DPI settings when possible
 - Avoid hardcoded pixel-perfect assumptions
 
-!!! link "See [Platform → Images & DPI](images-and-dpi.md) for how Tk handles DPI and image scaling."
+!!! link "See [Platform → Images & DPI](../platform/images-and-dpi.md) for how Tk handles DPI and image scaling."
 
 ---
 
@@ -256,7 +256,7 @@ for the full setup.
 
 ## Next steps
 
-- Read [Platform → CLI](cli.md)
+- Read [Tooling → CLI](cli.md)
 - Read [Guides → App Structure](../guides/app-structure.md)
 - Read [Guides → Layout](../guides/layout.md)
 - Read [Guides → Localization](../guides/localization.md)

@@ -30,6 +30,8 @@ nav = [
         { "Theming" = "guides/theming.md" },
         { "Formatting" = "guides/formatting.md" },
         { "Localization" = "guides/localization.md" },
+        { "Debugging" = "guides/debugging.md" },
+        { "Performance" = "guides/performance.md" },
     ] },
     { "Widgets" = [
         { "Overview" = "widgets/index.md" },
@@ -152,15 +154,6 @@ nav = [
         { "Styling Internals" = "platform/ttk-styles-elements.md" },
         { "Images & DPI" = "platform/images-and-dpi.md" },
         { "Windows" = "platform/windows.md" },
-        { "Operations" = [
-            { "Debugging" = "platform/debugging.md" },
-            { "Performance" = "platform/performance.md" },
-        ] },
-        { "Tooling" = [
-            { "CLI" = "platform/cli.md" },
-            { "Project Structure" = "platform/project-structure.md" },
-            { "Build & Distribute" = "platform/build-and-ship.md" },
-        ] },
     ] },
     { "Capabilities" = [
         { "Overview" = "capabilities/index.md" },
@@ -190,6 +183,11 @@ nav = [
         { "State & Interaction" = "capabilities/state-and-interaction.md" },
         { "Configuration" = "capabilities/configuration.md" },
         { "Localization" = "capabilities/localization.md" },
+    ] },
+    { "Tooling" = [
+        { "CLI" = "tooling/cli.md" },
+        { "Project Structure" = "tooling/project-structure.md" },
+        { "Build & Distribute" = "tooling/build-and-ship.md" },
     ] },
     { "API Reference" = [
         { "Overview" = "reference/index.md" },
@@ -358,6 +356,7 @@ nav = [
 [project.theme]
 language = "en"
 favicon = "assets/favicon.ico"
+logo = "assets/bootstack-icon.png"
 
 features = [
     "navigation.tabs",
@@ -369,9 +368,6 @@ features = [
     "content.code.copy",
     "search.highlight",
 ]
-
-[project.theme.icon]
-logo = "fontawesome/solid/feather-pointed"
 
 [[project.theme.palette]]
 media = "(prefers-color-scheme)"

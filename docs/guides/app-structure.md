@@ -180,7 +180,7 @@ myapp/
 Use `bootstack start MyApp` to scaffold a new project with this structure.
 
 !!! link "Project Structure"
-    See [Platform → Project Structure](../platform/project-structure.md) for detailed guidance on file organization, packaging, and PyInstaller.
+    See [Tooling → Project Structure](../tooling/project-structure.md) for detailed guidance on file organization, packaging, and PyInstaller.
 
 ---
 
@@ -433,5 +433,5 @@ shell.mainloop()
 - [Layout](layout.md) — building layouts with containers
 - [Navigation](navigation.md) — tabs, stacks, and sidebar patterns
 - [Reactivity](reactivity.md) — signals, callbacks, and events
-- [Project Structure](../platform/project-structure.md) — file organization and packaging
-- [CLI](../platform/cli.md) — scaffolding and build tools
+- [Project Structure](../tooling/project-structure.md) — file organization and packaging
+- [CLI](../tooling/cli.md) — scaffolding and build tools

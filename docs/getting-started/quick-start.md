@@ -62,4 +62,4 @@ From here you can:
 If you prefer a scaffolded project layout, localization setup, or build tooling,
 bootstack includes a command-line interface.
 
-See **[Platform → CLI](../platform/cli.md)** for available commands.
+See **[Tooling → CLI](../tooling/cli.md)** for available commands.

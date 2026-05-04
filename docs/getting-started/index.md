@@ -72,8 +72,8 @@ After that, explore:
 
 When you're ready to ship:
 
-- [Project Structure](../platform/project-structure.md) — organizing real-world apps
-- [Build & Distribute](../platform/build-and-ship.md) — packaging applications
+- [Project Structure](../tooling/project-structure.md) — organizing real-world apps
+- [Build & Distribute](../tooling/build-and-ship.md) — packaging applications
 
 ---
 

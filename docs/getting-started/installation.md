@@ -13,7 +13,7 @@ It runs anywhere Tk runs — Windows, macOS, and Linux — and installs like any
 
 ## Requirements
 
-- **Python 3.10 or newer**
+- **Python 3.12 or newer**
 
 - **Tk / Tcl**
 
@@ -76,7 +76,7 @@ building and distribution.
 
 You do **not** need the CLI to use bootstack, but it can simplify larger projects.
 
-!!! link "See [Platform → CLI](../platform/cli.md) for available commands."
+!!! link "See [Tooling → CLI](../tooling/cli.md) for available commands."
 
 ---
 
@@ -110,5 +110,6 @@ If Tk works in system Python but not in a venv, ensure:
 - [Quick Start](quick-start.md) — build a minimal app
 - [Guides](../guides/index.md) — recommended patterns and workflows
 - [Widgets](../widgets/index.md) — available UI components
-- [Platform](../platform/index.md) — Tk/ttk foundations (optional)
 - [Capabilities](../capabilities/index.md) — framework features like signals and localization
+- [Tooling](../tooling/cli.md) — CLI, project structure, and packaging
+- [Platform](../platform/index.md) — Tk/ttk foundations (optional)
