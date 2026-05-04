@@ -10,8 +10,7 @@ It's designed for values that users change in small steps, while still allowing 
 validation, localization, and consistent field events like other entry controls.
 
 <figure markdown>
-![spinnerentry states](../../assets/dark/widgets-spinnerentry-states.png#only-dark)
-![spinnerentry states](../../assets/light/widgets-spinnerentry-states.png#only-light)
+![spinnerentry states](../../assets/widgets-spinnerentry-states.png)
 </figure>
 
 ---
@@ -83,8 +82,7 @@ bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="cu
 ```
 
 <figure markdown>
-![spinnerentry formatting](../../assets/dark/widgets-spinnerentry-formats.png#only-dark)
-![spinnerentry formatting](../../assets/light/widgets-spinnerentry-formats.png#only-light)
+![spinnerentry formatting](../../assets/widgets-spinnerentry-formats.png)
 </figure>
 
 !!! link "Localization"
@@ -98,8 +96,7 @@ amount.insert_addon(bs.Label, position="before", text="$")
 ```
 
 <figure markdown>
-![spinnerentry addons](../../assets/dark/widgets-spinnerentry-addons.png#only-dark)
-![spinnerentry addons](../../assets/light/widgets-spinnerentry-addons.png#only-light)
+![spinnerentry addons](../../assets/widgets-spinnerentry-addons.png)
 </figure>
 
 ### Events

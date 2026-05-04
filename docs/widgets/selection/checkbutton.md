@@ -9,8 +9,7 @@ title: CheckButton
 Use `CheckButton` when users can enable multiple options independently (settings, filters, feature flags).
 
 <figure markdown>
-![checkbutton](../../assets/dark/widgets-checkbutton-states.png#only-dark)
-![checkbutton](../../assets/light/widgets-checkbutton-states.png#only-light)
+![checkbutton](../../assets/widgets-checkbutton-states.png)
 </figure>
 
 ---
@@ -55,8 +54,7 @@ Use `CheckButton` when:
 ## Appearance
 
 <figure markdown>
-![checkbutton](../../assets/dark/widgets-checkbutton-states.png#only-dark)
-![checkbutton](../../assets/light/widgets-checkbutton-states.png#only-light)
+![checkbutton](../../assets/widgets-checkbutton-states.png)
 </figure>
 
 ### Colors and styling
@@ -72,8 +70,7 @@ bs.CheckButton(app, accent="danger")
 ```
 
 <figure markdown>
-![colors](../../assets/dark/widgets-checkbutton-colors.png#only-dark)
-![colors](../../assets/light/widgets-checkbutton-colors.png#only-light)
+![colors](../../assets/widgets-checkbutton-colors.png)
 </figure>
 
 !!! link "See [Design System - Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."

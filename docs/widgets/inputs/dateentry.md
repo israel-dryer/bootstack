@@ -10,8 +10,7 @@ It behaves like other v2 entry controls (message, validation, localization, even
 using a calendar picker when needed. If you are building forms or dialogs, `DateEntry` is usually your **default date input**.
 
 <figure markdown>
-![dateentry states](../../assets/dark/widgets-dateentry-states.png#only-dark)
-![dateentry states](../../assets/light/widgets-dateentry-states.png#only-light)
+![dateentry states](../../assets/widgets-dateentry-states.png)
 </figure>
 
 ---
@@ -104,8 +103,7 @@ bs.DateEntry(app, label="ISO Format", value="2025-01-15", value_format="yyyy-MM-
 ```
 
 <figure markdown>
-![dateentry formats](../../assets/dark/widgets-dateentry-formats.png#only-dark)
-![dateentry formats](../../assets/light/widgets-dateentry-formats.png#only-light)
+![dateentry formats](../../assets/widgets-dateentry-formats.png)
 </figure>
 
 See [Guides → Formatting](../../guides/formatting.md) for all date presets and custom ICU patterns.
@@ -118,8 +116,7 @@ d.insert_addon(bs.Label, position="before", icon="cake-fill")
 ```
 
 <figure markdown>
-![dateentry addons](../../assets/dark/widgets-dateentry-addons.png#only-dark)
-![dateentry addons](../../assets/light/widgets-dateentry-addons.png#only-light)
+![dateentry addons](../../assets/widgets-dateentry-addons.png)
 </figure>
 
 ### Events
@@ -170,8 +167,7 @@ d.add_validation_rule("required", message="A date is required")
 - Escape — closes the popup without committing
 
 <figure markdown>
-![dateentry picker](../../assets/dark/widgets-dateentry-popup.png#only-dark)
-![dateentry picker](../../assets/light/widgets-dateentry-popup.png#only-light)
+![dateentry picker](../../assets/widgets-dateentry-popup.png)
 </figure>
 
 ---

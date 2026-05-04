@@ -10,8 +10,7 @@ It builds on `bs.Entry`, but adds the features you typically need in real applic
 localization, and consistent field events. If you're building forms or dialogs, `TextEntry` is usually your default text input.
 
 <figure markdown>
-![textentry states](../../assets/dark/widgets-textentry-states.png#only-dark)
-![textentry states](../../assets/light/widgets-textentry-states.png#only-light)
+![textentry states](../../assets/widgets-textentry-states.png)
 </figure>
 
 ---
@@ -110,8 +109,7 @@ bs.TextEntry(app, label="Short Date", value="March 14, 1981", value_format="shor
 ```
 
 <figure markdown>
-![localized](../../assets/dark/widgets-textentry-localization.png#only-dark)
-![localized](../../assets/light/widgets-textentry-localization.png#only-light)
+![localized](../../assets/widgets-textentry-localization.png)
 </figure>
 
 ### Events
@@ -179,8 +177,7 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 ```
 
 <figure markdown>
-![addons](../../assets/dark/widgets-textentry-addons.png#only-dark)
-![addons](../../assets/light/widgets-textentry-addons.png#only-light)
+![addons](../../assets/widgets-textentry-addons.png)
 </figure>
 
 !!! note "Power feature"

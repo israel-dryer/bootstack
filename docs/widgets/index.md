@@ -126,7 +126,7 @@ To browse all categories interactively, run:
 bootstack gallery
 ```
 
-![widget gallery](../assets/light/quick-start-gallery.png)
+![widget gallery](../assets/quick-start-gallery.png)
 
 ---
 

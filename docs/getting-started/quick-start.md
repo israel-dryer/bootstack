@@ -40,7 +40,7 @@ app.mainloop()
 Nothing here is bootstack-specific magic — this example behaves the same way
 across platforms and looks correct in both light and dark themes.
 
-![quick start](../assets/light/quick-start-hello-world.png)
+![quick start](../assets/quick-start-hello-world.png)
 
 ---
 
@@ -67,7 +67,7 @@ To browse all available widgets interactively, run:
 bootstack gallery
 ```
 
-![widget gallery](../assets/light/quick-start-gallery.png)
+![widget gallery](../assets/quick-start-gallery.png)
 
 ---
 

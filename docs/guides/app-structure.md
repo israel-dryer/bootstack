@@ -52,7 +52,7 @@ This demonstrates the core pattern:
 2. Add widgets to it
 3. Run the event loop
 
-![minimal app](../assets/light/guides-app-structure-min-app.png)
+![minimal app](../assets/guides-app-structure-min-app.png)
 
 ---
 
@@ -79,7 +79,7 @@ shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 shell.mainloop()
 ```
 
-![app shell](../assets/light/guides-app-structure-app-shell.png)
+![app shell](../assets/guides-app-structure-app-shell.png)
 
 `AppShell` extends `App`, so everything that works on `App` works on `AppShell` too.
 
@@ -95,7 +95,7 @@ shell = bs.AppShell(
 )
 ```
 
-![frameless](../assets/light/guides-app-structure-frameless.png)
+![frameless](../assets/guides-app-structure-frameless.png)
 
 ### When to use App vs AppShell
 

@@ -10,8 +10,7 @@ It adds the behavior you almost always need for numeric data: bounds, stepping, 
 consistent field events. If you are building forms or dialogs, `NumericEntry` is usually your **default numeric input**.
 
 <figure markdown>
-![NumericEntry states](../../assets/dark/widgets-numericentry-states.png#only-dark)
-![NumericEntry states](../../assets/light/widgets-numericentry-states.png#only-light)
+![NumericEntry states](../../assets/widgets-numericentry-states.png)
 </figure>
 
 ---
@@ -161,8 +160,7 @@ bs.NumericEntry(app, label="Percent", value=0.35, value_format="percent").pack()
 ```
 
 <figure markdown>
-![numeric formats](../../assets/dark/widgets-numericentry-formats.png#only-dark)
-![numeric formats](../../assets/light/widgets-numericentry-formats.png#only-light)
+![numeric formats](../../assets/widgets-numericentry-formats.png)
 </figure>
 
 See [Guides → Formatting](../../guides/formatting.md) for all number presets, precision control, and custom patterns.
@@ -230,8 +228,7 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 ```
 
 <figure markdown>
-![addons](../../assets/dark/widgets-numericentry-addons.png#only-dark)
-![addons](../../assets/light/widgets-numericentry-addons.png#only-light)
+![addons](../../assets/widgets-numericentry-addons.png)
 </figure>
 
 ---
