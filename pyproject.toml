@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bootstack"
-version = "0.1.0a3"
+version = "0.1.0a4"
 description = "A full UI framework for Python desktop apps built on tkinter — rich widgets, theming, and application structure out of the box."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -82,7 +82,7 @@ where = ["src"]
 ]
 
 [tool.bumpversion]
-current_version = "0.1.0a3"
+current_version = "0.1.0a4"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)((?P<pre>a|b|rc)(?P<pre_n>\\d+))?"
 serialize = [
     "{major}.{minor}.{patch}{pre}{pre_n}",
