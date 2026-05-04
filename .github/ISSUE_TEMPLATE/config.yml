@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/israel-dryer/bootstack/discussions/new
     about: "Ask a question in the discussion forum"
   - name: Documentation
-    url: https://bootstack.readthedocs.io/en/latest/
+    url: https://bootstack.org/
     about: "bootstack's documentation"

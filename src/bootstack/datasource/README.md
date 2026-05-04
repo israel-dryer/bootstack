@@ -600,7 +600,7 @@ class MyDataSource(BaseDataSource):
 
 For questions, issues, or feature requests, please visit:
 - GitHub Issues: https://github.com/israel-dryer/bootstack/issues
-- Documentation: https://bootstack.readthedocs.io/
+- Documentation: https://bootstack.org/
 
 ## License
 

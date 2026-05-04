@@ -219,7 +219,6 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 
 ### Framework concepts
 
-- [Forms](../../guides/forms.md) — working with form controls
 - [Localization](../../capabilities/localization.md) — internationalization and formatting
 - [Signals](../../capabilities/signals/signals.md) — reactive data binding
 

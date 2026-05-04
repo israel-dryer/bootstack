@@ -302,7 +302,6 @@ It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 * [Selection](../../capabilities/state-and-interaction.md)
 
-* [Forms](../../guides/forms.md)
 
 * [Localization](../../capabilities/localization.md)
 

@@ -15,7 +15,7 @@
 The aim is to take you from `pip install` to a working, themed application without wiring those pieces together yourself or dropping down to raw Tk geometry calls.
 
 > **Active alpha.** APIs may change before the first stable release.
-> See the [documentation](https://bootstack.readthedocs.io) for guides and the API reference.
+> See the [documentation](https://bootstack.org) for guides and the API reference.
 
 ## Installation
 
@@ -147,10 +147,10 @@ bootstack build                             # Package for distribution
 
 ## Documentation
 
-- **Documentation**: https://bootstack.readthedocs.io
-- **Getting Started**: https://bootstack.readthedocs.io/en/latest/getting-started/
-- **Guides**: https://bootstack.readthedocs.io/en/latest/guides/
-- **Widgets**: https://bootstack.readthedocs.io/en/latest/widgets/
+- **Documentation**: https://bootstack.org
+- **Getting Started**: https://bootstack.org/getting-started/
+- **Guides**: https://bootstack.org/guides/
+- **Widgets**: https://bootstack.org/widgets/
 
 ## Links
 
