@@ -5,13 +5,16 @@ site_author = "Israel Dryer"
 site_url = "https://www.bootstack.com"
 copyright = "Copyright &copy; 2021 - 2026 Israel Dryer"
 
+repo_url = "https://github.com/israel-dryer/bootstack"
+repo_name = "israel-dryer/bootstack"
+
 docs_dir = "docs"
 
 extra_css = ["stylesheets/extra.css"]
 
 nav = [
     { "Getting Started" = [
-        { "Overview" = "index.md" },
+        { "Overview" = "getting-started/index.md" },
         { "Installation" = "getting-started/installation.md" },
         { "Quick Start" = "getting-started/quick-start.md" },
     ] },
@@ -357,6 +360,7 @@ nav = [
 language = "en"
 favicon = "assets/favicon.ico"
 logo = "assets/bootstack-icon.png"
+custom_dir = "overrides"
 
 features = [
     "navigation.tabs",
@@ -367,6 +371,7 @@ features = [
     "navigation.top",
     "content.code.copy",
     "search.highlight",
+    "announce.dismiss",
 ]
 
 [[project.theme.palette]]

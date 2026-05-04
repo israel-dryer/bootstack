@@ -28,15 +28,20 @@ It runs anywhere Tk runs — Windows, macOS, and Linux — and installs like any
 
 ## Install with pip
 
+bootstack is currently in **active alpha**, so pip won't install it by default — you need the `--pre` flag to opt in to pre-release versions:
+
 ```bash
-python -m pip install bootstack
+python -m pip install --pre bootstack
 ```
 
 If you’re upgrading:
 
 ```bash
-python -m pip install --upgrade bootstack
+python -m pip install --upgrade --pre bootstack
 ```
+
+!!! note "Pinning to a specific alpha"
+    Once stable releases ship, the `--pre` flag will no longer be required. To stay on the alpha line in the meantime, you can pin a specific version, e.g. `pip install bootstack==0.1.0a2`.
 
 ---
 

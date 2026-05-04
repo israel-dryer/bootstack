@@ -1,4 +1,4 @@
-![bootstack](assets/banner-readme.png)
+![bootstack](https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/banner-readme.png)
 
 ![](https://img.shields.io/github/release/israel-dryer/bootstack.svg)
 [![Downloads](https://pepy.tech/badge/bootstack)](https://pepy.tech/project/bootstack)
@@ -21,8 +21,10 @@ The aim is to take you from `pip install` to a working, themed application witho
 
 Requires Python 3.12+.
 
+bootstack is currently in **active alpha**, so the `--pre` flag is required to opt in to pre-release versions:
+
 ```bash
-pip install bootstack
+pip install --pre bootstack
 ```
 
 ## Quick Start
