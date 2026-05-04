@@ -178,7 +178,6 @@ See [Guides → Formatting](../../guides/formatting.md) for all time presets and
 ### Framework concepts
 
 - [Formatting](../../guides/formatting.md) — time presets and custom patterns
-- [Forms](../../guides/forms.md) — working with form controls
 - [Localization](../../capabilities/localization.md) — internationalization and formatting
 - [Signals](../../capabilities/signals/signals.md) — reactive data binding
 

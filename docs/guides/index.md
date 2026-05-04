@@ -57,12 +57,6 @@ Guides show you *how to apply* that knowledge.
 
 - **[DataSource](datasource.md)** — Managing data with filtering, sorting, pagination, and CRUD operations.
 - **[Reactivity](reactivity.md)** — Signals, callbacks, and events—what each is for, and how to combine them.
-- **[Tables & Lists](tables-and-lists.md)** — Displaying tabular and list data with ListView and TableView.
-
-### Forms & Input
-
-- **[Forms](forms.md)** — Building forms with validation and data binding.
-- **[Dialogs](dialogs.md)** — Modal dialogs, message boxes, and user prompts.
 
 ### Visual Design
 
@@ -70,10 +64,6 @@ Guides show you *how to apply* that knowledge.
 - **[Styling](styling.md)** — Working with the design system—semantic colors, variants, and styling.
 - **[Icons](icons.md)** — Using icons effectively—named resources and theme integration.
 - **[Theming](theming.md)** — Theme palettes, switching themes at runtime, and custom themes.
-
-### UI Patterns
-
-- **[Toolbars](toolbars.md)** — Building toolbars with actions and controls.
 
 ### Internationalization
 

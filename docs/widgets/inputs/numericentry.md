@@ -267,7 +267,6 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 ### Framework concepts
 
 - [Formatting](../../guides/formatting.md) — number presets, precision, and custom patterns
-- [Forms](../../guides/forms.md) — working with form controls
 - [Localization](../../capabilities/localization.md) — internationalization and formatting
 - [Signals](../../capabilities/signals/signals.md) — reactive data binding
 
