@@ -779,6 +779,76 @@ fill any gaps.
   - Open the PR off `docs/restructure` → `main` whenever the open items
     are addressed (or accepted as out-of-scope follow-ups).
 
+### Session 10 — Localization guide rewrite (2026-05-05)
+
+- The original `guides/localization.md` documented a fictional API: JSON
+  catalogs (`locales/en.json`), `bs.App(locale=...)` direct kwarg,
+  `set_locale()`/`get_locale()` module functions, `L("key", name="X")`
+  with kwarg formatting, and `LV("key", name=signal)` as reactive text.
+  None of those exist. Real API is gettext-based via Babel (`.po`/`.mo`
+  in `locales/<lang>/LC_MESSAGES/<domain>.mo`), and `L`/`LV` produce
+  *spec objects* that widgets resolve.
+- Rewrote the entire guide. Source-verified against
+  `core/localization/{msgcat,specs,intl_format}.py`,
+  `widgets/mixins/localization_mixin.py`,
+  `core/capabilities/localization.py`, and `runtime/app.py`. Every code
+  example matches actual signatures.
+- API surface documented (and the surprises worth recording):
+  - `bs.App` does **not** accept `locale=` directly. It goes through
+    `settings={"locale": "es_ES"}` (or via `AppSettings` instance).
+    Same for `date_format`, `time_format`, `number_decimal`, etc. The
+    `localize` mode kwarg *is* a direct App kwarg, however.
+  - App auto-calls `MessageCatalog.init(domain="bootstack", ...)` after
+    window setup (`runtime/app.py:595–599`). The framework ships `.mo`
+    files under `src/bootstack/assets/locales/<lang>/LC_MESSAGES/
+    bootstack.mo` for 22 languages; this is what makes built-in dialog
+    buttons / calendar months / validation messages translate
+    automatically.
+  - **Domain mismatch gotcha (real architectural issue, documented as
+    such):** `bootstack add i18n` scaffolds `messages.po` (gettext
+    domain "messages"), but App auto-init uses domain "bootstack".
+    User-app translations are silently inactive until the user re-calls
+    `MessageCatalog.init(locales_dir="locales", domain="messages",
+    default_locale="...")` after `bs.App(...)`. Doing so deactivates the
+    framework's "bootstack" catalog (only one gettext domain active at
+    a time). The guide explains this honestly under "Pointing the
+    catalog at your domain" and the pitfalls section.
+  - `L(key, *fmtargs)` returns a `LocalizedTextSpec`, not a string.
+    Format args are positional `%`-style (`%s`, `%d`), not f-string
+    `{name}` braces. `msgid` and `msgstr` must agree on placeholder
+    style.
+  - `LV(value, format_spec)` is for **value formatting** (numbers,
+    dates, currency), not text translation. Format presets are
+    DevExtreme-flavored: `"decimal"`, `"currency"`, `"percent"`,
+    `"thousands"` / `"millions"` (compact), `"shortDate"` / `"longDate"`,
+    `"shortTime"` / `"longTime"`, `"shortDateShortTime"`, etc. (see
+    `intl_format.py` `NumberPreset` / `DatePreset` Literals). Dict spec
+    also accepted for finer control.
+  - Locale switching: `MessageCatalog.locale("de_DE")`. This emits
+    `<<LocaleChanged>>` on the root window; widgets with
+    `LocalizationMixin` (Label, Button, Field, Badge, dialogs — 22
+    widget files use the mixin) auto-re-resolve their text/value specs.
+  - Reactive currency-style display: `bs.Label(app, textsignal=price,
+    value_format="currency")`. The widget creates a private formatted
+    Signal that re-formats on both signal change and locale change.
+  - `bs.Form` button command receives the form as its first positional
+    arg (`form.py:924` calls `spec.command(self)`), so lambdas are
+    `lambda f: print(f.value)`, not `lambda: print(form.value)`.
+- File-level changes: `docs/guides/localization.md` rewritten end-to-end
+  (~440 lines). No inbound link changes — the file path is unchanged
+  and 22 widget docs that link to it still find coverage of
+  `localize=`, `value_format=`, and translation setup.
+  `zensical.toml` nav unchanged. `zensical build --clean` passes (11s,
+  "No issues found").
+- The two CLI source bugs (`add.py:308` `ttk.App` → `bs.App`,
+  `add.py:343` `ttk.mc` → `bs.L`) were fixed earlier this session and
+  committed on a separate branch `fix/cli-add-stale-hints` off `main`
+  (commit `13b07bb`). That branch is ready to PR independently of the
+  docs initiative.
+- Open items now reduced to: spacing screenshots (4 PNGs, user-side
+  capture), opening the docs-restructure PR, and PR'ing the
+  `fix/cli-add-stale-hints` branch.
+
 ---
 
 ## Key API notes (standing reference)

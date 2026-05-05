@@ -4,343 +4,456 @@ title: Localization
 
 # Localization
 
-This guide shows how to make bootstack applications language-aware with message catalogs and locale-aware formatting.
+bootstack apps localize at the framework level. Set a locale on your `App`,
+drop translation catalogs into `locales/`, and widgets re-render their text
+when the locale changes. Numbers, currencies, and dates pick up regional
+formatting from the same locale setting.
+
+This guide covers the practical path: framework strings, your own strings,
+locale-aware value formatting, and runtime language switching.
 
 ---
 
-## Why Localize?
+## How localization works
 
-Localization makes applications usable worldwide:
+bootstack uses **gettext** catalogs (`.po` source files compiled to `.mo`
+binary files). Three pieces fit together:
 
-- **Text** adapts to the user's language
-- **Dates and numbers** follow regional conventions
-- **UI** can adapt to RTL languages
+1. **`MessageCatalog`** owns the active locale, looks up translations, and
+   emits `<<LocaleChanged>>` on the root window when the locale switches.
+2. **Widget mixins** subscribe to `<<LocaleChanged>>` and re-resolve any
+   text or value spec they hold. You don't wire this up yourself —
+   `bs.Label`, `bs.Button`, `bs.Field`, etc. all participate.
+3. **`L()` and `LV()`** are the two spec constructors. `L("key")` produces
+   a translatable text spec; `LV(value, format_spec)` produces a
+   locale-aware value-formatting spec (currency, decimal, percent, date).
 
-bootstack treats localization as a framework-level concern, not widget-by-widget configuration.
+Catalogs live at `locales/<lang>/LC_MESSAGES/<domain>.mo` (the standard
+gettext layout that `msgfmt` and Babel produce).
 
 ---
 
-## Quick Start
+## Built-in language support
 
-A localized application:
+bootstack ships translations for its own widget strings (dialog buttons,
+calendar months, validation defaults) in 22 languages — including `de`,
+`es`, `fr`, `it`, `ja`, `ko`, `nl`, `pl`, `pt`, `pt_BR`, `zh_CN`, `zh_TW`,
+and more. These live under the framework's `bootstack` gettext domain and
+are loaded automatically.
+
+To use them, set the locale on `App`:
 
 ```python
 import bootstack as bs
 
-app = bs.App(locale="es")
+app = bs.App(title="Hello", size=(400, 200), settings={"locale": "es_ES"})
 
-# Use message keys instead of literal text
-bs.Label(app, text="greeting.hello").pack(pady=20)
-bs.Button(app, text="actions.save").pack(pady=10)
+bs.Button(app, text="OK").pack(pady=20)
+bs.Label(app, text="Saludos").pack()
 
 app.mainloop()
 ```
 
-With a Spanish message catalog, `"greeting.hello"` resolves to `"Hola"` and `"actions.save"` to `"Guardar"`.
+Built-in dialogs, calendar widgets, and validation messages will appear in
+Spanish without further configuration. If you omit `locale` from settings,
+bootstack auto-detects the system locale (falling back to `en_US`).
 
 ---
 
-## Message Catalogs
+## Adding your own translations
 
-Message catalogs map **message keys** to **translated text**.
+For application-specific strings, use the `bootstack add i18n` scaffold:
 
-### Catalog Structure
-
-Organize translations by language:
-
+```text
+bootstack add i18n --languages en es de
 ```
+
+This creates:
+
+```text
 locales/
-├── en.json
-├── es.json
-├── fr.json
-└── de.json
+├── en/LC_MESSAGES/messages.po
+├── es/LC_MESSAGES/messages.po
+└── de/LC_MESSAGES/messages.po
 ```
 
-Each file contains key-value pairs:
+Edit each `.po` file with your translations:
 
-```json
-{
-    "greeting.hello": "Hello",
-    "greeting.welcome": "Welcome, {name}!",
-    "actions.save": "Save",
-    "actions.cancel": "Cancel",
-    "status.ready": "Ready"
-}
+```po
+msgid "Welcome"
+msgstr "Bienvenido"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Hello, %s!"
+msgstr "¡Hola, %s!"
 ```
 
-### Loading Catalogs
+Compile to `.mo` files:
+
+```text
+msgfmt locales/es/LC_MESSAGES/messages.po -o locales/es/LC_MESSAGES/messages.mo
+```
+
+Or, if you have Babel installed:
+
+```text
+pybabel compile -d locales -D messages
+```
+
+### Pointing the catalog at your domain
+
+The scaffold uses the gettext domain `messages` (the Babel default). The
+framework's auto-init uses domain `bootstack` so its built-in strings load.
+To make your own catalog active, re-initialize after creating the App:
 
 ```python
 import bootstack as bs
 from bootstack import MessageCatalog
 
-# Load catalog from file
-MessageCatalog.load("locales/en.json")
-MessageCatalog.load("locales/es.json")
+app = bs.App(title="MyApp", size=(600, 400), settings={"locale": "es_ES"})
 
-app = bs.App(locale="en")
-```
+# Switch to your application's domain
+MessageCatalog.init(
+    locales_dir="locales",
+    domain="messages",
+    default_locale="es_ES",
+)
 
-### Using Message Keys
-
-Widgets automatically resolve message keys:
-
-```python
-# If "greeting.hello" exists in catalog, it's resolved
-# If not, the literal string is displayed
-bs.Label(app, text="greeting.hello")
-```
-
-This behavior uses `localize="auto"` (the default):
-
-```python
-# Auto: resolve if key exists, otherwise use literal
-bs.Label(app, text="greeting.hello")  # localize="auto"
-
-# Force localization (error if key missing)
-bs.Label(app, text="greeting.hello", localize=True)
-
-# Disable localization (always literal)
-bs.Label(app, text="Hello, World!", localize=False)
-```
-
----
-
-## Message Substitution
-
-Messages can include placeholders:
-
-```json
-{
-    "greeting.welcome": "Welcome, {name}!",
-    "items.count": "{count} items"
-}
-```
-
-Resolve with values:
-
-```python
-from bootstack import L
-
-# L() resolves messages with substitution
-text = L("greeting.welcome", name="Alice")  # "Welcome, Alice!"
-text = L("items.count", count=5)  # "5 items"
-```
-
-For reactive updates with signals:
-
-```python
-from bootstack import LV
-
-name = bs.Signal("Guest")
-
-# LV() returns a signal that updates when inputs change
-greeting = LV("greeting.welcome", name=name)
-
-label = bs.Label(app, textvariable=greeting)
-```
-
-When `name` changes, `greeting` updates automatically.
-
----
-
-## Changing Language at Runtime
-
-Switch languages without restarting:
-
-```python
-import bootstack as bs
-from bootstack import set_locale, get_locale
-
-app = bs.App(locale="en")
-
-def switch_to_spanish():
-    set_locale("es")
-
-def switch_to_english():
-    set_locale("en")
-
-bs.Button(app, text="Español", command=switch_to_spanish).pack()
-bs.Button(app, text="English", command=switch_to_english).pack()
-
-# This label updates when locale changes
-bs.Label(app, text="greeting.hello").pack(pady=20)
+bs.Label(app, text="Welcome").pack(pady=20)  # → "Bienvenido"
+bs.Button(app, text="Save").pack()            # → "Guardar"
 
 app.mainloop()
 ```
 
-Localized widgets re-render when the locale changes.
+After this re-init, `MessageCatalog.translate("Welcome")` consults your
+`locales/es/LC_MESSAGES/messages.mo`. The built-in `bootstack` domain is
+no longer active — built-in dialogs revert to English. If you need both,
+the simplest path is to copy the strings you care about into your own
+catalog.
 
 ---
 
-## Date and Number Formatting
+## Auto-translation of widget text
 
-Localization extends beyond text to **how values are displayed**.
-
-### Date Formatting
+Widgets with text accept a `localize=` parameter that controls whether
+plain string literals are wrapped into translation specs:
 
 ```python
-from bootstack import IntlFormatter
+# Auto: literal strings become translation lookups (default)
+bs.Label(app, text="Welcome")  # equivalent to text=L("Welcome")
+
+# Force on: same as auto for strings; lets you be explicit
+bs.Label(app, text="Welcome", localize=True)
+
+# Off: pass through verbatim
+bs.Label(app, text="Welcome", localize=False)
+```
+
+`localize="auto"` is the project-wide default. Override per-widget when a
+string is intentionally untranslatable (a user-entered name, a code
+identifier, etc.).
+
+Application-wide override:
+
+```python
+# Disable auto-localization globally; opt in per widget with localize=True
+app = bs.App(localize=False)
+```
+
+When auto-localization is on, an empty catalog falls back to the literal
+string itself, so undeveloped translations still display sensibly.
+
+---
+
+## Explicit translations with `L()`
+
+Use `L()` when you need format arguments or a key that differs from the
+displayed fallback:
+
+```python
+import bootstack as bs
+from bootstack import L
+
+app = bs.App(title="Greeter", size=(400, 200), settings={"locale": "es_ES"})
+
+# Positional %-style formatting
+bs.Label(app, text=L("Hello, %s!", "Alice")).pack(pady=20)
+
+# Multiple args
+bs.Label(app, text=L("%d items in %s", 5, "cart")).pack()
+
+app.mainloop()
+```
+
+`L(key, *fmtargs)` returns a `LocalizedTextSpec`. Widgets that accept
+`text=` resolve specs automatically. Format placeholders use Python's
+`%`-style operators (`%s`, `%d`, `%.2f`) — **not** f-string `{name}`
+braces. The catalog entry must use the same placeholder style:
+
+```po
+msgid "Hello, %s!"
+msgstr "¡Hola, %s!"
+
+msgid "%d items in %s"
+msgstr "%d artículos en %s"
+```
+
+If the key is missing from the catalog, `L()` falls back to the key
+itself (formatted with the args), so partial translations still render
+something useful.
+
+---
+
+## Locale-aware value formatting with `LV()`
+
+`L()` is for **text translation**. `LV()` is for **value formatting** —
+showing a number, date, or currency in the active locale's conventions:
+
+```python
+import bootstack as bs
+from bootstack import LV
 from datetime import date
 
-formatter = IntlFormatter(locale="de")
+app = bs.App(title="Formatting", size=(400, 250), settings={"locale": "de_DE"})
 
-today = date.today()
-formatted = formatter.format_date(today)  # "25.12.2024" (German format)
+# Currency (uses locale's currency symbol and conventions)
+bs.Label(app, text=LV(1234.56, "currency")).pack(pady=10)
+# → "1.234,56 €" in de_DE; "$1,234.56" in en_US
+
+# Decimal (locale-aware separators)
+bs.Label(app, text=LV(1234567.89, "decimal")).pack()
+# → "1.234.567,89" in de_DE
+
+# Percent
+bs.Label(app, text=LV(0.875, "percent")).pack()
+# → "87,5 %" in de_DE
+
+# Short date
+bs.Label(app, text=LV(date.today(), "shortDate")).pack()
+# → "05.05.26" in de_DE; "5/5/26" in en_US
+
+# Long date
+bs.Label(app, text=LV(date.today(), "longDate")).pack()
+# → "5. Mai 2026" in de_DE; "May 5, 2026" in en_US
+
+app.mainloop()
 ```
 
-### Number Formatting
+Common format presets:
+
+| Preset | Use for | Example output (en_US) |
+|---|---|---|
+| `"decimal"` | Plain numbers with grouping | `1,234,567.89` |
+| `"currency"` | Money values | `$1,234.56` |
+| `"percent"` | Ratios as percentages | `87.5%` |
+| `"thousands"` / `"millions"` | Compact magnitudes | `1.5K` / `2.3M` |
+| `"shortDate"` / `"longDate"` | Calendar dates | `5/5/26` / `May 5, 2026` |
+| `"shortTime"` / `"longTime"` | Times of day | `2:15 PM` / `2:15:30 PM` |
+| `"shortDateShortTime"` | Combined date and time | `5/5/26 2:15 PM` |
+
+For finer control, pass a dict instead of a preset name:
+`LV(0.875, {"type": "percent", "precision": 2})`. See the
+[Formatting guide](formatting.md) for the full spec catalog.
+
+---
+
+## Switching locale at runtime
+
+Call `MessageCatalog.locale("de_DE")`:
 
 ```python
-formatter = IntlFormatter(locale="fr")
+import bootstack as bs
+from bootstack import MessageCatalog, L
 
-formatted = formatter.format_number(1234567.89)  # "1 234 567,89" (French format)
-formatted = formatter.format_currency(99.99, "EUR")  # "99,99 €"
+app = bs.App(title="Switcher", size=(400, 250), settings={"locale": "en_US"})
+
+bs.Label(app, text=L("Welcome")).pack(pady=20)
+bs.Label(app, text=L("Hello, %s!", "Alice")).pack()
+
+def switch_to(loc: str) -> None:
+    MessageCatalog.locale(loc)
+
+bar = bs.PackFrame(app, direction="horizontal", gap=8)
+bar.pack(pady=10)
+bs.Button(bar, text="English", command=lambda: switch_to("en_US")).pack(side="left")
+bs.Button(bar, text="Español", command=lambda: switch_to("es_ES")).pack(side="left")
+bs.Button(bar, text="Deutsch", command=lambda: switch_to("de_DE")).pack(side="left")
+
+app.mainloop()
 ```
 
-### In Widgets
+Switching the locale fires `<<LocaleChanged>>` on the root window; every
+widget that holds a translation or value-format spec re-resolves itself.
+Date/number formats applied via `LV()` re-format too.
 
-Some widgets format values automatically based on locale:
+To listen for locale changes yourself:
 
 ```python
-app = bs.App(locale="de")
+def refresh_my_view(event):
+    print(f"locale is now {MessageCatalog.locale()}")
 
-# DateEntry displays dates in German format
-bs.DateEntry(app).pack()
+app.bind("<<LocaleChanged>>", refresh_my_view, add="+")
+```
 
-# NumericEntry uses locale decimal separator
-bs.NumericEntry(app).pack()
+---
+
+## Reactive signals with `value_format=`
+
+Widgets that take a `Signal` for their value also accept a `value_format=`
+kwarg. The signal stays in its raw type (a number, a date) and the widget
+displays it formatted for the current locale:
+
+```python
+import bootstack as bs
+
+app = bs.App(title="Live price", size=(400, 200), settings={"locale": "fr_FR"})
+
+price = bs.Signal(0.0)
+
+# Display the signal as currency in the active locale
+bs.Label(app, textsignal=price, value_format="currency").pack(pady=20)
+#   price=12.5 → "12,50 €" in fr_FR; "$12.50" in en_US
+
+bs.Button(app, text="Add 5", command=lambda: price.set(price.get() + 5)).pack()
+
+app.mainloop()
+```
+
+When the locale switches, the displayed string re-formats automatically;
+when the signal updates, it formats with the current locale. This is the
+right tool for live-updating numeric displays (prices, counters,
+percentages).
+
+---
+
+## Locale-aware widgets
+
+Several input widgets honor the locale settings out of the box:
+
+| Widget | What honors locale |
+|---|---|
+| `bs.DateEntry` | Display format (`settings.date_format`), first day of week |
+| `bs.TimeEntry` | Display format (`settings.time_format`), 12/24-hour |
+| `bs.NumericEntry` | Decimal separator, thousands separator |
+| `bs.Calendar` | Month and weekday names |
+
+These pick up format strings from `app.settings` (auto-derived from the
+locale via Babel), so setting the locale typically gives you correct
+formatting without further config. Override individual format strings via
+`settings={...}` if you need to:
+
+```python
+app = bs.App(settings={"locale": "en_GB", "date_format": "d MMM yyyy"})
 ```
 
 ---
 
 ## Patterns
 
-### Language Selector
+### Language switcher in the title bar
 
 ```python
 import bootstack as bs
-from bootstack import set_locale
+from bootstack import MessageCatalog
 
-app = bs.App(locale="en")
+app = bs.AppShell(title="Languages", size=(800, 500), settings={"locale": "en_US"})
 
-languages = [("English", "en"), ("Español", "es"), ("Français", "fr")]
+LANGS = [("English", "en_US"), ("Español", "es_ES"), ("Deutsch", "de_DE")]
 
-selector = bs.OptionMenu(
+def make_switcher() -> None:
+    for label, code in LANGS:
+        app.toolbar.add_button(
+            text=label,
+            command=lambda c=code: MessageCatalog.locale(c),
+        )
+
+make_switcher()
+app.mainloop()
+```
+
+### Localized form
+
+With `localize="auto"` in effect (the default), every `label` and `text`
+string in a declarative form becomes a translation lookup. No `L()`
+needed on the labels — your catalog `msgid`s match the literals:
+
+```python
+import bootstack as bs
+
+app = bs.App(title="Sign up", size=(420, 320), settings={"locale": "es_ES"})
+
+form = bs.Form(
     app,
-    values=[name for name, _ in languages],
-    command=lambda name: set_locale(
-        next(code for n, code in languages if n == name)
-    ),
+    col_count=2,
+    items=[
+        {"key": "username", "label": "Username"},
+        {"key": "password", "label": "Password", "editor": "passwordentry"},
+        {"key": "email", "label": "Email"},
+    ],
+    buttons=[{"text": "Sign up", "command": lambda f: print(f.value)}],
 )
-selector.pack(pady=20)
+form.pack(fill="both", expand=True, padx=20, pady=20)
 
 app.mainloop()
 ```
 
-### Localized Form
+`messages.po` for Spanish:
 
-```python
-import bootstack as bs
+```po
+msgid "Username"
+msgstr "Usuario"
 
-app = bs.App(locale="en")
+msgid "Password"
+msgstr "Contraseña"
 
-form = bs.GridFrame(app, columns=["auto", 1], gap=10, padding=20)
-form.pack(fill="both", expand=True)
+msgid "Email"
+msgstr "Correo"
 
-# Labels use message keys
-bs.Label(form, text="form.username").grid()
-bs.Entry(form).grid(sticky="ew")
-
-bs.Label(form, text="form.password").grid()
-bs.Entry(form, show="*").grid(sticky="ew")
-
-# Button uses message key
-bs.Button(form, text="actions.login").grid(column=1, sticky="e")
-
-app.mainloop()
+msgid "Sign up"
+msgstr "Registrarse"
 ```
 
-### Dynamic Messages
-
-```python
-import bootstack as bs
-from bootstack import LV
-
-app = bs.App()
-
-# Reactive count
-count = bs.Signal(0)
-
-# Message updates when count changes
-status = LV("items.selected", count=count)
-
-bs.Label(app, textvariable=status).pack(pady=20)
-
-def add_item():
-    count.set(count.get() + 1)
-
-bs.Button(app, text="Add", command=add_item).pack()
-
-app.mainloop()
-```
+Switch locale at runtime via `MessageCatalog.locale("en_US")` and every
+label, plus the button, re-renders together.
 
 ---
 
-## Best Practices
+## Pitfalls
 
-### Use Semantic Keys
+**Domain mismatch.** If `bootstack add i18n` scaffolded `messages.po` and
+your translations don't show up, you probably haven't re-initialized
+`MessageCatalog` with `domain="messages"`. App auto-init uses the framework's
+`bootstack` domain. Re-init after `bs.App(...)` (see the section above).
 
-```json
-{
-    "actions.save": "Save",
-    "actions.cancel": "Cancel",
-    "errors.required": "This field is required"
-}
-```
+**Format placeholders are positional.** `L("Hello, %s!", name)` works;
+`L("Hello, {name}!", name=name)` does not. Catalog `msgid` and `msgstr`
+must use the same placeholder style.
 
-Not:
+**`L()` vs `LV()`.** `L()` is for translatable text. `LV()` is for
+formatting values (numbers, dates) per locale. They are not
+interchangeable — passing a number to `L()` won't format it, and passing
+a string key to `LV()` won't translate it.
 
-```json
-{
-    "save_button_text": "Save",
-    "the_cancel_button": "Cancel"
-}
-```
+**Compile your `.po` files.** Editing `.po` is not enough — gettext reads
+`.mo`. Re-run `msgfmt` or `pybabel compile` after every edit.
 
-### Keep Translations Complete
+**Empty translations.** If a catalog has no translation for a key, the
+key itself is displayed (formatted, if `L()` had args). This is by design
+— it means partial catalogs degrade gracefully — but it also means typos
+in your `msgid` show through as untranslated text in production.
 
-Ensure all languages have the same keys. Missing keys fall back to the key itself.
-
-### Test RTL Languages
-
-If supporting Arabic or Hebrew, test that layout flows correctly.
-
-### Don't Concatenate
-
-```python
-# Bad: concatenation breaks translation
-message = L("greeting.hello") + ", " + name
-
-# Good: use placeholders
-message = L("greeting.welcome", name=name)
-```
+**`localize=False` for proper nouns.** A literal string that should never
+be translated (a user's name, a product code, an environment label)
+should pass `localize=False` so the auto-wrap doesn't accidentally try
+to look it up.
 
 ---
 
-## Summary
+## Next steps
 
-- Use **message keys** in widgets instead of literal text
-- Load **message catalogs** for each supported language
-- Use **`L()`** for static messages with substitution
-- Use **`LV()`** for reactive messages bound to signals
-- Use **`IntlFormatter`** for locale-aware date/number formatting
-- Change language at runtime with **`set_locale()`**
-
----
-
-## Next Steps
-
-- [App Structure](app-structure.md) — how applications are organized
-- [Reactivity](reactivity.md) — signals and reactive updates
-- [Color & Theming](color-and-theming.md) — working with the design system
+- [Formatting](formatting.md) — number, date, and currency format specs in detail
+- [Reactivity](reactivity.md) — signals and reactive bindings
+- [Forms & Input](forms-and-input.md) — pairing translated labels with input widgets
+- [App Structure](app-structure.md) — where locale fits into App settings
