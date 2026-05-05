@@ -438,11 +438,10 @@ If you ship `acme-light`, also ship `acme-dark`. The differences come down to:
 ### Register and use
 
 ```python
-from bootstack.style.theme_provider import register_user_theme
 import bootstack as bs
 
-register_user_theme("acme-light", "themes/acme-light.json")
-register_user_theme("acme-dark",  "themes/acme-dark.json")
+bs.register_user_theme("acme-light", "themes/acme-light.json")
+bs.register_user_theme("acme-dark",  "themes/acme-dark.json")
 
 app = bs.App(
     settings={

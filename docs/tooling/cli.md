@@ -144,9 +144,8 @@ Writes `themes/<name>.json` using the v2 theme schema (`mode`, `shades`,
 
 ```python
 import bootstack as bs
-from bootstack.style.theme_provider import register_user_theme
 
-register_user_theme("mytheme", "themes/mytheme.json")
+bs.register_user_theme("mytheme", "themes/mytheme.json")
 app = bs.App(theme="mytheme")
 ```
 

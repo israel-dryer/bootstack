@@ -281,17 +281,17 @@ line_height = font.metrics()["linespace"]
 For advanced use, access the typography system directly:
 
 ```python
-from bootstack.style.typography import Typography, FontSpec
+import bootstack as bs
 
 # Get a token's specification
-spec = Typography.get_token("heading-lg")
+spec = bs.Typography.get_token("heading-lg")
 print(spec.font, spec.size, spec.weight)
 
 # Update a token globally
-Typography.update_font_token("body", size=12)
+bs.Typography.update_font_token("body", size=12)
 
 # Change the global font family
-Typography.set_global_family("Arial")
+bs.Typography.set_global_family("Arial")
 ```
 
 ### Available Token Names
