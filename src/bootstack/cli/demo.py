@@ -1,5 +1,5 @@
 """
-bootstack Widget Gallery
+Widget Gallery
 
 An AppShell-based showcase of bootstack widgets, organized by category
 to mirror the documentation structure. Each sidebar item opens a page
@@ -1170,7 +1170,7 @@ def _build_theme_page(page):
 def run_demo():
     """Run the bootstack widget gallery as an AppShell application."""
     shell = bs.AppShell(
-        title="bootstack Widget Gallery",
+        title="Widget Gallery",
         theme="bootstrap-light",
         size=(1100, 750),
     )
