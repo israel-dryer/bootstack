@@ -237,61 +237,22 @@ Key principles:
 
 ## Application Settings
 
-bootstack applications are configured through a centralized settings object
-that defines application-wide behavior, rather than scattered flags and globals.
+App-wide configuration — theme, locale, default behaviors — lives in a single
+`AppSettings` object passed to `App` (or `AppShell`) at construction. Settings
+are applied at startup and remain readable throughout the app lifecycle.
 
-Configuration typically includes:
-
-- theme and appearance
-- localization settings
-- default behaviors
-- framework-level options
-
-This configuration is applied at application startup and remains accessible
-throughout the app lifecycle.
-
-!!! link "See [App Settings](app-settings.md) for how settings are declared and applied using `AppSettings`."
+!!! link "See [App Settings](app-settings.md) for declaring and applying settings."
 
 ---
 
 ## State Management
 
-bootstack encourages **signals** for state that multiple widgets share:
+Use **signals** for state shared between widgets — `bs.Signal(value)`, passed
+to widgets via `signal=` (or read/written via `.get()` / `.set()`). For larger
+apps, group related signals in a dedicated `state.py` module so views can
+import them without circular dependencies.
 
-```python
-import bootstack as bs
-
-app = bs.App()
-
-# Shared state
-username = bs.Signal("")
-
-# Input updates the signal
-entry = bs.TextEntry(app, signal=username)
-entry.pack(padx=20, pady=10)
-
-# Label reacts to the signal
-label = bs.Label(app, textvariable=username)
-label.pack(padx=20, pady=10)
-
-app.mainloop()
-```
-
-When the entry changes, the label updates automatically. Neither widget knows about the other—they both connect to the signal.
-
-For larger applications, group related signals in a `state.py` module:
-
-```python
-# src/myapp/state.py
-import bootstack as bs
-
-current_user = bs.Signal("")
-is_logged_in = bs.Signal(False)
-selected_item = bs.Signal(None)
-```
-
-!!! link "Reactivity Guide"
-    See [Reactivity](reactivity.md) for signals, callbacks, and events.
+!!! link "See [Reactivity](reactivity.md) for signals, subscriptions, callbacks, and events."
 
 ---
 
@@ -326,53 +287,20 @@ bs.Button(app, text="Settings", command=open_settings).pack(pady=10)
 
 ## Theme Switching
 
-`toggle_theme()` switches the app between its registered light and dark theme variants. By default it toggles between `docs-light` and `docs-dark`:
+bootstack supports light/dark variants and runtime switching via
+`bs.toggle_theme()` and `bs.set_theme(name)`. All widgets update automatically.
 
-```python
-import bootstack as bs
-
-app = bs.App(title="Theme Toggle")
-
-bs.Button(app, text="Toggle Theme", command=bs.toggle_theme).pack(pady=20)
-
-app.mainloop()
-```
-
-To use a different theme pair, set `light_theme` and `dark_theme` in the app settings. The `"light"` and `"dark"` aliases used elsewhere (e.g. `theme="dark"`) resolve to whichever themes are registered here:
-
-```python
-app = bs.App(
-    title="Theme Toggle",
-    settings={
-        "theme": "dark",          # starts on dark variant
-        "light_theme": "ocean-light",
-        "dark_theme": "ocean-dark",
-    },
-)
-```
-
-All widgets update automatically when the theme changes.
+!!! link "See [Color & Theming](color-and-theming.md) for accent tokens, surfaces, custom themes, and `light_theme` / `dark_theme` configuration."
 
 ---
 
 ## Localization Setup
 
-For internationalized applications:
+Set `locale=` in app settings to switch the active locale; widgets that opt in
+to message keys resolve them through the active message catalog. Number, date,
+and currency formatting follow the same locale.
 
-```python
-import bootstack as bs
-
-app = bs.App(
-    title="My App",
-    locale="es",  # Spanish locale
-)
-
-# Widgets use message keys
-bs.Label(app, text="greeting.hello").pack()  # Resolved from catalog
-```
-
-!!! link "Localization Guide"
-    See [Localization](localization.md) for message catalogs and runtime language switching.
+!!! link "See [Localization](localization.md) for message catalogs and runtime language switching."
 
 ---
 

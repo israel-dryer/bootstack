@@ -1,4 +1,4 @@
-﻿---
+---
 title: Icons
 ---
 
@@ -37,11 +37,40 @@ Applications express *intent*, not rendering details.
 
 ---
 
-## Icon providers
+## Icon source: Bootstrap Icons
 
-Icon providers supply named icons to the framework.
+bootstack ships with the full **[Bootstrap Icons](https://icons.getbootstrap.com/)**
+catalog (2,000+ icons) as its built-in icon set. Any name from the Bootstrap
+Icons catalog is a valid `icon=` value:
 
-Which providers are available depends on the environment and configuration.
+```python
+bs.Button(app, icon="house")
+bs.Label(app, icon="info-circle")
+bs.CheckToggle(app, icon="bell")
+```
+
+Use the [Bootstrap Icons website](https://icons.getbootstrap.com/) as the
+canonical "what icons can I use?" reference — search by keyword, copy the
+name, paste it into your widget.
+
+Internally, the catalog is supplied by the `ttkbootstrap_icons_bs` provider,
+which renders each glyph from a font asset and recolors it to match the active
+theme. This is an implementation detail — application code only needs the icon
+name.
+
+---
+
+## Browsing icons in bootstack
+
+For a quick visual browse without leaving the framework, run:
+
+```bash
+bootstack gallery
+```
+
+The widget gallery's **Icons** page showcases ~20 commonly-used icons, the
+available size range (12–48 px), and accent-colored variants. Use it to
+preview how an icon renders in your current theme before committing to it.
 
 ---
 
@@ -61,4 +90,4 @@ Widget-specific icon usage examples appear in:
 ## Related concepts
 
 - [Design System → Colors](colors.md)
-- [Capabilities → Icons & Imagery](../guides/icons.md)
+- [Guides → Icons](../guides/icons.md)

@@ -158,11 +158,6 @@ nav = [
         { "Images & DPI" = "platform/images-and-dpi.md" },
         { "Windows" = "platform/windows.md" },
     ] },
-    { "Capabilities" = [
-        { "Layout" = [
-            { "Scrolling" = "capabilities/layout/scrolling.md" },
-        ] },
-    ] },
     { "Tooling" = [
         { "CLI" = "tooling/cli.md" },
         { "Project Structure" = "tooling/project-structure.md" },

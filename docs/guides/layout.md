@@ -233,8 +233,36 @@ bootstack provides composite containers such as `ScrollView` that:
 - manage viewport and content sizing
 - coordinate scrollbars
 - adapt to dynamic content
+- normalize mouse-wheel behavior across platforms
 
 Widgets placed inside scroll containers should not manage scrolling themselves.
+
+```python
+import bootstack as bs
+
+app = bs.App()
+
+scroll = bs.ScrollView(app)
+scroll.pack(fill="both", expand=True, padx=20, pady=20)
+
+content = scroll.add(padding=12)
+for i in range(40):
+    bs.Label(content, text=f"Row {i + 1}").pack(anchor="w", pady=2)
+
+app.mainloop()
+```
+
+`ScrollView` accepts `scroll_direction` (`vertical` / `horizontal` / `both`) and
+`scrollbar_visibility` (`always` / `never` / `hover` / `scroll`). See
+[ScrollView](../widgets/layout/scrollview.md) for the full parameter list.
+
+**Common pitfalls**
+
+- attaching scrollbars directly to leaf widgets — let the container coordinate
+- mixing scrolling and `expand=True` siblings without intent — only the scroll
+  region should grow; fixed neighbors should stay sized
+- deeply nested layouts inside a scroll viewport — flatten where possible to
+  keep redraw cost predictable
 
 ---
 

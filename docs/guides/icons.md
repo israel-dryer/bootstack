@@ -15,7 +15,7 @@ In bootstack, icons are **named resources**, not file paths.
 When you specify an icon:
 
 ```python
-ttk.Button(app, text="Settings", icon="gear")
+bs.Button(app, text="Settings", icon="gear")
 ```
 
 The framework:
@@ -27,6 +27,41 @@ The framework:
 - updates it when the theme changes
 
 You don't manage image files, recolor assets, or worry about resolution. The framework handles it.
+
+---
+
+## Where icons come from
+
+bootstack ships with the full **[Bootstrap Icons](https://icons.getbootstrap.com/)**
+catalog. Any icon name from that catalog works as the `icon=` value:
+
+```python
+bs.Button(app, icon="house")
+bs.Button(app, icon="exclamation-triangle")
+bs.Button(app, icon="bar-chart")
+```
+
+When you need to find an icon, browse the
+[Bootstrap Icons catalog](https://icons.getbootstrap.com/) — search by keyword,
+copy the name, paste it into your widget. There are over 2,000 icons covering
+common UI metaphors (navigation, actions, status, charts, file types, devices).
+
+The underlying provider is `ttkbootstrap_icons_bs`, but you don't need to
+interact with it — bootstack wires the provider in for you. Treat that package
+as an implementation detail.
+
+### Icon explorer
+
+For a quick visual browse without leaving the framework, run:
+
+```bash
+bootstack gallery
+```
+
+The gallery's **Icons** page demonstrates ~20 commonly-used icons, the
+available size range, and accent-colored variants — useful when you want to
+see how a particular icon renders in your current theme before committing to
+it. See [Tooling → CLI](../tooling/cli.md) for other gallery options.
 
 ---
 
@@ -50,8 +85,8 @@ Icons also participate in **widget state**. When a button is disabled, its icon 
 ### Icon with text
 
 ```python
-ttk.Button(app, text="Save", icon="check")
-ttk.Button(app, text="Delete", icon="trash", accent="danger")
+bs.Button(app, text="Save", icon="check")
+bs.Button(app, text="Delete", icon="trash", accent="danger")
 ```
 
 The icon appears to the left of the text by default.
@@ -59,8 +94,8 @@ The icon appears to the left of the text by default.
 ### Icon only
 
 ```python
-ttk.Button(app, icon="plus", icon_only=True)
-ttk.Button(app, icon="x-lg", icon_only=True, accent="secondary")
+bs.Button(app, icon="plus", icon_only=True)
+bs.Button(app, icon="x-lg", icon_only=True, accent="secondary")
 ```
 
 Use `icon_only=True` when the icon is self-explanatory. The widget adjusts its padding accordingly.
@@ -68,7 +103,7 @@ Use `icon_only=True` when the icon is self-explanatory. The widget adjusts its p
 ### Labels with icons
 
 ```python
-ttk.Label(app, text="Warning: unsaved changes", icon="exclamation-triangle")
+bs.Label(app, text="Warning: unsaved changes", icon="exclamation-triangle")
 ```
 
 Icons in labels reinforce the message without making it interactive.
@@ -82,11 +117,11 @@ Icons in labels reinforce the message without making it interactive.
 Toolbars typically use icon-only buttons:
 
 ```python
-toolbar = ttk.PackFrame(app, direction="horizontal", gap=4)
+toolbar = bs.PackFrame(app, direction="horizontal", gap=4)
 
-ttk.Button(toolbar, icon="folder-open", icon_only=True).pack(side="left")
-ttk.Button(toolbar, icon="save", icon_only=True).pack(side="left")
-ttk.Button(toolbar, icon="printer", icon_only=True).pack(side="left")
+bs.Button(toolbar, icon="folder-open", icon_only=True).pack(side="left")
+bs.Button(toolbar, icon="save", icon_only=True).pack(side="left")
+bs.Button(toolbar, icon="printer", icon_only=True).pack(side="left")
 ```
 
 ### Icon + text for clarity
@@ -94,8 +129,8 @@ ttk.Button(toolbar, icon="printer", icon_only=True).pack(side="left")
 Primary actions benefit from both:
 
 ```python
-ttk.Button(app, text="New Project", icon="plus-lg", accent="primary")
-ttk.Button(app, text="Export", icon="download")
+bs.Button(app, text="New Project", icon="plus-lg", accent="primary")
+bs.Button(app, text="Export", icon="download")
 ```
 
 ### Contextual emphasis
@@ -103,9 +138,9 @@ ttk.Button(app, text="Export", icon="download")
 Use color to reinforce icon meaning:
 
 ```python
-ttk.Button(app, text="Delete", icon="trash", accent="danger")
-ttk.Button(app, text="Success", icon="check-circle", accent="success")
-ttk.Label(app, text="Connection lost", icon="wifi-off", accent="warning")
+bs.Button(app, text="Delete", icon="trash", accent="danger")
+bs.Button(app, text="Success", icon="check-circle", accent="success")
+bs.Label(app, text="Connection lost", icon="wifi-off", accent="warning")
 ```
 
 ### Menu items
@@ -125,7 +160,7 @@ menu.add_command(label="Paste", icon="clipboard")
 For more control, pass a dict instead of a string:
 
 ```python
-ttk.Button(app, text="Settings", icon={
+bs.Button(app, text="Settings", icon={
     "name": "gear",
     "size": 18,
 })
@@ -145,7 +180,7 @@ ttk.Button(app, text="Settings", icon={
 Some widgets have multiple visual states where different icons make sense. Use the `state` key to specify per-state overrides:
 
 ```python
-ttk.CheckToggle(app, text="Enable notifications", icon={
+bs.CheckToggle(app, text="Enable notifications", icon={
     "name": "bell-slash",
     "state": [
         ("selected", {"name": "bell"}),
@@ -168,7 +203,7 @@ State expressions follow TTK conventions:
 Each state override can specify `name`, `color`, or both:
 
 ```python
-ttk.Button(app, text="Play", icon={
+bs.Button(app, text="Play", icon={
     "name": "play",
     "state": [
         ("hover !disabled", {"name": "play-fill"}),
@@ -209,7 +244,7 @@ Icons adapt to theme changes automatically:
 
 ```python
 # Same code works for both themes
-ttk.Button(app, text="Edit", icon="pencil")
+bs.Button(app, text="Edit", icon="pencil")
 ```
 
 In a light theme, the icon renders dark. In a dark theme, it renders light. The framework derives icon color from the widget's foreground, which the theme controls.
@@ -224,10 +259,10 @@ Icons reinforce meaning but shouldn't replace text for critical actions:
 
 ```python
 # Good: icon reinforces label
-ttk.Button(app, text="Delete", icon="trash")
+bs.Button(app, text="Delete", icon="trash")
 
 # Use carefully: icon-only requires universal recognition
-ttk.Button(app, icon="x-lg", icon_only=True)  # Close button - widely understood
+bs.Button(app, icon="x-lg", icon_only=True)  # Close button - widely understood
 ```
 
 For localized applications:
