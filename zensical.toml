@@ -27,6 +27,7 @@ nav = [
         { "Spacing & Alignment" = "guides/spacing-and-alignment.md" },
         { "Reactivity" = "guides/reactivity.md" },
         { "DataSource" = "guides/datasource.md" },
+        { "Validation" = "guides/validation.md" },
         { "Typography" = "guides/typography.md" },
         { "Styling" = "guides/styling.md" },
         { "Icons" = "guides/icons.md" },
@@ -161,11 +162,6 @@ nav = [
     { "Capabilities" = [
         { "Layout" = [
             { "Scrolling" = "capabilities/layout/scrolling.md" },
-        ] },
-        { "Validation" = [
-            { "Overview" = "capabilities/validation/index.md" },
-            { "Rules" = "capabilities/validation/rules.md" },
-            { "Results" = "capabilities/validation/results.md" },
         ] },
     ] },
     { "Tooling" = [

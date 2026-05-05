@@ -224,7 +224,7 @@ Prescriptive guidance:
 
 - [Signals & Events](../../guides/reactivity.md)
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
 **API reference**
 

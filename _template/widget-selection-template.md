@@ -221,7 +221,7 @@ Prefer OtherWidget when:
 
 - [Localization](../../guides/localization.md)
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
 **API reference**
 

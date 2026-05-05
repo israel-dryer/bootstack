@@ -55,6 +55,7 @@ Guides show you *how to apply* that knowledge.
 
 - **[DataSource](datasource.md)** — Managing data with filtering, sorting, pagination, and CRUD operations.
 - **[Reactivity](reactivity.md)** — Signals, callbacks, and events—what each is for, and how to combine them.
+- **[Validation](validation.md)** — Validating user input with rules, results, and form-level checks.
 
 ### Visual Design
 

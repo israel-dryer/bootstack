@@ -340,7 +340,7 @@ Form data can be bound to reactive signals for automatic UI updates when values 
 
 - [Design System](../../design-system/index.md) — layout and spacing guidelines
 
-- [Validation](../../capabilities/validation/index.md) — form validation patterns
+- [Validation](../../guides/validation.md) — form validation patterns
 
 - [Localization](../../guides/localization.md) — internationalization support
 

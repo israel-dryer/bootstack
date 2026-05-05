@@ -397,6 +397,36 @@ fill any gaps.
 - For next session: `_template/widget-input-template.md` was the only template
   with no broken capability links — already clean.
 
+### Session 2 — Promote validation to a guide (2026-05-05)
+
+- Wrote `docs/guides/validation.md` as a concrete, example-driven guide.
+  Structure: how it works → quick start → built-in rules (`required`, `email`,
+  `stringLength`, `pattern`, `custom`) → triggers (`always`/`blur`/`manual`/
+  `key`) with default-trigger rationale → events and convenience callbacks →
+  surfacing errors → cross-field via closure + `on_changed` re-validate →
+  `bs.Form.validate()` → worked signup example → pitfalls.
+- API surface confirmed by reading `src/bootstack/core/validation/` (all of
+  `validation_rules.py`, `validation_result.py`, `types.py`),
+  `widgets/mixins/validation_mixin.py`, and `widgets/composites/{field.py,
+  form.py}`. Custom rule callable receives the raw value; cross-field
+  validation is done by closure (no built-in `compare` rule — the literal hint
+  in `types.py` is unimplemented; only the five rule types listed above
+  actually work).
+- Deleted `docs/capabilities/validation/{index,rules,results}.md` and the now-
+  empty directory. Only `docs/capabilities/layout/` remains under
+  `capabilities/` (Session 5 territory).
+- `zensical.toml`: removed Validation block from Capabilities nav; added
+  `Validation` to Guides nav between DataSource and Typography.
+- Repointed inbound links: `docs/widgets/forms/form.md`,
+  `docs/widgets/selection/selectbox.md`, plus three templates
+  (`_template/widget-{selection,form,data-display}-template.md`). Added
+  Validation entry to `docs/guides/index.md` Data section.
+- `zensical build` clean (10.77s, "No issues found"). Only CLAUDE.md still
+  references `capabilities/validation/*` — intentional planning context.
+- For next session (Session 3): styling.md + theming.md merge into
+  color-and-theming.md. Validation guide is now linked from `guides/index.md`
+  Data section — Session 5's "Where things live" rewrite should keep it there.
+
 ---
 
 ## Key API notes (standing reference)

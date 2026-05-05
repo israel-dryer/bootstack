@@ -223,7 +223,7 @@ Prescriptive advice:
 
 **Framework concepts**
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
 - [Layout Properties](../../guides/layout.md)
 
