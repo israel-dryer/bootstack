@@ -27,6 +27,7 @@ nav = [
         { "Spacing & Alignment" = "guides/spacing-and-alignment.md" },
         { "Reactivity" = "guides/reactivity.md" },
         { "DataSource" = "guides/datasource.md" },
+        { "Data Tables" = "guides/data-tables.md" },
         { "Forms & Input" = "guides/forms-and-input.md" },
         { "Validation" = "guides/validation.md" },
         { "Typography" = "guides/typography.md" },

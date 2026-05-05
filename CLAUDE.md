@@ -644,6 +644,57 @@ fill any gaps.
   DataTable with the DataSource system. CLAUDE.md Session 8 block lists
   the widgets and demo files to read first.
 
+### Session 8 — Data Tables guide (2026-05-05)
+
+- Wrote `docs/guides/data-tables.md` per the Session 8 plan. Sections:
+  quick start → columns (dict shape, tuple-vs-dict rows) → wiring to a
+  DataSource → selection → sorting and filtering (built-in toolbar +
+  programmatic API) → pagination (standard, virtual, suppressed) →
+  formatting cell values (records-side, since TableView has no per-cell
+  formatter) → status indication patterns → editing/exporting → worked
+  example mirroring the demo app's Results page → pitfalls.
+- Source-verified the API surface against `src/bootstack/widgets/composites/
+  tableview/tableview.py` and `src/bootstack/datasource/`. Findings worth
+  recording:
+  (a) **TableView is specifically backed by `SqliteDataSource`** — the
+  constructor's `datasource=` parameter is typed as `SqliteDataSource |
+  None`, and the implementation calls `_datasource.conn.execute(PRAGMA
+  table_info(...))` for column-type inference, so `MemoryDataSource` and
+  `FileDataSource` do *not* plug in. Documented the FileDataSource
+  → records → TableView indirect path.
+  (b) **TableView has no `value_format=` / formatter callback per column.**
+  Cells render whatever string repr the records have. Format records
+  before loading; the existing `formatting.md` patterns apply.
+  (c) **No public per-row tag/coloring API.** Striping is handled
+  internally; `_tree.tag_configure` works but is private. For
+  data-driven row colors, drop to `bs.TreeView`. Documented this
+  honestly under "Status indication" with three practical patterns
+  (decorate the string, show counts/banners, drop to TreeView).
+  (d) Public events use `on_row_*` / `on_selection_changed` family;
+  `selected_rows` is a property returning `list[dict]`.
+  (e) `bs.SelectBox` emits `<<Change>>`, not `<<SelectionChange>>` — caught
+  during a first-pass review of the worked example and corrected.
+- Worked example mirrors the demo app's Results page: external filter
+  toolbar above the table, suppressed built-in toolbar
+  (`enable_search=False`, `enable_filtering=False`,
+  `show_table_status=False`), `set_filters(where_sql)` driven by user
+  input. Calls out the SQL-string-escaping subtlety (`q.replace("'", "''")`).
+- `zensical.toml` Guides nav: inserted `Data Tables` between DataSource
+  and Forms & Input. `docs/guides/index.md` Data section gets a matching
+  bullet in the same position.
+- Inbound links added: `docs/widgets/data-display/tableview.md` (top of
+  Framework concepts), `docs/widgets/data-display/listview.md` (Framework
+  concepts — links forward to Data Tables for the "when to pick TableView"
+  comparison), `docs/guides/datasource.md` (Next steps), `docs/guides/
+  formatting.md` (Additional resources — explains why TableView records
+  use the same patterns the formatting guide documents).
+- `zensical build --clean` runs in 11.30s, "No issues found". Pre-existing
+  griffe annotation warnings unchanged.
+- For next session (Session 9): tooling consolidation. Audit
+  `docs/tooling/{cli,project-structure,build-and-ship}.md` against the
+  actual CLI implementation, expand any thin/stale pages, ensure the
+  Tooling cross-reference in `guides/index.md` works.
+
 ---
 
 ## Key API notes (standing reference)

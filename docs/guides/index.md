@@ -46,6 +46,7 @@ link to it.
 ### Data
 
 - **[DataSource](datasource.md)** — Managing data with filtering, sorting, pagination, and CRUD operations.
+- **[Data Tables](data-tables.md)** — Wiring TableView to a DataSource: columns, selection, filtering, pagination, and exporting.
 - **[Reactivity](reactivity.md)** — Signals, callbacks, and events — what each is for, and how to combine them.
 - **[Forms & Input](forms-and-input.md)** — Picking input widgets, layout patterns, submit handling, and error display.
 - **[Validation](validation.md)** — Validating user input with rules, triggers, and form-level checks.

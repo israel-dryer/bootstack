@@ -273,6 +273,8 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 
 ### Framework concepts
 
+- [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView; column-based filtering, sorting, and exporting patterns
+
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
 - [Signals](../../guides/reactivity.md) — reactive data binding

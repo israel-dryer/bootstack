@@ -386,5 +386,6 @@ value_format={"type": "custom", "pattern": "#,##0.00"}
 
 - [Localization](localization.md) — message translation and locale settings
 - [App Settings](app-settings.md) — configuring application locale
+- [Data Tables](data-tables.md) — pre-formatting record values for TableView (which has no per-cell `value_format`)
 - [Widgets → NumericEntry](../widgets/inputs/numericentry.md) — numeric input with formatting
 - [Widgets → DateEntry](../widgets/inputs/dateentry.md) — date input with formatting

@@ -313,6 +313,8 @@ tv.reload()
 
 ### Framework concepts
 
+- [Data Tables](../../guides/data-tables.md) — wiring TableView to a DataSource: columns, selection, filtering, pagination, and exporting
+
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
 - [Signals](../../guides/reactivity.md) — reactive data binding
