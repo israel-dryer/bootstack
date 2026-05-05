@@ -159,17 +159,7 @@ nav = [
         { "Windows" = "platform/windows.md" },
     ] },
     { "Capabilities" = [
-        { "Overview" = "capabilities/index.md" },
-        { "Signals & Events" = [
-            { "Overview" = "capabilities/signals/index.md" },
-            { "Signals" = "capabilities/signals/signals.md" },
-            { "Callbacks" = "capabilities/signals/callbacks.md" },
-            { "Virtual Events" = "capabilities/signals/virtual-events.md" },
-        ] },
         { "Layout" = [
-            { "Overview" = "capabilities/layout/index.md" },
-            { "Containers" = "capabilities/layout/containers.md" },
-            { "Spacing" = "capabilities/layout/spacing.md" },
             { "Scrolling" = "capabilities/layout/scrolling.md" },
         ] },
         { "Validation" = [
@@ -177,15 +167,6 @@ nav = [
             { "Rules" = "capabilities/validation/rules.md" },
             { "Results" = "capabilities/validation/results.md" },
         ] },
-        { "Icons & Images" = [
-            { "Overview" = "capabilities/icons/index.md" },
-            { "Icons" = "capabilities/icons/icons.md" },
-            { "Images" = "capabilities/icons/images.md" },
-        ] },
-        { "Layout Properties" = "capabilities/layout-props.md" },
-        { "State & Interaction" = "capabilities/state-and-interaction.md" },
-        { "Configuration" = "capabilities/configuration.md" },
-        { "Localization" = "capabilities/localization.md" },
     ] },
     { "Tooling" = [
         { "CLI" = "tooling/cli.md" },

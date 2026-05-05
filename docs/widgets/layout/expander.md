@@ -1,4 +1,4 @@
----
+﻿---
 title: Expander
 ---
 
@@ -239,7 +239,7 @@ exp.configure(icon_expanded={'name': 'caret-up', 'size': 14})
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 

@@ -583,9 +583,6 @@ The Signal API provides a cleaner interface:
 | `var.get()` | `signal.get()` / `signal.value` |
 | `var.set()` | `signal.set()` / `signal.value = ...` |
 
-!!! link "Signals Capability"
-    See [Capabilities → Signals](../capabilities/signals/signals.md) for implementation details.
-
 ---
 
 ## Summary

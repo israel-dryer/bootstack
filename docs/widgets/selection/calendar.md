@@ -1,4 +1,4 @@
----
+﻿---
 title: Calendar
 ---
 
@@ -284,7 +284,7 @@ Calendar localizes:
 It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 !!! link "Localization"
-    For complete details on internationalization and locale configuration, see the [Localization](../../capabilities/localization.md) documentation.
+    For complete details on internationalization and locale configuration, see the [Localization](../../guides/localization.md) documentation.
 
 ---
 
@@ -300,10 +300,10 @@ It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 ### Framework concepts
 
-* [Selection](../../capabilities/state-and-interaction.md)
+* [Selection](../../guides/reactivity.md)
 
 
-* [Localization](../../capabilities/localization.md)
+* [Localization](../../guides/localization.md)
 
 ### API reference
 

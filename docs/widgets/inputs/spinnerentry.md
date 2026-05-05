@@ -1,4 +1,4 @@
----
+﻿---
 title: SpinnerEntry
 ---
 
@@ -86,7 +86,7 @@ bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="cu
 </figure>
 
 !!! link "Localization"
-    Currency and number formatting respects locale settings. See [Localization](../../capabilities/localization.md) for details.
+    Currency and number formatting respects locale settings. See [Localization](../../guides/localization.md) for details.
 
 ### Add-ons
 

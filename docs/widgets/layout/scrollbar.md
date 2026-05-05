@@ -1,4 +1,4 @@
----
+﻿---
 title: Scrollbar
 ---
 
@@ -120,7 +120,7 @@ bs.Scrollbar(app, orient="vertical", command=widget.yview)
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 

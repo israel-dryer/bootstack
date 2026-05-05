@@ -1,4 +1,4 @@
----
+﻿---
 title: Combobox
 ---
 
@@ -221,7 +221,7 @@ If you need localization-aware field labels and messaging, prefer [SelectBox](..
 
 ### Framework concepts
 
-- [Events and Signals](../../capabilities/signals/signals.md)
+- [Events and Signals](../../guides/reactivity.md)
 
 ### API reference
 

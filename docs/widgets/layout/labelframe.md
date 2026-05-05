@@ -1,4 +1,4 @@
----
+﻿---
 title: LabelFrame
 ---
 
@@ -135,7 +135,7 @@ bs.LabelFrame(app, text="Options", padding=(16, 12))
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 

@@ -1,4 +1,4 @@
-# Widget Lifecycle
+﻿# Widget Lifecycle
 
 Widgets in Tk are created, configured, displayed, and eventually destroyed.
 Understanding this **lifecycle** is important for managing resources, bindings,
@@ -155,4 +155,4 @@ Understanding the widget lifecycle helps prevent these issues.
 
 - See [Geometry & Layout](geometry-and-layout.md) to understand layout timing.
 - See [Events & Bindings](events-and-bindings.md) for event delivery.
-- See [Capabilities → State & Interaction](../capabilities/state-and-interaction.md) for lifecycle-aware behaviors.
+- See [Capabilities → State & Interaction](../guides/reactivity.md) for lifecycle-aware behaviors.

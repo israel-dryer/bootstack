@@ -1,4 +1,4 @@
----
+﻿---
 title: Entry
 ---
 
@@ -167,9 +167,9 @@ If you want user-friendly validation messages and commit-based validation, prefe
 
 - [Design System](../../design-system/index.md)
 
-- [Events and Signals](../../capabilities/signals/signals.md)
+- [Events and Signals](../../guides/reactivity.md)
 
-- [Localization](../../capabilities/localization.md)
+- [Localization](../../guides/localization.md)
 
 ### API reference
 

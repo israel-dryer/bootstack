@@ -1,4 +1,4 @@
----
+﻿---
 title: WidgetName
 ---
 
@@ -120,9 +120,9 @@ Explain how the widget participates in localization and reactive text/value upda
 
 Link to:
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Localization](../../capabilities/localization.md)
+- [Localization](../../guides/localization.md)
 
 ---
 
@@ -136,11 +136,11 @@ Link to:
 
 **Framework concepts**
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Icons & Images](../../capabilities/icons/index.md)
+- [Icons & Images](../../guides/icons.md)
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 **API reference**
 

@@ -1,4 +1,4 @@
-# Geometry & Layout
+﻿# Geometry & Layout
 
 Layout in Tk is controlled by **geometry managers**.
 Understanding how geometry works is essential for building interfaces that resize,
@@ -114,4 +114,4 @@ Understanding layout mechanics helps avoid these problems.
 
 - See [Guides → Spacing & Alignment](../guides/spacing-and-alignment.md) for spacing and container helpers.
 - See [Widget Lifecycle](widget-lifecycle.md) for layout timing considerations.
-- See [Capabilities → Layout](../capabilities/layout/index.md) for layout-related capabilities.
+- See [Capabilities → Layout](../guides/layout.md) for layout-related capabilities.

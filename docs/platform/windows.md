@@ -1,4 +1,4 @@
-# Windows
+﻿# Windows
 
 Tk applications are composed of one or more **windows**.
 Understanding how windows behave — and how they interact with focus, modality,
@@ -127,4 +127,4 @@ Understanding window behavior helps avoid these issues.
 
 - See [Event Loop](event-loop.md) for how window events are dispatched.
 - See [Widget Lifecycle](widget-lifecycle.md) for creation and destruction timing.
-- See [Capabilities → Signals](../capabilities/signals/index.md) for coordinating window state.
+- See [Capabilities → Signals](../guides/reactivity.md) for coordinating window state.

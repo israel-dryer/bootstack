@@ -1,4 +1,4 @@
----
+﻿---
 title: NavigationWidgetName
 ---
 
@@ -177,9 +177,9 @@ Prescriptive advice:
 
 **Framework concepts**
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 **API reference**
 

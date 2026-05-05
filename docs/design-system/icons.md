@@ -1,4 +1,4 @@
----
+﻿---
 title: Icons
 ---
 
@@ -61,4 +61,4 @@ Widget-specific icon usage examples appear in:
 ## Related concepts
 
 - [Design System → Colors](colors.md)
-- [Capabilities → Icons & Imagery](../capabilities/icons/index.md)
+- [Capabilities → Icons & Imagery](../guides/icons.md)

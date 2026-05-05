@@ -1,4 +1,4 @@
----
+﻿---
 title: Build & Ship
 ---
 
@@ -125,7 +125,7 @@ Shipping a desktop app usually requires bundling:
 
 If you’re using bootstack’s built-in asset systems, the CLI/build integration should include the relevant folders.
 
-!!! link "See [Capabilities → Icons & Imagery](../capabilities/icons/index.md) for how icons and images behave at runtime (DPI, caching, recoloring)."
+!!! link "See [Capabilities → Icons & Imagery](../guides/icons.md) for how icons and images behave at runtime (DPI, caching, recoloring)."
 
 ---
 
@@ -146,7 +146,7 @@ ttk.Button(app, text="button.save")
 ```
 
 !!! link "See [Guides → Localization](../guides/localization.md) for the end-to-end localization workflow."
-!!! link "See [Capabilities → Localization](../capabilities/localization.md) for how message tokens are resolved."
+!!! link "See [Capabilities → Localization](../guides/localization.md) for how message tokens are resolved."
 
 ---
 

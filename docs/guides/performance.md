@@ -130,5 +130,5 @@ Understanding the event loop model is key to avoiding these issues.
 ## Next steps
 
 - See [Debugging](debugging.md) for diagnosing performance problems.
-- See [Capabilities → Signals](../capabilities/signals/index.md) for coordinating background work.
+- See [Reactivity](reactivity.md) for coordinating background work.
 - See [Platform → Images & DPI](../platform/images-and-dpi.md) for image performance considerations.

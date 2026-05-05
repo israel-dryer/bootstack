@@ -1,4 +1,4 @@
----
+﻿---
 title: DropdownButton
 ---
 
@@ -81,7 +81,7 @@ items = [
 bs.DropdownButton(app, text="More", items=items).pack(pady=10)
 ```
 
-!!! link "See [Icons & Imagery](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
+!!! link "See [Icons & Imagery](../../guides/icons.md) for icon sizing, DPI handling, and recoloring behavior."
 
 ### Handling item clicks
 
@@ -95,7 +95,7 @@ btn = bs.DropdownButton(app, text="Actions", items=items).pack(pady=10)
 btn.on_item_click(lambda item: print("Clicked:", item.text))
 ```
 
-!!! link "See [Callbacks](../../capabilities/signals/callbacks.md) for how bootstack command callbacks are structured."
+!!! link "See [Callbacks](../../guides/reactivity.md) for how bootstack command callbacks are structured."
 
 ---
 
@@ -104,7 +104,7 @@ btn.on_item_click(lambda item: print("Clicked:", item.text))
 - The dropdown opens relative to the button and closes when the user clicks away.
 - Item commands fire on click, and the menu closes afterward (typical desktop behavior).
 
-!!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
+!!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
 ---
 
@@ -120,7 +120,7 @@ items = [
 bs.DropdownButton(app, text="button.file", items=items).pack()
 ```
 
-!!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."
+!!! link "See [Localization](../../guides/localization.md) for how message tokens are resolved and how language switching works."
 
 ---
 
@@ -136,10 +136,10 @@ bs.DropdownButton(app, text="button.file", items=items).pack()
 
 - [Design System → Variants](../../design-system/variants.md)
 - [Design System → Icons](../../design-system/icons.md)
-- [Icons & Imagery](../../capabilities/icons/index.md)
-- [Callbacks](../../capabilities/signals/callbacks.md)
-- [State & Interaction](../../capabilities/state-and-interaction.md)
-- [Localization](../../capabilities/localization.md)
+- [Icons & Imagery](../../guides/icons.md)
+- [Callbacks](../../guides/reactivity.md)
+- [State & Interaction](../../guides/reactivity.md)
+- [Localization](../../guides/localization.md)
 
 ### API reference
 

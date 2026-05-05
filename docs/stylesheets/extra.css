@@ -88,6 +88,42 @@
 }
 
 /* =============================================================
+   App window chrome
+   Usage: <div class="app-window"><img src="..." alt="..."></div>
+   ============================================================= */
+
+.app-window {
+  display: inline-block;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  margin: 1.5rem 0;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.10),
+    0 32px 72px rgba(0, 0, 0, 0.08);
+}
+
+.app-window p {
+  margin: 0;
+  line-height: 0;
+}
+
+.app-window img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+[data-md-color-scheme="slate"] .app-window {
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.20),
+    0 8px 24px rgba(0, 0, 0, 0.30),
+    0 32px 72px rgba(0, 0, 0, 0.25);
+}
+
+/* =============================================================
    Homepage showcase screenshot
    ============================================================= */
 

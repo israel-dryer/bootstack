@@ -1,4 +1,4 @@
-# Images & DPI
+﻿# Images & DPI
 
 Images in Tk are first-class objects with lifetimes independent of widgets.
 Understanding how images behave — especially under high-DPI displays — is essential
@@ -105,6 +105,6 @@ Understanding image behavior helps avoid these problems.
 
 ## Next steps
 
-- See [Capabilities → Icons & Images](../capabilities/icons/index.md) for user-facing image behavior.
+- See [Capabilities → Icons & Images](../guides/icons.md) for user-facing image behavior.
 - See [Design System → Icons](../design-system/icons.md) for icon design principles.
 - See [Widgets](../widgets/index.md) for examples of image-backed controls.

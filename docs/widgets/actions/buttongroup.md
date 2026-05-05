@@ -1,4 +1,4 @@
----
+﻿---
 title: ButtonGroup
 ---
 
@@ -72,7 +72,7 @@ bg.add(icon="redo", icon_only=True, command=lambda: print("Redo"))
 bg.add(icon="trash", icon_only=True, command=lambda: print("Delete"))
 ```
 
-!!! link "See [Icons & Imagery](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
+!!! link "See [Icons & Imagery](../../guides/icons.md) for icon sizing, DPI handling, and recoloring behavior."
 
 ### Disabling a group
 
@@ -85,7 +85,7 @@ bg.pack(pady=10)
 bg.add(text="Disabled", command=lambda: ...)
 ```
 
-!!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
+!!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
 ---
 
@@ -101,8 +101,8 @@ bg.add(text="Disabled", command=lambda: ...)
 
 - [Design System → Variants](../../design-system/variants.md)
 - [Design System → Icons](../../design-system/icons.md)
-- [Icons & Imagery](../../capabilities/icons/index.md)
-- [State & Interaction](../../capabilities/state-and-interaction.md)
+- [Icons & Imagery](../../guides/icons.md)
+- [State & Interaction](../../guides/reactivity.md)
 
 ### API reference
 

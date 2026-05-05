@@ -1,4 +1,4 @@
----
+﻿---
 title: NumericEntry
 ---
 
@@ -238,7 +238,7 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 `NumericEntry` supports locale-aware number formatting through the `value_format` option. Formatting is applied at commit time, displaying numbers according to the current locale's conventions (decimal separators, grouping, currency symbols).
 
 !!! link "Localization"
-    For complete localization configuration and supported formats, see the [Localization](../../capabilities/localization.md) documentation.
+    For complete localization configuration and supported formats, see the [Localization](../../guides/localization.md) documentation.
 
 ---
 
@@ -247,7 +247,7 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 `NumericEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
 
 !!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../capabilities/signals/signals.md) documentation.
+    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
 
 ---
 
@@ -264,8 +264,8 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 ### Framework concepts
 
 - [Formatting](../../guides/formatting.md) — number presets, precision, and custom patterns
-- [Localization](../../capabilities/localization.md) — internationalization and formatting
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Localization](../../guides/localization.md) — internationalization and formatting
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

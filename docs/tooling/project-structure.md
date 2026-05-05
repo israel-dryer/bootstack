@@ -1,4 +1,4 @@
----
+﻿---
 title: Project Structure
 ---
 
@@ -134,7 +134,7 @@ import bootstack as bs
 status = bs.Signal("Ready")
 ```
 
-!!! link "See [Guides → Reactivity](../guides/reactivity.md) and [Capabilities → Signals](../capabilities/signals/signals.md)."
+!!! link "See [Guides → Reactivity](../guides/reactivity.md) and [Capabilities → Signals](../guides/reactivity.md)."
 
 ---
 

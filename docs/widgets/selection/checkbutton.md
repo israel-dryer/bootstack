@@ -1,4 +1,4 @@
----
+﻿---
 title: CheckButton
 ---
 
@@ -189,7 +189,7 @@ bs.CheckButton(app, text="Notifications", localize=False)
 !!! tip "Safe to pass literal text"
     With `localize="auto"`, passing literal text is safe when no translation exists.
 
-!!! link "See [Localization](../../capabilities/localization.md) for configuring translations and message catalogs."
+!!! link "See [Localization](../../guides/localization.md) for configuring translations and message catalogs."
 
 ---
 
@@ -218,7 +218,7 @@ app.mainloop()
 
 You can also bind a Tk variable with `variable=...`.
 
-!!! link "See [Signals](../../capabilities/signals/index.md) for reactive programming patterns."
+!!! link "See [Signals](../../guides/reactivity.md) for reactive programming patterns."
 
 ---
 
@@ -235,8 +235,8 @@ You can also bind a Tk variable with `variable=...`.
 
 ### Framework concepts
 
-- [Signals](../../capabilities/signals/index.md) - reactive state management
-- [Localization](../../capabilities/localization.md) - text translation
+- [Signals](../../guides/reactivity.md) - reactive state management
+- [Localization](../../guides/localization.md) - text translation
 - [Design System](../../design-system/variants.md) - color tokens and variants
 
 ### API reference

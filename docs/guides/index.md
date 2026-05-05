@@ -30,12 +30,10 @@ Guides assume you understand the basics. They focus on **showing**, not explaini
 Guides do not replace:
 
 - **Widget docs** — detailed per-widget reference and options
-- **Capabilities docs** — how framework features work internally
 - **API Reference** — method signatures and parameters
 - **Platform docs** — Tk/ttk fundamentals and behavior
 
 If you need to understand *what* a widget does, see [Widgets](../widgets/index.md).
-If you need to understand *how* a capability works, see [Capabilities](../capabilities/index.md).
 Guides show you *how to apply* that knowledge.
 
 ---

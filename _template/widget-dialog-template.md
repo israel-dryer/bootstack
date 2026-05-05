@@ -1,4 +1,4 @@
----
+﻿---
 title: DialogName
 ---
 
@@ -211,9 +211,9 @@ Always point to another concrete widget as the alternative.
 
 - [Windows](../../platform/windows.md)
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Localization](../../capabilities/localization.md)
+- [Localization](../../guides/localization.md)
 
 **API reference**
 

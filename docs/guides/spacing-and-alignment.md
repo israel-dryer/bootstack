@@ -20,7 +20,7 @@ If you are using:
 
 Then you typically **do not need to manage spacing manually**.
 
-!!! link "See [Layout → Containers](../capabilities/layout/containers.md) for recommended layout containers and patterns."
+!!! link "See [Layout](layout.md) for recommended layout containers and patterns."
 
 ---
 
@@ -150,16 +150,20 @@ bootstack promotes **centralized spacing decisions**.
 ### Instead of repeating spacing:
 
 ```python
-ttk.Label(f, text="Name").grid(padx=8, pady=4)
-ttk.Entry(f).grid(padx=8, pady=4)
+parent = bs.Frame(app)
+parent.columnconfigure(1, weight=1)
+
+bs.Label(parent, text="Name").grid(row=0, column=0, padx=8, pady=4)
+bs.TextEntry(parent).grid(row=0, column=1, padx=8, pady=4, sticky="ew")
 ```
 
 ### Prefer container-defined spacing:
 
 ```python
-with ttk.GridFrame(parent, columns=2, gap=8):
-    ttk.Label(text="Name")
-    ttk.Entry()
+frame = bs.GridFrame(app, columns=2, gap=8)
+
+bs.Label(frame, text="Name")
+bs.TextEntry(frame)
 ```
 
 Benefits:
@@ -169,7 +173,7 @@ Benefits:
 - clearer intent
 - easier refactoring
 
-!!! link "See [Layout → Containers](../capabilities/layout/containers.md) for `PackFrame` and `GridFrame` usage."
+!!! link "See [Layout](layout.md) for `PackFrame` and `GridFrame` usage."
 
 ---
 

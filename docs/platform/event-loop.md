@@ -1,4 +1,4 @@
-# Event Loop
+﻿# Event Loop
 
 At the core of every Tk application is the **event loop**.
 
@@ -115,7 +115,7 @@ While bootstack does not replace the event loop, it layers structure on top of i
 All of these features are designed to work *with* the event loop, not around it:
 
 - See [Guides → Reactivity](../guides/reactivity.md) for how signals, callbacks, and events work together in applications.
-- See [Capabilities → Signals](../capabilities/signals/index.md) for the reactive abstraction built on Tk variables.
+- See [Capabilities → Signals](../guides/reactivity.md) for the reactive abstraction built on Tk variables.
 
 ---
 

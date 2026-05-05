@@ -1,4 +1,4 @@
----
+﻿---
 title: Design System
 ---
 
@@ -41,7 +41,7 @@ Those topics are covered elsewhere:
 
 - Widget behavior → [Widgets](../widgets/index.md)
 - Application workflows → [Guides](../guides/index.md)
-- Framework mechanics → [Capabilities](../capabilities/index.md)
+- Framework mechanics → [Capabilities](../guides/index.md)
 
 ---
 

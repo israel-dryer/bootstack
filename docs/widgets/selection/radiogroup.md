@@ -1,4 +1,4 @@
----
+﻿---
 title: RadioGroup
 ---
 
@@ -168,7 +168,7 @@ If you use a group label (`text=`) or per-option labels, they follow your normal
 for `Label` and `RadioButton` text.
 
 !!! link "Localization"
-    For more information on localizing your application, see the [Localization](/capabilities/localization/) documentation.
+    For more information on localizing your application, see the [Localization](/guides/localization/) documentation.
 
 ---
 
@@ -198,7 +198,7 @@ app.mainloop()
 ```
 
 !!! link "Signals"
-    For more information on reactive programming with signals, see the [Signals](/capabilities/signals/) documentation.
+    For more information on reactive programming with signals, see the [Signals](/guides/reactivity/) documentation.
 
 ---
 
@@ -218,9 +218,9 @@ app.mainloop()
 
 - [Design System](/design-system/) — colors, themes, and styling
 
-- [Signals](/capabilities/signals/) — reactive state management
+- [Signals](/guides/reactivity/) — reactive state management
 
-- [Localization](/capabilities/localization/) — internationalization support
+- [Localization](/guides/localization/) — internationalization support
 
 ### API reference
 

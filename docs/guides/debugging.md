@@ -138,7 +138,7 @@ bootstack provides structure to reduce debugging effort:
 Leaning into these abstractions simplifies diagnosis:
 
 - See [App Structure](app-structure.md) for application organization patterns.
-- See [Capabilities → Signals](../capabilities/signals/index.md) for reactive state debugging.
+- See [Reactivity](reactivity.md) for reactive state debugging.
 
 ---
 
@@ -157,4 +157,3 @@ Most bugs fall into a small set of patterns.
 
 - See [Performance](performance.md) for responsiveness issues.
 - See [Platform → Images & DPI](../platform/images-and-dpi.md) for rendering bugs.
-- See [Capabilities → State & Interaction](../capabilities/state-and-interaction.md) for behavior-specific debugging.

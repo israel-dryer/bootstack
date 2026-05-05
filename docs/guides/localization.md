@@ -337,9 +337,6 @@ message = L("greeting.welcome", name=name)
 - Use **`IntlFormatter`** for locale-aware date/number formatting
 - Change language at runtime with **`set_locale()`**
 
-!!! link "Localization Capability"
-    See [Capabilities → Localization](../capabilities/localization.md) for architecture details.
-
 ---
 
 ## Next Steps

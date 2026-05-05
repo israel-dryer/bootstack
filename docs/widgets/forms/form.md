@@ -1,4 +1,4 @@
----
+﻿---
 title: Form
 ---
 
@@ -311,7 +311,7 @@ text_signal = form.field_textsignal("email")
 Form labels and validation messages should be localized for international users.
 
 !!! link "Localization"
-    See the [Localization guide](../../capabilities/localization.md) for details on translating form content.
+    See the [Localization guide](../../guides/localization.md) for details on translating form content.
 
 ---
 
@@ -320,7 +320,7 @@ Form labels and validation messages should be localized for international users.
 Form data can be bound to reactive signals for automatic UI updates when values change.
 
 !!! link "Signals"
-    See the [Signals documentation](../../capabilities/signals/index.md) for reactive data binding patterns.
+    See the [Signals documentation](../../guides/reactivity.md) for reactive data binding patterns.
 
 ---
 
@@ -342,7 +342,7 @@ Form data can be bound to reactive signals for automatic UI updates when values 
 
 - [Validation](../../capabilities/validation/index.md) — form validation patterns
 
-- [Localization](../../capabilities/localization.md) — internationalization support
+- [Localization](../../guides/localization.md) — internationalization support
 
 ### API reference
 
