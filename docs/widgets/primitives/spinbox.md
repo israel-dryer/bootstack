@@ -1,4 +1,4 @@
----
+﻿---
 title: Spinbox
 ---
 
@@ -177,7 +177,7 @@ For validated, commit-based workflows, prefer [SpinnerEntry](../inputs/spinneren
 
 ### Framework concepts
 
-- [Events and Signals](../../capabilities/signals/signals.md)
+- [Events and Signals](../../guides/reactivity.md)
 
 ### API reference
 

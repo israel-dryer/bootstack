@@ -1,4 +1,4 @@
----
+﻿---
 title: Installation
 ---
 
@@ -70,7 +70,7 @@ theme-aware icons, DPI scaling, caching, and recoloring.
 
 No additional installation is required.
 
-!!! link "See [Icons & Imagery](../capabilities/icons/index.md) for details on image handling and icon behavior."
+!!! link "See [Icons & Imagery](../guides/icons.md) for details on image handling and icon behavior."
 
 ---
 
@@ -115,6 +115,6 @@ If Tk works in system Python but not in a venv, ensure:
 - [Quick Start](quick-start.md) — build a minimal app
 - [Guides](../guides/index.md) — recommended patterns and workflows
 - [Widgets](../widgets/index.md) — available UI components
-- [Capabilities](../capabilities/index.md) — framework features like signals and localization
+- [Capabilities](../guides/index.md) — framework features like signals and localization
 - [Tooling](../tooling/cli.md) — CLI, project structure, and packaging
 - [Platform](../platform/index.md) — Tk/ttk foundations (optional)

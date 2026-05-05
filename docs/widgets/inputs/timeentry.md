@@ -1,4 +1,4 @@
----
+﻿---
 title: TimeEntry
 ---
 
@@ -161,7 +161,7 @@ See [Guides → Formatting](../../guides/formatting.md) for all time presets and
 `TimeEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
 
 !!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../capabilities/signals/signals.md) documentation.
+    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
 
 ---
 
@@ -178,8 +178,8 @@ See [Guides → Formatting](../../guides/formatting.md) for all time presets and
 ### Framework concepts
 
 - [Formatting](../../guides/formatting.md) — time presets and custom patterns
-- [Localization](../../capabilities/localization.md) — internationalization and formatting
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Localization](../../guides/localization.md) — internationalization and formatting
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

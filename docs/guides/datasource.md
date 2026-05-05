@@ -452,5 +452,6 @@ For complete API documentation, see:
 
 ## Next steps
 
+- [Data Tables](data-tables.md) — guide to wiring TableView to a DataSource end-to-end
 - [ListView](../widgets/data-display/listview.md) — data-aware list widget
 - [TableView](../widgets/data-display/tableview.md) — data-aware table widget

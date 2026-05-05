@@ -1,4 +1,4 @@
-# Getting Started
+﻿# Getting Started
 
 This section helps you get productive with bootstack quickly—without requiring deep knowledge
 of Tkinter or ttk internals.
@@ -68,7 +68,7 @@ After that, explore:
 - [Guides](../guides/index.md) — practical how-to guides for common tasks
 - [Widgets](../widgets/index.md) — discovering available components
 - [Platform](../platform/index.md) — understanding the foundations (optional but useful)
-- [Capabilities](../capabilities/index.md) — learning the framework’s core features
+- [Capabilities](../guides/index.md) — learning the framework’s core features
 
 When you're ready to ship:
 

@@ -1,4 +1,4 @@
----
+﻿---
 title: ContextMenu
 ---
 
@@ -88,9 +88,9 @@ menu.add_radiobutton(text="Sort by date", value="date", variable=sort_var)
 - The menu hides automatically when the user clicks outside.
 - Item commands fire on click and close the menu.
 
-!!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
+!!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
-!!! link "See [Virtual Events](../../capabilities/signals/virtual-events.md) for interaction events emitted by bootstack widgets."
+!!! link "See [Virtual Events](../../guides/reactivity.md) for interaction events emitted by bootstack widgets."
 
 ---
 
@@ -102,7 +102,7 @@ Menu items use the same icon system as other bootstack widgets.
 menu.add_command(text="Settings", icon="gear", command=on_settings)
 ```
 
-!!! link "See [Icons & Imagery](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
+!!! link "See [Icons & Imagery](../../guides/icons.md) for icon sizing, DPI handling, and recoloring behavior."
 
 ---
 
@@ -115,7 +115,7 @@ menu.add_command(text="menu.open", command=on_open)
 menu.add_command(text="menu.delete", command=on_delete)
 ```
 
-!!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and language switching works."
+!!! link "See [Localization](../../guides/localization.md) for how message tokens are resolved and language switching works."
 
 ---
 
@@ -182,10 +182,10 @@ menu.on_item_click(on_item_click)
 
 ### Framework concepts
 
-- [Icons & Imagery](../../capabilities/icons/index.md)
-- [Virtual Events](../../capabilities/signals/virtual-events.md)
-- [State & Interaction](../../capabilities/state-and-interaction.md)
-- [Localization](../../capabilities/localization.md)
+- [Icons & Imagery](../../guides/icons.md)
+- [Virtual Events](../../guides/reactivity.md)
+- [State & Interaction](../../guides/reactivity.md)
+- [Localization](../../guides/localization.md)
 
 ### API reference
 

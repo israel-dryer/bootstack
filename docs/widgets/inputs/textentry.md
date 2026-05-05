@@ -1,4 +1,4 @@
----
+﻿---
 title: TextEntry
 ---
 
@@ -190,7 +190,7 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 `TextEntry` supports locale-aware formatting through the `value_format` option. Formatting is applied at commit time (blur or Enter), ensuring consistent display across different locales.
 
 !!! link "Localization"
-    For complete localization configuration and supported formats, see the [Localization](../../capabilities/localization.md) documentation.
+    For complete localization configuration and supported formats, see the [Localization](../../guides/localization.md) documentation.
 
 ---
 
@@ -199,7 +199,7 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 `TextEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
 
 !!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../capabilities/signals/signals.md) documentation.
+    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
 
 ---
 
@@ -216,8 +216,9 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 
 ### Framework concepts
 
-- [Localization](../../capabilities/localization.md) — internationalization and formatting
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Forms & Input](../../guides/forms-and-input.md) — picking input widgets, layout, and submit handling
+- [Localization](../../guides/localization.md) — internationalization and formatting
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

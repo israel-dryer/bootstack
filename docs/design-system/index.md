@@ -1,4 +1,4 @@
----
+﻿---
 title: Design System
 ---
 
@@ -41,7 +41,7 @@ Those topics are covered elsewhere:
 
 - Widget behavior → [Widgets](../widgets/index.md)
 - Application workflows → [Guides](../guides/index.md)
-- Framework mechanics → [Capabilities](../capabilities/index.md)
+- Framework mechanics → [Capabilities](../guides/index.md)
 
 ---
 
@@ -67,4 +67,4 @@ By adopting the design system:
 - See how icons are treated in [Icons](icons.md)
 
 To learn how these concepts are applied in real applications, see
-[Guides → Styling](../guides/styling.md).
+[Guides → Color & Theming](../guides/color-and-theming.md).

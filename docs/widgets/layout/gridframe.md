@@ -1,4 +1,4 @@
----
+﻿---
 title: GridFrame
 ---
 
@@ -220,7 +220,7 @@ grid.configure_column(1, weight=2, minsize=100)
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 - [Layout](../../platform/geometry-and-layout.md)
 
 ### API reference

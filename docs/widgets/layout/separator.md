@@ -1,4 +1,4 @@
----
+﻿---
 title: Separator
 ---
 
@@ -116,7 +116,7 @@ bs.Separator(app, orient="vertical")
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 

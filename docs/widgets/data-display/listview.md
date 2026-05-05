@@ -1,4 +1,4 @@
----
+﻿---
 title: ListView
 ---
 
@@ -14,7 +14,6 @@ It renders only the visible rows (plus a small overscan), making it suitable for
 
 ```python
 import bootstack as bs
-from bootstack.widgets.composites.list import ListView
 
 app = bs.App()
 
@@ -23,7 +22,7 @@ items = [
     {"id": 2, "title": "Item 2", "text": "Description 2"},
 ]
 
-lv = ListView(app, items=items)
+lv = bs.ListView(app, items=items)
 lv.pack(fill="both", expand=True, padx=20, pady=20)
 
 app.mainloop()
@@ -66,7 +65,7 @@ Common presentation options:
 - `scrollbar_visibility='always'`
 
 ```python
-lv = ListView(
+lv = bs.ListView(
     app,
     items=data,
     striped=True,
@@ -86,11 +85,10 @@ lv = ListView(
 
 ```python
 import bootstack as bs
-from bootstack.widgets.composites.list import ListView
 
 app = bs.App()
 
-lv = ListView(
+lv = bs.ListView(
     app,
     items=[{"id": i, "title": f"Item {i}"} for i in range(2000)],
     selection_mode="multi",
@@ -149,7 +147,7 @@ Optional selection UI:
 - `select_on_click` controls whether clicking the row selects it
 
 ```python
-lv = ListView(app, items=data, selection_mode="single", select_on_click=True)
+lv = bs.ListView(app, items=data, selection_mode="single", select_on_click=True)
 ```
 
 ### Removing and dragging
@@ -157,7 +155,7 @@ lv = ListView(app, items=data, selection_mode="single", select_on_click=True)
 Enable item actions:
 
 ```python
-lv = ListView(
+lv = bs.ListView(
     app,
     items=data,
     enable_removing=True,
@@ -173,7 +171,7 @@ Use `row_factory` to supply your own `ListItem`-compatible row widget.
 def make_row(master, **kwargs):
     return bs.ListItem(master, **kwargs)  # or your custom widget
 
-lv = ListView(app, datasource=my_source, row_factory=make_row)
+lv = bs.ListView(app, datasource=my_source, row_factory=make_row)
 ```
 
 !!! tip "Row factory"
@@ -248,14 +246,14 @@ ListView can work with reactive data sources:
 
 ```python
 items = bs.Signal([{"id": 1, "title": "Item 1"}])
-lv = ListView(app, items=items)
+lv = bs.ListView(app, items=items)
 
 # Add new item
 items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 ```
 
 !!! link "Signals"
-    See [Signals](../../capabilities/signals/signals.md) for reactive programming patterns.
+    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -273,9 +271,11 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 
 ### Framework concepts
 
+- [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView; column-based filtering, sorting, and exporting patterns
+
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
 

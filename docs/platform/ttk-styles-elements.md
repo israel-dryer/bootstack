@@ -128,7 +128,7 @@ bootstack resolves these into concrete ttk style names and layouts.
 This keeps styling declarative and consistent:
 
 - See [Design System → Variants](../design-system/variants.md) for semantic styling options.
-- See [Guides → Styling](../guides/styling.md) for how to apply styles in practice.
+- See [Guides → Color & Theming](../guides/color-and-theming.md) for how to apply styles in practice.
 
 ---
 

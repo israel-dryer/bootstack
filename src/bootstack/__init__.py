@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     from bootstack.api.style import (
         Font,
         Style,
+        Typography,
         get_style,
         get_style_builder,
         get_theme,
@@ -58,6 +59,7 @@ if TYPE_CHECKING:
         toggle_theme,
         get_theme_color,
         get_themes,
+        register_user_theme,
     )
     from bootstack.api.widgets import (
         Button,
@@ -80,6 +82,8 @@ if TYPE_CHECKING:
         Label,
         LabelFrame,
         LabeledScale,
+        ListItem,
+        ListView,
         MenuBar,
         MenuButton,
         Meter,
@@ -158,10 +162,11 @@ _MODULE_EXPORTS = {
     ],
     # Style & Theming
     "bootstack.api.style": [
-        "BootstrapIcon", "Font", "Style",
+        "BootstrapIcon", "Font", "Style", "Typography",
         "get_style", "get_style_builder", "get_theme",
         "get_theme_provider", "set_theme", "get_theme_color",
         "toggle_theme", "get_themes",
+        "register_user_theme",
     ],
     # Widgets
     "bootstack.api.widgets": [
@@ -173,7 +178,7 @@ _MODULE_EXPORTS = {
         "RadioToggle",
         "Calendar", "ContextMenu", "ContextMenuItem", "DateEntry",
         "Accordion", "DropdownButton", "Expander", "Field", "FieldOptions", "FloodGauge", "Form",
-        "GridFrame", "LabeledScale", "MenuBar", "Meter",
+        "GridFrame", "LabeledScale", "ListItem", "ListView", "MenuBar", "Meter",
         "SideNav", "SideNavItem", "SideNavGroup",
         "SideNavHeader", "SideNavSeparator",
         "NumericEntry", "PackFrame", "PageStack",

@@ -106,5 +106,5 @@ This keeps applications consistent and themeable.
 ## Next steps
 
 - See [ttk Styles & Elements](ttk-styles-elements.md) for how ttk styling works internally.
-- See [Guides → Styling](../guides/styling.md) for how bootstack extends ttk themes.
+- See [Guides → Color & Theming](../guides/color-and-theming.md) for how bootstack extends ttk themes.
 - See [Widgets](../widgets/index.md) for user-facing components built on these systems.

@@ -1,4 +1,4 @@
-# Events & Bindings
+﻿# Events & Bindings
 
 Tk delivers user input and system notifications through an **event and binding system**.
 Understanding how events are generated, propagated, and handled is essential for building
@@ -104,7 +104,7 @@ They are especially useful when:
 - application-level state changes need to notify many components
 
 bootstack strongly encourages virtual events for semantic communication.
-See [Capabilities → Virtual Events](../capabilities/signals/virtual-events.md) for the framework's virtual event patterns.
+See [Capabilities → Virtual Events](../guides/reactivity.md) for the framework's virtual event patterns.
 
 ---
 
@@ -133,6 +133,6 @@ Clear event boundaries lead to more maintainable applications.
 
 ## Next steps
 
-- See [Capabilities → Signals](../capabilities/signals/index.md) for declarative state propagation.
+- See [Capabilities → Signals](../guides/reactivity.md) for declarative state propagation.
 - See [Widget Lifecycle](widget-lifecycle.md) to understand when bindings should be created or removed.
 - See [Event Loop](event-loop.md) for how events are scheduled and dispatched.

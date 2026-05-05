@@ -29,39 +29,39 @@ Many widgets accept a `value_format` parameter that specifies how values are dis
 
 ```python
 # Decimal with grouping
-ttk.NumericEntry(app, value=1234.56, value_format="decimal")
+bs.NumericEntry(app, value=1234.56, value_format="decimal")
 
 # Percentage
-ttk.NumericEntry(app, value=0.42, value_format="percent")
+bs.NumericEntry(app, value=0.42, value_format="percent")
 
 # Currency
-ttk.NumericEntry(app, value=99.99, value_format="currency")
+bs.NumericEntry(app, value=99.99, value_format="currency")
 
 # Large numbers (auto K/M/B/T)
-ttk.NumericEntry(app, value=1500000, value_format="largeNumber")
+bs.NumericEntry(app, value=1500000, value_format="largeNumber")
 ```
 
 ### Date formatting
 
 ```python
 # Long date: "January 15, 2025"
-ttk.DateEntry(app, value_format="longDate")
+bs.DateEntry(app, value_format="longDate")
 
 # Short date: "1/15/25"
-ttk.DateEntry(app, value_format="shortDate")
+bs.DateEntry(app, value_format="shortDate")
 
 # Custom pattern
-ttk.DateEntry(app, value_format="yyyy-MM-dd")
+bs.DateEntry(app, value_format="yyyy-MM-dd")
 ```
 
 ### Time formatting
 
 ```python
 # Short time: "3:30 PM"
-ttk.TimeEntry(app, value_format="shortTime")
+bs.TimeEntry(app, value_format="shortTime")
 
 # Long time: "3:30:45 PM PST"
-ttk.TimeEntry(app, value_format="longTime")
+bs.TimeEntry(app, value_format="longTime")
 ```
 
 ---
@@ -87,15 +87,15 @@ Use a dict to control decimal places:
 
 ```python
 # Percentage with no decimals
-ttk.NumericEntry(app, value=0.425, value_format={"type": "percent", "precision": 0})
+bs.NumericEntry(app, value=0.425, value_format={"type": "percent", "precision": 0})
 # Output: "43%"
 
 # Currency with 2 decimals
-ttk.NumericEntry(app, value=99, value_format={"type": "currency", "precision": 2})
+bs.NumericEntry(app, value=99, value_format={"type": "currency", "precision": 2})
 # Output: "$99.00"
 
 # Decimal with 3 decimals
-ttk.NumericEntry(app, value=3.14159, value_format={"type": "decimal", "precision": 3})
+bs.NumericEntry(app, value=3.14159, value_format={"type": "decimal", "precision": 3})
 # Output: "3.142"
 ```
 
@@ -247,10 +247,10 @@ fmt_fr.format(date(2025, 1, 15), "longDate")  # "15 janvier 2025"
 Widgets inherit locale from the application settings:
 
 ```python
-app = ttk.App(settings={"locale": "de_DE"})
+app = bs.App(settings={"locale": "de_DE"})
 
 # This entry uses German formatting automatically
-ttk.NumericEntry(app, value=1234.56, value_format="decimal")
+bs.NumericEntry(app, value=1234.56, value_format="decimal")
 # Displays: "1.234,56"
 ```
 
@@ -314,8 +314,8 @@ revenue = 1234567.89
 growth = 0.125
 
 # Create formatted labels
-ttk.Label(app, text=f"Revenue: {fmt.format(revenue, 'currency')}")
-ttk.Label(app, text=f"Growth: {fmt.format(growth, 'percent')}")
+bs.Label(app, text=f"Revenue: {fmt.format(revenue, 'currency')}")
+bs.Label(app, text=f"Growth: {fmt.format(growth, 'percent')}")
 ```
 
 ---
@@ -386,5 +386,6 @@ value_format={"type": "custom", "pattern": "#,##0.00"}
 
 - [Localization](localization.md) — message translation and locale settings
 - [App Settings](app-settings.md) — configuring application locale
+- [Data Tables](data-tables.md) — pre-formatting record values for TableView (which has no per-cell `value_format`)
 - [Widgets → NumericEntry](../widgets/inputs/numericentry.md) — numeric input with formatting
 - [Widgets → DateEntry](../widgets/inputs/dateentry.md) — date input with formatting

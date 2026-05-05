@@ -55,6 +55,10 @@ shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 shell.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../assets/navigation-appshell.png" alt="App Shell"/>
+</div>
+
 ### Groups and footer items
 
 ```python
@@ -186,9 +190,10 @@ making it easy to switch between categories.
 ```python
 import bootstack as bs
 
-app = bs.App()
+app = bs.App(size=(300, 200))
 
-notebook = bs.Notebook(app, accent="primary", padding=20)
+notebook = bs.Notebook(app, accent="primary")
+
 notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
 # Create tabs
@@ -203,6 +208,10 @@ bs.Label(about, text="Version 1.0").pack(anchor="w")
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/navigation-tabs.png" alt="Navigation Tabs"/>
+</div>
 
 ### When to use tabs
 

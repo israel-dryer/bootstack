@@ -1,4 +1,4 @@
----
+﻿---
 title: MenuButton
 ---
 
@@ -66,7 +66,7 @@ bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4
 - `MenuButton` opens the associated Tk `Menu`.
 - Menu keyboard navigation and platform conventions are handled by Tk.
 
-!!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
+!!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
 ---
 
@@ -80,7 +80,7 @@ m.add_command(label="menu.open", command=lambda: ...)
 bs.MenuButton(app, text="button.file", menu=m).pack()
 ```
 
-!!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."
+!!! link "See [Localization](../../guides/localization.md) for how message tokens are resolved and how language switching works."
 
 ---
 
@@ -95,8 +95,8 @@ bs.MenuButton(app, text="button.file", menu=m).pack()
 ### Framework concepts
 
 - [Design System → Variants](../../design-system/variants.md)
-- [State & Interaction](../../capabilities/state-and-interaction.md)
-- [Localization](../../capabilities/localization.md)
+- [State & Interaction](../../guides/reactivity.md)
+- [Localization](../../guides/localization.md)
 
 ### API reference
 

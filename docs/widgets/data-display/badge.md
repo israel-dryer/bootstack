@@ -1,4 +1,4 @@
----
+﻿---
 title: Badge
 ---
 
@@ -107,7 +107,7 @@ bs.Badge(app, text="status.new", localize=True)
 ```
 
 !!! link "Localization"
-    See [Localization](../../capabilities/localization.md) for translation setup.
+    See [Localization](../../guides/localization.md) for translation setup.
 
 ---
 
@@ -122,7 +122,7 @@ count.set(10)  # Badge updates automatically
 ```
 
 !!! link "Signals"
-    See [Signals](../../capabilities/signals/signals.md) for reactive programming patterns.
+    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -144,9 +144,9 @@ count.set(10)  # Badge updates automatically
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
-- [Localization](../../capabilities/localization.md) — translation support
+- [Localization](../../guides/localization.md) — translation support
 
 ### API reference
 

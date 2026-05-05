@@ -1,4 +1,4 @@
----
+﻿---
 title: Accordion
 ---
 
@@ -228,7 +228,7 @@ accordion.on_accordion_changed(on_accordion_changed)
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 

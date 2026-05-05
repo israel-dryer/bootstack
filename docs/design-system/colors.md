@@ -65,4 +65,4 @@ To customize how colors are rendered, see:
 
 - [Variants](variants.md)
 - [Design System → Icons](icons.md)
-- [Guides → Styling](../guides/styling.md)
+- [Guides → Color & Theming](../guides/color-and-theming.md)

@@ -1,4 +1,4 @@
----
+﻿---
 title: SelectionWidgetName
 ---
 
@@ -217,11 +217,11 @@ Prefer OtherWidget when:
 
 **Framework concepts**
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Localization](../../capabilities/localization.md)
+- [Localization](../../guides/localization.md)
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
 **API reference**
 

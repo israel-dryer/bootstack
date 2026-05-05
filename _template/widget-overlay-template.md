@@ -1,4 +1,4 @@
----
+﻿---
 title: OverlayWidgetName
 ---
 
@@ -187,7 +187,7 @@ Prescriptive advice:
 
 - [Windows](../../platform/windows.md)
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
 **API reference**
 

@@ -1,4 +1,4 @@
----
+﻿---
 title: TableView
 ---
 
@@ -297,7 +297,7 @@ tv.reload()
 ```
 
 !!! link "Signals"
-    See [Signals](../../capabilities/signals/signals.md) for reactive programming patterns.
+    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -313,9 +313,11 @@ tv.reload()
 
 ### Framework concepts
 
+- [Data Tables](../../guides/data-tables.md) — wiring TableView to a DataSource: columns, selection, filtering, pagination, and exporting
+
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
 

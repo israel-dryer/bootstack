@@ -54,9 +54,8 @@ For better IDE support and validation:
 
 ```python
 import bootstack as bs
-from bootstack.runtime.app import AppSettings
 
-settings = AppSettings(
+settings = bs.AppSettings(
     app_name="My Application",
     app_version="1.0.0",
     theme="dark",
@@ -82,7 +81,7 @@ Both approaches are equivalent. Use the class when you want autocomplete or need
 | `app_version` | `str` | `None` | Version string |
 
 ```python
-settings = AppSettings(
+settings = bs.AppSettings(
     app_name="Invoice Manager",
     app_author="Acme Corp",
     app_version="2.1.0",
@@ -100,15 +99,15 @@ settings = AppSettings(
 | `inherit_surface_color` | `bool` | `True` | Children inherit parent's background |
 
 ```python
-settings = AppSettings(
+settings = bs.AppSettings(
     theme="dark",
     light_theme="ocean-light",
     dark_theme="ocean-dark",
 )
 ```
 
-!!! link "Theming Guide"
-    See [Theming](theming.md) for theme customization and switching.
+!!! link "Color & Theming Guide"
+    See [Color & Theming](color-and-theming.md) for theme customization and switching.
 
 ### Localization Settings
 
@@ -123,7 +122,7 @@ settings = AppSettings(
 | `localize_mode` | `bool \| "auto"` | `"auto"` | Localization behavior |
 
 ```python
-settings = AppSettings(
+settings = bs.AppSettings(
     locale="de_DE",
     # Derived automatically:
     # language = "de"
@@ -136,7 +135,7 @@ settings = AppSettings(
 When you specify a `locale`, format settings are automatically derived from it. You can override any individual setting:
 
 ```python
-settings = AppSettings(
+settings = bs.AppSettings(
     locale="en_US",
     date_format="yyyy-MM-dd",  # Override the US default
 )
@@ -154,7 +153,7 @@ are intended for transient or environment-driven configuration (such as CLI flag
 
 
 ```python
-settings = AppSettings(
+settings = bs.AppSettings(
     app_name="Default Name",
     theme="light",
 )
@@ -199,9 +198,7 @@ app.settings.app_name = "New Name"
 Or use the global accessor:
 
 ```python
-from bootstack.runtime.app import get_app_settings
-
-settings = get_app_settings()
+settings = bs.get_app_settings()
 print(settings.locale)
 ```
 
@@ -213,10 +210,9 @@ A fully configured application:
 
 ```python
 import bootstack as bs
-from bootstack.runtime.app import AppSettings
 
 # Define settings
-settings = AppSettings(
+settings = bs.AppSettings(
     # App metadata
     app_name="Task Manager",
     app_author="Productivity Inc",
@@ -280,7 +276,7 @@ app = bs.App(settings=config)
 - You want to inspect defaults before passing
 
 ```python
-settings = AppSettings(locale="ja_JP")
+settings = bs.AppSettings(locale="ja_JP")
 
 # Inspect derived values
 print(f"Date format: {settings.date_format}")
@@ -319,12 +315,12 @@ Locale-dependent settings (`date_format`, `time_format`, `number_decimal`, `numb
 - Pass a **dict** for simplicity or an **AppSettings** instance for type safety
 - Settings cover **metadata**, **theming**, and **localization**
 - Constructor parameters (`title`, `theme`, `localize`) override settings
-- Access settings at runtime via `app.settings` or `get_app_settings()`
+- Access settings at runtime via `app.settings` or `bs.get_app_settings()`
 
 ---
 
 ## Next Steps
 
 - [App Structure](app-structure.md) — application organization and lifecycle
-- [Theming](theming.md) — theme configuration and customization
+- [Color & Theming](color-and-theming.md) — theme configuration and customization
 - [Localization](localization.md) — internationalization and translations

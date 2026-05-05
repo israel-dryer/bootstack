@@ -1,4 +1,4 @@
----
+﻿---
 title: FormWidgetName
 ---
 
@@ -223,11 +223,11 @@ Prescriptive advice:
 
 **Framework concepts**
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
 **API reference**
 

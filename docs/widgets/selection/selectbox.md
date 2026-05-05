@@ -1,4 +1,4 @@
----
+﻿---
 title: SelectBox
 ---
 
@@ -258,7 +258,7 @@ Items in the popup display hover states for visual feedback as the user moves th
 If the field label participates in localization, it follows your global field/widget localization rules.
 
 !!! link "Localization"
-    For details on internationalizing your application, see the [Localization](../../capabilities/localization.md) documentation.
+    For details on internationalizing your application, see the [Localization](../../guides/localization.md) documentation.
 
 ---
 
@@ -278,9 +278,9 @@ If the field label participates in localization, it follows your global field/wi
 
 ### Framework concepts
 
-- [Validation](../../capabilities/validation/index.md) — form and field validation patterns
+- [Validation](../../guides/validation.md) — form and field validation patterns
 
-- [Events and callbacks](../../capabilities/signals/index.md) — handling widget events
+- [Events and callbacks](../../guides/reactivity.md) — handling widget events
 
 ### API reference
 

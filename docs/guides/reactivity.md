@@ -583,9 +583,6 @@ The Signal API provides a cleaner interface:
 | `var.get()` | `signal.get()` / `signal.value` |
 | `var.set()` | `signal.set()` / `signal.value = ...` |
 
-!!! link "Signals Capability"
-    See [Capabilities → Signals](../capabilities/signals/signals.md) for implementation details.
-
 ---
 
 ## Summary
@@ -602,4 +599,4 @@ Use signals when state is shared. Use callbacks when an action happens. Use even
 
 - [App Structure](app-structure.md) — how applications are organized
 - [Layout](layout.md) — building layouts with containers
-- [Styling](styling.md) — applying consistent styling
+- [Color & Theming](color-and-theming.md) — applying consistent styling

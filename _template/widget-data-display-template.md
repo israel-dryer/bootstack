@@ -1,4 +1,4 @@
----
+﻿---
 title: DataDisplayWidgetName
 ---
 
@@ -220,11 +220,11 @@ Prescriptive guidance:
 
 **Framework concepts**
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
-- [Signals & Events](../../capabilities/signals/index.md)
+- [Signals & Events](../../guides/reactivity.md)
 
-- [Validation](../../capabilities/validation.md)
+- [Validation](../../guides/validation.md)
 
 **API reference**
 

@@ -1,4 +1,4 @@
----
+﻿---
 title: PackFrame
 ---
 
@@ -200,7 +200,7 @@ btn.pack_forget()
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 - [Layout](../../platform/geometry-and-layout.md)
 
 ### API reference

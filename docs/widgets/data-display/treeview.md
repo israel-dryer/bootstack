@@ -1,4 +1,4 @@
----
+﻿---
 title: TreeView
 ---
 
@@ -174,7 +174,7 @@ for item in new_data:
 ```
 
 !!! link "Signals"
-    See [Signals](../../capabilities/signals/signals.md) for reactive programming patterns.
+    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -192,7 +192,7 @@ for item in new_data:
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 
-- [Signals](../../capabilities/signals/signals.md) — reactive data binding
+- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

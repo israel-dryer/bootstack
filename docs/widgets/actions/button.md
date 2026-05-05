@@ -1,4 +1,4 @@
----
+﻿---
 title: Button
 ---
 
@@ -140,7 +140,7 @@ bs.Button(app, text="Settings", icon="gear").pack(pady=6)
 bs.Button(app, icon="gear", icon_only=True).pack(pady=6)
 ```
 
-!!! link "See [Icons & Images](../../capabilities/icons/index.md) for icon sizing, DPI handling, and recoloring behavior."
+!!! link "See [Icons & Images](../../guides/icons.md) for icon sizing, DPI handling, and recoloring behavior."
 
 
 !!! tip "Custom Icons"
@@ -176,7 +176,7 @@ Buttons support keyboard focus and activation.
 - **Space / Enter** activates the button.
 - Disabled buttons do not receive focus or emit events.
 
-!!! link "See [State & Interaction](../../capabilities/state-and-interaction.md) for focus, hover, and disabled behavior across widgets."
+!!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
 ---
 
@@ -189,7 +189,7 @@ through the active message catalog.
 bs.Button(app, text="button.save").pack()
 ```
 
-!!! link "See [Localization](../../capabilities/localization.md) for how message tokens are resolved and how language switching works."
+!!! link "See [Localization](../../guides/localization.md) for how message tokens are resolved and how language switching works."
 
 ---
 
@@ -204,7 +204,7 @@ bs.Button(app, textsignal=label).pack()
 label.set("Stop")
 ```
 
-!!! link "See [Signals](../../capabilities/signals/index.md) for how signal-backed widget values and text updates work."
+!!! link "See [Signals](../../guides/reactivity.md) for how signal-backed widget values and text updates work."
 
 ---
 
@@ -224,10 +224,10 @@ label.set("Stop")
 
 - [Design System → Variants](../../design-system/variants.md)
 - [Design System → Icons](../../design-system/icons.md)
-- [Icons & Imagery](../../capabilities/icons/index.md)
-- [Signals](../../capabilities/signals/index.md)
-- [Localization](../../capabilities/localization.md)
-- [State & Interaction](../../capabilities/state-and-interaction.md)
+- [Icons & Imagery](../../guides/icons.md)
+- [Signals](../../guides/reactivity.md)
+- [Localization](../../guides/localization.md)
+- [State & Interaction](../../guides/reactivity.md)
 
 ### API reference
 

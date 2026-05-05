@@ -1,4 +1,4 @@
----
+﻿---
 title: Frame
 ---
 
@@ -136,7 +136,7 @@ pane.pack_propagate(False)
 
 ### Framework concepts
 
-- [Layout Properties](../../capabilities/layout-props.md)
+- [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../platform/geometry-and-layout.md)
 
