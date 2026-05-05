@@ -461,6 +461,48 @@ fill any gaps.
   `docs/restructure` in Session 1 — re-read the file before assuming it's
   still in its `main` shape.
 
+### Session 4 — Rewrite spacing-and-alignment (Path A) (2026-05-05)
+
+- The "WIP draft on main" turned out to be the original Tk-mechanics-first
+  page (no Path A draft existed yet). Rewrote it from scratch.
+- New structure (per Session 4 plan): Spacing (`padding`, `gap`, Card
+  defaults) → Alignment (`sticky_items`, `fill_items`, `anchor_items`,
+  `direction`) → Sizing & expansion (column/row size specs, `expand_items`,
+  fill vs expand) → Auto-flow → Under the hood (demoted Tk mechanics) →
+  When to drop to raw Tk → Common pitfalls. Worked examples for each
+  bootstack-vocabulary section: settings panel, toolbar with left/right
+  groups, master-detail pane, dense gallery.
+- Source-verified the API surface against
+  `src/bootstack/widgets/primitives/{packframe.py, gridframe.py, card.py}`
+  and the `bs.*` exports in `src/bootstack/__init__.py`. `bs.*` only — no
+  `ttk.*`. Confirmed: PackFrame `direction` accepts six values incl.
+  `row-reverse`/`column-reverse`; GridFrame size specs are `int weight` /
+  `"auto"` / `"Npx"`; gap accepts `int` or `(col, row)` tuple; Card
+  defaults are `accent='card'`, `padding=16`, `show_border=True`.
+- One subtlety surfaced while writing the master-detail example:
+  `sticky_items="nsew"` only fills vertically when a row has weight, so the
+  example explicitly passes `rows=[1]` alongside `columns=["220px", 1]`.
+  The dense-gallery example uses `configure_row(r, weight=1)` /
+  `configure_column(c, weight=1)` after the fact since auto-flow creates
+  rows on demand.
+- No inbound links broken. The three references in `docs/` (`platform/
+  geometry-and-layout.md`, `guides/layout.md`, `guides/index.md`) all
+  point at `spacing-and-alignment.md` without anchor fragments. Their
+  one-line descriptions still read accurately for the new content.
+- `zensical build --clean` runs in 11.25s, "No issues found". (The griffe
+  warnings about missing annotations on existing widget code are
+  pre-existing and unrelated.)
+- **Screenshots deferred.** The Session 4 plan called for screenshots of
+  the centralized-spacing before/after and `auto_flow` dense, mirroring
+  `layout.md`'s `guides-spacing-*.png` convention. Capturing these requires
+  running the app interactively, which I can't do here. Recommend Session 5
+  pick these up alongside the other inbound-link work, or fold capture
+  into a small follow-up pass. The new guide reads cleanly without images.
+- For next session (Session 5): small fixes and inbound links — also a
+  good moment to capture the Session 4 screenshots if desired (file-name
+  template: `docs/assets/guides-spacing-{settings,toolbar,master-detail,
+  gallery-dense}.png`).
+
 ---
 
 ## Key API notes (standing reference)
