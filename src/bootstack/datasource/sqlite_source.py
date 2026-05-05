@@ -34,6 +34,10 @@ from typing import Any, Dict, List, Optional, Union, Sequence
 from bootstack.datasource.base import BaseDataSource
 from bootstack.datasource.types import Primitive, Record
 
+# Internal column names — reserved by SqliteDataSource, never exposed to user data.
+_ROW_ID = "_bs_row_id"
+_ROW_SEL = "_bs_selected"
+
 
 class SqliteDataSource(BaseDataSource):
     """SQLite-backed data manager with pagination, filtering, sorting, and CRUD operations.
@@ -61,8 +65,9 @@ class SqliteDataSource(BaseDataSource):
         - The database connection persists for the lifetime of the object
         - Close the connection explicitly with conn.close() if needed
         - Schema is inferred from first record's data types
-        - 'id' field is automatically set as PRIMARY KEY
-        - 'selected' field is added automatically for selection tracking
+        - An internal row-identity column (_bs_row_id) is added automatically as PRIMARY KEY
+        - An internal selection column (_bs_selected) is added automatically for selection tracking
+        - These internal columns are filtered out of the display column list automatically
     """
 
     def __init__(self, name: str = ":memory:", page_size: int = 10):
@@ -121,12 +126,12 @@ class SqliteDataSource(BaseDataSource):
             using_dicts = True
 
         if using_dicts:
-            # Ensure helper columns
+            # Ensure internal helper columns
             for i, record in enumerate(records):
-                if "id" not in record:
-                    record["id"] = i
-                if "selected" not in record:
-                    record["selected"] = 0
+                if _ROW_ID not in record:
+                    record[_ROW_ID] = i
+                if _ROW_SEL not in record:
+                    record[_ROW_SEL] = 0
 
             self._columns = list(records[0].keys())
             col_types = {col: self._infer_type(records[0][col]) for col in self._columns}
@@ -136,25 +141,25 @@ class SqliteDataSource(BaseDataSource):
             keys = list(column_keys or [])
             if not keys:
                 keys = [str(i) for i in range(len(first))]
-            need_id = "id" not in keys
-            need_selected = "selected" not in keys
+            need_id = _ROW_ID not in keys
+            need_sel = _ROW_SEL not in keys
             if need_id:
-                keys.append("id")
-            if need_selected:
-                keys.append("selected")
+                keys.append(_ROW_ID)
+            if need_sel:
+                keys.append(_ROW_SEL)
             self._columns = keys
 
             # Infer types from first row (pad to keys length)
             padded_first = list(first) + [None] * (len(keys) - len(first))
-            if need_id and "id" in keys:
-                padded_first[keys.index("id")] = 0
-            if need_selected and "selected" in keys:
-                padded_first[keys.index("selected")] = 0
+            if need_id and _ROW_ID in keys:
+                padded_first[keys.index(_ROW_ID)] = 0
+            if need_sel and _ROW_SEL in keys:
+                padded_first[keys.index(_ROW_SEL)] = 0
             col_types = {col: self._infer_type(padded_first[idx]) for idx, col in enumerate(keys)}
 
             rows_to_insert = []
-            id_idx = keys.index("id") if "id" in keys else None
-            sel_idx = keys.index("selected") if "selected" in keys else None
+            id_idx = keys.index(_ROW_ID) if _ROW_ID in keys else None
+            sel_idx = keys.index(_ROW_SEL) if _ROW_SEL in keys else None
             value_len = len(keys)
             for i, row in enumerate(records):
                 base_values = list(row[: value_len]) + [""] * (value_len - len(row))
@@ -165,7 +170,7 @@ class SqliteDataSource(BaseDataSource):
                 rows_to_insert.append(tuple(base_values))
 
         col_definitions = ", ".join(
-            f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == "id" else "")
+            f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == _ROW_ID else "")
             for col in self._columns
         )
         placeholders = ", ".join("?" for _ in self._columns)
@@ -241,11 +246,11 @@ class SqliteDataSource(BaseDataSource):
 
     def create_record(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID."""
-        if "id" not in record:
-            record["id"] = self._generate_new_id()
+        if _ROW_ID not in record:
+            record[_ROW_ID] = self._generate_new_id()
 
-        if "selected" not in record:
-            record["selected"] = 0
+        if _ROW_SEL not in record:
+            record[_ROW_SEL] = 0
 
         # Ensure table exists (handles empty datasources)
         self._ensure_table_for_record(record)
@@ -257,11 +262,11 @@ class SqliteDataSource(BaseDataSource):
 
         with self.conn:
             self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
-        return record["id"]
+        return record[_ROW_ID]
 
     def read_record(self, record_id: Any) -> Optional[Dict[str, Any]]:
         """Retrieve single record by ID."""
-        cursor = self.conn.execute(f"SELECT * FROM {self._table} WHERE id = ?", (record_id,))
+        cursor = self.conn.execute(f"SELECT * FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
         row = cursor.fetchone()
         return dict(row) if row else None
 
@@ -272,19 +277,19 @@ class SqliteDataSource(BaseDataSource):
         set_clause = ", ".join(f"{self._quote_identifier(k)} = ?" for k in updates)
         values = tuple(updates.values()) + (record_id,)
         with self.conn:
-            cur = self.conn.execute(f"UPDATE {self._table} SET {set_clause} WHERE id = ?", values)
+            cur = self.conn.execute(f"UPDATE {self._table} SET {set_clause} WHERE {_ROW_ID} = ?", values)
             return cur.rowcount > 0
 
     def delete_record(self, record_id: Any) -> bool:
         """Delete record by ID."""
         with self.conn:
-            cur = self.conn.execute(f"DELETE FROM {self._table} WHERE id = ?", (record_id,))
+            cur = self.conn.execute(f"DELETE FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
             return cur.rowcount > 0
 
     def _generate_new_id(self) -> int:
         """Generate next available integer ID."""
         try:
-            cursor = self.conn.execute(f"SELECT MAX(id) FROM {self._table}")
+            cursor = self.conn.execute(f"SELECT MAX({_ROW_ID}) FROM {self._table}")
             max_id = cursor.fetchone()[0]
         except Exception:
             max_id = 0
@@ -301,23 +306,23 @@ class SqliteDataSource(BaseDataSource):
             pass
 
         cols = list(self._columns) if self._columns else list(record.keys())
-        if "id" not in cols:
-            cols.append("id")
-        if "selected" not in cols:
-            cols.append("selected")
+        if _ROW_ID not in cols:
+            cols.append(_ROW_ID)
+        if _ROW_SEL not in cols:
+            cols.append(_ROW_SEL)
         self._columns = cols
 
         col_types = {}
         for c in cols:
-            if c == "id":
+            if c == _ROW_ID:
                 col_types[c] = "INTEGER"
-            elif c == "selected":
+            elif c == _ROW_SEL:
                 col_types[c] = "INTEGER"
             else:
                 col_types[c] = self._infer_type(record.get(c))
 
         col_definitions = ", ".join(
-            f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == "id" else "")
+            f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == _ROW_ID else "")
             for col in cols
         )
         with self.conn:
@@ -337,40 +342,40 @@ class SqliteDataSource(BaseDataSource):
         """Select all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [row["id"] for row in self.get_page()]
+            ids = [row[_ROW_ID] for row in self.get_page()]
             if not ids:
                 return 0
             placeholders = ", ".join("?" for _ in ids)
-            query = f"UPDATE {self._table} SET selected = 1 WHERE id IN ({placeholders})"
+            query = f"UPDATE {self._table} SET {_ROW_SEL} = 1 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
                 return cur.rowcount
         else:
             with self.conn:
-                cur = self.conn.execute(f"UPDATE {self._table} SET selected = 1")
+                cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 1")
                 return cur.rowcount
 
     def unselect_all(self, current_page_only: bool = False) -> int:
         """Unselect all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [row["id"] for row in self.get_page()]
+            ids = [row[_ROW_ID] for row in self.get_page()]
             if not ids:
                 return 0
             placeholders = ", ".join("?" for _ in ids)
-            query = f"UPDATE {self._table} SET selected = 0 WHERE id IN ({placeholders})"
+            query = f"UPDATE {self._table} SET {_ROW_SEL} = 0 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
                 return cur.rowcount
         else:
             with self.conn:
-                cur = self.conn.execute(f"UPDATE {self._table} SET selected = 0")
+                cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 0")
                 return cur.rowcount
 
     def get_selected(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get selected records, optionally paginated."""
         self._ensure_selected_column()
-        query = f"SELECT * FROM {self._table} WHERE selected = 1"
+        query = f"SELECT * FROM {self._table} WHERE {_ROW_SEL} = 1"
 
         if page is not None:
             offset = page * self.page_size
@@ -380,28 +385,30 @@ class SqliteDataSource(BaseDataSource):
         return [dict(row) for row in cursor.fetchall()]
 
     def _ensure_selected_column(self):
-        """Add 'selected' column to table if it doesn't exist."""
-        if "selected" not in self._columns:
+        """Add selection column to table if it doesn't exist."""
+        if _ROW_SEL not in self._columns:
             with self.conn:
-                self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN selected INTEGER DEFAULT 0")
-            self._columns.append("selected")
+                self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN {_ROW_SEL} INTEGER DEFAULT 0")
+            self._columns.append(_ROW_SEL)
 
     def selected_count(self) -> int:
         """Get total number of selected records."""
         self._ensure_selected_column()
-        query = f"SELECT COUNT(*) FROM {self._table} WHERE selected = 1"
+        query = f"SELECT COUNT(*) FROM {self._table} WHERE {_ROW_SEL} = 1"
         return self.conn.execute(query).fetchone()[0]
 
     def _set_selected_flag(self, record_id: Any, flag: int) -> bool:
         """Set selection flag for record by ID."""
-        if "selected" not in self._columns:
-            # Add selected column if it doesn't exist
+        if _ROW_SEL not in self._columns:
             with self.conn:
-                self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN selected INTEGER DEFAULT 0")
-            self._columns.append("selected")
+                self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN {_ROW_SEL} INTEGER DEFAULT 0")
+            self._columns.append(_ROW_SEL)
 
         with self.conn:
-            cur = self.conn.execute(f"UPDATE {self._table} SET selected = ? WHERE id = ?", (flag, record_id))
+            cur = self.conn.execute(
+                f"UPDATE {self._table} SET {_ROW_SEL} = ? WHERE {_ROW_ID} = ?",
+                (flag, record_id),
+            )
             return cur.rowcount > 0
 
     # === DATA EXPORT ===
@@ -411,7 +418,7 @@ class SqliteDataSource(BaseDataSource):
         self._ensure_selected_column()
         query = f"SELECT * FROM {self._table}"
         if not include_all:
-            query += " WHERE selected = 1"
+            query += f" WHERE {_ROW_SEL} = 1"
 
         cursor = self.conn.execute(query)
         rows = cursor.fetchall()
