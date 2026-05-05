@@ -216,6 +216,7 @@ search.insert_addon(bs.Button, position="after", icon="search", command=handle_s
 
 ### Framework concepts
 
+- [Forms & Input](../../guides/forms-and-input.md) — picking input widgets, layout, and submit handling
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Signals](../../guides/reactivity.md) — reactive data binding
 

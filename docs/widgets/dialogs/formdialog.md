@@ -116,6 +116,10 @@ For complex "live" forms, prefer an inline [Form](../forms/form.md) in a normal 
 
 - [PageStack](../views/pagestack.md) - multi-step workflows
 
+### Framework concepts
+
+- [Forms & Input](../../guides/forms-and-input.md) — picking input widgets and end-to-end form patterns
+
 ### API reference
 
 - [`bootstack.FormDialog`](../../reference/dialogs/FormDialog.md)

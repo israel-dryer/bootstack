@@ -338,6 +338,8 @@ Form data can be bound to reactive signals for automatic UI updates when values 
 
 ### Framework concepts
 
+- [Forms & Input](../../guides/forms-and-input.md) — picking input widgets and end-to-end form patterns
+
 - [Design System](../../design-system/index.md) — layout and spacing guidelines
 
 - [Validation](../../guides/validation.md) — form validation patterns

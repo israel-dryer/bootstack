@@ -378,6 +378,7 @@ The five built-in types plus `custom` cover almost everything.
 
 ## Related
 
+- [Forms & Input](forms-and-input.md) — picking input widgets, layout, and submit handling
 - [TextEntry](../widgets/inputs/textentry.md) — primary text field with built-in validation surface
 - [Form](../widgets/forms/form.md) — declarative form with `validate()`
 - [FormDialog](../widgets/dialogs/formdialog.md) — modal form flow

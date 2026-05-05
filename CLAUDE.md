@@ -589,6 +589,52 @@ fill any gaps.
   Session 7 block lists the inputs to read first and the structure to
   follow. The signup form example from `validation.md` can be reused/extended.
 
+### Session 7 — Forms & Input guide (2026-05-05)
+
+- Wrote `docs/guides/forms-and-input.md` per the Session 7 plan. Sections:
+  quick start (login form) → picking the right input (data-shape →
+  widget table) → reading/writing values + signal binding → layout
+  patterns (stacked single column, two-column `bs.Form`, Card sections)
+  → submit handling (manual vs `Form.validate()`, disabled-until-valid,
+  async with ThreadPoolExecutor) → surfacing errors (inline vs banner)
+  → worked signup example (extends the `validation.md` signup with
+  disabled-submit, terms checkbox, per-field re-validation) → modal
+  forms via `FormDialog` → pitfalls. The validation guide stays the
+  canonical place for *rules*; this guide explicitly cross-links rather
+  than re-explaining.
+- Source-verified the API surface against `src/bootstack/widgets/composites/
+  {form.py, field.py, buttongroup.py}` and `src/bootstack/dialogs/
+  {dialog.py, formdialog.py}` before writing. Three things worth
+  recording: (a) `bs.Form` takes `col_count=` not `columns=` (the
+  pre-existing `widgets/forms/form.md` shows `columns=2` which is
+  drifted — left alone for now since it's outside Session 7 scope, but
+  noting for a future cleanup pass); (b) `Form.validate()` only fires
+  rules whose trigger is `always` or `manual` (matches the
+  `validation.md` description); (c) `Dialog.show()` / `FormDialog.show()`
+  return `None` and set `self.result` — the existing `formdialog.md`
+  quick-start has `result = dlg.show()` which is wrong. The new guide
+  uses the correct `dlg.show(); if dlg.result: ...` pattern.
+- `bs.*` only across all examples. Verified the imports listed in
+  `src/bootstack/__init__.py` (`Form`, `FormDialog`, `Card`, `PackFrame`,
+  `TextEntry`, `PasswordEntry`, `NumericEntry`, `DateEntry`, `TimeEntry`,
+  `SelectBox`, `CheckButton`, `Switch`, `Scale`, `Toast`, `Button`).
+- `zensical.toml` Guides nav: inserted `Forms & Input` between DataSource
+  and Validation. `docs/guides/index.md` Data section gets a matching
+  bullet in the same position.
+- Inbound links added: `docs/guides/validation.md` Related list (top of
+  list), `docs/widgets/forms/form.md` Framework concepts, `docs/widgets/
+  dialogs/formdialog.md` (added a Framework concepts section since one
+  didn't exist), `docs/widgets/inputs/textentry.md` Framework concepts.
+  Did not add to the other four input docs with Framework-concepts
+  sections (passwordentry, numericentry, dateentry, timeentry) — they
+  already link to `validation.md`, which now points to forms-and-input,
+  which is enough breadcrumb depth without bloating every input page.
+- `zensical build --clean` runs in 11.42s, "No issues found". Pre-existing
+  griffe annotation warnings unchanged.
+- For next session (Session 8): `data-tables.md` guide pairing TableView /
+  DataTable with the DataSource system. CLAUDE.md Session 8 block lists
+  the widgets and demo files to read first.
+
 ---
 
 ## Key API notes (standing reference)

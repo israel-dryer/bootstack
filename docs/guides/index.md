@@ -47,6 +47,7 @@ link to it.
 
 - **[DataSource](datasource.md)** — Managing data with filtering, sorting, pagination, and CRUD operations.
 - **[Reactivity](reactivity.md)** — Signals, callbacks, and events — what each is for, and how to combine them.
+- **[Forms & Input](forms-and-input.md)** — Picking input widgets, layout patterns, submit handling, and error display.
 - **[Validation](validation.md)** — Validating user input with rules, triggers, and form-level checks.
 
 ### Visual design
