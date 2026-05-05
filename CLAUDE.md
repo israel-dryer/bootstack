@@ -556,6 +556,39 @@ fill any gaps.
   example-driven guides (replace philosophical sections with runnable
   `bs.App(...)` snippets per the Session 6 plan).
 
+### Session 6 — Rewrite debugging + performance (2026-05-05)
+
+- Rewrote `docs/guides/debugging.md` from a philosophical essay into a
+  pattern-driven guide. Six runnable `bs.App(...)` snippets, in order: timing
+  decorator for callbacks, `after_idle()` for the "winfo_width returns 1"
+  bug, `show_border=True`/`surface=` borderizing trick, `bind_all` focus
+  tracker, the disappearing-image bug (with both `bs.Image` and
+  `label.image = photo` fixes), and a recursive `dump_tree` walker. Common
+  pitfalls + cross-links to performance, reactivity, and platform pages.
+- Rewrote `docs/guides/performance.md` along the same lines. Four core
+  patterns as runnable snippets: ThreadPoolExecutor + `app.after()` for
+  background work, `after_idle()` chunking for large TreeView inserts,
+  module-level Font/Image caching with `bs.Image.cache_info()` proof, and
+  the trace decorator (back-referenced from debugging.md). Includes the
+  16 ms / 50 ms latency budgets as concrete rules of thumb.
+- API surface verified: `AfterMixin` (`after`, `after_idle`,
+  `after_cancel`, `after_repeat`) at `core/capabilities/after.py`;
+  `bs.Image` cache (`Image.open` cached by absolute path, `cache_info()`
+  returns `ImageCacheInfo(items=N)`) at `core/images.py`; `bs.Font` lazily
+  builds its underlying TkFont in the `tkfont` property at
+  `style/typography.py:475`; `Frame` accepts `show_border=True` +
+  `surface=` for the borderizing pattern at `widgets/primitives/frame.py`.
+- No inbound links broken or repointed — both files were already linked
+  from elsewhere by name and the names didn't change. The two guides now
+  cross-link each other intentionally (debugging trace decorator referenced
+  from performance, performance off-loop pattern referenced from debugging).
+- `zensical build --clean` runs in 11.01s, "No issues found". Pre-existing
+  griffe annotation warnings unchanged.
+- For next session (Session 7): new `forms-and-input.md` guide tying input
+  widgets + validation (Session 2) + signals together. Plan in CLAUDE.md
+  Session 7 block lists the inputs to read first and the structure to
+  follow. The signup form example from `validation.md` can be reused/extended.
+
 ---
 
 ## Key API notes (standing reference)
