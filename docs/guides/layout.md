@@ -65,6 +65,8 @@ app.mainloop()
 
 PackFrame is ideal when alignment between columns is not important.
 
+![packframe](../assets/guides-layout-packframe.png)
+
 ---
 
 ### GridFrame
@@ -108,6 +110,8 @@ app.mainloop()
 
 GridFrame is the recommended choice when visual alignment matters.
 
+![gridframe](../assets/guides-layout-gridframe.png)
+
 ---
 
 ## Card
@@ -136,6 +140,8 @@ Cards are ideal for:
 - grouping related form fields or controls
 - visually separating sections of content
 - creating panel-style layouts
+
+![card](../assets/guides-layout-card.png)
 
 ---
 

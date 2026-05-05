@@ -10,9 +10,16 @@
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
 
-**bootstack** is a batteries-included desktop application framework for Python, built on Tk. It grew out of [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap) — which brought Bootstrap-style theming to ttk widgets — and bundles the layers you'd expect from a modern framework around it: app scaffolding, layout containers, semantic styling, reactive signals, forms and validation, i18n, a data layer, and a CLI for scaffolding and packaging.
+> **From the maker of [ttkbootstrap](https://github.com/israel-dryer/ttkbootstrap).**
 
-The aim is to take you from `pip install` to a working, themed application without wiring those pieces together yourself or dropping down to raw Tk geometry calls.
+**bootstack** is a batteries-included desktop framework for Python, built on Tk.
+
+60+ themed widgets. Reactive state. Declarative layout. Built-in icons and localization. A CLI that scaffolds, builds, and ships. Everything ttkbootstrap was missing.
+
+<p align="center">
+  <img src="docs/assets/hero-demo-app-light.png" width="49%" alt="bootstack Data Analysis Workbench — light theme">
+  <img src="docs/assets/hero-demo-app-dark.png" width="49%" alt="bootstack Data Analysis Workbench — dark theme">
+</p>
 
 > **Active alpha.** APIs may change before the first stable release.
 > See the [documentation](https://bootstack.org) for guides and the API reference.
@@ -25,6 +32,14 @@ bootstack is currently in **active alpha**, so the `--pre` flag is required to o
 
 ```bash
 pip install --pre bootstack
+```
+
+## See it
+
+The widget gallery is a single-window tour of everything bootstack ships — every widget, theme switcher, accent variants, and layout containers. Fastest way to see the framework in action without writing a line of code:
+
+```bash
+bootstack gallery
 ```
 
 ## Quick Start
@@ -102,7 +117,7 @@ bs.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 ## Features
 
 - **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, frameless windows with custom chrome
-- **60+ widgets** — ttk-derived primitives plus higher-level composites (TableView, Calendar, DateEntry, Form, FloodGauge, Meter, ToggleGroup, PageStack, Toast, Tooltip, and more)
+- **60+ themed widgets** — ttk-derived primitives plus higher-level composites (TableView, Calendar, DateEntry, Form, FloodGauge, Meter, ToggleGroup, PageStack, Toast, Tooltip, and more)
 - **9 dialogs** — Message, Query, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog, plus a `Dialog` base
 - **Layout containers** — `PackFrame` and `GridFrame` for declarative layouts; `ScrollView`, `PanedWindow`, `Accordion`, `Card`, `Expander`
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost, link, text), consistent across widgets
@@ -134,6 +149,7 @@ bs.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 bootstack ships with an optional CLI for scaffolding, running, and packaging applications:
 
 ```bash
+bootstack gallery                           # Launch the interactive widget gallery
 bootstack start MyApp                       # Create a new project (basic template)
 bootstack start MyApp --template appshell   # ...or with sidebar navigation
 bootstack run                               # Run the app defined in the project config

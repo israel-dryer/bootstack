@@ -49,8 +49,7 @@ Buttons are styled using **semantic colors** and **variant** tokens. Variants de
 The `accent` parameter accepts semantic color tokens:
 
 <figure markdown>
-![button colors](../../assets/dark/widgets-button-colors.png#only-dark)
-![button colors](../../assets/light/widgets-button-colors.png#only-light)
+![button colors](../../assets/widgets-button-colors.png)
 </figure>
 
 ```python
@@ -69,8 +68,7 @@ The supported variants for Button are: **solid** (default), **outline**, **ghost
 Use for the primary, highest-emphasis action on a view (e.g., "Save", "Submit", "Continue").
 
 <figure markdown>
-![solid button](../../assets/dark/widgets-button-solid.png#only-dark)
-![solid button](../../assets/light/widgets-button-solid.png#only-light)
+![solid button](../../assets/widgets-button-solid.png)
 </figure>
 
 ```python
@@ -81,8 +79,7 @@ bs.Button(app, text="Solid")
 Use for secondary actions that should stay visible but clearly defer to the primary button (e.g., "Cancel", "Back").
 
 <figure markdown>
-![outline button](../../assets/dark/widgets-button-outline.png#only-dark)
-![outline button](../../assets/light/widgets-button-outline.png#only-light)
+![outline button](../../assets/widgets-button-outline.png)
 </figure>
 
 ```python
@@ -93,8 +90,7 @@ bs.Button(app, text="Outline", variant="outline")
 Use for low-emphasis, contextual actions embedded in panels, lists, or toolbars where the UI should stay visually quiet until hover or press.
 
 <figure markdown>
-![ghost button](../../assets/dark/widgets-button-ghost.png#only-dark)
-![ghost button](../../assets/light/widgets-button-ghost.png#only-light)
+![ghost button](../../assets/widgets-button-ghost.png)
 </figure>
 
 ```python
@@ -105,8 +101,7 @@ bs.Button(app, text="Ghost", variant="ghost")
 Use for navigation or "take me somewhere" actions that should read like text (e.g., "View details", "Open settings").
 
 <figure markdown>
-![link button](../../assets/dark/widgets-button-link.png#only-dark)
-![link button](../../assets/light/widgets-button-link.png#only-light)
+![link button](../../assets/widgets-button-link.png)
 </figure>
 
 ```python
@@ -117,8 +112,7 @@ bs.Button(app, text="Link", variant="link")
 Use for the lowest-emphasis utility actions—especially in dense UIs—where you want minimal chrome but still want button semantics (e.g., "Edit", "Clear", "Dismiss").
 
 <figure markdown>
-![text button](../../assets/dark/widgets-button-text.png#only-dark)
-![text button](../../assets/light/widgets-button-text.png#only-light)
+![text button](../../assets/widgets-button-text.png)
 </figure>
 
 ```python
@@ -135,8 +129,7 @@ Icons are integrated into the button widget and provide theme-aware and state-en
 where the icon/image is positioned relative to the label, and this is `"left"` by default.
 
 <figure markdown>
-![icon button](../../assets/dark/widgets-button-icons.png#only-dark)
-![icon button](../../assets/light/widgets-button-icons.png#only-light)
+![icon button](../../assets/widgets-button-icons.png)
 </figure>
 
 ```python

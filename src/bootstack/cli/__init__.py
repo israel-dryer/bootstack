@@ -19,7 +19,7 @@ Usage:
     bootstack add i18n               Add i18n support
     bootstack list themes            List available themes
     bootstack doctor                 Diagnose project and environment health
-    bootstack demo                   Launch the widget demo
+    bootstack gallery                 Launch the widget gallery
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ Examples:
   bootstack add view SettingsView    Add a new view
   bootstack list themes              List available themes
   bootstack doctor                   Diagnose project and environment health
-  bootstack demo                     Launch the widget demo
+  bootstack gallery                  Launch the widget gallery
 
 For more information on a command:
   bootstack <command> --help
@@ -83,10 +83,17 @@ For more information on a command:
     list_cmd.add_parser(subparsers)
     doctor.add_parser(subparsers)
 
-    # Demo command (kept for backwards compatibility)
+    # Gallery command
+    gallery_parser = subparsers.add_parser(
+        "gallery",
+        help="Launch the widget gallery",
+    )
+    gallery_parser.set_defaults(func=lambda args: run_demo())
+
+    # demo is kept as a backwards-compatible alias
     demo_parser = subparsers.add_parser(
         "demo",
-        help="Launch the widget demo",
+        help=argparse.SUPPRESS,
     )
     demo_parser.set_defaults(func=lambda args: run_demo())
 

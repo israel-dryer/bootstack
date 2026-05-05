@@ -238,12 +238,12 @@ installed) never fail the command.
 
 ---
 
-### `bootstack demo`
+### `bootstack gallery`
 
 Launch the AppShell-based widget gallery.
 
 ```
-bootstack demo
+bootstack gallery
 ```
 
 Useful for browsing every widget category, trying themes, and seeing example

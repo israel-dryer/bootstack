@@ -21,10 +21,10 @@ Every bootstack application starts with either `App` or `AppShell`:
 import bootstack as bs
 
 # Option A: blank window
-app = bs.App(title="My Application", theme="darkly")
+app = bs.App(title="My Application")
 
 # Option B: window with built-in navigation
-app = bs.AppShell(title="My Application", theme="darkly", size=(1000, 650))
+app = bs.AppShell(title="My Application", size=(1000, 650))
 ```
 
 Both create the main window, initialize theming, set up the application context, and manage the event loop. You typically create one per process. Additional windows use `Toplevel`.
@@ -52,6 +52,8 @@ This demonstrates the core pattern:
 2. Add widgets to it
 3. Run the event loop
 
+![minimal app](../assets/guides-app-structure-min-app.png)
+
 ---
 
 ## AppShell: Navigation Built In
@@ -61,7 +63,7 @@ Most desktop applications follow the same layout: toolbar at the top, sidebar on
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", theme="cosmo-light", size=(1000, 650))
+shell = bs.AppShell(title="My App", size=(1000, 650))
 
 # Each add_page() creates a nav item and returns a Frame for content
 home = shell.add_page("home", text="Home", icon="house")
@@ -77,6 +79,8 @@ shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 shell.mainloop()
 ```
 
+![app shell](../assets/guides-app-structure-app-shell.png)
+
 `AppShell` extends `App`, so everything that works on `App` works on `AppShell` too.
 
 ### Frameless window
@@ -90,6 +94,8 @@ shell = bs.AppShell(
     frameless=True,
 )
 ```
+
+![frameless](../assets/guides-app-structure-frameless.png)
 
 ### When to use App vs AppShell
 
@@ -108,7 +114,7 @@ Common `App` parameters:
 ```python
 app = bs.App(
     title="My App",           # Window title
-    theme="superhero",        # Theme name
+    theme="amber-light",      # Theme name
     size=(800, 600),          # Initial size (width, height)
     resizable=(True, True),   # Allow resize (width, height)
     alpha=1.0,                # Window transparency
@@ -316,20 +322,29 @@ bs.Button(app, text="Settings", command=open_settings).pack(pady=10)
 
 ## Theme Switching
 
-Themes can be changed at runtime:
+`toggle_theme()` switches the app between its registered light and dark theme variants. By default it toggles between `docs-light` and `docs-dark`:
 
 ```python
 import bootstack as bs
-from bootstack import toggle_theme
 
-app = bs.App(theme="litera")
+app = bs.App(title="Theme Toggle")
 
-def switch_theme():
-    toggle_theme()  # Toggles between light and dark variants
-
-bs.Button(app, text="Toggle Theme", command=switch_theme).pack(pady=20)
+bs.Button(app, text="Toggle Theme", command=bs.toggle_theme).pack(pady=20)
 
 app.mainloop()
+```
+
+To use a different theme pair, set `light_theme` and `dark_theme` in the app settings. The `"light"` and `"dark"` aliases used elsewhere (e.g. `theme="dark"`) resolve to whichever themes are registered here:
+
+```python
+app = bs.App(
+    title="Theme Toggle",
+    settings={
+        "theme": "dark",          # starts on dark variant
+        "light_theme": "ocean-light",
+        "dark_theme": "ocean-dark",
+    },
+)
 ```
 
 All widgets update automatically when the theme changes.

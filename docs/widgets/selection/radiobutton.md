@@ -9,8 +9,7 @@ title: RadioButton
 Use `RadioButton` when all options are short and should be visible at once (settings, modes, priority levels).
 
 <figure markdown>
-![radiobutton states](../../assets/dark/widgets-radiobutton-states.png#only-dark)
-![radiobutton states](../../assets/light/widgets-radiobutton-states.png#only-light)
+![radiobutton states](../../assets/widgets-radiobutton-states.png)
 </figure>
 
 ---
@@ -88,8 +87,7 @@ bs.RadioButton(app, accent="danger")
 ```
 
 <figure markdown>
-![colors](../../assets/dark/widgets-radiobutton-colors.png#only-dark)
-![colors](../../assets/light/widgets-radiobutton-colors.png#only-light)
+![colors](../../assets/widgets-radiobutton-colors.png)
 </figure>
 
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
