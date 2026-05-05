@@ -41,7 +41,7 @@ bootstack start MyApp
 bootstack start MyApp --template appshell
 
 # Pick the starting theme (any value from `bootstack list themes`)
-bootstack start MyApp --theme superhero
+bootstack start MyApp --theme ocean-dark
 
 # Minimal: skip assets/ and README.md
 bootstack start MyApp --simple
@@ -125,7 +125,7 @@ Shipping a desktop app usually requires bundling:
 
 If you’re using bootstack’s built-in asset systems, the CLI/build integration should include the relevant folders.
 
-!!! link "See [Capabilities → Icons & Imagery](../guides/icons.md) for how icons and images behave at runtime (DPI, caching, recoloring)."
+!!! link "See [Guides → Icons](../guides/icons.md) for how icons and images behave at runtime (DPI, caching, recoloring)."
 
 ---
 
@@ -142,11 +142,12 @@ Make sure your build step includes the message catalog assets.
 In your UI code, prefer **message tokens**:
 
 ```python
-ttk.Button(app, text="button.save")
+import bootstack as bs
+
+bs.Button(app, text="button.save")
 ```
 
 !!! link "See [Guides → Localization](../guides/localization.md) for the end-to-end localization workflow."
-!!! link "See [Capabilities → Localization](../guides/localization.md) for how message tokens are resolved."
 
 ---
 

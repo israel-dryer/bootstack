@@ -134,7 +134,7 @@ import bootstack as bs
 status = bs.Signal("Ready")
 ```
 
-!!! link "See [Guides → Reactivity](../guides/reactivity.md) and [Capabilities → Signals](../guides/reactivity.md)."
+!!! link "See [Guides → Reactivity](../guides/reactivity.md) for the full signals API."
 
 ---
 

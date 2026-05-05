@@ -54,7 +54,7 @@ bootstack start <name> [--template basic|appshell] [--theme <name>]
 | Option | Default | Description |
 |---|---|---|
 | `--template` | `basic` | `basic` for a single-view `App`, `appshell` for an `AppShell` with sidebar nav |
-| `--theme` | `cosmo` | Starting theme — see `bootstack list themes` |
+| `--theme` | `bootstrap-light` | Starting theme — see `bootstack list themes` |
 | `--container` | `grid` | `grid` or `pack` (the geometry manager used by the generated view; ignored for `appshell`) |
 | `--simple` | off | Skip the `assets/` directory and `README.md` |
 | `--dir` | `./<name_lowercased>` | Target directory |
@@ -121,14 +121,18 @@ other.
 
 Scaffolds a class-based page module under `src/<module>/pages/`. The command
 **only creates the file** — it does *not* modify `main.py`. After scaffolding
-it prints the three lines you need to paste in to register the page with the
-sidebar:
+it prints the import + `add_page()` call you need to paste into `main.py`,
+with placeholders for the page id, sidebar label, and icon name:
 
 ```
 from <module>.pages.dashboard_page import DashboardPage
-page = shell.add_page("dashboard", text="Dashboard", icon="speedometer2")
+page = shell.add_page("<id>", text="<Label>", icon="<icon>")
 DashboardPage(page)
 ```
+
+Fill the placeholders in with values that fit your app — e.g.
+`shell.add_page("dashboard", text="Dashboard", icon="speedometer2")`. Icon
+names come from the [Bootstrap Icons catalog](https://icons.getbootstrap.com/).
 
 `--scrollable` adjusts the printed hint so the suggested `add_page()` call
 includes `scrollable=True`.
@@ -139,10 +143,11 @@ Writes `themes/<name>.json` using the v2 theme schema (`mode`, `shades`,
 `semantic`, top-level `foreground`/`background`). To use the theme:
 
 ```python
+import bootstack as bs
 from bootstack.style.theme_provider import register_user_theme
 
 register_user_theme("mytheme", "themes/mytheme.json")
-app = ttk.App(theme="mytheme")
+app = bs.App(theme="mytheme")
 ```
 
 #### `bootstack add i18n`
@@ -161,9 +166,9 @@ Discover resources known to the framework.
 bootstack list themes
 ```
 
-Prints a table of every theme bundled with `bootstack` (canonical and
-legacy), including its display name and mode. Useful for picking a value to
-pass to `bootstack start --theme` or to set in `[settings].theme`.
+Prints a table of every theme bundled with `bootstack`, including its
+display name and mode (`light`/`dark`). Useful for picking a value to pass
+to `bootstack start --theme` or to set in `[settings].theme`.
 
 ---
 
@@ -264,7 +269,7 @@ entry = "src/myapp/main.py"
 template = "basic"           # or "appshell"
 
 [settings]
-theme = "cosmo"
+theme = "bootstrap-light"
 language = "en"
 appearance = "system"        # system | light | dark
 

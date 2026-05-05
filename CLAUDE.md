@@ -695,6 +695,90 @@ fill any gaps.
   actual CLI implementation, expand any thin/stale pages, ensure the
   Tooling cross-reference in `guides/index.md` works.
 
+### Session 9 — Tooling consolidation (2026-05-05)
+
+- Audited `docs/tooling/{cli,project-structure,build-and-ship}.md` against
+  the actual CLI source under `src/bootstack/cli/` (`__init__.py`, `start.py`,
+  `add.py`, `run.py`, `promote.py`, `build.py`, `doctor.py`, `list_cmd.py`,
+  `config.py`, and `templates/__init__.py`). Confirmed every documented
+  command, flag, and template tree against the implementation.
+- **Drift fixes in `cli.md`:**
+  - `--theme` default and the `bootstack.toml` example both said `cosmo` —
+    actual default is `bootstrap-light` (see `start.py:42` and
+    `config.py:70` / `DEFAULT_CONFIG_TEMPLATE`). `cosmo` doesn't exist as a
+    bundled theme. Updated both.
+  - `add theme` example showed `app = ttk.App(theme="mytheme")` —
+    fixed to `bs.App` per decision #6. (The CLI's *printed* hint still
+    says `ttk.App`; that's a CLI source bug, recorded below.)
+  - `add page` example claimed the CLI prints concrete values
+    (`"dashboard"` / `"Dashboard"` / `"speedometer2"`); it actually
+    prints `<id>` / `<Label>` / `<icon>` placeholders (see `add.py:224`).
+    Reworded to describe the placeholder shape and noted that icon names
+    come from the Bootstrap Icons catalog.
+  - `list themes` description claimed "canonical and legacy" themes —
+    there is no legacy partition. Replaced with "every theme bundled with
+    bootstack ... mode (light/dark)".
+- **Drift fixes in `build-and-ship.md`:**
+  - `bootstack start MyApp --theme superhero` — `superhero` is not a
+    bundled theme. Replaced with `ocean-dark` (which is real; see
+    `src/bootstack/assets/themes/`).
+  - `ttk.Button(app, text="button.save")` — replaced with a `bs.Button`
+    snippet including the `import bootstack as bs` line.
+  - Removed a duplicate "Capabilities → Localization" link that pointed
+    at the same `guides/localization.md` target as the line above it
+    (residue from the Session 1 mass-repoint that updated paths but not
+    labels). Relabeled "Capabilities → Icons & Imagery" to "Guides → Icons"
+    for the same reason.
+- **Drift fixes in `project-structure.md`:**
+  - Same labels-not-paths residue: a `[Guides → Reactivity](.) and
+    [Capabilities → Signals](.)` line where both labels pointed at the
+    same `guides/reactivity.md` URL. Collapsed into a single Guides link.
+- **Discoverability of Tooling from Guides:**
+  - `docs/guides/index.md` "Where things live" block named **Tooling**
+    but the label was plain text. Made it a link to `tooling/cli.md`
+    (the CLI page is the most discoverable entry; it cross-links
+    project-structure and build-and-ship via its own Next steps).
+- **Verified scaffolds match the docs.** `bootstack start` (basic)
+  produces `src/<module>/{__init__.py,main.py,views/{__init__.py,
+  main_view.py}}` plus `assets/`, `bootstack.toml`, `README.md` —
+  matches the `cli.md` "basic" tree exactly. `bootstack start --template
+  appshell` produces the same skeleton with `pages/{__init__.py,
+  home_page.py,settings_page.py}` instead of `views/`. `bootstack add
+  page/view/dialog` write to the expected directories. `project-
+  structure.md`'s "practical default layout" is aspirational (more
+  sub-modules than the scaffold creates) and is labeled as such — left
+  alone.
+- **Pre-existing CLI source bugs surfaced during the audit, not fixed
+  here (out of scope; Session 9 is docs-only).** Recording for a future
+  cleanup pass:
+  1. `src/bootstack/cli/add.py:308` — the `add theme` "next steps" hint
+     prints `app = ttk.App(theme="...")`. Should be `bs.App`. Same file
+     line 343 prints `ttk.mc('Hello')` for `add i18n` — `mc()` doesn't
+     exist on `bootstack` at all (the localization API is `bs.L()`,
+     `bs.LV()`, `bs.MessageCatalog`).
+  2. The localization API surface drift: `MessageCatalog.init(...)` uses
+     gettext (`.po`/`.mo` via Babel — see `core/localization/msgcat.py`),
+     and `bootstack add i18n` correctly scaffolds `.po` files. But
+     `docs/guides/localization.md` documents a different shape
+     (`MessageCatalog.load("locales/en.json")`) that doesn't match
+     either the gettext code path or the `.msg` loader (`msgcat.py:366`).
+     Localization guide rewrite is its own session.
+- `zensical build --clean` runs in 11.68s, "No issues found". Pre-existing
+  griffe annotation warnings unchanged.
+- **Initiative status:** Sessions 1–9 of the docs-restructure plan are
+  complete. Capability-essay tree is dissolved, validation/forms/data-
+  tables guides exist, color/theming is merged, spacing-and-alignment is
+  rewritten, debugging/performance are example-driven, tooling pages are
+  audited and discoverable from Guides. Open items the user may want to
+  tackle in a follow-up:
+  - Capture the four screenshot PNGs flagged in Session 4 (paths under
+    `docs/assets/guides-spacing-*.png`).
+  - The two CLI source bugs recorded above.
+  - The localization-API drift between `guides/localization.md` and
+    `core/localization/`.
+  - Open the PR off `docs/restructure` → `main` whenever the open items
+    are addressed (or accepted as out-of-scope follow-ups).
+
 ---
 
 ## Key API notes (standing reference)
