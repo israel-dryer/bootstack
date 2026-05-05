@@ -631,6 +631,15 @@ fill any gaps.
   which is enough breadcrumb depth without bloating every input page.
 - `zensical build --clean` runs in 11.42s, "No issues found". Pre-existing
   griffe annotation warnings unchanged.
+- Followed up with a small drift-fix commit on the same day for the three
+  pre-existing widget-doc bugs surfaced during source verification:
+  `widgets/forms/form.md` `columns=2` → `col_count=2`;
+  `widgets/dialogs/formdialog.md` quick-start rewritten to use the actual
+  `items=`/`data=`/`editor_options=` shape and `dlg.show(); dlg.result`
+  pattern (the old `fields=`/`"value":...`/`"required":...` keys were
+  silently dropped by Form's normalizer); and the formdialog.md "Common
+  options" list updated to match (replaces `fields`/`initial`/
+  `validate_on_submit` with `items`/`data`/`col_count`/`buttons`).
 - For next session (Session 8): `data-tables.md` guide pairing TableView /
   DataTable with the DataSource system. CLAUDE.md Session 8 block lists
   the widgets and demo files to read first.

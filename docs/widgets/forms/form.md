@@ -132,7 +132,7 @@ Some editors accept additional options:
 For wide forms, you can specify a column count:
 
 ```python
-form = bs.Form(app, columns=2, items=[...])
+form = bs.Form(app, col_count=2, items=[...])
 ```
 
 #### Explicit placement (advanced)
