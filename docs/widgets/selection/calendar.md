@@ -17,11 +17,10 @@ If you want a compact, form-friendly input (typed + popup), prefer **DateEntry**
 ```python
 from datetime import date
 import bootstack as bs
-from bootstack.widgets.composites.calendar import Calendar
 
 app = bs.App()
 
-cal = Calendar(app, value=date.today(), accent="primary")
+cal = bs.Calendar(app, value=date.today(), accent="primary")
 cal.pack(padx=12, pady=12)
 
 def on_select(e):
@@ -71,10 +70,9 @@ Range mode displays **two months side-by-side** to make cross-month selection ea
 
 ```python
 import bootstack as bs
-from bootstack.widgets.composites.calendar import Calendar
 
 app = bs.App()
-Calendar(app, value="2025-12-25").pack(padx=12, pady=12)
+bs.Calendar(app, value="2025-12-25").pack(padx=12, pady=12)
 app.mainloop()
 ```
 
@@ -82,10 +80,9 @@ app.mainloop()
 
 ```python
 import bootstack as bs
-from bootstack.widgets.composites.calendar import Calendar
 
 app = bs.App()
-Calendar(app, selection_mode="range", start_date="2025-12-01", end_date="2025-12-12").pack(padx=12, pady=12)
+bs.Calendar(app, selection_mode="range", start_date="2025-12-01", end_date="2025-12-12").pack(padx=12, pady=12)
 app.mainloop()
 ```
 
@@ -98,8 +95,8 @@ Use `accent` to set the accent color used for:
 * the range endpoints and in-range highlight (range mode)
 
 ```python
-Calendar(app, accent="success")
-Calendar(app, selection_mode="range", accent="warning")
+bs.Calendar(app, accent="success")
+bs.Calendar(app, selection_mode="range", accent="warning")
 ```
 
 Calendar also uses internal style names for day/range rendering (e.g. `*-calendar_day-toolbutton`, `*-calendar_date-toolbutton`, `*[subtle]-calendar_range-toolbutton`) so it can visually distinguish:
