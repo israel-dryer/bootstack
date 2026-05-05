@@ -181,8 +181,7 @@ right-aligned label in an otherwise stretching grid.
 `fill="x"`, `fill="y"`, `fill="both"`, or `fill="none"` to every child.
 
 ```python
-sidebar = bs.PackFrame(app, direction="vertical", gap=2, padding=8,
-                       fill_items="x")
+sidebar = bs.PackFrame(app, direction="vertical", gap=2, padding=8, fill_items="x")
 sidebar.pack(side="left", fill="y")
 
 bs.Button(sidebar, text="Inbox").pack()
@@ -198,8 +197,7 @@ axis — `"w"`, `"center"`, `"e"` for vertical packs; `"n"`, `"center"`, `"s"`
 for horizontal.
 
 ```python
-header = bs.PackFrame(app, direction="vertical", padding=12,
-                      anchor_items="w")
+header = bs.PackFrame(app, direction="vertical", padding=12, anchor_items="w")
 ```
 
 ### `direction` (PackFrame)
@@ -275,8 +273,7 @@ the leftover width of the first.
 
 ```python
 # Sidebar: 220px, content: takes the rest.
-shell = bs.GridFrame(app, columns=["220px", 1], rows=[1],
-                     sticky_items="nsew")
+shell = bs.GridFrame(app, columns=["220px", 1], rows=[1], sticky_items="nsew")
 shell.pack(fill="both", expand=True)
 
 # Form: label hugs its text, value takes the rest.
@@ -325,13 +322,11 @@ import bootstack as bs
 
 app = bs.App(title="Master/detail", size=(720, 420))
 
-shell = bs.GridFrame(app, columns=["220px", 1], rows=[1],
-                     sticky_items="nsew")
+shell = bs.GridFrame(app, columns=["220px", 1], rows=[1], sticky_items="nsew")
 shell.pack(fill="both", expand=True)
 
 # Sidebar: stacked buttons, all the same width.
-sidebar = bs.PackFrame(shell, direction="vertical", gap=2, padding=12,
-                       fill_items="x")
+sidebar = bs.PackFrame(shell, direction="vertical", gap=2, padding=12, fill_items="x")
 sidebar.grid()
 
 bs.Label(sidebar, text="Folders", font="label").pack(anchor="w", pady=(0, 8))
