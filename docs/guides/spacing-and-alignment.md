@@ -130,6 +130,10 @@ bs.CheckButton(notifications, text="Email me about security").pack(anchor="w")
 app.mainloop()
 ```
 
+<div class="app-window">
+  <img src="../assets/guides-spacing-settings-panel.png" alt="Settings panel"/>
+</div>
+
 Notice spacing decisions live on the *containers*: the page sets `gap=12`
 between cards, each card uses its default `padding=16`, and the inner grid
 uses `gap=(12, 8)` to space label/value pairs. No widget below the
@@ -239,6 +243,10 @@ bs.Button(right, text="Sign out", variant="ghost").pack()
 app.mainloop()
 ```
 
+<div class="app-window">
+  <img src="../assets/guides-spacing-toolbar.png" alt="Toolbar with left and right groups"/>
+</div>
+
 The two groups define their own internal flow with `direction="row"`;
 right-alignment of the *group* is handled by `side="right"` on the outer bar.
 
@@ -341,6 +349,10 @@ bs.Label(detail, text="No new messages.").pack(anchor="w")
 app.mainloop()
 ```
 
+<div class="app-window">
+  <img src="../assets/guides-spacing-master-detail.png" alt="Master-detail pane"/>
+</div>
+
 Three things make this work:
 
 1. `columns=["220px", 1]` — the sidebar gets a fixed slot, the detail column
@@ -399,6 +411,10 @@ bs.Card(gallery).grid()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+  <img src="../assets/guides-spacing-gallery-dense.png" alt="Dense gallery"/>
+</div>
 
 `row-dense` packs the small tiles around the wide and tall ones instead of
 leaving holes. Switch to `auto_flow="row"` to see the difference.

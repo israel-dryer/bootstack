@@ -492,16 +492,19 @@ fill any gaps.
 - `zensical build --clean` runs in 11.25s, "No issues found". (The griffe
   warnings about missing annotations on existing widget code are
   pre-existing and unrelated.)
-- **Screenshots deferred.** The Session 4 plan called for screenshots of
-  the centralized-spacing before/after and `auto_flow` dense, mirroring
-  `layout.md`'s `guides-spacing-*.png` convention. Capturing these requires
-  running the app interactively, which I can't do here. Recommend Session 5
-  pick these up alongside the other inbound-link work, or fold capture
-  into a small follow-up pass. The new guide reads cleanly without images.
-- For next session (Session 5): small fixes and inbound links — also a
-  good moment to capture the Session 4 screenshots if desired (file-name
-  template: `docs/assets/guides-spacing-{settings,toolbar,master-detail,
-  gallery-dense}.png`).
+- **Screenshot placeholders embedded; user will capture the PNGs.** Image
+  tags follow the `layout.md` convention (`<div class="app-window"><img
+  src="../assets/..."/></div>`) and reference these four files (not yet
+  on disk):
+  - `docs/assets/guides-spacing-settings-panel.png`
+  - `docs/assets/guides-spacing-toolbar.png`
+  - `docs/assets/guides-spacing-master-detail.png`
+  - `docs/assets/guides-spacing-gallery-dense.png`
+  Each runnable example in the guide produces the matching screenshot
+  verbatim — copy the snippet, run it, capture the window. `zensical`
+  link validation is disabled, so missing PNGs do not break the build,
+  but the rendered page will show broken-image icons until the files land.
+- For next session (Session 5): small fixes and inbound links.
 
 ---
 
