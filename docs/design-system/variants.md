@@ -62,14 +62,14 @@ See:
 Variants are applied using the `variant` parameter alongside `accent`.
 
 ```python
-ttk.Button(app, text="Save", accent="primary")  # solid (default)
-ttk.Button(app, text="Cancel", accent="secondary", variant="outline")
-ttk.Button(app, text="Learn More", accent="info", variant="link")
+bs.Button(app, text="Save", accent="primary")  # solid (default)
+bs.Button(app, text="Cancel", accent="secondary", variant="outline")
+bs.Button(app, text="Learn More", accent="info", variant="link")
 ```
 
 How to apply them in real layouts is covered in:
 
-- [Guides → Styling](../guides/styling.md)
+- [Guides → Color & Theming](../guides/color-and-theming.md)
 
 ---
 

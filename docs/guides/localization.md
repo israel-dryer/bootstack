@@ -343,4 +343,4 @@ message = L("greeting.welcome", name=name)
 
 - [App Structure](app-structure.md) — how applications are organized
 - [Reactivity](reactivity.md) — signals and reactive updates
-- [Styling](styling.md) — working with the design system
+- [Color & Theming](color-and-theming.md) — working with the design system

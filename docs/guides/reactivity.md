@@ -599,4 +599,4 @@ Use signals when state is shared. Use callbacks when an action happens. Use even
 
 - [App Structure](app-structure.md) — how applications are organized
 - [Layout](layout.md) — building layouts with containers
-- [Styling](styling.md) — applying consistent styling
+- [Color & Theming](color-and-theming.md) — applying consistent styling

@@ -270,6 +270,5 @@ The icon system exists to handle these concerns. Use it.
 ## Related resources
 
 - [Design System: Icons](../design-system/icons.md) — design philosophy and principles
-- [Styling](styling.md) — color tokens and semantic colors
-- [Theming](theming.md) — theme configuration and switching
+- [Color & Theming](color-and-theming.md) — color tokens, surfaces, theme configuration and switching
 - [Localization](localization.md) — internationalization patterns

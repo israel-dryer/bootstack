@@ -60,9 +60,8 @@ Guides show you *how to apply* that knowledge.
 ### Visual Design
 
 - **[Typography](typography.md)** — Using font tokens, modifiers, and the Font class.
-- **[Styling](styling.md)** — Working with the design system—semantic colors, variants, and styling.
+- **[Color & Theming](color-and-theming.md)** — Accent, variant, and surface tokens; theme palettes, runtime switching, custom themes.
 - **[Icons](icons.md)** — Using icons effectively—named resources and theme integration.
-- **[Theming](theming.md)** — Theme palettes, switching themes at runtime, and custom themes.
 
 ### Internationalization
 

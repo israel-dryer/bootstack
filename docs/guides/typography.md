@@ -78,7 +78,7 @@ The `Font` class:
 Modifiers are specified in **chained brackets** after the token name:
 
 !!! note "Consistent Syntax"
-    Font modifiers use the same chained bracket syntax as [color modifiers](styling.md#color-modifiers). This consistency makes both systems easy to learn together.
+    Font modifiers use the same chained bracket syntax as [color modifiers](color-and-theming.md#4-color-modifiers). This consistency makes both systems easy to learn together.
 
 ```python
 # Single modifier
@@ -386,6 +386,6 @@ def show_status(message, level="normal"):
 
 ## Next Steps
 
-- [Styling](styling.md) — working with the design system
+- [Color & Theming](color-and-theming.md) — accent and surface tokens, themes, runtime switching
 - [Layout](layout.md) — building layouts with containers
 - [App Structure](app-structure.md) — how applications are organized

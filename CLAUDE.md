@@ -427,6 +427,40 @@ fill any gaps.
   color-and-theming.md. Validation guide is now linked from `guides/index.md`
   Data section — Session 5's "Where things live" rewrite should keep it there.
 
+### Session 3 — Merge styling + theming → color-and-theming (2026-05-05)
+
+- Wrote `docs/guides/color-and-theming.md` as the single canonical guide for
+  colour. Nine sections: accent tokens, variant tokens, surface tokens, color
+  modifiers, themes, runtime switching, custom themes, common patterns,
+  pitfalls. `bs.*` only.
+- Source-verified the API surface before writing. Found and corrected several
+  drift bugs in the old pages while writing the new one: spectrum is 50–950
+  in 50-step increments (theming.md said 100–900 in 9 stops); real surface
+  tokens are `content` / `card` / `chrome` / `overlay` / `input` (not
+  `content[1]` / `content[2]` / `chrome[1]` / `titlebar` as styling.md
+  showed); `App(theme=..., light_theme=..., dark_theme=...)` direct kwargs
+  don't work — those go through `settings={...}` (or an `AppSettings`
+  instance). New guide uses `bs.Card(...)` and `surface=` examples that
+  actually run.
+- Documented additional theming features that weren't in either old page:
+  `<<ThemeChanged>>` event, `follow_system_appearance` setting, derived
+  surface tokens (`on_<surface>`, `<surface>_hover`, `stroke`,
+  `stroke_subtle`).
+- Deleted `docs/guides/styling.md` and `docs/guides/theming.md`.
+  `zensical.toml` Guides nav: replaced both entries with a single
+  `Color & Theming` entry.
+- Repointed inbound links across `docs/`: `design-system/{colors,index,
+  variants}.md`, `platform/{tk-vs-ttk,ttk-styles-elements}.md`, and the
+  guides themselves (`typography.md`, `reactivity.md`, `localization.md`,
+  `index.md`, `icons.md`, `app-settings.md`). Also fixed the stale
+  `ttk.Button(...)` samples in `design-system/variants.md` per decision #6.
+- `zensical build` clean (12.09s, "No issues found"). Final grep for
+  `styling.md` / `theming.md` returns only `CLAUDE.md` (planning context).
+- For next session (Session 4): `spacing-and-alignment.md` rewrite (Path A).
+  Earlier WIP drafts on `main` for Session 4 were already carried onto
+  `docs/restructure` in Session 1 — re-read the file before assuming it's
+  still in its `main` shape.
+
 ---
 
 ## Key API notes (standing reference)

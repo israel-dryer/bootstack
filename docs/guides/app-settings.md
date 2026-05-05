@@ -107,8 +107,8 @@ settings = AppSettings(
 )
 ```
 
-!!! link "Theming Guide"
-    See [Theming](theming.md) for theme customization and switching.
+!!! link "Color & Theming Guide"
+    See [Color & Theming](color-and-theming.md) for theme customization and switching.
 
 ### Localization Settings
 
@@ -326,5 +326,5 @@ Locale-dependent settings (`date_format`, `time_format`, `number_decimal`, `numb
 ## Next Steps
 
 - [App Structure](app-structure.md) — application organization and lifecycle
-- [Theming](theming.md) — theme configuration and customization
+- [Color & Theming](color-and-theming.md) — theme configuration and customization
 - [Localization](localization.md) — internationalization and translations
