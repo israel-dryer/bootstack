@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 
 class DropdownButtonKwargs(TypedDict, total=False):
-    command: Optional[Callable[[], Any]]
     image: Any
     icon: Any
     icon_only: bool
@@ -59,7 +58,6 @@ class DropdownButton(MenuButton):
             items (list): Initial list of ContextMenuItem entries.
 
         Other Parameters:
-            command (Callable): Callback when the button is activated.
             image (PhotoImage): Tk image to display.
             icon (str | dict): Bootstyle icon spec for the button content.
             icon_only (bool): Whether to reserve label padding when showing only an icon.
