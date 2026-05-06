@@ -1,6 +1,6 @@
 import bootstack as bs
 
-app = bs.App()
+app = bs.App(title="Dropdown Example", minsize=(300, 200))
 
 items = [
     bs.ContextMenuItem("command", text="Open", command=lambda: print("Open")),
@@ -10,7 +10,6 @@ items = [
 ]
 
 btn = bs.DropdownButton(app, text="File", items=items)
-btn.on_item_click(lambda info: print(info["text"]))
 btn.pack(padx=20, pady=20)
 
 app.mainloop()
