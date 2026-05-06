@@ -227,8 +227,22 @@ class ScrollView(Frame):
         rejected because the scrollbar then covers content, which was reported
         as confusing by users. Reserving the gutter avoids both the
         layout-shift problem *and* the content-coverage problem.
+
+        For 'never' mode the scrollbars are never placed in the grid at all.
+        Gridding them and immediately calling grid_remove() leaves Tkinter's
+        geometry manager holding the column's natural width until the next idle
+        cycle, which produces a visible gap beside the content area.
         """
         self.canvas.grid(row=0, column=0, sticky='nsew')
+
+        # Configure grid weights
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        if self._scrollbar_visibility == 'never':
+            # Don't touch the grid for the scrollbar columns/rows — column 1
+            # and row 1 stay at zero width so no space is reserved.
+            return
 
         if self._direction in ('vertical', 'both'):
             self.vertical_scrollbar.grid(row=0, column=1, sticky='ns')
@@ -236,18 +250,11 @@ class ScrollView(Frame):
         if self._direction in ('horizontal', 'both'):
             self.horizontal_scrollbar.grid(row=1, column=0, sticky='ew')
 
-        # Configure grid weights
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
         # Keep scrollbars above the canvas/content when visible
         self.vertical_scrollbar.lift()
         self.horizontal_scrollbar.lift()
 
-        # Initially hide scrollbars based on scrollbar_visibility setting
-        if self._scrollbar_visibility == 'never':
-            self.vertical_scrollbar.grid_remove()
-            self.horizontal_scrollbar.grid_remove()
-        elif self._scrollbar_visibility in ('hover', 'scroll'):
+        if self._scrollbar_visibility in ('hover', 'scroll'):
             # Hide scrollbars now; defer gutter measurement to after_idle so
             # the style system has finished sizing the widgets before we read
             # their dimensions.  Measuring too early (before the widget is
@@ -330,11 +337,13 @@ class ScrollView(Frame):
         """Show scrollbars only if content overflows the viewport."""
         x_fit, y_fit = self._content_fits()
         if self._direction in ('vertical', 'both') and not y_fit:
-            self.vertical_scrollbar.grid()
+            self.vertical_scrollbar.grid(row=0, column=1, sticky='ns')
+            self.vertical_scrollbar.lift()
         else:
             self.vertical_scrollbar.grid_remove()
         if self._direction in ('horizontal', 'both') and not x_fit:
-            self.horizontal_scrollbar.grid()
+            self.horizontal_scrollbar.grid(row=1, column=0, sticky='ew')
+            self.horizontal_scrollbar.lift()
         else:
             self.horizontal_scrollbar.grid_remove()
 

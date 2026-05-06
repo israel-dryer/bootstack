@@ -128,11 +128,13 @@ class AppShell(App):
 
         # Track which nav keys have associated pages
         self._page_keys: set[str] = set()
+        self._page_texts: dict[str, str] = {}  # key → display text for toolbar
         self._first_page_added = False
         self._navigating = False  # Guard against re-entrant navigation
 
         # Build components
         self._toolbar: Toolbar | None = None
+        self._title_label = None
         self._nav: SideNav | None = None
         self._pages: PageStack | None = None
 
@@ -177,10 +179,9 @@ class AppShell(App):
                 )
                 self._toolbar.add_separator()
 
-            # Title label
-            self._title_label = None
-            if self._shell_title:
-                self._title_label = self._toolbar.add_label(text=self._shell_title, font='heading-md')
+            # Title label — shows the active page name, not the app title.
+            # The app title is already in the native OS titlebar.
+            self._title_label = self._toolbar.add_label(text='', font='heading-md')
 
             # Spacer pushes subsequent user-added buttons to the right
             self._toolbar.add_spacer()
@@ -217,6 +218,11 @@ class AppShell(App):
         if self._nav is not None:
             self._nav.toggle_pane()
 
+    def _update_page_title(self, key: str):
+        """Update the toolbar label to show the active page name."""
+        if self._title_label is not None:
+            self._title_label.configure(text=self._page_texts.get(key, ''))
+
     def _on_nav_selection_changed(self, event):
         """Handle SideNav selection changes."""
         key = event.data.get('key', '')
@@ -229,6 +235,7 @@ class AppShell(App):
         self._navigating = True
         try:
             self._pages.navigate(key)
+            self._update_page_title(key)
         finally:
             self._navigating = False
 
@@ -286,13 +293,14 @@ class AppShell(App):
         # Add page
         page_widget = self._pages.add(key, page=page)
         self._page_keys.add(key)
+        self._page_texts[key] = text
 
         # Wrap in ScrollView when requested
         if scrollable:
             sv = ScrollView(
                 page_widget,
                 scroll_direction="vertical",
-                scrollbar_visibility="hover",
+                scrollbar_visibility="never",
             )
             sv.pack(fill="both", expand=True)
             page_widget = sv.add()
@@ -388,6 +396,7 @@ class AppShell(App):
             # Navigate the page stack
             if key in self._page_keys:
                 self._pages.navigate(key, data=data)
+                self._update_page_title(key)
         finally:
             self._navigating = False
 
