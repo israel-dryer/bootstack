@@ -90,7 +90,7 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 - You need a plain window — use `App`
 
 !!! link "AppShell Reference"
-    See [AppShell](../widgets/application/appshell.md) for all options including frameless mode, display modes, and component access.
+    See [AppShell](../widgets/navigation/appshell.md) for all options including undecorated (custom-chrome) mode, display modes, and component access.
 
 ---
 
@@ -403,7 +403,7 @@ When switching views, consider whether state should be preserved:
 
 ## Additional resources
 
-- [AppShell](../widgets/application/appshell.md) — app window with built-in navigation
+- [AppShell](../widgets/navigation/appshell.md) — app window with built-in navigation
 - [SideNav](../widgets/navigation/sidenav.md) — standalone sidebar navigation
 - [Toolbar](../widgets/navigation/toolbar.md) — horizontal toolbar
 - [Notebook](../widgets/views/notebook.md) — tabbed view container

@@ -22,6 +22,7 @@ nav = [
         { "Overview" = "guides/index.md" },
         { "App Structure" = "guides/app-structure.md" },
         { "App Settings" = "guides/app-settings.md" },
+        { "Windowing" = "guides/windowing.md" },
         { "Layout" = "guides/layout.md" },
         { "Navigation" = "guides/navigation.md" },
         { "Spacing & Alignment" = "guides/spacing-and-alignment.md" },
@@ -40,11 +41,6 @@ nav = [
     ] },
     { "Widgets" = [
         { "Overview" = "widgets/index.md" },
-        { "Application" = [
-            { "App" = "widgets/application/app.md" },
-            { "AppShell" = "widgets/application/appshell.md" },
-            { "Toplevel" = "widgets/application/toplevel.md" },
-        ] },
         { "Actions" = [
             { "Button" = "widgets/actions/button.md" },
             { "DropdownButton" = "widgets/actions/dropdownbutton.md" },
@@ -101,6 +97,7 @@ nav = [
             { "SizeGrip" = "widgets/layout/sizegrip.md" },
         ] },
         { "Navigation" = [
+            { "AppShell" = "widgets/navigation/appshell.md" },
             { "SideNav" = "widgets/navigation/sidenav.md" },
             { "Toolbar" = "widgets/navigation/toolbar.md" },
             { "Tabs" = "widgets/navigation/tabs.md" },
