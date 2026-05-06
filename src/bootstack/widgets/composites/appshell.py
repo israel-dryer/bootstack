@@ -6,6 +6,7 @@ toolbar at top, sidebar navigation on the left, and page content on the right.
 
 from __future__ import annotations
 
+import sys
 from typing import Any, Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
@@ -93,7 +94,8 @@ class AppShell(App):
             undecorated: If True, removes OS window decorations (title bar,
                 native border, and resize grip) and replaces them with a
                 custom frame border. Automatically enables
-                `show_window_controls` and `draggable`. Default False.
+                `show_window_controls` and `draggable`. Silently ignored on
+                macOS where `overrideredirect` has no effect. Default False.
             show_toolbar: Include the toolbar at the top. Default True.
             show_window_controls: Show minimize/maximize/close buttons
                 in the toolbar. Default False.
@@ -105,7 +107,11 @@ class AppShell(App):
             nav_accent: Accent color for navigation selection. Default 'primary'.
             **kwargs: Additional arguments passed to App.
         """
-        # Frameless mode: remove OS chrome and enable toolbar controls
+        # overrideredirect has no effect on macOS — disable undecorated there
+        # so the toolbar doesn't incorrectly act as the titlebar on that platform.
+        if sys.platform == 'darwin':
+            undecorated = False
+
         if undecorated:
             show_window_controls = True
             draggable = True
@@ -125,6 +131,7 @@ class AppShell(App):
         self._shell_title = title
         self._show_toolbar = show_toolbar
         self._show_nav = show_nav
+        self._undecorated = undecorated  # already False on macOS after guard above
 
         # Track which nav keys have associated pages
         self._page_keys: set[str] = set()
@@ -192,9 +199,11 @@ class AppShell(App):
                 )
                 self._toolbar.add_separator()
 
-            # Title label — shows the active page name, not the app title.
-            # The app title is already in the native OS titlebar.
-            self._title_label = self._toolbar.add_label(text='', font='heading-md')
+            # In undecorated mode the toolbar acts as the OS titlebar, so show
+            # the app title. In decorated mode the OS titlebar already has the
+            # app title, so show the active page name instead.
+            label_text = self._shell_title if undecorated else ''
+            self._title_label = self._toolbar.add_label(text=label_text, font='heading-md')
 
             # Spacer pushes subsequent user-added buttons to the right
             self._toolbar.add_spacer()
@@ -232,8 +241,8 @@ class AppShell(App):
             self._nav.toggle_pane()
 
     def _update_page_title(self, key: str):
-        """Update the toolbar label to show the active page name."""
-        if self._title_label is not None:
+        """Update the toolbar label to show the active page name (decorated mode only)."""
+        if self._title_label is not None and not self._undecorated:
             self._title_label.configure(text=self._page_texts.get(key, ''))
 
     def _on_nav_selection_changed(self, event):
