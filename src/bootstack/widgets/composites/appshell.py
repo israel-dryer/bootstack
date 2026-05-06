@@ -197,7 +197,6 @@ class AppShell(App):
                     icon='list',
                     command=self._toggle_nav,
                 )
-                self._toolbar.add_separator()
 
             # In undecorated mode the toolbar acts as the OS titlebar — show
             # the app title. In decorated mode the OS titlebar has the app
