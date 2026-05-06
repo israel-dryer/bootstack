@@ -16,24 +16,24 @@ Provide menu items as `ContextMenuItem` entries. The button can also have its ow
 ```python
 import bootstack as bs
 
-app = bs.App()
+app = bs.App(title="Dropdown Example", minsize=(300, 200))
 
 items = [
-    bs.ContextMenuItem(text="Open", command=lambda: print("Open")),
-    bs.ContextMenuItem(text="Rename", command=lambda: print("Rename")),
-    bs.ContextMenuItem(separator=True),
-    bs.ContextMenuItem(text="Delete", accent="danger", command=lambda: print("Delete")),
+    bs.ContextMenuItem("command", text="Open", command=lambda: print("Open")),
+    bs.ContextMenuItem("command", text="Rename", command=lambda: print("Rename")),
+    bs.ContextMenuItem("separator"),
+    bs.ContextMenuItem("command", text="Delete", command=lambda: print("Delete")),
 ]
 
-bs.DropdownButton(
-    app,
-    text="File",
-    items=items,
-    command=lambda: print("Primary action"),
-).pack(padx=20, pady=20)
+btn = bs.DropdownButton(app, text="File", items=items)
+btn.pack(padx=20, pady=20)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-dropdown-quickstart.png" alt="Dropdown Button Quickstart"/>
+</div>
 
 ---
 
@@ -64,6 +64,10 @@ bs.DropdownButton(app, text="Primary", accent="primary", items=[]).pack(pady=4)
 bs.DropdownButton(app, text="Outline", accent="primary", variant="outline", items=[]).pack(pady=4)
 bs.DropdownButton(app, text="Ghost", accent="primary", variant="ghost", items=[]).pack(pady=4)
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-dropdown-variants.png" alt="Dropdown Variants"/>
+</div>
 
 ---
 
