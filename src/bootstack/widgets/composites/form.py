@@ -629,8 +629,7 @@ class Form(Frame):
     def _build_buttons(self, parent: Frame, buttons: Sequence[ButtonInput]) -> None:
         parsed = self._normalize_buttons(buttons)
         for spec in reversed(parsed):
-            # Support both color and legacy bootstyle from DialogButton
-            btn_color = getattr(spec, 'color', None) or spec.bootstyle
+            btn_color = getattr(spec, 'accent', None) or getattr(spec, 'color', None) or getattr(spec, 'bootstyle', None)
             btn_variant = getattr(spec, 'variant', None)
 
             if not btn_color:
