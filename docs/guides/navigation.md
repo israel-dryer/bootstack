@@ -90,7 +90,7 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 - You need a plain window — use `App`
 
 !!! link "AppShell Reference"
-    See [AppShell](../widgets/application/appshell.md) for all options including frameless mode, display modes, and component access.
+    See [AppShell](../widgets/application/appshell.md) for all options including undecorated (custom-chrome) mode, display modes, and component access.
 
 ---
 

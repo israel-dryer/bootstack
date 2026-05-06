@@ -1894,7 +1894,7 @@ class TableView(Frame):
             items=items,
             allow_search=True,
             allow_select_all=True,
-            frameless=True
+            undecorated=True
         )
 
         result = dialog.show(position=(pos_x, pos_y))
@@ -2126,7 +2126,7 @@ class TableView(Frame):
             items=items,
             allow_search=False,
             allow_select_all=True,
-            frameless=True
+            undecorated=True
         )
 
         result = dialog.show(position=(pos_x, pos_y))

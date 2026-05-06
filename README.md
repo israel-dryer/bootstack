@@ -116,7 +116,7 @@ bs.Button(app, text="+1", command=lambda: counter.set(counter.get() + 1))
 
 ## Features
 
-- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, frameless windows with custom chrome
+- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, undecorated windows with custom chrome
 - **60+ themed widgets** — ttk-derived primitives plus higher-level composites (TableView, Calendar, DateEntry, Form, FloodGauge, Meter, ToggleGroup, PageStack, Toast, Tooltip, and more)
 - **9 dialogs** — Message, Query, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog, plus a `Dialog` base
 - **Layout containers** — `PackFrame` and `GridFrame` for declarative layouts; `ScrollView`, `PanedWindow`, `Accordion`, `Card`, `Expander`

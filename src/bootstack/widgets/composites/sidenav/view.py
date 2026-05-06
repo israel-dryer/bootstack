@@ -223,11 +223,13 @@ class SideNav(Frame):
         if self._show_header:
             self._build_header()
 
-        # Scrollable content area (vertical only, scrollbar on hover)
+        # Scrollable content area — scrollbar hidden; mousewheel scrolling still
+        # works. Showing a scrollbar here reserves a permanent gutter that visibly
+        # wastes nav width, so we keep 'never' in all display modes.
         self._content_scroll = ScrollView(
             self._pane_frame,
             scroll_direction='vertical',
-            scrollbar_visibility='hover',
+            scrollbar_visibility='never',
         )
         self._content_scroll.pack(fill='both', expand=True)
         self._content_frame = GridFrame(
@@ -296,13 +298,13 @@ class SideNav(Frame):
         # Update pane width and visibility
         if self._display_mode == 'expanded':
             width = self._pane_width or self.PANE_WIDTH_EXPANDED
-            self._pane_frame.configure(width=width, padding=(4, 4, 0, 4))
+            self._pane_frame.configure(width=width, padding=4)
             if self._is_pane_open:
                 self._pane_frame.pack(side='left', fill='y')
             else:
                 self._pane_frame.pack_forget()
         elif self._display_mode == 'compact':
-            self._pane_frame.configure(width=self.PANE_WIDTH_COMPACT, padding=(2, 2, 0, 2))
+            self._pane_frame.configure(width=self.PANE_WIDTH_COMPACT, padding=2)
             self._pane_frame.pack(side='left', fill='y')
         elif self._display_mode == 'minimal':
             if self._is_pane_open:
@@ -332,17 +334,6 @@ class SideNav(Frame):
                 self._title_label.pack_forget()
             else:
                 self._title_label.pack(side='left', fill='x', expand=True)
-
-        # In compact mode the pane is icon-only (52 px) and content never
-        # overflows vertically, so reserving a scrollbar gutter wastes ~25 % of
-        # the pane width.  Switch the ScrollView to 'never' visibility to
-        # release the gutter; restore 'hover' (with stable gutter) when the
-        # pane is expanded again.
-        if self._content_scroll:
-            if is_compact:
-                self._content_scroll.configure(scrollbar_visibility='never')
-            else:
-                self._content_scroll.configure(scrollbar_visibility='hover')
 
         # Set compact mode on all items and groups
         for item in self._items.values():

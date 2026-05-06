@@ -87,19 +87,22 @@ shell.mainloop()
 
 `AppShell` extends `App`, so everything that works on `App` works on `AppShell` too.
 
-### Frameless window
+### Undecorated window
 
-Set `frameless=True` to remove OS window chrome and get a fully custom window. The toolbar automatically gains minimize/maximize/close buttons and becomes draggable:
+!!! warning "Windows and Linux only"
+    `undecorated=True` has no effect on macOS and is silently ignored there.
+
+Set `undecorated=True` to remove OS window decorations (title bar, native border, resize grip) and replace them with custom chrome. The toolbar automatically gains minimize/maximize/close buttons and becomes draggable:
 
 ```python
 shell = bs.AppShell(
     title="Custom Window",
     minsize=(1000, 650),
-    frameless=True,
+    undecorated=True,
 )
 ```
 
-![frameless](../assets/guides-app-structure-frameless.png)
+![undecorated window](../assets/guides-app-structure-frameless.png)
 
 ### When to use App vs AppShell
 
