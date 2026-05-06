@@ -146,13 +146,11 @@ nav = [
     ] },
     { "Architecture" = [
         { "Overview" = "architecture/index.md" },
-        { "Fundamentals" = [
-            { "Tk vs ttk" = "architecture/tk-vs-ttk.md" },
-            { "Event Loop" = "architecture/event-loop.md" },
-            { "Events & Bindings" = "architecture/events-and-bindings.md" },
-            { "Geometry & Layout" = "architecture/geometry-and-layout.md" },
-            { "Widget Lifecycle" = "architecture/widget-lifecycle.md" },
-        ] },
+        { "Tk vs ttk" = "architecture/tk-vs-ttk.md" },
+        { "Event Loop" = "architecture/event-loop.md" },
+        { "Events & Bindings" = "architecture/events-and-bindings.md" },
+        { "Geometry & Layout" = "architecture/geometry-and-layout.md" },
+        { "Widget Lifecycle" = "architecture/widget-lifecycle.md" },
         { "Styling Internals" = "architecture/ttk-styles-elements.md" },
         { "Images & DPI" = "architecture/images-and-dpi.md" },
         { "Windows" = "architecture/windows.md" },

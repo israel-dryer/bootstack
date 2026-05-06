@@ -32,9 +32,13 @@ Many concepts described here originate in Tk itself: the event loop, geometry ma
 
 ## Topics
 
-- **Fundamentals** — Tk vs ttk, the event loop, events and bindings, widget lifecycle, geometry and layout
-- **Styling internals** — ttk styles and elements
-- **Windows** — top-level windows and modality
-- **Images & DPI** — image handling, DPI awareness, scaling
+- **[Tk vs ttk](tk-vs-ttk.md)** — what each layer provides and when bootstack uses which
+- **[Event Loop](event-loop.md)** — how the Tk event loop works and what bootstack adds
+- **[Events & Bindings](events-and-bindings.md)** — event delivery, binding scopes, virtual events
+- **[Geometry & Layout](geometry-and-layout.md)** — pack, grid, and place at the Tk level
+- **[Widget Lifecycle](widget-lifecycle.md)** — creation, configuration, and destruction
+- **[Styling Internals](ttk-styles-elements.md)** — ttk styles, elements, and how bootstack themes map to them
+- **[Images & DPI](images-and-dpi.md)** — image handling, DPI awareness, and scaling
+- **[Windows](windows.md)** — top-level windows and modality
 
 Together, these topics define the foundation on which all bootstack applications are built.
