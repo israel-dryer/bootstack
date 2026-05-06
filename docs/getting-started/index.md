@@ -1,4 +1,4 @@
-# Getting Started
+﻿# Getting Started
 
 This section helps you get productive with bootstack quickly—without requiring deep knowledge
 of Tkinter or ttk internals.

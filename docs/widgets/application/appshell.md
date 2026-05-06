@@ -4,7 +4,7 @@ title: AppShell
 
 # AppShell
 
-`AppShell` is an **application window with built-in navigation** â€” it extends `App` and wires
+`AppShell` is an **application window with built-in navigation** — it extends `App` and wires
 together a `Toolbar`, `SideNav`, and `PageStack` into the standard desktop app layout.
 
 ---
@@ -41,9 +41,9 @@ Use `AppShell` when:
 
 Consider a different control when:
 
-- you need a plain window without navigation â€” use [App](app.md)
+- you need a plain window without navigation — use [App](app.md)
 
-- you need a standalone sidebar in a custom layout â€” use [SideNav](../navigation/sidenav.md)
+- you need a standalone sidebar in a custom layout — use [SideNav](../navigation/sidenav.md)
 
 ---
 
@@ -135,7 +135,7 @@ shell = bs.AppShell(
 shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 
 home = shell.add_page("home", text="Home", icon="house")
-bs.Label(home, text="No OS chrome â€” fully custom!").pack(padx=20, pady=20)
+bs.Label(home, text="No OS chrome — fully custom!").pack(padx=20, pady=20)
 
 settings = shell.add_page("settings", text="Settings", icon="gear", is_footer=True)
 bs.Label(settings, text="Settings page").pack(padx=20, pady=20)
@@ -162,13 +162,13 @@ AppShell exposes its internal widgets as properties:
 
 ### Related widgets
 
-- [App](app.md) â€” plain application window
+- [App](app.md) — plain application window
 
-- [SideNav](../navigation/sidenav.md) â€” standalone sidebar navigation
+- [SideNav](../navigation/sidenav.md) — standalone sidebar navigation
 
-- [Toolbar](../navigation/toolbar.md) â€” standalone toolbar
+- [Toolbar](../navigation/toolbar.md) — standalone toolbar
 
-- [PageStack](../views/pagestack.md) â€” page container
+- [PageStack](../views/pagestack.md) — page container
 
 ### API reference
 

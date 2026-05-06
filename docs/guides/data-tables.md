@@ -70,7 +70,7 @@ bs.TableView(
         {"text": "Timestamp", "key": "ts",        "width": 160},
         {"text": "Channel",   "key": "channel",   "width": 80,  "anchor": "center"},
         {"text": "Reading",   "key": "reading",   "width": 100, "anchor": "e"},
-        {"text": "Î”",         "key": "delta",     "width": 90,  "anchor": "e"},
+        {"text": "Δ",         "key": "delta",     "width": 90,  "anchor": "e"},
         {"text": "Status",    "key": "status",    "width": 110, "anchor": "center", "stretch": True},
     ],
     rows=records,
@@ -93,7 +93,7 @@ columns whose values parse as numbers. Override with `anchor` when needed.
     When `key` is omitted, the column `text` is used as the SQLite column name.
     This is fine for simple headers like `"Channel"` or `"Status"`, but causes
     a silent empty-table failure for headers containing spaces or special
-    characters â€” `"Temp Â°C"` and `"|Î”|"` are examples. It also matters when
+    characters — `"Temp °C"` and `"|Δ|"` are examples. It also matters when
     you pass filter SQL via `set_filters()`: the key is the name you use in
     the WHERE clause, so an explicit key keeps that predictable.
 
@@ -119,7 +119,7 @@ bs.TableView(parent, columns=columns, rows=records)
 ## Wiring to a DataSource
 
 For anything beyond a quick demo, build the datasource yourself and pass it as
-`datasource=`. TableView is specifically backed by `SqliteDataSource` â€”
+`datasource=`. TableView is specifically backed by `SqliteDataSource` —
 in-memory for a working buffer, or pointed at a file for persistence.
 
 ```python
@@ -137,7 +137,7 @@ tv = bs.TableView(
 ```
 
 Other DataSource implementations (`MemoryDataSource`, `FileDataSource`) don't
-plug into TableView directly â€” they expect different storage. To use a CSV file
+plug into TableView directly — they expect different storage. To use a CSV file
 with TableView, load it via `FileDataSource` and hand the records to TableView:
 
 ```python
@@ -151,7 +151,7 @@ bs.TableView(parent, columns=columns, rows=all_records)
 ```
 
 For richer record shapes (lists, hierarchical data) use [ListView](../widgets/data-display/listview.md)
-or [TreeView](../widgets/data-display/treeview.md) instead â€” both accept any
+or [TreeView](../widgets/data-display/treeview.md) instead — both accept any
 `DataSourceProtocol` implementation.
 
 ### Refreshing data
@@ -173,9 +173,9 @@ bs.Button(parent, text="Refresh", icon="arrow-clockwise", command=reload).pack()
 
 `selection_mode` controls how rows can be selected:
 
-- `"none"` â€” disabled (table is read-only display)
-- `"single"` â€” one row at a time (default)
-- `"multi"` â€” multiple rows; clicking with Ctrl/Shift extends the selection
+- `"none"` — disabled (table is read-only display)
+- `"single"` — one row at a time (default)
+- `"multi"` — multiple rows; clicking with Ctrl/Shift extends the selection
 
 Read the current selection via `selected_rows`:
 
@@ -197,12 +197,12 @@ tv.on_selection_changed(show_selection)
 
 Other selection helpers:
 
-- `tv.select_rows([iid, ...])` â€” select rows by internal id
-- `tv.deselect_all()` â€” clear the selection
-- `tv.select_all()` / `tv.deselect_all()` â€” bulk operations
-- `tv.scroll_to_row(iid)` â€” bring a row into view
+- `tv.select_rows([iid, ...])` — select rows by internal id
+- `tv.deselect_all()` — clear the selection
+- `tv.select_all()` / `tv.deselect_all()` — bulk operations
+- `tv.scroll_to_row(iid)` — bring a row into view
 
-The `iid` strings come from event payloads (`event.data["iid"]`) â€” opaque
+The `iid` strings come from event payloads (`event.data["iid"]`) — opaque
 handles for the lifetime of the current page.
 
 ---
@@ -229,7 +229,7 @@ tv.clear_grouping()
 ```
 
 The filter syntax is the same SQL-like dialect used everywhere in the
-DataSource layer â€” see [DataSource â†’ Filtering](datasource.md#filtering) for
+DataSource layer — see [DataSource → Filtering](datasource.md#filtering) for
 the operator reference.
 
 The built-in search box (top-left of the toolbar) runs a substring match
@@ -289,8 +289,8 @@ tv = bs.TableView(
 )
 ```
 
-To hide pagination UI on small datasets â€” as the demo app's Results page does
-because all 16 rows fit on one screen â€” combine `show_table_status=False` with
+To hide pagination UI on small datasets — as the demo app's Results page does
+because all 16 rows fit on one screen — combine `show_table_status=False` with
 a `page_size` larger than the dataset:
 
 ```python
@@ -332,19 +332,19 @@ bs.TableView(parent, columns=columns, rows=records)
 ```
 
 The patterns are the same ones the [Formatting](formatting.md) guide documents
-for input widgets â€” just applied to the data instead of the widget. Centralize
+for input widgets — just applied to the data instead of the widget. Centralize
 the formatter so the same record shape feeds the table, an export, and any
 inline edit form.
 
 ### Status indication
 
-TableView renders cells as plain text â€” there is no per-cell renderer hook for
+TableView renders cells as plain text — there is no per-cell renderer hook for
 inline badges. Three patterns work in practice:
 
 1. **Decorate the status string** with a unicode glyph or short label that
    carries enough meaning on its own:
    ```python
-   STATUS_TEXT = {"Pass": "âœ“ Pass", "Warning": "âš  Warning", "Fail": "âœ— Fail"}
+   STATUS_TEXT = {"Pass": "✓ Pass", "Warning": "⚠ Warning", "Fail": "✗ Fail"}
    record["status"] = STATUS_TEXT[record["status"]]
    ```
 2. **Show the count, not the row.** When users only need to know *how many*
@@ -352,7 +352,7 @@ inline badges. Three patterns work in practice:
    plain. See the demo app's Results footer (`{n} records`) for the pattern.
 3. **Drop to `bs.TreeView`** when you genuinely need per-row coloring.
    TreeView's `tag_configure` lets you map status values to background colors
-   â€” it lacks TableView's toolbar and pagination, but it scales well for
+   — it lacks TableView's toolbar and pagination, but it scales well for
    small dashboards. See [TreeView](../widgets/data-display/treeview.md) and
    [Color & Theming](color-and-theming.md) for the available tokens.
 
@@ -423,8 +423,8 @@ COLUMNS = [
     {"text": "Channel",   "key": "channel", "width": 80,  "anchor": "center"},
     {"text": "Reading",   "key": "reading", "width": 100, "anchor": "e"},
     {"text": "Unit",      "key": "unit",    "width": 60,  "anchor": "center"},
-    {"text": "|Î”|",       "key": "delta",   "width": 90,  "anchor": "e"},
-    {"text": "Temp Â°C",   "key": "temp",    "width": 90,  "anchor": "e"},
+    {"text": "|Δ|",       "key": "delta",   "width": 90,  "anchor": "e"},
+    {"text": "Temp °C",   "key": "temp",    "width": 90,  "anchor": "e"},
     {"text": "Status",    "key": "status",  "width": 110, "anchor": "center", "stretch": True},
 ]
 
@@ -437,7 +437,7 @@ filters.pack(fill=X, padx=20, pady=(20, 12))
 fbar = bs.PackFrame(filters, direction="horizontal", gap=8, anchor_items=N)
 fbar.pack(fill=X)
 
-search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channelâ€¦")
+search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channel…")
 search.pack(fill=X, expand=YES)
 
 status = bs.SelectBox(
@@ -503,7 +503,7 @@ Two things worth noting in this example:
   Filters are then applied via `tv.set_filters(where_sql)`.
 - Filter values are escaped with `q.replace("'", "''")` before being
   interpolated into the SQL. The DataSource layer accepts a `where` string,
-  not parameterised queries â€” sanitize anything that comes from the user.
+  not parameterised queries — sanitize anything that comes from the user.
 
 ---
 
@@ -511,7 +511,7 @@ Two things worth noting in this example:
 
 - **Headers with spaces or special characters need an explicit `key`.** When
   `key` is omitted, the column `text` is used as the SQLite column name.
-  Headers like `"Temp Â°C"` or `"|Î”|"` produce invalid SQL identifiers and
+  Headers like `"Temp °C"` or `"|Δ|"` produce invalid SQL identifiers and
   cause a silent empty-table failure. Use a plain alphanumeric `key` for any
   column whose header isn't a simple word.
 - **`datasource=` requires `SqliteDataSource`.** The widget reads SQLite
@@ -537,12 +537,12 @@ Two things worth noting in this example:
 
 ## Related
 
-- [DataSource](datasource.md) â€” filter syntax, sorting, custom backends
-- [Formatting](formatting.md) â€” number, date, and time format patterns
-- [TableView](../widgets/data-display/tableview.md) â€” full parameter reference
-- [TreeView](../widgets/data-display/treeview.md) â€” hierarchical data and
+- [DataSource](datasource.md) — filter syntax, sorting, custom backends
+- [Formatting](formatting.md) — number, date, and time format patterns
+- [TableView](../widgets/data-display/tableview.md) — full parameter reference
+- [TreeView](../widgets/data-display/treeview.md) — hierarchical data and
   per-row tag coloring
-- [ListView](../widgets/data-display/listview.md) â€” virtual scrolling for
+- [ListView](../widgets/data-display/listview.md) — virtual scrolling for
   list-shaped (non-tabular) data
-- [Color & Theming](color-and-theming.md) â€” accent and surface tokens for
+- [Color & Theming](color-and-theming.md) — accent and surface tokens for
   status indication

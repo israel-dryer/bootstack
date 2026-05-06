@@ -1,4 +1,4 @@
-# Widget Lifecycle
+﻿# Widget Lifecycle
 
 Widgets in Tk are created, configured, displayed, and eventually destroyed.
 Understanding this **lifecycle** is important for managing resources, bindings,

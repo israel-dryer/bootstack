@@ -17,8 +17,8 @@ COLUMNS = [
     {"text": "Channel",   "key": "channel", "width": 80,  "anchor": "center"},
     {"text": "Reading",   "key": "reading", "width": 100, "anchor": "e"},
     {"text": "Unit",      "key": "unit",    "width": 60,  "anchor": "center"},
-    {"text": "|Î”|",       "key": "delta",   "width": 90,  "anchor": "e"},
-    {"text": "Temp Â°C",   "key": "temp",    "width": 90,  "anchor": "e"},
+    {"text": "|Δ|",       "key": "delta",   "width": 90,  "anchor": "e"},
+    {"text": "Temp °C",   "key": "temp",    "width": 90,  "anchor": "e"},
     {"text": "Status",    "key": "status",  "width": 110, "anchor": "center", "stretch": True},
 ]
 
@@ -31,7 +31,7 @@ filters.pack(fill=X, padx=20, pady=(20, 12))
 fbar = bs.PackFrame(filters, direction="horizontal", gap=8, anchor_items=N)
 fbar.pack(fill=X)
 
-search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channelâ€¦")
+search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channel…")
 search.pack(fill=X, expand=YES)
 
 status = bs.SelectBox(

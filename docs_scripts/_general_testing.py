@@ -10,7 +10,7 @@ bs.Label(app, text=date.today(), value_format="longDate").pack()
 bar = bs.PackFrame(app, direction="horizontal", gap=8)
 bar.pack(pady=10)
 bs.Button(bar, text="English", command=lambda: MessageCatalog.locale("en_US")).pack(side="left")
-bs.Button(bar, text="EspaÃ±ol", command=lambda: MessageCatalog.locale("es_ES")).pack(side="left")
+bs.Button(bar, text="Español", command=lambda: MessageCatalog.locale("es_ES")).pack(side="left")
 bs.Button(bar, text="Deutsch", command=lambda: MessageCatalog.locale("de_DE")).pack(side="left")
 
 app.mainloop()

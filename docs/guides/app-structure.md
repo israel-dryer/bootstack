@@ -4,7 +4,7 @@ title: App Structure
 
 # App Structure
 
-This guide explains how a bootstack application is organizedâ€”the `App` class, windows, layout, state, and lifecycle.
+This guide explains how a bootstack application is organized—the `App` class, windows, layout, state, and lifecycle.
 
 Use `bootstack start MyApp` to scaffold a new project with the recommended structure.
 
@@ -14,8 +14,8 @@ Use `bootstack start MyApp` to scaffold a new project with the recommended struc
 
 Every bootstack application starts with either `App` or `AppShell`:
 
-- **`App`** â€” a blank window. You build the layout from scratch.
-- **`AppShell`** â€” an `App` with a toolbar, sidebar navigation, and page stack already wired together.
+- **`App`** — a blank window. You build the layout from scratch.
+- **`AppShell`** — an `App` with a toolbar, sidebar navigation, and page stack already wired together.
 
 ```python
 import bootstack as bs
@@ -126,7 +126,7 @@ app = bs.App(
 ```
 
 !!! link "Themes"
-    See [Design System â†’ Custom Themes](../design-system/custom-themes.md) for available themes and customization.
+    See [Design System → Custom Themes](../design-system/custom-themes.md) for available themes and customization.
 
 ---
 
@@ -137,15 +137,15 @@ choose. The **basic** template (default) produces a single-view `App`:
 
 ```
 myapp/                       # bootstack start MyApp
-â”œâ”€â”€ src/myapp/
-â”‚   â”œâ”€â”€ __init__.py
-â”‚   â”œâ”€â”€ main.py              # App entry point
-â”‚   â””â”€â”€ views/
-â”‚       â”œâ”€â”€ __init__.py
-â”‚       â””â”€â”€ main_view.py
-â”œâ”€â”€ assets/                  # Images, icons
-â”œâ”€â”€ bootstack.toml                # Project configuration
-â””â”€â”€ README.md
+├── src/myapp/
+│   ├── __init__.py
+│   ├── main.py              # App entry point
+│   └── views/
+│       ├── __init__.py
+│       └── main_view.py
+├── assets/                  # Images, icons
+├── bootstack.toml                # Project configuration
+└── README.md
 ```
 
 The **appshell** template produces an `AppShell` with sidebar navigation
@@ -153,16 +153,16 @@ and one file per page:
 
 ```
 myapp/                       # bootstack start MyApp --template appshell
-â”œâ”€â”€ src/myapp/
-â”‚   â”œâ”€â”€ __init__.py
-â”‚   â”œâ”€â”€ main.py
-â”‚   â””â”€â”€ pages/
-â”‚       â”œâ”€â”€ __init__.py
-â”‚       â”œâ”€â”€ home_page.py
-â”‚       â””â”€â”€ settings_page.py
-â”œâ”€â”€ assets/
-â”œâ”€â”€ bootstack.toml
-â””â”€â”€ README.md
+├── src/myapp/
+│   ├── __init__.py
+│   ├── main.py
+│   └── pages/
+│       ├── __init__.py
+│       ├── home_page.py
+│       └── settings_page.py
+├── assets/
+├── bootstack.toml
+└── README.md
 ```
 
 The chosen template is recorded in `bootstack.toml` as `[app].template`, so
@@ -173,24 +173,24 @@ As your project grows:
 
 ```
 myapp/
-â”œâ”€â”€ src/myapp/
-â”‚   â”œâ”€â”€ __init__.py
-â”‚   â”œâ”€â”€ main.py
-â”‚   â”œâ”€â”€ settings.py      # AppSettings / defaults
-â”‚   â”œâ”€â”€ state.py         # Signals and shared state
-â”‚   â”œâ”€â”€ views/
-â”‚   â”‚   â”œâ”€â”€ main_view.py
-â”‚   â”‚   â””â”€â”€ settings_view.py
-â”‚   â””â”€â”€ services/        # IO, data, persistence
-â”œâ”€â”€ assets/
-â”œâ”€â”€ locales/             # Translation files
-â””â”€â”€ bootstack.toml
+├── src/myapp/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── settings.py      # AppSettings / defaults
+│   ├── state.py         # Signals and shared state
+│   ├── views/
+│   │   ├── main_view.py
+│   │   └── settings_view.py
+│   └── services/        # IO, data, persistence
+├── assets/
+├── locales/             # Translation files
+└── bootstack.toml
 ```
 
 Use `bootstack start MyApp` to scaffold a new project with this structure.
 
 !!! link "Project Structure"
-    See [Tooling â†’ Project Structure](../tooling/project-structure.md) for detailed guidance on file organization, packaging, and PyInstaller.
+    See [Tooling → Project Structure](../tooling/project-structure.md) for detailed guidance on file organization, packaging, and PyInstaller.
 
 ---
 
@@ -200,35 +200,35 @@ bootstack applications follow a **container hierarchy**:
 
 ```
 App (blank window)
-â””â”€â”€ PackFrame (main layout)
-    â”œâ”€â”€ Frame (toolbar area)
-    â”‚   â””â”€â”€ Button, Button, ...
-    â”œâ”€â”€ PackFrame (content area)
-    â”‚   â””â”€â”€ widgets...
-    â””â”€â”€ Frame (status bar)
-        â””â”€â”€ Label
+└── PackFrame (main layout)
+    ├── Frame (toolbar area)
+    │   └── Button, Button, ...
+    ├── PackFrame (content area)
+    │   └── widgets...
+    └── Frame (status bar)
+        └── Label
 ```
 
 With `AppShell`, the top-level structure is built for you:
 
 ```
 AppShell (window)
-â”œâ”€â”€ Toolbar
-â”‚   â””â”€â”€ hamburger, title, spacer, [your buttons]
-â””â”€â”€ Frame (body)
-    â”œâ”€â”€ SideNav
-    â”‚   â””â”€â”€ SideNavItem, SideNavGroup, ...
-    â””â”€â”€ PageStack
-        â”œâ”€â”€ Frame (page "home")
-        â”œâ”€â”€ Frame (page "docs")
-        â””â”€â”€ ...
+├── Toolbar
+│   └── hamburger, title, spacer, [your buttons]
+└── Frame (body)
+    ├── SideNav
+    │   └── SideNavItem, SideNavGroup, ...
+    └── PageStack
+        ├── Frame (page "home")
+        ├── Frame (page "docs")
+        └── ...
 ```
 
 Key principles:
 
-- **Containers own layout** â€” each container manages its children
-- **Widgets don't position themselves** â€” their parent decides placement
-- **Nesting creates structure** â€” compose complex layouts from simple containers
+- **Containers own layout** — each container manages its children
+- **Widgets don't position themselves** — their parent decides placement
+- **Nesting creates structure** — compose complex layouts from simple containers
 
 !!! link "Layout Guide"
     See [Layout](layout.md) for details on Frame, PackFrame, and GridFrame.
@@ -237,7 +237,7 @@ Key principles:
 
 ## Application Settings
 
-App-wide configuration â€” theme, locale, default behaviors â€” lives in a single
+App-wide configuration — theme, locale, default behaviors — lives in a single
 `AppSettings` object passed to `App` (or `AppShell`) at construction. Settings
 are applied at startup and remain readable throughout the app lifecycle.
 
@@ -247,7 +247,7 @@ are applied at startup and remain readable throughout the app lifecycle.
 
 ## State Management
 
-Use **signals** for state shared between widgets â€” `bs.Signal(value)`, passed
+Use **signals** for state shared between widgets — `bs.Signal(value)`, passed
 to widgets via `signal=` (or read/written via `.get()` / `.set()`). For larger
 apps, group related signals in a dedicated `state.py` module so views can
 import them without circular dependencies.
@@ -260,10 +260,10 @@ import them without circular dependencies.
 
 The `App` lifecycle:
 
-1. **Creation** â€” `App()` creates the window and initializes theming
-2. **Building** â€” you add widgets and configure layout
-3. **Running** â€” `mainloop()` processes events until the window closes
-4. **Cleanup** â€” the window is destroyed
+1. **Creation** — `App()` creates the window and initializes theming
+2. **Building** — you add widgets and configure layout
+3. **Running** — `mainloop()` processes events until the window closes
+4. **Cleanup** — the window is destroyed
 
 For additional windows:
 
@@ -377,8 +377,8 @@ shell.mainloop()
 
 ## Next Steps
 
-- [Layout](layout.md) â€” building layouts with containers
-- [Navigation](navigation.md) â€” tabs, stacks, and sidebar patterns
-- [Reactivity](reactivity.md) â€” signals, callbacks, and events
-- [Project Structure](../tooling/project-structure.md) â€” file organization and packaging
-- [CLI](../tooling/cli.md) â€” scaffolding and build tools
+- [Layout](layout.md) — building layouts with containers
+- [Navigation](navigation.md) — tabs, stacks, and sidebar patterns
+- [Reactivity](reactivity.md) — signals, callbacks, and events
+- [Project Structure](../tooling/project-structure.md) — file organization and packaging
+- [CLI](../tooling/cli.md) — scaffolding and build tools

@@ -1,4 +1,4 @@
-# Geometry & Layout
+﻿# Geometry & Layout
 
 Layout in Tk is controlled by **geometry managers**.
 Understanding how geometry works is essential for building interfaces that resize,

@@ -152,7 +152,7 @@ toolbar.add_button(icon="list", command=nav.toggle_pane)
 
 ### Selection management
 
-SideNav uses a shared `Variable` for radio-group selection across all items. Selection updates are O(1) â€” only the previously-selected and newly-selected items are updated.
+SideNav uses a shared `Variable` for radio-group selection across all items. Selection updates are O(1) — only the previously-selected and newly-selected items are updated.
 
 ### UX guidance
 

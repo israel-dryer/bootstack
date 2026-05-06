@@ -38,9 +38,9 @@ Use `Toplevel` when:
 
 Consider a different control when:
 
-- you need the main application window â€” use [App](app.md)
+- you need the main application window — use [App](app.md)
 
-- you need a standard dialog â€” see [Dialogs](../dialogs/index.md)
+- you need a standard dialog — see [Dialogs](../dialogs/index.md)
 
 ---
 
@@ -48,9 +48,9 @@ Consider a different control when:
 
 ### Related widgets
 
-- [App](app.md) â€” main application window
+- [App](app.md) — main application window
 
-- [AppShell](appshell.md) â€” app window with built-in navigation
+- [AppShell](appshell.md) — app window with built-in navigation
 
 ### API reference
 

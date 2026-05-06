@@ -1,4 +1,4 @@
-# Windows
+﻿# Windows
 
 Tk applications are composed of one or more **windows**.
 Understanding how windows behave — and how they interact with focus, modality,

@@ -4,7 +4,7 @@ title: App Settings
 
 # App Settings
 
-This guide explains how to configure a bootstack application using `AppSettings`â€”the centralized configuration object for themes, localization, and application metadata.
+This guide explains how to configure a bootstack application using `AppSettings`—the centralized configuration object for themes, localization, and application metadata.
 
 ---
 
@@ -12,10 +12,10 @@ This guide explains how to configure a bootstack application using `AppSettings`
 
 bootstack applications are configured through `AppSettings` rather than scattered flags and globals. This provides:
 
-- **Centralized configuration** â€” all settings in one place
-- **Type safety** â€” IDE autocomplete and validation
-- **Sensible defaults** â€” auto-detected locale, standard themes
-- **Flexibility** â€” pass a dict or a dataclass
+- **Centralized configuration** — all settings in one place
+- **Type safety** — IDE autocomplete and validation
+- **Sensible defaults** — auto-detected locale, standard themes
+- **Flexibility** — pass a dict or a dataclass
 
 ---
 
@@ -31,7 +31,7 @@ they react to framework state derived from these settings.
 
 ### Using a Dictionary
 
-The simplest approachâ€”pass settings as a dict:
+The simplest approach—pass settings as a dict:
 
 ```python
 import bootstack as bs
@@ -321,6 +321,6 @@ Locale-dependent settings (`date_format`, `time_format`, `number_decimal`, `numb
 
 ## Next Steps
 
-- [App Structure](app-structure.md) â€” application organization and lifecycle
-- [Color & Theming](color-and-theming.md) â€” theme configuration and customization
-- [Localization](localization.md) â€” internationalization and translations
+- [App Structure](app-structure.md) — application organization and lifecycle
+- [Color & Theming](color-and-theming.md) — theme configuration and customization
+- [Localization](localization.md) — internationalization and translations

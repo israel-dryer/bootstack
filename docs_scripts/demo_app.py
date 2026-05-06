@@ -1,4 +1,4 @@
-"""Data Analysis Workbench â€” bootstack hero demo.
+"""Data Analysis Workbench — bootstack hero demo.
 
 A single-file showcase application used for the bootstack homepage hero
 screenshot. All data is hardcoded; button commands are no-ops. Run with:
@@ -68,7 +68,7 @@ def build_analysis_page(page):
     bs.Label(header, text="Analysis", font="heading-xl[bold]").pack(side=LEFT)
     bs.Label(
         header,
-        text="Run-A15  Â·  CH-1 through CH-4  Â·  15 samples",
+        text="Run-A15  ·  CH-1 through CH-4  ·  15 samples",
         font="body",
         accent="secondary",
     ).pack(side=LEFT, padx=(16, 0), pady=(8, 0))
@@ -180,7 +180,7 @@ def build_analysis_page(page):
     ]:
         _stat_cell(row2, label, value, color, big=False).pack()
 
-    # Status / progress card â€” meter on left, info on right
+    # Status / progress card — meter on left, info on right
     status_card = bs.LabelFrame(right, text="Run Status", padding=14)
     status_card.pack(fill=BOTH, expand=YES)
 
@@ -248,7 +248,7 @@ def build_results_page(page):
     bs.Label(header, text="Results", font="heading-xl[bold]").pack(side=LEFT)
     bs.Label(
         header,
-        text="Cross-run readings  Â·  filtered & exportable",
+        text="Cross-run readings  ·  filtered & exportable",
         font="body",
         accent="secondary",
     ).pack(side=LEFT, padx=(16, 0), pady=(8, 0))
@@ -261,7 +261,7 @@ def build_results_page(page):
     fbar.pack(fill=X)
 
     bs.TextEntry(
-        fbar, label="Search", message="Sample ID, run, channelâ€¦",
+        fbar, label="Search", message="Sample ID, run, channel…",
     ).pack(fill=X, expand=YES)
 
     bs.SelectBox(
@@ -289,8 +289,8 @@ def build_results_page(page):
             {"text": "Channel",   "width": 80,  "anchor": "center"},
             {"text": "Reading",   "width": 100, "anchor": "e"},
             {"text": "Unit",      "width": 60,  "anchor": "center"},
-            {"text": "|Î”|",       "width": 90,  "anchor": "e"},
-            {"text": "Temp Â°C",   "width": 90,  "anchor": "e"},
+            {"text": "|Δ|",       "width": 90,  "anchor": "e"},
+            {"text": "Temp °C",   "width": 90,  "anchor": "e"},
             {"text": "Status",    "width": 110, "anchor": "center", "stretch": True},
         ],
         rows=RESULTS_ROWS,
@@ -329,7 +329,7 @@ def main():
     shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
     shell.toolbar.add_button(icon="gear", command=lambda: None)
 
-    # Sidebar pages â€” Analysis and Results are populated; the others are stubs
+    # Sidebar pages — Analysis and Results are populated; the others are stubs
     analysis = shell.add_page("analysis", text="Analysis", icon="bar-chart-line")
     build_analysis_page(analysis)
 

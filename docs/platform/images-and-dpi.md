@@ -1,4 +1,4 @@
-# Images & DPI
+﻿# Images & DPI
 
 Images in Tk are first-class objects with lifetimes independent of widgets.
 Understanding how images behave — especially under high-DPI displays — is essential

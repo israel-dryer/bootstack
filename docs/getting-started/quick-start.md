@@ -37,7 +37,7 @@ app.mainloop()
 - Widgets were laid out using **pack**, the standard Tk geometry manager.
 - Styling (colors, fonts, spacing defaults) comes from the active bootstack theme.
 
-Nothing here is bootstack-specific magic â€” this example behaves the same way
+Nothing here is bootstack-specific magic — this example behaves the same way
 across platforms and looks correct in both light and dark themes.
 
 <div class="app-window">
@@ -47,16 +47,16 @@ across platforms and looks correct in both light and dark themes.
 
 ## Where to go next
 
-If this feels familiar, thatâ€™s intentional.
+If this feels familiar, that’s intentional.
 
 From here you can:
 
 - Learn recommended layout patterns in  
-  **[Guides â†’ Layout](../guides/layout.md)**
+  **[Guides → Layout](../guides/layout.md)**
 - Explore higher-level containers like `PackFrame` and `GridFrame`  
-  **[Widgets â†’ Layout](../widgets/layout/frame.md)**
+  **[Widgets → Layout](../widgets/layout/frame.md)**
 - Understand how themes, colors, and variants work  
-  **[Design System â†’ Overview](../design-system/index.md)**
+  **[Design System → Overview](../design-system/index.md)**
 
 ---
 
@@ -79,4 +79,4 @@ bootstack gallery
 If you prefer a scaffolded project layout, localization setup, or build tooling,
 bootstack includes a command-line interface.
 
-See **[Tooling â†’ CLI](../tooling/cli.md)** for available commands.
+See **[Tooling → CLI](../tooling/cli.md)** for available commands.

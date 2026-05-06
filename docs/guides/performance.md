@@ -5,7 +5,7 @@ title: Performance
 # Performance
 
 Tk has a single event loop. Every callback, every redraw, every layout pass
-runs on it â€” and any callback that takes more than a few tens of
+runs on it — and any callback that takes more than a few tens of
 milliseconds is going to be felt as a stutter or freeze. Most "slow Tk"
 problems are really *blocked event loop* problems.
 
@@ -18,8 +18,8 @@ resources, and measure what's actually slow. Each is shown as a runnable
 
 ## Run blocking work off the event loop
 
-Anything that takes longer than ~50 ms â€” file I/O, network requests, heavy
-computation â€” should run on a worker thread. Then post the result back to
+Anything that takes longer than ~50 ms — file I/O, network requests, heavy
+computation — should run on a worker thread. Then post the result back to
 the UI via `after()`, because Tk widgets must only be touched from the main
 thread.
 
@@ -76,7 +76,7 @@ The `app.after(0, ...)` form schedules a callback for the next event-loop
 turn. It's the canonical way to hop from a worker thread back to the UI.
 
 When you need to schedule a `concurrent.futures` callback to run on the UI
-thread, route it through `after()` â€” calling widget methods from
+thread, route it through `after()` — calling widget methods from
 `Future.add_done_callback` directly will run them on the worker thread and
 you'll get sporadic, hard-to-debug Tk errors.
 
@@ -86,7 +86,7 @@ you'll get sporadic, hard-to-debug Tk errors.
 
 Inserting 50,000 rows into a `TreeView` in one go will freeze the UI for
 seconds. Splitting the work across event-loop turns keeps the UI
-interactive â€” and gives the user a chance to see incremental progress.
+interactive — and gives the user a chance to see incremental progress.
 
 ```python
 import bootstack as bs
@@ -117,7 +117,7 @@ insert_chunk()
 app.mainloop()
 ```
 
-Tune `CHUNK` until each chunk takes roughly 16 ms â€” that gives you ~60 fps
+Tune `CHUNK` until each chunk takes roughly 16 ms — that gives you ~60 fps
 worth of interactivity while the load progresses. `after_idle` (rather than
 `after(0, ...)`) lets the event loop service pending input and redraws
 between chunks, which is exactly what you want.
@@ -131,7 +131,7 @@ that loads pages on demand instead of materializing the whole set.
 ## Cache expensive resources
 
 Reconstructing fonts and images is far more expensive than it looks.
-`bs.Font` and `bs.Image` both cache for you â€” but only if you let them.
+`bs.Font` and `bs.Image` both cache for you — but only if you let them.
 
 ### Fonts
 
@@ -152,7 +152,7 @@ def make_label(parent, text, *, heading=False):
 
 The `bs.Font` object caches its underlying Tk font internally on first use.
 If you build a hundred `bs.Font("body[bold]")` instances, you'll create a
-hundred Tk font objects â€” each of which has measurement and metric tables.
+hundred Tk font objects — each of which has measurement and metric tables.
 Module-level constants are the right answer.
 
 ### Images
@@ -172,7 +172,7 @@ app.destroy()
 ```
 
 If you're scaling images at runtime, do the resize *once* with PIL and feed
-the result to `bs.Image.from_pil(..., key="logo-64")` â€” passing an explicit
+the result to `bs.Image.from_pil(..., key="logo-64")` — passing an explicit
 `key` lets subsequent calls hit the cache instead of redecoding.
 
 ---
@@ -180,7 +180,7 @@ the result to `bs.Image.from_pil(..., key="logo-64")` â€” passing an explic
 ## Measure before you optimize
 
 The trace decorator from
-[Debugging â†’ Time and trace your callbacks](debugging.md#time-and-trace-your-callbacks)
+[Debugging → Time and trace your callbacks](debugging.md#time-and-trace-your-callbacks)
 is the right starting point. Drop it on suspect callbacks and let the
 numbers tell you where to look.
 
@@ -242,8 +242,8 @@ work.
 
 ## Next steps
 
-- [Debugging](debugging.md) â€” diagnose what's actually slow.
-- [Reactivity](reactivity.md) â€” efficient signal-driven updates.
-- [DataSource](datasource.md) â€” paged data loading for large sets.
-- [Platform â†’ Images & DPI](../platform/images-and-dpi.md) â€” image
+- [Debugging](debugging.md) — diagnose what's actually slow.
+- [Reactivity](reactivity.md) — efficient signal-driven updates.
+- [DataSource](datasource.md) — paged data loading for large sets.
+- [Platform → Images & DPI](../platform/images-and-dpi.md) — image
   performance and DPI scaling.

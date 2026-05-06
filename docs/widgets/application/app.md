@@ -4,7 +4,7 @@ title: App
 
 # App
 
-`App` is the **root application window** â€” the starting point for every bootstack application.
+`App` is the **root application window** — the starting point for every bootstack application.
 
 It wraps Tk with sensible defaults: theme initialization, DPI awareness, window sizing, and shortcut management.
 
@@ -34,9 +34,9 @@ Use `App` when:
 
 Consider a different control when:
 
-- you need a sidebar + toolbar + page scaffold â€” use [AppShell](appshell.md)
+- you need a sidebar + toolbar + page scaffold — use [AppShell](appshell.md)
 
-- you need a secondary window â€” use [Toplevel](toplevel.md)
+- you need a secondary window — use [Toplevel](toplevel.md)
 
 ---
 
@@ -68,9 +68,9 @@ bs.toggle_theme()  # switches between light and dark
 
 ### Related widgets
 
-- [AppShell](appshell.md) â€” app window with built-in navigation
+- [AppShell](appshell.md) — app window with built-in navigation
 
-- [Toplevel](toplevel.md) â€” secondary windows
+- [Toplevel](toplevel.md) — secondary windows
 
 ### API reference
 
