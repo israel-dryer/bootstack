@@ -112,7 +112,7 @@ class Toolbar(Frame):
     def _build_window_controls(self):
         """Build window control buttons (minimize, maximize, close)."""
         self._controls_frame = Frame(self)
-        self._controls_frame.pack(side='right', fill='y')
+        self._controls_frame.pack(side='right', fill='y', padx=(8, 0))
 
         # Minimize button
         self._minimize_btn = Button(
