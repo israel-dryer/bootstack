@@ -199,11 +199,12 @@ class AppShell(App):
                 )
                 self._toolbar.add_separator()
 
-            # In undecorated mode the toolbar acts as the OS titlebar, so show
-            # the app title. In decorated mode the OS titlebar already has the
-            # app title, so show the active page name instead.
-            label_text = self._shell_title if undecorated else ''
-            self._title_label = self._toolbar.add_label(text=label_text, font='heading-md')
+            # In undecorated mode the toolbar acts as the OS titlebar — show
+            # the app title. In decorated mode the OS titlebar has the app
+            # title and the sidebar selection shows the current page, so no
+            # toolbar label is needed.
+            if undecorated:
+                self._title_label = self._toolbar.add_label(text=self._shell_title, font='heading-md')
 
             # Spacer pushes subsequent user-added buttons to the right
             self._toolbar.add_spacer()
