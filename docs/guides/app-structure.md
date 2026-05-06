@@ -89,6 +89,9 @@ shell.mainloop()
 
 ### Undecorated window
 
+!!! warning "Windows and Linux only"
+    `undecorated=True` has no effect on macOS and is silently ignored there.
+
 Set `undecorated=True` to remove OS window decorations (title bar, native border, resize grip) and replace them with custom chrome. The toolbar automatically gains minimize/maximize/close buttons and becomes draggable:
 
 ```python

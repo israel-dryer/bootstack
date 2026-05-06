@@ -117,6 +117,9 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 
 ### Undecorated (custom window chrome)
 
+!!! warning "Windows and Linux only"
+    `undecorated=True` has no effect on macOS and is silently ignored there.
+
 Set `undecorated=True` to remove the OS title bar, native border, and resize
 grip. The toolbar automatically gains window control buttons (minimize,
 maximize, close) and becomes draggable, giving you a fully custom window.
