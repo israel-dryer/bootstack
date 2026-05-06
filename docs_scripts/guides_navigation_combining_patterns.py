@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-shell = bs.AppShell(title="Combined Navigation", size=(1000, 650))
+shell = bs.AppShell(title="Combined Navigation", minsize=(1000, 650))
 
 # Simple page
 home = shell.add_page("home", text="Home", icon="house")

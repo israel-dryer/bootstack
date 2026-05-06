@@ -1,4 +1,4 @@
----
+﻿---
 title: Navigation
 ---
 
@@ -9,11 +9,11 @@ several patterns for organizing and switching between content areas.
 
 This guide covers:
 
-- **AppShell** — the fastest way to get toolbar + sidebar + pages
-- **SideNav** — standalone sidebar navigation with display modes and groups
-- **Tabs** — category-based switching with [Notebook](../widgets/views/notebook.md)
-- **Stacked views** — flow-based navigation with [PageStack](../widgets/views/pagestack.md)
-- **Custom sidebar** — rolling your own navigation panel
+- **AppShell** â€” the fastest way to get toolbar + sidebar + pages
+- **SideNav** â€” standalone sidebar navigation with display modes and groups
+- **Tabs** â€” category-based switching with [Notebook](../widgets/views/notebook.md)
+- **Stacked views** â€” flow-based navigation with [PageStack](../widgets/views/pagestack.md)
+- **Custom sidebar** â€” rolling your own navigation panel
 
 ---
 
@@ -21,7 +21,7 @@ This guide covers:
 
 | Pattern | Best for | Widget |
 |---------|----------|--------|
-| **AppShell** | Most desktop apps — toolbar, sidebar, and pages in one call | `AppShell` |
+| **AppShell** | Most desktop apps â€” toolbar, sidebar, and pages in one call | `AppShell` |
 | **SideNav + PageStack** | Custom layouts where you control toolbar/content placement | `SideNav` + `PageStack` |
 | **Tabs** | Category switching, settings panels, dashboards | `Notebook` |
 | **Stacked views** | Wizards, multi-step flows, drill-down navigation | `PageStack` |
@@ -40,7 +40,7 @@ a `Toolbar`, `SideNav`, and `PageStack` automatically:
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", minsize=(1000, 650))
 
 # Each add_page() creates a nav item and returns a Frame for content
 home = shell.add_page("home", text="Home", icon="house")
@@ -85,9 +85,9 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 
 ### When to use something else
 
-- You need a custom toolbar position or multiple toolbars — use `SideNav` + `PageStack` directly
-- You need horizontal tabs — use `Notebook`
-- You need a plain window — use `App`
+- You need a custom toolbar position or multiple toolbars â€” use `SideNav` + `PageStack` directly
+- You need horizontal tabs â€” use `Notebook`
+- You need a plain window â€” use `App`
 
 !!! link "AppShell Reference"
     See [AppShell](../widgets/application/appshell.md) for all options including frameless mode, display modes, and component access.
@@ -102,7 +102,7 @@ but want full control over the surrounding layout:
 ```python
 import bootstack as bs
 
-app = bs.App(title="SideNav Demo", size=(900, 600))
+app = bs.App(title="SideNav Demo", minsize=(900, 600))
 
 nav = bs.SideNav(app)
 nav.pack(side="left", fill="y")
@@ -125,7 +125,7 @@ When using SideNav outside of AppShell, you wire it to a PageStack manually:
 ```python
 import bootstack as bs
 
-app = bs.App(title="SideNav + PageStack", size=(900, 600))
+app = bs.App(title="SideNav + PageStack", minsize=(900, 600))
 
 # Sidebar
 nav = bs.SideNav(app)
@@ -221,9 +221,9 @@ app.mainloop()
 
 ### When to avoid tabs
 
-- You have many sections (7+) — use SideNav or AppShell
-- Navigation is sequential — use PageStack instead
-- Views have parent-child relationships — use PageStack with back/forward
+- You have many sections (7+) â€” use SideNav or AppShell
+- Navigation is sequential â€” use PageStack instead
+- Views have parent-child relationships â€” use PageStack with back/forward
 
 ---
 
@@ -265,7 +265,7 @@ app.mainloop()
 ### When to use PageStack
 
 - Multi-step wizards or forms
-- Drill-down navigation (list → detail → edit)
+- Drill-down navigation (list â†’ detail â†’ edit)
 - Back/forward improves usability
 
 ### Navigation methods
@@ -289,7 +289,7 @@ with tabs inside one of the pages:
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="Combined Navigation", size=(1000, 650))
+shell = bs.AppShell(title="Combined Navigation", minsize=(1000, 650))
 
 # Simple page
 home = shell.add_page("home", text="Home", icon="house")
@@ -324,7 +324,7 @@ controlling a `PageStack`:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Custom Sidebar", size=(800, 500))
+app = bs.App(title="Custom Sidebar", minsize=(800, 500))
 
 # Sidebar
 sidebar = bs.Frame(app, padding=10, width=200)
@@ -413,9 +413,9 @@ When switching views, consider whether state should be preserved:
 
 ## Additional resources
 
-- [AppShell](../widgets/application/appshell.md) — app window with built-in navigation
-- [SideNav](../widgets/navigation/sidenav.md) — standalone sidebar navigation
-- [Toolbar](../widgets/navigation/toolbar.md) — horizontal toolbar
-- [Notebook](../widgets/views/notebook.md) — tabbed view container
-- [PageStack](../widgets/views/pagestack.md) — stacked views with history
-- [App Structure](app-structure.md) — organizing your application code
+- [AppShell](../widgets/application/appshell.md) â€” app window with built-in navigation
+- [SideNav](../widgets/navigation/sidenav.md) â€” standalone sidebar navigation
+- [Toolbar](../widgets/navigation/toolbar.md) â€” horizontal toolbar
+- [Notebook](../widgets/views/notebook.md) â€” tabbed view container
+- [PageStack](../widgets/views/pagestack.md) â€” stacked views with history
+- [App Structure](app-structure.md) â€” organizing your application code

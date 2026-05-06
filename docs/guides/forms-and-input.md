@@ -1,10 +1,10 @@
----
+﻿---
 title: Forms & Input
 ---
 
 # Forms & Input
 
-This guide shows how to assemble input widgets into working forms — picking
+This guide shows how to assemble input widgets into working forms â€” picking
 the right widget for each field, wiring values, laying things out, validating,
 and handling submit.
 
@@ -20,7 +20,7 @@ A two-field login form:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Sign in", size=(360, 220))
+app = bs.App(title="Sign in", minsize=(360, 220))
 form = bs.Card(app)
 form.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -116,8 +116,8 @@ email.on_changed(lambda e: print("commit:", e.data["value"]))
 
 ### Binding to signals
 
-For shared state — the same value driving multiple widgets, or a value
-computed from other widgets — bind to a `Signal`:
+For shared state â€” the same value driving multiple widgets, or a value
+computed from other widgets â€” bind to a `Signal`:
 
 ```python
 query = bs.Signal("")
@@ -133,7 +133,7 @@ Both widgets stay in sync without a callback. See
 
 ## Layout patterns
 
-Pick the simplest layout that fits — most forms don't need a grid.
+Pick the simplest layout that fits â€” most forms don't need a grid.
 
 ### Stacked single column
 
@@ -269,7 +269,7 @@ email.on_validated(lambda _: refresh())
 password.on_input(lambda _: refresh())
 ```
 
-For long forms, prefer the opposite — keep the button enabled, and surface
+For long forms, prefer the opposite â€” keep the button enabled, and surface
 errors on click. A user who can't see why submit is greyed out gets stuck.
 
 ### Async submit and a busy state
@@ -284,7 +284,7 @@ pool = ThreadPoolExecutor(max_workers=2)
 def on_save():
     if not form.validate():
         return
-    submit.configure(state="disabled", text="Saving…")
+    submit.configure(state="disabled", text="Savingâ€¦")
     future = pool.submit(api.save, form.value)
     def done():
         if future.done():
@@ -298,7 +298,7 @@ def on_save():
     app.after(50, done)
 ```
 
-See [Performance → Background work](performance.md) for the full off-loop
+See [Performance â†’ Background work](performance.md) for the full off-loop
 pattern.
 
 ---
@@ -354,7 +354,7 @@ email.pack(fill="x", pady=4)
 username = bs.TextEntry(card, label="Username", required=True)
 username.add_validation_rule(
     "stringLength", min=3, max=20,
-    message="Username must be 3–20 characters.",
+    message="Username must be 3â€“20 characters.",
 )
 username.add_validation_rule(
     "pattern", pattern=r"^[a-zA-Z0-9_]+$",
@@ -417,11 +417,11 @@ Key patterns this combines:
 
 - `required=True` on every field gives both the asterisk and an inline
   required rule.
-- The `confirm` field is re-validated when the source `password` changes — the
+- The `confirm` field is re-validated when the source `password` changes â€” the
   `on_changed` line wires that loop. Without it, fixing the password wouldn't
   clear the mismatch error.
 - `valid_state` tracks each field's last validation outcome. `on_validated`
-  receives `data["is_valid"]` directly — re-running `validation()` inside the
+  receives `data["is_valid"]` directly â€” re-running `validation()` inside the
   callback would cause infinite recursion since validation fires more events.
 - `on_submit` guards against the button being enabled while terms is unchecked
   via keyboard between events.
@@ -430,7 +430,7 @@ Key patterns this combines:
 
 ## Modal forms with `FormDialog`
 
-When a form is part of a workflow ("New connection…", "Edit user…") and not
+When a form is part of a workflow ("New connectionâ€¦", "Edit userâ€¦") and not
 the main view, use `bs.FormDialog`:
 
 ```python
@@ -477,17 +477,17 @@ lists every field's error is noise. Keep field errors at the field; reserve
 the banner for form-level failures (server rejected the request).
 
 **Putting submit logic in a rule.** Validation rules are pure: value in,
-result out. Network calls, navigation, toasts — those go in the submit
+result out. Network calls, navigation, toasts â€” those go in the submit
 handler.
 
 ---
 
 ## Related
 
-- [Validation](validation.md) — rules, triggers, and form-level validation
-- [Reactivity](reactivity.md) — signals, callbacks, and events
-- [Layout](layout.md) — Frame, PackFrame, GridFrame, Card
-- [Formatting](formatting.md) — locale-aware `value_format` patterns
-- [TextEntry](../widgets/inputs/textentry.md) — the most-used input widget
-- [Form](../widgets/forms/form.md) — declarative form builder
-- [FormDialog](../widgets/dialogs/formdialog.md) — modal form flow
+- [Validation](validation.md) â€” rules, triggers, and form-level validation
+- [Reactivity](reactivity.md) â€” signals, callbacks, and events
+- [Layout](layout.md) â€” Frame, PackFrame, GridFrame, Card
+- [Formatting](formatting.md) â€” locale-aware `value_format` patterns
+- [TextEntry](../widgets/inputs/textentry.md) â€” the most-used input widget
+- [Form](../widgets/forms/form.md) â€” declarative form builder
+- [FormDialog](../widgets/dialogs/formdialog.md) â€” modal form flow

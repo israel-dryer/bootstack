@@ -1,4 +1,4 @@
----
+﻿---
 title: Spacing & Alignment
 ---
 
@@ -8,13 +8,13 @@ This guide is the practical reference for arranging widgets in bootstack:
 how to add space between things, how to line them up, and how to control which
 parts of the layout grow when the window resizes.
 
-It is organized around the bootstack vocabulary you actually use day to day —
+It is organized around the bootstack vocabulary you actually use day to day â€”
 `padding`, `gap`, `sticky_items`, `fill_items`, column/row size specs,
 `auto_flow`. The Tk-level mechanics (`padx`, `pady`, `sticky`, `fill`,
 `expand`) are covered near the end as background, for when you need to drop
 into raw `pack()` or `grid()`.
 
-If you have not yet picked a container, start with [Layout](layout.md) — that
+If you have not yet picked a container, start with [Layout](layout.md) â€” that
 guide explains *which* container fits your shape. This guide explains how to
 fine-tune the spacing and alignment inside it.
 
@@ -34,7 +34,7 @@ container's edge.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Padding", size=(320, 200))
+app = bs.App(title="Padding", minsize=(320, 200))
 
 panel = bs.PackFrame(app, padding=16)
 panel.pack(fill="both", expand=True)
@@ -46,7 +46,7 @@ app.mainloop()
 
 `padding` accepts an `int` for uniform padding or a tuple for asymmetric
 padding (`padding=(left_right, top_bottom)` or
-`padding=(left, top, right, bottom)`). It works on every bootstack frame —
+`padding=(left, top, right, bottom)`). It works on every bootstack frame â€”
 `Frame`, `PackFrame`, `GridFrame`, `Card`, `LabelFrame`.
 
 ### `gap`
@@ -65,8 +65,8 @@ bs.Entry(form, show="*").pack(fill="x")
 bs.Button(form, text="Sign in", accent="primary").pack(anchor="e")
 ```
 
-`PackFrame` applies `gap` along its direction (vertical → between rows,
-horizontal → between columns). `GridFrame` accepts either an `int` (same gap
+`PackFrame` applies `gap` along its direction (vertical â†’ between rows,
+horizontal â†’ between columns). `GridFrame` accepts either an `int` (same gap
 in both directions) or a `(column_gap, row_gap)` tuple:
 
 ```python
@@ -76,7 +76,7 @@ grid = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=16)
 ### `Card` defaults
 
 `Card` is the bootstack idiom for a grouped block with built-in spacing. Its
-defaults — `padding=16`, `accent='card'`, `show_border=True` — are what most
+defaults â€” `padding=16`, `accent='card'`, `show_border=True` â€” are what most
 panels want, so you rarely need to set padding yourself when you reach for a
 card.
 
@@ -100,7 +100,7 @@ inside. Container-level `gap` and `padding` mean no per-widget spacing flags.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Settings", size=(420, 360))
+app = bs.App(title="Settings", minsize=(420, 360))
 
 page = bs.PackFrame(app, direction="vertical", gap=12, padding=12)
 page.pack(fill="both", expand=True)
@@ -172,7 +172,7 @@ bs.Label(grid, text="Port").grid(sticky="e")
 bs.Entry(grid).grid()
 ```
 
-Per-widget `sticky=` overrides the container default — useful for a single
+Per-widget `sticky=` overrides the container default â€” useful for a single
 right-aligned label in an otherwise stretching grid.
 
 ### `fill_items` and `anchor_items` (PackFrame)
@@ -193,7 +193,7 @@ Because `fill_items="x"` is set, every button stretches to the sidebar's
 width without per-widget `pack(fill="x")` calls.
 
 `anchor_items` controls *where* a non-filling widget sits along the cross
-axis — `"w"`, `"center"`, `"e"` for vertical packs; `"n"`, `"center"`, `"s"`
+axis â€” `"w"`, `"center"`, `"e"` for vertical packs; `"n"`, `"center"`, `"s"`
 for horizontal.
 
 ```python
@@ -206,12 +206,12 @@ header = bs.PackFrame(app, direction="vertical", padding=12, anchor_items="w")
 
 | Direction         | Flow                       |
 | ----------------- | -------------------------- |
-| `"vertical"` / `"column"`         | Top → bottom (default)     |
-| `"horizontal"` / `"row"`          | Left → right               |
-| `"row-reverse"`   | Right → left               |
-| `"column-reverse"`| Bottom → top               |
+| `"vertical"` / `"column"`         | Top â†’ bottom (default)     |
+| `"horizontal"` / `"row"`          | Left â†’ right               |
+| `"row-reverse"`   | Right â†’ left               |
+| `"column-reverse"`| Bottom â†’ top               |
 
-`row-reverse` is the natural fit for groups that should hug the right edge —
+`row-reverse` is the natural fit for groups that should hug the right edge â€”
 toolbars, status bars, dialog button rows.
 
 ### Worked example: toolbar with left/right groups
@@ -223,7 +223,7 @@ plain `Frame` as the bar, then two `PackFrame`s with `side="left"` and
 ```python
 import bootstack as bs
 
-app = bs.App(title="Toolbar", size=(560, 80))
+app = bs.App(title="Toolbar", minsize=(560, 80))
 
 bar = bs.Frame(app, padding=8)
 bar.pack(fill="x")
@@ -264,11 +264,11 @@ decides how big the slot is and how leftover space is shared.
 | ---------- | -------------------------------------------- |
 | `"auto"`   | Hug the content; never grows                 |
 | `"100px"`  | Fixed minimum size (still grows if weighted) |
-| `1` (int)  | Weight — share of the leftover space         |
+| `1` (int)  | Weight â€” share of the leftover space         |
 
 If any column has weight `0` (the default for `"auto"` and `"100px"`), it
 does not absorb extra space. If multiple columns have positive weights, they
-share extra space proportionally — `[1, 2]` gives the second column twice
+share extra space proportionally â€” `[1, 2]` gives the second column twice
 the leftover width of the first.
 
 ```python
@@ -281,7 +281,7 @@ form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), sticky_items="ew")
 ```
 
 For vertical layouts the same ideas apply to `rows=`. A common shape is
-`rows=["auto", 1, "auto"]` — fixed-size header, scrollable middle, fixed-size
+`rows=["auto", 1, "auto"]` â€” fixed-size header, scrollable middle, fixed-size
 footer.
 
 ### `expand_items` (PackFrame)
@@ -297,7 +297,7 @@ columns.pack(fill="both", expand=True)
 
 bs.Card(columns)  # left
 bs.Card(columns)  # middle
-bs.Card(columns)  # right — three equal-width cards
+bs.Card(columns)  # right â€” three equal-width cards
 ```
 
 ### `fill` vs `expand`
@@ -305,8 +305,8 @@ bs.Card(columns)  # right — three equal-width cards
 These two flags do different things and you usually want both for a
 component that should grow with the window:
 
-- **`fill`** — stretch *the widget* to occupy the slot it was assigned.
-- **`expand`** — give *the slot* extra space when there is any.
+- **`fill`** â€” stretch *the widget* to occupy the slot it was assigned.
+- **`expand`** â€” give *the slot* extra space when there is any.
 
 A button with `fill="x"` but `expand=False` stretches across its slot but
 never claims leftover space. A button with `fill="x"` and `expand=True` keeps
@@ -314,13 +314,13 @@ growing as the window grows.
 
 ### Worked example: master-detail pane
 
-A fixed-width sidebar plus a content area that absorbs all leftover space —
+A fixed-width sidebar plus a content area that absorbs all leftover space â€”
 the canonical desktop-app shape.
 
 ```python
 import bootstack as bs
 
-app = bs.App(title="Master/detail", size=(720, 420))
+app = bs.App(title="Master/detail", minsize=(720, 420))
 
 shell = bs.GridFrame(app, columns=["220px", 1], rows=[1], sticky_items="nsew")
 shell.pack(fill="both", expand=True)
@@ -350,18 +350,18 @@ app.mainloop()
 
 Three things make this work:
 
-1. `columns=["220px", 1]` — the sidebar gets a fixed slot, the detail column
+1. `columns=["220px", 1]` â€” the sidebar gets a fixed slot, the detail column
    absorbs the rest.
-2. `rows=[1]` — the single row has weight, so vertical resizing flows to the
+2. `rows=[1]` â€” the single row has weight, so vertical resizing flows to the
    children.
-3. `sticky_items="nsew"` — children fill their cells, so the panes follow the
+3. `sticky_items="nsew"` â€” children fill their cells, so the panes follow the
    window as it grows.
 
 ---
 
 ## Auto-flow
 
-When you have many same-shape children — a gallery, a tag list, a card grid —
+When you have many same-shape children â€” a gallery, a tag list, a card grid â€”
 you don't want to assign `row=` and `column=` by hand. `GridFrame.auto_flow`
 controls how children get placed automatically.
 
@@ -371,7 +371,7 @@ controls how children get placed automatically.
 | `"column"`        | Fill column by column, wrap to next column when full |
 | `"row-dense"`     | Like `"row"`, but back-fill earlier gaps             |
 | `"column-dense"`  | Like `"column"`, but back-fill earlier gaps          |
-| `"none"`          | All children stack at `(0, 0)` — useful for overlays |
+| `"none"`          | All children stack at `(0, 0)` â€” useful for overlays |
 
 The dense variants matter when some children span multiple cells. Without
 `-dense`, gaps that appear before a tall or wide tile stay empty. With
@@ -382,7 +382,7 @@ The dense variants matter when some children span multiple cells. Without
 ```python
 import bootstack as bs
 
-app = bs.App(title="Gallery", size=(560, 420))
+app = bs.App(title="Gallery", minsize=(560, 420))
 
 gallery = bs.GridFrame(app, columns=4, gap=8, padding=12,
                        sticky_items="nsew", auto_flow="row-dense")
@@ -420,8 +420,8 @@ leaving holes. Switch to `auto_flow="row"` to see the difference.
 
 `PackFrame` and `GridFrame` are built on Tk's `pack` and `grid` geometry
 managers. The container properties above are higher-level vocabulary for the
-same Tk options. When you need to drop down — porting old code, building a
-custom container, debugging an unfamiliar layout — these are the underlying
+same Tk options. When you need to drop down â€” porting old code, building a
+custom container, debugging an unfamiliar layout â€” these are the underlying
 controls.
 
 ### External padding (`padx`, `pady`)
@@ -442,7 +442,7 @@ bs.Button(parent, text="OK").pack(side="right", padx=8, pady=4)
 
 ### Internal padding (`ipadx`, `ipady`)
 
-Per-widget padding *inside* the widget — increases the widget's drawn size.
+Per-widget padding *inside* the widget â€” increases the widget's drawn size.
 Use `padding=` on the *widget* (when supported) before reaching for these.
 
 ```text
@@ -467,11 +467,11 @@ Note: a child only stretches when its **column or row has weight**. Without
 
 `pack`'s three primary controls:
 
-- `side="top"|"bottom"|"left"|"right"` — which edge of the remaining space
+- `side="top"|"bottom"|"left"|"right"` â€” which edge of the remaining space
   the widget is packed against. `direction` picks the default for a
   `PackFrame`'s children.
-- `fill="x"|"y"|"both"|"none"` — stretch the widget to fill its slot.
-- `expand=True|False` — make the widget claim leftover space along the pack
+- `fill="x"|"y"|"both"|"none"` â€” stretch the widget to fill its slot.
+- `expand=True|False` â€” make the widget claim leftover space along the pack
   axis.
 
 ```python
@@ -480,7 +480,7 @@ bs.Frame(parent).pack(fill="both", expand=True)
 
 ### `anchor` (pack)
 
-Where a non-filling widget sits inside its slot — `"n"`, `"e"`, `"s"`, `"w"`,
+Where a non-filling widget sits inside its slot â€” `"n"`, `"e"`, `"s"`, `"w"`,
 their corners (`"ne"` etc.), or `"center"`. `anchor_items` is the container
 default.
 
@@ -500,7 +500,7 @@ Reach for `pack()`/`grid()` directly when:
   the container abstractions do not surface as a default.
 
 `PackFrame` and `GridFrame` accept all standard `pack`/`grid` options as
-per-widget overrides — you can mix container-level defaults with one-off raw
+per-widget overrides â€” you can mix container-level defaults with one-off raw
 options on individual children.
 
 ---
@@ -510,7 +510,7 @@ options on individual children.
 - **Setting `sticky="ew"` but the widget doesn't stretch.** The column has
   no weight. Either pass a numeric weight in `columns=[...]`, or call
   `frame.configure_column(index, weight=1)`.
-- **Setting `fill="x"` but the widget doesn't stretch.** It does — to its
+- **Setting `fill="x"` but the widget doesn't stretch.** It does â€” to its
   *slot*. If you want the slot itself to grow, also set `expand=True`.
 - **Mixing `pack` and `grid` in the same container.** Tk forbids it. Each
   container picks one. Use nested frames if you need both.
@@ -524,11 +524,11 @@ options on individual children.
 
 ## Next steps
 
-- [Layout](layout.md) — choosing between `PackFrame`, `GridFrame`, `Card`,
+- [Layout](layout.md) â€” choosing between `PackFrame`, `GridFrame`, `Card`,
   and `Frame`.
 - [PackFrame](../widgets/layout/packframe.md) and
-  [GridFrame](../widgets/layout/gridframe.md) — full parameter references.
-- [ScrollView](../widgets/layout/scrollview.md) — how spacing interacts with
+  [GridFrame](../widgets/layout/gridframe.md) â€” full parameter references.
+- [ScrollView](../widgets/layout/scrollview.md) â€” how spacing interacts with
   scrolling content.
-- [Geometry & Layout](../platform/geometry-and-layout.md) — Tk-level
+- [Geometry & Layout](../platform/geometry-and-layout.md) â€” Tk-level
   background on geometry managers and layout resolution timing.

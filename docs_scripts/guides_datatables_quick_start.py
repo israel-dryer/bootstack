@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Readings", size=(720, 360))
+app = bs.App(title="Readings", minsize=(720, 360))
 
 bs.TableView(
     app,

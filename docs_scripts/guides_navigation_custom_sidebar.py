@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Custom Sidebar", size=(800, 500))
+app = bs.App(title="Custom Sidebar", minsize=(800, 500))
 
 # Sidebar
 sidebar = bs.Frame(app, padding=10, width=200)

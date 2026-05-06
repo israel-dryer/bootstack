@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Settings", size=(420, 360))
+app = bs.App(title="Settings", minsize=(420, 360))
 
 page = bs.PackFrame(app, direction="vertical", gap=12, padding=12)
 page.pack(fill="both", expand=True)

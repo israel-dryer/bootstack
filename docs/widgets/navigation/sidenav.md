@@ -1,4 +1,4 @@
----
+﻿---
 title: SideNav
 ---
 
@@ -16,7 +16,7 @@ It supports three display modes: expanded (full width with text), compact (icons
 ```python
 import bootstack as bs
 
-app = bs.App(title="Nav Demo", size=(900, 600))
+app = bs.App(title="Nav Demo", minsize=(900, 600))
 
 nav = bs.SideNav(app, title="My App")
 nav.pack(side="left", fill="y")
@@ -152,7 +152,7 @@ toolbar.add_button(icon="list", command=nav.toggle_pane)
 
 ### Selection management
 
-SideNav uses a shared `Variable` for radio-group selection across all items. Selection updates are O(1) — only the previously-selected and newly-selected items are updated.
+SideNav uses a shared `Variable` for radio-group selection across all items. Selection updates are O(1) â€” only the previously-selected and newly-selected items are updated.
 
 ### UX guidance
 

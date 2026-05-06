@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Gallery", size=(560, 420))
+app = bs.App(title="Gallery", minsize=(560, 420))
 
 gallery = bs.GridFrame(app, columns=4, gap=8, padding=12,
                        sticky_items="nsew", auto_flow="row-dense")

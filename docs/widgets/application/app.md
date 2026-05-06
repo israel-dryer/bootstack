@@ -1,10 +1,10 @@
----
+﻿---
 title: App
 ---
 
 # App
 
-`App` is the **root application window** — the starting point for every bootstack application.
+`App` is the **root application window** â€” the starting point for every bootstack application.
 
 It wraps Tk with sensible defaults: theme initialization, DPI awareness, window sizing, and shortcut management.
 
@@ -15,7 +15,7 @@ It wraps Tk with sensible defaults: theme initialization, DPI awareness, window 
 ```python
 import bootstack as bs
 
-app = bs.App(title="My App", theme="cosmo-light", size=(800, 600))
+app = bs.App(title="My App", theme="cosmo-light", minsize=(800, 600))
 
 bs.Label(app, text="Hello, world!").pack(padx=20, pady=20)
 
@@ -34,9 +34,9 @@ Use `App` when:
 
 Consider a different control when:
 
-- you need a sidebar + toolbar + page scaffold — use [AppShell](appshell.md)
+- you need a sidebar + toolbar + page scaffold â€” use [AppShell](appshell.md)
 
-- you need a secondary window — use [Toplevel](toplevel.md)
+- you need a secondary window â€” use [Toplevel](toplevel.md)
 
 ---
 
@@ -48,7 +48,7 @@ Consider a different control when:
 app = bs.App(
     title="My App",
     theme="cosmo-dark",
-    size=(1024, 768),
+    minsize=(1024, 768),
     position=(100, 100),
     minsize=(640, 480),
     resizable=(True, True),
@@ -68,9 +68,9 @@ bs.toggle_theme()  # switches between light and dark
 
 ### Related widgets
 
-- [AppShell](appshell.md) — app window with built-in navigation
+- [AppShell](appshell.md) â€” app window with built-in navigation
 
-- [Toplevel](toplevel.md) — secondary windows
+- [Toplevel](toplevel.md) â€” secondary windows
 
 ### API reference
 

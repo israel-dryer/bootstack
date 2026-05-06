@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Sign in", size=(360, 300))
+app = bs.App(title="Sign in", minsize=(360, 300))
 form = bs.Card(app)
 form.pack(fill="both", expand=True, padx=20, pady=20)
 

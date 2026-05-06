@@ -1,4 +1,4 @@
-import bootstack as bs
+﻿import bootstack as bs
 from bootstack.constants import BOTH, LEFT, RIGHT, X, YES, N
 
 RESULTS = [
@@ -17,12 +17,12 @@ COLUMNS = [
     {"text": "Channel",   "key": "channel", "width": 80,  "anchor": "center"},
     {"text": "Reading",   "key": "reading", "width": 100, "anchor": "e"},
     {"text": "Unit",      "key": "unit",    "width": 60,  "anchor": "center"},
-    {"text": "|Δ|",       "key": "delta",   "width": 90,  "anchor": "e"},
-    {"text": "Temp °C",   "key": "temp",    "width": 90,  "anchor": "e"},
+    {"text": "|Î”|",       "key": "delta",   "width": 90,  "anchor": "e"},
+    {"text": "Temp Â°C",   "key": "temp",    "width": 90,  "anchor": "e"},
     {"text": "Status",    "key": "status",  "width": 110, "anchor": "center", "stretch": True},
 ]
 
-app = bs.App(title="Results", size=(1100, 540))
+app = bs.App(title="Results", minsize=(1100, 540))
 
 # --- Filter toolbar ---------------------------------------------------------
 filters = bs.LabelFrame(app, text="Filters", padding=12)
@@ -31,7 +31,7 @@ filters.pack(fill=X, padx=20, pady=(20, 12))
 fbar = bs.PackFrame(filters, direction="horizontal", gap=8, anchor_items=N)
 fbar.pack(fill=X)
 
-search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channel…")
+search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channelâ€¦")
 search.pack(fill=X, expand=YES)
 
 status = bs.SelectBox(

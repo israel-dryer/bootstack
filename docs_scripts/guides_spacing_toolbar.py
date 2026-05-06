@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Toolbar", size=(560, 80))
+app = bs.App(title="Toolbar", minsize=(560, 80))
 
 bar = bs.Frame(app, padding=8)
 bar.pack(fill="x")

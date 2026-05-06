@@ -1,4 +1,4 @@
----
+﻿---
 title: Debugging
 ---
 
@@ -6,7 +6,7 @@ title: Debugging
 
 Tk applications can feel opaque because the layout, redraw, and event work
 happens inside the Tcl/Tk engine. The good news is that Tk is also extremely
-introspectable — you just need a few patterns to make what's happening
+introspectable â€” you just need a few patterns to make what's happening
 visible.
 
 This guide collects the patterns that pay off most often: instrumenting
@@ -40,7 +40,7 @@ def trace(name):
         return wrapper
     return deco
 
-app = bs.App(title="Tracing", size=(360, 160))
+app = bs.App(title="Tracing", minsize=(360, 160))
 
 @trace("on_click")
 def on_click():
@@ -53,19 +53,19 @@ app.mainloop()
 ```
 
 Press the button a few times. You'll see the duration printed for each call,
-and you'll feel the UI freeze for the duration — concrete proof that the
+and you'll feel the UI freeze for the duration â€” concrete proof that the
 callback is blocking the event loop. This is the cheapest measurement you
 can add, and it should be your first move whenever the UI hitches.
 
 For background work that *shouldn't* freeze the UI, see
-[Performance → Run blocking work off the event loop](performance.md#run-blocking-work-off-the-event-loop).
+[Performance â†’ Run blocking work off the event loop](performance.md#run-blocking-work-off-the-event-loop).
 
 ---
 
 ## Use `after_idle()` for layout-timing bugs
 
 A common source of confusion: you create a widget, immediately ask for its
-size, and get `1` back. The widget hasn't been laid out yet — Tk schedules
+size, and get `1` back. The widget hasn't been laid out yet â€” Tk schedules
 geometry resolution for the *next* idle moment, which happens after your
 constructor returns.
 
@@ -74,7 +74,7 @@ The fix is to defer the size-dependent code with `after_idle()`:
 ```python
 import bootstack as bs
 
-app = bs.App(title="after_idle()", size=(400, 200))
+app = bs.App(title="after_idle()", minsize=(400, 200))
 
 card = bs.Card(app)
 card.pack(fill="both", expand=True, padx=20, pady=20)
@@ -97,7 +97,7 @@ If you ever find yourself reading for `winfo_width`, `winfo_height`,
 Wrap it in `after_idle()`.
 
 The same pattern applies to focus-on-startup, scroll-to-position, and
-resize-to-content logic — anything that depends on geometry being settled.
+resize-to-content logic â€” anything that depends on geometry being settled.
 
 ---
 
@@ -111,7 +111,7 @@ modifying the layout.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Borderized", size=(480, 240))
+app = bs.App(title="Borderized", minsize=(480, 240))
 
 # Each container shows its bounds and a contrasting surface.
 outer = bs.Frame(app, surface="card", show_border=True, padding=8)
@@ -130,7 +130,7 @@ app.mainloop()
 ```
 
 Once the borders show what's actually happening, the bug usually becomes
-obvious — a missing `expand=True`, a `fill` on the wrong axis, a child that's
+obvious â€” a missing `expand=True`, a `fill` on the wrong axis, a child that's
 larger than its parent. Strip the borders and surfaces back out once you've
 fixed the issue.
 
@@ -148,7 +148,7 @@ widget that gains and loses focus and the picture clears up fast.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Focus tracker", size=(360, 220))
+app = bs.App(title="Focus tracker", minsize=(360, 220))
 
 def on_focus_in(event):
     w = event.widget
@@ -158,7 +158,7 @@ def on_focus_out(event):
     w = event.widget
     print(f"FocusOut <- {w.winfo_class()}  {w}")
 
-# bind_all so every widget reports — invaluable when the focus
+# bind_all so every widget reports â€” invaluable when the focus
 # is going somewhere unexpected.
 app.bind_all("<FocusIn>", on_focus_in)
 app.bind_all("<FocusOut>", on_focus_out)
@@ -174,7 +174,7 @@ bs.Button(form, text="Submit", accent="primary").pack(anchor="e")
 app.mainloop()
 ```
 
-`bind_all` is overkill for production code — it fires for every widget — but
+`bind_all` is overkill for production code â€” it fires for every widget â€” but
 it's perfect for diagnosis. Tab through the form and watch the order. If the
 order surprises you, fix it with `takefocus=False` on widgets that shouldn't
 receive focus, or by reordering construction.
@@ -185,7 +185,7 @@ receive focus, or by reordering construction.
 
 This bug catches everyone exactly once: you load an image inside a function,
 display it, and the image is blank. The reason is that Tk's `PhotoImage`
-needs a live Python reference for the image data to survive — and as soon
+needs a live Python reference for the image data to survive â€” and as soon
 as your function returns, Python garbage-collects it.
 
 Reproduce:
@@ -193,7 +193,7 @@ Reproduce:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Disappearing image", size=(320, 240))
+app = bs.App(title="Disappearing image", minsize=(320, 240))
 
 def add_logo(parent):
     # WRONG: photo is local. As soon as add_logo returns, the
@@ -205,7 +205,7 @@ add_logo(app)
 app.mainloop()
 ```
 
-Two ways to fix it. The simplest is `bs.Image` — bootstack's image cache
+Two ways to fix it. The simplest is `bs.Image` â€” bootstack's image cache
 keeps a strong reference for you, so loading by path is safe even from
 inside a function:
 
@@ -227,7 +227,7 @@ def add_logo(parent):
 ```
 
 If an image renders in development but disappears in production, the cause
-is almost always this. See [Platform → Images & DPI](../platform/images-and-dpi.md)
+is almost always this. See [Platform â†’ Images & DPI](../platform/images-and-dpi.md)
 for more on image lifecycle and DPI considerations.
 
 ---
@@ -256,7 +256,7 @@ on individual widgets when you need to confirm who owns what.
 
 - **Reading geometry inside `__init__`.** Wrap it in `after_idle()`.
 - **Blocking the event loop.** If a callback runs longer than ~50 ms, the
-  UI hitches. Trace it (above) to confirm, then move work off the loop —
+  UI hitches. Trace it (above) to confirm, then move work off the loop â€”
   see [Performance](performance.md).
 - **Losing image references.** Use `bs.Image` or attach the `PhotoImage`
   to the widget (`label.image = photo`).
@@ -270,8 +270,8 @@ on individual widgets when you need to confirm who owns what.
 
 ## Next steps
 
-- [Performance](performance.md) — keep the event loop responsive.
-- [Reactivity](reactivity.md) — debugging signals and event flow.
-- [Platform → Images & DPI](../platform/images-and-dpi.md) — image lifecycle and DPI.
-- [Platform → Geometry & layout](../platform/geometry-and-layout.md) — how Tk
+- [Performance](performance.md) â€” keep the event loop responsive.
+- [Reactivity](reactivity.md) â€” debugging signals and event flow.
+- [Platform â†’ Images & DPI](../platform/images-and-dpi.md) â€” image lifecycle and DPI.
+- [Platform â†’ Geometry & layout](../platform/geometry-and-layout.md) â€” how Tk
   resolves geometry, and why timing matters.

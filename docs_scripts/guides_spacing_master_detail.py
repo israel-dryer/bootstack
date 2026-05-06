@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-app = bs.App(title="Master/detail", size=(720, 420))
+app = bs.App(title="Master/detail", minsize=(720, 420))
 
 shell = bs.GridFrame(app, columns=["220px", 1], rows=[1],
                      sticky_items="nsew")

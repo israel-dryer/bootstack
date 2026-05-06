@@ -1,6 +1,6 @@
-import bootstack as bs
+﻿import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", minsize=(1000, 650))
 
 # Each add_page() creates a nav item and returns a Frame for content
 home = shell.add_page("home", text="Home", icon="house")
