@@ -193,7 +193,7 @@ In development, your environment may not match target systems.
 - Test on multiple DPI settings when possible
 - Avoid hardcoded pixel-perfect assumptions
 
-!!! link "See [Platform → Images & DPI](../platform/images-and-dpi.md) for how Tk handles DPI and image scaling."
+!!! link "See [Architecture → Images & DPI](../architecture/images-and-dpi.md) for how Tk handles DPI and image scaling."
 
 ---
 

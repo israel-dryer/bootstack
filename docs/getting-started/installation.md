@@ -117,4 +117,4 @@ If Tk works in system Python but not in a venv, ensure:
 - [Widgets](../widgets/index.md) — available UI components
 - [Capabilities](../guides/index.md) — framework features like signals and localization
 - [Tooling](../tooling/cli.md) — CLI, project structure, and packaging
-- [Platform](../platform/index.md) — Tk/ttk foundations (optional)
+- [Architecture](../architecture/index.md) — Tk/ttk foundations (optional)

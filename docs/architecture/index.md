@@ -1,8 +1,8 @@
-# Platform
+# Architecture
 
-The **Platform** section explains how Tk and ttk work underneath bootstack — the runtime model, event system, styling architecture, and system-level behaviors that apply to every widget you use.
+The **Architecture** section explains how bootstack is structured at a foundational level — the Tk/ttk runtime model, the enhancements bootstack makes to it, and the system-level behaviors that underpin every widget and application.
 
-If you're trying to build an interface, start with [Guides](../guides/index.md). Platform pages explain *why* things behave the way they do.
+If you're trying to build an interface, start with [Guides](../guides/index.md). Architecture pages explain *why* things behave the way they do.
 
 If you're new to Tk or ttk, these pages will help you build a mental model. If you already know Tk, this section explains what bootstack standardizes, extends, or intentionally constrains.
 
@@ -26,11 +26,11 @@ For exact APIs, see the [API Reference](../reference/index.md).
 
 ## Relationship to Tk and ttk
 
-Many concepts described here originate in Tk itself: the event loop, geometry managers, widget lifecycles, and windowing behavior. External resources such as Python's `tkinter` documentation and the TkDocs tutorial cover *how Tk works*. The Platform section explains **how bootstack expects you to work with Tk**.
+Many concepts described here originate in Tk itself: the event loop, geometry managers, widget lifecycles, and windowing behavior. External resources such as Python's `tkinter` documentation and the TkDocs tutorial cover *how Tk works*. This section explains **how bootstack expects you to work with Tk** — and where bootstack extends or replaces the defaults.
 
 ---
 
-## Platform topics
+## Topics
 
 - **Fundamentals** — Tk vs ttk, the event loop, events and bindings, widget lifecycle, geometry and layout
 - **Styling internals** — ttk styles and elements

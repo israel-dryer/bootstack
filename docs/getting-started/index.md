@@ -67,7 +67,7 @@ After that, explore:
 
 - [Guides](../guides/index.md) — practical how-to guides for common tasks
 - [Widgets](../widgets/index.md) — discovering available components
-- [Platform](../platform/index.md) — understanding the foundations (optional but useful)
+- [Architecture](../architecture/index.md) — understanding the foundations (optional but useful)
 - [Capabilities](../guides/index.md) — learning the framework’s core features
 
 When you're ready to ship:

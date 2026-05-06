@@ -221,7 +221,7 @@ grid.configure_column(1, weight=2, minsize=100)
 ### Framework concepts
 
 - [Layout Properties](../../guides/layout.md)
-- [Layout](../../platform/geometry-and-layout.md)
+- [Layout](../../architecture/geometry-and-layout.md)
 
 ### API reference
 

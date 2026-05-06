@@ -144,18 +144,18 @@ nav = [
         { "Icons" = "design-system/icons.md" },
         { "Custom Themes" = "design-system/custom-themes.md" },
     ] },
-    { "Platform" = [
-        { "Overview" = "platform/index.md" },
+    { "Architecture" = [
+        { "Overview" = "architecture/index.md" },
         { "Fundamentals" = [
-            { "Tk vs ttk" = "platform/tk-vs-ttk.md" },
-            { "Event Loop" = "platform/event-loop.md" },
-            { "Events & Bindings" = "platform/events-and-bindings.md" },
-            { "Geometry & Layout" = "platform/geometry-and-layout.md" },
-            { "Widget Lifecycle" = "platform/widget-lifecycle.md" },
+            { "Tk vs ttk" = "architecture/tk-vs-ttk.md" },
+            { "Event Loop" = "architecture/event-loop.md" },
+            { "Events & Bindings" = "architecture/events-and-bindings.md" },
+            { "Geometry & Layout" = "architecture/geometry-and-layout.md" },
+            { "Widget Lifecycle" = "architecture/widget-lifecycle.md" },
         ] },
-        { "Styling Internals" = "platform/ttk-styles-elements.md" },
-        { "Images & DPI" = "platform/images-and-dpi.md" },
-        { "Windows" = "platform/windows.md" },
+        { "Styling Internals" = "architecture/ttk-styles-elements.md" },
+        { "Images & DPI" = "architecture/images-and-dpi.md" },
+        { "Windows" = "architecture/windows.md" },
     ] },
     { "Tooling" = [
         { "CLI" = "tooling/cli.md" },
