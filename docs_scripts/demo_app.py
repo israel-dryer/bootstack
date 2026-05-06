@@ -65,7 +65,7 @@ def build_analysis_page(page):
     # Page header — title + subtitle side by side, baseline-aligned
     header = bs.PackFrame(page, direction="horizontal", gap=16, anchor_items="s")
     header.pack(fill=X, padx=20, pady=(16, 4))
-    bs.Label(header, text="Analysis", font="heading-xl[bold]").pack()
+    bs.Label(header, text="Analysis", font="heading-xl").pack()
     bs.Label(
         header,
         text="Run-A15  ·  CH-1 through CH-4  ·  15 samples",
@@ -74,9 +74,7 @@ def build_analysis_page(page):
     ).pack()
 
     # Top row: parameters (left, fixed) | summary + status (right, expands)
-    top = bs.GridFrame(
-        page, columns=["360px", 1], gap=(12, 0), sticky_items="nsew",
-    )
+    top = bs.GridFrame(page, columns=["360px", 1], gap=(12, 0), sticky_items="nsew")
     top.pack(fill=X, padx=20, pady=(4, 10))
 
     # --- Parameters card ---------------------------------------------------

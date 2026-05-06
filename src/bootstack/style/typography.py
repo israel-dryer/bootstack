@@ -115,13 +115,13 @@ def build_desktop_tokens(
         body_lg=FontSpec(ui, s(1), "normal"),
         body_xl=FontSpec(ui, s(2), "normal"),
 
-        heading_sm=FontSpec(ui, s(-1), "bold"),
-        heading_md=FontSpec(ui, s(0), "bold"),
-        heading_lg=FontSpec(ui, s(1), "bold"),
-        heading_xl=FontSpec(ui, s(2), "bold"),
+        heading_sm=FontSpec(ui, s(1),  "bold"),   # 12pt — just above body
+        heading_md=FontSpec(ui, s(2),  "bold"),   # 13pt
+        heading_lg=FontSpec(ui, s(4),  "bold"),   # 15pt
+        heading_xl=FontSpec(ui, s(7),  "bold"),   # 18pt
 
-        display_lg=FontSpec(ui, s(4), "bold"),
-        display_xl=FontSpec(ui, s(5), "bold"),
+        display_lg=FontSpec(ui, s(11), "bold"),   # 22pt
+        display_xl=FontSpec(ui, s(17), "bold"),   # 28pt
 
         code=FontSpec(mono, s(0), "normal"),
         hyperlink=FontSpec(ui, s(0), "normal", underline=True),
