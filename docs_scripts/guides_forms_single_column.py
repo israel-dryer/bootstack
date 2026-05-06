@@ -1,21 +1,12 @@
 import bootstack as bs
 
-app = bs.App(title="Sign in", size=(360, 300))
-form = bs.Card(app)
+app = bs.App(title="Single Column Form")
+
+form = bs.Card(app, padding=20)
 form.pack(fill="both", expand=True, padx=20, pady=20)
 
-email = bs.TextEntry(form, label="Email", required=True)
-email.add_validation_rule("email", message="Enter a valid email address.")
-email.pack(fill="x")
-
-password = bs.PasswordEntry(form, label="Password", required=True)
-password.pack(fill="x", pady=(8, 12))
-
-def submit():
-    if email.validation(email.value, "manual") and password.value:
-        print("signing in:", email.value)
-
-bs.Button(form, text="Sign in", accent="primary", command=submit)\
-    .pack(fill="x")
+bs.TextEntry(form, label="Name", required=True).pack(fill="x", pady=4)
+bs.TextEntry(form, label="Email", required=True).pack(fill="x", pady=4)
+bs.NumericEntry(form, label="Age", value=18, minvalue=0).pack(fill="x", pady=4)
 
 app.mainloop()

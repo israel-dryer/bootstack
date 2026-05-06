@@ -1,22 +1,20 @@
 import bootstack as bs
 
-app = bs.App(title="Multi Column Form")
+app = bs.App(title="Sections Form")
 
-form = bs.Form(
-    app,
-    col_count=2,
-    items=[
-        {"key": "first",    "label": "First name", "editor": "textentry"},
-        {"key": "last",     "label": "Last name",  "editor": "textentry"},
-        {"key": "email",    "label": "Email",      "editor": "textentry",
-         "columnspan": 2},
-        {"key": "city",     "label": "City",       "editor": "textentry"},
-        {"key": "zip",      "label": "ZIP",        "editor": "textentry"},
-        {"key": "verified", "label": "Email verified",
-         "editor": "checkbutton", "columnspan": 2},
-    ],
-    buttons=["Cancel", "Save"],
-)
-form.pack(fill="both", expand=True, padx=20, pady=20)
+container = bs.PackFrame(app, gap=12, padding=20)
+container.pack(fill="both", expand=True)
+
+account = bs.Card(container)
+account.pack(fill="x")
+bs.Label(account, text="Account", font="heading-sm").pack(anchor="w", pady=(0, 8))
+bs.TextEntry(account, label="Email", required=True).pack(fill="x", pady=4)
+bs.PasswordEntry(account, label="Password", required=True).pack(fill="x", pady=4)
+
+profile = bs.Card(container)
+profile.pack(fill="x")
+bs.Label(profile, text="Profile", font="heading-sm").pack(anchor="w", pady=(0, 8))
+bs.TextEntry(profile, label="Display name").pack(fill="x", pady=4)
+bs.DateEntry(profile, label="Date of birth").pack(fill="x", pady=4)
 
 app.mainloop()

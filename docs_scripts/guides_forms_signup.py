@@ -1,6 +1,6 @@
 import bootstack as bs
 
-app = bs.App(title="Create account", minsize=(400, 0))
+app = bs.App(title="Create account", minsize=(440, 460))
 card = bs.Card(app, padding=20)
 card.pack(fill="both", expand=True, padx=20, pady=20)
 

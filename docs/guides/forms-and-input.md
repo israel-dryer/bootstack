@@ -340,7 +340,7 @@ fields, submit handling, and disabled-until-valid.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Create account", size=(440, 460))
+app = bs.App(title="Create account", minsize=(440, 460))
 card = bs.Card(app, padding=20)
 card.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -408,6 +408,10 @@ def on_submit():
 submit.configure(command=on_submit)
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-form-signup.png" alt="Sign up form"/>
+</div>
 
 Key patterns this combines:
 

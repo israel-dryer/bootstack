@@ -1,12 +1,22 @@
 import bootstack as bs
 
-app = bs.App(title="Single Column Form")
+app = bs.App(title="Multi Column Form")
 
-form = bs.Card(app, padding=20)
+form = bs.Form(
+    app,
+    col_count=2,
+    items=[
+        {"key": "first",    "label": "First name", "editor": "textentry"},
+        {"key": "last",     "label": "Last name",  "editor": "textentry"},
+        {"key": "email",    "label": "Email",      "editor": "textentry",
+         "columnspan": 2},
+        {"key": "city",     "label": "City",       "editor": "textentry"},
+        {"key": "zip",      "label": "ZIP",        "editor": "textentry"},
+        {"key": "verified", "label": "Email verified",
+         "editor": "checkbutton", "columnspan": 2},
+    ],
+    buttons=["Cancel", "Save"],
+)
 form.pack(fill="both", expand=True, padx=20, pady=20)
-
-bs.TextEntry(form, label="Name", required=True).pack(fill="x", pady=4)
-bs.TextEntry(form, label="Email", required=True).pack(fill="x", pady=4)
-bs.NumericEntry(form, label="Age", value=18, minvalue=0).pack(fill="x", pady=4)
 
 app.mainloop()
