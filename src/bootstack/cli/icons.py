@@ -1,7 +1,10 @@
-"""Icons command — standalone Bootstrap Icons browser."""
+"""Icons command — delegates to the ttkbootstrap-icons browser."""
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
+from pathlib import Path
 
 
 def add_parser(subparsers: argparse._SubParsersAction) -> None:
@@ -9,21 +12,17 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         "icons",
         help="Browse Bootstrap Icons available in bootstack",
         description=(
-            "Launch a visual browser for Bootstrap Icons.\n\n"
-            "Displays common icons, size variants, context examples, and "
-            "accent-coloured variants. Any icon name shown here can be used "
-            "as the icon= parameter on any bootstack widget."
+            "Launch the Bootstrap Icons browser.\n\n"
+            "Delegates to the ttkbootstrap-icons tool bundled with the "
+            "ttkbootstrap_icons_bs package. Any icon name shown there can "
+            "be used as the icon= parameter on any bootstack widget."
         ),
     )
     parser.set_defaults(func=lambda args: run_icons())
 
 
 def run_icons() -> None:
-    import bootstack as bs
-    from bootstack.cli.demo import _build_icons_page
-
-    app = bs.App(title="bootstack — Icons", size=(920, 680))
-    scroll = bs.ScrollView(app)
-    scroll.pack(fill="both", expand=True)
-    _build_icons_page(scroll)
-    app.mainloop()
+    scripts = Path(sys.executable).parent
+    name = "ttkbootstrap-icons.exe" if sys.platform == "win32" else "ttkbootstrap-icons"
+    result = subprocess.run([str(scripts / name)])
+    sys.exit(result.returncode)

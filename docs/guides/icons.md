@@ -58,12 +58,14 @@ bootstack ships a dedicated icon browser. Run it from anywhere:
 bootstack icons
 ```
 
-The browser shows ~20 common icons, the available size range (12 px – 48 px),
-icons used in button context, and accent-coloured variants — useful when you
-want to see how a particular icon renders in your current theme before
-committing to it. Any icon name in the catalog works as the `icon=` value;
-the browser is just a sampler. See [Tooling → CLI](../tooling/cli.md) for
-full CLI reference.
+This delegates to the `ttkbootstrap-icons` tool, which provides a full
+searchable browser of the Bootstrap Icons catalog. Any icon name you find
+there works directly as the `icon=` value on any bootstack widget. See
+[Tooling → CLI](../tooling/cli.md) for full CLI reference.
+
+<div class="app-window">
+    <img src="../assets/guides-icons-browser.png" alt="icon browser"/>
+</div>
 
 ---
 

@@ -263,11 +263,10 @@ Launch the standalone Bootstrap Icons browser.
 bootstack icons
 ```
 
-Opens a scrollable window showing ~20 common icons, size variants (12 px –
-48 px), icons in button context, and accent-coloured variants. Any icon name
+Delegates to the `ttkbootstrap-icons` tool from the `ttkbootstrap_icons_bs`
+package, which ships a full searchable Bootstrap Icons browser. Any icon name
 from the [Bootstrap Icons catalog](https://icons.getbootstrap.com/) can be
-used as the `icon=` parameter on any bootstack widget; this browser is a
-visual sampler of the most frequently used ones.
+used as the `icon=` parameter on any bootstack widget.
 
 ---
 
