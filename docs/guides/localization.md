@@ -46,13 +46,17 @@ To use them, set the locale on `App`:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Hello", size=(400, 200), settings={"locale": "es_ES"})
+app = bs.App(title="Hello", minsize=(400, 200), settings=bs.AppSettings(locale="es_ES"))
 
 bs.Button(app, text="OK").pack(pady=20)
 bs.Label(app, text="Saludos").pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+   <img src="../assets/guides-localization-locale.png" alt="locale"/>
+</div>
 
 Built-in dialogs, calendar widgets, and validation messages will appear in
 Spanish without further configuration. If you omit `locale` from settings,
@@ -112,7 +116,7 @@ To make your own catalog active, re-initialize after creating the App:
 import bootstack as bs
 from bootstack import MessageCatalog
 
-app = bs.App(title="MyApp", size=(600, 400), settings={"locale": "es_ES"})
+app = bs.App(title="MyApp", minsize=(600, 400), settings=bs.AppSettings(locale="es_ES"))
 
 # Switch to your application's domain
 MessageCatalog.init(
@@ -176,7 +180,7 @@ displayed fallback:
 import bootstack as bs
 from bootstack import L
 
-app = bs.App(title="Greeter", size=(400, 200), settings={"locale": "es_ES"})
+app = bs.App(title="Greeter", size=(400, 200), settings=bs.AppSettings(locale="es_ES"))
 
 # Positional %-style formatting
 bs.Label(app, text=L("Hello, %s!", "Alice")).pack(pady=20)
@@ -216,7 +220,7 @@ import bootstack as bs
 from bootstack import LV
 from datetime import date
 
-app = bs.App(title="Formatting", size=(400, 250), settings={"locale": "de_DE"})
+app = bs.App(title="Formatting", size=(400, 250), settings=bs.AppSettings(locale="de_DE"))
 
 # Currency (uses locale's currency symbol and conventions)
 bs.Label(app, text=LV(1234.56, "currency")).pack(pady=10)
@@ -241,6 +245,10 @@ bs.Label(app, text=LV(date.today(), "longDate")).pack()
 app.mainloop()
 ```
 
+<div class="app-window">
+   <img src="../assets/guides-localization-value-format.png" alt="value formats"/>
+</div>
+
 Common format presets:
 
 | Preset | Use for | Example output (en_US) |
@@ -261,32 +269,37 @@ For finer control, pass a dict instead of a preset name:
 
 ## Switching locale at runtime
 
-Call `MessageCatalog.locale("de_DE")`:
+Call `MessageCatalog.locale("de_DE")`. This fires `<<LocaleChanged>>` on the
+root window — every widget holding a translation or value-format spec
+re-resolves itself immediately.
+
+`value_format=` is the easiest way to see this live, because number and date
+formatting reacts to locale without any catalog setup:
 
 ```python
 import bootstack as bs
-from bootstack import MessageCatalog, L
+from bootstack import MessageCatalog
+from datetime import date
 
-app = bs.App(title="Switcher", size=(400, 250), settings={"locale": "en_US"})
+app = bs.App(title="Switcher", size=(400, 200), settings=bs.AppSettings(locale="en_US"))
 
-bs.Label(app, text=L("Welcome")).pack(pady=20)
-bs.Label(app, text=L("Hello, %s!", "Alice")).pack()
-
-def switch_to(loc: str) -> None:
-    MessageCatalog.locale(loc)
+bs.Label(app, text=1234.56,      value_format="currency", font="heading-md").pack(pady=10)
+bs.Label(app, text=date.today(), value_format="longDate").pack()
 
 bar = bs.PackFrame(app, direction="horizontal", gap=8)
 bar.pack(pady=10)
-bs.Button(bar, text="English", command=lambda: switch_to("en_US")).pack(side="left")
-bs.Button(bar, text="Español", command=lambda: switch_to("es_ES")).pack(side="left")
-bs.Button(bar, text="Deutsch", command=lambda: switch_to("de_DE")).pack(side="left")
+bs.Button(bar, text="English", command=lambda: MessageCatalog.locale("en_US")).pack(side="left")
+bs.Button(bar, text="Español", command=lambda: MessageCatalog.locale("es_ES")).pack(side="left")
+bs.Button(bar, text="Deutsch", command=lambda: MessageCatalog.locale("de_DE")).pack(side="left")
 
 app.mainloop()
 ```
 
-Switching the locale fires `<<LocaleChanged>>` on the root window; every
-widget that holds a translation or value-format spec re-resolves itself.
-Date/number formats applied via `LV()` re-format too.
+Click a button and the currency symbol, decimal separator, and date order
+all update immediately. Translated strings (`L()` specs) re-resolve the same
+way, but you won't see a change unless a catalog with the target translations
+is loaded — see [Pointing the catalog at your domain](#pointing-the-catalog-at-your-domain)
+for that setup.
 
 To listen for locale changes yourself:
 
@@ -308,7 +321,7 @@ displays it formatted for the current locale:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Live price", size=(400, 200), settings={"locale": "fr_FR"})
+app = bs.App(title="Live price", size=(400, 200), settings=bs.AppSettings(locale="fr_FR"))
 
 price = bs.Signal(0.0)
 
@@ -342,10 +355,10 @@ Several input widgets honor the locale settings out of the box:
 These pick up format strings from `app.settings` (auto-derived from the
 locale via Babel), so setting the locale typically gives you correct
 formatting without further config. Override individual format strings via
-`settings={...}` if you need to:
+`bs.AppSettings` if you need to:
 
 ```python
-app = bs.App(settings={"locale": "en_GB", "date_format": "d MMM yyyy"})
+app = bs.App(settings=bs.AppSettings(locale="en_GB", date_format="d MMM yyyy"))
 ```
 
 ---
@@ -354,24 +367,34 @@ app = bs.App(settings={"locale": "en_GB", "date_format": "d MMM yyyy"})
 
 ### Language switcher in the title bar
 
+The switcher calls `MessageCatalog.locale()` — but you need locale-sensitive
+content on the page to see it work. `LV()` date and number formatting responds
+immediately without any catalog setup:
+
 ```python
 import bootstack as bs
 from bootstack import MessageCatalog
+from datetime import date
 
-app = bs.AppShell(title="Languages", size=(800, 500), settings={"locale": "en_US"})
+app = bs.AppShell(title="Languages", size=(600, 300), settings=bs.AppSettings(locale="en_US"))
+
+page = app.add_page("main", text="Main", icon="house")
+app.navigate("main")
+
+bs.Label(page, text=1234.56,      value_format="currency", font="heading-md").pack(pady=10)
+bs.Label(page, text=date.today(), value_format="longDate",  font="body").pack()
 
 LANGS = [("English", "en_US"), ("Español", "es_ES"), ("Deutsch", "de_DE")]
+for label, code in LANGS:
+    app.toolbar.add_button(text=label, command=lambda c=code: MessageCatalog.locale(c))
 
-def make_switcher() -> None:
-    for label, code in LANGS:
-        app.toolbar.add_button(
-            text=label,
-            command=lambda c=code: MessageCatalog.locale(c),
-        )
-
-make_switcher()
 app.mainloop()
 ```
+
+Clicking a language button re-formats the amount and date immediately — the
+currency symbol, decimal separator, and date order all update. For translated
+strings (`L()` specs), you also need `MessageCatalog.init()` pointing at your
+`.mo` files (see [Pointing the catalog at your domain](#pointing-the-catalog-at-your-domain)).
 
 ### Localized form
 
@@ -382,7 +405,7 @@ needed on the labels — your catalog `msgid`s match the literals:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Sign up", size=(420, 320), settings={"locale": "es_ES"})
+app = bs.App(title="Sign up", size=(420, 320), settings=bs.AppSettings(locale="es_ES"))
 
 form = bs.Form(
     app,
