@@ -176,8 +176,8 @@ class Field(EntryMixin, Frame):
         show_message_explicit = 'show_message' in kwargs
         show_message = kwargs.pop('show_message', show_message)
 
-        # Auto-enable show_message if message is provided and user didn't explicitly disable it
-        if message and not show_message_explicit:
+        # Auto-enable show_message if there is any chance a message will be shown
+        if (message or required) and not show_message_explicit:
             show_message = True
 
         accent = kwargs.pop('accent', None)
@@ -266,8 +266,19 @@ class Field(EntryMixin, Frame):
         self.signal = self._entry.textsignal
 
         # enty validation
-        self.add_validation_rule = self._entry.add_validation_rule
-        self.add_validation_rules = self._entry.add_validation_rules
+        _add_rule = self._entry.add_validation_rule
+        _add_rules = self._entry.add_validation_rules
+
+        def add_validation_rule(rule_type, **kwargs):
+            self._reserve_message_space()
+            _add_rule(rule_type, **kwargs)
+
+        def add_validation_rules(rules):
+            self._reserve_message_space()
+            _add_rules(rules)
+
+        self.add_validation_rule = add_validation_rule
+        self.add_validation_rules = add_validation_rules
         self.validation = self._entry.validate
 
         # Copy Field's delegate handlers to entry for configuration forwarding
@@ -420,6 +431,11 @@ class Field(EntryMixin, Frame):
         # bind focus events to field frame
         instance.bind('<FocusIn>', lambda _: self._field.state(['focus']), add=True)
         instance.bind('<FocusOut>', lambda _: self._field.state(['!focus']), add=True)
+
+    def _reserve_message_space(self) -> None:
+        if not self._show_messages:
+            self._show_messages = True
+            self._message_lbl.pack(side='top', fill='x', padx=4)
 
     def _show_error(self, event: Any) -> None:
         """Display a validation error message below the input field."""
