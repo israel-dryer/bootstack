@@ -322,7 +322,7 @@ def main():
     shell = bs.AppShell(
         title="Data Analysis Workbench",
         theme="bootstrap-light",
-        size=(1200, 780),
+        minsize=(1200, 780),
     )
 
     # Toolbar buttons

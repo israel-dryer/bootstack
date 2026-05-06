@@ -14,7 +14,7 @@ together a `Toolbar`, `SideNav`, and `PageStack` into the standard desktop app l
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", minsize=(1000, 650))
 
 # Create a page frame and add a nav item for it
 home = shell.add_page("home", text="Home", icon="house")
@@ -127,7 +127,7 @@ import bootstack as bs
 shell = bs.AppShell(
     title="Custom Window",
     theme="cosmo-dark",
-    size=(1000, 650),
+    minsize=(1000, 650),
     frameless=True,
 )
 

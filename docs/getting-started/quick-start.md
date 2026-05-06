@@ -17,7 +17,7 @@ know Tkinter.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Quick Start", size=(300, 200))
+app = bs.App(title="Quick Start", minsize=(300, 200))
 
 frame = bs.Frame(app, padding=20)
 frame.pack(fill="both", expand=True)

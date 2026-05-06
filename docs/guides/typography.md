@@ -174,6 +174,8 @@ import bootstack as bs
 from bootstack import Font
 
 app = bs.App()
+frm = bs.PackFrame(app, gap=8, padding=16)
+frm.pack(fill='both')
 
 # Define fonts
 title = Font("heading-xl")
@@ -181,12 +183,16 @@ body = Font("body")
 code = Font("code")
 
 # Apply to widgets
-bs.Label(app, text="Welcome", font=title).pack(pady=10)
-bs.Label(app, text="This is body text.", font=body).pack()
-bs.Label(app, text="print('Hello')", font=code).pack(pady=10)
+bs.Label(frm, text="Welcome", font=title).pack()
+bs.Label(frm, text="This is body text.", font=body).pack()
+bs.Label(frm, text="print('Hello')", font=code).pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-typography-widgets.png" alt="Widgets Typography"/>
+</div>
 
 ### Inline Font Strings
 

@@ -24,7 +24,7 @@ import bootstack as bs
 app = bs.App(title="My Application")
 
 # Option B: window with built-in navigation
-app = bs.AppShell(title="My Application", size=(1000, 650))
+app = bs.AppShell(title="My Application", minsize=(1000, 650))
 ```
 
 Both create the main window, initialize theming, set up the application context, and manage the event loop. You typically create one per process. Additional windows use `Toplevel`.
@@ -38,7 +38,7 @@ A complete, runnable application:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Hello", size=(400, 300))
+app = bs.App(title="Hello", minsize=(400, 300))
 
 bs.Label(app, text="Hello, bootstack!").pack(padx=20, pady=20)
 bs.Button(app, text="Close", command=app.destroy).pack(pady=10)
@@ -65,7 +65,7 @@ Most desktop applications follow the same layout: toolbar at the top, sidebar on
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", minsize=(1000, 650))
 
 # Each add_page() creates a nav item and returns a Frame for content
 home = shell.add_page("home", text="Home", icon="house")
@@ -94,7 +94,7 @@ Set `frameless=True` to remove OS window chrome and get a fully custom window. T
 ```python
 shell = bs.AppShell(
     title="Custom Window",
-    size=(1000, 650),
+    minsize=(1000, 650),
     frameless=True,
 )
 ```
@@ -119,7 +119,7 @@ Common `App` parameters:
 app = bs.App(
     title="My App",           # Window title
     theme="amber-light",      # Theme name
-    size=(800, 600),          # Initial size (width, height)
+    minsize=(800, 600),          # Initial size (width, height)
     resizable=(True, True),   # Allow resize (width, height)
     alpha=1.0,                # Window transparency
 )
@@ -318,7 +318,7 @@ def increment():
     counter.set(counter.get() + 1)
 
 # App
-app = bs.App(title="Counter", size=(300, 200))
+app = bs.App(title="Counter", minsize=(300, 200))
 
 # Layout
 main = bs.PackFrame(app, direction="vertical", gap=10, padding=20)
@@ -351,7 +351,7 @@ For navigation-based applications, `AppShell` replaces the manual layout wiring:
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(900, 600))
+shell = bs.AppShell(title="My App", minsize=(900, 600))
 
 # State
 counter = bs.Signal(0)

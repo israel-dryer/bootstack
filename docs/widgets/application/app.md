@@ -15,7 +15,7 @@ It wraps Tk with sensible defaults: theme initialization, DPI awareness, window 
 ```python
 import bootstack as bs
 
-app = bs.App(title="My App", theme="cosmo-light", size=(800, 600))
+app = bs.App(title="My App", theme="cosmo-light", minsize=(800, 600))
 
 bs.Label(app, text="Hello, world!").pack(padx=20, pady=20)
 
@@ -48,7 +48,7 @@ Consider a different control when:
 app = bs.App(
     title="My App",
     theme="cosmo-dark",
-    size=(1024, 768),
+    minsize=(1024, 768),
     position=(100, 100),
     minsize=(640, 480),
     resizable=(True, True),

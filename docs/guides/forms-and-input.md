@@ -20,7 +20,7 @@ A two-field login form:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Sign in", size=(360, 220))
+app = bs.App(title="Sign in", minsize=(360, 220))
 form = bs.Card(app)
 form.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -40,6 +40,10 @@ bs.Button(form, text="Sign in", accent="primary", command=submit)\
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-form-quickstart.png" alt="Form Quickstart"/>
+</div>
 
 The interesting bits:
 
@@ -145,6 +149,10 @@ bs.TextEntry(form, label="Email", required=True).pack(fill="x", pady=4)
 bs.NumericEntry(form, label="Age", value=18, minvalue=0).pack(fill="x", pady=4)
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-form-single-column.png" alt="Single column form"/>
+</div>
+
 `bs.Card` gives you the padding and surface; `pady=4` between fields is enough
 breathing room.
 
@@ -171,6 +179,9 @@ form = bs.Form(
 )
 form.pack(fill="both", expand=True, padx=20, pady=20)
 ```
+<div class="app-window">
+    <img src="../assets/guides-form-multi-column.png" alt="Multi-column Form"/>
+</div>
 
 `Form` handles the grid, the variable wiring, and the footer buttons. Use
 `columnspan` for fields that should stretch full-width, and group related
@@ -196,6 +207,10 @@ bs.Label(profile, text="Profile", font="heading-sm").pack(anchor="w", pady=(0, 8
 bs.TextEntry(profile, label="Display name").pack(fill="x", pady=4)
 bs.DateEntry(profile, label="Date of birth").pack(fill="x", pady=4)
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-form-sections.png" alt="Sections Form"/>
+</div>
 
 ---
 
@@ -325,7 +340,7 @@ fields, submit handling, and disabled-until-valid.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Create account", size=(440, 460))
+app = bs.App(title="Create account", minsize=(440, 460))
 card = bs.Card(app, padding=20)
 card.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -371,21 +386,32 @@ submit = bs.Button(card, text="Create account", accent="primary",
                    state="disabled")
 submit.pack(fill="x")
 
-def refresh_submit(_=None):
-    all_valid = all(f.value and f.validation(f.value, "manual") for f in fields)
-    submit.configure(state="normal" if all_valid and terms.value else "disabled")
+valid_state = {f: False for f in fields}
+
+def refresh_submit():
+    submit.configure(state="normal" if all(valid_state.values()) and terms.value else "disabled")
 
 for f in fields:
-    f.on_validated(refresh_submit)
-terms.on_changed(refresh_submit)
+    def make_handler(field):
+        def handler(data):
+            valid_state[field] = data["is_valid"]
+            refresh_submit()
+        return handler
+    f.on_validated(make_handler(f))
+
+terms.configure(command=refresh_submit)
 
 def on_submit():
-    if all(f.validation(f.value, "manual") for f in fields):
+    if all(valid_state.values()):
         print("creating account for", username.value)
 
 submit.configure(command=on_submit)
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-form-signup.png" alt="Sign up form"/>
+</div>
 
 Key patterns this combines:
 
@@ -394,11 +420,11 @@ Key patterns this combines:
 - The `confirm` field is re-validated when the source `password` changes — the
   `on_changed` line wires that loop. Without it, fixing the password wouldn't
   clear the mismatch error.
-- `refresh_submit` enables the button only when every field has a value, every
-  validation passes, and the terms checkbox is on.
-- `on_submit` re-runs validation as a final guard. The button being enabled
-  isn't proof — the user could have un-checked terms via keyboard between
-  events.
+- `valid_state` tracks each field's last validation outcome. `on_validated`
+  receives `data["is_valid"]` directly — re-running `validation()` inside the
+  callback would cause infinite recursion since validation fires more events.
+- `on_submit` guards against the button being enabled while terms is unchecked
+  via keyboard between events.
 
 ---
 

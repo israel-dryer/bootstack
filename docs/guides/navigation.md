@@ -40,7 +40,7 @@ a `Toolbar`, `SideNav`, and `PageStack` automatically:
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="My App", size=(1000, 650))
+shell = bs.AppShell(title="My App", minsize=(1000, 650))
 
 # Each add_page() creates a nav item and returns a Frame for content
 home = shell.add_page("home", text="Home", icon="house")
@@ -102,7 +102,7 @@ but want full control over the surrounding layout:
 ```python
 import bootstack as bs
 
-app = bs.App(title="SideNav Demo", size=(900, 600))
+app = bs.App(title="SideNav Demo", minsize=(900, 600))
 
 nav = bs.SideNav(app)
 nav.pack(side="left", fill="y")
@@ -125,7 +125,7 @@ When using SideNav outside of AppShell, you wire it to a PageStack manually:
 ```python
 import bootstack as bs
 
-app = bs.App(title="SideNav + PageStack", size=(900, 600))
+app = bs.App(title="SideNav + PageStack", minsize=(900, 600))
 
 # Sidebar
 nav = bs.SideNav(app)
@@ -258,6 +258,7 @@ bs.Button(details, text="Continue", command=lambda: stack.navigate("confirm")).p
 bs.Label(confirm, text="All done!").pack(anchor="w", pady=(0, 10))
 bs.Button(confirm, text="Back", command=stack.back).pack()
 
+stack.navigate("welcome")
 app.mainloop()
 ```
 
@@ -288,7 +289,7 @@ with tabs inside one of the pages:
 ```python
 import bootstack as bs
 
-shell = bs.AppShell(title="Combined Navigation", size=(1000, 650))
+shell = bs.AppShell(title="Combined Navigation", minsize=(1000, 650))
 
 # Simple page
 home = shell.add_page("home", text="Home", icon="house")
@@ -297,10 +298,10 @@ bs.Label(home, text="Dashboard", font="heading-xl").pack(anchor="w", padx=20, pa
 # Page with tabs inside
 settings = shell.add_page("settings", text="Settings", icon="gear")
 
-tabs = bs.Notebook(settings, padding=10)
-tabs.pack(fill="both", expand=True, padx=10, pady=10)
+tabs = bs.Notebook(settings)
+tabs.pack(fill="both", expand=True)
 
-general = tabs.add(text="General", key="general")
+general = tabs.add(text="General", key="general", padding=16)
 bs.Label(general, text="General settings").pack(anchor="w")
 
 advanced = tabs.add(text="Advanced", key="advanced")
@@ -308,6 +309,10 @@ bs.Label(advanced, text="Advanced options").pack(anchor="w")
 
 shell.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-navigation-combining-patterns.png" alt="Combining Patterns"/>
+</div>
 
 ---
 
@@ -319,7 +324,7 @@ controlling a `PageStack`:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Custom Sidebar", size=(800, 500))
+app = bs.App(title="Custom Sidebar", minsize=(800, 500))
 
 # Sidebar
 sidebar = bs.Frame(app, padding=10, width=200)
@@ -360,8 +365,13 @@ stack.navigate("dashboard")
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-navigation-custom-sidebar.png" alt="Custom Sidebar"/>
+</div>
+
 This is significantly more code than using `SideNav` or `AppShell`, so only use this
 approach when you need a layout that the built-in widgets can't provide.
+
 
 ---
 

@@ -18,7 +18,7 @@ import bootstack as bs
 app = bs.App(title="Main Window")
 
 def open_window():
-    win = bs.Toplevel(title="Settings", size=(400, 300))
+    win = bs.Toplevel(title="Settings", minsize=(400, 300))
     bs.Label(win, text="Secondary window").pack(padx=20, pady=20)
 
 bs.Button(app, text="Open Window", command=open_window).pack(pady=20)
