@@ -115,11 +115,11 @@ shell.navigate("settings")
 shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 ```
 
-### Frameless (custom window chrome)
+### Undecorated (custom window chrome)
 
-Set `frameless=True` to remove the OS title bar and borders. The toolbar
-automatically gains window control buttons (minimize, maximize, close) and
-becomes draggable, giving you a fully custom window.
+Set `undecorated=True` to remove the OS title bar, native border, and resize
+grip. The toolbar automatically gains window control buttons (minimize,
+maximize, close) and becomes draggable, giving you a fully custom window.
 
 ```python
 import bootstack as bs
@@ -128,7 +128,7 @@ shell = bs.AppShell(
     title="Custom Window",
     theme="cosmo-dark",
     minsize=(1000, 650),
-    frameless=True,
+    undecorated=True,
 )
 
 # Toolbar buttons are added after the built-in window controls

@@ -2,7 +2,7 @@
 
 This module provides a multi-select dialog with optional search and select-all
 functionality. Items can be displayed with checkboxes, and the dialog supports
-both standard and frameless (borderless) display modes.
+both standard and undecorated (custom-chrome) display modes.
 """
 
 from tkinter import Widget
@@ -194,7 +194,7 @@ class FilterDialog(ttk.Frame):
             items: list[str | dict[str, Any]] = None,
             enable_search: bool = False,
             enable_select_all: bool = False,
-            frameless: bool = False
+            undecorated: bool = False
     ):
         """Initialize the FilterDialog.
 
@@ -207,7 +207,7 @@ class FilterDialog(ttk.Frame):
                 - selected (bool): Initial selection state (defaults to False)
             enable_search: If True, includes a search box to filter items by text.
             enable_select_all: If True, includes a "Select All" checkbox.
-            frameless: If True, removes window decorations and displays with a
+            undecorated: If True, removes window decorations and displays with a
                 border frame. Enables dismiss-on-outside-click behavior.
         """
         super().__init__(master)
@@ -216,7 +216,7 @@ class FilterDialog(ttk.Frame):
         self._items = items or []
         self._enable_search = enable_search
         self._enable_select_all = enable_select_all
-        self._frameless = frameless
+        self._undecorated = undecorated
         self._content: FilterDialogContent | None = None
         self._dialog: Dialog | None = None
         self.result: list[Any] | None = None
@@ -229,12 +229,12 @@ class FilterDialog(ttk.Frame):
             enable_select_all=self._enable_select_all,
             items=self._items
         )
-        padding = 0 if self._frameless else 10
+        padding = 0 if self._undecorated else 10
         self._content.pack(fill='both', expand=True, padx=padding, pady=padding)
 
-        # Setup dismiss-on-click for frameless after dialog is built
-        if self._frameless:
-            parent.after(10, self._setup_frameless_dismiss)
+        # Setup dismiss-on-click for undecorated after dialog is built
+        if self._undecorated:
+            parent.after(10, self._setup_undecorated_dismiss)
 
     def _on_ok(self, dialog: Dialog):
         """Save selected items to result when OK button is clicked."""
@@ -278,9 +278,9 @@ class FilterDialog(ttk.Frame):
         except:
             pass
 
-    def _setup_frameless_dismiss(self):
-        """Setup dismiss-on-outside-click for frameless dialogs."""
-        if self._frameless and self._dialog and self._dialog.toplevel:
+    def _setup_undecorated_dismiss(self):
+        """Setup dismiss-on-outside-click for undecorated dialogs."""
+        if self._undecorated and self._dialog and self._dialog.toplevel:
             # Bind to root window to catch all clicks
             root = self._dialog.toplevel.winfo_toplevel()
             while root.master:
@@ -343,7 +343,7 @@ class FilterDialog(ttk.Frame):
             maxsize=(250, 380),
             resizable=(False, True),
             mode="modal",
-            frameless=self._frameless
+            undecorated=self._undecorated
         )
 
         self._dialog.show(

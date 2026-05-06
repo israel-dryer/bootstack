@@ -27,7 +27,7 @@ class AppShellKwargs(TypedDict, total=False):
     minsize: tuple[int, int]
     maxsize: tuple[int, int]
     resizable: tuple[bool, bool]
-    frameless: bool
+    undecorated: bool
     show_toolbar: bool
     show_window_controls: bool
     draggable: bool
@@ -70,7 +70,7 @@ class AppShell(App):
         minsize: tuple[int, int] | None = None,
         maxsize: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
-        frameless: bool = False,
+        undecorated: bool = False,
         show_toolbar: bool = True,
         show_window_controls: bool = False,
         draggable: bool = False,
@@ -90,10 +90,10 @@ class AppShell(App):
             minsize: Minimum window size as (width, height).
             maxsize: Maximum window size as (width, height).
             resizable: Whether the window is resizable as (width, height).
-            frameless: If True, remove OS window chrome (title bar, borders)
-                and rely on the toolbar for window controls and dragging.
-                Automatically enables `show_window_controls` and
-                `draggable` when True. Default False.
+            undecorated: If True, removes OS window decorations (title bar,
+                native border, and resize grip) and replaces them with a
+                custom frame border. Automatically enables
+                `show_window_controls` and `draggable`. Default False.
             show_toolbar: Include the toolbar at the top. Default True.
             show_window_controls: Show minimize/maximize/close buttons
                 in the toolbar. Default False.
@@ -106,7 +106,7 @@ class AppShell(App):
             **kwargs: Additional arguments passed to App.
         """
         # Frameless mode: remove OS chrome and enable toolbar controls
-        if frameless:
+        if undecorated:
             show_window_controls = True
             draggable = True
 
@@ -118,7 +118,7 @@ class AppShell(App):
             minsize=minsize,
             maxsize=maxsize,
             resizable=resizable,
-            override_redirect=frameless,
+            override_redirect=undecorated,
             **kwargs,
         )
 
@@ -139,6 +139,7 @@ class AppShell(App):
         self._pages: PageStack | None = None
 
         self._build_shell(
+            undecorated=undecorated,
             show_toolbar=show_toolbar,
             show_window_controls=show_window_controls,
             draggable=draggable,
@@ -151,6 +152,7 @@ class AppShell(App):
     def _build_shell(
         self,
         *,
+        undecorated: bool,
         show_toolbar: bool,
         show_window_controls: bool,
         draggable: bool,
@@ -160,10 +162,21 @@ class AppShell(App):
         nav_accent: str,
     ):
         """Build the internal widget structure."""
+        # --- Frameless border container ---
+        # In undecorated (custom-chrome) mode the OS chrome (titlebar + border) is removed via
+        # overrideredirect. A Frame with show_border=True substitutes the
+        # visible window border. padding=3 is required for the border to render;
+        # without it the border is obscured by the child widgets.
+        if undecorated:
+            _root = Frame(self, show_border=True, padding=1)
+            _root.pack(fill='both', expand=True)
+        else:
+            _root = self
+
         # --- Toolbar ---
         if show_toolbar:
             self._toolbar = Toolbar(
-                self,
+                _root,
                 surface='chrome',
                 density=toolbar_density,
                 show_window_controls=show_window_controls,
@@ -187,7 +200,7 @@ class AppShell(App):
             self._toolbar.add_spacer()
 
         # --- Body (nav + pages) ---
-        body = Frame(self)
+        body = Frame(_root)
         body.pack(side='top', fill='both', expand=True)
 
         # --- SideNav ---

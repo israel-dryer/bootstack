@@ -142,7 +142,7 @@ class FilterDialog:
             - selected: Initial selection state (defaults to False)
         allow_search: If True, adds a search box to filter items
         allow_select_all: If True, adds a "Select All" checkbox
-        frameless: If True, hides the window decorations and shows a border
+        undecorated: If True, hides the window decorations and shows a border
 
     Example:
         >>> dialog = FilterDialog(
@@ -163,14 +163,14 @@ class FilterDialog:
             items: list[str | dict[str, Any]] = None,
             allow_search: bool = False,
             allow_select_all: bool = False,
-            frameless: bool = False
+            undecorated: bool = False
     ):
         self._master = master
         self._title = title
         self._items = items or []
         self._allow_search = allow_search
         self._allow_select_all = allow_select_all
-        self._frameless = frameless
+        self._undecorated = undecorated
         self._content: FilterDialogContent | None = None
         self._dialog: Dialog | None = None
         self.result: list[Any] | None = None
@@ -183,7 +183,7 @@ class FilterDialog:
             allow_select_all=self._allow_select_all,
             items=self._items
         )
-        padding = 0 if self._frameless else 10
+        padding = 0 if self._undecorated else 10
         self._content.pack(fill='both', expand=True, padx=padding, pady=padding)
 
     def _on_ok(self, dialog: Dialog):
@@ -193,8 +193,8 @@ class FilterDialog:
 
     def show(self):
         """Show the dialog and return the selected items when closed."""
-        # Use popover mode when frameless for dismiss on outside click
-        dialog_mode: Literal['modal', 'popover'] = "popover" if self._frameless else "modal"
+        # Use popover mode when undecorated for dismiss on outside click
+        dialog_mode: Literal['modal', 'popover'] = "popover" if self._undecorated else "modal"
 
         self._dialog = Dialog(
             master=self._master,
@@ -214,7 +214,7 @@ class FilterDialog:
             maxsize=(250, 380),
             resizable=(False, True),
             mode=dialog_mode,
-            frameless=self._frameless
+            undecorated=self._undecorated
         )
 
         self._dialog.show()
