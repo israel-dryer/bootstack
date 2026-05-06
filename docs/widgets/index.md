@@ -126,7 +126,9 @@ To browse all categories interactively, run:
 bootstack gallery
 ```
 
-![widget gallery](../assets/quick-start-gallery.png)
+<div class="app-window">
+  <img src="../assets/quick-start-gallery.png" alt="Widget Gallery"/>
+</div>
 
 ---
 

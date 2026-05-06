@@ -1,4 +1,4 @@
----
+﻿---
 title: Button
 ---
 
@@ -22,6 +22,10 @@ bs.Button(app, text="Save", command=on_save).pack(padx=20, pady=20)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-button-quickstart.png" alt="Quickstart"/>
+</div>
 
 ---
 
