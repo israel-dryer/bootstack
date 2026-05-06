@@ -20,6 +20,7 @@ Usage:
     bootstack list themes            List available themes
     bootstack doctor                 Diagnose project and environment health
     bootstack gallery                 Launch the widget gallery
+    bootstack icons                   Browse Bootstrap Icons
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ import argparse
 import sys
 from typing import Sequence
 
-from bootstack.cli import add, build, doctor, list_cmd, promote, run, start
+from bootstack.cli import add, build, doctor, icons, list_cmd, promote, run, start
 from bootstack.cli.demo import run_demo
 
 
@@ -50,6 +51,7 @@ Examples:
   bootstack list themes              List available themes
   bootstack doctor                   Diagnose project and environment health
   bootstack gallery                  Launch the widget gallery
+  bootstack icons                    Browse Bootstrap Icons
 
 For more information on a command:
   bootstack <command> --help
@@ -82,6 +84,7 @@ For more information on a command:
     add.add_parser(subparsers)
     list_cmd.add_parser(subparsers)
     doctor.add_parser(subparsers)
+    icons.add_parser(subparsers)
 
     # Gallery command
     gallery_parser = subparsers.add_parser(

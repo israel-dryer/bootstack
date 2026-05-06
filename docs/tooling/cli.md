@@ -255,6 +255,22 @@ spec values for buttons, forms, tables, and dialogs.
 
 ---
 
+### `bootstack icons`
+
+Launch the standalone Bootstrap Icons browser.
+
+```
+bootstack icons
+```
+
+Opens a scrollable window showing ~20 common icons, size variants (12 px –
+48 px), icons in button context, and accent-coloured variants. Any icon name
+from the [Bootstrap Icons catalog](https://icons.getbootstrap.com/) can be
+used as the `icon=` parameter on any bootstack widget; this browser is a
+visual sampler of the most frequently used ones.
+
+---
+
 ## Configuration: `bootstack.toml`
 
 When present, the CLI reads configuration from `bootstack.toml` at the project

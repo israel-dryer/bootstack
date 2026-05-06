@@ -52,16 +52,18 @@ as an implementation detail.
 
 ### Icon explorer
 
-For a quick visual browse without leaving the framework, run:
+bootstack ships a dedicated icon browser. Run it from anywhere:
 
 ```bash
-bootstack gallery
+bootstack icons
 ```
 
-The gallery's **Icons** page demonstrates ~20 commonly-used icons, the
-available size range, and accent-colored variants — useful when you want to
-see how a particular icon renders in your current theme before committing to
-it. See [Tooling → CLI](../tooling/cli.md) for other gallery options.
+The browser shows ~20 common icons, the available size range (12 px – 48 px),
+icons used in button context, and accent-coloured variants — useful when you
+want to see how a particular icon renders in your current theme before
+committing to it. Any icon name in the catalog works as the `icon=` value;
+the browser is just a sampler. See [Tooling → CLI](../tooling/cli.md) for
+full CLI reference.
 
 ---
 
