@@ -1,4 +1,4 @@
-﻿import bootstack as bs
+import bootstack as bs
 from bootstack import MessageCatalog
 from datetime import date
 

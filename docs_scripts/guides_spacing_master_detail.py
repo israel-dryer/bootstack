@@ -1,4 +1,4 @@
-﻿import bootstack as bs
+import bootstack as bs
 
 app = bs.App(title="Master/detail", minsize=(720, 420))
 

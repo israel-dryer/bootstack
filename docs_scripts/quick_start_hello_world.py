@@ -1,4 +1,4 @@
-﻿import bootstack as bs
+import bootstack as bs
 
 app = bs.App(title="Quick Start", minsize=(300, 200))
 

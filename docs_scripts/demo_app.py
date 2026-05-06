@@ -1,4 +1,4 @@
-﻿"""Data Analysis Workbench â€” bootstack hero demo.
+"""Data Analysis Workbench â€” bootstack hero demo.
 
 A single-file showcase application used for the bootstack homepage hero
 screenshot. All data is hardcoded; button commands are no-ops. Run with:

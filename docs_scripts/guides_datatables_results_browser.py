@@ -1,4 +1,4 @@
-﻿import bootstack as bs
+import bootstack as bs
 from bootstack.constants import BOTH, LEFT, RIGHT, X, YES, N
 
 RESULTS = [

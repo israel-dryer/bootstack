@@ -1,4 +1,4 @@
-﻿---
+---
 title: Spacing & Alignment
 ---
 

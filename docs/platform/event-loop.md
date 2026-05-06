@@ -1,4 +1,4 @@
-﻿# Event Loop
+# Event Loop
 
 At the core of every Tk application is the **event loop**.
 

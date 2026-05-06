@@ -1,4 +1,4 @@
-﻿import bootstack as bs
+import bootstack as bs
 
 shell = bs.AppShell(title="Combined Navigation", minsize=(1000, 650))
 
