@@ -40,7 +40,7 @@ def trace(name):
         return wrapper
     return deco
 
-app = bs.App(title="Tracing", size=(360, 160))
+app = bs.App(title="Tracing", minsize=(360, 160))
 
 @trace("on_click")
 def on_click():
@@ -74,7 +74,7 @@ The fix is to defer the size-dependent code with `after_idle()`:
 ```python
 import bootstack as bs
 
-app = bs.App(title="after_idle()", size=(400, 200))
+app = bs.App(title="after_idle()", minsize=(400, 200))
 
 card = bs.Card(app)
 card.pack(fill="both", expand=True, padx=20, pady=20)
@@ -111,7 +111,7 @@ modifying the layout.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Borderized", size=(480, 240))
+app = bs.App(title="Borderized", minsize=(480, 240))
 
 # Each container shows its bounds and a contrasting surface.
 outer = bs.Frame(app, surface="card", show_border=True, padding=8)
@@ -148,7 +148,7 @@ widget that gains and loses focus and the picture clears up fast.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Focus tracker", size=(360, 220))
+app = bs.App(title="Focus tracker", minsize=(360, 220))
 
 def on_focus_in(event):
     w = event.widget
@@ -193,7 +193,7 @@ Reproduce:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Disappearing image", size=(320, 240))
+app = bs.App(title="Disappearing image", minsize=(320, 240))
 
 def add_logo(parent):
     # WRONG: photo is local. As soon as add_logo returns, the

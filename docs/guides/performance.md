@@ -30,7 +30,7 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import bootstack as bs
 
-app = bs.App(title="Background work", size=(420, 200))
+app = bs.App(title="Background work", minsize=(420, 200))
 status = bs.Signal("Idle")
 
 bs.Label(app, signal=status, font="body[bold]").pack(padx=20, pady=(20, 8))
@@ -91,7 +91,7 @@ interactive — and gives the user a chance to see incremental progress.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Chunked load", size=(480, 360))
+app = bs.App(title="Chunked load", minsize=(480, 360))
 
 tree = bs.TreeView(app, columns=("id", "value"), show="headings")
 tree.heading("id", text="ID")
@@ -199,7 +199,7 @@ def trace(name):
         return wrapper
     return deco
 
-app = bs.App(title="Measure", size=(360, 160))
+app = bs.App(title="Measure", minsize=(360, 160))
 
 @trace("rebuild")
 def rebuild():

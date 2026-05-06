@@ -6,6 +6,7 @@ toolbar at top, sidebar navigation on the left, and page content on the right.
 
 from __future__ import annotations
 
+import sys
 from typing import Any, Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
@@ -27,7 +28,7 @@ class AppShellKwargs(TypedDict, total=False):
     minsize: tuple[int, int]
     maxsize: tuple[int, int]
     resizable: tuple[bool, bool]
-    frameless: bool
+    undecorated: bool
     show_toolbar: bool
     show_window_controls: bool
     draggable: bool
@@ -70,7 +71,7 @@ class AppShell(App):
         minsize: tuple[int, int] | None = None,
         maxsize: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
-        frameless: bool = False,
+        undecorated: bool = False,
         show_toolbar: bool = True,
         show_window_controls: bool = False,
         draggable: bool = False,
@@ -90,10 +91,11 @@ class AppShell(App):
             minsize: Minimum window size as (width, height).
             maxsize: Maximum window size as (width, height).
             resizable: Whether the window is resizable as (width, height).
-            frameless: If True, remove OS window chrome (title bar, borders)
-                and rely on the toolbar for window controls and dragging.
-                Automatically enables `show_window_controls` and
-                `draggable` when True. Default False.
+            undecorated: If True, removes OS window decorations (title bar,
+                native border, and resize grip) and replaces them with a
+                custom frame border. Automatically enables
+                `show_window_controls` and `draggable`. Silently ignored on
+                macOS where `overrideredirect` has no effect. Default False.
             show_toolbar: Include the toolbar at the top. Default True.
             show_window_controls: Show minimize/maximize/close buttons
                 in the toolbar. Default False.
@@ -105,8 +107,12 @@ class AppShell(App):
             nav_accent: Accent color for navigation selection. Default 'primary'.
             **kwargs: Additional arguments passed to App.
         """
-        # Frameless mode: remove OS chrome and enable toolbar controls
-        if frameless:
+        # overrideredirect has no effect on macOS — disable undecorated there
+        # so the toolbar doesn't incorrectly act as the titlebar on that platform.
+        if sys.platform == 'darwin':
+            undecorated = False
+
+        if undecorated:
             show_window_controls = True
             draggable = True
 
@@ -118,25 +124,29 @@ class AppShell(App):
             minsize=minsize,
             maxsize=maxsize,
             resizable=resizable,
-            override_redirect=frameless,
+            override_redirect=undecorated,
             **kwargs,
         )
 
         self._shell_title = title
         self._show_toolbar = show_toolbar
         self._show_nav = show_nav
+        self._undecorated = undecorated  # already False on macOS after guard above
 
         # Track which nav keys have associated pages
         self._page_keys: set[str] = set()
+        self._page_texts: dict[str, str] = {}  # key → display text for toolbar
         self._first_page_added = False
         self._navigating = False  # Guard against re-entrant navigation
 
         # Build components
         self._toolbar: Toolbar | None = None
+        self._title_label = None
         self._nav: SideNav | None = None
         self._pages: PageStack | None = None
 
         self._build_shell(
+            undecorated=undecorated,
             show_toolbar=show_toolbar,
             show_window_controls=show_window_controls,
             draggable=draggable,
@@ -149,6 +159,7 @@ class AppShell(App):
     def _build_shell(
         self,
         *,
+        undecorated: bool,
         show_toolbar: bool,
         show_window_controls: bool,
         draggable: bool,
@@ -158,10 +169,21 @@ class AppShell(App):
         nav_accent: str,
     ):
         """Build the internal widget structure."""
+        # --- Frameless border container ---
+        # In undecorated (custom-chrome) mode the OS chrome (titlebar + border) is removed via
+        # overrideredirect. A Frame with show_border=True substitutes the
+        # visible window border. padding=3 is required for the border to render;
+        # without it the border is obscured by the child widgets.
+        if undecorated:
+            _root = Frame(self, show_border=True, padding=1)
+            _root.pack(fill='both', expand=True)
+        else:
+            _root = self
+
         # --- Toolbar ---
         if show_toolbar:
             self._toolbar = Toolbar(
-                self,
+                _root,
                 surface='chrome',
                 density=toolbar_density,
                 show_window_controls=show_window_controls,
@@ -175,18 +197,19 @@ class AppShell(App):
                     icon='list',
                     command=self._toggle_nav,
                 )
-                self._toolbar.add_separator()
 
-            # Title label
-            self._title_label = None
-            if self._shell_title:
+            # In undecorated mode the toolbar acts as the OS titlebar — show
+            # the app title. In decorated mode the OS titlebar has the app
+            # title and the sidebar selection shows the current page, so no
+            # toolbar label is needed.
+            if undecorated:
                 self._title_label = self._toolbar.add_label(text=self._shell_title, font='heading-md')
 
             # Spacer pushes subsequent user-added buttons to the right
             self._toolbar.add_spacer()
 
         # --- Body (nav + pages) ---
-        body = Frame(self)
+        body = Frame(_root)
         body.pack(side='top', fill='both', expand=True)
 
         # --- SideNav ---
@@ -217,6 +240,11 @@ class AppShell(App):
         if self._nav is not None:
             self._nav.toggle_pane()
 
+    def _update_page_title(self, key: str):
+        """Update the toolbar label to show the active page name (decorated mode only)."""
+        if self._title_label is not None and not self._undecorated:
+            self._title_label.configure(text=self._page_texts.get(key, ''))
+
     def _on_nav_selection_changed(self, event):
         """Handle SideNav selection changes."""
         key = event.data.get('key', '')
@@ -229,6 +257,7 @@ class AppShell(App):
         self._navigating = True
         try:
             self._pages.navigate(key)
+            self._update_page_title(key)
         finally:
             self._navigating = False
 
@@ -286,13 +315,14 @@ class AppShell(App):
         # Add page
         page_widget = self._pages.add(key, page=page)
         self._page_keys.add(key)
+        self._page_texts[key] = text
 
         # Wrap in ScrollView when requested
         if scrollable:
             sv = ScrollView(
                 page_widget,
                 scroll_direction="vertical",
-                scrollbar_visibility="hover",
+                scrollbar_visibility="never",
             )
             sv.pack(fill="both", expand=True)
             page_widget = sv.add()
@@ -388,6 +418,7 @@ class AppShell(App):
             # Navigate the page stack
             if key in self._page_keys:
                 self._pages.navigate(key, data=data)
+                self._update_page_title(key)
         finally:
             self._navigating = False
 

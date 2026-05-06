@@ -85,8 +85,8 @@ bs.Button(app, text="Outlined",  accent="primary", variant="outline")
 bs.Button(app, text="Ghosted",   accent="primary", variant="ghost")
 bs.Button(app, text="Learn more", accent="info",   variant="link")
 
-bs.CheckButton(app, text="Dark mode",     variant="toggle")
-bs.CheckButton(app, text="Notifications", accent="success", variant="toggle")
+bs.Switch(app, text="Dark mode")
+bs.Switch(app, text="Notifications", accent="success")
 ```
 
 Use `solid` for the primary action, `outline` for secondary actions, and
@@ -519,30 +519,35 @@ app = bs.App(theme="ocean-light")
 form = bs.LabelFrame(app, text="User settings", padding=20)
 form.pack(padx=20, pady=20, fill="x")
 
-grid = bs.GridFrame(form, columns=["auto", 1], gap=(10, 8))
+grid = bs.GridFrame(form, columns=["auto", 1], gap=(10, 8), sticky_items='ew')
 grid.pack(fill="x")
 
 bs.Label(grid, text="Username:").grid()
-bs.Entry(grid).grid(sticky="ew")
+bs.Entry(grid).grid()
 
 bs.Label(grid, text="Email:").grid()
-bs.Entry(grid).grid(sticky="ew")
+bs.Entry(grid).grid()
 
 bs.Label(grid, text="Role:").grid()
-bs.OptionMenu(grid, values=["User", "Admin", "Guest"]).grid(sticky="ew")
+bs.OptionMenu(grid, options=["User", "Admin", "Guest"]).grid()
 
-toggles = bs.PackFrame(form, direction="vertical", gap=5)
+toggles = bs.PackFrame(form, gap=5, fill_items='x')
 toggles.pack(fill="x", pady=(15, 0))
-bs.CheckButton(toggles, text="Email notifications", variant="toggle").pack()
-bs.CheckButton(toggles, text="Two-factor auth", accent="success", variant="toggle").pack()
+bs.Switch(toggles, text="Email notifications").pack()
+bs.Switch(toggles, text="Two-factor auth", accent="success").pack()
 
 actions = bs.PackFrame(form, direction="horizontal", gap=10)
-actions.pack(anchor="e", pady=(20, 0))
-bs.Button(actions, text="Cancel",       accent="secondary", variant="outline").pack()
+actions.pack(anchor="e", pady=(16, 0))
+
+bs.Button(actions, text="Cancel", accent="secondary", variant="outline").pack()
 bs.Button(actions, text="Save changes", accent="primary").pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-color-styled-form.png" alt="Styled Form"/>
+</div>
 
 ---
 

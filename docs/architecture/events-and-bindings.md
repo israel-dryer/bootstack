@@ -1,4 +1,4 @@
-﻿# Events & Bindings
+# Events & Bindings
 
 Tk delivers user input and system notifications through an **event and binding system**.
 Understanding how events are generated, propagated, and handled is essential for building

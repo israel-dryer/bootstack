@@ -24,15 +24,15 @@ creates an in-memory SQLite datasource for you.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Readings", size=(720, 360))
+app = bs.App(title="Readings", minsize=(720, 360))
 
 bs.TableView(
     app,
     columns=[
-        {"text": "ID",       "width": 90},
-        {"text": "Channel",  "width": 90, "anchor": "center"},
-        {"text": "Reading",  "width": 100, "anchor": "e"},
-        {"text": "Status",   "width": 100, "anchor": "center"},
+        {"text": "ID",      "width": 90},
+        {"text": "Channel", "width": 90,  "anchor": "center"},
+        {"text": "Reading", "width": 100, "anchor": "e"},
+        {"text": "Status",  "width": 100, "anchor": "center"},
     ],
     rows=[
         ("R-1042", "CH-1", "1.0438", "Pass"),
@@ -45,6 +45,10 @@ bs.TableView(
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-datatables-quickstart.png" alt="Data Table Quickstart"/>
+</div>
 
 Out of the box you get: clickable column headers (sort), a search box, a header
 context menu (filter/group/hide), pagination buttons, and a status footer.
@@ -84,6 +88,16 @@ bs.TableView(
 
 If you omit the `dtype`, TableView samples the first page and right-aligns
 columns whose values parse as numbers. Override with `anchor` when needed.
+
+!!! tip "Provide explicit `key` values when headers aren't plain identifiers"
+    When `key` is omitted, the column `text` is used as the SQLite column name.
+    This is fine for simple headers like `"Channel"` or `"Status"`, but causes
+    a silent empty-table failure for headers containing spaces or special
+    characters — `"Temp °C"` and `"|Δ|"` are examples. It also matters when
+    you pass filter SQL via `set_filters()`: the key is the name you use in
+    the WHERE clause, so an explicit key keeps that predictable.
+
+    Use short alphanumeric keys: `"run_id"`, `"channel"`, `"temp"`.
 
 ### Tuple rows vs dict rows
 
@@ -391,7 +405,7 @@ toolbar above and an export footer below.
 
 ```python
 import bootstack as bs
-from bootstack.constants import BOTH, LEFT, RIGHT, X, YES
+from bootstack.constants import BOTH, LEFT, RIGHT, X, YES, N
 
 RESULTS = [
     ("R-1042", "Run-A12", "2026-05-04 09:12", "CH-1", "1.0438", "V", "0.0021", "23.4", "Pass"),
@@ -403,24 +417,24 @@ RESULTS = [
 ]
 
 COLUMNS = [
-    {"text": "ID",        "width": 90},
-    {"text": "Run",       "width": 100},
-    {"text": "Timestamp", "width": 150},
-    {"text": "Channel",   "width": 80,  "anchor": "center"},
-    {"text": "Reading",   "width": 100, "anchor": "e"},
-    {"text": "Unit",      "width": 60,  "anchor": "center"},
-    {"text": "|Δ|",       "width": 90,  "anchor": "e"},
-    {"text": "Temp °C",   "width": 90,  "anchor": "e"},
-    {"text": "Status",    "width": 110, "anchor": "center", "stretch": True},
+    {"text": "ID",        "key": "run_id",  "width": 90},
+    {"text": "Run",       "key": "run",     "width": 100},
+    {"text": "Timestamp", "key": "ts",      "width": 150},
+    {"text": "Channel",   "key": "channel", "width": 80,  "anchor": "center"},
+    {"text": "Reading",   "key": "reading", "width": 100, "anchor": "e"},
+    {"text": "Unit",      "key": "unit",    "width": 60,  "anchor": "center"},
+    {"text": "|Δ|",       "key": "delta",   "width": 90,  "anchor": "e"},
+    {"text": "Temp °C",   "key": "temp",    "width": 90,  "anchor": "e"},
+    {"text": "Status",    "key": "status",  "width": 110, "anchor": "center", "stretch": True},
 ]
 
-app = bs.App(title="Results", size=(1100, 540))
+app = bs.App(title="Results", minsize=(1100, 540))
 
 # --- Filter toolbar ---------------------------------------------------------
 filters = bs.LabelFrame(app, text="Filters", padding=12)
 filters.pack(fill=X, padx=20, pady=(20, 12))
 
-fbar = bs.PackFrame(filters, direction="horizontal", gap=8)
+fbar = bs.PackFrame(filters, direction="horizontal", gap=8, anchor_items=N)
 fbar.pack(fill=X)
 
 search = bs.TextEntry(fbar, label="Search", message="Sample ID, run, channel…")
@@ -454,10 +468,10 @@ def apply_filters(_evt=None):
     if (q := search.get().strip()):
         q = q.replace("'", "''")
         clauses.append(
-            f"(ID LIKE '%{q}%' OR Run LIKE '%{q}%' OR Channel LIKE '%{q}%')"
+            f"(run_id LIKE '%{q}%' OR run LIKE '%{q}%' OR channel LIKE '%{q}%')"
         )
     if (s := status.get()) and s != "All":
-        clauses.append(f"Status = '{s}'")
+        clauses.append(f"status = '{s}'")
     tv.set_filters(" AND ".join(clauses) if clauses else "")
 
 search.on_input(apply_filters)
@@ -477,6 +491,10 @@ bs.Button(
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-datatables-results-browser.png" alt="Results Browser"/>
+</div>
+
 Two things worth noting in this example:
 
 - The TableView's built-in toolbar is suppressed (`enable_search=False`,
@@ -491,6 +509,11 @@ Two things worth noting in this example:
 
 ## Common pitfalls
 
+- **Headers with spaces or special characters need an explicit `key`.** When
+  `key` is omitted, the column `text` is used as the SQLite column name.
+  Headers like `"Temp °C"` or `"|Δ|"` produce invalid SQL identifiers and
+  cause a silent empty-table failure. Use a plain alphanumeric `key` for any
+  column whose header isn't a simple word.
 - **`datasource=` requires `SqliteDataSource`.** The widget reads SQLite
   metadata for column-type inference, so `MemoryDataSource` and
   `FileDataSource` don't plug in directly. Use `rows=` for one-shot data, or

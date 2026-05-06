@@ -130,7 +130,7 @@ class Dialog:
               its parent (via `transient`). Falls back to plain modal
               behavior on Windows/Linux where there's no equivalent.
             Defaults to "modal".
-        frameless: If True, removes window decorations (title bar, borders) and adds
+        undecorated: If True, removes window decorations (title bar, borders) and adds
             a solid border frame around the dialog content. Useful for dropdown-style
             menus or popover UIs. Defaults to False.
         window_style: Windows-only pywinstyles effect. Options include
@@ -151,7 +151,7 @@ class Dialog:
             resizable: tuple[bool, bool] | None = (False, False),
             alert: bool = False,
             mode: DialogMode = "modal",
-            frameless: bool = False,
+            undecorated: bool = False,
             window_style: str | None = None,
     ):
         import tkinter
@@ -166,7 +166,7 @@ class Dialog:
         self._resizable = resizable
         self._alert = alert
         self._mode = mode
-        self._frameless = frameless
+        self._undecorated = undecorated
         self._window_style = window_style
 
         self._toplevel: Toplevel | None = None
@@ -316,17 +316,17 @@ class Dialog:
         if self._resizable is not None:
             self._toplevel.resizable(*self._resizable)
 
-        if self._frameless:
+        if self._undecorated:
             self._toplevel.overrideredirect(True)
             self._border_frame = bs.Frame(self._toplevel, show_border=True, padding=2)
             self._border_frame.pack(fill='both', expand=True)
 
     def _build_content(self):
-        parent = self._border_frame if self._frameless else self._toplevel
-        padding = 2 if self._frameless else 0
+        parent = self._border_frame if self._undecorated else self._toplevel
+        padding = 2 if self._undecorated else 0
         self._content = bs.Frame(parent, padding=padding)
 
-        if self._frameless:
+        if self._undecorated:
             self._content.pack(fill="both", side="top", expand=False)
         else:
             self._content.pack(fill="both", side="top", expand=True)
@@ -335,8 +335,8 @@ class Dialog:
             self._content_builder(self._content)
 
     def _build_footer(self):
-        parent = self._border_frame if self._frameless else self._toplevel
-        footer_padding = 6 if self._frameless else 4
+        parent = self._border_frame if self._undecorated else self._toplevel
+        footer_padding = 6 if self._undecorated else 4
 
         if self._footer_builder:
             self._footer = bs.Frame(parent, padding=footer_padding)

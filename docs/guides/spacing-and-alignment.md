@@ -34,7 +34,7 @@ container's edge.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Padding", size=(320, 200))
+app = bs.App(title="Padding", minsize=(320, 200))
 
 panel = bs.PackFrame(app, padding=16)
 panel.pack(fill="both", expand=True)
@@ -100,7 +100,7 @@ inside. Container-level `gap` and `padding` mean no per-widget spacing flags.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Settings", size=(420, 360))
+app = bs.App(title="Settings", minsize=(420, 360))
 
 page = bs.PackFrame(app, direction="vertical", gap=12, padding=12)
 page.pack(fill="both", expand=True)
@@ -181,8 +181,7 @@ right-aligned label in an otherwise stretching grid.
 `fill="x"`, `fill="y"`, `fill="both"`, or `fill="none"` to every child.
 
 ```python
-sidebar = bs.PackFrame(app, direction="vertical", gap=2, padding=8,
-                       fill_items="x")
+sidebar = bs.PackFrame(app, direction="vertical", gap=2, padding=8, fill_items="x")
 sidebar.pack(side="left", fill="y")
 
 bs.Button(sidebar, text="Inbox").pack()
@@ -198,8 +197,7 @@ axis — `"w"`, `"center"`, `"e"` for vertical packs; `"n"`, `"center"`, `"s"`
 for horizontal.
 
 ```python
-header = bs.PackFrame(app, direction="vertical", padding=12,
-                      anchor_items="w")
+header = bs.PackFrame(app, direction="vertical", padding=12, anchor_items="w")
 ```
 
 ### `direction` (PackFrame)
@@ -225,7 +223,7 @@ plain `Frame` as the bar, then two `PackFrame`s with `side="left"` and
 ```python
 import bootstack as bs
 
-app = bs.App(title="Toolbar", size=(560, 80))
+app = bs.App(title="Toolbar", minsize=(560, 80))
 
 bar = bs.Frame(app, padding=8)
 bar.pack(fill="x")
@@ -275,8 +273,7 @@ the leftover width of the first.
 
 ```python
 # Sidebar: 220px, content: takes the rest.
-shell = bs.GridFrame(app, columns=["220px", 1], rows=[1],
-                     sticky_items="nsew")
+shell = bs.GridFrame(app, columns=["220px", 1], rows=[1], sticky_items="nsew")
 shell.pack(fill="both", expand=True)
 
 # Form: label hugs its text, value takes the rest.
@@ -323,15 +320,13 @@ the canonical desktop-app shape.
 ```python
 import bootstack as bs
 
-app = bs.App(title="Master/detail", size=(720, 420))
+app = bs.App(title="Master/detail", minsize=(720, 420))
 
-shell = bs.GridFrame(app, columns=["220px", 1], rows=[1],
-                     sticky_items="nsew")
+shell = bs.GridFrame(app, columns=["220px", 1], rows=[1], sticky_items="nsew")
 shell.pack(fill="both", expand=True)
 
 # Sidebar: stacked buttons, all the same width.
-sidebar = bs.PackFrame(shell, direction="vertical", gap=2, padding=12,
-                       fill_items="x")
+sidebar = bs.PackFrame(shell, direction="vertical", gap=2, padding=12, fill_items="x")
 sidebar.grid()
 
 bs.Label(sidebar, text="Folders", font="label").pack(anchor="w", pady=(0, 8))
@@ -387,7 +382,7 @@ The dense variants matter when some children span multiple cells. Without
 ```python
 import bootstack as bs
 
-app = bs.App(title="Gallery", size=(560, 420))
+app = bs.App(title="Gallery", minsize=(560, 420))
 
 gallery = bs.GridFrame(app, columns=4, gap=8, padding=12,
                        sticky_items="nsew", auto_flow="row-dense")

@@ -52,16 +52,20 @@ as an implementation detail.
 
 ### Icon explorer
 
-For a quick visual browse without leaving the framework, run:
+bootstack ships a dedicated icon browser. Run it from anywhere:
 
 ```bash
-bootstack gallery
+bootstack icons
 ```
 
-The gallery's **Icons** page demonstrates ~20 commonly-used icons, the
-available size range, and accent-colored variants — useful when you want to
-see how a particular icon renders in your current theme before committing to
-it. See [Tooling → CLI](../tooling/cli.md) for other gallery options.
+This delegates to the `ttkbootstrap-icons` tool, which provides a full
+searchable browser of the Bootstrap Icons catalog. Any icon name you find
+there works directly as the `icon=` value on any bootstack widget. See
+[Tooling → CLI](../tooling/cli.md) for full CLI reference.
+
+<div class="app-window">
+    <img src="../assets/guides-icons-browser.png" alt="icon browser"/>
+</div>
 
 ---
 

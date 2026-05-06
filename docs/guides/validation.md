@@ -33,7 +33,7 @@ The most common case — a required field with a format constraint:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Sign up", size=(400, 200))
+app = bs.App(title="Sign up", minsize=(400, 200))
 
 email = bs.TextEntry(app, label="Email", required=True)
 email.add_validation_rule("email", message="Enter a valid email address.")
@@ -151,11 +151,12 @@ count.add_validation_rule("custom", func=is_even, trigger="always")
 email.add_validation_rule("email", trigger="blur")
 ```
 
-!!! tip "Don't validate too aggressively"
-    Showing "invalid email" the instant a user types `a` is unhelpful. Stick
-    with `blur` for rules that look at fully-formed input (email, length,
-    custom regexes), and `always` only for rules that have a clear answer at
-    every keystroke (required).
+!!! tip "Tune triggers to match user expectation"
+    `email` and `pattern` default to `always`, which means they start checking
+    while the user is still composing. That can feel aggressive — showing
+    "invalid email" the moment someone types `a`. Consider switching them to
+    `trigger="blur"` so the check waits until the field loses focus. `required`
+    stays `always` because it has a clear, immediate answer at every keystroke.
 
 ---
 
@@ -300,7 +301,7 @@ A complete signup form combining everything above:
 ```python
 import bootstack as bs
 
-app = bs.App(title="Create account", size=(420, 360))
+app = bs.App(title="Create account", minsize=(420, 360))
 form = bs.Card(app, padding=20)
 form.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -349,6 +350,10 @@ bs.Button(form, text="Create account", accent="primary", command=submit)\
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-validation-signup.png" alt="Signup Form Validation"/>
+</div>
+
 Each field reports its own errors inline. Submit re-runs validation
 synchronously so a user who clicks Submit on an empty form sees every error
 at once instead of having to tab through to discover them.
@@ -368,6 +373,19 @@ A's value won't re-fire when A changes. Wire `A.on_changed` to call
 **Putting UI behavior in rules.** Rules return `ValidationResult` objects;
 they don't touch widgets. Keep "show a toast", "disable the button", "scroll
 to error" in event handlers, not inside the rule's callable.
+
+**Calling `validation()` inside an `on_validated` handler.** `validation()`
+fires more validation events, which call your handler again — infinite
+recursion. Inside `on_validated`, read the result from the payload you already
+have (`payload["is_valid"]`) rather than re-running validation:
+
+```python
+# Wrong — causes infinite recursion
+field.on_validated(lambda p: field.validation(field.value, "manual"))
+
+# Right — use the payload that's already there
+field.on_validated(lambda p: do_something(p["is_valid"]))
+```
 
 **Over-engineering custom rules.** If you find yourself writing the same
 `custom` rule across files, lift it into a small helper that returns a

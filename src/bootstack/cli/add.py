@@ -305,7 +305,7 @@ def run_add_theme(args: argparse.Namespace) -> None:
     print()
     print("  from bootstack.style.theme_provider import register_user_theme")
     print(f'  register_user_theme("{theme_name}", "themes/{theme_name}.json")')
-    print(f'  app = ttk.App(theme="{theme_name}")')
+    print(f'  app = bs.App(theme="{theme_name}")')
 
 
 def run_add_i18n(args: argparse.Namespace) -> None:
@@ -340,7 +340,7 @@ def run_add_i18n(args: argparse.Namespace) -> None:
     print("Next steps:")
     print("  1. Add translatable strings to your .po files")
     print("  2. Compile with: msgfmt locales/<lang>/LC_MESSAGES/messages.po -o locales/<lang>/LC_MESSAGES/messages.mo")
-    print("  3. Use translations in code: ttk.mc('Hello')")
+    print("  3. Use translations in code: bs.L('Hello')")
 
 
 _BASE_SHADES = {

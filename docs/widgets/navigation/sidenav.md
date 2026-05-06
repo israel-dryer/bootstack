@@ -16,7 +16,7 @@ It supports three display modes: expanded (full width with text), compact (icons
 ```python
 import bootstack as bs
 
-app = bs.App(title="Nav Demo", size=(900, 600))
+app = bs.App(title="Nav Demo", minsize=(900, 600))
 
 nav = bs.SideNav(app, title="My App")
 nav.pack(side="left", fill="y")

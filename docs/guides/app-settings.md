@@ -231,7 +231,7 @@ settings = bs.AppSettings(
 # Create app with settings and window options
 app = bs.App(
     settings=settings,
-    size=(800, 600),
+    minsize=(800, 600),
     minsize=(400, 300),
     resizable=(True, True),
 )

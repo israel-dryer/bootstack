@@ -35,7 +35,7 @@ app = bs.App()
 name = bs.Signal("")
 
 # Connect an entry to the signal
-entry = bs.TextEntry(app, signal=name)
+entry = bs.TextEntry(app, textsignal=name)
 entry.pack(padx=20, pady=10)
 
 # React to signal changes
@@ -107,10 +107,10 @@ Many widgets accept a `signal` parameter:
 name = bs.Signal("")
 
 # Entry updates the signal
-entry = bs.TextEntry(app, signal=name)
+entry = bs.TextEntry(app, textsignal=name)
 
 # Label displays the signal
-label = bs.Label(app, textvariable=name)
+label = bs.Label(app, textsignal=name)
 ```
 
 When the entry changes, the label updates automatically.
@@ -132,10 +132,10 @@ fahrenheit = celsius.map(lambda c: c * 9/5 + 32)
 
 # UI
 bs.Label(app, text="Celsius:").pack()
-bs.Scale(app, from_=0, to=100, variable=celsius).pack(fill="x", padx=20)
+bs.Scale(app, from_=0, to=100, signal=celsius).pack(fill="x", padx=20)
 
 bs.Label(app, text="Fahrenheit:").pack(pady=(20, 0))
-bs.Label(app, textvariable=fahrenheit).pack()
+bs.Label(app, textsignal=fahrenheit).pack()
 
 app.mainloop()
 ```
@@ -152,7 +152,7 @@ price = bs.Signal(29.99)
 # Format as currency
 display_price = price.map(lambda p: f"${p:.2f}")
 
-bs.Label(app, textvariable=display_price)  # Shows "$29.99"
+bs.Label(app, textsignal=display_price)  # Shows "$29.99"
 ```
 
 **Boolean to text:**
@@ -163,7 +163,7 @@ is_enabled = bs.Signal(True)
 # Map boolean to descriptive text
 status_text = is_enabled.map(lambda v: "Enabled" if v else "Disabled")
 
-bs.Label(app, textvariable=status_text)
+bs.Label(app, textsignal=status_text)
 ```
 
 **Validation state:**
@@ -288,7 +288,7 @@ def on_submit():
     current_name = name.get()
     print(f"Submitting: {current_name}")
 
-entry = bs.TextEntry(app, signal=name)
+entry = bs.TextEntry(app, textsignal=name)
 button = bs.Button(app, text="Submit", command=on_submit)
 ```
 
@@ -451,8 +451,8 @@ item_list.bind("<<ItemSelected>>", on_selected)
 ```python
 # Good: shared username across form
 username = bs.Signal("")
-entry = bs.TextEntry(app, signal=username)
-preview = bs.Label(app, textvariable=username)
+entry = bs.TextEntry(app, textsignal=username)
+preview = bs.Label(app, textsignal=username)
 ```
 
 ### Use Callbacks When
@@ -493,14 +493,14 @@ username = bs.Signal("")
 password = bs.Signal("")
 
 # UI
-form = bs.PackFrame(app, direction="vertical", gap=10, padding=20)
+form = bs.PackFrame(app, gap=10, padding=20)
 form.pack(fill="both", expand=True)
 
 bs.Label(form, text="Username:").pack()
-bs.TextEntry(form, signal=username).pack()
+bs.TextEntry(form, textsignal=username).pack()
 
 bs.Label(form, text="Password:").pack()
-bs.PasswordEntry(form, signal=password).pack()
+bs.PasswordEntry(form, textsignal=password).pack()
 
 # Submit reads current signal values
 def on_submit():
@@ -518,25 +518,22 @@ import bootstack as bs
 
 app = bs.App()
 
-# Signal for shared state
-content = bs.Signal("Type here...")
+content = bs.Signal("")
 
-main = bs.PackFrame(app, direction="horizontal", gap=20, padding=20)
+main = bs.PackFrame(app, gap=20, padding=20)
 main.pack(fill="both", expand=True)
 
-# Editor
-editor = bs.ScrolledText(main, width=40, height=10)
-editor.pack(fill="both", expand=True)
+left = bs.PackFrame(main, gap=8)
+left.pack(fill="both", expand=True)
+bs.Label(left, text="Editor").pack(anchor="w")
+entry = bs.TextEntry(left)
+entry.pack(fill="x")
+entry.on_input(lambda e: content.set(e.data["text"]))
 
-# Preview updates reactively
-preview = bs.Label(main, wraplength=200)
-preview.pack()
-
-# Connect editor changes to preview
-def sync_to_preview(event=None):
-    preview.configure(text=editor.get("1.0", "end-1c"))
-
-editor.bind("<KeyRelease>", sync_to_preview)
+right = bs.PackFrame(main, gap=8)
+right.pack(fill="both", expand=True)
+bs.Label(right, text="Preview").pack(anchor="w")
+bs.Label(right, textsignal=content, wraplength=300).pack(anchor="w")
 
 app.mainloop()
 ```

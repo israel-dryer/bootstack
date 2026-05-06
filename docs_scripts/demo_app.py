@@ -8,7 +8,7 @@ screenshot. All data is hardcoded; button commands are no-ops. Run with:
 
 import bootstack as bs
 from bootstack.constants import (
-    BOTH, CENTER, END, HORIZONTAL, LEFT, RIGHT, W, X, Y, YES,
+    BOTH, CENTER, END, W, X, YES,
 )
 
 
@@ -62,21 +62,19 @@ STATUS_ACCENTS = {"Pass": "success", "Warning": "warning", "Fail": "danger"}
 
 def build_analysis_page(page):
     """Main working view: parameters | summary, meter, status; data table below."""
-    # Page header
-    header = bs.Frame(page)
+    # Page header — title + subtitle side by side, baseline-aligned
+    header = bs.PackFrame(page, direction="horizontal", gap=16, anchor_items="s")
     header.pack(fill=X, padx=20, pady=(16, 4))
-    bs.Label(header, text="Analysis", font="heading-xl[bold]").pack(side=LEFT)
+    bs.Label(header, text="Analysis", font="heading-xl").pack()
     bs.Label(
         header,
         text="Run-A15  ·  CH-1 through CH-4  ·  15 samples",
         font="body",
         accent="secondary",
-    ).pack(side=LEFT, padx=(16, 0), pady=(8, 0))
+    ).pack()
 
     # Top row: parameters (left, fixed) | summary + status (right, expands)
-    top = bs.GridFrame(
-        page, columns=["360px", 1], gap=(12, 0), sticky_items="nsew",
-    )
+    top = bs.GridFrame(page, columns=["360px", 1], gap=(12, 0), sticky_items="nsew")
     top.pack(fill=X, padx=20, pady=(4, 10))
 
     # --- Parameters card ---------------------------------------------------
@@ -149,13 +147,13 @@ def build_analysis_page(page):
     summary.pack(fill=X)
 
     def _stat_cell(parent, label, value, color=None, big=True):
-        cell = bs.Frame(parent)
-        bs.Label(cell, text=label, font="caption", accent="secondary").pack(anchor=W)
+        cell = bs.PackFrame(parent, direction="vertical", anchor_items="w")
+        bs.Label(cell, text=label, font="caption", accent="secondary").pack()
         bs.Label(
             cell, text=value,
             font="heading-lg[bold]" if big else "body-xl[bold]",
             accent=color,
-        ).pack(anchor=W, pady=(2, 0))
+        ).pack(pady=(2, 0))
         return cell
 
     row1 = bs.PackFrame(summary, direction="horizontal", gap=18)
@@ -201,20 +199,20 @@ def build_analysis_page(page):
     info = bs.PackFrame(status_inner, direction="vertical", gap=10)
     info.pack(fill=BOTH, expand=YES, anchor="w", pady=(8, 0))
 
-    state_row = bs.Frame(info)
-    state_row.pack(anchor=W)
-    bs.Label(state_row, text="State", font="caption", accent="secondary").pack(anchor=W)
-    bs.Badge(state_row, text="Complete", accent="success", variant="pill").pack(anchor=W, pady=(4, 0))
+    state_row = bs.PackFrame(info, direction="vertical", anchor_items="w")
+    state_row.pack(anchor="w")
+    bs.Label(state_row, text="State", font="caption", accent="secondary").pack()
+    bs.Badge(state_row, text="Complete", accent="success", variant="pill").pack(pady=(4, 0))
 
-    eta_block = bs.Frame(info)
-    eta_block.pack(anchor=W)
-    bs.Label(eta_block, text="Elapsed", font="caption", accent="secondary").pack(anchor=W)
-    bs.Label(eta_block, text="0:00:42", font="heading-md[bold]").pack(anchor=W)
+    eta_block = bs.PackFrame(info, direction="vertical", anchor_items="w")
+    eta_block.pack(anchor="w")
+    bs.Label(eta_block, text="Elapsed", font="caption", accent="secondary").pack()
+    bs.Label(eta_block, text="0:00:42", font="heading-md[bold]").pack()
 
-    started_block = bs.Frame(info)
-    started_block.pack(anchor=W)
-    bs.Label(started_block, text="Started", font="caption", accent="secondary").pack(anchor=W)
-    bs.Label(started_block, text="13:44:15", font="body[bold]").pack(anchor=W)
+    started_block = bs.PackFrame(info, direction="vertical", anchor_items="w")
+    started_block.pack(anchor="w")
+    bs.Label(started_block, text="Started", font="caption", accent="secondary").pack()
+    bs.Label(started_block, text="13:44:15", font="body[bold]").pack()
 
     # --- Data table (TreeView for compact, no pager) -----------------------
     table_frame = bs.LabelFrame(page, text="Sample Readings", padding=8)
@@ -243,15 +241,16 @@ def build_analysis_page(page):
 
 def build_results_page(page):
     """Wide tabular results view with filter row and footer."""
-    header = bs.Frame(page)
+    # Page header — title + subtitle side by side, baseline-aligned
+    header = bs.PackFrame(page, direction="horizontal", gap=16, anchor_items="s")
     header.pack(fill=X, padx=20, pady=(20, 8))
-    bs.Label(header, text="Results", font="heading-xl[bold]").pack(side=LEFT)
+    bs.Label(header, text="Results", font="heading-xl[bold]").pack()
     bs.Label(
         header,
         text="Cross-run readings  ·  filtered & exportable",
         font="body",
         accent="secondary",
-    ).pack(side=LEFT, padx=(16, 0), pady=(8, 0))
+    ).pack()
 
     # Filter toolbar
     filters = bs.LabelFrame(page, text="Filters", padding=12)
@@ -301,17 +300,17 @@ def build_results_page(page):
         page_size=16,
     ).pack(fill=BOTH, expand=YES)
 
-    # Footer
-    footer = bs.Frame(page)
+    # Footer — record count left, export button right
+    footer = bs.GridFrame(page, columns=[1, "auto"])
     footer.pack(fill=X, padx=20, pady=(0, 20))
     bs.Label(
         footer, text=f"{len(RESULTS_ROWS)} records",
         font="body", accent="secondary",
-    ).pack(side=LEFT)
+    ).grid(row=0, column=0, sticky="w")
     bs.Button(
         footer, text="Export", icon="download", accent="secondary",
         variant="outline", command=lambda: None,
-    ).pack(side=RIGHT)
+    ).grid(row=0, column=1, sticky="e")
 
 
 # ---------------------------------------------------------------------------
@@ -322,7 +321,7 @@ def main():
     shell = bs.AppShell(
         title="Data Analysis Workbench",
         theme="bootstrap-light",
-        size=(1200, 780),
+        minsize=(1200, 780),
     )
 
     # Toolbar buttons

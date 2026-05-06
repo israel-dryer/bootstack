@@ -17,7 +17,7 @@ from bootstack.widgets.types import Master
 
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.style.style import get_style
-from bootstack.datasource.sqlite_source import SqliteDataSource
+from bootstack.datasource.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
 from bootstack.widgets.primitives.button import Button
 from bootstack.runtime.utility import bind_right_click
 from bootstack.widgets.composites.contextmenu import ContextMenu
@@ -382,7 +382,7 @@ class TableView(Frame):
                 new_id = self._datasource.create_record(dict(rec))
                 rec = dict(rec)
                 if new_id is not None:
-                    rec["id"] = new_id
+                    rec[_ROW_ID] = new_id
                 inserted.append(rec)
             except Exception:
                 logger.exception("Failed to insert record")
@@ -392,13 +392,13 @@ class TableView(Frame):
             self.event_generate("<<RowInsert>>", data={"records": inserted})
 
     def update_rows(self, rows: list[dict]) -> None:
-        """Update rows by id; each dict must include an 'id' key."""
+        """Update rows by internal row id; each dict must include the internal row-id key."""
         updated: list[dict] = []
         for rec in rows:
-            rec_id = rec.get("id")
+            rec_id = rec.get(_ROW_ID)
             if rec_id is None:
                 continue
-            updates = {k: v for k, v in rec.items() if k != "id"}
+            updates = {k: v for k, v in rec.items() if k != _ROW_ID}
             try:
                 self._datasource.update_record(rec_id, updates)
                 updated.append(rec)
@@ -417,7 +417,7 @@ class TableView(Frame):
             rec = {}
             if isinstance(item, dict):
                 rec = item
-                rec_id = item.get("id")
+                rec_id = item.get(_ROW_ID)
             else:
                 rec_id = item
             if rec_id is None:
@@ -425,7 +425,7 @@ class TableView(Frame):
             try:
                 self._datasource.delete_record(rec_id)
                 if not rec:
-                    rec = {"id": rec_id}
+                    rec = {_ROW_ID: rec_id}
                 deleted.append(rec)
             except Exception:
                 logger.exception("Failed to delete record id=%s", rec_id)
@@ -689,7 +689,7 @@ class TableView(Frame):
         if not inferred:
             inferred = getattr(self._datasource, "_columns", []) or []
 
-        inferred = [c for c in inferred if c not in ("id", "selected")]
+        inferred = [c for c in inferred if c not in (_ROW_ID, _ROW_SEL)]
         if not inferred:
             inferred = ["value"]
 
@@ -1326,7 +1326,7 @@ class TableView(Frame):
         form_options.setdefault('resizable', True)
 
         # Build buttons: Cancel, Delete (only for existing records), Save
-        if record and "id" in record:
+        if record and _ROW_ID in record:
             buttons: list[str | dict] = ['Cancel']
             if self._editing['deleting']:
                 buttons.append({"text": "Delete", "role": "secondary", "result": "delete"})
@@ -1353,21 +1353,21 @@ class TableView(Frame):
             return
 
         # Handle delete action
-        if result == "delete" and record and "id" in record:
+        if result == "delete" and record and _ROW_ID in record:
             try:
-                self._datasource.delete_record(record["id"])
+                self._datasource.delete_record(record[_ROW_ID])
                 self._clear_cache()
                 self._load_page(self._current_page)
             except Exception:
-                logger.exception("Failed to delete record id=%s", record["id"])
+                logger.exception("Failed to delete record id=%s", record[_ROW_ID])
             return
 
         data = result
         new_id = None
-        if record and "id" in record:
-            rec_id = record["id"]
+        if record and _ROW_ID in record:
+            rec_id = record[_ROW_ID]
             updates = dict(data)
-            updates.pop("id", None)
+            updates.pop(_ROW_ID, None)
             try:
                 logger.debug("Updating record id=%s with %s", rec_id, updates)
                 self._datasource.update_record(rec_id, updates)
@@ -1539,7 +1539,7 @@ class TableView(Frame):
             return
         iid = sel[0]
         rec = self._row_map.get(iid, {})
-        rec_id = rec.get("id")
+        rec_id = rec.get(_ROW_ID)
         if rec_id is not None:
             try:
                 self._datasource.delete_record(rec_id)
@@ -1557,7 +1557,7 @@ class TableView(Frame):
             rec = dict(self._row_map.get(iid) or {})
             if rec:
                 deleted_records.append(rec)
-            rec_id = rec.get("id")
+            rec_id = rec.get(_ROW_ID)
             if rec_id is not None:
                 try:
                     self._datasource.delete_record(rec_id)
@@ -1629,7 +1629,7 @@ class TableView(Frame):
         try:
             rid = str(record_id)
             for iid, rec in self._row_map.items():
-                if str(rec.get("id")) == rid:
+                if str(rec.get(_ROW_ID)) == rid:
                     self._tree.selection_set(iid)
                     self._tree.see(iid)
                     break
@@ -1646,7 +1646,7 @@ class TableView(Frame):
                     rows = self._datasource.get_page(page_idx)
                 except Exception:
                     break
-                if any(str(rec.get("id")) == rid for rec in rows):
+                if any(str(rec.get(_ROW_ID)) == rid for rec in rows):
                     return page_idx
         except Exception:
             pass
@@ -1894,7 +1894,7 @@ class TableView(Frame):
             items=items,
             allow_search=True,
             allow_select_all=True,
-            frameless=True
+            undecorated=True
         )
 
         result = dialog.show(position=(pos_x, pos_y))
@@ -2126,7 +2126,7 @@ class TableView(Frame):
             items=items,
             allow_search=False,
             allow_select_all=True,
-            frameless=True
+            undecorated=True
         )
 
         result = dialog.show(position=(pos_x, pos_y))
