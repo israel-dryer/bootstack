@@ -25,6 +25,7 @@ nav = [
         { "Windowing" = "guides/windowing.md" },
         { "Layout" = "guides/layout.md" },
         { "Navigation" = "guides/navigation.md" },
+        { "Menus" = "guides/menus.md" },
         { "Spacing & Alignment" = "guides/spacing-and-alignment.md" },
         { "Reactivity" = "guides/reactivity.md" },
         { "DataSource" = "guides/datasource.md" },

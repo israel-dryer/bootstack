@@ -4,30 +4,65 @@ title: MenuButton
 
 # MenuButton
 
-`MenuButton` is a **menu-first** control: it displays like a button, but its primary purpose is to **open a Tk menu**.
-Use it for classic menu patterns (File/Edit/View), or when the options list is the main interaction.
+`MenuButton` is a **native-menu control**: it looks like a button but opens a
+hierarchical Tk `Menu` — supporting cascading submenus, keyboard navigation,
+and platform menu conventions.
+
+Use it when your options have **nested structure** or when you need native
+platform menu behavior.  For a flat list of choices, use
+[DropdownButton](dropdownbutton.md) instead.
 
 ---
 
 ## Quick start
 
-`MenuButton` uses a standard Tk `Menu`.
+Build the menu declaratively with `bs.create_menu`, then pass it to `MenuButton`.
+Icons and theme-color updates are handled automatically.
 
 ```python
 import bootstack as bs
-from tkinter import Menu
 
-app = bs.App()
+app = bs.App(minsize=(300, 200))
 
-m = Menu(app, tearoff=0)
-m.add_command(label="Open", command=lambda: print("Open"))
-m.add_command(label="Save", command=lambda: print("Save"))
-m.add_separator()
-m.add_command(label="Exit", command=app.destroy)
+items = [
+    {
+        "label": "File",
+        "items": [
+            {"label": "New",  "icon": "file-plus",    "command": lambda: print("New")},
+            {"label": "Open", "icon": "folder2-open", "command": lambda: print("Open")},
+            {"type": "separator"},
+            {"label": "Exit", "icon": "x-circle",     "command": app.destroy},
+        ],
+    },
+    {
+        "label": "Edit",
+        "items": [
+            {"label": "Undo", "icon": "arrow-counterclockwise", "command": lambda: print("Undo")},
+            {"label": "Redo", "icon": "arrow-clockwise",        "command": lambda: print("Redo")},
+        ],
+    },
+]
 
-bs.MenuButton(app, text="File", menu=m).pack(padx=20, pady=20)
+bs.MenuButton(app, text="Menu", menu=bs.create_menu(items)).pack(padx=20, pady=20)
 
 app.mainloop()
+```
+
+<div class="app-window">
+    <img src="../../assets/widgets-menubutton-quickstart.png" alt="Menubutton Quickstart"/>
+</div>
+
+`bs.create_menu` returns a `bs.Menu` populated with cascade entries — pass it
+directly to `menu=`.  Each top-level dict becomes a submenu group; items inside
+`"items"` are the actual commands.  Nesting is unlimited.
+
+`parent` defaults to the current app and can be omitted in single-window apps.
+When building a menu for a secondary window or dialog, pass the `Toplevel`
+explicitly so icon theme-tracking stays on the correct window:
+
+```python
+dlg = bs.Toplevel(app)
+bs.MenuButton(dlg, text="Menu", menu=bs.create_menu(items, parent=dlg)).pack()
 ```
 
 ---
@@ -36,14 +71,15 @@ app.mainloop()
 
 Use `MenuButton` when:
 
-- the control is primarily a **menu entry point**
-- you need native-style menu behavior (keyboard navigation, platform conventions)
-- your menu items map well to Tk’s `Menu` model
+- your options have **two or more levels** (groups, submenus, or both)
+- you need native platform menu conventions (keyboard navigation, accelerators)
+- the menu is the primary interaction, not a secondary affordance
 
 ### Consider a different control when…
 
+- you want a **flat** list of options → use [DropdownButton](dropdownbutton.md)
 - you want a primary action plus a small menu → use [DropdownButton](dropdownbutton.md)
-- you want a fully themed, widget-backed menu with icons/layout → use [ContextMenu](contextmenu.md)
+- you want a fully themed, widget-backed menu with custom layout → use [ContextMenu](contextmenu.md)
 - you want a single action → use [Button](button.md)
 
 ---
@@ -63,8 +99,10 @@ bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4
 
 ## Behavior
 
-- `MenuButton` opens the associated Tk `Menu`.
-- Menu keyboard navigation and platform conventions are handled by Tk.
+- `MenuButton` opens the associated `bs.Menu` on click.
+- Keyboard navigation and platform conventions are handled by Tk.
+
+!!! link "See [Menus](../../guides/menus.md) for the full item dict format, shortcuts, localization, and how `MenuButton` fits alongside `ContextMenu` and `MenuBar`."
 
 !!! link "See [State & Interaction](../../guides/reactivity.md) for focus, hover, and disabled behavior across widgets."
 
@@ -72,12 +110,20 @@ bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4
 
 ## Localization
 
-Tk `Menu` labels can be localized by passing message tokens (or resolved strings) when you build the menu.
+Pass message tokens as labels when building the menu — `bs.create_menu`
+resolves them through `MessageCatalog` automatically.
 
 ```python
-m = Menu(app, tearoff=0)
-m.add_command(label="menu.open", command=lambda: ...)
-bs.MenuButton(app, text="button.file", menu=m).pack()
+items = [
+    {
+        "label": "menu.file",
+        "items": [
+            {"label": "menu.file.open", "icon": "folder2-open", "command": open_file},
+            {"label": "menu.file.exit", "icon": "x-circle",     "command": app.destroy},
+        ],
+    },
+]
+bs.MenuButton(app, text="menu.file", menu=bs.create_menu(items)).pack()
 ```
 
 !!! link "See [Localization](../../guides/localization.md) for how message tokens are resolved and how language switching works."
@@ -101,3 +147,5 @@ bs.MenuButton(app, text="button.file", menu=m).pack()
 ### API reference
 
 - [`bootstack.MenuButton`](../../reference/widgets/MenuButton.md)
+- [`bootstack.create_menu`](../../reference/app/create_menu.md)
+- [`bootstack.MenuManager`](../../reference/app/MenuManager.md)

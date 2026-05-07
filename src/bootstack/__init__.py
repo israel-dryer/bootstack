@@ -45,7 +45,7 @@ from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 # (see constants.py which re-exports from core.constants)
 
 if TYPE_CHECKING:
-    from bootstack.api.menu import MenuManager, create_menu
+    from bootstack.api.menu import MenuManager, create_menu, create_menu_items
     from bootstack.api.app import App, AppShell, App as Window, Toplevel, AppSettings, get_app_settings, get_current_app, Shortcuts, Shortcut, get_shortcuts
     from bootstack.api.style import (
         Font,
@@ -157,7 +157,7 @@ _MODULE_EXPORTS = {
     # Application & Windows (includes menu and shortcuts)
     "bootstack.api.app": [
         "App", "AppShell", "Toplevel", "Window", "AppSettings", "get_app_settings", "get_current_app",
-        "MenuManager", "create_menu",
+        "MenuManager", "create_menu", "create_menu_items",
         "Shortcuts", "Shortcut", "get_shortcuts",
     ],
     # Style & Theming

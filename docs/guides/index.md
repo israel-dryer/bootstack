@@ -41,6 +41,7 @@ link to it.
 - **[Layout](layout.md)** — Building layouts with Frame, PackFrame, GridFrame, and Card.
 - **[Spacing & Alignment](spacing-and-alignment.md)** — Padding, gap, alignment, sizing, and auto-flow in bootstack containers.
 - **[Navigation](navigation.md)** — Tabs, stacked pages, and sidebar navigation patterns.
+- **[Menus](menus.md)** — Window menubars, MenuButton, ContextMenu, and MenuBar: choosing a surface, item dict format, icons, shortcuts, and localization.
 
 ### Data
 
