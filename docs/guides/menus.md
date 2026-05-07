@@ -76,6 +76,10 @@ app['menu'] = bs.create_menu([
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-menus-menubar.png" alt="Window Menubar"/>
+</div>
+
 For a secondary window, pass `parent=` explicitly so icon theme-tracking
 stays on the correct window:
 
@@ -148,8 +152,12 @@ Build items with `add_command`, `add_checkbutton`, `add_radiobutton`, and
 ```python
 import bootstack as bs
 
-app = bs.App()
+app = bs.App(size=(200, 200))
 frame = bs.PackFrame(app).pack(fill="both", expand=True)
+
+def refresh(): pass
+def copy_path(): pass
+def show_props(): pass
 
 ctx = bs.ContextMenu(frame, trigger="right-click")
 ctx.add_command(text="Refresh",   icon="arrow-clockwise", command=refresh)
@@ -159,6 +167,10 @@ ctx.add_command(text="Properties", icon="gear",           command=show_props)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-menus-contextmenu.png" alt="context menu"/>
+</div>
 
 `trigger="right-click"` binds the platform-correct gesture automatically
 (Button-3 on Win/Linux, Button-2 and Ctrl+Button-1 on macOS).
@@ -226,6 +238,12 @@ import bootstack as bs
 
 app = bs.App(title="Editor", minsize=(900, 600))
 
+def new_file(): pass
+def open_file(): pass
+def undo(): pass
+def redo(): pass
+def show_help(): pass
+
 bar = bs.MenuBar(app)
 bar.pack(fill="x")
 
@@ -245,6 +263,9 @@ bar.add_button("Help", icon="question-circle", region="after", command=show_help
 
 app.mainloop()
 ```
+<div class="app-window">
+    <img src="../assets/guides-menus-menubar-widget.png" alt="Menubar Widget"/>
+</div>
 
 ### Regions
 
