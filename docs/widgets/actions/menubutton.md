@@ -5,11 +5,11 @@ title: MenuButton
 # MenuButton
 
 `MenuButton` is a **native-menu control**: it looks like a button but opens a
-hierarchical Tk `Menu` — supporting cascading submenus, keyboard navigation,
+hierarchical `bs.Menu` — supporting cascading submenus, keyboard navigation,
 and platform menu conventions.
 
 Use it when your options have **nested structure** or when you need native
-platform menu behavior.  For a flat list of choices, use
+platform menu behavior. For a flat list of choices, use
 [DropdownButton](dropdownbutton.md) instead.
 
 ---
@@ -53,8 +53,10 @@ app.mainloop()
 </div>
 
 `bs.create_menu` returns a `bs.Menu` populated with cascade entries — pass it
-directly to `menu=`.  Each top-level dict becomes a submenu group; items inside
-`"items"` are the actual commands.  Nesting is unlimited.
+directly to `menu=`. Each top-level dict becomes a submenu group; items inside
+`"items"` are the actual commands. Nesting is unlimited.
+
+!!! link "See [Menus](../../guides/menus.md) for the full item dict format, shortcuts, icons, and how to build flat and nested menus."
 
 `parent` defaults to the current app and can be omitted in single-window apps.
 When building a menu for a secondary window or dialog, pass the `Toplevel`
@@ -77,9 +79,8 @@ Use `MenuButton` when:
 
 ### Consider a different control when…
 
-- you want a **flat** list of options → use [DropdownButton](dropdownbutton.md)
-- you want a primary action plus a small menu → use [DropdownButton](dropdownbutton.md)
-- you want a fully themed, widget-backed menu with custom layout → use [ContextMenu](contextmenu.md)
+- you want a flat list of options, or a primary action plus a small menu → use [DropdownButton](dropdownbutton.md)
+- you want a fully themed, widget-backed popup menu → use [ContextMenu](contextmenu.md)
 - you want a single action → use [Button](button.md)
 
 ---
@@ -95,12 +96,27 @@ bs.MenuButton(app, text="Menu", accent="primary").pack(pady=4)
 bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4)
 ```
 
+Use `icon=` to add an icon, `icon_only=True` for icon-only buttons, and
+`density='compact'` for toolbar contexts:
+
+```python
+bs.MenuButton(app, icon="list",  icon_only=True, density="compact", menu=m).pack()
+bs.MenuButton(app, text="View",  icon="eye",     density="compact", menu=m).pack()
+```
+
+Use `direction=` to control which side the menu posts relative to the button:
+
+```python
+bs.MenuButton(app, text="Menu", direction="above", menu=m).pack()
+```
+
 ---
 
 ## Behavior
 
 - `MenuButton` opens the associated `bs.Menu` on click.
 - Keyboard navigation and platform conventions are handled by Tk.
+- A second click on an open menu closes it.
 
 !!! link "See [Menus](../../guides/menus.md) for the full item dict format, shortcuts, localization, and how `MenuButton` fits alongside `ContextMenu` and `MenuBar`."
 
@@ -111,7 +127,8 @@ bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4
 ## Localization
 
 Pass message tokens as labels when building the menu — `bs.create_menu`
-resolves them through `MessageCatalog` automatically.
+resolves them through `MessageCatalog` automatically. The button's own `text=`
+kwarg is also localized the same way.
 
 ```python
 items = [
