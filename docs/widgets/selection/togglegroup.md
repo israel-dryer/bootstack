@@ -14,8 +14,8 @@ Use `ToggleGroup` for segmented controls, mode switches, toolbar filters, and co
 
 `ToggleGroup` provides:
 
-- **single selection** (`mode="single"`) - radio button behavior, one active at a time
-- **multi-selection** (`mode="multi"`) - checkbox behavior, multiple selections allowed
+- **single selection** (`mode="single"`) — radio button behavior, one active at a time
+- **multi-selection** (`mode="multi"`) — checkbox behavior, multiple selections allowed
 - **horizontal** or **vertical** orientation
 - automatic visual grouping with buttongroup styling
 
@@ -29,8 +29,8 @@ import bootstack as bs
 app = bs.App()
 
 group = bs.ToggleGroup(app, mode="single", value="grid")
-group.add("Grid", value="grid")
-group.add("List", value="list")
+group.add("Grid",  value="grid")
+group.add("List",  value="list")
 group.add("Cards", value="cards")
 group.pack(padx=20, pady=20)
 
@@ -49,9 +49,9 @@ Use `ToggleGroup` when:
 
 ### Consider a different control when...
 
-- options should look like classic radio buttons -> use [RadioGroup](radiogroup.md)
-- you have unrelated actions that shouldn't look connected -> use separate [Button](../actions/button.md) widgets
-- you need grouped action buttons (not selection) -> use [ButtonGroup](../actions/buttongroup.md)
+- options should look like classic radio buttons → use [RadioGroup](radiogroup.md)
+- you have unrelated actions that shouldn't look connected → use separate [Button](../actions/button.md) widgets
+- you need grouped action buttons (not selection) → use [ButtonGroup](../actions/buttongroup.md)
 
 ---
 
@@ -59,23 +59,19 @@ Use `ToggleGroup` when:
 
 ### Single selection mode
 
-Only one option can be selected at a time (radio button behavior).
-
 ```python
 group = bs.ToggleGroup(app, mode="single", value="day")
-group.add("Day", value="day")
-group.add("Week", value="week")
+group.add("Day",   value="day")
+group.add("Week",  value="week")
 group.add("Month", value="month")
 ```
 
 ### Multi-selection mode
 
-Multiple options can be selected simultaneously (checkbox behavior).
-
 ```python
 group = bs.ToggleGroup(app, mode="multi", value={"bold"})
-group.add("Bold", value="bold")
-group.add("Italic", value="italic")
+group.add("Bold",      value="bold")
+group.add("Italic",    value="italic")
 group.add("Underline", value="underline")
 ```
 
@@ -88,50 +84,6 @@ bs.ToggleGroup(app, orient="vertical")
 
 ---
 
-## How the value works
-
-The value type depends on the mode:
-
-- **single mode**: `str` - the value of the selected option
-- **multi mode**: `set[str]` - set of selected option values
-
-```python
-# Get current value
-current = group.get()
-
-# Set value
-group.set("week")           # single mode
-group.set({"bold", "italic"})  # multi mode
-```
-
----
-
-## Binding to signals or variables
-
-You can control the group selection with either:
-
-- `signal=...` (preferred)
-- `variable=...` (Tk variable - `StringVar` for single, `SetVar` for multi)
-
-If neither is provided, `ToggleGroup` creates an internal variable.
-
-```python
-import bootstack as bs
-
-app = bs.App()
-
-view = bs.Signal("grid")
-
-group = bs.ToggleGroup(app, mode="single", signal=view)
-group.add("Grid", value="grid")
-group.add("List", value="list")
-group.pack(padx=20, pady=20)
-
-app.mainloop()
-```
-
----
-
 ## Common options
 
 ### `mode`
@@ -140,47 +92,91 @@ Selection mode: `"single"` (default) or `"multi"`.
 
 ### `orient`
 
-Layout orientation: `"horizontal"` (default) or `"vertical"`.
+Layout: `"horizontal"` (default) or `"vertical"`.
 
 ### `accent`
-
-Applies to all child buttons (defaults to `"primary"`).
 
 ```python
 group = bs.ToggleGroup(app, accent="secondary")
 ```
 
-### `add(text, value, key=None, **kwargs)`
+### `variant`
 
-Add an option. `value` is required. `key` defaults to `value`.
+Controls the visual style of the child buttons: `"outline"`, `"ghost"`, or the default solid.
 
 ```python
-group.add("Low", value="low")
-group.add("High", value="high", key="hi")
+group = bs.ToggleGroup(app, variant="ghost")
+```
+
+### `add(text, value, key=None, **kwargs)`
+
+Add an option. Extra `**kwargs` are forwarded to the underlying `RadioToggle` (single) or `CheckToggle` (multi) — including `icon=` and `icon_only=`:
+
+```python
+group.add("Grid",  value="grid")
+group.add("List",  value="list", key="list-view")
+
+# Icon-only toggles
+group.add(icon="grid", icon_only=True, value="grid")
+group.add(icon="list", icon_only=True, value="list")
+```
+
+Note: `text` defaults to `None` — useful for icon-only buttons.
+
+!!! warning "`padding=` is not supported as a constructor kwarg"
+    Due to a known source issue, passing `padding=` to `ToggleGroup()` raises a `TypeError`.
+    Use the parent container for layout spacing instead.
+
+---
+
+## How the value works
+
+- **single mode**: `str` — the value of the selected option
+- **multi mode**: `set[str]` — set of selected option values
+
+```python
+current = group.get()          # or group.value
+group.set("week")              # single mode
+group.set({"bold", "italic"})  # multi mode
+group.value = "week"           # property form
 ```
 
 ---
 
-## Behavior
+## Item management
 
-- In single mode, selecting a new option deselects the previous one.
-- In multi mode, clicking toggles the option on/off.
-- Buttons are packed based on orientation (horizontal: left-to-right, vertical: top-to-bottom).
-- Visual styling uses buttongroup variants with automatic position detection.
+```python
+group.add("Draft", value="draft", key="draft")
+
+btn = group.item("draft")                      # retrieve by key
+group.configure_item("draft", state="disabled") # reconfigure
+group.remove("draft")                           # remove and destroy
+group.keys()                                    # all keys in order
+group.items()                                   # all widgets in order
+```
+
+---
+
+## Binding to signals or variables
+
+```python
+view = bs.Signal("grid")
+
+group = bs.ToggleGroup(app, mode="single", signal=view)
+group.add("Grid", value="grid")
+group.add("List", value="list")
+group.pack(padx=20, pady=20)
+```
 
 ---
 
 ## Events
-
-Subscribe to value changes using `on_changed`.
 
 ```python
 def on_change(value):
     print("Selected:", value)
 
 sub_id = group.on_changed(on_change)
-
-# Later:
 group.off_changed(sub_id)
 ```
 
@@ -190,31 +186,11 @@ Callbacks receive the new value directly (string in single mode, set in multi mo
 
 ## Colors and styling
 
-`ToggleGroup` forwards `accent` to its child buttons with buttongroup styling.
-
 ```python
 bs.ToggleGroup(app, accent="primary")
-bs.ToggleGroup(app, accent="secondary")
-bs.ToggleGroup(app, accent="success")
+bs.ToggleGroup(app, accent="secondary", variant="outline")
+bs.ToggleGroup(app, accent="success",   variant="ghost")
 ```
-
----
-
-## When should I use ToggleGroup?
-
-Use `ToggleGroup` when:
-
-- you want connected button-style selection
-- the control appears in toolbars, headers, or compact UI areas
-- you need either single or multi-selection in a segmented layout
-
-Prefer **RadioGroup** when:
-
-- classic radio button indicators are expected
-
-Prefer **ButtonGroup** when:
-
-- buttons trigger actions rather than represent selection state
 
 ---
 
@@ -222,10 +198,10 @@ Prefer **ButtonGroup** when:
 
 ### Related widgets
 
-- [ButtonGroup](../actions/buttongroup.md) - grouped action buttons (no selection state)
-- [RadioGroup](radiogroup.md) - grouped radio buttons with classic indicators
-- [RadioToggle](radiotoggle.md) - individual toggle-style radio buttons
-- [CheckToggle](checktoggle.md) - individual toggle-style checkboxes
+- [ButtonGroup](../actions/buttongroup.md) — grouped action buttons (no selection state)
+- [RadioGroup](radiogroup.md) — grouped radio buttons with classic indicators
+- [RadioToggle](radiotoggle.md) — individual toggle-style radio buttons
+- [CheckToggle](checktoggle.md) — individual toggle-style checkboxes
 
 ### API reference
 
