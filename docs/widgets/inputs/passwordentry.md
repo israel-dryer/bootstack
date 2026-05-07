@@ -4,10 +4,10 @@ title: PasswordEntry
 
 # PasswordEntry
 
-`PasswordEntry` is a secure, form-ready text input control for passwords, PINs, and other sensitive values.
+`PasswordEntry` is a secure, form-ready text input control for passwords and other sensitive values.
 
-It builds on `TextEntry`, adding masking, optional reveal behavior, and password-specific validation patterns—while preserving
-the same label/message, localization, and event model used throughout bootstack v2.
+It builds on `TextEntry`, adding masking, an optional reveal toggle, and password-specific validation patterns — while
+preserving the same label/message, localization, and event model used throughout bootstack.
 
 ---
 
@@ -36,14 +36,12 @@ app.mainloop()
 Use `PasswordEntry` when:
 
 - the input should not be displayed in clear text
-
 - you want consistent form UX (label/message/validation/events)
 
 Consider a different control when:
 
 - masking is not required — use [TextEntry](textentry.md)
-
-- the input is numeric-only (PINs with numeric constraints) — use [NumericEntry](numericentry.md)
+- the input is a numeric PIN — use [TextEntry](textentry.md) with a `pattern` validation rule (PINs are strings where leading zeros matter, not numbers)
 
 ---
 
@@ -52,22 +50,23 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.PasswordEntry(app, label="Password")  # primary (default)
+bs.PasswordEntry(app, label="Password")                    # primary (default)
 bs.PasswordEntry(app, label="Password", accent="secondary")
-bs.PasswordEntry(app, label="Password", accent="success")
-bs.PasswordEntry(app, label="Password", accent="warning")
 ```
 
-!!! link "Design System"
-    For a complete list of available colors and styling options, see the [Design System](../../design-system/index.md) documentation.
+Use `density='compact'` for dense layouts:
+
+```python
+bs.PasswordEntry(app, label="Password", density="compact")
+```
+
+!!! link "See [Design System](../../design-system/index.md) for a complete list of available colors and styling options."
 
 ---
 
 ## Examples and patterns
 
 ### Value model
-
-PasswordEntry separates **what is displayed** from **what is stored**.
 
 | Concept | Meaning |
 |---|---|
@@ -83,10 +82,13 @@ The reveal toggle changes only the display, never the underlying value.
 
 ### Common options
 
-#### `required`, `message`, `accent`
+#### `required`, `message`, `show`
 
 ```python
 bs.PasswordEntry(app, label="Password", required=True, message="Minimum 8 characters")
+
+# Custom mask character (default is '•')
+bs.PasswordEntry(app, label="PIN", show="*")
 ```
 
 #### Reveal toggle: `show_visibility_toggle`
@@ -95,79 +97,112 @@ bs.PasswordEntry(app, label="Password", required=True, message="Minimum 8 charac
 pwd = bs.PasswordEntry(app, label="Password", show_visibility_toggle=False)
 ```
 
+#### `state`
+
+```python
+pwd = bs.PasswordEntry(app, label="Password", state="disabled")
+
+pwd.disable()       # prevent input
+pwd.enable()        # restore input
+pwd.readonly(True)  # allow reading, block editing
+```
+
 #### Add-ons
 
 ```python
 pwd.insert_addon(bs.Label, position="before", icon="lock", icon_only=True)
 ```
 
+!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+
 ### Events
 
-PasswordEntry emits the standard field events:
-
-- `<<Input>>` / `on_input` — editing
-
-- `<<Changed>>` / `on_changed` — committed value changed
-
-- `<<Valid>>`, `<<Invalid>>`, `<<Validated>>`
+**Change events** — callback receives a Tkinter event object:
 
 ```python
-def handle_changed(event):
-    print("Password updated")
+def on_change(event):
+    print("password updated:", event.data["value"])
 
-pwd.on_changed(handle_changed)
+pwd.on_input(on_change)    # <<Input>>  — fires on each keystroke
+pwd.on_changed(on_change)  # <<Change>> — fires on commit
 ```
 
-!!! tip "Event usage"
-    Use `on_input(...)` for live UX feedback (e.g., strength meters).
-    Use `on_changed(...)` for authentication or submission logic.
+**Validation events** — callback receives a plain dict:
+
+```python
+def on_result(data):
+    print("valid:", data["is_valid"], "message:", data["message"])
+
+pwd.on_valid(on_result)      # <<Valid>>
+pwd.on_invalid(on_result)    # <<Invalid>>
+pwd.on_validated(on_result)  # <<Validate>> — fires after any validation
+```
+
+Use `on_enter` to handle the Return key directly (useful for single-field login forms):
+
+```python
+pwd.on_enter(lambda event: submit())
+```
+
+All `on_*` methods return a bind ID for unsubscribing:
+
+```python
+bid = pwd.on_changed(on_change)
+pwd.off_changed(bid)
+```
 
 ### Validation
 
-Password validation is typically applied **on commit**, not per keystroke.
+Password validation is applied **on commit**, not per keystroke.
 
 ```python
 pwd = bs.PasswordEntry(app, label="Password", required=True)
-pwd.add_validation_rule("min_length", 8, message="Minimum 8 characters")
+pwd.add_validation_rule("stringLength", min=8, message="Minimum 8 characters")
 ```
 
-Common patterns include:
+Common patterns:
 
-- required
+```python
+# Minimum length
+pwd.add_validation_rule("stringLength", min=8, message="At least 8 characters")
 
-- minimum length
+# Character class (regex)
+pwd.add_validation_rule("pattern",
+    pattern=r"^(?=.*[A-Z])(?=.*\d).+$",
+    message="Must contain a capital letter and a number")
 
-- character class rules
-
-- confirmation match (cross-field rule)
+# Confirmation match (cross-field)
+pwd.add_validation_rule("compare",
+    other_field=confirm_pwd,
+    message="Passwords do not match")
+```
 
 ---
 
 ## Behavior
 
-- Characters are masked while typing.
-
-- A reveal button is shown by default (configurable).
-
+- Characters are masked while typing (default mask character: `'•'`).
+- A reveal button is shown by default (`show_visibility_toggle=True`).
 - Commit semantics match other field controls (blur or Enter).
 
 ---
 
 ## Localization
 
-`PasswordEntry` inherits the localization capabilities from `TextEntry`. Labels, messages, and validation feedback can be localized for different languages.
+Labels, messages, and validation feedback can be localized. Any string passed as `label=` or `message=` is used as a gettext key when localization is active.
 
-!!! link "Localization"
-    For complete localization configuration and supported formats, see the [Localization](../../guides/localization.md) documentation.
+!!! link "See [Localization](../../guides/localization.md) for setup and language switching."
 
 ---
 
 ## Reactivity
 
-`PasswordEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
+```python
+password = bs.Signal("")
+entry = bs.PasswordEntry(app, label="Password", textsignal=password)
+```
 
-!!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
+!!! link "See [Reactivity](../../guides/reactivity.md) for signal patterns and data binding."
 
 ---
 
@@ -182,7 +217,7 @@ Common patterns include:
 ### Framework concepts
 
 - [Localization](../../guides/localization.md) — internationalization and formatting
-- [Signals](../../guides/reactivity.md) — reactive data binding
+- [Reactivity](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

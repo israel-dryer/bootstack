@@ -6,8 +6,8 @@ title: TimeEntry
 
 `TimeEntry` is a form-ready input control for entering a **time of day**.
 
-It's built on the same field foundation as other v2 inputs, so it supports a label and message region, validation,
-localization/formatting, and consistent events.
+It combines a text field with a time dropdown, and supports the same label/message, validation, localization, and events
+as other entry controls.
 
 ---
 
@@ -35,16 +35,12 @@ app.mainloop()
 Use `TimeEntry` when:
 
 - users need to enter times (schedules, appointments, thresholds)
-
 - you want consistent field behavior (label, message, validation, events)
 
 Consider a different control when:
 
 - the value is not semantically a time — use [TextEntry](textentry.md)
-
-- you want free-form text — use [TextEntry](textentry.md)
-
-- users should step through time in fixed increments (minutes, hours) — use [SpinnerEntry](spinnerentry.md)
+- users should step through time in fixed increments — use [SpinnerEntry](spinnerentry.md)
 
 ---
 
@@ -53,14 +49,17 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.TimeEntry(app, label="Start time")  # primary (default)
+bs.TimeEntry(app, label="Start time")                    # primary (default)
 bs.TimeEntry(app, label="Start time", accent="secondary")
-bs.TimeEntry(app, label="Start time", accent="success")
-bs.TimeEntry(app, label="Start time", accent="warning")
 ```
 
-!!! link "Design System"
-    For a complete list of available colors and styling options, see the [Design System](../../design-system/index.md) documentation.
+Use `density='compact'` for dense form layouts:
+
+```python
+bs.TimeEntry(app, label="Time", density="compact")
+```
+
+!!! link "See [Design System](../../design-system/index.md) for a complete list of available colors and styling options."
 
 ---
 
@@ -70,98 +69,112 @@ bs.TimeEntry(app, label="Start time", accent="warning")
 
 `TimeEntry` separates **typed text** from the **committed time value**.
 
-- While editing, the widget contains raw text.
-
-- On commit (blur or Enter), the value is parsed and normalized.
-
 ```python
-current = t.value  # committed value
-raw = t.get()      # raw text
+current = t.value   # committed time value
+raw = t.get()       # raw text
 ```
 
-If parsing fails, the value remains unchanged and validation/event feedback is emitted (see **Validation**).
+On commit (blur or Enter), the value is parsed and normalized. If parsing fails, the value is unchanged and validation feedback is emitted.
 
 ### Common options
 
-Common field options include:
+#### `value`
 
-- `label`, `message`, `required`
-
-- `accent`
-
-- `value` (initial committed value)
-
-- time formatting options (if supported by your implementation)
+!!! note "Default is current time"
+    If `value` is not provided, `TimeEntry` pre-fills with the current wall-clock time. Pass `value=""` or an explicit time string to start with a known value.
 
 ```python
-bs.TimeEntry(app, label="End time", required=True, accent="secondary")
+bs.TimeEntry(app, label="Alarm", value="07:00")
+```
+
+#### Dropdown options: `interval`, `min_time`, `max_time`
+
+The dropdown shows time options at regular intervals. Customize to limit what appears:
+
+```python
+# 15-minute intervals from 9 AM to 5 PM
+bs.TimeEntry(
+    app,
+    label="Appointment",
+    interval=15,
+    min_time="09:00",
+    max_time="17:00",
+)
+```
+
+`interval` defaults to 30 minutes. `min_time` and `max_time` default to midnight and 23:59.
+
+#### Formatting: `value_format`
+
+```python
+bs.TimeEntry(app, label="Short Time", value_format="shortTime")  # "3:30 PM"
+bs.TimeEntry(app, label="Long Time",  value_format="longTime")   # "3:30:45 PM PST"
+bs.TimeEntry(app, label="24-Hour",    value_format="HH:mm")      # "15:30"
+```
+
+!!! link "See [Formatting](../../guides/formatting.md) for all time presets and custom patterns."
+
+#### `state`
+
+```python
+t = bs.TimeEntry(app, label="Time", state="disabled")
+
+t.disable()       # prevent input
+t.enable()        # restore input
+t.readonly(True)  # allow reading, block editing
 ```
 
 ### Events
 
-`TimeEntry` follows the standard field event model:
-
-- `<<Input>>` / `on_input` — live typing
-
-- `<<Changed>>` / `on_changed` — committed value changed
-
-- `<<Valid>>`, `<<Invalid>>`, `<<Validated>>` — validation lifecycle
+**Change events** — callback receives a Tkinter event object:
 
 ```python
-def on_changed(event):
+def on_change(event):
     print("time:", event.data["value"])
 
-t.on_changed(on_changed)
+t.on_input(on_change)    # <<Input>>  — live typing
+t.on_changed(on_change)  # <<Change>> — committed value
+```
+
+**Validation events** — callback receives a plain dict:
+
+```python
+def on_result(data):
+    print("valid:", data["is_valid"])
+
+t.on_valid(on_result)      # <<Valid>>
+t.on_invalid(on_result)    # <<Invalid>>
+t.on_validated(on_result)  # <<Validate>> — fires after any validation
 ```
 
 ### Validation
 
-Validation is commonly used to ensure:
+```python
+t = bs.TimeEntry(app, label="End time", required=True)
 
-- the value is a valid time
-
-- a time is required
-
-- time ranges are consistent across fields (e.g., start < end)
-
-Because `TimeEntry` is a structured input, prefer commit-time validation rather than per-keystroke restrictions.
+t.add_validation_rule("custom",
+    func=lambda v: (v >= start.value, "End must be after start"))
+```
 
 ---
 
 ## Behavior
 
-`TimeEntry` is designed for quick keyboard entry:
-
-- users can type a time (e.g., `830`, `8:30`, `08:30`, depending on your parser)
-
-- commit occurs on blur or Enter
-
-- formatting (if configured) is applied on commit
-
-If your implementation supports a picker-style interaction, it should be treated as an optional convenience on top of typing.
-
----
-
-## Formatting and localization
-
-`TimeEntry` supports locale-aware time formatting through the `value_format` option. Times are displayed according to the current locale's conventions (12-hour vs 24-hour format, AM/PM indicators).
-
-```python
-bs.TimeEntry(app, label="Short Time", value_format="shortTime")  # "3:30 PM"
-bs.TimeEntry(app, label="Long Time", value_format="longTime")    # "3:30:45 PM PST"
-bs.TimeEntry(app, label="24-Hour", value_format="HH:mm")         # "15:30"
-```
-
-See [Guides → Formatting](../../guides/formatting.md) for all time presets and custom patterns.
+- Users type a time directly (`"8:30"`, `"08:30"`, `"8:30 PM"`) or select from the dropdown.
+- Accepted formats: `HH:MM` and `HH:MM AM/PM`. Other formats may not parse correctly and will leave the value unchanged.
+- Commit occurs on blur or Enter.
+- Formatting is applied on commit.
 
 ---
 
 ## Reactivity
 
-`TimeEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
+```python
+alarm = bs.Signal("07:00")
+entry = bs.TimeEntry(app, label="Alarm", textsignal=alarm)
+```
 
-!!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
+!!! link "See [Reactivity](../../guides/reactivity.md) for signal patterns and data binding."
 
 ---
 
@@ -171,15 +184,14 @@ See [Guides → Formatting](../../guides/formatting.md) for all time presets and
 
 - [DateEntry](dateentry.md) — date input control
 - [TextEntry](textentry.md) — general field control
-- [NumericEntry](numericentry.md) — numeric field with bounds and stepping
-- [SpinnerEntry](spinnerentry.md) — stepped input control (useful for minute increments)
+- [SpinnerEntry](spinnerentry.md) — stepped input (useful for minute/hour increments)
 - [Form](../forms/form.md) — build forms from field definitions
 
 ### Framework concepts
 
 - [Formatting](../../guides/formatting.md) — time presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
-- [Signals](../../guides/reactivity.md) — reactive data binding
+- [Reactivity](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

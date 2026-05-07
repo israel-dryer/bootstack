@@ -7,7 +7,7 @@ title: PathEntry
 `PathEntry` is a form-ready input control for selecting **files and folders**.
 
 It combines a text field (type/paste paths) with a browse button (pick visually), while keeping the same label/message,
-validation, and event model as other v2 field controls.
+validation, and event model as other field controls.
 
 ---
 
@@ -40,16 +40,14 @@ Use `PathEntry` when:
 
 ### Consider a different control when...
 
-- the value is not a filesystem path (URL, ID) -> use [TextEntry](textentry.md)
-- you need a one-off selection with no persistent field -> use a file dialog directly
+- the value is not a filesystem path — use [TextEntry](textentry.md)
+- you need a one-off selection with no persistent field — use a file dialog directly
 
 ---
 
 ## Examples and patterns
 
 ### Value model
-
-PathEntry separates **raw text** from the **committed path value**.
 
 | Concept | Meaning |
 |---|---|
@@ -63,8 +61,7 @@ raw = path.get()
 path.value = r"C:\data\input.csv"
 ```
 
-Picker selections commit immediately. The raw dialog result (which may be a tuple for
-multi-file selections) is available via `path.dialog_result`.
+Picker selections commit immediately. The raw dialog result is available via `path.dialog_result`.
 
 ### Dialog type: `dialog`
 
@@ -72,19 +69,11 @@ multi-file selections) is available via `path.dialog_result`.
 bs.PathEntry(app, dialog="openfilename")   # choose existing file (default)
 bs.PathEntry(app, dialog="directory")      # choose folder
 bs.PathEntry(app, dialog="saveasfilename") # choose save-as path
-bs.PathEntry(app, dialog="openfilenames")  # choose multiple files
+bs.PathEntry(app, dialog="openfilenames")  # choose multiple files (returns list)
 ```
 
-Available dialog types:
-
-- `openfilename` / `openfile`: Single file selection
-- `openfilenames` / `openfiles`: Multiple file selection
-- `directory`: Directory selection
-- `saveasfilename` / `saveasfile`: Save file dialog
-
-!!! note "Open vs save"
-    File selection usually expects an existing path.
-    Save selection may allow non-existing files and can prompt for overwrite.
+!!! note "`openfile` vs `openfilename`"
+    `openfilename` returns a path string. `openfile` returns a file object. Use `openfilename` unless you specifically need a file handle.
 
 ### File type filters: `dialog_options`
 
@@ -94,11 +83,7 @@ bs.PathEntry(
     label="Document",
     dialog="openfilename",
     dialog_options={
-        "filetypes": [
-            ("PDF", "*.pdf"),
-            ("Word Document", "*.docx"),
-            ("All files", "*.*"),
-        ],
+        "filetypes": [("PDF", "*.pdf"), ("Word Document", "*.docx"), ("All files", "*.*")],
         "title": "Select a document",
     },
 )
@@ -106,75 +91,105 @@ bs.PathEntry(
 
 Common `dialog_options` keys: `title`, `initialdir`, `initialfile`, `filetypes`, `defaultextension`.
 
+`dialog` and `dialog_options` can also be changed at runtime:
+
+```python
+path.configure(dialog="directory")
+path.configure(dialog_options={"title": "Choose output folder"})
+```
+
 ### Button text: `button_text`
 
 ```python
-bs.PathEntry(app, label="File", button_text="Choose...")
+bs.PathEntry(app, label="File",   button_text="Choose...")
 bs.PathEntry(app, label="Folder", dialog="directory", button_text="Select Folder")
+
+# Change at runtime
+path.configure(button_text="Re-select...")
 ```
 
-The button text can be changed at runtime via `configure(button_text=...)`.
+### `state`
+
+```python
+path = bs.PathEntry(app, label="File", state="disabled")
+
+path.disable()       # prevent input and browsing
+path.enable()        # restore
+path.readonly(True)  # allow reading, block editing
+```
 
 ### Add-ons
 
 ```python
 p = bs.PathEntry(app, label="File")
-p.insert_addon(
-    bs.Button,
-    position="after",
-    text="Clear",
-    command=lambda: setattr(p, "value", ""),
-)
+p.insert_addon(bs.Button, position="after", text="Clear",
+               command=lambda: setattr(p, "value", ""), name="clear")
 ```
+
+!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 
 ### Events
 
-PathEntry emits standard field events:
+`PathEntry` emits `<<Change>>` from two distinct sources with different `event.data` shapes:
 
-- `<<Input>>` / `on_input` — typing/pasting
-- `<<Change>>` / `on_changed` — committed value changed (blur/Enter or picker selection)
-- validation lifecycle events
-
-The `<<Change>>` event provides `event.data` with:
-
-- `value`: The new path value (display string)
-- `prev_value`: The previous path value
-- `text`: Same as value (display string)
-- `dialog_result`: Raw dialog result (may be tuple for multi-select)
+**Typed input** — bind directly on the widget via `widget.bind()`:
 
 ```python
-def handle_changed(event):
-    print("path:", event.data["value"])
-    print("raw result:", event.data["dialog_result"])
+def on_typed(event):
+    print("typed path:", event.data["value"])
+    print("previous:", event.data["prev_value"])
 
-path.on_changed(handle_changed)
+path.bind("<<Change>>", on_typed)
 ```
 
-!!! tip "Commit-based logic"
-    Prefer `on_changed(...)` for filesystem work (paths should be validated/normalized first).
-
-### Validation and constraints
-
-Common validation patterns include:
-
-- required
-- path exists
-- is file / is directory
+**Picker selection** — the composite-level `<<Change>>` carries the dialog result:
 
 ```python
-p = bs.PathEntry(app, label="File", required=True)
-p.add_validation_rule("required", message="Please choose a file")
-p.add_validation_rule("path_exists", message="Path does not exist")
+def on_picked(event):
+    print("picked path:", event.data["value"])
+    print("dialog result:", event.data["dialog_result"])  # raw; tuple for multi-select
+
+path.bind("<<Change>>", on_picked)
+```
+
+!!! note "`on_changed` and picker selections"
+    `path.on_changed(callback)` only fires for typed-input commits — it binds to the inner text entry, not the composite. To receive both typed and picker changes, use `path.bind("<<Change>>", callback)` directly on the `PathEntry` instance.
+
+**Validation events** — callback receives a plain dict:
+
+```python
+def on_result(data):
+    print("valid:", data["is_valid"])
+
+path.on_valid(on_result)
+path.on_validated(on_result)
+```
+
+### Validation
+
+Use `required=True` for required path fields. For existence and type checks, use a `"custom"` rule:
+
+```python
+import os
+
+p = bs.PathEntry(app, label="Input file", required=True)
+
+p.add_validation_rule("custom",
+    func=os.path.isfile,
+    message="File does not exist")
+
+p.add_validation_rule("custom",
+    func=lambda v: (v.endswith(".csv"), "Must be a CSV file"))
 ```
 
 ---
 
 ## Behavior
 
-- Users can type/paste paths directly.
-- Clicking the browse button opens a native file/folder chooser (based on `dialog`).
-- Picker selection commits the value and closes the dialog.
-- For multi-file selection, paths are joined with ", " for display; raw result is available via `dialog_result`.
+- Users can type or paste paths directly.
+- Clicking the browse button opens a native file/folder chooser.
+- Picker selection commits the value immediately.
+- For multi-file selection, paths are joined with `", "` for display; the raw result (list) is in `dialog_result`.
 
 ---
 
@@ -182,9 +197,9 @@ p.add_validation_rule("path_exists", message="Path does not exist")
 
 ### Related widgets
 
-- [TextEntry](textentry.md) - general-purpose field control
-- [SelectBox](../selection/selectbox.md) - choose from known values instead of browsing
-- [Form](../forms/form.md) - build complete forms with path fields
+- [TextEntry](textentry.md) — general-purpose field control
+- [SelectBox](../selection/selectbox.md) — choose from known values instead of browsing
+- [Form](../forms/form.md) — build complete forms with path fields
 
 ### API reference
 

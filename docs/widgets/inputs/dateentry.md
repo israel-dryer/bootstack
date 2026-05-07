@@ -6,8 +6,8 @@ title: DateEntry
 
 `DateEntry` is a form-ready calendar date input that combines a text field with a picker popup.
 
-It behaves like other v2 entry controls (message, validation, localization, events), while making date entry fast and consistent
-using a calendar picker when needed. If you are building forms or dialogs, `DateEntry` is usually your **default date input**.
+It behaves like other entry controls (message, validation, localization, events), while making date entry fast and
+consistent using a calendar picker when needed.
 
 <figure markdown>
 ![dateentry states](../../assets/widgets-dateentry-states.png)
@@ -40,17 +40,13 @@ app.mainloop()
 Use `DateEntry` when:
 
 - users need to enter calendar dates reliably
-
 - you want both typing and a picker UI
-
 - validation and formatting should be consistent with other field controls
 
 Consider a different control when:
 
 - you need time-of-day input — use [TimeEntry](timeentry.md)
-
 - the value is "date-like" but not an actual calendar date — use [TextEntry](textentry.md)
-
 - date selection should be modal (dialog-based) — use [DateDialog](../dialogs/datedialog.md)
 
 ---
@@ -60,14 +56,19 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.DateEntry(app, label="Due date")  # primary (default)
+bs.DateEntry(app, label="Due date")                    # primary (default)
 bs.DateEntry(app, label="Due date", accent="secondary")
 bs.DateEntry(app, label="Due date", accent="success")
 bs.DateEntry(app, label="Due date", accent="warning")
 ```
 
-!!! link "Design System"
-    For a complete list of available colors and styling options, see the [Design System](../../design-system/index.md) documentation.
+Use `density='compact'` for dense form layouts:
+
+```python
+bs.DateEntry(app, label="Date", density="compact")
+```
+
+!!! link "See [Design System](../../design-system/index.md) for a complete list of available colors and styling options."
 
 ---
 
@@ -75,16 +76,14 @@ bs.DateEntry(app, label="Due date", accent="warning")
 
 ### Value model
 
-DateEntry uses the standard **text vs committed value** model.
-
 | Concept | Meaning |
 |---|---|
 | Text | Raw, editable string while focused |
 | Value | Parsed/validated date committed on blur, Enter, or picker selection |
 
 ```python
-current = due.value
-raw = due.get()
+current = due.value   # committed date value
+raw = due.get()       # raw text
 ```
 
 !!! tip "Commit semantics"
@@ -95,63 +94,96 @@ raw = due.get()
 
 #### Formatting: `value_format`
 
-Commit-time formatting shared with other field controls:
-
 ```python
-bs.DateEntry(app, label="Short Date", value="March 14, 1981", value_format="shortDate").pack()
+bs.DateEntry(app, label="Short Date", value="2025-01-15", value_format="shortDate").pack()
 bs.DateEntry(app, label="ISO Format", value="2025-01-15", value_format="yyyy-MM-dd").pack()
+bs.DateEntry(app, label="Long Date",  value="2025-01-15", value_format="longDate").pack()
 ```
 
 <figure markdown>
 ![dateentry formats](../../assets/widgets-dateentry-formats.png)
 </figure>
 
-See [Guides → Formatting](../../guides/formatting.md) for all date presets and custom ICU patterns.
+!!! link "See [Formatting](../../guides/formatting.md) for all date presets and custom ICU patterns."
+
+#### `state`
+
+```python
+due = bs.DateEntry(app, label="Due date", state="disabled")
+
+due.disable()       # prevent input
+due.enable()        # restore input
+due.readonly(True)  # allow reading, block editing
+```
+
+#### Picker options
+
+Use `show_picker_button=False` to hide the calendar button when only typed input is needed:
+
+```python
+bs.DateEntry(app, label="Date", show_picker_button=False)
+```
+
+Customise the picker dialog title and first weekday:
+
+```python
+bs.DateEntry(
+    app,
+    label="Start date",
+    picker_title="Select a start date",
+    picker_first_weekday=0,   # 0 = Monday, 6 = Sunday (default)
+)
+```
 
 #### Add-ons
 
 ```python
 d = bs.DateEntry(app, label="Birthday")
-d.insert_addon(bs.Label, position="before", icon="cake-fill")
+d.insert_addon(bs.Label, position="before", icon="cake-fill", name="icon")
 ```
 
 <figure markdown>
 ![dateentry addons](../../assets/widgets-dateentry-addons.png)
 </figure>
 
+!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+
 ### Events
 
-DateEntry emits the standard field events:
-
-- `<<Input>>` / `on_input`
-
-- `<<Changed>>` / `on_changed`
-
-- `<<Valid>>`, `<<Invalid>>`, `<<Validated>>`
+**Change events** — callback receives a Tkinter event object:
 
 ```python
-def handle_changed(event):
-    print("changed:", event.data)
+def on_change(event):
+    print("date:", event.data["value"])
 
-due.on_changed(handle_changed)
+due.on_input(on_change)    # <<Input>>  — live typing
+due.on_changed(on_change)  # <<Change>> — committed (blur, Enter, or picker)
 ```
 
-!!! tip "Live typing vs commit"
-    Use `on_input(...)` for live typing, and `on_changed(...)` for committed values.
+**Validation events** — callback receives a plain dict:
+
+```python
+def on_result(data):
+    print("valid:", data["is_valid"])
+
+due.on_valid(on_result)      # <<Valid>>
+due.on_invalid(on_result)    # <<Invalid>>
+due.on_validated(on_result)  # <<Validate>> — fires after any validation
+```
 
 ### Validation
 
-Common validation patterns:
-
-- required date
-
-- not in the past
-
-- within a window (e.g., next 90 days)
-
 ```python
 d = bs.DateEntry(app, label="Date", required=True)
-d.add_validation_rule("required", message="A date is required")
+```
+
+Use `required=True` to add the required rule. Add custom rules for business logic:
+
+```python
+from datetime import date
+
+d.add_validation_rule("custom",
+    func=lambda v: (v >= date.today(), "Date must be today or in the future"))
 ```
 
 ---
@@ -161,9 +193,7 @@ d.add_validation_rule("required", message="A date is required")
 ### Picker behavior
 
 - Click the calendar button — opens the picker
-
 - Click a day — commits the date and closes the popup
-
 - Escape — closes the popup without committing
 
 <figure markdown>
@@ -174,19 +204,22 @@ d.add_validation_rule("required", message="A date is required")
 
 ## Localization
 
-`DateEntry` supports locale-aware date formatting through the `value_format` option. Dates are displayed according to the current locale's conventions (date order, separators, month names).
+`DateEntry` supports locale-aware date formatting. The `value_format` option controls display format; dates adapt automatically to locale conventions (date order, separators, month names).
 
-!!! link "Localization"
-    For complete localization configuration and supported formats, see the [Localization](../../guides/localization.md) documentation.
+Labels and messages are also localized when localization is active.
+
+!!! link "See [Localization](../../guides/localization.md) for setup and language switching."
 
 ---
 
 ## Reactivity
 
-`DateEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
+```python
+start = bs.Signal(None)
+entry = bs.DateEntry(app, label="Start date", textsignal=start)
+```
 
-!!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
+!!! link "See [Reactivity](../../guides/reactivity.md) for signal patterns and data binding."
 
 ---
 
@@ -204,7 +237,7 @@ d.add_validation_rule("required", message="A date is required")
 
 - [Formatting](../../guides/formatting.md) — date presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
-- [Signals](../../guides/reactivity.md) — reactive data binding
+- [Reactivity](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 
