@@ -93,15 +93,6 @@ The `value` option sets the **initial state**:
 bs.CheckButton(app, text="Auto-sync")
 ```
 
-#### `icon`
-
-CheckButton supports icons alongside or instead of the label:
-
-```python
-bs.CheckButton(app, text="Starred", icon="star")
-bs.CheckButton(app, icon="star", icon_only=True)
-```
-
 #### `command`
 
 Callback with no arguments, fires on every toggle.
