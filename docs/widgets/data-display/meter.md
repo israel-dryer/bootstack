@@ -4,7 +4,7 @@ title: Meter
 
 # Meter
 
-`Meter` displays a **single numeric value within a range**, often as a circular or arc-style gauge.
+`Meter` displays a **single numeric value within a range** as a circular or arc-style gauge.
 
 It's ideal for dashboards, summaries, and status panels where visual emphasis matters more than precision.
 
@@ -17,7 +17,7 @@ import bootstack as bs
 
 app = bs.App()
 
-meter = bs.Meter(app, amountused=65, amounttotal=100)
+meter = bs.Meter(app, value=65, maxvalue=100)
 meter.pack(padx=20, pady=20)
 
 app.mainloop()
@@ -30,26 +30,20 @@ app.mainloop()
 Use Meter when:
 
 - showing a snapshot or status value
-
 - visual emphasis is important
-
 - you need a dashboard-style indicator
 
 ### Consider a different control when...
 
-- **Tracking task progress over time** — use [Progressbar](progressbar.md) instead
-
-- **Showing capacity or fullness levels** — use [FloodGauge](floodgauge.md) instead
-
-- **You need a compact text-based indicator** — use [Badge](badge.md) instead
+- **Tracking task progress over time** — use [Progressbar](progressbar.md)
+- **Showing capacity or fullness levels** — use [FloodGauge](floodgauge.md)
+- **You need a compact text-based indicator** — use [Badge](badge.md)
 
 ---
 
 ## Appearance
 
-### Styling with `accent`
-
-Meters are highly visual and often color-coded:
+### `accent`
 
 ```python
 bs.Meter(app, accent="success")
@@ -57,80 +51,115 @@ bs.Meter(app, accent="danger")
 bs.Meter(app, accent="info")
 ```
 
-!!! link "Design System"
-    See [Design System](../../design-system/index.md) for color tokens and theming guidelines.
+### Size and shape
+
+```python
+# Size in pixels (width and height)
+bs.Meter(app, value=75, size=150)
+
+# Arc thickness
+bs.Meter(app, value=75, thickness=20)
+
+# Semicircle style
+bs.Meter(app, value=75, meter_type="semi")
+
+# Segmented style
+bs.Meter(app, value=75, segment_width=10)
+```
+
+!!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
 
 ## Examples & patterns
 
-### Value model
-
-Meters display:
-
-- `amountused` relative to `amounttotal`
-
-- optional text/label overlays
-
-```python
-meter = bs.Meter(
-    app,
-    amountused=75,
-    amounttotal=100,
-    subtext="CPU Usage"
-)
-meter.pack()
-```
-
 ### Common options
 
-- `amountused` — current value
+- `value` — current meter value
+- `minvalue` — minimum value (default `0`)
+- `maxvalue` — maximum value (default `100`)
+- `subtitle` — label displayed below the value
+- `meter_type` — `"full"` (default) or `"semi"` for a semicircle
+- `value_format` — format string for the center number (default `"{:.0f}"`)
+- `value_prefix` — text before the value (e.g. `"$"`)
+- `value_suffix` — text after the value (e.g. `"%"`, `"mph"`)
+- `size` — pixel dimensions of the widget (default `200`)
+- `thickness` — arc width in pixels (default `10`)
+- `segment_width` — segment gap for a segmented style (default `0` = solid)
+- `interactive` — allow mouse drag to adjust value (default `False`)
+- `dtype` — `int` (default) or `float` for the internal variable
 
-- `amounttotal` — maximum value
-
-- `subtext` — label displayed below the value
-
-- `stripethickness` — thickness of the gauge stripe
-
-- `interactive=False` — whether the meter can be adjusted by the user (if supported)
-
-### With subtext
+### Value model
 
 ```python
-bs.Meter(
-    app,
-    amountused=42,
-    amounttotal=100,
-    subtext="Progress"
-).pack()
+meter = bs.Meter(app, value=75, maxvalue=100, subtitle="CPU Usage")
+meter.pack()
+
+# Read and write
+print(meter.value)     # 75
+meter.value = 80
+meter.get()            # equivalent to meter.value
+meter.set(90)          # equivalent to meter.value = 90
+
+# Increment/decrement
+meter.step(5)          # +5
+meter.step(-10)        # -10
+```
+
+### Prefix / suffix
+
+```python
+bs.Meter(app, value=1234, maxvalue=5000,
+         value_prefix="$", subtitle="Revenue").pack()
+
+bs.Meter(app, value=42, maxvalue=100,
+         value_suffix="%", subtitle="Disk used").pack()
+```
+
+### Value formatting
+
+```python
+# 1 decimal place
+bs.Meter(app, value=87.5, value_format="{:.1f}")
+
+# Integer (default)
+bs.Meter(app, value=87.5, value_format="{:.0f}")
+```
+
+### Range customization
+
+```python
+bs.Meter(app, value=23, minvalue=0, maxvalue=50,
+         subtitle="Temperature", value_suffix="°C")
+```
+
+### Interactive meter
+
+```python
+# User can drag to adjust value
+meter = bs.Meter(app, value=50, interactive=True)
+meter.on_changed(lambda e: print("value:", meter.value))
+```
+
+### Reacting to changes
+
+```python
+def on_update(event):
+    # event.data = {'value': ..., 'prev_value': ...}
+    print("changed to:", event.data["value"])
+
+bind_id = meter.on_changed(on_update)
+meter.off_changed(bind_id)
 ```
 
 ---
 
 ## Behavior
 
-- The meter arc fills proportionally based on `amountused / amounttotal`
-
-- Visual updates occur when values are changed programmatically
-
-- Some implementations support interactive mode where users can drag to adjust
-
----
-
-## Reactivity
-
-Meter can be updated dynamically by binding to signals:
-
-```python
-usage = bs.Signal(50)
-meter = bs.Meter(app, amountused=usage, amounttotal=100)
-
-# Update value
-usage.set(75)  # Meter updates automatically
-```
-
-!!! link "Signals"
-    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
+- The arc fills proportionally from `minvalue` to `maxvalue`
+- `meter_type="semi"` renders a 270° arc instead of a full circle
+- `interactive=True` enables mouse click and drag to change value
+- Updates occur immediately when `value` is changed programmatically
 
 ---
 
@@ -139,16 +168,12 @@ usage.set(75)  # Meter updates automatically
 ### Related widgets
 
 - [Progressbar](progressbar.md) — linear progress indicators
-
 - [FloodGauge](floodgauge.md) — capacity/level indicators
-
 - [Badge](badge.md) — compact status indicators
 
 ### Framework concepts
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

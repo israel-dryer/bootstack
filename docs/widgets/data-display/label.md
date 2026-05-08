@@ -4,7 +4,7 @@ title: Label
 
 # Label
 
-`Label` displays **read-only text or images**.
+`Label` displays **read-only text, icons, or images**.
 
 It's a fundamental building block used for headings, captions, instructions, and status text throughout an interface.
 
@@ -29,18 +29,14 @@ app.mainloop()
 Use Label when:
 
 - displaying static text or images
-
 - providing context or instructions
-
 - showing status information that doesn't require user interaction
 
 ### Consider a different control when...
 
-- **User input is required** — use [Entry](../primitives/entry.md) or [TextEntry](../inputs/textentry.md) instead
-
-- **You need a compact status indicator** — use [Badge](badge.md) for high-contrast pill-style labels
-
-- **You need interactive text** — use [Button](../actions/button.md) for clickable elements
+- **User input is required** — use [TextEntry](../inputs/textentry.md)
+- **You need a compact status indicator** — use [Badge](badge.md)
+- **You need interactive text** — use [Button](../actions/button.md)
 
 ---
 
@@ -48,16 +44,19 @@ Use Label when:
 
 ### Styling with `accent`
 
-Labels participate fully in bootstack theming:
-
 ```python
-bs.Label(app, text="Info", accent="info")
-bs.Label(app, text="Muted", accent="secondary")
+bs.Label(app, text="Info",    accent="info")
+bs.Label(app, text="Muted",   accent="secondary")
 bs.Label(app, text="Warning", accent="warning")
 ```
 
-!!! link "Design System"
-    See [Design System](../../design-system/index.md) for color tokens and theming guidelines.
+Use `variant=` for alternative rendering such as inverted text-on-accent:
+
+```python
+bs.Label(app, text="Tag", accent="primary", variant="inverse")
+```
+
+!!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
 
@@ -66,64 +65,82 @@ bs.Label(app, text="Warning", accent="warning")
 ### Common options
 
 - `text` — the text content to display
-
-- `image` — an image to display
-
-- `compound` — how to combine text and image (`"top"`, `"bottom"`, `"left"`, `"right"`, `"center"`)
-
-- `anchor` — where to position content within the label
-
+- `textsignal` — a `Signal[str]` for reactive text updates
+- `icon`, `icon_only` — theme-aware icon alongside or instead of text
+- `font` — bootstack font token (e.g. `"heading-lg[bold]"`, `"body"`, `"label[9]"`)
+- `value_format` — format spec for displaying numeric/date values (e.g. `"currency"`, `"shortDate"`)
+- `compound` — how to combine text and icon/image (`"left"`, `"right"`, `"top"`, `"bottom"`)
+- `anchor` — content alignment within the label
 - `justify` — text alignment (`"left"`, `"center"`, `"right"`)
-
 - `wraplength` — maximum line width before wrapping
 
 ### Text alignment
 
 ```python
-bs.Label(app, text="Left aligned", anchor="w").pack(fill="x")
-bs.Label(app, text="Centered", anchor="center").pack(fill="x")
+bs.Label(app, text="Left aligned",  anchor="w").pack(fill="x")
+bs.Label(app, text="Centered",      anchor="center").pack(fill="x")
 bs.Label(app, text="Right aligned", anchor="e").pack(fill="x")
 ```
 
-### Image with text
+### Typography
+
+Use bootstack font tokens via `font=`:
 
 ```python
-bs.Label(app, text="Status", image=icon, compound="left").pack()
+bs.Label(app, text="Section heading", font="heading-lg[bold]")
+bs.Label(app, text="Body copy",       font="body")
+bs.Label(app, text="Caption text",    font="label[9]")
 ```
+
+### Icons
+
+```python
+bs.Label(app, text="Status", icon="check-circle", compound="left")
+bs.Label(app, icon="gear", icon_only=True)
+```
+
+### Formatted values
+
+Use `value_format=` to display numbers or dates with locale-aware formatting:
+
+```python
+bs.Label(app, text=1234.56, value_format="currency")
+bs.Label(app, text=0.42,    value_format="percent")
+```
+
+!!! link "See [Formatting](../../guides/formatting.md) for all presets and custom patterns."
 
 ---
 
 ## Behavior
 
-Label is a static display widget. It does not respond to user interaction by default, but can be updated programmatically.
+Label is a static display widget. It does not respond to user interaction by default, but can be updated programmatically via `configure(text=...)` or a signal.
 
 ---
 
 ## Localization
 
-Label supports localization through the `localize` parameter:
+Any string passed as `text=` is used as a gettext key when localization is active.
 
 ```python
 bs.Label(app, text="greeting.hello", localize=True)
 ```
 
-!!! link "Localization"
-    See [Localization](../../guides/localization.md) for translation setup.
+!!! link "See [Localization](../../guides/localization.md) for translation setup."
 
 ---
 
 ## Reactivity
 
-Label can be updated dynamically by binding to signals:
+Use `textsignal=` to bind a signal for live text updates:
 
 ```python
 message = bs.Signal("Initial text")
-label = bs.Label(app, text=message)
-message.set("Updated text")  # Label updates automatically
+label = bs.Label(app, textsignal=message)
+message.set("Updated text")   # label updates automatically
 ```
 
-!!! link "Signals"
-    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
+!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns."
 
 ---
 
@@ -132,17 +149,14 @@ message.set("Updated text")  # Label updates automatically
 ### Related widgets
 
 - [Button](../actions/button.md) — interactive clickable element
-
 - [Badge](badge.md) — compact status indicator
-
 - [Tooltip](../overlays/tooltip.md) — contextual hover information
 
 ### Framework concepts
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-- [Signals](../../guides/reactivity.md) — reactive data binding
-
+- [Formatting](../../guides/formatting.md) — value_format presets and patterns
+- [Reactivity](../../guides/reactivity.md) — reactive data binding
 - [Localization](../../guides/localization.md) — translation support
 
 ### API reference
