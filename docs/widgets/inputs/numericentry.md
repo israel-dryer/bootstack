@@ -9,10 +9,6 @@ title: NumericEntry
 It adds the behavior you almost always need for numeric data: bounds, stepping, formatting, validation, localization, and
 consistent field events. If you are building forms or dialogs, `NumericEntry` is usually your **default numeric input**.
 
-<figure markdown>
-![NumericEntry states](../../assets/widgets-numericentry-states.png)
-</figure>
-
 ---
 
 ## Quick start
@@ -35,6 +31,10 @@ qty.pack(fill="x", padx=20, pady=10)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-quickstart.png" alt="NumericEntry Quickstart"/>
+</div>
 
 ---
 
@@ -59,7 +59,7 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.NumericEntry(app, label="Quantity")                    # primary (default)
+bs.NumericEntry(app, label="Quantity") # primary (default)
 bs.NumericEntry(app, label="Quantity", accent="secondary")
 bs.NumericEntry(app, label="Quantity", accent="success")
 bs.NumericEntry(app, label="Quantity", accent="warning")
@@ -108,8 +108,14 @@ age = bs.NumericEntry(app, label="Age", value=25, minvalue=0, maxvalue=120)
 #### Stepping: `increment`
 
 ```python
-price = bs.NumericEntry(app, label="Unit Price", value=9.99,
-                        minvalue=0, maxvalue=10000, increment=0.01)
+price = bs.NumericEntry(
+    app, 
+    label="Unit Price", 
+    value=9.99, 
+    minvalue=0, 
+    maxvalue=10000, 
+    increment=0.01
+)
 ```
 
 Stepping is triggered by spin buttons, Up/Down arrow keys, and the mouse wheel.
@@ -119,14 +125,21 @@ Stepping is triggered by spin buttons, Up/Down arrow keys, and the mouse wheel.
 By default values clamp at the min/max. Set `wrap=True` to cycle through the range.
 
 ```python
-percent = bs.NumericEntry(app, label="Percent", value=50,
-                          minvalue=0, maxvalue=100, increment=5, wrap=True)
+pct = bs.NumericEntry(
+    app, 
+    label="Percent", 
+    value=50, 
+    minvalue=0, 
+    maxvalue=100, 
+    increment=5, 
+    wrap=True
+)
 ```
 
 #### Spin buttons: `show_spin_buttons`
 
 ```python
-field = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
+qty = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
 ```
 
 #### Formatting: `value_format`
@@ -134,18 +147,40 @@ field = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
 Commit-time, locale-aware formatting using named presets, precision dicts, or custom ICU patterns:
 
 ```python
-bs.NumericEntry(app, label="Currency",    value=1234.56, value_format="currency").pack()
-bs.NumericEntry(app, label="Fixed Point", value=15422354, value_format="fixedPoint").pack()
-bs.NumericEntry(app, label="Percent",     value=0.35,    value_format="percent").pack()
+bs.NumericEntry(
+    app,
+    label="Currency",
+    value=1234.56,
+    value_format="currency",
+)
 
-# Precision control
-bs.NumericEntry(app, label="Rate", value=0.0875,
-                value_format={"type": "percent", "precision": 1}).pack()
+bs.NumericEntry(
+    app,
+    label="Fixed Point",
+    value=15422354,
+    value_format="fixedPoint",
+)
+
+bs.NumericEntry(
+    app,
+    label="Percent",
+    value=0.35,
+    value_format="percent",
+)
+
+# value format precision control
+bs.NumericEntry(
+    app,
+    label="Rate",
+    value=0.0875,
+    value_format={"type": "percent", "precision": 1}
+)
 ```
 
-<figure markdown>
-![numeric formats](../../assets/widgets-numericentry-formats.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-formats.png" alt="Numeric Entry Formats"/>
+</div>
+
 
 !!! link "See [Formatting](../../guides/formatting.md) for all number presets, precision control, and custom patterns."
 
@@ -237,9 +272,9 @@ size = bs.NumericEntry(app, label="Size", show_spin_buttons=False)
 size.insert_addon(bs.Label, position="after", text="cm", name="unit")
 ```
 
-<figure markdown>
-![addons](../../assets/widgets-numericentry-addons.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-addons.png" alt="Numeric Entry Addons"/>
+</div>
 
 !!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API including state inheritance and retrieval."
 

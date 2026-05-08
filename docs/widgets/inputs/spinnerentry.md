@@ -9,8 +9,6 @@ title: SpinnerEntry
 It operates in two modes: **numeric range** (bounded stepping between a min and max) and **value list** (cycling through
 a fixed set of string options). Both modes support formatting, validation, localization, and consistent field events.
 
-![spinnerentry states](../../assets/widgets-spinnerentry-states.png)
-
 ---
 
 ## Quick start
@@ -33,6 +31,10 @@ qty.pack(fill="x", padx=20, pady=10)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-quickstart.png" alt="Spinner Entry Quickstart"/>
+</div>
 
 ---
 
@@ -72,19 +74,38 @@ Use `minvalue`, `maxvalue`, and `increment` for bounded numeric stepping:
 
 ```python
 # Integer stepping with bounds
-qty = bs.SpinnerEntry(app, label="Quantity", value=1,
-                      minvalue=0, maxvalue=100, increment=1)
+qty = bs.SpinnerEntry(
+    app, 
+    label="Quantity", 
+    value=1,
+    minvalue=0, 
+    maxvalue=100, 
+    increment=1
+)
 
 # Float stepping
-temp = bs.SpinnerEntry(app, label="Temperature", value=20.0,
-                       minvalue=-20.0, maxvalue=50.0, increment=0.5)
+temp = bs.SpinnerEntry(
+    app, 
+    label="Temperature", 
+    value=20.0,
+    minvalue=-20.0, 
+    maxvalue=50.0, 
+    increment=0.5
+)
 ```
 
 Use `wrap=True` to cycle back to `minvalue` after reaching `maxvalue`:
 
 ```python
-hour = bs.SpinnerEntry(app, label="Hour", value=12,
-                       minvalue=1, maxvalue=12, increment=1, wrap=True)
+hour = bs.SpinnerEntry(
+    app, 
+    label="Hour", 
+    value=12,
+    minvalue=1, 
+    maxvalue=12, 
+    increment=1, 
+    wrap=True
+)
 ```
 
 ### Value list mode
@@ -92,12 +113,18 @@ hour = bs.SpinnerEntry(app, label="Hour", value=12,
 Pass `values=` to cycle through a fixed set of string options:
 
 ```python
-priority = bs.SpinnerEntry(app, label="Priority",
-                           values=["Low", "Medium", "High", "Critical"],
-                           value="Medium")
+priority = bs.SpinnerEntry(
+    app, 
+    label="Priority",
+    values=["Low", "Medium", "High", "Critical"],
+    value="Medium"
+)
 
-size = bs.SpinnerEntry(app, label="T-Shirt Size",
-                       values=["XS", "S", "M", "L", "XL", "XXL"])
+size = bs.SpinnerEntry(
+    app, 
+    label="T-Shirt Size",
+    values=["XS", "S", "M", "L", "XL", "XXL"]
+)
 ```
 
 The step buttons cycle forward and backward through the list. Typing is still allowed.
@@ -107,17 +134,50 @@ The step buttons cycle forward and backward through the list. Typing is still al
 Controls step size in numeric mode.
 
 ```python
-bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="currency")
+bs.SpinnerEntry(
+    app, 
+    label="Price", 
+    value=9.99, 
+    increment=0.01, 
+    value_format="currency"
+)
 ```
 
 ### Formatting: `value_format`
 
 ```python
-bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01,
-                value_format="currency").pack()
+bs.SpinnerEntry(
+    app,
+    label="Currency",
+    value=1234.56,
+    value_format="currency",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Fixed Point",
+    value=15422354,
+    value_format="fixedPoint",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Percent",
+    value=0.35,
+    value_format="percent",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Rate",
+    value=0.0875,
+    value_format={"type": "percent", "precision": 1}
+)
 ```
 
-![spinnerentry formatting](../../assets/widgets-spinnerentry-formats.png)
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-formats.png" alt="Spinner Entry Format"/>
+</div>
 
 !!! link "See [Formatting](../../guides/formatting.md) for all number presets and custom patterns."
 
@@ -134,11 +194,16 @@ qty.readonly(True)  # allow reading, block editing
 ### Add-ons
 
 ```python
-amount = bs.SpinnerEntry(app, label="Amount", value=0, increment=1)
-amount.insert_addon(bs.Label, position="before", text="$", name="currency")
+salary = bs.SpinnerEntry(app, label="Salary")
+salary.insert_addon(bs.Label, position='before', icon='currency-euro')
+
+size = bs.SpinnerEntry(app, label="Size", values=['Small', 'Med', 'Large'], value='Small')
+size.insert_addon(bs.Button, position='before', icon='rulers')
 ```
 
-![spinnerentry addons](../../assets/widgets-spinnerentry-addons.png)
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-addons.png" alt="Spinner Entry Addons"/>
+</div>
 
 !!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 
