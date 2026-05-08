@@ -9,8 +9,6 @@ title: TextEntry
 It builds on `bs.Entry`, but adds the features you typically need in real applications: validation, messages, formatting,
 localization, and consistent field events. If you're building forms or dialogs, `TextEntry` is usually your default text input.
 
-![textentry states](../../assets/widgets-textentry-states.png)
-
 ---
 
 ## Quick start
@@ -100,7 +98,12 @@ name.value = "Ada Lovelace"
 #### `label`, `message`, `required`
 
 ```python
-bs.TextEntry(app, label="Email", message="We'll never share it.", required=True)
+bs.TextEntry(
+    app, 
+    label="Email", 
+    message="We'll never share it.", 
+    required=True
+)
 ```
 
 #### `state`
@@ -121,19 +124,44 @@ Commit-time formatting using named presets, precision dicts, or custom ICU patte
 
 ```python
 # Named presets
-bs.TextEntry(app, label="Amount",  value=1234.56,         value_format="currency").pack()
-bs.TextEntry(app, label="Date",    value="March 14 1981", value_format="shortDate").pack()
-bs.TextEntry(app, label="Percent", value=0.42,            value_format="percent").pack()
+bs.TextEntry(
+    app, 
+    label="Amount",  
+    value=1234.56,         
+    value_format="currency"
+)
+bs.TextEntry(
+    app, 
+    label="Date",    
+    value="March 14 1981", 
+    value_format="shortDate"
+)
+bs.TextEntry(
+    app, 
+    label="Percent", 
+    value=0.42,
+    value_format="percent"
+)
 
 # Precision control via dict
-bs.TextEntry(app, label="Rate", value=0.0875,
-             value_format={"type": "percent", "precision": 1}).pack()
+bs.TextEntry(
+    app, 
+    label="Rate", 
+    value=0.0875,
+    value_format={"type": "percent", "precision": 1}
+)
 
 # Custom ICU pattern
-bs.TextEntry(app, label="Code", value_format="000-000").pack()
+bs.TextEntry(
+    app, 
+    label="Code", 
+    value_format="000-000"
+)
 ```
 
-![value format](../../assets/widgets-textentry-format.png)
+<div class="app-window">
+    <img src="../../assets/widgets-textentry-format.png" alt="TextEntry Format"/>
+</div>
 
 !!! link "See [Formatting](../../guides/formatting.md) for all number, date, and time presets, dict options, and custom pattern syntax."
 
@@ -179,8 +207,16 @@ name.off_changed(bind_id)
 ### Validation
 
 ```python
-email = bs.TextEntry(app, label="Email", required=True)
-email.add_validation_rule("email", message="Enter a valid email address")
+email = bs.TextEntry(
+    app, 
+    label="Email", 
+    required=True
+)
+
+email.add_validation_rule(
+    "email", 
+    message="Enter a valid email address"
+)
 ```
 
 Available rule types: `"required"`, `"email"`, `"pattern"`, `"stringLength"`, `"compare"`, `"custom"`.
@@ -189,10 +225,19 @@ Validation results are reflected visually and via events.
 
 ```python
 # Pattern rule
-phone.add_validation_rule("pattern", pattern=r"^\d{3}-\d{4}$", message="Format: 555-1234")
+phone.add_validation_rule(
+    "pattern", 
+    pattern=r"^\d{3}-\d{4}$", 
+    message="Format: 555-1234"
+)
 
 # Length rule
-bio.add_validation_rule("stringLength", min=10, max=500, message="10–500 characters")
+bio.add_validation_rule(
+    "stringLength", 
+    min=10, 
+    max=500, 
+    message="10–500 characters"
+)
 
 # Custom rule
 def check_username(value):
@@ -211,13 +256,26 @@ username.add_validation_rule("custom", func=check_username)
 
 ```python
 # Icon label prefix
-entry.insert_addon(bs.Label, position="before", icon="envelope")
+email = bs.TextEntry(app, label="Email")
+email.insert_addon(
+    bs.Label, 
+    position='before', 
+    icon='envelope'
+)
 
 # Action button suffix
-entry.insert_addon(bs.Button, position="after", icon="x-circle", command=on_clear)
+search = bs.TextEntry(app)
+search.insert_addon(
+    bs.Button, 
+    position='after', 
+    icon='search', 
+    command=handle_search
+)
 ```
 
-![addons](../../assets/widgets-textentry-addons.png)
+<div class="app-window">
+    <img src="../../assets/widgets-textentry-addons.png" alt="TextEntry Addons"/>
+</div>
 
 ### Retrieving add-ons
 
@@ -225,8 +283,14 @@ Pass `name=` to register the add-on under a known key. Retrieve it later via `en
 
 ```python
 search = bs.TextEntry(app, label="Search")
-search.insert_addon(bs.Button, position="after", icon="search",
-                    command=on_search, name="search-btn")
+
+search.insert_addon(
+    bs.Button, 
+    position="after", 
+    icon="search",
+    command=on_search, 
+    name="search-btn"
+)
 
 # Swap icon on state change
 search.addons["search-btn"].configure(icon="x")
@@ -276,8 +340,12 @@ search.insert_addon(
 Use `pack_options=` to pass spacing arguments to the add-on's `pack()` call:
 
 ```python
-entry.insert_addon(bs.Label, position="before", text="$",
-                   pack_options={"padx": (6, 2)})
+entry.insert_addon(
+    bs.Label, 
+    position="before", 
+    text="$",
+    pack_options={"padx": (6, 2)}
+)
 ```
 
 ---

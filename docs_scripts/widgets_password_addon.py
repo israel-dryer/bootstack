@@ -9,7 +9,7 @@ pwd = bs.PasswordEntry(
 pwd.insert_addon(
     bs.Label,
     position="before",
-    icon="eye",
+    icon="lock",
     icon_only=True,
 )
 pwd.pack(padx=16, pady=16)

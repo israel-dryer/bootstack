@@ -89,10 +89,19 @@ The reveal toggle changes only the display, never the underlying value.
 #### `required`, `message`, `show`
 
 ```python
-bs.PasswordEntry(app, label="Password", required=True, message="Minimum 8 characters")
+bs.PasswordEntry(
+    app, 
+    label="Password", 
+    required=True, 
+    message="Minimum 8 characters"
+)
 
 # Custom mask character (default is '•')
-bs.PasswordEntry(app, label="PIN", show="*")
+bs.PasswordEntry(
+    app, 
+    label="PIN", 
+    show="*"
+)
 ```
 
 #### Reveal toggle: `show_visibility_toggle`
@@ -104,7 +113,11 @@ pwd = bs.PasswordEntry(app, label="Password", show_visibility_toggle=False)
 #### `state`
 
 ```python
-pwd = bs.PasswordEntry(app, label="Password", state="disabled")
+pwd = bs.PasswordEntry(
+    app, 
+    label="Password", 
+    state="disabled"
+)
 
 pwd.disable()       # prevent input
 pwd.enable()        # restore input
@@ -114,8 +127,17 @@ pwd.readonly(True)  # allow reading, block editing
 #### Add-ons
 
 ```python
-pwd.insert_addon(bs.Label, position="before", icon="lock", icon_only=True)
+pwd.insert_addon(
+    bs.Label, 
+    position="before", 
+    icon="lock", 
+    icon_only=True
+)
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-password-addons.png" alt="Password Addon"/>
+</div>
 
 !!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 
