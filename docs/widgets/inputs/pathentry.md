@@ -28,6 +28,10 @@ path.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-pathentry-quickstart.png" alt="Path Entry Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -187,7 +191,7 @@ p.add_validation_rule("custom",
 ## Behavior
 
 - Users can type or paste paths directly.
-- Clicking the browse button opens a native file/folder chooser.
+- Clicking the browse button opens the **OS-native file/folder chooser** — Windows Explorer on Windows, a Finder sheet on macOS, and the GTK file chooser on Linux. Its appearance is controlled by the OS, not by bootstack's theme.
 - Picker selection commits the value immediately.
 - For multi-file selection, paths are joined with `", "` for display; the raw result (list) is in `dialog_result`.
 
