@@ -9,9 +9,7 @@ title: TextEntry
 It builds on `bs.Entry`, but adds the features you typically need in real applications: validation, messages, formatting,
 localization, and consistent field events. If you're building forms or dialogs, `TextEntry` is usually your default text input.
 
-<figure markdown>
 ![textentry states](../../assets/widgets-textentry-states.png)
-</figure>
 
 ---
 
@@ -32,6 +30,10 @@ name.pack(fill="x", padx=20, pady=10)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-textentry-quickstart.png" alt="Quickstart"/>
+</div>
 
 ---
 
@@ -130,6 +132,8 @@ bs.TextEntry(app, label="Rate", value=0.0875,
 # Custom ICU pattern
 bs.TextEntry(app, label="Code", value_format="000-000").pack()
 ```
+
+![value format](../../assets/widgets-textentry-format.png)
 
 !!! link "See [Formatting](../../guides/formatting.md) for all number, date, and time presets, dict options, and custom pattern syntax."
 
@@ -243,22 +247,19 @@ search.enable()    # both restored
 
 ### Toggle add-ons
 
-Use `bs.CheckButton` for toggle affordances such as "show password" or "pin to sidebar":
+Use `bs.CheckButton` for toggles that modify how the field behaves — for example, a "match case" option on a search field:
 
 ```python
-password = bs.TextEntry(app, label="Password", show="•")
+search = bs.TextEntry(app, label="Find")
 
-def toggle_show(var):
-    password.configure(show="" if var.get() else "•")
-
-var = bs.BooleanVar()
-password.insert_addon(
+match_case = bs.BooleanVar(value=False)
+search.insert_addon(
     bs.CheckButton,
     position="after",
-    text="Show",
-    variable=var,
-    command=lambda: toggle_show(var),
-    name="show-toggle",
+    text="Aa",
+    variable=match_case,
+    command=lambda: run_search(search.value, match_case.get()),
+    name="case-toggle",
 )
 ```
 
