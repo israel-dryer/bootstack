@@ -9,9 +9,7 @@ title: SpinnerEntry
 It operates in two modes: **numeric range** (bounded stepping between a min and max) and **value list** (cycling through
 a fixed set of string options). Both modes support formatting, validation, localization, and consistent field events.
 
-<figure markdown>
 ![spinnerentry states](../../assets/widgets-spinnerentry-states.png)
-</figure>
 
 ---
 
@@ -119,9 +117,7 @@ bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01,
                 value_format="currency").pack()
 ```
 
-<figure markdown>
 ![spinnerentry formatting](../../assets/widgets-spinnerentry-formats.png)
-</figure>
 
 !!! link "See [Formatting](../../guides/formatting.md) for all number presets and custom patterns."
 
@@ -142,9 +138,7 @@ amount = bs.SpinnerEntry(app, label="Amount", value=0, increment=1)
 amount.insert_addon(bs.Label, position="before", text="$", name="currency")
 ```
 
-<figure markdown>
 ![spinnerentry addons](../../assets/widgets-spinnerentry-addons.png)
-</figure>
 
 !!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 

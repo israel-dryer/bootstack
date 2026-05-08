@@ -1,6 +1,6 @@
 import bootstack as bs
 
-app = bs.App(theme="docs-light")
+app = bs.App()
 
 r1 = bs.Frame(app, padding=16)
 r1.pack(side='top')
@@ -14,21 +14,6 @@ bs.SpinnerEntry(r1, value='Normal', label='Label', required=True, message='This 
 bs.SpinnerEntry(r1, value='Readonly', state='readonly', label='Label', show_message=True).pack(side='left', padx=10)
 bs.SpinnerEntry(r1, value='Disabled', state='disabled', label='Label', show_message=True).pack(side='left', padx=10)
 
-
-# colors
-r3 = bs.Frame(app, padding=16)
-r3.pack(side='top')
-
-for color in ['primary', 'secondary', 'success']:
-    te = bs.SpinnerEntry(r3, value=123456, color=color)
-    te.pack(side='left', padx=10)
-
-r5 = bs.Frame(app, padding=16)
-r5.pack(side='top')
-
-for color in ['info', 'warning', 'danger']:
-    te = bs.SpinnerEntry(r5, value=123456, color=color)
-    te.pack(side='left', padx=10)
 
 # prefix example
 
