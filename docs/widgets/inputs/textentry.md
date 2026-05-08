@@ -247,19 +247,26 @@ search.enable()    # both restored
 
 ### Toggle add-ons
 
-Use `bs.CheckButton` for toggles that modify how the field behaves — for example, a "match case" option on a search field:
+Use a `bs.Button` add-on to implement a toggle by changing its accent on each click:
 
 ```python
 search = bs.TextEntry(app, label="Find")
 
-match_case = bs.BooleanVar(value=False)
+case_sensitive = False
+
+def toggle_case():
+    global case_sensitive
+    case_sensitive = not case_sensitive
+    accent = "primary" if case_sensitive else "secondary"
+    search.addons["case-btn"].configure(accent=accent)
+
 search.insert_addon(
-    bs.CheckButton,
+    bs.Button,
     position="after",
     text="Aa",
-    variable=match_case,
-    command=lambda: run_search(search.value, match_case.get()),
-    name="case-toggle",
+    accent="secondary",
+    command=toggle_case,
+    name="case-btn",
 )
 ```
 
