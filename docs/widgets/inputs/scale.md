@@ -38,7 +38,6 @@ Use `Scale` when:
 
 - users must type exact values — use [NumericEntry](numericentry.md)
 - values require strict validation — use [NumericEntry](numericentry.md)
-- you want both a value label and dragging — use [LabeledScale](labeledscale.md)
 
 ---
 
@@ -141,7 +140,6 @@ scale = bs.Scale(app, from_=0, to=100, value=50, command=on_change)
 
 ### Related widgets
 
-- [LabeledScale](labeledscale.md) — scale with integrated tracking value label
 - [NumericEntry](numericentry.md) — precise numeric input
 - [SpinnerEntry](spinnerentry.md) — numeric stepping with typing
 - [Progressbar](../data-display/progressbar.md) — displays progress, not user input
