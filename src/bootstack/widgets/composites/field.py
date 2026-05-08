@@ -413,6 +413,9 @@ class Field(EntryMixin, Frame):
         kwargs.setdefault('variant', variant)
         kwargs.setdefault('takefocus', False)
         kwargs.setdefault('density', self._density)
+        kwargs.setdefault('anchor', 'center')
+        if 'icon' in kwargs and 'text' not in kwargs:
+            kwargs.setdefault('compound', 'image')
 
         if issubclass(widget, (Button, CheckButton)):
             icon_only = kwargs.get('icon_only', False)
