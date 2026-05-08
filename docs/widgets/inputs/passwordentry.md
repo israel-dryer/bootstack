@@ -29,6 +29,10 @@ pwd.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-password-quickstart.png" src="Password Entry Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -50,7 +54,7 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.PasswordEntry(app, label="Password")                    # primary (default)
+bs.PasswordEntry(app, label="Password") # primary (default)
 bs.PasswordEntry(app, label="Password", accent="secondary")
 ```
 
