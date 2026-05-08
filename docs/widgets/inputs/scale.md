@@ -24,6 +24,10 @@ scale.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-scale-quickstart.png" alt="Scale Quickstart"/>
+</div>
+
 ---
 
 ## When to use
