@@ -11,10 +11,6 @@ Text widget — just with better scrolling behavior and consistent theming.
 
 Use `ScrolledText` for logs, notes, editors, and any situation where **text content** needs to scroll.
 
-<figure markdown>
-![scrolledtext states](../../assets/widgets-scrolledtext-states.png)
-</figure>
-
 ---
 
 ## Quick start
@@ -31,6 +27,10 @@ st.insert("end", "Insert your text here.\n" * 20)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-scrolledtext-quickstart.png" alt="Scrolled Text Quickstart"/>
+</div>
 
 ---
 
