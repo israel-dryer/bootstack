@@ -28,6 +28,10 @@ bg.add(text="Paste", icon="clipboard", command=lambda: print("Paste"))
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-buttongroup-quickstart.png" alt="quickstart"/>
+</div>
+
 ---
 
 ## When to use

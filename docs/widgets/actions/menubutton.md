@@ -96,8 +96,12 @@ bs.MenuButton(app, text="Menu", accent="primary").pack(pady=4)
 bs.MenuButton(app, text="Menu", accent="primary", variant="outline").pack(pady=4)
 ```
 
+![menubutton appearance](../../assets/widgets-menubutton-appearance.png)
+
 Use `icon=` to add an icon, `icon_only=True` for icon-only buttons, and
 `density='compact'` for toolbar contexts:
+
+![menubutton appearance](../../assets/widgets-menubutton-compact.png)
 
 ```python
 bs.MenuButton(app, icon="list",  icon_only=True, density="compact", menu=m).pack()

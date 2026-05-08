@@ -1,6 +1,6 @@
 import bootstack as bs
 
-app = bs.App(theme="docs-dark")
+app = bs.App()
 
 r1 = bs.Frame(app, padding=16)
 r1.pack(side='top')
@@ -32,10 +32,19 @@ search.pack(side='left', padx=10, anchor='s')
 r3 = bs.Frame(app, padding=16)
 r3.pack(side='top')
 
-bs.TextEntry(r3, label="Currency", value=1234.56, value_format="currency").pack(side='left', padx=10)
-bs.TextEntry(r3, label="Short Date", value='March 14, 1981', value_format='shortDate').pack(side='left', padx=10)
-bs.TextEntry(r3, label="Fixed Point", value=15422354, value_format="fixedPoint").pack(side='left', padx=10)
+# bs.TextEntry(r3, label="Currency", value=1234.56, value_format="currency").pack(side='left', padx=10)
+# bs.TextEntry(r3, label="Short Date", value='March 14, 1981', value_format='shortDate').pack(side='left', padx=10)
+# bs.TextEntry(r3, label="Fixed Point", value=15422354, value_format="fixedPoint").pack(side='left', padx=10)
 
+bs.TextEntry(r3, label="Amount",    value=1234.56,        value_format="currency").pack(side='left', padx=1)
+bs.TextEntry(r3, label="Date",      value="March 14 1981", value_format="shortDate").pack(side='left', padx=1)
+bs.TextEntry(r3, label="Percent",   value=0.42,           value_format="percent").pack(side='left', padx=1)
+
+# Precision control via dict
+bs.TextEntry(r3, label="Rate", value=0.0875, value_format={"type": "percent", "precision": 1}).pack(side='left', padx=1)
+
+# Custom ICU pattern
+bs.TextEntry(r3, label="Code", value_format="000-000").pack()
 
 # colors
 r4 = bs.Frame(app, padding=16)

@@ -177,6 +177,10 @@ bs.Button(app, text="Dashboard", icon="grid", anchor="w").pack(fill="x")
 bs.Button(app, icon="gear", icon_only=True, density="compact").pack(pady=6)
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-button-layout.png"/>
+</div>
+
 Use `surface=` when the button sits on a non-default background (e.g., inside a card or overlay):
 
 ```python
