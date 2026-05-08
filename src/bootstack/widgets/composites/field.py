@@ -12,6 +12,7 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.checkbutton import CheckButton
+from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.mixins.entry_mixin import EntryMixin
 from bootstack.widgets.parts.numberentry_part import NumberEntryPart
@@ -193,14 +194,14 @@ class Field(EntryMixin, Frame):
         # configuration
         self._message_text = message
         self._show_messages = show_message
-        self._addons: dict[str, Button | Label | CheckButton] = {}
+        self._addons: dict[str, Button | Label | CheckToggle] = {}
         self._required = required
         self._kind = kind
         self._label_text = label
         self._value = value
 
         self._entry: TextEntryPart | NumberEntryPart | SpinnerEntryPart
-        self._addons: dict[str, Union[Button, Label, CheckButton]] = {}
+        self._addons: dict[str, Union[Button, Label, CheckToggle]] = {}
 
         # layout
         label_text = self._label_text or ''
@@ -366,7 +367,7 @@ class Field(EntryMixin, Frame):
 
     def insert_addon(
             self,
-            widget: Type[Union[Button, Label, CheckButton]],
+            widget: Type[Union[Button, Label, CheckToggle]],
             position: Literal['before', 'after'],
             name: str | None = None,
             pack_options: dict[str, Any] = None,
@@ -374,7 +375,7 @@ class Field(EntryMixin, Frame):
     ):
         """Insert a widget addon before or after the entry input.
 
-        Addons are Button, Label, or Checkbutton widgets positioned inside the field container,
+        Addons are Button, Label, or ToggleButton widgets positioned inside the field container,
         either before (left of) or after (right of) the entry input. Common use
         cases include search buttons, icons, clear buttons, or status indicators.
 
@@ -407,7 +408,7 @@ class Field(EntryMixin, Frame):
         kwargs.setdefault('takefocus', False)
         kwargs.setdefault('density', self._density)
 
-        if widget in (Button, CheckButton):
+        if issubclass(widget, (Button, CheckButton)):
             icon_only = kwargs.get('icon_only', False)
             if 'style_options' in kwargs:
                 kwargs['style_options'].update(use_active_states=True, density=self._density, icon_only=icon_only)
