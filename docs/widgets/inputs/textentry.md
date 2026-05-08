@@ -57,7 +57,7 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.TextEntry(app)                          # primary (default)
+bs.TextEntry(app) # primary (default)
 bs.TextEntry(app, accent="secondary")
 bs.TextEntry(app, accent="success")
 bs.TextEntry(app, accent="warning")
@@ -121,9 +121,9 @@ Commit-time formatting using named presets, precision dicts, or custom ICU patte
 
 ```python
 # Named presets
-bs.TextEntry(app, label="Amount",    value=1234.56,        value_format="currency").pack()
-bs.TextEntry(app, label="Date",      value="March 14 1981", value_format="shortDate").pack()
-bs.TextEntry(app, label="Percent",   value=0.42,           value_format="percent").pack()
+bs.TextEntry(app, label="Amount",  value=1234.56,         value_format="currency").pack()
+bs.TextEntry(app, label="Date",    value="March 14 1981", value_format="shortDate").pack()
+bs.TextEntry(app, label="Percent", value=0.42,            value_format="percent").pack()
 
 # Precision control via dict
 bs.TextEntry(app, label="Rate", value=0.0875,
@@ -146,8 +146,8 @@ bs.TextEntry(app, label="Code", value_format="000-000").pack()
 ```python
 def on_change(event):
     print("value:", event.data["value"])      # committed value
-    print("previous:", event.data["prev_value"])
     print("text:", event.data["text"])        # raw display string
+    print("previous:", event.data["prev_value"])
 
 name.on_input(on_change)    # <<Input>>  — fires on each keystroke
 name.on_changed(on_change)  # <<Change>> — fires on commit (blur or Enter)
@@ -217,9 +217,7 @@ entry.insert_addon(bs.Label, position="before", icon="envelope")
 entry.insert_addon(bs.Button, position="after", icon="x-circle", command=on_clear)
 ```
 
-<figure markdown>
 ![addons](../../assets/widgets-textentry-addons.png)
-</figure>
 
 ### Retrieving add-ons
 
@@ -247,28 +245,31 @@ search.enable()    # both restored
 
 ### Toggle add-ons
 
-Use a `bs.Button` add-on to implement a toggle by changing its accent on each click:
+Use `bs.CheckToggle` as a toggle add-on. Pass `signal=` to link it to a reactive boolean value and `command=` to react on each toggle:
 
 ```python
-search = bs.TextEntry(app, label="Find")
+app = bs.App()
 
-case_sensitive = False
+search = bs.TextEntry(app, label="Find").pack(padx=16, pady=16)
+
+case_sensitive = bs.Signal(True)
 
 def toggle_case():
-    global case_sensitive
-    case_sensitive = not case_sensitive
-    accent = "primary" if case_sensitive else "secondary"
-    search.addons["case-btn"].configure(accent=accent)
+    print('Toggled:', case_sensitive.get())
 
 search.insert_addon(
-    bs.Button,
+    bs.CheckToggle,
     position="after",
     text="Aa",
-    accent="secondary",
-    command=toggle_case,
     name="case-btn",
+    signal=case_sensitive,
+    command=toggle_case,
 )
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-textentry-checktoggle.png" alt="Text Checktoggle"/>
+</div>
 
 ### Layout options
 
