@@ -60,9 +60,10 @@ class TextEntry(Field):
                 This is replaced by validation error messages when validation fails.
 
         Other Parameters:
+            accent (str): Accent token for the focus ring and active border.
+            density (str): Widget density — 'default' or 'compact'.
+            state (str): Initial widget state — 'normal', 'disabled', or 'readonly'.
             allow_blank (bool): Allow empty input. Default is True.
-            color (str): Color token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `color` instead.
             cursor (str): Cursor style when hovering.
             value_format (str): ICU format pattern for parsing/formatting.
             exportselection (bool): Export selection to clipboard.
@@ -70,7 +71,8 @@ class TextEntry(Field):
             foreground (str): Text color.
             initial_focus (bool): If True, widget receives focus on creation.
             justify (str): Text alignment ('left', 'center', 'right').
-            show_message (bool): If True, displays message area. Default is True.
+            show_message (bool): If True, displays message area. Defaults to False,
+                but auto-enables when `message=` or `required=True` is set.
             padding: Padding around entry widget.
             show (str): Character to mask input (e.g., '*' for passwords).
             takefocus (bool): If True, widget accepts Tab focus.
@@ -80,11 +82,6 @@ class TextEntry(Field):
             required (bool): If True, field cannot be empty. Adds 'required'
                 validation rule and appends '*' to label.
             xscrollcommand: Callback for horizontal scrolling.
-
-        Note:
-            The widget automatically sets up event handlers for focus, validation,
-            and value commits. Use on_input(), on_changed(), on_valid(), and
-            on_invalid() methods to bind callbacks to widget events.
         """
         super().__init__(master, value=value, label=label, message=message, **kwargs)
 
