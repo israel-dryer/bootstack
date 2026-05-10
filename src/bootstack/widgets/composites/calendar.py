@@ -827,7 +827,7 @@ class Calendar(ttk.Frame):
     def _style_for_date(self, d: date, in_month: bool, disabled: bool) -> tuple[str | None, str]:
         """Return (accent, variant) tuple for the given date."""
         if disabled or not in_month:
-            return (None, "ghost")
+            return (None, "calendar-outside")
         if self._selection_mode == "range" and self._range_start:
             end = self._range_end
             start = self._range_start

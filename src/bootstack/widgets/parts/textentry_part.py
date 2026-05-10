@@ -108,6 +108,8 @@ class TextEntryPart(ValidationMixin, Entry):
 
     def _handle_focus_out(self, _):
         """Commit value and check for changes when focus leaves the widget."""
+        if 'readonly' in self.state():
+            return
         self.commit()
         self._check_if_changed()
 

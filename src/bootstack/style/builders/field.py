@@ -106,12 +106,12 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     b.map_style(
         ttk_style,
         background=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        fieldbackground=[('disabled', disabled_bg)],
+        fieldbackground=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         selectforeground=[],
         selectbackground=[],
-        bordercolor=[('disabled', disabled_bg)],
-        darkcolor=[('disabled', disabled_bg)],
-        lightcolor=[('disabled', disabled_bg)],
+        bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
     )
 
@@ -199,12 +199,12 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     b.map_style(
         ttk_style,
         background=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        fieldbackground=[('disabled', disabled_bg)],
+        fieldbackground=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         selectforeground=[],
         selectbackground=[],
-        bordercolor=[('disabled', disabled_bg)],
-        darkcolor=[('disabled', disabled_bg)],
-        lightcolor=[('disabled', disabled_bg)],
+        bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
     )
 

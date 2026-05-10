@@ -4,14 +4,9 @@ title: DateEntry
 
 # DateEntry
 
-`DateEntry` is a form-ready calendar date input that combines a text field with a picker popup.
+`DateEntry` is a form-ready calendar date input that combines a text field with a picker popup. It supports both single-date and date-range selection.
 
-It behaves like other entry controls (message, validation, localization, events), while making date entry fast and
-consistent using a calendar picker when needed.
-
-<figure markdown>
-![dateentry states](../../assets/widgets-dateentry-states.png)
-</figure>
+It behaves like other entry controls (message, validation, localization, events), while making date entry fast and consistent using a calendar picker when needed.
 
 ---
 
@@ -33,6 +28,10 @@ due.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-dateentry-popup.png" alt="DateEntry quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -40,14 +39,16 @@ app.mainloop()
 Use `DateEntry` when:
 
 - users need to enter calendar dates reliably
-- you want both typing and a picker UI
+- you want both typing and a picker UI in a single field
+- you need a start/end date range in a compact field (`selection_mode='range'`)
 - validation and formatting should be consistent with other field controls
 
 Consider a different control when:
 
 - you need time-of-day input — use [TimeEntry](timeentry.md)
 - the value is "date-like" but not an actual calendar date — use [TextEntry](textentry.md)
-- date selection should be modal (dialog-based) — use [DateDialog](../dialogs/datedialog.md)
+- you need a standalone calendar embed — use [Calendar](../selection/calendar.md)
+- date selection should be a standalone modal — use [DateDialog](../dialogs/datedialog.md)
 
 ---
 
@@ -82,27 +83,41 @@ bs.DateEntry(app, label="Date", density="compact")
 | Value | Parsed/validated date committed on blur, Enter, or picker selection |
 
 ```python
-current = due.value   # committed date value
-raw = due.get()       # raw text
+current = due.value   # date in single mode; tuple[date, date] in range mode
+raw = due.get()       # raw display text
 ```
 
 !!! tip "Commit semantics"
-    Parsing, validation, and `value_format` are applied when the value is committed
-    (blur/Enter or picker selection), not while typing.
+    In single mode, parsing, validation, and `value_format` are applied when the value is committed (blur/Enter or picker selection), not while typing. In range mode the field is readonly so the picker is the only path.
 
 ### Common options
 
 #### Formatting: `value_format`
 
 ```python
-bs.DateEntry(app, label="Short Date", value="2025-01-15", value_format="shortDate").pack()
-bs.DateEntry(app, label="ISO Format", value="2025-01-15", value_format="yyyy-MM-dd").pack()
-bs.DateEntry(app, label="Long Date",  value="2025-01-15", value_format="longDate").pack()
+bs.DateEntry(
+    app, 
+    label="Short Date", 
+    value="2025-01-15", 
+    value_format="shortDate"
+)
+bs.DateEntry(
+    app, 
+    label="ISO Format", 
+    value="2025-01-15", 
+    value_format="yyyy-MM-dd"
+)
+bs.DateEntry(
+    app, 
+    label="Long Date",  
+    value="2025-01-15", 
+    value_format="longDate"
+)
 ```
 
-<figure markdown>
-![dateentry formats](../../assets/widgets-dateentry-formats.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-dateentry-formats.png" alt="DateEntry formats"/>
+</div>
 
 !!! link "See [Formatting](../../guides/formatting.md) for all date presets and custom ICU patterns."
 
@@ -135,16 +150,107 @@ bs.DateEntry(
 )
 ```
 
-#### Add-ons
+### Range selection
+
+Set `selection_mode='range'` to collect a start/end date pair in a single field. The field becomes readonly and displays the formatted range; clicking anywhere on it (or the calendar button) opens a dual-month picker.
+
+```python
+bs.DateEntry(
+    app,
+    label="Report period",
+    selection_mode="range",
+    start_date=date(2025, 1, 1),
+    end_date=date(2025, 3, 31),
+)
+
+bs.DateEntry(
+    app,
+    label="Booking window",
+    selection_mode="range",
+    value_format="shortDate",
+    min_date=date.today(),
+)
+```
+
+<div class="app-window">
+    <img src="../../assets/widgets-dateentry-range.png" alt="DateEntry range"/>
+</div>
+
+
+
+
+`value` returns a `tuple[date, date]` when both dates are picked, or `None` if the user has not yet made a selection:
+
+```python
+val = period.value
+if val:
+    start, end = val
+    print(f"From {start} to {end}")
+```
+
+The range is displayed using the same `value_format` applied to each date individually, joined by an en-dash — e.g. `"January 1, 2025 – March 31, 2025"`. Provide an initial range via `start_date` and `end_date`:
+
+```python
+bs.DateEntry(
+    app,
+    label="Subscription period",
+    selection_mode="range",
+    start_date="2025-01-01",
+    end_date="2025-12-31",
+    value_format="shortDate",
+)
+```
+
+#### Range picker behavior
+
+- Click the calendar button — opens a dual-month picker
+- Click a start date, then an end date — commits the range and closes
+- Clicking again after a complete range resets and starts a new selection
+
+### Date constraints
+
+Use `min_date`, `max_date`, and `disabled_dates` to restrict which dates can be picked. These apply in both single and range mode.
+
+```python
+from datetime import date
+
+bs.DateEntry(
+    app,
+    label="Appointment",
+    min_date=date.today(),           # no past dates
+)
+
+bs.DateEntry(
+    app,
+    label="Fiscal year end",
+    min_date=date(2025, 1, 1),
+    max_date=date(2025, 12, 31),
+)
+
+bs.DateEntry(
+    app,
+    label="Booking",
+    disabled_dates=[date(2025, 12, 25), date(2026, 1, 1)],
+)
+```
+
+### Add-ons
 
 ```python
 d = bs.DateEntry(app, label="Birthday")
-d.insert_addon(bs.Label, position="before", icon="cake-fill", name="icon")
+
+d.insert_addon(
+    bs.Label, 
+    position="before", 
+    icon="cake-fill", 
+    name="icon"
+)
 ```
 
-<figure markdown>
-![dateentry addons](../../assets/widgets-dateentry-addons.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-dateentry-addons.png" alt="DateEntry addons"/>
+</div>
+
 
 !!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 
@@ -154,10 +260,12 @@ d.insert_addon(bs.Label, position="before", icon="cake-fill", name="icon")
 
 ```python
 def on_change(event):
-    print("date:", event.data["value"])
+    print("value:", event.data["value"])
+    # single mode: date object
+    # range mode:  tuple[date, date] or None
 
-due.on_input(on_change)    # <<Input>>  — live typing
-due.on_changed(on_change)  # <<Change>> — committed (blur, Enter, or picker)
+due.on_input(on_change)    # <<Input>>  — live typing (single mode only)
+due.on_changed(on_change)  # <<Change>> — committed (blur, Enter, picker, or range pick)
 ```
 
 **Validation events** — callback receives a plain dict:
@@ -196,15 +304,15 @@ d.add_validation_rule("custom",
 - Click a day — commits the date and closes the popup
 - Escape — closes the popup without committing
 
-<figure markdown>
-![dateentry picker](../../assets/widgets-dateentry-popup.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-dateentry-popup.png" alt="DateEntry Popup"/>
+</div>
 
 ---
 
 ## Localization
 
-`DateEntry` supports locale-aware date formatting. The `value_format` option controls display format; dates adapt automatically to locale conventions (date order, separators, month names).
+`DateEntry` supports locale-aware date formatting. The `value_format` option controls display format; dates adapt automatically to locale conventions (date order, separators, month names). In range mode the same format is applied to each date in the range.
 
 Labels and messages are also localized when localization is active.
 
