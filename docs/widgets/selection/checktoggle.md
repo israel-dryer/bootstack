@@ -27,6 +27,10 @@ bs.CheckToggle(app, text="Italic", value=True).pack(side="left", padx=4, pady=10
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-checktoggle-quickstart.png" alt="CheckToggle Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -75,7 +79,11 @@ enabled.subscribe(lambda v: print("Snap:", v))
 ## Common options
 
 - `text`, `textvariable`, `textsignal`
-- `icon`, `icon_only`, `compound` — icon alongside or instead of label
+- `icon` — icon in the label area for all states (color shifts with selected state)
+- `on_icon`, `off_icon` — different icons for selected / unselected states
+- `icon_only`, `compound` — icon layout options
+
+!!! link "See [Icons](../../guides/icons.md) for stateful icon specs, color overrides, size control, and the full `on_icon`/`off_icon` reference."
 - `command` — callback with no arguments, fires on toggle
 - `variable`, `signal`, `value`
 - `onvalue`, `offvalue` — non-boolean on/off values

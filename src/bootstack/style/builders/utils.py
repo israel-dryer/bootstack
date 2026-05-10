@@ -251,6 +251,31 @@ def button_padding(b: BootstyleBuilderTTk, icon_only: bool, density: Any) -> int
     return b.scale((8, 0))
 
 
+def resolve_icon_spec(options: dict) -> 'str | dict | None':
+    """Resolve on_icon/off_icon/icon kwargs into a unified icon spec.
+
+    Handles the three icon kwargs accepted by toggle-style widgets:
+    - icon: base icon for all states (color changes with state)
+    - off_icon: icon for the unselected/off state
+    - on_icon: icon for the selected/on state
+
+    Returns an IconSpec dict (or plain name string) suitable for passing
+    to normalize_icon_spec, or None if no icon was provided.
+    """
+    on_icon = options.get('on_icon')
+    off_icon = options.get('off_icon')
+    icon = options.get('icon')
+
+    if not on_icon and not off_icon:
+        return icon  # None, str, or full IconSpec dict
+
+    base = off_icon or icon or on_icon
+    spec: dict = {'name': base}
+    if on_icon:
+        spec['state'] = [('selected', on_icon)]
+    return spec
+
+
 def apply_icon_mapping(
         b: BootstyleBuilderTTk,
         options: dict,
@@ -261,14 +286,15 @@ def apply_icon_mapping(
 
     Args:
         b: The bootstyle builder instance.
-        options: Style options dictionary containing 'icon' and 'icon_only' keys.
+        options: Style options dictionary containing 'icon', 'on_icon', 'off_icon',
+            and 'icon_only' keys.
         state_spec: The state specification dictionary to update.
         default_size: Default icon size, or None to use normalize_icon_spec defaults.
 
     Returns:
         Updated state_spec with icon mappings applied.
     """
-    icon = options.get('icon')
+    icon = resolve_icon_spec(options)
     if icon is None:
         return state_spec
 

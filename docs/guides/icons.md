@@ -18,6 +18,10 @@ When you specify an icon:
 bs.Button(app, text="Settings", icon="gear")
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-icons.png" alt="Button Icon"/>
+</div>
+
 The framework:
 
 - resolves the name through an icon provider
@@ -102,6 +106,10 @@ bs.Button(app, icon="plus", icon_only=True)
 bs.Button(app, icon="x-lg", icon_only=True, accent="secondary")
 ```
 
+<div class="app-window">
+    <img src="../assets/guides-icons-icon-only.png" alt="Icon Only Example"/>
+</div>
+
 Use `icon_only=True` when the icon is self-explanatory. The widget adjusts its padding accordingly.
 
 ### Labels with icons
@@ -121,12 +129,16 @@ Icons in labels reinforce the message without making it interactive.
 Toolbars typically use icon-only buttons:
 
 ```python
-toolbar = bs.PackFrame(app, direction="horizontal", gap=4)
+toolbar = bs.PackFrame(app, direction="horizontal", padding=8, anchor_items="w").pack(fill='x')
 
-bs.Button(toolbar, icon="folder-open", icon_only=True).pack(side="left")
-bs.Button(toolbar, icon="save", icon_only=True).pack(side="left")
-bs.Button(toolbar, icon="printer", icon_only=True).pack(side="left")
+bs.Button(toolbar, icon="folder2", icon_only=True).pack()
+bs.Button(toolbar, icon="save", icon_only=True).pack()
+bs.Button(toolbar, icon="printer", icon_only=True).pack()
 ```
+
+<div class="app-window">
+    <img src="../assets/guides-icons-toolbar.png" alt="Icon Buttons in Toolbar"/>
+</div>
 
 ### Icon + text for clarity
 
@@ -161,60 +173,141 @@ menu.add_command(label="Paste", icon="clipboard")
 
 ## Icon specifications
 
-For more control, pass a dict instead of a string:
+A plain string is the simplest form. When you need more control, pass a dict:
 
 ```python
-bs.Button(app, text="Settings", icon={
-    "name": "gear",
-    "size": 18,
-})
+bs.Button(app, text="Settings", icon="gear")          # string — name only
+bs.Button(app, text="Settings", icon={"name": "gear"})  # dict — same result
 ```
 
-### Available options
+### `name`
 
-| Key | Purpose |
-|-----|---------|
-| `name` | Icon identifier (required) |
-| `size` | Size in pixels (default: 20, DPI-scaled) |
-| `color` | Override color (hex or semantic token) |
-| `state` | Per-state icon overrides (list of tuples) |
-
-### State-based icons
-
-Some widgets have multiple visual states where different icons make sense. Use the `state` key to specify per-state overrides:
+The Bootstrap Icons identifier. Required in the dict form.
 
 ```python
-bs.CheckToggle(app, text="Enable notifications", icon={
+bs.Button(app, icon={"name": "gear"})
+```
+
+### `size`
+
+Size in pixels. Defaults to 20px, DPI-scaled automatically. Adjust when the default
+doesn't balance visually with surrounding content:
+
+```python
+bs.Button(app, icon={"name": "gear", "size": 16})
+bs.Label(app,  icon={"name": "exclamation-triangle", "size": 24})
+```
+
+### `color`
+
+Override the icon color. Accepts a hex string. When omitted the framework derives the
+color from the widget's foreground (and shifts it for state automatically):
+
+```python
+bs.Button(app, icon={"name": "heart-fill", "color": "#e74c3c"})
+```
+
+Use `color` sparingly — hardcoded colors bypass theme adaptation. Prefer letting the
+framework derive the color from the accent and surface tokens.
+
+### `state`
+
+Per-state overrides as a list of `(state_expression, override)` pairs. Covered in
+detail in the [Stateful icons](#stateful-icons) section below.
+
+### Stateful icons
+
+`CheckButton`, `CheckToggle`, and `RadioButton` can show different icons depending on
+their selection state. The icon appears in the **label area** alongside the text; color
+shifts automatically from foreground (unselected) to accent (selected).
+
+#### Shorthand: `on_icon` / `off_icon`
+
+For the common two-state case, use the `on_icon` and `off_icon` kwargs directly:
+
+```python
+# CheckButton — bell-slash when unchecked, bell-fill when checked
+bs.CheckButton(app, text="Notifications", off_icon="bell-slash", on_icon="bell-fill")
+
+# CheckToggle — different icon when toggled on
+bs.CheckToggle(app, text="Bold", off_icon="type", on_icon="type-bold")
+
+# RadioButton — filled icon when selected
+bs.RadioButton(app, text="Grid", off_icon="grid", on_icon="grid-fill", signal=view, value="grid")
+```
+
+`off_icon` is the default (unselected) icon. `on_icon` shows when the widget is
+selected or checked. A plain `icon=` with no `on_icon`/`off_icon` uses the same icon
+for both states — only the color changes:
+
+```python
+bs.CheckButton(app, text="Notifications", icon="bell")   # same icon, color shifts
+```
+
+#### Full spec: `state` list
+
+For finer control — custom colors per state, more than two states — pass a dict with a
+`state` list:
+
+```python
+bs.CheckButton(app, text="Notifications", icon={
     "name": "bell-slash",
     "state": [
-        ("selected", {"name": "bell"}),
-    ]
+        ("selected", "bell-fill"),
+        ("disabled", {"name": "bell-slash", "color": "#aaaaaa"}),
+    ],
 })
 ```
 
-When unselected, the toggle shows `bell-slash`. When selected, it shows `bell`.
-
-State expressions follow TTK conventions:
+Each entry is a `(state_expression, override)` pair. The override can be a plain icon
+name string or a dict with `name` and/or `color`. Any TTK state expression is valid:
 
 | Expression | Meaning |
 |------------|---------|
 | `"selected"` | Widget is selected/checked |
 | `"disabled"` | Widget is disabled |
-| `"hover !disabled"` | Mouse over, but not disabled |
+| `"hover !disabled"` | Mouse over, not disabled |
 | `"pressed !disabled"` | Being clicked |
 | `"focus !disabled"` | Has keyboard focus |
 
-Each state override can specify `name`, `color`, or both:
+The `on_icon`/`off_icon` shorthand and the full `state` dict are equivalent. Use
+whichever is clearer for the situation.
+
+For non-selection widgets (Button, etc.) the same `state` dict applies:
 
 ```python
 bs.Button(app, text="Play", icon={
     "name": "play",
     "state": [
-        ("hover !disabled", {"name": "play-fill"}),
+        ("hover !disabled",   {"name": "play-fill"}),
         ("pressed !disabled", {"color": "#ffffff"}),
     ]
 })
 ```
+
+### Hiding the checkbox or radio indicator
+
+`CheckButton` and `RadioButton` show a standard indicator (checkbox square or radio
+circle) independently of any icon. Use `show_indicator=False` to hide it:
+
+```python
+# Icon only, no checkbox square
+bs.CheckButton(app, off_icon="bell-slash", on_icon="bell-fill", show_indicator=False)
+
+# Standard indicator alongside a decorative label icon (default behavior)
+bs.CheckButton(app, text="Notifications", icon="bell", show_indicator=True)
+```
+
+`RadioGroup` forwards `show_indicator` to all child buttons — useful for icon-only
+radio groups that mimic a segmented control:
+
+```python
+group = bs.RadioGroup(app, orient="horizontal", show_indicator=False)
+group.add("Grid", "grid", off_icon="grid", on_icon="grid-fill")
+group.add("List", "list", off_icon="list", on_icon="list-check")
+```
+
+Individual `add()` calls can override the group default per button.
 
 ### When to use specs
 
@@ -222,9 +315,9 @@ Use the dict form when you need to:
 
 - adjust size for visual balance
 - override color for emphasis
-- fine-tune appearance in specific contexts
+- target more than two states
 
-For most cases, the string form is sufficient.
+For most cases, `on_icon`/`off_icon` or a plain string is sufficient.
 
 ---
 

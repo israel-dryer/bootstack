@@ -25,6 +25,10 @@ bs.Switch(app, text="Send notifications",  value=False).pack(padx=20, pady=6)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-switch-quickstart.png" alt="Switch Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -50,9 +54,16 @@ Use `Switch` when:
 bs.Switch(app, text="Primary",   accent="primary")
 bs.Switch(app, text="Secondary", accent="secondary")
 bs.Switch(app, text="Success",   accent="success")
+bs.Switch(app, text="Info",      accent="info")
 bs.Switch(app, text="Warning",   accent="warning")
 bs.Switch(app, text="Danger",    accent="danger")
+bs.Switch(app, text="Dark",      accent="dark")
+bs.Switch(app, text="Light",     accent="light")
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-switch-appearance.png" alt="Switch Colors"/>
+</div>
 
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
 
@@ -102,8 +113,13 @@ Store non-boolean values:
 ```python
 theme = bs.Signal("light")
 
-sw = bs.Switch(app, text="Dark mode", signal=theme,
-               onvalue="dark", offvalue="light")
+sw = bs.Switch(
+    app, 
+    text="Dark mode", 
+    signal=theme,
+    onvalue="dark", 
+    offvalue="light"
+)
 
 theme.subscribe(lambda v: print("theme:", v))
 ```

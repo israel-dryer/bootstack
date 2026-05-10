@@ -145,36 +145,25 @@ bs.CheckButton(app, text="Wider",  padding=(10, 6), width=18).pack(pady=6)
 bs.CheckButton(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
-### Custom icon indicators
+### Icons
 
-Pass `icon=` as a dict with a `name` (shown when unchecked) and a `state` list to swap to a
-different icon when checked. The icon replaces the standard checkbox indicator and is tinted
-with the `accent` color in both states.
+Icons appear in the **label area** alongside the text, independent of the checkbox indicator.
+Use `on_icon`/`off_icon` for state-switching, or `icon=` for a static icon whose color shifts
+automatically (foreground when unchecked, accent when checked):
 
 ```python
-bell_icon = {
-    "name": "bell-slash",
-    "state": [("selected", "bell-fill")],
-}
-
-bs.CheckButton(app, text="Push alerts",  icon=bell_icon, value=True,  accent="primary")
-bs.CheckButton(app, text="Email digest", icon=bell_icon, value=False, accent="primary")
+bs.CheckButton(app, text="Notifications", off_icon="bell-slash", on_icon="bell-fill")
+bs.CheckButton(app, text="Notifications", icon="bell")   # same icon, color shifts only
 ```
 
-<div class="app-window">
-    <img src="../../assets/widgets-checkbutton-custom-icons.png" alt="CheckButton custom icons"/>
-</div>
+Use `show_indicator=False` to hide the checkbox square, or keep the default to show both:
 
-!!! info "Using the text color instead of an accent"
-    Pass `accent="foreground"` to tint the icon with the widget's text color rather than a
-    theme accent. Useful when you want the icon to blend with surrounding text.
+```python
+bs.CheckButton(app, off_icon="bell-slash", on_icon="bell-fill", show_indicator=False)
+bs.CheckButton(app, text="Alerts", icon="bell")  # indicator + icon, default behavior
+```
 
-The `name` key sets the default (unchecked) icon. The `state` list is a sequence of
-`(state_expression, icon_name)` pairs — any ttk state expression is valid, so you can also
-target `"disabled"` or `"hover"` for finer control. Icon names come from the
-[Bootstrap Icons](https://icons.getbootstrap.com/) catalog.
-
-!!! link "See [Icons](../../guides/icons.md) for a full overview of icon usage, naming conventions, and the in-project gallery."
+!!! link "See [Icons](../../guides/icons.md) for the full spec — stateful overrides, custom colors, size control, and indicator visibility."
 
 ---
 

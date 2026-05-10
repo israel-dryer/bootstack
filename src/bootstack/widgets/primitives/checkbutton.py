@@ -22,7 +22,10 @@ class CheckButtonKwargs(TypedDict, total=False):
     command: Optional[Callable[[], Any]]
     image: Any
     icon: Any
+    on_icon: Any
+    off_icon: Any
     icon_only: bool
+    show_indicator: bool
     compound: Literal['text', 'image', 'top', 'bottom', 'left', 'right', 'center', 'none'] | str
     variable: Any
     signal: Signal[Any]
@@ -68,8 +71,15 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
             textsignal (Signal[str]): Reactive Signal linked to the text (auto-synced with textvariable).
             command (Callable): Callable invoked when the value toggles.
             image (PhotoImage): Image to display.
-            icon (str | dict): Theme-aware icon spec handled by the style system.
+            icon (str | dict): Icon shown in the label area for all states. Color shifts
+                from foreground (unselected) to accent (selected) automatically.
+            on_icon (str | dict): Icon shown in the label area when the button is selected.
+                Shortcut for ``state=[("selected", name)]`` inside a full icon spec.
+            off_icon (str | dict): Icon shown in the label area when the button is unselected.
+                Used as the base icon when ``on_icon`` is also provided.
             icon_only (bool): If True, removes the additional padding reserved for text.
+            show_indicator (bool): Whether to show the standard checkbox indicator. Defaults
+                to True. Set to False to hide the indicator (e.g. when using icons alone).
             compound (str): Placement of the image relative to text.
             variable (Variable): Linked variable controlling the on/off state.
             localize (bool | Literal['auto']): Determines the widget's localization mode.
@@ -94,7 +104,7 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
         signal_provided = 'signal' in kwargs
         variable_provided = 'variable' in kwargs
         initial_value = kwargs.pop('value', None)
-        kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'anchor'], kwargs))
+        kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'on_icon', 'off_icon', 'show_indicator', 'anchor'], kwargs))
         super().__init__(master, **kwargs)
         if initial_value is not None and not signal_provided and not variable_provided:
             self.variable.set(initial_value)

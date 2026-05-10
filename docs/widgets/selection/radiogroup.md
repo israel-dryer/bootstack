@@ -80,6 +80,29 @@ bs.RadioGroup(app, surface="card")
 group = bs.RadioGroup(app, accent="success")
 ```
 
+### Indicator visibility
+
+`show_indicator` is forwarded to all child buttons. Set it to `False` for icon-only groups
+where the icon itself conveys the selection state:
+
+```python
+group = bs.RadioGroup(app, orient="horizontal", show_indicator=False)
+group.add("Grid", "grid", icon="grid",      on_icon="grid-fill")
+group.add("List", "list", icon="list",      on_icon="list-check")
+group.add("Map",  "map",  icon="map",       on_icon="map-fill")
+group.pack(padx=20, pady=20)
+```
+
+Individual `add()` calls can override the group default:
+
+!!! link "See [Icons](../../guides/icons.md) for stateful icon specs, `on_icon`/`off_icon` shortcuts, and color overrides."
+
+```python
+group = bs.RadioGroup(app, show_indicator=False)
+group.add("Standard", "std")                           # inherits show_indicator=False
+group.add("Custom",   "custom", show_indicator=True)   # overrides to show indicator
+```
+
 !!! link "See [Design System](../../design-system/index.md) for available colors and styling options."
 
 ---

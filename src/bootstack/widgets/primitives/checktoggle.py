@@ -19,7 +19,12 @@ class CheckToggle(CheckButton):
             textsignal (Signal[str]): Reactive Signal linked to the text (auto-synced with textvariable).
             command (Callable): Callable invoked when the toggle changes state.
             image (PhotoImage): Image to display.
-            icon (str | dict): Theme-aware icon spec handled by the style system.
+            icon (str | dict): Icon shown in the label area for all states. Color shifts
+                with the button's pressed/selected state automatically.
+            on_icon (str | dict): Icon shown when the toggle is selected (on). Shortcut
+                for ``state=[("selected", name)]`` inside a full icon spec.
+            off_icon (str | dict): Icon shown when the toggle is unselected (off). Used
+                as the base icon when ``on_icon`` is also provided.
             icon_only (bool): If True, removes the additional padding reserved for text.
             compound (str): Placement of the image relative to text.
             variable (Variable): Linked variable controlling the on/off state.
