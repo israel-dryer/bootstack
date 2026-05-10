@@ -111,8 +111,13 @@ menu.configure(options=["Apple", "Banana", "Cherry"])
 Callback invoked on every selection change — no arguments:
 
 ```python
-menu = bs.OptionMenu(app, value="A", options=["A", "B"],
-                     command=lambda: print("selected:", menu.value))
+menu = bs.OptionMenu(
+    app, 
+    value="A", 
+    options=["A", "B"],
+                     
+    command=lambda: print("selected:", menu.value)
+)
 ```
 
 #### `state`
@@ -133,8 +138,12 @@ bs.OptionMenu(app, value="A", options=["A", "B"], density="compact")
 Control label localization per-widget:
 
 ```python
-bs.OptionMenu(app, value="menu.opt.a", options=["menu.opt.a", "menu.opt.b"],
-              localize=True)
+bs.OptionMenu(
+    app, 
+    value="menu.opt.a", 
+    options=["menu.opt.a", "menu.opt.b"],
+    localize=True
+)
 ```
 
 #### `width` and `padding`

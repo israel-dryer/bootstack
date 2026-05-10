@@ -166,9 +166,12 @@ Use `textsignal=` for reactive two-way binding:
 ```python
 status = bs.Signal("New")
 
-sb = bs.SelectBox(app, label="Status",
-                  items=["New", "In Progress", "Done"],
-                  textsignal=status)
+sb = bs.SelectBox(
+    app, 
+    label="Status",
+    items=["New", "In Progress", "Done"],
+    textsignal=status
+)
 
 status.subscribe(lambda v: print("status:", v))
 ```
