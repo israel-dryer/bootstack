@@ -27,6 +27,10 @@ group.pack(padx=20, pady=20, fill="x")
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-radiogroup-quickstart.png" alt="Radio Group Quickstart"/>
+</div>
+
 ---
 
 ## When to use
