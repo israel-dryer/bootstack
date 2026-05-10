@@ -150,6 +150,14 @@ class SelectBox(Field):
         toplevel.deiconify()
         toplevel.lift()
 
+        # Scroll to the selected item.  Two after_idle calls are needed: the first
+        # lets Tkinter process the deiconify/pack events; the second runs once the
+        # canvas has finished computing button positions so winfo_y() is accurate.
+        idx = popup_state['highlighted_index']
+        self.after_idle(lambda: self.after_idle(
+            lambda: self._update_highlight(popup_state, idx)
+        ))
+
         if self._search_enabled:
             self.entry_widget.focus_force()
             self.entry_widget.icursor('end')
@@ -222,7 +230,7 @@ class SelectBox(Field):
         inner_frame.bind('<Configure>', on_inner_frame_configure, add='+')
 
         self._item_labels = []
-        current_value = self.value
+        current_value = self.entry_widget.get()
 
         # Get accent from Field's _accent attribute, fallback to primary if None
         accent = getattr(self, '_accent', None) or 'primary'
@@ -329,8 +337,7 @@ class SelectBox(Field):
         else:
             toplevel.bind("<FocusOut>", close_popup)
 
-        # Apply initial highlight
-        self._update_highlight(popup_state, popup_state['highlighted_index'])
+        # Initial highlight state is applied after deiconify (see _show_selection_options)
 
     def _setup_search_bindings(self, toplevel, popup_state, close_popup):
         """Setup search-specific event bindings."""
@@ -505,7 +512,7 @@ class SelectBox(Field):
         Setting to -1 or None clears the selection.
         """
         try:
-            return self._items.index(self.value)
+            return self._items.index(self.entry_widget.get())
         except (ValueError, TypeError):
             return -1
 

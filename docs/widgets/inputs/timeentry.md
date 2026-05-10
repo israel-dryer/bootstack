@@ -28,6 +28,10 @@ t.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-timentry-quickstart.png" alt="TimeEntry quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -49,7 +53,7 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.TimeEntry(app, label="Start time")                    # primary (default)
+bs.TimeEntry(app, label="Start time") # primary (default)
 bs.TimeEntry(app, label="Start time", accent="secondary")
 ```
 
