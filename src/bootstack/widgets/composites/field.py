@@ -12,6 +12,7 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.checkbutton import CheckButton
+from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.mixins.entry_mixin import EntryMixin
 from bootstack.widgets.parts.numberentry_part import NumberEntryPart
@@ -147,7 +148,8 @@ class Field(EntryMixin, Frame):
                 when validation passes. Default is None (no message).
             show_message: If True, displays the message area below the field.
                 If False, hides the message area entirely (validation errors
-                won't be shown). Default is True.
+                won't be shown). Defaults to False, but auto-enables when
+                `message=` or `required=True` is set.
             required: If True, marks the field as required and automatically adds
                 a 'required' validation rule. An asterisk (*) is appended to the
                 label. The field cannot be left empty. Default is False.
@@ -156,14 +158,18 @@ class Field(EntryMixin, Frame):
                 NumberEntryPart). Default is 'text'.
 
         Other Parameters:
+            accent (str): Accent token for the focus ring and active border.
+            density (str): Widget density — 'default' or 'compact'.
+            state (str): Initial widget state — 'normal', 'disabled', or 'readonly'.
             value_format (str): ICU format pattern for parsing/formatting.
             allow_blank (bool): Allow empty input.
-            locale (str): Locale for formatting (e.g., 'en_US').
             initial_focus (bool): Focus on creation.
             show (str): Character to mask input (e.g., '*' for passwords).
             width (int): Width in characters.
             font (str): Font specification.
             justify (str): Text alignment ('left', 'center', 'right').
+            textvariable (Variable): Tkinter Variable linked to entry text.
+            textsignal (Signal): Signal for reactive text updates.
             minvalue (int | float): Minimum allowed value (numeric kind only).
             maxvalue (int | float): Maximum allowed value (numeric kind only).
             increment (int | float): Step size for up/down arrows (numeric kind only).
@@ -193,14 +199,14 @@ class Field(EntryMixin, Frame):
         # configuration
         self._message_text = message
         self._show_messages = show_message
-        self._addons: dict[str, Button | Label | CheckButton] = {}
+        self._addons: dict[str, Button | Label | CheckToggle] = {}
         self._required = required
         self._kind = kind
         self._label_text = label
         self._value = value
 
         self._entry: TextEntryPart | NumberEntryPart | SpinnerEntryPart
-        self._addons: dict[str, Union[Button, Label, CheckButton]] = {}
+        self._addons: dict[str, Union[Button, Label, CheckToggle]] = {}
 
         # layout
         label_text = self._label_text or ''
@@ -310,7 +316,7 @@ class Field(EntryMixin, Frame):
         return self._entry.get()
 
     @property
-    def entry_widget(self) -> NumberEntryPart | TextEntryPart:
+    def entry_widget(self) -> TextEntryPart | NumberEntryPart | SpinnerEntryPart:
         """Get the underlying entry widget."""
         return self._entry
 
@@ -366,7 +372,7 @@ class Field(EntryMixin, Frame):
 
     def insert_addon(
             self,
-            widget: Type[Union[Button, Label, CheckButton]],
+            widget: Type[Union[Button, Label, CheckToggle]],
             position: Literal['before', 'after'],
             name: str | None = None,
             pack_options: dict[str, Any] = None,
@@ -374,7 +380,7 @@ class Field(EntryMixin, Frame):
     ):
         """Insert a widget addon before or after the entry input.
 
-        Addons are Button, Label, or Checkbutton widgets positioned inside the field container,
+        Addons are Button, Label, or CheckToggle widgets positioned inside the field container,
         either before (left of) or after (right of) the entry input. Common use
         cases include search buttons, icons, clear buttons, or status indicators.
 
@@ -384,7 +390,7 @@ class Field(EntryMixin, Frame):
         - Is stored in the addons dictionary for later reference
 
         Args:
-            widget: Widget class to instantiate. Must be Button, Label, or Checkbutton.
+            widget: Widget class to instantiate. Must be Button, Label, or CheckToggle.
             position: Position relative to the entry input:
                 - 'before': Insert to the left of the entry (prefix)
                 - 'after': Insert to the right of the entry (suffix)
@@ -396,9 +402,10 @@ class Field(EntryMixin, Frame):
                 padx, pady, etc. The side and after/before options are set
                 automatically based on position.
             **kwargs (Any): Additional keyword arguments passed to the widget constructor.
-                For Button: text, command, icon, bootstyle, etc.
-                For Label: text, icon, image, bootstyle, etc.
-                Note: bootstyle and takefocus are set automatically but can be
+                For Button: text, command, icon, accent, variant, etc.
+                For Label: text, icon, image, accent, etc.
+                For CheckToggle: text, icon, signal, command, accent, etc.
+                Note: variant and takefocus are set automatically but can be
                 overridden.
         """
         variant = "suffix" if position == "after" else "prefix"
@@ -406,8 +413,11 @@ class Field(EntryMixin, Frame):
         kwargs.setdefault('variant', variant)
         kwargs.setdefault('takefocus', False)
         kwargs.setdefault('density', self._density)
+        kwargs.setdefault('anchor', 'center')
+        if 'icon' in kwargs and 'text' not in kwargs:
+            kwargs.setdefault('compound', 'image')
 
-        if widget in (Button, CheckButton):
+        if issubclass(widget, (Button, CheckButton)):
             icon_only = kwargs.get('icon_only', False)
             if 'style_options' in kwargs:
                 kwargs['style_options'].update(use_active_states=True, density=self._density, icon_only=icon_only)

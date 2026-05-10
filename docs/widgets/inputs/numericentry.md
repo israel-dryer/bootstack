@@ -9,10 +9,6 @@ title: NumericEntry
 It adds the behavior you almost always need for numeric data: bounds, stepping, formatting, validation, localization, and
 consistent field events. If you are building forms or dialogs, `NumericEntry` is usually your **default numeric input**.
 
-<figure markdown>
-![NumericEntry states](../../assets/widgets-numericentry-states.png)
-</figure>
-
 ---
 
 ## Quick start
@@ -36,6 +32,10 @@ qty.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-quickstart.png" alt="NumericEntry Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -43,18 +43,14 @@ app.mainloop()
 Use `NumericEntry` when:
 
 - users type numbers and you want reliable parsing + validation
-
 - bounds and stepping help prevent errors
-
 - you want locale-aware display formatting on commit
 
 Consider a different control when:
 
 - stepping is the primary interaction (visible step buttons matter) — use [SpinnerEntry](spinnerentry.md)
-
 - users adjust by feel and live feedback matters — use [Scale](scale.md)
-
-- you need the lowest-level ttk spinbox behavior and options — use [Spinbox](../primitives/spinbox.md)
+- you need the lowest-level spinbox primitive with full Tk option access — use [Spinbox](../primitives/spinbox.md)
 
 ---
 
@@ -63,14 +59,19 @@ Consider a different control when:
 ### `accent`
 
 ```python
-bs.NumericEntry(app, label="Quantity")  # primary (default)
+bs.NumericEntry(app, label="Quantity") # primary (default)
 bs.NumericEntry(app, label="Quantity", accent="secondary")
 bs.NumericEntry(app, label="Quantity", accent="success")
 bs.NumericEntry(app, label="Quantity", accent="warning")
 ```
 
-!!! link "Design System"
-    For a complete list of available colors and styling options, see the [Design System](../../design-system/index.md) documentation.
+Use `density='compact'` for dense form layouts:
+
+```python
+bs.NumericEntry(app, label="Qty", density="compact")
+```
+
+!!! link "See [Design System](../../design-system/index.md) for a complete list of available colors and styling options."
 
 ---
 
@@ -78,7 +79,7 @@ bs.NumericEntry(app, label="Quantity", accent="warning")
 
 ### Value model
 
-All Entry-based field controls separate **what the user is typing** from the **committed value**.
+All entry-based field controls separate **what the user is typing** from the **committed value**.
 
 | Concept | Meaning |
 |---|---|
@@ -86,7 +87,7 @@ All Entry-based field controls separate **what the user is typing** from the **c
 | Value | Parsed/validated value committed on blur or Enter |
 
 ```python
-current = qty.value      # committed value (usually int/float)
+current = qty.value      # committed value (int or float)
 raw = qty.get()          # raw text at any time
 
 qty.value = 42
@@ -106,148 +107,189 @@ age = bs.NumericEntry(app, label="Age", value=25, minvalue=0, maxvalue=120)
 
 #### Stepping: `increment`
 
-Stepping is supported via:
-
-- spin buttons (if enabled)
-
-- Up/Down arrow keys
-
-- mouse wheel (platform-dependent)
-
 ```python
 price = bs.NumericEntry(
-    app,
-    label="Unit Price",
-    value=9.99,
-    minvalue=0,
-    maxvalue=10000,
-    increment=0.01,
+    app, 
+    label="Unit Price", 
+    value=9.99, 
+    minvalue=0, 
+    maxvalue=10000, 
+    increment=0.01
 )
 ```
 
+Stepping is triggered by spin buttons, Up/Down arrow keys, and the mouse wheel.
+
 #### `wrap`
 
-- default behavior clamps at the min/max
-
-- set `wrap=True` to cycle through the range
+By default values clamp at the min/max. Set `wrap=True` to cycle through the range.
 
 ```python
-percent = bs.NumericEntry(
-    app,
-    label="Percent",
-    value=50,
-    minvalue=0,
-    maxvalue=100,
-    increment=5,
-    wrap=True,
+pct = bs.NumericEntry(
+    app, 
+    label="Percent", 
+    value=50, 
+    minvalue=0, 
+    maxvalue=100, 
+    increment=5, 
+    wrap=True
 )
 ```
 
 #### Spin buttons: `show_spin_buttons`
 
 ```python
-field = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
+qty = bs.NumericEntry(app, label="Quantity", value=1, show_spin_buttons=False)
 ```
 
 #### Formatting: `value_format`
 
-Commit-time, locale-aware formatting:
+Commit-time, locale-aware formatting using named presets, precision dicts, or custom ICU patterns:
 
 ```python
-bs.NumericEntry(app, label="Currency", value=1234.56, value_format="currency").pack()
-bs.NumericEntry(app, label="Fixed Point", value=15422354, value_format="fixedPoint").pack()
-bs.NumericEntry(app, label="Percent", value=0.35, value_format="percent").pack()
+bs.NumericEntry(
+    app,
+    label="Currency",
+    value=1234.56,
+    value_format="currency",
+)
+
+bs.NumericEntry(
+    app,
+    label="Fixed Point",
+    value=15422354,
+    value_format="fixedPoint",
+)
+
+bs.NumericEntry(
+    app,
+    label="Percent",
+    value=0.35,
+    value_format="percent",
+)
+
+# value format precision control
+bs.NumericEntry(
+    app,
+    label="Rate",
+    value=0.0875,
+    value_format={"type": "percent", "precision": 1}
+)
 ```
 
-<figure markdown>
-![numeric formats](../../assets/widgets-numericentry-formats.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-formats.png" alt="Numeric Entry Formats"/>
+</div>
 
-See [Guides → Formatting](../../guides/formatting.md) for all number presets, precision control, and custom patterns.
+
+!!! link "See [Formatting](../../guides/formatting.md) for all number presets, precision control, and custom patterns."
+
+#### `state`
+
+```python
+field = bs.NumericEntry(app, label="Amount", state="disabled")
+
+field.disable()         # prevent input
+field.enable()          # restore input
+field.readonly(True)    # allow reading, block editing
+```
 
 ### Events
 
-`NumericEntry` emits standard field events:
+`NumericEntry` emits two groups of events with different callback shapes.
 
-- `<<Input>>` / `on_input` — live typing
-
-- `<<Changed>>` / `on_changed` — committed value changed
-
-- `<<Valid>>`, `<<Invalid>>`, `<<Validated>>` — validation lifecycle
-
-It also emits step intent events:
-
-- `<<Increment>>` / `on_increment`
-
-- `<<Decrement>>` / `on_decrement`
+**Change events** — callback receives a Tkinter event object:
 
 ```python
-def handle_changed(event):
-    print("changed:", event.data)
+def on_change(event):
+    print("value:", event.data["value"])
 
-qty.on_changed(handle_changed)
-
-def handle_increment(event):
-    print("increment requested")
-
-qty.on_increment(handle_increment)
+qty.on_input(on_change)    # <<Input>>  — fires on each keystroke
+qty.on_changed(on_change)  # <<Change>> — fires on commit
 ```
 
-!!! tip "Live typing"
-    Use `on_input(...)` for live UX (previews), and `on_changed(...)` for committed values.
+**Step events** — also receive a Tkinter event object:
+
+```python
+def on_step(event):
+    print("stepped to:", event.data["value"])
+
+qty.on_increment(on_step)   # <<Increment>> — step-up fired
+qty.on_decrement(on_step)   # <<Decrement>> — step-down fired
+```
+
+**Validation events** — callback receives a plain dict:
+
+```python
+def on_result(data):
+    print("valid:", data["is_valid"], "value:", data["value"])
+
+qty.on_valid(on_result)      # <<Valid>>    — validation passed
+qty.on_invalid(on_result)    # <<Invalid>>  — validation failed
+qty.on_validated(on_result)  # <<Validate>> — fires after any validation
+```
+
+All `on_*` methods return a bind ID for unsubscribing:
+
+```python
+bid = qty.on_changed(on_change)
+qty.off_changed(bid)
+```
+
+### Programmatic stepping
+
+Use `step(n)` to move by an arbitrary number of increments:
+
+```python
+qty.step(3)   # step up 3 increments
+qty.step(-1)  # step down 1 increment
+```
 
 ### Validation
 
-Use numeric options for guardrails:
-
-- `minvalue` / `maxvalue` for bounds
-
-- `increment` for step size
-
-Use validation rules for business logic:
-
 ```python
 qty = bs.NumericEntry(app, label="Quantity", minvalue=0, maxvalue=999, required=True)
-qty.add_validation_rule("required", message="Quantity is required")
+```
+
+Use `required=True` to add the required rule at construction. Add additional rules for business logic:
+
+```python
+qty.add_validation_rule("custom",
+    func=lambda v: (v % 5 == 0, "Must be a multiple of 5"))
 ```
 
 ---
 
-## Behavior
+## Add-ons
 
-### Add-ons
-
-Like other field controls, `NumericEntry` supports prefix and suffix add-ons.
+`NumericEntry` supports prefix and suffix add-ons via `insert_addon`. Pass `name=` to retrieve them later.
 
 ```python
 salary = bs.NumericEntry(app, label="Salary")
-salary.insert_addon(bs.Label, position="before", icon="currency-euro")
+salary.insert_addon(bs.Label, position="before", icon="currency-euro", name="icon")
 
 size = bs.NumericEntry(app, label="Size", show_spin_buttons=False)
-size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
+size.insert_addon(bs.Label, position="after", text="cm", name="unit")
 ```
 
-<figure markdown>
-![addons](../../assets/widgets-numericentry-addons.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-numericentry-addons.png" alt="Numeric Entry Addons"/>
+</div>
 
----
-
-## Localization
-
-`NumericEntry` supports locale-aware number formatting through the `value_format` option. Formatting is applied at commit time, displaying numbers according to the current locale's conventions (decimal separators, grouping, currency symbols).
-
-!!! link "Localization"
-    For complete localization configuration and supported formats, see the [Localization](../../guides/localization.md) documentation.
+!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API including state inheritance and retrieval."
 
 ---
 
 ## Reactivity
 
-`NumericEntry` integrates with the signals system for reactive data binding. Changes to the field value can automatically propagate to other parts of your application.
+Bind a signal to keep the field value in sync with other parts of your application:
 
-!!! link "Signals"
-    For details on reactive patterns and data binding, see the [Signals](../../guides/reactivity.md) documentation.
+```python
+budget = bs.Signal(0.0)
+entry = bs.NumericEntry(app, label="Budget", textsignal=budget)
+
+budget.subscribe(lambda v: print("budget changed:", v))
+```
 
 ---
 
@@ -265,7 +307,7 @@ size.insert_addon(bs.Label, position="after", text="cm", font="label[9]")
 
 - [Formatting](../../guides/formatting.md) — number presets, precision, and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
-- [Signals](../../guides/reactivity.md) — reactive data binding
+- [Reactivity](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

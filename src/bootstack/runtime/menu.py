@@ -245,19 +245,18 @@ class MenuManager:
         """Create a menu from a list of item dictionaries.
 
         Args:
-            parent: The parent widget (Window, Toplevel, or Menu).
+            parent: The parent widget (Window, Toplevel, or Menu). Used as the
+                Tk parent for the created ``tk.Menu``; the menu is NOT
+                automatically attached to the parent — the caller decides
+                (e.g. ``widget['menu'] = m`` or ``MenuButton(menu=m)``).
             items: List of menu item dictionaries defining the menu structure.
 
         Returns:
             The created Menu object.
         """
-        menubar = None
-
-        # If parent is a window, create the menubar first
         if not isinstance(parent, tk.Menu):
-            menubar = tk.Menu(parent, tearoff=0)
-            parent['menu'] = menubar
-            parent = menubar  # Now work with the menubar
+            menu_root = tk.Menu(parent, tearoff=0)
+            parent = menu_root
 
         for options in items:
             options = options.copy()
@@ -305,7 +304,7 @@ class MenuManager:
             # Add all sub-items to this menu
             self._add_menu_items(menu, sub_items)
 
-        return parent if isinstance(parent, tk.Menu) else menubar
+        return parent
 
     def _add_menu_items(self, menu: tk.Menu, items: list[dict]):
         """Add items to a menu with icon support and theme tracking."""
@@ -363,148 +362,102 @@ class MenuManager:
         self.menu_items[item_id] = (menu, index, icon_name, icon_size)
 
 
-def create_menu(parent: Any, items: list[dict]) -> tk.Menu:
-    """Create a menu with icon and theme support.
+def create_menu_items(items: list[dict], menu: tk.Menu = None) -> tk.Menu:
+    """Add flat or mixed items to a menu with icon and theme support.
 
-    This is a convenience function that creates or retrieves a MenuManager
-    for the parent window and uses it to build a menu from a declarative
-    structure. The resulting menu automatically updates icon colors when
-    the theme changes.
-
-    Each menu item is defined by a dictionary that can contain:
-        - **label** (str): The text displayed for the menu item
-        - **icon** (str or dict): Icon specification. Can be a string icon
-          name (e.g., "folder2-open") or a dict with 'name' and 'size' keys
-          (e.g., {"name": "folder2-open", "size": 20})
-        - **items** (list): List of submenu items for cascade menus
-        - **command** (callable): Callback function executed when clicked
-        - **type** (str): Menu item type - 'command', 'checkbutton',
-          'radiobutton', or 'separator'
-        - **variable** (Variable): Tkinter variable for checkbutton/radiobutton
-        - **value** (Any): Value for radiobutton items
-        - **name** (str): Optional Tcl widget name for the cascade. On macOS
-          three names trigger system-native menu integration: `'apple'`
-          gives you the application menu (Tk auto-fills it with About,
-          Hide, Hide Others, Show All, Quit; any items you add appear
-          before the system items), `'window'` gets auto-populated with
-          open Toplevels, and `'help'` enables system Help search.
-          Ignored on Win/Linux.
-        - **shortcut** (str): Platform-aware accelerator. Accepts a
-          registered shortcut key (e.g. `'save'` if you've called
-          `Shortcuts.register('save', 'Mod+S', save_file)`) or a
-          modifier pattern like `'Mod+S'`, `'Ctrl+Shift+N'`, `'F5'`.
-          Renders as `⌘S` on macOS and `Ctrl+S` on Win/Linux.
-          For the actual keypress binding, register the shortcut and call
-          `Shortcuts.bind_to(app)` — that's the canonical pathway.
-        - **accelerator** (str): Legacy literal display string passed
-          straight through to `tk.Menu` (e.g. `'Ctrl+S'`). No platform
-          translation. Prefer `shortcut` for new code. If both are
-          provided, `accelerator` wins.
-        - Any other valid Tkinter menu item options (underline, etc.)
+    Populates *menu* declaratively — flat commands, separators, and nested
+    cascades are all supported.  Icons and theme-color updates are handled
+    automatically via ``MenuManager``.
 
     Args:
-        parent: The parent widget (Window, Toplevel, or Menu). If a Window
-            or Toplevel is provided, the menu becomes the window's menubar.
-            If a Menu is provided, items are added to that menu.
-        items: List of dictionaries defining the menu structure. Each
-            dictionary represents a menu item with its configuration.
+        items: List of item dicts.  Supported keys: ``label``, ``icon``,
+            ``command``, ``type`` (``'command'``, ``'checkbutton'``,
+            ``'radiobutton'``, ``'separator'``), ``variable``, ``value``,
+            ``shortcut``, ``accelerator``, ``items`` (nested cascade).
+        menu: ``tk.Menu`` to populate.  If ``None``, a new ``tk.Menu`` is
+            created under the current app (``get_current_app()``).  For a
+            secondary window or dialog, pass a ``bs.Menu(dialog, tearoff=0)``
+            explicitly so icon tracking stays on the correct window.
 
     Returns:
-        The created Menu object. For window menubars, this is the menubar
-        itself. For menus attached to other widgets, this is the menu.
+        The populated ``tk.Menu``.
+
+    Example::
+
+        bs.MenuButton(app, text="File", menu=bs.create_menu_items(items)).pack()
+    """
+    if menu is None:
+        from bootstack.runtime.app import get_current_app
+        menu = tk.Menu(get_current_app(), tearoff=0)
+    root = menu.winfo_toplevel() if hasattr(menu, 'winfo_toplevel') else menu
+    if not hasattr(root, '_menu_manager'):
+        root._menu_manager = MenuManager(root)
+    root._menu_manager._add_menu_items(menu, items)
+    return menu
+
+
+def create_menu(items: list[dict], parent: Any = None) -> tk.Menu:
+    """Create a menu with icon and theme support.
+
+    Builds a ``tk.Menu`` populated with cascade entries from *items*.  Icons
+    and theme-color updates are handled automatically via ``MenuManager``.
+
+    The returned menu is not attached to anything — pass it to a
+    ``MenuButton``, assign it as a window menubar, or use it however you like.
+
+    Each top-level dict in *items* becomes a cascade (submenu group).  Items
+    inside ``"items"`` are the actual commands.  Supported keys per dict:
+
+    - **label** (str): Display text (message tokens are auto-translated).
+    - **icon** (str or dict): Bootstrap icon name, e.g. ``"folder2-open"``,
+      or ``{"name": "folder2-open", "size": 18}`` for a custom size.
+    - **items** (list): Nested sub-items — creates a cascade.
+    - **command** (callable): Callback for ``'command'`` items.
+    - **type** (str): ``'command'`` (default), ``'checkbutton'``,
+      ``'radiobutton'``, or ``'separator'``.
+    - **variable** (Variable): Tk variable for checkbutton / radiobutton.
+    - **value**: Value for radiobutton items.
+    - **shortcut** (str): Platform-aware accelerator, e.g. ``'Mod+S'``.
+      Renders as ``⌘S`` on macOS and ``Ctrl+S`` on Win/Linux.
+    - **accelerator** (str): Literal accelerator string (legacy, no
+      platform translation). Prefer ``shortcut`` for new code.
+    - **name** (str): Tcl widget name for the cascade. On macOS, ``'apple'``,
+      ``'window'``, and ``'help'`` trigger system-native menu integration.
+
+    Args:
+        items: List of dicts defining the cascade structure.
+        parent: Tk parent for the created ``tk.Menu`` and the window whose
+            ``MenuManager`` tracks icon theme updates.  Defaults to the
+            current app (``get_current_app()``).  Pass a specific
+            ``Toplevel`` or dialog when building a menu for a secondary
+            window so icon tracking stays on the correct window.
+
+    Returns:
+        The created ``tk.Menu``.
 
     Examples:
-        Basic menubar with icons:
-            ```python
-            import bootstack as bs
+        MenuButton (single-window app — parent optional)::
 
-            app = bs.App()
+            bs.MenuButton(app, text="Menu", menu=bs.create_menu(items)).pack()
 
-            menu_items = [
-                {
-                    "label": "File",
-                    "items": [
-                        {"label": "New", "icon": "file-plus", "command": new_file},
-                        {"label": "Open", "icon": "folder2-open", "command": open_file},
-                        {"type": "separator"},
-                        {"label": "Exit", "icon": "x-circle", "command": app.quit}
-                    ]
-                },
-                {
-                    "label": "Edit",
-                    "items": [
-                        {"label": "Undo", "icon": "arrow-counterclockwise"},
-                        {"label": "Redo", "icon": "arrow-clockwise"}
-                    ]
-                }
-            ]
+        Window menubar::
 
-            bs.create_menu(app, menu_items)
-            app.mainloop()
-            ```
+            app['menu'] = bs.create_menu(items)
 
-        Nested submenus with custom icon sizes:
-            ```python
-            menu_items = [
-                {
-                    "label": "File",
-                    "items": [
-                        {
-                            "label": "Recent",
-                            "icon": {"name": "clock-history", "size": 18},
-                            "items": [
-                                {"label": "Document 1.txt"},
-                                {"label": "Document 2.txt"}
-                            ]
-                        }
-                    ]
-                }
-            ]
-            ```
+        Menu for a dialog (pass the Toplevel explicitly)::
 
-        Menu with checkbuttons and radiobuttons:
-            ```python
-            view_var = bs.BooleanVar(value=True)
-            theme_var = bs.StringVar(value="light")
-
-            menu_items = [
-                {
-                    "label": "View",
-                    "items": [
-                        {
-                            "label": "Show Toolbar",
-                            "type": "checkbutton",
-                            "variable": view_var
-                        }
-                    ]
-                },
-                {
-                    "label": "Theme",
-                    "items": [
-                        {
-                            "label": "Light",
-                            "type": "radiobutton",
-                            "variable": theme_var,
-                            "value": "light"
-                        },
-                        {
-                            "label": "Dark",
-                            "type": "radiobutton",
-                            "variable": theme_var,
-                            "value": "dark"
-                        }
-                    ]
-                }
-            ]
-            ```
+            dlg = bs.Toplevel(app)
+            bs.MenuButton(dlg, text="Menu", menu=bs.create_menu(items, parent=dlg)).pack()
     """
-    # Get or create MenuManager for this window
-    root = parent.winfo_toplevel() if hasattr(parent, 'winfo_toplevel') else parent
+    if parent is None:
+        from bootstack.runtime.app import get_current_app
+        parent = get_current_app()
 
+    root = parent.winfo_toplevel() if hasattr(parent, 'winfo_toplevel') else parent
     if not hasattr(root, '_menu_manager'):
         root._menu_manager = MenuManager(root)
 
     return root._menu_manager.create_menu(parent, items)
 
 
-__all__ = ['create_menu']
+__all__ = ['create_menu', 'create_menu_items']

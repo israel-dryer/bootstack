@@ -7,8 +7,8 @@ title: OptionMenu
 `OptionMenu` is a **selection control** that lets users pick **one value from a short list** using a
 menu-style dropdown.
 
-In bootstack v2, `OptionMenu` wraps Tkinter's `bs.Menubutton` and adds theming, icons, signals,
-and standardized change events. It is best suited for **compact, known option sets**.
+`OptionMenu` wraps `bs.MenuButton` and adds theming, icons, signals, and standardized change events.
+It is best suited for **compact, known option sets**.
 
 Use `OptionMenu` when the list is small and users already know the available choices.
 For longer lists or search/filtering, prefer [SelectBox](selectbox.md).
@@ -20,12 +20,9 @@ For longer lists or search/filtering, prefer [SelectBox](selectbox.md).
 `OptionMenu` provides:
 
 - **single selection** (one committed value)
-
 - **menu-based** dropdown behavior
-
 - compact desktop-friendly appearance
-
-- optional **signals** and `<<Changed>>` events
+- optional **signals** and `<<Change>>` events
 
 It is intentionally simpler than `SelectBox` and does not support search or custom values.
 
@@ -50,45 +47,23 @@ app.mainloop()
 
 ---
 
-## Variants
-
-`OptionMenu` does not have behavioral variants. Its primary variations are visual, controlled by
-`accent` and `variant` (see **Colors and styling**).
-
----
-
 ## How the value works
 
 - `options` defines the list of valid values
-
 - `value` is the currently selected option
-
-When the user selects a menu item, `OptionMenu` updates `value` and emits `<<Changed>>`.
 
 ```python
 print(menu.value)
 menu.value = "High"
+menu.get()              # equivalent to menu.value
+menu.set("Low")         # equivalent to menu.value = "Low"
 ```
 
 ---
 
 ## Binding to signals or variables
 
-You can bind selection state in several ways.
-
-### Using a Tk variable
-
-```python
-color = bs.StringVar(value="Green")
-
-menu = bs.OptionMenu(
-    app,
-    textvariable=color,
-    options=["Red", "Green", "Blue"],
-)
-```
-
-### Using a signal
+### Using a signal (preferred)
 
 ```python
 selected = bs.Signal("Medium")
@@ -102,45 +77,70 @@ menu = bs.OptionMenu(
 selected.subscribe(lambda v: print("changed:", v))
 ```
 
+### Using a Tk variable
+
+```python
+color = bs.StringVar(value="Green")
+
+menu = bs.OptionMenu(
+    app,
+    textvariable=color,
+    options=["Red", "Green", "Blue"],
+)
+```
+
 ---
 
 ## Common options
 
 ### `options`
 
-Defines the available choices.
-
 ```python
 menu.configure(options=["Apple", "Banana", "Cherry"])
 ```
 
-### `value`
+### `command`
 
-Set or update the selected value.
+Callback invoked on every selection change — no arguments:
 
 ```python
-menu.configure(value="Banana")
+menu = bs.OptionMenu(app, value="A", options=["A", "B"],
+                     command=lambda: print("selected:", menu.value))
 ```
 
 ### `state`
-
-Disable or enable the menu.
 
 ```python
 menu.configure(state="disabled")
 menu.configure(state="normal")
 ```
 
+### `density`
+
+```python
+bs.OptionMenu(app, value="A", options=["A", "B"], density="compact")
+```
+
+### `localize`
+
+Control label localization per-widget:
+
+```python
+bs.OptionMenu(app, value="menu.opt.a", options=["menu.opt.a", "menu.opt.b"],
+              localize=True)
+```
+
 ### `width` and `padding`
 
 ```python
-bs.OptionMenu(
-    app,
-    value="A",
-    options=["A", "B"],
-    width=20,
-    padding=(10, 6),
-).pack(pady=6)
+bs.OptionMenu(app, value="A", options=["A", "B"], width=20, padding=(10, 6))
+```
+
+### Dropdown button options
+
+```python
+bs.OptionMenu(app, value="A", options=["A", "B"], show_dropdown_button=False)
+bs.OptionMenu(app, value="A", options=["A", "B"], dropdown_button_icon="chevron-down")
 ```
 
 ---
@@ -148,63 +148,39 @@ bs.OptionMenu(
 ## Behavior
 
 - Clicking the button opens a menu of options.
-
 - Selecting an item immediately commits the value.
-
 - The menu closes automatically after selection.
-
-- Keyboard navigation follows standard ttk menubutton behavior.
+- Keyboard: standard menubutton navigation.
 
 ---
 
 ## Events
 
-`OptionMenu` emits a committed change event when selection changes.
-
 ```python
 def on_changed(event):
     print("Selected:", event.data["value"])
 
-menu.on_changed(on_changed)
-```
-
-To unbind:
-
-```python
 bind_id = menu.on_changed(on_changed)
 menu.off_changed(bind_id)
 ```
 
----
-
-## Validation and constraints
-
-Selection is constrained to `options`.
-
-Validation is typically unnecessary, but may be useful when:
-
-- a selection is required before submission
-
-- options are updated dynamically
+The event name is `<<Change>>`. The callback receives a Tkinter event object with `event.data["value"]`.
 
 ---
 
 ## Colors and styling
 
-`OptionMenu` supports the same `accent` and `variant` options as `MenuButton`.
+`OptionMenu` supports the same `accent` and `variant` options as `MenuButton` (`"solid"`, `"outline"`, `"ghost"`):
 
 ```python
 bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary")
 bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="outline")
 bs.OptionMenu(app, value="A", options=["A", "B"], accent="primary", variant="ghost")
-bs.OptionMenu(app, value="A", options=["A", "B"], variant="text")
 ```
 
 ---
 
 ## Icons
-
-Use `icon=...` to attach a theme-aware icon.
 
 ```python
 bs.OptionMenu(
@@ -222,8 +198,9 @@ bs.OptionMenu(
 
 ## Localization
 
-Text shown by `OptionMenu` participates in localization according to your global widget settings.
-When `localize="auto"`, untranslated keys fall back to literal text.
+`OptionMenu` text participates in localization. When `localize="auto"` (the default), untranslated keys fall back to literal text.
+
+!!! link "See [Localization](../../guides/localization.md) for configuring translations and message catalogs."
 
 ---
 
@@ -231,23 +208,12 @@ When `localize="auto"`, untranslated keys fall back to literal text.
 
 Use `OptionMenu` when:
 
-- the option list is short (3-15 items)
-
+- the option list is short (up to ~8 items)
 - the control should remain compact
-
 - search or rich presentation is unnecessary
 
-Prefer **SelectBox** when:
-
-- the list is long
-
-- search or filtering is needed
-
-- users may enter custom values
-
-Prefer **RadioButton / RadioGroup** when:
-
-- there are very few options and showing them inline improves clarity
+Prefer **SelectBox** when the list is longer, search helps, or users may enter custom values.
+Prefer **RadioButton / RadioGroup** when there are very few options and showing them inline improves clarity.
 
 ---
 
@@ -255,10 +221,10 @@ Prefer **RadioButton / RadioGroup** when:
 
 ### Related widgets
 
-- [SelectBox](selectbox.md) - dropdown selection with search and filtering
-- [RadioButton](radiobutton.md) - inline mutually exclusive options
-- [RadioGroup](radiogroup.md) - grouped radio options
-- [MenuButton](../actions/menubutton.md) - base widget for menu-triggered buttons
+- [SelectBox](selectbox.md) — dropdown selection with search and filtering
+- [RadioButton](radiobutton.md) — inline mutually exclusive options
+- [RadioGroup](radiogroup.md) — grouped radio options
+- [MenuButton](../actions/menubutton.md) — base widget for menu-triggered buttons
 
 ### API reference
 

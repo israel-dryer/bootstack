@@ -6,7 +6,7 @@ title: TreeView
 
 `TreeView` displays **hierarchical data** in an expandable tree structure.
 
-It's ideal for representing parent/child relationships like folders, categories, or outlines.
+It's ideal for representing parent/child relationships like folders, categories, or outlines. It is also the widget to reach for when you need per-row color coding — `tag_configure` lets you map data values to background or foreground colors row by row.
 
 ---
 
@@ -17,7 +17,7 @@ import bootstack as bs
 
 app = bs.App()
 
-tree = bs.Treeview(app)
+tree = bs.TreeView(app)
 tree.pack(fill="both", expand=True)
 
 tree.insert("", "end", text="Root")
@@ -31,17 +31,14 @@ app.mainloop()
 Use TreeView when:
 
 - data has a natural hierarchy
-
 - users need to navigate parent/child relationships
-
 - content can be expanded and collapsed
+- you need per-row color coding via `tag_configure`
 
 ### Consider a different control when...
 
-- **Data is flat and column-based** — use [TableView](tableview.md) instead
-
-- **Data is a simple list without hierarchy** — use [ListView](listview.md) instead
-
+- **Data is flat and column-based** — use [TableView](tableview.md)
+- **Data is a simple list without hierarchy** — use [ListView](listview.md)
 - **You only need to display a single value** — use [Label](label.md) or [Badge](badge.md)
 
 ---
@@ -50,72 +47,81 @@ Use TreeView when:
 
 ### Styling
 
-TreeView supports theming through bootstack:
-
 ```python
-bs.Treeview(app, accent="primary")
+tree = bs.TreeView(app, accent="primary")
 ```
 
-!!! link "Design System"
-    See [Design System](../../design-system/index.md) for color tokens and theming guidelines.
+Bootstack-specific appearance params:
+
+- `density` — `"default"` or `"compact"` row sizing
+- `show_border` — draw a border around the widget
+- `border_color` — border color token
+- `select_background` — row selection highlight color token
+- `header_background` — header row background token
+
+!!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
 
 ## Examples & patterns
 
-### Core concepts
-
-- **Items and parents** — each item can have a parent and children
-
-- **Expand/collapse state** — branches can be opened or closed
-
-- **Selection and focus** — items can be selected and focused
-
 ### Building a tree
 
 ```python
-tree = bs.Treeview(app)
+tree = bs.TreeView(app)
 tree.pack(fill="both", expand=True)
 
-# Insert root item
 root = tree.insert("", "end", text="Documents")
-
-# Insert children
 tree.insert(root, "end", text="Report.pdf")
 tree.insert(root, "end", text="Notes.txt")
 
-# Insert nested folder
 subfolder = tree.insert(root, "end", text="Images")
 tree.insert(subfolder, "end", text="photo.jpg")
 ```
 
-### Common patterns
-
-- **File browsers** — navigate folder structures
-
-- **Category navigation** — browse hierarchical categories
-
-- **Outline views** — display document outlines
-
 ### With columns
 
 ```python
-tree = bs.Treeview(app, columns=("size", "modified"))
-tree.heading("#0", text="Name")
-tree.heading("size", text="Size")
+tree = bs.TreeView(app, columns=("size", "modified"))
+tree.heading("#0",       text="Name")
+tree.heading("size",     text="Size")
 tree.heading("modified", text="Modified")
+
+# Configure column widths and alignment
+tree.column("size",     width=80,  anchor="e")
+tree.column("modified", width=120, anchor="center")
 
 tree.insert("", "end", text="file.txt", values=("10 KB", "2024-01-15"))
 ```
 
+### Per-row color with `tag_configure`
+
+`tag_configure` is the primary reason to choose `TreeView` over `TableView` when you need status-based row colors:
+
+```python
+tree = bs.TreeView(app, columns=("status",))
+tree.heading("status", text="Status")
+
+# Define tag styles
+tree.tag_configure("ok",      background="#d4edda", foreground="#155724")
+tree.tag_configure("warning", background="#fff3cd", foreground="#856404")
+tree.tag_configure("error",   background="#f8d7da", foreground="#721c24")
+
+# Apply tags when inserting rows
+for record in records:
+    tag = "ok" if record["status"] == "active" else "warning"
+    tree.insert("", "end", text=record["name"],
+                values=(record["status"],), tags=(tag,))
+```
+
+!!! link "See [Data Tables](../../guides/data-tables.md) for guidance on when to use TreeView vs TableView."
+
 ### Common options
 
 - `columns` — additional columns beyond the tree column
-
-- `show` — what to display (`"tree"`, `"headings"`, or both)
-
-- `selectmode` — selection behavior (`"browse"`, `"extended"`, `"none"`)
-
+- `displaycolumns` — subset and display order of columns (e.g. `("#0", "size")`)
+- `show` — `"tree"` (tree column only), `"headings"` (columns only), or `"tree headings"` (both)
+- `selectmode` — `"browse"`, `"extended"`, or `"none"`
 - `height` — number of visible rows
 
 ---
@@ -124,57 +130,40 @@ tree.insert("", "end", text="file.txt", values=("10 KB", "2024-01-15"))
 
 ### Events
 
-TreeView emits events for user interactions:
-
-- `<<TreeviewSelect>>` — selection changed
-
-- `<<TreeviewOpen>>` — item expanded
-
-- `<<TreeviewClose>>` — item collapsed
-
 ```python
 def on_select(event):
     selected = tree.selection()
     print("Selected:", selected)
 
 tree.bind("<<TreeviewSelect>>", on_select)
+tree.bind("<<TreeviewOpen>>",   lambda e: print("expanded"))
+tree.bind("<<TreeviewClose>>",  lambda e: print("collapsed"))
 ```
 
 ### Item operations
 
 ```python
-# Get selected items
-selected = tree.selection()
-
-# Expand/collapse
-tree.item(item_id, open=True)
-tree.item(item_id, open=False)
-
-# Get item data
-data = tree.item(item_id)
-
-# Delete item
-tree.delete(item_id)
+selected = tree.selection()        # selected item IDs
+tree.item(item_id, open=True)      # expand
+tree.item(item_id, open=False)     # collapse
+data = tree.item(item_id)          # get item dict
+tree.delete(item_id)               # remove
+tree.move(item_id, parent, index)  # reorder
 ```
 
 ---
 
 ## Reactivity
 
-TreeView can be updated dynamically:
+TreeView is updated imperatively — clear and rebuild when data changes:
 
 ```python
-# Clear and rebuild
 for item in tree.get_children():
     tree.delete(item)
 
-# Add new items
-for item in new_data:
-    tree.insert("", "end", text=item["name"])
+for record in new_data:
+    tree.insert("", "end", text=record["name"])
 ```
-
-!!! link "Signals"
-    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -183,16 +172,13 @@ for item in new_data:
 ### Related widgets
 
 - [TableView](tableview.md) — tabular record display
-
 - [ListView](listview.md) — virtual scrolling list
-
 - [ScrollView](../layout/scrollview.md) — scrolling containers
 
 ### Framework concepts
 
+- [Data Tables](../../guides/data-tables.md) — TreeView vs TableView guidance
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 

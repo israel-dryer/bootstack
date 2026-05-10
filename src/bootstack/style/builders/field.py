@@ -106,12 +106,12 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     b.map_style(
         ttk_style,
         background=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        fieldbackground=[('disabled', disabled_bg)],
+        fieldbackground=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         selectforeground=[],
         selectbackground=[],
-        bordercolor=[('disabled', disabled_bg)],
-        darkcolor=[('disabled', disabled_bg)],
-        lightcolor=[('disabled', disabled_bg)],
+        bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
     )
 
@@ -199,12 +199,12 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     b.map_style(
         ttk_style,
         background=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        fieldbackground=[('disabled', disabled_bg)],
+        fieldbackground=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         selectforeground=[],
         selectbackground=[],
-        bordercolor=[('disabled', disabled_bg)],
-        darkcolor=[('disabled', disabled_bg)],
-        lightcolor=[('disabled', disabled_bg)],
+        bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
+        lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
     )
 
@@ -245,11 +245,13 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, vari
     foreground = b.on_color(fill)
     foreground_disabled = b.disabled('text')
     normal = b.disabled(surface=fill)
+    surface_selected = b.selected(fill)
 
     # addon element images - use density-aware images from manifest
     # variant is 'before' or 'after', maps to input_before_* or input_after_*
     img_key = entry_image_key(f'input_{variant}', density)
     normal_img = recolor_element_image(img_key, normal, border)
+    selected_img = recolor_element_image(img_key, surface_selected, border)
 
     if use_active_states:
         active_img = recolor_element_image(img_key, surface_active, border)
@@ -261,6 +263,9 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, vari
     height = field_height(b, density)
     b.create_style_element_image(
         ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height).state_specs([
+            ('selected pressed', selected_img.image),
+            ('selected active', selected_img.image),
+            ('selected', selected_img.image),
             ('pressed', pressed_img.image),
             ('active', active_img.image),
             ('', normal_img.image)
@@ -297,6 +302,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, vari
     state_spec = dict(
         foreground=[
             ('disabled', foreground_disabled),
+            ('selected !disabled', foreground),
             ('pressed !disabled', foreground),
             ('hover !disabled', foreground),
             ('', foreground)

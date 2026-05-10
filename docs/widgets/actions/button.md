@@ -4,7 +4,7 @@ title: Button
 
 # Button
 
-Buttons allow users to take actions with a single click. They communicate available actions and are commonly used throughout an interface—such as in dialogs, forms, and toolbars.
+Buttons allow users to take actions with a single click. They communicate available actions and are commonly used throughout an interface — such as in dialogs, forms, and toolbars.
 
 ## Quick start
 
@@ -23,6 +23,10 @@ bs.Button(app, text="Save", command=on_save).pack(padx=20, pady=20)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-button-quickstart.png" alt="Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -31,10 +35,10 @@ Use a button when the user needs to **trigger an action immediately**, such as s
 
 ### Consider a different control when…
 
-- Use **CheckButton / CheckToggle** for persistent on/off state.
-- Use **RadioButton / RadioGroup** for choosing one option from a set.
-- Use **ToggleGroup** for compact single or multi selection (segmented control).
-- Use **MenuButton / DropdownButton** when the action reveals a menu of choices.
+- Use [CheckToggle](../selection/checktoggle.md) for persistent on/off state.
+- Use [RadioButton / RadioGroup](../selection/radiobutton.md) for choosing one option from a set.
+- Use [ToggleGroup](../selection/togglegroup.md) for compact single or multi selection (segmented control).
+- Use [MenuButton](menubutton.md) or [DropdownButton](dropdownbutton.md) when the action reveals a menu of choices.
 
 ---
 
@@ -55,9 +59,9 @@ The `accent` parameter accepts semantic color tokens:
 ```python
 bs.Button(app, text="Primary", accent="primary").pack(pady=4)
 bs.Button(app, text="Outline", accent="primary", variant="outline").pack(pady=4)
-bs.Button(app, text="Ghost", accent="primary", variant="ghost").pack(pady=4)
-bs.Button(app, text="Link", accent="primary", variant="link").pack(pady=4)
-bs.Button(app, text="Text", accent="secondary", variant="text").pack(pady=4)
+bs.Button(app, text="Ghost",   accent="primary", variant="ghost").pack(pady=4)
+bs.Button(app, text="Link",    accent="primary", variant="link").pack(pady=4)
+bs.Button(app, text="Text",    accent="secondary", variant="text").pack(pady=4)
 ```
 
 ### Variants
@@ -109,7 +113,7 @@ bs.Button(app, text="Link", variant="link")
 ```
 
 **Text**
-Use for the lowest-emphasis utility actions—especially in dense UIs—where you want minimal chrome but still want button semantics (e.g., "Edit", "Clear", "Dismiss").
+Use for the lowest-emphasis utility actions — especially in dense UIs — where you want minimal chrome but still want button semantics (e.g., "Edit", "Clear", "Dismiss").
 
 <figure markdown>
 ![text button](../../assets/widgets-button-text.png)
@@ -125,8 +129,7 @@ bs.Button(app, text="Text", variant="text")
 
 ### Using icons
 
-Icons are integrated into the button widget and provide theme-aware and state-enabled icons. The `compound` controls
-where the icon/image is positioned relative to the label, and this is `"left"` by default.
+Icons are integrated into the button widget and provide theme-aware and state-enabled icons. The `compound` parameter controls where the icon is positioned relative to the label — `"left"` by default.
 
 <figure markdown>
 ![icon button](../../assets/widgets-button-icons.png)
@@ -141,7 +144,6 @@ bs.Button(app, icon="gear", icon_only=True).pack(pady=6)
 ```
 
 !!! link "See [Icons & Images](../../guides/icons.md) for icon sizing, DPI handling, and recoloring behavior."
-
 
 !!! tip "Custom Icons"
     You can pass an icon spec instead of a string to customize the color, size, and state of the icon.
@@ -159,11 +161,30 @@ btn.pack()
 btn.configure(state="normal")
 ```
 
-### Size and emphasis (`padding`, `width`, `underline`)
+### Size, layout, and density
 
 ```python
+# fixed width and padding
 bs.Button(app, text="Wide", width=18, padding=(12, 6)).pack(pady=6)
+
+# underline a keyboard shortcut character
 bs.Button(app, text="Exit", underline=1).pack(pady=6)
+
+# left-aligned content — useful for nav-item style buttons
+bs.Button(app, text="Dashboard", icon="grid", anchor="w").pack(fill="x")
+
+# compact density for toolbars
+bs.Button(app, icon="gear", icon_only=True, density="compact").pack(pady=6)
+```
+
+<div class="app-window">
+    <img src="../../assets/widgets-button-layout.png"/>
+</div>
+
+Use `surface=` when the button sits on a non-default background (e.g., inside a card or overlay):
+
+```python
+bs.Button(app, text="Action", surface="card")
 ```
 
 ---
@@ -182,8 +203,7 @@ Buttons support keyboard focus and activation.
 
 ## Localization
 
-If your application localization is enabled, you can pass a **message token** as `text`. The displayed label is resolved
-through the active message catalog.
+If localization is enabled, any string passed as `text` is used as a gettext key and resolved through the active message catalog.
 
 ```python
 bs.Button(app, text="button.save").pack()
@@ -225,9 +245,8 @@ label.set("Stop")
 - [Design System → Variants](../../design-system/variants.md)
 - [Design System → Icons](../../design-system/icons.md)
 - [Icons & Imagery](../../guides/icons.md)
-- [Signals](../../guides/reactivity.md)
+- [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-- [State & Interaction](../../guides/reactivity.md)
 
 ### API reference
 

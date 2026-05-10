@@ -65,7 +65,7 @@ before reaching for the kitchen sink.
 | Free-form text (name, email, query) | `bs.TextEntry`                              |
 | Secret (password, PIN)              | `bs.PasswordEntry`                          |
 | Number with bounds and parsing      | `bs.NumericEntry`                           |
-| Number adjusted by feel             | `bs.Scale` / `bs.LabeledScale`              |
+| Number adjusted by feel             | `bs.Scale`                                  |
 | Number with prominent steppers      | `bs.SpinnerEntry`                           |
 | Calendar date                       | `bs.DateEntry`                              |
 | Time of day                         | `bs.TimeEntry`                              |

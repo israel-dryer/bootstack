@@ -227,7 +227,7 @@ def add_logo(parent):
 ```
 
 If an image renders in development but disappears in production, the cause
-is almost always this. See [Platform → Images & DPI](../platform/images-and-dpi.md)
+is almost always this. See [Architecture → Images & DPI](../architecture/images-and-dpi.md)
 for more on image lifecycle and DPI considerations.
 
 ---
@@ -272,6 +272,6 @@ on individual widgets when you need to confirm who owns what.
 
 - [Performance](performance.md) — keep the event loop responsive.
 - [Reactivity](reactivity.md) — debugging signals and event flow.
-- [Platform → Images & DPI](../platform/images-and-dpi.md) — image lifecycle and DPI.
-- [Platform → Geometry & layout](../platform/geometry-and-layout.md) — how Tk
+- [Architecture → Images & DPI](../architecture/images-and-dpi.md) — image lifecycle and DPI.
+- [Architecture → Geometry & layout](../architecture/geometry-and-layout.md) — how Tk
   resolves geometry, and why timing matters.

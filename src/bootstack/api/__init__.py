@@ -64,7 +64,7 @@ from bootstack.api.widgets import (
 )
 from bootstack.runtime.app import App, App as Window
 from bootstack.runtime.toplevel import Toplevel
-from bootstack.runtime.menu import MenuManager, create_menu
+from bootstack.runtime.menu import MenuManager, create_menu, create_menu_items
 
 __all__ = [
     "BootstrapIcon",
@@ -122,6 +122,7 @@ __all__ = [
     "get_theme_provider",
     "get_theme_color",
     "create_menu",
+    "create_menu_items",
     "TK_WIDGETS",
     "TTK_WIDGETS",
 ]

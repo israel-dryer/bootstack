@@ -19,8 +19,8 @@ import bootstack as bs
 
 app = bs.App()
 
-bs.Switch(app, text="Enable dark mode", value=True).pack(padx=20, pady=6)
-bs.Switch(app, text="Send notifications", value=False).pack(padx=20, pady=6)
+bs.Switch(app, text="Enable dark mode",    value=True).pack(padx=20, pady=6)
+bs.Switch(app, text="Send notifications",  value=False).pack(padx=20, pady=6)
 
 app.mainloop()
 ```
@@ -37,28 +37,24 @@ Use `Switch` when:
 
 ### Consider a different control when...
 
-- you need tri-state (indeterminate) support -> use [CheckButton](checkbutton.md)
-- multiple related options can be enabled -> use [CheckButton](checkbutton.md) for each
-- you want a compact button-like toggle -> use [CheckToggle](checktoggle.md)
-- only one choice is allowed in a group -> use [RadioButton](radiobutton.md)
+- you need tri-state (indeterminate) support → use [CheckButton](checkbutton.md)
+- multiple related options can be enabled → use [CheckButton](checkbutton.md) for each
+- you want a compact button-like toggle → use [CheckToggle](checktoggle.md)
+- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
 
 ---
 
 ## Appearance
 
-### Colors and styling
-
-Use semantic color tokens with the `accent` parameter.
-
 ```python
-bs.Switch(app, text="Primary", accent="primary")
+bs.Switch(app, text="Primary",   accent="primary")
 bs.Switch(app, text="Secondary", accent="secondary")
-bs.Switch(app, text="Success", accent="success")
-bs.Switch(app, text="Warning", accent="warning")
-bs.Switch(app, text="Danger", accent="danger")
+bs.Switch(app, text="Success",   accent="success")
+bs.Switch(app, text="Warning",   accent="warning")
+bs.Switch(app, text="Danger",    accent="danger")
 ```
 
-!!! link "See [Design System - Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
+!!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
 
 ---
 
@@ -66,73 +62,76 @@ bs.Switch(app, text="Danger", accent="danger")
 
 ### How the value works
 
-`Switch` uses a boolean value model:
+`Switch` uses a boolean value model: `True` = on, `False` = off.
 
-- `True` -> on (switch is toggled)
-- `False` -> off (switch is not toggled)
+```python
+current = sw.value    # bool
+sw.value = True
+sw.get()              # equivalent to sw.value
+sw.set(False)         # equivalent to sw.value = False
+```
 
-The `value` option sets the **initial state**. Once bound, the signal or variable becomes the source of truth.
+!!! note "Seeding a signal's initial value"
+    `value=` is only applied when no `signal=` or `variable=` is passed. To seed a signal,
+    set the initial value on the `Signal` itself: `bs.Signal(True)` rather than
+    `bs.Signal(False)` with `value=True`.
 
-!!! note "Value precedence"
-    The `value` option is only used during initialization.
-    After creation, the bound signal or variable controls the widget state.
-
-### Common options
-
-#### `text`
-
-Label shown next to the switch.
+### `text`
 
 ```python
 bs.Switch(app, text="Auto-save")
 ```
 
-#### `command`
+### `command`
 
-Run a callback when the switch toggles.
+Callback with no arguments, fires on every toggle.
 
 ```python
-enabled = bs.BooleanVar(value=True)
+sw = bs.Switch(app, text="Enable feature")
 
 def on_toggle():
-    print("now:", enabled.get())
+    print("now:", sw.value)
 
-bs.Switch(app, text="Enable feature", variable=enabled, command=on_toggle).pack(padx=20, pady=20)
+sw.configure(command=on_toggle)
 ```
 
-#### `state`
+### `onvalue` / `offvalue`
 
-Disable or enable the widget.
+Store non-boolean values:
+
+```python
+theme = bs.Signal("light")
+
+sw = bs.Switch(app, text="Dark mode", signal=theme,
+               onvalue="dark", offvalue="light")
+
+theme.subscribe(lambda v: print("theme:", v))
+```
+
+### `state`
 
 ```python
 sw = bs.Switch(app, text="Locked", state="disabled")
-sw.pack()
-
 sw.configure(state="normal")
 ```
 
-#### `padding`, `width`, `underline`
+### `padding`, `width`, `underline`
 
 ```python
-bs.Switch(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
+bs.Switch(app, text="Wider",  padding=(10, 6), width=18).pack(pady=6)
 bs.Switch(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
 ### Reacting to changes
 
-Use `command` for immediate callbacks, or subscribe to the signal/variable for reactive updates.
-
 ```python
-# Using command callback
-def on_toggle():
-    print("toggled!")
+# Via command (no arguments)
+sw = bs.Switch(app, text="Feature", command=lambda: print("value:", sw.value))
 
-sw = bs.Switch(app, text="Feature", command=on_toggle)
-
-# Using signal subscription
+# Via signal subscription
 enabled = bs.Signal(False)
 sw = bs.Switch(app, text="Feature", signal=enabled)
-enabled.subscribe(lambda v: print(f"Value: {v}"))
+enabled.subscribe(lambda v: print("value:", v))
 ```
 
 ---
@@ -140,27 +139,20 @@ enabled.subscribe(lambda v: print(f"Value: {v}"))
 ## Behavior
 
 - Click toggles between on and off states.
-- Unlike `CheckButton`, `Switch` does not support an indeterminate state.
-- Keyboard navigation follows standard ttk checkbutton behavior (focus + Space to toggle).
+- `Switch` does not support an indeterminate state.
+- Keyboard: Tab to focus, Space to toggle.
 - The visual design clearly communicates whether the setting is active.
 
 ---
 
 ## Localization
 
-By default, widgets use `localize="auto"`:
-
-- if a translation key exists, it is used
-- otherwise, the label is treated as a literal string
+Any string passed as `text=` is used as a gettext key when localization is active.
 
 ```python
 bs.Switch(app, text="settings.dark_mode")
-bs.Switch(app, text="settings.dark_mode", localize=True)
 bs.Switch(app, text="Dark Mode", localize=False)
 ```
-
-!!! tip "Safe to pass literal text"
-    With `localize="auto"`, passing literal text is safe when no translation exists.
 
 !!! link "See [Localization](../../guides/localization.md) for configuring translations and message catalogs."
 
@@ -168,31 +160,16 @@ bs.Switch(app, text="Dark Mode", localize=False)
 
 ## Reactivity
 
-Prefer a reactive `signal=...` in v2 apps:
-
 ```python
-import bootstack as bs
-
-app = bs.App()
-
 dark_mode = bs.Signal(False)
 
-sw = bs.Switch(
-    app,
-    text="Dark mode",
-    signal=dark_mode,
-)
+sw = bs.Switch(app, text="Dark mode", signal=dark_mode)
 sw.pack(padx=20, pady=20)
 
-# React to changes
 dark_mode.subscribe(lambda v: print(f"Dark mode: {v}"))
-
-app.mainloop()
 ```
 
-You can also bind a Tk variable with `variable=...`.
-
-!!! link "See [Signals](../../guides/reactivity.md) for reactive programming patterns."
+!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns."
 
 ---
 
@@ -204,24 +181,22 @@ You can also bind a Tk variable with `variable=...`.
 | **CheckButton** | Checkbox indicator | Multi-select, forms, tri-state |
 | **CheckToggle** | Pressed button | Toolbars, compact UI areas |
 
-Choose based on the visual context and whether you need tri-state support.
-
 ---
 
 ## Additional resources
 
 ### Related widgets
 
-- [CheckButton](checkbutton.md) - classic checkbox with tri-state support
-- [CheckToggle](checktoggle.md) - button-like toggle presentation
-- [RadioButton](radiobutton.md) - choose one option from a group
-- [Form](../forms/form.md) - use `editor='switch'` or `editor='toggle'` for switch fields
+- [CheckButton](checkbutton.md) — classic checkbox with tri-state support
+- [CheckToggle](checktoggle.md) — button-like toggle presentation
+- [RadioButton](radiobutton.md) — choose one option from a group
+- [Form](../forms/form.md) — use `editor='switch'` or `editor='toggle'` for switch fields
 
 ### Framework concepts
 
-- [Signals](../../guides/reactivity.md) - reactive state management
-- [Localization](../../guides/localization.md) - text translation
-- [Design System](../../design-system/variants.md) - color tokens and variants
+- [Reactivity](../../guides/reactivity.md) — reactive state management
+- [Localization](../../guides/localization.md) — text translation
+- [Design System → Variants](../../design-system/variants.md) — color tokens and variants
 
 ### API reference
 

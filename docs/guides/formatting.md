@@ -228,19 +228,19 @@ value_format="EEEE, MMMM d, yyyy 'at' h:mm a"
 Formatting adapts to the active locale:
 
 ```python
-from bootstack.api.i18n import IntlFormatter
+import bootstack as bs
 
 # German formatting
-fmt_de = IntlFormatter(locale="de_DE")
+fmt_de = bs.IntlFormatter(locale="de_DE")
 fmt_de.format(1234.56, "decimal")      # "1.234,56"
 fmt_de.format(0.42, "percent")         # "42 %"
 
 # Japanese formatting
-fmt_ja = IntlFormatter(locale="ja_JP")
+fmt_ja = bs.IntlFormatter(locale="ja_JP")
 fmt_ja.format(1234.56, "currency")     # "¥1,235"
 
 # French formatting
-fmt_fr = IntlFormatter(locale="fr_FR")
+fmt_fr = bs.IntlFormatter(locale="fr_FR")
 fmt_fr.format(date(2025, 1, 15), "longDate")  # "15 janvier 2025"
 ```
 
@@ -261,10 +261,10 @@ bs.NumericEntry(app, value=1234.56, value_format="decimal")
 Use `IntlFormatter` directly for labels, computed values, or any formatting need:
 
 ```python
+import bootstack as bs
 from datetime import date, datetime
-from bootstack.api.i18n import IntlFormatter
 
-fmt = IntlFormatter()  # Uses system locale
+fmt = bs.IntlFormatter()  # Uses system locale
 
 # Format numbers
 fmt.format(1234567, "largeNumber")           # "1.23M"
@@ -285,7 +285,7 @@ fmt.format(datetime.now(), "HH:mm:ss")       # "14:30:45"
 IntlFormatter also parses formatted strings back to Python objects:
 
 ```python
-fmt = IntlFormatter()
+fmt = bs.IntlFormatter()
 
 # Parse numbers
 fmt.parse("1,234.56", "decimal")      # 1234.56
@@ -307,9 +307,9 @@ fmt.parse("3:30 PM", "shortTime")            # time(15, 30)
 Format values for display in labels:
 
 ```python
-from bootstack.api.i18n import IntlFormatter
+import bootstack as bs
 
-fmt = IntlFormatter()
+fmt = bs.IntlFormatter()
 revenue = 1234567.89
 growth = 0.125
 

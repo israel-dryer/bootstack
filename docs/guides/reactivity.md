@@ -436,7 +436,7 @@ item_list.bind("<<ItemSelected>>", on_selected)
 ```
 
 !!! link "Events & Bindings"
-    See [Platform → Events & Bindings](../platform/events-and-bindings.md) for the full event system.
+    See [Architecture → Events & Bindings](../architecture/events-and-bindings.md) for the full event system.
 
 ---
 

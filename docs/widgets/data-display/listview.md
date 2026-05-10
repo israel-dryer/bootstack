@@ -35,124 +35,85 @@ app.mainloop()
 Use `ListView` when:
 
 - you need to display a long list efficiently (virtual scrolling)
-
 - rows can include rich content (icon/title/text/badge)
-
 - you need selection, deletion, or drag reordering
 
 ### Consider a different control when...
 
-- **Data is strongly column-based and users compare fields across rows** — use [TableView](tableview.md) instead
-
-- **Your data is hierarchical** — use [TreeView](treeview.md) instead
-
+- **Data is strongly column-based** — use [TableView](tableview.md)
+- **Your data is hierarchical** — use [TreeView](treeview.md)
 - **You have a small, static list** — a simple frame with labels may suffice
 
 ---
 
 ## Appearance
 
-### Alternating rows, separators, and scrollbars
-
-Common presentation options:
-
-- `striped=True` - show alternating row colors
-
-- `striped_background="background[+1]"` - color for alternating rows
-
-- `show_separator=True`
-
-- `scrollbar_visibility='always'`
+### Common display options
 
 ```python
 lv = bs.ListView(
     app,
     items=data,
     striped=True,
+    striped_background="background[+1]",
     show_separator=True,
-    scrollbar_visibility='never',  # mousewheel only
+    scrollbar_visibility="always",   # or 'never' (mousewheel only)
+    density="compact",               # 'default' or 'compact'
 )
 ```
 
-!!! link "Design System"
-    See [Design System](../../design-system/index.md) for color tokens and theming guidelines.
+Use `show_chevron=True` for navigation-list patterns where each row implies drilling down:
+
+```python
+lv = bs.ListView(app, items=data, show_chevron=True)
+```
+
+!!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
 
 ## Examples & patterns
 
-### Selection + events
+### Data model
+
+`ListView` accepts either:
+
+- `items=[...]` — a simple list of dicts, or
+- `datasource=...` — a [DataSource](../../guides/datasource.md) implementing the `DataSourceProtocol`
+
+#### Recognized fields
+
+Records with an `id` field enable selection, deletion, and moving.
+
+The default `ListItem` recognizes:
+
+- `title` — main heading
+- `text` — body text
+- `caption` — small caption (hidden in `density="compact"`)
+- `icon` — icon spec shown on the left
+- `badge` — small text on the right
+
+### Selection
 
 ```python
-import bootstack as bs
-
-app = bs.App()
-
 lv = bs.ListView(
     app,
     items=[{"id": i, "title": f"Item {i}"} for i in range(2000)],
     selection_mode="multi",
     show_selection_controls=True,
 )
-lv.pack(fill="both", expand=True, padx=20, pady=20)
 
 def on_sel(_):
     print("selected:", lv.get_selected())
 
-lv.on_selection_change(on_sel)
-
-app.mainloop()
+lv.on_selection_changed(on_sel)
 ```
 
-### Data model
+`selection_mode` options: `"none"`, `"single"`, `"multi"`.
 
-`ListView` works with either:
-
-- `items=[...]` — a simple list of dicts (or primitives), or
-
-- `datasource=...` — a [DataSource](../../guides/datasource.md) implementing the `DataSourceProtocol`
-
-#### Required fields
-
-Records are expected to have a stable identifier:
-
-- `id` — unique record id (required for selection/deleting/moving)
-
-The default `ListItem` also recognizes:
-
-- `title` — main heading
-
-- `text` — body text
-
-- `caption` — small caption text
-
-- `icon` — icon spec shown on the left
-
-- `badge` — small text on the right
-
-### Selection
-
-Set `selection_mode` to control selection behavior:
-
-- `"none"` — no selection
-
-- `"single"` — one selected item
-
-- `"multi"` — multiple selected items
-
-Optional selection UI:
-
-- `show_selection_controls=True` shows checkbox/radio affordances
-
-- `select_on_click` controls whether clicking the row selects it
-
-```python
-lv = bs.ListView(app, items=data, selection_mode="single", select_on_click=True)
-```
+`select_on_click` defaults to `True` when `selection_mode` is `"single"` or `"multi"`.
 
 ### Removing and dragging
-
-Enable item actions:
 
 ```python
 lv = bs.ListView(
@@ -163,33 +124,32 @@ lv = bs.ListView(
 )
 ```
 
+### Selection appearance
+
+```python
+lv = bs.ListView(
+    app,
+    items=data,
+    selection_mode="single",
+    selected_background="primary",   # accent token for selected rows
+    enable_focus=True,               # allow keyboard focus on rows
+    enable_hover=True,               # show hover state on rows
+)
+```
+
 ### Custom row layouts
 
-Use `row_factory` to supply your own `ListItem`-compatible row widget.
+Provide `row_factory=` to use your own row widget. The factory receives the row container and keyword arguments from the datasource record:
 
 ```python
 def make_row(master, **kwargs):
-    return bs.ListItem(master, **kwargs)  # or your custom widget
+    return bs.ListItem(master, **kwargs)   # or your custom widget subclass
 
 lv = bs.ListView(app, datasource=my_source, row_factory=make_row)
 ```
 
-!!! tip "Row factory"
-    If you need a fully custom row template, implement a widget that provides an `update_data(record)` method and honors the selection/focus conventions you want.
-
-### Common options
-
-- `items` — list of data records
-
-- `datasource` — custom data source
-
-- `selection_mode` — `"none"`, `"single"`, or `"multi"`
-
-- `show_selection_controls` — show checkbox/radio controls
-
-- `enable_removing` — allow item removal
-
-- `enable_dragging` — allow drag reordering
+!!! tip "Custom rows"
+    Your row widget needs an `update_data(record)` method. Bootstack calls it when the virtual window scrolls to map the row to a new record.
 
 ---
 
@@ -197,63 +157,63 @@ lv = bs.ListView(app, datasource=my_source, row_factory=make_row)
 
 ### Events
 
-ListView generates virtual events for higher-level behaviors:
+```python
+# <<SelectionChange>>: event.data is None — read selection via get_selected()
+lv.on_selection_changed(lambda e: print(lv.get_selected()))
 
-- `<<SelectionChange>>` — selection state changed
+# <<ItemClick>>: event.data = {'record': dict}
+lv.on_item_click(lambda e: print("clicked:", e.data["record"]))
+```
 
-- `<<ItemClick>>` — row clicked/activated (payload includes record data)
+Available events:
 
-- `<<ItemDelete>>` / `<<ItemDeleteFail>>`
+- `<<SelectionChange>>` — selection changed (`event.data = None`)
+- `<<ItemClick>>` — row clicked (`event.data = {'record': dict}`)
+- `<<ItemDelete>>` / `<<ItemDeleteFail>>` — item removed (no event data currently)
+- `<<ItemInsert>>` / `<<ItemUpdate>>` — item added/updated (no event data currently)
+- `<<ItemDragStart>>` / `<<ItemDrag>>` / `<<ItemDragEnd>>` — drag lifecycle
 
-- `<<ItemInsert>>` / `<<ItemUpdate>>`
-
-- `<<ItemDragStart>>` / `<<ItemDrag>>` / `<<ItemDragEnd>>`
-
-Preferred handlers:
+All `on_*` methods return a bind ID for unsubscribing:
 
 ```python
-lv.on_selection_change(lambda e: print(lv.get_selected()))
-lv.on_item_click(lambda e: print("clicked:", e.data))
+bid = lv.on_selection_changed(on_sel)
+lv.off_selection_changed(bid)
 ```
 
 ### Public API
 
-Common methods:
+```python
+lv.get_selected()              # list of selected records
+lv.clear_selection()
+lv.select_all()                # multi mode only
 
-- `get_selected()`
+lv.insert_item({"id": 99, "title": "New"})
+lv.update_item(record_id, {"title": "Updated"})
 
-- `clear_selection()`
+lv.scroll_to_top()
+lv.scroll_to_bottom()
 
-- `select_all()` (multi only)
-
-- `reload()`
-
-- `insert_item(data)`
-
-- `update_item(record_id, data)`
-
-- `delete_item(record_id)`
-
-- `scroll_to_top()`, `scroll_to_bottom()`
-
-- `get_datasource()`
+ds = lv.get_datasource()       # access the underlying DataSource
+ds.reload()                    # reload from datasource
+ds.set_data(new_list)          # replace all data
+```
 
 ---
 
-## Reactivity
+## Dynamic data
 
-ListView can work with reactive data sources:
+ListView has no signal binding for `items=`. Drive dynamic updates through the datasource:
 
 ```python
-items = bs.Signal([{"id": 1, "title": "Item 1"}])
-lv = bs.ListView(app, items=items)
+lv = bs.ListView(app, items=[])
+ds = lv.get_datasource()
 
-# Add new item
-items.set([*items.get(), {"id": 2, "title": "Item 2"}])
+# Add a record
+ds.create_record({"id": 1, "title": "New item"})
+
+# Or replace all data
+ds.set_data(new_list)
 ```
-
-!!! link "Signals"
-    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
 
 ---
 
@@ -262,23 +222,15 @@ items.set([*items.get(), {"id": 2, "title": "Item 2"}])
 ### Related widgets
 
 - [TableView](tableview.md) — tabular record display
-
 - [TreeView](treeview.md) — hierarchical record display
-
-- [Scrollbar](../layout/scrollbar.md) — scrolling controls
-
 - [ScrollView](../layout/scrollview.md) — scrolling containers
 
 ### Framework concepts
 
-- [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView; column-based filtering, sorting, and exporting patterns
-
+- [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-- [Signals](../../guides/reactivity.md) — reactive data binding
-
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
 
 ### API reference
 
-- `bootstack.ListView`
+- [`bootstack.ListView`](../../reference/widgets/ListView.md)

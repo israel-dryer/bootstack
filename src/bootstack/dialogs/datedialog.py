@@ -202,13 +202,16 @@ class DateDialog:
             show_week_numbers: bool = False,
             hide_window_chrome: bool = False,
             close_on_click_outside: bool = False,
+            selection_mode: Literal["single", "range"] = "single",
+            start_date: Optional[date | datetime | str] = None,
+            end_date: Optional[date | datetime | str] = None,
     ) -> None:
         """Create a date selection dialog.
 
         Args:
             master: Parent widget; positions dialog relative to it when set.
             title: Dialog window title text.
-            initial_date: Initial date shown; defaults to `date.today()`.
+            initial_date: Initial date shown in single mode; defaults to `date.today()`.
             first_weekday: First weekday index (0=Monday, 6=Sunday).
             accent: Calendar accent token (e.g., `primary`, `secondary`).
             disabled_dates: Iterable of dates to disable selection.
@@ -221,6 +224,11 @@ class DateDialog:
                 decorations using override-redirect.
             close_on_click_outside: When True, closes the dialog when focus
                 moves outside (popover mode).
+            selection_mode: `'single'` for a single date (default) or `'range'`
+                for a start/end date range. In range mode `result` is a
+                `tuple[date, date]` rather than a `date`.
+            start_date: Initial range start date (range mode only).
+            end_date: Initial range end date (range mode only).
         """
         self._master = master
         self._first_weekday = first_weekday
@@ -233,6 +241,9 @@ class DateDialog:
         self._show_week_numbers = show_week_numbers
         self._hide_window_chrome = hide_window_chrome
         self._close_on_click_outside = close_on_click_outside
+        self._selection_mode = selection_mode
+        self._start_date = start_date
+        self._end_date = end_date
 
         self._picker: Optional[_DialogCalendar] = None
 
@@ -253,7 +264,9 @@ class DateDialog:
 
         self._picker = _DialogCalendar(
             master=container,
-            start_date=self._initial_date,
+            selection_mode=self._selection_mode,
+            start_date=self._start_date if self._selection_mode == "range" else self._initial_date,
+            end_date=self._end_date if self._selection_mode == "range" else None,
             first_weekday=self._first_weekday,
             accent=self._accent,
             disabled_dates=self._disabled_dates,
@@ -275,16 +288,29 @@ class DateDialog:
             return
 
         payload = getattr(event, "data", None)
-        selected = None
-        if isinstance(payload, dict):
-            selected = payload.get("date") or payload.get("result")
 
-        selected = selected or self._picker.get()
-        if selected is None:
-            return
+        if self._selection_mode == "range":
+            range_data = None
+            if isinstance(payload, dict):
+                range_data = payload.get("range")
+            if range_data is None:
+                range_data = self._picker.get_range()
+            start, end = range_data if range_data else (None, None)
+            # Wait for both dates before confirming
+            if start is None or end is None:
+                return
+            result: date | Tuple[date, date] = (start, end)
+        else:
+            selected = None
+            if isinstance(payload, dict):
+                selected = payload.get("date") or payload.get("result")
+            selected = selected or self._picker.get()
+            if selected is None:
+                return
+            result = selected
 
-        self._dialog.result = selected
-        self._emit_result(selected, confirmed=True)
+        self._dialog.result = result
+        self._emit_result(result, confirmed=True)
         if self._dialog.toplevel:
             top = self._dialog.toplevel
             try:
@@ -354,8 +380,8 @@ class DateDialog:
         )
 
     @property
-    def result(self) -> Optional[date]:
-        """The selected date, or None if cancelled."""
+    def result(self) -> Optional[Union[date, Tuple[date, date]]]:
+        """The selected date (single mode) or ``(start, end)`` tuple (range mode), or None if cancelled."""
         return self._dialog.result
 
     def on_result(self, callback: Callable[[date], None]) -> Optional[str]:

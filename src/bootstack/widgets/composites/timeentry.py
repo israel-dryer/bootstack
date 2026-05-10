@@ -104,13 +104,20 @@ class TimeEntry(SelectBox):
         if value is None:
             value = datetime.datetime.now().time()
 
+        # Normalize value to a time object using our own parser (avoids dateparser
+        # mis-reading "08:30" as "August 30"), then format it with the same
+        # IntlFormatter used to build items so the strings compare equal.
+        formatter = IntlFormatter(locale=self._locale)
+        time_val = self._parse_time(value) if isinstance(value, str) else value
+        formatted_value = formatter.format(time_val, value_format)
+
         # Generate time intervals for dropdown
         items = self._generate_time_intervals()
 
         # Initialize SelectBox with time-specific configuration
         super().__init__(
             master=master,
-            value=value,
+            value=formatted_value,
             value_format=value_format,
             items=items,
             allow_custom_values=True,

@@ -5,7 +5,7 @@ and an optional calendar picker button.
 """
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, Literal, Optional, Tuple
 
 from typing_extensions import Unpack
 
@@ -61,8 +61,14 @@ class DateEntry(Field):
             label: str = None,
             message: str = None,
             show_picker_button=True,
-            picker_title: str = "Select new date",
+            picker_title: str = None,
             picker_first_weekday: int = 6,
+            selection_mode: Literal["single", "range"] = "single",
+            start_date: date | datetime | str | None = None,
+            end_date: date | datetime | str | None = None,
+            min_date: date | datetime | str | None = None,
+            max_date: date | datetime | str | None = None,
+            disabled_dates: Iterable[date | datetime | str] | None = None,
             **kwargs: Unpack[FieldOptions]
     ):
         """Initialize a DateEntry widget.
@@ -74,8 +80,8 @@ class DateEntry(Field):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-            value (str | date | datetime): Initial date value to display. Can be a
-                date object, datetime object, or string representation.
+            value (str | date | datetime): Initial date value to display (single
+                mode). Ignored when ``selection_mode='range'``.
             value_format (str): Date format pattern to use for parsing and displaying
                 dates. See class docstring for complete list of presets.
             label (str): Optional label text to display above the entry field.
@@ -85,9 +91,23 @@ class DateEntry(Field):
                 validation fails.
             show_picker_button (bool): If True, displays the calendar picker button
                 to the right of the entry. If False, hides the button.
-            picker_title (str): Title text for the calendar picker dialog.
+            picker_title (str): Title text for the calendar picker dialog. Defaults
+                to "Select date range" in range mode and "Select new date" otherwise.
             picker_first_weekday (int): First day of the week to display in the
                 calendar picker. 0=Monday, 6=Sunday.
+            selection_mode (str): ``'single'`` (default) for a single date or
+                ``'range'`` for a start/end date range. In range mode the entry
+                is readonly and the user selects dates exclusively via the picker.
+                ``value`` returns ``tuple[date, date] | None`` in range mode.
+            start_date (date | datetime | str): Initial range start date (range
+                mode only).
+            end_date (date | datetime | str): Initial range end date (range mode
+                only).
+            min_date (date | datetime | str): Lower bound for selectable dates.
+                Dates before this are disabled in the picker.
+            max_date (date | datetime | str): Upper bound for selectable dates.
+                Dates after this are disabled in the picker.
+            disabled_dates (Iterable): Specific dates to disable in the picker.
 
         Other Parameters:
             locale (str): Locale identifier for date formatting (e.g., 'en_US').
@@ -110,17 +130,37 @@ class DateEntry(Field):
 
         Note:
             The widget uses the IntlFormatter for locale-aware date formatting.
-            The value is parsed and formatted automatically when the user commits
-            input (on FocusOut or Return key). Invalid date strings that cannot
-            be parsed will revert to the previous valid value.
+            In single mode, the value is parsed and formatted automatically when
+            the user commits input (on FocusOut or Return key). In range mode the
+            field is readonly; the picker is the only way to enter a value.
         """
+        # Store before super().__init__ so property override is safe if called during init
+        self._selection_mode = selection_mode
+        self._range_value: Optional[Tuple[date, date]] = None
+        self._value_format = value_format
+
+        if picker_title is None:
+            picker_title = "Select date range" if selection_mode == "range" else "Select new date"
+
         kwargs.setdefault('bootstyle', 'primary')
-        super().__init__(master=master, value=value, value_format=value_format, label=label, message=message, **kwargs)
+        # In range mode pass value=None so the entry starts empty; display text
+        # is set manually below after range initialisation.
+        super().__init__(
+            master=master,
+            value=None if selection_mode == "range" else value,
+            value_format=value_format,
+            label=label,
+            message=message,
+            **kwargs,
+        )
 
         # configuration
         self._show_picker_button = show_picker_button
         self._picker_title = picker_title
         self._picker_first_weekday = picker_first_weekday
+        self._min_date = min_date
+        self._max_date = max_date
+        self._disabled_dates = disabled_dates
 
         self._button_pack = {}
 
@@ -134,6 +174,114 @@ class DateEntry(Field):
         )
 
         self._delegate_show_picker_button(self._show_picker_button)
+
+        if selection_mode == "range":
+            # Make the entry readonly — user must use the picker
+            self._entry.state(['readonly'])
+            self._field.state(['!disabled'])
+
+            # Seed initial range
+            s = self._coerce_date(start_date)
+            e = self._coerce_date(end_date)
+            if s is not None and e is not None:
+                self._set_range((s, e))
+
+    # --- value property override for range mode -------------------------
+
+    @property
+    def value(self):
+        """Selected date (single mode) or ``(start, end)`` tuple (range mode)."""
+        if self._selection_mode == 'range':
+            return self._range_value
+        return Field.value.fget(self)
+
+    @value.setter
+    def value(self, val):
+        if self._selection_mode == 'range':
+            self._set_range(val)
+        else:
+            Field.value.fset(self, val)
+
+    # --- addon state override for range mode ----------------------------
+
+    def _sync_addon_state(self, event=None):
+        if getattr(self, '_selection_mode', 'single') == 'range':
+            # Entry is intentionally readonly in range mode; keep addons active
+            self._set_addons_state(False)
+        else:
+            super()._sync_addon_state(event)
+
+    # --- range helpers --------------------------------------------------
+
+    def _set_range(self, val) -> None:
+        """Set the range value, update display text, and fire <<Change>>."""
+        if val is None:
+            prev = self._range_value
+            self._range_value = None
+            self.variable.set("")
+            if prev is not None:
+                try:
+                    self._entry.event_generate("<<Change>>", data={
+                        "value": None, "prev_value": prev, "text": "",
+                    })
+                except Exception:
+                    pass
+            return
+
+        if not (isinstance(val, (tuple, list)) and len(val) == 2):
+            return
+
+        s = self._coerce_date(val[0])
+        e = self._coerce_date(val[1])
+        if s is None or e is None:
+            return
+        if e < s:
+            s, e = e, s
+
+        prev = self._range_value
+        self._range_value = (s, e)
+        self.variable.set(self._format_range_display(s, e))
+
+        if prev != self._range_value:
+            try:
+                self._entry.event_generate("<<Change>>", data={
+                    "value": self._range_value,
+                    "prev_value": prev,
+                    "text": self.variable.get(),
+                })
+            except Exception:
+                pass
+
+    def _format_range_display(self, start: date, end: date) -> str:
+        """Format a date range as 'Jan 1 – Jan 31, 2025' using value_format."""
+        from bootstack.core.localization import IntlFormatter, MessageCatalog
+        fmt = IntlFormatter(locale=MessageCatalog.locale())
+        start_str = fmt.format(start, self._value_format)
+        end_str = fmt.format(end, self._value_format)
+        return f"{start_str} – {end_str}"
+
+    @staticmethod
+    def _coerce_date(value) -> Optional[date]:
+        """Coerce a date/datetime/ISO-string to a date, or return None."""
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        if isinstance(value, str):
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+                try:
+                    return datetime.strptime(value, fmt).date()
+                except Exception:
+                    continue
+            try:
+                return datetime.fromisoformat(value).date()
+            except Exception:
+                return None
+        return None
+
+    # --- public properties ----------------------------------------------
 
     @property
     def date_picker_button(self):
@@ -157,7 +305,7 @@ class DateEntry(Field):
     def _show_date_picker(self):
         """Open the calendar picker dialog.
 
-        Opens a DateDialog seeded with the current value (if valid), updates
+        Opens a DateDialog seeded with the current value (or range), updates
         the entry when a date is picked, and leaves the field unchanged on
         cancel.
         """
@@ -180,32 +328,53 @@ class DateEntry(Field):
             return
         self._active_date_dialog = None
 
-        current_value = self.value
-        if isinstance(current_value, datetime):
-            current_value = current_value.date()
-        if not isinstance(current_value, date):
-            current_value = date.today()
-
         position = self._picker_position()
 
-        dialog = DateDialog(
-            master=self.winfo_toplevel(),
-            title=self._picker_title,
-            first_weekday=self._picker_first_weekday,
-            initial_date=current_value,
-            accent=self._accent,
-            hide_window_chrome=True,
-            close_on_click_outside=False,  # Disabled to avoid interference with button clicks
-        )
+        if self._selection_mode == "range":
+            cur = self._range_value
+            dialog = DateDialog(
+                master=self.winfo_toplevel(),
+                title=self._picker_title,
+                first_weekday=self._picker_first_weekday,
+                selection_mode="range",
+                start_date=cur[0] if cur else None,
+                end_date=cur[1] if cur else None,
+                accent=self._accent,
+                disabled_dates=self._disabled_dates,
+                min_date=self._min_date,
+                max_date=self._max_date,
+                hide_window_chrome=True,
+                close_on_click_outside=False,
+            )
+        else:
+            current_value = self.value
+            if isinstance(current_value, datetime):
+                current_value = current_value.date()
+            if not isinstance(current_value, date):
+                current_value = date.today()
+            dialog = DateDialog(
+                master=self.winfo_toplevel(),
+                title=self._picker_title,
+                first_weekday=self._picker_first_weekday,
+                initial_date=current_value,
+                accent=self._accent,
+                disabled_dates=self._disabled_dates,
+                min_date=self._min_date,
+                max_date=self._max_date,
+                hide_window_chrome=True,
+                close_on_click_outside=False,
+            )
 
         self._active_date_dialog = dialog
 
         def _on_result(payload):
-            if isinstance(payload, dict):
-                result = payload.get('result')
-                self.value = result
+            result = payload.get('result') if isinstance(payload, dict) else payload
+            if self._selection_mode == "range":
+                if isinstance(result, tuple) and len(result) == 2:
+                    self.value = result
             else:
-                self.value = payload
+                if isinstance(result, (date, datetime)):
+                    self.value = result
 
         dialog.on_result(lambda x: _on_result(x))
         dialog.show(position=position)
@@ -225,10 +394,14 @@ class DateEntry(Field):
 
         # Fallback: ensure value is applied after modal dialog closes.
         selected = dialog.result
-        if isinstance(selected, datetime):
-            selected = selected.date()
-        if isinstance(selected, date):
-            self.value = selected
+        if self._selection_mode == "range":
+            if isinstance(selected, tuple) and len(selected) == 2:
+                self.value = selected
+        else:
+            if isinstance(selected, datetime):
+                selected = selected.date()
+            if isinstance(selected, date):
+                self.value = selected
 
         # Return focus to the entry after dialog closes
         # Note: focus_force() is needed on Windows after override-redirect dialogs
@@ -240,10 +413,11 @@ class DateEntry(Field):
     def _picker_position(self):
         """Choose a dialog position beneath the entry mirroring SelectBox spacing."""
         try:
-            # Position relative to the inner field widget, not the whole container
-            # This ensures proper positioning even when message label is visible
+            # The field is already rendered when the user clicks, so no layout
+            # flush is needed — update_idletasks() here would drain unrelated
+            # idle callbacks (e.g. Calendar._lock_size from a previous dialog)
+            # and cause noticeable lag on repeated opens.
             field_widget = self._field
-            field_widget.update_idletasks()
             x = field_widget.winfo_rootx() + 4
             y = field_widget.winfo_rooty() + field_widget.winfo_height() + 2
             return x, y
@@ -252,7 +426,6 @@ class DateEntry(Field):
 
         try:
             top = self.winfo_toplevel()
-            top.update_idletasks()
             x = top.winfo_rootx() + top.winfo_width() // 2
             y = top.winfo_rooty() + top.winfo_height() // 2
             return x, y

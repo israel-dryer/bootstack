@@ -4,7 +4,7 @@ title: CheckButton
 
 # CheckButton
 
-`CheckButton` is a **selection control** that represents an option being **on**, **off**, or **mixed (indeterminate)**.
+`CheckButton` is a **selection control** that represents an option being **on** or **off**.
 
 Use `CheckButton` when users can enable multiple options independently (settings, filters, feature flags).
 
@@ -23,14 +23,11 @@ import bootstack as bs
 
 app = bs.App()
 
-bs.CheckButton(app, text="Enable notifications", value=True).pack(padx=20, pady=6)
+bs.CheckButton(app, text="Enable notifications",      value=True).pack(padx=20, pady=6)
 bs.CheckButton(app, text="Send anonymous usage data", value=False).pack(padx=20, pady=6)
-bs.CheckButton(app, text="Apply to all", value=None).pack(padx=20, pady=6)
 
 app.mainloop()
 ```
-
-By default, `value=None`, which places the checkbutton in an **indeterminate** state.
 
 ---
 
@@ -39,27 +36,21 @@ By default, `value=None`, which places the checkbutton in an **indeterminate** s
 Use `CheckButton` when:
 
 - multiple selections may be enabled at once
-- the value is on/off or mixed
+- the value is on/off
 - you need independent option toggles
 
 ### Consider a different control when...
 
-- only one choice is allowed in a group -> use [RadioButton](radiobutton.md)
-- you want a dropdown list -> use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
-- you want a button-like toggle -> use [CheckToggle](checktoggle.md)
-- you want a dedicated on/off switch -> use [Switch](switch.md)
+- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
+- you want a dropdown list → use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
+- you want a button-like toggle → use [CheckToggle](checktoggle.md) or [ToggleGroup](togglegroup.md)
+- you want a dedicated on/off switch → use [Switch](switch.md)
 
 ---
 
 ## Appearance
 
-<figure markdown>
-![checkbutton](../../assets/widgets-checkbutton-states.png)
-</figure>
-
 ### Colors and styling
-
-Use semantic color tokens with `accent`.
 
 ```python
 bs.CheckButton(app)
@@ -73,7 +64,7 @@ bs.CheckButton(app, accent="danger")
 ![colors](../../assets/widgets-checkbutton-colors.png)
 </figure>
 
-!!! link "See [Design System - Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
+!!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
 
 ---
 
@@ -81,25 +72,22 @@ bs.CheckButton(app, accent="danger")
 
 ### How the value works
 
-`CheckButton` uses a single logical value.
-
 The `value` option sets the **initial state**:
 
-- `True` -> checked
-- `False` -> unchecked
-- `None` -> indeterminate
+- `True` → checked
+- `False` → unchecked (default when `value=` is omitted)
 
-Once bound, the signal or variable becomes the source of truth.
+`value=None` is equivalent to omitting `value=` — the widget starts unchecked. Indeterminate
+(tri-state) visual state requires explicitly calling `cb.state(["alternate"])` after construction.
 
-!!! note "Value precedence"
-    The `value` option is only used during initialization.
-    After creation, the bound signal or variable controls the widget state.
+!!! note "Seeding a signal's initial value"
+    `value=` is only applied when no `signal=` or `variable=` is passed. To seed a signal,
+    set the initial value on the `Signal` itself: `bs.Signal(True)` rather than
+    `bs.Signal(False)` with `value=True`.
 
 ### Common options
 
 #### `text`
-
-Label shown next to the indicator.
 
 ```python
 bs.CheckButton(app, text="Auto-sync")
@@ -107,87 +95,84 @@ bs.CheckButton(app, text="Auto-sync")
 
 #### `command`
 
-Run a callback when the value toggles.
+Callback with no arguments, fires on every toggle.
 
 ```python
-flag = bs.BooleanVar(value=True)
+cb = bs.CheckButton(app, text="Send notifications")
 
 def on_toggle():
-    print("now:", flag.get())
+    print("now:", cb.value)
 
-bs.CheckButton(app, text="Send notifications", variable=flag, command=on_toggle).pack(padx=20, pady=20)
+cb.configure(command=on_toggle)
+```
+
+#### Reading and setting state
+
+```python
+current = cb.value    # get committed value
+cb.value = True       # set programmatically
+cb.get()              # equivalent to cb.value
+cb.set(False)         # equivalent to cb.value = False
 ```
 
 #### `state`
 
-Disable or enable the widget.
-
 ```python
 cb = bs.CheckButton(app, text="Locked", state="disabled")
-cb.pack()
-
 cb.configure(state="normal")
+```
+
+#### `onvalue` / `offvalue`
+
+Store non-boolean values instead of `True`/`False`:
+
+```python
+v = bs.Signal("no")
+cb = bs.CheckButton(app, text="Enable feature", signal=v, onvalue="yes", offvalue="no")
+
+# v.get() returns "yes" or "no"
+v.subscribe(lambda val: print("feature:", val))
 ```
 
 #### `padding`, `width`, `underline`
 
 ```python
-bs.CheckButton(app, text="Wider", padding=(10, 6), width=18).pack(pady=6)
+bs.CheckButton(app, text="Wider",  padding=(10, 6), width=18).pack(pady=6)
 bs.CheckButton(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
 ### Reacting to changes
 
-Use `command` for immediate callbacks, or subscribe to the signal/variable for reactive updates.
+Use `command` for immediate callbacks, or subscribe to the signal for reactive updates.
 
 ```python
-# Using command callback
-def on_toggle():
-    print("toggled!")
+# Via command
+cb = bs.CheckButton(app, text="Option", command=lambda: print("value:", cb.value))
 
-cb = bs.CheckButton(app, text="Option", command=on_toggle)
-
-# Using signal subscription
+# Via signal
 enabled = bs.Signal(False)
 cb = bs.CheckButton(app, text="Option", signal=enabled)
-enabled.subscribe(lambda v: print(f"Value: {v}"))
+enabled.subscribe(lambda v: print("value:", v))
 ```
-
-### Validation and constraints
-
-Validation is usually minimal for `CheckButton`.
-
-Use validation when:
-
-- the option is required to proceed
-- the indeterminate state must be resolved before submission
-- the selection participates in cross-field rules
 
 ---
 
 ## Behavior
 
-- Click toggles between checked/unchecked.
-- Indeterminate behavior depends on your app logic (commonly used for "mixed" parent selections).
-- Keyboard navigation follows standard ttk checkbutton behavior (focus + Space to toggle).
+- Click toggles between checked and unchecked.
+- Keyboard: Tab to focus, Space to toggle.
 
 ---
 
 ## Localization
 
-By default, widgets use `localize="auto"`:
-
-- if a translation key exists, it is used
-- otherwise, the label is treated as a literal string
+Any string passed as `text=` is used as a gettext key when localization is active.
 
 ```python
 bs.CheckButton(app, text="settings.notifications")
 bs.CheckButton(app, text="settings.notifications", localize=True)
-bs.CheckButton(app, text="Notifications", localize=False)
+bs.CheckButton(app, text="Notifications",           localize=False)
 ```
-
-!!! tip "Safe to pass literal text"
-    With `localize="auto"`, passing literal text is safe when no translation exists.
 
 !!! link "See [Localization](../../guides/localization.md) for configuring translations and message catalogs."
 
@@ -195,30 +180,13 @@ bs.CheckButton(app, text="Notifications", localize=False)
 
 ## Reactivity
 
-Prefer a reactive `signal=...` in v2 apps:
-
 ```python
-import bootstack as bs
-
-app = bs.App()
-
-v = bs.Signal("no")
-
-cb = bs.CheckButton(
-    app,
-    text="Enable feature",
-    signal=v,
-    onvalue="yes",
-    offvalue="no",
-)
-cb.pack(padx=20, pady=20)
-
-app.mainloop()
+enabled = bs.Signal(False)
+cb = bs.CheckButton(app, text="Option", signal=enabled)
+enabled.subscribe(lambda v: print("value:", v))
 ```
 
-You can also bind a Tk variable with `variable=...`.
-
-!!! link "See [Signals](../../guides/reactivity.md) for reactive programming patterns."
+!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns."
 
 ---
 
@@ -226,18 +194,19 @@ You can also bind a Tk variable with `variable=...`.
 
 ### Related widgets
 
-- [Switch](switch.md) - dedicated on/off switch control
-- [RadioButton](radiobutton.md) - choose one option from a group
-- [RadioGroup](radiogroup.md) - manage a group of radio options as one control
-- [CheckToggle](checktoggle.md) - button-like toggle presentation
-- [SelectBox](selectbox.md) - select one item from a list
-- [Form](../forms/form.md) - build grouped selection controls declaratively
+- [Switch](switch.md) — dedicated on/off switch control
+- [RadioButton](radiobutton.md) — choose one option from a group
+- [RadioGroup](radiogroup.md) — manage a group of radio options as one control
+- [CheckToggle](checktoggle.md) — button-like toggle presentation
+- [ToggleGroup](togglegroup.md) — connected button-style multi or single selection
+- [SelectBox](selectbox.md) — select one item from a list
+- [Form](../forms/form.md) — build grouped selection controls declaratively
 
 ### Framework concepts
 
-- [Signals](../../guides/reactivity.md) - reactive state management
-- [Localization](../../guides/localization.md) - text translation
-- [Design System](../../design-system/variants.md) - color tokens and variants
+- [Reactivity](../../guides/reactivity.md) — reactive state management
+- [Localization](../../guides/localization.md) — text translation
+- [Design System → Variants](../../design-system/variants.md) — color tokens and variants
 
 ### API reference
 

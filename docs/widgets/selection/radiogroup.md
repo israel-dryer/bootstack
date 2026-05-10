@@ -19,8 +19,8 @@ import bootstack as bs
 app = bs.App()
 
 group = bs.RadioGroup(app, text="Choose a plan", orient="vertical", value="basic")
-group.add("Basic", "basic")
-group.add("Pro", "pro")
+group.add("Basic",      "basic")
+group.add("Pro",        "pro")
 group.add("Enterprise", "enterprise")
 group.pack(padx=20, pady=20, fill="x")
 
@@ -34,52 +34,53 @@ app.mainloop()
 Use `RadioGroup` when:
 
 - you want a single widget that manages a set of radio options
-
 - you want consistent layout and labeling for the group
-
 - you want a simple subscribe/unsubscribe change API
 
 ### Consider a different control when...
 
-- you need custom per-option layout (different rows/columns, mixed widgets) — use individual **RadioButton** widgets
-
+- you need custom per-option layout — use individual **RadioButton** widgets
 - you want complete control over spacing and structure — use individual **RadioButton** widgets
 
 ---
 
 ## Appearance
 
-### Variants
+### Orientation
 
-`RadioGroup` primarily varies by **orientation** and **label placement**.
-
-#### Orientation
+`orient` defaults to `"horizontal"`. Pass `orient="vertical"` for a stacked layout.
 
 ```python
-bs.RadioGroup(app, orient="horizontal")
+bs.RadioGroup(app, orient="horizontal")  # default
 bs.RadioGroup(app, orient="vertical")
 ```
 
-#### Label placement
+### Label placement
 
-`labelanchor` controls where the label appears relative to the buttons:
-
-- `'n'` (top, default), `'s'` (bottom), `'w'` (left), `'e'` (right)
-
-- compound anchors like `'nw'`, `'se'` are accepted and normalized
+`labelanchor` controls where the group label appears. Accepts `'n'` (default), `'s'`, `'w'`, `'e'`.
 
 ```python
 bs.RadioGroup(app, text="Pick one", labelanchor="w", orient="horizontal")
 ```
 
+### Border and surface
+
+Use `show_border=True` to draw a border around the group. `surface=` controls the background token.
+
+```python
+bs.RadioGroup(app, text="Plan", show_border=True)
+bs.RadioGroup(app, surface="card")
+```
+
 ### Colors and styling
 
-`RadioGroup` forwards `accent` to its child radio buttons.
+`accent` is forwarded to all child buttons.
 
-For more control, pass per-button options via `add(..., **kwargs)` or `style_options`.
+```python
+group = bs.RadioGroup(app, accent="success")
+```
 
-!!! link "Design System"
-    For available colors and styling options, see the [Design System](/design-system/) documentation.
+!!! link "See [Design System](../../design-system/index.md) for available colors and styling options."
 
 ---
 
@@ -87,118 +88,98 @@ For more control, pass per-button options via `add(..., **kwargs)` or `style_opt
 
 ### How the value works
 
-`RadioGroup` exposes a single selected value.
-
-- `value=` sets the initial selection (stored in the underlying variable)
-
-- `get()` returns the current selection
-
-- `set(value)` selects an option by value (or `""` to deselect)
-
 ```python
-group.set("pro")
-print(group.get())
+group.set("pro")       # select by key (see note below)
+print(group.get())     # current selection key
+print(group.value)     # property form
+group.value = "basic"
 ```
 
-### Common options
+!!! note "`set()` and `get()` use **keys**, not values"
+    `add(text, value, key=None)` — `key` defaults to `value`, but when you pass a custom `key=`,
+    `set()` and `get()` operate on the key, not the value. For example:
+    ```python
+    group.add("High", "high", key="hi")
+    group.set("hi")      # correct — uses key
+    group.set("high")    # raises ValueError — "high" is not a key
+    ```
 
-#### `accent`
+### `add(text, value, key=None, **kwargs)`
 
-Applies to the child `RadioButton` widgets (defaults to `"primary"`).
+Add an option. `value` is required. `key` defaults to `value`. Returns the created button.
 
 ```python
-group = bs.RadioGroup(app, accent="success")
+group.add("Low",  "low")
+group.add("High", "high", key="hi")
+
+# Pass extra kwargs to the underlying RadioButton
+group.add("Pro", "pro", icon="star", state="disabled")
 ```
 
-#### `state`
+### Item management
 
-Sets the state for all buttons (`"normal"` or `"disabled"`).
+Give items a `key=` to retrieve or modify them after creation:
+
+```python
+btn = group.item("basic")                    # retrieve button by key
+group.configure_item("basic", state="disabled")  # reconfigure
+group.remove("basic")                        # remove and destroy
+group.keys()                                 # all keys in order
+group.values()                               # all option values in order
+group.items()                                # all button widgets in order
+```
+
+### `state`
 
 ```python
 group = bs.RadioGroup(app, state="disabled")
-```
-
-#### `add(text, value, key=None, **kwargs)`
-
-Add an option. `value` is required. `key` defaults to `value`.
-
-```python
-group.add("Low", "low")
-group.add("High", "high", key="hi")
+group.configure(state="normal")
 ```
 
 ### Events
-
-Subscribe to changes using `on_changed`.
 
 ```python
 def on_change(value):
     print("Selected:", value)
 
 sub_id = group.on_changed(on_change)
-# Later: group.off_changed(sub_id)
+group.off_changed(sub_id)
 ```
 
-This subscribes to the underlying signal, so callbacks receive the **new value**.
-
-### Validation and constraints
-
-`RadioGroup` enforces that selected values correspond to existing options:
-
-- `set(value)` raises if `value` does not exist (except `""` which clears selection)
-
-Validation is most useful when selection is required before submission.
+The callback receives the **new value** (not the key) when the selection changes.
 
 ---
 
 ## Behavior
 
 - In horizontal orientation, buttons are packed left-to-right.
-
 - In vertical orientation, buttons are stacked top-to-bottom.
-
-- Changing `orient`, `accent`, `state`, `text`, `labelanchor`, or `value` via `configure(...)`
-  updates the group and its children.
+- `orient`, `accent`, `state`, `text`, `labelanchor`, and `value` can all be updated via `configure()`.
 
 ---
 
 ## Localization
 
-If you use a group label (`text=`) or per-option labels, they follow your normal localization rules
-for `Label` and `RadioButton` text.
+Group label and per-option labels follow normal localization rules.
 
-!!! link "Localization"
-    For more information on localizing your application, see the [Localization](/guides/localization/) documentation.
+!!! link "See [Localization](../../guides/localization.md) for details."
 
 ---
 
 ## Reactivity
 
-You can control the group selection with either:
-
-- `signal=...` (preferred)
-
-- `variable=...` (Tk `StringVar`)
-
-If neither is provided, `RadioGroup` creates an internal variable.
+Bind a `signal=` to control the group from outside:
 
 ```python
-import bootstack as bs
-
-app = bs.App()
-
 choice = bs.Signal("opt2")
 
 group = bs.RadioGroup(app, text="Select:", signal=choice, orient="vertical")
 group.add("Option 1", "opt1")
 group.add("Option 2", "opt2")
 group.pack(padx=20, pady=20)
-
-app.mainloop()
 ```
 
-!!! link "Signals"
-    For more information on reactive programming with signals, see the [Signals](/guides/reactivity/) documentation.
+!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns."
 
 ---
 
@@ -207,20 +188,16 @@ app.mainloop()
 ### Related widgets
 
 - [RadioButton](radiobutton.md) — individual radio option
-
 - [RadioToggle](radiotoggle.md) — button-like radio option
-
+- [ToggleGroup](togglegroup.md) — connected button-style selection
 - [SelectBox](selectbox.md) — single selection from a list (dropdown)
-
 - [CheckButton](checkbutton.md) — independent multi-selection
 
 ### Framework concepts
 
-- [Design System](/design-system/) — colors, themes, and styling
-
-- [Signals](/guides/reactivity/) — reactive state management
-
-- [Localization](/guides/localization/) — internationalization support
+- [Design System](../../design-system/index.md) — colors, themes, and styling
+- [Reactivity](../../guides/reactivity.md) — reactive state management
+- [Localization](../../guides/localization.md) — internationalization support
 
 ### API reference
 

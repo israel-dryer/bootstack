@@ -530,5 +530,5 @@ options on individual children.
   [GridFrame](../widgets/layout/gridframe.md) — full parameter references.
 - [ScrollView](../widgets/layout/scrollview.md) — how spacing interacts with
   scrolling content.
-- [Geometry & Layout](../platform/geometry-and-layout.md) — Tk-level
+- [Geometry & Layout](../architecture/geometry-and-layout.md) — Tk-level
   background on geometry managers and layout resolution timing.

@@ -4,14 +4,10 @@ title: Scale
 
 # Scale
 
-`Scale` is a **direct-manipulation input control** for selecting a numeric value from a continuous or stepped range.
+`Scale` is a **direct-manipulation input control** for selecting a numeric value from a continuous range.
 
 Unlike `NumericEntry`, which is optimized for precise typing, `Scale` is designed for **gesture-based adjustment** —
 ideal for volume, zoom, thresholds, and any setting where users benefit from immediate visual feedback.
-
-> _Image placeholder:_
-> `![Scale overview](../_img/widgets/scale/overview.png)`
-> Suggested shot: horizontal scale + value label + live update.
 
 ---
 
@@ -28,6 +24,10 @@ scale.pack(fill="x", padx=20, pady=10)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-scale-quickstart.png" alt="Scale Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -40,9 +40,8 @@ Use `Scale` when:
 
 ### Consider a different control when...
 
-- users must type exact values -> use [NumericEntry](numericentry.md)
-- values require strict validation -> use [NumericEntry](numericentry.md)
-- keyboard-first accessibility is primary -> use [NumericEntry](numericentry.md)
+- users must type exact values — use [NumericEntry](numericentry.md)
+- values require strict validation — use [NumericEntry](numericentry.md)
 
 ---
 
@@ -50,107 +49,94 @@ Use `Scale` when:
 
 ### `orient`
 
-Controls orientation.
-
 ```python
-bs.Scale(app, from_=0, to=100, orient="horizontal")  # or "vertical"
+bs.Scale(app, from_=0, to=100, orient="horizontal")  # default
+bs.Scale(app, from_=0, to=100, orient="vertical")
 ```
 
-!!! note "Orientation"
-    Horizontal scales are preferred for most desktop layouts.
-    Vertical scales work well for audio levels, side panels, or compact tool areas.
+### `accent`
 
-!!! link "Design System"
-    Scale styling follows the theme's color palette. See [Design System](../../design-system/index.md) for customization options.
+```python
+bs.Scale(app, from_=0, to=100, accent="primary")
+bs.Scale(app, from_=0, to=100, accent="success")
+```
+
+Use `length=` to set the track size in pixels:
+
+```python
+bs.Scale(app, from_=0, to=100, length=300)
+```
+
+!!! link "See [Design System](../../design-system/index.md) for customization options."
 
 ---
 
 ## Examples and patterns
 
-### Value model
-
-A `Scale` always produces a numeric value within its configured range.
-
-- The displayed value updates while the user drags the thumb.
-- A **committed** value is produced when the user releases the thumb.
-
-If your app treats "live preview" differently from "final commit", use the appropriate event hook
-(see **Events**).
-
-### `from_` and `to`
-
-Defines the numeric range.
+### `from_`, `to`, `value`
 
 ```python
 bs.Scale(app, from_=10, to=200)
-```
-
-### `value`
-
-Sets the initial value.
-
-```python
 bs.Scale(app, from_=0, to=100, value=25)
 ```
 
-### `step`
+### Value access
 
-If supported by your implementation, constrains values to discrete increments.
-
-```python
-bs.Scale(app, from_=0, to=10, step=1)
-```
-
-!!! note "Continuous vs stepped"
-
-    - **Continuous scales** are best for perception-based adjustment
-
-    - **Stepped scales** are best when values must align to discrete states
-
-### Events
-
-`Scale` distinguishes between **live input** and **committed change**.
-
-| Event | When it fires |
-|------|---------------|
-| `on_input` | while the thumb is moving |
-| `on_changed` | when the user releases the thumb |
+Use the `value` property to read or set the current position:
 
 ```python
-def handle_changed(event):
-    print("final value:", event.data)
-
-scale.on_changed(handle_changed)
+current = scale.value   # float
+scale.value = 75.0
 ```
 
-!!! tip "Live feedback"
-    Use `on_input(...)` to update previews or labels while dragging.
-    Use `on_changed(...)` when the value is committed.
+### Reacting to changes: `command=`
 
-### Validation and constraints
+`Scale` notifies changes via the `command=` callback. The callback receives the new value as a **string** — convert explicitly when needed:
 
-Because a `Scale` inherently constrains values to a known range, explicit validation is usually minimal.
+```python
+def on_change(new_val):
+    print("value:", float(new_val))
 
-Validation is most useful when:
+scale = bs.Scale(app, from_=0, to=100, command=on_change)
+```
 
-- the scale is conditionally enabled/required
-- the valid range changes dynamically
-- the value must satisfy cross-field rules
+The `command=` fires continuously while the user drags. There is no separate "on release" event — if you only need the final committed value, read `scale.value` on a button press or form submit instead.
+
+### Reactive binding: `signal=`
+
+Bind a signal for reactive two-way sync with other widgets:
+
+```python
+volume = bs.Signal(50.0)
+scale = bs.Scale(app, from_=0, to=100, signal=volume)
+
+# Update a label reactively
+volume.subscribe(lambda v: label.configure(text=f"{int(v)}%"))
+```
+
+`signal=` is the idiomatic approach when the value drives other UI state.
+
+### Pairing with a value label
+
+```python
+value_label = bs.Label(app, text="50")
+
+def on_change(new_val):
+    value_label.configure(text=str(int(float(new_val))))
+
+scale = bs.Scale(app, from_=0, to=100, value=50, command=on_change)
+```
 
 ---
 
 ## Behavior
 
-Scales are commonly paired with a label or preview to reflect the current value.
+- Value changes are continuous while dragging.
+- There is no step/increment constraint — `Scale` produces a continuous float.
+- Keyboard: arrow keys move the thumb by a small amount; `Shift+Arrow` moves further.
 
-```python
-value_label = bs.Label(app, text="50")
-
-def update_value(event):
-    value_label.config(text=str(int(event.data)))
-
-scale.on_input(update_value)
-```
+!!! note "Planned: richer change API"
+    `Scale` currently exposes `command=` (string callback) and `signal=` for change notification. A future API update may add `on_changed(callback)` with a normalized dict payload consistent with other input widgets.
 
 ---
 
@@ -158,11 +144,10 @@ scale.on_input(update_value)
 
 ### Related widgets
 
-- [NumericEntry](numericentry.md) - precise numeric input
-- [SpinnerEntry](spinnerentry.md) - numeric stepping with typing
-- [LabeledScale](labeledscale.md) - scale with integrated value label
-- [Progressbar](../data-display/progressbar.md) - displays progress, not user input
-- [Meter](../data-display/meter.md) - displays proportional values
+- [NumericEntry](numericentry.md) — precise numeric input
+- [SpinnerEntry](spinnerentry.md) — numeric stepping with typing
+- [Progressbar](../data-display/progressbar.md) — displays progress, not user input
+- [Meter](../data-display/meter.md) — displays proportional values
 
 ### API reference
 

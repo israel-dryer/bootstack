@@ -6,12 +6,8 @@ title: SpinnerEntry
 
 `SpinnerEntry` is a form-ready input control with integrated step buttons.
 
-It's designed for values that users change in small steps, while still allowing typing. It supports formatting,
-validation, localization, and consistent field events like other entry controls.
-
-<figure markdown>
-![spinnerentry states](../../assets/widgets-spinnerentry-states.png)
-</figure>
+It operates in two modes: **numeric range** (bounded stepping between a min and max) and **value list** (cycling through
+a fixed set of string options). Both modes support formatting, validation, localization, and consistent field events.
 
 ---
 
@@ -26,13 +22,19 @@ qty = bs.SpinnerEntry(
     app,
     label="Quantity",
     value=1,
+    minvalue=0,
+    maxvalue=10,
     increment=1,
-    message="How many items?",
+    message="Select a quantity",
 )
 qty.pack(fill="x", padx=20, pady=10)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-quickstart.png" alt="Spinner Entry Quickstart"/>
+</div>
 
 ---
 
@@ -40,15 +42,14 @@ app.mainloop()
 
 Use `SpinnerEntry` when:
 
-- stepping is the primary interaction
+- stepping is the primary interaction and visible step buttons improve UX
+- users cycle through a small fixed list of options (sizes, priorities, directions)
 - users frequently increment/decrement values
-- visible step buttons improve UX
 
 ### Consider a different control when...
 
-- users primarily type numbers and stepping is secondary -> use [NumericEntry](numericentry.md)
-- you need bounds (`minvalue`/`maxvalue`) and clamping/wrapping behavior -> use [NumericEntry](numericentry.md)
-- users adjust continuously -> use [Scale](scale.md)
+- users primarily type numbers and stepping is secondary — use [NumericEntry](numericentry.md)
+- users adjust continuously by feel — use [Scale](scale.md)
 
 ---
 
@@ -62,78 +63,186 @@ SpinnerEntry uses the same **text vs committed value** model as other field cont
 current = qty.value
 raw = qty.get()
 
-qty.value = 10
+qty.value = 5
 ```
 
-Commit-time parsing/formatting happens on blur or Enter.
+Commit-time parsing and formatting happens on blur or Enter.
+
+### Numeric range mode
+
+Use `minvalue`, `maxvalue`, and `increment` for bounded numeric stepping:
+
+```python
+# Integer stepping with bounds
+qty = bs.SpinnerEntry(
+    app, 
+    label="Quantity", 
+    value=1,
+    minvalue=0, 
+    maxvalue=100, 
+    increment=1
+)
+
+# Float stepping
+temp = bs.SpinnerEntry(
+    app, 
+    label="Temperature", 
+    value=20.0,
+    minvalue=-20.0, 
+    maxvalue=50.0, 
+    increment=0.5
+)
+```
+
+Use `wrap=True` to cycle back to `minvalue` after reaching `maxvalue`:
+
+```python
+hour = bs.SpinnerEntry(
+    app, 
+    label="Hour", 
+    value=12,
+    minvalue=1, 
+    maxvalue=12, 
+    increment=1, 
+    wrap=True
+)
+```
+
+### Value list mode
+
+Pass `values=` to cycle through a fixed set of string options:
+
+```python
+priority = bs.SpinnerEntry(
+    app, 
+    label="Priority",
+    values=["Low", "Medium", "High", "Critical"],
+    value="Medium"
+)
+
+size = bs.SpinnerEntry(
+    app, 
+    label="T-Shirt Size",
+    values=["XS", "S", "M", "L", "XL", "XXL"]
+)
+```
+
+The step buttons cycle forward and backward through the list. Typing is still allowed.
 
 ### `increment`
 
-Controls step size for buttons/keys/wheel.
+Controls step size in numeric mode.
 
 ```python
-bs.SpinnerEntry(app, label="Retry limit", value=3, increment=1)
+bs.SpinnerEntry(
+    app, 
+    label="Price", 
+    value=9.99, 
+    increment=0.01, 
+    value_format="currency"
+)
 ```
 
 ### Formatting: `value_format`
 
 ```python
-bs.SpinnerEntry(app, label="Price", value=9.99, increment=0.01, value_format="currency").pack()
+bs.SpinnerEntry(
+    app,
+    label="Currency",
+    value=1234.56,
+    value_format="currency",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Fixed Point",
+    value=15422354,
+    value_format="fixedPoint",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Percent",
+    value=0.35,
+    value_format="percent",
+)
+
+bs.SpinnerEntry(
+    app,
+    label="Rate",
+    value=0.0875,
+    value_format={"type": "percent", "precision": 1}
+)
 ```
 
-<figure markdown>
-![spinnerentry formatting](../../assets/widgets-spinnerentry-formats.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-formats.png" alt="Spinner Entry Format"/>
+</div>
 
-!!! link "Localization"
-    Currency and number formatting respects locale settings. See [Localization](../../guides/localization.md) for details.
+!!! link "See [Formatting](../../guides/formatting.md) for all number presets and custom patterns."
+
+### `state`
+
+```python
+qty = bs.SpinnerEntry(app, label="Quantity", state="disabled")
+
+qty.disable()       # prevent input
+qty.enable()        # restore input
+qty.readonly(True)  # allow reading, block editing
+```
 
 ### Add-ons
 
 ```python
-amount = bs.SpinnerEntry(app, label="Amount", value=0, increment=1)
-amount.insert_addon(bs.Label, position="before", text="$")
+salary = bs.SpinnerEntry(app, label="Salary")
+salary.insert_addon(bs.Label, position='before', icon='currency-euro')
+
+size = bs.SpinnerEntry(app, label="Size", values=['Small', 'Med', 'Large'], value='Small')
+size.insert_addon(bs.Button, position='before', icon='rulers')
 ```
 
-<figure markdown>
-![spinnerentry addons](../../assets/widgets-spinnerentry-addons.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-spinnerentry-addons.png" alt="Spinner Entry Addons"/>
+</div>
+
+!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
 
 ### Events
 
-SpinnerEntry emits standard field events:
-
-- `<<Input>>` / `on_input`
-- `<<Changed>>` / `on_changed`
-- validation lifecycle events
-
-It also emits step intent events:
-
-- `<<Increment>>` / `on_increment`
-- `<<Decrement>>` / `on_decrement`
+**Change events** — callback receives a Tkinter event object:
 
 ```python
-def on_changed(event):
+def on_change(event):
     print("new value:", event.data["value"])
 
-qty.on_changed(on_changed)
-
-def on_increment(event):
-    print("increment requested")
-
-qty.on_increment(on_increment)
+qty.on_input(on_change)    # <<Input>>  — live typing
+qty.on_changed(on_change)  # <<Change>> — committed value
 ```
 
-### Validation and constraints
-
-Use validation rules for business constraints:
+**Validation events** — callback receives a plain dict:
 
 ```python
-limit = bs.SpinnerEntry(app, label="Retry limit", value=3, increment=1, required=True)
-limit.add_validation_rule("required", message="A value is required")
+def on_result(data):
+    print("valid:", data["is_valid"])
+
+qty.on_valid(on_result)      # <<Valid>>
+qty.on_invalid(on_result)    # <<Invalid>>
+qty.on_validated(on_result)  # <<Validate>> — fires after any validation
 ```
 
-If you need numeric bounds, prefer **NumericEntry** (min/max) unless SpinnerEntry also supports them in your implementation.
+### Validation
+
+```python
+limit = bs.SpinnerEntry(app, label="Retry limit", value=3,
+                        minvalue=1, maxvalue=10, increment=1, required=True)
+```
+
+Use `required=True` to add the required rule. Additional business rules:
+
+```python
+limit.add_validation_rule("custom",
+    func=lambda v: (v <= 5, "Maximum 5 retries recommended"))
+```
 
 ---
 
@@ -142,10 +251,10 @@ If you need numeric bounds, prefer **NumericEntry** (min/max) unless SpinnerEntr
 SpinnerEntry supports stepping via:
 
 - spin buttons
-- Up / Down arrow keys
+- Up/Down arrow keys
 - mouse wheel (platform-dependent)
 
-Typing is always allowed unless you set the underlying entry to readonly.
+Typing is always allowed unless the field is set to readonly.
 
 ---
 
@@ -153,11 +262,11 @@ Typing is always allowed unless you set the underlying entry to readonly.
 
 ### Related widgets
 
-- [NumericEntry](numericentry.md) - validated numeric input with bounds
-- [Spinbox](../primitives/spinbox.md) - low-level stepper primitive
-- [TextEntry](textentry.md) - general field control
-- [Scale](scale.md) - slider-based numeric adjustment
-- [Form](../forms/form.md) - build forms from field definitions
+- [NumericEntry](numericentry.md) — validated numeric input with bounds
+- [Spinbox](../primitives/spinbox.md) — low-level stepper primitive
+- [TextEntry](textentry.md) — general field control
+- [Scale](scale.md) — slider-based numeric adjustment
+- [Form](../forms/form.md) — build forms from field definitions
 
 ### API reference
 

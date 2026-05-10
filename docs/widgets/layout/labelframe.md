@@ -137,7 +137,7 @@ bs.LabelFrame(app, text="Options", padding=(16, 12))
 
 - [Layout Properties](../../guides/layout.md)
 
-- [Layout](../../platform/geometry-and-layout.md)
+- [Layout](../../architecture/geometry-and-layout.md)
 
 ### API reference
 

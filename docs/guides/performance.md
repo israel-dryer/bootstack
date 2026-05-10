@@ -245,5 +245,5 @@ work.
 - [Debugging](debugging.md) — diagnose what's actually slow.
 - [Reactivity](reactivity.md) — efficient signal-driven updates.
 - [DataSource](datasource.md) — paged data loading for large sets.
-- [Platform → Images & DPI](../platform/images-and-dpi.md) — image
+- [Architecture → Images & DPI](../architecture/images-and-dpi.md) — image
   performance and DPI scaling.

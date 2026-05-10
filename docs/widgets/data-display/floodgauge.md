@@ -30,18 +30,14 @@ app.mainloop()
 Use FloodGauge when:
 
 - capacity or fullness matters
-
 - thresholds are more important than exact numbers
-
 - visualizing resource utilization
 
 ### Consider a different control when...
 
-- **Tracking task progress over time** — use [Progressbar](progressbar.md) instead
-
-- **You need a dashboard-style circular gauge** — use [Meter](meter.md) instead
-
-- **You need a compact text-based indicator** — use [Badge](badge.md) instead
+- **Tracking task progress over time** — use [Progressbar](progressbar.md)
+- **You need a dashboard-style circular gauge** — use [Meter](meter.md)
+- **You need a compact text-based indicator** — use [Badge](badge.md)
 
 ---
 
@@ -49,31 +45,28 @@ Use FloodGauge when:
 
 ### Styling with `accent`
 
-Flood gauges often change color as thresholds are crossed:
-
 ```python
 bs.FloodGauge(app, accent="warning")
 bs.FloodGauge(app, accent="danger")
 bs.FloodGauge(app, accent="success")
 ```
 
-!!! link "Design System"
-    See [Design System](../../design-system/index.md) for color tokens and theming guidelines.
+!!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
 
 ## Examples & patterns
 
-### Value model
+### Common options
 
-- `value` represents fill level (commonly 0-100)
-
-- optional thresholds can alter styling
-
-```python
-fg = bs.FloodGauge(app, value=80, maximum=100)
-fg.pack()
-```
+- `value` — current fill level (int, default `0`)
+- `maximum` — maximum value (default `100`)
+- `text` — static label displayed on the gauge
+- `mask` — dynamic text overlay with `{}` placeholder (e.g. `"{} MB free"`) — updates automatically as value changes
+- `orient` — `"horizontal"` (default) or `"vertical"`
+- `length` — pixel length along the main axis (default `200`)
+- `thickness` — pixel size along the minor axis (default `50`)
+- `increment` — step size for `start()` animations (default `1`)
 
 ### Programmatic control
 
@@ -81,75 +74,61 @@ fg.pack()
 fg = bs.FloodGauge(app, value=50)
 fg.pack()
 
-# Get/set methods
-current = fg.get()      # Returns 50
-fg.set(75)              # Sets value to 75
-
-# Property access
-print(fg.value)         # Returns 75
-fg.value = 90           # Sets value to 90
-
-# Configure-style access
-fg.configure(value=100)
-print(fg.cget('value')) # Returns 100
+current = fg.get()     # 50
+fg.set(75)
+print(fg.value)        # 75
+fg.value = 90
+fg.step(5)             # increment by 5
 ```
-
-### Common options
-
-- `value` — current fill level
-
-- `maximum` — maximum value (default 100)
-
-- `text` — label displayed on the gauge
-
-- `orient` — orientation (`"horizontal"` or `"vertical"`)
 
 ### With text label
 
+Static label:
 ```python
-bs.FloodGauge(
-    app,
-    value=65,
-    text="Storage"
-).pack(fill="x", padx=20)
+bs.FloodGauge(app, value=65, text="Storage").pack(fill="x", padx=20)
+```
+
+Dynamic label (updates with value):
+```python
+bs.FloodGauge(app, value=65, mask="{}% used").pack(fill="x", padx=20)
+```
+
+### Indeterminate animation
+
+```python
+fg = bs.FloodGauge(app, mode="indeterminate")
+fg.pack(fill="x")
+fg.start()     # begins bouncing animation
+# ...
+fg.stop()
 ```
 
 ### Vertical orientation
 
 ```python
-bs.FloodGauge(
-    app,
-    value=50,
-    orient="vertical"
-).pack(pady=20)
+bs.FloodGauge(app, value=50, orient="vertical").pack(pady=20)
+```
+
+### Reactive updates
+
+FloodGauge has no signal mixin. Drive updates by subscribing a signal to `fg.set`:
+
+```python
+level = bs.Signal(25)
+fg = bs.FloodGauge(app, variable=level.var)
+
+# Or subscribe directly
+level.subscribe(fg.set)
+level.set(90)   # gauge updates
 ```
 
 ---
 
 ## Behavior
 
-- The gauge fill level updates proportionally based on `value / maximum`
-
-- Visual updates occur when values are changed programmatically
-
-- Color/style can change based on threshold values
-
----
-
-## Reactivity
-
-FloodGauge can be updated dynamically by binding to signals:
-
-```python
-level = bs.Signal(25)
-fg = bs.FloodGauge(app, value=level)
-
-# Update value
-level.set(90)  # FloodGauge updates automatically
-```
-
-!!! link "Signals"
-    See [Signals](../../guides/reactivity.md) for reactive programming patterns.
+- The fill level updates proportionally based on `value / maximum`
+- Call `configure(accent="danger")` when a threshold is crossed — color does not change automatically
+- `step()` increments with wraparound
 
 ---
 
@@ -158,16 +137,12 @@ level.set(90)  # FloodGauge updates automatically
 ### Related widgets
 
 - [Progressbar](progressbar.md) — linear progress indicators
-
 - [Meter](meter.md) — dashboard-style gauge indicators
-
 - [Badge](badge.md) — compact status indicators
 
 ### Framework concepts
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-- [Signals](../../guides/reactivity.md) — reactive data binding
 
 ### API reference
 
