@@ -8,10 +8,6 @@ title: CheckButton
 
 Use `CheckButton` when users can enable multiple options independently (settings, filters, feature flags).
 
-<figure markdown>
-![checkbutton](../../assets/widgets-checkbutton-states.png)
-</figure>
-
 ---
 
 ## Quick start
@@ -28,6 +24,10 @@ bs.CheckButton(app, text="Send anonymous usage data", value=False).pack(padx=20,
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-checkbutton-quickstart.png" alt="Checkbutton Quickstart"/>
+</div>
 
 ---
 
@@ -56,19 +56,23 @@ Use `CheckButton` when:
 bs.CheckButton(app)
 bs.CheckButton(app, accent="secondary")
 bs.CheckButton(app, accent="success")
+bs.CheckButton(app, accent="info")
 bs.CheckButton(app, accent="warning")
 bs.CheckButton(app, accent="danger")
+bs.CheckButton(app, accent="dark")
+bs.CheckButton(app, accent="light")
 ```
 
-<figure markdown>
-![colors](../../assets/widgets-checkbutton-colors.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-checkbutton-appearance.png" alt="Checkbutton Colors"/>
+</div>
+
 
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
 
 ---
 
-## Examples & patterns
+## Examples and patterns
 
 ### How the value works
 
@@ -141,6 +145,28 @@ bs.CheckButton(app, text="Wider",  padding=(10, 6), width=18).pack(pady=6)
 bs.CheckButton(app, text="E_xport", underline=1).pack(pady=6)
 ```
 
+### Icons
+
+Icons appear in the **label area** alongside the text, independent of the checkbox indicator.
+Use `on_icon`/`off_icon` for state-switching, or `icon=` for a static icon whose color shifts
+automatically (foreground when unchecked, accent when checked):
+
+```python
+bs.CheckButton(app, text="Notifications", off_icon="bell-slash", on_icon="bell-fill")
+bs.CheckButton(app, text="Notifications", icon="bell")   # same icon, color shifts only
+```
+
+Use `show_indicator=False` to hide the checkbox square, or keep the default to show both:
+
+```python
+bs.CheckButton(app, off_icon="bell-slash", on_icon="bell-fill", show_indicator=False)
+bs.CheckButton(app, text="Alerts", icon="bell")  # indicator + icon, default behavior
+```
+
+!!! link "See [Icons](../../guides/icons.md) for the full spec — stateful overrides, custom colors, size control, and indicator visibility."
+
+---
+
 ### Reacting to changes
 
 Use `command` for immediate callbacks, or subscribe to the signal for reactive updates.
@@ -171,7 +197,7 @@ Any string passed as `text=` is used as a gettext key when localization is activ
 ```python
 bs.CheckButton(app, text="settings.notifications")
 bs.CheckButton(app, text="settings.notifications", localize=True)
-bs.CheckButton(app, text="Notifications",           localize=False)
+bs.CheckButton(app, text="Notifications",          localize=False)
 ```
 
 !!! link "See [Localization](../../guides/localization.md) for configuring translations and message catalogs."

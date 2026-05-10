@@ -8,10 +8,6 @@ title: RadioButton
 
 Use `RadioButton` when all options are short and should be visible at once (settings, modes, priority levels).
 
-<figure markdown>
-![radiobutton states](../../assets/widgets-radiobutton-states.png)
-</figure>
-
 ---
 
 ## Quick start
@@ -25,12 +21,18 @@ app = bs.App()
 
 choice = bs.Signal("medium")
 
-bs.RadioButton(app, text="Low",    signal=choice, value="low").pack(anchor="w", padx=20, pady=2)
-bs.RadioButton(app, text="Medium", signal=choice, value="medium").pack(anchor="w", padx=20, pady=2)
-bs.RadioButton(app, text="High",   signal=choice, value="high").pack(anchor="w", padx=20, pady=2)
+frame = bs.PackFrame(app, direction="horizontal", gap=16, padding=16).pack()
+
+bs.RadioButton(frame, text="Low",    signal=choice, value="low").pack()
+bs.RadioButton(frame, text="Medium", signal=choice, value="medium").pack()
+bs.RadioButton(frame, text="High",   signal=choice, value="high").pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-radiobutton-quickstart.png" alt="Radiobutton Quickstart"/>
+</div>
 
 ---
 
@@ -65,13 +67,21 @@ bs.RadioButton(app, text="Option", signal=choice, value="opt")
 
 #### With icon
 
-RadioButton supports an icon alongside the label:
+RadioButton supports an icon in the label area alongside the text. The icon color shifts
+automatically: foreground when unselected, accent when selected.
 
 ```python
-bs.RadioButton(app, text="Grid view", icon="grid",      signal=view, value="grid")
-bs.RadioButton(app, text="List view", icon="list",      signal=view, value="list")
-bs.RadioButton(app, icon="grid", icon_only=True, signal=view, value="grid")
+# Same icon for both states — color change only
+bs.RadioButton(app, text="Grid", icon="grid", signal=view, value="grid")
+
+# Different icon per state
+bs.RadioButton(app, text="Grid", off_icon="grid", on_icon="grid-fill", signal=view, value="grid")
+
+# Icon only, no indicator
+bs.RadioButton(app, icon="grid", icon_only=True, show_indicator=False, signal=view, value="grid")
 ```
+
+!!! link "See [Icons](../../guides/icons.md) for stateful overrides, custom colors, size control, and `show_indicator` patterns."
 
 #### RadioToggle
 
@@ -93,15 +103,15 @@ bs.RadioButton(app, accent="success")
 bs.RadioButton(app, accent="danger")
 ```
 
-<figure markdown>
-![colors](../../assets/widgets-radiobutton-colors.png)
-</figure>
+<div class="app-window">
+    <img src="../../assets/widgets-radiobutton-colors.png" alt="Radiobutton Colors"/>
+</div>
 
 !!! link "See [Design System → Variants](../../design-system/variants.md) for how color tokens apply consistently across widgets."
 
 ---
 
-## Examples & patterns
+## Examples and patterns
 
 ### How the value works
 

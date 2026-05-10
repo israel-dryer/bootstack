@@ -25,6 +25,7 @@ class RadioGroupKwargs(TypedDict, total=False):
     text: str
     labelanchor: Literal['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']
     state: Literal['normal', 'disabled']
+    show_indicator: bool
     show_border: bool
     surface: str
     style_options: dict[str, Any]
@@ -64,6 +65,9 @@ class RadioGroup(Frame):
             signal (Signal): Optional Signal instance for reactive programming.
             value (str): Initial selected value.
             state (str): Initial state for all buttons - 'normal' (default) or 'disabled'.
+            show_indicator (bool): Whether child buttons show the standard radio indicator.
+                Defaults to True. Set to False for icon-only or custom-styled groups.
+                Can be overridden per-button in ``add()``.
             show_border (bool): If True, draws a border around the group.
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Additional style options passed to child buttons.
@@ -78,6 +82,7 @@ class RadioGroup(Frame):
         self._labeltext = kwargs.pop('text', None)
         self._labelanchor = kwargs.pop('labelanchor', 'n')
         self._state = kwargs.pop('state', 'normal')
+        self._show_indicator = kwargs.pop('show_indicator', True)
 
         # Handle signal/variable/value
         initial_value = kwargs.pop('value', None)
@@ -242,6 +247,9 @@ class RadioGroup(Frame):
         # Apply current state if not explicitly provided
         if 'state' not in btn_kwargs:
             btn_kwargs['state'] = self._state
+        # Forward group-level show_indicator unless overridden per-button
+        if 'show_indicator' not in btn_kwargs:
+            btn_kwargs['show_indicator'] = self._show_indicator
 
         button = RadioButton(
             self._button_container,

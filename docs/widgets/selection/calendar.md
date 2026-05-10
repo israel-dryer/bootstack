@@ -34,6 +34,10 @@ cal.on_date_selected(on_select)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-calendar-quickstart.png" alt="Calendar Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -44,7 +48,7 @@ Use Calendar when:
 - users benefit from seeing the whole month(s) while selecting
 - you want a natural range-selection interaction
 
-### Consider a different control when
+### Consider a different control when...
 
 - you need a compact form control or typing is a primary workflow — use [DateEntry](../inputs/dateentry.md)
 
@@ -64,15 +68,23 @@ Range mode displays **two months side-by-side**.
 #### Single date
 
 ```python
-bs.Calendar(app, value="2025-12-25").pack(padx=12, pady=12)
+bs.Calendar(app, value="2025-12-25")
 ```
 
 #### Date range
 
 ```python
-bs.Calendar(app, selection_mode="range",
-            start_date="2025-12-01", end_date="2025-12-12").pack(padx=12, pady=12)
+bs.Calendar(
+    app, 
+    selection_mode="range",
+    start_date="2025-12-01", 
+    end_date="2025-12-12"
+)
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-calendar-range.png" alt="Calendar Range"/>
+</div>
 
 ### Colors and styling
 
@@ -118,8 +130,8 @@ cal.range = (date(2025, 1, 10), date(2025, 1, 20))
     `set()` and `set_range()` do **not** emit `<<DateSelect>>`. User interactions do.
 
 !!! note "`set(None)` has no effect"
-    Passing `None` to `set()` is accepted but does not change the selection. To clear the selection,
-    navigate to a new month or reset the widget.
+    Passing `None` to `set()` is accepted but does not change the selection. There is no way to
+    programmatically clear the selection — the widget always holds a selected date.
 
 ### Common options
 
@@ -173,7 +185,7 @@ Event name: `<<DateSelect>>`. Callback receives an event object with `e.data`:
 ## Behavior
 
 - Month navigation via chevron buttons (single) or mirrored headers (range mode).
-- Clicking the **month/year title label resets the calendar** to the initial date and clears the selection.
+- Clicking the **month/year title label** (single mode only) navigates back to the initial month and restores the initial date selection, emitting `<<DateSelect>>`.
 - Disabled dates and dates outside `min_date`/`max_date` cannot be selected.
 - `show_outside_days=False` blanks out adjacent-month cells within mixed rows so they cannot be focused or selected; entire rows consisting only of outside-month days are removed from the grid entirely.
 - Keyboard: day cells are focusable; disabled cells are not.

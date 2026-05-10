@@ -20,11 +20,17 @@ app = bs.App()
 
 view = bs.Signal("grid")
 
-bs.RadioToggle(app, text="Grid", signal=view, value="grid").pack(side="left", padx=4, pady=10)
-bs.RadioToggle(app, text="List", signal=view, value="list").pack(side="left", padx=4, pady=10)
+frm = bs.PackFrame(app, direction="horizontal", padding=16).pack()
+
+bs.RadioToggle(frm, text="Grid", signal=view, value="grid").pack()
+bs.RadioToggle(frm, text="List", signal=view, value="list").pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-radiotoggle-quickstart.png" alt="Radio Toggle Quickstart"/>
+</div>
 
 ---
 
@@ -89,6 +95,10 @@ RadioToggle accepts the same `icon=`, `icon_only=`, and `compound=` params as Ra
 bs.RadioToggle(app, text="Grid", icon="grid", signal=view, value="grid")
 bs.RadioToggle(app, icon="grid", icon_only=True, signal=view, value="grid")
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-radiotoggle-icons.png" alt="Radio Toggle With Icons"/>
+</div>
 
 ### `command`
 
