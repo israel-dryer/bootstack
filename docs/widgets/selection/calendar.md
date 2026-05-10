@@ -48,7 +48,7 @@ Use Calendar when:
 - users benefit from seeing the whole month(s) while selecting
 - you want a natural range-selection interaction
 
-### Consider a different control when
+### Consider a different control when...
 
 - you need a compact form control or typing is a primary workflow — use [DateEntry](../inputs/dateentry.md)
 

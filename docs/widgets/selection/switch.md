@@ -69,7 +69,7 @@ bs.Switch(app, text="Light",     accent="light")
 
 ---
 
-## Examples & patterns
+## Examples and patterns
 
 ### How the value works
 

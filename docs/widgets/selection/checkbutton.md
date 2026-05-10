@@ -72,7 +72,7 @@ bs.CheckButton(app, accent="light")
 
 ---
 
-## Examples & patterns
+## Examples and patterns
 
 ### How the value works
 

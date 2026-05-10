@@ -111,7 +111,7 @@ bs.RadioButton(app, accent="danger")
 
 ---
 
-## Examples & patterns
+## Examples and patterns
 
 ### How the value works
 

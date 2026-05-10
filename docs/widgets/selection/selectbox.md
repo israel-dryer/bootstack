@@ -30,6 +30,10 @@ sb.pack(fill="x", padx=20, pady=20)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-selectbox-quickstart.png" alt="SelectBox Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -221,6 +225,21 @@ When the popup is open:
 The field label follows your global field localization rules.
 
 !!! link "See [Localization](../../guides/localization.md) for details on internationalizing your application."
+
+---
+
+## Reactivity
+
+Bind a `signal=` (preferred) or `variable=` to drive the selected value from outside, or subscribe to react to user changes:
+
+```python
+status = bs.Signal("New")
+
+sb = bs.SelectBox(app, label="Status", items=["New", "Done"], signal=status)
+status.subscribe(lambda v: print("status now:", v))
+```
+
+!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns and state management."
 
 ---
 
