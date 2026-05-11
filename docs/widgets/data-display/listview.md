@@ -20,6 +20,8 @@ app = bs.App()
 items = [
     {"id": 1, "title": "Item 1", "text": "Description 1"},
     {"id": 2, "title": "Item 2", "text": "Description 2"},
+    {"id": 3, "title": "Item 3", "text": "Description 3"},
+    {"id": 4, "title": "Item 4", "text": "Description 4"},
 ]
 
 lv = bs.ListView(app, items=items)
@@ -27,6 +29,10 @@ lv.pack(fill="both", expand=True, padx=20, pady=20)
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-quickstart.png" alt="Listview quickstart"/>
+</div>
 
 ---
 
@@ -61,6 +67,11 @@ lv = bs.ListView(
     density="compact",               # 'default' or 'compact'
 )
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-common.png" alt="Listview common options"/>
+</div>
+
 
 Use `show_chevron=True` for navigation-list patterns where each row implies drilling down:
 
@@ -98,7 +109,7 @@ The default `ListItem` recognizes:
 ```python
 lv = bs.ListView(
     app,
-    items=[{"id": i, "title": f"Item {i}"} for i in range(2000)],
+    items=[{"id": i, "text": f"Item {i}"} for i in range(2000)],
     selection_mode="multi",
     show_selection_controls=True,
 )
@@ -108,6 +119,11 @@ def on_sel(_):
 
 lv.on_selection_changed(on_sel)
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-selection.png" alt="Listview selection"/>
+</div>
+
 
 `selection_mode` options: `"none"`, `"single"`, `"multi"`.
 
@@ -124,6 +140,10 @@ lv = bs.ListView(
 )
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-listview-dragging.png" alt="Listview dragging"/>
+</div>
+
 ### Selection appearance
 
 ```python
@@ -136,6 +156,10 @@ lv = bs.ListView(
     enable_hover=True,               # show hover state on rows
 )
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-selection-appearance.png" alt="Listview selection-appearance"/>
+</div>
 
 ### Custom row layouts
 
