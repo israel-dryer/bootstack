@@ -225,7 +225,11 @@ Bind a `textsignal=` to drive the selected value from outside, or subscribe to t
 ```python
 selected = bs.Signal("Medium")
 
-menu = bs.OptionMenu(app, textsignal=selected, options=["Low", "Medium", "High"])
+menu = bs.OptionMenu(
+    app, 
+    textsignal=selected, 
+    options=["Low", "Medium", "High"]
+)
 selected.subscribe(lambda v: print("changed:", v))
 ```
 

@@ -114,17 +114,23 @@ print(sb.selected_index)    # -1 if value not in items
 #### `enable_search`
 
 ```python
-sb = bs.SelectBox(app, label="Assignee",
-                  items=["Alice", "Bob", "Charlie", "Diana"],
-                  enable_search=True)
+sb = bs.SelectBox(
+    app, 
+    label="Assignee",
+    items=["Alice", "Bob", "Charlie", "Diana"],
+    enable_search=True
+)
 ```
 
 #### `allow_custom_values`
 
 ```python
-sb = bs.SelectBox(app, label="Tag",
-                  items=["Bug", "Feature", "Docs"],
-                  allow_custom_values=True)
+sb = bs.SelectBox(
+    app, 
+    label="Tag",
+    items=["Bug", "Feature", "Docs"],
+    allow_custom_values=True
+)
 ```
 
 Both `enable_search` and `allow_custom_values` can be toggled at runtime:
@@ -137,8 +143,13 @@ sb.configure(allow_custom_values=True)
 #### Dropdown button options
 
 ```python
-sb = bs.SelectBox(app, label="Priority", items=["Low", "Medium", "High"],
-                  show_dropdown_button=True, dropdown_button_icon="chevron-down")
+sb = bs.SelectBox(
+    app, 
+    label="Priority", 
+    items=["Low", "Medium", "High"],
+    show_dropdown_button=True, 
+    dropdown_button_icon="chevron-down"
+)
 ```
 
 !!! note "Using custom values"
@@ -238,7 +249,12 @@ Bind a `signal=` (preferred) or `variable=` to drive the selected value from out
 ```python
 status = bs.Signal("New")
 
-sb = bs.SelectBox(app, label="Status", items=["New", "Done"], signal=status)
+sb = bs.SelectBox(
+    app, 
+    label="Status", 
+    items=["New", "Done"], 
+    signal=status
+)
 status.subscribe(lambda v: print("status now:", v))
 ```
 

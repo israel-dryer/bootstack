@@ -22,6 +22,10 @@ bs.Label(app, text="Hello world").pack(padx=20, pady=20)
 app.mainloop()
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-label-quickstart.png" alt="Label Quickstart"/>
+</div>
+
 ---
 
 ## When to use
@@ -82,6 +86,11 @@ bs.Label(app, text="Centered",      anchor="center").pack(fill="x")
 bs.Label(app, text="Right aligned", anchor="e").pack(fill="x")
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-label-alignment.png" alt="Label Alignment"/>
+</div>
+
+
 ### Typography
 
 Use bootstack font tokens via `font=`:
@@ -92,12 +101,20 @@ bs.Label(app, text="Body copy",       font="body")
 bs.Label(app, text="Caption text",    font="label[9]")
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-label-typography.png" alt="Label typography"/>
+</div>
+
 ### Icons
 
 ```python
 bs.Label(app, text="Status", icon="check-circle", compound="left")
 bs.Label(app, icon="gear", icon_only=True)
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-label-icons.png" alt="Label icons"/>
+</div>
 
 ### Formatted values
 
@@ -107,6 +124,10 @@ Use `value_format=` to display numbers or dates with locale-aware formatting:
 bs.Label(app, text=1234.56, value_format="currency")
 bs.Label(app, text=0.42,    value_format="percent")
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-label-formats.png" alt="Label Formats"/>
+</div>
 
 !!! link "See [Formatting](../../guides/formatting.md) for all presets and custom patterns."
 
