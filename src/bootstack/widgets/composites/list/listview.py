@@ -44,7 +44,7 @@ class ListView(Frame):
             master=None,
             items: list = None,
             datasource: DataSourceProtocol = None,
-            row_factory: Callable = None,
+            _row_factory: Callable = None,
             selection_mode: Literal['none', 'single', 'multi'] = 'none',
             show_selection_controls: bool = False,
             show_chevron: bool = False,
@@ -68,7 +68,6 @@ class ListView(Frame):
             master: Parent widget.
             items: List of items or dicts to display (alternative to `datasource`).
             datasource: DataSource implementation for data access.
-            row_factory: Callable that creates custom `ListItem` widgets.
             selection_mode: Selection mode (`none`, `single`, `multi`).
             show_selection_controls: Show checkboxes/radio buttons for selection.
             show_chevron: Show chevron indicators on items.
@@ -136,7 +135,7 @@ class ListView(Frame):
         self._mousewheel_bound_widgets: set = set()  # Track bound widgets to avoid cycles
 
         # Row factory
-        self._row_factory = row_factory or self._default_row_factory
+        self._row_factory = _row_factory or self._default_row_factory
 
         # Create container frame for list items
         self._container = Frame(self, variant='container', ttk_class='ListView.TFrame')

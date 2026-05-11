@@ -15,16 +15,24 @@ It renders only the visible rows (plus a small overscan), making it suitable for
 ```python
 import bootstack as bs
 
-app = bs.App()
+app = bs.App(size=(400, 350))
 
-items = [
-    {"id": 1, "title": "Item 1", "text": "Description 1"},
-    {"id": 2, "title": "Item 2", "text": "Description 2"},
-    {"id": 3, "title": "Item 3", "text": "Description 3"},
-    {"id": 4, "title": "Item 4", "text": "Description 4"},
+files = [
+    {
+        "id": i,
+        "title": f"Item {i}",
+        "text": f"This is the description of item {i}",
+        "caption": f"Created: 2024-0{(i % 9) + 1}-{(i % 28) + 1:02d}"
+    }
+    for i in range(1000)
 ]
 
-lv = bs.ListView(app, items=items)
+lv = bs.ListView(
+    app,
+    items=files,
+    show_separator=True,
+    selection_mode="single",
+)
 lv.pack(fill="both", expand=True, padx=20, pady=20)
 
 app.mainloop()
@@ -79,6 +87,10 @@ Use `show_chevron=True` for navigation-list patterns where each row implies dril
 lv = bs.ListView(app, items=data, show_chevron=True)
 ```
 
+<div class="app-window">
+    <img src="../../assets/widgets-listview-chevron.png" alt="Listview chevron"/>
+</div>
+
 !!! link "See [Design System](../../design-system/index.md) for color tokens and theming guidelines."
 
 ---
@@ -106,28 +118,28 @@ The default `ListItem` recognizes:
 
 ### Selection
 
-```python
-lv = bs.ListView(
-    app,
-    items=[{"id": i, "text": f"Item {i}"} for i in range(2000)],
-    selection_mode="multi",
-    show_selection_controls=True,
-)
-
-def on_sel(_):
-    print("selected:", lv.get_selected())
-
-lv.on_selection_changed(on_sel)
-```
-
-<div class="app-window">
-    <img src="../../assets/widgets-listview-selection.png" alt="Listview selection"/>
-</div>
-
-
 `selection_mode` options: `"none"`, `"single"`, `"multi"`.
 
 `select_on_click` defaults to `True` when `selection_mode` is `"single"` or `"multi"`.
+
+```python
+lv = bs.ListView(
+    app,
+    items=files,
+    selection_mode="multi",  # or 'single'
+    show_selection_controls=True,
+    show_separator=True
+)
+```
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-selection-multi.png" alt="Listview multi selection"/>
+</div>
+
+<div class="app-window">
+    <img src="../../assets/widgets-listview-selection-single.png" alt="Listview single selection"/>
+</div>
+
 
 ### Removing and dragging
 
@@ -182,61 +194,6 @@ lv = bs.ListView(
 <div class="app-window">
     <img src="../../assets/widgets-listview-selection-appearance.png" alt="Listview selection-appearance"/>
 </div>
-
-### Custom row layouts
-
-Pass `row_factory=` to render each row with your own widget. The simplest path is to
-subclass `ListItem` and override what you need:
-
-```python
-class TaskRow(bs.ListItem):
-    """A row that flags completed tasks in the title."""
-
-    def update_data(self, record):
-        if "__empty__" not in record and record.get("done"):
-            record = dict(record, title=f"[done] {record.get('title', '')}")
-        super().update_data(record)
-
-
-lv = bs.ListView(app, datasource=my_source, row_factory=TaskRow)
-```
-
-#### Factory contract
-
-The factory is called once per row in the virtual pool. It receives:
-
-- `master` — the row container (positional)
-- All row-level keyword arguments derived from `ListView` options: `selection_mode`,
-  `show_selection_controls`, `show_chevron`, `removable`, `draggable`, `show_separator`,
-  `focusable`, `hoverable`, `focus_color`, `selected_background`, `density`, and
-  `select_on_click` (only when explicitly set on `ListView`)
-
-It does **not** receive the record — records arrive later via `update_data`.
-
-#### `update_data(record)` lifecycle
-
-`update_data` is called repeatedly — once per record the row displays as the virtual
-window scrolls. Treat it as cheap and idempotent.
-
-The record passed in is a copy of your datasource record plus three fields `ListView`
-injects:
-
-| Field | Type | Meaning |
-|---|---|---|
-| `selected` | `bool` | True when the record's ID is in the datasource selection |
-| `focused` | `bool` | True when this record holds keyboard focus |
-| `item_index` | `int` | The record's zero-based position in the full dataset |
-
-When the row is beyond the end of the data, `update_data` receives the placeholder
-`{"__empty__": True, "id": "__empty__"}`. The base `ListItem` hides itself on this
-record — if you build a row from scratch, check for `"__empty__"` and call
-`self.pack_forget()`.
-
-!!! tip "Subclass `ListItem` when you can"
-    A row built from scratch must also emit `<<ItemSelecting>>`, `<<ItemRemoving>>`,
-    `<<ItemFocus>>`, `<<ItemClick>>`, and the drag lifecycle events for `ListView` to
-    wire selection, removal, focus, and drag. Subclassing `ListItem` inherits all of
-    these for free.
 
 ### Custom datasource
 
@@ -307,8 +264,7 @@ When `enable_focus=True` (the default), arrow keys navigate between rows:
 | `<Space>` | Activate the focused item (fires `<<ItemClick>>` and toggles selection in `single`/`multi` mode) |
 
 Focus is tracked at the data layer (by record ID), so a focused record stays focused
-even when its row widget is recycled during scroll. Custom rows that subclass
-`ListItem` inherit this for free.
+even when its row widget is recycled during scroll.
 
 Use `focus_color=` to set the indicator color, or `enable_focus=False` to disable
 keyboard navigation.
