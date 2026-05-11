@@ -1,8 +1,9 @@
 """ListView widget for displaying large lists with virtual scrolling."""
 
 from tkinter import TclError
-from typing import Protocol, Any, Callable, Literal, runtime_checkable
+from typing import Any, Callable, Literal
 
+from bootstack.datasource import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets.composites.list.listitem import ListItem
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.scrollbar import Scrollbar
@@ -14,312 +15,6 @@ ROW_HEIGHT = 40
 OVERSCAN_ROWS = 2
 EMPTY = {"__empty__": True, "id": "__empty__"}
 
-
-@runtime_checkable
-class DataSourceProtocol(Protocol):
-    """Protocol for data sources used by ListView.
-
-    Implementations provide paging, selection, and CRUD operations for records.
-    """
-
-    def total_count(self) -> int:
-        """Return total number of records.
-
-        Returns:
-            Total record count.
-        """
-        ...
-
-    def get_page_from_index(self, start: int, count: int) -> list[dict]:
-        """Get a page of records starting at an index.
-
-        Args:
-            start: Zero-based index for the first record.
-            count: Maximum number of records to return.
-
-        Returns:
-            List of record dictionaries.
-        """
-        ...
-
-    def is_selected(self, record_id: Any) -> bool:
-        """Check if a record is selected.
-
-        Args:
-            record_id: Record identifier to check.
-
-        Returns:
-            True if the record is selected.
-        """
-        ...
-
-    def select_record(self, record_id: Any) -> None:
-        """Select a record.
-
-        Args:
-            record_id: Record identifier to select.
-        """
-        ...
-
-    def deselect_record(self, record_id: Any) -> None:
-        """Deselect a record.
-
-        Args:
-            record_id: Record identifier to deselect.
-        """
-        ...
-
-    def deselect_all(self) -> None:
-        """Deselect all records."""
-        ...
-
-    def get_selected(self) -> list[Any]:
-        """Get all selected record IDs.
-
-        Returns:
-            List of selected record identifiers.
-        """
-        ...
-
-    def delete_record(self, record_id: Any) -> None:
-        """Delete a record.
-
-        Args:
-            record_id: Record identifier to delete.
-        """
-        ...
-
-    def create_record(self, data: dict) -> Any:
-        """Create a new record and return its ID.
-
-        Args:
-            data: Record data to insert.
-
-        Returns:
-            The new record identifier.
-        """
-        ...
-
-    def update_record(self, record_id: Any, data: dict) -> bool:
-        """Update a record.
-
-        Args:
-            record_id: Record identifier to update.
-            data: Record data to merge into the existing record.
-
-        Returns:
-            True if the record was updated.
-        """
-        ...
-
-    def reload(self) -> None:
-        """Reload data from the data source."""
-        ...
-
-    def move_record(self, record_id: Any, target_index: int) -> bool:
-        """Move a record to a new position.
-
-        Args:
-            record_id: Record identifier to move.
-            target_index: Zero-based index to move the record to.
-
-        Returns:
-            True if the record was moved.
-        """
-        ...
-
-
-class MemoryDataSource:
-    """In-memory data source implementation for ListView.
-
-    Stores records in a list and tracks selected record IDs.
-    """
-
-    def __init__(self):
-        """Initialize an empty data source."""
-        self._data: list[dict] = []
-        self._selected_ids: set = set()
-        self._id_index: dict[Any, int] = {}  # Maps record ID to index for O(1) lookups
-
-    def set_data(self, data: list) -> 'MemoryDataSource':
-        """Set the data and return self for chaining.
-
-        Args:
-            data: List of dicts or primitive values to convert to records.
-
-        Returns:
-            This instance for chaining.
-        """
-        self._data = []
-        self._id_index = {}
-        for i, item in enumerate(data or []):
-            if isinstance(item, dict):
-                if 'id' not in item:
-                    item['id'] = i
-                self._data.append(item)
-                self._id_index[item['id']] = i
-            else:
-                # Convert primitives to dict
-                record = {'id': i, 'value': str(item)}
-                self._data.append(record)
-                self._id_index[i] = i
-
-        return self
-
-    def total_count(self) -> int:
-        """Return total number of records.
-
-        Returns:
-            Total record count.
-        """
-        return len(self._data)
-
-    def get_page_from_index(self, start: int, count: int) -> list[dict]:
-        """Get a page of records starting at an index.
-
-        Args:
-            start: Zero-based index for the first record.
-            count: Maximum number of records to return.
-
-        Returns:
-            List of record dictionaries.
-        """
-        end = min(start + count, len(self._data))
-        return self._data[start:end]
-
-    def is_selected(self, record_id: Any) -> bool:
-        """Check if a record is selected.
-
-        Args:
-            record_id: Record identifier to check.
-
-        Returns:
-            True if the record is selected.
-        """
-        return record_id in self._selected_ids
-
-    def select_record(self, record_id: Any) -> None:
-        """Select a record.
-
-        Args:
-            record_id: Record identifier to select.
-        """
-        self._selected_ids.add(record_id)
-
-    def deselect_record(self, record_id: Any) -> None:
-        """Deselect a record.
-
-        Args:
-            record_id: Record identifier to deselect.
-        """
-        self._selected_ids.discard(record_id)
-
-    def deselect_all(self) -> None:
-        """Deselect all records."""
-        self._selected_ids.clear()
-
-    def get_selected(self) -> list[Any]:
-        """Get all selected record IDs.
-
-        Returns:
-            List of selected record identifiers.
-        """
-        return list(self._selected_ids)
-
-    def delete_record(self, record_id: Any) -> None:
-        """Delete a record.
-
-        Args:
-            record_id: Record identifier to delete.
-        """
-        # Use index for O(1) lookup
-        index = self._id_index.get(record_id)
-        if index is not None:
-            # Remove from data
-            del self._data[index]
-            # Remove from index
-            del self._id_index[record_id]
-            # Rebuild index for all records after the deleted one
-            for i in range(index, len(self._data)):
-                self._id_index[self._data[i]['id']] = i
-        self._selected_ids.discard(record_id)
-
-    def create_record(self, data: dict) -> Any:
-        """Create a new record and return its ID.
-
-        Args:
-            data: Record data to insert.
-
-        Returns:
-            The new record identifier.
-        """
-        max_id = max((r.get('id', 0) for r in self._data), default=0)
-        new_id = max_id + 1 if isinstance(max_id, int) else len(self._data)
-        data['id'] = new_id
-        new_index = len(self._data)
-        self._data.append(data)
-        self._id_index[new_id] = new_index
-        return new_id
-
-    def update_record(self, record_id: Any, data: dict) -> bool:
-        """Update a record.
-
-        Args:
-            record_id: Record identifier to update.
-            data: Record data to merge into the existing record.
-
-        Returns:
-            True if the record was updated.
-        """
-        # Use index for O(1) lookup
-        index = self._id_index.get(record_id)
-        if index is not None:
-            self._data[index].update(data)
-            return True
-        return False
-
-    def reload(self) -> None:
-        """Reload data from source.
-
-        This is a no-op for the in-memory data source.
-        """
-        pass
-
-    def move_record(self, record_id: Any, target_index: int) -> bool:
-        """Move a record to a new position.
-
-        Args:
-            record_id: Record identifier to move.
-            target_index: Zero-based index to move the record to.
-
-        Returns:
-            True if the record was moved.
-        """
-        if not self._data:
-            return False
-
-        # Use index for O(1) lookup
-        source_index = self._id_index.get(record_id)
-        if source_index is None:
-            return False
-
-        clamped_target = max(0, min(target_index, len(self._data) - 1))
-        if source_index == clamped_target:
-            return False
-
-        # Move the record
-        record = self._data.pop(source_index)
-        if clamped_target > source_index:
-            clamped_target -= 1
-        self._data.insert(clamped_target, record)
-
-        # Rebuild index for affected range
-        start = min(source_index, clamped_target)
-        end = max(source_index, clamped_target) + 1
-        for i in range(start, end):
-            self._id_index[self._data[i]['id']] = i
-
-        return True
 
 
 class ListView(Frame):
@@ -418,21 +113,21 @@ class ListView(Frame):
         self._selected_background = selected_background
         self._density = density
 
-
-        # Data source
-        if datasource:
-            self._datasource = datasource
-        elif items:
-            self._datasource = MemoryDataSource().set_data(items)
-        else:
-            self._datasource = MemoryDataSource().set_data([])
-
         # Virtual scrolling state
         self._start_index = 0
         self._prev_start_index = 0
         self._visible_rows = VISIBLE_ROWS
         self._row_height = ROW_HEIGHT
         self._page_size = VISIBLE_ROWS + OVERSCAN_ROWS
+
+        # Data source
+        if datasource:
+            self._datasource = datasource
+        elif items:
+            self._datasource = MemoryDataSource(page_size=self._page_size).set_data(items)
+        else:
+            self._datasource = MemoryDataSource(page_size=self._page_size).set_data([])
+
         self._rows: list[ListItem] = []
         self._focused_record_id = None
         self._drag_state: dict | None = None
@@ -1310,16 +1005,17 @@ class ListView(Frame):
         self._datasource.reload()
         self._update_rows()
 
-    def get_selected(self) -> list:
-        """Get list of selected record IDs.
+    def get_selected(self) -> list[dict]:
+        """Get the currently selected records.
 
         Returns:
-            List of record IDs that are currently selected. Empty list if
-            no items are selected.
+            List of selected record dictionaries (each with `id` and the
+            record's data). Empty list if no items are selected.
 
         Examples:
             >>> selected = listview.get_selected()
-            >>> print(f"Selected {len(selected)} items")
+            >>> for record in selected:
+            ...     print(record["id"], record.get("title"))
         """
         return self._datasource.get_selected()
 

@@ -328,7 +328,7 @@ Changing `selection_mode` rebuilds the row pool so rows pick up the new behavior
 ### Public API
 
 ```python
-lv.get_selected()              # list of selected record IDs
+lv.get_selected()              # list of selected record dicts
 lv.clear_selection()
 lv.select_all()                # multi mode only
 
