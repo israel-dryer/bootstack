@@ -334,14 +334,14 @@ class ListView(Frame):
 
     !!! note "Events"
         - `<<SelectionChange>>`: Fired when selection state changes. `event.data = None` (use `get_selected()` to get current selection)
-        - `<<ItemDelete>>`: Fired when an item is deleted. `event.data = {'record': dict}`
-        - `<<ItemDeleteFail>>`: Fired when item deletion fails. `event.data = {'record': dict, 'error': str}`
-        - `<<ItemInsert>>`: Fired when a new item is inserted. `event.data = {'record': dict}`
-        - `<<ItemUpdate>>`: Fired when an item is updated. `event.data = {'record': dict}`
-        - `<<ItemClick>>`: Fired when an item is clicked. `event.data = {'record': dict}`
-        - `<<ItemDragStart>>`: Fired when a drag begins. `event.data = {'record': dict, 'index': int}`
-        - `<<ItemDrag>>`: Fired when an item is being dragged. `event.data = {'source_index': int, 'target_index': int, 'x': int, 'y': int}`
-        - `<<ItemDragEnd>>`: Fired when a drag ends. `event.data = {'moved': bool, 'source_index': int, 'target_index': int}`
+        - `<<ItemDelete>>`: Fired when an item is deleted. `event.data = dict` (the deleted record; contains at least `id`)
+        - `<<ItemDeleteFail>>`: Fired when item deletion fails. `event.data = dict` (the record plus an `error: str` key)
+        - `<<ItemInsert>>`: Fired when a new item is inserted. `event.data = dict` (the new record, with `id` populated)
+        - `<<ItemUpdate>>`: Fired when an item is updated. `event.data = dict` (the merged record, with `id`)
+        - `<<ItemClick>>`: Fired when an item is clicked. `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)
+        - `<<ItemDragStart>>`: Fired when a drag begins. `event.data = dict` (the record)
+        - `<<ItemDrag>>`: Fired during a drag. `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)
+        - `<<ItemDragEnd>>`: Fired when a drag ends. `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)
     """
 
     def __init__(
@@ -924,9 +924,11 @@ class ListView(Frame):
             try:
                 self._datasource.delete_record(record_id)
                 self._update_rows()
-                self.event_generate('<<ItemDelete>>')
-            except Exception as e:
-                self.event_generate('<<ItemDeleteFail>>')
+                self.event_generate('<<ItemDelete>>', data=event.data)
+            except Exception as exc:
+                payload = dict(event.data)
+                payload['error'] = str(exc)
+                self.event_generate('<<ItemDeleteFail>>', data=payload)
 
     def _on_item_focused(self, event: Any):
         """Handle item focus event from `ListItem`.
@@ -1325,7 +1327,7 @@ class ListView(Frame):
         """Select all items in the list.
 
         Only works when selection_mode is 'multi'. Generates a
-        <<SelectionChanged>> event after completion.
+        <<SelectionChange>> event after completion.
 
         Note:
             For large datasets, this may be slow as it loads all records.
@@ -1374,7 +1376,8 @@ class ListView(Frame):
                 auto-generated if not provided.
 
         Note:
-            Generates a <<ItemInserted>> event after the item is added.
+            Generates a <<ItemInsert>> event after the item is added.
+            `event.data` is the inserted record dict with `id` populated.
 
         Examples:
             >>> listview.insert_item({
@@ -1382,9 +1385,11 @@ class ListView(Frame):
             ...     'text': 'Description'
             ... })
         """
-        self._datasource.create_record(data)
+        record_id = self._datasource.create_record(data)
         self._update_rows()
-        self.event_generate('<<ItemInsert>>')
+        record = dict(data)
+        record.setdefault('id', record_id)
+        self.event_generate('<<ItemInsert>>', data=record)
 
     def update_item(self, record_id: Any, data: dict):
         """Update an existing item's data.
@@ -1395,14 +1400,17 @@ class ListView(Frame):
                 existing record data.
 
         Note:
-            Generates a <<ItemUpdated>> event if the update succeeds.
+            Generates a <<ItemUpdate>> event if the update succeeds.
+            `event.data` is the patch dict with `id` set to `record_id`.
 
         Examples:
             >>> listview.update_item(42, {'title': 'Updated Title'})
         """
         if self._datasource.update_record(record_id, data):
             self._update_rows()
-            self.event_generate('<<ItemUpdate>>')
+            record = dict(data)
+            record['id'] = record_id
+            self.event_generate('<<ItemUpdate>>', data=record)
 
     def delete_item(self, record_id: Any):
         """Delete an item from the list.
@@ -1411,14 +1419,15 @@ class ListView(Frame):
             record_id: The ID of the record to delete.
 
         Note:
-            Generates a <<ItemDeleted>> event after deletion.
+            Generates a <<ItemDelete>> event after deletion.
+            `event.data = {'id': record_id}`.
 
         Examples:
             >>> listview.delete_item(42)
         """
         self._datasource.delete_record(record_id)
         self._update_rows()
-        self.event_generate('<<ItemDelete>>')
+        self.event_generate('<<ItemDelete>>', data={'id': record_id})
 
     def get_datasource(self) -> DataSourceProtocol:
         """Get the underlying datasource.
@@ -1443,7 +1452,7 @@ class ListView(Frame):
         self.unbind('<<SelectionChange>>', bind_id)
 
     def on_item_delete(self, callback: Callable) -> str:
-        """Bind to `<<ItemDelete>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemDelete>>`. Callback receives `event.data = dict` (the deleted record, with at least `id`)."""
         return self.bind('<<ItemDelete>>', callback, add='+')
 
     def off_item_delete(self, bind_id: str | None = None) -> None:
@@ -1451,7 +1460,7 @@ class ListView(Frame):
         self.unbind('<<ItemDelete>>', bind_id)
 
     def on_item_delete_fail(self, callback: Callable) -> str:
-        """Bind to `<<ItemDeleteFail>>`. Callback receives `event.data = {'record': dict, 'error': str}`."""
+        """Bind to `<<ItemDeleteFail>>`. Callback receives `event.data = dict` (the record plus an `error: str` key)."""
         return self.bind('<<ItemDeleteFail>>', callback, add='+')
 
     def off_item_delete_fail(self, bind_id: str | None = None) -> None:
@@ -1459,7 +1468,7 @@ class ListView(Frame):
         self.unbind('<<ItemDeleteFail>>', bind_id)
 
     def on_item_insert(self, callback: Callable) -> str:
-        """Bind to `<<ItemInsert>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemInsert>>`. Callback receives `event.data = dict` (the inserted record, with `id` populated)."""
         return self.bind('<<ItemInsert>>', callback, add='+')
 
     def off_item_insert(self, bind_id: str | None = None) -> None:
@@ -1467,7 +1476,7 @@ class ListView(Frame):
         self.unbind('<<ItemInsert>>', bind_id)
 
     def on_item_update(self, callback: Callable) -> str:
-        """Bind to `<<ItemUpdate>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemUpdate>>`. Callback receives `event.data = dict` (the patch dict with `id` set)."""
         return self.bind('<<ItemUpdate>>', callback, add='+')
 
     def off_item_update(self, bind_id: str | None = None) -> None:
@@ -1475,7 +1484,7 @@ class ListView(Frame):
         self.unbind('<<ItemUpdate>>', bind_id)
 
     def on_item_click(self, callback: Callable) -> str:
-        """Bind to `<<ItemClick>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemClick>>`. Callback receives `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)."""
         return self.bind('<<ItemClick>>', callback, add='+')
 
     def off_item_click(self, bind_id: str | None = None) -> None:
@@ -1483,7 +1492,7 @@ class ListView(Frame):
         self.unbind('<<ItemClick>>', bind_id)
 
     def on_item_drag_start(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragStart>>`. Callback receives `event.data = {'record': dict, 'index': int}`."""
+        """Bind to `<<ItemDragStart>>`. Callback receives `event.data = dict` (the record)."""
         return self.bind('<<ItemDragStart>>', callback, add='+')
 
     def off_item_drag_start(self, bind_id: str | None = None) -> None:
@@ -1491,7 +1500,7 @@ class ListView(Frame):
         self.unbind('<<ItemDragStart>>', bind_id)
 
     def on_item_drag(self, callback: Callable) -> str:
-        """Bind to `<<ItemDrag>>`. Callback receives `event.data = {'source_index': int, 'target_index': int, 'x': int, 'y': int}`."""
+        """Bind to `<<ItemDrag>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)."""
         return self.bind('<<ItemDrag>>', callback, add='+')
 
     def off_item_drag(self, bind_id: str | None = None) -> None:
@@ -1499,7 +1508,7 @@ class ListView(Frame):
         self.unbind('<<ItemDrag>>', bind_id)
 
     def on_item_drag_end(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragEnd>>`. Callback receives `event.data = {'moved': bool, 'source_index': int, 'target_index': int}`."""
+        """Bind to `<<ItemDragEnd>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)."""
         return self.bind('<<ItemDragEnd>>', callback, add='+')
 
     def off_item_drag_end(self, bind_id: str | None = None) -> None:

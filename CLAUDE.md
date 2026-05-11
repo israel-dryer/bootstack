@@ -99,7 +99,6 @@ patterns established during this work.
    Key items:
    - `ToggleGroup` `padding=` kwarg causes `TypeError` (field.py insert_addon)
    - `insert_addon` passes `density=` to `CheckButton` causing `TclError`
-   - `<<ItemDelete>>` / `<<ItemInsert>>` / `<<ItemUpdate>>` on ListView carry no data
    - `Meter` deprecated param names (`amountused` etc.) not yet cleaned from source
    - Scale needs API design pass (`from_`/`to` naming, `on_changed`, `<<Change>>`)
    - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter

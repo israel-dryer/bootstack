@@ -77,8 +77,8 @@ def build_list_item_style(
     active_img = recolor_element_image(image_key, active, border_normal, active)
     selected_img = recolor_element_image(image_key, selected, border_normal, indicator)
 
-    focus_img = recolor_element_image(image_key, active, border_normal, indicator)
-    focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, indicator)
+    focus_img = recolor_element_image(image_key, active, border_normal, active)
+    focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, pressed)
 
     image_state_specs = [
         ('selected', selected_img.image),
