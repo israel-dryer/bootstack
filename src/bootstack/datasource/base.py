@@ -195,6 +195,18 @@ class BaseDataSource(ABC):
 
     # Selection Management
     @abstractmethod
+    def is_selected(self, record_id: Any) -> bool:
+        """Check whether a record is currently selected.
+
+        Args:
+            record_id: Unique identifier of the record
+
+        Returns:
+            True if the record is selected, False otherwise (including missing records)
+        """
+        ...
+
+    @abstractmethod
     def select_record(self, record_id: Any) -> bool:
         """Mark record as selected.
 
@@ -207,14 +219,14 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def unselect_record(self, record_id: Any) -> bool:
+    def deselect_record(self, record_id: Any) -> bool:
         """Mark record as unselected.
 
         Args:
             record_id: Unique identifier of the record
 
         Returns:
-            True if record was unselected, False if not found
+            True if record was deselected, False if not found
         """
         ...
 
@@ -231,14 +243,14 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def unselect_all(self, current_page_only: bool = False) -> int:
-        """Unselect all records (optionally only current page).
+    def deselect_all(self, current_page_only: bool = False) -> int:
+        """Deselect all records (optionally only current page).
 
         Args:
-            current_page_only: If True, unselect only records on current page
+            current_page_only: If True, deselect only records on current page
 
         Returns:
-            Number of records unselected
+            Number of records deselected
         """
         ...
 
@@ -287,6 +299,30 @@ class BaseDataSource(ABC):
             List of record dictionaries
         """
         ...
+
+    # Lifecycle / reorder — concrete defaults; subclasses may override
+    def reload(self) -> None:
+        """Re-read data from the underlying source.
+
+        Default is a no-op suitable for in-memory implementations.
+        File- and database-backed sources should override to re-query.
+        """
+        return None
+
+    def move_record(self, record_id: Any, target_index: int) -> bool:
+        """Reorder a record to a new position.
+
+        Default returns False (not supported). Subclasses that maintain
+        an explicit ordering should override.
+
+        Args:
+            record_id: Unique identifier of the record to move
+            target_index: Zero-based destination index (clamped to valid range)
+
+        Returns:
+            True if the record was moved, False if not supported or not found
+        """
+        return False
 
     # ========== SHARED UTILITY METHODS ==========
 

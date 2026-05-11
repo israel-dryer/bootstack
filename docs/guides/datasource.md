@@ -248,15 +248,18 @@ success = ds.delete_record(record_id=1)
 Track which records are selected:
 
 ```python
-# Select/unselect individual records
-ds.select_record(record_id=1)
-ds.unselect_record(record_id=1)
+# Check selection
+ds.is_selected(record_id=1)
 
-# Select/unselect all
+# Select/deselect individual records
+ds.select_record(record_id=1)
+ds.deselect_record(record_id=1)
+
+# Select/deselect all
 ds.select_all()
 ds.select_all(current_page_only=True)
-ds.unselect_all()
-ds.unselect_all(current_page_only=True)
+ds.deselect_all()
+ds.deselect_all(current_page_only=True)
 
 # Get selected records
 selected = ds.get_selected()

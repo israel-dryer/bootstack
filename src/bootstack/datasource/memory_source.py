@@ -108,18 +108,29 @@ class MemoryDataSource(BaseDataSource):
                 r.setdefault("selected", 0)
 
     def _ensure_id(self) -> None:
-        """Ensure all records have unique integer IDs."""
-        used = set()
+        """Ensure all records have unique integer IDs.
+
+        Records whose `id` is already an int and not a duplicate are
+        preserved as-is. Records with missing, non-integer, or duplicate
+        IDs get a freshly-allocated integer ID.
+        """
+        used: set[int] = set()
+        needs_id: list[Dict[str, Any]] = []
         max_id = 0
         for r in self._data:
-            if "id" in r and isinstance(r["id"], int):
-                used.add(r["id"])
-                max_id = max(max_id, r["id"])
-        for r in self._data:
-            if "id" not in r or not isinstance(r["id"], int) or r["id"] in used:
+            rid = r.get("id")
+            if isinstance(rid, int) and rid not in used:
+                used.add(rid)
+                if rid > max_id:
+                    max_id = rid
+            else:
+                needs_id.append(r)
+        for r in needs_id:
+            max_id += 1
+            while max_id in used:
                 max_id += 1
-                r["id"] = max_id
-                used.add(max_id)
+            r["id"] = max_id
+            used.add(max_id)
         self._rebuild_id_index()
 
     @staticmethod
@@ -389,11 +400,18 @@ class MemoryDataSource(BaseDataSource):
         self._rebuild_id_index()
         return True
 
+    def is_selected(self, record_id: Any) -> bool:
+        """Check whether a record is currently selected."""
+        idx = self._id_index.get(record_id)
+        if idx is None:
+            return False
+        return bool(self._data[idx].get("selected", 0))
+
     def select_record(self, record_id: Any) -> bool:
         """Mark record as selected."""
         return self._set_selected_flag(record_id, 1)
 
-    def unselect_record(self, record_id: Any) -> bool:
+    def deselect_record(self, record_id: Any) -> bool:
         """Mark record as unselected."""
         return self._set_selected_flag(record_id, 0)
 
@@ -417,8 +435,8 @@ class MemoryDataSource(BaseDataSource):
                     count += 1
             return count
 
-    def unselect_all(self, current_page_only: bool = False) -> int:
-        """Unselect all records (optionally only current page)."""
+    def deselect_all(self, current_page_only: bool = False) -> int:
+        """Deselect all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
             ids = [r["id"] for r in self.get_page()]
@@ -436,6 +454,30 @@ class MemoryDataSource(BaseDataSource):
                     r["selected"] = 0
                     count += 1
             return count
+
+    def move_record(self, record_id: Any, target_index: int) -> bool:
+        """Reorder a record within the in-memory list."""
+        if not self._data:
+            return False
+
+        source_index = self._id_index.get(record_id)
+        if source_index is None:
+            return False
+
+        clamped_target = max(0, min(int(target_index), len(self._data) - 1))
+        if source_index == clamped_target:
+            return False
+
+        record = self._data.pop(source_index)
+        if clamped_target > source_index:
+            clamped_target -= 1
+        self._data.insert(clamped_target, record)
+
+        start = min(source_index, clamped_target)
+        end = max(source_index, clamped_target) + 1
+        for i in range(start, end):
+            self._id_index[self._data[i]["id"]] = i
+        return True
 
     def _set_selected_flag(self, record_id: Any, flag: int) -> bool:
         """Set selection flag for record by ID."""

@@ -330,11 +330,23 @@ class SqliteDataSource(BaseDataSource):
 
     # === SELECTION ====
 
+    def is_selected(self, record_id: Any) -> bool:
+        """Check whether a record is currently selected."""
+        if _ROW_SEL not in self._columns:
+            return False
+        row = self.conn.execute(
+            f"SELECT {_ROW_SEL} FROM {self._table} WHERE {_ROW_ID} = ?",
+            (record_id,),
+        ).fetchone()
+        if row is None:
+            return False
+        return bool(row[0])
+
     def select_record(self, record_id: Any) -> bool:
         """Mark record as selected."""
         return self._set_selected_flag(record_id, 1)
 
-    def unselect_record(self, record_id: Any) -> bool:
+    def deselect_record(self, record_id: Any) -> bool:
         """Mark record as unselected."""
         return self._set_selected_flag(record_id, 0)
 
@@ -355,8 +367,8 @@ class SqliteDataSource(BaseDataSource):
                 cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 1")
                 return cur.rowcount
 
-    def unselect_all(self, current_page_only: bool = False) -> int:
-        """Unselect all records (optionally only current page)."""
+    def deselect_all(self, current_page_only: bool = False) -> int:
+        """Deselect all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
             ids = [row[_ROW_ID] for row in self.get_page()]

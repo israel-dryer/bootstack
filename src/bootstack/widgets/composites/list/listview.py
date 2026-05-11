@@ -1,8 +1,9 @@
 """ListView widget for displaying large lists with virtual scrolling."""
 
 from tkinter import TclError
-from typing import Protocol, Any, Callable, Literal, runtime_checkable
+from typing import Any, Callable, Literal
 
+from bootstack.datasource import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets.composites.list.listitem import ListItem
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.scrollbar import Scrollbar
@@ -14,312 +15,6 @@ ROW_HEIGHT = 40
 OVERSCAN_ROWS = 2
 EMPTY = {"__empty__": True, "id": "__empty__"}
 
-
-@runtime_checkable
-class DataSourceProtocol(Protocol):
-    """Protocol for data sources used by ListView.
-
-    Implementations provide paging, selection, and CRUD operations for records.
-    """
-
-    def total_count(self) -> int:
-        """Return total number of records.
-
-        Returns:
-            Total record count.
-        """
-        ...
-
-    def get_page_from_index(self, start: int, count: int) -> list[dict]:
-        """Get a page of records starting at an index.
-
-        Args:
-            start: Zero-based index for the first record.
-            count: Maximum number of records to return.
-
-        Returns:
-            List of record dictionaries.
-        """
-        ...
-
-    def is_selected(self, record_id: Any) -> bool:
-        """Check if a record is selected.
-
-        Args:
-            record_id: Record identifier to check.
-
-        Returns:
-            True if the record is selected.
-        """
-        ...
-
-    def select_record(self, record_id: Any) -> None:
-        """Select a record.
-
-        Args:
-            record_id: Record identifier to select.
-        """
-        ...
-
-    def deselect_record(self, record_id: Any) -> None:
-        """Deselect a record.
-
-        Args:
-            record_id: Record identifier to deselect.
-        """
-        ...
-
-    def deselect_all(self) -> None:
-        """Deselect all records."""
-        ...
-
-    def get_selected(self) -> list[Any]:
-        """Get all selected record IDs.
-
-        Returns:
-            List of selected record identifiers.
-        """
-        ...
-
-    def delete_record(self, record_id: Any) -> None:
-        """Delete a record.
-
-        Args:
-            record_id: Record identifier to delete.
-        """
-        ...
-
-    def create_record(self, data: dict) -> Any:
-        """Create a new record and return its ID.
-
-        Args:
-            data: Record data to insert.
-
-        Returns:
-            The new record identifier.
-        """
-        ...
-
-    def update_record(self, record_id: Any, data: dict) -> bool:
-        """Update a record.
-
-        Args:
-            record_id: Record identifier to update.
-            data: Record data to merge into the existing record.
-
-        Returns:
-            True if the record was updated.
-        """
-        ...
-
-    def reload(self) -> None:
-        """Reload data from the data source."""
-        ...
-
-    def move_record(self, record_id: Any, target_index: int) -> bool:
-        """Move a record to a new position.
-
-        Args:
-            record_id: Record identifier to move.
-            target_index: Zero-based index to move the record to.
-
-        Returns:
-            True if the record was moved.
-        """
-        ...
-
-
-class MemoryDataSource:
-    """In-memory data source implementation for ListView.
-
-    Stores records in a list and tracks selected record IDs.
-    """
-
-    def __init__(self):
-        """Initialize an empty data source."""
-        self._data: list[dict] = []
-        self._selected_ids: set = set()
-        self._id_index: dict[Any, int] = {}  # Maps record ID to index for O(1) lookups
-
-    def set_data(self, data: list) -> 'MemoryDataSource':
-        """Set the data and return self for chaining.
-
-        Args:
-            data: List of dicts or primitive values to convert to records.
-
-        Returns:
-            This instance for chaining.
-        """
-        self._data = []
-        self._id_index = {}
-        for i, item in enumerate(data or []):
-            if isinstance(item, dict):
-                if 'id' not in item:
-                    item['id'] = i
-                self._data.append(item)
-                self._id_index[item['id']] = i
-            else:
-                # Convert primitives to dict
-                record = {'id': i, 'value': str(item)}
-                self._data.append(record)
-                self._id_index[i] = i
-
-        return self
-
-    def total_count(self) -> int:
-        """Return total number of records.
-
-        Returns:
-            Total record count.
-        """
-        return len(self._data)
-
-    def get_page_from_index(self, start: int, count: int) -> list[dict]:
-        """Get a page of records starting at an index.
-
-        Args:
-            start: Zero-based index for the first record.
-            count: Maximum number of records to return.
-
-        Returns:
-            List of record dictionaries.
-        """
-        end = min(start + count, len(self._data))
-        return self._data[start:end]
-
-    def is_selected(self, record_id: Any) -> bool:
-        """Check if a record is selected.
-
-        Args:
-            record_id: Record identifier to check.
-
-        Returns:
-            True if the record is selected.
-        """
-        return record_id in self._selected_ids
-
-    def select_record(self, record_id: Any) -> None:
-        """Select a record.
-
-        Args:
-            record_id: Record identifier to select.
-        """
-        self._selected_ids.add(record_id)
-
-    def deselect_record(self, record_id: Any) -> None:
-        """Deselect a record.
-
-        Args:
-            record_id: Record identifier to deselect.
-        """
-        self._selected_ids.discard(record_id)
-
-    def deselect_all(self) -> None:
-        """Deselect all records."""
-        self._selected_ids.clear()
-
-    def get_selected(self) -> list[Any]:
-        """Get all selected record IDs.
-
-        Returns:
-            List of selected record identifiers.
-        """
-        return list(self._selected_ids)
-
-    def delete_record(self, record_id: Any) -> None:
-        """Delete a record.
-
-        Args:
-            record_id: Record identifier to delete.
-        """
-        # Use index for O(1) lookup
-        index = self._id_index.get(record_id)
-        if index is not None:
-            # Remove from data
-            del self._data[index]
-            # Remove from index
-            del self._id_index[record_id]
-            # Rebuild index for all records after the deleted one
-            for i in range(index, len(self._data)):
-                self._id_index[self._data[i]['id']] = i
-        self._selected_ids.discard(record_id)
-
-    def create_record(self, data: dict) -> Any:
-        """Create a new record and return its ID.
-
-        Args:
-            data: Record data to insert.
-
-        Returns:
-            The new record identifier.
-        """
-        max_id = max((r.get('id', 0) for r in self._data), default=0)
-        new_id = max_id + 1 if isinstance(max_id, int) else len(self._data)
-        data['id'] = new_id
-        new_index = len(self._data)
-        self._data.append(data)
-        self._id_index[new_id] = new_index
-        return new_id
-
-    def update_record(self, record_id: Any, data: dict) -> bool:
-        """Update a record.
-
-        Args:
-            record_id: Record identifier to update.
-            data: Record data to merge into the existing record.
-
-        Returns:
-            True if the record was updated.
-        """
-        # Use index for O(1) lookup
-        index = self._id_index.get(record_id)
-        if index is not None:
-            self._data[index].update(data)
-            return True
-        return False
-
-    def reload(self) -> None:
-        """Reload data from source.
-
-        This is a no-op for the in-memory data source.
-        """
-        pass
-
-    def move_record(self, record_id: Any, target_index: int) -> bool:
-        """Move a record to a new position.
-
-        Args:
-            record_id: Record identifier to move.
-            target_index: Zero-based index to move the record to.
-
-        Returns:
-            True if the record was moved.
-        """
-        if not self._data:
-            return False
-
-        # Use index for O(1) lookup
-        source_index = self._id_index.get(record_id)
-        if source_index is None:
-            return False
-
-        clamped_target = max(0, min(target_index, len(self._data) - 1))
-        if source_index == clamped_target:
-            return False
-
-        # Move the record
-        record = self._data.pop(source_index)
-        if clamped_target > source_index:
-            clamped_target -= 1
-        self._data.insert(clamped_target, record)
-
-        # Rebuild index for affected range
-        start = min(source_index, clamped_target)
-        end = max(source_index, clamped_target) + 1
-        for i in range(start, end):
-            self._id_index[self._data[i]['id']] = i
-
-        return True
 
 
 class ListView(Frame):
@@ -334,14 +29,14 @@ class ListView(Frame):
 
     !!! note "Events"
         - `<<SelectionChange>>`: Fired when selection state changes. `event.data = None` (use `get_selected()` to get current selection)
-        - `<<ItemDelete>>`: Fired when an item is deleted. `event.data = {'record': dict}`
-        - `<<ItemDeleteFail>>`: Fired when item deletion fails. `event.data = {'record': dict, 'error': str}`
-        - `<<ItemInsert>>`: Fired when a new item is inserted. `event.data = {'record': dict}`
-        - `<<ItemUpdate>>`: Fired when an item is updated. `event.data = {'record': dict}`
-        - `<<ItemClick>>`: Fired when an item is clicked. `event.data = {'record': dict}`
-        - `<<ItemDragStart>>`: Fired when a drag begins. `event.data = {'record': dict, 'index': int}`
-        - `<<ItemDrag>>`: Fired when an item is being dragged. `event.data = {'source_index': int, 'target_index': int, 'x': int, 'y': int}`
-        - `<<ItemDragEnd>>`: Fired when a drag ends. `event.data = {'moved': bool, 'source_index': int, 'target_index': int}`
+        - `<<ItemDelete>>`: Fired when an item is deleted. `event.data = dict` (the deleted record; contains at least `id`)
+        - `<<ItemDeleteFail>>`: Fired when item deletion fails. `event.data = dict` (the record plus an `error: str` key)
+        - `<<ItemInsert>>`: Fired when a new item is inserted. `event.data = dict` (the new record, with `id` populated)
+        - `<<ItemUpdate>>`: Fired when an item is updated. `event.data = dict` (the merged record, with `id`)
+        - `<<ItemClick>>`: Fired when an item is clicked. `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)
+        - `<<ItemDragStart>>`: Fired when a drag begins. `event.data = dict` (the record)
+        - `<<ItemDrag>>`: Fired during a drag. `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)
+        - `<<ItemDragEnd>>`: Fired when a drag ends. `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)
     """
 
     def __init__(
@@ -349,7 +44,7 @@ class ListView(Frame):
             master=None,
             items: list = None,
             datasource: DataSourceProtocol = None,
-            row_factory: Callable = None,
+            _row_factory: Callable = None,
             selection_mode: Literal['none', 'single', 'multi'] = 'none',
             show_selection_controls: bool = False,
             show_chevron: bool = False,
@@ -361,8 +56,6 @@ class ListView(Frame):
             scrollbar_visibility: Literal['always', 'never'] = 'always',
             enable_focus: bool = True,
             enable_hover: bool = True,
-            focus_color: str = None,
-            selected_background: str = 'primary',
             select_on_click: bool = None,
             density: Literal['default', 'compact'] = 'default',
             **kwargs
@@ -373,7 +66,6 @@ class ListView(Frame):
             master: Parent widget.
             items: List of items or dicts to display (alternative to `datasource`).
             datasource: DataSource implementation for data access.
-            row_factory: Callable that creates custom `ListItem` widgets.
             selection_mode: Selection mode (`none`, `single`, `multi`).
             show_selection_controls: Show checkboxes/radio buttons for selection.
             show_chevron: Show chevron indicators on items.
@@ -386,15 +78,21 @@ class ListView(Frame):
                 'never' to hide (mousewheel only). Defaults to 'always'.
             enable_focus: Whether items can receive keyboard focus.
             enable_hover: Whether items show hover state.
-            focus_color: Color for the focus indicator.
-            selected_background: Background color for selected items.
             select_on_click: Whether clicking an item selects it. Defaults to True when
                 selection_mode is 'single' or 'multi', False otherwise. Can be explicitly
                 set to override the default behavior.
             density: Visual density ('default' or 'compact'). Defaults to 'default'.
             **kwargs: Additional keyword arguments forwarded to `Frame`.
         """
+        # Capture user-provided accent for row propagation and the drag indicator.
+        # super().__init__ runs through the bootstyle wrapper which sets self._accent
+        # to whatever's in kwargs (None if absent), so we re-assert with a 'primary'
+        # fallback after super() completes.
+        _user_accent = kwargs.get('accent')
+
         super().__init__(master, variant='container', ttk_class='ListView.TFrame', **kwargs)
+
+        self._accent = _user_accent or 'primary'
 
         # Cache the windowing system so scroll bindings can dispatch
         # platform-correctly: Aqua/Win send <MouseWheel>, X11 sends
@@ -414,18 +112,7 @@ class ListView(Frame):
         self._enable_hover = enable_hover
         self._striped = striped
         self._striped_background = striped_background
-        self._focus_color = focus_color
-        self._selected_background = selected_background
         self._density = density
-
-
-        # Data source
-        if datasource:
-            self._datasource = datasource
-        elif items:
-            self._datasource = MemoryDataSource().set_data(items)
-        else:
-            self._datasource = MemoryDataSource().set_data([])
 
         # Virtual scrolling state
         self._start_index = 0
@@ -433,6 +120,15 @@ class ListView(Frame):
         self._visible_rows = VISIBLE_ROWS
         self._row_height = ROW_HEIGHT
         self._page_size = VISIBLE_ROWS + OVERSCAN_ROWS
+
+        # Data source
+        if datasource:
+            self._datasource = datasource
+        elif items:
+            self._datasource = MemoryDataSource(page_size=self._page_size).set_data(items)
+        else:
+            self._datasource = MemoryDataSource(page_size=self._page_size).set_data([])
+
         self._rows: list[ListItem] = []
         self._focused_record_id = None
         self._drag_state: dict | None = None
@@ -441,7 +137,7 @@ class ListView(Frame):
         self._mousewheel_bound_widgets: set = set()  # Track bound widgets to avoid cycles
 
         # Row factory
-        self._row_factory = row_factory or self._default_row_factory
+        self._row_factory = _row_factory or self._default_row_factory
 
         # Create container frame for list items
         self._container = Frame(self, variant='container', ttk_class='ListView.TFrame')
@@ -591,8 +287,7 @@ class ListView(Frame):
                 show_separator=self._show_separator,
                 focusable=self._enable_focus,
                 hoverable=self._enable_hover,
-                focus_color=self._focus_color,
-                selected_background=self._selected_background,
+                accent=self._accent,
                 density=self._density
             )
 
@@ -924,9 +619,11 @@ class ListView(Frame):
             try:
                 self._datasource.delete_record(record_id)
                 self._update_rows()
-                self.event_generate('<<ItemDelete>>')
-            except Exception as e:
-                self.event_generate('<<ItemDeleteFail>>')
+                self.event_generate('<<ItemDelete>>', data=event.data)
+            except Exception as exc:
+                payload = dict(event.data)
+                payload['error'] = str(exc)
+                self.event_generate('<<ItemDeleteFail>>', data=payload)
 
     def _on_item_focused(self, event: Any):
         """Handle item focus event from `ListItem`.
@@ -1263,7 +960,7 @@ class ListView(Frame):
     def _show_drag_indicator(self) -> None:
         """Create and show the drag drop indicator line."""
         if self._drag_indicator is None:
-            self._drag_indicator = Frame(self._container, accent=self._selected_background)
+            self._drag_indicator = Frame(self._container, accent=self._accent)
 
     def _update_drag_indicator_position(self, target_index: int) -> None:
         """Update the drag indicator to show drop location."""
@@ -1308,16 +1005,17 @@ class ListView(Frame):
         self._datasource.reload()
         self._update_rows()
 
-    def get_selected(self) -> list:
-        """Get list of selected record IDs.
+    def get_selected(self) -> list[dict]:
+        """Get the currently selected records.
 
         Returns:
-            List of record IDs that are currently selected. Empty list if
-            no items are selected.
+            List of selected record dictionaries (each with `id` and the
+            record's data). Empty list if no items are selected.
 
         Examples:
             >>> selected = listview.get_selected()
-            >>> print(f"Selected {len(selected)} items")
+            >>> for record in selected:
+            ...     print(record["id"], record.get("title"))
         """
         return self._datasource.get_selected()
 
@@ -1325,7 +1023,7 @@ class ListView(Frame):
         """Select all items in the list.
 
         Only works when selection_mode is 'multi'. Generates a
-        <<SelectionChanged>> event after completion.
+        <<SelectionChange>> event after completion.
 
         Note:
             For large datasets, this may be slow as it loads all records.
@@ -1374,7 +1072,8 @@ class ListView(Frame):
                 auto-generated if not provided.
 
         Note:
-            Generates a <<ItemInserted>> event after the item is added.
+            Generates a <<ItemInsert>> event after the item is added.
+            `event.data` is the inserted record dict with `id` populated.
 
         Examples:
             >>> listview.insert_item({
@@ -1382,9 +1081,11 @@ class ListView(Frame):
             ...     'text': 'Description'
             ... })
         """
-        self._datasource.create_record(data)
+        record_id = self._datasource.create_record(data)
         self._update_rows()
-        self.event_generate('<<ItemInsert>>')
+        record = dict(data)
+        record.setdefault('id', record_id)
+        self.event_generate('<<ItemInsert>>', data=record)
 
     def update_item(self, record_id: Any, data: dict):
         """Update an existing item's data.
@@ -1395,14 +1096,17 @@ class ListView(Frame):
                 existing record data.
 
         Note:
-            Generates a <<ItemUpdated>> event if the update succeeds.
+            Generates a <<ItemUpdate>> event if the update succeeds.
+            `event.data` is the patch dict with `id` set to `record_id`.
 
         Examples:
             >>> listview.update_item(42, {'title': 'Updated Title'})
         """
         if self._datasource.update_record(record_id, data):
             self._update_rows()
-            self.event_generate('<<ItemUpdate>>')
+            record = dict(data)
+            record['id'] = record_id
+            self.event_generate('<<ItemUpdate>>', data=record)
 
     def delete_item(self, record_id: Any):
         """Delete an item from the list.
@@ -1411,14 +1115,15 @@ class ListView(Frame):
             record_id: The ID of the record to delete.
 
         Note:
-            Generates a <<ItemDeleted>> event after deletion.
+            Generates a <<ItemDelete>> event after deletion.
+            `event.data = {'id': record_id}`.
 
         Examples:
             >>> listview.delete_item(42)
         """
         self._datasource.delete_record(record_id)
         self._update_rows()
-        self.event_generate('<<ItemDelete>>')
+        self.event_generate('<<ItemDelete>>', data={'id': record_id})
 
     def get_datasource(self) -> DataSourceProtocol:
         """Get the underlying datasource.
@@ -1443,7 +1148,7 @@ class ListView(Frame):
         self.unbind('<<SelectionChange>>', bind_id)
 
     def on_item_delete(self, callback: Callable) -> str:
-        """Bind to `<<ItemDelete>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemDelete>>`. Callback receives `event.data = dict` (the deleted record, with at least `id`)."""
         return self.bind('<<ItemDelete>>', callback, add='+')
 
     def off_item_delete(self, bind_id: str | None = None) -> None:
@@ -1451,7 +1156,7 @@ class ListView(Frame):
         self.unbind('<<ItemDelete>>', bind_id)
 
     def on_item_delete_fail(self, callback: Callable) -> str:
-        """Bind to `<<ItemDeleteFail>>`. Callback receives `event.data = {'record': dict, 'error': str}`."""
+        """Bind to `<<ItemDeleteFail>>`. Callback receives `event.data = dict` (the record plus an `error: str` key)."""
         return self.bind('<<ItemDeleteFail>>', callback, add='+')
 
     def off_item_delete_fail(self, bind_id: str | None = None) -> None:
@@ -1459,7 +1164,7 @@ class ListView(Frame):
         self.unbind('<<ItemDeleteFail>>', bind_id)
 
     def on_item_insert(self, callback: Callable) -> str:
-        """Bind to `<<ItemInsert>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemInsert>>`. Callback receives `event.data = dict` (the inserted record, with `id` populated)."""
         return self.bind('<<ItemInsert>>', callback, add='+')
 
     def off_item_insert(self, bind_id: str | None = None) -> None:
@@ -1467,7 +1172,7 @@ class ListView(Frame):
         self.unbind('<<ItemInsert>>', bind_id)
 
     def on_item_update(self, callback: Callable) -> str:
-        """Bind to `<<ItemUpdate>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemUpdate>>`. Callback receives `event.data = dict` (the patch dict with `id` set)."""
         return self.bind('<<ItemUpdate>>', callback, add='+')
 
     def off_item_update(self, bind_id: str | None = None) -> None:
@@ -1475,7 +1180,7 @@ class ListView(Frame):
         self.unbind('<<ItemUpdate>>', bind_id)
 
     def on_item_click(self, callback: Callable) -> str:
-        """Bind to `<<ItemClick>>`. Callback receives `event.data = {'record': dict}`."""
+        """Bind to `<<ItemClick>>`. Callback receives `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)."""
         return self.bind('<<ItemClick>>', callback, add='+')
 
     def off_item_click(self, bind_id: str | None = None) -> None:
@@ -1483,7 +1188,7 @@ class ListView(Frame):
         self.unbind('<<ItemClick>>', bind_id)
 
     def on_item_drag_start(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragStart>>`. Callback receives `event.data = {'record': dict, 'index': int}`."""
+        """Bind to `<<ItemDragStart>>`. Callback receives `event.data = dict` (the record)."""
         return self.bind('<<ItemDragStart>>', callback, add='+')
 
     def off_item_drag_start(self, bind_id: str | None = None) -> None:
@@ -1491,7 +1196,7 @@ class ListView(Frame):
         self.unbind('<<ItemDragStart>>', bind_id)
 
     def on_item_drag(self, callback: Callable) -> str:
-        """Bind to `<<ItemDrag>>`. Callback receives `event.data = {'source_index': int, 'target_index': int, 'x': int, 'y': int}`."""
+        """Bind to `<<ItemDrag>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)."""
         return self.bind('<<ItemDrag>>', callback, add='+')
 
     def off_item_drag(self, bind_id: str | None = None) -> None:
@@ -1499,7 +1204,7 @@ class ListView(Frame):
         self.unbind('<<ItemDrag>>', bind_id)
 
     def on_item_drag_end(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragEnd>>`. Callback receives `event.data = {'moved': bool, 'source_index': int, 'target_index': int}`."""
+        """Bind to `<<ItemDragEnd>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)."""
         return self.bind('<<ItemDragEnd>>', callback, add='+')
 
     def off_item_drag_end(self, bind_id: str | None = None) -> None:

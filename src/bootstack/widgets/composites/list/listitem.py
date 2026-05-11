@@ -48,14 +48,12 @@ class ListItem(CompositeFrame):
         Args:
             master: Parent widget.
             **kwargs: Additional keyword arguments:
-                focus_color (str): Color for the focus indicator. Defaults to None.
                 show_separator (bool): Show separator line below the item. Defaults to False.
                 show_chevron (bool): Show chevron indicator on the right. Defaults to False.
                 focusable (bool): Whether this item can receive keyboard focus. Defaults to True.
                 hoverable (bool): Whether this item shows hover state. Defaults to False.
                 draggable (bool): Whether this item can be dragged. Defaults to False.
                 removable (bool): Whether this item can be removed. Defaults to False.
-                selected_background (str): Background color when selected. Defaults to 'primary'.
                 selection_mode (str): Selection mode ('none', 'single', 'multi'). Defaults to 'none'.
                 show_selection_controls (bool): Show checkbox/radio button. Defaults to False.
                 select_on_click (bool): Whether clicking selects the item. Defaults to True
@@ -71,14 +69,15 @@ class ListItem(CompositeFrame):
         self._drag_state = None
 
         # configuration properties
-        self._focus_color = kwargs.pop('focus_color', None)
         self._show_separator = kwargs.pop('show_separator', False)
         self._show_chevron = kwargs.pop('show_chevron', False)
         self._focusable = kwargs.pop('focusable', True)
         self._hoverable = kwargs.pop('hoverable', False)
         self._draggable = kwargs.pop('draggable', False)
         self._removable = kwargs.pop('removable', False)
-        self._selected_background = kwargs.pop('selected_background', 'primary')
+        # Capture accent (pop) so super() doesn't get it twice, and we can pass it
+        # explicitly to super() below.
+        self._accent = kwargs.pop('accent', None) or 'primary'
         self._selection_mode = kwargs.pop('selection_mode', 'none')
         self._show_selection_controls = kwargs.pop('show_selection_controls', False)
         self._density = kwargs.pop('density', 'default')
@@ -102,9 +101,8 @@ class ListItem(CompositeFrame):
             takefocus=self._focusable,
             ttk_class='ListView.TFrame',
             padding=item_padding,
+            accent=self._accent,
             style_options=dict(
-                selected_background=self._selected_background,
-                focus_color=self._focus_color,
                 hoverable=self._hoverable,
                 density=self._density
             )
@@ -116,9 +114,8 @@ class ListItem(CompositeFrame):
             variant='list',
             ttk_class='ListView.TFrame',
             takefocus=False,
-            style_options=dict(selected_background=self._selected_background,
-                               hoverable=self._hoverable,
-                               density=self._density)
+            accent=self._accent,
+            style_options=dict(hoverable=self._hoverable, density=self._density)
         )
         self._left_frame.pack(side='left')
 
@@ -127,9 +124,8 @@ class ListItem(CompositeFrame):
             variant='list',
             ttk_class='ListView.TFrame',
             takefocus=False,
-            style_options=dict(selected_background=self._selected_background,
-                               hoverable=self._hoverable,
-                               density=self._density)
+            accent=self._accent,
+            style_options=dict(hoverable=self._hoverable, density=self._density)
         )
         self._center_frame.pack(side='left', fill='x', expand=True)
 
@@ -138,9 +134,8 @@ class ListItem(CompositeFrame):
             variant='list',
             ttk_class='ListView.TFrame',
             takefocus=False,
-            style_options=dict(selected_background=self._selected_background,
-                               hoverable=self._hoverable,
-                               density=self._density)
+            accent=self._accent,
+            style_options=dict(hoverable=self._hoverable, density=self._density)
         )
         self._right_frame.pack(side='left')
 
@@ -268,9 +263,8 @@ class ListItem(CompositeFrame):
                 variant='icon',
                 ttk_class='ListView.TLabel',
                 icon_only=True,
-                style_options=dict(selected_background=self._selected_background,
-                                   hoverable=self._hoverable,
-                                   density=self._density),
+                accent=self._accent,
+                style_options=dict(hoverable=self._hoverable, density=self._density),
                 takefocus=False,
             )
             if self._show_selection_controls:
@@ -301,9 +295,8 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TLabel',
                     takefocus=False,
                     icon_only=True,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._icon_widget.pack(side='left', padx=5)
                 self.register_composite(self._icon_widget)
@@ -332,9 +325,8 @@ class ListItem(CompositeFrame):
                     variant='list',
                     ttk_class='ListView.TLabel',
                     takefocus=False,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._title_widget.pack(side='top', fill='x', anchor='w', padx=(0, 3))
                 self.register_composite(self._title_widget)
@@ -363,9 +355,8 @@ class ListItem(CompositeFrame):
                     variant='list',
                     ttk_class='ListView.TLabel',
                     takefocus=False,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._text_widget.pack(side='top', fill='x', padx=(0, 3))
                 self.register_composite(self._text_widget)
@@ -405,9 +396,8 @@ class ListItem(CompositeFrame):
                     variant='list',
                     ttk_class='ListView.TLabel',
                     takefocus=False,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._caption_widget.pack(side='top', fill='x', padx=(0, 3))
                 self.register_composite(self._caption_widget)
@@ -432,9 +422,8 @@ class ListItem(CompositeFrame):
                     text=text,
                     variant='list',
                     ttk_class='ListView.TLabel',
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._badge_widget.pack(side='right', padx=6)
                 self.register_composite(self._badge_widget)
@@ -461,9 +450,8 @@ class ListItem(CompositeFrame):
                     variant='icon',
                     ttk_class='ListView.TButton',
                     takefocus=False,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._chevron_widget.pack(side='right', padx=6)
                 self.register_composite(self._chevron_widget)
@@ -489,9 +477,8 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TButton',
                     takefocus=False,
                     command=self.remove,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._remove_widget.pack(side='right', padx=6)
                 self.register_composite(self._remove_widget)
@@ -517,9 +504,8 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TButton',
                     cursor='fleur',
                     takefocus=False,
-                    style_options=dict(selected_background=self._selected_background,
-                                       hoverable=self._hoverable,
-                                       density=self._density),
+                    accent=self._accent,
+                    style_options=dict(hoverable=self._hoverable, density=self._density),
                 )
                 self._drag_widget.pack(side='right', padx=6)
 
@@ -625,10 +611,6 @@ class ListItem(CompositeFrame):
         self._show_selection_controls = value
         self._get_selection_icon()
         self._update_selection(False)
-
-    @configure_delegate('selected_background')
-    def _delegate_selected_background(self, value=None):
-        self._selected_background = value
 
     @configure_delegate('show_chevron')
     def _delegate_show_chevron(self, value=None):

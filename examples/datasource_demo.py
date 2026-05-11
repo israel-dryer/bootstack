@@ -234,8 +234,8 @@ class DataSourceDemo(bs.Window):
 
         bs.Button(
             selection_frame,
-            text="Unselect All",
-            command=lambda: self.unselect_all(False),
+            text="Deselect All",
+            command=lambda: self.deselect_all(False),
             bootstyle="warning-outline",
             width=15
         ).pack(side=LEFT, padx=2)
@@ -409,11 +409,11 @@ class DataSourceDemo(bs.Window):
             bootstyle="success"
         )
 
-    def unselect_all(self, current_page_only: bool):
-        """Unselect all records."""
-        count = self.datasource.unselect_all(current_page_only=current_page_only)
+    def deselect_all(self, current_page_only: bool):
+        """Deselect all records."""
+        count = self.datasource.deselect_all(current_page_only=current_page_only)
         self.refresh_table()
-        self.status_label.configure(text=f"Unselected {count} records", bootstyle="info")
+        self.status_label.configure(text=f"Deselected {count} records", bootstyle="info")
 
     def add_random_record(self):
         """Add a new random employee record."""

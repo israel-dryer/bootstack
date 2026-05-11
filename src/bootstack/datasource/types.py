@@ -7,9 +7,10 @@ The DataSourceProtocol provides a unified interface for:
     - Data loading and configuration (set_data, set_filter, set_sort)
     - Pagination (get_page, next_page, prev_page, has_next_page)
     - CRUD operations (create, read, update, delete)
-    - Selection management (select/unselect records)
+    - Selection management (is_selected, select/deselect records)
     - Data export (CSV export)
     - Index-based access (get_page_from_index)
+    - Lifecycle and reorder (reload, move_record)
 
 All datasource implementations should conform to this protocol to ensure
 compatibility with datasource-aware widgets and utilities.
@@ -172,6 +173,17 @@ class DataSourceProtocol(Protocol):
         ...
 
     # ---------- selection ----------
+    def is_selected(self, record_id: Any) -> bool:
+        """Check whether a record is currently selected.
+
+        Args:
+            record_id: Unique identifier of the record
+
+        Returns:
+            True if the record is selected, False otherwise (including missing records)
+        """
+        ...
+
     def select_record(self, record_id: Any) -> bool:
         """Mark record as selected.
 
@@ -183,14 +195,14 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def unselect_record(self, record_id: Any) -> bool:
+    def deselect_record(self, record_id: Any) -> bool:
         """Mark record as unselected.
 
         Args:
             record_id: Unique identifier of the record
 
         Returns:
-            True if record was unselected, False if not found
+            True if record was deselected, False if not found
         """
         ...
 
@@ -205,14 +217,14 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def unselect_all(self, current_page_only: bool = False) -> int:
-        """Unselect all records (optionally only current page).
+    def deselect_all(self, current_page_only: bool = False) -> int:
+        """Deselect all records (optionally only current page).
 
         Args:
-            current_page_only: If True, unselect only records on current page
+            current_page_only: If True, deselect only records on current page
 
         Returns:
-            Number of records unselected
+            Number of records deselected
         """
         ...
 
@@ -232,6 +244,27 @@ class DataSourceProtocol(Protocol):
 
         Returns:
             Count of selected records
+        """
+        ...
+
+    # ---------- lifecycle / reorder ----------
+    def reload(self) -> None:
+        """Re-read data from the underlying source.
+
+        For in-memory implementations this is typically a no-op. For
+        file- or database-backed sources, this re-queries or re-reads.
+        """
+        ...
+
+    def move_record(self, record_id: Any, target_index: int) -> bool:
+        """Reorder a record to a new position.
+
+        Args:
+            record_id: Unique identifier of the record to move
+            target_index: Zero-based destination index (clamped to valid range)
+
+        Returns:
+            True if the record was moved, False if not supported or not found
         """
         ...
 

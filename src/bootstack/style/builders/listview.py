@@ -77,8 +77,8 @@ def build_list_item_style(
     active_img = recolor_element_image(image_key, active, border_normal, active)
     selected_img = recolor_element_image(image_key, selected, border_normal, indicator)
 
-    focus_img = recolor_element_image(image_key, active, border_normal, indicator)
-    focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, indicator)
+    focus_img = recolor_element_image(image_key, active, border_normal, active)
+    focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, pressed)
 
     image_state_specs = [
         ('selected', selected_img.image),
@@ -173,13 +173,12 @@ def _list_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
 def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
-    select_background_token = options.get('selected_background', 'primary')
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
     active = b.elevate(background, 1)
     pressed = b.pressed(background)
-    selected = b.subtle(select_background_token, background)
+    selected = b.subtle(accent or 'primary', background)
     on_background = b.on_color(background)
     on_selected = b.on_color(selected)
     on_disabled = b.disabled('text', background)
@@ -236,19 +235,17 @@ def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
 
     Style Options
     * surface
-    * selected_background
     * hoverable
     * foreground
     """
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
-    select_background_token = options.get('selected_background', 'primary')
     foreground_token = options.get('foreground', None)
 
     background = b.color(surface_token)
     active = b.elevate(background, 1)
     pressed = b.pressed(background)
-    selected = b.subtle(select_background_token, background)
+    selected = b.subtle(accent or 'primary', background)
     on_selected = b.on_color(selected)
     on_background = b.color(foreground_token) if foreground_token else b.on_color(background)
 
