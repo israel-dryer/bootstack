@@ -333,12 +333,17 @@ class AuditedDataSource(BaseDataSource):
 - `delete_record(record_id)` - Delete record by ID
 
 #### Selection Management
+- `is_selected(record_id)` - Check whether a record is selected
 - `select_record(record_id)` - Mark record as selected
-- `unselect_record(record_id)` - Unmark record
+- `deselect_record(record_id)` - Unmark record
 - `select_all(current_page_only=False)` - Select all/page records
-- `unselect_all(current_page_only=False)` - Unselect all/page records
+- `deselect_all(current_page_only=False)` - Deselect all/page records
 - `get_selected(page=None)` - Get selected records
 - `selected_count()` - Count selected records
+
+#### Lifecycle / reorder
+- `reload()` - Re-read from source (no-op for in-memory)
+- `move_record(record_id, target_index)` - Reorder a record
 
 #### Export
 - `export_to_csv(filepath, include_all=True)` - Export to CSV
