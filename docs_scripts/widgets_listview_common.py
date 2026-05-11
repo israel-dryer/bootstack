@@ -15,8 +15,9 @@ files = [
 lv = bs.ListView(
     app,
     items=files,
-    show_separator=True,
-    selection_mode="single",
+    density="compact",
+    striped=True,
+    show_separator=True
 )
 lv.pack(fill="both", expand=True, padx=20, pady=20)
 

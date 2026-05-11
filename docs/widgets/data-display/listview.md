@@ -6,7 +6,7 @@ title: ListView
 
 `ListView` is a **virtual scrolling list** for displaying large datasets efficiently.
 
-It renders only the visible rows (plus a small overscan), making it suitable for thousands of records while still supporting selection, deletion, dragging, and custom row layouts.
+It renders only the visible rows (plus a small overscan), making it suitable for thousands of records while still supporting selection, deletion, and drag reordering.
 
 ---
 
@@ -108,7 +108,7 @@ lv = bs.ListView(app, items=data, show_chevron=True)
 
 Records with an `id` field enable selection, deletion, and moving.
 
-The default `ListItem` recognizes:
+Each record can include these fields:
 
 - `title` — main heading
 - `text` — body text
@@ -184,8 +184,7 @@ lv = bs.ListView(
     app,
     items=data,
     selection_mode="single",
-    selected_background="primary",   # accent token for selected rows
-    focus_color="primary",           # accent token for the focus ring
+    accent="success",                # accent token for selected rows / indicator
     enable_focus=True,               # allow keyboard focus on rows
     enable_hover=True,               # show hover state on rows
 )
@@ -229,22 +228,17 @@ lv.on_item_click(lambda e: print("clicked:", e.data))
 
 Available events:
 
-- `<<SelectionChange>>` — selection changed; `event.data = None` (use `get_selected()`)
-- `<<ItemClick>>` — row clicked; `event.data = dict` (the record, with `selected`,
-  `focused`, `item_index` injected)
-- `<<ItemDelete>>` — item removed; `event.data = dict` (the deleted record, with at
-  least `id`)
-- `<<ItemDeleteFail>>` — removal failed; `event.data = dict` (the record plus an
-  `error: str` key)
-- `<<ItemInsert>>` — item added via `lv.insert_item(...)`; `event.data = dict` (the
-  inserted record, with `id` populated)
-- `<<ItemUpdate>>` — item changed via `lv.update_item(...)`; `event.data = dict` (the
-  patch dict, with `id`)
-- `<<ItemDragStart>>` — `event.data = dict` (the record)
-- `<<ItemDrag>>` — `event.data = dict` (record + `source_index`, `target_index`,
-  `y_current`)
-- `<<ItemDragEnd>>` — `event.data = dict` (record + `source_index`, `target_index`,
-  `moved`, `y_start`, `y_end`)
+| Event | `event.data` |
+|---|---|
+| `<<SelectionChange>>` | `None` — call `get_selected()` to read selection |
+| `<<ItemClick>>` | record dict (with `selected`, `focused`, `item_index` injected) |
+| `<<ItemInsert>>` | inserted record (with `id` populated) |
+| `<<ItemUpdate>>` | patch dict (with `id`) |
+| `<<ItemDelete>>` | deleted record (with at least `id`) |
+| `<<ItemDeleteFail>>` | record + `error: str` |
+| `<<ItemDragStart>>` | record dict |
+| `<<ItemDrag>>` | record + `source_index`, `target_index`, `y_current` |
+| `<<ItemDragEnd>>` | record + `source_index`, `target_index`, `moved`, `y_start`, `y_end` |
 
 All `on_*` methods return a bind ID for unsubscribing:
 
@@ -266,8 +260,7 @@ When `enable_focus=True` (the default), arrow keys navigate between rows:
 Focus is tracked at the data layer (by record ID), so a focused record stays focused
 even when its row widget is recycled during scroll.
 
-Use `focus_color=` to set the indicator color, or `enable_focus=False` to disable
-keyboard navigation.
+Set `enable_focus=False` to disable keyboard navigation.
 
 ### Runtime configuration
 
