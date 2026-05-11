@@ -144,6 +144,27 @@ lv = bs.ListView(
     <img src="../../assets/widgets-listview-dragging.png" alt="Listview dragging"/>
 </div>
 
+During a drag, an indicator line shows the drop position and the list auto-scrolls
+when the cursor nears the top or bottom edge.
+
+To persist a reorder, hook `<<ItemDragEnd>>` and read the index payload:
+
+```python
+def on_drag_end(event):
+    if event.data["moved"]:
+        save_order(
+            record_id=event.data["id"],
+            from_index=event.data["source_index"],
+            to_index=event.data["target_index"],
+        )
+
+lv.on_item_drag_end(on_drag_end)
+```
+
+If the datasource implements `move_record`, `ListView` calls it before firing
+`<<ItemDragEnd>>` and the `moved` flag reflects the result. `MemoryDataSource`
+supports this out of the box.
+
 ### Selection appearance
 
 ```python
@@ -152,6 +173,7 @@ lv = bs.ListView(
     items=data,
     selection_mode="single",
     selected_background="primary",   # accent token for selected rows
+    focus_color="primary",           # accent token for the focus ring
     enable_focus=True,               # allow keyboard focus on rows
     enable_hover=True,               # show hover state on rows
 )
@@ -163,17 +185,76 @@ lv = bs.ListView(
 
 ### Custom row layouts
 
-Provide `row_factory=` to use your own row widget. The factory receives the row container and keyword arguments from the datasource record:
+Pass `row_factory=` to render each row with your own widget. The simplest path is to
+subclass `ListItem` and override what you need:
 
 ```python
-def make_row(master, **kwargs):
-    return bs.ListItem(master, **kwargs)   # or your custom widget subclass
+class TaskRow(bs.ListItem):
+    """A row that flags completed tasks in the title."""
 
-lv = bs.ListView(app, datasource=my_source, row_factory=make_row)
+    def update_data(self, record):
+        if "__empty__" not in record and record.get("done"):
+            record = dict(record, title=f"[done] {record.get('title', '')}")
+        super().update_data(record)
+
+
+lv = bs.ListView(app, datasource=my_source, row_factory=TaskRow)
 ```
 
-!!! tip "Custom rows"
-    Your row widget needs an `update_data(record)` method. Bootstack calls it when the virtual window scrolls to map the row to a new record.
+#### Factory contract
+
+The factory is called once per row in the virtual pool. It receives:
+
+- `master` — the row container (positional)
+- All row-level keyword arguments derived from `ListView` options: `selection_mode`,
+  `show_selection_controls`, `show_chevron`, `removable`, `draggable`, `show_separator`,
+  `focusable`, `hoverable`, `focus_color`, `selected_background`, `density`, and
+  `select_on_click` (only when explicitly set on `ListView`)
+
+It does **not** receive the record — records arrive later via `update_data`.
+
+#### `update_data(record)` lifecycle
+
+`update_data` is called repeatedly — once per record the row displays as the virtual
+window scrolls. Treat it as cheap and idempotent.
+
+The record passed in is a copy of your datasource record plus three fields `ListView`
+injects:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `selected` | `bool` | True when the record's ID is in the datasource selection |
+| `focused` | `bool` | True when this record holds keyboard focus |
+| `item_index` | `int` | The record's zero-based position in the full dataset |
+
+When the row is beyond the end of the data, `update_data` receives the placeholder
+`{"__empty__": True, "id": "__empty__"}`. The base `ListItem` hides itself on this
+record — if you build a row from scratch, check for `"__empty__"` and call
+`self.pack_forget()`.
+
+!!! tip "Subclass `ListItem` when you can"
+    A row built from scratch must also emit `<<ItemSelecting>>`, `<<ItemRemoving>>`,
+    `<<ItemFocus>>`, `<<ItemClick>>`, and the drag lifecycle events for `ListView` to
+    wire selection, removal, focus, and drag. Subclassing `ListItem` inherits all of
+    these for free.
+
+### Custom datasource
+
+For larger datasets — a database table, a paginated API, a filtered view — pass a
+custom datasource instead of `items=`:
+
+```python
+lv = bs.ListView(app, datasource=my_source)
+```
+
+`ListView` calls the datasource on demand as the virtual window scrolls, so only the
+visible page is ever materialized.
+
+!!! link "See the [DataSource guide](../../guides/datasource.md)"
+    The guide covers the built-in `MemoryDataSource`, `SqliteDataSource`, and
+    `FileDataSource`, the filtering/sorting/pagination API, and how to implement a
+    custom datasource (extending `BaseDataSource` or implementing the protocol
+    directly).
 
 ---
 
@@ -185,17 +266,28 @@ lv = bs.ListView(app, datasource=my_source, row_factory=make_row)
 # <<SelectionChange>>: event.data is None — read selection via get_selected()
 lv.on_selection_changed(lambda e: print(lv.get_selected()))
 
-# <<ItemClick>>: event.data = {'record': dict}
-lv.on_item_click(lambda e: print("clicked:", e.data["record"]))
+# <<ItemClick>>: event.data is the record dict
+lv.on_item_click(lambda e: print("clicked:", e.data))
 ```
 
 Available events:
 
-- `<<SelectionChange>>` — selection changed (`event.data = None`)
-- `<<ItemClick>>` — row clicked (`event.data = {'record': dict}`)
-- `<<ItemDelete>>` / `<<ItemDeleteFail>>` — item removed (no event data currently)
-- `<<ItemInsert>>` / `<<ItemUpdate>>` — item added/updated (no event data currently)
-- `<<ItemDragStart>>` / `<<ItemDrag>>` / `<<ItemDragEnd>>` — drag lifecycle
+- `<<SelectionChange>>` — selection changed; `event.data = None` (use `get_selected()`)
+- `<<ItemClick>>` — row clicked; `event.data = dict` (the record, with `selected`,
+  `focused`, `item_index` injected)
+- `<<ItemDelete>>` — item removed; `event.data = dict` (the deleted record, with at
+  least `id`)
+- `<<ItemDeleteFail>>` — removal failed; `event.data = dict` (the record plus an
+  `error: str` key)
+- `<<ItemInsert>>` — item added via `lv.insert_item(...)`; `event.data = dict` (the
+  inserted record, with `id` populated)
+- `<<ItemUpdate>>` — item changed via `lv.update_item(...)`; `event.data = dict` (the
+  patch dict, with `id`)
+- `<<ItemDragStart>>` — `event.data = dict` (the record)
+- `<<ItemDrag>>` — `event.data = dict` (record + `source_index`, `target_index`,
+  `y_current`)
+- `<<ItemDragEnd>>` — `event.data = dict` (record + `source_index`, `target_index`,
+  `moved`, `y_start`, `y_end`)
 
 All `on_*` methods return a bind ID for unsubscribing:
 
@@ -204,39 +296,77 @@ bid = lv.on_selection_changed(on_sel)
 lv.off_selection_changed(bid)
 ```
 
+### Keyboard navigation
+
+When `enable_focus=True` (the default), arrow keys navigate between rows:
+
+| Key | Action |
+|---|---|
+| `<Down>` | Move focus to the next item; scrolls if needed |
+| `<Up>` | Move focus to the previous item; scrolls if needed |
+| `<Space>` | Activate the focused item (fires `<<ItemClick>>` and toggles selection in `single`/`multi` mode) |
+
+Focus is tracked at the data layer (by record ID), so a focused record stays focused
+even when its row widget is recycled during scroll. Custom rows that subclass
+`ListItem` inherit this for free.
+
+Use `focus_color=` to set the indicator color, or `enable_focus=False` to disable
+keyboard navigation.
+
+### Runtime configuration
+
+A handful of constructor parameters are also mutable at runtime via `.configure(...)`:
+
+```python
+lv.configure(selection_mode="multi")
+lv.configure(scrollbar_visibility="never")
+lv.configure(striped=True, striped_background="background[+1]")
+```
+
+Changing `selection_mode` rebuilds the row pool so rows pick up the new behavior.
+
 ### Public API
 
 ```python
-lv.get_selected()              # list of selected records
+lv.get_selected()              # list of selected record IDs
 lv.clear_selection()
 lv.select_all()                # multi mode only
 
-lv.insert_item({"id": 99, "title": "New"})
+lv.insert_item({"title": "New"})
 lv.update_item(record_id, {"title": "Updated"})
+lv.delete_item(record_id)
 
 lv.scroll_to_top()
 lv.scroll_to_bottom()
 
+lv.reload()                    # refresh visible rows from the datasource
+
 ds = lv.get_datasource()       # access the underlying DataSource
-ds.reload()                    # reload from datasource
-ds.set_data(new_list)          # replace all data
 ```
 
 ---
 
 ## Dynamic data
 
-ListView has no signal binding for `items=`. Drive dynamic updates through the datasource:
+`ListView` has no signal binding for `items=`. Drive dynamic updates through the
+widget API:
 
 ```python
 lv = bs.ListView(app, items=[])
+
+lv.insert_item({"title": "New item"})
+lv.update_item(record_id, {"title": "Renamed"})
+lv.delete_item(record_id)
+
+lv.reload()                    # after external changes to the datasource
+```
+
+For bulk replacement, work with the datasource directly and refresh:
+
+```python
 ds = lv.get_datasource()
-
-# Add a record
-ds.create_record({"id": 1, "title": "New item"})
-
-# Or replace all data
-ds.set_data(new_list)
+ds.set_data(new_list)          # MemoryDataSource only
+lv.reload()
 ```
 
 ---
