@@ -56,8 +56,6 @@ class ListView(Frame):
             scrollbar_visibility: Literal['always', 'never'] = 'always',
             enable_focus: bool = True,
             enable_hover: bool = True,
-            focus_color: str = None,
-            selected_background: str = 'primary',
             select_on_click: bool = None,
             density: Literal['default', 'compact'] = 'default',
             **kwargs
@@ -80,15 +78,21 @@ class ListView(Frame):
                 'never' to hide (mousewheel only). Defaults to 'always'.
             enable_focus: Whether items can receive keyboard focus.
             enable_hover: Whether items show hover state.
-            focus_color: Color for the focus indicator.
-            selected_background: Background color for selected items.
             select_on_click: Whether clicking an item selects it. Defaults to True when
                 selection_mode is 'single' or 'multi', False otherwise. Can be explicitly
                 set to override the default behavior.
             density: Visual density ('default' or 'compact'). Defaults to 'default'.
             **kwargs: Additional keyword arguments forwarded to `Frame`.
         """
+        # Capture user-provided accent for row propagation and the drag indicator.
+        # super().__init__ runs through the bootstyle wrapper which sets self._accent
+        # to whatever's in kwargs (None if absent), so we re-assert with a 'primary'
+        # fallback after super() completes.
+        _user_accent = kwargs.get('accent')
+
         super().__init__(master, variant='container', ttk_class='ListView.TFrame', **kwargs)
+
+        self._accent = _user_accent or 'primary'
 
         # Cache the windowing system so scroll bindings can dispatch
         # platform-correctly: Aqua/Win send <MouseWheel>, X11 sends
@@ -108,8 +112,6 @@ class ListView(Frame):
         self._enable_hover = enable_hover
         self._striped = striped
         self._striped_background = striped_background
-        self._focus_color = focus_color
-        self._selected_background = selected_background
         self._density = density
 
         # Virtual scrolling state
@@ -285,8 +287,7 @@ class ListView(Frame):
                 show_separator=self._show_separator,
                 focusable=self._enable_focus,
                 hoverable=self._enable_hover,
-                focus_color=self._focus_color,
-                selected_background=self._selected_background,
+                accent=self._accent,
                 density=self._density
             )
 
@@ -959,7 +960,7 @@ class ListView(Frame):
     def _show_drag_indicator(self) -> None:
         """Create and show the drag drop indicator line."""
         if self._drag_indicator is None:
-            self._drag_indicator = Frame(self._container, accent=self._selected_background)
+            self._drag_indicator = Frame(self._container, accent=self._accent)
 
     def _update_drag_indicator_position(self, target_index: int) -> None:
         """Update the drag indicator to show drop location."""
