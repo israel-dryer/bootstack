@@ -335,7 +335,3 @@ lv.reload()
 - [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
-
-### API reference
-
-- [`bootstack.ListView`](../../reference/widgets/ListView.md)

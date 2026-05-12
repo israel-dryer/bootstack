@@ -318,7 +318,3 @@ tv.reload()
 - [Signals](../../guides/reactivity.md) — reactive data binding
 
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
-
-### API reference
-
-- [`bootstack.TableView`](../../reference/widgets/TableView.md)

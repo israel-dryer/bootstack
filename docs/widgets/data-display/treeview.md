@@ -339,7 +339,3 @@ datasource, built-in pagination).
 
 - [Data Tables](../../guides/data-tables.md) — TreeView vs TableView guidance
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-### API reference
-
-- [`bootstack.TreeView`](../../reference/widgets/TreeView.md)

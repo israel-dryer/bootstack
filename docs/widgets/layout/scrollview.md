@@ -163,7 +163,3 @@ for i in range(20):
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.ScrollView`](../../reference/widgets/ScrollView.md)

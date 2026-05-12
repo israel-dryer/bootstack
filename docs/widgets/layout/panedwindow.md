@@ -140,7 +140,3 @@ Use the ttk panedwindow API (varies by implementation/version).
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.PanedWindow`](../../reference/widgets/PanedWindow.md)

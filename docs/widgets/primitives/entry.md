@@ -168,7 +168,3 @@ If you want user-friendly validation messages and commit-based validation, prefe
 - [Events and Signals](../../guides/reactivity.md)
 
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.Entry`](../../reference/widgets/Entry.md)

@@ -235,7 +235,3 @@ tabs.bind("<<TabSelect>>", lambda e: print("Tab selected"))
 - [Notebook](../views/notebook.md) - traditional tabbed container
 
 - [SideNav](sidenav.md) - vertical navigation list
-
-### API reference
-
-- [`bootstack.Tabs`](../../reference/widgets/Tabs.md)

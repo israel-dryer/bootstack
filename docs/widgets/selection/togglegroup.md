@@ -230,7 +230,3 @@ group.add("List", value="list")
 - [Design System](../../design-system/index.md) — color tokens and theming
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — internationalizing widget text
-
-### API reference
-
-- [`bootstack.ToggleGroup`](../../reference/widgets/ToggleGroup.md)

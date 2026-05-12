@@ -129,7 +129,3 @@ count.set(10)   # badge updates automatically
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
 - [Localization](../../guides/localization.md) — translation support
-
-### API reference
-
-- [`bootstack.Badge`](../../reference/widgets/Badge.md)

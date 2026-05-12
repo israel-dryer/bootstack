@@ -204,7 +204,3 @@ p.add_validation_rule("custom",
 - [TextEntry](textentry.md) — general-purpose field control
 - [SelectBox](../selection/selectbox.md) — choose from known values instead of browsing
 - [Form](../forms/form.md) — build complete forms with path fields
-
-### API reference
-
-- [`bootstack.PathEntry`](../../reference/widgets/PathEntry.md)

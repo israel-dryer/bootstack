@@ -308,7 +308,3 @@ budget.subscribe(lambda v: print("budget changed:", v))
 - [Formatting](../../guides/formatting.md) — number presets, precision, and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.NumericEntry`](../../reference/widgets/NumericEntry.md)

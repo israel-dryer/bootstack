@@ -177,7 +177,3 @@ For validated, commit-based workflows, prefer [SpinnerEntry](../inputs/spinneren
 ### Framework concepts
 
 - [Events and Signals](../../guides/reactivity.md)
-
-### API reference
-
-- [`bootstack.Spinbox`](../../reference/widgets/Spinbox.md)

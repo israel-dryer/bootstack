@@ -232,7 +232,3 @@ tabview.on_page_changed(on_page_change)
 - [Notebook](notebook.md) - traditional ttk tabbed container
 
 - [PanedWindow](../layout/panedwindow.md) - resizable multi-view layouts
-
-### API reference
-
-- [`bootstack.TabView`](../../reference/widgets/TabView.md)

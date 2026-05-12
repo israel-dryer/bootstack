@@ -223,7 +223,3 @@ It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 - [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.Calendar`](../../reference/widgets/Calendar.md)

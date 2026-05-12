@@ -15,19 +15,6 @@ class SelectBox(Field):
 
     Renders a field with a suffix button that opens a popup list of available
     items. Selecting an item updates the field value and emits `<<Change>>`.
-
-    !!! note "Events"
-
-          `<<Change>>`: Fired when the selection changes (user or code).
-          Provides `event.data` with keys: `value`, `prev_value`, `text`.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying entry widget.
-        label_widget (Label): The label widget.
-        message_widget (Label): The message label widget.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(

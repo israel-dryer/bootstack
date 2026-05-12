@@ -238,7 +238,3 @@ For `on_tab_changed(...)`, `event.data` includes:
 - [Frame](../layout/frame.md) - common tab page container
 
 - [PanedWindow](../layout/panedwindow.md) - split layouts often paired with view switching
-
-### API reference
-
-- [`bootstack.Notebook`](../../reference/widgets/Notebook.md)

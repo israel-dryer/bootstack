@@ -92,27 +92,6 @@ class Field(EntryMixin, Frame):
     The widget automatically handles layout, focus states, validation feedback, and
     provides a consistent API for all entry-based components. It supports both text
     and numeric input types through the `kind` parameter.
-
-    !!! note "Events"
-
-        - `<<Input>>`: Triggered on each keystroke.
-          Provides `event.data` with keys: `text`.
-
-        - `<<Change>>`: Triggered when value changes after commit.
-          Provides `event.data` with keys: `value`, `prev_value`, `text`.
-
-        - `<<Valid>>`: Triggered when validation passes.
-          Provides `event.data` with keys: `value`, `is_valid` (True), `message`.
-
-        - `<<Invalid>>`: Triggered when validation fails.
-          Provides `event.data` with keys: `value`, `is_valid` (False), `message`.
-
-        - `<<Validate>>`: Triggered after any validation.
-          Provides `event.data` with keys: `value`, `is_valid` (bool), `message`.
-
-    Attributes:
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
@@ -267,10 +246,6 @@ class Field(EntryMixin, Frame):
         self.on_validated = self._entry.on_validated
         self.off_validated = self._entry.off_validated
 
-        # entry state
-        self.variable = self._entry.textvariable
-        self.signal = self._entry.textsignal
-
         # enty validation
         _add_rule = self._entry.add_validation_rule
         _add_rules = self._entry.add_validation_rules
@@ -334,6 +309,16 @@ class Field(EntryMixin, Frame):
     def addons(self):
         """Get the dictionary of inserted addon widgets"""
         return self._addons
+
+    @property
+    def variable(self):
+        """Tkinter Variable linked to the entry text."""
+        return self._entry.textvariable
+
+    @property
+    def signal(self):
+        """Signal linked to the entry text for reactive updates."""
+        return self._entry.textsignal
 
     @configure_delegate
     def _config_accent(self, value=None):

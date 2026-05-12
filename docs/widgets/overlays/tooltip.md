@@ -95,7 +95,3 @@ Tooltips can be styled using the `accent` parameter (if supported).
 ### Framework concepts
 
 - [Widgets](../index.md) — overview of all widgets
-
-### API reference
-
-- [`bootstack.Tooltip`](../../reference/widgets/ToolTip.md)

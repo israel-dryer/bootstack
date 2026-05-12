@@ -145,7 +145,3 @@ level.set(90)   # gauge updates
 ### Framework concepts
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-### API reference
-
-- [`bootstack.FloodGauge`](../../reference/widgets/FloodGauge.md)

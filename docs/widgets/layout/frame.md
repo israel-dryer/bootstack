@@ -139,7 +139,3 @@ pane.pack_propagate(False)
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Frame`](../../reference/widgets/Frame.md)

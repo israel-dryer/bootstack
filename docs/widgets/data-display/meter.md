@@ -176,7 +176,3 @@ meter.off_changed(bind_id)
 ### Framework concepts
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
-
-### API reference
-
-- [`bootstack.Meter`](../../reference/widgets/Meter.md)

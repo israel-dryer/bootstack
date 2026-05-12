@@ -267,7 +267,3 @@ Typing is always allowed unless the field is set to readonly.
 - [TextEntry](textentry.md) — general field control
 - [Scale](scale.md) — slider-based numeric adjustment
 - [Form](../forms/form.md) — build forms from field definitions
-
-### API reference
-
-- [`bootstack.SpinnerEntry`](../../reference/widgets/SpinnerEntry.md)

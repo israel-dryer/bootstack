@@ -96,7 +96,3 @@ Toast supports different visual intents through the `accent` parameter:
 ### Framework concepts
 
 - [Widgets](../index.md) — overview of all widgets
-
-### API reference
-
-- [`bootstack.Toast`](../../reference/widgets/Toast.md)

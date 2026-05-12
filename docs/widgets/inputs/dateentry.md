@@ -346,7 +346,3 @@ entry = bs.DateEntry(app, label="Start date", textsignal=start)
 - [Formatting](../../guides/formatting.md) — date presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.DateEntry`](../../reference/widgets/DateEntry.md)

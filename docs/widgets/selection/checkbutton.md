@@ -233,7 +233,3 @@ enabled.subscribe(lambda v: print("value:", v))
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — text translation
 - [Design System → Variants](../../design-system/variants.md) — color tokens and variants
-
-### API reference
-
-- [`bootstack.CheckButton`](../../reference/widgets/CheckButton.md)

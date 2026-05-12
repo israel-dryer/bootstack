@@ -167,6 +167,5 @@ bs.MenuButton(app, text="menu.file", menu=bs.create_menu(items)).pack()
 
 ### API reference
 
-- [`bootstack.MenuButton`](../../reference/widgets/MenuButton.md)
 - [`bootstack.create_menu`](../../reference/app/create_menu.md)
 - [`bootstack.MenuManager`](../../reference/app/MenuManager.md)

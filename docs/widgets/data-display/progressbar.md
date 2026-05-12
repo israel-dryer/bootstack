@@ -135,7 +135,3 @@ progress.set(50)   # progressbar updates automatically
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.Progressbar`](../../reference/widgets/Progressbar.md)

@@ -122,7 +122,3 @@ bs.Scrollbar(app, orient="vertical", command=widget.yview)
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Scrollbar`](../../reference/widgets/Scrollbar.md)

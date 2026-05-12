@@ -4,282 +4,236 @@ title: SelectBox
 
 # SelectBox
 
-`SelectBox` is a **selection control** that lets users pick **one value from a list** using a field-like dropdown.
-It can optionally support **search filtering** and **custom (user-typed) values**.
+`SelectBox` is a selection control that lets users pick one value from a list using a field-like dropdown.
 
-Use `SelectBox` when you want a modern select experience (popup list + optional search) while keeping consistent
-field patterns like labels, messages, and validation.
+=== "Usage"
 
----
+    ```python
+    import bootstack as bs
 
-## Quick start
+    app = bs.App()
 
-```python
-import bootstack as bs
+    sb = bs.SelectBox(
+        app,
+        label="Status",
+        items=["New", "In Progress", "Blocked", "Done"],
+        value="New",
+    )
+    sb.pack(fill="x", padx=20, pady=20)
 
-app = bs.App()
+    app.mainloop()
+    ```
 
-sb = bs.SelectBox(
-    app,
-    label="Status",
-    items=["New", "In Progress", "Blocked", "Done"],
-    value="New",
-)
-sb.pack(fill="x", padx=20, pady=20)
+    <div class="app-window">
+        <img src="../../assets/widgets-selectbox-quickstart.png" alt="SelectBox quickstart"/>
+    </div>
 
-app.mainloop()
-```
+    ## When to use
 
-<div class="app-window">
-    <img src="../../assets/widgets-selectbox-quickstart.png" alt="SelectBox Quickstart"/>
-</div>
+    Use `SelectBox` when:
 
----
+    - users should pick one value from a known list
+    - search or filtering improves usability
+    - you want a field-like dropdown with consistent form patterns
 
-## When to use
+    ### Consider a different control when...
 
-Use `SelectBox` when:
+    - you want a simpler, menu-based selector — use [OptionMenu](optionmenu.md)
+    - you need single selection among visible options — use [RadioGroup](radiogroup.md)
+    - you need direct access to the low-level combobox primitive — use [Combobox](../primitives/combobox.md)
 
-- users should pick one value from a known list
-- search or filtering improves usability
-- you want a field-like dropdown with consistent form patterns
+    ## Common options
 
-### Consider a different control when...
+    | Option | Purpose |
+    |---|---|
+    | `items` | Sequence of string options shown in the popup. |
+    | `value` | Initial selected value; should usually appear in `items`. |
+    | `label` | Optional label rendered above the field. |
+    | `message` | Optional helper or error message rendered below the field. |
+    | `enable_search` | If `True`, typing filters the popup list. |
+    | `allow_custom_values` | If `True`, the entry is editable and accepts off-list values. |
+    | `show_dropdown_button` | Show the dropdown affordance (forced on with custom values). |
+    | `dropdown_button_icon` | Icon name for the dropdown button. Defaults to `"chevron-down"`. |
+    | `accent` | Accent token for the focus ring and active border. |
+    | `density` | `"default"` or `"compact"`. |
 
-- you want a simpler, menu-based selector — use [OptionMenu](optionmenu.md)
-- you need single selection among visible options — use [RadioGroup](radiogroup.md)
-- you need direct access to the low-level combobox primitive — use [Combobox](../primitives/combobox.md)
+    ## Value model
 
----
+    | Concept | Where it lives |
+    |---|---|
+    | Text shown in the entry | `sb.entry_widget.get()` |
+    | Committed value | `sb.value` |
 
-## Appearance
+    Selecting from the popup updates `value` and emits `<<Change>>`. The text in the entry mirrors the committed value for strict pickers; when `allow_custom_values=True` the displayed text can diverge until the user commits.
 
-`SelectBox` is primarily a single pattern (field + popup list). The most meaningful variation is whether
-it behaves as a strict picker or an editable picker — see **Allowing custom values** below.
+    ```python
+    print("Current:", sb.value)
+    sb.value = "In Progress"
+    ```
 
-```python
-bs.SelectBox(app, label="Status", items=["New", "Done"], accent="secondary")
-```
+    ## Items and values
 
-Use `density='compact'` for dense form layouts:
+    Update the list at runtime via `configure(items=...)`:
 
-```python
-bs.SelectBox(app, label="Status", items=["New", "Done"], density="compact")
-```
+    ```python
+    sb.configure(items=["Low", "Medium", "High"])
+    ```
 
-!!! link "See [Design System](../../design-system/index.md) for theming details, color tokens, and styling guidelines."
+    Get or set the selection by index with `selected_index`:
 
----
+    ```python
+    sb.selected_index = 2       # select third item
+    print(sb.selected_index)    # -1 if value not in items
+    ```
 
-## Examples and patterns
+    !!! note "`selected_index` edge cases"
+        Setting to `None` clears the selection. Setting to an out-of-range integer raises `IndexError`.
 
-### How the value works
+    ## State
 
-- `items` defines the available choices shown in the popup
-- `value` is the committed selection
+    `SelectBox` supports the standard Field state methods:
 
-When the user selects from the popup, `SelectBox` updates `value` and emits `<<Change>>`.
+    ```python
+    sb.disable()
+    sb.enable()
+    sb.readonly(True)
+    ```
 
-```python
-print("Current:", sb.value)
-sb.value = "In Progress"
-```
+    `state="disabled"` and `state="readonly"` work as constructor kwargs too.
 
-### Common options
+    ## Add-ons
 
-#### `items`
+    `SelectBox` inherits `insert_addon()` from Field. The internal dropdown button is added as an addon named `"dropdown"` at position `"after"`. You can insert additional prefix or suffix addons alongside it — give yours a different name to avoid colliding with the internal one.
 
-```python
-sb.configure(items=["Low", "Medium", "High"])
-```
+    ```python
+    sb = bs.SelectBox(app, label="Status", items=["New", "Done"])
 
-#### `value`
+    # Prefix icon
+    sb.insert_addon(bs.Label, position="before", name="status-icon", icon="circle-fill")
 
-```python
-sb.value = "Medium"
-```
+    # Extra suffix action (appears further right than the internal dropdown)
+    sb.insert_addon(
+        bs.Button,
+        position="after",
+        name="refresh",
+        icon="arrow-clockwise",
+        icon_only=True,
+        command=lambda: sb.configure(items=fetch_items()),
+    )
+    ```
 
-#### `selected_index`
+    Accepted addon types are `bs.Button`, `bs.Label`, and `bs.CheckToggle`. Retrieve any addon by name via `sb.addons["name"]`. See [TextEntry add-ons](../inputs/textentry.md#add-ons) for the full surface.
 
-Get or set selection by index.
+    ## Search and filtering
 
-```python
-sb.selected_index = 2       # select third item
-print(sb.selected_index)    # -1 if value not in items
-```
+    When `enable_search=True`:
 
-!!! note "`selected_index` edge cases"
-    Setting to `None` clears the selection. Setting to an out-of-range integer raises `IndexError`.
+    - typing filters the popup list
+    - the first matching item is highlighted automatically
+    - closing without explicit selection commits the first match (when `allow_custom_values=False`)
 
-#### `enable_search`
+    ```python
+    bs.SelectBox(
+        app,
+        label="Assignee",
+        items=["Alice", "Bob", "Charlie", "Diana"],
+        enable_search=True,
+    )
+    ```
 
-```python
-sb = bs.SelectBox(
-    app, 
-    label="Assignee",
-    items=["Alice", "Bob", "Charlie", "Diana"],
-    enable_search=True
-)
-```
+    ## Custom values
 
-#### `allow_custom_values`
+    When `allow_custom_values=True`:
 
-```python
-sb = bs.SelectBox(
-    app, 
-    label="Tag",
-    items=["Bug", "Feature", "Docs"],
-    allow_custom_values=True
-)
-```
+    - the entry becomes editable
+    - the dropdown button is always shown
+    - typed text is kept even if it doesn't match an item
 
-Both `enable_search` and `allow_custom_values` can be toggled at runtime:
+    ```python
+    bs.SelectBox(
+        app,
+        label="Tag",
+        items=["Bug", "Feature", "Docs"],
+        allow_custom_values=True,
+    )
+    ```
 
-```python
-sb.configure(enable_search=True)
-sb.configure(allow_custom_values=True)
-```
+    ## Events
 
-#### Dropdown button options
+    ```python
+    def on_changed(event):
+        print("Changed:", event.data["value"])
+        print("Previous:", event.data["prev_value"])
 
-```python
-sb = bs.SelectBox(
-    app, 
-    label="Priority", 
-    items=["Low", "Medium", "High"],
-    show_dropdown_button=True, 
-    dropdown_button_icon="chevron-down"
-)
-```
+    bind_id = sb.on_changed(on_changed)
+    sb.off_changed(bind_id)
+    ```
 
-!!! note "Using custom values"
-    `show_dropdown_button` is forced on when `allow_custom_values=True`.
-    The default icon is `"chevron-down"`.
+    | Event | When it fires |
+    |---|---|
+    | `<<Change>>` | Selection changes (user or code). `event.data` carries `value`, `prev_value`, `text`. |
 
-### Events
+    ## Validation
 
-```python
-def on_changed(event):
-    print("Changed:", event.data["value"])
-    print("Previous:", event.data["prev_value"])
+    When `allow_custom_values=False`, values are constrained to `items`. Add explicit rules with the standard Field validation API:
 
-bind_id = sb.on_changed(on_changed)
-sb.off_changed(bind_id)
-```
+    ```python
+    sb.add_validation_rule("required", message="Please select a status")
+    ```
 
-The event name is `<<Change>>`. The callback receives a Tkinter event object with `event.data` keys:
-`value`, `prev_value`, `text`.
+    !!! link "See [Validation](../../guides/validation.md) for rules, triggers, and patterns."
 
-### Binding to signals or variables
+    ## Keyboard navigation
 
-Use `textsignal=` for reactive two-way binding:
+    The popup opens on dropdown-button click. When the field is readonly (no search, no custom values), clicking the entry area also opens it.
 
-```python
-status = bs.Signal("New")
+    When the popup is open:
 
-sb = bs.SelectBox(
-    app, 
-    label="Status",
-    items=["New", "In Progress", "Done"],
-    textsignal=status
-)
+    | Key | Action |
+    |---|---|
+    | Arrow Up / Down | Navigate items |
+    | Enter | Select highlighted item |
+    | Tab | Select highlighted item (search mode) |
+    | Escape | Close without selecting |
 
-status.subscribe(lambda v: print("status:", v))
-```
+    Clicking outside also closes the popup.
 
-### Validation and constraints
+    ## Reactivity
 
-When `allow_custom_values=False`, values are constrained to `items`. Additional rules:
+    Use `textsignal=` for reactive two-way binding to the displayed text:
 
-```python
-sb.add_validation_rule("required", message="Please select a status")
-```
+    ```python
+    status = bs.Signal("New")
 
----
+    sb = bs.SelectBox(
+        app,
+        label="Status",
+        items=["New", "In Progress", "Done"],
+        textsignal=status,
+    )
 
-## Behavior
+    status.subscribe(lambda v: print("status:", v))
+    ```
 
-### Opening the popup
+    !!! link "See [Reactivity](../../guides/reactivity.md) for signal patterns."
 
-The popup opens when:
+    ## Localization
 
-- the dropdown button is clicked
-- the field is readonly and the user clicks the entry area (default when search and custom values are off)
+    The field label follows the global field localization rules.
 
-### Search and filtering
+    !!! link "See [Localization](../../guides/localization.md) for internationalization patterns."
 
-When `enable_search=True`:
+    ## See also
 
-- typing filters the popup list
-- the first matching item is highlighted automatically
-- closing without explicit selection commits the first match (when `allow_custom_values=False`)
+    - [OptionMenu](optionmenu.md) — simple menu-based selection control
+    - [Combobox](../primitives/combobox.md) — classic ttk dropdown with optional typing
+    - [RadioGroup](radiogroup.md) — single selection among visible options
+    - [Form](../forms/form.md) — declarative selection fields
+    - [Validation guide](../../guides/validation.md)
+    - [Reactivity guide](../../guides/reactivity.md)
 
-### Allowing custom values
+=== "API"
 
-When `allow_custom_values=True`:
-
-- the entry becomes editable
-- the dropdown button is always shown
-- typed text is kept even if it doesn't match an item
-
-### Keyboard navigation
-
-When the popup is open:
-
-| Key | Action |
-|---|---|
-| **Arrow Up / Down** | Navigate items |
-| **Enter** | Select highlighted item |
-| **Tab** | Select highlighted item (search mode) |
-| **Escape** | Close without selecting |
-
-Clicking outside also closes the popup.
-
----
-
-## Localization
-
-The field label follows your global field localization rules.
-
-!!! link "See [Localization](../../guides/localization.md) for details on internationalizing your application."
-
----
-
-## Reactivity
-
-Bind a `signal=` (preferred) or `variable=` to drive the selected value from outside, or subscribe to react to user changes:
-
-```python
-status = bs.Signal("New")
-
-sb = bs.SelectBox(
-    app, 
-    label="Status", 
-    items=["New", "Done"], 
-    signal=status
-)
-status.subscribe(lambda v: print("status now:", v))
-```
-
-!!! link "See [Reactivity](../../guides/reactivity.md) for reactive programming patterns and state management."
-
----
-
-## Additional resources
-
-### Related widgets
-
-- [OptionMenu](optionmenu.md) — simple menu-based selection control
-- [Combobox](../primitives/combobox.md) — classic ttk dropdown + optional typing
-- [RadioGroup](radiogroup.md) — single selection among visible options
-- [CheckButton](checkbutton.md) — independent multi-selection
-- [Form](../forms/form.md) — generate selection fields declaratively
-
-### Framework concepts
-
-- [Validation](../../guides/validation.md) — form and field validation patterns
-- [Reactivity](../../guides/reactivity.md) — handling widget events
-
-### API reference
-
-- [`bootstack.SelectBox`](../../reference/widgets/SelectBox.md)
+    ::: bootstack.widgets.composites.selectbox.SelectBox
+        options:
+          inherited_members: true

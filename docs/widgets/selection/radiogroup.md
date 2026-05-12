@@ -225,7 +225,3 @@ group.pack(padx=20, pady=20)
 - [Design System](../../design-system/index.md) — colors, themes, and styling
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — internationalization support
-
-### API reference
-
-- [`bootstack.RadioGroup`](../../reference/widgets/RadioGroup.md)

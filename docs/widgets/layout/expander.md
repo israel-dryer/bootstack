@@ -240,7 +240,3 @@ exp.configure(icon_expanded={'name': 'caret-up', 'size': 14})
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Expander`](../../reference/widgets/Expander.md)

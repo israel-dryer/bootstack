@@ -247,7 +247,3 @@ label.set("Stop")
 - [Icons & Imagery](../../guides/icons.md)
 - [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.Button`](../../reference/widgets/Button.md)

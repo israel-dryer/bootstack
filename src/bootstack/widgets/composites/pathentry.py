@@ -39,27 +39,6 @@ class PathEntry(Field):
     chooser dialog, and displays the selected path(s) in the entry field. The
     widget supports various dialog types including single file selection, multiple
     file selection, directory selection, and save file dialogs.
-
-    !!! note "Events"
-
-        `<<Change>>`: Fired when a path is selected from the dialog.
-          Provides `event.data` with keys: `value`, `prev_value`, `text`, `dialog_result`.
-
-        `<<Input>>`: Fired when user manually types in the entry.
-
-        `<<Valid>>`: Fired when validation passes.
-
-        `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry (from FieldOptions).
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
-        dialog_result (Any): The raw result from the last file dialog operation.
-        dialog_button (Button): The button widget that opens the dialog.
     """
 
     def __init__(

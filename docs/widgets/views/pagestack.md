@@ -235,7 +235,3 @@ Navigation events include:
 - [Frame](../layout/frame.md) - typical page container
 
 - [PanedWindow](../layout/panedwindow.md) - resizable multi-view layouts
-
-### API reference
-
-- [`bootstack.PageStack`](../../reference/widgets/PageStack.md)

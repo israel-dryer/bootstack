@@ -243,3 +243,18 @@
   }
 }
 
+/* =============================================================
+   Tabbed content spacing
+   Give the active tab panel a top buffer so the first piece of
+   content (code fence, mkdocstrings output, table, etc.) doesn't
+   sit flush against the tab strip.
+   ============================================================= */
+
+.md-typeset .tabbed-content {
+  padding-top: 1rem;
+}
+
+.md-typeset .tabbed-content > :first-child {
+  margin-top: 0;
+}
+

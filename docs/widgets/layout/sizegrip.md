@@ -92,7 +92,3 @@ a UX hint.
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.SizeGrip`](../../reference/widgets/SizeGrip.md)

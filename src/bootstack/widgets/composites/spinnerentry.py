@@ -19,21 +19,6 @@ class SpinnerEntry(Field):
     SpinnerEntry extends the Field widget to provide a spinbox input that can
     handle both predefined text values and numeric ranges. The widget includes
     built-in up/down arrow buttons and supports keyboard/mouse wheel interaction.
-
-    !!! note "Events"
-
-        - `<<Change>>`  : Fired when value changes after commit.
-        - `<<Input>>`   : Fired on each keystroke.
-        - `<<Valid>>`   : Fired when validation passes.
-        - `<<Invalid>>` : Fired when validation fails.
-
-    Attributes:
-        entry_widget (SpinnerEntryPart): The underlying spinbox entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(

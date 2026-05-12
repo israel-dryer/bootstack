@@ -181,7 +181,3 @@ message.set("Updated text")   # label updates automatically
 - [Formatting](../../guides/formatting.md) — value_format presets and patterns
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
 - [Localization](../../guides/localization.md) — translation support
-
-### API reference
-
-- [`bootstack.Label`](../../reference/widgets/Label.md)

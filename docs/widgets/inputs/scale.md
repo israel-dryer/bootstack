@@ -148,7 +148,3 @@ scale = bs.Scale(app, from_=0, to=100, value=50, command=on_change)
 - [SpinnerEntry](spinnerentry.md) — numeric stepping with typing
 - [Progressbar](../data-display/progressbar.md) — displays progress, not user input
 - [Meter](../data-display/meter.md) — displays proportional values
-
-### API reference
-
-- [`bootstack.Scale`](../../reference/widgets/Scale.md)

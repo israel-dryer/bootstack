@@ -216,7 +216,3 @@ bs.RadioButton(app, text="High",   variable=choice, value="high")
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — text translation
 - [Design System → Variants](../../design-system/variants.md) — color tokens and variants
-
-### API reference
-
-- [`bootstack.RadioButton`](../../reference/widgets/RadioButton.md)

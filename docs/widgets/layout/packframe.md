@@ -202,7 +202,3 @@ btn.pack_forget()
 
 - [Layout Properties](../../guides/layout.md)
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.PackFrame`](../../reference/widgets/PackFrame.md)

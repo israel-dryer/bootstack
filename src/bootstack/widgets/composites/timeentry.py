@@ -22,21 +22,6 @@ class TimeEntry(SelectBox):
     TimeEntry extends SelectBox to provide specialized time input with
     locale-aware formatting and a searchable dropdown of time intervals.
     The widget supports various time format presets and custom time patterns.
-
-    !!! note "Events"
-
-        - `<<Change>>`: Fired when time value changes after commit.
-        - `<<Input>>`: Fired on each keystroke.
-        - `<<Valid>>`: Fired when validation passes.
-        - `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(

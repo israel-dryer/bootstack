@@ -244,7 +244,3 @@ entry = bs.PasswordEntry(app, label="Password", textsignal=password)
 
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.PasswordEntry`](../../reference/widgets/PasswordEntry.md)

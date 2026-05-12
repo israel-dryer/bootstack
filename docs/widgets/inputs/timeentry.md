@@ -196,7 +196,3 @@ entry = bs.TimeEntry(app, label="Alarm", textsignal=alarm)
 - [Formatting](../../guides/formatting.md) — time presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.TimeEntry`](../../reference/widgets/TimeEntry.md)

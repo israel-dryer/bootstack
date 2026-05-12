@@ -19,23 +19,6 @@ class NumericEntry(Field):
 
     Extends Field to provide numeric input with spin buttons, bounds validation,
     keyboard stepping (Up/Down arrows), mouse wheel support, and optional wrapping.
-
-    !!! note "Events"
-
-        - `<<Increment>>`: Fired when increment is requested (before step occurs).
-        - `<<Decrement>>`: Fired when decrement is requested (before step occurs).
-        - `<<Change>>`: Fired when value changes after commit.
-        - `<<Input>>`: Fired on each keystroke.
-        - `<<Valid>>`: Fired when validation passes.
-        - `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (NumberEntryPart): The underlying entry widget.
-        label_widget (Label): The label widget.
-        message_widget (Label): The message label widget.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(

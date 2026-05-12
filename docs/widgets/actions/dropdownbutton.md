@@ -182,8 +182,3 @@ bs.DropdownButton(app, text="button.file", items=items).pack()
 - [Icons & Imagery](../../guides/icons.md)
 - [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.DropdownButton`](../../reference/widgets/DropdownButton.md)
-- [`bootstack.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)

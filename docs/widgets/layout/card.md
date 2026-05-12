@@ -83,7 +83,3 @@ card2.pack(side="left", fill="both", expand=True, padx=(5, 0))
 - [LabelFrame](labelframe.md) - container with a titled border
 
 - [Expander](expander.md) - collapsible container
-
-### API reference
-
-- [`bootstack.Card`](../../reference/widgets/Card.md)

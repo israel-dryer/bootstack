@@ -174,7 +174,3 @@ SideNav uses a shared `Variable` for radio-group selection across all items. Sel
 - [Tabs](tabs.md) - horizontal tab navigation
 
 - [PageStack](../views/pagestack.md) - page content management
-
-### API reference
-
-- [`bootstack.SideNav`](../../reference/widgets/SideNav.md)

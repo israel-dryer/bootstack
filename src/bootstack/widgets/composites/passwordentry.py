@@ -18,22 +18,6 @@ class PasswordEntry(Field):
     including character masking and a toggle button to temporarily reveal the password.
     The widget automatically inserts a visibility toggle button (eye icon) that shows
     the password while pressed and hides it when released.
-
-    !!! note "Events"
-
-        - `<<Input>>`: Triggered on each keystroke.
-        - `<<Change>>`: Triggered when value changes after commit.
-        - `<<Valid>>`: Triggered when validation passes.
-        - `<<Invalid>>`: Triggered when validation fails.
-        - `<<Validate>>`: Triggered after any validation.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(

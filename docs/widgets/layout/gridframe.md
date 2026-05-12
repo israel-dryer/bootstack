@@ -222,7 +222,3 @@ grid.configure_column(1, weight=2, minsize=100)
 
 - [Layout Properties](../../guides/layout.md)
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.GridFrame`](../../reference/widgets/GridFrame.md)

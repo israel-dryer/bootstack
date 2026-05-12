@@ -405,7 +405,3 @@ entry.signal.subscribe(lambda val: print("changed to:", val))
 - [Formatting](../../guides/formatting.md) — value_format presets, patterns, and locale-aware formatting
 - [Localization](../../guides/localization.md) — internationalization and language switching
 - [Reactivity](../../guides/reactivity.md) — signals and reactive data binding
-
-### API reference
-
-- [`bootstack.TextEntry`](../../reference/widgets/TextEntry.md)

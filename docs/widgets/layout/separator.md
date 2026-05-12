@@ -118,7 +118,3 @@ bs.Separator(app, orient="vertical")
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Separator`](../../reference/widgets/Separator.md)

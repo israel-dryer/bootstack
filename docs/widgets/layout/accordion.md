@@ -229,7 +229,3 @@ accordion.on_accordion_changed(on_accordion_changed)
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Accordion`](../../reference/widgets/Accordion.md)

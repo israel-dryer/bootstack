@@ -180,7 +180,3 @@ bg.configure(accent="danger", variant="outline")
 - [Design System → Variants](../../design-system/variants.md)
 - [Icons & Imagery](../../guides/icons.md)
 - [State & Interaction](../../guides/reactivity.md)
-
-### API reference
-
-- [`bootstack.ButtonGroup`](../../reference/widgets/ButtonGroup.md)

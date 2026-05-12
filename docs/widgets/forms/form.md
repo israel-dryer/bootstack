@@ -342,7 +342,3 @@ Form data can be bound to reactive signals for automatic UI updates when values 
 - [Validation](../../guides/validation.md) — form validation patterns
 
 - [Localization](../../guides/localization.md) — internationalization support
-
-### API reference
-
-- [`bootstack.Form`](../../reference/widgets/Form.md)
