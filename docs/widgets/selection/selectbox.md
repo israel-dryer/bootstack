@@ -226,11 +226,14 @@ When `allow_custom_values=True`:
 
 When the popup is open:
 
-- **Arrow Up/Down** — navigate items
-- **Enter** — select highlighted item
-- **Tab** — select highlighted item (search mode)
-- **Escape** — close without selecting
-- Clicking outside closes the popup
+| Key | Action |
+|---|---|
+| **Arrow Up / Down** | Navigate items |
+| **Enter** | Select highlighted item |
+| **Tab** | Select highlighted item (search mode) |
+| **Escape** | Close without selecting |
+
+Clicking outside also closes the popup.
 
 ---
 

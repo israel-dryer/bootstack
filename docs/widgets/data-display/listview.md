@@ -110,11 +110,13 @@ Records with an `id` field enable selection, deletion, and moving.
 
 Each record can include these fields:
 
-- `title` — main heading
-- `text` — body text
-- `caption` — small caption (hidden in `density="compact"`)
-- `icon` — icon spec shown on the left
-- `badge` — small text on the right
+| Field | Purpose |
+|---|---|
+| `title` | Main heading |
+| `text` | Body text |
+| `caption` | Small caption (hidden in `density="compact"`) |
+| `icon` | Icon spec shown on the left |
+| `badge` | Small text on the right |
 
 ### Selection
 

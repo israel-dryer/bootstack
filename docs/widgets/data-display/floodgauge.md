@@ -59,14 +59,16 @@ bs.FloodGauge(app, accent="success")
 
 ### Common options
 
-- `value` — current fill level (int, default `0`)
-- `maximum` — maximum value (default `100`)
-- `text` — static label displayed on the gauge
-- `mask` — dynamic text overlay with `{}` placeholder (e.g. `"{} MB free"`) — updates automatically as value changes
-- `orient` — `"horizontal"` (default) or `"vertical"`
-- `length` — pixel length along the main axis (default `200`)
-- `thickness` — pixel size along the minor axis (default `50`)
-- `increment` — step size for `start()` animations (default `1`)
+| Option | Purpose |
+|---|---|
+| `value` | Current fill level (int, default `0`) |
+| `maximum` | Maximum value (default `100`) |
+| `text` | Static label displayed on the gauge |
+| `mask` | Dynamic text overlay with `{}` placeholder (e.g. `"{} MB free"`) — updates automatically as value changes |
+| `orient` | `"horizontal"` (default) or `"vertical"` |
+| `length` | Pixel length along the main axis (default `200`) |
+| `thickness` | Pixel size along the minor axis (default `50`) |
+| `increment` | Step size for `start()` animations (default `1`) |
 
 ### Programmatic control
 

@@ -73,11 +73,13 @@ bs.Progressbar(app, variant="thin")     # reduced height bar
 
 ### Common options
 
-- `value` — current progress value
-- `maximum` — maximum value (default 100)
-- `mode` — `"determinate"` or `"indeterminate"`
-- `length` — pixel length of the bar
-- `orient` — `"horizontal"` or `"vertical"`
+| Option | Purpose |
+|---|---|
+| `value` | Current progress value |
+| `maximum` | Maximum value (default `100`) |
+| `mode` | `"determinate"` or `"indeterminate"` |
+| `length` | Pixel length of the bar |
+| `orient` | `"horizontal"` or `"vertical"` |
 
 ### Reading and setting value
 

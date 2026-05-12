@@ -75,19 +75,21 @@ bs.Meter(app, value=75, segment_width=10)
 
 ### Common options
 
-- `value` — current meter value
-- `minvalue` — minimum value (default `0`)
-- `maxvalue` — maximum value (default `100`)
-- `subtitle` — label displayed below the value
-- `meter_type` — `"full"` (default) or `"semi"` for a semicircle
-- `value_format` — format string for the center number (default `"{:.0f}"`)
-- `value_prefix` — text before the value (e.g. `"$"`)
-- `value_suffix` — text after the value (e.g. `"%"`, `"mph"`)
-- `size` — pixel dimensions of the widget (default `200`)
-- `thickness` — arc width in pixels (default `10`)
-- `segment_width` — segment gap for a segmented style (default `0` = solid)
-- `interactive` — allow mouse drag to adjust value (default `False`)
-- `dtype` — `int` (default) or `float` for the internal variable
+| Option | Purpose |
+|---|---|
+| `value` | Current meter value |
+| `minvalue` | Minimum value (default `0`) |
+| `maxvalue` | Maximum value (default `100`) |
+| `subtitle` | Label displayed below the value |
+| `meter_type` | `"full"` (default) or `"semi"` for a semicircle |
+| `value_format` | Format string for the center number (default `"{:.0f}"`) |
+| `value_prefix` | Text before the value (e.g. `"$"`) |
+| `value_suffix` | Text after the value (e.g. `"%"`, `"mph"`) |
+| `size` | Pixel dimensions of the widget (default `200`) |
+| `thickness` | Arc width in pixels (default `10`) |
+| `segment_width` | Segment gap for a segmented style (default `0` = solid) |
+| `interactive` | Allow mouse drag to adjust value (default `False`) |
+| `dtype` | `int` (default) or `float` for the internal variable |
 
 ### Value model
 

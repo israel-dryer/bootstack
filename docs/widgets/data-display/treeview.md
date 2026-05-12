@@ -118,14 +118,14 @@ tree = bs.TreeView(
 `bs.TreeView` is a thin wrapper around `ttk.Treeview`, so all the usual options
 are available:
 
-- `columns` — sequence of data column identifiers (excludes the tree column `#0`).
-- `displaycolumns` — subset and ordering of data columns to display, or `"#all"`.
-  This refers to entries from `columns=` only — use `show` to hide the tree column.
-- `show` — `"tree headings"` (default), `"tree"` (no headings), or `"headings"`
-  (no tree column, gives you a plain table).
-- `selectmode` — `"browse"`, `"extended"`, or `"none"`.
-- `height` — number of visible rows.
-- `padding` — extra padding around the widget.
+| Option | Purpose |
+|---|---|
+| `columns` | Sequence of data column identifiers (excludes the tree column `#0`) |
+| `displaycolumns` | Subset and ordering of data columns to display, or `"#all"`. Refers to entries from `columns=` only — use `show` to hide the tree column |
+| `show` | `"tree headings"` (default), `"tree"` (no headings), or `"headings"` (no tree column, gives you a plain table) |
+| `selectmode` | `"browse"`, `"extended"`, or `"none"` |
+| `height` | Number of visible rows |
+| `padding` | Extra padding around the widget |
 
 ---
 
@@ -147,13 +147,15 @@ tree.insert(subfolder, "end", text="photo.jpg")
 
 `insert(parent, index, ...)` takes:
 
-- `parent` — `""` for top level, or an existing item id.
-- `index` — `"end"`, `0`, etc.
-- `text` — label shown in the tree column.
-- `values` — tuple of values for the additional `columns`.
-- `image` — optional Tk image for the row.
-- `tags` — tuple of tag names (see [tag_configure](#per-row-color-with-tag_configure)).
-- `open` — `True` to start expanded.
+| Parameter | Purpose |
+|---|---|
+| `parent` | `""` for top level, or an existing item id |
+| `index` | `"end"`, `0`, etc. |
+| `text` | Label shown in the tree column |
+| `values` | Tuple of values for the additional `columns` |
+| `image` | Optional Tk image for the row |
+| `tags` | Tuple of tag names (see [tag_configure](#per-row-color-with-tag_configure)) |
+| `open` | `True` to start expanded |
 
 ### Headings-only (table layout)
 

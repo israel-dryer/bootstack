@@ -68,15 +68,17 @@ bs.Label(app, text="Tag", accent="primary", variant="inverse")
 
 ### Common options
 
-- `text` — the text content to display
-- `textsignal` — a `Signal[str]` for reactive text updates
-- `icon`, `icon_only` — theme-aware icon alongside or instead of text
-- `font` — bootstack font token (e.g. `"heading-lg[bold]"`, `"body"`, `"label[9]"`)
-- `value_format` — format spec for displaying numeric/date values (e.g. `"currency"`, `"shortDate"`)
-- `compound` — how to combine text and icon/image (`"left"`, `"right"`, `"top"`, `"bottom"`)
-- `anchor` — content alignment within the label
-- `justify` — text alignment (`"left"`, `"center"`, `"right"`)
-- `wraplength` — maximum line width before wrapping
+| Option | Purpose |
+|---|---|
+| `text` | The text content to display |
+| `textsignal` | A `Signal[str]` for reactive text updates |
+| `icon`, `icon_only` | Theme-aware icon alongside or instead of text |
+| `font` | Bootstack font token (e.g. `"heading-lg[bold]"`, `"body"`, `"label[9]"`) |
+| `value_format` | Format spec for displaying numeric/date values (e.g. `"currency"`, `"shortDate"`) |
+| `compound` | How to combine text and icon/image (`"left"`, `"right"`, `"top"`, `"bottom"`) |
+| `anchor` | Content alignment within the label |
+| `justify` | Text alignment (`"left"`, `"center"`, `"right"`) |
+| `wraplength` | Maximum line width before wrapping |
 
 ### Text alignment
 
