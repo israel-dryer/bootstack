@@ -12,12 +12,13 @@ class Badge(Label):
         Args:
             master: Parent widget. If None, uses the default root window.
 
+        Note:
+            Badge is text-only by design. The TBadge ttk style layout omits the
+            image element, so `image=`, `icon=`, `icon_only=`, and `compound=`
+            are silently dropped at render time even though Label accepts them.
+
         Other Parameters:
             text (str): Text to display on the badge.
-            image (PhotoImage): Image to display.
-            icon (str | dict): Theme-aware icon spec handled by the style system.
-            icon_only (bool): If True, removes the additional padding reserved for label text.
-            compound (str): Placement of the image relative to text.
             anchor (str): Alignment of the badge content within its area.
             justify (str): How to justify multiple lines of text.
             localize (bool | Literal['auto']): Determines the widget's localization mode.
