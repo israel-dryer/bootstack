@@ -337,6 +337,7 @@ features = [
     "navigation.instant",
     "navigation.top",
     "content.code.copy",
+    "content.tabs.link",
     "search.highlight",
     "announce.dismiss",
 ]
@@ -378,4 +379,6 @@ toc_depth = 2
 
 [project.markdown_extensions.md_in_html]
 [project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
 [project.markdown_extensions.admonition]
