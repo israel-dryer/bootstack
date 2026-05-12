@@ -35,9 +35,9 @@ Use FloodGauge when:
 
 ### Consider a different control when...
 
-- **Tracking task progress over time** — use [Progressbar](progressbar.md)
-- **You need a dashboard-style circular gauge** — use [Meter](meter.md)
-- **You need a compact text-based indicator** — use [Badge](badge.md)
+- you are tracking task progress over time — use [Progressbar](progressbar.md)
+- you need a dashboard-style circular gauge — use [Meter](meter.md)
+- you need a compact text-based indicator — use [Badge](badge.md)
 
 ---
 

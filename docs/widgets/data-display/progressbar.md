@@ -35,9 +35,9 @@ Use Progressbar when:
 
 ### Consider a different control when...
 
-- **You want a dashboard-style indicator** — use [Meter](meter.md)
-- **You need to show capacity or fullness** — use [FloodGauge](floodgauge.md)
-- **You need a compact status indicator** — use [Badge](badge.md)
+- you want a dashboard-style indicator — use [Meter](meter.md)
+- you need to show capacity or fullness — use [FloodGauge](floodgauge.md)
+- you need a compact status indicator — use [Badge](badge.md)
 
 ---
 

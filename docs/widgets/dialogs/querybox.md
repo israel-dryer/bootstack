@@ -39,9 +39,8 @@ Use `QueryBox` when:
 
 ### Consider a different control when...
 
-- the value is part of a larger form - use [TextEntry](../inputs/textentry.md) inline instead
-
-- you need multiple fields or rich validation - use [FormDialog](formdialog.md) instead
+- the value is part of a larger form — use [TextEntry](../inputs/textentry.md) inline
+- you need multiple fields or rich validation — use [FormDialog](formdialog.md)
 
 ---
 

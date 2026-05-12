@@ -38,9 +38,9 @@ Use Label when:
 
 ### Consider a different control when...
 
-- **User input is required** — use [TextEntry](../inputs/textentry.md)
-- **You need a compact status indicator** — use [Badge](badge.md)
-- **You need interactive text** — use [Button](../actions/button.md)
+- user input is required — use [TextEntry](../inputs/textentry.md)
+- you need a compact status indicator — use [Badge](badge.md)
+- you need interactive text — use [Button](../actions/button.md)
 
 ---
 

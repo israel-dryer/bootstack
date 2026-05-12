@@ -48,7 +48,7 @@ Use `Sizegrip` when:
 
 - you want to match platform expectations in desktop apps
 
-**Consider a different control when:**
+### Consider a different control when...
 
 - your UI already makes resizing obvious (or resizing is disabled)
 

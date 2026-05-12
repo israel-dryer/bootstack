@@ -35,9 +35,9 @@ Use Meter when:
 
 ### Consider a different control when...
 
-- **Tracking task progress over time** — use [Progressbar](progressbar.md)
-- **Showing capacity or fullness levels** — use [FloodGauge](floodgauge.md)
-- **You need a compact text-based indicator** — use [Badge](badge.md)
+- you are tracking task progress over time — use [Progressbar](progressbar.md)
+- you are showing capacity or fullness levels — use [FloodGauge](floodgauge.md)
+- you need a compact text-based indicator — use [Badge](badge.md)
 
 ---
 

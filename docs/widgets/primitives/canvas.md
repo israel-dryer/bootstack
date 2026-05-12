@@ -59,9 +59,8 @@ Use `Canvas` when:
 
 ### Consider a different control when...
 
-- **you're laying out regular widgets in a scrolling container** - prefer [ScrollView](../layout/scrollview.md) + [Frame](../layout/frame.md)
-
-- **the content is primarily structured records** - prefer [ListView](../data-display/listview.md), [TableView](../data-display/tableview.md), or [TreeView](../data-display/treeview.md)
+- you're laying out regular widgets in a scrolling container — use [ScrollView](../layout/scrollview.md) + [Frame](../layout/frame.md)
+- the content is primarily structured records — use [ListView](../data-display/listview.md), [TableView](../data-display/tableview.md), or [TreeView](../data-display/treeview.md)
 
 ---
 

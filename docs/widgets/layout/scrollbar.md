@@ -56,11 +56,10 @@ Use `Scrollbar` when:
 
 - you're wiring scroll behavior manually (Text, Canvas, custom composites)
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you want a scrollable container for arbitrary widgets -- use [ScrollView](scrollview.md)
-
-- you need multi-line text with built-in scrolling -- use [ScrolledText](../inputs/scrolledtext.md)
+- you want a scrollable container for arbitrary widgets — use [ScrollView](scrollview.md)
+- you need multi-line text with built-in scrolling — use [ScrolledText](../inputs/scrolledtext.md)
 
 ---
 

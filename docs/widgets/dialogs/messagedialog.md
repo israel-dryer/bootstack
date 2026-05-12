@@ -43,9 +43,9 @@ Use `MessageDialog` when:
 
 ### Consider a different control when...
 
-- you want a standard info/warning/error dialog -> use [MessageBox](messagebox.md) static methods
-- you need user input -> use [QueryDialog](querydialog.md)
-- you need a complex form -> use [FormDialog](formdialog.md)
+- you want a standard info/warning/error dialog — use [MessageBox](messagebox.md) static methods
+- you need user input — use [QueryDialog](querydialog.md)
+- you need a complex form — use [FormDialog](formdialog.md)
 
 ---
 

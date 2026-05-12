@@ -43,7 +43,7 @@ Use `DateEntry` when:
 - you need a start/end date range in a compact field (`selection_mode='range'`)
 - validation and formatting should be consistent with other field controls
 
-Consider a different control when:
+### Consider a different control when...
 
 - you need time-of-day input — use [TimeEntry](timeentry.md)
 - the value is "date-like" but not an actual calendar date — use [TextEntry](textentry.md)

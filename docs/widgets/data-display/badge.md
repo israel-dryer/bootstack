@@ -35,9 +35,9 @@ Use `Badge` when:
 
 ### Consider a different control when...
 
-- **Text is long or multi-line** — use [Label](label.md) instead
-- **Content should blend into the surrounding layout** — use [Label](label.md) for less visual emphasis
-- **You need transient feedback that disappears automatically** — use [Toast](../overlays/toast.md) instead
+- text is long or multi-line — use [Label](label.md)
+- content should blend into the surrounding layout — use [Label](label.md) for less visual emphasis
+- you need transient feedback that disappears automatically — use [Toast](../overlays/toast.md)
 
 ---
 

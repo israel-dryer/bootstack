@@ -43,7 +43,7 @@ Use `Dialog` (or a specialized dialog) when:
 
 ### Consider a different control when...
 
-- feedback should not block workflow - use [Toast](../overlays/toast.md) or [Tooltip](../overlays/tooltip.md) instead
+- feedback should not block workflow — use [Toast](../overlays/toast.md) or [Tooltip](../overlays/tooltip.md)
 
 ---
 

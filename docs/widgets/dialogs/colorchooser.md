@@ -38,9 +38,8 @@ Use `ColorChooser` when:
 
 ### Consider a different control when...
 
-- users need to pick a color from the screen - use [ColorDropper](colordropper.md) instead
-
-- users frequently change colors and need immediate feedback - use inline color swatches instead
+- users need to pick a color from the screen — use [ColorDropper](colordropper.md)
+- users frequently change colors and need immediate feedback — use inline color swatches
 
 ---
 

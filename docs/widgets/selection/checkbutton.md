@@ -41,10 +41,10 @@ Use `CheckButton` when:
 
 ### Consider a different control when...
 
-- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
-- you want a dropdown list → use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
-- you want a button-like toggle → use [CheckToggle](checktoggle.md) or [ToggleGroup](togglegroup.md)
-- you want a dedicated on/off switch → use [Switch](switch.md)
+- only one choice is allowed in a group — use [RadioButton](radiobutton.md)
+- you want a dropdown list — use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
+- you want a button-like toggle — use [CheckToggle](checktoggle.md) or [ToggleGroup](togglegroup.md)
+- you want a dedicated on/off switch — use [Switch](switch.md)
 
 ---
 

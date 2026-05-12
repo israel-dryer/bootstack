@@ -45,7 +45,6 @@ Use Tooltip when:
 ### Consider a different control when...
 
 - the text is essential to completing the task — use labels or inline help
-
 - you need to show notifications or feedback — use [Toast](./toast.md)
 
 ---

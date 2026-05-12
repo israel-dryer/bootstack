@@ -54,13 +54,11 @@ Use `TabView` when:
 
 - all tabs are equally important and accessible
 
-Consider a different control when:
+### Consider a different control when...
 
-- navigation is sequential - use [PageStack](pagestack.md) instead
-
-- you need a standalone tab bar - use [Tabs](../navigation/tabs.md) instead
-
-- content must be visible simultaneously - use [PanedWindow](../layout/panedwindow.md) instead
+- navigation is sequential — use [PageStack](pagestack.md)
+- you need a standalone tab bar — use [Tabs](../navigation/tabs.md)
+- content must be visible simultaneously — use [PanedWindow](../layout/panedwindow.md)
 
 ---
 

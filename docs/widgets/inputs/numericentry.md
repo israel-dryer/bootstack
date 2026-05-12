@@ -46,7 +46,7 @@ Use `NumericEntry` when:
 - bounds and stepping help prevent errors
 - you want locale-aware display formatting on commit
 
-Consider a different control when:
+### Consider a different control when...
 
 - stepping is the primary interaction (visible step buttons matter) — use [SpinnerEntry](spinnerentry.md)
 - users adjust by feel and live feedback matters — use [Scale](scale.md)

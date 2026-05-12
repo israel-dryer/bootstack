@@ -33,12 +33,12 @@ app.mainloop()
 
 Use a button when the user needs to **trigger an action immediately**, such as submitting a form, saving a change, or opening a dialog.
 
-### Consider a different control when…
+### Consider a different control when...
 
-- Use [CheckToggle](../selection/checktoggle.md) for persistent on/off state.
-- Use [RadioButton / RadioGroup](../selection/radiobutton.md) for choosing one option from a set.
-- Use [ToggleGroup](../selection/togglegroup.md) for compact single or multi selection (segmented control).
-- Use [MenuButton](menubutton.md) or [DropdownButton](dropdownbutton.md) when the action reveals a menu of choices.
+- the value is a persistent on/off state — use [CheckToggle](../selection/checktoggle.md)
+- the user is choosing one option from a set — use [RadioButton](../selection/radiobutton.md) or [RadioGroup](../selection/radiogroup.md)
+- you want compact single or multi selection (segmented control) — use [ToggleGroup](../selection/togglegroup.md)
+- the action reveals a menu of choices — use [MenuButton](menubutton.md) or [DropdownButton](dropdownbutton.md)
 
 ---
 

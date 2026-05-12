@@ -50,10 +50,9 @@ Use `Separator` when:
 
 - whitespace alone doesn't provide enough structure
 
-**Consider a different control when:**
+### Consider a different control when...
 
 - spacing and alignment already clearly indicate grouping
-
 - too many lines would add visual clutter
 
 ---

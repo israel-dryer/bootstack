@@ -59,12 +59,9 @@ Use `Form` when:
 ### Consider a different control when...
 
 - the form is small (1–3 fields) — hand-built layouts may be simpler
-
 - the layout is highly custom or artistic — manual composition gives more control
-
 - you need extremely bespoke widget composition per row
-
-- the entire task is "fill this form and confirm/cancel" in a modal flow — prefer [FormDialog](../dialogs/formdialog.md)
+- the entire task is "fill this form and confirm/cancel" in a modal flow — use [FormDialog](../dialogs/formdialog.md)
 
 ---
 

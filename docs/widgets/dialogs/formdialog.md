@@ -47,9 +47,8 @@ Use `FormDialog` when:
 
 ### Consider a different control when...
 
-- you only need one value - use [QueryBox](querybox.md) instead
-
-- the flow is multi-step or requires navigation - use [PageStack](../views/pagestack.md) instead
+- you only need one value — use [QueryBox](querybox.md)
+- the flow is multi-step or requires navigation — use [PageStack](../views/pagestack.md)
 
 ---
 

@@ -36,7 +36,7 @@ Use `FontDialog` when:
 
 ### Consider a different control when...
 
-- font selection is a frequent, always-visible control (toolbars) - use inline font controls instead
+- font selection is a frequent, always-visible control (toolbars) — use inline font controls
 
 ---
 

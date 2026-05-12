@@ -47,10 +47,10 @@ Use `ContextMenu` when:
 - you want theme-consistent menus across platforms
 - you want icons or richer item styling
 
-### Consider a different control when…
+### Consider a different control when...
 
-- you want a button-first action with a small menu → use [DropdownButton](dropdownbutton.md)
-- you want a persistent menu button in a toolbar → use [MenuButton](menubutton.md)
+- you want a button-first action with a small menu — use [DropdownButton](dropdownbutton.md)
+- you want a persistent menu button in a toolbar — use [MenuButton](menubutton.md)
 
 ---
 

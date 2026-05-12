@@ -46,9 +46,9 @@ Use `SelectBox` when:
 
 ### Consider a different control when...
 
-- You want a simpler, menu-based selector — use [OptionMenu](optionmenu.md)
-- You need single selection among visible options — use [RadioGroup](radiogroup.md)
-- You need direct access to the low-level combobox primitive — use [Combobox](../primitives/combobox.md)
+- you want a simpler, menu-based selector — use [OptionMenu](optionmenu.md)
+- you need single selection among visible options — use [RadioGroup](radiogroup.md)
+- you need direct access to the low-level combobox primitive — use [Combobox](../primitives/combobox.md)
 
 ---
 

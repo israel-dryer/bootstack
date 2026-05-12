@@ -41,11 +41,10 @@ Use `Toolbar` when:
 
 - you're building a toolbar for an [AppShell](appshell.md) or standalone layout
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need tab-based navigation - use [Tabs](tabs.md)
-
-- you need a menu bar - use `MenuBar`
+- you need tab-based navigation — use [Tabs](tabs.md)
+- you need a menu bar — use `MenuBar`
 
 ---
 

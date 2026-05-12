@@ -43,9 +43,9 @@ Use `QueryDialog` when:
 
 ### Consider a different control when...
 
-- you want a simple string/integer/float prompt -> use [QueryBox](querybox.md) static methods
-- you just need to show a message -> use [MessageDialog](messagedialog.md)
-- you need a complex multi-field form -> use [FormDialog](formdialog.md)
+- you want a simple string/integer/float prompt — use [QueryBox](querybox.md) static methods
+- you just need to show a message — use [MessageDialog](messagedialog.md)
+- you need a complex multi-field form — use [FormDialog](formdialog.md)
 
 ---
 

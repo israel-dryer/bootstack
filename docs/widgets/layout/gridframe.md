@@ -43,11 +43,11 @@ Use `GridFrame` when:
 - you need consistent gap spacing between cells
 - you want to define row/column sizes declaratively
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you only need a 1D stack -> use [PackFrame](packframe.md)
-- you just need a container without layout management -> use [Frame](frame.md)
-- you need resizable split regions -> use [PanedWindow](panedwindow.md)
+- you only need a 1D stack — use [PackFrame](packframe.md)
+- you just need a container without layout management — use [Frame](frame.md)
+- you need resizable split regions — use [PanedWindow](panedwindow.md)
 
 ---
 

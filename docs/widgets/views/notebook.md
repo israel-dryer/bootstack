@@ -73,13 +73,11 @@ Use `Notebook` when:
 
 - you want a familiar desktop "tabs" model
 
-Consider a different control when:
+### Consider a different control when...
 
-- the workflow is sequential (wizard/flow) - use [PageStack](pagestack.md) instead
-
-- back/forward history matters - use [PageStack](pagestack.md) instead
-
-- you have many sections that don't fit well as tabs - consider a side navigation pattern
+- the workflow is sequential (wizard/flow) — use [PageStack](pagestack.md)
+- back/forward history matters — use [PageStack](pagestack.md)
+- you have many sections that don't fit well as tabs — consider a side navigation pattern
 
 ---
 

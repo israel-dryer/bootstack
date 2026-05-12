@@ -42,10 +42,10 @@ Use `ButtonGroup` when:
 - you want a compact toolbar cluster without separate spacing between buttons
 - you want segmented visuals without managing per-button layout
 
-### Consider a different control when…
+### Consider a different control when...
 
-- you need a single/multi selection model → use [ToggleGroup](../selection/togglegroup.md)
-- you need unrelated actions that should not look connected → use separate [Button](button.md) widgets
+- you need a single/multi selection model — use [ToggleGroup](../selection/togglegroup.md)
+- you need unrelated actions that should not look connected — use separate [Button](button.md) widgets
 
 ---
 

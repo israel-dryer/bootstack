@@ -43,11 +43,10 @@ Use `LabelFrame` when:
 
 - the title should be visually attached to the region
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you want grouping without a label -- use [Frame](frame.md)
-
-- the label belongs in surrounding layout (e.g., page header) -- use [Frame](frame.md) with a separate [Label](../data-display/label.md)
+- you want grouping without a label — use [Frame](frame.md)
+- the label belongs in surrounding layout (e.g., page header) — use [Frame](frame.md) with a separate [Label](../data-display/label.md)
 
 ---
 

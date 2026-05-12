@@ -54,9 +54,8 @@ Use `Spinbox` when:
 
 ### Consider a different control when...
 
-- **you want a form-ready field (labels/messages/validation/events)** - prefer [SpinnerEntry](../inputs/spinnerentry.md)
-
-- **the choices are better expressed as a dropdown list** - prefer [SelectBox](../selection/selectbox.md)
+- you want a form-ready field (labels/messages/validation/events) — use [SpinnerEntry](../inputs/spinnerentry.md)
+- the choices are better expressed as a dropdown list — use [SelectBox](../selection/selectbox.md)
 
 ---
 

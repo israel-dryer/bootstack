@@ -50,13 +50,11 @@ Use `Accordion` when:
 
 - you want a structured, step-by-step flow (e.g., wizard-like forms)
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- sections should be independently collapsible -- use multiple [Expander](expander.md) widgets
-
-- content switching should use tabs -- use [Notebook](../views/notebook.md)
-
-- all sections should always be visible -- use [LabelFrame](labelframe.md) or [Frame](frame.md)
+- sections should be independently collapsible — use multiple [Expander](expander.md) widgets
+- content switching should use tabs — use [Notebook](../views/notebook.md)
+- all sections should always be visible — use [LabelFrame](labelframe.md) or [Frame](frame.md)
 
 ---
 

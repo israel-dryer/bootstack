@@ -42,7 +42,7 @@ Use `PasswordEntry` when:
 - the input should not be displayed in clear text
 - you want consistent form UX (label/message/validation/events)
 
-Consider a different control when:
+### Consider a different control when...
 
 - masking is not required — use [TextEntry](textentry.md)
 - the input is a numeric PIN — use [TextEntry](textentry.md) with a `pattern` validation rule (PINs are strings where leading zeros matter, not numbers)

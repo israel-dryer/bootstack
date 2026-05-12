@@ -42,9 +42,8 @@ Use `FilterDialog` when:
 
 ### Consider a different control when...
 
-- there are only a few filters - use inline filter controls instead
-
-- live filtering is expected - use inline filter controls instead
+- there are only a few filters — use inline filter controls
+- live filtering is expected — use inline filter controls
 
 ---
 

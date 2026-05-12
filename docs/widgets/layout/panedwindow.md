@@ -53,10 +53,9 @@ Use `PanedWindow` when:
 
 - your app has a "workbench" layout (nav/editor/inspector)
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- the layout should be fixed -- use [Frame](frame.md) containers
-
+- the layout should be fixed — use [Frame](frame.md) containers
 - resizing regions would add complexity without benefit
 
 ---

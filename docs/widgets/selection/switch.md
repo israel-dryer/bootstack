@@ -41,10 +41,10 @@ Use `Switch` when:
 
 ### Consider a different control when...
 
-- you need tri-state (indeterminate) support → use [CheckButton](checkbutton.md)
-- multiple related options can be enabled → use [CheckButton](checkbutton.md) for each
-- you want a compact button-like toggle → use [CheckToggle](checktoggle.md)
-- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
+- you need tri-state (indeterminate) support — use [CheckButton](checkbutton.md)
+- multiple related options can be enabled — use [CheckButton](checkbutton.md) for each
+- you want a compact button-like toggle — use [CheckToggle](checktoggle.md)
+- only one choice is allowed in a group — use [RadioButton](radiobutton.md)
 
 ---
 

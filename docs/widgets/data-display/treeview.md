@@ -72,12 +72,9 @@ Use `TreeView` when:
 
 ### Consider a different control when...
 
-- **Data is flat, column-oriented, and benefits from sorting/filtering/search** —
-  use [TableView](tableview.md).
-- **Data is a flat list of records with rich content (icon/title/text/badge)** —
-  use [ListView](listview.md).
-- **You only need to display a single value** — use [Label](label.md) or
-  [Badge](badge.md).
+- data is flat, column-oriented, and benefits from sorting/filtering/search — use [TableView](tableview.md)
+- data is a flat list of records with rich content (icon/title/text/badge) — use [ListView](listview.md)
+- you only need to display a single value — use [Label](label.md) or [Badge](badge.md)
 
 ---
 

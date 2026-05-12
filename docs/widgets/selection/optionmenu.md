@@ -48,9 +48,9 @@ Use `OptionMenu` when:
 
 ### Consider a different control when...
 
-- the list is longer, search helps, or users may enter custom values → use [SelectBox](selectbox.md)
-- there are very few options and showing them inline improves clarity → use [RadioButton](radiobutton.md) or [RadioGroup](radiogroup.md)
-- you need a menu-driven button rather than a value selector → use [MenuButton](../actions/menubutton.md)
+- the list is longer, search helps, or users may enter custom values — use [SelectBox](selectbox.md)
+- there are very few options and showing them inline improves clarity — use [RadioButton](radiobutton.md) or [RadioGroup](radiogroup.md)
+- you need a menu-driven button rather than a value selector — use [MenuButton](../actions/menubutton.md)
 
 ---
 

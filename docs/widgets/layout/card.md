@@ -36,11 +36,10 @@ Use `Card` when:
 
 - you need an elevated container that stands out from the background
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need a collapsible container - use [Expander](expander.md)
-
-- you need a titled border - use [LabelFrame](labelframe.md)
+- you need a collapsible container — use [Expander](expander.md)
+- you need a titled border — use [LabelFrame](labelframe.md)
 
 ---
 

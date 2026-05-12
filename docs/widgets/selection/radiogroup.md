@@ -43,8 +43,8 @@ Use `RadioGroup` when:
 
 ### Consider a different control when...
 
-- you need custom per-option layout — use individual **RadioButton** widgets
-- you want complete control over spacing and structure — use individual **RadioButton** widgets
+- you need custom per-option layout — use individual [RadioButton](radiobutton.md) widgets
+- you want complete control over spacing and structure — use individual [RadioButton](radiobutton.md) widgets
 
 ---
 

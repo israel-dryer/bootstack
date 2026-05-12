@@ -55,11 +55,9 @@ Use `DateDialog` when:
 
 ### Consider a different control when...
 
-- date is part of a form - use [DateEntry](../inputs/dateentry.md) instead
-
-- users may want to type/paste a date - use [DateEntry](../inputs/dateentry.md) instead
-
-- you want inline validation and messaging - use [DateEntry](../inputs/dateentry.md) instead
+- date is part of a form — use [DateEntry](../inputs/dateentry.md)
+- users may want to type/paste a date — use [DateEntry](../inputs/dateentry.md)
+- you want inline validation and messaging — use [DateEntry](../inputs/dateentry.md)
 
 ---
 

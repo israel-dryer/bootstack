@@ -77,11 +77,11 @@ Use `MenuButton` when:
 - you need native platform menu conventions (keyboard navigation, accelerators)
 - the menu is the primary interaction, not a secondary affordance
 
-### Consider a different control when…
+### Consider a different control when...
 
-- you want a flat list of options, or a primary action plus a small menu → use [DropdownButton](dropdownbutton.md)
-- you want a fully themed, widget-backed popup menu → use [ContextMenu](contextmenu.md)
-- you want a single action → use [Button](button.md)
+- you want a flat list of options, or a primary action plus a small menu — use [DropdownButton](dropdownbutton.md)
+- you want a fully themed, widget-backed popup menu — use [ContextMenu](contextmenu.md)
+- you want a single action — use [Button](button.md)
 
 ---
 

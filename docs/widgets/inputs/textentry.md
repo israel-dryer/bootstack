@@ -43,7 +43,7 @@ Use `TextEntry` when:
 - you want consistent events and commit semantics
 - you want optional localization and formatting
 
-Consider a different control when:
+### Consider a different control when...
 
 - you need the lowest-level `bs.Entry` behavior and options — use [Entry](../primitives/entry.md)
 - you are building your own composite control — use [Entry](../primitives/entry.md)

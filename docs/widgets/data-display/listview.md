@@ -54,9 +54,9 @@ Use `ListView` when:
 
 ### Consider a different control when...
 
-- **Data is strongly column-based** — use [TableView](tableview.md)
-- **Your data is hierarchical** — use [TreeView](treeview.md)
-- **You have a small, static list** — a simple frame with labels may suffice
+- data is strongly column-based — use [TableView](tableview.md)
+- your data is hierarchical — use [TreeView](treeview.md)
+- you have a small, static list — a simple frame with labels may suffice
 
 ---
 
