@@ -1,8 +1,8 @@
 ---
-title: PathEntry
+title: DateEntry
 ---
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.dateentry.DateEntry
     options:
       show_root_heading: true
       show_root_toc_entry: true
@@ -13,16 +13,15 @@ title: PathEntry
 
 ## Properties
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.dateentry.DateEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
       members:
-        - dialog_button
-        - dialog_result
         - value
+        - date_picker_button
         - entry_widget
         - label_widget
         - message_widget
@@ -32,7 +31,7 @@ title: PathEntry
 
 ## Methods
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.dateentry.DateEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
@@ -45,7 +44,7 @@ title: PathEntry
 
 ## State
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.dateentry.DateEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
@@ -58,7 +57,7 @@ title: PathEntry
 
 ## Events
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.dateentry.DateEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false

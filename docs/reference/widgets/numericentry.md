@@ -1,8 +1,8 @@
 ---
-title: PathEntry
+title: NumericEntry
 ---
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry
     options:
       show_root_heading: true
       show_root_toc_entry: true
@@ -13,15 +13,15 @@ title: PathEntry
 
 ## Properties
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
       members:
-        - dialog_button
-        - dialog_result
+        - increment_widget
+        - decrement_widget
         - value
         - entry_widget
         - label_widget
@@ -32,20 +32,22 @@ title: PathEntry
 
 ## Methods
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
       members:
+        - increment
+        - decrement
         - get
         - add_validation_rule
         - insert_addon
 
 ## State
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
@@ -58,7 +60,7 @@ title: PathEntry
 
 ## Events
 
-::: bootstack.widgets.composites.pathentry.PathEntry
+::: bootstack.widgets.composites.numericentry.NumericEntry
     options:
       show_root_heading: false
       show_root_toc_entry: false
