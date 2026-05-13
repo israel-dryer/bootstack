@@ -131,14 +131,7 @@ class Field(EntryMixin, Frame):
             kind: FieldKind = "text",
             **kwargs: Any
     ):
-        """Initialize a Field widget.
-
-        Creates a composite entry field with optional label, message area, and
-        validation support. The field type is determined by the 'kind' parameter,
-        which selects either TextEntryPart or NumberEntryPart as the underlying
-        entry widget.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display. Can be str, int, or float depending
                 on the field kind. For 'text' kind, should be a string. For

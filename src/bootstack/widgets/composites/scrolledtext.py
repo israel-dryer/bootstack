@@ -33,9 +33,7 @@ class ScrolledText(Frame):
             scrollbar_style: str = 'default',
             **kwargs: Any,
     ) -> None:
-        """Initialize a ScrolledText widget.
-
-        Args:
+        """Args:
             master: The parent widget.
             padding: Padding around the frame container.
             scroll_direction: Scroll direction - 'vertical', 'horizontal', or 'both'.

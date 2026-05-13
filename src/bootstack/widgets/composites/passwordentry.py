@@ -28,14 +28,7 @@ class PasswordEntry(Field):
             message: str = None,
             show_visibility_toggle: bool = True,
             **kwargs: Unpack[FieldOptions]):
-        """Initialize a PasswordEntry widget.
-
-        Creates a password entry field with character masking and an optional
-        visibility toggle button. The widget automatically masks input characters
-        (default: '•') and provides a button to temporarily reveal the password
-        while pressed.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial password value to display (masked). Default is None.
             label: Optional label text to display above the entry field.

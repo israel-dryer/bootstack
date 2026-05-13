@@ -52,14 +52,7 @@ class DateEntry(Field):
             disabled_dates: Iterable[date | datetime | str] | None = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a DateEntry widget.
-
-        Creates a date entry field with locale-aware formatting and an optional
-        calendar picker button. The widget accepts date input as strings, date
-        objects, or datetime objects, and formats them according to the specified
-        value_format pattern.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value (str | date | datetime): Initial date value to display (single
                 mode). Ignored when ``selection_mode='range'``.

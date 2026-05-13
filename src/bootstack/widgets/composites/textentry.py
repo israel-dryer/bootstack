@@ -20,13 +20,7 @@ class TextEntry(Field):
     def __init__(
             self, master: Master = None, value: Any = None, label: str = None, message: str = None,
             **kwargs: Unpack[FieldOptions]):
-        """Initialize a TextEntry widget.
-
-        Creates a composite text entry field with optional label, validation,
-        and formatting support. The widget includes a label area, entry input,
-        and message area for displaying hints or validation errors.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display. Default is None.
             label: Optional label text to display above the entry field.

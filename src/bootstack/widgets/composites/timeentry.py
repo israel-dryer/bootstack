@@ -36,13 +36,7 @@ class TimeEntry(SelectBox):
             message: str = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a TimeEntry widget.
-
-        Creates a time entry field with locale-aware formatting and a searchable
-        dropdown of time intervals. The widget accepts time input as time objects
-        or strings, and formats them according to the specified value_format pattern.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial time value to display. Can be a time object or string.
                 Default is current time.

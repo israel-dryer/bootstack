@@ -34,13 +34,7 @@ class SpinnerEntry(Field):
             wrap: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a SpinnerEntry widget.
-
-        Creates a spinner entry field with optional label, validation, and either
-        a predefined list of values or a numeric range. The widget includes built-in
-        up/down arrows for cycling through values or adjusting numbers.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display. Can be string, integer, or float
                 depending on whether using text values or numeric range.

@@ -33,14 +33,7 @@ class NumericEntry(Field):
             increment: int | float = 1,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a NumericEntry widget.
-
-        Creates a numeric entry field with optional label, validation, bounds
-        constraints, and increment/decrement spin buttons. The widget supports
-        keyboard stepping (Up/Down arrows), mouse wheel interaction, and optional
-        value wrapping at boundaries.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value (int | float): Initial numeric value to display.
             label (str): Optional label text to display above the entry field.

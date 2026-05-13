@@ -53,14 +53,7 @@ class PathEntry(Field):
             message: str = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a PathEntry widget.
-
-        Creates a path entry field with a button that opens a native file or
-        directory chooser dialog. The selected path(s) are automatically displayed
-        in the entry field. The widget supports various dialog types for different
-        use cases (single file, multiple files, directory, save file).
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial path value to display in the entry field. Default is None
                 (empty field). This is updated when a path is selected from the dialog.

@@ -30,9 +30,7 @@ class SelectBox(Field):
             enable_search: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Create a SelectBox widget.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value (str): Initial selected value; should typically be present in `items`.
             items (list): Sequence of string options to present in the popup list.
