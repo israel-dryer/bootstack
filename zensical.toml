@@ -162,6 +162,11 @@ nav = [
     ] },
     { "API Reference" = [
         { "Overview" = "reference/index.md" },
+        { "Widgets" = [
+            { "TextEntry" = "reference/widgets/textentry.md" },
+            { "PasswordEntry" = "reference/widgets/passwordentry.md" },
+            { "PathEntry" = "reference/widgets/pathentry.md" },
+        ] },
         { "App" = [
             { "Overview" = "reference/app/index.md" },
             { "App" = "reference/app/App.md" },

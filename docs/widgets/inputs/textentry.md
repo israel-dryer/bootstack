@@ -44,5 +44,3 @@ Use `TextEntry` when:
 **Examples:** [Login form](../../examples/forms/login.md) · [Settings panel](../../examples/forms/settings.md) · [Search with add-ons](../../examples/inputs/search.md)  
 **Guides:** [Forms & Input](../../guides/forms-and-input.md) · [Formatting](../../guides/formatting.md) · [Validation](../../guides/validation.md)  
 **API reference:** [TextEntry](../../reference/widgets/textentry.md)
-
---8<-- "snippets/api/textentry.md"

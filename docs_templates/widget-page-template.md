@@ -110,7 +110,9 @@ SEE ALSO
   - Examples: scenario-based links, e.g. "Login form", "Settings panel"
   - Guides: cross-cutting concept links, e.g. "Forms & Input", "Validation"
   - API reference: `../../reference/widgets/<slug>.md`
-    These are rebuilt from `docs/snippets/api/<slug>.md` (gen_api.py output).
+    These are standalone pages at docs/reference/widgets/<slug>.md that
+    include the snippet via --8<-- "snippets/api/<slug>.md". The snippet
+    is NOT included on the widget page itself — the widget page only links.
   - Separate multiple links within a level with ` · ` (space-middot-space).
   - End each level line with two trailing spaces for a <br> in the rendered output.
 

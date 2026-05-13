@@ -43,5 +43,3 @@ Use `PasswordEntry` when:
 **Examples:** [Login form](../../examples/forms/login.md) · [Registration form](../../examples/forms/registration.md) · [Password strength](../../examples/inputs/password-strength.md)  
 **Guides:** [Forms & Input](../../guides/forms-and-input.md) · [Validation](../../guides/validation.md)  
 **API reference:** [PasswordEntry](../../reference/widgets/passwordentry.md)
-
---8<-- "snippets/api/passwordentry.md"

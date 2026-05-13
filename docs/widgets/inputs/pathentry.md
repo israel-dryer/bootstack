@@ -43,5 +43,3 @@ Use `PathEntry` when:
 **Examples:** [File import form](../../examples/forms/file-import.md) · [Settings with paths](../../examples/forms/settings.md)  
 **Guides:** [Forms & Input](../../guides/forms-and-input.md) · [Validation](../../guides/validation.md)  
 **API reference:** [PathEntry](../../reference/widgets/pathentry.md)
-
---8<-- "snippets/api/pathentry.md"
