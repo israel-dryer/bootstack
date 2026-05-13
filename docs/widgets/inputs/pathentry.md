@@ -4,14 +4,7 @@ title: PathEntry
 
 # PathEntry
 
-`PathEntry` is a form-ready input control for selecting **files and folders**.
-
-It combines a text field (type/paste paths) with a browse button (pick visually), while keeping the same label/message,
-validation, and event model as other field controls.
-
----
-
-## Quick start
+`PathEntry` is a file and folder input field that combines text entry with a browse button that opens a native OS file chooser.
 
 ```python
 import bootstack as bs
@@ -29,34 +22,42 @@ app.mainloop()
 ```
 
 <div class="app-window">
-    <img src="../../assets/widgets-pathentry-quickstart.png" alt="Path Entry Quickstart"/>
+    <img src="../../assets/widgets-pathentry-quickstart.png" alt="PathEntry quickstart"/>
 </div>
-
----
 
 ## When to use
 
 Use `PathEntry` when:
 
-- users need to choose files/folders frequently
-- you want both typing and browsing
-- you want consistent field UX (message + validation)
+- users need to select files or folders
+- you want both typing and browsing in the same control
+- you want consistent field UX (label, message, validation)
 
 ### Consider a different control when...
 
 - the value is not a filesystem path — use [TextEntry](textentry.md)
-- you need a one-off selection with no persistent field — use a file dialog directly
+- you need a one-off file selection with no persistent field — use a file dialog directly
 
----
+## Common options
 
-## Examples and patterns
+| Option | Purpose |
+|---|---|
+| `label` | Text label rendered above the field. |
+| `message` | Helper text rendered below the field. |
+| `required` | Marks the field required; adds `*` to the label. |
+| `dialog` | Dialog type that opens on browse. Default `"openfilename"`. |
+| `dialog_options` | Dict of options passed to the OS file dialog (`title`, `filetypes`, `initialdir`, etc.). |
+| `button_text` | Text on the browse button. Default `"Browse"`. |
+| `accent` | Accent token for the focus ring and active border. |
+| `density` | `"default"` or `"compact"`. |
+| `width` | Width in characters. |
 
-### Value model
+## Value model
 
 | Concept | Meaning |
 |---|---|
 | Text | Raw text while editing |
-| Value | Committed path after validation/commit |
+| Value | Committed path after validation or picker selection |
 
 ```python
 current = path.value
@@ -67,19 +68,32 @@ path.value = r"C:\data\input.csv"
 
 Picker selections commit immediately. The raw dialog result is available via `path.dialog_result`.
 
-### Dialog type: `dialog`
+## Dialog type
 
 ```python
-bs.PathEntry(app, dialog="openfilename")   # choose existing file (default)
-bs.PathEntry(app, dialog="directory")      # choose folder
-bs.PathEntry(app, dialog="saveasfilename") # choose save-as path
-bs.PathEntry(app, dialog="openfilenames")  # choose multiple files (returns list)
+bs.PathEntry(app, dialog="openfilename")   # single file (default)
+bs.PathEntry(app, dialog="directory")      # folder
+bs.PathEntry(app, dialog="saveasfilename") # save-as path
+bs.PathEntry(app, dialog="openfilenames")  # multiple files (returns list)
 ```
 
 !!! note "`openfile` vs `openfilename`"
     `openfilename` returns a path string. `openfile` returns a file object. Use `openfilename` unless you specifically need a file handle.
 
-### File type filters: `dialog_options`
+The browse button opens the OS-native chooser (Windows Explorer, macOS Finder, or GTK on Linux). Its appearance is controlled by the OS, not bootstack's theme.
+
+For multi-file selection (`"openfilenames"`), paths are joined with `", "` for display. The raw tuple is available via `path.dialog_result`.
+
+Both `dialog` and `button_text` can be changed at runtime:
+
+```python
+path.configure(dialog="directory")
+path.configure(button_text="Re-select...")
+```
+
+## File filters
+
+Use `dialog_options=` to pass options to the OS dialog:
 
 ```python
 bs.PathEntry(
@@ -95,81 +109,92 @@ bs.PathEntry(
 
 Common `dialog_options` keys: `title`, `initialdir`, `initialfile`, `filetypes`, `defaultextension`.
 
-`dialog` and `dialog_options` can also be changed at runtime:
-
-```python
-path.configure(dialog="directory")
-path.configure(dialog_options={"title": "Choose output folder"})
-```
-
-### Button text: `button_text`
-
-```python
-bs.PathEntry(app, label="File",   button_text="Choose...")
-bs.PathEntry(app, label="Folder", dialog="directory", button_text="Select Folder")
-
-# Change at runtime
-path.configure(button_text="Re-select...")
-```
-
-### `state`
+## State
 
 ```python
 path = bs.PathEntry(app, label="File", state="disabled")
 
-path.disable()       # prevent input and browsing
-path.enable()        # restore
-path.readonly(True)  # allow reading, block editing
+path.disable()         # prevent input and browsing
+path.enable()          # restore
+path.readonly(True)    # allow reading, block editing
 ```
 
-### Add-ons
+## Add-ons
+
+`PathEntry` supports the same `insert_addon()` API as `TextEntry`. The browse button is already placed as an add-on named `"dialog-button"` at position `"before"`.
 
 ```python
 p = bs.PathEntry(app, label="File")
-p.insert_addon(bs.Button, position="after", text="Clear",
-               command=lambda: setattr(p, "value", ""), name="clear")
+p.insert_addon(
+    bs.Button,
+    position="after",
+    text="Clear",
+    command=lambda: setattr(p, "value", ""),
+    name="clear",
+)
 ```
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+!!! link "See [TextEntry add-ons](textentry.md#add-ons) for the full API."
 
-### Events
+## Events
 
-`PathEntry` emits `<<Change>>` from two distinct sources with different `event.data` shapes:
+| Event | Fires when |
+|---|---|
+| `<<Input>>` | Each keystroke while typing |
+| `<<Change>>` | Typed path committed, or picker selection made |
+| `<<Valid>>` | Validation passed |
+| `<<Invalid>>` | Validation failed |
+| `<<Validate>>` | After any validation attempt |
 
-**Typed input** — bind directly on the widget via `widget.bind()`:
+Register with `on_*` / `off_*` convenience methods. The two groups have different callback shapes:
+
+**Change events** (`<<Input>>`, `<<Change>>`) — callback receives a Tkinter event object:
 
 ```python
+def on_change(event):
+    event.data["value"]       # committed value
+    event.data["prev_value"]  # previous value
+    event.data["text"]        # raw display string
+
+path.on_changed(on_change)   # <<Change>>
+path.on_input(on_change)     # <<Input>>
+```
+
+**Validation events** (`<<Valid>>`, `<<Invalid>>`, `<<Validate>>`) — callback receives a plain dict:
+
+```python
+def on_result(data):
+    data["is_valid"]   # bool
+    data["value"]      # committed value
+    data["message"]    # validation message
+
+path.on_validated(on_result)  # <<Validate>>
+path.on_valid(on_result)      # <<Valid>>
+path.on_invalid(on_result)    # <<Invalid>>
+```
+
+`<<Change>>` fires from two sources. The picker source adds a `dialog_result` key:
+
+```python
+# Typed path committed — binds to inner entry
 def on_typed(event):
-    print("typed path:", event.data["value"])
-    print("previous:", event.data["prev_value"])
+    event.data["value"]       # committed path string
+    event.data["prev_value"]  # previous path
 
-path.bind("<<Change>>", on_typed)
-```
+path.on_changed(on_typed)
 
-**Picker selection** — the composite-level `<<Change>>` carries the dialog result:
-
-```python
+# Picker selection — fires on PathEntry composite; includes dialog_result
 def on_picked(event):
-    print("picked path:", event.data["value"])
-    print("dialog result:", event.data["dialog_result"])  # raw; tuple for multi-select
+    event.data["value"]         # display string (joined for multi-select)
+    event.data["dialog_result"] # raw result; tuple for openfilenames
 
 path.bind("<<Change>>", on_picked)
 ```
 
 !!! note "`on_changed` and picker selections"
-    `path.on_changed(callback)` only fires for typed-input commits — it binds to the inner text entry, not the composite. To receive both typed and picker changes, use `path.bind("<<Change>>", callback)` directly on the `PathEntry` instance.
+    `on_changed` binds to the inner entry and fires for typed commits only. To receive both typed and picker changes, use `path.bind("<<Change>>", callback)` directly on the `PathEntry` instance.
 
-**Validation events** — callback receives a plain dict:
-
-```python
-def on_result(data):
-    print("valid:", data["is_valid"])
-
-path.on_valid(on_result)
-path.on_validated(on_result)
-```
-
-### Validation
+## Validation
 
 Use `required=True` for required path fields. For existence and type checks, use a `"custom"` rule:
 
@@ -186,21 +211,32 @@ p.add_validation_rule("custom",
     func=lambda v: (v.endswith(".csv"), "Must be a CSV file"))
 ```
 
----
+!!! link "See [Forms & Input](../../guides/forms-and-input.md) for validation patterns and triggers."
 
-## Behavior
+## Reactivity
 
-- Users can type or paste paths directly.
-- Clicking the browse button opens the **OS-native file/folder chooser** — Windows Explorer on Windows, a Finder sheet on macOS, and the GTK file chooser on Linux. Its appearance is controlled by the OS, not by bootstack's theme.
-- Picker selection commits the value immediately.
-- For multi-file selection, paths are joined with `", "` for display; the raw result (list) is in `dialog_result`.
+```python
+filepath = bs.Signal("")
 
----
+entry = bs.PathEntry(app, label="Input file", textsignal=filepath)
 
-## Additional resources
+filepath.subscribe(lambda v: print("path changed:", v))
+```
 
-### Related widgets
+!!! link "See [Reactivity](../../guides/reactivity.md) for signal patterns."
 
-- [TextEntry](textentry.md) — general-purpose field control
-- [SelectBox](../selection/selectbox.md) — choose from known values instead of browsing
+## Localization
+
+Any string passed as `label=` or `message=` is used as a gettext key when localization is active.
+
+!!! link "See [Localization](../../guides/localization.md) for setup and language switching."
+
+## See also
+
+- [TextEntry](textentry.md) — general-purpose text field
+- [SelectBox](../selection/selectbox.md) — choose from a known list instead of browsing
 - [Form](../forms/form.md) — build complete forms with path fields
+- [Forms & Input guide](../../guides/forms-and-input.md)
+- [Validation guide](../../guides/validation.md)
+
+--8<-- "snippets/api/pathentry.md"

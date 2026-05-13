@@ -335,4 +335,6 @@ toc_depth = 2
 [project.markdown_extensions.pymdownx.superfences]
 [project.markdown_extensions.pymdownx.tabbed]
 alternate_style = true
+[project.markdown_extensions.pymdownx.snippets]
+base_path = ["docs"]
 [project.markdown_extensions.admonition]
