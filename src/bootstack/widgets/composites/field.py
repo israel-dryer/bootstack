@@ -30,6 +30,31 @@ Determines which entry part widget to use:
 """
 
 
+class InputEventData(TypedDict):
+    """Payload for ``<<Input>>`` events — fires on each keystroke."""
+    text: str
+
+
+class ChangeEventData(TypedDict):
+    """Payload for ``<<Change>>`` events — fires on commit (blur or Enter)."""
+    value: Any
+    prev_value: Any
+    text: str
+
+
+class EnterEventData(TypedDict):
+    """Payload for ``<Return>`` key events."""
+    value: Any
+    text: str
+
+
+class ValidationEventData(TypedDict):
+    """Payload for ``<<Valid>>``, ``<<Invalid>>``, and ``<<Validate>>`` events."""
+    value: Any
+    is_valid: bool
+    message: str
+
+
 class FieldOptions(TypedDict, total=False):
     """Type hints for Field widget configuration options.
 
@@ -232,34 +257,7 @@ class Field(EntryMixin, Frame):
         if required:
             self._entry.add_validation_rule("required")
 
-        # forward reference entry methods
-        self.on_input = self._entry.on_input
-        self.off_input = self._entry.off_input
-        self.on_changed = self._entry.on_changed
-        self.off_changed = self._entry.off_changed
-        self.on_enter = self._entry.on_enter
-        self.off_enter = self._entry.off_enter
-        self.on_invalid = self._entry.on_invalid
-        self.off_invalid = self._entry.off_invalid
-        self.on_valid = self._entry.on_valid
-        self.off_valid = self._entry.off_valid
-        self.on_validated = self._entry.on_validated
-        self.off_validated = self._entry.off_validated
 
-        # enty validation
-        _add_rule = self._entry.add_validation_rule
-        _add_rules = self._entry.add_validation_rules
-
-        def add_validation_rule(rule_type, **kwargs):
-            self._reserve_message_space()
-            _add_rule(rule_type, **kwargs)
-
-        def add_validation_rules(rules):
-            self._reserve_message_space()
-            _add_rules(rules)
-
-        self.add_validation_rule = add_validation_rule
-        self.add_validation_rules = add_validation_rules
         self.validation = self._entry.validate
 
         # Copy Field's delegate handlers to entry for configuration forwarding
@@ -329,6 +327,157 @@ class Field(EntryMixin, Frame):
             self._field['accent'] = value
         return None
 
+
+    # ------ Event registration ------
+
+    def on_input(self, callback: Callable) -> str:
+        """Register a callback for ``<<Input>>`` events (fires on each keystroke).
+
+        Args:
+            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
+                :class:`InputEventData` dict with key ``text`` (current raw text).
+
+        Returns:
+            Bind ID — pass to ``off_input()`` to unsubscribe.
+        """
+        return self._entry.on_input(callback)
+
+    def off_input(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Input>>``.
+
+        Args:
+            bind_id: ID returned by ``on_input()``.
+        """
+        self._entry.off_input(bind_id)
+
+    def on_changed(self, callback: Callable) -> str:
+        """Register a callback for ``<<Change>>`` events (fires on commit).
+
+        Args:
+            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is a
+                :class:`ChangeEventData` dict with keys ``value`` (committed value),
+                ``prev_value`` (previous value), and ``text`` (raw display string).
+
+        Returns:
+            Bind ID — pass to ``off_changed()`` to unsubscribe.
+        """
+        return self._entry.on_changed(callback)
+
+    def off_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Change>>``.
+
+        Args:
+            bind_id: ID returned by ``on_changed()``.
+        """
+        self._entry.off_changed(bind_id)
+
+    def on_enter(self, callback: Callable) -> str:
+        """Register a callback for ``<Return>`` key events.
+
+        Args:
+            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
+                :class:`EnterEventData` dict with keys ``value`` (committed value)
+                and ``text`` (raw display string).
+
+        Returns:
+            Bind ID — pass to ``off_enter()`` to unsubscribe.
+        """
+        return self._entry.on_enter(callback)
+
+    def off_enter(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<Return>``.
+
+        Args:
+            bind_id: ID returned by ``on_enter()``.
+        """
+        self._entry.off_enter(bind_id)
+
+    def on_valid(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for ``<<Valid>>`` events (fires when validation passes).
+
+        Args:
+            callback: Receives a :class:`ValidationEventData` dict with keys
+                ``value`` (committed value), ``is_valid`` (``True``), and
+                ``message`` (empty string on pass).
+        """
+        self._entry.on_valid(callback)
+
+    def off_valid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Valid>>``.
+
+        Args:
+            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
+                to remove all ``<<Valid>>`` bindings.
+        """
+        self._entry.off_valid(bind_id)
+
+    def on_invalid(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for ``<<Invalid>>`` events (fires when validation fails).
+
+        Args:
+            callback: Receives a :class:`ValidationEventData` dict with keys
+                ``value`` (committed value), ``is_valid`` (``False``), and
+                ``message`` (validation error text).
+        """
+        self._entry.on_invalid(callback)
+
+    def off_invalid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Invalid>>``.
+
+        Args:
+            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
+                to remove all ``<<Invalid>>`` bindings.
+        """
+        self._entry.off_invalid(bind_id)
+
+    def on_validated(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for ``<<Validate>>`` events (fires after any validation).
+
+        Args:
+            callback: Receives a :class:`ValidationEventData` dict with keys
+                ``value`` (committed value), ``is_valid`` (bool), and
+                ``message`` (validation message or empty string).
+        """
+        self._entry.on_validated(callback)
+
+    def off_validated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Validate>>``.
+
+        Args:
+            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
+                to remove all ``<<Validate>>`` bindings.
+        """
+        self._entry.off_validated(bind_id)
+
+    # ------ Validation ------
+
+    def add_validation_rule(
+        self,
+        rule_type: Literal["required", "email", "pattern", "stringLength", "compare", "custom"],
+        **kwargs,
+    ) -> None:
+        """Add a validation rule to the field.
+
+        Rules are evaluated on blur and on Enter. When a rule fails the field
+        emits ``<<Invalid>>``; when all rules pass it emits ``<<Valid>>``. Both
+        carry a :class:`ValidationEventData` payload.
+
+        Args:
+            rule_type: Rule type. One of:
+
+                - ``"required"`` — field must not be empty.
+                - ``"email"`` — value must be a valid email address.
+                - ``"pattern"`` — value must match a regex. Pass ``pattern=``.
+                - ``"stringLength"`` — length bounds. Pass ``min=`` and/or ``max=``.
+                - ``"compare"`` — must match another field's value. Pass ``other_field=``.
+                - ``"custom"`` — arbitrary logic. Pass ``func=``, a callable that
+                  receives the value and returns ``bool`` or ``(bool, message)``.
+
+            **kwargs: Rule-specific options. ``message=`` is accepted by all rule
+                types to override the default failure message.
+        """
+        self._reserve_message_space()
+        self._entry.add_validation_rule(rule_type, **kwargs)
 
     def disable(self):
         """Disable the field, preventing user input."""
