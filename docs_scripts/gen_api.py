@@ -10,8 +10,9 @@ Outputs one file per widget to docs/snippets/api/<slug>.md.
 Include in a widget page with:
     --8<-- "snippets/api/textentry.md"
 
-Each snippet contains up to three ## sections (Parameters, Properties, Methods).
-These are plain markdown headings and appear directly in the page TOC.
+Each snippet contains up to five ## sections (Parameters, Properties, Methods,
+State, Events). These are plain markdown headings and appear directly in the
+page TOC.
 """
 
 from __future__ import annotations
@@ -93,6 +94,12 @@ SKIP: frozenset[str] = frozenset({
     "add_validation_rules",  # batch setter; rarely needed directly
 })
 
+# Methods routed to the State group rather than Methods.
+_STATE_NAMES: frozenset[str] = frozenset({
+    "disable", "enable", "readonly", "show", "hide", "forget",
+    "lift", "lower", "state",
+})
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 _STRIP_PREFIXES = (
@@ -139,8 +146,6 @@ def first_sentence(text: str) -> str:
         if i > 0 and line.strip().startswith(("-", "*", "+")):
             return " ".join(text.splitlines()[:i]).strip().rstrip(".")
     return text.rstrip(".")
-
-
 
 
 # ── Member collection ─────────────────────────────────────────────────────────
@@ -267,44 +272,95 @@ def gen_properties(members: dict[str, griffe.Object]) -> str:
     ])
 
 
+def _method_row(name: str, member: griffe.Function) -> str:
+    """Render a single method as a table row."""
+    params: list[str] = []
+    for p in member.parameters:
+        if p.name in ("self", "cls"):
+            continue
+        if p.kind in (
+            griffe.ParameterKind.var_positional,
+            griffe.ParameterKind.var_keyword,
+        ):
+            continue
+        if p.default is not None:
+            params.append(f"{p.name}={p.default}")
+        else:
+            params.append(p.name)
+
+    sig = f"`{name}({', '.join(params)})`"
+    desc = first_sentence(member.docstring.value)
+
+    ret = ""
+    if member.returns:
+        ret_str = fmt_type(member.returns)
+        if ret_str and ret_str not in ("None", "none"):
+            ret = f" → `{ret_str}`"
+
+    return f"| {sig}{ret} | {desc} |"
+
+
 def gen_methods(members: dict[str, griffe.Object]) -> str:
-    """### Methods table."""
+    """### Methods table — widget-specific operations, excluding state and event methods."""
     rows: list[str] = []
     for name, member in sorted(members.items()):
         if not isinstance(member, griffe.Function):
             continue
-
-        # Build a compact param list, skipping self/cls/*args/**kwargs
-        params: list[str] = []
-        for p in member.parameters:
-            if p.name in ("self", "cls"):
-                continue
-            if p.kind in (
-                griffe.ParameterKind.var_positional,
-                griffe.ParameterKind.var_keyword,
-            ):
-                continue
-            if p.default is not None:
-                params.append(f"{p.name}={p.default}")
-            else:
-                params.append(p.name)
-
-        sig = f"`{name}({', '.join(params)})`"
-        desc = first_sentence(member.docstring.value)
-
-        ret = ""
-        if member.returns:
-            ret_str = fmt_type(member.returns)
-            if ret_str and ret_str not in ("None", "none"):
-                ret = f" → `{ret_str}`"
-
-        rows.append(f"| {sig}{ret} | {desc} |")
+        if name.startswith(("on_", "off_")):
+            continue
+        if name in _STATE_NAMES:
+            continue
+        rows.append(_method_row(name, member))
 
     if not rows:
         return ""
 
     return "\n".join([
         "### Methods\n",
+        "| Method | Description |",
+        "|---|---|",
+        *rows,
+        "",
+    ])
+
+
+def gen_state(members: dict[str, griffe.Object]) -> str:
+    """### State table — disable / enable / readonly / show / hide methods."""
+    rows: list[str] = []
+    for name, member in sorted(members.items()):
+        if not isinstance(member, griffe.Function):
+            continue
+        if name not in _STATE_NAMES:
+            continue
+        rows.append(_method_row(name, member))
+
+    if not rows:
+        return ""
+
+    return "\n".join([
+        "### State\n",
+        "| Method | Description |",
+        "|---|---|",
+        *rows,
+        "",
+    ])
+
+
+def gen_events(members: dict[str, griffe.Object]) -> str:
+    """### Events table — on_* / off_* callback registration methods."""
+    rows: list[str] = []
+    for name, member in sorted(members.items()):
+        if not isinstance(member, griffe.Function):
+            continue
+        if not name.startswith(("on_", "off_")):
+            continue
+        rows.append(_method_row(name, member))
+
+    if not rows:
+        return ""
+
+    return "\n".join([
+        "### Events\n",
         "| Method | Description |",
         "|---|---|",
         *rows,
@@ -341,6 +397,8 @@ def main() -> None:
             gen_parameters(cls),
             gen_properties(members),
             gen_methods(members),
+            gen_state(members),
+            gen_events(members),
         ] if s)
         content = f"## API reference\n\n{body}" if body else ""
 

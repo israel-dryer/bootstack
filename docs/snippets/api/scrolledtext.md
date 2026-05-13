@@ -33,10 +33,21 @@ in 'scroll' mode |
 |---|---|
 | `add_validation_rule(rule_type)` | Add a validation rule to the field |
 | `destroy()` | Clean up resources and destroy the widget |
-| `disable()` | Disable the field, preventing user input |
-| `enable()` | Enable the field, allowing user input |
 | `get()` | Return the raw text from the underlying entry widget |
 | `insert_addon(widget, position, name=None, pack_options=None)` | Insert a widget addon before or after the entry input |
+
+### State
+
+| Method | Description |
+|---|---|
+| `disable()` | Disable the field, preventing user input |
+| `enable()` | Enable the field, allowing user input |
+| `readonly(value=None)` | Set or toggle the readonly state of the field |
+
+### Events
+
+| Method | Description |
+|---|---|
 | `off_changed(bind_id=None)` | Unsubscribe from ``<<Change>>`` |
 | `off_enter(bind_id=None)` | Unsubscribe from ``<Return>`` |
 | `off_input(bind_id=None)` | Unsubscribe from ``<<Input>>`` |
@@ -49,4 +60,3 @@ in 'scroll' mode |
 | `on_invalid(callback)` | Register a callback for ``<<Invalid>>`` events (fires when validation fails) |
 | `on_valid(callback)` | Register a callback for ``<<Valid>>`` events (fires when validation passes) |
 | `on_validated(callback)` | Register a callback for ``<<Validate>>`` events (fires after any validation) |
-| `readonly(value=None)` | Set or toggle the readonly state of the field |
