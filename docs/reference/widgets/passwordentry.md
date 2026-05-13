@@ -4,4 +4,6 @@ title: PasswordEntry
 
 # PasswordEntry
 
---8<-- "snippets/api/passwordentry.md"
+::: bootstack.widgets.composites.passwordentry.PasswordEntry
+    options:
+      inherited_members: true

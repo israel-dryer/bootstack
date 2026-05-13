@@ -252,7 +252,7 @@ d.insert_addon(
 </div>
 
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+!!! link "See [TextEntry](textentry.md) for the full add-on API."
 
 ### Events
 

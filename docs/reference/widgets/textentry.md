@@ -4,4 +4,6 @@ title: TextEntry
 
 # TextEntry
 
---8<-- "snippets/api/textentry.md"
+::: bootstack.widgets.composites.textentry.TextEntry
+    options:
+      inherited_members: true

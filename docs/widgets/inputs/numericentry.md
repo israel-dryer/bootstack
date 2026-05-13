@@ -276,7 +276,7 @@ size.insert_addon(bs.Label, position="after", text="cm", name="unit")
     <img src="../../assets/widgets-numericentry-addons.png" alt="Numeric Entry Addons"/>
 </div>
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API including state inheritance and retrieval."
+!!! link "See [TextEntry](textentry.md) for the full add-on API including state inheritance and retrieval."
 
 ---
 

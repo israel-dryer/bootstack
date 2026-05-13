@@ -4,4 +4,6 @@ title: PathEntry
 
 # PathEntry
 
---8<-- "snippets/api/pathentry.md"
+::: bootstack.widgets.composites.pathentry.PathEntry
+    options:
+      inherited_members: true

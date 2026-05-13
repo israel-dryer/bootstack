@@ -205,7 +205,7 @@ size.insert_addon(bs.Button, position='before', icon='rulers')
     <img src="../../assets/widgets-spinnerentry-addons.png" alt="Spinner Entry Addons"/>
 </div>
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+!!! link "See [TextEntry](textentry.md) for the full add-on API."
 
 ### Events
 

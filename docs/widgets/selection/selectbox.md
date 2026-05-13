@@ -122,7 +122,7 @@ title: SelectBox
     )
     ```
 
-    Accepted addon types are `bs.Button`, `bs.Label`, and `bs.CheckToggle`. Retrieve any addon by name via `sb.addons["name"]`. See [TextEntry add-ons](../inputs/textentry.md#add-ons) for the full surface.
+    Accepted addon types are `bs.Button`, `bs.Label`, and `bs.CheckToggle`. Retrieve any addon by name via `sb.addons["name"]`. See [TextEntry](../inputs/textentry.md) for the full add-on surface.
 
     ## Search and filtering
 
