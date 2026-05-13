@@ -177,6 +177,9 @@ def mkdocs_block(
     lines.append(f"      show_root_toc_entry: {'true' if show_root_heading else 'false'}")
     lines.append("      show_root_full_path: false")
     lines.append(f"      inherited_members: {'true' if inherited_members else 'false'}")
+    if not show_root_heading:
+        lines.append("      show_docstring: false")
+        lines.append("      heading_level: 3")
 
     if merge_init:
         lines.append("      merge_init_into_class: true")

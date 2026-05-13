@@ -19,6 +19,8 @@ title: NumericEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - increment_widget
         - decrement_widget
@@ -38,6 +40,8 @@ title: NumericEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - increment
         - decrement
@@ -53,6 +57,8 @@ title: NumericEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - disable
         - enable
@@ -66,6 +72,8 @@ title: NumericEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - on_input
         - off_input

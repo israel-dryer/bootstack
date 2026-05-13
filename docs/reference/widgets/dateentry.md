@@ -19,6 +19,8 @@ title: DateEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - value
         - date_picker_button
@@ -37,6 +39,8 @@ title: DateEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - get
         - add_validation_rule
@@ -50,6 +54,8 @@ title: DateEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - disable
         - enable
@@ -63,6 +69,8 @@ title: DateEntry
       show_root_toc_entry: false
       show_root_full_path: false
       inherited_members: true
+      show_docstring: false
+      heading_level: 3
       members:
         - on_input
         - off_input
