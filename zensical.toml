@@ -303,6 +303,7 @@ paths = ["src"]
 docstring_style = "google"
 heading_level = 3
 show_root_heading = false
+show_root_full_path = false
 show_signature = true
 show_signature_annotations = true
 separate_signature = true
