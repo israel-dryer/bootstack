@@ -20,11 +20,6 @@ class TabView(Frame):
     to a page in the page stack. Selecting a tab navigates to the associated
     page.
 
-    !!! note "Events"
-        - `<<TabSelect>>`: Fired when a tab is selected.
-        - `<<TabClose>>`: Fired when a tab's close button is clicked.
-        - `<<TabAdd>>`: Fired when the add button is clicked (if enable_adding=True).
-        - `<<PageChange>>`: Fired when the page changes (from PageStack).
     """
 
     def __init__(
@@ -350,3 +345,34 @@ class TabView(Frame):
     def off_tab_added(self, bind_id: str | None = None) -> None:
         """Unbind from `<<TabAdd>>` event."""
         self._tabs.off_tab_added(bind_id)
+
+    def on_tab_changed(self, callback: Callable) -> Any:
+        """Subscribe to tab selection changes.
+
+        Args:
+            callback: Function called with the new selected value.
+
+        Returns:
+            Subscription identifier for use with off_tab_changed().
+        """
+        return self._tabs.on_tab_changed(callback)
+
+    def off_tab_changed(self, bind_id: Any) -> None:
+        """Unsubscribe from tab selection changes."""
+        self._tabs.off_tab_changed(bind_id)
+
+    def on_tab_closed(self, callback: Callable) -> str:
+        """Bind to `<<TabClose>>` event (when a tab's close button is clicked).
+
+        Args:
+            callback: Function to call when a tab is closed.
+                Receives `event.data = {'value': Any}` with the tab's value.
+
+        Returns:
+            Binding identifier for use with off_tab_closed().
+        """
+        return self._tabs.on_tab_closed(callback)
+
+    def off_tab_closed(self, bind_id: str | None = None) -> None:
+        """Unbind from `<<TabClose>>` event."""
+        self._tabs.off_tab_closed(bind_id)

@@ -63,15 +63,6 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
     is visible at a time. Tabs can be referenced by key (str), index (int), or
     widget instance.
 
-    !!! note "Events"
-
-        - `<<NotebookTabChange>>`: Triggered when the selected tab changes.
-        - `<<NotebookTabActivate>>`: Triggered when a tab becomes active.
-        - `<<NotebookTabDeactivate>>`: Triggered when a tab becomes inactive.
-
-        All events provide `event.data` with keys: `current` (TabRef), `previous`
-        (TabRef), `reason` ('user', 'api', 'hide', 'forget', 'reorder'),
-        `via` ('click', 'key', 'programmatic').
     """
 
     _ttk_base = ttk.Notebook

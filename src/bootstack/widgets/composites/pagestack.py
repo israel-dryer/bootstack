@@ -36,16 +36,6 @@ class PageStack(Frame):
     visible at a time. It maintains a navigation history, allowing users to move
     backward and forward through pages similar to a web browser.
 
-    !!! note "Events"
-
-        - `<<PageUnmount>>`: Triggered when the current page is hidden.
-        - `<<PageWillMount>>`: Triggered before a new page is displayed.
-        - `<<PageMount>>`: Triggered after a new page is displayed.
-        - `<<PageChange>>`: Triggered after page navigation completes.
-
-        All events provide `event.data` with keys: `page`, `prev_page`, `prev_data`,
-        `nav` ('push', 'back', 'forward'), `index`, `length`, `can_back`,
-        `can_forward`.
     """
 
     def __init__(self, master: Master = None, **kwargs: Unpack[PageStackKwargs]):
@@ -328,3 +318,21 @@ class PageStack(Frame):
     def off_page_changed(self, bind_id: str | None = None) -> None:
         """Unbind from `<<PageChange>>`."""
         self.unbind("<<PageChange>>", bind_id)
+
+    def on_page_mount(self, callback: Callable) -> str:
+        """Bind to `<<PageMount>>` (fires after a new page is displayed).
+
+        Args:
+            callback: Function to call after a page mounts.
+                Receives `event.data` with navigation info: `page`,
+                `prev_page`, `nav`, `index`, `length`, `can_back`,
+                `can_forward`.
+
+        Returns:
+            Binding identifier for use with off_page_mount().
+        """
+        return self.bind('<<PageMount>>', callback, add='+')
+
+    def off_page_mount(self, bind_id: str | None = None) -> None:
+        """Unbind from `<<PageMount>>`."""
+        self.unbind('<<PageMount>>', bind_id)

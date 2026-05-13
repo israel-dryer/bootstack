@@ -24,13 +24,6 @@ class PackFrame(Frame):
     default layout options. Simply use the standard `pack()` method
     on child widgets — no special `add()` method is needed.
 
-    Example:
-        ```python
-        frame = PackFrame(direction="vertical", gap=10, fill_items="x")
-        Label(frame, text="First").pack()
-        Label(frame, text="Second").pack()
-        Button(frame, text="Click").pack(expand=True)  # override default
-        ```
     """
 
     SIDE_MAP: dict[Direction, Side] = {

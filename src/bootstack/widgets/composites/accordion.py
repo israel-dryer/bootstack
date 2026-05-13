@@ -25,9 +25,6 @@ class Accordion(Frame):
         expanders (list[Expander]): List of managed Expander widgets.
         expanded (list[Expander]): Currently expanded Expander(s).
 
-    !!! note "Events"
-        - `<<AccordionChange>>`: Fired when the expanded section(s) change.
-          `event.data = {'expanded': list[Expander]}`
     """
 
     def __init__(

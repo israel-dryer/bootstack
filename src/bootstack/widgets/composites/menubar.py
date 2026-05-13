@@ -52,26 +52,6 @@ class MenuBar(GridFrame):
     MenuBar provides a 5-column grid layout where the center region stays visually
     centered. All three regions support adding buttons, labels, and menus.
 
-    Example:
-        ```python
-        menubar = MenuBar(app, gap=6)
-
-        # Add menus to the left (before) region
-        menubar.add_menu("File", items=[
-            {"type": "command", "text": "Open", "command": open_file},
-            {"type": "command", "text": "Save", "command": save_file},
-            {"type": "separator"},
-            {"type": "command", "text": "Exit", "command": app.destroy},
-        ])
-
-        # Add label to center region
-        menubar.add_label("My App", region="center")
-
-        # Add buttons to the right (after) region
-        menubar.add_button("Help", region="after", command=show_help)
-        menubar.add_menu("Account", region="after", items=[...])
-        ```
-
     Args:
         master: Parent widget. If None, uses the default root window.
         gap: Default gap between items in all region PackFrames. Defaults to 0.

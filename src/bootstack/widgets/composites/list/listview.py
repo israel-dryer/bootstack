@@ -27,16 +27,6 @@ class ListView(Frame):
     The widget works with either a simple list/dict data or a custom DataSource
     implementation for more complex scenarios (database, API, etc.).
 
-    !!! note "Events"
-        - `<<SelectionChange>>`: Fired when selection state changes. `event.data = None` (use `get_selected()` to get current selection)
-        - `<<ItemDelete>>`: Fired when an item is deleted. `event.data = dict` (the deleted record; contains at least `id`)
-        - `<<ItemDeleteFail>>`: Fired when item deletion fails. `event.data = dict` (the record plus an `error: str` key)
-        - `<<ItemInsert>>`: Fired when a new item is inserted. `event.data = dict` (the new record, with `id` populated)
-        - `<<ItemUpdate>>`: Fired when an item is updated. `event.data = dict` (the merged record, with `id`)
-        - `<<ItemClick>>`: Fired when an item is clicked. `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)
-        - `<<ItemDragStart>>`: Fired when a drag begins. `event.data = dict` (the record)
-        - `<<ItemDrag>>`: Fired during a drag. `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)
-        - `<<ItemDragEnd>>`: Fired when a drag ends. `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)
     """
 
     def __init__(

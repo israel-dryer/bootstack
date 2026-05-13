@@ -60,15 +60,6 @@ class TableView(Frame):
     Provides sortable headers, filtering/search, pagination or virtual scrolling,
     optional grouping, column striping, and configurable exporting/editing.
 
-    !!! note "Events"
-        - `<<SelectionChange>>`: Fired when row selection changes. `event.data = {'records': list[dict], 'iids': list[str]}`
-        - `<<RowClick>>`: Fired on single row click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowDoubleClick>>`: Fired on row double-click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowRightClick>>`: Fired on row right-click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowInsert>>`: Fired when rows are inserted. `event.data = {'records': list[dict]}`
-        - `<<RowUpdate>>`: Fired when rows are updated. `event.data = {'records': list[dict]}`
-        - `<<RowDelete>>`: Fired when rows are deleted. `event.data = {'records': list[dict]}`
-        - `<<RowMove>>`: Fired when rows are moved/reordered. `event.data = {'records': list[dict]}`
     """
 
     def __init__(

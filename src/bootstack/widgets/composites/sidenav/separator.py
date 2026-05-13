@@ -23,13 +23,6 @@ class SideNavSeparator(Frame):
     groups of navigation items. It is a thin wrapper around the Separator
     primitive with appropriate padding for navigation contexts.
 
-    Example:
-        ```python
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_item('documents', text='Documents', icon='folder')
-        nav.add_separator()  # Creates SideNavSeparator
-        nav.add_item('settings', text='Settings', icon='gear')
-        ```
     """
 
     DEFAULT_PADDING = (0, 4, 0, 4)

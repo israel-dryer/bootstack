@@ -34,11 +34,6 @@ class Card(Frame):
     Card is a Frame with `surface='card'` and `show_border=True` by default,
     providing an elevated container with a visible border for grouping content.
 
-    Example:
-        ```python
-        card = ttk.Card(app, padding=20)
-        ttk.Label(card, text="Card content").pack()
-        ```
     """
 
     def __init__(self, master: Master = None, **kwargs: Unpack[CardKwargs]) -> None:

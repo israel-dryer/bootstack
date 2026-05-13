@@ -18,10 +18,6 @@ class NumberEntryPart(TextEntryPart):
     stepping functionality. Supports min/max bounds, increment/decrement
     via keyboard and mouse wheel, and optional wrapping.
 
-    !!! note "Events"
-        - `<<Increment>>`: Fired when an increment is requested (before step occurs). `event.data = {'value': current_value}`
-        - `<<Decrement>>`: Fired when a decrement is requested (before step occurs). `event.data = {'value': current_value}`
-        - Plus all events from TextEntryPart: `<<Input>>`, `<<Change>>`, `<Return>`
     """
 
     def __init__(

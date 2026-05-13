@@ -58,38 +58,6 @@ class SideNav(Frame):
     The pane manages a shared selection variable/signal that all items use
     for radio-group behavior.
 
-    !!! note "Events"
-        - `<<PaneToggled>>`: Fired when pane is opened/closed.
-          `event.data = {'is_open': bool}`
-        - `<<DisplayModeChanged>>`: Fired when display mode changes.
-          `event.data = {'mode': str}`
-        - `<<SelectionChanged>>`: Fired when selected item changes.
-          `event.data = {'key': str}`
-        - `<<BackRequested>>`: Fired when back button is clicked.
-
-    Example:
-        ```python
-        nav = SideNav(root, title='My App')
-
-        # Add root-level items
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_item('docs', text='Documents', icon='file-earmark-text')
-
-        # Add a group with items
-        nav.add_group('files', text='Files', icon='folder')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        nav.add_item('cloud', text='Cloud', icon='cloud', group='files')
-
-        # Add section header
-        nav.add_header('Favorites')
-        nav.add_item('photos', text='Photos', icon='image')
-
-        # Add footer item
-        nav.add_footer_item('settings', text='Settings', icon='gear')
-
-        # Bind to selection
-        nav.on_selection_changed(lambda e: print(f"Selected: {e.data['key']}"))
-        ```
     """
 
     # Default pane widths
@@ -908,3 +876,20 @@ class SideNav(Frame):
     def off_pane_toggled(self, bind_id: str = None) -> None:
         """Unbind from `<<PaneToggled>>`."""
         self.unbind('<<PaneToggled>>', bind_id)
+
+    def on_display_mode_changed(self, callback) -> str:
+        """Bind to `<<DisplayModeChanged>>`.
+
+        Args:
+            callback: Function to call when display mode changes.
+                Receives `event.data = {'mode': str}` where mode is
+                'expanded', 'compact', or 'minimal'.
+
+        Returns:
+            Binding identifier for use with off_display_mode_changed().
+        """
+        return self.bind('<<DisplayModeChanged>>', callback, add='+')
+
+    def off_display_mode_changed(self, bind_id: str = None) -> None:
+        """Unbind from `<<DisplayModeChanged>>`."""
+        self.unbind('<<DisplayModeChanged>>', bind_id)

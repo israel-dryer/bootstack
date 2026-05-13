@@ -48,19 +48,6 @@ class SideNavGroup(Frame):
 
     The group shows as selected if any of its child items are currently selected.
 
-    !!! note "Events"
-        - `<<GroupExpanding>>`: Fired before the group expands.
-          `event.data = {'key': str}`
-        - `<<GroupCollapsed>>`: Fired after the group collapses.
-          `event.data = {'key': str}`
-
-    Example:
-        ```python
-        # Groups are created via SideNav.add_group()
-        nav.add_group('files', text='Files', icon='folder')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        nav.add_item('cloud', text='Cloud', icon='cloud', group='files')
-        ```
     """
 
     # Default padding values (same as SideNavItem)

@@ -51,16 +51,6 @@ class SideNavItem(Frame):
     Uses NavigationButton.TFrame for the container (with selection indicator)
     and NavigationButton.TLabel for the icon and text labels.
 
-    !!! note "Events"
-        - `<<ItemInvoked>>`: Fired when the item is clicked.
-          `event.data = {'key': str}`
-
-    Example:
-        ```python
-        # Items are typically created via SideNav.add_item()
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        ```
     """
 
     # Default indent width in pixels per indent level

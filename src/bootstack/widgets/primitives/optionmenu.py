@@ -48,9 +48,6 @@ class OptionMenu(MenuButton):
     a popup menu containing the provided options as radiobutton items. Selecting
     an item updates the displayed text and fires a `<<Change>>` event.
 
-    !!! note "Events"
-        - `<<Change>>`: Fired when the selected value changes.
-          `event.data = {'value': Any}`
     """
 
     def __init__(
@@ -61,9 +58,6 @@ class OptionMenu(MenuButton):
             **kwargs: Unpack[OptionMenuKwargs],
     ):
         """Create an OptionMenu backed by a ContextMenu.
-
-        !!! note "Events"
-            - `<<Change>>`: Fired when the selected value changes. `event.data = {'value': Any}`
 
         Args:
             master: Parent widget. If None, uses the default root window.

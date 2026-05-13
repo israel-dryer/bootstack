@@ -25,11 +25,6 @@ class Tabs(Frame):
     Tabs provides a tab bar with optional divider. It manages the layout,
     orientation, and styling of child TabItems.
 
-    !!! note "Events"
-        - `<<TabSelect>>`: Fired when a tab is selected (bubbled from TabItem).
-        - `<<TabClose>>`: Fired when a tab's close button is clicked (bubbled from TabItem).
-        - `<<TabAdd>>`: Fired when the add button is clicked (if enable_adding=True).
-
     Attributes:
         orient (str): The orientation of the tab bar ('horizontal' or 'vertical').
         variant (str): The visual style variant ('pill' or 'bar').
@@ -231,8 +226,24 @@ class Tabs(Frame):
         return self.bind('<<TabAdd>>', callback, add='+')
 
     def off_tab_added(self, bind_id: str | None = None) -> None:
-        """Unbind from <<TabAdd>> event."""
+        """Unbind from `<<TabAdd>>` event."""
         self.unbind('<<TabAdd>>', bind_id)
+
+    def on_tab_closed(self, callback: Callable) -> str:
+        """Bind to `<<TabClose>>` event (when a tab's close button is clicked).
+
+        Args:
+            callback: Function to call when a tab is closed.
+                Receives `event.data = {'value': Any}` with the tab's value.
+
+        Returns:
+            Binding identifier for use with off_tab_closed().
+        """
+        return self.bind('<<TabClose>>', callback, add='+')
+
+    def off_tab_closed(self, bind_id: str | None = None) -> None:
+        """Unbind from `<<TabClose>>` event."""
+        self.unbind('<<TabClose>>', bind_id)
 
     def add(
         self,

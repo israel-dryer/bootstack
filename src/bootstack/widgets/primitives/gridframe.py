@@ -42,15 +42,6 @@ class GridFrame(Frame):
     default layout options. Simply use the standard `grid()` method
     on child widgets — no special `add()` method is needed.
 
-    Example:
-        ```python
-        frame = GridFrame(columns=3, gap=10, sticky_items="nsew")
-        Label(frame, text="A").grid()  # auto-placed at row=0, col=0
-        Label(frame, text="B").grid()  # auto-placed at row=0, col=1
-        Label(frame, text="C").grid()  # auto-placed at row=0, col=2
-        Label(frame, text="D").grid()  # auto-placed at row=1, col=0
-        Label(frame, text="Wide").grid(columnspan=2)  # spans 2 columns
-        ```
     """
 
     def __init__(

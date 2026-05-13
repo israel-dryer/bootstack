@@ -20,15 +20,6 @@ class ListItem(CompositeFrame):
     The widget automatically handles hover, pressed, and focus states across all
     registered child widgets using the Composite state coordinator.
 
-    !!! note "Events"
-        - `<<ItemClick>>`: Fired when the item is clicked.
-        - `<<ItemSelecting>>`: Fired when the item is being selected/deselected.
-        - `<<ItemRemoving>>`: Fired when the remove button is clicked.
-        - `<<ItemFocus>>`: Fired when the item receives keyboard focus.
-        - `<<ItemDragStart>>`: Fired when a drag operation begins.
-        - `<<ItemDrag>>`: Fired during a drag operation.
-        - `<<ItemDragEnd>>`: Fired when a drag operation ends.
-
     Data fields:
         When update_data() is called, the following fields are recognized:
         - id: Unique identifier for the item (required for selection/removal).

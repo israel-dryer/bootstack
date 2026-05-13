@@ -38,24 +38,6 @@ class Toolbar(Frame):
     Items are added from left to right. Use `add_spacer()` to push
     subsequent items to the right side.
 
-    Example:
-        ```python
-        # Basic toolbar with buttons
-        toolbar = Toolbar(root)
-        toolbar.add_button(icon='list', command=toggle_menu)
-        toolbar.add_separator()
-        toolbar.add_label(text='My App')
-        toolbar.add_spacer()
-        toolbar.add_button(icon='gear', command=settings)
-
-        # Custom titlebar with window controls
-        toolbar = Toolbar(
-            root,
-            show_window_controls=True,
-            draggable=True,
-        )
-        toolbar.add_label(text='My App', font='heading-md')
-        ```
     """
 
     def __init__(
