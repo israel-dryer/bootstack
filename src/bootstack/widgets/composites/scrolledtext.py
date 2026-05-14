@@ -1,17 +1,11 @@
 """Scrolled text widget with configurable scrollbars."""
 import tkinter
-from typing import Any, Literal
+from typing import Any
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives.scrollbar import Scrollbar
-from bootstack.widgets.types import Master
-
-ScrollDirection = Literal['horizontal', 'vertical', 'both']
-"""Scroll axis for ``ScrolledText``."""
-
-ScrollbarVisibility = Literal['always', 'never', 'hover', 'scroll']
-"""Scrollbar visibility mode for ``ScrolledText``."""
+from bootstack.widgets.types import Master, ScrollDirection, ScrollbarVisibility
 
 
 class ScrolledText(Frame):
