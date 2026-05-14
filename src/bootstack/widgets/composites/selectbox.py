@@ -490,7 +490,7 @@ class SelectBox(Field):
             return None
 
     @property
-    def selected_index(self):
+    def selected_index(self) -> int:
         """Get or set the selected index.
 
         Returns -1 if the current value is not in the items list.
@@ -511,7 +511,7 @@ class SelectBox(Field):
             raise IndexError(f"index {index} out of range for {len(self._items)} items")
 
     @property
-    def value(self):
+    def value(self) -> str:
         """Get or set the selected value."""
         return Field.value.fget(self)
 

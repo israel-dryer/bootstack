@@ -77,12 +77,7 @@ class NumericEntry(Field):
 
         self._show_spin_buttons = show_spin_buttons
 
-        # passthrough methods
-        self.on_increment = self.entry_widget.on_increment
-        self.off_increment = self.entry_widget.off_increment
-        self.on_decrement = self.entry_widget.on_decrement
-        self.off_decrement = self.entry_widget.off_decrement
-        self.step = self.entry_widget.step
+        # passthrough methods — replaced below with def stubs for API visibility
 
         # pack info
         self._increment_pack_info = {}
@@ -99,26 +94,74 @@ class NumericEntry(Field):
         self._update_spin_button_states()
 
     @property
-    def increment_widget(self):
+    def increment_widget(self) -> Button:
         """Get the increment spin button widget."""
         return self.addons['increment']
 
     @property
-    def decrement_widget(self):
+    def decrement_widget(self) -> Button:
         """Get the decrement spin button widget."""
         return self.addons['decrement']
 
-    def increment(self):
+    def increment(self) -> None:
         """Increment the numeric value by one step."""
         if not self._entry_is_interactive():
             return
         self.entry_widget.event_generate("<<Increment>>")
 
-    def decrement(self):
+    def decrement(self) -> None:
         """Decrement the numeric value by one step."""
         if not self._entry_is_interactive():
             return
         self.entry_widget.event_generate("<<Decrement>>")
+
+    def step(self, n: int = 1) -> None:
+        """Step the value by ``n`` increments (positive) or decrements (negative).
+
+        Args:
+            n: Number of steps. Positive steps up, negative steps down.
+        """
+        self.entry_widget.step(n)
+
+    def on_increment(self, callback) -> str:
+        """Register a callback for ``<<Increment>>`` events (fires when value steps up).
+
+        Args:
+            callback: Receives a Tkinter `Event` object with `event.data['value']`
+                set to the new numeric value.
+
+        Returns:
+            Bind ID — pass to `off_increment()` to unsubscribe.
+        """
+        return self.entry_widget.on_increment(callback)
+
+    def off_increment(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Increment>>``.
+
+        Args:
+            bind_id: ID returned by `on_increment()`.
+        """
+        self.entry_widget.off_increment(bind_id)
+
+    def on_decrement(self, callback) -> str:
+        """Register a callback for ``<<Decrement>>`` events (fires when value steps down).
+
+        Args:
+            callback: Receives a Tkinter `Event` object with `event.data['value']`
+                set to the new numeric value.
+
+        Returns:
+            Bind ID — pass to `off_decrement()` to unsubscribe.
+        """
+        return self.entry_widget.on_decrement(callback)
+
+    def off_decrement(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from ``<<Decrement>>``.
+
+        Args:
+            bind_id: ID returned by `on_decrement()`.
+        """
+        self.entry_widget.off_decrement(bind_id)
 
     def _entry_is_interactive(self) -> bool:
         """Return True if the entry widget is not disabled or readonly."""

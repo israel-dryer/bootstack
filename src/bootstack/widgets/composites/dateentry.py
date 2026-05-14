@@ -156,7 +156,7 @@ class DateEntry(Field):
     # --- value property override for range mode -------------------------
 
     @property
-    def value(self):
+    def value(self) -> date | tuple[date, date] | None:
         """Selected date (single mode) or `(start, end)` tuple (range mode)."""
         if self._selection_mode == 'range':
             return self._range_value
@@ -251,7 +251,7 @@ class DateEntry(Field):
     # --- public properties ----------------------------------------------
 
     @property
-    def date_picker_button(self):
+    def date_picker_button(self) -> Button | None:
         """Get the calendar picker button widget."""
         return self.addons.get('date-picker')
 

@@ -1,4 +1,4 @@
-"""Icons command — delegates to the ttkbootstrap-icons browser."""
+"""Icons command — launches the Bootstrap Icons browser."""
 from __future__ import annotations
 
 import argparse
@@ -13,7 +13,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         help="Browse Bootstrap Icons available in bootstack",
         description=(
             "Launch the Bootstrap Icons browser.\n\n"
-            "Delegates to the ttkbootstrap-icons tool bundled with the "
+            "Launches the Bootstrap Icons browser bundled with the "
             "ttkbootstrap_icons_bs package. Any icon name shown there can "
             "be used as the icon= parameter on any bootstack widget."
         ),
