@@ -146,17 +146,28 @@ new or unstarted pages.
     Not every level will be populated immediately — that is acceptable while
     the examples section is being built.
 
-24. **`docs_scripts/gen_api.py` generates static API snippets (Session 14).**
-    Run `python docs_scripts/gen_api.py` from the project root. Outputs
-    `docs/snippets/api/<slug>.md` for each registered widget. Each snippet
-    contains `## API reference` (h2 landmark for TOC) with `### Parameters`,
-    `### Properties`, `### Methods` tables (h3, not in TOC at `toc_depth=2`).
-    Include in a page with `--8<-- "snippets/api/textentry.md"`.
-    `pymdownx.snippets` is configured in `zensical.toml` with
-    `base_path = ["docs"]`. Re-run the script whenever source docstrings change.
-    Widget registry lives in the `WIDGETS` dict at the top of the script —
-    add new widgets there. Field-based widgets must also list `_FIELD` in
-    `include_from` to pull inherited methods.
+24. **`docs_scripts/gen_api.py` generates widget API reference pages (Session 15).**
+    Run `python docs_scripts/gen_api.py` from the project root. Writes one
+    complete page per widget to `docs/reference/widgets/<slug>.md`. Widget
+    registry lives in the `WIDGETS` dict at the top of the script. Field-based
+    widgets must list `_FIELD` in `include_from`.
+
+    **⚠️ Current output is not satisfactory — plan to revise approach in Session 16.**
+    Current structure per page:
+    - mkdocstrings `:::` block for class description + constructor parameters
+      (members: false, merge_init_into_class: true)
+    - `## Properties` / `## Methods` / `## State` / `## Events` (h2, in TOC)
+    - `### member(sig)` static h3 markdown for each member (nested in TOC)
+
+    Problems with current approach: static h3 member entries look plain compared
+    to mkdocstrings rendering; no type detail on individual members; rich
+    mkdocstrings rendering for section content was abandoned because mkdocstrings
+    registers all headings at a flat page.toc level (breaking TOC hierarchy) and
+    the class description repeated in every section block regardless of
+    show_docstring option. Revisit before Session 16 begins.
+
+    `docs/reference/widgets/` nav sub-section is wired in `zensical.toml`.
+    Re-run the script whenever source docstrings change.
 
 25. **`field.py` event API is now fully griffe-visible (Session 14).**
     Replaced 12 dynamic `self.on_* = self._entry.on_*` assignments and the
@@ -167,16 +178,16 @@ new or unstarted pages.
     all event methods and `add_validation_rule` automatically. These methods
     now appear in IDE hover, API snippets, and any mkdocstrings output.
 
-26. **Examples use a standard template (Session 14, template not yet written).**
-    Each example page: title, one-sentence description, screenshot, `**Covers:**`
-    inline list of widgets/concepts, complete runnable code block, short
-    Walkthrough section (3–5 annotated key decisions, not line-by-line), See
-    also. Code must always be complete and runnable — no ellipses.
-    Template file: `docs_templates/example-page-template.md` (to be created).
+26. **Examples use a standard template (Session 15).** Each example page:
+    title, one-sentence description, screenshot, `**Covers:**` inline list of
+    widgets/concepts, complete runnable code block, short Walkthrough section
+    (3–5 annotated key decisions, not line-by-line), See also. Code must always
+    be complete and runnable — no ellipses.
+    Template: `docs_templates/example-page-template.md` ✅ written Session 15.
 
 ---
 
-## Current state (as of Session 14)
+## Current state (as of Session 15)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -188,7 +199,7 @@ new or unstarted pages.
 | Folder | Status | Notes |
 |---|---|---|
 | `widgets/actions/` | ✅ Accuracy-reviewed | Old structure |
-| `widgets/inputs/` | ✅ Accuracy-reviewed | Old structure; textentry/passwordentry/pathentry in transitional state (see below) |
+| `widgets/inputs/` | ✅ Accuracy-reviewed | Old structure; textentry/passwordentry/pathentry on thin template |
 | `widgets/selection/` | ✅ Accuracy-reviewed | Old structure; selectbox.md has superseded tabbed template |
 | `widgets/data-display/` | ✅ 7/8 accuracy-reviewed | Old structure; tableview reserved for dedicated pass |
 
@@ -197,20 +208,36 @@ primitives/, views/, plus `data-display/tableview.md`.
 
 ### Widget page state
 
-The Session 14 architecture pivot means all widget pages need to move to the
-thin template (decision #22). Current states:
+- **~76 pages** — old structure. Not yet migrated.
+- **`selectbox.md`** — superseded tabbed template. Needs thin template once examples exist.
+- **`textentry.md`, `passwordentry.md`, `pathentry.md`** — ✅ on thin template (Session 15).
+  See also has placeholder example links.
 
-- **~76 pages** — old structure (`## Appearance` / `## Examples and patterns`
-  / `## Behavior` umbrellas). Not yet migrated to either template.
-- **`selectbox.md`** — has superseded tabbed template from Session 13. Needs
-  to be trimmed to thin template once examples exist.
-- **`textentry.md`, `passwordentry.md`, `pathentry.md`** — transitional state:
-  comprehensive flat sections (no tabs), API snippet include at the bottom.
-  Content is accurate and better than the old structure. Will be trimmed to
-  the thin template once examples absorb the usage content.
+### API reference state (Session 15)
 
-No pages are currently on the final thin template — the template itself has
-not yet been written (open item #1 below).
+- `docs/reference/widgets/` — 9 pages generated by `docs_scripts/gen_api.py`:
+  textentry, passwordentry, pathentry, numericentry, spinnerentry, dateentry,
+  timeentry, scrolledtext, selectbox.
+- **Current output is not satisfactory.** See decision #24 for details and the
+  plan to revise in Session 16.
+- `zensical.toml` mkdocstrings config changes made in Session 15:
+  `show_signature = false`, `show_root_full_path = false`, `heading_level = 2`,
+  `separate_signature = false`.
+
+### Session 15 source cleanups
+
+- **`!!! note "Events"` sweep** — removed from all widget composites, primitives,
+  parts, mixins, and dialog source files. Zero remaining in `src/bootstack/`.
+- **`Example:` block sweep** — removed from class docstrings in sidenav, appshell,
+  menubar, toolbar, card, packframe, gridframe, and sidenav sub-widgets.
+- **`__init__` docstring prose stripped** — removed redundant summary/description
+  paragraphs from `__init__` docstrings in all 10 Field-based widgets (TextEntry,
+  PasswordEntry, PathEntry, NumericEntry, SpinnerEntry, DateEntry, TimeEntry,
+  ScrolledText, SelectBox, Field). `__init__` docstrings now begin directly with
+  `Args:`.
+- **Missing `on_*` stubs added**: `on_display_mode_changed` / `off_display_mode_changed`
+  (SideNav), `on_tab_closed` / `off_tab_closed` (Tabs, TabView), `on_tab_changed` /
+  `off_tab_changed` (TabView), `on_page_mount` / `off_page_mount` (PageStack).
 
 ### Session 13 source cleanups
 
@@ -260,50 +287,49 @@ during the SelectBox migration:
 
 ## Open items
 
-### Architecture (Session 14 pivot)
+### Architecture
 
-1. **Write the thin widget page template.** Replace
-   `docs_templates/widget-page-template.md` with the new thin model (decision
-   #22): description, quickstart, When to use, See also (three levels). The
-   old template documents the superseded tabbed structure.
+1. ✅ **Thin widget page template** — written Session 15.
+   `docs_templates/widget-page-template.md`
 
-2. **Write the example page template.** Create
-   `docs_templates/example-page-template.md` per decision #26: title,
-   description, screenshot, Covers line, complete code, Walkthrough (3–5
-   points), See also.
+2. ✅ **Example page template** — written Session 15.
+   `docs_templates/example-page-template.md`
 
-3. **Define the examples topic taxonomy.** Agree on the top-level categories
-   under `docs/examples/` (e.g. Forms, Data entry, Data display, Navigation
-   patterns, Dialogs & overlays). Write `docs/examples/index.md` with the
-   category listing. This unblocks writing the first examples and populating
-   widget page See also sections.
+3. **Define the examples topic taxonomy.** Agree on top-level categories under
+   `docs/examples/` (e.g. Forms, Data entry, Data display, Navigation patterns,
+   Dialogs & overlays). Write `docs/examples/index.md`. Unblocks writing the
+   first examples and populating widget page See also sections.
 
-4. **Docstring cleanup pass — all widget source files.** Systematic sweep:
-   consistent `Args:` blocks, correct `@property` declarations (Field pattern
-   established in Sessions 13–14), strip any remaining `!!! note "Events"`
-   admonitions, accurate class summaries. Field-based composites are mostly
-   clean; thin ttk wrappers (Button, TreeView, etc.) likely need work.
-   Run `grep -r '!!! note "Events"' src/` to find stragglers.
+4. ✅ **Docstring cleanup — Field-based widgets.** `!!! note "Events"` and
+   `Example:` blocks swept from all source files. `__init__` prose stripped.
+   **Remaining:** thin ttk wrappers (Button, TreeView, etc.) `Args:` blocks
+   and class summary quality — deferred.
 
-5. **Migrate widget pages to thin template.** Once items 1–3 are done:
-   trim each page to the thin model, populate See also with example + guide +
-   API ref links. The three transitional pages (textentry, passwordentry,
-   pathentry) go first since they're already restructured. ~79 others follow.
+5. **Revise the API reference approach (Session 16 priority).** Current
+   `gen_api.py` output (static h3 markdown for member sections) is not
+   satisfactory. Constraints discovered in Session 15:
+   - mkdocstrings registers all headings at a flat `page.toc` level, breaking
+     TOC nesting when using `:::` blocks for section content.
+   - `show_docstring: false` is not a valid mkdocstrings-python option — class
+     description repeats in every section block.
+   - Full mkdocstrings rendering for individual members could not be achieved
+     while also maintaining correct TOC hierarchy.
+   Before resuming widget page migrations, agree on the final approach. Options
+   to evaluate: single `:::` block with `group_by_category`, per-member `:::`
+   blocks at individual member paths, or a richer static generation from griffe
+   with formatted type info.
 
-6. **`add_validation_rule` — `**kwargs` are undocumented in the snippet.**
-   The Methods table shows `add_validation_rule(rule_type)` with kwargs hidden.
-   The full options (pattern=, min=, max=, other_field=, func=, message=) are
-   in the method docstring (visible in IDE hover) but not in the table.
-   Acceptable for now; could be addressed with a dedicated Validation section
-   in the example pages that use it.
+6. **Migrate widget pages to thin template.** Textentry, passwordentry, pathentry
+   done. ~76 others + selectbox.md still on old structure. Blocked on item 3
+   (taxonomy) for See also → Examples links, and item 5 (API reference approach)
+   for See also → API reference links.
+
+7. **`add_validation_rule` kwargs undocumented in reference pages.** The static
+   h3 heading shows `add_validation_rule(rule_type)` with `**kwargs` hidden.
+   Full options (pattern=, min=, max=, other_field=, func=, message=) are in
+   the method docstring. Address as part of item 5 revision.
 
 ### Infrastructure
-
-7. **Commit Session 14 changes.** Unstaged: `field.py` (TypedDicts + stubs),
-   `textentry.md`, `passwordentry.md`, `pathentry.md`, `zensical.toml`
-   (snippets extension). Untracked: `docs_scripts/gen_api.py`,
-   `docs/snippets/api/` (9 files). Commit in two logical groups:
-   source improvements (`field.py`) and docs infrastructure (everything else).
 
 8. **Screenshot PNGs** for `spacing-and-alignment.md` — user-side capture:
    - `docs/assets/guides-spacing-settings-panel.png`
@@ -432,6 +458,51 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 15 — Templates, docstring sweep, page migrations, API reference iteration (2026-05-13)
+
+A wide-ranging session that completed several infrastructure items from Session 14
+and ran into significant friction on the API reference page format.
+
+**1. Templates written.** Both `docs_templates/widget-page-template.md` (thin
+gateway model, ~40 lines, four sections) and `docs_templates/example-page-template.md`
+(title, description, screenshot, Covers, code, Walkthrough, See also) written and
+committed. Old tabbed template replaced.
+
+**2. Docstring sweep — all source files.** `!!! note "Events"` admonitions removed
+from 27 widget files and 4 dialog files. `Example:` blocks removed from class
+docstrings in 11 files. `__init__` docstring prose (redundant summary/description)
+stripped from 10 Field-based widget files — `__init__` now begins with `Args:` only.
+Missing `on_*` / `off_*` stubs added to SideNav, Tabs, TabView, PageStack.
+
+**3. Widget page migrations.** textentry.md, passwordentry.md, pathentry.md trimmed
+to thin template. See also sections use placeholder example links.
+
+**4. API reference — extensive iteration, unsatisfactory result.** The session
+spent significant time evolving the API reference approach:
+- Started with mkdocstrings `:::` on standalone `docs/reference/widgets/` pages.
+- Switched to static table generation via `gen_api.py` (Methods/State/Events grouped).
+- Switched back to mkdocstrings after user preferred standard format.
+- Iterated through multiple mkdocstrings config changes (heading_level, show_root_full_path,
+  show_root_heading, separate_signature, show_signature) to fix duplication and TOC issues.
+- Discovered mkdocstrings registers all headings at a flat page.toc level — multi-block
+  `:::` approaches cannot achieve proper TOC nesting.
+- Final state: `gen_api.py` generates pages with a mkdocstrings class block at the
+  top (description + parameters) and static h3 markdown for Properties/Methods/State/Events
+  sections. TOC nesting is correct. But member entries are plain static markdown without
+  rich type rendering.
+- **User is not happy with the result.** Plan to revisit the approach in Session 16
+  before continuing widget page migrations. See open item #5.
+
+**zensical.toml mkdocstrings config as of Session 15:**
+`show_signature = false`, `show_root_full_path = false`, `heading_level = 2`,
+`separate_signature = false`, `show_root_heading = false` (global default).
+
+**What's NOT done in Session 15:**
+- Examples taxonomy and index.md
+- Remaining ~76 widget page migrations
+- Thin ttk wrapper docstring cleanup
+- API reference approach finalised (open item #5)
 
 ### Session 14 — Architecture pivot + Field API improvements (2026-05-13)
 
