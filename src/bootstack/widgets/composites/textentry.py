@@ -29,26 +29,26 @@ class TextEntry(Field):
                 This is replaced by validation error messages when validation fails.
 
         Other Parameters:
-            accent (str): Accent token for the focus ring and active border.
-            density (str): Widget density — 'default' or 'compact'.
-            state (str): Initial widget state — 'normal', 'disabled', or 'readonly'.
-            allow_blank (bool): Allow empty input. Default is True.
-            cursor (str): Cursor style when hovering.
-            value_format (str): ICU format pattern for parsing/formatting.
-            exportselection (bool): Export selection to clipboard.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment ('left', 'center', 'right').
-            show_message (bool): If True, displays message area. Defaults to False,
+            accent: Accent token for the focus ring and active border.
+            density: Widget density — 'default' or 'compact'.
+            state: Initial widget state — 'normal', 'disabled', or 'readonly'.
+            allow_blank: Allow empty input. Default is True.
+            cursor: Cursor style when hovering.
+            value_format: ICU format pattern for parsing/formatting.
+            exportselection: Export selection to clipboard.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment ('left', 'center', 'right').
+            show_message: If True, displays message area. Defaults to False,
                 but auto-enables when `message=` or `required=True` is set.
             padding: Padding around entry widget.
-            show (str): Character to mask input (e.g., '*' for passwords).
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-            required (bool): If True, field cannot be empty. Adds 'required'
+            show: Character to mask input (e.g., '*' for passwords).
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
+            required: If True, field cannot be empty. Adds 'required'
                 validation rule and appends '*' to label.
             xscrollcommand: Callback for horizontal scrolling.
         """

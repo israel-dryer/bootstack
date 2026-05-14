@@ -35,42 +35,42 @@ class NumericEntry(Field):
     ):
         """Args:
             master: Parent widget. If None, uses the default root window.
-            value (int | float): Initial numeric value to display.
-            label (str): Optional label text to display above the entry field.
+            value: Initial numeric value to display.
+            label: Optional label text to display above the entry field.
                 If `required=True`, an asterisk (*) is automatically appended.
-            message (str): Optional message text to display below the entry field.
+            message: Optional message text to display below the entry field.
                 Used for hints or help text. Replaced by validation errors when
                 validation fails.
-            show_spin_buttons (bool): If True, displays increment/decrement buttons
+            show_spin_buttons: If True, displays increment/decrement buttons
                 (plus and minus icons) to the right of the entry.
-            minvalue (int | float): Minimum allowed value (inclusive). Values below
+            minvalue: Minimum allowed value (inclusive). Values below
                 this will be clamped or wrapped depending on the wrap setting.
-            maxvalue (int | float): Maximum allowed value (inclusive). Values above
+            maxvalue: Maximum allowed value (inclusive). Values above
                 this will be clamped or wrapped depending on the wrap setting.
-            increment (int | float): Step size for increment/decrement operations.
+            increment: Step size for increment/decrement operations.
 
         Other Parameters:
-            wrap (bool): If True, values wrap around at min/max boundaries.
-            value_format (str): Number format specification for IntlFormatter.
+            wrap: If True, values wrap around at min/max boundaries.
+            value_format: Number format specification for IntlFormatter.
                 Examples: `'decimal'`, `'percent'`, `'currency'`, `'#,##0.00'`.
-            locale (str): Locale identifier for number formatting (e.g., `'en_US'`).
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            allow_blank (bool): If True, empty input is allowed (sets value to None).
-            cursor (str): Cursor style when hovering.
-            exportselection (bool): Export selection to clipboard.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment (`'left'`, `'center'`, `'right'`).
-            show_message (bool): If True, displays message area.
-            padding (int | tuple): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-            xscrollcommand (Callable): Callback for horizontal scrolling.
+            locale: Locale identifier for number formatting (e.g., `'en_US'`).
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            bootstyle: DEPRECATED - Use `accent` instead.
+            allow_blank: If True, empty input is allowed (sets value to None).
+            cursor: Cursor style when hovering.
+            exportselection: Export selection to clipboard.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment (`'left'`, `'center'`, `'right'`).
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
+            xscrollcommand: Callback for horizontal scrolling.
         """
         super().__init__(
             master, value=value, label=label, message=message, minvalue=minvalue, maxvalue=maxvalue, kind="numeric",

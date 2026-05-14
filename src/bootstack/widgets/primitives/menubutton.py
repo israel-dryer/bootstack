@@ -56,27 +56,27 @@ class MenuButton(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, 
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            text (str): Text to display in the menubutton.
-            image (PhotoImage): Image to display.
-            icon (str | dict): Theme-aware icon spec handled by the style system.
-            icon_only (bool): If True, removes the additional padding reserved for label text.
-            compound (str): Placement of the image relative to text.
-            direction (str): Direction for the menu to appear.
-            menu (Menu): Associated tk.Menu instance.
-            padding (int | tuple): Extra space around the content.
-            density (str): The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            textvariable (Variable): Tk variable linked to the text.
-            textsignal (Signal): Reactive Signal linked to the text (auto-synced with textvariable).
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            variant (str): Style variant, e.g. 'solid', 'outline', 'ghost'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
+            text: Text to display in the menubutton.
+            image: Image to display.
+            icon: Theme-aware icon spec handled by the style system.
+            icon_only: If True, removes the additional padding reserved for label text.
+            compound: Placement of the image relative to text.
+            direction: Direction for the menu to appear.
+            menu: Associated tk.Menu instance.
+            padding: Extra space around the content.
+            density: Widget density — 'default' or 'compact'.
+            state: Widget state — 'normal', 'active', 'disabled', or 'readonly'.
+            takefocus: Whether the widget participates in focus traversal.
+            textvariable: Tk variable linked to the text.
+            textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
+            variant: Style variant, e.g. 'solid', 'outline', 'ghost'.
+            bootstyle: DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'primary', 'ghost').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
+            localize: Determines the widget's localization mode.
         """
         kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'density'], kwargs))
         super().__init__(master, **kwargs)

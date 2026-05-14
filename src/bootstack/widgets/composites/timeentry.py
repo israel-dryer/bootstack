@@ -57,14 +57,14 @@ class TimeEntry(SelectBox):
                 validation fails.
 
         Other Parameters:
-            locale (str): Locale identifier for time formatting (e.g., 'en_US').
-            required (bool): If True, field cannot be empty.
-            color (str): Color token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `color` instead.
-            allow_blank (bool): Allow empty input.
-            width (int): Width in characters.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
+            locale: Locale identifier for time formatting (e.g., 'en_US').
+            required: If True, field cannot be empty.
+            color: Color token for the focus ring and active border.
+            bootstyle: DEPRECATED - Use `color` instead.
+            allow_blank: Allow empty input.
+            width: Width in characters.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
         """
         self._interval = interval
         self._value_format = value_format
@@ -159,7 +159,7 @@ class TimeEntry(SelectBox):
             # Note: Pass datetime (not time) as IntlFormatter expects it for Babel
             try:
                 formatted_time = formatter.format(current, self._value_format)
-            except (ValueError, TypeError):
+            except:
                 # Fallback to 24-hour format if formatting fails
                 formatted_time = current.strftime('%H:%M')
 

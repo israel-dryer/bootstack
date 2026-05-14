@@ -41,22 +41,22 @@ class PasswordEntry(Field):
                 Can be changed at runtime via `configure(show_visibility_toggle=...)`.
 
         Other Parameters:
-            show (str): Character to mask password input. Default is '•'.
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment.
-            show_message (bool): If True, displays message area.
-            padding (str): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
+            show: Character to mask password input. Default is '•'.
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            bootstyle: DEPRECATED - Use `accent` instead.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment.
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
         """
         # set default mask if not provided
         self._show_indicator = kwargs.get('show', '•')

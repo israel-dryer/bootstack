@@ -19,8 +19,8 @@ class ScrolledText(Frame):
     functionality.
 
     Attributes:
-        vertical_scrollbar (Scrollbar): The vertical scrollbar widget.
-        horizontal_scrollbar (Scrollbar): The horizontal scrollbar widget.
+        vertical_scrollbar: The vertical scrollbar widget.
+        horizontal_scrollbar: The horizontal scrollbar widget.
     """
 
     def __init__(

@@ -54,53 +54,53 @@ class DateEntry(Field):
     ):
         """Args:
             master: Parent widget. If None, uses the default root window.
-            value (str | date | datetime): Initial date value to display (single
+            value: Initial date value to display (single
                 mode). Ignored when ``selection_mode='range'``.
-            value_format (str): Date format pattern to use for parsing and displaying
+            value_format: Date format pattern to use for parsing and displaying
                 dates. See class docstring for complete list of presets.
-            label (str): Optional label text to display above the entry field.
+            label: Optional label text to display above the entry field.
                 If required=True, an asterisk (*) is automatically appended.
-            message (str): Optional message text to display below the entry field.
+            message: Optional message text to display below the entry field.
                 Used for hints or help text. Replaced by validation errors when
                 validation fails.
-            show_picker_button (bool): If True, displays the calendar picker button
+            show_picker_button: If True, displays the calendar picker button
                 to the right of the entry. If False, hides the button.
-            picker_title (str): Title text for the calendar picker dialog. Defaults
+            picker_title: Title text for the calendar picker dialog. Defaults
                 to "Select date range" in range mode and "Select new date" otherwise.
-            picker_first_weekday (int): First day of the week to display in the
+            picker_first_weekday: First day of the week to display in the
                 calendar picker. 0=Monday, 6=Sunday.
-            selection_mode (str): ``'single'`` (default) for a single date or
+            selection_mode: ``'single'`` (default) for a single date or
                 ``'range'`` for a start/end date range. In range mode the entry
                 is readonly and the user selects dates exclusively via the picker.
                 ``value`` returns ``tuple[date, date] | None`` in range mode.
-            start_date (date | datetime | str): Initial range start date (range
+            start_date: Initial range start date (range
                 mode only).
-            end_date (date | datetime | str): Initial range end date (range mode
+            end_date: Initial range end date (range mode
                 only).
-            min_date (date | datetime | str): Lower bound for selectable dates.
+            min_date: Lower bound for selectable dates.
                 Dates before this are disabled in the picker.
-            max_date (date | datetime | str): Upper bound for selectable dates.
+            max_date: Upper bound for selectable dates.
                 Dates after this are disabled in the picker.
-            disabled_dates (Iterable): Specific dates to disable in the picker.
+            disabled_dates: Specific dates to disable in the picker.
 
         Other Parameters:
-            locale (str): Locale identifier for date formatting (e.g., 'en_US').
-            required (bool): If True, field cannot be empty.
-            bootstyle (str): The accent color of the focus ring and active border.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            exportselection (bool): Export selection to clipboard.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment ('left', 'center', 'right').
-            show_message (bool): If True, displays message area.
-            padding (int | tuple): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-            xscrollcommand (Callable): Callback for horizontal scrolling.
+            locale: Locale identifier for date formatting (e.g., 'en_US').
+            required: If True, field cannot be empty.
+            bootstyle: The accent color of the focus ring and active border.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            exportselection: Export selection to clipboard.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment ('left', 'center', 'right').
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
+            xscrollcommand: Callback for horizontal scrolling.
         """
         # Store before super().__init__ so property override is safe if called during init
         self._selection_mode = selection_mode

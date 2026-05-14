@@ -56,16 +56,16 @@ class ButtonGroup(Frame):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            orient (str): Layout orientation - 'horizontal' (default) or 'vertical'.
-            accent (str): The accent token (e.g., 'primary', 'success', 'danger').
-            variant (str): The style variant (e.g., 'solid', 'outline', 'ghost'). Defaults to 'solid',
-            state (str): Initial state for all buttons - 'normal' (default) or 'disabled'.
-            surface (str): Optional surface token; otherwise inherited.
-            density (str): The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
-            padding (int | tuple): Frame padding. Defaults to 1.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            style_options (dict): Additional style options passed to child widgets.
+            orient: Layout orientation — 'horizontal' (default) or 'vertical'.
+            accent: The accent token (e.g., 'primary', 'success', 'danger').
+            variant: The style variant (e.g., 'solid', 'outline', 'ghost'). Defaults to 'solid'.
+            state: Initial state for all buttons — 'normal' (default) or 'disabled'.
+            surface: Optional surface token; otherwise inherited.
+            density: Widget density — 'default' or 'compact'.
+            padding: Frame padding. Defaults to 1.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
+            style_options: Additional style options passed to child widgets.
         """
         # Store ButtonGroup-specific options from explicit parameters
         # NOTE: _color and _variant are set AFTER super().__init__() because
@@ -386,6 +386,6 @@ class ButtonGroup(Frame):
         for widget in self._widgets.values():
             try:
                 widget.configure(state=value)
-            except (AttributeError, TypeError):
+            except:
                 # Widget doesn't support state configuration
                 pass

@@ -42,6 +42,13 @@ class DropdownButtonKwargs(TypedDict, total=False):
 
 
 class DropdownButton(MenuButton):
+    """A button that opens a ContextMenu dropdown when clicked.
+
+    DropdownButton combines a MenuButton with a ContextMenu, adding a chevron
+    indicator and optional item-click callbacks. Items can be added at
+    construction or dynamically via ``add_command``, ``add_checkbutton``,
+    ``add_radiobutton``, and ``add_separator``.
+    """
 
     def __init__(
             self,
@@ -54,31 +61,31 @@ class DropdownButton(MenuButton):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-            text (str): Label text for the button.
-            items (list): Initial list of ContextMenuItem entries.
+            text: Label text for the button.
+            items: Initial list of ContextMenuItem entries.
 
         Other Parameters:
-            image (PhotoImage): Tk image to display.
-            icon (str | dict): Bootstyle icon spec for the button content.
-            icon_only (bool): Whether to reserve label padding when showing only an icon.
-            compound (str): Placement of image relative to text.
-            padding (int | tuple): Extra padding around the button content.
-            density (str): The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
-            width (int): Width of the button.
-            underline (int): Index of underlined character in text.
-            state (str): Widget state ('normal', 'active', 'disabled', 'readonly').
-            takefocus (bool): Participation in focus traversal.
-            style (str): Explicit ttk style name.
-            textvariable (Variable): Existing Tk variable for the label text.
-            textsignal (Signal[str]): Signal bound to the textvariable.
-            accent (str): Accent token for styling (e.g., 'primary', 'danger').
-            variant (str): Style variant (e.g., 'outline', 'ghost').
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-            surface (str): Surface token for style.
-            style_options (dict): Dict forwarded to the menubutton style builder.
-            popdown_options (dict): Dict forwarded to ContextMenu (e.g., anchor, attach, offset).
-            show_dropdown_button (bool): Show/hide the chevron.
-            dropdown_button_icon (str | dict): Icon name for the chevron.
+            image: Tk image to display.
+            icon: Bootstyle icon spec for the button content.
+            icon_only: Whether to reserve label padding when showing only an icon.
+            compound: Placement of image relative to text.
+            padding: Extra padding around the button content.
+            density: Widget density — 'default' or 'compact'.
+            width: Width of the button.
+            underline: Index of underlined character in text.
+            state: Widget state — 'normal', 'active', 'disabled', or 'readonly'.
+            takefocus: Participation in focus traversal.
+            style: Explicit ttk style name.
+            textvariable: Existing Tk variable for the label text.
+            textsignal: Signal bound to the textvariable.
+            accent: Accent token for styling (e.g., 'primary', 'danger').
+            variant: Style variant (e.g., 'outline', 'ghost').
+            bootstyle: DEPRECATED - Use `accent` and `variant` instead.
+            surface: Surface token for style.
+            style_options: Dict forwarded to the menubutton style builder.
+            popdown_options: Dict forwarded to ContextMenu (e.g., anchor, attach, offset).
+            show_dropdown_button: Show/hide the chevron.
+            dropdown_button_icon: Icon name for the chevron.
         """
         style_options = kwargs.pop('style_options', {})
         style_options.update(

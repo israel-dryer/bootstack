@@ -63,15 +63,15 @@ class ContextMenuItem:
     """Data class for context menu items.
 
     Attributes:
-        type (str): Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
-        kwargs (dict): Additional keyword arguments for the item.
+        type: Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
+        kwargs: Additional keyword arguments for the item.
     """
 
     def __init__(self, type: str, **kwargs) -> None:
         """Initialize a context menu item.
 
         Args:
-            type (str): Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
+            type: Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
             **kwargs: Additional arguments passed to the widget.
         """
         self.type: str = type
@@ -253,17 +253,17 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a command button to the menu.
 
         Args:
-            text (str): Button text label.
-            icon (str): Optional icon name. Uses 'empty' placeholder if None
+            text: Button text label.
+            icon: Optional icon name. Uses 'empty' placeholder if None
                 to maintain text alignment with items that have icons.
-            command (Callable): Function to call when clicked.
-            disabled (bool): If True, the item is disabled and cannot be clicked.
-            shortcut (str): Optional keyboard shortcut. Can be either:
+            command: Function to call when clicked.
+            disabled: If True, the item is disabled and cannot be clicked.
+            shortcut: Optional keyboard shortcut. Can be either:
                 - A key registered with the Shortcuts service (e.g., "save")
                 - A literal display string (e.g., "Ctrl+S")
                 If a registered key is provided, the platform-appropriate
                 display string is shown automatically.
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             Button: The created Button widget.
@@ -339,10 +339,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a checkbutton to the menu.
 
         Args:
-            text (str): Checkbutton text label.
-            value (bool): Initial checked state.
-            command (Callable): Function to call when toggled.
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            text: Checkbutton text label.
+            value: Initial checked state.
+            command: Function to call when toggled.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             CheckButton: The created CheckButton widget.
@@ -376,11 +376,11 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a radiobutton to the menu.
 
         Args:
-            text (str): Radiobutton text label.
-            value (Any): Value to set when selected.
-            variable (StringVar | IntVar): Tkinter Variable to link with.
-            command (Callable): Function to call when selected.
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            text: Radiobutton text label.
+            value: Value to set when selected.
+            variable: Tkinter Variable to link with.
+            command: Function to call when selected.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             RadioButton: The created RadioButton widget.
@@ -406,7 +406,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a horizontal separator to the menu.
 
         Args:
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             Separator: The created Separator widget.
@@ -420,7 +420,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a menu item based on type.
 
         Args:
-            type (str): Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
+            type: Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
             **kwargs: Arguments passed to the appropriate add_* method.
 
         Returns:
@@ -441,7 +441,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add multiple items at once.
 
         Args:
-            items (list): List of ContextMenuItem objects or dictionaries with 'type' and 'kwargs'.
+            items: List of ContextMenuItem objects or dictionaries with 'type' and 'kwargs'.
         """
         for item in items:
             if isinstance(item, ContextMenuItem):
@@ -470,8 +470,8 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Insert a new item at the given index.
 
         Args:
-            index (int): Position to insert the item at.
-            type (str): Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
+            index: Position to insert the item at.
+            type: Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
             **kwargs: Arguments passed to the appropriate add_* method.
 
         Returns:
@@ -535,7 +535,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
 
         Args:
             from_key_or_index: Key (str) or index (int) of the item to move.
-            to_index (int): New index for the item.
+            to_index: New index for the item.
 
         Returns:
             Widget: The moved widget.
@@ -600,7 +600,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Show the context menu.
 
         Args:
-            position (tuple): Optional screen coordinate (x, y) to align to. If provided,
+            position: Optional screen coordinate (x, y) to align to. If provided,
                 the menu's anchor will align to this point. Negative x/y are
                 treated as offsets from the screen's right/bottom.
         """
@@ -723,10 +723,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Handle item click events.
 
         Args:
-            type (str): Type of item clicked.
-            text (str): Text of the item.
-            command (Callable): Command to execute.
-            value (Any): Value associated with the item.
+            type: Type of item clicked.
+            text: Text of the item.
+            command: Command to execute.
+            value: Value associated with the item.
         """
         # Prepare event data
         data = {
@@ -1643,31 +1643,31 @@ class ContextMenu:
             density: str = 'default',
             trigger: str | None = 'right-click',
     ):
-        """Create a ContextMenu.
-
-        Args mirror the underlying backend; `trigger` is a dispatcher-level
-        convenience that auto-binds the menu to `target`'s click event so
-        callers don't have to wire a `bind('<Button-3>', show_at)` handler
-        themselves. Set `trigger=None` (or `'manual'`) to opt out and
-        manage activation in caller code (e.g. when the menu is built lazily).
-
-        `target` defaults to `master` when omitted, since the menu is
-        usually attached to the same widget that owns it. Pass `target=None`
-        explicitly to opt out of positioning/auto-binding (e.g. when calling
-        `show(position=(x, y))` with cursor-driven coordinates instead).
-
-        Trigger values:
-            - `'right-click'` (default): portable right-click via
-              `bootstack.runtime.utility.bind_right_click` —
-              `<Button-3>` on Win/Linux plus `<Button-2>` and
-              `<Control-Button-1>` on Aqua.
-            - `'click'` / `'left-click'`: `<Button-1>`.
-            - `'double-click'`: `<Double-Button-1>`.
-            - `'shift-click'`: `<Shift-Button-1>`.
-            - `'ctrl-click'` / `'control-click'`: `<Control-Button-1>`
-              (note that on Aqua this is the same as Ctrl+click for context
-              menus, since macOS uses Ctrl+click as a context-menu gesture).
-            - `None` or `'manual'`: no auto-binding.
+        """
+        Args:
+            master: Parent widget. If None, uses the default root window.
+            minwidth: Minimum width of the menu popup in pixels. Default 150.
+            width: Fixed width of the menu popup. If None, sizes to content.
+            minheight: Minimum height of the menu popup in pixels.
+            height: Fixed height of the menu popup in pixels.
+            target: Widget the menu is attached to for positioning and
+                auto-binding. Defaults to ``master``. Pass ``None`` to opt out
+                of auto-positioning (e.g. when calling ``show(position=(x, y))``
+                with cursor-driven coordinates).
+            anchor: Corner of the menu aligned to the attach point. Default ``'nw'``.
+            attach: Corner of the target widget used as the attach point. Default ``'se'``.
+            offset: ``(x, y)`` pixel offset from the attach point.
+            hide_on_outside_click: Auto-hide when clicking outside the menu. Default True.
+            items: Initial list of menu items.
+            density: Widget density — ``'default'`` or ``'compact'``.
+            trigger: Gesture that auto-shows the menu on the target widget.
+                ``'right-click'`` (default) — platform right-click (``<Button-3>`` on
+                Win/Linux; ``<Button-2>`` and ``<Control-Button-1>`` on macOS).
+                ``'click'`` / ``'left-click'`` — ``<Button-1>``.
+                ``'double-click'`` — ``<Double-Button-1>``.
+                ``'shift-click'`` — ``<Shift-Button-1>``.
+                ``'ctrl-click'`` / ``'control-click'`` — ``<Control-Button-1>``.
+                ``None`` or ``'manual'`` — no auto-binding; caller manages activation.
         """
         # Default target to master when omitted; explicit `None` opts out.
         if target is _TARGET_DEFAULT:
@@ -1678,7 +1678,7 @@ class ContextMenu:
         if probe is not None:
             try:
                 winsys = probe.tk.call('tk', 'windowingsystem')
-            except (TclError, AttributeError):
+            except:
                 winsys = None
         if winsys is None:
             try:
@@ -1686,7 +1686,7 @@ class ContextMenu:
                 root = _tk._get_default_root()
                 if root is not None:
                     winsys = root.tk.call('tk', 'windowingsystem')
-            except (TclError, AttributeError):
+            except:
                 winsys = None
 
         backend_cls = _NativeContextMenu if winsys == 'aqua' else _ToplevelContextMenu

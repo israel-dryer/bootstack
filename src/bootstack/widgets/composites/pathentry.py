@@ -73,24 +73,24 @@ class PathEntry(Field):
                 defaultextension, multiple.
             button_text: Text to display on the browse button. Default is "Browse".
                 Can be changed at runtime via `configure(button_text=...)`.
-            label (str): Label text to display above the entry field (from FieldOptions).
-            message (str): Message text to display below the field.
+            label: Label text to display above the entry field (from FieldOptions).
+            message: Message text to display below the field.
 
         Other Parameters:
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment.
-            show_message (bool): If True, displays message area.
-            padding (str): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment.
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
         """
         self._dialog = dialog
         self._dialog_options = dialog_options

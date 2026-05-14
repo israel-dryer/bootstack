@@ -164,22 +164,22 @@ class Field(EntryMixin, Frame):
                 NumberEntryPart). Default is 'text'.
 
         Other Parameters:
-            accent (str): Accent token for the focus ring and active border.
-            density (str): Widget density — 'default' or 'compact'.
-            state (str): Initial widget state — 'normal', 'disabled', or 'readonly'.
-            value_format (str): ICU format pattern for parsing/formatting.
-            allow_blank (bool): Allow empty input.
-            initial_focus (bool): Focus on creation.
-            show (str): Character to mask input (e.g., '*' for passwords).
-            width (int): Width in characters.
-            font (str): Font specification.
-            justify (str): Text alignment ('left', 'center', 'right').
-            textvariable (Variable): Tkinter Variable linked to entry text.
-            textsignal (Signal): Signal for reactive text updates.
-            minvalue (int | float): Minimum allowed value (numeric kind only).
-            maxvalue (int | float): Maximum allowed value (numeric kind only).
-            increment (int | float): Step size for up/down arrows (numeric kind only).
-            wrap (bool): Wrap around at boundaries (numeric kind only).
+            accent: Accent token for the focus ring and active border.
+            density: Widget density — 'default' or 'compact'.
+            state: Initial widget state — 'normal', 'disabled', or 'readonly'.
+            value_format: ICU format pattern for parsing/formatting.
+            allow_blank: Allow empty input.
+            initial_focus: Focus on creation.
+            show: Character to mask input (e.g., '*' for passwords).
+            width: Width in characters.
+            font: Font specification.
+            justify: Text alignment ('left', 'center', 'right').
+            textvariable: Tkinter Variable linked to entry text.
+            textsignal: Signal for reactive text updates.
+            minvalue: Minimum allowed value (numeric kind only).
+            maxvalue: Maximum allowed value (numeric kind only).
+            increment: Step size for up/down arrows (numeric kind only).
+            wrap: Wrap around at boundaries (numeric kind only).
         """
         # Accept legacy parameter name and prevent it from reaching the Tk widget.
         if 'show_messages' in kwargs:
@@ -537,7 +537,7 @@ class Field(EntryMixin, Frame):
                 apply when placing the addon widget. Common options include
                 padx, pady, etc. The side and after/before options are set
                 automatically based on position.
-            **kwargs (Any): Additional keyword arguments passed to the widget constructor.
+            **kwargs: Additional keyword arguments passed to the widget constructor.
                 For Button: text, command, icon, accent, variant, etc.
                 For Label: text, icon, image, accent, etc.
                 For CheckToggle: text, icon, signal, command, accent, etc.
