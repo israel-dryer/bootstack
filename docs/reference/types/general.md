@@ -38,6 +38,14 @@ title: General
       heading_level: 2
       show_inheritance_diagram: false
 
+## PathEntry types
+
+::: bootstack.widgets.types.FileDialogType
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
 ## ScrolledText types
 
 ::: bootstack.widgets.types.ScrollDirection

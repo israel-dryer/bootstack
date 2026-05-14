@@ -19,6 +19,21 @@ CommandCallback = Callable[[], Any]
 WidgetKwargs = dict[str, Any]
 """Generic dict of widget configuration keyword arguments."""
 
+FileDialogType = Literal[
+    'openfilename', 'openfile', 'directory', 'openfilenames', 'openfiles',
+    'saveasfile', 'saveasfilename'
+]
+"""File dialog type for `PathEntry`.
+
+- ``'openfilename'``: Select a single existing file (returns path string)
+- ``'openfile'``: Select a single existing file (returns file object)
+- ``'directory'``: Select a directory
+- ``'openfilenames'``: Select multiple existing files (returns tuple of paths)
+- ``'openfiles'``: Select multiple existing files (returns tuple of file objects)
+- ``'saveasfile'``: Save file dialog (returns file object)
+- ``'saveasfilename'``: Save file dialog (returns path string)
+"""
+
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
 """Scroll axis for `ScrolledText`."""
 
