@@ -109,16 +109,16 @@ class PathEntry(Field):
         )
 
     @property
-    def dialog_button(self):
+    def dialog_button(self) -> Button | None:
         """Get the dialog button widget."""
         return self.addons.get('dialog-button')
 
     @property
-    def dialog_result(self):
+    def dialog_result(self) -> str | tuple[str, ...] | None:
         """Get the raw result from the last file dialog operation.
 
-        For single file selection, this returns the path string.
-        For multiple file selection, this returns a tuple/list of paths.
+        Returns a single path string for single-file dialogs, a tuple of
+        paths for multi-file dialogs, or ``None`` if no selection was made.
         """
         return self._dialog_result
 
