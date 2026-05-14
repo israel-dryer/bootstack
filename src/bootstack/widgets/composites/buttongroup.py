@@ -230,7 +230,7 @@ class ButtonGroup(Frame):
         widget.destroy()
         self._update_widget_positions()
 
-    def item(self, key: str) -> 'tk.Widget':
+    def item(self, key: str) -> ButtonGroupItem:
         """Get a widget by its key.
 
         Args:
@@ -266,7 +266,7 @@ class ButtonGroup(Frame):
             return widget.cget(option)
         widget.configure(**kwargs)
 
-    def items(self) -> tuple['tk.Widget', ...]:
+    def items(self) -> tuple[ButtonGroupItem, ...]:
         """Get all widgets in the group.
 
         Returns:
