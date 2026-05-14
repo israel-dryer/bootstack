@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TypedDict, TYPE_CHECKING
+from typing import Any, Callable, Literal, Type, TypedDict, TYPE_CHECKING, Union
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives import Frame
-from bootstack.widgets.primitives.checkbutton import CheckButton
 from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.primitives.radiobutton import RadioButton
 from bootstack.widgets.primitives.radiotoggle import RadioToggle
@@ -14,6 +13,10 @@ from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
     import tkinter as tk
+
+
+ButtonGroupItem = Union[Button, CheckToggle, RadioButton, RadioToggle]
+"""Widget types supported by :class:`ButtonGroup`."""
 
 
 class ButtonGroupKwargs(TypedDict, total=False):
@@ -96,10 +99,10 @@ class ButtonGroup(Frame):
         text: str = None,
         *,
         key: str = None,
-        widget_type: type = None,
+        widget_type: Type[ButtonGroupItem] = None,
         command: Callable[[], Any] = None,
         **kwargs: Any
-    ) -> 'tk.Widget':
+    ) -> ButtonGroupItem:
         """Add a widget to the group.
 
         Args:
@@ -151,8 +154,8 @@ class ButtonGroup(Frame):
         existing_style_opts['density'] = self._density
         existing_style_opts.setdefault('position', 'before')
 
-        # Set active_state for non-radio/check button types
-        _radio_check_types = (CheckButton, CheckToggle, RadioButton, RadioToggle)
+        # Set active_state for non-toggle types
+        _radio_check_types = (CheckToggle, RadioButton, RadioToggle)
         if not (isinstance(widget_type, type) and issubclass(widget_type, _radio_check_types)):
             existing_style_opts.setdefault('active_state', True)
 
