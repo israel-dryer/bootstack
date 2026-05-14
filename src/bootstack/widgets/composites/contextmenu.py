@@ -5,7 +5,10 @@ radiobuttons, and separators.
 """
 
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
-from typing import Any, Callable, Union
+from typing import Any, Callable, Literal, Union
+
+from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack.widgets.types import WidgetDensity
 
 from bootstack.runtime.shortcuts import get_shortcuts
 from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
@@ -15,6 +18,15 @@ from bootstack.widgets.types import Master
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import CustomConfigMixin, configure_delegate
 
+
+ContextMenuTrigger = Literal[
+    'right-click', 'click', 'left-click', 'double-click',
+    'shift-click', 'ctrl-click', 'control-click', 'manual',
+]
+"""Gesture that auto-shows a `ContextMenu` when the user interacts with the target widget.
+
+Pass ``None`` to disable auto-binding and manage activation in caller code.
+"""
 
 ContextMenuItemResult = Union[Button, CheckToggle, RadioToggle, Separator, str]
 """Return type for ContextMenu item-add and item-lookup operations.
@@ -100,12 +112,12 @@ class _ToplevelContextMenu(CustomConfigMixin):
             minheight: int = None,
             height: int = None,
             target: Misc = None,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
+            density: WidgetDensity = 'default',
             command: Callable = None,
     ):
         """Initialize the themed Toplevel backend.
@@ -982,12 +994,12 @@ class _NativeContextMenu(CustomConfigMixin):
             minheight: int = None,
             height: int = None,
             target: Misc = None,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
+            density: WidgetDensity = 'default',
             command: Callable = None,
     ):
         """Initialize the native tk.Menu backend.
@@ -1626,13 +1638,13 @@ class ContextMenu:
             minheight: int = None,
             height: int = None,
             target: Misc = _TARGET_DEFAULT,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
-            trigger: str | None = 'right-click',
+            density: WidgetDensity = 'default',
+            trigger: ContextMenuTrigger | None = 'right-click',
             command: Callable = None,
     ):
         """

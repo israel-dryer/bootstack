@@ -4,6 +4,18 @@ title: General
 
 ## Widget types
 
+::: bootstack.widgets.types.WidgetDensity
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
+::: bootstack.runtime.window_utilities.AnchorPoint
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
 ::: bootstack.widgets.types.Master
     options:
       show_root_toc_entry: false
@@ -31,6 +43,12 @@ title: General
       show_inheritance_diagram: false
 
 ## ContextMenu types
+
+::: bootstack.widgets.composites.contextmenu.ContextMenuTrigger
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
 
 ::: bootstack.widgets.composites.contextmenu.ContextMenuItemResult
     options:

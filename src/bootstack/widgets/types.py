@@ -34,6 +34,9 @@ FileDialogType = Literal[
 - ``'saveasfilename'``: Save file dialog (returns path string)
 """
 
+WidgetDensity = Literal['default', 'compact']
+"""Widget density — ``'default'`` for normal sizing, ``'compact'`` for reduced padding."""
+
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
 """Scroll axis for `ScrolledText`."""
 
