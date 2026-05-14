@@ -166,6 +166,12 @@ nav = [
             { "TextEntry" = "reference/widgets/textentry.md" },
             { "PasswordEntry" = "reference/widgets/passwordentry.md" },
             { "PathEntry" = "reference/widgets/pathentry.md" },
+            { "NumericEntry" = "reference/widgets/numericentry.md" },
+            { "SpinnerEntry" = "reference/widgets/spinnerentry.md" },
+            { "DateEntry" = "reference/widgets/dateentry.md" },
+            { "TimeEntry" = "reference/widgets/timeentry.md" },
+            { "ScrolledText" = "reference/widgets/scrolledtext.md" },
+            { "SelectBox" = "reference/widgets/selectbox.md" },
         ] },
         { "App" = [
             { "Overview" = "reference/app/index.md" },
@@ -300,21 +306,29 @@ invalid_links = false
 paths = ["src"]
 
 [project.plugins.mkdocstrings.handlers.python.options]
-docstring_style = "google"
-heading_level = 2
-show_root_heading = false
+
+backlinks = "tree"
+docstring_options = {}
+docstring_section_style = "spacy"
+heading_level = 1
+inherited_members = true
+merge_init_into_class = true
+parameter_headings = true
+separate_signature = true
+show_root_heading = true
 show_root_full_path = false
-show_signature = false
-show_signature_annotations = false
-separate_signature = false
-members_order = "source"
-inherited_members = false
-show_source = false
-# Suppress cross-cutting capability methods that are documented separately
-# under reference/capabilities/. These come from WidgetCapabilitiesMixin,
-# TtkStateMixin, and TTKWrapperBase and would otherwise duplicate across
-# every widget page when a page opts into inherited_members: true.
+show_signature_annotations = true
+show_source = true
+show_symbol_type_heading = true
+show_symbol_type_toc = true
+show_bases = false
+show_inheritance_diagram = true
+signature_crossrefs = true
+summary = true
+unwrap_annotated = true
+
 filters = [
+    "public",
     "!^_[^_]",
     "!^winfo_",
     "!^(pack|grid|place)(_|$)",
@@ -330,6 +344,7 @@ filters = [
     "!^register_localized_field$",
     "!^(rebuild_style|configure_style_options)$",
 ]
+
 
 # -----------------------------------------------------------------------------
 # Markdown extensions
