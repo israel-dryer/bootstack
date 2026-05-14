@@ -8,10 +8,10 @@ from bootstack.widgets.primitives.scrollbar import Scrollbar
 from bootstack.widgets.types import Master
 
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
-"""Scroll axis for :class:`ScrolledText`."""
+"""Scroll axis for ``ScrolledText``."""
 
 ScrollbarVisibility = Literal['always', 'never', 'hover', 'scroll']
-"""Scrollbar visibility mode for :class:`ScrolledText`."""
+"""Scrollbar visibility mode for ``ScrolledText``."""
 
 
 class ScrolledText(Frame):

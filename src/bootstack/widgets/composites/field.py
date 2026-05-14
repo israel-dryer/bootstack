@@ -27,7 +27,7 @@ EntryWidget = Union[TextEntryPart, NumberEntryPart, SpinnerEntryPart]
 """The internal entry widget used by a Field — one of the three entry part types."""
 
 FieldAddonWidget = Union[Button, Label, CheckToggle]
-"""Widget types that can be inserted as addons via :class:`Field.insert_addon`."""
+"""Widget types supported by ``Field.insert_addon``."""
 """Type alias for field kind specification.
 
 Determines which entry part widget to use:

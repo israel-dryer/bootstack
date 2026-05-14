@@ -1823,7 +1823,7 @@ class ContextMenu:
         """Add multiple items at once.
 
         Args:
-            items: List of :class:`ContextMenuItem` objects or dicts with
+            items: List of ``ContextMenuItem`` objects or dicts with
                 a ``type`` key and item kwargs.
         """
         self._impl.add_items(items)
