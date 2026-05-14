@@ -8,6 +8,7 @@ from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, Type, TypedDict, Union, cast
 
 from bootstack.core.signals import Signal
+from bootstack.core.validation.types import RuleType
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
@@ -461,7 +462,7 @@ class Field(EntryMixin, Frame):
 
     def add_validation_rule(
         self,
-        rule_type: Literal["required", "email", "pattern", "stringLength", "compare", "custom"],
+        rule_type: RuleType,
         **kwargs,
     ) -> None:
         """Add a validation rule to the field.
