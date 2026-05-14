@@ -40,21 +40,18 @@ class ScrolledText(Frame):
             scrollbar_style: str = 'default',
             **kwargs: Any,
     ) -> None:
-        """Args:
+        """
+        Args:
             master: The parent widget.
             padding: Padding around the frame container.
-            scroll_direction: Scroll direction - 'vertical', 'horizontal', or 'both'.
-                Use 'both' to enable horizontal scrolling with Shift+MouseWheel.
-            scrollbar_visibility: Scrollbar visibility mode:
-                - 'always': Scrollbars always visible
-                - 'never': Scrollbars hidden (scrolling still works)
-                - 'hover': Scrollbars appear when mouse enters
-                - 'scroll': Scrollbars appear when scrolling, auto-hide after delay
-            autohide_delay: Time in milliseconds before auto-hiding scrollbars
-                in 'scroll' mode.
-            scrollbar_style: The bootstyle for scrollbars (e.g., 'primary',
-                'success', 'danger').
-            **kwargs: Additional keyword arguments passed to the Text widget.
+            scroll_direction: Scroll direction — ``'vertical'``, ``'horizontal'``, or ``'both'``.
+                Use ``'both'`` to enable horizontal scrolling with Shift+MouseWheel.
+            scrollbar_visibility: When scrollbars are shown — ``'always'``, ``'never'``,
+                ``'hover'`` (on mouse enter), or ``'scroll'`` (auto-hide after delay).
+            autohide_delay: Milliseconds before scrollbars hide in ``'scroll'`` mode.
+                Default is 1000.
+            scrollbar_style: Accent token for the scrollbars (e.g., ``'primary'``).
+            **kwargs: Additional keyword arguments passed to the ``Text`` widget.
         """
         # Initialize Frame
         super().__init__(master=master, padding=padding)
