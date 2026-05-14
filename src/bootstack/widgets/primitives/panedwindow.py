@@ -22,7 +22,6 @@ class PanedWindowKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -48,7 +47,6 @@ class PanedWindow(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Pa
             style (str): Explicit ttk style name (overrides accent/variant).
             accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
             variant (str): Style variant (if applicable).
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens.
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Optional dict forwarded to the style builder.

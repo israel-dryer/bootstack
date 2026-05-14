@@ -37,7 +37,6 @@ class EntryKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     density: Literal['default', 'compact']
     variant: str
@@ -76,7 +75,6 @@ class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMi
             accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
             variant (str): Style variant, e.g. 'default'.
             density (str): The vertical and horizontal compactness, e.g. 'default', 'compact'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'primary').
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Optional dict forwarded to the style builder.

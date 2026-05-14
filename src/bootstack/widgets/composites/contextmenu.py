@@ -1612,7 +1612,6 @@ class ContextMenu:
     integrate with the system, dodging the key-window/activation issues
     that affect a reused overrideredirect Toplevel on Aqua. On Windows
     and Linux it uses the themed Toplevel-backed implementation so
-    bootstyle, density, and rich item types apply consistently.
 
     The public API is identical across backends. Consumers should not
     rely on `item()` returning a Tk widget — on the native backend it

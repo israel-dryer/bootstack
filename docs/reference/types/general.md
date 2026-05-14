@@ -40,6 +40,18 @@ title: General
 
 ## Field types
 
+::: bootstack.widgets.composites.field.EntryWidget
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
+::: bootstack.widgets.composites.field.FieldAddonWidget
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
 ::: bootstack.widgets.composites.field.FieldKind
     options:
       show_root_toc_entry: false

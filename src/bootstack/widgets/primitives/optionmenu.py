@@ -32,7 +32,6 @@ class OptionMenuKwargs(TypedDict, total=False):
     name: str
     textvariable: Any
     textsignal: Signal[str]
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -80,7 +79,6 @@ class OptionMenu(MenuButton):
             textsignal (Signal[str]): Signal bound to the textvariable.
             accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
             variant (str): Style variant, e.g. 'solid', 'outline'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'primary-outline').
             surface (str): Surface token for style.
             style_options (dict): Dict forwarded to the style builder (e.g., icon_only, surface).

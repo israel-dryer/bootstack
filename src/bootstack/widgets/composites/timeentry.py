@@ -60,7 +60,6 @@ class TimeEntry(SelectBox):
             locale: Locale identifier for time formatting (e.g., 'en_US').
             required: If True, field cannot be empty.
             color: Color token for the focus ring and active border.
-            bootstyle: DEPRECATED - Use `color` instead.
             allow_blank: Allow empty input.
             width: Width in characters.
             textvariable: Tkinter Variable to link with text.

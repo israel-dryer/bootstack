@@ -68,7 +68,6 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         """
 
         # Handle deprecated bootstyle parameter
-        bootstyle = kwargs.pop("bootstyle", None)
 
         self._variable = kwargs.pop("variable", IntVar(value=value))
         self._value = self._variable.get()

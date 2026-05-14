@@ -106,7 +106,6 @@ class Calendar(ttk.Frame):
             show_week_numbers: bool = False,
             first_weekday: int | None = None,
             accent: str = None,
-            bootstyle: str = None,
             padding: int | tuple[int, int] | tuple[int, int, int, int] | str | None = None,
     ) -> None:
         """Initialize a Calendar widget.
@@ -132,7 +131,6 @@ class Calendar(ttk.Frame):
             first_weekday (int | None): First day of the week. 0=Monday, 6=Sunday.
                 If None, uses the locale default.
             accent (str): Accent token for selected dates and highlights (e.g., 'primary', 'success').
-            bootstyle (str): DEPRECATED - Use `accent` instead.
             padding (int | tuple | str): Padding around the widget.
         """
         super().__init__(master, padding=padding)

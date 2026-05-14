@@ -32,7 +32,6 @@ class FrameKwargs(TypedDict, total=False):
     input_background: str
     show_border: bool
     style_options: dict[str, Any]
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
 
 
 class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
@@ -56,7 +55,6 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
             style (str): Explicit ttk style name (overrides accent/variant).
             accent (str): Accent token for styling, e.g. 'primary', 'secondary', 'success'.
             variant (str): Style variant (if applicable).
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'secondary').
             surface (str): Optional surface token; otherwise inherited.
             input_background (str): Surface token used as the fill color for all input

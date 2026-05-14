@@ -60,7 +60,6 @@ class SpinnerEntry(Field):
             locale: Locale identifier for formatting (e.g., 'en_US').
             required: If True, field cannot be empty.
             color: Color token for the focus ring and active border.
-            bootstyle: DEPRECATED - Use `color` instead.
             allow_blank: If True, empty input is allowed.
             cursor: Cursor style when hovering.
             font: Font for text display.

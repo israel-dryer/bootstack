@@ -25,7 +25,6 @@ class ToastConfig(TypedDict, total=False):
     buttons: Optional[Sequence[dict[str, Any]]]
     show_close_button: bool
     accent: Optional[str]
-    bootstyle: Optional[str]  # DEPRECATED: Use accent instead
     position: Optional[str]
     alert: bool
     on_dismissed: Optional[Callable[[Any], Any]]
@@ -50,7 +49,6 @@ class Toast:
             buttons: Optional[Sequence[dict[str, Any]]] = None,
             show_close_button: bool = True,
             accent: Optional[str] = None,
-            bootstyle: Optional[str] = None,
             position: Optional[str] = None,
             alert: bool = False,
             on_dismissed: Optional[Callable[[Any], Any]] = None,
@@ -76,7 +74,6 @@ class Toast:
             show_close_button (bool): Whether to show the close button in the header. Default is True.
             accent (str): Accent token for the toast container (e.g., "primary", "success",
                 "danger"). If None, uses the default background color.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
             position (str): Tkinter geometry string for toast position (e.g., "-25-75" for bottom-right).
                 If None, uses platform-specific defaults.
             alert (bool): If True, plays a system bell sound when the toast is shown.

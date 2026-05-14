@@ -30,7 +30,6 @@ class DropdownButtonKwargs(TypedDict, total=False):
     name: str
     textvariable: Any
     textsignal: Signal[str]
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     density: Literal['default', 'compact']
     variant: str
@@ -84,7 +83,6 @@ class DropdownButton(MenuButton):
             textsignal: Signal bound to the textvariable.
             accent: Accent token for styling (e.g., 'primary', 'danger').
             variant: Style variant (e.g., 'outline', 'ghost').
-            bootstyle: DEPRECATED - Use `accent` and `variant` instead.
             surface: Surface token for style.
             style_options: Dict forwarded to the menubutton style builder.
             popdown_options: Dict forwarded to ContextMenu (e.g., anchor, attach, offset).

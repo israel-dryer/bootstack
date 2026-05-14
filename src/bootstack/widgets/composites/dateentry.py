@@ -86,7 +86,6 @@ class DateEntry(Field):
         Other Parameters:
             locale: Locale identifier for date formatting (e.g., 'en_US').
             required: If True, field cannot be empty.
-            bootstyle: The accent color of the focus ring and active border.
             allow_blank: Allow empty input.
             cursor: Cursor style when hovering.
             exportselection: Export selection to clipboard.

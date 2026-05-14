@@ -21,6 +21,12 @@ from bootstack.widgets.parts.spinnerentry_part import SpinnerEntryPart
 from bootstack.widgets.types import Master
 
 FieldKind = Literal['text', 'numeric', 'spinbox']
+
+EntryWidget = Union[TextEntryPart, NumberEntryPart, SpinnerEntryPart]
+"""The internal entry widget used by a Field — one of the three entry part types."""
+
+FieldAddonWidget = Union[Button, Label, CheckToggle]
+"""Widget types that can be inserted as addons via :class:`Field.insert_addon`."""
 """Type alias for field kind specification.
 
 Determines which entry part widget to use:
@@ -211,7 +217,7 @@ class Field(EntryMixin, Frame):
         self._label_text = label
         self._value = value
 
-        self._entry: TextEntryPart | NumberEntryPart | SpinnerEntryPart
+        self._entry: EntryWidget
         self._addons: dict[str, Union[Button, Label, CheckToggle]] = {}
 
         # layout
@@ -278,45 +284,45 @@ class Field(EntryMixin, Frame):
         self.__setitem__ = self._entry.__setitem__
 
     @property
-    def value(self):
+    def value(self) -> Any:
         """Get or set the parsed value via the underlying entry widget."""
         return self._entry.value()
 
     @value.setter
-    def value(self, value):
+    def value(self, value: Any) -> None:
         self._entry.value(value)
 
-    def get(self):
+    def get(self) -> str:
         """Return the raw text from the underlying entry widget."""
         return self._entry.get()
 
     @property
-    def entry_widget(self) -> TextEntryPart | NumberEntryPart | SpinnerEntryPart:
+    def entry_widget(self) -> EntryWidget:
         """Get the underlying entry widget."""
         return self._entry
 
     @property
-    def label_widget(self):
+    def label_widget(self) -> Label:
         """Get the label widget."""
         return self._label_lbl
 
     @property
-    def message_widget(self):
+    def message_widget(self) -> Label:
         """Get the message widget."""
         return self._message_lbl
 
     @property
-    def addons(self):
-        """Get the dictionary of inserted addon widgets"""
+    def addons(self) -> dict[str, FieldAddonWidget]:
+        """Get the dictionary of inserted addon widgets."""
         return self._addons
 
     @property
-    def variable(self):
+    def variable(self) -> Variable:
         """Tkinter Variable linked to the entry text."""
         return self._entry.textvariable
 
     @property
-    def signal(self):
+    def signal(self) -> Signal:
         """Signal linked to the entry text for reactive updates."""
         return self._entry.textsignal
 
@@ -337,7 +343,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                [InputEventData][] dict with key ``text`` (current raw text).
+                `InputEventData` dict with key ``text`` (current raw text).
 
         Returns:
             Bind ID — pass to ``off_input()`` to unsubscribe.
@@ -357,7 +363,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is a
-                [ChangeEventData][] dict with keys ``value`` (committed value),
+                `ChangeEventData` dict with keys ``value`` (committed value),
                 ``prev_value`` (previous value), and ``text`` (raw display string).
 
         Returns:
@@ -378,7 +384,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                [EnterEventData][] dict with keys ``value`` (committed value)
+                `EnterEventData` dict with keys ``value`` (committed value)
                 and ``text`` (raw display string).
 
         Returns:
@@ -398,7 +404,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Valid>>`` events (fires when validation passes).
 
         Args:
-            callback: Receives a [ValidationEventData][] dict with keys
+            callback: Receives a `ValidationEventData` dict with keys
                 ``value`` (committed value), ``is_valid`` (``True``), and
                 ``message`` (empty string on pass).
         """
@@ -417,7 +423,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Invalid>>`` events (fires when validation fails).
 
         Args:
-            callback: Receives a [ValidationEventData][] dict with keys
+            callback: Receives a `ValidationEventData` dict with keys
                 ``value`` (committed value), ``is_valid`` (``False``), and
                 ``message`` (validation error text).
         """
@@ -436,7 +442,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Validate>>`` events (fires after any validation).
 
         Args:
-            callback: Receives a [ValidationEventData][] dict with keys
+            callback: Receives a `ValidationEventData` dict with keys
                 ``value`` (committed value), ``is_valid`` (bool), and
                 ``message`` (validation message or empty string).
         """
@@ -462,7 +468,7 @@ class Field(EntryMixin, Frame):
 
         Rules are evaluated on blur and on Enter. When a rule fails the field
         emits ``<<Invalid>>``; when all rules pass it emits ``<<Valid>>``. Both
-        carry a [ValidationEventData][] payload.
+        carry a `ValidationEventData` payload.
 
         Args:
             rule_type: Rule type. One of:
@@ -508,12 +514,12 @@ class Field(EntryMixin, Frame):
 
     def insert_addon(
             self,
-            widget: Type[Union[Button, Label, CheckToggle]],
+            widget: Type[FieldAddonWidget],
             position: Literal['before', 'after'],
             name: str | None = None,
             pack_options: dict[str, Any] = None,
             **kwargs: Any
-    ):
+    ) -> FieldAddonWidget:
         """Insert a widget addon before or after the entry input.
 
         Addons are Button, Label, or CheckToggle widgets positioned inside the field container,
@@ -577,6 +583,8 @@ class Field(EntryMixin, Frame):
         # bind focus events to field frame
         instance.bind('<FocusIn>', lambda _: self._field.state(['focus']), add=True)
         instance.bind('<FocusOut>', lambda _: self._field.state(['!focus']), add=True)
+
+        return instance
 
     def _reserve_message_space(self) -> None:
         if not self._show_messages:

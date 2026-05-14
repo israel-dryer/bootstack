@@ -56,7 +56,6 @@ class NumericEntry(Field):
             locale: Locale identifier for number formatting (e.g., `'en_US'`).
             required: If True, field cannot be empty.
             accent: Accent token for the focus ring and active border.
-            bootstyle: DEPRECATED - Use `accent` instead.
             allow_blank: If True, empty input is allowed (sets value to None).
             cursor: Cursor style when hovering.
             exportselection: Export selection to clipboard.

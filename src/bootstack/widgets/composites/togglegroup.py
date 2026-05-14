@@ -54,7 +54,6 @@ class ToggleGroup(Frame):
             accent (str): Accent token for styling (e.g., 'primary', 'danger').
                 Defaults to 'primary'.
             variant (str): Style variant (e.g., 'outline', 'ghost').
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
             variable (Variable): Optional tk.Variable for controlling the value. For single mode,
                 use StringVar; for multi mode, use SetVar.
             signal (Signal): Optional Signal instance for reactive programming.

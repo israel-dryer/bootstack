@@ -22,7 +22,6 @@ def parse_bootstyle_v2(bootstyle: str, widget_class: str) -> dict:
     treated as custom colors.
 
     Args:
-        bootstyle: Bootstyle string (e.g., "success-outline", "primary")
         widget_class: TTK widget class name (e.g., "TButton")
 
     Returns:

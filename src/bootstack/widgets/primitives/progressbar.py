@@ -31,7 +31,6 @@ class ProgressbarKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -61,7 +60,6 @@ class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             style (str): Explicit ttk style name (overrides accent/variant).
             accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
             variant (str): Style variant, e.g. 'default', 'striped', 'thin'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'success', 'striped').
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Optional dict forwarded to the style builder.

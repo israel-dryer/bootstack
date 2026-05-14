@@ -25,7 +25,6 @@ class CardKwargs(TypedDict, total=False):
     surface: str
     show_border: bool
     style_options: dict[str, Any]
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
 
 
 class Card(Frame):

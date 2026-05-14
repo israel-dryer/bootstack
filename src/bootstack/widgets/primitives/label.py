@@ -44,7 +44,6 @@ class LabelKwargs(TypedDict, total=False):
     textsignal: Signal[str]
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -86,7 +85,6 @@ class Label(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, Widge
             style (str): Explicit ttk style name (overrides accent/variant).
             accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
             variant (str): Style variant, e.g. 'default', 'inverse'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'secondary', 'info').
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Optional dict forwarded to the style builder.

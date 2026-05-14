@@ -37,7 +37,6 @@ class NotebookKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -80,7 +79,6 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
             style (str): Explicit ttk style name that overrides accent/variant.
             accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
             variant (str): Style variant (if applicable).
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
                 Combined style tokens (e.g., 'primary', 'secondary').
             surface (str): Optional surface color token; inherits from the current theme if omitted.
             style_options (dict): Additional options forwarded to the style builder.

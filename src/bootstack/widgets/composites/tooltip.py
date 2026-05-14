@@ -67,7 +67,6 @@ class ToolTip:
                 "center", or "right". Defaults to "left".
             accent: Accent token for the tooltip frame (e.g., "danger", "info").
                 If None, uses default elevated background styling.
-            bootstyle: DEPRECATED - Use `accent` instead. Bootstrap style(s) to apply
                 to the tooltip frame.
             wraplength: Maximum width in screen units before text wraps to a new line.
                 If None, defaults to a scaled value of 300 based on the widget's display.

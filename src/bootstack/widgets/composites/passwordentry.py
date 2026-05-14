@@ -44,7 +44,6 @@ class PasswordEntry(Field):
             show: Character to mask password input. Default is '•'.
             required: If True, field cannot be empty.
             accent: Accent token for the focus ring and active border.
-            bootstyle: DEPRECATED - Use `accent` instead.
             allow_blank: Allow empty input.
             cursor: Cursor style when hovering.
             font: Font for text display.

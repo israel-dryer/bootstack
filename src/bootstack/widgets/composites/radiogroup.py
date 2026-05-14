@@ -57,7 +57,6 @@ class RadioGroup(Frame):
             orient (str): Layout orientation - 'horizontal' (default) or 'vertical'.
             accent (str): Accent token for styling (e.g., 'primary', 'success', 'danger').
                 Defaults to 'primary'.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
             text (str): Optional label text to display.
             labelanchor (str): Label position - 'n' (top, default), 's' (bottom),
                 'e' (right), 'w' (left), or combinations like 'nw', 'ne', etc.

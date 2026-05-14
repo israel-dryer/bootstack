@@ -27,7 +27,6 @@ class LabelFrameKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     surface: str
     style_options: dict[str, Any]
@@ -55,7 +54,6 @@ class LabelFrame(LocalizationMixin, TTKWrapperBase, WidgetCapabilitiesMixin, Ttk
             height (int): Requested height in pixels.
             style (str): Explicit ttk style name (overrides accent/variant).
             accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Optional dict forwarded to the style builder.
             localize (bool | Literal['auto']): Determines the widget's localization mode.

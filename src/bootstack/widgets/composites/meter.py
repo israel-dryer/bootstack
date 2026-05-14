@@ -69,7 +69,6 @@ class Meter(Frame):
         Args:
             master: The parent widget.
             accent: Accent token for the meter indicator (e.g., 'primary', 'success').
-            bootstyle: DEPRECATED - Use `accent` instead.
 
             value: Current meter value.
             minvalue: Minimum value for the meter range.
