@@ -24,7 +24,7 @@ class SizeGripKwargs(TypedDict, total=False):
 
 
 class SizeGrip(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Sizegrip):
-    """bootstack wrapper for `ttk.Sizegrip` with bootstyle support."""
+    """bootstack wrapper for `ttk.Sizegrip` with themed styling support."""
 
     _ttk_base = ttk.Sizegrip
 

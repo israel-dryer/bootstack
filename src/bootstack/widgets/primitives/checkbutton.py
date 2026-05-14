@@ -54,7 +54,7 @@ class CheckButtonKwargs(TypedDict, total=False):
 
 
 class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Checkbutton):
-    """bootstack wrapper for `ttk.Checkbutton` with bootstyle and icon support."""
+    """bootstack wrapper for `ttk.Checkbutton` with themed styling and icon support."""
 
     _ttk_base = ttk.Checkbutton
 

@@ -28,7 +28,7 @@ class ScrollbarKwargs(TypedDict, total=False):
 
 
 class Scrollbar(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scrollbar):
-    """bootstack wrapper for `ttk.Scrollbar` with bootstyle support."""
+    """bootstack wrapper for `ttk.Scrollbar` with themed styling support."""
 
     _ttk_base = ttk.Scrollbar
 

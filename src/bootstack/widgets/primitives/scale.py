@@ -38,7 +38,7 @@ class ScaleKwargs(TypedDict, total=False):
 
 
 class Scale(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scale):
-    """bootstack wrapper for `ttk.Scale` with bootstyle support."""
+    """bootstack wrapper for `ttk.Scale` with themed styling support."""
 
     _ttk_base = ttk.Scale
 

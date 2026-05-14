@@ -535,6 +535,7 @@ class Field(EntryMixin, Frame):
         Args:
             widget: Widget class to instantiate. Must be Button, Label, or CheckToggle.
             position: Position relative to the entry input:
+
                 - 'before': Insert to the left of the entry (prefix)
                 - 'after': Insert to the right of the entry (suffix)
             name: Optional name for the addon. If provided, the addon can be

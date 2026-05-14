@@ -43,7 +43,7 @@ class ComboboxKwargs(TypedDict, total=False):
 
 
 class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Combobox):
-    """bootstack wrapper for `ttk.Combobox` with bootstyle support."""
+    """bootstack wrapper for `ttk.Combobox` with themed styling support."""
 
     _ttk_base = ttk.Combobox
 

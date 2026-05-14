@@ -46,9 +46,7 @@ class ButtonKwargs(TypedDict, total=False):
 
 
 class Button(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Button):
-    """TTK Bootstrap Button
-
-    bootstack wrapper for `ttk.Button` with bootstyle and icon support.
+    """bootstack wrapper for `ttk.Button` with themed styling and icon support.
     """
     _ttk_base = ttk.Button
 

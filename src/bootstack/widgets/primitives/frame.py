@@ -35,7 +35,7 @@ class FrameKwargs(TypedDict, total=False):
 
 
 class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
-    """bootstack wrapper for `ttk.Frame` with bootstyle support."""
+    """bootstack wrapper for `ttk.Frame` with themed styling support."""
 
     _ttk_base = ttk.Frame
 

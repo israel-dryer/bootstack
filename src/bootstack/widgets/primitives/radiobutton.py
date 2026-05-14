@@ -52,7 +52,7 @@ class RadioButtonKwargs(TypedDict, total=False):
 
 
 class RadioButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Radiobutton):
-    """bootstack wrapper for `ttk.Radiobutton` with bootstyle and icon support."""
+    """bootstack wrapper for `ttk.Radiobutton` with themed styling and icon support."""
 
     _ttk_base = ttk.Radiobutton
 

@@ -38,7 +38,7 @@ class ProgressbarKwargs(TypedDict, total=False):
 
 
 class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Progressbar):
-    """bootstack wrapper for `ttk.Progressbar` with bootstyle support."""
+    """bootstack wrapper for `ttk.Progressbar` with themed styling support."""
 
     _ttk_base = ttk.Progressbar
 

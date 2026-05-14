@@ -29,7 +29,7 @@ class PanedWindowKwargs(TypedDict, total=False):
 
 
 class PanedWindow(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.PanedWindow):
-    """bootstack wrapper for `ttk.Panedwindow` with bootstyle support."""
+    """bootstack wrapper for `ttk.Panedwindow` with themed styling support."""
 
     _ttk_base = ttk.Panedwindow
 

@@ -34,7 +34,7 @@ class TreeViewKwargs(TypedDict, total=False):
 
 
 class TreeView(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Treeview):
-    """bootstack wrapper for `ttk.Treeview` with bootstyle support."""
+    """bootstack wrapper for `ttk.Treeview` with themed styling support."""
 
     _ttk_base = ttk.Treeview
 

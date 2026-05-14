@@ -45,7 +45,7 @@ class EntryKwargs(TypedDict, total=False):
 
 
 class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Entry):
-    """bootstack wrapper for `ttk.Entry` with bootstyle support."""
+    """bootstack wrapper for `ttk.Entry` with themed styling support."""
 
     _ttk_base = ttk.Entry
 

@@ -27,7 +27,7 @@ class SeparatorKwargs(TypedDict, total=False):
 
 
 class Separator(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Separator):
-    """bootstack wrapper for `ttk.Separator` with bootstyle support."""
+    """bootstack wrapper for `ttk.Separator` with themed styling support."""
 
     _ttk_base = ttk.Separator
 

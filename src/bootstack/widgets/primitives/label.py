@@ -51,7 +51,7 @@ class LabelKwargs(TypedDict, total=False):
 
 
 class Label(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Label):
-    """bootstack wrapper for `ttk.Label` with bootstyle and icon support."""
+    """bootstack wrapper for `ttk.Label` with themed styling and icon support."""
 
     _ttk_base = ttk.Label
 

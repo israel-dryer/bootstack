@@ -44,7 +44,7 @@ class MenuButtonKwargs(TypedDict, total=False):
 
 
 class MenuButton(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Menubutton):
-    """bootstack wrapper for `ttk.Menubutton` with bootstyle and icon support."""
+    """bootstack wrapper for `ttk.Menubutton` with themed styling and icon support."""
 
     _ttk_base = ttk.Menubutton
 

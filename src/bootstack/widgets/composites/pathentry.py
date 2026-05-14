@@ -93,7 +93,7 @@ class PathEntry(Field):
         )
 
     @property
-    def dialog_button(self) -> Button | None:
+    def dialog_button(self) -> Button:
         """Get the dialog button widget."""
         return self.addons.get('dialog-button')
 

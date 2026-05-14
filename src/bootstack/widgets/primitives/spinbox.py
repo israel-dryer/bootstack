@@ -42,7 +42,7 @@ class SpinboxKwargs(TypedDict, total=False):
 
 
 class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Spinbox):
-    """bootstack wrapper for `ttk.Spinbox` with bootstyle support."""
+    """bootstack wrapper for `ttk.Spinbox` with themed styling support."""
 
     _ttk_base = ttk.Spinbox
 

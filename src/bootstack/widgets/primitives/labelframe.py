@@ -34,7 +34,7 @@ class LabelFrameKwargs(TypedDict, total=False):
 
 
 class LabelFrame(LocalizationMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.LabelFrame):
-    """bootstack wrapper for `ttk.Labelframe` with bootstyle support."""
+    """bootstack wrapper for `ttk.Labelframe` with themed styling support."""
 
     _ttk_base = ttk.Labelframe
 
