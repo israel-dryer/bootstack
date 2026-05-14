@@ -4,8 +4,6 @@ This module provides centralized type definitions used across all widget modules
 to ensure consistency and reduce import boilerplate.
 """
 
-from __future__ import annotations
-
 import tkinter
 from typing import Any, Callable, Literal, Optional, Union
 
