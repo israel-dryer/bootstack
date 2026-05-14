@@ -6,6 +6,7 @@ and an optional calendar picker button.
 
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Iterable, Literal, Optional, Tuple
+from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
@@ -38,7 +39,7 @@ class DateEntry(Field):
             self,
             master: Master = None,
             value: str | date | datetime = None,
-            value_format: str = "longDate",
+            value_format: DateFormatSpec = "longDate",
             label: str = None,
             message: str = None,
             show_picker_button=True,

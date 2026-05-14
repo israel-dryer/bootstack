@@ -6,6 +6,7 @@ list of time values at specified intervals.
 
 import datetime
 from typing import Union
+from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
@@ -28,7 +29,7 @@ class TimeEntry(SelectBox):
             self,
             master: Master = None,
             value: Union[datetime.time, str] = None,
-            value_format: str = 'shortTime',
+            value_format: DateFormatSpec = 'shortTime',
             interval: int = 30,
             min_time: Union[datetime.time, str] = None,
             max_time: Union[datetime.time, str] = None,

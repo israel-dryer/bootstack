@@ -51,8 +51,9 @@ class NumericEntry(Field):
 
         Other Parameters:
             wrap: If True, values wrap around at min/max boundaries.
-            value_format: Number format specification for IntlFormatter.
-                Examples: `'decimal'`, `'percent'`, `'currency'`, `'#,##0.00'`.
+            value_format (`NumberFormatSpec`): Number format — a `NumberPreset`
+                string (e.g., `'decimal'`, `'percent'`, `'currency'`) or a
+                custom ICU pattern (e.g., `'#,##0.00'`).
             locale: Locale identifier for number formatting (e.g., `'en_US'`).
             required: If True, field cannot be empty.
             accent: Accent token for the focus ring and active border.
