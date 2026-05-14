@@ -319,12 +319,24 @@ class Field(EntryMixin, Frame):
 
     @property
     def variable(self) -> Variable:
-        """Tkinter Variable linked to the entry text."""
+        """The `StringVar` linked to the entry text.
+
+        Use when bridging to a plain tkinter widget that requires `textvariable=`,
+        or for direct read/write access to the raw string value. For reactive
+        bindings between bootstack widgets, prefer `signal` instead.
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
+        """
         return self._entry.textvariable
 
     @property
     def signal(self) -> Signal:
-        """Signal linked to the entry text for reactive updates."""
+        """The `Signal[str]` linked to the entry text.
+
+        Pass as `textsignal=` to any other bootstack widget to keep its text
+        in sync with this field's value, or call `signal.subscribe(callback)`
+        to observe changes programmatically. See the
+        [Reactivity guide](../../guides/reactivity.md) for patterns.
+        """
         return self._entry.textsignal
 
     @configure_delegate
