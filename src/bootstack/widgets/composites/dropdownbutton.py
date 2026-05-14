@@ -55,6 +55,7 @@ class DropdownButton(MenuButton):
             master: Master = None,
             text: Any = None,
             items: list[ContextMenuItem] = None,
+            command: Callable = None,
             **kwargs: Unpack[DropdownButtonKwargs],
     ):
         """Create a dropdown button backed by a ContextMenu.
@@ -63,6 +64,9 @@ class DropdownButton(MenuButton):
             master: Parent widget. If None, uses the default root window.
             text: Label text for the button.
             items: Initial list of ContextMenuItem entries.
+            command: Callback invoked when any menu item is clicked. Receives a
+                dict with keys ``type`` (str), ``text`` (str), and ``value`` (Any).
+                Use ``configure(command=...)`` to change or clear after construction.
 
         Other Parameters:
             image: Tk image to display.
@@ -95,8 +99,8 @@ class DropdownButton(MenuButton):
             )
         )
         kwargs['style_options'] = style_options
-        self._item_click_callback = None
         self._items = items if items else []
+        self._command = command
         self._popdown_options = kwargs.pop('popdown_options', {})
 
         # Store the textvariable if provided, or create a new one
@@ -111,7 +115,6 @@ class DropdownButton(MenuButton):
         self.bind('<KP_Enter>', lambda _: self.show_menu(), add="+")
 
         # passthrough methods
-        self.on_item_click = self._context_menu.on_item_click
         self.add_radiobutton = self._context_menu.add_radiobutton
         self.add_command = self._context_menu.add_command
         self.add_checkbutton = self._context_menu.add_checkbutton
@@ -123,16 +126,6 @@ class DropdownButton(MenuButton):
         self.move_item = self._context_menu.move_item
         self.configure_item = self._context_menu.configure_item
         self.items = self._context_menu.items
-
-    def on_item_click(self, callback: Callable) -> None:
-        """Set item click callback. Callback receives `item_info = {'type': str, 'text': str, 'value': Any}`."""
-        self._item_click_callback = callback
-        self._context_menu.on_item_click(callback)
-
-    def off_item_click(self) -> None:
-        """Remove the item click callback."""
-        self._item_click_callback = None
-        self._context_menu.on_item_click(None)
 
     def _build_context_menu(self):
         """Construct the ContextMenu with current items and options."""
@@ -151,9 +144,7 @@ class DropdownButton(MenuButton):
         options.update(self._popdown_options)
         # DropdownButton manages its own activation (left-click, Return/
         # KP_Enter via show_menu), so opt out of ContextMenu's auto-trigger.
-        cm = ContextMenu(self, target=self, items=self._items, trigger=None, **options)
-        if self._item_click_callback:
-            self.on_item_click(self._item_click_callback)
+        cm = ContextMenu(self, target=self, items=self._items, trigger=None, command=self._command, **options)
         return cm
 
     @property
@@ -166,6 +157,15 @@ class DropdownButton(MenuButton):
         if not self.instate(("!disabled", "!readonly")):
             return
         self._context_menu.show()
+
+    @configure_delegate('command')
+    def _delegate_command(self, value=None):
+        """Get or set the item-click callback."""
+        if value is None and not self._command:
+            return self._command
+        self._command = value
+        self._context_menu.configure(command=value)
+        return None
 
     @configure_delegate('popdown_options')
     def _delegate_popdown_options(self, value=None):
