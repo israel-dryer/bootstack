@@ -101,12 +101,6 @@ class DateEntry(Field):
             textsignal (Signal): Signal object for reactive updates.
             width (int): Width in characters.
             xscrollcommand (Callable): Callback for horizontal scrolling.
-
-        Note:
-            The widget uses the IntlFormatter for locale-aware date formatting.
-            In single mode, the value is parsed and formatted automatically when
-            the user commits input (on FocusOut or Return key). In range mode the
-            field is readonly; the picker is the only way to enter a value.
         """
         # Store before super().__init__ so property override is safe if called during init
         self._selection_mode = selection_mode

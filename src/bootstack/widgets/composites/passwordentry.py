@@ -57,11 +57,6 @@ class PasswordEntry(Field):
             textvariable (Variable): Tkinter Variable to link with text.
             textsignal (Signal): Signal object for reactive updates.
             width (int): Width in characters.
-
-        Note:
-            The visibility toggle button uses a press-and-hold interaction.
-            The password is only visible while the button is actively pressed,
-            providing a secure way to verify input without leaving it exposed.
         """
         # set default mask if not provided
         self._show_indicator = kwargs.get('show', '•')

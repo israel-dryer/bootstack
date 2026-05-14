@@ -65,11 +65,6 @@ class TimeEntry(SelectBox):
             width (int): Width in characters.
             textvariable (Variable): Tkinter Variable to link with text.
             textsignal (Signal): Signal object for reactive updates.
-
-        Note:
-            The widget uses IntlFormatter for locale-aware time formatting.
-            The dropdown is searchable - type to filter time values.
-            Custom time values can be entered directly in the field.
         """
         self._interval = interval
         self._value_format = value_format

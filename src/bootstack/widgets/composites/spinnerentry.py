@@ -73,10 +73,6 @@ class SpinnerEntry(Field):
             textvariable (Variable): Tkinter Variable to link with text.
             textsignal (Signal): Signal object for reactive updates.
             width (int): Width in characters.
-
-        Note:
-            Use either 'values' (for text mode) OR 'minvalue/maxvalue' (for numeric mode),
-            not both. If both are provided, 'values' takes precedence.
         """
         # Build kwargs for Field initialization
         # Map minvalue/maxvalue to from_/to for the underlying Spinbox

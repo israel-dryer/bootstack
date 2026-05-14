@@ -33,26 +33,35 @@ Determines which entry part widget to use:
 class InputEventData(TypedDict):
     """Payload for ``<<Input>>`` events — fires on each keystroke."""
     text: str
+    """Current raw text in the entry field."""
 
 
 class ChangeEventData(TypedDict):
     """Payload for ``<<Change>>`` events — fires on commit (blur or Enter)."""
     value: Any
+    """Committed (parsed) value."""
     prev_value: Any
+    """Previous committed value."""
     text: str
+    """Raw display string."""
 
 
 class EnterEventData(TypedDict):
     """Payload for ``<Return>`` key events."""
     value: Any
+    """Committed (parsed) value."""
     text: str
+    """Raw display string."""
 
 
 class ValidationEventData(TypedDict):
     """Payload for ``<<Valid>>``, ``<<Invalid>>``, and ``<<Validate>>`` events."""
     value: Any
+    """Committed (parsed) value."""
     is_valid: bool
+    """Whether validation passed."""
     message: str
+    """Validation error text, or empty string on pass."""
 
 
 class FieldOptions(TypedDict, total=False):
@@ -328,7 +337,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                :class:`InputEventData` dict with key ``text`` (current raw text).
+                [InputEventData][] dict with key ``text`` (current raw text).
 
         Returns:
             Bind ID — pass to ``off_input()`` to unsubscribe.
@@ -348,7 +357,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is a
-                :class:`ChangeEventData` dict with keys ``value`` (committed value),
+                [ChangeEventData][] dict with keys ``value`` (committed value),
                 ``prev_value`` (previous value), and ``text`` (raw display string).
 
         Returns:
@@ -369,7 +378,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                :class:`EnterEventData` dict with keys ``value`` (committed value)
+                [EnterEventData][] dict with keys ``value`` (committed value)
                 and ``text`` (raw display string).
 
         Returns:
@@ -389,7 +398,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Valid>>`` events (fires when validation passes).
 
         Args:
-            callback: Receives a :class:`ValidationEventData` dict with keys
+            callback: Receives a [ValidationEventData][] dict with keys
                 ``value`` (committed value), ``is_valid`` (``True``), and
                 ``message`` (empty string on pass).
         """
@@ -408,7 +417,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Invalid>>`` events (fires when validation fails).
 
         Args:
-            callback: Receives a :class:`ValidationEventData` dict with keys
+            callback: Receives a [ValidationEventData][] dict with keys
                 ``value`` (committed value), ``is_valid`` (``False``), and
                 ``message`` (validation error text).
         """
@@ -427,7 +436,7 @@ class Field(EntryMixin, Frame):
         """Register a callback for ``<<Validate>>`` events (fires after any validation).
 
         Args:
-            callback: Receives a :class:`ValidationEventData` dict with keys
+            callback: Receives a [ValidationEventData][] dict with keys
                 ``value`` (committed value), ``is_valid`` (bool), and
                 ``message`` (validation message or empty string).
         """
@@ -453,7 +462,7 @@ class Field(EntryMixin, Frame):
 
         Rules are evaluated on blur and on Enter. When a rule fails the field
         emits ``<<Invalid>>``; when all rules pass it emits ``<<Valid>>``. Both
-        carry a :class:`ValidationEventData` payload.
+        carry a [ValidationEventData][] payload.
 
         Args:
             rule_type: Rule type. One of:

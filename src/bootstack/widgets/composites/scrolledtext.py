@@ -48,29 +48,7 @@ class ScrolledText(Frame):
             scrollbar_style: The bootstyle for scrollbars (e.g., 'primary',
                 'success', 'danger').
             **kwargs: Additional keyword arguments passed to the Text widget.
-
-        Note:
-            Legacy parameters 'autohide', 'vbar', and 'hbar' parameters work, but are deprecated. Use
-            `scroll_direction` and `scrollbar_visibility` instead.
         """
-        # Handle deprecated parameters
-        autohide = kwargs.pop('autohide', None)
-        if autohide is not None:
-            scrollbar_visibility = 'hover' if autohide else 'always'
-
-        vbar = kwargs.pop('vbar', None)
-        hbar = kwargs.pop('hbar', None)
-        if vbar is not None or hbar is not None:
-            # Determine direction from vbar/hbar
-            if hbar and vbar:
-                scroll_direction = 'both'
-            elif hbar:
-                scroll_direction = 'horizontal'
-            elif vbar:
-                scroll_direction = 'vertical'
-            else:
-                scroll_direction = 'vertical'  # Default
-
         # Initialize Frame
         super().__init__(master=master, padding=padding)
 

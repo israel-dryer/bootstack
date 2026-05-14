@@ -91,12 +91,6 @@ class PathEntry(Field):
             textvariable (Variable): Tkinter Variable to link with text.
             textsignal (Signal): Signal object for reactive updates.
             width (int): Width in characters.
-
-        Note:
-            When multiple files are selected (using 'openfilenames' or 'openfiles'),
-            the paths are joined with ", " (comma-space) and displayed in the entry.
-            The raw dialog result (tuple/list) is available via the `dialog_result`
-            property.
         """
         self._dialog = dialog
         self._dialog_options = dialog_options

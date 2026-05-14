@@ -9,12 +9,14 @@ from __future__ import annotations
 import tkinter
 from typing import Any, Callable, Optional, Union
 
-# Master widget type - used for the `master` parameter in all widget constructors
 Master = Optional[tkinter.Misc]
+"""Parent widget. Pass any tkinter widget or ``None`` to use the default root window."""
 
-# Callback types
 EventCallback = Callable[[tkinter.Event], None]
-CommandCallback = Callable[[], Any]
+"""Callback that receives a Tkinter ``Event`` object."""
 
-# Common parameter types
+CommandCallback = Callable[[], Any]
+"""Callback invoked with no arguments, e.g. a button ``command=``."""
+
 WidgetKwargs = dict[str, Any]
+"""Generic dict of widget configuration keyword arguments."""

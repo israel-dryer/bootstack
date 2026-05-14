@@ -247,6 +247,10 @@ nav = [
             { "LV" = "reference/i18n/LV.md" },
             { "IntlFormatter" = "reference/i18n/IntlFormatter.md" },
         ] },
+        { "Types" = [
+            { "Events" = "reference/types/events.md" },
+            { "General" = "reference/types/general.md" },
+        ] },
         { "Utils" = [
             { "Overview" = "reference/utils/index.md" },
             { "Font" = "reference/utils/Font.md" },
