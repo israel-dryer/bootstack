@@ -38,6 +38,20 @@ title: General
       heading_level: 2
       show_inheritance_diagram: false
 
+## ScrolledText types
+
+::: bootstack.widgets.composites.scrolledtext.ScrollDirection
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
+::: bootstack.widgets.composites.scrolledtext.ScrollbarVisibility
+    options:
+      show_root_toc_entry: false
+      heading_level: 2
+      show_inheritance_diagram: false
+
 ## Field types
 
 ::: bootstack.widgets.composites.field.EntryWidget

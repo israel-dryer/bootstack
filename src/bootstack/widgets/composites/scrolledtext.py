@@ -6,6 +6,12 @@ from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives.scrollbar import Scrollbar
 
+ScrollDirection = Literal['horizontal', 'vertical', 'both']
+"""Scroll axis for :class:`ScrolledText`."""
+
+ScrollbarVisibility = Literal['always', 'never', 'hover', 'scroll']
+"""Scrollbar visibility mode for :class:`ScrolledText`."""
+
 
 class ScrolledText(Frame):
     """A text widget with configurable scrollbars and mouse wheel support.
@@ -27,8 +33,8 @@ class ScrolledText(Frame):
             self,
             master: Optional[tkinter.Misc] = None,
             padding: int = 0,
-            scroll_direction: Literal['horizontal', 'vertical', 'both'] = 'vertical',
-            scrollbar_visibility: Literal['always', 'never', 'hover', 'scroll'] = 'always',
+            scroll_direction: ScrollDirection = 'vertical',
+            scrollbar_visibility: ScrollbarVisibility = 'always',
             autohide_delay: int = 1000,
             scrollbar_style: str = 'default',
             **kwargs: Any,
