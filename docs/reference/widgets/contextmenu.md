@@ -3,10 +3,10 @@ title: ContextMenu
 ---
 
 ::: bootstack.widgets.composites.contextmenu.ContextMenu
-
-## Item specification
+    options:
+      heading_level: 2
 
 ::: bootstack.widgets.composites.contextmenu.ContextMenuItem
     options:
-      show_inheritance_diagram: false
-      heading_level: 3
+      heading_level: 2
+

@@ -323,7 +323,7 @@ heading_level = 1
 line_length = 88
 inherited_members = true
 merge_init_into_class = true
-parameter_headings = true
+parameter_headings = false
 separate_signature = true
 show_root_heading = true
 show_root_full_path = false
@@ -360,7 +360,7 @@ filters = [
 # Markdown extensions
 # -----------------------------------------------------------------------------
 [project.markdown_extensions.toc]
-toc_depth = 2
+toc_depth = 3
 
 [project.markdown_extensions.md_in_html]
 [project.markdown_extensions.pymdownx.superfences]
