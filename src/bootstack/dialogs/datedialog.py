@@ -381,7 +381,7 @@ class DateDialog:
 
     @property
     def result(self) -> Optional[Union[date, Tuple[date, date]]]:
-        """The selected date (single mode) or ``(start, end)`` tuple (range mode), or None if cancelled."""
+        """The selected date (single mode) or `(start, end)` tuple (range mode), or None if cancelled."""
         return self._dialog.result
 
     def on_result(self, callback: Callable[[date], None]) -> Optional[str]:

@@ -71,9 +71,9 @@ class RadioButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
             icon (str | dict): Icon shown in the label area for all states. Color shifts
                 from foreground (unselected) to accent (selected) automatically.
             on_icon (str | dict): Icon shown in the label area when the button is selected.
-                Shortcut for ``state=[("selected", name)]`` inside a full icon spec.
+                Shortcut for `state=[("selected", name)]` inside a full icon spec.
             off_icon (str | dict): Icon shown in the label area when the button is unselected.
-                Used as the base icon when ``on_icon`` is also provided.
+                Used as the base icon when `on_icon` is also provided.
             icon_only (bool): Removes the additional padding added for label.
             show_indicator (bool): Whether to show the standard radio indicator. Defaults
                 to True. Set to False to hide the indicator (e.g. for icon-only radio groups).

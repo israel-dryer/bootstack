@@ -66,7 +66,7 @@ class RadioGroup(Frame):
             state (str): Initial state for all buttons - 'normal' (default) or 'disabled'.
             show_indicator (bool): Whether child buttons show the standard radio indicator.
                 Defaults to True. Set to False for icon-only or custom-styled groups.
-                Can be overridden per-button in ``add()``.
+                Can be overridden per-button in `add()`.
             show_border (bool): If True, draws a border around the group.
             surface (str): Optional surface token; otherwise inherited.
             style_options (dict): Additional style options passed to child buttons.

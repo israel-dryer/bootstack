@@ -10,19 +10,19 @@ import tkinter
 from typing import Any, Callable, Literal, Optional, Union
 
 Master = Optional[tkinter.Misc]
-"""Parent widget. Pass any tkinter widget or ``None`` to use the default root window."""
+"""Parent widget. Pass any tkinter widget or `None` to use the default root window."""
 
 EventCallback = Callable[[tkinter.Event], None]
-"""Callback that receives a Tkinter ``Event`` object."""
+"""Callback that receives a Tkinter `Event` object."""
 
 CommandCallback = Callable[[], Any]
-"""Callback invoked with no arguments, e.g. a button ``command=``."""
+"""Callback invoked with no arguments, e.g. a button `command=`."""
 
 WidgetKwargs = dict[str, Any]
 """Generic dict of widget configuration keyword arguments."""
 
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
-"""Scroll axis for ``ScrolledText``."""
+"""Scroll axis for `ScrolledText`."""
 
 ScrollbarVisibility = Literal['always', 'never', 'hover', 'scroll']
-"""Scrollbar visibility mode for ``ScrolledText``."""
+"""Scrollbar visibility mode for `ScrolledText`."""

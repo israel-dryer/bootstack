@@ -22,9 +22,9 @@ class CheckToggle(CheckButton):
             icon (str | dict): Icon shown in the label area for all states. Color shifts
                 with the button's pressed/selected state automatically.
             on_icon (str | dict): Icon shown when the toggle is selected (on). Shortcut
-                for ``state=[("selected", name)]`` inside a full icon spec.
+                for `state=[("selected", name)]` inside a full icon spec.
             off_icon (str | dict): Icon shown when the toggle is unselected (off). Used
-                as the base icon when ``on_icon`` is also provided.
+                as the base icon when `on_icon` is also provided.
             icon_only (bool): If True, removes the additional padding reserved for text.
             compound (str): Placement of the image relative to text.
             variable (Variable): Linked variable controlling the on/off state.

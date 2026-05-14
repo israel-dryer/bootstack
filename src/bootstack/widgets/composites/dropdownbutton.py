@@ -45,8 +45,8 @@ class DropdownButton(MenuButton):
 
     DropdownButton combines a MenuButton with a ContextMenu, adding a chevron
     indicator and optional item-click callbacks. Items can be added at
-    construction or dynamically via ``add_command``, ``add_checkbutton``,
-    ``add_radiobutton``, and ``add_separator``.
+    construction or dynamically via `add_command`, `add_checkbutton`,
+    `add_radiobutton`, and `add_separator`.
     """
 
     def __init__(
@@ -64,8 +64,8 @@ class DropdownButton(MenuButton):
             text: Label text for the button.
             items: Initial list of ContextMenuItem entries.
             command: Callback invoked when any menu item is clicked. Receives a
-                dict with keys ``type`` (str), ``text`` (str), and ``value`` (Any).
-                Use ``configure(command=...)`` to change or clear after construction.
+                dict with keys `type` (str), `text` (str), and `value` (Any).
+                Use `configure(command=...)` to change or clear after construction.
 
         Other Parameters:
             image: Tk image to display.

@@ -27,7 +27,7 @@ EntryWidget = Union[TextEntryPart, NumberEntryPart, SpinnerEntryPart]
 """The internal entry widget used by a Field — one of the three entry part types."""
 
 FieldAddonWidget = Union[Button, Label, CheckToggle]
-"""Widget types supported by ``Field.insert_addon``."""
+"""Widget types supported by `Field.insert_addon`."""
 """Type alias for field kind specification.
 
 Determines which entry part widget to use:
@@ -38,13 +38,13 @@ Determines which entry part widget to use:
 
 
 class InputEventData(TypedDict):
-    """Payload for ``<<Input>>`` events — fires on each keystroke."""
+    """Payload for `<<Input>>` events — fires on each keystroke."""
     text: str
     """Current raw text in the entry field."""
 
 
 class ChangeEventData(TypedDict):
-    """Payload for ``<<Change>>`` events — fires on commit (blur or Enter)."""
+    """Payload for `<<Change>>` events — fires on commit (blur or Enter)."""
     value: Any
     """Committed (parsed) value."""
     prev_value: Any
@@ -54,7 +54,7 @@ class ChangeEventData(TypedDict):
 
 
 class EnterEventData(TypedDict):
-    """Payload for ``<Return>`` key events."""
+    """Payload for `<Return>` key events."""
     value: Any
     """Committed (parsed) value."""
     text: str
@@ -62,7 +62,7 @@ class EnterEventData(TypedDict):
 
 
 class ValidationEventData(TypedDict):
-    """Payload for ``<<Valid>>``, ``<<Invalid>>``, and ``<<Validate>>`` events."""
+    """Payload for `<<Valid>>`, `<<Invalid>>`, and `<<Validate>>` events."""
     value: Any
     """Committed (parsed) value."""
     is_valid: bool
@@ -340,121 +340,121 @@ class Field(EntryMixin, Frame):
     # ------ Event registration ------
 
     def on_input(self, callback: Callable) -> str:
-        """Register a callback for ``<<Input>>`` events (fires on each keystroke).
+        """Register a callback for `<<Input>>` events (fires on each keystroke).
 
         Args:
-            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                `InputEventData` dict with key ``text`` (current raw text).
+            callback: Receives a Tkinter `Event` object whose `event.data` is an
+                `InputEventData` dict with key `text` (current raw text).
 
         Returns:
-            Bind ID — pass to ``off_input()`` to unsubscribe.
+            Bind ID — pass to `off_input()` to unsubscribe.
         """
         return self._entry.on_input(callback)
 
     def off_input(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Input>>``.
+        """Unsubscribe from `<<Input>>`.
 
         Args:
-            bind_id: ID returned by ``on_input()``.
+            bind_id: ID returned by `on_input()`.
         """
         self._entry.off_input(bind_id)
 
     def on_changed(self, callback: Callable) -> str:
-        """Register a callback for ``<<Change>>`` events (fires on commit).
+        """Register a callback for `<<Change>>` events (fires on commit).
 
         Args:
-            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is a
-                `ChangeEventData` dict with keys ``value`` (committed value),
-                ``prev_value`` (previous value), and ``text`` (raw display string).
+            callback: Receives a Tkinter `Event` object whose `event.data` is a
+                `ChangeEventData` dict with keys `value` (committed value),
+                `prev_value` (previous value), and `text` (raw display string).
 
         Returns:
-            Bind ID — pass to ``off_changed()`` to unsubscribe.
+            Bind ID — pass to `off_changed()` to unsubscribe.
         """
         return self._entry.on_changed(callback)
 
     def off_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+        """Unsubscribe from `<<Change>>`.
 
         Args:
-            bind_id: ID returned by ``on_changed()``.
+            bind_id: ID returned by `on_changed()`.
         """
         self._entry.off_changed(bind_id)
 
     def on_enter(self, callback: Callable) -> str:
-        """Register a callback for ``<Return>`` key events.
+        """Register a callback for `<Return>` key events.
 
         Args:
-            callback: Receives a Tkinter ``Event`` object whose ``event.data`` is an
-                `EnterEventData` dict with keys ``value`` (committed value)
-                and ``text`` (raw display string).
+            callback: Receives a Tkinter `Event` object whose `event.data` is an
+                `EnterEventData` dict with keys `value` (committed value)
+                and `text` (raw display string).
 
         Returns:
-            Bind ID — pass to ``off_enter()`` to unsubscribe.
+            Bind ID — pass to `off_enter()` to unsubscribe.
         """
         return self._entry.on_enter(callback)
 
     def off_enter(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<Return>``.
+        """Unsubscribe from `<Return>`.
 
         Args:
-            bind_id: ID returned by ``on_enter()``.
+            bind_id: ID returned by `on_enter()`.
         """
         self._entry.off_enter(bind_id)
 
     def on_valid(self, callback: Callable[[ValidationEventData], None]) -> None:
-        """Register a callback for ``<<Valid>>`` events (fires when validation passes).
+        """Register a callback for `<<Valid>>` events (fires when validation passes).
 
         Args:
             callback: Receives a `ValidationEventData` dict with keys
-                ``value`` (committed value), ``is_valid`` (``True``), and
-                ``message`` (empty string on pass).
+                `value` (committed value), `is_valid` (`True`), and
+                `message` (empty string on pass).
         """
         self._entry.on_valid(callback)
 
     def off_valid(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Valid>>``.
+        """Unsubscribe from `<<Valid>>`.
 
         Args:
-            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
-                to remove all ``<<Valid>>`` bindings.
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Valid>>` bindings.
         """
         self._entry.off_valid(bind_id)
 
     def on_invalid(self, callback: Callable[[ValidationEventData], None]) -> None:
-        """Register a callback for ``<<Invalid>>`` events (fires when validation fails).
+        """Register a callback for `<<Invalid>>` events (fires when validation fails).
 
         Args:
             callback: Receives a `ValidationEventData` dict with keys
-                ``value`` (committed value), ``is_valid`` (``False``), and
-                ``message`` (validation error text).
+                `value` (committed value), `is_valid` (`False`), and
+                `message` (validation error text).
         """
         self._entry.on_invalid(callback)
 
     def off_invalid(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Invalid>>``.
+        """Unsubscribe from `<<Invalid>>`.
 
         Args:
-            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
-                to remove all ``<<Invalid>>`` bindings.
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Invalid>>` bindings.
         """
         self._entry.off_invalid(bind_id)
 
     def on_validated(self, callback: Callable[[ValidationEventData], None]) -> None:
-        """Register a callback for ``<<Validate>>`` events (fires after any validation).
+        """Register a callback for `<<Validate>>` events (fires after any validation).
 
         Args:
             callback: Receives a `ValidationEventData` dict with keys
-                ``value`` (committed value), ``is_valid`` (bool), and
-                ``message`` (validation message or empty string).
+                `value` (committed value), `is_valid` (bool), and
+                `message` (validation message or empty string).
         """
         self._entry.on_validated(callback)
 
     def off_validated(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Validate>>``.
+        """Unsubscribe from `<<Validate>>`.
 
         Args:
-            bind_id: Bind ID from a direct ``widget.bind()`` call, or ``None``
-                to remove all ``<<Validate>>`` bindings.
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Validate>>` bindings.
         """
         self._entry.off_validated(bind_id)
 
@@ -468,21 +468,21 @@ class Field(EntryMixin, Frame):
         """Add a validation rule to the field.
 
         Rules are evaluated on blur and on Enter. When a rule fails the field
-        emits ``<<Invalid>>``; when all rules pass it emits ``<<Valid>>``. Both
+        emits `<<Invalid>>`; when all rules pass it emits `<<Valid>>`. Both
         carry a `ValidationEventData` payload.
 
         Args:
             rule_type: Rule type. One of:
 
-                - ``"required"`` — field must not be empty.
-                - ``"email"`` — value must be a valid email address.
-                - ``"pattern"`` — value must match a regex. Pass ``pattern=``.
-                - ``"stringLength"`` — length bounds. Pass ``min=`` and/or ``max=``.
-                - ``"compare"`` — must match another field's value. Pass ``other_field=``.
-                - ``"custom"`` — arbitrary logic. Pass ``func=``, a callable that
-                  receives the value and returns ``bool`` or ``(bool, message)``.
+                - `"required"` — field must not be empty.
+                - `"email"` — value must be a valid email address.
+                - `"pattern"` — value must match a regex. Pass `pattern=`.
+                - `"stringLength"` — length bounds. Pass `min=` and/or `max=`.
+                - `"compare"` — must match another field's value. Pass `other_field=`.
+                - `"custom"` — arbitrary logic. Pass `func=`, a callable that
+                  receives the value and returns `bool` or `(bool, message)`.
 
-            **kwargs: Rule-specific options. ``message=`` is accepted by all rule
+            **kwargs: Rule-specific options. `message=` is accepted by all rule
                 types to override the default failure message.
         """
         self._reserve_message_space()

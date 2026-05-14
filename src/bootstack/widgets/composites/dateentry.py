@@ -55,7 +55,7 @@ class DateEntry(Field):
         """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial date value to display (single
-                mode). Ignored when ``selection_mode='range'``.
+                mode). Ignored when `selection_mode='range'`.
             value_format: Date format pattern to use for parsing and displaying
                 dates. See class docstring for complete list of presets.
             label: Optional label text to display above the entry field.
@@ -69,10 +69,10 @@ class DateEntry(Field):
                 to "Select date range" in range mode and "Select new date" otherwise.
             picker_first_weekday: First day of the week to display in the
                 calendar picker. 0=Monday, 6=Sunday.
-            selection_mode: ``'single'`` (default) for a single date or
-                ``'range'`` for a start/end date range. In range mode the entry
+            selection_mode: `'single'` (default) for a single date or
+                `'range'` for a start/end date range. In range mode the entry
                 is readonly and the user selects dates exclusively via the picker.
-                ``value`` returns ``tuple[date, date] | None`` in range mode.
+                `value` returns `tuple[date, date] | None` in range mode.
             start_date: Initial range start date (range
                 mode only).
             end_date: Initial range end date (range mode
@@ -157,7 +157,7 @@ class DateEntry(Field):
 
     @property
     def value(self):
-        """Selected date (single mode) or ``(start, end)`` tuple (range mode)."""
+        """Selected date (single mode) or `(start, end)` tuple (range mode)."""
         if self._selection_mode == 'range':
             return self._range_value
         return Field.value.fget(self)

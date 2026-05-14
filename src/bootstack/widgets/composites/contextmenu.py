@@ -20,7 +20,7 @@ ContextMenuItemResult = Union[Button, CheckToggle, RadioToggle, Separator, str]
 """Return type for ContextMenu item-add and item-lookup operations.
 
 On Windows and Linux the result is the created widget. On macOS (native
-``NSMenu`` backend) the result is a string key since no per-item widget exists.
+`NSMenu` backend) the result is a string key since no per-item widget exists.
 """
 
 
@@ -413,7 +413,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a menu item based on type.
 
         Args:
-            type: One of ``'command'``, ``'checkbutton'``, ``'radiobutton'``, ``'separator'``.
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`, `'separator'`.
             **kwargs: Arguments passed to the appropriate add_* method.
         """
         if type == 'command':
@@ -461,7 +461,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
 
         Args:
             index: Position to insert the item at.
-            type: One of ``'command'``, ``'checkbutton'``, ``'radiobutton'``, ``'separator'``.
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`, `'separator'`.
             **kwargs: Arguments passed to the appropriate add_* method.
         """
         before_key = self._item_order[index] if 0 <= index < len(self._item_order) else None
@@ -1643,27 +1643,27 @@ class ContextMenu:
             minheight: Minimum height of the menu popup in pixels.
             height: Fixed height of the menu popup in pixels.
             target: Widget the menu is attached to for positioning and
-                auto-binding. Defaults to ``master``. Pass ``None`` to opt out
-                of auto-positioning (e.g. when calling ``show(position=(x, y))``
+                auto-binding. Defaults to `master`. Pass `None` to opt out
+                of auto-positioning (e.g. when calling `show(position=(x, y))`
                 with cursor-driven coordinates).
-            anchor: Corner of the menu aligned to the attach point. Default ``'nw'``.
-            attach: Corner of the target widget used as the attach point. Default ``'se'``.
-            offset: ``(x, y)`` pixel offset from the attach point.
+            anchor: Corner of the menu aligned to the attach point. Default `'nw'`.
+            attach: Corner of the target widget used as the attach point. Default `'se'`.
+            offset: `(x, y)` pixel offset from the attach point.
             hide_on_outside_click: Auto-hide when clicking outside the menu. Default True.
             items: Initial list of menu items.
-            density: Widget density — ``'default'`` or ``'compact'``.
+            density: Widget density — `'default'` or `'compact'`.
             trigger: Gesture that auto-shows the menu on the target widget.
-                ``'right-click'`` (default) — platform right-click (``<Button-3>`` on
-                Win/Linux; ``<Button-2>`` and ``<Control-Button-1>`` on macOS).
-                ``'click'`` / ``'left-click'`` — ``<Button-1>``.
-                ``'double-click'`` — ``<Double-Button-1>``.
-                ``'shift-click'`` — ``<Shift-Button-1>``.
-                ``'ctrl-click'`` / ``'control-click'`` — ``<Control-Button-1>``.
-                ``None`` or ``'manual'`` — no auto-binding; caller manages activation.
+                `'right-click'` (default) — platform right-click (`<Button-3>` on
+                Win/Linux; `<Button-2>` and `<Control-Button-1>` on macOS).
+                `'click'` / `'left-click'` — `<Button-1>`.
+                `'double-click'` — `<Double-Button-1>`.
+                `'shift-click'` — `<Shift-Button-1>`.
+                `'ctrl-click'` / `'control-click'` — `<Control-Button-1>`.
+                `None` or `'manual'` — no auto-binding; caller manages activation.
             command: Callback invoked when any menu item is clicked. Receives a
-                dict with keys ``type`` (str), ``text`` (str), and ``value`` (Any).
-                Single-slot — assigning a new value via ``configure(command=...)``
-                replaces the previous callback. Pass ``None`` to clear.
+                dict with keys `type` (str), `text` (str), and `value` (Any).
+                Single-slot — assigning a new value via `configure(command=...)`
+                replaces the previous callback. Pass `None` to clear.
         """
         # Default target to master when omitted; explicit `None` opts out.
         if target is _TARGET_DEFAULT:
@@ -1755,7 +1755,7 @@ class ContextMenu:
             command: Callable invoked when the item is clicked.
             disabled: If True the item is rendered disabled and cannot be clicked.
             shortcut: Keyboard shortcut label, either a registered shortcut key
-                or a literal display string (e.g. ``'Ctrl+S'``).
+                or a literal display string (e.g. `'Ctrl+S'`).
             key: Unique identifier. Auto-generated if not provided.
         """
         return self._impl.add_command(
@@ -1792,7 +1792,7 @@ class ContextMenu:
 
         Args:
             text: Item label text.
-            value: Value assigned to ``variable`` when this item is selected.
+            value: Value assigned to `variable` when this item is selected.
             variable: Tkinter Variable shared across the radio group.
             command: Callable invoked when the item is selected.
             key: Unique identifier. Auto-generated if not provided.
@@ -1813,9 +1813,9 @@ class ContextMenu:
         """Add a menu item by type name.
 
         Args:
-            type: One of ``'command'``, ``'checkbutton'``, ``'radiobutton'``,
-                or ``'separator'``.
-            **kwargs: Forwarded to the matching ``add_*`` method.
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`,
+                or `'separator'`.
+            **kwargs: Forwarded to the matching `add_*` method.
         """
         return self._impl.add_item(type, **kwargs)
 
@@ -1823,8 +1823,8 @@ class ContextMenu:
         """Add multiple items at once.
 
         Args:
-            items: List of ``ContextMenuItem`` objects or dicts with
-                a ``type`` key and item kwargs.
+            items: List of `ContextMenuItem` objects or dicts with
+                a `type` key and item kwargs.
         """
         self._impl.add_items(items)
 
@@ -1834,7 +1834,7 @@ class ContextMenu:
         Args:
             index: Position to insert at (0-based).
             type: Item type — same values as :meth:`add_item`.
-            **kwargs: Forwarded to the matching ``add_*`` method.
+            **kwargs: Forwarded to the matching `add_*` method.
         """
         return self._impl.insert_item(index, type, **kwargs)
 
@@ -1873,7 +1873,7 @@ class ContextMenu:
 
         Args:
             key_or_index: Key or index of the item.
-            option: If provided without ``kwargs``, returns the current value of
+            option: If provided without `kwargs`, returns the current value of
                 this option. If omitted, returns the full option map.
             **kwargs: Option values to set.
         """
@@ -1883,7 +1883,7 @@ class ContextMenu:
         """Show the context menu.
 
         Args:
-            position: Optional ``(x, y)`` screen coordinates. If omitted the
+            position: Optional `(x, y)` screen coordinates. If omitted the
                 menu is positioned relative to its target widget.
         """
         self._impl.show(position=position)

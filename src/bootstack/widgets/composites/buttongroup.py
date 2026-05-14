@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 ButtonGroupItem = Union[Button, CheckToggle, RadioButton, RadioToggle]
-"""Widget types supported by ``ButtonGroup``."""
+"""Widget types supported by `ButtonGroup`."""
 
 
 class ButtonGroupKwargs(TypedDict, total=False):
