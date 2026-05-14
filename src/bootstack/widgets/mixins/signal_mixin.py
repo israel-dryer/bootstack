@@ -94,7 +94,7 @@ class TextSignalMixin:
         return self._ttk_base.configure(self, textvariable=var_to_set)  # type: ignore[misc]
 
     @property
-    def textsignal(self) -> 'Signal[str]':
+    def textsignal(self) -> Signal[str]:
         """Get or lazily create the textsignal.
 
         If no textvariable has been set, creates a new Signal with empty string.
@@ -115,7 +115,7 @@ class TextSignalMixin:
         return self._textsignal
 
     @textsignal.setter
-    def textsignal(self, value: 'Signal[str]') -> None:
+    def textsignal(self, value: Signal[str]) -> None:
         """Set the textsignal, extracting and configuring its underlying variable.
 
         Args:
@@ -214,7 +214,7 @@ class SignalMixin:
         return self._ttk_base.configure(self, variable=var_to_set)  # type: ignore[misc]
 
     @property
-    def signal(self) -> 'Signal[Any]':
+    def signal(self) -> Signal[Any]:
         """Get or lazily create the signal.
 
         If no variable has been set, creates a new Signal with appropriate default
@@ -236,7 +236,7 @@ class SignalMixin:
         return self._signal
 
     @signal.setter
-    def signal(self, value: 'Signal[Any]') -> None:
+    def signal(self, value: Signal[Any]) -> None:
         """Set the signal, extracting and configuring its underlying variable.
 
         Args:

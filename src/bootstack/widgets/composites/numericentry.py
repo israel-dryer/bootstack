@@ -12,6 +12,7 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.field import Field, FieldOptions
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
+from bootstack.core.localization.intl_format import NumberFormatSpec
 
 
 class NumericEntry(Field):
@@ -51,7 +52,7 @@ class NumericEntry(Field):
 
         Other Parameters:
             wrap: If True, values wrap around at min/max boundaries.
-            value_format (`NumberFormatSpec`): Number format — a `NumberPreset`
+            value_format (NumberFormatSpec): Number format — a `NumberPreset`
                 string (e.g., `'decimal'`, `'percent'`, `'currency'`) or a
                 custom ICU pattern (e.g., `'#,##0.00'`).
             locale: Locale identifier for number formatting (e.g., `'en_US'`).
