@@ -6,8 +6,16 @@ Run from the project root:
     python docs_scripts/gen_api.py
 
 Writes one complete reference page per widget to docs/reference/widgets/<slug>.md.
-Each page has h2 section headings (Properties / Methods / State / Events) that
-appear in the MkDocs Material right-side TOC.
+
+Page structure:
+  - mkdocstrings ::: block  — class description + constructor parameters only
+  - ## Properties / ## Methods / ## State / ## Events   (h2, in TOC)
+  - ### `member(sig)` → type                            (h3 static markdown)
+
+Static h3 headings for members are nested correctly under h2 section headers
+in the page.toc by the markdown toc extension. mkdocstrings-injected headings
+always register at a flat page.toc level, which is why ::: blocks for sections
+were abandoned.
 
 Re-run whenever source docstrings change.
 """
@@ -24,11 +32,6 @@ import griffe
 OUT_DIR = Path("docs/reference/widgets")
 
 # ── Widget registry ───────────────────────────────────────────────────────────
-#
-# slug → {
-#   "path":         fully-qualified class path
-#   "include_from": additional classes to pull inherited members from
-# }
 
 _FIELD = "bootstack.widgets.composites.field.Field"
 
@@ -73,7 +76,6 @@ WIDGETS: dict[str, dict] = {
 
 # ── Member classification ─────────────────────────────────────────────────────
 
-# Members to exclude entirely from the reference page.
 SKIP: frozenset[str] = frozenset({
     "bbox", "delete", "icursor", "index", "insert",
     "scan_mark", "scan_dragto",
@@ -84,7 +86,6 @@ SKIP: frozenset[str] = frozenset({
     "add_validation_rules",
 })
 
-# Methods that belong in the State section.
 STATE_NAMES: frozenset[str] = frozenset({
     "disable", "enable", "readonly", "show", "hide", "forget",
     "lift", "lower", "state",
@@ -92,7 +93,6 @@ STATE_NAMES: frozenset[str] = frozenset({
 
 
 def classify(name: str, member: griffe.Object) -> str | None:
-    """Return the section name for a member, or None to skip it."""
     if name.startswith("_") or name in SKIP:
         return None
     if not member.docstring:
@@ -106,6 +106,42 @@ def classify(name: str, member: griffe.Object) -> str | None:
             return "state"
         return "methods"
     return None
+
+
+# ── Formatting helpers ────────────────────────────────────────────────────────
+
+_STRIP_PREFIXES = (
+    "bootstack.widgets.types.",
+    "bootstack.core.signals.signal.",
+    "bootstack.core.signals.",
+    "bootstack.widgets.composites.field.",
+    "typing_extensions.",
+    "typing.",
+)
+
+
+def fmt_type(annotation: object) -> str:
+    if annotation is None:
+        return ""
+    s = str(annotation)
+    for prefix in _STRIP_PREFIXES:
+        s = s.replace(prefix, "")
+    return s.strip()
+
+
+def first_sentence(text: str) -> str:
+    text = text.strip()
+    for sep in (".\n", ". "):
+        idx = text.find(sep)
+        if idx != -1:
+            return text[:idx].strip()
+    idx = text.find("\n\n")
+    if idx != -1:
+        return text[:idx].strip().rstrip(".")
+    for i, line in enumerate(text.splitlines()):
+        if i > 0 and line.strip().startswith(("-", "*", "+")):
+            return " ".join(text.splitlines()[:i]).strip().rstrip(".")
+    return text.rstrip(".")
 
 
 # ── Griffe helpers ────────────────────────────────────────────────────────────
@@ -129,9 +165,9 @@ def collect_sections(
     module: griffe.Module,
     class_path: str,
     include_from: list[str],
-) -> dict[str, list[str]]:
-    """Return member names grouped by section, preserving source order."""
-    sections: dict[str, list[str]] = {
+) -> dict[str, list[tuple[str, griffe.Object]]]:
+    """Return (name, member) pairs grouped by section, in source order."""
+    sections: dict[str, list[tuple[str, griffe.Object]]] = {
         "properties": [],
         "methods": [],
         "state": [],
@@ -145,7 +181,7 @@ def collect_sections(
                 continue
             section = classify(name, member)
             if section:
-                sections[section].append(name)
+                sections[section].append((name, member))
                 seen.add(name)
 
     cls = load_class(module, class_path)
@@ -160,47 +196,63 @@ def collect_sections(
     return sections
 
 
-# ── Page generator ────────────────────────────────────────────────────────────
+# ── Static member markdown ────────────────────────────────────────────────────
 
-def mkdocs_block(
-    class_path: str,
-    *,
-    show_root_heading: bool = False,
-    inherited_members: bool = True,
-    members: list[str] | bool = True,
-    merge_init: bool = False,
-) -> list[str]:
-    """Render a mkdocstrings ::: block as a list of lines."""
-    lines = [f"::: {class_path}", "    options:"]
+def gen_member_md(name: str, member: griffe.Object) -> list[str]:
+    """Generate static h3 markdown for a single member.
 
-    lines.append(f"      show_root_heading: {'true' if show_root_heading else 'false'}")
-    lines.append(f"      show_root_toc_entry: {'true' if show_root_heading else 'false'}")
-    lines.append("      show_root_full_path: false")
-    lines.append(f"      inherited_members: {'true' if inherited_members else 'false'}")
-    if not show_root_heading:
-        lines.append("      show_docstring: false")
-        lines.append("      heading_level: 3")
+    Format:
+      ### `name` — *property* · `Type`       (for attributes)
+      ### `name(param, param)` → `ReturnType` (for functions)
+      description sentence
+    """
+    lines: list[str] = []
+    desc = first_sentence(member.docstring.value) if member.docstring else ""
 
-    if merge_init:
-        lines.append("      merge_init_into_class: true")
+    if isinstance(member, griffe.Attribute):
+        type_str = fmt_type(member.annotation) if member.annotation else ""
+        suffix = f" — *property*" + (f" · `{type_str}`" if type_str else "")
+        lines.append(f"### `{name}`{suffix}")
+        if desc:
+            lines.append("")
+            lines.append(desc)
+        lines.append("")
 
-    if members is False:
-        lines.append("      members: false")
-    elif isinstance(members, list):
-        lines.append("      members:")
-        for m in members:
-            lines.append(f"        - {m}")
+    elif isinstance(member, griffe.Function):
+        params: list[str] = []
+        for p in member.parameters:
+            if p.name in ("self", "cls"):
+                continue
+            if p.kind in (
+                griffe.ParameterKind.var_positional,
+                griffe.ParameterKind.var_keyword,
+            ):
+                continue
+            params.append(f"{p.name}={p.default}" if p.default is not None else p.name)
+
+        ret = ""
+        if member.returns:
+            ret_str = fmt_type(member.returns)
+            if ret_str and ret_str not in ("None", "none"):
+                ret = f" → `{ret_str}`"
+
+        lines.append(f"### `{name}({', '.join(params)})`{ret}")
+        if desc:
+            lines.append("")
+            lines.append(desc)
+        lines.append("")
 
     return lines
 
+
+# ── Page generator ────────────────────────────────────────────────────────────
 
 def gen_page(slug: str, cfg: dict, module: griffe.Module) -> str | None:
     class_path = cfg["path"]
     include_from = cfg.get("include_from", [])
     class_name = class_path.split(".")[-1]
 
-    cls = load_class(module, class_path)
-    if cls is None:
+    if load_class(module, class_path) is None:
         return None
 
     sections = collect_sections(module, class_path, include_from)
@@ -210,17 +262,18 @@ def gen_page(slug: str, cfg: dict, module: griffe.Module) -> str | None:
         f"title: {class_name}",
         "---",
         "",
+        # mkdocstrings renders the class description and constructor parameters.
+        # members: false keeps it from rendering any member docs here.
+        f"::: {class_path}",
+        "    options:",
+        "      show_root_heading: true",
+        "      show_root_toc_entry: true",
+        "      show_root_full_path: false",
+        "      inherited_members: false",
+        "      merge_init_into_class: true",
+        "      members: false",
+        "",
     ]
-
-    # Class description block — docstring + merged __init__ signature, no members
-    lines += mkdocs_block(
-        class_path,
-        show_root_heading=True,
-        inherited_members=False,
-        members=False,
-        merge_init=True,
-    )
-    lines.append("")
 
     section_labels = {
         "properties": "Properties",
@@ -230,17 +283,12 @@ def gen_page(slug: str, cfg: dict, module: griffe.Module) -> str | None:
     }
 
     for key, label in section_labels.items():
-        names = sections[key]
-        if not names:
+        members_in_section = sections[key]
+        if not members_in_section:
             continue
         lines += [f"## {label}", ""]
-        lines += mkdocs_block(
-            class_path,
-            show_root_heading=False,
-            inherited_members=True,
-            members=names,
-        )
-        lines.append("")
+        for name, member in members_in_section:
+            lines += gen_member_md(name, member)
 
     return "\n".join(lines)
 

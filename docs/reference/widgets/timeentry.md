@@ -13,73 +13,108 @@ title: TimeEntry
 
 ## Properties
 
-::: bootstack.widgets.composites.timeentry.TimeEntry
-    options:
-      show_root_heading: false
-      show_root_toc_entry: false
-      show_root_full_path: false
-      inherited_members: true
-      show_docstring: false
-      heading_level: 3
-      members:
-        - value
-        - entry_widget
-        - label_widget
-        - message_widget
-        - addons
-        - variable
-        - signal
+### `value` — *property*
+
+Get or set the parsed value via the underlying entry widget
+
+### `entry_widget` — *property* · `TextEntryPart | NumberEntryPart | SpinnerEntryPart`
+
+Get the underlying entry widget
+
+### `label_widget` — *property*
+
+Get the label widget
+
+### `message_widget` — *property*
+
+Get the message widget
+
+### `addons` — *property*
+
+Get the dictionary of inserted addon widgets
+
+### `variable` — *property*
+
+Tkinter Variable linked to the entry text
+
+### `signal` — *property*
+
+Signal linked to the entry text for reactive updates
 
 ## Methods
 
-::: bootstack.widgets.composites.timeentry.TimeEntry
-    options:
-      show_root_heading: false
-      show_root_toc_entry: false
-      show_root_full_path: false
-      inherited_members: true
-      show_docstring: false
-      heading_level: 3
-      members:
-        - get
-        - add_validation_rule
-        - insert_addon
+### `get()`
+
+Return the raw text from the underlying entry widget
+
+### `add_validation_rule(rule_type)`
+
+Add a validation rule to the field
+
+### `insert_addon(widget, position, name=None, pack_options=None)`
+
+Insert a widget addon before or after the entry input
 
 ## State
 
-::: bootstack.widgets.composites.timeentry.TimeEntry
-    options:
-      show_root_heading: false
-      show_root_toc_entry: false
-      show_root_full_path: false
-      inherited_members: true
-      show_docstring: false
-      heading_level: 3
-      members:
-        - disable
-        - enable
-        - readonly
+### `disable()`
+
+Disable the field, preventing user input
+
+### `enable()`
+
+Enable the field, allowing user input
+
+### `readonly(value=None)`
+
+Set or toggle the readonly state of the field
 
 ## Events
 
-::: bootstack.widgets.composites.timeentry.TimeEntry
-    options:
-      show_root_heading: false
-      show_root_toc_entry: false
-      show_root_full_path: false
-      inherited_members: true
-      show_docstring: false
-      heading_level: 3
-      members:
-        - on_input
-        - off_input
-        - on_changed
-        - off_changed
-        - on_enter
-        - off_enter
-        - on_valid
-        - off_valid
-        - on_invalid
-        - off_invalid
-        - on_validated
-        - off_validated
+### `on_input(callback)` → `str`
+
+Register a callback for ``<<Input>>`` events (fires on each keystroke)
+
+### `off_input(bind_id=None)`
+
+Unsubscribe from ``<<Input>>``
+
+### `on_changed(callback)` → `str`
+
+Register a callback for ``<<Change>>`` events (fires on commit)
+
+### `off_changed(bind_id=None)`
+
+Unsubscribe from ``<<Change>>``
+
+### `on_enter(callback)` → `str`
+
+Register a callback for ``<Return>`` key events
+
+### `off_enter(bind_id=None)`
+
+Unsubscribe from ``<Return>``
+
+### `on_valid(callback)`
+
+Register a callback for ``<<Valid>>`` events (fires when validation passes)
+
+### `off_valid(bind_id=None)`
+
+Unsubscribe from ``<<Valid>>``
+
+### `on_invalid(callback)`
+
+Register a callback for ``<<Invalid>>`` events (fires when validation fails)
+
+### `off_invalid(bind_id=None)`
+
+Unsubscribe from ``<<Invalid>>``
+
+### `on_validated(callback)`
+
+Register a callback for ``<<Validate>>`` events (fires after any validation)
+
+### `off_validated(bind_id=None)`
+
+Unsubscribe from ``<<Validate>>``
