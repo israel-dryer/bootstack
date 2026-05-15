@@ -225,6 +225,33 @@ primitives/, views/, plus `data-display/tableview.md`.
 - `zensical.toml` mkdocstrings config: `show_signature = false`,
   `show_root_full_path = false`, `heading_level = 2`, `separate_signature = false`.
 
+### Session 17 source cleanups
+
+- **Docstring param style sweep completed** across ALL remaining widget modules not
+  covered in Session 16: composites (toolbar, toast, floodgauge, tooltip, pagestack,
+  scrollview, buttongroup, form, meter, numericentry, listitem, menubar, contextmenu,
+  field, dateentry), sidenav (item, view, separator, group, header), tabs (tabs,
+  tabitem, tabview), primitives (badge, label, entry, combobox, scale, progressbar,
+  treeview, spinbox, notebook), parts (textentry_part, numberentry_part,
+  spinnerentry_part), mixins (signal_mixin, validation_mixin), types.py.
+  `name (type): description` → `name: description` throughout.
+- **`Optional`/`Union` modernized** to pipe syntax across all remaining widget files.
+  44 files updated total this session.
+- **`Attributes:` blocks audited and fixed** — removed entries that were `@property`
+  or plain class-level attributes (griffe-visible). Affected: `Composite` class
+  constants + properties, `TextSignalMixin`/`SignalMixin` (all @property),
+  `CompositeFrame`, `TabItem` (selected/value are @property), `form.py` (data/value
+  are @property, result kept). Format-only fix (type stripped) on ScrollView, Tabs,
+  FloodGauge, LabeledScale.
+- **`on_*/off_*` standard applied** to Meter (`on_changed`/`off_changed`) and
+  Notebook (`on_tab_activated`, `on_tab_deactivated`, `on_tab_changed` and their
+  off_ counterparts). "Register a callback for…" opener, "Bind ID — pass to
+  off_*()" Returns.
+- **`Other Parameters:` → `Args:`** conversion for PageStack `__init__` and
+  ButtonGroup `__init__`.
+- **Stray "Combined style tokens" continuation lines removed** from Progressbar,
+  Notebook, Combobox, Entry primitives (missed in Session 16 pass).
+
 ### Session 16 source cleanups
 
 - **Docstring param style normalized** across actions, inputs, layout, selection
@@ -329,10 +356,12 @@ during the SelectBox migration:
    Dialogs & overlays). Write `docs/examples/index.md`. Unblocks writing the
    first examples and populating widget page See also sections.
 
-4. ✅ **Docstring cleanup — Field-based widgets.** `!!! note "Events"` and
-   `Example:` blocks swept from all source files. `__init__` prose stripped.
-   **Remaining:** thin ttk wrappers (Button, TreeView, etc.) `Args:` blocks
-   and class summary quality — deferred.
+4. ✅ **Docstring cleanup — all widget source files.** `!!! note "Events"` and
+   `Example:` blocks swept (Session 15). `__init__` prose stripped from Field-based
+   widgets (Session 15). `name (type):` param format removed from all 44 remaining
+   files (Session 17). `Attributes:` blocks audited across the full tree (Session 17).
+   `Optional`/`Union` modernized to pipe syntax across all widget modules (Session 17).
+   **Docstring sweep is now complete for `src/bootstack/widgets/`.**
 
 5. **Revise the API reference approach (Session 16 priority).** Current
    `gen_api.py` output (static h3 markdown for member sections) is not
@@ -493,6 +522,42 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 17 — Docstring sweep completion across all widget modules (2026-05-15)
+
+A focused cleanup session that completed the docstring style sweep started in Session 16,
+extending it to every remaining file in `src/bootstack/widgets/`.
+
+**1. `name (type): desc` → `name: desc` everywhere.** 44 files updated. The sweep now
+covers the full widget tree: all composites (including sidenav, tabs, appshell, toolbar,
+toast, floodgauge, tooltip, pagestack, scrollview, buttongroup, form, meter, numericentry,
+listitem, menubar, contextmenu, field, dateentry), all primitives (badge, label, entry,
+combobox, scale, progressbar, treeview, spinbox, notebook), all parts and mixins.
+
+**2. `Optional`/`Union` → pipe syntax.** All remaining widget files modernized. types.py
+`Master = Optional[tkinter.Misc]` → `Master = tkinter.Misc | None` and `Optional`/`Union`
+imports removed from every affected file.
+
+**3. `Attributes:` block audit.** Rules applied consistently: keep only runtime-assigned
+names invisible to griffe (`self.x = ...` in `__init__`). Removed: Composite class
+constants and `selected`/`disabled` @property; TextSignalMixin/SignalMixin (all @property);
+CompositeFrame `selected`/`disabled`; TabItem `selected`/`value`; Form `data`/`value`.
+Format-only fix (type stripped) on ScrollView, Tabs, FloodGauge, LabeledScale, FloodGauge.
+
+**4. `on_*/off_*` standard applied** to Meter and Notebook. Meter gains proper payload
+documentation. Notebook's six tab lifecycle methods updated to "Register a callback for…"
+opener with "Bind ID — pass to off_*()" Returns.
+
+**5. Structural fixes.** `Other Parameters:` → `Args:` for PageStack and ButtonGroup
+`__init__`. Stray "Combined style tokens" continuation lines removed from Progressbar,
+Notebook, Combobox, Entry. `ButtonGroupItem` and `ContextMenuItemResult` type aliases
+modernized to pipe syntax.
+
+**What's NOT done in Session 17:**
+- `on_*/off_*` standard not yet applied to SideNav, Tabs/TabView, ListView, TableView,
+  PageStack event handlers (docstring format correct but opener/Returns not standardized)
+- Remaining widget page migrations (~76 pages on old structure)
+- Examples taxonomy and index.md
 
 ### Session 15 — Templates, docstring sweep, page migrations, API reference iteration (2026-05-13)
 
