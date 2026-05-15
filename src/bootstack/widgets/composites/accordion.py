@@ -20,10 +20,6 @@ class Accordion(Frame):
     one can be expanded at a time. When `allow_multiple=False`, expanding one
     section automatically collapses the others. When `allow_collapse_all=False`,
     at least one section must remain open.
-
-    Attributes:
-        expanded (list[Expander]): Currently expanded Expander(s).
-
     """
 
     def __init__(
@@ -332,8 +328,13 @@ class Accordion(Frame):
             exp.collapse()
 
     @property
+    def expanders(self) -> list[Expander]:
+        """All managed Expander widgets in insertion order."""
+        return [self._expanders[k] for k in self._expander_order]
+
+    @property
     def expanded(self) -> list[Expander]:
-        """Get the list of currently expanded Expanders."""
+        """Currently expanded Expander widgets."""
         return [self._expanders[k] for k in self._expander_order if self._expanders[k]['expanded']]
 
     @configure_delegate('allow_multiple')
