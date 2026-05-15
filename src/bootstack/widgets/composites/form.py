@@ -184,9 +184,6 @@ class Form(Frame):
             buttons: Optional footer buttons (DialogButton, mapping, or string).
             **kwargs: Additional Frame configuration options.
         """
-        # Support legacy bootstyle parameter
-        if 'bootstyle' in kwargs:
-            accent = accent or kwargs.pop('bootstyle')
         super().__init__(master=master, width=width, height=height, accent=accent, **kwargs)
 
         self._data: dict[str, Any] = dict(data) if data else {}
@@ -629,7 +626,7 @@ class Form(Frame):
     def _build_buttons(self, parent: Frame, buttons: Sequence[ButtonInput]) -> None:
         parsed = self._normalize_buttons(buttons)
         for spec in reversed(parsed):
-            btn_color = getattr(spec, 'accent', None) or getattr(spec, 'color', None) or getattr(spec, 'bootstyle', None)
+            btn_color = getattr(spec, 'accent', None) or getattr(spec, 'color', None)
             btn_variant = getattr(spec, 'variant', None)
 
             if not btn_color:

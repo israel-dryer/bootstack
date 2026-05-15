@@ -79,7 +79,6 @@ class Button(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, Widg
             surface: Optional surface token to use for this button; if not provided, surface color is inherited from the parent.
             style_options: Optional dict forwarded to the style builder.
         """
-        if 'bootstyle' not in kwargs:
-            kwargs.setdefault('variant', 'solid')
+        kwargs.setdefault('variant', 'solid')
         kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'anchor', 'density'], kwargs))
         super().__init__(master, **kwargs)

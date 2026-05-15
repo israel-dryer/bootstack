@@ -67,8 +67,6 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
             the widget redraws automatically when the variables change.
         """
 
-        # Handle deprecated bootstyle parameter
-
         self._variable = kwargs.pop("variable", IntVar(value=value))
         self._value = self._variable.get()
 
@@ -78,7 +76,7 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         self._mode = mode
         self._mask = mask
         self._font = font
-        self._accent = accent or bootstyle or "primary"
+        self._accent = accent or "primary"
         self._orient = orient
         self._length = length
         self._thickness = thickness
@@ -152,13 +150,6 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
             return self._font
         self._font = value
         self._draw()
-
-    @configure_delegate('bootstyle')
-    def _delegate_bootstyle(self, value=None):
-        if value is None:
-            return self._accent
-        self._accent = value
-        self._update_theme_colors()  # calls _draw()
 
     @configure_delegate('accent')
     def _delegate_accent(self, value=None):
@@ -266,7 +257,7 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         self._draw()
 
     def _update_theme_colors(self) -> None:
-        """Update widget colors based on current theme and bootstyle."""
+        """Update widget colors based on current theme and accent."""
         from bootstack.style.style import get_style
         style = get_style()
         b = style.style_builder

@@ -110,7 +110,7 @@ class DateEntry(Field):
         if picker_title is None:
             picker_title = "Select date range" if selection_mode == "range" else "Select new date"
 
-        kwargs.setdefault('bootstyle', 'primary')
+        kwargs.setdefault('accent', 'primary')
         # In range mode pass value=None so the entry starts empty; display text
         # is set manually below after range initialisation.
         super().__init__(

@@ -36,6 +36,5 @@ class Switch(CheckButton):
             style_options: Optional dict forwarded to the style builder.
             localize: Determines the widget's localization mode.
         """
-        if 'bootstyle' not in kwargs:
-            kwargs['variant'] = 'switch'
+        kwargs['variant'] = 'switch'
         super().__init__(master, **kwargs)

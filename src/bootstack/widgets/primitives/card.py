@@ -53,8 +53,7 @@ class Card(Frame):
             show_border: Draw a border around the card. Default True.
             style_options: Optional dict forwarded to the style builder.
         """
-        if 'bootstyle' not in kwargs:
-            kwargs.setdefault('accent', 'card')
+        kwargs.setdefault('accent', 'card')
         kwargs.setdefault('show_border', True)
         kwargs.setdefault('padding', 16)
         super().__init__(master, **kwargs)

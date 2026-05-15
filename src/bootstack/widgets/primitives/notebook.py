@@ -67,7 +67,7 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
     _ttk_base = ttk.Notebook
 
     def __init__(self, master: Master = None, **kwargs: Unpack[NotebookKwargs]) -> None:
-        """Create a themed bootstack Notebook with optional bootstyle extensions.
+        """Create a themed bootstack Notebook.
 
         Args:
             master: Parent widget. If None, uses the default root window.
@@ -271,7 +271,7 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
             image (PhotoImage | None): The image to display in the tab.
             underline (int | None): Index of character to underline in the label.
             fmtargs (tuple | list): Format arguments for localized text.
-            **kwargs: When child is None, these are passed to Frame (e.g., padding, bootstyle).
+            **kwargs: When child is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The tab content widget (passed or created Frame).
@@ -309,7 +309,7 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
             image (PhotoImage | None): The image to display in the tab.
             underline (int | None): Index of character to underline in the label.
             fmtargs (tuple | list): Format arguments for localized text.
-            **kwargs: When child is None, these are passed to Frame (e.g., padding, bootstyle).
+            **kwargs: When child is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The tab content widget (passed or created Frame).

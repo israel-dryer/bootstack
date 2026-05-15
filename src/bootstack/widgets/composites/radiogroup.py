@@ -72,8 +72,7 @@ class RadioGroup(Frame):
         """
         # Extract RadioGroup-specific options before super().__init__
         self._orientation = kwargs.pop('orient', 'horizontal')
-        # Support both 'accent' and legacy 'bootstyle'
-        self._accent = kwargs.pop('accent', None) or kwargs.pop('bootstyle', 'primary')
+        self._accent = kwargs.pop('accent', None) or 'primary'
         self._labeltext = kwargs.pop('text', None)
         self._labelanchor = kwargs.pop('labelanchor', 'n')
         self._state = kwargs.pop('state', 'normal')
@@ -237,7 +236,7 @@ class RadioGroup(Frame):
 
         btn_kwargs = kwargs.copy()
         # Use accent for button styling
-        if 'accent' not in btn_kwargs and 'bootstyle' not in btn_kwargs:
+        if 'accent' not in btn_kwargs:
             btn_kwargs['accent'] = self._accent
         # Apply current state if not explicitly provided
         if 'state' not in btn_kwargs:

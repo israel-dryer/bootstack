@@ -546,7 +546,7 @@ class ScrollView(Frame):
         Args:
             widget (Widget | None): The widget to add. If None, creates a Frame.
             anchor (str): Anchor position for the widget in the canvas. Default is 'nw'.
-            **kwargs: When widget is None, these are passed to Frame (e.g., padding, bootstyle).
+            **kwargs: When widget is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The content widget (passed or created).

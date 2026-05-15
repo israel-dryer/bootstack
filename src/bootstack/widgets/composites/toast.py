@@ -69,7 +69,7 @@ class Toast:
             duration (int): Auto-dismiss duration in milliseconds. If None, the toast remains visible
                 until manually closed.
             buttons (list): Sequence of button configurations. Each dict can contain any bootstack
-                button options (text, bootstyle, command, etc.). Button commands will trigger
+                button options (text, accent, command, etc.). Button commands will trigger
                 the on_dismissed callback before closing the toast.
             show_close_button (bool): Whether to show the close button in the header. Default is True.
             accent (str): Accent token for the toast container (e.g., "primary", "success",
@@ -82,7 +82,7 @@ class Toast:
                 button or auto-dismiss.
         """
         self._config_keys = {'title', 'icon', 'message', 'memo', 'duration', 'buttons', 'show_close_button',
-                             'accent', 'bootstyle', 'position', 'alert', 'on_dismissed'}
+                             'accent', 'position', 'alert', 'on_dismissed'}
 
         # initialized configuration
         self._title = title
@@ -92,8 +92,7 @@ class Toast:
         self._duration = duration
         self._buttons = buttons
         self._show_close_button = show_close_button
-        self._accent = accent or bootstyle  # Support legacy bootstyle parameter
-        self._bootstyle = bootstyle  # Keep for backwards compatibility
+        self._accent = accent
         self._position = position
         self._alert = alert
         self._on_dismissed = on_dismissed
@@ -189,7 +188,6 @@ class Toast:
         self._buttons = None
         self._show_close_button = True
         self._accent = None
-        self._bootstyle = None
         self._position = None
         self._alert = False
         self._on_dismissed = None
