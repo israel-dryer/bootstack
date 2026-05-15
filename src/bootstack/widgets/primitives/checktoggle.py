@@ -14,36 +14,36 @@ class CheckToggle(CheckButton):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            text (str): Text to display on the toggle.
-            textvariable (Variable): Tk variable linked to the text.
-            textsignal (Signal[str]): Reactive Signal linked to the text (auto-synced with textvariable).
-            command (Callable): Callable invoked when the toggle changes state.
-            image (PhotoImage): Image to display.
-            icon (str | dict): Icon shown in the label area for all states. Color shifts
+            text: Text to display on the toggle.
+            textvariable: Tk variable linked to the text.
+            textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
+            command: Callable invoked when the toggle changes state.
+            image: Image to display.
+            icon: Icon shown in the label area for all states. Color shifts
                 with the button's pressed/selected state automatically.
-            on_icon (str | dict): Icon shown when the toggle is selected (on). Shortcut
+            on_icon: Icon shown when the toggle is selected (on). Shortcut
                 for `state=[("selected", name)]` inside a full icon spec.
-            off_icon (str | dict): Icon shown when the toggle is unselected (off). Used
+            off_icon: Icon shown when the toggle is unselected (off). Used
                 as the base icon when `on_icon` is also provided.
-            icon_only (bool): If True, removes the additional padding reserved for text.
-            compound (str): Placement of the image relative to text.
-            variable (Variable): Linked variable controlling the on/off state.
-            signal (Signal): Reactive Signal controlling the on/off state (auto-synced with variable).
-            value (Any): Initial state for the widget's associated variable (defaults to None when unset).
-            onvalue (Any): Value set in `variable` when selected.
-            offvalue (Any): Value set in `variable` when deselected.
-            padding (int | tuple): Extra space around the content.
-            anchor (str): Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
-            density (str): The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
-            width (int): Width of the control in characters.
-            underline (int): Index of character to underline in `text`.
-            state (str): Widget state ('normal', 'active', 'disabled', 'readonly').
-            takefocus (bool): Whether the widget participates in focus traversal.
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            variant (str): Style variant (coerced to 'toolbutton').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
+            icon_only: If True, removes the additional padding reserved for text.
+            compound: Placement of the image relative to text.
+            variable: Linked variable controlling the on/off state.
+            signal: Reactive Signal controlling the on/off state (auto-synced with variable).
+            value: Initial state for the widget's associated variable (defaults to None when unset).
+            onvalue: Value set in `variable` when selected.
+            offvalue: Value set in `variable` when deselected.
+            padding: Extra space around the content.
+            anchor: Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
+            density: The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
+            width: Width of the control in characters.
+            underline: Index of character to underline in `text`.
+            state: Widget state ('normal', 'active', 'disabled', 'readonly').
+            takefocus: Whether the widget participates in focus traversal.
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            variant: Style variant (coerced to 'toolbutton').
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
+            localize: Determines the widget's localization mode.
         """
         self._capture_density_option(kwargs)
         kwargs.setdefault('class_', 'Toolbutton')

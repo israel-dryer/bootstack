@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class RadioButtonKwargs(TypedDict, total=False):
     # Standard ttk.Radiobutton options
     text: Any
-    command: Optional[Callable[[], Any]]
+    command: Callable[[], Any] | None
     image: Any
     icon: Any
     on_icon: Any
@@ -63,37 +63,36 @@ class RadioButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            text (str): Text to display.
-            textvariable (Variable): Tk variable linked to the text.
-            textsignal (Signal[str]): Reactive Signal linked to the text (auto-synced with textvariable).
-            command (Callable): Callable invoked when the value is selected.
-            image (PhotoImage): Image to display.
-            icon (str | dict): Icon shown in the label area for all states. Color shifts
+            text: Text to display.
+            textvariable: Tk variable linked to the text.
+            textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
+            command: Callable invoked when the value is selected.
+            image: Image to display.
+            icon: Icon shown in the label area for all states. Color shifts
                 from foreground (unselected) to accent (selected) automatically.
-            on_icon (str | dict): Icon shown in the label area when the button is selected.
+            on_icon: Icon shown in the label area when the button is selected.
                 Shortcut for `state=[("selected", name)]` inside a full icon spec.
-            off_icon (str | dict): Icon shown in the label area when the button is unselected.
+            off_icon: Icon shown in the label area when the button is unselected.
                 Used as the base icon when `on_icon` is also provided.
-            icon_only (bool): Removes the additional padding added for label.
-            show_indicator (bool): Whether to show the standard radio indicator. Defaults
+            icon_only: Removes the additional padding added for label.
+            show_indicator: Whether to show the standard radio indicator. Defaults
                 to True. Set to False to hide the indicator (e.g. for icon-only radio groups).
-            compound (str): Placement of the image relative to text.
-            variable (Variable): Linked Tk variable that receives the selected value.
-            signal (Signal): Reactive Signal that receives the selected value (auto-synced with variable).
-            value (Any): The value assigned to `variable` when this radio is selected.
-            padding (int | tuple): Extra space around the content.
-            anchor (str): Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
-            width (int): Width of the control in characters.
-            underline (int): Index of character to underline in `text`.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            variant (str): Style variant, e.g. 'default'.
-                Combined style tokens (e.g., 'primary', 'success').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
+            compound: Placement of the image relative to text.
+            variable: Linked Tk variable that receives the selected value.
+            signal: Reactive Signal that receives the selected value (auto-synced with variable).
+            value: The value assigned to `variable` when this radio is selected.
+            padding: Extra space around the content.
+            anchor: Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
+            width: Width of the control in characters.
+            underline: Index of character to underline in `text`.
+            state: Widget state.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            variant: Style variant, e.g. 'default'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
+            localize: Determines the widget's localization mode.
         """
         kwargs.update(style_options=self._capture_style_options(['icon_only', 'icon', 'on_icon', 'off_icon', 'show_indicator', 'anchor'], kwargs))
         super().__init__(master, **kwargs)

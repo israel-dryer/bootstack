@@ -41,10 +41,6 @@ class RadioGroup(Frame):
     The RadioGroup widget provides a convenient way to create groups of radio
     buttons with automatic state management. It supports both horizontal and
     vertical orientations, and can display an optional label in various positions.
-
-    Attributes:
-        variable (Variable): The underlying tk.Variable for the selected value.
-        signal (Signal): Signal for reactive programming and change subscriptions.
     """
 
     def __init__(self, master: Master = None, **kwargs: Unpack[RadioGroupKwargs]):
@@ -54,25 +50,25 @@ class RadioGroup(Frame):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            orient (str): Layout orientation - 'horizontal' (default) or 'vertical'.
-            accent (str): Accent token for styling (e.g., 'primary', 'success', 'danger').
+            orient: Layout orientation - 'horizontal' (default) or 'vertical'.
+            accent: Accent token for styling (e.g., 'primary', 'success', 'danger').
                 Defaults to 'primary'.
-            text (str): Optional label text to display.
-            labelanchor (str): Label position - 'n' (top, default), 's' (bottom),
+            text: Optional label text to display.
+            labelanchor: Label position - 'n' (top, default), 's' (bottom),
                 'e' (right), 'w' (left), or combinations like 'nw', 'ne', etc.
-            variable (Variable): Optional tk.StringVar for controlling the selected value.
-            signal (Signal): Optional Signal instance for reactive programming.
-            value (str): Initial selected value.
-            state (str): Initial state for all buttons - 'normal' (default) or 'disabled'.
-            show_indicator (bool): Whether child buttons show the standard radio indicator.
+            variable: Optional tk.StringVar for controlling the selected value.
+            signal: Optional Signal instance for reactive programming.
+            value: Initial selected value.
+            state: Initial state for all buttons - 'normal' (default) or 'disabled'.
+            show_indicator: Whether child buttons show the standard radio indicator.
                 Defaults to True. Set to False for icon-only or custom-styled groups.
                 Can be overridden per-button in `add()`.
-            show_border (bool): If True, draws a border around the group.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Additional style options passed to child buttons.
-            padding (int | tuple): Frame padding. Defaults to 1.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
+            show_border: If True, draws a border around the group.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Additional style options passed to child buttons.
+            padding: Frame padding. Defaults to 1.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
         """
         # Extract RadioGroup-specific options before super().__init__
         self._orientation = kwargs.pop('orient', 'horizontal')
@@ -357,11 +353,23 @@ class RadioGroup(Frame):
         button.configure(**kwargs)
 
     def on_changed(self, callback: Callable) -> Any:
-        """Subscribe to value changes. Callback receives `new_value: str` directly."""
+        """Subscribe to value changes.
+
+        Args:
+            callback: Called when the selected value changes. Receives
+                `new_value: str` directly (not a Tk event object).
+
+        Returns:
+            Subscription ID — pass to `off_changed()` to unsubscribe.
+        """
         return self._signal.subscribe(callback)
 
     def off_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from value changes."""
+        """Unsubscribe from value changes.
+
+        Args:
+            bind_id: ID returned by `on_changed()`. If None, removes all.
+        """
         self._signal.unsubscribe(bind_id)
 
     @configure_delegate('accent')
