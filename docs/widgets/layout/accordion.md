@@ -163,7 +163,7 @@ for exp in accordion.items():
     print(exp.cget('title'))
 
 # Get currently expanded sections
-for exp in accordion.expanded:
+for exp in accordion.items(expanded=True):
     print(f"Open: {exp.cget('title')}")
 
 # Query configuration

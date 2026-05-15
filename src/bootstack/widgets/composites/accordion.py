@@ -252,13 +252,20 @@ class Accordion(Frame):
             raise KeyError(f"No expander with key '{key}'")
         return self._expanders[key]
 
-    def items(self) -> tuple[Expander, ...]:
-        """Get all expander widgets in order.
+    def items(self, expanded: bool | None = None) -> tuple[Expander, ...]:
+        """Get expander widgets in insertion order, optionally filtered by state.
+
+        Args:
+            expanded: If `True`, return only expanded expanders. If `False`,
+                return only collapsed expanders. If `None` (default), return all.
 
         Returns:
-            A tuple of all Expander instances in the order they were added.
+            A tuple of matching Expander instances.
         """
-        return tuple(self._expanders[key] for key in self._expander_order)
+        expanders = (self._expanders[key] for key in self._expander_order)
+        if expanded is None:
+            return tuple(expanders)
+        return tuple(e for e in expanders if bool(e['expanded']) == expanded)
 
     def keys(self) -> tuple[str, ...]:
         """Get all expander keys in order.
@@ -326,11 +333,6 @@ class Accordion(Frame):
             return
         for exp in self._expanders.values():
             exp.collapse()
-
-    @property
-    def expanded(self) -> list[Expander]:
-        """Currently expanded Expander widgets."""
-        return [self._expanders[k] for k in self._expander_order if self._expanders[k]['expanded']]
 
     @configure_delegate('allow_multiple')
     def _delegate_allow_multiple(self, value=None):
