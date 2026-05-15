@@ -4,7 +4,7 @@ from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
-from bootstack.widgets.composites.contextmenu import ContextMenu, ContextMenuItem
+from bootstack.widgets.composites.contextmenu import ContextMenu, ContextMenuItem, ContextMenuItemResult
 from bootstack.widgets.primitives.menubutton import MenuButton
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
@@ -112,18 +112,6 @@ class DropdownButton(MenuButton):
         self.bind('<Return>', lambda _: self.show_menu(), add="+")
         self.bind('<KP_Enter>', lambda _: self.show_menu(), add="+")
 
-        # passthrough methods
-        self.add_radiobutton = self._context_menu.add_radiobutton
-        self.add_command = self._context_menu.add_command
-        self.add_checkbutton = self._context_menu.add_checkbutton
-        self.add_separator = self._context_menu.add_separator
-        self.add_item = self._context_menu.add_item
-        self.add_items = self._context_menu.add_items
-        self.insert_item = self._context_menu.insert_item
-        self.remove_item = self._context_menu.remove_item
-        self.move_item = self._context_menu.move_item
-        self.configure_item = self._context_menu.configure_item
-        self.items = self._context_menu.items
 
     def _build_context_menu(self):
         """Construct the ContextMenu with current items and options."""
@@ -156,6 +144,154 @@ class DropdownButton(MenuButton):
             return
         self._context_menu.show()
 
+    def add_command(
+            self,
+            text: str = None,
+            icon: str = None,
+            command: Callable = None,
+            disabled: bool = False,
+            shortcut: str = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a command item to the dropdown menu.
+
+        Args:
+            text: Item label text.
+            icon: Icon name. Defaults to a blank placeholder to preserve alignment.
+            command: Callable invoked when the item is clicked.
+            disabled: If True the item is rendered disabled and cannot be clicked.
+            shortcut: Keyboard shortcut label, either a registered shortcut key
+                or a literal display string (e.g. `'Ctrl+S'`).
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._context_menu.add_command(
+            text=text, icon=icon, command=command,
+            disabled=disabled, shortcut=shortcut, key=key,
+        )
+
+    def add_checkbutton(
+            self,
+            text: str = None,
+            value: bool = False,
+            command: Callable = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a checkbutton item to the dropdown menu.
+
+        Args:
+            text: Item label text.
+            value: Initial checked state.
+            command: Callable invoked when the item is toggled.
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._context_menu.add_checkbutton(
+            text=text, value=value, command=command, key=key,
+        )
+
+    def add_radiobutton(
+            self,
+            text: str = None,
+            value: Any = None,
+            variable: Any = None,
+            command: Callable = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a radiobutton item to the dropdown menu.
+
+        Args:
+            text: Item label text.
+            value: Value assigned to `variable` when this item is selected.
+            variable: Tkinter Variable shared across the radio group.
+            command: Callable invoked when the item is selected.
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._context_menu.add_radiobutton(
+            text=text, value=value, variable=variable, command=command, key=key,
+        )
+
+    def add_separator(self, key: str = None) -> ContextMenuItemResult:
+        """Add a horizontal separator to the dropdown menu.
+
+        Args:
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._context_menu.add_separator(key=key)
+
+    def add_item(self, type: str, **kwargs: Any) -> ContextMenuItemResult:
+        """Add a menu item by type name.
+
+        Args:
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`,
+                or `'separator'`.
+            **kwargs: Forwarded to the matching `add_*` method.
+        """
+        return self._context_menu.add_item(type, **kwargs)
+
+    def add_items(self, items: list[ContextMenuItem]) -> None:
+        """Add multiple items at once.
+
+        Args:
+            items: List of `ContextMenuItem` objects or dicts with
+                a `type` key and item kwargs.
+        """
+        self._context_menu.add_items(items)
+
+    def insert_item(self, index: int, type: str, **kwargs: Any) -> ContextMenuItemResult:
+        """Insert a new item at the given index.
+
+        Args:
+            index: Position to insert at (0-based).
+            type: Item type — same values as `add_item`.
+            **kwargs: Forwarded to the matching `add_*` method.
+        """
+        return self._context_menu.insert_item(index, type, **kwargs)
+
+    def remove_item(self, key_or_index: str | int) -> None:
+        """Remove and destroy the item at the given key or index.
+
+        Args:
+            key_or_index: String key or integer index of the item.
+        """
+        self._context_menu.remove_item(key_or_index)
+
+    def move_item(self, from_key_or_index: str | int, to_index: int) -> ContextMenuItemResult:
+        """Reorder an item to a new position.
+
+        Args:
+            from_key_or_index: Current key or index of the item.
+            to_index: Target index.
+        """
+        return self._context_menu.move_item(from_key_or_index, to_index)
+
+    def configure_item(
+            self,
+            key_or_index: str | int,
+            option: str | None = None,
+            **kwargs: Any,
+    ) -> Any:
+        """Get or set options on an individual menu item.
+
+        Args:
+            key_or_index: Key or index of the item.
+            option: If provided without `kwargs`, returns the current value
+                of this option. If omitted, returns the full option map.
+            **kwargs: Option values to set.
+        """
+        return self._context_menu.configure_item(key_or_index, option, **kwargs)
+
+    def items(self, value: list[ContextMenuItem] = None) -> list[ContextMenuItemResult] | None:
+        """Get or set the full item list.
+
+        Args:
+            value: If provided, replaces all current items. If omitted,
+                returns the current item list.
+        """
+        return self._context_menu.items(value)
+
+    def keys(self) -> tuple[str, ...]:
+        """Return all item keys in insertion order."""
+        return self._context_menu.keys()
+
     @configure_delegate('command')
     def _delegate_command(self, value=None):
         """Get or set the item-click callback."""
@@ -167,6 +303,7 @@ class DropdownButton(MenuButton):
 
     @configure_delegate('popdown_options')
     def _delegate_popdown_options(self, value=None):
+        """Get or set ContextMenu positioning options (anchor, attach, offset, etc.)."""
         if value is None:
             return self._popdown_options
         else:

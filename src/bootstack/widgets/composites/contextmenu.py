@@ -1623,7 +1623,8 @@ class ContextMenu:
     On macOS this materializes as a native `tk.Menu` (NSMenu) so popups
     integrate with the system, dodging the key-window/activation issues
     that affect a reused overrideredirect Toplevel on Aqua. On Windows
-    and Linux it uses the themed Toplevel-backed implementation so
+    and Linux it uses the themed Toplevel-backed implementation so theme
+    tokens, density, and rich item types apply consistently.
 
     The public API is identical across backends. Consumers should not
     rely on `item()` returning a Tk widget — on the native backend it
@@ -1796,7 +1797,7 @@ class ContextMenu:
             self,
             text: str = None,
             value: Any = None,
-            variable=None,
+            variable: Any = None,
             command: Callable = None,
             key: str = None,
     ) -> ContextMenuItemResult:
@@ -1845,7 +1846,7 @@ class ContextMenu:
 
         Args:
             index: Position to insert at (0-based).
-            type: Item type — same values as :meth:`add_item`.
+            type: Item type — same values as `add_item`.
             **kwargs: Forwarded to the matching `add_*` method.
         """
         return self._impl.insert_item(index, type, **kwargs)

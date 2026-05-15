@@ -256,10 +256,6 @@ class ButtonGroup(Frame):
 
         Returns:
             If option is provided, returns the value of that option.
-
-        Examples:
-            group.configure_item("save_btn", state='disabled')
-            current_state = group.configure_item("save_btn", 'state')
         """
         widget = self.item(key)
         if option is not None:
@@ -283,29 +279,15 @@ class ButtonGroup(Frame):
         return tuple(self._widgets.keys())
 
     def __len__(self) -> int:
-        """Return the number of widgets in the group.
-
-        Examples:
-            >>> count = len(button_group)
-        """
+        """Return the number of widgets in the group."""
         return len(self._widgets)
 
     def __contains__(self, key: str) -> bool:
-        """Check if a widget with the given key exists in the group.
-
-        Examples:
-            >>> if 'save' in button_group:
-            ...     print('Save button exists')
-        """
+        """Check if a widget with the given key exists in the group."""
         return key in self._widgets
 
     def __iter__(self):
-        """Iterate over the widgets in the group.
-
-        Examples:
-            >>> for widget in button_group:
-            ...     widget.configure(state='disabled')
-        """
+        """Iterate over the widgets in the group."""
         return iter(self._widgets.values())
 
     @configure_delegate('accent')

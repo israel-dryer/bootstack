@@ -71,7 +71,6 @@ class MenuButton(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, 
             style: Explicit ttk style name (overrides accent/variant).
             accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
             variant: Style variant, e.g. 'solid', 'outline', 'ghost'.
-                Combined style tokens (e.g., 'primary', 'ghost').
             surface: Optional surface token; otherwise inherited.
             style_options: Optional dict forwarded to the style builder.
             localize: Determines the widget's localization mode.
