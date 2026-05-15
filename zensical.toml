@@ -172,6 +172,7 @@ nav = [
             { "NumericEntry" = "reference/widgets/numericentry.md" },
             { "PasswordEntry" = "reference/widgets/passwordentry.md" },
             { "PathEntry" = "reference/widgets/pathentry.md" },
+            { "Scale" = "reference/widgets/scale.md" },
             { "ScrolledText" = "reference/widgets/scrolledtext.md" },
             { "SelectBox" = "reference/widgets/selectbox.md" },
             { "SpinnerEntry" = "reference/widgets/spinnerentry.md" },

@@ -4,7 +4,7 @@ Provides a specialized entry field with a built-in spinbox for selecting
 values from a list or numeric range.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
 from typing_extensions import Unpack
 
@@ -24,13 +24,13 @@ class SpinnerEntry(Field):
     def __init__(
             self,
             master: Master = None,
-            value: Union[int, float, str] = '',
+            value: int | float | str = '',
             label: str = None,
             message: str = None,
-            values: List[str] = None,
-            minvalue: Union[int, float] = None,
-            maxvalue: Union[int, float] = None,
-            increment: Union[int, float] = 1,
+            values: list[str] = None,
+            minvalue: int | float = None,
+            maxvalue: int | float = None,
+            increment: int | float = 1,
             wrap: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
@@ -59,7 +59,7 @@ class SpinnerEntry(Field):
             value_format: ICU format pattern for parsing/formatting.
             locale: Locale identifier for formatting (e.g., 'en_US').
             required: If True, field cannot be empty.
-            color: Color token for the focus ring and active border.
+            accent: Accent token for the focus ring and active border.
             allow_blank: If True, empty input is allowed.
             cursor: Cursor style when hovering.
             font: Font for text display.
@@ -101,19 +101,13 @@ class SpinnerEntry(Field):
         self._wrap = wrap
 
     @property
-    def values(self) -> List[str]:
+    def values(self) -> list[str]:
         """Get the list of valid values (text mode only)."""
         return self._values
 
     @configure_delegate('values')
-    def _delegate_values(self, value: List[str] = None):
-        """Get or set the list of valid values.
-
-        Can be accessed via:
-            widget.configure(values=['A', 'B', 'C'])
-            widget['values'] = ['A', 'B', 'C']
-            widget.cget('values')
-        """
+    def _delegate_values(self, value: list[str] = None):
+        """Get or set the list of valid values."""
         if value is None:
             return self._values
 
@@ -126,14 +120,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('minvalue')
-    def _delegate_minvalue(self, value: Union[int, float] = None):
-        """Get or set the minimum value (numeric mode).
-
-        Can be accessed via:
-            widget.configure(minvalue=0)
-            widget['minvalue'] = 0
-            widget.cget('minvalue')
-        """
+    def _delegate_minvalue(self, value: int | float = None):
+        """Get or set the minimum value (numeric mode)."""
         if value is None:
             return self._minvalue
 
@@ -146,14 +134,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('maxvalue')
-    def _delegate_maxvalue(self, value: Union[int, float] = None):
-        """Get or set the maximum value (numeric mode).
-
-        Can be accessed via:
-            widget.configure(maxvalue=100)
-            widget['maxvalue'] = 100
-            widget.cget('maxvalue')
-        """
+    def _delegate_maxvalue(self, value: int | float = None):
+        """Get or set the maximum value (numeric mode)."""
         if value is None:
             return self._maxvalue
 
@@ -166,14 +148,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('increment')
-    def _delegate_increment(self, value: Union[int, float] = None):
-        """Get or set the increment step size (numeric mode).
-
-        Can be accessed via:
-            widget.configure(increment=5)
-            widget['increment'] = 5
-            widget.cget('increment')
-        """
+    def _delegate_increment(self, value: int | float = None):
+        """Get or set the increment step size (numeric mode)."""
         if value is None:
             return self._increment
 
@@ -187,13 +163,7 @@ class SpinnerEntry(Field):
 
     @configure_delegate('wrap')
     def _delegate_wrap(self, value: bool = None):
-        """Get or set the wrap setting.
-
-        Can be accessed via:
-            widget.configure(wrap=True)
-            widget['wrap'] = True
-            widget.cget('wrap')
-        """
+        """Get or set the wrap setting."""
         if value is None:
             return self._wrap
 

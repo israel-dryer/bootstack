@@ -115,6 +115,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('scroll_direction')
     def _delegate_scroll_direction(self, value=None):
+        """Get or set the scroll direction ('vertical', 'horizontal', or 'both')."""
         if value is None:
             return self._direction
         else:
@@ -125,6 +126,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('scrollbar_visibility')
     def _delegate_scrollbar_visibility(self, value=None):
+        """Get or set the scrollbar visibility mode ('always', 'never', 'hover', 'scroll')."""
         if value is None:
             return self._scrollbar_visibility
         else:
@@ -149,6 +151,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('autohide_delay')
     def _delegate_autohide_delay(self, value=None):
+        """Get or set the milliseconds before scrollbars hide in 'scroll' mode."""
         if value is None:
             return self._autohide_delay
         else:
@@ -157,6 +160,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('scrollbar_style')
     def _delegate_scrollbar_style(self, value=None):
+        """Get or set the accent token applied to both scrollbars."""
         if value is None:
             return self._scrollbar_style
         else:

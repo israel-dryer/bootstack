@@ -25,17 +25,17 @@ FileDialogType = Literal[
 ]
 """File dialog type for `PathEntry`.
 
-- ``'openfilename'``: Select a single existing file (returns path string)
-- ``'openfile'``: Select a single existing file (returns file object)
-- ``'directory'``: Select a directory
-- ``'openfilenames'``: Select multiple existing files (returns tuple of paths)
-- ``'openfiles'``: Select multiple existing files (returns tuple of file objects)
-- ``'saveasfile'``: Save file dialog (returns file object)
-- ``'saveasfilename'``: Save file dialog (returns path string)
+- `'openfilename'`: Select a single existing file (returns path string)
+- `'openfile'`: Select a single existing file (returns file object)
+- `'directory'`: Select a directory
+- `'openfilenames'`: Select multiple existing files (returns tuple of paths)
+- `'openfiles'`: Select multiple existing files (returns tuple of file objects)
+- `'saveasfile'`: Save file dialog (returns file object)
+- `'saveasfilename'`: Save file dialog (returns path string)
 """
 
 WidgetDensity = Literal['default', 'compact']
-"""Widget density — ``'default'`` for normal sizing, ``'compact'`` for reduced padding."""
+"""Widget density — `'default'` for normal sizing, `'compact'` for reduced padding."""
 
 ScrollDirection = Literal['horizontal', 'vertical', 'both']
 """Scroll axis for `ScrolledText`."""

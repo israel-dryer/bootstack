@@ -102,7 +102,7 @@ class PathEntry(Field):
         """Get the raw result from the last file dialog operation.
 
         Returns a single path string for single-file dialogs, a tuple of
-        paths for multi-file dialogs, or ``None`` if no selection was made.
+        paths for multi-file dialogs, or `None` if no selection was made.
         """
         return self._dialog_result
 
@@ -110,6 +110,7 @@ class PathEntry(Field):
 
     @configure_delegate('dialog')
     def _delegate_dialog(self, value: FileDialogType = None):
+        """Get or set the file dialog type ('openfilename', 'directory', etc.)."""
         if value is None:
             return self._dialog
         else:
@@ -118,6 +119,7 @@ class PathEntry(Field):
 
     @configure_delegate('button_text')
     def _delegate_button_text(self, value: str = None):
+        """Get or set the browse button label text."""
         if value is None:
             return self._button_text
         else:
@@ -128,6 +130,7 @@ class PathEntry(Field):
 
     @configure_delegate('dialog_options')
     def _delegate_dialog_options(self, value: dict[str, Any] = None):
+        """Get or set the kwargs forwarded to the file dialog."""
         if value is None:
             return self._dialog_options
         else:

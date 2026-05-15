@@ -5,7 +5,7 @@ list of time values at specified intervals.
 """
 
 import datetime
-from typing import Union
+from __future__ import annotations
 from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
@@ -28,11 +28,11 @@ class TimeEntry(SelectBox):
     def __init__(
             self,
             master: Master = None,
-            value: Union[datetime.time, str] = None,
+            value: datetime.time | str = None,
             value_format: DateFormatSpec = 'shortTime',
             interval: int = 30,
-            min_time: Union[datetime.time, str] = None,
-            max_time: Union[datetime.time, str] = None,
+            min_time: datetime.time | str = None,
+            max_time: datetime.time | str = None,
             label: str = None,
             message: str = None,
             **kwargs: Unpack[FieldOptions]
@@ -60,7 +60,7 @@ class TimeEntry(SelectBox):
         Other Parameters:
             locale: Locale identifier for time formatting (e.g., 'en_US').
             required: If True, field cannot be empty.
-            color: Color token for the focus ring and active border.
+            accent: Accent token for the focus ring and active border.
             allow_blank: Allow empty input.
             width: Width in characters.
             textvariable: Tkinter Variable to link with text.
@@ -102,7 +102,7 @@ class TimeEntry(SelectBox):
             **kwargs
         )
 
-    def _parse_time(self, time_value: Union[datetime.time, str]) -> datetime.time:
+    def _parse_time(self, time_value: datetime.time | str) -> datetime.time:
         """Parse time value from various input formats.
 
         Args:

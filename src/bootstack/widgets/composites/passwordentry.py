@@ -99,6 +99,7 @@ class PasswordEntry(Field):
 
     @configure_delegate('show_visibility_toggle')
     def _delegate_show_visibility_toggle(self, value=None):
+        """Get or set the visibility of the eye-icon toggle button."""
         if value is None:
             return self._show_visibility_toggle
         else:

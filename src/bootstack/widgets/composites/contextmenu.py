@@ -25,7 +25,7 @@ ContextMenuTrigger = Literal[
 ]
 """Gesture that auto-shows a `ContextMenu` when the user interacts with the target widget.
 
-Pass ``None`` to disable auto-binding and manage activation in caller code.
+Pass `None` to disable auto-binding and manage activation in caller code.
 """
 
 ContextMenuItemResult = Union[Button, CheckToggle, RadioToggle, Separator, str]

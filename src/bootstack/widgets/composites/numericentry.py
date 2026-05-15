@@ -118,7 +118,7 @@ class NumericEntry(Field):
         self.entry_widget.event_generate("<<Decrement>>")
 
     def step(self, n: int = 1) -> None:
-        """Step the value by ``n`` increments (positive) or decrements (negative).
+        """Step the value by `n` increments (positive) or decrements (negative).
 
         Args:
             n: Number of steps. Positive steps up, negative steps down.
@@ -126,7 +126,7 @@ class NumericEntry(Field):
         self.entry_widget.step(n)
 
     def on_increment(self, callback) -> str:
-        """Register a callback for ``<<Increment>>`` events (fires when value steps up).
+        """Register a callback for `<<Increment>>` events (fires when value steps up).
 
         Args:
             callback: Receives a Tkinter `Event` object with `event.data['value']`
@@ -138,7 +138,7 @@ class NumericEntry(Field):
         return self.entry_widget.on_increment(callback)
 
     def off_increment(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Increment>>``.
+        """Unsubscribe from `<<Increment>>`.
 
         Args:
             bind_id: ID returned by `on_increment()`.
@@ -146,7 +146,7 @@ class NumericEntry(Field):
         self.entry_widget.off_increment(bind_id)
 
     def on_decrement(self, callback) -> str:
-        """Register a callback for ``<<Decrement>>`` events (fires when value steps down).
+        """Register a callback for `<<Decrement>>` events (fires when value steps down).
 
         Args:
             callback: Receives a Tkinter `Event` object with `event.data['value']`
@@ -158,7 +158,7 @@ class NumericEntry(Field):
         return self.entry_widget.on_decrement(callback)
 
     def off_decrement(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Decrement>>``.
+        """Unsubscribe from `<<Decrement>>`.
 
         Args:
             bind_id: ID returned by `on_decrement()`.
