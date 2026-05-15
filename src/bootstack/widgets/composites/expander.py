@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from tkinter import Widget, Variable
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
@@ -13,6 +13,18 @@ from bootstack.core.capabilities.signals import normalize_signal
 
 if TYPE_CHECKING:
     from bootstack.core.signals import Signal
+
+
+class ToggleEventData(TypedDict):
+    """Payload for `<<Toggle>>` events."""
+    expanded: bool
+    """Whether the expander is now open."""
+
+
+class SelectedEventData(TypedDict):
+    """Payload for `<<Selected>>` events."""
+    value: Any
+    """The expander's configured value."""
 
 
 class Expander(Frame):
@@ -316,43 +328,43 @@ class Expander(Frame):
             return self._variable.get() == self._value
         return False
 
-    def on_toggled(self, callback: Callable) -> str:
-        """Bind callback to `<<Toggle>>` events.
+    def on_toggled(self, callback: Callable[[ToggleEventData], None]) -> str:
+        """Register a callback for `<<Toggle>>` events.
 
         Args:
-            callback: Function to call when toggled. Receives event with
-                `event.data = {'expanded': bool}`.
+            callback: Receives a `ToggleEventData` dict with key
+                `expanded` (bool — True if now open, False if now closed).
 
         Returns:
-            Bind ID that can be passed to `off_toggled` to remove this callback.
+            Bind ID — pass to `off_toggled()` to unsubscribe.
         """
         return self.bind('<<Toggle>>', callback, add='+')
 
     def off_toggled(self, bind_id: str | None = None) -> None:
-        """Unbind `<<Toggle>>` callback(s).
+        """Unsubscribe from `<<Toggle>>`.
 
         Args:
-            bind_id: Bind ID returned by `on_toggled`. If None, unbinds all.
+            bind_id: ID returned by `on_toggled()`. If None, removes all.
         """
         self.unbind('<<Toggle>>', bind_id)
 
-    def on_selected(self, callback: Callable) -> str:
-        """Bind callback to `<<Selected>>` events.
+    def on_selected(self, callback: Callable[[SelectedEventData], None]) -> str:
+        """Register a callback for `<<Selected>>` events.
 
         Args:
-            callback: Function to call when selected. Receives event with
-                `event.data = {'value': Any}`.
+            callback: Receives a `SelectedEventData` dict with key
+                `value` (the expander's configured value).
 
         Returns:
-            Bind ID that can be passed to `off_selected` to remove this callback.
+            Bind ID — pass to `off_selected()` to unsubscribe.
         """
         return self.bind('<<Selected>>', callback, add='+')
 
-    def off_selected(self, bind_id: str = None):
-        """Unbind `<<Selected>>` callback(s).
+    def off_selected(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Selected>>`.
 
         Args:
-            bind_id: Bind ID returned by `on_selected`. If None, unbinds all.
+            bind_id: ID returned by `on_selected()`. If None, removes all.
         """
         self.unbind('<<Selected>>', bind_id)
 

@@ -4,7 +4,7 @@ Provides a specialized entry field for numeric input with increment/decrement
 buttons and keyboard/mouse wheel support.
 """
 
-from typing import Any
+from typing import Any, Callable
 from tkinter import TclError
 from typing_extensions import Unpack
 
@@ -125,7 +125,7 @@ class NumericEntry(Field):
         """
         self.entry_widget.step(n)
 
-    def on_increment(self, callback) -> str:
+    def on_increment(self, callback: Callable) -> str:
         """Register a callback for `<<Increment>>` events (fires when value steps up).
 
         Args:
@@ -145,7 +145,7 @@ class NumericEntry(Field):
         """
         self.entry_widget.off_increment(bind_id)
 
-    def on_decrement(self, callback) -> str:
+    def on_decrement(self, callback: Callable) -> str:
         """Register a callback for `<<Decrement>>` events (fires when value steps down).
 
         Args:

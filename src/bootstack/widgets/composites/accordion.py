@@ -1,7 +1,7 @@
 """Accordion widget - a container of mutually exclusive expanders."""
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.separator import Separator
@@ -11,6 +11,12 @@ from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
     pass
+
+
+class AccordionChangeEventData(TypedDict):
+    """Payload for `<<AccordionChange>>` events."""
+    expanded: list[Expander]
+    """Expanders that are currently open after the change."""
 
 
 class Accordion(Frame):
@@ -358,22 +364,22 @@ class Accordion(Frame):
         self._show_separators = value
         return None
 
-    def on_accordion_changed(self, callback: Callable) -> str:
-        """Bind callback to `<<AccordionChange>>` events.
+    def on_accordion_changed(self, callback: Callable[[AccordionChangeEventData], None]) -> str:
+        """Register a callback for `<<AccordionChange>>` events.
 
         Args:
-            callback: Function to call when expanded sections change.
-                Receives event with `event.data = {'expanded': list[Expander]}`.
+            callback: Receives an `AccordionChangeEventData` dict with key
+                `expanded` (list of currently open Expanders).
 
         Returns:
-            Bind ID that can be passed to `off_accordion_changed` to remove this callback.
+            Bind ID — pass to `off_accordion_changed()` to unsubscribe.
         """
         return self.bind('<<AccordionChange>>', callback, add='+')
 
-    def off_accordion_changed(self, bind_id: str = None):
-        """Unbind `<<AccordionChange>>` callback(s).
+    def off_accordion_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<AccordionChange>>`.
 
         Args:
-            bind_id: Bind ID returned by `on_accordion_changed`. If None, unbinds all.
+            bind_id: ID returned by `on_accordion_changed()`. If None, removes all.
         """
         self.unbind('<<AccordionChange>>', bind_id)
