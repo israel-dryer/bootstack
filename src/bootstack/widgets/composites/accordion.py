@@ -328,11 +328,6 @@ class Accordion(Frame):
             exp.collapse()
 
     @property
-    def expanders(self) -> list[Expander]:
-        """All managed Expander widgets in insertion order."""
-        return [self._expanders[k] for k in self._expander_order]
-
-    @property
     def expanded(self) -> list[Expander]:
         """Currently expanded Expander widgets."""
         return [self._expanders[k] for k in self._expander_order if self._expanders[k]['expanded']]
