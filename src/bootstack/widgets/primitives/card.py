@@ -42,16 +42,16 @@ class Card(Frame):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            padding (int | tuple): Extra padding inside the card. Default 16.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            takefocus (bool): Widget accepts focus during keyboard traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent/color token for the card. Default 'card'.
-            variant (str): Style variant (if applicable).
-            surface (str): Surface token for the parent background.
-            show_border (bool): Draw a border around the card. Default True.
-            style_options (dict): Optional dict forwarded to the style builder.
+            padding: Extra padding inside the card. Default 16.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
+            takefocus: Widget accepts focus during keyboard traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent/color token for the card. Default 'card'.
+            variant: Style variant (if applicable).
+            surface: Surface token for the parent background.
+            show_border: Draw a border around the card. Default True.
+            style_options: Optional dict forwarded to the style builder.
         """
         if 'bootstyle' not in kwargs:
             kwargs.setdefault('accent', 'card')

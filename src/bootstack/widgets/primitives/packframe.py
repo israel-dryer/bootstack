@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Literal, Optional, Any
+from typing import Literal, Any
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
@@ -41,10 +41,10 @@ class PackFrame(Frame):
         *,
         direction: Direction = "vertical",
         gap: int = 0,
-        fill_items: Optional[Fill] = None,
-        expand_items: Optional[bool] = None,
-        anchor_items: Optional[Anchor] = None,
-        propagate: Optional[bool] = None,
+        fill_items: Fill | None = None,
+        expand_items: bool | None = None,
+        anchor_items: Anchor | None = None,
+        propagate: bool | None = None,
         **kwargs: Any,
     ) -> None:
         """Create a PackFrame with automatic pack-based layout.

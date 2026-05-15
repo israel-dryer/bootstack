@@ -26,10 +26,6 @@ class Expander(Frame):
     `value`, similar to RadioButton. When clicked, it sets the variable to
     its value, enabling radio-group-like behavior for navigation.
 
-    Attributes:
-        content (Frame): The content container frame (read-only).
-        is_selected (bool): Whether this expander's value matches the variable (read-only).
-
     """
 
     def __init__(
@@ -51,18 +47,18 @@ class Expander(Frame):
         """Create an Expander widget.
 
         Args:
-            master (Master): Parent widget. If None, uses the default root window.
-            title (str): Header title text.
-            icon (str | dict): Icon to display in header (left of title).
-            expanded (bool): Initial expansion state. Default is True (expanded).
-            collapsible (bool): Whether the expander can be toggled. Default is True.
-            highlight (bool): If True, header shows 'selected' state when expanded.
-            icon_expanded (str | dict): Icon spec for expanded state. Default is chevron-up.
-            icon_collapsed (str | dict): Icon spec for collapsed state. Default is chevron-down.
-            icon_position (Literal["before", "after"]): Position of chevron relative to title.
-            signal (Signal): Reactive Signal for selection state (preferred over variable).
-            variable (Variable): Tk variable for selection state (synced with signal).
-            value (Any): Value to set on signal/variable when selected.
+            master: Parent widget. If None, uses the default root window.
+            title: Header title text.
+            icon: Icon to display in header (left of title).
+            expanded: Initial expansion state. Default is True (expanded).
+            collapsible: Whether the expander can be toggled. Default is True.
+            highlight: If True, header shows 'selected' state when expanded.
+            icon_expanded: Icon spec for expanded state. Default is chevron-up.
+            icon_collapsed: Icon spec for collapsed state. Default is chevron-down.
+            icon_position: Position of chevron relative to title.
+            signal: Reactive Signal for selection state (preferred over variable).
+            variable: Tk variable for selection state (synced with signal).
+            value: Value to set on signal/variable when selected.
             **kwargs: Additional arguments passed to Frame. Use `accent` and `variant`
                 for styling the header and chevron.
         """
@@ -286,7 +282,7 @@ class Expander(Frame):
         """Add content widget, or create and return an empty frame.
 
         Args:
-            widget (Widget | None): Optional widget to use as content. If None, creates a Frame.
+            widget: Optional widget to use as content. If None, creates a Frame.
             **kwargs: When widget is None, these are passed to Frame (e.g., padding).
 
         Returns:
@@ -356,7 +352,7 @@ class Expander(Frame):
         """Unbind `<<Selected>>` callback(s).
 
         Args:
-            bind_id (str | None): Bind ID returned by `on_selected`. If None, unbinds all.
+            bind_id: Bind ID returned by `on_selected`. If None, unbinds all.
         """
         self.unbind('<<Selected>>', bind_id)
 

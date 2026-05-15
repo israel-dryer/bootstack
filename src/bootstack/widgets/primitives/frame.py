@@ -46,26 +46,25 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            padding (int | tuple): Extra padding inside the frame.
-            relief (str): Border style.
-            borderwidth (int): Border width.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            takefocus (bool): Widget accepts focus during keyboard traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'secondary', 'success'.
-            variant (str): Style variant (if applicable).
-                Combined style tokens (e.g., 'secondary').
-            surface (str): Optional surface token; otherwise inherited.
-            input_background (str): Surface token used as the fill color for all input
+            padding: Extra padding inside the frame.
+            relief: Border style.
+            borderwidth: Border width.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
+            takefocus: Widget accepts focus during keyboard traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'secondary', 'success'.
+            variant: Style variant (if applicable).
+            surface: Optional surface token; otherwise inherited.
+            input_background: Surface token used as the fill color for all input
                 widgets (Entry, Combobox, Spinbox, Field) inside this container. Cascades
                 to descendants the same way `surface` does. Input foreground, border,
                 and focus-ring colors are all derived from this fill so contrast is always
                 correct. Defaults to `'content'` (the app background), which keeps
                 inputs visually distinct regardless of the container surface. Override
                 with any surface token (e.g. `'card'`) to match the container.
-            show_border (bool): Draw a border around the frame.
-            style_options (dict): Optional dict forwarded to the style builder.
+            show_border: Draw a border around the frame.
+            style_options: Optional dict forwarded to the style builder.
         """
         kwargs.update(style_options=self._capture_style_options(['show_border'], kwargs))
         super().__init__(master, **kwargs)
@@ -89,6 +88,7 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
 
     @configure_delegate("bootstyle")
     def _delegate_bootstyle(self, value: Any = None):
+        """Get or set the bootstyle string."""
         old_surface = getattr(self, "_surface", "background")
         result = super()._delegate_bootstyle(value)
         new_surface = getattr(self, "_surface", "background")
@@ -196,6 +196,7 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
 
     @configure_delegate('show_border')
     def _delegate_show_border(self, value=None):
+        """Get or set whether to draw a border."""
         if value is not None:
             return self.configure_style_options('show_border')
         else:

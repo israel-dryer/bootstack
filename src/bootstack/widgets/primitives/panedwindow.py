@@ -40,16 +40,15 @@ class PanedWindow(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Pa
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            orient (str): Orientation of panes ('horizontal' or 'vertical').
-            padding (int | tuple): Extra internal padding.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
-            variant (str): Style variant (if applicable).
-                Combined style tokens.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            orient: Orientation of panes ('horizontal' or 'vertical').
+            padding: Extra internal padding.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'secondary'.
+            variant: Style variant (if applicable).
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
 

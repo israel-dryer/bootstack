@@ -39,15 +39,14 @@ class Scrollbar(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scro
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            orient (str): Orientation of the scrollbar ('horizontal' or 'vertical').
-            command (Callable): Scroll command callback.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            variant (str): Style variant, e.g. 'default', 'round', 'square'.
-                Combined style tokens (e.g., 'primary', 'danger-square').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            orient: Orientation of the scrollbar ('horizontal' or 'vertical').
+            command: Scroll command callback.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
+            variant: Style variant, e.g. 'default', 'round', 'square'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
 

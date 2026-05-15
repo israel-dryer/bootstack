@@ -22,7 +22,6 @@ class Accordion(Frame):
     at least one section must remain open.
 
     Attributes:
-        expanders (list[Expander]): List of managed Expander widgets.
         expanded (list[Expander]): Currently expanded Expander(s).
 
     """
@@ -41,14 +40,14 @@ class Accordion(Frame):
         """Create an Accordion widget.
 
         Args:
-            master (Master): Parent widget. If None, uses the default root window.
-            allow_multiple (bool): If True, multiple sections can be open at once.
+            master: Parent widget. If None, uses the default root window.
+            allow_multiple: If True, multiple sections can be open at once.
                 If False (default), only one section can be open at a time.
-            allow_collapse_all (bool): If True (default), all sections can be collapsed.
+            allow_collapse_all: If True (default), all sections can be collapsed.
                 If False, at least one section must remain open.
-            show_separators (bool): If True, show separators between expanders.
-            accent (str): Accent token for the expanders (e.g., 'success', 'primary').
-            variant (str): Variant for the expanders (e.g., 'solid', 'default').
+            show_separators: If True, show separators between expanders.
+            accent: Accent token for the expanders (e.g., 'success', 'primary').
+            variant: Variant for the expanders (e.g., 'solid', 'default').
             **kwargs: Additional arguments passed to Frame.
         """
 
@@ -81,11 +80,11 @@ class Accordion(Frame):
         """Add an expander to the accordion.
 
         Args:
-            expander (Expander | None): Existing Expander to add. If None, creates one.
-            key (str | None): Unique identifier for the expander. Auto-generated if not provided.
-            title (str): Title for the expander header (when creating new).
-            icon (str | dict): Icon for the expander header (when creating new).
-            expanded (bool | None): Initial expansion state. If None, first expander
+            expander: Existing Expander to add. If None, creates one.
+            key: Unique identifier for the expander. Auto-generated if not provided.
+            title: Title for the expander header (when creating new).
+            icon: Icon for the expander header (when creating new).
+            expanded: Initial expansion state. If None, first expander
                 is expanded when allow_collapse_all=False, otherwise collapsed.
             **kwargs: When expander is None, passed to Expander constructor.
 
@@ -293,7 +292,7 @@ class Accordion(Frame):
         """Expand the expander with the given key.
 
         Args:
-            key (str): Key of the expander to expand.
+            key: Key of the expander to expand.
         """
         if key in self._expanders:
             self._expanders[key].expand()
@@ -302,7 +301,7 @@ class Accordion(Frame):
         """Collapse the expander with the given key.
 
         Args:
-            key (str): Key of the expander to collapse.
+            key: Key of the expander to collapse.
 
         Note:
             If allow_collapse_all=False and this is the only open expander,
@@ -377,6 +376,6 @@ class Accordion(Frame):
         """Unbind `<<AccordionChange>>` callback(s).
 
         Args:
-            bind_id (str | None): Bind ID returned by `on_accordion_changed`. If None, unbinds all.
+            bind_id: Bind ID returned by `on_accordion_changed`. If None, unbinds all.
         """
         self.unbind('<<AccordionChange>>', bind_id)
