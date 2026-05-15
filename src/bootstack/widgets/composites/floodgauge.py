@@ -1,5 +1,5 @@
 from tkinter import Canvas, Event, IntVar, StringVar
-from typing import Any, Optional, Union
+from typing import Any
 
 from bootstack.widgets.mixins.configure_mixin import ConfigureDelegationMixin, configure_delegate
 from bootstack.widgets.types import Master
@@ -13,8 +13,8 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
     and bounce-style animation for indeterminate mode.
 
     Attributes:
-        variable (IntVar): Tkinter IntVar for value binding.
-        textvariable (StringVar): Tkinter StringVar for text binding.
+        variable: Tkinter IntVar for value binding.
+        textvariable: Tkinter StringVar for text binding.
     """
 
     def __init__(
@@ -23,9 +23,9 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
             value: int = 0,
             maximum: int = 100,
             mode: str = "determinate",
-            mask: Optional[str] = None,
+            mask: str | None = None,
             text: str = "",
-            font: Union[tuple[str, int], str] = ("Helvetica", 12),
+            font: tuple[str, int] | str = ("Helvetica", 12),
             accent: str = None,
             orient: str = "horizontal",
             length: int = 200,
@@ -37,34 +37,25 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-            value (int): Initial progress value (0-maximum).
-            maximum (int): Maximum value for determinate range.
-            mode (str): Progress mode - `'determinate'` for known progress or
+            value: Initial progress value (0–maximum).
+            maximum: Maximum value for the determinate range.
+            mode: Progress mode — `'determinate'` for known progress,
                 `'indeterminate'` for unknown duration.
-            mask (str): Format string for text overlay with `'{}'` placeholder for
-                the value. Examples: `'{}% Complete'` or `'Progress: {}/100'`.
-                If None, no automatic text formatting is applied.
-            text (str): Static text label shown when no mask is specified.
-            font (tuple | str): Font specification as tuple `(family, size)` or
-                string like `'Arial 12 bold'`.
-            accent (str): Accent token from bootstack (e.g., `'primary'`,
-                `'success'`, `'info'`, `'warning'`, `'danger'`).
-            orient (str): Widget orientation - `'horizontal'` or `'vertical'`.
-            length (int): Size in pixels along the main axis (width if horizontal,
+            mask: Format string for the text overlay with `'{}'` placeholder for
+                the value (e.g., `'{}% Complete'`, `'Progress: {}/100'`). If None,
+                no automatic text formatting is applied.
+            text: Static text label shown when no mask is specified.
+            font: Font specification as `(family, size)` tuple or string like
+                `'Arial 12 bold'`.
+            accent: Accent token (e.g., `'primary'`, `'success'`, `'danger'`).
+            orient: Widget orientation — `'horizontal'` or `'vertical'`.
+            length: Size in pixels along the main axis (width if horizontal,
                 height if vertical).
-            thickness (int): Size in pixels along the minor axis (height if horizontal,
-                width if vertical).
-            increment (int): Step size for value changes when using `step()` method
-                or during animations.
-
-        Other Parameters:
-            variable (IntVar): Tkinter IntVar for value binding.
-            textvariable (StringVar): Tkinter StringVar for text binding.
-
-        Note:
-            The widget automatically updates colors when the theme changes via the
-            `<<ThemeChanged>>` event. When using variable or textvariable bindings,
-            the widget redraws automatically when the variables change.
+            thickness: Size in pixels along the minor axis.
+            increment: Step size for `step()` and animations.
+            variable: Tkinter IntVar for value binding. Auto-created if not provided.
+            textvariable: Tkinter StringVar for text binding. Auto-created if not
+                provided.
         """
 
         self._variable = kwargs.pop("variable", IntVar(value=value))
@@ -342,24 +333,23 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         """Increment the progress value by the specified amount.
 
         Args:
-            amount (int): Amount to increment. Value wraps around after reaching
-                maximum.
+            amount: Amount to increment. Value wraps around after reaching maximum.
         """
         self._value = (self._value + amount) % (self._maximum + 1)
         self._variable.set(self._value)
         self._draw()
 
-    def start(self, step_size: Optional[int] = None, interval: Optional[int] = None) -> None:
+    def start(self, step_size: int | None = None, interval: int | None = None) -> None:
         """Start the progress animation.
 
         For indeterminate mode, starts bouncing animation. For determinate mode,
         auto-increments the value at regular intervals.
 
         Args:
-            step_size (int): Amount to increment per animation step. Defaults to 8
-                for indeterminate mode, 1 for determinate mode.
-            interval (int): Time in milliseconds between animation steps. Defaults
-                to 20ms for indeterminate mode, 50ms for determinate mode.
+            step_size: Amount to increment per animation step. Defaults to 8 for
+                indeterminate mode, 1 for determinate mode.
+            interval: Time in milliseconds between animation steps. Defaults to
+                20ms for indeterminate mode, 50ms for determinate mode.
         """
         if self._mode == "indeterminate":
             self._increment = step_size if step_size is not None else 8

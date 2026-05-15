@@ -5,7 +5,7 @@ for creating specialized entry widgets like TextEntry, PasswordEntry, NumberEntr
 """
 
 from tkinter import TclError, Variable
-from typing import Any, Callable, Literal, Type, TypedDict, Union, cast
+from typing import Any, Callable, Literal, Type, TypedDict, cast
 
 from bootstack.core.signals import Signal
 from bootstack.core.validation.types import RuleType
@@ -23,10 +23,10 @@ from bootstack.widgets.types import Master
 
 FieldKind = Literal['text', 'numeric', 'spinbox']
 
-EntryWidget = Union[TextEntryPart, NumberEntryPart, SpinnerEntryPart]
+EntryWidget = TextEntryPart | NumberEntryPart | SpinnerEntryPart
 """The internal entry widget used by a Field — one of the three entry part types."""
 
-FieldAddonWidget = Union[Button, Label, CheckToggle]
+FieldAddonWidget = Button | Label | CheckToggle
 """Widget types supported by `Field.insert_addon`."""
 """Type alias for field kind specification.
 
@@ -219,7 +219,7 @@ class Field(EntryMixin, Frame):
         self._value = value
 
         self._entry: EntryWidget
-        self._addons: dict[str, Union[Button, Label, CheckToggle]] = {}
+        self._addons: dict[str, Button | Label | CheckToggle] = {}
 
         # layout
         label_text = self._label_text or ''

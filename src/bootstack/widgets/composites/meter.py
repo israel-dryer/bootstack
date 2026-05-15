@@ -866,10 +866,22 @@ class Meter(Frame):
             self._value_var.set(value_updated)
 
     def on_changed(self, callback: Callable[[Any], Any]) -> str:
-        """Bind a callback to the `<<Change>>` virtual event."""
+        """Register a callback for meter value changes.
+
+        Args:
+            callback: Called with a Tkinter event; `event.data["value"]` is the
+                new value, `event.data["prev_value"]` is the previous value.
+
+        Returns:
+            Bind ID — pass to `off_changed()` to unregister.
+        """
         return self.bind('<<Change>>', callback, add="+")
 
-    def off_changed(self, bind_id: str):
-        """Remove a previously registered `<<Change>>` callback."""
+    def off_changed(self, bind_id: str) -> None:
+        """Unregister a callback registered with `on_changed()`.
+
+        Args:
+            bind_id: The bind ID returned by `on_changed()`.
+        """
         self.unbind('<<Change>>', bind_id)
 

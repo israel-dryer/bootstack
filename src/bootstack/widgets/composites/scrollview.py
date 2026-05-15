@@ -18,9 +18,9 @@ class ScrollView(Frame):
     when the content exceeds the available space.
 
     Attributes:
-        canvas (Canvas): The underlying tkinter Canvas widget.
-        vertical_scrollbar (Scrollbar): The vertical scrollbar widget.
-        horizontal_scrollbar (Scrollbar): The horizontal scrollbar widget.
+        canvas: The underlying tkinter Canvas widget.
+        vertical_scrollbar: The vertical scrollbar widget.
+        horizontal_scrollbar: The horizontal scrollbar widget.
     """
 
     def __init__(
@@ -544,8 +544,8 @@ class ScrollView(Frame):
         """Add a widget to the scrollable area, or create and return a Frame.
 
         Args:
-            widget (Widget | None): The widget to add. If None, creates a Frame.
-            anchor (str): Anchor position for the widget in the canvas. Default is 'nw'.
+            widget: The widget to add. If None, creates a Frame.
+            anchor: Anchor position for the widget in the canvas. Default is 'nw'.
             **kwargs: When widget is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:

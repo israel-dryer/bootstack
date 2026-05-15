@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, Type, TypedDict, TYPE_CHECKING, Union
+from typing import Any, Callable, Literal, Type, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.button import Button
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     import tkinter as tk
 
 
-ButtonGroupItem = Union[Button, CheckToggle, RadioButton, RadioToggle]
+ButtonGroupItem = Button | CheckToggle | RadioButton | RadioToggle
 """Widget types supported by `ButtonGroup`."""
 
 
@@ -57,18 +57,13 @@ class ButtonGroup(Frame):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-
-        Other Parameters:
             orient: Layout orientation — 'horizontal' (default) or 'vertical'.
-            accent: The accent token (e.g., 'primary', 'success', 'danger').
-            variant: The style variant (e.g., 'solid', 'outline', 'ghost'). Defaults to 'solid'.
-            state: Initial state for all buttons — 'normal' (default) or 'disabled'.
-            surface: Optional surface token; otherwise inherited.
+            accent: Accent token (e.g., 'primary', 'success', 'danger').
+            variant: Style variant (e.g., 'solid', 'outline', 'ghost'). Default 'solid'.
+            state: Initial state for all buttons — 'normal' or 'disabled'. Default 'normal'.
             density: Widget density — 'default' or 'compact'.
-            padding: Frame padding. Defaults to 1.
-            width: Requested width in pixels.
-            height: Requested height in pixels.
-            style_options: Additional style options passed to child widgets.
+            **kwargs: Additional arguments passed to Frame (e.g., `surface`, `padding`,
+                `width`, `height`, `style_options`).
         """
         # Store ButtonGroup-specific options from explicit parameters
         # NOTE: _color and _variant are set AFTER super().__init__() because

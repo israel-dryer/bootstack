@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Callable, Literal, Optional, TypedDict, TYPE_CHECKING
+from typing import Any, Callable, Literal, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.core.mixins.ttk_state import TtkStateMixin
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class ButtonKwargs(TypedDict, total=False):
     # Standard ttk.Button options
     text: Any
-    command: Optional[Callable[[], Any]]
+    command: Callable[[], Any] | None
     image: Any
     icon: Any
     icon_only: bool

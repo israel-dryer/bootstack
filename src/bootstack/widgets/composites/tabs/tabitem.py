@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['TabItem']
 
 from tkinter import TclError, Variable
-from typing import Any, Callable, Literal, TYPE_CHECKING, Union
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.primitives.button import Button
@@ -23,10 +23,6 @@ class TabItem(CompositeFrame):
     TabItem extends CompositeFrame to provide a clickable tab with coordinated
     hover/pressed/focus states across all child widgets. It supports selection
     via signal/variable and optional close functionality.
-
-    Attributes:
-        selected (bool): Current selection state (read-only).
-        value: The value associated with this tab.
     """
 
     def __init__(
@@ -40,7 +36,7 @@ class TabItem(CompositeFrame):
         orient: Literal['horizontal', 'vertical'] = 'horizontal',
         signal: 'Signal[Any]' = None,
         command: Callable = None,
-        closable: Union[bool, Literal['hover']] = False,
+        closable: bool | Literal['hover'] = False,
         close_command: Callable = None,
         variant: Literal['pill', 'bar'] = 'bar',
         **kwargs

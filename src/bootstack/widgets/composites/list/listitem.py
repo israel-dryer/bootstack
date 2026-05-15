@@ -38,19 +38,18 @@ class ListItem(CompositeFrame):
 
         Args:
             master: Parent widget.
-            **kwargs: Additional keyword arguments:
-                show_separator (bool): Show separator line below the item. Defaults to False.
-                show_chevron (bool): Show chevron indicator on the right. Defaults to False.
-                focusable (bool): Whether this item can receive keyboard focus. Defaults to True.
-                hoverable (bool): Whether this item shows hover state. Defaults to False.
-                draggable (bool): Whether this item can be dragged. Defaults to False.
-                removable (bool): Whether this item can be removed. Defaults to False.
-                selection_mode (str): Selection mode ('none', 'single', 'multi'). Defaults to 'none'.
-                show_selection_controls (bool): Show checkbox/radio button. Defaults to False.
-                select_on_click (bool): Whether clicking selects the item. Defaults to True
-                    when selection_mode is 'single' or 'multi', False otherwise.
-                density (str): Visual density ('default' or 'compact'). Defaults to 'default'.
-                **kwargs: Additional arguments forwarded to CompositeFrame.
+            show_separator: Show separator line below the item. Default False.
+            show_chevron: Show chevron indicator on the right. Default False.
+            focusable: Whether this item can receive keyboard focus. Default True.
+            hoverable: Whether this item shows hover state. Default False.
+            draggable: Whether this item can be dragged. Default False.
+            removable: Whether this item can be removed. Default False.
+            selection_mode: Selection mode ('none', 'single', 'multi'). Default 'none'.
+            show_selection_controls: Show checkbox/radio button. Default False.
+            select_on_click: Whether clicking selects the item. Defaults to True when
+                selection_mode is 'single' or 'multi', False otherwise.
+            density: Visual density ('default' or 'compact'). Default 'default'.
+            **kwargs: Additional arguments forwarded to CompositeFrame.
         """
         # state tracking
         self._data = {}

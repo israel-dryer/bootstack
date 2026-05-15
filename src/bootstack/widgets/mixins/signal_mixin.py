@@ -37,9 +37,6 @@ class TextSignalMixin:
 
     This mixin delegates normalization and binding logic to the core signals capability.
 
-    Attributes:
-        textvariable (Variable): The underlying tk.Variable (usually StringVar).
-        textsignal (Signal): The reactive Signal wrapper with subscribe/map capabilities.
     """
 
     def __init__(self, *args, **kwargs):
@@ -157,9 +154,6 @@ class SignalMixin:
 
     This mixin delegates normalization and binding logic to the core signals capability.
 
-    Attributes:
-        variable (Variable): The underlying tk.Variable (IntVar, DoubleVar, BooleanVar, etc.).
-        signal (Signal): The reactive Signal wrapper with subscribe/map capabilities.
     """
 
     def __init__(self, *args, **kwargs):

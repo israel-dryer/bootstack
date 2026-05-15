@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['TabView']
 
 import tkinter as tk
-from typing import Callable, Literal, Union
+from typing import Callable, Literal
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.composites.tabs.tabs import Tabs
@@ -29,10 +29,10 @@ class TabView(Frame):
         variant: Literal['pill', 'bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
-        tab_width: Union[None, int, Literal['stretch']] = None,
+        tab_width: None | int | Literal['stretch'] = None,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        enable_closing: Union[bool, Literal['hover']] = False,
+        enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         accent: str = None,
         **kwargs
@@ -128,7 +128,7 @@ class TabView(Frame):
         text: str = "",
         icon: str | dict = None,
         page: tk.Widget = None,
-        closable: Union[bool, Literal['hover'], None] = None,
+        closable: bool | Literal['hover'] | None = None,
         close_command: Callable = None,
         command: Callable = None,
         **kwargs

@@ -6,7 +6,7 @@ both text and numeric values.
 """
 
 from tkinter import Event, TclError
-from typing import Any, Callable, Union, List
+from typing import Any, Callable
 
 from bootstack.core.localization import MessageCatalog, IntlFormatter
 from bootstack.widgets.primitives.spinbox import Spinbox
@@ -27,12 +27,12 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             self,
             master=None,
             *,
-            value: Union[int, float, str] = '',
+            value: int | float | str = '',
             value_format: str = None,
-            values: List[str] = None,
-            from_: Union[int, float] = None,
-            to: Union[int, float] = None,
-            increment: Union[int, float] = 1,
+            values: list[str] = None,
+            from_: int | float = None,
+            to: int | float = None,
+            increment: int | float = 1,
             wrap: bool = False,
             initial_focus: bool = False,
             allow_blank: bool = True,

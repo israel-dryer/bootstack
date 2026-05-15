@@ -71,13 +71,13 @@ class SideNavGroup(Frame):
         """Initialize a SideNavGroup.
 
         Args:
-            master (Master | None): Parent widget.
-            key (str): Unique identifier for this group.
-            text (str): Display text for the group.
-            icon (str | dict | None): Icon name or configuration dict.
-            signal (Signal | None): Reactive signal for selection state.
-            variable (Variable | None): Shared variable for selection tracking.
-            is_expanded (bool): Initial expansion state. Default False.
+            master: Parent widget.
+            key: Unique identifier for this group.
+            text: Display text for the group.
+            icon: Icon name or configuration dict.
+            signal: Reactive signal for selection state.
+            variable: Shared variable for selection tracking.
+            is_expanded: Initial expansion state. Default False.
             **kwargs: Additional arguments passed to Frame.
         """
         if not key:
@@ -333,7 +333,7 @@ class SideNavGroup(Frame):
         with the group's items.
 
         Args:
-            compact (bool): True for compact mode, False for full display.
+            compact: True for compact mode, False for full display.
         """
         if self._compact == compact:
             return

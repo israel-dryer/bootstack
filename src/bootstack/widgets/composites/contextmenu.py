@@ -5,7 +5,7 @@ radiobuttons, and separators.
 """
 
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
-from typing import Any, Callable, Literal, Union
+from typing import Any, Callable, Literal
 
 from bootstack.runtime.window_utilities import AnchorPoint
 from bootstack.widgets.types import WidgetDensity
@@ -28,7 +28,7 @@ ContextMenuTrigger = Literal[
 Pass `None` to disable auto-binding and manage activation in caller code.
 """
 
-ContextMenuItemResult = Union[Button, CheckToggle, RadioToggle, Separator, str]
+ContextMenuItemResult = Button | CheckToggle | RadioToggle | Separator | str
 """Return type for ContextMenu item-add and item-lookup operations.
 
 On Windows and Linux the result is the created widget. On macOS (native
@@ -377,7 +377,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
             self,
             text: str = None,
             value: Any = None,
-            variable: Union[StringVar, IntVar] = None,
+            variable: StringVar | IntVar = None,
             command: Callable = None,
             key: str = None
     ) -> RadioToggle:
@@ -1202,7 +1202,7 @@ class _NativeContextMenu(CustomConfigMixin):
             self,
             text: str = None,
             value: Any = None,
-            variable: Union[StringVar, IntVar] = None,
+            variable: StringVar | IntVar = None,
             command: Callable = None,
             key: str = None,
     ) -> str:

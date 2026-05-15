@@ -5,7 +5,7 @@ and an optional calendar picker button.
 """
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Iterable, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Iterable, Literal
 from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
@@ -104,7 +104,7 @@ class DateEntry(Field):
         """
         # Store before super().__init__ so property override is safe if called during init
         self._selection_mode = selection_mode
-        self._range_value: Optional[Tuple[date, date]] = None
+        self._range_value: tuple[date, date] | None = None
         self._value_format = value_format
 
         if picker_title is None:
@@ -229,7 +229,7 @@ class DateEntry(Field):
         return f"{start_str} – {end_str}"
 
     @staticmethod
-    def _coerce_date(value) -> Optional[date]:
+    def _coerce_date(value) -> date | None:
         """Coerce a date/datetime/ISO-string to a date, or return None."""
         if value is None:
             return None

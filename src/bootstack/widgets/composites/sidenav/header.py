@@ -40,8 +40,8 @@ class SideNavHeader(Frame):
         """Initialize a SideNavHeader.
 
         Args:
-            master (Master | None): Parent widget.
-            text (str): The header text to display.
+            master: Parent widget.
+            text: The header text to display.
             **kwargs: Additional arguments passed to Frame.
         """
         self._text = text

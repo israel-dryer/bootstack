@@ -5,7 +5,7 @@ __all__ = ['Tabs']
 
 import tkinter as tk
 from tkinter import Variable
-from typing import Any, Callable, Literal, TYPE_CHECKING, Union
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets.primitives.packframe import PackFrame
 from bootstack.widgets.primitives.frame import Frame
@@ -26,8 +26,8 @@ class Tabs(Frame):
     orientation, and styling of child TabItems.
 
     Attributes:
-        orient (str): The orientation of the tab bar ('horizontal' or 'vertical').
-        variant (str): The visual style variant ('pill' or 'bar').
+        orient: The orientation of the tab bar ('horizontal' or 'vertical').
+        variant: The visual style variant ('pill' or 'bar').
     """
 
     def __init__(
@@ -37,10 +37,10 @@ class Tabs(Frame):
         variant: Literal['pill', 'bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
-        tab_width: Union[None, int, Literal['stretch']] = None,
+        tab_width: None | int | Literal['stretch'] = None,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        enable_closing: Union[bool, Literal['hover']] = False,
+        enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         variable: Variable = None,
         signal: 'Signal[Any]' = None,
@@ -252,7 +252,7 @@ class Tabs(Frame):
         key: str = None,
         icon: str | dict = None,
         value: Any = None,
-        closable: Union[bool, Literal['hover']] = None,
+        closable: bool | Literal['hover'] | None = None,
         close_command: Callable = None,
         command: Callable = None,
         **kwargs

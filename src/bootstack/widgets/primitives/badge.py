@@ -18,25 +18,25 @@ class Badge(Label):
             are silently dropped at render time even though Label accepts them.
 
         Other Parameters:
-            text (str): Text to display on the badge.
-            anchor (str): Alignment of the badge content within its area.
-            justify (str): How to justify multiple lines of text.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
-            value_format (str | dict): Format specification for the badge value.
-            padding (int | tuple): Extra space around the badge content.
-            width (int): Width of the badge in characters.
-            wraplength (int): Maximum width before wrapping text.
-            font (str | Font): Font for the badge text.
-            foreground (str): Text color.
-            background (str): Background color.
-            relief (str): Border style.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            variant (str): Shape of badge. 'pill' or 'square' (default).
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            text: Text to display on the badge.
+            anchor: Alignment of the badge content within its area.
+            justify: How to justify multiple lines of text.
+            localize: Determines the widget's localization mode.
+            value_format: Format specification for the badge value.
+            padding: Extra space around the badge content.
+            width: Width of the badge in characters.
+            wraplength: Maximum width before wrapping text.
+            font: Font for the badge text.
+            foreground: Text color.
+            background: Background color.
+            relief: Border style.
+            state: Widget state.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            variant: Shape of badge. 'pill' or 'square' (default).
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         kwargs.setdefault('ttk_class', 'TBadge')
         kwargs.setdefault('anchor', 'center')

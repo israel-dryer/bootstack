@@ -31,7 +31,7 @@ class SideNavSeparator(Frame):
         """Initialize a SideNavSeparator.
 
         Args:
-            master (Master | None): Parent widget.
+            master: Parent widget.
             **kwargs: Additional arguments passed to Frame.
         """
         # Default padding for visual separation

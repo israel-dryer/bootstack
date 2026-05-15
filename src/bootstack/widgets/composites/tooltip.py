@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Misc
 from types import SimpleNamespace
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 from bootstack.constants import *
 from bootstack.runtime.toplevel import Toplevel
@@ -35,13 +35,13 @@ class ToolTip:
             text: str = "widget info",
             padding: int = 10,
             justify: Literal["left", "center", "right"] = "left",
-            accent: Optional[str] = None,
-            wraplength: Optional[int] = None,
+            accent: str | None = None,
+            wraplength: int | None = None,
             delay: int = 250,  # milliseconds
             image: Any = None,
-            anchor_point: Optional[AnchorPoint] = None,
-            window_point: Optional[AnchorPoint] = None,
-            auto_flip: Union[bool, Literal['vertical', 'horizontal']] = True,
+            anchor_point: AnchorPoint | None = None,
+            window_point: AnchorPoint | None = None,
+            auto_flip: bool | Literal['vertical', 'horizontal'] = True,
             **kwargs: Any,
     ) -> None:
         """Initialize a ToolTip instance for the specified widget.

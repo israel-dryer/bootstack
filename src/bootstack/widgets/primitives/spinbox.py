@@ -53,23 +53,23 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            from_ (float): Minimum value.
-            to (float): Maximum value.
-            increment (float): Step size between values.
-            values (list): Sequence of values to cycle through.
-            wrap (bool): Whether to wrap between min/max.
-            command (Callable): Callback when the value changes.
-            textvariable (Variable): Tk variable linked to the entry text.
-            textsignal (Signal): Reactive Signal linked to the text (auto-synced with textvariable).
-            format (str): Display format string.
-            width (int): Widget width in characters.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            density (str): The vertical and horizontal compactness, e.g. 'default', 'compact'.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            from_: Minimum value.
+            to: Maximum value.
+            increment: Step size between values.
+            values: Sequence of values to cycle through.
+            wrap: Whether to wrap between min/max.
+            command: Callback when the value changes.
+            textvariable: Tk variable linked to the entry text.
+            textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
+            format: Display format string.
+            width: Widget width in characters.
+            state: Widget state.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
+            density: Vertical and horizontal compactness, e.g. 'default', 'compact'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         if kwargs.get('density') == 'compact':
             kwargs['font'] = 'caption'

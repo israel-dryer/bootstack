@@ -49,18 +49,18 @@ class Scale(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin,
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            from_ (float): Minimum value.
-            to (float): Maximum value.
-            value (float): Initial value.
-            variable (Variable): Tk variable linked to the value.
-            signal (Signal): Reactive Signal linked to the value (auto-synced with variable).
-            orient (str): Orientation of the scale ('horizontal' or 'vertical').
-            length (int): Scale length in pixels.
-            command (Callable): Callback on value change.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            from_: Minimum value.
+            to: Maximum value.
+            value: Initial value.
+            variable: Tk variable linked to the value.
+            signal: Reactive Signal linked to the value (auto-synced with variable).
+            orient: Orientation of the scale ('horizontal' or 'vertical').
+            length: Scale length in pixels.
+            command: Callback on value change.
+            takefocus: Whether the widget participates in focus traversal.
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
 

@@ -53,17 +53,15 @@ class Toolbar(Frame):
         """Initialize a Toolbar.
 
         Args:
-            master (Master | None): Parent widget.
-            show_window_controls (bool): Show minimize/maximize/close buttons.
+            master: Parent widget.
+            show_window_controls: Show minimize/maximize/close buttons. Default False.
+            draggable: Enable window dragging by clicking and dragging the toolbar.
                 Default False.
-            draggable (bool): Enable window dragging by clicking and dragging
-                the toolbar. Default False.
-            button_variant (str): Default variant for toolbar buttons.
-                Default 'ghost'.
-            density (str): Button density for toolbar items. 'compact' for
-                smaller buttons, 'default' for standard size. Default 'default'.
-            padding (int | tuple): Toolbar padding. If None, uses density-based
-                default ((3, 1) for compact, 3 for default).
+            button_variant: Default variant for toolbar buttons. Default 'ghost'.
+            density: Button density for toolbar items. 'compact' for smaller buttons,
+                'default' for standard size. Default 'default'.
+            padding: Toolbar padding. If None, uses density-based default
+                ((3, 1) for compact, 3 for default).
             **kwargs: Additional arguments passed to Frame.
         """
         if padding is None:
@@ -198,12 +196,11 @@ class Toolbar(Frame):
         """Add a button to the toolbar.
 
         Args:
-            icon (str | dict | None): Icon name or configuration.
-            text (str | None): Button text. If None and icon provided,
-                creates icon-only button.
-            command (Callable | None): Button click callback.
-            accent (str | None): Button accent token.
-            variant (str | None): Button variant. Uses toolbar default if None.
+            icon: Icon name or configuration.
+            text: Button text. If None and icon provided, creates icon-only button.
+            command: Button click callback.
+            accent: Button accent token.
+            variant: Button variant. Uses toolbar default if None.
             **kwargs: Additional arguments passed to Button.
 
         Returns:
@@ -234,9 +231,9 @@ class Toolbar(Frame):
         """Add a label to the toolbar.
 
         Args:
-            text (str): Label text.
-            icon (str | dict | None): Optional icon.
-            font (str | None): Font specification.
+            text: Label text.
+            icon: Optional icon name or configuration.
+            font: Font specification.
             **kwargs: Additional arguments passed to Label.
 
         Returns:
@@ -263,8 +260,8 @@ class Toolbar(Frame):
         """Add a vertical separator to the toolbar.
 
         Args:
-            length (int | None): Fixed length in pixels. If None, stretches
-                to fill the toolbar height.
+            length: Fixed length in pixels. If None, stretches to fill the
+                toolbar height.
             **kwargs: Additional arguments passed to Separator.
 
         Returns:
@@ -306,7 +303,7 @@ class Toolbar(Frame):
         as its parent. Use `toolbar.content` to get the parent frame.
 
         Args:
-            widget (Widget): The widget to add.
+            widget: The widget to add.
             **pack_kwargs: Arguments passed to pack(). Defaults to side='left'.
 
         Returns:

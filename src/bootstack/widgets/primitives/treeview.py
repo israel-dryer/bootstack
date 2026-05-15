@@ -45,22 +45,22 @@ class TreeView(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Treev
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            columns (list): Sequence of column identifiers.
-            displaycolumns (list | str): Subset and order of columns to display.
-            show (str): Which parts to display (e.g., 'tree', 'headings').
-            height (int): Number of rows to display.
-            padding (int | tuple): Extra padding around the widget.
-            selectmode (str): Selection mode ('browse', 'extended', 'none').
-            style (str): Explicit ttk style name.
-            surface (str): Optional surface token; otherwise inherited.
-            density (str): The compactness of widget content ('default' or 'compact').
-            border_color (str): The color of the border around the table.
-            show_border (bool): Whether to show a border around the table.
-            open_icon (str | dict): The icon used for open state.
-            close_icon (str | dict): The icon used for close state.
-            select_background (str): A semantic color token used to set selection background color.
-            header_background (str): A semantic color token used to set the header background color.
-            style_options (dict): Optional dict forwarded to the style builder.
+            columns: Sequence of column identifiers.
+            displaycolumns: Subset and order of columns to display.
+            show: Which parts to display (e.g., 'tree', 'headings').
+            height: Number of rows to display.
+            padding: Extra padding around the widget.
+            selectmode: Selection mode ('browse', 'extended', 'none').
+            style: Explicit ttk style name.
+            surface: Optional surface token; otherwise inherited.
+            density: Compactness of widget content ('default' or 'compact').
+            border_color: Color of the border around the table.
+            show_border: Whether to show a border around the table.
+            open_icon: Icon used for the open state.
+            close_icon: Icon used for the close state.
+            select_background: Semantic color token for selection background.
+            header_background: Semantic color token for the header background.
+            style_options: Optional dict forwarded to the style builder.
         """
         kwargs.update(style_options=self._capture_style_options([
             'density',

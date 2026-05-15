@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from tkinter import TclError
 from tkinter.ttk import Widget
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from bootstack.core.validation import ValidationRule
 from bootstack.core.validation.types import RuleTriggerType, RuleType, ValidationOptions
@@ -37,9 +37,9 @@ class ValidationMixin(Widget):
         self._debounce_ids: dict[str, str] = {}
 
         # Optional convenience callbacks
-        self._on_invalid_command: Optional[Callable[[dict[str, Any]], None]] = None
-        self._on_valid_command: Optional[Callable[[dict[str, Any]], None]] = None
-        self._on_validated_command: Optional[Callable[[dict[str, Any]], None]] = None
+        self._on_invalid_command: Callable[[dict[str, Any]], None] | None = None
+        self._on_valid_command: Callable[[dict[str, Any]], None] | None = None
+        self._on_validated_command: Callable[[dict[str, Any]], None] | None = None
 
         super().__init__(*args, **kwargs)  # next in MRO must be a Tk/ttk widget
         self._setup_validation_binds()
@@ -167,7 +167,7 @@ class ValidationMixin(Widget):
     def _debounced(self, trigger: RuleTriggerType, ms: int) -> None:
         """Debounce validation to avoid excessive checks during typing."""
         key = f"debounce:{trigger}"
-        aid: Optional[str] = self._debounce_ids.get(key)
+        aid: str | None = self._debounce_ids.get(key)
         if aid:
             try:
                 self.after_cancel(aid)

@@ -49,20 +49,19 @@ class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            mode (str): Progress mode ('determinate' or 'indeterminate').
-            orient (str): Orientation of the bar ('horizontal' or 'vertical').
-            length (int): Requested length of the progress bar in pixels.
-            maximum (float): Maximum value.
-            value (float): Current value.
-            variable (Variable): Tk variable linked to the value.
-            signal (Signal): Reactive Signal linked to the value (auto-synced with variable).
-            phase (int): Animation phase for indeterminate mode.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            variant (str): Style variant, e.g. 'default', 'striped', 'thin'.
-                Combined style tokens (e.g., 'success', 'striped').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            mode: Progress mode ('determinate' or 'indeterminate').
+            orient: Orientation of the bar ('horizontal' or 'vertical').
+            length: Requested length of the progress bar in pixels.
+            maximum: Maximum value.
+            value: Current value.
+            variable: Tk variable linked to the value.
+            signal: Reactive Signal linked to the value (auto-synced with variable).
+            phase: Animation phase for indeterminate mode.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            variant: Style variant, e.g. 'default', 'striped', 'thin'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
 

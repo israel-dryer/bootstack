@@ -47,17 +47,8 @@ class PageStack(Frame):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-
-        Other Parameters:
-            takefocus (bool): If True, the widget can receive keyboard focus.
-            width (int): Width of the PageStack in pixels.
-            height (int): Height of the PageStack in pixels.
-            padding (int | tuple): Padding around the PageStack (can be a single value
-                or tuple of (left, top, right, bottom)).
-
-        Note:
-            Pages must be added using add() before navigation can occur.
-            The PageStack starts with an empty history and no current page.
+            **kwargs: Additional arguments passed to Frame (e.g., `takefocus`,
+                `width`, `height`, `padding`).
         """
         super().__init__(master, **kwargs)
         self._pages: dict[str, tkinter.Widget] = {}
@@ -69,9 +60,9 @@ class PageStack(Frame):
         """Add a page to the stack, optionally creating a Frame.
 
         Args:
-            key (str): Unique identifier for the page (required for navigation).
-            page (Widget | None): The widget to add. If None, creates a Frame.
-            **kwargs: When page is None, these are passed to Frame (e.g., padding, color, variant).
+            key: Unique identifier for the page (required for navigation).
+            page: The widget to add. If None, creates a Frame.
+            **kwargs: When page is None, these are passed to Frame (e.g., padding, accent, variant).
 
         Returns:
             Widget: The page widget (passed or created Frame).

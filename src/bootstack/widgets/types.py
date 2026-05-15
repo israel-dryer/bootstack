@@ -5,9 +5,9 @@ to ensure consistency and reduce import boilerplate.
 """
 
 import tkinter
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, Literal
 
-Master = Optional[tkinter.Misc]
+Master = tkinter.Misc | None
 """Parent widget. Pass any tkinter widget or `None` to use the default root window."""
 
 EventCallback = Callable[[tkinter.Event], None]

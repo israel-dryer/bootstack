@@ -131,9 +131,8 @@ class Form(Frame):
         - `field_textsignal(key)` — get Signal for a field's text
 
     Attributes:
-        data (dict): Current form data (read-only property).
-        value (dict): Alias for form data (get/set property).
-        result (Any): Result value set by button commands.
+        result: Result value set by button commands. None until a button with a
+            `result` or `command` is pressed.
 
     Args:
         master: Parent widget.

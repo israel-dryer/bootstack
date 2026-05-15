@@ -126,12 +126,12 @@ class ToggleGroup(Frame):
         self._signal = Signal.from_variable(value)
 
     @property
-    def signal(self) -> 'Signal[Any]':
+    def signal(self) -> Signal[Any]:
         """Get the signal."""
         return self._signal
 
     @signal.setter
-    def signal(self, value: 'Signal[Any]') -> None:
+    def signal(self, value: Signal[Any]) -> None:
         """Set the signal."""
         self._signal = value
         self._variable = value.var
