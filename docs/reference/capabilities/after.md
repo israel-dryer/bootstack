@@ -8,4 +8,5 @@ extensions).
 
 ::: bootstack.core.capabilities.after.AfterMixin
     options:
-      filters: ["public"]
+      filters:
+        - "public"

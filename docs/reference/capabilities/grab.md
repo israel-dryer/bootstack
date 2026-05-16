@@ -8,4 +8,5 @@ extensions).
 
 ::: bootstack.core.capabilities.grab.GrabMixin
     options:
-      filters: ["public"]
+      filters:
+        - "public"

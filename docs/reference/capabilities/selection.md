@@ -6,4 +6,5 @@ This capability documents one focused aspect of the **widget interface** (Tk/Tcl
 
 ::: bootstack.core.capabilities.selection.SelectionMixin
     options:
-      filters: ["public"]
+      filters:
+        - "public"
