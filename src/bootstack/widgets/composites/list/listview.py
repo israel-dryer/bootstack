@@ -1130,73 +1130,177 @@ class ListView(Frame):
     # Event handler API
 
     def on_selection_changed(self, callback: Callable) -> str:
-        """Bind to `<<SelectionChange>>`. Callback receives `event.data = None` (use `get_selected()` to get current selection)."""
+        """Register a callback for `<<SelectionChange>>` events.
+
+        Args:
+            callback: Called when selection changes. `event.data` is None — use
+                `get_selected()` to read the current selection.
+
+        Returns:
+            Bind ID — pass to `off_selection_changed()` to unsubscribe.
+        """
         return self.bind('<<SelectionChange>>', callback, add='+')
 
     def off_selection_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<SelectionChange>>`."""
+        """Unsubscribe from `<<SelectionChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_selection_changed()`. If None, removes all.
+        """
         self.unbind('<<SelectionChange>>', bind_id)
 
     def on_item_delete(self, callback: Callable) -> str:
-        """Bind to `<<ItemDelete>>`. Callback receives `event.data = dict` (the deleted record, with at least `id`)."""
+        """Register a callback for `<<ItemDelete>>` events (fires when an item is removed).
+
+        Args:
+            callback: Receives `event.data` — the deleted record dict with at least `id`.
+
+        Returns:
+            Bind ID — pass to `off_item_delete()` to unsubscribe.
+        """
         return self.bind('<<ItemDelete>>', callback, add='+')
 
     def off_item_delete(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemDelete>>`."""
+        """Unsubscribe from `<<ItemDelete>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_delete()`. If None, removes all.
+        """
         self.unbind('<<ItemDelete>>', bind_id)
 
     def on_item_delete_fail(self, callback: Callable) -> str:
-        """Bind to `<<ItemDeleteFail>>`. Callback receives `event.data = dict` (the record plus an `error: str` key)."""
+        """Register a callback for `<<ItemDeleteFail>>` events (fires when deletion raises an exception).
+
+        Args:
+            callback: Receives `event.data` — the record dict plus an `error: str` key.
+
+        Returns:
+            Bind ID — pass to `off_item_delete_fail()` to unsubscribe.
+        """
         return self.bind('<<ItemDeleteFail>>', callback, add='+')
 
     def off_item_delete_fail(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemDeleteFail>>`."""
+        """Unsubscribe from `<<ItemDeleteFail>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_delete_fail()`. If None, removes all.
+        """
         self.unbind('<<ItemDeleteFail>>', bind_id)
 
     def on_item_insert(self, callback: Callable) -> str:
-        """Bind to `<<ItemInsert>>`. Callback receives `event.data = dict` (the inserted record, with `id` populated)."""
+        """Register a callback for `<<ItemInsert>>` events (fires when an item is added).
+
+        Args:
+            callback: Receives `event.data` — the inserted record dict with `id` populated.
+
+        Returns:
+            Bind ID — pass to `off_item_insert()` to unsubscribe.
+        """
         return self.bind('<<ItemInsert>>', callback, add='+')
 
     def off_item_insert(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemInsert>>`."""
+        """Unsubscribe from `<<ItemInsert>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_insert()`. If None, removes all.
+        """
         self.unbind('<<ItemInsert>>', bind_id)
 
     def on_item_update(self, callback: Callable) -> str:
-        """Bind to `<<ItemUpdate>>`. Callback receives `event.data = dict` (the patch dict with `id` set)."""
+        """Register a callback for `<<ItemUpdate>>` events (fires when an item is updated).
+
+        Args:
+            callback: Receives `event.data` — the patch dict with `id` set to the
+                updated record's ID.
+
+        Returns:
+            Bind ID — pass to `off_item_update()` to unsubscribe.
+        """
         return self.bind('<<ItemUpdate>>', callback, add='+')
 
     def off_item_update(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemUpdate>>`."""
+        """Unsubscribe from `<<ItemUpdate>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_update()`. If None, removes all.
+        """
         self.unbind('<<ItemUpdate>>', bind_id)
 
     def on_item_click(self, callback: Callable) -> str:
-        """Bind to `<<ItemClick>>`. Callback receives `event.data = dict` (the record, with `selected`, `focused`, `item_index` injected)."""
+        """Register a callback for `<<ItemClick>>` events (fires when an item is clicked).
+
+        Args:
+            callback: Receives `event.data` — the record dict with `selected`,
+                `focused`, and `item_index` injected.
+
+        Returns:
+            Bind ID — pass to `off_item_click()` to unsubscribe.
+        """
         return self.bind('<<ItemClick>>', callback, add='+')
 
     def off_item_click(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemClick>>`."""
+        """Unsubscribe from `<<ItemClick>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_click()`. If None, removes all.
+        """
         self.unbind('<<ItemClick>>', bind_id)
 
     def on_item_drag_start(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragStart>>`. Callback receives `event.data = dict` (the record)."""
+        """Register a callback for `<<ItemDragStart>>` events (fires when a drag begins).
+
+        Args:
+            callback: Receives `event.data` — the dragged record dict.
+
+        Returns:
+            Bind ID — pass to `off_item_drag_start()` to unsubscribe.
+        """
         return self.bind('<<ItemDragStart>>', callback, add='+')
 
     def off_item_drag_start(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemDragStart>>`."""
+        """Unsubscribe from `<<ItemDragStart>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_drag_start()`. If None, removes all.
+        """
         self.unbind('<<ItemDragStart>>', bind_id)
 
     def on_item_drag(self, callback: Callable) -> str:
-        """Bind to `<<ItemDrag>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `y_current`)."""
+        """Register a callback for `<<ItemDrag>>` events (fires during a drag).
+
+        Args:
+            callback: Receives `event.data` — the record dict plus `source_index`,
+                `target_index`, and `y_current`.
+
+        Returns:
+            Bind ID — pass to `off_item_drag()` to unsubscribe.
+        """
         return self.bind('<<ItemDrag>>', callback, add='+')
 
     def off_item_drag(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemDrag>>`."""
+        """Unsubscribe from `<<ItemDrag>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_drag()`. If None, removes all.
+        """
         self.unbind('<<ItemDrag>>', bind_id)
 
     def on_item_drag_end(self, callback: Callable) -> str:
-        """Bind to `<<ItemDragEnd>>`. Callback receives `event.data = dict` (record plus `source_index`, `target_index`, `moved`, `y_start`, `y_end`)."""
+        """Register a callback for `<<ItemDragEnd>>` events (fires when a drag completes).
+
+        Args:
+            callback: Receives `event.data` — the record dict plus `source_index`,
+                `target_index`, `moved`, `y_start`, and `y_end`.
+
+        Returns:
+            Bind ID — pass to `off_item_drag_end()` to unsubscribe.
+        """
         return self.bind('<<ItemDragEnd>>', callback, add='+')
 
     def off_item_drag_end(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<ItemDragEnd>>`."""
+        """Unsubscribe from `<<ItemDragEnd>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_drag_end()`. If None, removes all.
+        """
         self.unbind('<<ItemDragEnd>>', bind_id)

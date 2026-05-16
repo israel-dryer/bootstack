@@ -41,22 +41,8 @@ new or unstarted pages.
 7. **Icon docs are self-sufficient.** Name Bootstrap Icons as the source, link
    https://icons.getbootstrap.com/, mention `ttkbootstrap_icons_bs` as an
    implementation detail only, document `bootstack gallery` as the in-project explorer.
-8. **Widget pages use a flat catalog structure with two tabs labeled
-   `=== "Usage"` and `=== "API"`.** Never "Documentation" — the entire site is
-   documentation, so the outer label is meta-redundant. No umbrella `## Appearance`
-   / `## Examples & patterns` / `## Behavior` headings — former subsections become
-   flat h2s. Template: `docs_templates/widget-page-template.md`. Tabs config
-   (`pymdownx.tabbed` extension + `content.tabs.link` theme feature) lives in
-   `zensical.toml`.
-9. **mkdocstrings strategy is two-track** (Session 13):
-   - **Composites** (Field-derived widgets, anything inheriting useful API from
-     bootstack source): per-page `inherited_members: true` + global `filters`
-     in `zensical.toml` that suppress `WidgetCapabilitiesMixin` noise
-     (winfo/pack/grid/bind/focus/grab/clipboard/after/bindtags methods).
-   - **Thin ttk wrappers** (Button, TreeView, Spinbox, Scale, Switch,
-     PanedWindow, etc.): still need hand-written stubs on the bootstack class.
-     Griffe cannot introspect tkinter stdlib regardless of config — confirmed
-     empirically. See `project_mkdocstrings_api_incomplete.md`.
+8. *(Superseded by decisions 21–26.)* Widget pages used a flat catalog + two-tab structure.
+9. *(Superseded by decisions 21–26.)* mkdocstrings two-track strategy.
 10. **"Consider a different control when..." is opt-in by widget family,
     not on every page.** Include only where readers can plausibly land on the
     wrong widget in a family of overlapping controls (TreeView/TableView/ListView,
@@ -74,36 +60,19 @@ new or unstarted pages.
     is auto-carried. All other existing screenshots are evaluated case-by-case
     during the page rewrite — drop the ones that no longer fit the new section
     structure or that the new content doesn't need.
-14. **Widget page intro is description-only.** Single sentence above the tabs
-    explaining what the widget is. No "when to use" content in the intro —
-    that lives inside the Usage tab under `## When to use`. Memory:
-    `feedback_widget_page_intro.md`.
-15. **No `## Usage` heading inside the Usage tab.** The tab label is the section
-    header. The quickstart code + screenshot lead the tab directly; the first h2
-    inside the tab is `## When to use`. Memory: `feedback_widget_tab_labels.md`.
-16. **Docstring conventions are codified** (template "Docstring conventions"
-    section). Class docstrings hold: 1-line summary, 1-paragraph description,
-    `Args:` on `__init__`, `Attributes:` ONLY for runtime-assigned names
-    invisible to griffe (e.g., `variable`, `signal` set via `self.x = ...`
-    in `__init__`). They do NOT hold: `!!! note "Events"` admonitions,
-    `Example:` blocks, behavioral prose, "See also" lists. Cookbook content
-    lives in the Usage tab. Verify via `grep '!!! note "Events"' src/...` and
-    inspect each `Attributes:` block.
-17. **Catalog sections earn their h2 only when they add content beyond a
-    Common options table row.** Don't include `## Density`, `## Surface`,
-    etc. as standalone sections if they would just restate the table row.
-    A section needs samples, callouts, edge cases, or a screenshot to justify
-    its own h2. Pre-publish checklist enforces this.
-18. **Widget-specific behavioral modes precede catalog-band Behavior sections.**
-    When a widget has defining variants (e.g., SelectBox's `enable_search`,
-    `allow_custom_values`), those sections appear *before* catalog Behavior
-    items (`## Events`, `## Validation`, `## Keyboard navigation`) so readers
-    scanning "what can this widget do?" hit the variant-defining content first.
-19. **API Reference sub-tree is cut once widget/dialog pages own their API
-    tab.** `docs/reference/widgets/*` deleted in Session 13. `docs/reference/dialogs/*`
-    will follow when dialog widget pages migrate to tabs. API Reference now
-    houses only non-widget surfaces: App, Style, Capabilities, Data, i18n,
-    Utils.
+14. *(Superseded.)* Widget page intro is description-only. Memory: `feedback_widget_page_intro.md`.
+15. *(Superseded.)* No `## Usage` heading inside the Usage tab. Memory: `feedback_widget_tab_labels.md`.
+16. **Docstring conventions are codified.** Class docstrings hold: 1-line summary,
+    1-paragraph description, `Args:` on `__init__`, `Attributes:` ONLY for
+    runtime-assigned names invisible to griffe (e.g., `self.x = ...` in `__init__`).
+    They do NOT hold: `!!! note "Events"` admonitions, `Example:` blocks, behavioral
+    prose, "See also" lists. Verify via `grep '!!! note "Events"' src/...`.
+17. *(Superseded.)* Catalog sections earn their h2 only when they add content.
+18. *(Superseded.)* Widget-specific behavioral modes precede catalog-band Behavior sections.
+19. **API Reference sub-tree is cut.** `docs/reference/widgets/*` recreated as simple
+    `:::` mkdocstrings blocks (Session 16). `docs/reference/dialogs/*` will follow
+    when dialog widget pages migrate. API Reference now houses non-widget surfaces too:
+    App, Style, Capabilities, Data, i18n, Utils.
 20. **No `!!! warning` callouts about invalid types when the type signature
     already restricts callers.** Reserve warnings for runtime gotchas the type
     system can't catch (deprecation, version-specific behavior, ordering
@@ -111,16 +80,14 @@ new or unstarted pages.
 
 21. **Three-layer documentation architecture (Session 14).** The docs have
     three distinct layers with distinct purposes:
-    - **API reference** — auto-generated from docstrings via mkdocstrings or
-      `docs_scripts/gen_api.py`. One page per class. Answers "what does this do
-      exactly?" Docstrings are the source of truth; keep them accurate.
+    - **API reference** — auto-generated from docstrings via mkdocstrings.
+      One page per class. Answers "what does this do exactly?" Docstrings are
+      the source of truth; keep them accurate.
     - **Examples** — runnable annotated programs organized by topic/scenario.
       Answers "how do I build X?" Topics are scenario-based ("Forms",
-      "Data entry", "Navigation patterns"), not widget-based. A widget appears
-      in multiple topics. Lives under `docs/examples/`.
+      "Data entry", "Navigation patterns"), not widget-based. Lives under `docs/examples/`.
     - **Guides** — cross-cutting conceptual explanations that span multiple
-      widgets (`validation.md`, `reactivity.md`, `localization.md`, etc.).
-      Answers "why does this work this way?" Not task instructions; not API
+      widgets. Answers "why does this work this way?" Not task instructions; not API
       reference. The existing guides are largely in this category already.
 
 22. **Widget pages are thin gateway pages (Session 14).** A widget page has
@@ -131,9 +98,7 @@ new or unstarted pages.
     3. `## When to use` — bullets + `### Consider a different control when...`
     4. `## See also` — three levels: **Examples**, **Guides**, **API reference**
     No `## Events`, `## Add-ons`, `## Validation`, `## Common options`, etc.
-    That content lives in examples (how-to) and API reference (lookup).
-    Template: `docs_templates/widget-page-template.md` (needs rewrite for
-    this new model — old template describes the superseded tabbed structure).
+    Template: `docs_templates/widget-page-template.md` ✅ written Session 15.
 
 23. **`## See also` has three levels (Session 14).** Every widget page's See
     also section links to all three layers:
@@ -143,40 +108,22 @@ new or unstarted pages.
     **Guides:** [Forms & Input](../../guides/forms-and-input.md) · ...
     **API reference:** [TextEntry](../../reference/widgets/textentry.md)
     ```
-    Not every level will be populated immediately — that is acceptable while
-    the examples section is being built.
+    Not every level will be populated immediately — acceptable while the examples
+    section is being built.
 
-24. **`docs_scripts/gen_api.py` generates widget API reference pages (Session 15).**
-    Run `python docs_scripts/gen_api.py` from the project root. Writes one
-    complete page per widget to `docs/reference/widgets/<slug>.md`. Widget
-    registry lives in the `WIDGETS` dict at the top of the script. Field-based
-    widgets must list `_FIELD` in `include_from`.
-
-    **⚠️ Current output is not satisfactory — plan to revise approach in Session 16.**
-    Current structure per page:
-    - mkdocstrings `:::` block for class description + constructor parameters
-      (members: false, merge_init_into_class: true)
-    - `## Properties` / `## Methods` / `## State` / `## Events` (h2, in TOC)
-    - `### member(sig)` static h3 markdown for each member (nested in TOC)
-
-    Problems with current approach: static h3 member entries look plain compared
-    to mkdocstrings rendering; no type detail on individual members; rich
-    mkdocstrings rendering for section content was abandoned because mkdocstrings
-    registers all headings at a flat page.toc level (breaking TOC hierarchy) and
-    the class description repeated in every section block regardless of
-    show_docstring option. Revisit before Session 16 begins.
-
-    `docs/reference/widgets/` nav sub-section is wired in `zensical.toml`.
-    Re-run the script whenever source docstrings change.
+24. **API reference pages use a single `:::` mkdocstrings block per widget (Session 16).**
+    `docs/reference/widgets/<slug>.md` — one file per widget, one `:::` block.
+    `zensical.toml` mkdocstrings config: `show_signature = false`,
+    `show_root_full_path = false`, `heading_level = 2`, `separate_signature = false`.
+    Re-run `python docs_scripts/gen_api.py` (or edit pages directly) whenever source
+    docstrings change. Nav sub-section wired in `zensical.toml`.
 
 25. **`field.py` event API is now fully griffe-visible (Session 14).**
     Replaced 12 dynamic `self.on_* = self._entry.on_*` assignments and the
     `add_validation_rule` closure with proper `def` stub methods on `Field`.
     Four TypedDicts added at module level: `InputEventData`, `ChangeEventData`,
-    `EnterEventData`, `ValidationEventData` — document event payload shapes
-    and are referenced in method docstrings. Every Field-based widget inherits
-    all event methods and `add_validation_rule` automatically. These methods
-    now appear in IDE hover, API snippets, and any mkdocstrings output.
+    `EnterEventData`, `ValidationEventData`. Every Field-based widget inherits all
+    event methods and `add_validation_rule` automatically.
 
 26. **Examples use a standard template (Session 15).** Each example page:
     title, one-sentence description, screenshot, `**Covers:**` inline list of
@@ -185,9 +132,19 @@ new or unstarted pages.
     be complete and runnable — no ellipses.
     Template: `docs_templates/example-page-template.md` ✅ written Session 15.
 
+27. **`on_*/off_*` event handler standard (Sessions 14–18).** Applied across the
+    full widget tree. Rules:
+    - Opener: `"Register a callback for \`<<EventName>>\` events."`
+    - Callback type: `Callable[[XEventData], None]` when TypedDict exists; `Callable` otherwise
+    - Returns: `"Bind ID — pass to \`off_*()\` to unsubscribe."`
+    - `off_*` opener: `"Unsubscribe from \`<<EventName>>\`."`
+    - `off_*` arg: `bind_id: str | None = None`, doc: `"ID returned by \`on_*()\`. If None, removes all."`
+    - TypedDict required for payloads with 2+ keys or complex types (list/dict values).
+    - Signal-based (RadioGroup, ToggleGroup, Tabs): same opener/returns pattern; `bind_id: Any`.
+
 ---
 
-## Current state (as of Session 15)
+## Current state (as of Session 18)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -202,7 +159,7 @@ new or unstarted pages.
 | `widgets/inputs/` | ✅ Accuracy-reviewed + source cleaned | Session 16 |
 | `widgets/layout/` | ✅ Source cleaned | Session 16 |
 | `widgets/selection/` | ✅ Accuracy-reviewed + source cleaned | Session 16 |
-| `widgets/data-display/` | ✅ 7/8 accuracy-reviewed | Old structure; tableview reserved for dedicated pass |
+| `widgets/data-display/` | ✅ 7/8 accuracy-reviewed | tableview reserved for dedicated pass |
 
 **Pending accuracy review:** dialogs/, forms/, navigation/, overlays/,
 primitives/, views/, plus `data-display/tableview.md`.
@@ -214,130 +171,23 @@ primitives/, views/, plus `data-display/tableview.md`.
 - **`textentry.md`, `passwordentry.md`, `pathentry.md`** — ✅ on thin template (Session 15).
   See also has placeholder example links.
 
-### API reference state (Session 16)
+### API reference state
 
-- `docs/reference/widgets/` — **48 pages** (simple `:::` mkdocstrings blocks,
-  one per widget). All action, input, layout, and selection widgets now covered.
+- `docs/reference/widgets/` — **48 pages** (single `:::` mkdocstrings blocks, one per widget).
+  All action, input, layout, and selection widgets covered.
   Remaining categories (data-display, navigation, views, forms, dialogs, overlays,
   primitives) still need pages.
-- Format settled on single `:::` block per page — clean, consistent, renders well.
-  The `gen_api.py` static-generation approach from Session 15 is superseded.
-- `zensical.toml` mkdocstrings config: `show_signature = false`,
-  `show_root_full_path = false`, `heading_level = 2`, `separate_signature = false`.
 
-### Session 17 source cleanups
+### Source — docstring state (complete as of Session 18)
 
-- **Docstring param style sweep completed** across ALL remaining widget modules not
-  covered in Session 16: composites (toolbar, toast, floodgauge, tooltip, pagestack,
-  scrollview, buttongroup, form, meter, numericentry, listitem, menubar, contextmenu,
-  field, dateentry), sidenav (item, view, separator, group, header), tabs (tabs,
-  tabitem, tabview), primitives (badge, label, entry, combobox, scale, progressbar,
-  treeview, spinbox, notebook), parts (textentry_part, numberentry_part,
-  spinnerentry_part), mixins (signal_mixin, validation_mixin), types.py.
-  `name (type): description` → `name: description` throughout.
-- **`Optional`/`Union` modernized** to pipe syntax across all remaining widget files.
-  44 files updated total this session.
-- **`Attributes:` blocks audited and fixed** — removed entries that were `@property`
-  or plain class-level attributes (griffe-visible). Affected: `Composite` class
-  constants + properties, `TextSignalMixin`/`SignalMixin` (all @property),
-  `CompositeFrame`, `TabItem` (selected/value are @property), `form.py` (data/value
-  are @property, result kept). Format-only fix (type stripped) on ScrollView, Tabs,
-  FloodGauge, LabeledScale.
-- **`on_*/off_*` standard applied** to Meter (`on_changed`/`off_changed`) and
-  Notebook (`on_tab_activated`, `on_tab_deactivated`, `on_tab_changed` and their
-  off_ counterparts). "Register a callback for…" opener, "Bind ID — pass to
-  off_*()" Returns.
-- **`Other Parameters:` → `Args:`** conversion for PageStack `__init__` and
-  ButtonGroup `__init__`.
-- **Stray "Combined style tokens" continuation lines removed** from Progressbar,
-  Notebook, Combobox, Entry primitives (missed in Session 16 pass).
-
-### Session 16 source cleanups
-
-- **Docstring param style normalized** across actions, inputs, layout, selection
-  widgets: `name (type): description` → `name: description` throughout. Type is
-  already in the signature; the inline annotation was redundant.
-- **`Attributes:` blocks audited** — removed entries that were `@property` (griffe-
-  visible). `Attributes:` now only lists runtime-assigned names invisible to griffe.
-- **Hanging "Combined style tokens" lines removed** from variant: param descriptions
-  in Button, CheckButton, RadioButton, OptionMenu, Frame, PanedWindow, Scrollbar.
-- **`on_*`/`off_*` event handler standard applied** to Accordion, Expander,
-  NumericEntry, OptionMenu, Calendar, RadioGroup, ToggleGroup. TypedDicts added for
-  multi-key payloads (`AccordionChangeEventData`, `ToggleEventData`,
-  `SelectedEventData`, `OptionMenuChangeEventData`, `DateSelectEventData`).
-  RadioGroup/ToggleGroup use Signal.subscribe (value direct, not Tk Event) — documented.
-- **`Optional`/`Union` modernized** to pipe syntax across GridFrame, PackFrame,
-  SpinnerEntry, TimeEntry, ScrollView, radiobutton.py, checkbutton.py, optionmenu.py,
-  calendar.py.
-- **`bootstyle=` legacy support removed** — see API gotchas above. Two latent
-  NameError bugs fixed in FloodGauge and Toast where `bootstyle` was referenced
-  without being in scope.
-- **Calendar source bug fixed**: `accent or bootstyle or PRIMARY` → `accent or PRIMARY`.
-- **`Accordion.items()` gains `expanded` filter param** — `items(expanded=True/False)`.
-  `@property expanded` removed (replaced by the filter).
-- **`delegate_*` docstrings added** to all `_delegate_*` methods that were missing one
-  across PasswordEntry, PathEntry, ScrolledText, and ScrollView.
-- **Reference pages created**: 48 total `docs/reference/widgets/` pages now exist.
-  All layout (12) and selection (9) pages added this session. All wired in `zensical.toml`.
-
-### Session 15 source cleanups
-
-- **`!!! note "Events"` sweep** — removed from all widget composites, primitives,
-  parts, mixins, and dialog source files. Zero remaining in `src/bootstack/`.
-- **`Example:` block sweep** — removed from class docstrings in sidenav, appshell,
-  menubar, toolbar, card, packframe, gridframe, and sidenav sub-widgets.
-- **`__init__` docstring prose stripped** — removed redundant summary/description
-  paragraphs from `__init__` docstrings in all 10 Field-based widgets (TextEntry,
-  PasswordEntry, PathEntry, NumericEntry, SpinnerEntry, DateEntry, TimeEntry,
-  ScrolledText, SelectBox, Field). `__init__` docstrings now begin directly with
-  `Args:`.
-- **Missing `on_*` stubs added**: `on_display_mode_changed` / `off_display_mode_changed`
-  (SideNav), `on_tab_closed` / `off_tab_closed` (Tabs, TabView), `on_tab_changed` /
-  `off_tab_changed` (TabView), `on_page_mount` / `off_page_mount` (PageStack).
-
-### Session 13 source cleanups
-
-- `field.py`: `variable` and `signal` converted from `__init__` assignments
-  to `@property` declarations (consistent with `entry_widget`, `label_widget`,
-  `message_widget`, `addons`, `value`). No external assignments existed.
-- All 8 Field-derived widget class docstrings stripped of `!!! note "Events"`
-  admonitions and redundant `Attributes:` blocks (Field, SelectBox, TextEntry,
-  PasswordEntry, PathEntry, NumericEntry, SpinnerEntry, DateEntry, TimeEntry).
-  ScrolledText kept its `Attributes:` block — `vertical_scrollbar` and
-  `horizontal_scrollbar` are legitimately runtime-bound (created via
-  `Scrollbar(...)` in `__init__`, can't easily be properties).
-
-### Session 13 docs infrastructure
-
-- **`zensical.toml`**: added `filters` list under
-  `[project.plugins.mkdocstrings.handlers.python.options]` to suppress
-  `WidgetCapabilitiesMixin` cross-cutting methods globally. Exact filter list
-  in the file. Carefully scoped to NOT filter `destroy`, `state`, `forget`,
-  `lift`, `lower`, `configure`, etc. because many composites override them
-  with widget-specific semantics (e.g., `Notebook.forget(tab)`).
-- **`zensical.toml`** nav: Widgets sub-section removed from `API Reference`.
-- **`docs/stylesheets/extra.css`**: added `.md-typeset .tabbed-content`
-  padding-top rule (1rem) so first content inside a tab doesn't sit flush
-  against the tab strip.
-- **`docs/reference/widgets/`**: all 80 stub `.md` files deleted (each was
-  `# Name\n\n::: bootstack...`). Inbound `### API reference` link blocks
-  stripped from 55 widget pages. `menubutton.md` kept its API reference
-  section but only with non-widget links (`reference/app/`).
-- **`docs/reference/core/`**: orphan directory (two 0-byte files) deleted.
-
-### Template refinements (Session 13)
-
-`docs_templates/widget-page-template.md` was updated with new rules surfaced
-during the SelectBox migration:
-
-- Intro-only description rule (settled decision #14)
-- Tab labels `=== "Usage"` / `=== "API"` (settled decision #8/#15)
-- No `## Usage` heading inside the Usage tab (settled decision #15)
-- Catalog-vs-table rule (settled decision #17)
-- Widget-specific behavior precedes catalog Behavior (settled decision #18)
-- **"Docstring conventions" section** added — what belongs in class/`__init__`
-  docstrings vs the Usage tab (settled decision #16)
-- Six new pre-publish checklist items reflect all of the above
+- ✅ `name (type): desc` → `name: desc` across all 44+ widget files
+- ✅ `Optional`/`Union` modernized to pipe syntax throughout
+- ✅ `Attributes:` blocks audited — only runtime-assigned names invisible to griffe remain
+- ✅ `!!! note "Events"` and `Example:` blocks removed from all class docstrings
+- ✅ `on_*/off_*` standard fully applied — all composites, primitives, SideNav,
+  Tabs, TabView, ListView, TableView, PageStack (Session 18)
+- ✅ TypedDicts added for TableView events (`TableSelectionEventData`,
+  `TableRowEventData`, `TableRowsEventData`) — Session 18
 
 ---
 
@@ -345,67 +195,44 @@ during the SelectBox migration:
 
 ### Architecture
 
-1. ✅ **Thin widget page template** — written Session 15.
-   `docs_templates/widget-page-template.md`
-
-2. ✅ **Example page template** — written Session 15.
-   `docs_templates/example-page-template.md`
+1. ✅ **Thin widget page template** — `docs_templates/widget-page-template.md`
+2. ✅ **Example page template** — `docs_templates/example-page-template.md`
 
 3. **Define the examples topic taxonomy.** Agree on top-level categories under
    `docs/examples/` (e.g. Forms, Data entry, Data display, Navigation patterns,
    Dialogs & overlays). Write `docs/examples/index.md`. Unblocks writing the
    first examples and populating widget page See also sections.
 
-4. ✅ **Docstring cleanup — all widget source files.** `!!! note "Events"` and
-   `Example:` blocks swept (Session 15). `__init__` prose stripped from Field-based
-   widgets (Session 15). `name (type):` param format removed from all 44 remaining
-   files (Session 17). `Attributes:` blocks audited across the full tree (Session 17).
-   `Optional`/`Union` modernized to pipe syntax across all widget modules (Session 17).
-   **Docstring sweep is now complete for `src/bootstack/widgets/`.**
+4. ✅ **Docstring cleanup — all widget source files.** Sweep complete as of Session 18.
+   See source state above.
 
-5. **Revise the API reference approach (Session 16 priority).** Current
-   `gen_api.py` output (static h3 markdown for member sections) is not
-   satisfactory. Constraints discovered in Session 15:
-   - mkdocstrings registers all headings at a flat `page.toc` level, breaking
-     TOC nesting when using `:::` blocks for section content.
-   - `show_docstring: false` is not a valid mkdocstrings-python option — class
-     description repeats in every section block.
-   - Full mkdocstrings rendering for individual members could not be achieved
-     while also maintaining correct TOC hierarchy.
-   Before resuming widget page migrations, agree on the final approach. Options
-   to evaluate: single `:::` block with `group_by_category`, per-member `:::`
-   blocks at individual member paths, or a richer static generation from griffe
-   with formatted type info.
+5. ✅ **API reference approach settled (Session 16).** Single `:::` mkdocstrings block
+   per page. `add_validation_rule` kwargs appear in full via the method docstring
+   render. No further work needed.
 
 6. **Migrate widget pages to thin template.** Textentry, passwordentry, pathentry
    done. ~76 others + selectbox.md still on old structure. Blocked on item 3
-   (taxonomy) for See also → Examples links, and item 5 (API reference approach)
-   for See also → API reference links.
-
-7. **`add_validation_rule` kwargs undocumented in reference pages.** The static
-   h3 heading shows `add_validation_rule(rule_type)` with `**kwargs` hidden.
-   Full options (pattern=, min=, max=, other_field=, func=, message=) are in
-   the method docstring. Address as part of item 5 revision.
+   (taxonomy) for See also → Examples links.
 
 ### Infrastructure
 
-8. **Screenshot PNGs** for `spacing-and-alignment.md` — user-side capture:
+7. **Screenshot PNGs** for `spacing-and-alignment.md` — user-side capture:
    - `docs/assets/guides-spacing-settings-panel.png`
    - `docs/assets/guides-spacing-toolbar.png`
    - `docs/assets/guides-spacing-master-detail.png`
    - `docs/assets/guides-spacing-gallery-dense.png`
 
-9. **CLI source bugs** (branch `fix/cli-add-stale-hints` off `main`, commit
+8. **CLI source bugs** (branch `fix/cli-add-stale-hints` off `main`, commit
    `13b07bb`, ready to PR):
    - `src/bootstack/cli/add.py:308` prints `ttk.App(theme="...")` → should be `bs.App`
    - `src/bootstack/cli/add.py:343` prints `ttk.mc('Hello')` → should be `bs.L()`
 
-10. **Open the docs-restructure PR** (`docs/restructure` → `main`) once the
-    widget page migration is reasonably complete.
+9. **Open the docs-restructure PR** (`docs/restructure` → `main`) once the
+   widget page migration is reasonably complete.
 
 ### Source bugs
 
-11. **Source bugs to fix** — see memory `project_api_gaps.md` for full list.
+10. **Source bugs to fix** — see memory `project_api_gaps.md` for full list.
     Key items:
     - `ToggleGroup` `padding=` kwarg causes `TypeError` (field.py insert_addon)
     - `insert_addon` passes `density=` to `CheckButton` causing `TclError`
@@ -414,7 +241,7 @@ during the SelectBox migration:
     - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
     - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
 
-12. **Badge working-tree state, parked.** `docs_scripts/widgets_badge_examples.py`
+11. **Badge working-tree state, parked.** `docs_scripts/widgets_badge_examples.py`
     uses icon kwargs that don't work; `widgets_badge_quickstart.py` and
     `docs/assets/widgets-badge-quickstart.png` are untracked. Resolve when
     convenient.
@@ -494,11 +321,8 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 - **`insert_addon` with `bs.CheckButton` raises `TclError`** — `density=` leaks to ttk.
   `bs.CheckToggle` is the supported toggle addon type per `Field.insert_addon`'s
   type signature.
-- **`Field.variable` / `Field.signal` are `@property` (Session 13 refactor).**
-  Previously bare attribute assignments in `__init__`; now properties consistent
-  with `entry_widget`, `label_widget`, `message_widget`, `addons`, `value`.
-  Functionally identical; read-only. They're now visible to griffe and render
-  as proper "property" headings on the API tab.
+- **`Field.variable` / `Field.signal` are `@property`.** Read-only; visible to griffe
+  and render as proper "property" headings in the API reference.
 - **Localization domain mismatch:** `bootstack add i18n` scaffolds domain
   `"messages"`, but `bs.App` auto-inits domain `"bootstack"`. User-app translations
   are silently inactive until the app re-calls
@@ -513,9 +337,7 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 - **`RadioGroup.set()` validates against keys, not values.** When `key=` differs
   from `value=` in `add()`, pass the key to `set()`, not the value.
 - **`bootstyle=` is not a supported public parameter.** Use `accent=` and `variant=`
-  instead. The internal style engine modules (`BootstyleBuilderBase`, `bootstyle_builder_*`,
-  `_delegate_bootstyle` in wrapper_base) keep the name internally — those are not public.
-  Legacy compat code was removed in Session 16.
+  instead. Legacy compat code removed in Session 16.
 - **`Accordion.items(expanded=True/False)` filters by expansion state.** Pass `True` for
   expanded-only, `False` for collapsed-only, `None` (default) for all.
 
@@ -523,247 +345,80 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 
 ## Handoff log
 
+### Session 18 — on_*/off_* standard completion + CLAUDE.md optimization (2026-05-16)
+
+Completed the `on_*/off_*` event handler docstring standard across the remaining
+widget files identified in Session 17's "what's NOT done" list.
+
+**Files updated:** `sidenav/view.py`, `tabs/tabs.py`, `tabs/tabview.py`,
+`composites/pagestack.py`, `composites/list/listview.py`,
+`composites/tableview/tableview.py`.
+
+**Changes per file:**
+- `sidenav/view.py`: Added `Callable` import. Fixed all 4 event pairs
+  (`on_selection_changed`, `on_back_requested`, `on_pane_toggled`,
+  `on_display_mode_changed`) — opener/Returns/type annotations/off_* Args.
+- `tabs/tabs.py`: Fixed `on_tab_added`, `on_tab_closed` (Tk events) and
+  `on_tab_changed` (Signal-based).
+- `tabs/tabview.py`: Added `Any` import. Fixed `on_page_changed`, `on_tab_added`,
+  `on_tab_changed`, `on_tab_closed`.
+- `pagestack.py`: Fixed `on_page_changed`, `on_page_mount` — proper opener
+  and Returns; `off_*` now have Args docs.
+- `listview.py`: Expanded all 9 single-line event docstrings to full
+  Args/Returns format.
+- `tableview.py`: Added `from typing import Callable` and `TypedDict` to
+  `typing_extensions` import. Added three TypedDicts (`TableSelectionEventData`,
+  `TableRowEventData`, `TableRowsEventData`). Expanded all 8 event pair docstrings
+  with typed callback signatures.
+
+**CLAUDE.md:** Condensed historical session notes (10–14), removed superseded
+decision text from #8/#9/#14/#15/#17/#18, updated decision #24 to reflect
+Session 16 resolution, added settled decision #27 (on_*/off_* standard), updated
+current state and open items to reflect completion.
+
+**What's NOT done:**
+- Examples taxonomy and `docs/examples/index.md`
+- ~76 widget page migrations to thin template
+- API reference pages for data-display, navigation, views, forms, dialogs,
+  overlays, primitives categories
+
+---
+
 ### Session 17 — Docstring sweep completion across all widget modules (2026-05-15)
 
-A focused cleanup session that completed the docstring style sweep started in Session 16,
-extending it to every remaining file in `src/bootstack/widgets/`.
+Completed the docstring style sweep started in Session 16, extending it to every
+remaining file in `src/bootstack/widgets/`.
 
-**1. `name (type): desc` → `name: desc` everywhere.** 44 files updated. The sweep now
-covers the full widget tree: all composites (including sidenav, tabs, appshell, toolbar,
-toast, floodgauge, tooltip, pagestack, scrollview, buttongroup, form, meter, numericentry,
-listitem, menubar, contextmenu, field, dateentry), all primitives (badge, label, entry,
-combobox, scale, progressbar, treeview, spinbox, notebook), all parts and mixins.
+1. `name (type): desc` → `name: desc` in 44 files (full widget tree).
+2. `Optional`/`Union` → pipe syntax throughout; `types.py` updated.
+3. `Attributes:` blocks audited — only legitimately runtime-assigned names kept.
+4. `on_*/off_*` standard applied to Meter and Notebook.
+5. `Other Parameters:` → `Args:` for PageStack and ButtonGroup `__init__`.
+6. Stray "Combined style tokens" lines removed from Progressbar, Notebook,
+   Combobox, Entry primitives.
 
-**2. `Optional`/`Union` → pipe syntax.** All remaining widget files modernized. types.py
-`Master = Optional[tkinter.Misc]` → `Master = tkinter.Misc | None` and `Optional`/`Union`
-imports removed from every affected file.
+---
 
-**3. `Attributes:` block audit.** Rules applied consistently: keep only runtime-assigned
-names invisible to griffe (`self.x = ...` in `__init__`). Removed: Composite class
-constants and `selected`/`disabled` @property; TextSignalMixin/SignalMixin (all @property);
-CompositeFrame `selected`/`disabled`; TabItem `selected`/`value`; Form `data`/`value`.
-Format-only fix (type stripped) on ScrollView, Tabs, FloodGauge, LabeledScale, FloodGauge.
+### Session 16 — Source cleanup + API reference pages (2026-05-14)
 
-**4. `on_*/off_*` standard applied** to Meter and Notebook. Meter gains proper payload
-documentation. Notebook's six tab lifecycle methods updated to "Register a callback for…"
-opener with "Bind ID — pass to off_*()" Returns.
+1. Docstring param style normalized across actions, inputs, layout, selection widgets.
+2. `Attributes:` blocks audited — `@property` entries removed.
+3. `on_*/off_*` standard applied to Accordion, Expander, NumericEntry, OptionMenu,
+   Calendar, RadioGroup, ToggleGroup. TypedDicts added for multi-key payloads.
+4. `Optional`/`Union` modernized to pipe syntax across GridFrame, PackFrame, etc.
+5. `bootstyle=` legacy support removed; two NameError bugs fixed.
+6. Calendar source bug fixed. `Accordion.items()` gains `expanded=` filter param.
+7. **48 `docs/reference/widgets/` pages created** (single `:::` block each).
+   API reference format settled — supersedes `gen_api.py` static approach.
 
-**5. Structural fixes.** `Other Parameters:` → `Args:` for PageStack and ButtonGroup
-`__init__`. Stray "Combined style tokens" continuation lines removed from Progressbar,
-Notebook, Combobox, Entry. `ButtonGroupItem` and `ContextMenuItemResult` type aliases
-modernized to pipe syntax.
+---
 
-**What's NOT done in Session 17:**
-- `on_*/off_*` standard not yet applied to SideNav, Tabs/TabView, ListView, TableView,
-  PageStack event handlers (docstring format correct but opener/Returns not standardized)
-- Remaining widget page migrations (~76 pages on old structure)
-- Examples taxonomy and index.md
+### Sessions 10–15 — Foundation work (2026-05-05 to 2026-05-13)
 
-### Session 15 — Templates, docstring sweep, page migrations, API reference iteration (2026-05-13)
-
-A wide-ranging session that completed several infrastructure items from Session 14
-and ran into significant friction on the API reference page format.
-
-**1. Templates written.** Both `docs_templates/widget-page-template.md` (thin
-gateway model, ~40 lines, four sections) and `docs_templates/example-page-template.md`
-(title, description, screenshot, Covers, code, Walkthrough, See also) written and
-committed. Old tabbed template replaced.
-
-**2. Docstring sweep — all source files.** `!!! note "Events"` admonitions removed
-from 27 widget files and 4 dialog files. `Example:` blocks removed from class
-docstrings in 11 files. `__init__` docstring prose (redundant summary/description)
-stripped from 10 Field-based widget files — `__init__` now begins with `Args:` only.
-Missing `on_*` / `off_*` stubs added to SideNav, Tabs, TabView, PageStack.
-
-**3. Widget page migrations.** textentry.md, passwordentry.md, pathentry.md trimmed
-to thin template. See also sections use placeholder example links.
-
-**4. API reference — extensive iteration, unsatisfactory result.** The session
-spent significant time evolving the API reference approach:
-- Started with mkdocstrings `:::` on standalone `docs/reference/widgets/` pages.
-- Switched to static table generation via `gen_api.py` (Methods/State/Events grouped).
-- Switched back to mkdocstrings after user preferred standard format.
-- Iterated through multiple mkdocstrings config changes (heading_level, show_root_full_path,
-  show_root_heading, separate_signature, show_signature) to fix duplication and TOC issues.
-- Discovered mkdocstrings registers all headings at a flat page.toc level — multi-block
-  `:::` approaches cannot achieve proper TOC nesting.
-- Final state: `gen_api.py` generates pages with a mkdocstrings class block at the
-  top (description + parameters) and static h3 markdown for Properties/Methods/State/Events
-  sections. TOC nesting is correct. But member entries are plain static markdown without
-  rich type rendering.
-- **User is not happy with the result.** Plan to revisit the approach in Session 16
-  before continuing widget page migrations. See open item #5.
-
-**zensical.toml mkdocstrings config as of Session 15:**
-`show_signature = false`, `show_root_full_path = false`, `heading_level = 2`,
-`separate_signature = false`, `show_root_heading = false` (global default).
-
-**What's NOT done in Session 15:**
-- Examples taxonomy and index.md
-- Remaining ~76 widget page migrations
-- Thin ttk wrapper docstring cleanup
-- API reference approach finalised (open item #5)
-
-### Session 14 — Architecture pivot + Field API improvements (2026-05-13)
-
-The session began as a Field-based widget migration (TextEntry, PasswordEntry,
-PathEntry) but evolved into a fundamental rethink of the documentation
-architecture, producing both source improvements and a new docs strategy.
-
-**1. Field event API made griffe-visible.** Replaced 12 dynamic
-`self.on_* = self._entry.on_*` instance assignments in `Field.__init__` with
-proper `def` stub methods on the class. Added four TypedDicts
-(`InputEventData`, `ChangeEventData`, `EnterEventData`, `ValidationEventData`)
-at module level to document event payload shapes. Replaced the
-`add_validation_rule` closure with a proper stub documenting all rule types
-and kwargs. Every Field-based widget now inherits these methods and they are
-visible to griffe, IDEs, and the API snippet generator.
-
-**2. Three Field-based widget pages restructured.** `textentry.md`,
-`passwordentry.md`, `pathentry.md` migrated from old umbrella-heading
-structure to flat sections, accurate events with payload shapes documented,
-new `## Common options` tables, no tabs. These are in a transitional state —
-comprehensive content that will be trimmed to the thin template once examples
-are written.
-
-**3. `docs_scripts/gen_api.py` — static API snippet pipeline.** Griffe-based
-script that generates `docs/snippets/api/<slug>.md` for 9 Field-based widgets.
-Output structure: `## API reference` wrapper (h2 TOC landmark) containing
-`### Parameters`, `### Properties`, `### Methods` tables. Run with
-`python docs_scripts/gen_api.py`. Added `pymdownx.snippets` to `zensical.toml`
-to enable `--8<-- "snippets/api/..."` includes. Solved the mkdocstrings TOC
-navigation problem by generating static markdown.
-
-**4. Architecture pivot to three-layer docs model.** Through iterative design
-discussion, concluded that widget pages have been failing because they try to
-serve three audiences simultaneously (decision aid, task guide, API lookup).
-Settled on a clean three-layer separation: thin widget pages (orientation +
-quickstart + when to use + see also), examples organised by topic/scenario,
-API reference from docstrings. Widget pages are gateway pages — ~40 lines —
-not usage manuals. See decisions 21–26.
-
-**What's NOT done in Session 14:**
-- Thin widget page template not yet written
-- Example page template not yet written
-- Topics taxonomy not yet defined
-- Widget pages not yet trimmed to thin model
-- Docstring cleanup pass across all widgets not done
-- Session 14 changes not yet committed
-
-### Session 10 — Localization guide rewrite (2026-05-05)
-Rewrote `guides/localization.md` end-to-end; old version documented a fictional
-JSON-based API. Source-verified against `core/localization/`, `widgets/mixins/`,
-and `runtime/app.py`. Fixed CLI source bugs on separate branch
-`fix/cli-add-stale-hints` (ready to PR).
-
-### Session 11 — Widget doc accuracy review (2026-05-07)
-Started systematic accuracy review of all widget docs using parallel eval agents.
-Each page is evaluated against its source (Critical / Important / Minor findings),
-then fixed in a parallel write pass.
-
-**Completed:** actions/ (5 pages), inputs/ (10 pages), selection/ (10 pages),
-data-display/ (7/8 pages — tableview.md deferred).
-
-**Key systemic fixes applied across many pages:**
-- `<<Changed>>` → `<<Change>>`, `<<Validated>>` → `<<Validate>>` (event names)
-- `text=signal` → `textsignal=signal` (label/badge reactivity)
-- Removed fabricated Signal reactivity from Meter, FloodGauge (no SignalMixin)
-- All deprecated Meter params replaced with real API
-- `bs.Treeview` → `bs.TreeView` (class name fix)
-- Removed `on_increment`/`on_decrement` from SpinnerEntry (don't exist there)
-- Fixed `on_selection_change` → `on_selection_changed` on ListView
-- Added `tag_configure` section to TreeView (the reason to use it over TableView)
-- `value=None` is NOT indeterminate on CheckButton/CheckToggle — it's unchecked
-
-### Session 12 — Structural sweeps + template design (2026-05-12)
-
-Three structural sweeps applied to already-reviewed widget pages:
-
-1. **Bullet → table conversions** — `ae9c578`.
-2. **"Consider a different control when..." normalization** across all 63
-   widget pages — `883ac9a`.
-3. **Badge icon misrepresentation fix** — `d1c46f9`.
-
-Designed the **widget page template** (`docs_templates/widget-page-template.md`)
-and committed the tabs infrastructure as `a611fb7` (gated on mkdocstrings fix).
-
-### Session 13 — mkdocstrings resolution + first migration + cleanup (2026-05-12)
-
-The biggest cross-cutting session of the docs initiative. Multi-layered work
-that unblocked the migration, validated the template end-to-end, and
-opportunistically cleaned source inconsistencies.
-
-**1. mkdocstrings investigation and resolution.** Empirically tested every
-listed option from `project_mkdocstrings_api_incomplete.md` and discovered the
-memory's framing was incomplete: griffe doesn't introspect tkinter regardless
-of `inherited_members` flag. Two-track resolution applied (settled decision #9):
-composites get per-page `inherited_members: true` + a global `filters` list in
-`zensical.toml`; thin ttk wrappers need hand-written stubs (deferred). Memory
-updated.
-
-**2. SelectBox migrated as the pilot widget page.** First end-to-end pass
-through the template. Surfaced four template-level issues that became settled
-decisions during the migration:
-- Intro should be description-only, not "what + when" (decision #14)
-- Tab labels should be "Usage"/"API", not "Documentation"/"API" (decision #8 update + #15)
-- No `## Usage` heading inside the Usage tab (decision #15)
-- Catalog sections need to add content beyond a Common options table row
-  (decision #17)
-Plus the discovery that defining behavioral modes (search/custom values) should
-precede catalog Behavior sections (decision #18). Add-ons section added after
-verifying `Field.insert_addon` semantics. Density and Popup activation
-dropped as filler.
-
-**3. Field source cleanup (cascade from API tab review).** During the
-SelectBox API tab review, noticed `variable` and `signal` rendered via
-`Attributes:` docstring block while everything else was `@property`. Traced to
-inconsistent Field source. Converted both to `@property` (no callers
-assigned to them — verified across src/ and tests/). Then swept all 8
-Field-derived widget class docstrings stripping `!!! note "Events"`
-admonitions and redundant `Attributes:` blocks. Codified "Docstring
-conventions" in the template (decision #16). ScrolledText kept its Attributes
-block — legitimate use case (scrollbars created with side effects in
-`__init__`).
-
-**4. API Reference > Widgets sub-tree cut** (decision #19). Once widget
-pages own their API tab, the auto-gen `reference/widgets/` is redundant and
-already drifting (composite widget pages had `inherited_members: true`; the
-reference pages didn't). Stripped `### API reference` sections from 55 widget
-pages (one inline `!!! link` callout in `contextmenu.md` too), deleted 80
-stub `.md` files, removed the Widgets sub-section from `zensical.toml` nav.
-Then deleted the orphan `docs/reference/core/` directory (two 0-byte files,
-no inbound references). API Reference now houses non-widget surfaces only.
-Dialogs sub-tree will follow when dialog widget pages migrate.
-
-**5. CSS spacing fix.** Added two rules in `docs/stylesheets/extra.css` to
-give the tabbed content panel 1rem of top padding (and zero out the first
-child's margin so it doesn't compound). Resolves the visual issue where the
-first piece of content inside a tab sits flush against the tab strip.
-
-**6. Template iterations.** `docs_templates/widget-page-template.md` now
-captures every Session 13 settled decision plus six new pre-publish checklist
-items.
-
-**7. Four memory files updated/added:**
-- `project_mkdocstrings_api_incomplete.md` — rewritten with the empirical
-  two-track resolution
-- `feedback_widget_page_intro.md` — new (decision #14)
-- `feedback_widget_tab_labels.md` — new (decision #15)
-- `feedback_no_type_warnings.md` — new (decision #20)
-
-**Design conversation arc:** unusually wide-ranging session because validating
-the template required iterating both the template and the page being
-migrated, which surfaced source inconsistencies, which required cleanup,
-which exposed the API Reference duplication. Each step had implications for
-the prior step. Net result: pilot validated, template robust, source cleaner,
-docs structure simpler.
-
-**What's NOT done in Session 13:**
-- Other widget pages (still ~79 to migrate)
-- `inherited_members: true` opt-in on other Field-based reference targets
-  (deferred — those reference files no longer exist; the opt-in lands on
-  each widget's API tab during its individual migration)
-- Thin ttk wrapper Track A stubs
-- Dialogs migration + reference/dialogs/ cut
-- TOC band grouping / in-page section dividers (deferred until more pages
-  to judge from)
+Key outcomes now codified in settled decisions:
+- **Session 10:** Localization guide rewritten. CLI bug branch `fix/cli-add-stale-hints` ready to PR.
+- **Session 11:** Systematic widget doc accuracy review — actions, inputs, selection, data-display (7/8).
+- **Session 12:** Structural sweeps (bullet→table, "consider a different control" normalization, badge fix). Widget page template v1 designed.
+- **Session 13:** mkdocstrings two-track resolution. SelectBox migrated as pilot. Field `variable`/`signal` converted to `@property`. API Reference > Widgets sub-tree cut. CSS spacing fix. Docstring conventions codified (decision #16).
+- **Session 14:** Architecture pivot to three-layer docs model (decisions 21–26). Field event API made griffe-visible with `def` stubs + TypedDicts.
+- **Session 15:** Thin widget page template and example page template written. Docstring sweep — `!!! note "Events"` and `Example:` blocks removed. Three widget pages migrated (textentry, passwordentry, pathentry).

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from tkinter import Variable
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from typing_extensions import TypedDict, Unpack
 
@@ -832,64 +832,81 @@ class SideNav(Frame):
 
     # --- Event Binding Helpers ---
 
-    def on_selection_changed(self, callback) -> str:
-        """Bind to `<<SelectionChanged>>`.
+    def on_selection_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<SelectionChanged>>` events.
 
         Args:
-            callback: Function to call when selection changes.
+            callback: Receives `event.data = {'key': str}` — the newly selected
+                item key, or an empty string when nothing is selected.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_selection_changed()` to unsubscribe.
         """
         return self.bind('<<SelectionChanged>>', callback, add='+')
 
-    def off_selection_changed(self, bind_id: str = None) -> None:
-        """Unbind from `<<SelectionChanged>>`."""
-        self.unbind('<<SelectionChanged>>', bind_id)
-
-    def on_back_requested(self, callback) -> str:
-        """Bind to `<<BackRequested>>`.
+    def off_selection_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<SelectionChanged>>`.
 
         Args:
-            callback: Function to call when back button is clicked.
+            bind_id: ID returned by `on_selection_changed()`. If None, removes all.
+        """
+        self.unbind('<<SelectionChanged>>', bind_id)
+
+    def on_back_requested(self, callback: Callable) -> str:
+        """Register a callback for `<<BackRequested>>` events (fires when the back button is clicked).
+
+        Args:
+            callback: Called when the back button is clicked. `event.data` is None.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_back_requested()` to unsubscribe.
         """
         return self.bind('<<BackRequested>>', callback, add='+')
 
-    def off_back_requested(self, bind_id: str = None) -> None:
-        """Unbind from `<<BackRequested>>`."""
-        self.unbind('<<BackRequested>>', bind_id)
-
-    def on_pane_toggled(self, callback) -> str:
-        """Bind to `<<PaneToggled>>`.
+    def off_back_requested(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<BackRequested>>`.
 
         Args:
-            callback: Function to call when pane is toggled.
+            bind_id: ID returned by `on_back_requested()`. If None, removes all.
+        """
+        self.unbind('<<BackRequested>>', bind_id)
+
+    def on_pane_toggled(self, callback: Callable) -> str:
+        """Register a callback for `<<PaneToggled>>` events.
+
+        Args:
+            callback: Receives `event.data = {'is_open': bool}` — True when the
+                pane opened, False when it closed.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_pane_toggled()` to unsubscribe.
         """
         return self.bind('<<PaneToggled>>', callback, add='+')
 
-    def off_pane_toggled(self, bind_id: str = None) -> None:
-        """Unbind from `<<PaneToggled>>`."""
-        self.unbind('<<PaneToggled>>', bind_id)
-
-    def on_display_mode_changed(self, callback) -> str:
-        """Bind to `<<DisplayModeChanged>>`.
+    def off_pane_toggled(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<PaneToggled>>`.
 
         Args:
-            callback: Function to call when display mode changes.
-                Receives `event.data = {'mode': str}` where mode is
-                'expanded', 'compact', or 'minimal'.
+            bind_id: ID returned by `on_pane_toggled()`. If None, removes all.
+        """
+        self.unbind('<<PaneToggled>>', bind_id)
+
+    def on_display_mode_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<DisplayModeChanged>>` events.
+
+        Args:
+            callback: Receives `event.data = {'mode': str}` — one of
+                `'expanded'`, `'compact'`, or `'minimal'`.
 
         Returns:
-            Binding identifier for use with off_display_mode_changed().
+            Bind ID — pass to `off_display_mode_changed()` to unsubscribe.
         """
         return self.bind('<<DisplayModeChanged>>', callback, add='+')
 
-    def off_display_mode_changed(self, bind_id: str = None) -> None:
-        """Unbind from `<<DisplayModeChanged>>`."""
+    def off_display_mode_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<DisplayModeChanged>>`.
+
+        Args:
+            bind_id: ID returned by `on_display_mode_changed()`. If None, removes all.
+        """
         self.unbind('<<DisplayModeChanged>>', bind_id)

@@ -299,31 +299,41 @@ class PageStack(Frame):
             return self._pages[key].configure(**kwargs)
 
     def on_page_changed(self, callback: Callable) -> str:
-        """Bind to `<<PageChange>>`. Callback receives `event.data` with navigation info.
+        """Register a callback for `<<PageChange>>` events (fires after every navigation).
+
+        Args:
+            callback: Receives `event.data` with navigation info: `page`, `prev_page`,
+                `nav`, `index`, `length`, `can_back`, `can_forward`.
 
         Returns:
-            Binding identifier for use with off_page_changed().
+            Bind ID — pass to `off_page_changed()` to unsubscribe.
         """
         return self.bind('<<PageChange>>', callback, add="+")
 
     def off_page_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<PageChange>>`."""
+        """Unsubscribe from `<<PageChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_page_changed()`. If None, removes all.
+        """
         self.unbind("<<PageChange>>", bind_id)
 
     def on_page_mount(self, callback: Callable) -> str:
-        """Bind to `<<PageMount>>` (fires after a new page is displayed).
+        """Register a callback for `<<PageMount>>` events (fires after a new page is displayed).
 
         Args:
-            callback: Function to call after a page mounts.
-                Receives `event.data` with navigation info: `page`,
-                `prev_page`, `nav`, `index`, `length`, `can_back`,
-                `can_forward`.
+            callback: Receives `event.data` with navigation info: `page`,
+                `prev_page`, `nav`, `index`, `length`, `can_back`, `can_forward`.
 
         Returns:
-            Binding identifier for use with off_page_mount().
+            Bind ID — pass to `off_page_mount()` to unsubscribe.
         """
         return self.bind('<<PageMount>>', callback, add='+')
 
     def off_page_mount(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<PageMount>>`."""
+        """Unsubscribe from `<<PageMount>>`.
+
+        Args:
+            bind_id: ID returned by `on_page_mount()`. If None, removes all.
+        """
         self.unbind('<<PageMount>>', bind_id)

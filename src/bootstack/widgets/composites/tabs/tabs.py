@@ -215,34 +215,41 @@ class Tabs(Frame):
         self.event_generate('<<TabAdd>>')
 
     def on_tab_added(self, callback: Callable) -> str:
-        """Bind to `<<TabAdd>>` event.
+        """Register a callback for `<<TabAdd>>` events (fires when the add button is clicked).
 
         Args:
-            callback: Function to call when add button is clicked.
+            callback: Called when the add button is clicked. `event.data` is None.
 
         Returns:
-            Binding identifier for use with off_tab_added().
+            Bind ID — pass to `off_tab_added()` to unsubscribe.
         """
         return self.bind('<<TabAdd>>', callback, add='+')
 
     def off_tab_added(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<TabAdd>>` event."""
+        """Unsubscribe from `<<TabAdd>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_added()`. If None, removes all.
+        """
         self.unbind('<<TabAdd>>', bind_id)
 
     def on_tab_closed(self, callback: Callable) -> str:
-        """Bind to `<<TabClose>>` event (when a tab's close button is clicked).
+        """Register a callback for `<<TabClose>>` events (fires when a tab's close button is clicked).
 
         Args:
-            callback: Function to call when a tab is closed.
-                Receives `event.data = {'value': Any}` with the tab's value.
+            callback: Receives `event.data = {'value': Any}` — the closed tab's value.
 
         Returns:
-            Binding identifier for use with off_tab_closed().
+            Bind ID — pass to `off_tab_closed()` to unsubscribe.
         """
         return self.bind('<<TabClose>>', callback, add='+')
 
     def off_tab_closed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<TabClose>>` event."""
+        """Unsubscribe from `<<TabClose>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_closed()`. If None, removes all.
+        """
         self.unbind('<<TabClose>>', bind_id)
 
     def add(
@@ -474,16 +481,21 @@ class Tabs(Frame):
         self.set(value)
 
     def on_tab_changed(self, callback: Callable) -> Any:
-        """Subscribe to tab selection changes.
+        """Register a callback for tab selection changes.
 
         Args:
-            callback: Function called with the new selected value.
+            callback: Called with the new selected tab value (str) when the
+                selection changes.
 
         Returns:
-            Subscription ID for use with off_tab_changed().
+            Subscription ID — pass to `off_tab_changed()` to unsubscribe.
         """
         return self._signal.subscribe(callback)
 
     def off_tab_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from tab selection changes."""
+        """Unsubscribe from tab selection changes.
+
+        Args:
+            bind_id: ID returned by `on_tab_changed()`.
+        """
         self._signal.unsubscribe(bind_id)
