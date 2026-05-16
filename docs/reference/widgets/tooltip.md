@@ -2,4 +2,4 @@
 title: Tooltip
 ---
 
-::: bootstack.widgets.composites.tooltip.Tooltip
+::: bootstack.widgets.composites.tooltip.ToolTip
