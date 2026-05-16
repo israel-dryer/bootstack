@@ -5,3 +5,5 @@ This capability documents one focused aspect of the **widget interface** (Tk/Tcl
 > **Note**: You typically won’t use `bootstack.core.capabilities.signals` directly. This page describes the behavior that widgets expose.
 
 ::: bootstack.core.capabilities.signals.SignalBinding
+    options:
+      filters: ["public"]

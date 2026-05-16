@@ -7,3 +7,5 @@ extensions).
 > that widgets expose.
 
 ::: bootstack.core.capabilities.bind.BindingsMixin
+    options:
+      filters: ["public"]
