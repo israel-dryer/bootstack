@@ -1,12 +1,6 @@
-"""Widget package for bootstack.
-
-All widgets are exported at the top level (bootstack.Button, etc.).
-This module provides constants for backwards compatibility.
-"""
+"""Widget package for bootstack."""
 import tkinter as tk
 from tkinter import ttk
-
-# Constants from original widgets.py
 
 TTK_WIDGETS = (
     ttk.Button,
