@@ -2,8 +2,36 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+from typing_extensions import TypedDict
+
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+
+class PlaceKwargs(TypedDict, total=False):
+    """Keyword options for `place()` and `place_configure()`."""
+    x: int
+    """Absolute x-coordinate in pixels, relative to the container's top-left corner."""
+    y: int
+    """Absolute y-coordinate in pixels, relative to the container's top-left corner."""
+    relx: float
+    """Relative x-coordinate as a fraction (0.0–1.0) of the container's width."""
+    rely: float
+    """Relative y-coordinate as a fraction (0.0–1.0) of the container's height."""
+    width: int
+    """Absolute width of the widget in pixels."""
+    height: int
+    """Absolute height of the widget in pixels."""
+    relwidth: float
+    """Width as a fraction (0.0–1.0) of the container's width."""
+    relheight: float
+    """Height as a fraction (0.0–1.0) of the container's height."""
+    anchor: str
+    """Which point of the widget is placed at (x, y)/(relx, rely) (e.g., `'nw'`, `'center'`, `'se'`). Defaults to `'nw'`."""
+    bordermode: str
+    """How x/y are interpreted relative to container borders: `'inside'`, `'outside'`, or `'ignore'`."""
+    in_: Any
+    """Parent widget to place into (rarely needed — defaults to the widget's own master)."""
 
 
 class PlaceMixin:
@@ -27,19 +55,12 @@ class PlaceMixin:
     # Core widget methods
     # -------------------------------------------------------------------------
 
-    def place(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def place(self, cnf: dict[str, Any] | None = None, **kw: Unpack[PlaceKwargs]) -> Self:
         """Position this widget using the place geometry manager.
 
         Args:
-            cnf: Optional dict of place options.
-            **kw: Place options. Common options include:
-                - x, y: Absolute coordinates in pixels (relative to container).
-                - relx, rely: Relative coordinates (0.0–1.0) of the container size.
-                - width, height: Absolute size in pixels.
-                - relwidth, relheight: Relative size (0.0–1.0) of the container size.
-                - anchor: Which point of the widget is placed at (x, y) / (relx, rely)
-                  (e.g. "nw", "center", "se").
-                - bordermode: How to interpret x/y relative to container borders.
+            cnf: Optional dict of place options (same keys as `PlaceKwargs`).
+            **kw: See `PlaceKwargs`.
 
         Returns:
             Self for method chaining.
@@ -49,12 +70,12 @@ class PlaceMixin:
         super().place(**options)  # type: ignore[misc]
         return self  # type: ignore[return-value]
 
-    def place_configure(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def place_configure(self, cnf: dict[str, Any] | None = None, **kw: Unpack[PlaceKwargs]) -> Self:
         """Alias for `place()`.
 
         Args:
             cnf: Optional dict of place options.
-            **kw: Place options (see `place`).
+            **kw: See `PlaceKwargs`.
 
         Returns:
             Self for method chaining.

@@ -1,14 +1,53 @@
 """Event binding capabilities mixin for bootstack widgets."""
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, TYPE_CHECKING
+
+from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from typing_extensions import Unpack
+
+
+class EventGenerateKwargs(TypedDict, total=False):
+    """Keyword options for `event_generate` (Tk event field overrides).
+
+    All fields are optional. Only supply fields relevant to the event type
+    being synthesized (e.g., `x`/`y` for mouse events, `keysym` for key events).
+    """
+    x: int
+    """Widget-relative x-coordinate in pixels."""
+    y: int
+    """Widget-relative y-coordinate in pixels."""
+    rootx: int
+    """Screen (root) x-coordinate in pixels."""
+    rooty: int
+    """Screen (root) y-coordinate in pixels."""
+    state: int
+    """Modifier key bitmask (Shift, Ctrl, Alt, etc.)."""
+    time: int
+    """Event timestamp in milliseconds."""
+    keycode: int
+    """Key code for keyboard events."""
+    keysym: str
+    """Key symbol name for keyboard events (e.g., `'Return'`, `'Escape'`, `'a'`)."""
+    button: int
+    """Mouse button number: 1=left, 2=middle, 3=right."""
+    delta: int
+    """Scroll wheel delta (positive = up, negative = down)."""
+    width: int
+    """Width value for Configure events."""
+    height: int
+    """Height value for Configure events."""
+    when: str
+    """When to deliver the event: `'now'`, `'tail'`, `'mark'`, or `'head'`. Defaults to `'tail'`."""
 
 
 class BindingsMixin:
     """Event binding and virtual event generation.
 
     This mixin documents the *Tkinter-style* binding API (`bind`, `unbind`,
-    `bind_all`, etc.) while reflecting bootstack v2’s enhanced event system.
+    `bind_all`, etc.) while reflecting bootstack v2's enhanced event system.
 
     Differences from stock Tkinter:
         - Virtual events generated via `event_generate("<<Name>>", data=...)` may
@@ -36,12 +75,12 @@ class BindingsMixin:
         """Bind an event sequence to a handler.
 
         Args:
-            sequence: Event pattern string (e.g. "<Button-1>", "<KeyPress>", "<<MyEvent>>").
+            sequence: Event pattern string (e.g. `"<Button-1>"`, `"<KeyPress>"`, `"<<MyEvent>>"`).
                 If None, returns a string describing all bindings on this widget.
             func: Handler callable. The handler is called with a single argument:
                 the event object. For bootstack enhanced events, `event.data`
                 is always present (None for regular events, payload for virtual events).
-            add: If true/"+" then this binding is added in addition to existing bindings.
+            add: If true/`"+"` then this binding is added in addition to existing bindings.
                 If false/None then any existing binding for this sequence is replaced.
 
         Returns:
@@ -110,7 +149,7 @@ class BindingsMixin:
         """Bind an event sequence to a Tk widget class.
 
         This attaches a handler to *all widgets of a given Tk class name*
-        (e.g. "TButton", "TEntry").
+        (e.g. `"TButton"`, `"TEntry"`).
 
         Args:
             className: Tk class name.
@@ -137,18 +176,17 @@ class BindingsMixin:
     # Event generation (including virtual-event payloads)
     # ---------------------------------------------------------------------
 
-    def event_generate(self, sequence: str, data: Any | None = None, **kw: Any) -> None:
+    def event_generate(self, sequence: str, data: Any | None = None, **kw: Unpack[EventGenerateKwargs]) -> None:
         """Generate an event.
 
-        This can synthesize both physical events (like "<Button-1>") and virtual
-        events (like "<<MyEvent>>"). For virtual events, bootstack supports
-        attaching a Python payload via the `data` parameter.
+        Synthesizes both physical events (e.g. `"<Button-1>"`) and virtual events
+        (e.g. `"<<MyEvent>>"`). For virtual events, bootstack supports attaching
+        a Python payload via `data`.
 
         Args:
-            sequence: Event sequence to generate (commonly "<<Name>>" for virtual events).
-            data: Optional Python object payload for **virtual events**. When provided,
-                handlers will receive an event object whose `.data` is this value.
-                For non-virtual events, `data` is ignored and `.data` will be None.
-            **kw: Additional Tk event fields (e.g. x=..., y=..., rootx=..., rooty=...).
+            sequence: Event sequence to generate (commonly `"<<Name>>"` for virtual events).
+            data: Optional Python object payload for virtual events. Handlers receive
+                an event whose `.data` is this value. Ignored for non-virtual events.
+            **kw: See `EventGenerateKwargs` for Tk event field overrides (x, y, state, etc.).
         """
         return super().event_generate(sequence, data=data, **kw)  # type: ignore[misc]

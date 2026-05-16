@@ -3,8 +3,46 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
+from typing_extensions import TypedDict
+
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+
+class GridKwargs(TypedDict, total=False):
+    """Keyword options for `grid()` and `grid_configure()`."""
+    row: int
+    """Row index (0-based). Defaults to the next available row."""
+    column: int
+    """Column index (0-based). Defaults to 0."""
+    rowspan: int
+    """Number of rows to span. Defaults to 1."""
+    columnspan: int
+    """Number of columns to span. Defaults to 1."""
+    sticky: str
+    """How the widget expands within its cell (e.g., `'nsew'`, `'ew'`, `'n'`). Defaults to `''`."""
+    padx: int | tuple[int, int]
+    """Horizontal external padding in pixels. A tuple sets (left, right) independently."""
+    pady: int | tuple[int, int]
+    """Vertical external padding in pixels. A tuple sets (top, bottom) independently."""
+    ipadx: int
+    """Horizontal internal padding in pixels."""
+    ipady: int
+    """Vertical internal padding in pixels."""
+    in_: Any
+    """Parent widget to grid into (rarely needed — defaults to the widget's own master)."""
+
+
+class GridRowColumnKwargs(TypedDict, total=False):
+    """Keyword options for `grid_rowconfigure()` and `grid_columnconfigure()`."""
+    weight: int
+    """How extra space is distributed among rows/columns. 0 means no expansion. Defaults to 0."""
+    minsize: int
+    """Minimum row/column size in pixels. Defaults to 0."""
+    pad: int
+    """Extra padding added to the row/column in pixels. Defaults to 0."""
+    uniform: str
+    """Group name — rows/columns sharing a group are given equal size."""
 
 
 class GridMixin:
@@ -18,7 +56,7 @@ class GridMixin:
 
     Notes:
         - `grid()` attaches a widget to a parent container that is using grid.
-        - `rowconfigure()` / `columnconfigure()` set sizing behavior (weight/minsize/pad).
+        - `grid_rowconfigure()` / `grid_columnconfigure()` set sizing behavior.
         - `grid_propagate(False)` prevents a container from resizing to fit its children.
         - If the parent has a `_on_child_grid` hook (e.g. GridFrame), layout defaults
           are applied automatically.
@@ -28,17 +66,12 @@ class GridMixin:
     # Core widget methods
     # -------------------------------------------------------------------------
 
-    def grid(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def grid(self, cnf: dict[str, Any] | None = None, **kw: Unpack[GridKwargs]) -> Self:
         """Position this widget using the grid geometry manager.
 
         Args:
-            cnf: Optional dict of grid options.
-            **kw: Grid options. Common options include:
-                - row, column: Cell coordinates (0-based).
-                - rowspan, columnspan: Span across multiple cells.
-                - sticky: How the widget expands within its cell (e.g. "nsew").
-                - padx, pady: External padding around the widget.
-                - ipadx, ipady: Internal padding inside the widget.
+            cnf: Optional dict of grid options (same keys as `GridKwargs`).
+            **kw: See `GridKwargs`.
 
         Returns:
             Self for method chaining.
@@ -53,12 +86,12 @@ class GridMixin:
             super().grid(**options)  # type: ignore[misc]
         return self  # type: ignore[return-value]
 
-    def grid_configure(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def grid_configure(self, cnf: dict[str, Any] | None = None, **kw: Unpack[GridKwargs]) -> Self:
         """Alias for `grid()`.
 
         Args:
             cnf: Optional dict of grid options.
-            **kw: Grid options (see `grid`).
+            **kw: See `GridKwargs`.
 
         Returns:
             Self for method chaining.
@@ -123,35 +156,25 @@ class GridMixin:
         """
         return super().grid_propagate(flag)  # type: ignore[misc]
 
-    def grid_rowconfigure(self, index: int, cnf: dict[str, Any] | None = None, **kw: Any) -> None:
+    def grid_rowconfigure(self, index: int, cnf: dict[str, Any] | None = None, **kw: Unpack[GridRowColumnKwargs]) -> None:
         """Configure sizing behavior for a grid row in this container.
-
-        Common options:
-            - weight: How extra space is distributed (0 means no expansion).
-            - minsize: Minimum row size in pixels.
-            - pad: Extra padding added to the row.
 
         Args:
             index: Row index (0-based).
-            cnf: Optional dict of configuration options.
-            **kw: Row configuration options.
+            cnf: Optional dict of configuration options (same keys as `GridRowColumnKwargs`).
+            **kw: See `GridRowColumnKwargs`.
         """
         if cnf is None:
             return super().grid_rowconfigure(index, **kw)  # type: ignore[misc]
         return super().grid_rowconfigure(index, cnf, **kw)  # type: ignore[misc]
 
-    def grid_columnconfigure(self, index: int, cnf: dict[str, Any] | None = None, **kw: Any) -> None:
+    def grid_columnconfigure(self, index: int, cnf: dict[str, Any] | None = None, **kw: Unpack[GridRowColumnKwargs]) -> None:
         """Configure sizing behavior for a grid column in this container.
-
-        Common options:
-            - weight: How extra space is distributed (0 means no expansion).
-            - minsize: Minimum column size in pixels.
-            - pad: Extra padding added to the column.
 
         Args:
             index: Column index (0-based).
-            cnf: Optional dict of configuration options.
-            **kw: Column configuration options.
+            cnf: Optional dict of configuration options (same keys as `GridRowColumnKwargs`).
+            **kw: See `GridRowColumnKwargs`.
         """
         if cnf is None:
             return super().grid_columnconfigure(index, **kw)  # type: ignore[misc]
