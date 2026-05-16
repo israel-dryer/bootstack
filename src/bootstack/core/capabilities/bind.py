@@ -1,7 +1,7 @@
 """Event binding capabilities mixin for bootstack widgets."""
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable
 
 
 class BindingsMixin:
@@ -29,10 +29,10 @@ class BindingsMixin:
 
     def bind(
             self,
-            sequence: Optional[str] = None,
-            func: Optional[Callable[..., Any]] = None,
-            add: Optional[Union[bool, str]] = None,
-    ) -> Optional[str]:
+            sequence: str | None = None,
+            func: Callable[..., Any] | None = None,
+            add: bool | str | None = None,
+    ) -> str | None:
         """Bind an event sequence to a handler.
 
         Args:
@@ -73,10 +73,10 @@ class BindingsMixin:
 
     def bind_all(
             self,
-            sequence: Optional[str] = None,
-            func: Optional[Callable[..., Any]] = None,
-            add: Optional[Union[bool, str]] = None,
-    ) -> Optional[str]:
+            sequence: str | None = None,
+            func: Callable[..., Any] | None = None,
+            add: bool | str | None = None,
+    ) -> str | None:
         """Bind an event sequence at the application level (all widgets).
 
         Use sparingly. This affects *every* widget in the application.
@@ -103,10 +103,10 @@ class BindingsMixin:
     def bind_class(
             self,
             className: str,
-            sequence: Optional[str] = None,
-            func: Optional[Callable[..., Any]] = None,
-            add: Optional[Union[bool, str]] = None,
-    ) -> Optional[str]:
+            sequence: str | None = None,
+            func: Callable[..., Any] | None = None,
+            add: bool | str | None = None,
+    ) -> str | None:
         """Bind an event sequence to a Tk widget class.
 
         This attaches a handler to *all widgets of a given Tk class name*

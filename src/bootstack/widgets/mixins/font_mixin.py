@@ -296,15 +296,22 @@ def build_font_from_modifier(font_spec: str, base_font: Any = None) -> tuple | s
 
 
 class FontMixin:
-    """
-    Constructor + runtime font modifier support.
-
-    Contract expected by WrapperBase:
-      - _init_font_mixin(kwargs) -> returns processed font value (or None)
-      - _delegate_font(value)    -> applies/handles delegated configure
-    """
+    """Adds font modifier syntax support to widgets at construction and runtime."""
 
     def _init_font_mixin(self, kwargs: dict[str, Any]) -> Any:
+        """Extract and pre-process the `font` kwarg before widget construction.
+
+        Called by `TTKWrapperBase.__init__` before `super().__init__` so the
+        font modifier string is resolved to a Tk-compatible tuple early.
+
+        Args:
+            kwargs: The widget constructor kwargs dict (mutated in-place — `font`
+                is popped if present).
+
+        Returns:
+            The resolved font value (token name or tuple), or None if `font` was
+            not in kwargs.
+        """
         if "font" not in kwargs:
             return None
 
@@ -324,6 +331,7 @@ class FontMixin:
 
     @configure_delegate("font")
     def _delegate_font(self, value: Any = None):
+        """Get or set the widget font, resolving modifier syntax at runtime."""
         if value is None:
             return self._ttk_base.cget(self, "font")  # type: ignore[misc]
 
