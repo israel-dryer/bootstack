@@ -4,8 +4,9 @@ Provides a specialized entry field for time input with a searchable dropdown
 list of time values at specified intervals.
 """
 
-import datetime
 from __future__ import annotations
+
+import datetime
 from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
