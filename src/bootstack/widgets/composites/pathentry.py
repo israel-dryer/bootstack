@@ -5,14 +5,19 @@ dialog for selecting paths.
 """
 
 from tkinter import filedialog
-from typing import Any
+from typing import Any, Literal
 
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.field import Field, FieldOptions
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import FileDialogType, Master
+from bootstack.widgets.types import Master
+
+FileDialogType = Literal[
+    'openfilename', 'openfile', 'directory', 'openfilenames', 'openfiles',
+    'saveasfile', 'saveasfilename'
+]
 
 
 class PathEntry(Field):
