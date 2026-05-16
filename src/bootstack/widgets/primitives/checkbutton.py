@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class CheckButtonKwargs(TypedDict, total=False):
     # Standard ttk.Checkbutton options
     text: Any
-    command: Optional[Callable[[], Any]]
+    command: Callable[[], Any] | None
     image: Any
     icon: Any
     on_icon: Any
@@ -46,7 +46,6 @@ class CheckButtonKwargs(TypedDict, total=False):
     textsignal: Signal[str]
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -55,7 +54,7 @@ class CheckButtonKwargs(TypedDict, total=False):
 
 
 class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Checkbutton):
-    """bootstack wrapper for `ttk.Checkbutton` with bootstyle and icon support."""
+    """bootstack wrapper for `ttk.Checkbutton` with themed styling and icon support."""
 
     _ttk_base = ttk.Checkbutton
 
@@ -66,40 +65,38 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            text (str): Text to display.
-            textvariable (Variable): Tk variable linked to the text.
-            textsignal (Signal[str]): Reactive Signal linked to the text (auto-synced with textvariable).
-            command (Callable): Callable invoked when the value toggles.
-            image (PhotoImage): Image to display.
-            icon (str | dict): Icon shown in the label area for all states. Color shifts
+            text: Text to display.
+            textvariable: Tk variable linked to the text.
+            textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
+            command: Callable invoked when the value toggles.
+            image: Image to display.
+            icon: Icon shown in the label area for all states. Color shifts
                 from foreground (unselected) to accent (selected) automatically.
-            on_icon (str | dict): Icon shown in the label area when the button is selected.
-                Shortcut for ``state=[("selected", name)]`` inside a full icon spec.
-            off_icon (str | dict): Icon shown in the label area when the button is unselected.
-                Used as the base icon when ``on_icon`` is also provided.
-            icon_only (bool): If True, removes the additional padding reserved for text.
-            show_indicator (bool): Whether to show the standard checkbox indicator. Defaults
+            on_icon: Icon shown in the label area when the button is selected.
+                Shortcut for `state=[("selected", name)]` inside a full icon spec.
+            off_icon: Icon shown in the label area when the button is unselected.
+                Used as the base icon when `on_icon` is also provided.
+            icon_only: If True, removes the additional padding reserved for text.
+            show_indicator: Whether to show the standard checkbox indicator. Defaults
                 to True. Set to False to hide the indicator (e.g. when using icons alone).
-            compound (str): Placement of the image relative to text.
-            variable (Variable): Linked variable controlling the on/off state.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
-            signal (Signal): Reactive Signal controlling the on/off state (auto-synced with variable).
-            value (Any): Initial state for the widget's associated variable (defaults to None when unset).
-            onvalue (Any): Value set in `variable` when selected.
-            offvalue (Any): Value set in `variable` when deselected.
-            padding (int | tuple): Extra space around the content.
-            anchor (str): Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
-            width (int): Width of the control in characters.
-            underline (int): Index of character to underline in `text`.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'success', 'danger'.
-            variant (str): Style variant, e.g. 'default', 'round', 'square'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-                Combined style tokens (e.g., 'primary', 'success').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            compound: Placement of the image relative to text.
+            variable: Linked variable controlling the on/off state.
+            localize: Determines the widget's localization mode.
+            signal: Reactive Signal controlling the on/off state (auto-synced with variable).
+            value: Initial state for the widget's associated variable (defaults to None when unset).
+            onvalue: Value set in `variable` when selected.
+            offvalue: Value set in `variable` when deselected.
+            padding: Extra space around the content.
+            anchor: Determines how the content is aligned in the container. Combination of 'n', 's', 'e', 'w', or 'center' (default).
+            width: Width of the control in characters.
+            underline: Index of character to underline in `text`.
+            state: Widget state.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'success', 'danger'.
+            variant: Style variant, e.g. 'default', 'round', 'square'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         signal_provided = 'signal' in kwargs
         variable_provided = 'variable' in kwargs

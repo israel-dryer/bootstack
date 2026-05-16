@@ -41,11 +41,9 @@ Use TableView when:
 
 ### Consider a different control when...
 
-- **Data is simple or visually rich per row** — use [ListView](listview.md) instead
-
-- **Your data is hierarchical** — use [TreeView](treeview.md) instead
-
-- **You only need to display a single value** — use [Label](label.md) or [Badge](badge.md)
+- data is simple or visually rich per row — use [ListView](listview.md)
+- your data is hierarchical — use [TreeView](treeview.md)
+- you only need to display a single value — use [Label](label.md) or [Badge](badge.md)
 
 ---
 
@@ -320,7 +318,3 @@ tv.reload()
 - [Signals](../../guides/reactivity.md) — reactive data binding
 
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
-
-### API reference
-
-- [`bootstack.TableView`](../../reference/widgets/TableView.md)

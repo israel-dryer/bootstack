@@ -58,9 +58,8 @@ Use `Text` when:
 
 ### Consider a different control when...
 
-- **you want the standard "Text + scrollbar" composite with less wiring** - prefer [ScrolledText](../inputs/scrolledtext.md)
-
-- **input is part of a form and you want label/message/validation and `on_input/on_changed`** - prefer [TextEntry](../inputs/textentry.md) (and other Field widgets)
+- you want the standard "Text + scrollbar" composite with less wiring — use [ScrolledText](../inputs/scrolledtext.md)
+- input is part of a form and you want label/message/validation and `on_input/on_changed` — use [TextEntry](../inputs/textentry.md) (and other Field widgets)
 
 ---
 

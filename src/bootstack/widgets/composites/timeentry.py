@@ -5,7 +5,8 @@ list of time values at specified intervals.
 """
 
 import datetime
-from typing import Union
+from __future__ import annotations
+from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
@@ -22,42 +23,21 @@ class TimeEntry(SelectBox):
     TimeEntry extends SelectBox to provide specialized time input with
     locale-aware formatting and a searchable dropdown of time intervals.
     The widget supports various time format presets and custom time patterns.
-
-    !!! note "Events"
-
-        - `<<Change>>`: Fired when time value changes after commit.
-        - `<<Input>>`: Fired on each keystroke.
-        - `<<Valid>>`: Fired when validation passes.
-        - `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
             self,
             master: Master = None,
-            value: Union[datetime.time, str] = None,
-            value_format: str = 'shortTime',
+            value: datetime.time | str = None,
+            value_format: DateFormatSpec = 'shortTime',
             interval: int = 30,
-            min_time: Union[datetime.time, str] = None,
-            max_time: Union[datetime.time, str] = None,
+            min_time: datetime.time | str = None,
+            max_time: datetime.time | str = None,
             label: str = None,
             message: str = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a TimeEntry widget.
-
-        Creates a time entry field with locale-aware formatting and a searchable
-        dropdown of time intervals. The widget accepts time input as time objects
-        or strings, and formats them according to the specified value_format pattern.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial time value to display. Can be a time object or string.
                 Default is current time.
@@ -78,19 +58,13 @@ class TimeEntry(SelectBox):
                 validation fails.
 
         Other Parameters:
-            locale (str): Locale identifier for time formatting (e.g., 'en_US').
-            required (bool): If True, field cannot be empty.
-            color (str): Color token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `color` instead.
-            allow_blank (bool): Allow empty input.
-            width (int): Width in characters.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-
-        Note:
-            The widget uses IntlFormatter for locale-aware time formatting.
-            The dropdown is searchable - type to filter time values.
-            Custom time values can be entered directly in the field.
+            locale: Locale identifier for time formatting (e.g., 'en_US').
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: Allow empty input.
+            width: Width in characters.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
         """
         self._interval = interval
         self._value_format = value_format
@@ -128,7 +102,7 @@ class TimeEntry(SelectBox):
             **kwargs
         )
 
-    def _parse_time(self, time_value: Union[datetime.time, str]) -> datetime.time:
+    def _parse_time(self, time_value: datetime.time | str) -> datetime.time:
         """Parse time value from various input formats.
 
         Args:
@@ -185,7 +159,7 @@ class TimeEntry(SelectBox):
             # Note: Pass datetime (not time) as IntlFormatter expects it for Babel
             try:
                 formatted_time = formatter.format(current, self._value_format)
-            except (ValueError, TypeError):
+            except:
                 # Fallback to 24-hour format if formatting fails
                 formatted_time = current.strftime('%H:%M')
 

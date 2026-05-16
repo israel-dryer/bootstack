@@ -160,7 +160,3 @@ For scrolling arbitrary widgets (forms, panels, composites), use [ScrollView](..
 - [Entry](../primitives/entry.md) — low-level single-line text input
 - [ScrollView](../layout/scrollview.md) — scroll container for arbitrary widgets
 - [Scrollbar](../layout/scrollbar.md) — scrollbar primitive used internally
-
-### API reference
-
-- [`bootstack.ScrolledText`](../../reference/widgets/ScrolledText.md)

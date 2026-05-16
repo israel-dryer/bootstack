@@ -41,10 +41,10 @@ Use `Switch` when:
 
 ### Consider a different control when...
 
-- you need tri-state (indeterminate) support → use [CheckButton](checkbutton.md)
-- multiple related options can be enabled → use [CheckButton](checkbutton.md) for each
-- you want a compact button-like toggle → use [CheckToggle](checktoggle.md)
-- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
+- you need tri-state (indeterminate) support — use [CheckButton](checkbutton.md)
+- multiple related options can be enabled — use [CheckButton](checkbutton.md) for each
+- you want a compact button-like toggle — use [CheckToggle](checktoggle.md)
+- only one choice is allowed in a group — use [RadioButton](radiobutton.md)
 
 ---
 
@@ -213,7 +213,3 @@ dark_mode.subscribe(lambda v: print(f"Dark mode: {v}"))
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — text translation
 - [Design System → Variants](../../design-system/variants.md) — color tokens and variants
-
-### API reference
-
-- [`bootstack.Switch`](../../reference/widgets/Switch.md)

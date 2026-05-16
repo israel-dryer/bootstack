@@ -5,30 +5,14 @@ dialog for selecting paths.
 """
 
 from tkinter import filedialog
-from typing import Any, Literal
+from typing import Any
 
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.field import Field, FieldOptions
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
-
-FileDialogType = Literal[
-    'openfilename', 'openfile', 'directory', 'openfilenames', 'openfiles',
-    'saveasfile', 'saveasfilename'
-]
-"""Type alias for file dialog types.
-
-Available dialog types:
-    - 'openfilename': Select a single existing file (returns filename)
-    - 'openfile': Select a single existing file (returns file object)
-    - 'directory': Select a directory
-    - 'openfilenames': Select multiple existing files (returns filenames)
-    - 'openfiles': Select multiple existing files (returns file objects)
-    - 'saveasfile': Select location to save a file (returns file object)
-    - 'saveasfilename': Select location to save a file (returns filename)
-"""
+from bootstack.widgets.types import FileDialogType, Master
 
 
 class PathEntry(Field):
@@ -39,27 +23,6 @@ class PathEntry(Field):
     chooser dialog, and displays the selected path(s) in the entry field. The
     widget supports various dialog types including single file selection, multiple
     file selection, directory selection, and save file dialogs.
-
-    !!! note "Events"
-
-        `<<Change>>`: Fired when a path is selected from the dialog.
-          Provides `event.data` with keys: `value`, `prev_value`, `text`, `dialog_result`.
-
-        `<<Input>>`: Fired when user manually types in the entry.
-
-        `<<Valid>>`: Fired when validation passes.
-
-        `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry (from FieldOptions).
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
-        dialog_result (Any): The raw result from the last file dialog operation.
-        dialog_button (Button): The button widget that opens the dialog.
     """
 
     def __init__(
@@ -74,14 +37,7 @@ class PathEntry(Field):
             message: str = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a PathEntry widget.
-
-        Creates a path entry field with a button that opens a native file or
-        directory chooser dialog. The selected path(s) are automatically displayed
-        in the entry field. The widget supports various dialog types for different
-        use cases (single file, multiple files, directory, save file).
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial path value to display in the entry field. Default is None
                 (empty field). This is updated when a path is selected from the dialog.
@@ -101,30 +57,24 @@ class PathEntry(Field):
                 defaultextension, multiple.
             button_text: Text to display on the browse button. Default is "Browse".
                 Can be changed at runtime via `configure(button_text=...)`.
-            label (str): Label text to display above the entry field (from FieldOptions).
-            message (str): Message text to display below the field.
+            label: Label text to display above the entry field (from FieldOptions).
+            message: Message text to display below the field.
 
         Other Parameters:
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment.
-            show_message (bool): If True, displays message area.
-            padding (str): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-
-        Note:
-            When multiple files are selected (using 'openfilenames' or 'openfiles'),
-            the paths are joined with ", " (comma-space) and displayed in the entry.
-            The raw dialog result (tuple/list) is available via the `dialog_result`
-            property.
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment.
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
         """
         self._dialog = dialog
         self._dialog_options = dialog_options
@@ -143,16 +93,16 @@ class PathEntry(Field):
         )
 
     @property
-    def dialog_button(self):
+    def dialog_button(self) -> Button:
         """Get the dialog button widget."""
         return self.addons.get('dialog-button')
 
     @property
-    def dialog_result(self):
+    def dialog_result(self) -> str | tuple[str, ...] | None:
         """Get the raw result from the last file dialog operation.
 
-        For single file selection, this returns the path string.
-        For multiple file selection, this returns a tuple/list of paths.
+        Returns a single path string for single-file dialogs, a tuple of
+        paths for multi-file dialogs, or `None` if no selection was made.
         """
         return self._dialog_result
 
@@ -160,6 +110,7 @@ class PathEntry(Field):
 
     @configure_delegate('dialog')
     def _delegate_dialog(self, value: FileDialogType = None):
+        """Get or set the file dialog type ('openfilename', 'directory', etc.)."""
         if value is None:
             return self._dialog
         else:
@@ -168,6 +119,7 @@ class PathEntry(Field):
 
     @configure_delegate('button_text')
     def _delegate_button_text(self, value: str = None):
+        """Get or set the browse button label text."""
         if value is None:
             return self._button_text
         else:
@@ -178,6 +130,7 @@ class PathEntry(Field):
 
     @configure_delegate('dialog_options')
     def _delegate_dialog_options(self, value: dict[str, Any] = None):
+        """Get or set the kwargs forwarded to the file dialog."""
         if value is None:
             return self._dialog_options
         else:

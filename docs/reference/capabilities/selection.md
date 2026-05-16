@@ -5,3 +5,6 @@ This capability documents one focused aspect of the **widget interface** (Tk/Tcl
 > **Note**: You typically won’t use `bootstack.core.capabilities.selection` directly. This page describes the behavior that widgets expose.
 
 ::: bootstack.core.capabilities.selection.SelectionMixin
+    options:
+      filters:
+        - "!^_"

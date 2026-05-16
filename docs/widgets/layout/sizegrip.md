@@ -48,7 +48,7 @@ Use `Sizegrip` when:
 
 - you want to match platform expectations in desktop apps
 
-**Consider a different control when:**
+### Consider a different control when...
 
 - your UI already makes resizing obvious (or resizing is disabled)
 
@@ -92,7 +92,3 @@ a UX hint.
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.SizeGrip`](../../reference/widgets/SizeGrip.md)

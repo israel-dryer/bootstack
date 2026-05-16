@@ -40,6 +40,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
     _ttk_base: type
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
+        """Initialize the wrapper, applying font modifier syntax and Bootstyle setup."""
         font_value = self._init_font_mixin(kwargs)
         init_wrapper = Bootstyle.override_ttk_widget_constructor(self._ttk_base.__init__)  # type: ignore[attr-defined]
         init_wrapper(self, *args, **kwargs)
@@ -47,6 +48,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             self._delegate_font(font_value)
 
     def configure(self, cnf: Any | None = None, **kwargs: Any):  # type: ignore[override]
+        """Configure widget options, routing delegated keys before forwarding to ttk."""
         # First, route custom keys via delegation
         if kwargs:
             for _k in list(kwargs.keys()):
@@ -272,19 +274,18 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             return options.get(value, None)
 
     def _capture_style_options(self, options: list[str] = None, source: Any = None):
-        """Extract options from a dictionary source.
+        """Extract named kwargs into a style-options dict before passing to super.
 
-        This method should be called before `super()` to capture the style options when they are explicitly exposed as
-        keyword arguments instead of being passed indirectly in the `style_options` parameter.
+        Call this before `super().__init__` to capture style-related kwargs that
+        are exposed as explicit parameters rather than via `style_options=`. Also
+        merges any `style_options` dict already in `source`.
 
-        This method will also attempt to extract the style_options argument if provided.
-
-        Parameters:
-            options: A list of options to extract.
-            source: The dictionary of keyword arguments to extract from.
+        Args:
+            options: Names of kwargs to extract from `source`.
+            source: The kwargs dict to extract from (mutated in-place).
 
         Returns:
-            A dict of style options. e.g. {"icon_only": True, "icon": "bootstrap-fill"}.
+            A dict of captured style options, e.g. `{'icon_only': True, 'icon': 'house'}`.
         """
         if source is None:
             return {}

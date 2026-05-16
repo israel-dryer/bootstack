@@ -4,7 +4,7 @@ from __future__ import annotations
 __all__ = ['TabView']
 
 import tkinter as tk
-from typing import Callable, Literal, Union
+from typing import Any, Callable, Literal
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.composites.tabs.tabs import Tabs
@@ -20,11 +20,6 @@ class TabView(Frame):
     to a page in the page stack. Selecting a tab navigates to the associated
     page.
 
-    !!! note "Events"
-        - `<<TabSelect>>`: Fired when a tab is selected.
-        - `<<TabClose>>`: Fired when a tab's close button is clicked.
-        - `<<TabAdd>>`: Fired when the add button is clicked (if enable_adding=True).
-        - `<<PageChange>>`: Fired when the page changes (from PageStack).
     """
 
     def __init__(
@@ -34,10 +29,10 @@ class TabView(Frame):
         variant: Literal['pill', 'bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
-        tab_width: Union[None, int, Literal['stretch']] = None,
+        tab_width: None | int | Literal['stretch'] = None,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        enable_closing: Union[bool, Literal['hover']] = False,
+        enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         accent: str = None,
         **kwargs
@@ -133,7 +128,7 @@ class TabView(Frame):
         text: str = "",
         icon: str | dict = None,
         page: tk.Widget = None,
-        closable: Union[bool, Literal['hover'], None] = None,
+        closable: bool | Literal['hover'] | None = None,
         close_command: Callable = None,
         command: Callable = None,
         **kwargs
@@ -322,31 +317,79 @@ class TabView(Frame):
         tab.configure(**kwargs)
 
     def on_page_changed(self, callback: Callable) -> str:
-        """Bind to `<<PageChange>>` event.
+        """Register a callback for `<<PageChange>>` events (fires when the visible page changes).
 
         Args:
-            callback: Function to call when page changes.
+            callback: Receives `event.data` with navigation info: `page`, `prev_page`,
+                `nav`, `index`, `length`, `can_back`, `can_forward`.
 
         Returns:
-            Binding identifier.
+            Bind ID — pass to `off_page_changed()` to unsubscribe.
         """
         return self._page_stack.on_page_changed(callback)
 
     def off_page_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<PageChange>>` event."""
+        """Unsubscribe from `<<PageChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_page_changed()`. If None, removes all.
+        """
         self._page_stack.off_page_changed(bind_id)
 
     def on_tab_added(self, callback: Callable) -> str:
-        """Bind to `<<TabAdd>>` event (when add button is clicked).
+        """Register a callback for `<<TabAdd>>` events (fires when the add button is clicked).
 
         Args:
-            callback: Function to call when add button is clicked.
+            callback: Called when the add button is clicked. `event.data` is None.
 
         Returns:
-            Binding identifier for use with off_tab_added().
+            Bind ID — pass to `off_tab_added()` to unsubscribe.
         """
         return self._tabs.on_tab_added(callback)
 
     def off_tab_added(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<TabAdd>>` event."""
+        """Unsubscribe from `<<TabAdd>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_added()`. If None, removes all.
+        """
         self._tabs.off_tab_added(bind_id)
+
+    def on_tab_changed(self, callback: Callable) -> Any:
+        """Register a callback for tab selection changes.
+
+        Args:
+            callback: Called with the new selected tab key (str) when the
+                selection changes.
+
+        Returns:
+            Subscription ID — pass to `off_tab_changed()` to unsubscribe.
+        """
+        return self._tabs.on_tab_changed(callback)
+
+    def off_tab_changed(self, bind_id: Any) -> None:
+        """Unsubscribe from tab selection changes.
+
+        Args:
+            bind_id: ID returned by `on_tab_changed()`.
+        """
+        self._tabs.off_tab_changed(bind_id)
+
+    def on_tab_closed(self, callback: Callable) -> str:
+        """Register a callback for `<<TabClose>>` events (fires when a tab's close button is clicked).
+
+        Args:
+            callback: Receives `event.data = {'value': Any}` — the closed tab's value.
+
+        Returns:
+            Bind ID — pass to `off_tab_closed()` to unsubscribe.
+        """
+        return self._tabs.on_tab_closed(callback)
+
+    def off_tab_closed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TabClose>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_closed()`. If None, removes all.
+        """
+        self._tabs.off_tab_closed(bind_id)

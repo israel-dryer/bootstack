@@ -45,9 +45,8 @@ Use `Combobox` when:
 
 ### Consider a different control when...
 
-- **for most selection use cases** - prefer [SelectBox](../selection/selectbox.md), which provides keyboard navigation, hover states, search/filtering, and form integration
-
-- **you want the simplest menu-style single selection picker** - prefer [OptionMenu](../selection/optionmenu.md)
+- you are handling most selection use cases — use [SelectBox](../selection/selectbox.md), which provides keyboard navigation, hover states, search/filtering, and form integration
+- you want the simplest menu-style single selection picker — use [OptionMenu](../selection/optionmenu.md)
 
 ---
 
@@ -222,7 +221,3 @@ If you need localization-aware field labels and messaging, prefer [SelectBox](..
 ### Framework concepts
 
 - [Events and Signals](../../guides/reactivity.md)
-
-### API reference
-
-- [`bootstack.Combobox`](../../reference/widgets/Combobox.md)

@@ -127,7 +127,7 @@ class MessageCatalog:
         """Return a plausible locales directory for this installation.
 
         Priority order:
-        1) `TTKBOOTSTRAP_LOCALES` environment variable
+        1) `BOOTSTACK_LOCALES` environment variable
         2) Package asset `src/bootstack/assets/locales`
         3) Module-local `bootstack/localization/locales`
         4) Package-local `src/bootstack/locales`
@@ -135,7 +135,7 @@ class MessageCatalog:
         6) Current working directory `./locales`
         """
         import os
-        env = os.environ.get("TTKBOOTSTRAP_LOCALES")
+        env = os.environ.get("BOOTSTACK_LOCALES")
         if env:
             p = Path(env)
             if p.exists():

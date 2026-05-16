@@ -18,14 +18,13 @@ class SizeGripKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     surface: str
     style_options: dict[str, Any]
 
 
 class SizeGrip(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Sizegrip):
-    """bootstack wrapper for `ttk.Sizegrip` with bootstyle support."""
+    """bootstack wrapper for `ttk.Sizegrip` with themed styling support."""
 
     _ttk_base = ttk.Sizegrip
 
@@ -36,11 +35,10 @@ class SizeGrip(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Sizeg
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
 

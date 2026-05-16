@@ -35,9 +35,9 @@ Use Progressbar when:
 
 ### Consider a different control when...
 
-- **You want a dashboard-style indicator** — use [Meter](meter.md)
-- **You need to show capacity or fullness** — use [FloodGauge](floodgauge.md)
-- **You need a compact status indicator** — use [Badge](badge.md)
+- you want a dashboard-style indicator — use [Meter](meter.md)
+- you need to show capacity or fullness — use [FloodGauge](floodgauge.md)
+- you need a compact status indicator — use [Badge](badge.md)
 
 ---
 
@@ -73,11 +73,13 @@ bs.Progressbar(app, variant="thin")     # reduced height bar
 
 ### Common options
 
-- `value` — current progress value
-- `maximum` — maximum value (default 100)
-- `mode` — `"determinate"` or `"indeterminate"`
-- `length` — pixel length of the bar
-- `orient` — `"horizontal"` or `"vertical"`
+| Option | Purpose |
+|---|---|
+| `value` | Current progress value |
+| `maximum` | Maximum value (default `100`) |
+| `mode` | `"determinate"` or `"indeterminate"` |
+| `length` | Pixel length of the bar |
+| `orient` | `"horizontal"` or `"vertical"` |
 
 ### Reading and setting value
 
@@ -133,7 +135,3 @@ progress.set(50)   # progressbar updates automatically
 
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.Progressbar`](../../reference/widgets/Progressbar.md)

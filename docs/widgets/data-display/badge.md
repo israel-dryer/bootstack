@@ -17,11 +17,17 @@ import bootstack as bs
 
 app = bs.App()
 
-bs.Badge(app, text="New").pack(padx=20, pady=10)
-bs.Badge(app, text="3", accent="primary").pack(padx=20, pady=10)
+frm = bs.PackFrame(app, direction='horizontal', padding=16, gap=16).pack()
+
+bs.Badge(frm, text="New").pack()
+bs.Badge(frm, text="3", accent="primary").pack()
 
 app.mainloop()
 ```
+
+<div class="app-window">
+    <img src="../../assets/widgets-badge-quickstart.png" alt="Badge Quickstart"/>
+</div>
 
 ---
 
@@ -35,9 +41,9 @@ Use `Badge` when:
 
 ### Consider a different control when...
 
-- **Text is long or multi-line** — use [Label](label.md) instead
-- **Content should blend into the surrounding layout** — use [Label](label.md) for less visual emphasis
-- **You need transient feedback that disappears automatically** — use [Toast](../overlays/toast.md) instead
+- text is long or multi-line — use [Label](label.md)
+- content should blend into the surrounding layout — use [Label](label.md) for less visual emphasis
+- you need transient feedback that disappears automatically — use [Toast](../overlays/toast.md)
 
 ---
 
@@ -60,23 +66,21 @@ bs.Badge(app, text="Beta", accent="danger")  # danger colored badge
 
 ## Examples & patterns
 
-### Icon badges
-
-```python
-bs.Badge(app, text="Verified", icon="check").pack(pady=6)
-bs.Badge(app, icon="bell", icon_only=True, accent="info").pack(pady=6)
-```
+!!! note "Text-only by design"
+    Badge does not render icons or embedded images. The TBadge style layout
+    is text-only — `icon=`, `icon_only=`, `image=`, and `compound=` are
+    silently dropped. Use [Label](label.md) when you need an icon alongside
+    text.
 
 ### Common options
 
 Badge accepts standard `Label` options, including:
 
 - `text`, `textsignal` — static or reactive text
-- `icon`, `icon_only`, `compound`
 - `font`, `foreground`
 - `padding`, `width`, `wraplength`
 - `localize`, `value_format`
-- `accent`
+- `accent`, `variant` (`"square"` default or `"pill"`)
 
 ---
 
@@ -125,7 +129,3 @@ count.set(10)   # badge updates automatically
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
 - [Localization](../../guides/localization.md) — translation support
-
-### API reference
-
-- [`bootstack.Badge`](../../reference/widgets/Badge.md)

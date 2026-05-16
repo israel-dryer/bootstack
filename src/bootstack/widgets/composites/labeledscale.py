@@ -16,8 +16,8 @@ class LabeledScale(Frame):
     the slider position. Only horizontal orientation is currently supported.
 
     Attributes:
-        scale (Scale): The underlying Scale widget.
-        label (Label): The Label widget displaying the current value.
+        scale: The underlying Scale widget.
+        label: The Label widget displaying the current value.
     """
 
     def __init__(

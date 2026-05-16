@@ -28,10 +28,6 @@ class MessageDialog:
     selected button. Use a `Toplevel` widget for more advanced modal
     dialog designs.
 
-    !!! note "Events"
-
-        `<<DialogResult>>`: Fired when dialog closes.
-          Provides `event.data` with keys: `result` (str), `confirmed` (bool).
     """
 
     def __init__(

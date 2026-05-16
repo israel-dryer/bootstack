@@ -48,11 +48,10 @@ Use `ScrollView` when:
 
 - you want to avoid manual Canvas/Scrollbar plumbing
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you need a multi-line text editor/log output -- use [ScrolledText](../inputs/scrolledtext.md)
-
-- you need highly customized scrolling or virtualized rendering -- use manual [Canvas](../primitives/canvas.md) + [Scrollbar](scrollbar.md)
+- you need a multi-line text editor/log output — use [ScrolledText](../inputs/scrolledtext.md)
+- you need highly customized scrolling or virtualized rendering — use manual [Canvas](../primitives/canvas.md) + [Scrollbar](scrollbar.md)
 
 ---
 
@@ -164,7 +163,3 @@ for i in range(20):
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.ScrollView`](../../reference/widgets/ScrollView.md)

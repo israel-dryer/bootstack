@@ -1,10 +1,11 @@
 """Scrolled text widget with configurable scrollbars."""
 import tkinter
-from typing import Any, Literal, Optional
+from typing import Any
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives.scrollbar import Scrollbar
+from bootstack.widgets.types import Master, ScrollDirection, ScrollbarVisibility
 
 
 class ScrolledText(Frame):
@@ -17,62 +18,31 @@ class ScrolledText(Frame):
     This widget delegates all Text methods to the internal text widget, so it
     can be used just like a standard Text widget with additional scrolling
     functionality.
-
-    Attributes:
-        vertical_scrollbar (Scrollbar): The vertical scrollbar widget.
-        horizontal_scrollbar (Scrollbar): The horizontal scrollbar widget.
     """
 
     def __init__(
             self,
-            master: Optional[tkinter.Misc] = None,
+            master: Master = None,
             padding: int = 0,
-            scroll_direction: Literal['horizontal', 'vertical', 'both'] = 'vertical',
-            scrollbar_visibility: Literal['always', 'never', 'hover', 'scroll'] = 'always',
+            scroll_direction: ScrollDirection = 'vertical',
+            scrollbar_visibility: ScrollbarVisibility = 'always',
             autohide_delay: int = 1000,
             scrollbar_style: str = 'default',
             **kwargs: Any,
-    ) -> None:
-        """Initialize a ScrolledText widget.
-
+    ):
+        """
         Args:
             master: The parent widget.
             padding: Padding around the frame container.
-            scroll_direction: Scroll direction - 'vertical', 'horizontal', or 'both'.
-                Use 'both' to enable horizontal scrolling with Shift+MouseWheel.
-            scrollbar_visibility: Scrollbar visibility mode:
-                - 'always': Scrollbars always visible
-                - 'never': Scrollbars hidden (scrolling still works)
-                - 'hover': Scrollbars appear when mouse enters
-                - 'scroll': Scrollbars appear when scrolling, auto-hide after delay
-            autohide_delay: Time in milliseconds before auto-hiding scrollbars
-                in 'scroll' mode.
-            scrollbar_style: The bootstyle for scrollbars (e.g., 'primary',
-                'success', 'danger').
-            **kwargs: Additional keyword arguments passed to the Text widget.
-
-        Note:
-            Legacy parameters 'autohide', 'vbar', and 'hbar' parameters work, but are deprecated. Use
-            `scroll_direction` and `scrollbar_visibility` instead.
+            scroll_direction: Scroll direction — `'vertical'`, `'horizontal'`, or `'both'`.
+                Use `'both'` to enable horizontal scrolling with Shift+MouseWheel.
+            scrollbar_visibility: When scrollbars are shown — `'always'`, `'never'`,
+                `'hover'` (on mouse enter), or `'scroll'` (auto-hide after delay).
+            autohide_delay: Milliseconds before scrollbars hide in `'scroll'` mode.
+                Default is 1000.
+            scrollbar_style: Accent token for the scrollbars (e.g., `'primary'`).
+            **kwargs: Additional keyword arguments passed to the `Text` widget.
         """
-        # Handle deprecated parameters
-        autohide = kwargs.pop('autohide', None)
-        if autohide is not None:
-            scrollbar_visibility = 'hover' if autohide else 'always'
-
-        vbar = kwargs.pop('vbar', None)
-        hbar = kwargs.pop('hbar', None)
-        if vbar is not None or hbar is not None:
-            # Determine direction from vbar/hbar
-            if hbar and vbar:
-                scroll_direction = 'both'
-            elif hbar:
-                scroll_direction = 'horizontal'
-            elif vbar:
-                scroll_direction = 'vertical'
-            else:
-                scroll_direction = 'vertical'  # Default
-
         # Initialize Frame
         super().__init__(master=master, padding=padding)
 
@@ -103,13 +73,13 @@ class ScrolledText(Frame):
         self._text = tkinter.Text(self, **text_kwargs)
 
         # Create scrollbars
-        self.vertical_scrollbar = Scrollbar(
+        self._vertical_scrollbar = Scrollbar(
             master=self,
             orient='vertical',
             command=self._text.yview,
             accent=scrollbar_style if scrollbar_style != 'default' else None
         )
-        self.horizontal_scrollbar = Scrollbar(
+        self._horizontal_scrollbar = Scrollbar(
             master=self,
             orient='horizontal',
             command=self._text.xview,
@@ -145,6 +115,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('scroll_direction')
     def _delegate_scroll_direction(self, value=None):
+        """Get or set the scroll direction ('vertical', 'horizontal', or 'both')."""
         if value is None:
             return self._direction
         else:
@@ -155,6 +126,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('scrollbar_visibility')
     def _delegate_scrollbar_visibility(self, value=None):
+        """Get or set the scrollbar visibility mode ('always', 'never', 'hover', 'scroll')."""
         if value is None:
             return self._scrollbar_visibility
         else:
@@ -167,10 +139,10 @@ class ScrolledText(Frame):
                 self.unbind('<Leave>')
                 self._text.unbind('<Enter>')
                 self._text.unbind('<Leave>')
-                self.vertical_scrollbar.unbind('<Enter>')
-                self.vertical_scrollbar.unbind('<Leave>')
-                self.horizontal_scrollbar.unbind('<Enter>')
-                self.horizontal_scrollbar.unbind('<Leave>')
+                self._vertical_scrollbar.unbind('<Enter>')
+                self._vertical_scrollbar.unbind('<Leave>')
+                self._horizontal_scrollbar.unbind('<Enter>')
+                self._horizontal_scrollbar.unbind('<Leave>')
 
             # Bind new events and update scrollbar visibility
             self._bind_container_events()
@@ -179,6 +151,7 @@ class ScrolledText(Frame):
 
     @configure_delegate('autohide_delay')
     def _delegate_autohide_delay(self, value=None):
+        """Get or set the milliseconds before scrollbars hide in 'scroll' mode."""
         if value is None:
             return self._autohide_delay
         else:
@@ -187,14 +160,15 @@ class ScrolledText(Frame):
 
     @configure_delegate('scrollbar_style')
     def _delegate_scrollbar_style(self, value=None):
+        """Get or set the accent token applied to both scrollbars."""
         if value is None:
             return self._scrollbar_style
         else:
             self._scrollbar_style = value
             # Apply the new accent to both scrollbars
             if value and value != 'default':
-                self.vertical_scrollbar.configure(accent=value)
-                self.horizontal_scrollbar.configure(accent=value)
+                self._vertical_scrollbar.configure(accent=value)
+                self._horizontal_scrollbar.configure(accent=value)
         return None
 
     def _setup_scroll_tag_bindings(self):
@@ -213,10 +187,10 @@ class ScrolledText(Frame):
         self._text.grid(row=0, column=0, sticky='nsew')
 
         if self._direction in ('vertical', 'both'):
-            self.vertical_scrollbar.grid(row=0, column=1, sticky='ns')
+            self._vertical_scrollbar.grid(row=0, column=1, sticky='ns')
 
         if self._direction in ('horizontal', 'both'):
-            self.horizontal_scrollbar.grid(row=1, column=0, sticky='ew')
+            self._horizontal_scrollbar.grid(row=1, column=0, sticky='ew')
 
         # Configure grid weights
         self.grid_rowconfigure(0, weight=1)
@@ -224,11 +198,11 @@ class ScrolledText(Frame):
 
         # Initially hide scrollbars based on scrollbar_visibility setting
         if self._scrollbar_visibility == 'never':
-            self.vertical_scrollbar.grid_remove()
-            self.horizontal_scrollbar.grid_remove()
+            self._vertical_scrollbar.grid_remove()
+            self._horizontal_scrollbar.grid_remove()
         elif self._scrollbar_visibility in ('hover', 'scroll'):
-            self.vertical_scrollbar.grid_remove()
-            self.horizontal_scrollbar.grid_remove()
+            self._vertical_scrollbar.grid_remove()
+            self._horizontal_scrollbar.grid_remove()
 
     def _bind_container_events(self):
         """Bind events for the container (enter/leave for autohide)."""
@@ -237,10 +211,10 @@ class ScrolledText(Frame):
             self.bind('<Leave>', self._on_container_leave)
             self._text.bind('<Enter>', self._on_container_enter)
             self._text.bind('<Leave>', self._on_container_leave)
-            self.vertical_scrollbar.bind('<Enter>', self._on_container_enter)
-            self.vertical_scrollbar.bind('<Leave>', self._on_container_leave)
-            self.horizontal_scrollbar.bind('<Enter>', self._on_container_enter)
-            self.horizontal_scrollbar.bind('<Leave>', self._on_container_leave)
+            self._vertical_scrollbar.bind('<Enter>', self._on_container_enter)
+            self._vertical_scrollbar.bind('<Leave>', self._on_container_leave)
+            self._horizontal_scrollbar.bind('<Enter>', self._on_container_enter)
+            self._horizontal_scrollbar.bind('<Leave>', self._on_container_leave)
 
     def _on_container_enter(self, event):
         """Handle mouse entering the container."""
@@ -255,22 +229,22 @@ class ScrolledText(Frame):
     def _show_scrollbars(self):
         """Show scrollbars."""
         if self._direction in ('vertical', 'both'):
-            self.vertical_scrollbar.grid()
+            self._vertical_scrollbar.grid()
         if self._direction in ('horizontal', 'both'):
-            self.horizontal_scrollbar.grid()
+            self._horizontal_scrollbar.grid()
 
     def _hide_scrollbars(self):
         """Hide scrollbars."""
-        self.vertical_scrollbar.grid_remove()
-        self.horizontal_scrollbar.grid_remove()
+        self._vertical_scrollbar.grid_remove()
+        self._horizontal_scrollbar.grid_remove()
 
     def _on_text_scroll_y(self, first, last):
         """Update vertical scrollbar position."""
-        self.vertical_scrollbar.set(first, last)
+        self._vertical_scrollbar.set(first, last)
 
     def _on_text_scroll_x(self, first, last):
         """Update horizontal scrollbar position."""
-        self.horizontal_scrollbar.set(first, last)
+        self._horizontal_scrollbar.set(first, last)
 
     def _update_scrollbar_visibility(self):
         """Update scrollbar visibility based on current mode."""
@@ -376,6 +350,16 @@ class ScrolledText(Frame):
         if '_text' not in self.__dict__:
             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
         return getattr(self._text, name)
+
+    @property
+    def vertical_scrollbar(self) -> Scrollbar:
+        """The vertical scrollbar widget."""
+        return self._vertical_scrollbar
+
+    @property
+    def horizontal_scrollbar(self) -> Scrollbar:
+        """The horizontal scrollbar widget."""
+        return self._horizontal_scrollbar
 
     @property
     def text(self):

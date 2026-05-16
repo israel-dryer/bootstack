@@ -51,16 +51,6 @@ class SideNavItem(Frame):
     Uses NavigationButton.TFrame for the container (with selection indicator)
     and NavigationButton.TLabel for the icon and text labels.
 
-    !!! note "Events"
-        - `<<ItemInvoked>>`: Fired when the item is clicked.
-          `event.data = {'key': str}`
-
-    Example:
-        ```python
-        # Items are typically created via SideNav.add_item()
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        ```
     """
 
     # Default indent width in pixels per indent level
@@ -92,18 +82,18 @@ class SideNavItem(Frame):
         """Initialize a SideNavItem.
 
         Args:
-            master (Master | None): Parent widget.
-            key (str): Unique identifier for this item (used as selection value).
-            text (str): Display text for the item.
-            icon (str | dict | None): Icon name or configuration dict.
-            signal (Signal | None): Reactive signal for selection state (preferred).
-            variable (Variable | None): Shared variable for radio group selection.
-            is_enabled (bool): Whether the item is interactive. Default True.
-            indent_level (int): Nesting level for indentation (0 = root, 1 = child). Default 0.
-            command (Callable | None): Callback invoked when item is clicked.
-            padding_x (int | None): Horizontal padding on edges. Default is 12.
-            padding_y (int | None): Vertical padding. Default is 8.
-            icon_gap (int | None): Gap between icon and text. Default is 8.
+            master: Parent widget.
+            key: Unique identifier for this item (used as selection value).
+            text: Display text for the item.
+            icon: Icon name or configuration dict.
+            signal: Reactive signal for selection state (preferred).
+            variable: Shared variable for radio group selection.
+            is_enabled: Whether the item is interactive. Default True.
+            indent_level: Nesting level for indentation (0 = root, 1 = child). Default 0.
+            command: Callback invoked when item is clicked.
+            padding_x: Horizontal padding on edges. Default is 12.
+            padding_y: Vertical padding. Default is 8.
+            icon_gap: Gap between icon and text. Default is 8.
             **kwargs: Additional arguments passed to Frame.
         """
         if not key:
@@ -299,7 +289,7 @@ class SideNavItem(Frame):
         """Set the enabled state.
 
         Args:
-            enabled (bool): True to enable, False to disable.
+            enabled: True to enable, False to disable.
         """
         self._is_enabled = enabled
         self._container.set_disabled(not enabled)
@@ -308,7 +298,7 @@ class SideNavItem(Frame):
         """Set compact mode (icon only, no text).
 
         Args:
-            compact (bool): True for compact mode, False for full display.
+            compact: True for compact mode, False for full display.
         """
         if self._compact == compact:
             return
@@ -408,6 +398,6 @@ class SideNavItem(Frame):
         """Unbind from `<<ItemInvoked>>`.
 
         Args:
-            bind_id (str | None): Binding identifier from on_invoked().
+            bind_id: Binding identifier from on_invoked().
         """
         self.unbind('<<ItemInvoked>>', bind_id)

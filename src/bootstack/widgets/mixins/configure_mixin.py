@@ -7,7 +7,7 @@ subclasses and custom widgets.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable
 
 
 def configure_delegate(*names: str):
@@ -34,11 +34,11 @@ class ConfigureDelegationMixin:
     custom configuration entries without if/else chains.
     """
 
-    _configure_delegate_map: Dict[str, str] = {}
+    _configure_delegate_map: dict[str, str] = {}
 
     def __init_subclass__(cls, **kwargs: Any) -> None:  # noqa: D401
         super().__init_subclass__(**kwargs)
-        mapping: Dict[str, str] = {}
+        mapping: dict[str, str] = {}
         for base in reversed(cls.__mro__):
             for name, member in getattr(base, "__dict__", {}).items():
                 keys = getattr(member, "_bootstack_configure_keys", None)
@@ -55,7 +55,7 @@ class ConfigureDelegationMixin:
         handler(value)
         return True
 
-    def _config_delegate_get(self, key: str) -> Tuple[bool, Any]:
+    def _config_delegate_get(self, key: str) -> tuple[bool, Any]:
         method_name = self._configure_delegate_map.get(key)
         if not method_name:
             return False, None

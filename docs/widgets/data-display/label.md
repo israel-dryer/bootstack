@@ -38,9 +38,9 @@ Use Label when:
 
 ### Consider a different control when...
 
-- **User input is required** — use [TextEntry](../inputs/textentry.md)
-- **You need a compact status indicator** — use [Badge](badge.md)
-- **You need interactive text** — use [Button](../actions/button.md)
+- user input is required — use [TextEntry](../inputs/textentry.md)
+- you need a compact status indicator — use [Badge](badge.md)
+- you need interactive text — use [Button](../actions/button.md)
 
 ---
 
@@ -68,15 +68,17 @@ bs.Label(app, text="Tag", accent="primary", variant="inverse")
 
 ### Common options
 
-- `text` — the text content to display
-- `textsignal` — a `Signal[str]` for reactive text updates
-- `icon`, `icon_only` — theme-aware icon alongside or instead of text
-- `font` — bootstack font token (e.g. `"heading-lg[bold]"`, `"body"`, `"label[9]"`)
-- `value_format` — format spec for displaying numeric/date values (e.g. `"currency"`, `"shortDate"`)
-- `compound` — how to combine text and icon/image (`"left"`, `"right"`, `"top"`, `"bottom"`)
-- `anchor` — content alignment within the label
-- `justify` — text alignment (`"left"`, `"center"`, `"right"`)
-- `wraplength` — maximum line width before wrapping
+| Option | Purpose |
+|---|---|
+| `text` | The text content to display |
+| `textsignal` | A `Signal[str]` for reactive text updates |
+| `icon`, `icon_only` | Theme-aware icon alongside or instead of text |
+| `font` | Bootstack font token (e.g. `"heading-lg[bold]"`, `"body"`, `"label[9]"`) |
+| `value_format` | Format spec for displaying numeric/date values (e.g. `"currency"`, `"shortDate"`) |
+| `compound` | How to combine text and icon/image (`"left"`, `"right"`, `"top"`, `"bottom"`) |
+| `anchor` | Content alignment within the label |
+| `justify` | Text alignment (`"left"`, `"center"`, `"right"`) |
+| `wraplength` | Maximum line width before wrapping |
 
 ### Text alignment
 
@@ -179,7 +181,3 @@ message.set("Updated text")   # label updates automatically
 - [Formatting](../../guides/formatting.md) — value_format presets and patterns
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
 - [Localization](../../guides/localization.md) — translation support
-
-### API reference
-
-- [`bootstack.Label`](../../reference/widgets/Label.md)

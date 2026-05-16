@@ -43,7 +43,7 @@ Use `DateEntry` when:
 - you need a start/end date range in a compact field (`selection_mode='range'`)
 - validation and formatting should be consistent with other field controls
 
-Consider a different control when:
+### Consider a different control when...
 
 - you need time-of-day input — use [TimeEntry](timeentry.md)
 - the value is "date-like" but not an actual calendar date — use [TextEntry](textentry.md)
@@ -252,7 +252,7 @@ d.insert_addon(
 </div>
 
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+!!! link "See [TextEntry](textentry.md) for the full add-on API."
 
 ### Events
 
@@ -346,7 +346,3 @@ entry = bs.DateEntry(app, label="Start date", textsignal=start)
 - [Formatting](../../guides/formatting.md) — date presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.DateEntry`](../../reference/widgets/DateEntry.md)

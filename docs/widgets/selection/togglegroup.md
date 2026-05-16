@@ -42,9 +42,9 @@ Use `ToggleGroup` when:
 
 ### Consider a different control when...
 
-- options should look like classic radio buttons → use [RadioGroup](radiogroup.md)
-- you have unrelated actions that shouldn't look connected → use separate [Button](../actions/button.md) widgets
-- you need grouped action buttons (not selection) → use [ButtonGroup](../actions/buttongroup.md)
+- options should look like classic radio buttons — use [RadioGroup](radiogroup.md)
+- you have unrelated actions that shouldn't look connected — use separate [Button](../actions/button.md) widgets
+- you need grouped action buttons (not selection) — use [ButtonGroup](../actions/buttongroup.md)
 
 ---
 
@@ -230,7 +230,3 @@ group.add("List", value="list")
 - [Design System](../../design-system/index.md) — color tokens and theming
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — internationalizing widget text
-
-### API reference
-
-- [`bootstack.ToggleGroup`](../../reference/widgets/ToggleGroup.md)

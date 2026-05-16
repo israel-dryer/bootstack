@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from tkinter import Variable
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from typing_extensions import TypedDict, Unpack
 
@@ -58,38 +58,6 @@ class SideNav(Frame):
     The pane manages a shared selection variable/signal that all items use
     for radio-group behavior.
 
-    !!! note "Events"
-        - `<<PaneToggled>>`: Fired when pane is opened/closed.
-          `event.data = {'is_open': bool}`
-        - `<<DisplayModeChanged>>`: Fired when display mode changes.
-          `event.data = {'mode': str}`
-        - `<<SelectionChanged>>`: Fired when selected item changes.
-          `event.data = {'key': str}`
-        - `<<BackRequested>>`: Fired when back button is clicked.
-
-    Example:
-        ```python
-        nav = SideNav(root, title='My App')
-
-        # Add root-level items
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_item('docs', text='Documents', icon='file-earmark-text')
-
-        # Add a group with items
-        nav.add_group('files', text='Files', icon='folder')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        nav.add_item('cloud', text='Cloud', icon='cloud', group='files')
-
-        # Add section header
-        nav.add_header('Favorites')
-        nav.add_item('photos', text='Photos', icon='image')
-
-        # Add footer item
-        nav.add_footer_item('settings', text='Settings', icon='gear')
-
-        # Bind to selection
-        nav.on_selection_changed(lambda e: print(f"Selected: {e.data['key']}"))
-        ```
     """
 
     # Default pane widths
@@ -114,18 +82,18 @@ class SideNav(Frame):
         """Initialize a SideNav.
 
         Args:
-            master (Master | None): Parent widget.
-            title (str): Title displayed in the pane header.
-            show_header (bool): Show internal header with toolbar. Default True.
+            master: Parent widget.
+            title: Title displayed in the pane header.
+            show_header: Show internal header with toolbar. Default True.
                 Set to False when using an external toolbar.
-            show_back_button (bool): Show back button in header. Default False.
-            collapsible (bool): Allow pane to collapse. Shows hamburger menu. Default True.
-            display_mode (DisplayMode): Initial display mode. Default 'expanded'.
-            is_pane_open (bool): Initial pane state. Default True.
-            pane_width (int | None): Custom pane width. Uses default based on mode.
-            signal (Signal | None): Reactive signal for selection state.
-            variable (Variable | None): Tk variable for selection state.
-            accent (str): Accent color for selection indicators. Default 'primary'.
+            show_back_button: Show back button in header. Default False.
+            collapsible: Allow pane to collapse. Shows hamburger menu. Default True.
+            display_mode: Initial display mode. Default 'expanded'.
+            is_pane_open: Initial pane state. Default True.
+            pane_width: Custom pane width. Uses default based on mode.
+            signal: Reactive signal for selection state.
+            variable: Tk variable for selection state.
+            accent: Accent color for selection indicators. Default 'primary'.
             **kwargs: Additional arguments passed to Frame.
         """
         super().__init__(master, **kwargs)
@@ -422,10 +390,10 @@ class SideNav(Frame):
         mode. In compact mode, clicking a group shows a popup with its items.
 
         Args:
-            key (str): Unique identifier for the group.
-            text (str): Display text.
-            icon (str | dict | None): Icon name or configuration.
-            is_expanded (bool): Initial expansion state. Default False.
+            key: Unique identifier for the group.
+            text: Display text.
+            icon: Icon name or configuration.
+            is_expanded: Initial expansion state. Default False.
             **kwargs: Additional arguments passed to SideNavGroup.
 
         Returns:
@@ -472,10 +440,10 @@ class SideNav(Frame):
         """Add a navigation item to the pane.
 
         Args:
-            key (str): Unique identifier for the item.
-            text (str): Display text.
-            icon (str | dict | None): Icon name or configuration.
-            group (str | None): Key of the group to add this item to.
+            key: Unique identifier for the item.
+            text: Display text.
+            icon: Icon name or configuration.
+            group: Key of the group to add this item to.
                 If None, item is added at root level.
             **kwargs: Additional arguments passed to SideNavItem.
 
@@ -538,7 +506,7 @@ class SideNav(Frame):
         Headers are hidden in compact display mode.
 
         Args:
-            text (str): Header text.
+            text: Header text.
             **kwargs: Additional arguments passed to SideNavHeader.
 
         Returns:
@@ -580,9 +548,9 @@ class SideNav(Frame):
         """Add a navigation item to the footer section.
 
         Args:
-            key (str): Unique identifier for the item.
-            text (str): Display text.
-            icon (str | dict | None): Icon name or configuration.
+            key: Unique identifier for the item.
+            text: Display text.
+            icon: Icon name or configuration.
             **kwargs: Additional arguments passed to SideNavItem.
 
         Returns:
@@ -624,7 +592,7 @@ class SideNav(Frame):
         """Get an item by key.
 
         Args:
-            key (str): The item key.
+            key: The item key.
 
         Returns:
             SideNavItem: The item.
@@ -658,7 +626,7 @@ class SideNav(Frame):
         """Get a group by key.
 
         Args:
-            key (str): The group key.
+            key: The group key.
 
         Returns:
             SideNavGroup: The group.
@@ -698,7 +666,7 @@ class SideNav(Frame):
         """Remove an item by key.
 
         Args:
-            key (str): The item key to remove.
+            key: The item key to remove.
         """
         if key in self._items:
             item = self._items.pop(key)
@@ -726,7 +694,7 @@ class SideNav(Frame):
         """Remove a group and all its items.
 
         Args:
-            key (str): The group key to remove.
+            key: The group key to remove.
         """
         if key not in self._groups:
             return
@@ -749,7 +717,7 @@ class SideNav(Frame):
         """Select an item by key.
 
         Args:
-            key (str): The item key to select.
+            key: The item key to select.
         """
         if self._selection_var:
             self._selection_var.set(key)
@@ -789,7 +757,7 @@ class SideNav(Frame):
         """Set the display mode.
 
         Args:
-            mode (DisplayMode): 'expanded', 'compact', or 'minimal'.
+            mode: 'expanded', 'compact', or 'minimal'.
         """
         if mode != self._display_mode:
             self._display_mode = mode
@@ -864,47 +832,81 @@ class SideNav(Frame):
 
     # --- Event Binding Helpers ---
 
-    def on_selection_changed(self, callback) -> str:
-        """Bind to `<<SelectionChanged>>`.
+    def on_selection_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<SelectionChanged>>` events.
 
         Args:
-            callback: Function to call when selection changes.
+            callback: Receives `event.data = {'key': str}` — the newly selected
+                item key, or an empty string when nothing is selected.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_selection_changed()` to unsubscribe.
         """
         return self.bind('<<SelectionChanged>>', callback, add='+')
 
-    def off_selection_changed(self, bind_id: str = None) -> None:
-        """Unbind from `<<SelectionChanged>>`."""
-        self.unbind('<<SelectionChanged>>', bind_id)
-
-    def on_back_requested(self, callback) -> str:
-        """Bind to `<<BackRequested>>`.
+    def off_selection_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<SelectionChanged>>`.
 
         Args:
-            callback: Function to call when back button is clicked.
+            bind_id: ID returned by `on_selection_changed()`. If None, removes all.
+        """
+        self.unbind('<<SelectionChanged>>', bind_id)
+
+    def on_back_requested(self, callback: Callable) -> str:
+        """Register a callback for `<<BackRequested>>` events (fires when the back button is clicked).
+
+        Args:
+            callback: Called when the back button is clicked. `event.data` is None.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_back_requested()` to unsubscribe.
         """
         return self.bind('<<BackRequested>>', callback, add='+')
 
-    def off_back_requested(self, bind_id: str = None) -> None:
-        """Unbind from `<<BackRequested>>`."""
-        self.unbind('<<BackRequested>>', bind_id)
-
-    def on_pane_toggled(self, callback) -> str:
-        """Bind to `<<PaneToggled>>`.
+    def off_back_requested(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<BackRequested>>`.
 
         Args:
-            callback: Function to call when pane is toggled.
+            bind_id: ID returned by `on_back_requested()`. If None, removes all.
+        """
+        self.unbind('<<BackRequested>>', bind_id)
+
+    def on_pane_toggled(self, callback: Callable) -> str:
+        """Register a callback for `<<PaneToggled>>` events.
+
+        Args:
+            callback: Receives `event.data = {'is_open': bool}` — True when the
+                pane opened, False when it closed.
 
         Returns:
-            str: Binding identifier.
+            Bind ID — pass to `off_pane_toggled()` to unsubscribe.
         """
         return self.bind('<<PaneToggled>>', callback, add='+')
 
-    def off_pane_toggled(self, bind_id: str = None) -> None:
-        """Unbind from `<<PaneToggled>>`."""
+    def off_pane_toggled(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<PaneToggled>>`.
+
+        Args:
+            bind_id: ID returned by `on_pane_toggled()`. If None, removes all.
+        """
         self.unbind('<<PaneToggled>>', bind_id)
+
+    def on_display_mode_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<DisplayModeChanged>>` events.
+
+        Args:
+            callback: Receives `event.data = {'mode': str}` — one of
+                `'expanded'`, `'compact'`, or `'minimal'`.
+
+        Returns:
+            Bind ID — pass to `off_display_mode_changed()` to unsubscribe.
+        """
+        return self.bind('<<DisplayModeChanged>>', callback, add='+')
+
+    def off_display_mode_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<DisplayModeChanged>>`.
+
+        Args:
+            bind_id: ID returned by `on_display_mode_changed()`. If None, removes all.
+        """
+        self.unbind('<<DisplayModeChanged>>', bind_id)

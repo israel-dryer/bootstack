@@ -14,10 +14,6 @@ class TextEntryPart(ValidationMixin, Entry):
     providing a clean pattern for handling formatted data entry. Parsing and formatting
     only occur when the user commits the value via `<FocusOut>` or `<Return>`.
 
-    !!! note "Events"
-        - `<<Input>>`: Triggered on each keystroke. `event.data = {'text': str}`
-        - `<<Change>>`: Triggered when value changes after commit. `event.data = {'value': Any, 'prev_value': Any, 'text': str}`
-        - `<Return>`: Triggered on Enter key press. `event.data = {'value': Any, 'text': str}`
     """
 
     def __init__(
@@ -40,12 +36,12 @@ class TextEntryPart(ValidationMixin, Entry):
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display and parse. Can be a string or any value
                 that can be formatted using value_format. Default is empty string.
-            value_format (str): ICU format pattern for parsing and formatting the value.
+            value_format: ICU format pattern for parsing and formatting the value.
                 Common patterns: `'#,##0.00'` (decimal), `'¤#,##0.00'` (currency),
                 `'yyyy-MM-dd'` (date), `'#,##0.00%'` (percent).
                 If None, value is treated as plain text (no parsing/formatting).
-            initial_focus (bool): If True, widget receives focus when created.
-            allow_blank (bool): If True, empty input is parsed as None. If False, empty
+            initial_focus: If True, widget receives focus when created.
+            allow_blank: If True, empty input is parsed as None. If False, empty
                 input preserves the previous value.
             **kwargs: Additional keyword arguments passed to the Entry base class.
 

@@ -46,13 +46,11 @@ Use `Expander` when:
 
 - grouping related controls under a collapsible header improves scanability
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- content should always be visible -- use [LabelFrame](labelframe.md) or [Frame](frame.md)
-
-- you need multiple exclusive sections (only one open at a time) -- use [Accordion](accordion.md)
-
-- you need tabbed navigation -- use [Notebook](../views/notebook.md)
+- content should always be visible — use [LabelFrame](labelframe.md) or [Frame](frame.md)
+- you need multiple exclusive sections (only one open at a time) — use [Accordion](accordion.md)
+- you need tabbed navigation — use [Notebook](../views/notebook.md)
 
 ---
 
@@ -242,7 +240,3 @@ exp.configure(icon_expanded={'name': 'caret-up', 'size': 14})
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Expander`](../../reference/widgets/Expander.md)

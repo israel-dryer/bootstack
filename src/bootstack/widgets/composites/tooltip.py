@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import Misc
 from types import SimpleNamespace
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 from bootstack.constants import *
 from bootstack.runtime.toplevel import Toplevel
@@ -35,13 +35,13 @@ class ToolTip:
             text: str = "widget info",
             padding: int = 10,
             justify: Literal["left", "center", "right"] = "left",
-            accent: Optional[str] = None,
-            wraplength: Optional[int] = None,
+            accent: str | None = None,
+            wraplength: int | None = None,
             delay: int = 250,  # milliseconds
             image: Any = None,
-            anchor_point: Optional[AnchorPoint] = None,
-            window_point: Optional[AnchorPoint] = None,
-            auto_flip: Union[bool, Literal['vertical', 'horizontal']] = True,
+            anchor_point: AnchorPoint | None = None,
+            window_point: AnchorPoint | None = None,
+            auto_flip: bool | Literal['vertical', 'horizontal'] = True,
             **kwargs: Any,
     ) -> None:
         """Initialize a ToolTip instance for the specified widget.
@@ -67,7 +67,6 @@ class ToolTip:
                 "center", or "right". Defaults to "left".
             accent: Accent token for the tooltip frame (e.g., "danger", "info").
                 If None, uses default elevated background styling.
-            bootstyle: DEPRECATED - Use `accent` instead. Bootstrap style(s) to apply
                 to the tooltip frame.
             wraplength: Maximum width in screen units before text wraps to a new line.
                 If None, defaults to a scaled value of 300 based on the widget's display.

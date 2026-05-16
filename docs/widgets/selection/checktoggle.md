@@ -42,9 +42,9 @@ Use `CheckToggle` when:
 
 ### Consider a different control when...
 
-- classic checkbox indicators are expected in forms or settings panels → use [CheckButton](checkbutton.md)
-- you want a slider-style on/off toggle → use [Switch](switch.md)
-- only one option may be active in a group → use [RadioToggle](radiotoggle.md) or [ToggleGroup](togglegroup.md)
+- classic checkbox indicators are expected in forms or settings panels — use [CheckButton](checkbutton.md)
+- you want a slider-style on/off toggle — use [Switch](switch.md)
+- only one option may be active in a group — use [RadioToggle](radiotoggle.md) or [ToggleGroup](togglegroup.md)
 
 ---
 
@@ -180,7 +180,3 @@ enabled.subscribe(lambda v: print("Snap:", v))
 - [Design System](../../design-system/index.md) — color tokens and theming
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — internationalizing widget text
-
-### API reference
-
-- [`bootstack.CheckToggle`](../../reference/widgets/CheckToggle.md)

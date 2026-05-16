@@ -4,7 +4,7 @@ Provides a specialized entry field for numeric input with increment/decrement
 buttons and keyboard/mouse wheel support.
 """
 
-from typing import Any
+from typing import Any, Callable
 from tkinter import TclError
 from typing_extensions import Unpack
 
@@ -12,6 +12,7 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.field import Field, FieldOptions
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
+from bootstack.core.localization.intl_format import NumberFormatSpec
 
 
 class NumericEntry(Field):
@@ -19,23 +20,6 @@ class NumericEntry(Field):
 
     Extends Field to provide numeric input with spin buttons, bounds validation,
     keyboard stepping (Up/Down arrows), mouse wheel support, and optional wrapping.
-
-    !!! note "Events"
-
-        - `<<Increment>>`: Fired when increment is requested (before step occurs).
-        - `<<Decrement>>`: Fired when decrement is requested (before step occurs).
-        - `<<Change>>`: Fired when value changes after commit.
-        - `<<Input>>`: Fired on each keystroke.
-        - `<<Valid>>`: Fired when validation passes.
-        - `<<Invalid>>`: Fired when validation fails.
-
-    Attributes:
-        entry_widget (NumberEntryPart): The underlying entry widget.
-        label_widget (Label): The label widget.
-        message_widget (Label): The message label widget.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
@@ -50,51 +34,44 @@ class NumericEntry(Field):
             increment: int | float = 1,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a NumericEntry widget.
-
-        Creates a numeric entry field with optional label, validation, bounds
-        constraints, and increment/decrement spin buttons. The widget supports
-        keyboard stepping (Up/Down arrows), mouse wheel interaction, and optional
-        value wrapping at boundaries.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
-            value (int | float): Initial numeric value to display.
-            label (str): Optional label text to display above the entry field.
+            value: Initial numeric value to display.
+            label: Optional label text to display above the entry field.
                 If `required=True`, an asterisk (*) is automatically appended.
-            message (str): Optional message text to display below the entry field.
+            message: Optional message text to display below the entry field.
                 Used for hints or help text. Replaced by validation errors when
                 validation fails.
-            show_spin_buttons (bool): If True, displays increment/decrement buttons
+            show_spin_buttons: If True, displays increment/decrement buttons
                 (plus and minus icons) to the right of the entry.
-            minvalue (int | float): Minimum allowed value (inclusive). Values below
+            minvalue: Minimum allowed value (inclusive). Values below
                 this will be clamped or wrapped depending on the wrap setting.
-            maxvalue (int | float): Maximum allowed value (inclusive). Values above
+            maxvalue: Maximum allowed value (inclusive). Values above
                 this will be clamped or wrapped depending on the wrap setting.
-            increment (int | float): Step size for increment/decrement operations.
+            increment: Step size for increment/decrement operations.
 
         Other Parameters:
-            wrap (bool): If True, values wrap around at min/max boundaries.
-            value_format (str): Number format specification for IntlFormatter.
-                Examples: `'decimal'`, `'percent'`, `'currency'`, `'#,##0.00'`.
-            locale (str): Locale identifier for number formatting (e.g., `'en_US'`).
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            allow_blank (bool): If True, empty input is allowed (sets value to None).
-            cursor (str): Cursor style when hovering.
-            exportselection (bool): Export selection to clipboard.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment (`'left'`, `'center'`, `'right'`).
-            show_message (bool): If True, displays message area.
-            padding (int | tuple): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-            xscrollcommand (Callable): Callback for horizontal scrolling.
+            wrap: If True, values wrap around at min/max boundaries.
+            value_format: Number format — a `NumberPreset` string
+                (e.g., `'decimal'`, `'percent'`, `'currency'`) or a custom ICU
+                pattern (e.g., `'#,##0.00'`).
+            locale: Locale identifier for number formatting (e.g., `'en_US'`).
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: If True, empty input is allowed (sets value to None).
+            cursor: Cursor style when hovering.
+            exportselection: Export selection to clipboard.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment (`'left'`, `'center'`, `'right'`).
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
+            xscrollcommand: Callback for horizontal scrolling.
         """
         super().__init__(
             master, value=value, label=label, message=message, minvalue=minvalue, maxvalue=maxvalue, kind="numeric",
@@ -102,12 +79,7 @@ class NumericEntry(Field):
 
         self._show_spin_buttons = show_spin_buttons
 
-        # passthrough methods
-        self.on_increment = self.entry_widget.on_increment
-        self.off_increment = self.entry_widget.off_increment
-        self.on_decrement = self.entry_widget.on_decrement
-        self.off_decrement = self.entry_widget.off_decrement
-        self.step = self.entry_widget.step
+        # passthrough methods — replaced below with def stubs for API visibility
 
         # pack info
         self._increment_pack_info = {}
@@ -124,26 +96,74 @@ class NumericEntry(Field):
         self._update_spin_button_states()
 
     @property
-    def increment_widget(self):
+    def increment_widget(self) -> Button:
         """Get the increment spin button widget."""
         return self.addons['increment']
 
     @property
-    def decrement_widget(self):
+    def decrement_widget(self) -> Button:
         """Get the decrement spin button widget."""
         return self.addons['decrement']
 
-    def increment(self):
+    def increment(self) -> None:
         """Increment the numeric value by one step."""
         if not self._entry_is_interactive():
             return
         self.entry_widget.event_generate("<<Increment>>")
 
-    def decrement(self):
+    def decrement(self) -> None:
         """Decrement the numeric value by one step."""
         if not self._entry_is_interactive():
             return
         self.entry_widget.event_generate("<<Decrement>>")
+
+    def step(self, n: int = 1) -> None:
+        """Step the value by `n` increments (positive) or decrements (negative).
+
+        Args:
+            n: Number of steps. Positive steps up, negative steps down.
+        """
+        self.entry_widget.step(n)
+
+    def on_increment(self, callback: Callable) -> str:
+        """Register a callback for `<<Increment>>` events (fires when value steps up).
+
+        Args:
+            callback: Receives a Tkinter `Event` object with `event.data['value']`
+                set to the new numeric value.
+
+        Returns:
+            Bind ID — pass to `off_increment()` to unsubscribe.
+        """
+        return self.entry_widget.on_increment(callback)
+
+    def off_increment(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Increment>>`.
+
+        Args:
+            bind_id: ID returned by `on_increment()`.
+        """
+        self.entry_widget.off_increment(bind_id)
+
+    def on_decrement(self, callback: Callable) -> str:
+        """Register a callback for `<<Decrement>>` events (fires when value steps down).
+
+        Args:
+            callback: Receives a Tkinter `Event` object with `event.data['value']`
+                set to the new numeric value.
+
+        Returns:
+            Bind ID — pass to `off_decrement()` to unsubscribe.
+        """
+        return self.entry_widget.on_decrement(callback)
+
+    def off_decrement(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Decrement>>`.
+
+        Args:
+            bind_id: ID returned by `on_decrement()`.
+        """
+        self.entry_widget.off_decrement(bind_id)
 
     def _entry_is_interactive(self) -> bool:
         """Return True if the entry widget is not disabled or readonly."""

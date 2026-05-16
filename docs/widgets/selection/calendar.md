@@ -135,27 +135,35 @@ cal.range = (date(2025, 1, 10), date(2025, 1, 20))
 
 ### Common options
 
-Selection:
+**Selection**
 
-- `selection_mode`: `"single"` (default) or `"range"`
-- `value`: initial selected date for single mode (`date`, `datetime`, or ISO string)
-- `start_date`, `end_date`: range start/end (range mode only)
+| Option | Purpose |
+|---|---|
+| `selection_mode` | `"single"` (default) or `"range"` |
+| `value` | Initial selected date for single mode (`date`, `datetime`, or ISO string) |
+| `start_date`, `end_date` | Range start/end (range mode only) |
 
-Constraints:
+**Constraints**
 
-- `min_date`, `max_date`: minimum and maximum selectable dates
-- `disabled_dates`: iterable of dates that cannot be selected
+| Option | Purpose |
+|---|---|
+| `min_date`, `max_date` | Minimum and maximum selectable dates |
+| `disabled_dates` | Iterable of dates that cannot be selected |
 
-Display:
+**Display**
 
-- `show_outside_days`: show adjacent-month days (default `True` for single, `False` for range)
-- `show_week_numbers`: show ISO week numbers (default `False`)
-- `first_weekday`: `0=Monday` … `6=Sunday`, `None` for locale default
+| Option | Purpose |
+|---|---|
+| `show_outside_days` | Show adjacent-month days (default `True` for single, `False` for range) |
+| `show_week_numbers` | Show ISO week numbers (default `False`) |
+| `first_weekday` | `0=Monday` … `6=Sunday`, `None` for locale default |
 
-Style:
+**Style**
 
-- `accent`: accent color for selection and highlights (default `"primary"`)
-- `padding`: padding around the widget
+| Option | Purpose |
+|---|---|
+| `accent` | Accent color for selection and highlights (default `"primary"`) |
+| `padding` | Padding around the widget |
 
 ### Binding to signals or variables
 
@@ -215,7 +223,3 @@ It refreshes automatically when `<<LocaleChanged>>` is generated.
 
 - [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.Calendar`](../../reference/widgets/Calendar.md)

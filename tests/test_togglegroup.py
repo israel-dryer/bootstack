@@ -52,18 +52,18 @@ class TestToggleGroup(unittest.TestCase):
         group = ToggleGroup(self.root)
         btn1 = group.add(text='A', value='a')
         btn2 = group.add(text='B', value='b')
-        self.assertEqual(len(group.buttons()), 2)
-        self.assertIs(group.get_button('a'), btn1)
-        self.assertIs(group.get_button('b'), btn2)
+        self.assertEqual(len(group.items()), 2)
+        self.assertIs(group.item('a'), btn1)
+        self.assertIs(group.item('b'), btn2)
 
     def test_remove_button(self):
         group = ToggleGroup(self.root)
         group.add(text='A', value='a')
         group.add(text='B', value='b')
         group.remove('a')
-        self.assertEqual(len(group.buttons()), 1)
+        self.assertEqual(len(group.items()), 1)
         with self.assertRaises(KeyError):
-            group.get_button('a')
+            group.item('a')
 
     # 3. Value Handling Tests
     def test_get_set_single_mode(self):
@@ -94,7 +94,7 @@ class TestToggleGroup(unittest.TestCase):
         b_button.invoke()
         self.assertEqual(var.get(), 'b') # Should still be b as it's a radio
 
-        a_button = group.get_button('a')
+        a_button = group.item('a')
         a_button.invoke()
         self.assertEqual(var.get(), 'a')
 
@@ -125,23 +125,19 @@ class TestToggleGroup(unittest.TestCase):
         self.assertEqual(group.get(), "b")
 
         # Test widget -> signal
-        group.get_button('a').invoke()
+        group.item('a').invoke()
         self.assertEqual(sig.get(), "a")
 
     # 4. UI Layout Tests
     def test_orientation(self):
-        h_group = ToggleGroup(self.root, orientation='horizontal')
+        h_group = ToggleGroup(self.root, orient='horizontal')
         h_btn = h_group.add(value='a')
         self.assertEqual(h_btn.pack_info()['side'], 'left')
 
-        v_group = ToggleGroup(self.root, orientation='vertical')
+        v_group = ToggleGroup(self.root, orient='vertical')
         v_btn = v_group.add(value='a')
         self.assertEqual(v_btn.pack_info()['side'], 'top')
 
-    def test_bootstyle_propagation(self):
-        group = ToggleGroup(self.root, bootstyle='danger')
-        button = group.add(value='a')
-        self.assertIn('danger', button.cget('bootstyle'))
 
 if __name__ == '__main__':
     unittest.main()

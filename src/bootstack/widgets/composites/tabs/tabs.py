@@ -5,7 +5,7 @@ __all__ = ['Tabs']
 
 import tkinter as tk
 from tkinter import Variable
-from typing import Any, Callable, Literal, TYPE_CHECKING, Union
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets.primitives.packframe import PackFrame
 from bootstack.widgets.primitives.frame import Frame
@@ -25,14 +25,9 @@ class Tabs(Frame):
     Tabs provides a tab bar with optional divider. It manages the layout,
     orientation, and styling of child TabItems.
 
-    !!! note "Events"
-        - `<<TabSelect>>`: Fired when a tab is selected (bubbled from TabItem).
-        - `<<TabClose>>`: Fired when a tab's close button is clicked (bubbled from TabItem).
-        - `<<TabAdd>>`: Fired when the add button is clicked (if enable_adding=True).
-
     Attributes:
-        orient (str): The orientation of the tab bar ('horizontal' or 'vertical').
-        variant (str): The visual style variant ('pill' or 'bar').
+        orient: The orientation of the tab bar ('horizontal' or 'vertical').
+        variant: The visual style variant ('pill' or 'bar').
     """
 
     def __init__(
@@ -42,10 +37,10 @@ class Tabs(Frame):
         variant: Literal['pill', 'bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
-        tab_width: Union[None, int, Literal['stretch']] = None,
+        tab_width: None | int | Literal['stretch'] = None,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        enable_closing: Union[bool, Literal['hover']] = False,
+        enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         variable: Variable = None,
         signal: 'Signal[Any]' = None,
@@ -220,19 +215,42 @@ class Tabs(Frame):
         self.event_generate('<<TabAdd>>')
 
     def on_tab_added(self, callback: Callable) -> str:
-        """Bind to `<<TabAdd>>` event.
+        """Register a callback for `<<TabAdd>>` events (fires when the add button is clicked).
 
         Args:
-            callback: Function to call when add button is clicked.
+            callback: Called when the add button is clicked. `event.data` is None.
 
         Returns:
-            Binding identifier for use with off_tab_added().
+            Bind ID — pass to `off_tab_added()` to unsubscribe.
         """
         return self.bind('<<TabAdd>>', callback, add='+')
 
     def off_tab_added(self, bind_id: str | None = None) -> None:
-        """Unbind from <<TabAdd>> event."""
+        """Unsubscribe from `<<TabAdd>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_added()`. If None, removes all.
+        """
         self.unbind('<<TabAdd>>', bind_id)
+
+    def on_tab_closed(self, callback: Callable) -> str:
+        """Register a callback for `<<TabClose>>` events (fires when a tab's close button is clicked).
+
+        Args:
+            callback: Receives `event.data = {'value': Any}` — the closed tab's value.
+
+        Returns:
+            Bind ID — pass to `off_tab_closed()` to unsubscribe.
+        """
+        return self.bind('<<TabClose>>', callback, add='+')
+
+    def off_tab_closed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TabClose>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_closed()`. If None, removes all.
+        """
+        self.unbind('<<TabClose>>', bind_id)
 
     def add(
         self,
@@ -241,7 +259,7 @@ class Tabs(Frame):
         key: str = None,
         icon: str | dict = None,
         value: Any = None,
-        closable: Union[bool, Literal['hover']] = None,
+        closable: bool | Literal['hover'] | None = None,
         close_command: Callable = None,
         command: Callable = None,
         **kwargs
@@ -463,16 +481,21 @@ class Tabs(Frame):
         self.set(value)
 
     def on_tab_changed(self, callback: Callable) -> Any:
-        """Subscribe to tab selection changes.
+        """Register a callback for tab selection changes.
 
         Args:
-            callback: Function called with the new selected value.
+            callback: Called with the new selected tab value (str) when the
+                selection changes.
 
         Returns:
-            Subscription ID for use with off_tab_changed().
+            Subscription ID — pass to `off_tab_changed()` to unsubscribe.
         """
         return self._signal.subscribe(callback)
 
     def off_tab_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from tab selection changes."""
+        """Unsubscribe from tab selection changes.
+
+        Args:
+            bind_id: ID returned by `on_tab_changed()`.
+        """
         self._signal.unsubscribe(bind_id)

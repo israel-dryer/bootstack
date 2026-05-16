@@ -48,19 +48,6 @@ class SideNavGroup(Frame):
 
     The group shows as selected if any of its child items are currently selected.
 
-    !!! note "Events"
-        - `<<GroupExpanding>>`: Fired before the group expands.
-          `event.data = {'key': str}`
-        - `<<GroupCollapsed>>`: Fired after the group collapses.
-          `event.data = {'key': str}`
-
-    Example:
-        ```python
-        # Groups are created via SideNav.add_group()
-        nav.add_group('files', text='Files', icon='folder')
-        nav.add_item('local', text='Local', icon='hdd', group='files')
-        nav.add_item('cloud', text='Cloud', icon='cloud', group='files')
-        ```
     """
 
     # Default padding values (same as SideNavItem)
@@ -84,13 +71,13 @@ class SideNavGroup(Frame):
         """Initialize a SideNavGroup.
 
         Args:
-            master (Master | None): Parent widget.
-            key (str): Unique identifier for this group.
-            text (str): Display text for the group.
-            icon (str | dict | None): Icon name or configuration dict.
-            signal (Signal | None): Reactive signal for selection state.
-            variable (Variable | None): Shared variable for selection tracking.
-            is_expanded (bool): Initial expansion state. Default False.
+            master: Parent widget.
+            key: Unique identifier for this group.
+            text: Display text for the group.
+            icon: Icon name or configuration dict.
+            signal: Reactive signal for selection state.
+            variable: Shared variable for selection tracking.
+            is_expanded: Initial expansion state. Default False.
             **kwargs: Additional arguments passed to Frame.
         """
         if not key:
@@ -346,7 +333,7 @@ class SideNavGroup(Frame):
         with the group's items.
 
         Args:
-            compact (bool): True for compact mode, False for full display.
+            compact: True for compact mode, False for full display.
         """
         if self._compact == compact:
             return

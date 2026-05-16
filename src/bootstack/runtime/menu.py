@@ -246,9 +246,9 @@ class MenuManager:
 
         Args:
             parent: The parent widget (Window, Toplevel, or Menu). Used as the
-                Tk parent for the created ``tk.Menu``; the menu is NOT
+                Tk parent for the created `tk.Menu`; the menu is NOT
                 automatically attached to the parent — the caller decides
-                (e.g. ``widget['menu'] = m`` or ``MenuButton(menu=m)``).
+                (e.g. `widget['menu'] = m` or `MenuButton(menu=m)`).
             items: List of menu item dictionaries defining the menu structure.
 
         Returns:
@@ -367,20 +367,20 @@ def create_menu_items(items: list[dict], menu: tk.Menu = None) -> tk.Menu:
 
     Populates *menu* declaratively — flat commands, separators, and nested
     cascades are all supported.  Icons and theme-color updates are handled
-    automatically via ``MenuManager``.
+    automatically via `MenuManager`.
 
     Args:
-        items: List of item dicts.  Supported keys: ``label``, ``icon``,
-            ``command``, ``type`` (``'command'``, ``'checkbutton'``,
-            ``'radiobutton'``, ``'separator'``), ``variable``, ``value``,
-            ``shortcut``, ``accelerator``, ``items`` (nested cascade).
-        menu: ``tk.Menu`` to populate.  If ``None``, a new ``tk.Menu`` is
-            created under the current app (``get_current_app()``).  For a
-            secondary window or dialog, pass a ``bs.Menu(dialog, tearoff=0)``
+        items: List of item dicts.  Supported keys: `label`, `icon`,
+            `command`, `type` (`'command'`, `'checkbutton'`,
+            `'radiobutton'`, `'separator'`), `variable`, `value`,
+            `shortcut`, `accelerator`, `items` (nested cascade).
+        menu: `tk.Menu` to populate.  If `None`, a new `tk.Menu` is
+            created under the current app (`get_current_app()`).  For a
+            secondary window or dialog, pass a `bs.Menu(dialog, tearoff=0)`
             explicitly so icon tracking stays on the correct window.
 
     Returns:
-        The populated ``tk.Menu``.
+        The populated `tk.Menu`.
 
     Example::
 
@@ -399,41 +399,41 @@ def create_menu_items(items: list[dict], menu: tk.Menu = None) -> tk.Menu:
 def create_menu(items: list[dict], parent: Any = None) -> tk.Menu:
     """Create a menu with icon and theme support.
 
-    Builds a ``tk.Menu`` populated with cascade entries from *items*.  Icons
-    and theme-color updates are handled automatically via ``MenuManager``.
+    Builds a `tk.Menu` populated with cascade entries from *items*.  Icons
+    and theme-color updates are handled automatically via `MenuManager`.
 
     The returned menu is not attached to anything — pass it to a
-    ``MenuButton``, assign it as a window menubar, or use it however you like.
+    `MenuButton`, assign it as a window menubar, or use it however you like.
 
     Each top-level dict in *items* becomes a cascade (submenu group).  Items
-    inside ``"items"`` are the actual commands.  Supported keys per dict:
+    inside `"items"` are the actual commands.  Supported keys per dict:
 
     - **label** (str): Display text (message tokens are auto-translated).
-    - **icon** (str or dict): Bootstrap icon name, e.g. ``"folder2-open"``,
-      or ``{"name": "folder2-open", "size": 18}`` for a custom size.
+    - **icon** (str or dict): Bootstrap icon name, e.g. `"folder2-open"`,
+      or `{"name": "folder2-open", "size": 18}` for a custom size.
     - **items** (list): Nested sub-items — creates a cascade.
-    - **command** (callable): Callback for ``'command'`` items.
-    - **type** (str): ``'command'`` (default), ``'checkbutton'``,
-      ``'radiobutton'``, or ``'separator'``.
+    - **command** (callable): Callback for `'command'` items.
+    - **type** (str): `'command'` (default), `'checkbutton'`,
+      `'radiobutton'`, or `'separator'`.
     - **variable** (Variable): Tk variable for checkbutton / radiobutton.
     - **value**: Value for radiobutton items.
-    - **shortcut** (str): Platform-aware accelerator, e.g. ``'Mod+S'``.
-      Renders as ``⌘S`` on macOS and ``Ctrl+S`` on Win/Linux.
+    - **shortcut** (str): Platform-aware accelerator, e.g. `'Mod+S'`.
+      Renders as `⌘S` on macOS and `Ctrl+S` on Win/Linux.
     - **accelerator** (str): Literal accelerator string (legacy, no
-      platform translation). Prefer ``shortcut`` for new code.
-    - **name** (str): Tcl widget name for the cascade. On macOS, ``'apple'``,
-      ``'window'``, and ``'help'`` trigger system-native menu integration.
+      platform translation). Prefer `shortcut` for new code.
+    - **name** (str): Tcl widget name for the cascade. On macOS, `'apple'`,
+      `'window'`, and `'help'` trigger system-native menu integration.
 
     Args:
         items: List of dicts defining the cascade structure.
-        parent: Tk parent for the created ``tk.Menu`` and the window whose
-            ``MenuManager`` tracks icon theme updates.  Defaults to the
-            current app (``get_current_app()``).  Pass a specific
-            ``Toplevel`` or dialog when building a menu for a secondary
+        parent: Tk parent for the created `tk.Menu` and the window whose
+            `MenuManager` tracks icon theme updates.  Defaults to the
+            current app (`get_current_app()`).  Pass a specific
+            `Toplevel` or dialog when building a menu for a secondary
             window so icon tracking stays on the correct window.
 
     Returns:
-        The created ``tk.Menu``.
+        The created `tk.Menu`.
 
     Examples:
         MenuButton (single-window app — parent optional)::

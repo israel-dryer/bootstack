@@ -47,10 +47,10 @@ Use `ContextMenu` when:
 - you want theme-consistent menus across platforms
 - you want icons or richer item styling
 
-### Consider a different control when…
+### Consider a different control when...
 
-- you want a button-first action with a small menu → use [DropdownButton](dropdownbutton.md)
-- you want a persistent menu button in a toolbar → use [MenuButton](menubutton.md)
+- you want a button-first action with a small menu — use [DropdownButton](dropdownbutton.md)
+- you want a persistent menu button in a toolbar — use [MenuButton](menubutton.md)
 
 ---
 
@@ -282,8 +282,6 @@ menu.on_item_click(on_item_click)
 menu.off_item_click()  # remove when no longer needed
 ```
 
-!!! link "See [API Reference → ContextMenu](../../reference/widgets/ContextMenu.md) for full item management and callback APIs."
-
 ---
 
 ## Additional resources
@@ -299,8 +297,3 @@ menu.off_item_click()  # remove when no longer needed
 - [Icons & Imagery](../../guides/icons.md)
 - [Localization](../../guides/localization.md)
 - [State & Interaction](../../guides/reactivity.md)
-
-### API reference
-
-- [`bootstack.ContextMenu`](../../reference/widgets/ContextMenu.md)
-- [`bootstack.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)

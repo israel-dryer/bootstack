@@ -39,7 +39,6 @@ Use Toast when:
 ### Consider a different control when...
 
 - the user must confirm or decide something — use [MessageBox](../dialogs/messagebox.md)
-
 - the feedback is tied to a specific control (validation, helper text) — use inline messaging
 
 ---
@@ -97,7 +96,3 @@ Toast supports different visual intents through the `accent` parameter:
 ### Framework concepts
 
 - [Widgets](../index.md) — overview of all widgets
-
-### API reference
-
-- [`bootstack.Toast`](../../reference/widgets/Toast.md)

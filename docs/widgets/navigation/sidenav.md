@@ -47,11 +47,10 @@ Use `SideNav` when:
 
 - you need compact (icon-only) mode for space-constrained layouts
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need a complete app scaffold with toolbar and pages - use [AppShell](../../reference/app/AppShell.md)
-
-- you need horizontal navigation - use [Tabs](tabs.md)
+- you need a complete app scaffold with toolbar and pages — use [AppShell](../../reference/app/AppShell.md)
+- you need horizontal navigation — use [Tabs](tabs.md)
 
 ---
 
@@ -175,7 +174,3 @@ SideNav uses a shared `Variable` for radio-group selection across all items. Sel
 - [Tabs](tabs.md) - horizontal tab navigation
 
 - [PageStack](../views/pagestack.md) - page content management
-
-### API reference
-
-- [`bootstack.SideNav`](../../reference/widgets/SideNav.md)

@@ -5,7 +5,8 @@ and an optional calendar picker button.
 """
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Iterable, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Iterable, Literal
+from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
@@ -32,32 +33,13 @@ class DateEntry(Field):
     (Wednesday), `month` (January), `quarter` (Q1), `year` (2025),
     `longTime` (3:30:45 PM PST), `shortTime` (3:30 PM), `longDateLongTime`,
     `shortDateShortTime`, or any custom ICU date format pattern (e.g., "yyyy-MM-dd").
-
-    !!! note "Events"
-
-        - `<<Change>>`: Fired when date value changes after commit.
-        - `<<Input>>`: Fired on each keystroke.
-        - `<<Valid>>`: Fired when validation passes.
-        - `<<Invalid>>`: Fired when validation fails.
-
-        The calendar picker button uses a DateDialog. The button can be hidden
-        using `show_picker_button=False`.
-
-    Attributes:
-        entry_widget (TextEntryPart): Access to the underlying TextEntryPart widget.
-        label_widget (Label): Access to the label widget.
-        message_widget (Label): Access to the message label widget.
-        addons (dict): Dictionary of inserted addon widgets.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
-        date_picker_button (Button): The calendar picker button widget.
     """
 
     def __init__(
             self,
             master: Master = None,
             value: str | date | datetime = None,
-            value_format: str = "longDate",
+            value_format: DateFormatSpec = "longDate",
             label: str = None,
             message: str = None,
             show_picker_button=True,
@@ -71,78 +53,64 @@ class DateEntry(Field):
             disabled_dates: Iterable[date | datetime | str] | None = None,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a DateEntry widget.
-
-        Creates a date entry field with locale-aware formatting and an optional
-        calendar picker button. The widget accepts date input as strings, date
-        objects, or datetime objects, and formats them according to the specified
-        value_format pattern.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
-            value (str | date | datetime): Initial date value to display (single
-                mode). Ignored when ``selection_mode='range'``.
-            value_format (str): Date format pattern to use for parsing and displaying
+            value: Initial date value to display (single
+                mode). Ignored when `selection_mode='range'`.
+            value_format: Date format pattern to use for parsing and displaying
                 dates. See class docstring for complete list of presets.
-            label (str): Optional label text to display above the entry field.
+            label: Optional label text to display above the entry field.
                 If required=True, an asterisk (*) is automatically appended.
-            message (str): Optional message text to display below the entry field.
+            message: Optional message text to display below the entry field.
                 Used for hints or help text. Replaced by validation errors when
                 validation fails.
-            show_picker_button (bool): If True, displays the calendar picker button
+            show_picker_button: If True, displays the calendar picker button
                 to the right of the entry. If False, hides the button.
-            picker_title (str): Title text for the calendar picker dialog. Defaults
+            picker_title: Title text for the calendar picker dialog. Defaults
                 to "Select date range" in range mode and "Select new date" otherwise.
-            picker_first_weekday (int): First day of the week to display in the
+            picker_first_weekday: First day of the week to display in the
                 calendar picker. 0=Monday, 6=Sunday.
-            selection_mode (str): ``'single'`` (default) for a single date or
-                ``'range'`` for a start/end date range. In range mode the entry
+            selection_mode: `'single'` (default) for a single date or
+                `'range'` for a start/end date range. In range mode the entry
                 is readonly and the user selects dates exclusively via the picker.
-                ``value`` returns ``tuple[date, date] | None`` in range mode.
-            start_date (date | datetime | str): Initial range start date (range
+                `value` returns `tuple[date, date] | None` in range mode.
+            start_date: Initial range start date (range
                 mode only).
-            end_date (date | datetime | str): Initial range end date (range mode
+            end_date: Initial range end date (range mode
                 only).
-            min_date (date | datetime | str): Lower bound for selectable dates.
+            min_date: Lower bound for selectable dates.
                 Dates before this are disabled in the picker.
-            max_date (date | datetime | str): Upper bound for selectable dates.
+            max_date: Upper bound for selectable dates.
                 Dates after this are disabled in the picker.
-            disabled_dates (Iterable): Specific dates to disable in the picker.
+            disabled_dates: Specific dates to disable in the picker.
 
         Other Parameters:
-            locale (str): Locale identifier for date formatting (e.g., 'en_US').
-            required (bool): If True, field cannot be empty.
-            bootstyle (str): The accent color of the focus ring and active border.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            exportselection (bool): Export selection to clipboard.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment ('left', 'center', 'right').
-            show_message (bool): If True, displays message area.
-            padding (int | tuple): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-            xscrollcommand (Callable): Callback for horizontal scrolling.
-
-        Note:
-            The widget uses the IntlFormatter for locale-aware date formatting.
-            In single mode, the value is parsed and formatted automatically when
-            the user commits input (on FocusOut or Return key). In range mode the
-            field is readonly; the picker is the only way to enter a value.
+            locale: Locale identifier for date formatting (e.g., 'en_US').
+            required: If True, field cannot be empty.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            exportselection: Export selection to clipboard.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment ('left', 'center', 'right').
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
+            xscrollcommand: Callback for horizontal scrolling.
         """
         # Store before super().__init__ so property override is safe if called during init
         self._selection_mode = selection_mode
-        self._range_value: Optional[Tuple[date, date]] = None
+        self._range_value: tuple[date, date] | None = None
         self._value_format = value_format
 
         if picker_title is None:
             picker_title = "Select date range" if selection_mode == "range" else "Select new date"
 
-        kwargs.setdefault('bootstyle', 'primary')
+        kwargs.setdefault('accent', 'primary')
         # In range mode pass value=None so the entry starts empty; display text
         # is set manually below after range initialisation.
         super().__init__(
@@ -189,8 +157,8 @@ class DateEntry(Field):
     # --- value property override for range mode -------------------------
 
     @property
-    def value(self):
-        """Selected date (single mode) or ``(start, end)`` tuple (range mode)."""
+    def value(self) -> date | tuple[date, date] | None:
+        """Selected date (single mode) or `(start, end)` tuple (range mode)."""
         if self._selection_mode == 'range':
             return self._range_value
         return Field.value.fget(self)
@@ -261,7 +229,7 @@ class DateEntry(Field):
         return f"{start_str} – {end_str}"
 
     @staticmethod
-    def _coerce_date(value) -> Optional[date]:
+    def _coerce_date(value) -> date | None:
         """Coerce a date/datetime/ISO-string to a date, or return None."""
         if value is None:
             return None
@@ -284,7 +252,7 @@ class DateEntry(Field):
     # --- public properties ----------------------------------------------
 
     @property
-    def date_picker_button(self):
+    def date_picker_button(self) -> Button | None:
         """Get the calendar picker button widget."""
         return self.addons.get('date-picker')
 

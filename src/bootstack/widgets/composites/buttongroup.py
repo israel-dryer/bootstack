@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TypedDict, TYPE_CHECKING
+from typing import Any, Callable, Literal, Type, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives import Frame
-from bootstack.widgets.primitives.checkbutton import CheckButton
 from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.primitives.radiobutton import RadioButton
 from bootstack.widgets.primitives.radiotoggle import RadioToggle
@@ -14,6 +13,10 @@ from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
     import tkinter as tk
+
+
+ButtonGroupItem = Button | CheckToggle | RadioButton | RadioToggle
+"""Widget types supported by `ButtonGroup`."""
 
 
 class ButtonGroupKwargs(TypedDict, total=False):
@@ -54,18 +57,13 @@ class ButtonGroup(Frame):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-
-        Other Parameters:
-            orient (str): Layout orientation - 'horizontal' (default) or 'vertical'.
-            accent (str): The accent token (e.g., 'primary', 'success', 'danger').
-            variant (str): The style variant (e.g., 'solid', 'outline', 'ghost'). Defaults to 'solid',
-            state (str): Initial state for all buttons - 'normal' (default) or 'disabled'.
-            surface (str): Optional surface token; otherwise inherited.
-            density (str): The vertical and horizontal compactness of widget content, e.g. 'default', 'compact'.
-            padding (int | tuple): Frame padding. Defaults to 1.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            style_options (dict): Additional style options passed to child widgets.
+            orient: Layout orientation — 'horizontal' (default) or 'vertical'.
+            accent: Accent token (e.g., 'primary', 'success', 'danger').
+            variant: Style variant (e.g., 'solid', 'outline', 'ghost'). Default 'solid'.
+            state: Initial state for all buttons — 'normal' or 'disabled'. Default 'normal'.
+            density: Widget density — 'default' or 'compact'.
+            **kwargs: Additional arguments passed to Frame (e.g., `surface`, `padding`,
+                `width`, `height`, `style_options`).
         """
         # Store ButtonGroup-specific options from explicit parameters
         # NOTE: _color and _variant are set AFTER super().__init__() because
@@ -96,10 +94,10 @@ class ButtonGroup(Frame):
         text: str = None,
         *,
         key: str = None,
-        widget_type: type = None,
+        widget_type: Type[ButtonGroupItem] = None,
         command: Callable[[], Any] = None,
         **kwargs: Any
-    ) -> 'tk.Widget':
+    ) -> ButtonGroupItem:
         """Add a widget to the group.
 
         Args:
@@ -151,8 +149,8 @@ class ButtonGroup(Frame):
         existing_style_opts['density'] = self._density
         existing_style_opts.setdefault('position', 'before')
 
-        # Set active_state for non-radio/check button types
-        _radio_check_types = (CheckButton, CheckToggle, RadioButton, RadioToggle)
+        # Set active_state for non-toggle types
+        _radio_check_types = (CheckToggle, RadioButton, RadioToggle)
         if not (isinstance(widget_type, type) and issubclass(widget_type, _radio_check_types)):
             existing_style_opts.setdefault('active_state', True)
 
@@ -227,7 +225,7 @@ class ButtonGroup(Frame):
         widget.destroy()
         self._update_widget_positions()
 
-    def item(self, key: str) -> 'tk.Widget':
+    def item(self, key: str) -> ButtonGroupItem:
         """Get a widget by its key.
 
         Args:
@@ -253,17 +251,13 @@ class ButtonGroup(Frame):
 
         Returns:
             If option is provided, returns the value of that option.
-
-        Examples:
-            group.configure_item("save_btn", state='disabled')
-            current_state = group.configure_item("save_btn", 'state')
         """
         widget = self.item(key)
         if option is not None:
             return widget.cget(option)
         widget.configure(**kwargs)
 
-    def items(self) -> tuple['tk.Widget', ...]:
+    def items(self) -> tuple[ButtonGroupItem, ...]:
         """Get all widgets in the group.
 
         Returns:
@@ -280,29 +274,15 @@ class ButtonGroup(Frame):
         return tuple(self._widgets.keys())
 
     def __len__(self) -> int:
-        """Return the number of widgets in the group.
-
-        Examples:
-            >>> count = len(button_group)
-        """
+        """Return the number of widgets in the group."""
         return len(self._widgets)
 
     def __contains__(self, key: str) -> bool:
-        """Check if a widget with the given key exists in the group.
-
-        Examples:
-            >>> if 'save' in button_group:
-            ...     print('Save button exists')
-        """
+        """Check if a widget with the given key exists in the group."""
         return key in self._widgets
 
     def __iter__(self):
-        """Iterate over the widgets in the group.
-
-        Examples:
-            >>> for widget in button_group:
-            ...     widget.configure(state='disabled')
-        """
+        """Iterate over the widgets in the group."""
         return iter(self._widgets.values())
 
     @configure_delegate('accent')
@@ -386,6 +366,6 @@ class ButtonGroup(Frame):
         for widget in self._widgets.values():
             try:
                 widget.configure(state=value)
-            except (AttributeError, TypeError):
+            except:
                 # Widget doesn't support state configuration
                 pass

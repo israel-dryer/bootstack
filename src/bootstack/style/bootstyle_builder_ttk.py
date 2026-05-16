@@ -296,7 +296,6 @@ class BootstyleBuilderTTk(BootstyleBuilderBase):
 
         This method should be called when a theme is loaded to ensure
         all base widget styles are properly configured before any
-        bootstyle variants are created.
 
         It iterates through all registered widget classes and calls
         their 'default' builder (if registered) with no accent specified,

@@ -19,7 +19,6 @@ class SeparatorKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     surface: str
     thickness: int
@@ -28,7 +27,7 @@ class SeparatorKwargs(TypedDict, total=False):
 
 
 class Separator(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Separator):
-    """bootstack wrapper for `ttk.Separator` with bootstyle support."""
+    """bootstack wrapper for `ttk.Separator` with themed styling support."""
 
     _ttk_base = ttk.Separator
 
@@ -39,16 +38,14 @@ class Separator(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Sepa
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            orient (str): Orientation of the separator ('horizontal' or 'vertical').
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'secondary' otherwise derived from inherited surface.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-                Combined style tokens.
-            surface (str): Optional surface token; otherwise inherited.
-            thickness (int): Thickness of the separator.
-            length (int): Fixed length of the separator in pixels. If None,
+            orient: Orientation of the separator ('horizontal' or 'vertical').
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'secondary'; otherwise derived from the inherited surface.
+            surface: Optional surface token; otherwise inherited.
+            thickness: Thickness of the separator.
+            length: Fixed length of the separator in pixels. If None,
                 stretches to fill available space.
-            style_options (dict): Optional dict forwarded to the style builder.
+            style_options: Optional dict forwarded to the style builder.
         """
         kwargs.update(style_options=self._capture_style_options(['thickness', 'length'], kwargs))
         super().__init__(master, **kwargs)

@@ -53,11 +53,10 @@ Use `Tabs` when:
 
 - you want fine-grained control over tab behavior
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need tabs with integrated content panels - use [TabView](../views/tabview.md) instead
-
-- navigation is sequential/flow-based - use [PageStack](../views/pagestack.md) instead
+- you need tabs with integrated content panels — use [TabView](../views/tabview.md)
+- navigation is sequential/flow-based — use [PageStack](../views/pagestack.md)
 
 ---
 
@@ -236,7 +235,3 @@ tabs.bind("<<TabSelect>>", lambda e: print("Tab selected"))
 - [Notebook](../views/notebook.md) - traditional tabbed container
 
 - [SideNav](sidenav.md) - vertical navigation list
-
-### API reference
-
-- [`bootstack.Tabs`](../../reference/widgets/Tabs.md)

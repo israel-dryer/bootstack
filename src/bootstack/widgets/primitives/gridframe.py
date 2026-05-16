@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Literal, Optional, Any, Union
+from typing import Literal, Any
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
@@ -13,10 +13,10 @@ Side = Literal["top", "bottom", "left", "right"]
 Anchor = Literal["n", "ne", "e", "se", "s", "sw", "w", "nw", "center"]
 Sticky = Literal["n", "s", "e", "w", "ns", "ew", "nsew", "ne", "nw", "se", "sw", "nse", "nsw", "new", "sew", ""]
 AutoFlow = Literal["row", "column", "row-dense", "column-dense", "none"]
-Gap = Union[int, tuple[int, int]]
+Gap = int | tuple[int, int]
 
 
-def _parse_size(value: Union[int, str]) -> tuple[int, int]:
+def _parse_size(value: int | str) -> tuple[int, int]:
     """Parse size value into (weight, minsize) tuple."""
     if isinstance(value, int):
         return value, 0
@@ -42,26 +42,17 @@ class GridFrame(Frame):
     default layout options. Simply use the standard `grid()` method
     on child widgets — no special `add()` method is needed.
 
-    Example:
-        ```python
-        frame = GridFrame(columns=3, gap=10, sticky_items="nsew")
-        Label(frame, text="A").grid()  # auto-placed at row=0, col=0
-        Label(frame, text="B").grid()  # auto-placed at row=0, col=1
-        Label(frame, text="C").grid()  # auto-placed at row=0, col=2
-        Label(frame, text="D").grid()  # auto-placed at row=1, col=0
-        Label(frame, text="Wide").grid(columnspan=2)  # spans 2 columns
-        ```
     """
 
     def __init__(
         self,
         master: Master = None,
         *,
-        rows: Optional[Union[int, list[Union[int, str]]]] = None,
-        columns: Optional[Union[int, list[Union[int, str]]]] = None,
+        rows: int | list[int | str] | None = None,
+        columns: int | list[int | str] | None = None,
         gap: Gap = 0,
-        sticky_items: Optional[Sticky] = None,
-        propagate: Optional[bool] = None,
+        sticky_items: Sticky | None = None,
+        propagate: bool | None = None,
         auto_flow: AutoFlow = "row",
         **kwargs: Any,
     ) -> None:
@@ -452,10 +443,17 @@ class GridFrame(Frame):
         self,
         index: int,
         weight: int = 1,
-        minsize: Optional[int] = None,
-        pad: Optional[int] = None,
+        minsize: int | None = None,
+        pad: int | None = None,
     ) -> None:
-        """Configure a row's properties."""
+        """Configure a row's weight and minimum size.
+
+        Args:
+            index: Row index to configure.
+            weight: Stretch weight. Defaults to 1.
+            minsize: Minimum height in pixels.
+            pad: Extra padding around the row.
+        """
         kwargs: dict[str, Any] = {"weight": weight}
         if minsize is not None:
             kwargs["minsize"] = minsize
@@ -467,10 +465,17 @@ class GridFrame(Frame):
         self,
         index: int,
         weight: int = 1,
-        minsize: Optional[int] = None,
-        pad: Optional[int] = None,
+        minsize: int | None = None,
+        pad: int | None = None,
     ) -> None:
-        """Configure a column's properties."""
+        """Configure a column's weight and minimum size.
+
+        Args:
+            index: Column index to configure.
+            weight: Stretch weight. Defaults to 1.
+            minsize: Minimum width in pixels.
+            pad: Extra padding around the column.
+        """
         kwargs: dict[str, Any] = {"weight": weight}
         if minsize is not None:
             kwargs["minsize"] = minsize

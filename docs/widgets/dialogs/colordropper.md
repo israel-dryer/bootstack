@@ -35,7 +35,7 @@ Use `ColorDropper` when:
 
 ### Consider a different control when...
 
-- users need to browse/select from a palette with previews - use [ColorChooser](colorchooser.md) instead
+- users need to browse/select from a palette with previews — use [ColorChooser](colorchooser.md)
 
 ---
 

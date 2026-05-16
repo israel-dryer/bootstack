@@ -46,10 +46,10 @@ Use `RadioButton` when:
 
 ### Consider a different control when...
 
-- multiple selections are allowed → use [CheckButton](checkbutton.md)
-- the list is long or space is limited → use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
-- you want a button-like toggle appearance → use [RadioToggle](radiotoggle.md)
-- you want a self-contained group widget → use [RadioGroup](radiogroup.md)
+- multiple selections are allowed — use [CheckButton](checkbutton.md)
+- the list is long or space is limited — use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
+- you want a button-like toggle appearance — use [RadioToggle](radiotoggle.md)
+- you want a self-contained group widget — use [RadioGroup](radiogroup.md)
 
 ---
 
@@ -216,7 +216,3 @@ bs.RadioButton(app, text="High",   variable=choice, value="high")
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — text translation
 - [Design System → Variants](../../design-system/variants.md) — color tokens and variants
-
-### API reference
-
-- [`bootstack.RadioButton`](../../reference/widgets/RadioButton.md)

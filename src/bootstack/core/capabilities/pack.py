@@ -1,10 +1,38 @@
 """Pack geometry manager capabilities mixin for bootstack widgets."""
 from __future__ import annotations
 
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
+
+from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
+
+
+class PackKwargs(TypedDict, total=False):
+    """Keyword options for `pack()` and `pack_configure()`."""
+    side: str
+    """Side to pack against: `'top'`, `'bottom'`, `'left'`, or `'right'`. Defaults to `'top'`."""
+    fill: str
+    """How to fill extra space: `'x'`, `'y'`, `'both'`, or `'none'`. Defaults to `'none'`."""
+    expand: bool | int
+    """If True/1, the widget expands to fill extra space in the packing direction. Defaults to False."""
+    anchor: str
+    """Where to place the widget when it does not fill available space (e.g., `'center'`, `'nw'`). Defaults to `'center'`."""
+    padx: int | tuple[int, int]
+    """Horizontal external padding in pixels. A tuple sets (left, right) independently."""
+    pady: int | tuple[int, int]
+    """Vertical external padding in pixels. A tuple sets (top, bottom) independently."""
+    ipadx: int
+    """Horizontal internal padding in pixels."""
+    ipady: int
+    """Vertical internal padding in pixels."""
+    before: Any
+    """Pack this widget immediately before the given widget."""
+    after: Any
+    """Pack this widget immediately after the given widget."""
+    in_: Any
+    """Parent widget to pack into (rarely needed — defaults to the widget's own master)."""
 
 
 class PackMixin:
@@ -28,19 +56,12 @@ class PackMixin:
     # Core widget methods
     # -------------------------------------------------------------------------
 
-    def pack(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def pack(self, cnf: dict[str, Any] | None = None, **kw: Unpack[PackKwargs]) -> Self:
         """Position this widget using the pack geometry manager.
 
         Args:
-            cnf: Optional dict of pack options.
-            **kw: Pack options. Common options include:
-                - side: Which side to pack against ("top", "bottom", "left", "right").
-                - fill: How the widget should fill extra space ("x", "y", "both", "none").
-                - expand: Whether the widget expands to fill extra space (0/1 or False/True).
-                - anchor: Where to place the widget if it does not fill the space.
-                - padx, pady: External padding around the widget.
-                - ipadx, ipady: Internal padding inside the widget.
-                - before, after: Pack relative to another widget.
+            cnf: Optional dict of pack options (same keys as `PackKwargs`).
+            **kw: See `PackKwargs`.
 
         Returns:
             Self for method chaining.
@@ -55,12 +76,12 @@ class PackMixin:
             super().pack(**options)  # type: ignore[misc]
         return self  # type: ignore[return-value]
 
-    def pack_configure(self, cnf: dict[str, Any] | None = None, **kw: Any) -> Self:
+    def pack_configure(self, cnf: dict[str, Any] | None = None, **kw: Unpack[PackKwargs]) -> Self:
         """Alias for `pack()`.
 
         Args:
             cnf: Optional dict of pack options.
-            **kw: Pack options (see `pack`).
+            **kw: See `PackKwargs`.
 
         Returns:
             Self for method chaining.

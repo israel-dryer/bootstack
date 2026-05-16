@@ -11,7 +11,8 @@ import logging
 from collections import OrderedDict
 from tkinter import font as tkfont
 
-from typing_extensions import Literal
+from typing import Callable
+from typing_extensions import Literal, TypedDict
 
 from bootstack.widgets.types import Master
 
@@ -54,21 +55,34 @@ _TABLE_SEARCH_MODE_OPTIONS = [
 ]
 
 
+class TableSelectionEventData(TypedDict):
+    """Payload for `<<SelectionChange>>` events."""
+    records: list[dict]
+    """The currently selected record dicts."""
+    iids: list[str]
+    """The Treeview internal IDs of the selected rows."""
+
+
+class TableRowEventData(TypedDict):
+    """Payload for `<<RowClick>>`, `<<RowDoubleClick>>`, and `<<RowRightClick>>` events."""
+    record: dict
+    """The record dict for the interacted row."""
+    iid: str
+    """The Treeview internal ID of the interacted row."""
+
+
+class TableRowsEventData(TypedDict):
+    """Payload for `<<RowDelete>>`, `<<RowInsert>>`, `<<RowUpdate>>`, and `<<RowMove>>` events."""
+    records: list[dict]
+    """The affected record dicts."""
+
+
 class TableView(Frame):
     """TableView backed by an in-memory SqliteDataSource.
 
     Provides sortable headers, filtering/search, pagination or virtual scrolling,
     optional grouping, column striping, and configurable exporting/editing.
 
-    !!! note "Events"
-        - `<<SelectionChange>>`: Fired when row selection changes. `event.data = {'records': list[dict], 'iids': list[str]}`
-        - `<<RowClick>>`: Fired on single row click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowDoubleClick>>`: Fired on row double-click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowRightClick>>`: Fired on row right-click. `event.data = {'record': dict, 'iid': str}`
-        - `<<RowInsert>>`: Fired when rows are inserted. `event.data = {'records': list[dict]}`
-        - `<<RowUpdate>>`: Fired when rows are updated. `event.data = {'records': list[dict]}`
-        - `<<RowDelete>>`: Fired when rows are deleted. `event.data = {'records': list[dict]}`
-        - `<<RowMove>>`: Fired when rows are moved/reordered. `event.data = {'records': list[dict]}`
     """
 
     def __init__(
@@ -286,68 +300,157 @@ class TableView(Frame):
         self._load_page(0)
 
     # ------------------------------------------------------------------ Public event API
-    def on_selection_changed(self, callback) -> str:
-        """Bind to `<<SelectionChange>>`. Callback receives `event.data = {'records': list[dict], 'iids': list[str]}`."""
+    def on_selection_changed(self, callback: Callable[[TableSelectionEventData], None]) -> str:
+        """Register a callback for `<<SelectionChange>>` events.
+
+        Args:
+            callback: Receives a `TableSelectionEventData` dict with keys `records`
+                and `iids`.
+
+        Returns:
+            Bind ID — pass to `off_selection_changed()` to unsubscribe.
+        """
         return self.bind("<<SelectionChange>>", callback, add=True)
 
     def off_selection_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<SelectionChange>>`."""
+        """Unsubscribe from `<<SelectionChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_selection_changed()`. If None, removes all.
+        """
         self.unbind("<<SelectionChange>>", bind_id)
 
-    def on_row_click(self, callback) -> str:
-        """Bind to `<<RowClick>>`. Callback receives `event.data = {'record': dict, 'iid': str}`."""
+    def on_row_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+        """Register a callback for `<<RowClick>>` events (fires on single click).
+
+        Args:
+            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+
+        Returns:
+            Bind ID — pass to `off_row_click()` to unsubscribe.
+        """
         return self.bind("<<RowClick>>", callback, add=True)
 
     def off_row_click(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowClick>>`."""
+        """Unsubscribe from `<<RowClick>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_click()`. If None, removes all.
+        """
         self.unbind("<<RowClick>>", bind_id)
 
-    def on_row_double_click(self, callback) -> str:
-        """Bind to `<<RowDoubleClick>>`. Callback receives `event.data = {'record': dict, 'iid': str}`."""
+    def on_row_double_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+        """Register a callback for `<<RowDoubleClick>>` events.
+
+        Args:
+            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+
+        Returns:
+            Bind ID — pass to `off_row_double_click()` to unsubscribe.
+        """
         return self.bind("<<RowDoubleClick>>", callback, add=True)
 
     def off_row_double_click(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowDoubleClick>>`."""
+        """Unsubscribe from `<<RowDoubleClick>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_double_click()`. If None, removes all.
+        """
         self.unbind("<<RowDoubleClick>>", bind_id)
 
-    def on_row_right_click(self, callback) -> str:
-        """Bind to `<<RowRightClick>>`. Callback receives `event.data = {'record': dict, 'iid': str}`."""
+    def on_row_right_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+        """Register a callback for `<<RowRightClick>>` events.
+
+        Args:
+            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+
+        Returns:
+            Bind ID — pass to `off_row_right_click()` to unsubscribe.
+        """
         return self.bind("<<RowRightClick>>", callback, add=True)
 
     def off_row_right_click(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowRightClick>>`."""
+        """Unsubscribe from `<<RowRightClick>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_right_click()`. If None, removes all.
+        """
         self.unbind("<<RowRightClick>>", bind_id)
 
-    def on_row_deleted(self, callback) -> str:
-        """Bind to `<<RowDelete>>`. Callback receives `event.data = {'records': list[dict]}`."""
+    def on_row_deleted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+        """Register a callback for `<<RowDelete>>` events (fires when rows are removed).
+
+        Args:
+            callback: Receives a `TableRowsEventData` dict with key `records`.
+
+        Returns:
+            Bind ID — pass to `off_row_deleted()` to unsubscribe.
+        """
         return self.bind("<<RowDelete>>", callback, add=True)
 
     def off_row_deleted(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowDelete>>`."""
+        """Unsubscribe from `<<RowDelete>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_deleted()`. If None, removes all.
+        """
         self.unbind("<<RowDelete>>", bind_id)
 
-    def on_row_inserted(self, callback) -> str:
-        """Bind to `<<RowInsert>>`. Callback receives `event.data = {'records': list[dict]}`."""
+    def on_row_inserted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+        """Register a callback for `<<RowInsert>>` events (fires when rows are added).
+
+        Args:
+            callback: Receives a `TableRowsEventData` dict with key `records`.
+
+        Returns:
+            Bind ID — pass to `off_row_inserted()` to unsubscribe.
+        """
         return self.bind("<<RowInsert>>", callback, add=True)
 
     def off_row_inserted(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowInsert>>`."""
+        """Unsubscribe from `<<RowInsert>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_inserted()`. If None, removes all.
+        """
         self.unbind("<<RowInsert>>", bind_id)
 
-    def on_row_updated(self, callback) -> str:
-        """Bind to `<<RowUpdate>>`. Callback receives `event.data = {'records': list[dict]}`."""
+    def on_row_updated(self, callback: Callable[[TableRowsEventData], None]) -> str:
+        """Register a callback for `<<RowUpdate>>` events (fires when rows are modified).
+
+        Args:
+            callback: Receives a `TableRowsEventData` dict with key `records`.
+
+        Returns:
+            Bind ID — pass to `off_row_updated()` to unsubscribe.
+        """
         return self.bind("<<RowUpdate>>", callback, add=True)
 
     def off_row_updated(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowUpdate>>`."""
+        """Unsubscribe from `<<RowUpdate>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_updated()`. If None, removes all.
+        """
         self.unbind("<<RowUpdate>>", bind_id)
 
-    def on_row_moved(self, callback) -> str:
-        """Bind to `<<RowMove>>`. Callback receives `event.data = {'records': list[dict]}`."""
+    def on_row_moved(self, callback: Callable[[TableRowsEventData], None]) -> str:
+        """Register a callback for `<<RowMove>>` events (fires when rows are reordered).
+
+        Args:
+            callback: Receives a `TableRowsEventData` dict with key `records`.
+
+        Returns:
+            Bind ID — pass to `off_row_moved()` to unsubscribe.
+        """
         return self.bind("<<RowMove>>", callback, add=True)
 
     def off_row_moved(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<RowMove>>`."""
+        """Unsubscribe from `<<RowMove>>`.
+
+        Args:
+            bind_id: ID returned by `on_row_moved()`. If None, removes all.
+        """
         self.unbind("<<RowMove>>", bind_id)
 
     # ------------------------------------------------------------------ Public data/selection API

@@ -41,7 +41,7 @@ Use `TimeEntry` when:
 - users need to enter times (schedules, appointments, thresholds)
 - you want consistent field behavior (label, message, validation, events)
 
-Consider a different control when:
+### Consider a different control when...
 
 - the value is not semantically a time — use [TextEntry](textentry.md)
 - users should step through time in fixed increments — use [SpinnerEntry](spinnerentry.md)
@@ -196,7 +196,3 @@ entry = bs.TimeEntry(app, label="Alarm", textsignal=alarm)
 - [Formatting](../../guides/formatting.md) — time presets and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.TimeEntry`](../../reference/widgets/TimeEntry.md)

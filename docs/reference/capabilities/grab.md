@@ -7,3 +7,6 @@ extensions).
 > that widgets expose.
 
 ::: bootstack.core.capabilities.grab.GrabMixin
+    options:
+      filters:
+        - "!^_"

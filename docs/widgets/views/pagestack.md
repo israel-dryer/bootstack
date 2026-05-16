@@ -58,13 +58,11 @@ Use `PageStack` when:
 
 - only one view should be visible at a time
 
-Consider a different control when:
+### Consider a different control when...
 
-- users need random access to views - use [Notebook](notebook.md) instead
-
-- the interaction model is "switch categories" - use [Notebook](notebook.md) instead
-
-- multiple views must be visible simultaneously - use [PanedWindow](../layout/panedwindow.md) instead
+- users need random access to views — use [Notebook](notebook.md)
+- the interaction model is "switch categories" — use [Notebook](notebook.md)
+- multiple views must be visible simultaneously — use [PanedWindow](../layout/panedwindow.md)
 
 ---
 
@@ -237,7 +235,3 @@ Navigation events include:
 - [Frame](../layout/frame.md) - typical page container
 
 - [PanedWindow](../layout/panedwindow.md) - resizable multi-view layouts
-
-### API reference
-
-- [`bootstack.PageStack`](../../reference/widgets/PageStack.md)

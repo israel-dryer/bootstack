@@ -64,9 +64,8 @@ Use `MessageBox` when:
 
 ### Consider a different control when...
 
-- you want non-blocking feedback (Saved!, Copied!) - use [Toast](../overlays/toast.md) instead
-
-- feedback is contextual and shouldn't interrupt workflow - use [Tooltip](../overlays/tooltip.md) or inline messaging instead
+- you want non-blocking feedback (Saved!, Copied!) — use [Toast](../overlays/toast.md)
+- feedback is contextual and shouldn't interrupt workflow — use [Tooltip](../overlays/tooltip.md) or inline messaging
 
 ---
 

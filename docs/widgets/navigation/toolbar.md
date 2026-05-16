@@ -41,11 +41,10 @@ Use `Toolbar` when:
 
 - you're building a toolbar for an [AppShell](appshell.md) or standalone layout
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need tab-based navigation - use [Tabs](tabs.md)
-
-- you need a menu bar - use `MenuBar`
+- you need tab-based navigation — use [Tabs](tabs.md)
+- you need a menu bar — use `MenuBar`
 
 ---
 
@@ -111,7 +110,3 @@ toolbar.close_button     # Button or None
 - [AppShell](appshell.md) - uses Toolbar as its top bar
 
 - [SideNav](sidenav.md) - sidebar navigation
-
-### API reference
-
-- [`bootstack.Toolbar`](../../reference/widgets/Toolbar.md)

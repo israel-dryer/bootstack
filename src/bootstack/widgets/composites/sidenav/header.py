@@ -25,13 +25,6 @@ class SideNavHeader(Frame):
     navigation items. Unlike SideNavItem, headers are not selectable
     and serve only as visual labels. Uses the 'label' font token for styling.
 
-    Example:
-        ```python
-        nav.add_item('home', text='Home', icon='house')
-        nav.add_header('Favorites')  # Creates SideNavHeader
-        nav.add_item('photos', text='Photos', icon='image')
-        nav.add_item('music', text='Music', icon='music-note')
-        ```
     """
 
     DEFAULT_PADDING = (8, 20, 8, 4)
@@ -47,8 +40,8 @@ class SideNavHeader(Frame):
         """Initialize a SideNavHeader.
 
         Args:
-            master (Master | None): Parent widget.
-            text (str): The header text to display.
+            master: Parent widget.
+            text: The header text to display.
             **kwargs: Additional arguments passed to Frame.
         """
         self._text = text

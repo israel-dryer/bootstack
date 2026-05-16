@@ -45,11 +45,11 @@ Use `DropdownButton` when:
 - you want the options to be **discoverable**, but not always visible
 - the control belongs in a **toolbar** or dense header area
 
-### Consider a different control when…
+### Consider a different control when...
 
-- you want a *single* action → use [Button](button.md)
-- the control is primarily "a menu" (not a button) → use [MenuButton](menubutton.md)
-- the menu must be shown on right-click / contextual interaction → use [ContextMenu](contextmenu.md)
+- you want a *single* action — use [Button](button.md)
+- the control is primarily "a menu" (not a button) — use [MenuButton](menubutton.md)
+- the menu must be shown on right-click / contextual interaction — use [ContextMenu](contextmenu.md)
 
 ---
 
@@ -182,8 +182,3 @@ bs.DropdownButton(app, text="button.file", items=items).pack()
 - [Icons & Imagery](../../guides/icons.md)
 - [Reactivity](../../guides/reactivity.md)
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.DropdownButton`](../../reference/widgets/DropdownButton.md)
-- [`bootstack.ContextMenuItem`](../../reference/widgets/ContextMenuItem.md)

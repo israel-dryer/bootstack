@@ -15,19 +15,6 @@ class SelectBox(Field):
 
     Renders a field with a suffix button that opens a popup list of available
     items. Selecting an item updates the field value and emits `<<Change>>`.
-
-    !!! note "Events"
-
-          `<<Change>>`: Fired when the selection changes (user or code).
-          Provides `event.data` with keys: `value`, `prev_value`, `text`.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying entry widget.
-        label_widget (Label): The label widget.
-        message_widget (Label): The message label widget.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
@@ -43,38 +30,36 @@ class SelectBox(Field):
             enable_search: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Create a SelectBox widget.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
-            value (str): Initial selected value; should typically be present in `items`.
-            items (list): Sequence of string options to present in the popup list.
-            label (str): Optional label text shown above the field.
-            message (str): Optional helper/error message shown below the field.
-            allow_custom_values (bool): If True, the entry is editable so users can type
+            value: Initial selected value; should typically be present in `items`.
+            items: Sequence of string options to present in the popup list.
+            label: Optional label text shown above the field.
+            message: Optional helper/error message shown below the field.
+            allow_custom_values: If True, the entry is editable so users can type
                 arbitrary values in addition to choosing from the list.
-            show_dropdown_button (bool): If True (default), the dropdown button is shown. This option is
+            show_dropdown_button: If True (default), the dropdown button is shown. This option is
                 ignored if custom values are allowed.
-            dropdown_button_icon (str): The icon to display on the dropdown button.
-            enable_search (bool): If True, allows typing in the entry to filter the popup list.
+            dropdown_button_icon: The icon to display on the dropdown button.
+            enable_search: If True, allows typing in the entry to filter the popup list.
                 When combined with allow_custom_values=False, the first filtered item is selected
                 when the popup closes. With allow_custom_values=True, any typed value is kept.
 
         Other Parameters:
-            allow_blank (bool): If True, empty input is allowed.
-            accent (str): Accent token for styling the focus ring and active border.
-            value_format (str): ICU format pattern for parsing/formatting.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus when created.
-            justify (str): Text justification ('left', 'center', 'right').
-            show_message (bool): If True, displays message text below the field.
-            padding (str | int | tuple): Padding around the entry widget.
-            state (str): The widget state ('normal', 'disabled', 'readonly').
-            textvariable (Variable): Tkinter Variable to link with the entry text.
-            textsignal (Signal): Signal object for reactive text updates.
-            width (int): Width of the entry in characters.
-            required (bool): If True, field cannot be empty.
+            allow_blank: If True, empty input is allowed.
+            accent: Accent token for styling the focus ring and active border.
+            value_format: ICU format pattern for parsing/formatting.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus when created.
+            justify: Text justification ('left', 'center', 'right').
+            show_message: If True, displays message text below the field.
+            padding: Padding around the entry widget.
+            state: The widget state ('normal', 'disabled', 'readonly').
+            textvariable: Tkinter Variable to link with the entry text.
+            textsignal: Signal object for reactive text updates.
+            width: Width of the entry in characters.
+            required: If True, field cannot be empty.
         """
         super().__init__(master, value=value, label=label, message=message, **kwargs)
 
@@ -505,7 +490,7 @@ class SelectBox(Field):
             return None
 
     @property
-    def selected_index(self):
+    def selected_index(self) -> int:
         """Get or set the selected index.
 
         Returns -1 if the current value is not in the items list.
@@ -513,7 +498,7 @@ class SelectBox(Field):
         """
         try:
             return self._items.index(self.entry_widget.get())
-        except (ValueError, TypeError):
+        except:
             return -1
 
     @selected_index.setter
@@ -526,7 +511,7 @@ class SelectBox(Field):
             raise IndexError(f"index {index} out of range for {len(self._items)} items")
 
     @property
-    def value(self):
+    def value(self) -> str:
         """Get or set the selected value."""
         return Field.value.fget(self)
 

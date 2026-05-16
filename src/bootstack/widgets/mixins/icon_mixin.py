@@ -20,6 +20,7 @@ class IconMixin:
 
     @configure_delegate("icon")
     def _delegate_icon(self, value: Any = None):
+        """Get or set the icon via the style engine."""
         if value is None:
             return self.configure_style_options("icon")
         else:
@@ -28,6 +29,7 @@ class IconMixin:
 
     @configure_delegate("icon_only")
     def _delegate_icon_only(self, value: Any = None):
+        """Get or set icon-only display mode via the style engine."""
         if value is None:
             return self.configure_style_options("icon_only")
         else:

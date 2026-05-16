@@ -5,7 +5,6 @@ numeric-specific features like min/max bounds, stepping, and keyboard/mouse
 wheel support.
 """
 
-from typing import Union
 
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.parts.textentry_part import TextEntryPart
@@ -18,21 +17,17 @@ class NumberEntryPart(TextEntryPart):
     stepping functionality. Supports min/max bounds, increment/decrement
     via keyboard and mouse wheel, and optional wrapping.
 
-    !!! note "Events"
-        - `<<Increment>>`: Fired when an increment is requested (before step occurs). `event.data = {'value': current_value}`
-        - `<<Decrement>>`: Fired when a decrement is requested (before step occurs). `event.data = {'value': current_value}`
-        - Plus all events from TextEntryPart: `<<Input>>`, `<<Change>>`, `<Return>`
     """
 
     def __init__(
             self,
             master=None,
             *,
-            value: Union[int, float, str] = 0,
+            value: int | float | str = 0,
             value_format: str = None,
-            minvalue: Union[int, float, None] = None,
-            maxvalue: Union[int, float, None] = None,
-            increment: Union[int, float] = 1,
+            minvalue: int | float | None = None,
+            maxvalue: int | float | None = None,
+            increment: int | float = 1,
             wrap: bool = False,
             initial_focus: bool = False,
             allow_blank: bool = True,
@@ -62,7 +57,7 @@ class NumberEntryPart(TextEntryPart):
         self._wrap = wrap
 
         # Determine numeric type (float if any parameter is float)
-        def _has_fractional(x: Union[int, float, None]) -> bool:
+        def _has_fractional(x: int | float | None) -> bool:
             if x is None:
                 return False
             if isinstance(x, float):
@@ -307,7 +302,7 @@ class NumberEntryPart(TextEntryPart):
         self.unbind('<<Decrement>>', bind_id)
 
     @configure_delegate('minvalue')
-    def _delegate_minvalue(self, value: Union[int, float]):
+    def _delegate_minvalue(self, value: int | float):
         """Get or set the minimum allowed value and re-validate current value."""
         if value is None:
             return self._minvalue
@@ -318,7 +313,7 @@ class NumberEntryPart(TextEntryPart):
             self._normalize_display_from_value()
 
     @configure_delegate('maxvalue')
-    def _delegate_maxvalue(self, value: Union[int, float]):
+    def _delegate_maxvalue(self, value: int | float):
         """Get or set the maximum allowed value and re-validate current value."""
         if value is None:
             return self._maxvalue
@@ -329,7 +324,7 @@ class NumberEntryPart(TextEntryPart):
             self._normalize_display_from_value()
 
     @configure_delegate('increment')
-    def _delegate_increment(self, value: Union[int, float]):
+    def _delegate_increment(self, value: int | float):
         """Get or set the step increment value."""
         if value is None:
             return self._increment

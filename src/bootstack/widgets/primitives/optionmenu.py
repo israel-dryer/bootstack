@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import StringVar
-from typing import Any, Callable, Literal, Optional, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
@@ -14,8 +14,14 @@ if TYPE_CHECKING:
     from bootstack.core.signals import Signal
 
 
+class OptionMenuChangeEventData(TypedDict):
+    """Payload for `<<Change>>` events fired when a menu item is selected."""
+    value: Any
+    """The newly selected value (coerced to string)."""
+
+
 class OptionMenuKwargs(TypedDict, total=False):
-    command: Optional[Callable[[], Any]]
+    command: Callable[[], Any] | None
     image: Any
     icon: Any
     icon_only: bool
@@ -32,7 +38,6 @@ class OptionMenuKwargs(TypedDict, total=False):
     name: str
     textvariable: Any
     textsignal: Signal[str]
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -48,9 +53,6 @@ class OptionMenu(MenuButton):
     a popup menu containing the provided options as radiobutton items. Selecting
     an item updates the displayed text and fires a `<<Change>>` event.
 
-    !!! note "Events"
-        - `<<Change>>`: Fired when the selected value changes.
-          `event.data = {'value': Any}`
     """
 
     def __init__(
@@ -62,36 +64,31 @@ class OptionMenu(MenuButton):
     ):
         """Create an OptionMenu backed by a ContextMenu.
 
-        !!! note "Events"
-            - `<<Change>>`: Fired when the selected value changes. `event.data = {'value': Any}`
-
         Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial selected value.
-            options (list): List of values to populate the menu.
+            options: List of values to populate the menu.
 
         Other Parameters:
-            command (Callable): Callback invoked when the value changes via menu selection.
-            image (PhotoImage): Tk image to display.
-            icon (str | dict): Bootstyle icon spec for the label content.
-            icon_only (bool): Whether to reserve label padding when showing only an icon.
-            compound (str): Placement of image relative to text.
-            padding (int | tuple): Extra padding around the menubutton content.
-            width (int): Width of the menubutton.
-            underline (int): Index of underlined character in text.
-            state (str): Widget state ('normal', 'active', 'disabled', 'readonly').
-            takefocus (bool): Participation in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            textvariable (Variable): Existing Tk variable to bind; new StringVar created if omitted.
-            textsignal (Signal[str]): Signal bound to the textvariable.
-            accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            variant (str): Style variant, e.g. 'solid', 'outline'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-                Combined style tokens (e.g., 'primary-outline').
-            surface (str): Surface token for style.
-            style_options (dict): Dict forwarded to the style builder (e.g., icon_only, surface).
-            show_dropdown_button (bool): Toggle visibility of the dropdown chevron.
-            dropdown_button_icon (str | dict): Icon name for the chevron; defaults to 'caret-down-fill'.
+            command: Callback invoked when the value changes via menu selection.
+            image: Tk image to display.
+            icon: Bootstyle icon spec for the label content.
+            icon_only: Whether to reserve label padding when showing only an icon.
+            compound: Placement of image relative to text.
+            padding: Extra padding around the menubutton content.
+            width: Width of the menubutton.
+            underline: Index of underlined character in text.
+            state: Widget state ('normal', 'active', 'disabled', 'readonly').
+            takefocus: Participation in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            textvariable: Existing Tk variable to bind; new StringVar created if omitted.
+            textsignal: Signal bound to the textvariable.
+            accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
+            variant: Style variant, e.g. 'solid', 'outline'.
+            surface: Surface token for style.
+            style_options: Dict forwarded to the style builder (e.g., icon_only, surface).
+            show_dropdown_button: Toggle visibility of the dropdown chevron.
+            dropdown_button_icon: Icon name for the chevron; defaults to 'caret-down-fill'.
         """
         style_options = kwargs.pop('style_options', {})
         style_options.update(
@@ -190,11 +187,24 @@ class OptionMenu(MenuButton):
         self.set(value)
 
     def on_changed(self, callback: Callable) -> str:
-        """Bind to `<<Change>>`. Callback receives `event.data = {'value': Any}`."""
+        """Register a callback for `<<Change>>` events.
+
+        Args:
+            callback: Called when a menu item is selected. Receives a Tk event
+                object; `event.data` is an `OptionMenuChangeEventData` dict with
+                the key `value` (the newly selected value, coerced to string).
+
+        Returns:
+            Bind ID — pass to `off_changed()` to unsubscribe.
+        """
         return self.bind('<<Change>>', callback, add="+")
 
     def off_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<Change>>`."""
+        """Unsubscribe from `<<Change>>`.
+
+        Args:
+            bind_id: ID returned by `on_changed()`. If None, removes all.
+        """
         self.unbind('<<Change>>', bind_id)
 
     @configure_delegate('options')

@@ -36,16 +36,6 @@ class PageStack(Frame):
     visible at a time. It maintains a navigation history, allowing users to move
     backward and forward through pages similar to a web browser.
 
-    !!! note "Events"
-
-        - `<<PageUnmount>>`: Triggered when the current page is hidden.
-        - `<<PageWillMount>>`: Triggered before a new page is displayed.
-        - `<<PageMount>>`: Triggered after a new page is displayed.
-        - `<<PageChange>>`: Triggered after page navigation completes.
-
-        All events provide `event.data` with keys: `page`, `prev_page`, `prev_data`,
-        `nav` ('push', 'back', 'forward'), `index`, `length`, `can_back`,
-        `can_forward`.
     """
 
     def __init__(self, master: Master = None, **kwargs: Unpack[PageStackKwargs]):
@@ -57,17 +47,8 @@ class PageStack(Frame):
 
         Args:
             master: Parent widget. If None, uses the default root window.
-
-        Other Parameters:
-            takefocus (bool): If True, the widget can receive keyboard focus.
-            width (int): Width of the PageStack in pixels.
-            height (int): Height of the PageStack in pixels.
-            padding (int | tuple): Padding around the PageStack (can be a single value
-                or tuple of (left, top, right, bottom)).
-
-        Note:
-            Pages must be added using add() before navigation can occur.
-            The PageStack starts with an empty history and no current page.
+            **kwargs: Additional arguments passed to Frame (e.g., `takefocus`,
+                `width`, `height`, `padding`).
         """
         super().__init__(master, **kwargs)
         self._pages: dict[str, tkinter.Widget] = {}
@@ -79,9 +60,9 @@ class PageStack(Frame):
         """Add a page to the stack, optionally creating a Frame.
 
         Args:
-            key (str): Unique identifier for the page (required for navigation).
-            page (Widget | None): The widget to add. If None, creates a Frame.
-            **kwargs: When page is None, these are passed to Frame (e.g., padding, color, variant).
+            key: Unique identifier for the page (required for navigation).
+            page: The widget to add. If None, creates a Frame.
+            **kwargs: When page is None, these are passed to Frame (e.g., padding, accent, variant).
 
         Returns:
             Widget: The page widget (passed or created Frame).
@@ -318,13 +299,41 @@ class PageStack(Frame):
             return self._pages[key].configure(**kwargs)
 
     def on_page_changed(self, callback: Callable) -> str:
-        """Bind to `<<PageChange>>`. Callback receives `event.data` with navigation info.
+        """Register a callback for `<<PageChange>>` events (fires after every navigation).
+
+        Args:
+            callback: Receives `event.data` with navigation info: `page`, `prev_page`,
+                `nav`, `index`, `length`, `can_back`, `can_forward`.
 
         Returns:
-            Binding identifier for use with off_page_changed().
+            Bind ID — pass to `off_page_changed()` to unsubscribe.
         """
         return self.bind('<<PageChange>>', callback, add="+")
 
     def off_page_changed(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<PageChange>>`."""
+        """Unsubscribe from `<<PageChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_page_changed()`. If None, removes all.
+        """
         self.unbind("<<PageChange>>", bind_id)
+
+    def on_page_mount(self, callback: Callable) -> str:
+        """Register a callback for `<<PageMount>>` events (fires after a new page is displayed).
+
+        Args:
+            callback: Receives `event.data` with navigation info: `page`,
+                `prev_page`, `nav`, `index`, `length`, `can_back`, `can_forward`.
+
+        Returns:
+            Bind ID — pass to `off_page_mount()` to unsubscribe.
+        """
+        return self.bind('<<PageMount>>', callback, add='+')
+
+    def off_page_mount(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<PageMount>>`.
+
+        Args:
+            bind_id: ID returned by `on_page_mount()`. If None, removes all.
+        """
+        self.unbind('<<PageMount>>', bind_id)

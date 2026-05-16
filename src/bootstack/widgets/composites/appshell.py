@@ -46,20 +46,6 @@ class AppShell(App):
     toolbar + sidebar + content layout. Each component is optional
     and exposed as a property for customization.
 
-    Example:
-        ```python
-        import bootstack as bs
-
-        shell = bs.AppShell(title='My App', size=(1000, 650))
-
-        home = shell.add_page('home', text='Home', icon='house')
-        bs.Label(home, text='Welcome!').pack(padx=20, pady=20)
-
-        docs = shell.add_page('docs', text='Documents', icon='file-earmark-text')
-        bs.Label(docs, text='Your documents.').pack(padx=20, pady=20)
-
-        shell.mainloop()
-        ```
     """
 
     def __init__(

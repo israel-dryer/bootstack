@@ -41,10 +41,10 @@ Use `CheckButton` when:
 
 ### Consider a different control when...
 
-- only one choice is allowed in a group → use [RadioButton](radiobutton.md)
-- you want a dropdown list → use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
-- you want a button-like toggle → use [CheckToggle](checktoggle.md) or [ToggleGroup](togglegroup.md)
-- you want a dedicated on/off switch → use [Switch](switch.md)
+- only one choice is allowed in a group — use [RadioButton](radiobutton.md)
+- you want a dropdown list — use [SelectBox](selectbox.md) or [OptionMenu](optionmenu.md)
+- you want a button-like toggle — use [CheckToggle](checktoggle.md) or [ToggleGroup](togglegroup.md)
+- you want a dedicated on/off switch — use [Switch](switch.md)
 
 ---
 
@@ -233,7 +233,3 @@ enabled.subscribe(lambda v: print("value:", v))
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — text translation
 - [Design System → Variants](../../design-system/variants.md) — color tokens and variants
-
-### API reference
-
-- [`bootstack.CheckButton`](../../reference/widgets/CheckButton.md)

@@ -1,7 +1,7 @@
 """MenuBar composite widget."""
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Literal, Optional, Tuple, TypedDict, Union
+from typing import Any, Callable, Literal, TypedDict
 
 from typing_extensions import Unpack
 
@@ -18,7 +18,7 @@ Region = Literal["before", "center", "after"]
 
 class MenuBarButtonKwargs(TypedDict, total=False):
     """Keyword arguments for MenuBar.add_button()."""
-    command: Optional[Callable[[], Any]]
+    command: Callable[[], Any] | None
     image: Any
     icon: Any
     icon_only: bool
@@ -52,26 +52,6 @@ class MenuBar(GridFrame):
     MenuBar provides a 5-column grid layout where the center region stays visually
     centered. All three regions support adding buttons, labels, and menus.
 
-    Example:
-        ```python
-        menubar = MenuBar(app, gap=6)
-
-        # Add menus to the left (before) region
-        menubar.add_menu("File", items=[
-            {"type": "command", "text": "Open", "command": open_file},
-            {"type": "command", "text": "Save", "command": save_file},
-            {"type": "separator"},
-            {"type": "command", "text": "Exit", "command": app.destroy},
-        ])
-
-        # Add label to center region
-        menubar.add_label("My App", region="center")
-
-        # Add buttons to the right (after) region
-        menubar.add_button("Help", region="after", command=show_help)
-        menubar.add_menu("Account", region="after", items=[...])
-        ```
-
     Args:
         master: Parent widget. If None, uses the default root window.
         gap: Default gap between items in all region PackFrames. Defaults to 0.
@@ -94,9 +74,9 @@ class MenuBar(GridFrame):
         master: Master = None,
         *,
         gap: int = 0,
-        region_gap: Optional[Union[Dict[str, int], Tuple[int, int, int]]] = None,
+        region_gap: dict[str, int] | tuple[int, int, int] | None = None,
         chevron: bool = None,
-        popdown_options: Optional[dict[str, Any]] = None,
+        popdown_options: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         # Initialize GridFrame with 5-column centered layout
@@ -154,8 +134,8 @@ class MenuBar(GridFrame):
     @staticmethod
     def _parse_region_gap(
         gap: int,
-        region_gap: Optional[Union[Dict[str, int], Tuple[int, int, int]]],
-    ) -> Tuple[int, int, int]:
+        region_gap: dict[str, int] | tuple[int, int, int] | None,
+    ) -> tuple[int, int, int]:
         """Parse region_gap into (before, center, after) tuple."""
         if region_gap is None:
             return gap, gap, gap
@@ -257,10 +237,10 @@ class MenuBar(GridFrame):
     def add_menu(
         self,
         text: str,
-        items: Optional[list[ContextMenuItem]] = None,
+        items: list[ContextMenuItem] | None = None,
         *,
         region: Region = "before",
-        popdown_options: Optional[dict[str, Any]] = None,
+        popdown_options: dict[str, Any] | None = None,
         **kwargs: Unpack[MenuBarMenuKwargs],
     ) -> DropdownButton:
         """Add a dropdown menu button to the specified region.

@@ -5,17 +5,35 @@ radiobuttons, and separators.
 """
 
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
-from typing import Any, Callable, Union
+from typing import Any, Callable, Literal
+
+from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack.widgets.types import WidgetDensity
 
 from bootstack.runtime.shortcuts import get_shortcuts
 from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
 from bootstack.widgets.primitives import RadioToggle, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.types import Master
-from bootstack.widgets.primitives.checkbutton import CheckButton
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import CustomConfigMixin, configure_delegate
-from bootstack.widgets.primitives.radiobutton import RadioButton
+
+
+ContextMenuTrigger = Literal[
+    'right-click', 'click', 'left-click', 'double-click',
+    'shift-click', 'ctrl-click', 'control-click', 'manual',
+]
+"""Gesture that auto-shows a `ContextMenu` when the user interacts with the target widget.
+
+Pass `None` to disable auto-binding and manage activation in caller code.
+"""
+
+ContextMenuItemResult = Button | CheckToggle | RadioToggle | Separator | str
+"""Return type for ContextMenu item-add and item-lookup operations.
+
+On Windows and Linux the result is the created widget. On macOS (native
+`NSMenu` backend) the result is a string key since no per-item widget exists.
+"""
 
 
 # Sentinel for "argument not provided" so we can distinguish between
@@ -63,15 +81,15 @@ class ContextMenuItem:
     """Data class for context menu items.
 
     Attributes:
-        type (str): Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
-        kwargs (dict): Additional keyword arguments for the item.
+        type: Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
+        kwargs: Additional keyword arguments for the item.
     """
 
     def __init__(self, type: str, **kwargs) -> None:
         """Initialize a context menu item.
 
         Args:
-            type (str): Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
+            type: Type of menu item ('command', 'checkbutton', 'radiobutton', 'separator').
             **kwargs: Additional arguments passed to the widget.
         """
         self.type: str = type
@@ -94,12 +112,13 @@ class _ToplevelContextMenu(CustomConfigMixin):
             minheight: int = None,
             height: int = None,
             target: Misc = None,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
+            density: WidgetDensity = 'default',
+            command: Callable = None,
     ):
         """Initialize the themed Toplevel backend.
 
@@ -136,7 +155,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._offset = offset if offset is not None else (BootstyleBuilderBase.scale_from_source(10), 0)
         self._hide_on_outside_click = hide_on_outside_click
         self._density = density
-        self._on_item_click_callback = None
+        self._command = command
         self._click_handler_id = None
         self._click_binding_root = None
         self._click_bind_after_id = None
@@ -233,14 +252,6 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._item_order.append(key)
         return key
 
-    def on_item_click(self, callback: Callable) -> None:
-        """Set item click callback. Callback receives `item_info = {'type': str, 'text': str, 'value': Any}`."""
-        self._on_item_click_callback = callback
-
-    def off_item_click(self) -> None:
-        """Remove the item click callback."""
-        self._on_item_click_callback = None
-
     def add_command(
             self,
             text: str = None,
@@ -253,17 +264,17 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a command button to the menu.
 
         Args:
-            text (str): Button text label.
-            icon (str): Optional icon name. Uses 'empty' placeholder if None
+            text: Button text label.
+            icon: Optional icon name. Uses 'empty' placeholder if None
                 to maintain text alignment with items that have icons.
-            command (Callable): Function to call when clicked.
-            disabled (bool): If True, the item is disabled and cannot be clicked.
-            shortcut (str): Optional keyboard shortcut. Can be either:
+            command: Function to call when clicked.
+            disabled: If True, the item is disabled and cannot be clicked.
+            shortcut: Optional keyboard shortcut. Can be either:
                 - A key registered with the Shortcuts service (e.g., "save")
                 - A literal display string (e.g., "Ctrl+S")
                 If a registered key is provided, the platform-appropriate
                 display string is shown automatically.
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             Button: The created Button widget.
@@ -335,17 +346,14 @@ class _ToplevelContextMenu(CustomConfigMixin):
             value: bool = False,
             command: Callable = None,
             key: str = None
-    ) -> CheckButton:
+    ) -> CheckToggle:
         """Add a checkbutton to the menu.
 
         Args:
-            text (str): Checkbutton text label.
-            value (bool): Initial checked state.
-            command (Callable): Function to call when toggled.
-            key (str): Optional unique identifier. Auto-generated if not provided.
-
-        Returns:
-            CheckButton: The created CheckButton widget.
+            text: Checkbutton text label.
+            value: Initial checked state.
+            command: Function to call when toggled.
+            key: Optional unique identifier. Auto-generated if not provided.
         """
         var = BooleanVar(value=value)
 
@@ -369,21 +377,18 @@ class _ToplevelContextMenu(CustomConfigMixin):
             self,
             text: str = None,
             value: Any = None,
-            variable: Union[StringVar, IntVar] = None,
+            variable: StringVar | IntVar = None,
             command: Callable = None,
             key: str = None
-    ) -> RadioButton:
+    ) -> RadioToggle:
         """Add a radiobutton to the menu.
 
         Args:
-            text (str): Radiobutton text label.
-            value (Any): Value to set when selected.
-            variable (StringVar | IntVar): Tkinter Variable to link with.
-            command (Callable): Function to call when selected.
-            key (str): Optional unique identifier. Auto-generated if not provided.
-
-        Returns:
-            RadioButton: The created RadioButton widget.
+            text: Radiobutton text label.
+            value: Value to set when selected.
+            variable: Tkinter Variable to link with.
+            command: Function to call when selected.
+            key: Optional unique identifier. Auto-generated if not provided.
         """
 
         def on_select():
@@ -406,7 +411,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Add a horizontal separator to the menu.
 
         Args:
-            key (str): Optional unique identifier. Auto-generated if not provided.
+            key: Optional unique identifier. Auto-generated if not provided.
 
         Returns:
             Separator: The created Separator widget.
@@ -416,15 +421,12 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._register_item(key, sep)
         return sep
 
-    def add_item(self, type: str, **kwargs: Any) -> Widget:
+    def add_item(self, type: str, **kwargs: Any) -> ContextMenuItemResult:
         """Add a menu item based on type.
 
         Args:
-            type (str): Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`, `'separator'`.
             **kwargs: Arguments passed to the appropriate add_* method.
-
-        Returns:
-            Widget: The created widget.
         """
         if type == 'command':
             return self.add_command(**kwargs)
@@ -437,11 +439,11 @@ class _ToplevelContextMenu(CustomConfigMixin):
         else:
             raise ValueError(f"Unknown item type: {type}")
 
-    def add_items(self, items: list) -> None:
+    def add_items(self, items: list[ContextMenuItem]) -> None:
         """Add multiple items at once.
 
         Args:
-            items (list): List of ContextMenuItem objects or dictionaries with 'type' and 'kwargs'.
+            items: List of ContextMenuItem objects or dictionaries with 'type' and 'kwargs'.
         """
         for item in items:
             if isinstance(item, ContextMenuItem):
@@ -466,16 +468,13 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """
         return tuple(self._item_order)
 
-    def insert_item(self, index: int, type: str, **kwargs: Any) -> Widget:
+    def insert_item(self, index: int, type: str, **kwargs: Any) -> ContextMenuItemResult:
         """Insert a new item at the given index.
 
         Args:
-            index (int): Position to insert the item at.
-            type (str): Type of item ('command', 'checkbutton', 'radiobutton', 'separator').
+            index: Position to insert the item at.
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`, `'separator'`.
             **kwargs: Arguments passed to the appropriate add_* method.
-
-        Returns:
-            Widget: The created widget.
         """
         before_key = self._item_order[index] if 0 <= index < len(self._item_order) else None
         before_widget = self._items[before_key] if before_key else None
@@ -498,14 +497,11 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._item_order.insert(index, new_key)
         return widget
 
-    def item(self, key_or_index: str | int) -> Widget:
+    def item(self, key_or_index: str | int) -> ContextMenuItemResult:
         """Get a menu item by key or index.
 
         Args:
             key_or_index: The key (str) or index (int) of the item to retrieve.
-
-        Returns:
-            The menu item widget.
 
         Raises:
             KeyError: If no item with the given key exists.
@@ -530,15 +526,12 @@ class _ToplevelContextMenu(CustomConfigMixin):
             pass
         return None
 
-    def move_item(self, from_key_or_index: str | int, to_index: int) -> Widget:
+    def move_item(self, from_key_or_index: str | int, to_index: int) -> ContextMenuItemResult:
         """Reorder an existing item to a new index.
 
         Args:
             from_key_or_index: Key (str) or index (int) of the item to move.
-            to_index (int): New index for the item.
-
-        Returns:
-            Widget: The moved widget.
+            to_index: New index for the item.
         """
         key = self._resolve_key(from_key_or_index)
         widget = self._items[key]
@@ -600,7 +593,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Show the context menu.
 
         Args:
-            position (tuple): Optional screen coordinate (x, y) to align to. If provided,
+            position: Optional screen coordinate (x, y) to align to. If provided,
                 the menu's anchor will align to this point. Negative x/y are
                 treated as offsets from the screen's right/bottom.
         """
@@ -723,10 +716,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         """Handle item click events.
 
         Args:
-            type (str): Type of item clicked.
-            text (str): Text of the item.
-            command (Callable): Command to execute.
-            value (Any): Value associated with the item.
+            type: Type of item clicked.
+            text: Text of the item.
+            command: Command to execute.
+            value: Value associated with the item.
         """
         # Prepare event data
         data = {
@@ -736,8 +729,8 @@ class _ToplevelContextMenu(CustomConfigMixin):
         }
 
         # Call registered callback
-        if self._on_item_click_callback:
-            self._on_item_click_callback(data)
+        if self._command:
+            self._command(data)
 
         # Execute item command
         if command:
@@ -880,6 +873,14 @@ class _ToplevelContextMenu(CustomConfigMixin):
 
     # ----- Configuration delegates -------------------------------------------------
 
+    @configure_delegate('command')
+    def _delegate_command(self, value: Callable | None = None):
+        """Get or set the item-click callback."""
+        if value is None and not self._command:
+            return self._command
+        self._command = value
+        return None
+
     @configure_delegate('minwidth')
     def _delegate_minwidth(self, value: int | None):
         """Get or set the minimum width."""
@@ -993,12 +994,13 @@ class _NativeContextMenu(CustomConfigMixin):
             minheight: int = None,
             height: int = None,
             target: Misc = None,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
+            density: WidgetDensity = 'default',
+            command: Callable = None,
     ):
         """Initialize the native tk.Menu backend.
 
@@ -1026,7 +1028,7 @@ class _NativeContextMenu(CustomConfigMixin):
         self._offset = offset if offset is not None else (BootstyleBuilderBase.scale_from_source(10), 0)
         self._hide_on_outside_click = hide_on_outside_click
         self._density = density
-        self._on_item_click_callback = None
+        self._command = command
 
         # Create the native menu and look up the per-root MenuManager so
         # icon resolution, label translation, and <<ThemeChanged>> tracking
@@ -1090,8 +1092,8 @@ class _NativeContextMenu(CustomConfigMixin):
     def _wrap_command(self, type_: str, text: str | None,
                       command: Callable | None, value: Any = None) -> Callable:
         def fire():
-            if self._on_item_click_callback:
-                self._on_item_click_callback({
+            if self._command:
+                self._command({
                     'type': type_,
                     'text': text,
                     'value': value,
@@ -1114,12 +1116,6 @@ class _NativeContextMenu(CustomConfigMixin):
         return display or None
 
     # ----- Public API mirroring the themed backend ---------------------------
-
-    def on_item_click(self, callback: Callable) -> None:
-        self._on_item_click_callback = callback
-
-    def off_item_click(self) -> None:
-        self._on_item_click_callback = None
 
     def add_command(
             self,
@@ -1181,8 +1177,8 @@ class _NativeContextMenu(CustomConfigMixin):
         self._var_refs[key] = var
 
         def on_toggle():
-            if self._on_item_click_callback:
-                self._on_item_click_callback({
+            if self._command:
+                self._command({
                     'type': 'checkbutton',
                     'text': text,
                     'value': var.get(),
@@ -1206,7 +1202,7 @@ class _NativeContextMenu(CustomConfigMixin):
             self,
             text: str = None,
             value: Any = None,
-            variable: Union[StringVar, IntVar] = None,
+            variable: StringVar | IntVar = None,
             command: Callable = None,
             key: str = None,
     ) -> str:
@@ -1221,8 +1217,8 @@ class _NativeContextMenu(CustomConfigMixin):
         self._var_refs[key] = variable
 
         def on_select():
-            if self._on_item_click_callback:
-                self._on_item_click_callback({
+            if self._command:
+                self._command({
                     'type': 'radiobutton',
                     'text': text,
                     'value': value,
@@ -1266,7 +1262,7 @@ class _NativeContextMenu(CustomConfigMixin):
             return self.add_separator(**kwargs)
         raise ValueError(f"Unknown item type: {type}")
 
-    def add_items(self, items: list) -> None:
+    def add_items(self, items: list[ContextMenuItem]) -> None:
         for item in items:
             if isinstance(item, ContextMenuItem):
                 self.add_item(item.type, **item.kwargs)
@@ -1342,7 +1338,7 @@ class _NativeContextMenu(CustomConfigMixin):
             if name:
                 self._mgr.register_icon(self._menu, i, name, size)
 
-    def move_item(self, from_key_or_index: str | int, to_index: int):
+    def move_item(self, from_key_or_index: str | int, to_index: int) -> dict:
         key = self._resolve_key(from_key_or_index)
         self._item_order.remove(key)
         if to_index < 0:
@@ -1451,8 +1447,8 @@ class _NativeContextMenu(CustomConfigMixin):
                 command = spec.get('command')
 
                 def on_toggle(_var=var, _text=text, _cmd=command):
-                    if self._on_item_click_callback:
-                        self._on_item_click_callback({
+                    if self._command:
+                        self._command({
                             'type': 'checkbutton',
                             'text': _text,
                             'value': _var.get(),
@@ -1469,8 +1465,8 @@ class _NativeContextMenu(CustomConfigMixin):
                 command = spec.get('command')
 
                 def on_select(_text=text, _value=value, _cmd=command):
-                    if self._on_item_click_callback:
-                        self._on_item_click_callback({
+                    if self._command:
+                        self._command({
                             'type': 'radiobutton',
                             'text': _text,
                             'value': _value,
@@ -1522,6 +1518,14 @@ class _NativeContextMenu(CustomConfigMixin):
         return 0, 0
 
     # ----- Configuration delegates -------------------------------------------
+
+    @configure_delegate('command')
+    def _delegate_command(self, value: Callable | None = None):
+        """Get or set the item-click callback."""
+        if value is None and not self._command:
+            return self._command
+        self._command = value
+        return None
 
     @configure_delegate('minwidth')
     def _delegate_minwidth(self, value: int | None):
@@ -1619,8 +1623,8 @@ class ContextMenu:
     On macOS this materializes as a native `tk.Menu` (NSMenu) so popups
     integrate with the system, dodging the key-window/activation issues
     that affect a reused overrideredirect Toplevel on Aqua. On Windows
-    and Linux it uses the themed Toplevel-backed implementation so
-    bootstyle, density, and rich item types apply consistently.
+    and Linux it uses the themed Toplevel-backed implementation so theme
+    tokens, density, and rich item types apply consistently.
 
     The public API is identical across backends. Consumers should not
     rely on `item()` returning a Tk widget — on the native backend it
@@ -1635,39 +1639,44 @@ class ContextMenu:
             minheight: int = None,
             height: int = None,
             target: Misc = _TARGET_DEFAULT,
-            anchor: str = 'nw',
-            attach: str = 'se',
+            anchor: AnchorPoint = 'nw',
+            attach: AnchorPoint = 'se',
             offset: tuple[int, int] = None,
             hide_on_outside_click: bool = True,
             items: list[ContextMenuItem] = None,
-            density: str = 'default',
-            trigger: str | None = 'right-click',
+            density: WidgetDensity = 'default',
+            trigger: ContextMenuTrigger | None = 'right-click',
+            command: Callable = None,
     ):
-        """Create a ContextMenu.
-
-        Args mirror the underlying backend; `trigger` is a dispatcher-level
-        convenience that auto-binds the menu to `target`'s click event so
-        callers don't have to wire a `bind('<Button-3>', show_at)` handler
-        themselves. Set `trigger=None` (or `'manual'`) to opt out and
-        manage activation in caller code (e.g. when the menu is built lazily).
-
-        `target` defaults to `master` when omitted, since the menu is
-        usually attached to the same widget that owns it. Pass `target=None`
-        explicitly to opt out of positioning/auto-binding (e.g. when calling
-        `show(position=(x, y))` with cursor-driven coordinates instead).
-
-        Trigger values:
-            - `'right-click'` (default): portable right-click via
-              `bootstack.runtime.utility.bind_right_click` —
-              `<Button-3>` on Win/Linux plus `<Button-2>` and
-              `<Control-Button-1>` on Aqua.
-            - `'click'` / `'left-click'`: `<Button-1>`.
-            - `'double-click'`: `<Double-Button-1>`.
-            - `'shift-click'`: `<Shift-Button-1>`.
-            - `'ctrl-click'` / `'control-click'`: `<Control-Button-1>`
-              (note that on Aqua this is the same as Ctrl+click for context
-              menus, since macOS uses Ctrl+click as a context-menu gesture).
-            - `None` or `'manual'`: no auto-binding.
+        """
+        Args:
+            master: Parent widget. If None, uses the default root window.
+            minwidth: Minimum width of the menu popup in pixels. Default 150.
+            width: Fixed width of the menu popup. If None, sizes to content.
+            minheight: Minimum height of the menu popup in pixels.
+            height: Fixed height of the menu popup in pixels.
+            target: Widget the menu is attached to for positioning and
+                auto-binding. Defaults to `master`. Pass `None` to opt out
+                of auto-positioning (e.g. when calling `show(position=(x, y))`
+                with cursor-driven coordinates).
+            anchor: Corner of the menu aligned to the attach point. Default `'nw'`.
+            attach: Corner of the target widget used as the attach point. Default `'se'`.
+            offset: `(x, y)` pixel offset from the attach point.
+            hide_on_outside_click: Auto-hide when clicking outside the menu. Default True.
+            items: Initial list of menu items.
+            density: Widget density — `'default'` or `'compact'`.
+            trigger: Gesture that auto-shows the menu on the target widget.
+                `'right-click'` (default) — platform right-click (`<Button-3>` on
+                Win/Linux; `<Button-2>` and `<Control-Button-1>` on macOS).
+                `'click'` / `'left-click'` — `<Button-1>`.
+                `'double-click'` — `<Double-Button-1>`.
+                `'shift-click'` — `<Shift-Button-1>`.
+                `'ctrl-click'` / `'control-click'` — `<Control-Button-1>`.
+                `None` or `'manual'` — no auto-binding; caller manages activation.
+            command: Callback invoked when any menu item is clicked. Receives a
+                dict with keys `type` (str), `text` (str), and `value` (Any).
+                Single-slot — assigning a new value via `configure(command=...)`
+                replaces the previous callback. Pass `None` to clear.
         """
         # Default target to master when omitted; explicit `None` opts out.
         if target is _TARGET_DEFAULT:
@@ -1678,7 +1687,7 @@ class ContextMenu:
         if probe is not None:
             try:
                 winsys = probe.tk.call('tk', 'windowingsystem')
-            except (TclError, AttributeError):
+            except:
                 winsys = None
         if winsys is None:
             try:
@@ -1686,7 +1695,7 @@ class ContextMenu:
                 root = _tk._get_default_root()
                 if root is not None:
                     winsys = root.tk.call('tk', 'windowingsystem')
-            except (TclError, AttributeError):
+            except:
                 winsys = None
 
         backend_cls = _NativeContextMenu if winsys == 'aqua' else _ToplevelContextMenu
@@ -1703,6 +1712,7 @@ class ContextMenu:
             hide_on_outside_click=hide_on_outside_click,
             items=items,
             density=density,
+            command=command,
         )
 
         # Auto-bind the activation gesture to the target widget. Skip when
@@ -1735,6 +1745,182 @@ class ContextMenu:
                 f"Unknown trigger {trigger!r}. Use 'right-click', 'click', "
                 f"'double-click', 'shift-click', 'ctrl-click', or 'manual'."
             )
+
+    # ── Public API stubs ──────────────────────────────────────────────────────
+    # Explicit method definitions so griffe and IDEs can see the API.
+    # Each delegates to self._impl; on macOS the native backend returns key
+    # strings instead of widget objects, so add_* return types are Any.
+
+    def add_command(
+            self,
+            text: str = None,
+            icon: str = None,
+            command: Callable = None,
+            disabled: bool = False,
+            shortcut: str = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a command item to the menu.
+
+        Args:
+            text: Item label text.
+            icon: Icon name. Defaults to a blank placeholder to preserve alignment.
+            command: Callable invoked when the item is clicked.
+            disabled: If True the item is rendered disabled and cannot be clicked.
+            shortcut: Keyboard shortcut label, either a registered shortcut key
+                or a literal display string (e.g. `'Ctrl+S'`).
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._impl.add_command(
+            text=text, icon=icon, command=command,
+            disabled=disabled, shortcut=shortcut, key=key,
+        )
+
+    def add_checkbutton(
+            self,
+            text: str = None,
+            value: bool = False,
+            command: Callable = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a checkbutton item to the menu.
+
+        Args:
+            text: Item label text.
+            value: Initial checked state.
+            command: Callable invoked when the item is toggled.
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._impl.add_checkbutton(text=text, value=value, command=command, key=key)
+
+    def add_radiobutton(
+            self,
+            text: str = None,
+            value: Any = None,
+            variable: Any = None,
+            command: Callable = None,
+            key: str = None,
+    ) -> ContextMenuItemResult:
+        """Add a radiobutton item to the menu.
+
+        Args:
+            text: Item label text.
+            value: Value assigned to `variable` when this item is selected.
+            variable: Tkinter Variable shared across the radio group.
+            command: Callable invoked when the item is selected.
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._impl.add_radiobutton(
+            text=text, value=value, variable=variable, command=command, key=key,
+        )
+
+    def add_separator(self, key: str = None) -> ContextMenuItemResult:
+        """Add a horizontal separator to the menu.
+
+        Args:
+            key: Unique identifier. Auto-generated if not provided.
+        """
+        return self._impl.add_separator(key=key)
+
+    def add_item(self, type: str, **kwargs: Any) -> ContextMenuItemResult:
+        """Add a menu item by type name.
+
+        Args:
+            type: One of `'command'`, `'checkbutton'`, `'radiobutton'`,
+                or `'separator'`.
+            **kwargs: Forwarded to the matching `add_*` method.
+        """
+        return self._impl.add_item(type, **kwargs)
+
+    def add_items(self, items: list[ContextMenuItem]) -> None:
+        """Add multiple items at once.
+
+        Args:
+            items: List of `ContextMenuItem` objects or dicts with
+                a `type` key and item kwargs.
+        """
+        self._impl.add_items(items)
+
+    def insert_item(self, index: int, type: str, **kwargs: Any) -> ContextMenuItemResult:
+        """Insert a new item at the given index.
+
+        Args:
+            index: Position to insert at (0-based).
+            type: Item type — same values as `add_item`.
+            **kwargs: Forwarded to the matching `add_*` method.
+        """
+        return self._impl.insert_item(index, type, **kwargs)
+
+    def item(self, key_or_index: str | int) -> ContextMenuItemResult:
+        """Return the item widget (or spec dict on macOS) for a key or index.
+
+        Args:
+            key_or_index: String key or integer index of the item.
+        """
+        return self._impl.item(key_or_index)
+
+    def remove_item(self, key_or_index: str | int) -> None:
+        """Remove and destroy the item at the given key or index.
+
+        Args:
+            key_or_index: String key or integer index of the item.
+        """
+        self._impl.remove_item(key_or_index)
+
+    def move_item(self, from_key_or_index: str | int, to_index: int) -> ContextMenuItemResult:
+        """Reorder an item to a new position.
+
+        Args:
+            from_key_or_index: Current key or index of the item.
+            to_index: Target index.
+        """
+        return self._impl.move_item(from_key_or_index, to_index)
+
+    def configure_item(
+            self,
+            key_or_index: str | int,
+            option: str | None = None,
+            **kwargs: Any,
+    ) -> Any:
+        """Get or set options on an individual menu item.
+
+        Args:
+            key_or_index: Key or index of the item.
+            option: If provided without `kwargs`, returns the current value of
+                this option. If omitted, returns the full option map.
+            **kwargs: Option values to set.
+        """
+        return self._impl.configure_item(key_or_index, option, **kwargs)
+
+    def show(self, position: tuple[int, int] = None) -> None:
+        """Show the context menu.
+
+        Args:
+            position: Optional `(x, y)` screen coordinates. If omitted the
+                menu is positioned relative to its target widget.
+        """
+        self._impl.show(position=position)
+
+    def hide(self) -> None:
+        """Hide the context menu."""
+        self._impl.hide()
+
+    def destroy(self) -> None:
+        """Destroy the context menu and release all resources."""
+        self._impl.destroy()
+
+    def items(self, value: list[ContextMenuItem] = None) -> list[ContextMenuItemResult] | None:
+        """Get or set the full item list.
+
+        Args:
+            value: If provided, replaces all current items. If omitted,
+                returns the current item list.
+        """
+        return self._impl.items(value)
+
+    def keys(self) -> tuple[str, ...]:
+        """Return all item keys in insertion order."""
+        return self._impl.keys()
 
     # Forward every other attribute (methods, configure delegates, etc.)
     # to the active backend. `_impl` itself is a real instance attribute

@@ -48,23 +48,22 @@ class ToggleGroup(Frame):
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            mode (str): Selection mode - 'single' for radio button behavior (default),
+            mode: Selection mode - 'single' for radio button behavior (default),
                 or 'multi' for checkbox behavior allowing multiple selections.
-            orient (str): Layout orientation - 'horizontal' (default) or 'vertical'.
-            accent (str): Accent token for styling (e.g., 'primary', 'danger').
+            orient: Layout orientation - 'horizontal' (default) or 'vertical'.
+            accent: Accent token for styling (e.g., 'primary', 'danger').
                 Defaults to 'primary'.
-            variant (str): Style variant (e.g., 'outline', 'ghost').
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-            variable (Variable): Optional tk.Variable for controlling the value. For single mode,
+            variant: Style variant (e.g., 'outline', 'ghost').
+            variable: Optional tk.Variable for controlling the value. For single mode,
                 use StringVar; for multi mode, use SetVar.
-            signal (Signal): Optional Signal instance for reactive programming.
-            value (str | set): Initial value - string for single mode, set for multi mode.
-            show_border (bool): If True, draws a border around the group.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Additional style options passed to child buttons.
-            padding (int | tuple): Frame padding. Defaults to 1.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
+            signal: Optional Signal instance for reactive programming.
+            value: Initial value - string for single mode, set for multi mode.
+            show_border: If True, draws a border around the group.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Additional style options passed to child buttons.
+            padding: Frame padding. Defaults to 1.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
         """
         # Extract ToggleGroup-specific options before super().__init__
         self._mode = kwargs.pop('mode', 'single')
@@ -127,12 +126,12 @@ class ToggleGroup(Frame):
         self._signal = Signal.from_variable(value)
 
     @property
-    def signal(self) -> 'Signal[Any]':
+    def signal(self) -> Signal[Any]:
         """Get the signal."""
         return self._signal
 
     @signal.setter
-    def signal(self, value: 'Signal[Any]') -> None:
+    def signal(self, value: Signal[Any]) -> None:
         """Set the signal."""
         self._signal = value
         self._variable = value.var
@@ -334,11 +333,24 @@ class ToggleGroup(Frame):
         return tuple(self._buttons.keys())
 
     def on_changed(self, callback: Callable) -> Any:
-        """Subscribe to value changes. Callback receives `new_value: str | set[str]` directly (str in 'single' mode, set in 'multi' mode)."""
+        """Subscribe to value changes.
+
+        Args:
+            callback: Called when the selection changes. Receives the new value
+                directly (not a Tk event object): `str` in single mode,
+                `set[str]` in multi mode.
+
+        Returns:
+            Subscription ID — pass to `off_changed()` to unsubscribe.
+        """
         return self._signal.subscribe(callback)
 
     def off_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from value changes."""
+        """Unsubscribe from value changes.
+
+        Args:
+            bind_id: ID returned by `on_changed()`. If None, removes all.
+        """
         self._signal.unsubscribe(bind_id)
 
     @configure_delegate('accent')

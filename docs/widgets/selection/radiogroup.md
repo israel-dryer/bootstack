@@ -43,8 +43,8 @@ Use `RadioGroup` when:
 
 ### Consider a different control when...
 
-- you need custom per-option layout — use individual **RadioButton** widgets
-- you want complete control over spacing and structure — use individual **RadioButton** widgets
+- you need custom per-option layout — use individual [RadioButton](radiobutton.md) widgets
+- you want complete control over spacing and structure — use individual [RadioButton](radiobutton.md) widgets
 
 ---
 
@@ -225,7 +225,3 @@ group.pack(padx=20, pady=20)
 - [Design System](../../design-system/index.md) — colors, themes, and styling
 - [Reactivity](../../guides/reactivity.md) — reactive state management
 - [Localization](../../guides/localization.md) — internationalization support
-
-### API reference
-
-- [`bootstack.RadioGroup`](../../reference/widgets/RadioGroup.md)

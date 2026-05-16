@@ -1,7 +1,7 @@
 """Canvas-based scrollable container widget with mouse wheel support."""
 from tkinter import Canvas
 from tkinter.ttk import Widget
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
@@ -18,9 +18,9 @@ class ScrollView(Frame):
     when the content exceeds the available space.
 
     Attributes:
-        canvas (Canvas): The underlying tkinter Canvas widget.
-        vertical_scrollbar (Scrollbar): The vertical scrollbar widget.
-        horizontal_scrollbar (Scrollbar): The horizontal scrollbar widget.
+        canvas: The underlying tkinter Canvas widget.
+        vertical_scrollbar: The vertical scrollbar widget.
+        horizontal_scrollbar: The horizontal scrollbar widget.
     """
 
     def __init__(
@@ -120,6 +120,7 @@ class ScrollView(Frame):
 
     @configure_delegate('scroll_direction')
     def _delegate_scroll_direction(self, value=None):
+        """Get or set the scroll direction."""
         if value is None:
             return self._direction
         else:
@@ -146,6 +147,7 @@ class ScrollView(Frame):
 
     @configure_delegate('scrollbar_visibility')
     def _delegate_scrollbar_visibility(self, value=None):
+        """Get or set the scrollbar visibility mode."""
         if value is None:
             return self._scrollbar_visibility
         else:
@@ -184,6 +186,7 @@ class ScrollView(Frame):
 
     @configure_delegate('autohide_delay')
     def _delegate_autohide_delay(self, value=None):
+        """Get or set the autohide delay in milliseconds."""
         if value is None:
             return self._autohide_delay
         else:
@@ -192,6 +195,7 @@ class ScrollView(Frame):
 
     @configure_delegate('scrollbar_variant')
     def _delegate_scrollbar_variant(self, value=None):
+        """Get or set the scrollbar variant."""
         if value is None:
             return self._scrollbar_variant
         else:
@@ -540,9 +544,9 @@ class ScrollView(Frame):
         """Add a widget to the scrollable area, or create and return a Frame.
 
         Args:
-            widget (Widget | None): The widget to add. If None, creates a Frame.
-            anchor (str): Anchor position for the widget in the canvas. Default is 'nw'.
-            **kwargs: When widget is None, these are passed to Frame (e.g., padding, bootstyle).
+            widget: The widget to add. If None, creates a Frame.
+            anchor: Anchor position for the widget in the canvas. Default is 'nw'.
+            **kwargs: When widget is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The content widget (passed or created).
@@ -588,7 +592,7 @@ class ScrollView(Frame):
 
         return widget
 
-    def remove(self) -> Optional[Widget]:
+    def remove(self) -> Widget | None:
         """Remove the current widget from the scrollable area.
 
         Returns:
@@ -615,7 +619,7 @@ class ScrollView(Frame):
 
         return widget
 
-    def get_child(self) -> Optional[Widget]:
+    def get_child(self) -> Widget | None:
         """Get the current child widget.
 
         Returns:

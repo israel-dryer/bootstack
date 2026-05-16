@@ -54,9 +54,9 @@ Use `ListView` when:
 
 ### Consider a different control when...
 
-- **Data is strongly column-based** — use [TableView](tableview.md)
-- **Your data is hierarchical** — use [TreeView](treeview.md)
-- **You have a small, static list** — a simple frame with labels may suffice
+- data is strongly column-based — use [TableView](tableview.md)
+- your data is hierarchical — use [TreeView](treeview.md)
+- you have a small, static list — a simple frame with labels may suffice
 
 ---
 
@@ -110,11 +110,13 @@ Records with an `id` field enable selection, deletion, and moving.
 
 Each record can include these fields:
 
-- `title` — main heading
-- `text` — body text
-- `caption` — small caption (hidden in `density="compact"`)
-- `icon` — icon spec shown on the left
-- `badge` — small text on the right
+| Field | Purpose |
+|---|---|
+| `title` | Main heading |
+| `text` | Body text |
+| `caption` | Small caption (hidden in `density="compact"`) |
+| `icon` | Icon spec shown on the left |
+| `badge` | Small text on the right |
 
 ### Selection
 
@@ -333,7 +335,3 @@ lv.reload()
 - [Data Tables](../../guides/data-tables.md) — when to pick TableView over ListView
 - [Design System](../../design-system/index.md) — colors, typography, and theming
 - [DataSource](../../guides/datasource.md) — data management with filtering, sorting, pagination
-
-### API reference
-
-- [`bootstack.ListView`](../../reference/widgets/ListView.md)

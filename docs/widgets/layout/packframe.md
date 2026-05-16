@@ -42,11 +42,11 @@ Use `PackFrame` when:
 - you want to set default fill/expand behavior for all children
 - you want standard `pack()` calls to work with managed defaults
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you need a 2D grid layout -> use [GridFrame](gridframe.md)
-- you just need a container without layout management -> use [Frame](frame.md)
-- you need a labeled container -> use [LabelFrame](labelframe.md)
+- you need a 2D grid layout — use [GridFrame](gridframe.md)
+- you just need a container without layout management — use [Frame](frame.md)
+- you need a labeled container — use [LabelFrame](labelframe.md)
 
 ---
 
@@ -202,7 +202,3 @@ btn.pack_forget()
 
 - [Layout Properties](../../guides/layout.md)
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.PackFrame`](../../reference/widgets/PackFrame.md)

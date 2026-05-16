@@ -27,7 +27,6 @@ class LabelFrameKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     surface: str
     style_options: dict[str, Any]
@@ -35,7 +34,7 @@ class LabelFrameKwargs(TypedDict, total=False):
 
 
 class LabelFrame(LocalizationMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.LabelFrame):
-    """bootstack wrapper for `ttk.Labelframe` with bootstyle support."""
+    """bootstack wrapper for `ttk.Labelframe` with themed styling support."""
 
     _ttk_base = ttk.Labelframe
 
@@ -46,18 +45,17 @@ class LabelFrame(LocalizationMixin, TTKWrapperBase, WidgetCapabilitiesMixin, Ttk
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            text (str): Text for the embedded label.
-            labelanchor (str): Position of the label relative to the frame.
-            padding (int | tuple): Extra internal padding.
-            relief (str): Border style.
-            borderwidth (int): Border width.
-            width (int): Requested width in pixels.
-            height (int): Requested height in pixels.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
-            localize (bool | Literal['auto']): Determines the widget's localization mode.
+            text: Text for the embedded label.
+            labelanchor: Position of the label relative to the frame.
+            padding: Extra internal padding.
+            relief: Border style.
+            borderwidth: Border width.
+            width: Requested width in pixels.
+            height: Requested height in pixels.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'secondary'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
+            localize: Determines the widget's localization mode.
         """
         super().__init__(master, **kwargs)

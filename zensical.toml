@@ -162,6 +162,68 @@ nav = [
     ] },
     { "API Reference" = [
         { "Overview" = "reference/index.md" },
+        { "Widgets" = [
+            { "Accordion" = "reference/widgets/accordion.md" },
+            { "Badge" = "reference/widgets/badge.md" },
+            { "Button" = "reference/widgets/button.md" },
+            { "ButtonGroup" = "reference/widgets/buttongroup.md" },
+            { "Calendar" = "reference/widgets/calendar.md" },
+            { "Card" = "reference/widgets/card.md" },
+            { "CheckButton" = "reference/widgets/checkbutton.md" },
+            { "CheckToggle" = "reference/widgets/checktoggle.md" },
+            { "Combobox" = "reference/widgets/combobox.md" },
+            { "ContextMenu" = "reference/widgets/contextmenu.md" },
+            { "DateEntry" = "reference/widgets/dateentry.md" },
+            { "DropdownButton" = "reference/widgets/dropdownbutton.md" },
+            { "Entry" = "reference/widgets/entry.md" },
+            { "Expander" = "reference/widgets/expander.md" },
+            { "Field" = "reference/widgets/field.md" },
+            { "FloodGauge" = "reference/widgets/floodgauge.md" },
+            { "Form" = "reference/widgets/form.md" },
+            { "Frame" = "reference/widgets/frame.md" },
+            { "GridFrame" = "reference/widgets/gridframe.md" },
+            { "Label" = "reference/widgets/label.md" },
+            { "LabeledScale" = "reference/widgets/labeledscale.md" },
+            { "LabelFrame" = "reference/widgets/labelframe.md" },
+            { "ListItem" = "reference/widgets/listitem.md" },
+            { "ListView" = "reference/widgets/listview.md" },
+            { "MenuBar" = "reference/widgets/menubar.md" },
+            { "MenuButton" = "reference/widgets/menubutton.md" },
+            { "Meter" = "reference/widgets/meter.md" },
+            { "Notebook" = "reference/widgets/notebook.md" },
+            { "NumericEntry" = "reference/widgets/numericentry.md" },
+            { "OptionMenu" = "reference/widgets/optionmenu.md" },
+            { "PackFrame" = "reference/widgets/packframe.md" },
+            { "PageStack" = "reference/widgets/pagestack.md" },
+            { "PanedWindow" = "reference/widgets/panedwindow.md" },
+            { "PasswordEntry" = "reference/widgets/passwordentry.md" },
+            { "PathEntry" = "reference/widgets/pathentry.md" },
+            { "Progressbar" = "reference/widgets/progressbar.md" },
+            { "RadioButton" = "reference/widgets/radiobutton.md" },
+            { "RadioGroup" = "reference/widgets/radiogroup.md" },
+            { "RadioToggle" = "reference/widgets/radiotoggle.md" },
+            { "Scale" = "reference/widgets/scale.md" },
+            { "Scrollbar" = "reference/widgets/scrollbar.md" },
+            { "ScrolledText" = "reference/widgets/scrolledtext.md" },
+            { "ScrollView" = "reference/widgets/scrollview.md" },
+            { "SelectBox" = "reference/widgets/selectbox.md" },
+            { "Separator" = "reference/widgets/separator.md" },
+            { "SideNav" = "reference/widgets/sidenav.md" },
+            { "SizeGrip" = "reference/widgets/sizegrip.md" },
+            { "Spinbox" = "reference/widgets/spinbox.md" },
+            { "SpinnerEntry" = "reference/widgets/spinnerentry.md" },
+            { "Switch" = "reference/widgets/switch.md" },
+            { "Tabs" = "reference/widgets/tabs.md" },
+            { "TabView" = "reference/widgets/tabview.md" },
+            { "TableView" = "reference/widgets/tableview.md" },
+            { "TextEntry" = "reference/widgets/textentry.md" },
+            { "TimeEntry" = "reference/widgets/timeentry.md" },
+            { "Toast" = "reference/widgets/toast.md" },
+            { "ToggleGroup" = "reference/widgets/togglegroup.md" },
+            { "Toolbar" = "reference/widgets/toolbar.md" },
+            { "Tooltip" = "reference/widgets/tooltip.md" },
+            { "TreeView" = "reference/widgets/treeview.md" },
+        ] },
         { "App" = [
             { "Overview" = "reference/app/index.md" },
             { "App" = "reference/app/App.md" },
@@ -204,72 +266,6 @@ nav = [
             { "signals" = "reference/capabilities/signals.md" },
             { "winfo" = "reference/capabilities/winfo.md" },
         ] },
-        { "Widgets" = [
-            { "Overview" = "reference/widgets/index.md" },
-            { "Accordion" = "reference/widgets/Accordion.md" },
-            { "Badge" = "reference/widgets/Badge.md" },
-            { "Button" = "reference/widgets/Button.md" },
-            { "ButtonGroup" = "reference/widgets/ButtonGroup.md" },
-            { "Calendar" = "reference/widgets/Calendar.md" },
-            { "Card" = "reference/widgets/Card.md" },
-            { "CheckButton" = "reference/widgets/CheckButton.md" },
-            { "CheckToggle" = "reference/widgets/CheckToggle.md" },
-            { "Combobox" = "reference/widgets/Combobox.md" },
-            { "ContextMenu" = "reference/widgets/ContextMenu.md" },
-            { "ContextMenuItem" = "reference/widgets/ContextMenuItem.md" },
-            { "DateEntry" = "reference/widgets/DateEntry.md" },
-            { "DropdownButton" = "reference/widgets/DropdownButton.md" },
-            { "Entry" = "reference/widgets/Entry.md" },
-            { "Expander" = "reference/widgets/Expander.md" },
-            { "Field" = "reference/widgets/Field.md" },
-            { "FieldOptions" = "reference/widgets/FieldOptions.md" },
-            { "FloodGauge" = "reference/widgets/FloodGauge.md" },
-            { "Form" = "reference/widgets/Form.md" },
-            { "Frame" = "reference/widgets/Frame.md" },
-            { "GridFrame" = "reference/widgets/GridFrame.md" },
-            { "Label" = "reference/widgets/Label.md" },
-            { "LabelFrame" = "reference/widgets/LabelFrame.md" },
-            { "MenuButton" = "reference/widgets/MenuButton.md" },
-            { "Meter" = "reference/widgets/Meter.md" },
-            { "SideNav" = "reference/widgets/SideNav.md" },
-            { "SideNavItem" = "reference/widgets/NavigationViewItem.md" },
-            { "SideNavGroup" = "reference/widgets/NavigationViewGroup.md" },
-            { "SideNavHeader" = "reference/widgets/NavigationViewHeader.md" },
-            { "SideNavSeparator" = "reference/widgets/NavigationViewSeparator.md" },
-            { "Notebook" = "reference/widgets/Notebook.md" },
-            { "NumericEntry" = "reference/widgets/NumericEntry.md" },
-            { "OptionMenu" = "reference/widgets/OptionMenu.md" },
-            { "PackFrame" = "reference/widgets/PackFrame.md" },
-            { "PageStack" = "reference/widgets/PageStack.md" },
-            { "PanedWindow" = "reference/widgets/PanedWindow.md" },
-            { "PasswordEntry" = "reference/widgets/PasswordEntry.md" },
-            { "PathEntry" = "reference/widgets/PathEntry.md" },
-            { "Progressbar" = "reference/widgets/Progressbar.md" },
-            { "RadioButton" = "reference/widgets/RadioButton.md" },
-            { "RadioGroup" = "reference/widgets/RadioGroup.md" },
-            { "RadioToggle" = "reference/widgets/RadioToggle.md" },
-            { "Scale" = "reference/widgets/Scale.md" },
-            { "Scrollbar" = "reference/widgets/Scrollbar.md" },
-            { "ScrolledText" = "reference/widgets/ScrolledText.md" },
-            { "ScrollView" = "reference/widgets/ScrollView.md" },
-            { "SelectBox" = "reference/widgets/SelectBox.md" },
-            { "Separator" = "reference/widgets/Separator.md" },
-            { "SideNav" = "reference/widgets/SideNav.md" },
-            { "SizeGrip" = "reference/widgets/SizeGrip.md" },
-            { "Spinbox" = "reference/widgets/Spinbox.md" },
-            { "SpinnerEntry" = "reference/widgets/SpinnerEntry.md" },
-            { "Switch" = "reference/widgets/Switch.md" },
-            { "TableView" = "reference/widgets/TableView.md" },
-            { "Tabs" = "reference/widgets/Tabs.md" },
-            { "TabView" = "reference/widgets/TabView.md" },
-            { "TextEntry" = "reference/widgets/TextEntry.md" },
-            { "TimeEntry" = "reference/widgets/TimeEntry.md" },
-            { "Toast" = "reference/widgets/Toast.md" },
-            { "Toolbar" = "reference/widgets/Toolbar.md" },
-            { "ToggleGroup" = "reference/widgets/ToggleGroup.md" },
-            { "ToolTip" = "reference/widgets/ToolTip.md" },
-            { "TreeView" = "reference/widgets/TreeView.md" },
-        ] },
         { "Dialogs" = [
             { "Overview" = "reference/dialogs/index.md" },
             { "Dialog" = "reference/dialogs/Dialog.md" },
@@ -301,6 +297,10 @@ nav = [
             { "L" = "reference/i18n/L.md" },
             { "LV" = "reference/i18n/LV.md" },
             { "IntlFormatter" = "reference/i18n/IntlFormatter.md" },
+        ] },
+        { "Types" = [
+            { "Events" = "reference/types/events.md" },
+            { "General" = "reference/types/general.md" },
         ] },
         { "Utils" = [
             { "Overview" = "reference/utils/index.md" },
@@ -337,6 +337,7 @@ features = [
     "navigation.instant",
     "navigation.top",
     "content.code.copy",
+    "content.tabs.link",
     "search.highlight",
     "announce.dismiss",
 ]
@@ -360,22 +361,54 @@ invalid_links = false
 paths = ["src"]
 
 [project.plugins.mkdocstrings.handlers.python.options]
-docstring_style = "google"
-heading_level = 3
-show_root_heading = false
-show_signature = true
-show_signature_annotations = true
+
+backlinks = "tree"
+docstring_options = {}
+docstring_section_style = "spacy"
+heading_level = 1
+line_length = 88
+inherited_members = true
+merge_init_into_class = true
+parameter_headings = false
 separate_signature = true
-members_order = "source"
-inherited_members = false
-show_source = false
+show_root_heading = true
+show_root_full_path = false
+show_signature_annotations = true
+show_source = true
+show_symbol_type_heading = true
+show_symbol_type_toc = true
+show_bases = false
+show_inheritance_diagram = false
+signature_crossrefs = true
+summary = true
+unwrap_annotated = true
+
+filters = [
+    "!^_",
+    "!^winfo_",
+    "!^(pack|grid|place)(_|$)",
+    "!^(bind|unbind)(_|$)",
+    "!^bindtags",
+    "!^after(_|$)",
+    "!^focus_",
+    "!^tk_focus",
+    "!^grab_",
+    "!^clipboard_",
+    "!^selection_(clear|get|handle|own|own_set)$",
+    "!^event_generate$",
+    "!^register_localized_field$",
+    "!^(rebuild_style|configure_style_options)$",
+]
+
 
 # -----------------------------------------------------------------------------
 # Markdown extensions
 # -----------------------------------------------------------------------------
 [project.markdown_extensions.toc]
-toc_depth = 2
+toc_depth = 3
 
 [project.markdown_extensions.md_in_html]
 [project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
 [project.markdown_extensions.admonition]

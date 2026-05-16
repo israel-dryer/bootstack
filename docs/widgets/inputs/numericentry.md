@@ -46,7 +46,7 @@ Use `NumericEntry` when:
 - bounds and stepping help prevent errors
 - you want locale-aware display formatting on commit
 
-Consider a different control when:
+### Consider a different control when...
 
 - stepping is the primary interaction (visible step buttons matter) — use [SpinnerEntry](spinnerentry.md)
 - users adjust by feel and live feedback matters — use [Scale](scale.md)
@@ -276,7 +276,7 @@ size.insert_addon(bs.Label, position="after", text="cm", name="unit")
     <img src="../../assets/widgets-numericentry-addons.png" alt="Numeric Entry Addons"/>
 </div>
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API including state inheritance and retrieval."
+!!! link "See [TextEntry](textentry.md) for the full add-on API including state inheritance and retrieval."
 
 ---
 
@@ -308,7 +308,3 @@ budget.subscribe(lambda v: print("budget changed:", v))
 - [Formatting](../../guides/formatting.md) — number presets, precision, and custom patterns
 - [Localization](../../guides/localization.md) — internationalization and formatting
 - [Reactivity](../../guides/reactivity.md) — reactive data binding
-
-### API reference
-
-- [`bootstack.NumericEntry`](../../reference/widgets/NumericEntry.md)

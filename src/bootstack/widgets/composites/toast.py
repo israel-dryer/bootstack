@@ -1,7 +1,7 @@
 from tkinter import Widget, Misc
 
 from bootstack.runtime.toplevel import Toplevel
-from typing import Any, Callable, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Literal, Sequence
 
 from typing_extensions import TypedDict, Unpack
 
@@ -11,24 +11,23 @@ from bootstack.runtime.window_utilities import WindowPositioning, AnchorPoint
 class IconSpec(TypedDict, total=False):
     """Icon configuration for toast."""
     name: str
-    size: Optional[int]
-    color: Optional[str]
+    size: int | None
+    color: str | None
 
 
 class ToastConfig(TypedDict, total=False):
     """Configuration options for Toast widget."""
-    title: Optional[str]
-    icon: Union[str, IconSpec, None]
-    message: Optional[str]
-    memo: Optional[str]
-    duration: Optional[int]
-    buttons: Optional[Sequence[dict[str, Any]]]
+    title: str | None
+    icon: str | IconSpec | None
+    message: str | None
+    memo: str | None
+    duration: int | None
+    buttons: Sequence[dict[str, Any]] | None
     show_close_button: bool
-    accent: Optional[str]
-    bootstyle: Optional[str]  # DEPRECATED: Use accent instead
-    position: Optional[str]
+    accent: str | None
+    position: str | None
     alert: bool
-    on_dismissed: Optional[Callable[[Any], Any]]
+    on_dismissed: Callable[[Any], Any] | None
 
 
 class Toast:
@@ -42,50 +41,42 @@ class Toast:
     def __init__(
             self,
             *,
-            title: Optional[str] = None,
-            icon: Union[str, IconSpec, None] = None,
-            message: Optional[str] = None,
-            memo: Optional[str] = None,
-            duration: Optional[int] = None,
-            buttons: Optional[Sequence[dict[str, Any]]] = None,
+            title: str | None = None,
+            icon: str | IconSpec | None = None,
+            message: str | None = None,
+            memo: str | None = None,
+            duration: int | None = None,
+            buttons: Sequence[dict[str, Any]] | None = None,
             show_close_button: bool = True,
-            accent: Optional[str] = None,
-            bootstyle: Optional[str] = None,
-            position: Optional[str] = None,
+            accent: str | None = None,
+            position: str | None = None,
             alert: bool = False,
-            on_dismissed: Optional[Callable[[Any], Any]] = None,
+            on_dismissed: Callable[[Any], Any] | None = None,
     ) -> None:
         """Initialize a Toast notification.
 
         Args:
-            title (str): The toast title text. If provided without a message, it will be displayed
-                with a larger "label" font. If both title and message are provided, the title
-                appears in the header and the message appears in a separate section below.
-            icon (str | dict): Icon to display in the header. Can be a string icon name (e.g., "bootstrap-fill")
-                or an IconSpec dict with name, size, and color properties.
-            message (str): The main message text. If no title is provided, this message is displayed
-                in the header with a "body" font. If a title is provided, this appears in a
-                separate section below the header.
-            memo (str): Small metadata text displayed in the header (e.g., "5 mins ago"). Appears
-                with muted styling.
-            duration (int): Auto-dismiss duration in milliseconds. If None, the toast remains visible
-                until manually closed.
-            buttons (list): Sequence of button configurations. Each dict can contain any bootstack
-                button options (text, bootstyle, command, etc.). Button commands will trigger
-                the on_dismissed callback before closing the toast.
-            show_close_button (bool): Whether to show the close button in the header. Default is True.
-            accent (str): Accent token for the toast container (e.g., "primary", "success",
-                "danger"). If None, uses the default background color.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            position (str): Tkinter geometry string for toast position (e.g., "-25-75" for bottom-right).
-                If None, uses platform-specific defaults.
-            alert (bool): If True, plays a system bell sound when the toast is shown.
-            on_dismissed (Callable): Callback function invoked when the toast is dismissed. Receives the
-                button options dict if dismissed via a button, or None if dismissed via close
-                button or auto-dismiss.
+            title: Title text. Displayed with a larger font when no message is
+                provided; otherwise appears as the header with message below.
+            icon: Icon name string or `IconSpec` dict with `name`, `size`, and
+                `color` keys.
+            message: Main message text. Displayed in header when no title; shown
+                below the title separator when both are provided.
+            memo: Small metadata text in the header (e.g., "5 mins ago"). Muted styling.
+            duration: Auto-dismiss delay in milliseconds. If None, stays until closed.
+            buttons: Sequence of button option dicts. Each dict accepts any bootstack
+                Button kwargs. Button press triggers `on_dismissed` before closing.
+            show_close_button: Whether to show the close (×) button. Default True.
+            accent: Accent token for the container (e.g., 'primary', 'danger'). If
+                None, uses the default background.
+            position: Tkinter geometry string (e.g., '-25-75'). If None, uses
+                platform defaults (bottom-right on Windows/macOS, top-right on X11).
+            alert: If True, plays a system bell when shown.
+            on_dismissed: Callback invoked on dismiss. Receives the button options
+                dict when dismissed via a button, or None otherwise.
         """
         self._config_keys = {'title', 'icon', 'message', 'memo', 'duration', 'buttons', 'show_close_button',
-                             'accent', 'bootstyle', 'position', 'alert', 'on_dismissed'}
+                             'accent', 'position', 'alert', 'on_dismissed'}
 
         # initialized configuration
         self._title = title
@@ -95,14 +86,13 @@ class Toast:
         self._duration = duration
         self._buttons = buttons
         self._show_close_button = show_close_button
-        self._accent = accent or bootstyle  # Support legacy bootstyle parameter
-        self._bootstyle = bootstyle  # Keep for backwards compatibility
+        self._accent = accent
         self._position = position
         self._alert = alert
         self._on_dismissed = on_dismissed
 
         # top level widget
-        self._toplevel: Optional[Toplevel] = None
+        self._toplevel: Toplevel | None = None
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Set a configuration option using dictionary syntax."""
@@ -119,9 +109,9 @@ class Toast:
 
     def configure(
             self,
-            option: Optional[str] = None,
+            option: str | None = None,
             **kwargs: Unpack[ToastConfig]
-    ) -> Optional[tuple[str, str, str, None, Any]]:
+    ) -> tuple[str, str, str, None, Any] | None:
         """Configure toast options.
 
         Args:
@@ -192,7 +182,6 @@ class Toast:
         self._buttons = None
         self._show_close_button = True
         self._accent = None
-        self._bootstyle = None
         self._position = None
         self._alert = False
         self._on_dismissed = None
@@ -287,7 +276,7 @@ class Toast:
 
         # buttons
         if self._buttons:
-            def execute_command(options: dict[str, Any], fn: Optional[Callable[[], None]] = None) -> Callable[[], None]:
+            def execute_command(options: dict[str, Any], fn: Callable[[], None] | None = None) -> Callable[[], None]:
                 def inner() -> None:
                     if fn:
                         fn()

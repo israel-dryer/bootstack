@@ -1,7 +1,7 @@
 """Accordion widget - a container of mutually exclusive expanders."""
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.separator import Separator
@@ -13,6 +13,12 @@ if TYPE_CHECKING:
     pass
 
 
+class AccordionChangeEventData(TypedDict):
+    """Payload for `<<AccordionChange>>` events."""
+    expanded: list[Expander]
+    """Expanders that are currently open after the change."""
+
+
 class Accordion(Frame):
     """A container of Expander widgets with optional mutual exclusion.
 
@@ -20,14 +26,6 @@ class Accordion(Frame):
     one can be expanded at a time. When `allow_multiple=False`, expanding one
     section automatically collapses the others. When `allow_collapse_all=False`,
     at least one section must remain open.
-
-    Attributes:
-        expanders (list[Expander]): List of managed Expander widgets.
-        expanded (list[Expander]): Currently expanded Expander(s).
-
-    !!! note "Events"
-        - `<<AccordionChange>>`: Fired when the expanded section(s) change.
-          `event.data = {'expanded': list[Expander]}`
     """
 
     def __init__(
@@ -44,14 +42,14 @@ class Accordion(Frame):
         """Create an Accordion widget.
 
         Args:
-            master (Master): Parent widget. If None, uses the default root window.
-            allow_multiple (bool): If True, multiple sections can be open at once.
+            master: Parent widget. If None, uses the default root window.
+            allow_multiple: If True, multiple sections can be open at once.
                 If False (default), only one section can be open at a time.
-            allow_collapse_all (bool): If True (default), all sections can be collapsed.
+            allow_collapse_all: If True (default), all sections can be collapsed.
                 If False, at least one section must remain open.
-            show_separators (bool): If True, show separators between expanders.
-            accent (str): Accent token for the expanders (e.g., 'success', 'primary').
-            variant (str): Variant for the expanders (e.g., 'solid', 'default').
+            show_separators: If True, show separators between expanders.
+            accent: Accent token for the expanders (e.g., 'success', 'primary').
+            variant: Variant for the expanders (e.g., 'solid', 'default').
             **kwargs: Additional arguments passed to Frame.
         """
 
@@ -84,11 +82,11 @@ class Accordion(Frame):
         """Add an expander to the accordion.
 
         Args:
-            expander (Expander | None): Existing Expander to add. If None, creates one.
-            key (str | None): Unique identifier for the expander. Auto-generated if not provided.
-            title (str): Title for the expander header (when creating new).
-            icon (str | dict): Icon for the expander header (when creating new).
-            expanded (bool | None): Initial expansion state. If None, first expander
+            expander: Existing Expander to add. If None, creates one.
+            key: Unique identifier for the expander. Auto-generated if not provided.
+            title: Title for the expander header (when creating new).
+            icon: Icon for the expander header (when creating new).
+            expanded: Initial expansion state. If None, first expander
                 is expanded when allow_collapse_all=False, otherwise collapsed.
             **kwargs: When expander is None, passed to Expander constructor.
 
@@ -260,13 +258,20 @@ class Accordion(Frame):
             raise KeyError(f"No expander with key '{key}'")
         return self._expanders[key]
 
-    def items(self) -> tuple[Expander, ...]:
-        """Get all expander widgets in order.
+    def items(self, expanded: bool | None = None) -> tuple[Expander, ...]:
+        """Get expander widgets in insertion order, optionally filtered by state.
+
+        Args:
+            expanded: If `True`, return only expanded expanders. If `False`,
+                return only collapsed expanders. If `None` (default), return all.
 
         Returns:
-            A tuple of all Expander instances in the order they were added.
+            A tuple of matching Expander instances.
         """
-        return tuple(self._expanders[key] for key in self._expander_order)
+        expanders = (self._expanders[key] for key in self._expander_order)
+        if expanded is None:
+            return tuple(expanders)
+        return tuple(e for e in expanders if bool(e['expanded']) == expanded)
 
     def keys(self) -> tuple[str, ...]:
         """Get all expander keys in order.
@@ -296,7 +301,7 @@ class Accordion(Frame):
         """Expand the expander with the given key.
 
         Args:
-            key (str): Key of the expander to expand.
+            key: Key of the expander to expand.
         """
         if key in self._expanders:
             self._expanders[key].expand()
@@ -305,7 +310,7 @@ class Accordion(Frame):
         """Collapse the expander with the given key.
 
         Args:
-            key (str): Key of the expander to collapse.
+            key: Key of the expander to collapse.
 
         Note:
             If allow_collapse_all=False and this is the only open expander,
@@ -335,11 +340,6 @@ class Accordion(Frame):
         for exp in self._expanders.values():
             exp.collapse()
 
-    @property
-    def expanded(self) -> list[Expander]:
-        """Get the list of currently expanded Expanders."""
-        return [self._expanders[k] for k in self._expander_order if self._expanders[k]['expanded']]
-
     @configure_delegate('allow_multiple')
     def _delegate_allow_multiple(self, value=None):
         """Get or set whether multiple sections can be open at once."""
@@ -364,22 +364,22 @@ class Accordion(Frame):
         self._show_separators = value
         return None
 
-    def on_accordion_changed(self, callback: Callable) -> str:
-        """Bind callback to `<<AccordionChange>>` events.
+    def on_accordion_changed(self, callback: Callable[[AccordionChangeEventData], None]) -> str:
+        """Register a callback for `<<AccordionChange>>` events.
 
         Args:
-            callback: Function to call when expanded sections change.
-                Receives event with `event.data = {'expanded': list[Expander]}`.
+            callback: Receives an `AccordionChangeEventData` dict with key
+                `expanded` (list of currently open Expanders).
 
         Returns:
-            Bind ID that can be passed to `off_accordion_changed` to remove this callback.
+            Bind ID — pass to `off_accordion_changed()` to unsubscribe.
         """
         return self.bind('<<AccordionChange>>', callback, add='+')
 
-    def off_accordion_changed(self, bind_id: str = None):
-        """Unbind `<<AccordionChange>>` callback(s).
+    def off_accordion_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<AccordionChange>>`.
 
         Args:
-            bind_id (str | None): Bind ID returned by `on_accordion_changed`. If None, unbinds all.
+            bind_id: ID returned by `on_accordion_changed()`. If None, removes all.
         """
         self.unbind('<<AccordionChange>>', bind_id)

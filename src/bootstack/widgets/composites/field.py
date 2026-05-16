@@ -5,9 +5,10 @@ for creating specialized entry widgets like TextEntry, PasswordEntry, NumberEntr
 """
 
 from tkinter import TclError, Variable
-from typing import Any, Callable, Literal, Type, TypedDict, Union, cast
+from typing import Any, Callable, Literal, Type, TypedDict, cast
 
 from bootstack.core.signals import Signal
+from bootstack.core.validation.types import RuleType
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
@@ -21,6 +22,12 @@ from bootstack.widgets.parts.spinnerentry_part import SpinnerEntryPart
 from bootstack.widgets.types import Master
 
 FieldKind = Literal['text', 'numeric', 'spinbox']
+
+EntryWidget = TextEntryPart | NumberEntryPart | SpinnerEntryPart
+"""The internal entry widget used by a Field — one of the three entry part types."""
+
+FieldAddonWidget = Button | Label | CheckToggle
+"""Widget types supported by `Field.insert_addon`."""
 """Type alias for field kind specification.
 
 Determines which entry part widget to use:
@@ -28,6 +35,40 @@ Determines which entry part widget to use:
     - 'numeric': Uses NumberEntryPart for numeric input with bounds and stepping
     - 'spinbox': Uses SpinnerEntryPart for spinner input (supports text or numeric values)
 """
+
+
+class InputEventData(TypedDict):
+    """Payload for `<<Input>>` events — fires on each keystroke."""
+    text: str
+    """Current raw text in the entry field."""
+
+
+class ChangeEventData(TypedDict):
+    """Payload for `<<Change>>` events — fires on commit (blur or Enter)."""
+    value: Any
+    """Committed (parsed) value."""
+    prev_value: Any
+    """Previous committed value."""
+    text: str
+    """Raw display string."""
+
+
+class EnterEventData(TypedDict):
+    """Payload for `<Return>` key events."""
+    value: Any
+    """Committed (parsed) value."""
+    text: str
+    """Raw display string."""
+
+
+class ValidationEventData(TypedDict):
+    """Payload for `<<Valid>>`, `<<Invalid>>`, and `<<Validate>>` events."""
+    value: Any
+    """Committed (parsed) value."""
+    is_valid: bool
+    """Whether validation passed."""
+    message: str
+    """Validation error text, or empty string on pass."""
 
 
 class FieldOptions(TypedDict, total=False):
@@ -92,27 +133,6 @@ class Field(EntryMixin, Frame):
     The widget automatically handles layout, focus states, validation feedback, and
     provides a consistent API for all entry-based components. It supports both text
     and numeric input types through the `kind` parameter.
-
-    !!! note "Events"
-
-        - `<<Input>>`: Triggered on each keystroke.
-          Provides `event.data` with keys: `text`.
-
-        - `<<Change>>`: Triggered when value changes after commit.
-          Provides `event.data` with keys: `value`, `prev_value`, `text`.
-
-        - `<<Valid>>`: Triggered when validation passes.
-          Provides `event.data` with keys: `value`, `is_valid` (True), `message`.
-
-        - `<<Invalid>>`: Triggered when validation fails.
-          Provides `event.data` with keys: `value`, `is_valid` (False), `message`.
-
-        - `<<Validate>>`: Triggered after any validation.
-          Provides `event.data` with keys: `value`, `is_valid` (bool), `message`.
-
-    Attributes:
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
@@ -127,14 +147,7 @@ class Field(EntryMixin, Frame):
             kind: FieldKind = "text",
             **kwargs: Any
     ):
-        """Initialize a Field widget.
-
-        Creates a composite entry field with optional label, message area, and
-        validation support. The field type is determined by the 'kind' parameter,
-        which selects either TextEntryPart or NumberEntryPart as the underlying
-        entry widget.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display. Can be str, int, or float depending
                 on the field kind. For 'text' kind, should be a string. For
@@ -158,22 +171,22 @@ class Field(EntryMixin, Frame):
                 NumberEntryPart). Default is 'text'.
 
         Other Parameters:
-            accent (str): Accent token for the focus ring and active border.
-            density (str): Widget density — 'default' or 'compact'.
-            state (str): Initial widget state — 'normal', 'disabled', or 'readonly'.
-            value_format (str): ICU format pattern for parsing/formatting.
-            allow_blank (bool): Allow empty input.
-            initial_focus (bool): Focus on creation.
-            show (str): Character to mask input (e.g., '*' for passwords).
-            width (int): Width in characters.
-            font (str): Font specification.
-            justify (str): Text alignment ('left', 'center', 'right').
-            textvariable (Variable): Tkinter Variable linked to entry text.
-            textsignal (Signal): Signal for reactive text updates.
-            minvalue (int | float): Minimum allowed value (numeric kind only).
-            maxvalue (int | float): Maximum allowed value (numeric kind only).
-            increment (int | float): Step size for up/down arrows (numeric kind only).
-            wrap (bool): Wrap around at boundaries (numeric kind only).
+            accent: Accent token for the focus ring and active border.
+            density: Widget density — 'default' or 'compact'.
+            state: Initial widget state — 'normal', 'disabled', or 'readonly'.
+            value_format: ICU format pattern for parsing/formatting.
+            allow_blank: Allow empty input.
+            initial_focus: Focus on creation.
+            show: Character to mask input (e.g., '*' for passwords).
+            width: Width in characters.
+            font: Font specification.
+            justify: Text alignment ('left', 'center', 'right').
+            textvariable: Tkinter Variable linked to entry text.
+            textsignal: Signal for reactive text updates.
+            minvalue: Minimum allowed value (numeric kind only).
+            maxvalue: Maximum allowed value (numeric kind only).
+            increment: Step size for up/down arrows (numeric kind only).
+            wrap: Wrap around at boundaries (numeric kind only).
         """
         # Accept legacy parameter name and prevent it from reaching the Tk widget.
         if 'show_messages' in kwargs:
@@ -205,8 +218,8 @@ class Field(EntryMixin, Frame):
         self._label_text = label
         self._value = value
 
-        self._entry: TextEntryPart | NumberEntryPart | SpinnerEntryPart
-        self._addons: dict[str, Union[Button, Label, CheckToggle]] = {}
+        self._entry: EntryWidget
+        self._addons: dict[str, Button | Label | CheckToggle] = {}
 
         # layout
         label_text = self._label_text or ''
@@ -253,38 +266,7 @@ class Field(EntryMixin, Frame):
         if required:
             self._entry.add_validation_rule("required")
 
-        # forward reference entry methods
-        self.on_input = self._entry.on_input
-        self.off_input = self._entry.off_input
-        self.on_changed = self._entry.on_changed
-        self.off_changed = self._entry.off_changed
-        self.on_enter = self._entry.on_enter
-        self.off_enter = self._entry.off_enter
-        self.on_invalid = self._entry.on_invalid
-        self.off_invalid = self._entry.off_invalid
-        self.on_valid = self._entry.on_valid
-        self.off_valid = self._entry.off_valid
-        self.on_validated = self._entry.on_validated
-        self.off_validated = self._entry.off_validated
 
-        # entry state
-        self.variable = self._entry.textvariable
-        self.signal = self._entry.textsignal
-
-        # enty validation
-        _add_rule = self._entry.add_validation_rule
-        _add_rules = self._entry.add_validation_rules
-
-        def add_validation_rule(rule_type, **kwargs):
-            self._reserve_message_space()
-            _add_rule(rule_type, **kwargs)
-
-        def add_validation_rules(rules):
-            self._reserve_message_space()
-            _add_rules(rules)
-
-        self.add_validation_rule = add_validation_rule
-        self.add_validation_rules = add_validation_rules
         self.validation = self._entry.validate
 
         # Copy Field's delegate handlers to entry for configuration forwarding
@@ -303,37 +285,59 @@ class Field(EntryMixin, Frame):
         self.__setitem__ = self._entry.__setitem__
 
     @property
-    def value(self):
+    def value(self) -> Any:
         """Get or set the parsed value via the underlying entry widget."""
         return self._entry.value()
 
     @value.setter
-    def value(self, value):
+    def value(self, value: Any) -> None:
         self._entry.value(value)
 
-    def get(self):
+    def get(self) -> str:
         """Return the raw text from the underlying entry widget."""
         return self._entry.get()
 
     @property
-    def entry_widget(self) -> TextEntryPart | NumberEntryPart | SpinnerEntryPart:
+    def entry_widget(self) -> EntryWidget:
         """Get the underlying entry widget."""
         return self._entry
 
     @property
-    def label_widget(self):
+    def label_widget(self) -> Label:
         """Get the label widget."""
         return self._label_lbl
 
     @property
-    def message_widget(self):
+    def message_widget(self) -> Label:
         """Get the message widget."""
         return self._message_lbl
 
     @property
-    def addons(self):
-        """Get the dictionary of inserted addon widgets"""
+    def addons(self) -> dict[str, FieldAddonWidget]:
+        """Get the dictionary of inserted addon widgets."""
         return self._addons
+
+    @property
+    def variable(self) -> Variable:
+        """The `StringVar` linked to the entry text.
+
+        Use when bridging to a plain tkinter widget that requires `textvariable=`,
+        or for direct read/write access to the raw string value. For reactive
+        bindings between bootstack widgets, prefer `signal` instead.
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
+        """
+        return self._entry.textvariable
+
+    @property
+    def signal(self) -> Signal:
+        """The `Signal[str]` linked to the entry text.
+
+        Pass as `textsignal=` to any other bootstack widget to keep its text
+        in sync with this field's value, or call `signal.subscribe(callback)`
+        to observe changes programmatically. See the
+        [Reactivity guide](../../guides/reactivity.md) for patterns.
+        """
+        return self._entry.textsignal
 
     @configure_delegate
     def _config_accent(self, value=None):
@@ -344,6 +348,157 @@ class Field(EntryMixin, Frame):
             self._field['accent'] = value
         return None
 
+
+    # ------ Event registration ------
+
+    def on_input(self, callback: Callable) -> str:
+        """Register a callback for `<<Input>>` events (fires on each keystroke).
+
+        Args:
+            callback: Receives a Tkinter `Event` object whose `event.data` is an
+                `InputEventData` dict with key `text` (current raw text).
+
+        Returns:
+            Bind ID — pass to `off_input()` to unsubscribe.
+        """
+        return self._entry.on_input(callback)
+
+    def off_input(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Input>>`.
+
+        Args:
+            bind_id: ID returned by `on_input()`.
+        """
+        self._entry.off_input(bind_id)
+
+    def on_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<Change>>` events (fires on commit).
+
+        Args:
+            callback: Receives a Tkinter `Event` object whose `event.data` is a
+                `ChangeEventData` dict with keys `value` (committed value),
+                `prev_value` (previous value), and `text` (raw display string).
+
+        Returns:
+            Bind ID — pass to `off_changed()` to unsubscribe.
+        """
+        return self._entry.on_changed(callback)
+
+    def off_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Change>>`.
+
+        Args:
+            bind_id: ID returned by `on_changed()`.
+        """
+        self._entry.off_changed(bind_id)
+
+    def on_enter(self, callback: Callable) -> str:
+        """Register a callback for `<Return>` key events.
+
+        Args:
+            callback: Receives a Tkinter `Event` object whose `event.data` is an
+                `EnterEventData` dict with keys `value` (committed value)
+                and `text` (raw display string).
+
+        Returns:
+            Bind ID — pass to `off_enter()` to unsubscribe.
+        """
+        return self._entry.on_enter(callback)
+
+    def off_enter(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<Return>`.
+
+        Args:
+            bind_id: ID returned by `on_enter()`.
+        """
+        self._entry.off_enter(bind_id)
+
+    def on_valid(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for `<<Valid>>` events (fires when validation passes).
+
+        Args:
+            callback: Receives a `ValidationEventData` dict with keys
+                `value` (committed value), `is_valid` (`True`), and
+                `message` (empty string on pass).
+        """
+        self._entry.on_valid(callback)
+
+    def off_valid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Valid>>`.
+
+        Args:
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Valid>>` bindings.
+        """
+        self._entry.off_valid(bind_id)
+
+    def on_invalid(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for `<<Invalid>>` events (fires when validation fails).
+
+        Args:
+            callback: Receives a `ValidationEventData` dict with keys
+                `value` (committed value), `is_valid` (`False`), and
+                `message` (validation error text).
+        """
+        self._entry.on_invalid(callback)
+
+    def off_invalid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Invalid>>`.
+
+        Args:
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Invalid>>` bindings.
+        """
+        self._entry.off_invalid(bind_id)
+
+    def on_validated(self, callback: Callable[[ValidationEventData], None]) -> None:
+        """Register a callback for `<<Validate>>` events (fires after any validation).
+
+        Args:
+            callback: Receives a `ValidationEventData` dict with keys
+                `value` (committed value), `is_valid` (bool), and
+                `message` (validation message or empty string).
+        """
+        self._entry.on_validated(callback)
+
+    def off_validated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Validate>>`.
+
+        Args:
+            bind_id: Bind ID from a direct `widget.bind()` call, or `None`
+                to remove all `<<Validate>>` bindings.
+        """
+        self._entry.off_validated(bind_id)
+
+    # ------ Validation ------
+
+    def add_validation_rule(
+        self,
+        rule_type: RuleType,
+        **kwargs,
+    ) -> None:
+        """Add a validation rule to the field.
+
+        Rules are evaluated on blur and on Enter. When a rule fails the field
+        emits `<<Invalid>>`; when all rules pass it emits `<<Valid>>`. Both
+        carry a `ValidationEventData` payload.
+
+        Args:
+            rule_type: Rule type. One of:
+
+                - `"required"` — field must not be empty.
+                - `"email"` — value must be a valid email address.
+                - `"pattern"` — value must match a regex. Pass `pattern=`.
+                - `"stringLength"` — length bounds. Pass `min=` and/or `max=`.
+                - `"compare"` — must match another field's value. Pass `other_field=`.
+                - `"custom"` — arbitrary logic. Pass `func=`, a callable that
+                  receives the value and returns `bool` or `(bool, message)`.
+
+            **kwargs: Rule-specific options. `message=` is accepted by all rule
+                types to override the default failure message.
+        """
+        self._reserve_message_space()
+        self._entry.add_validation_rule(rule_type, **kwargs)
 
     def disable(self):
         """Disable the field, preventing user input."""
@@ -372,12 +527,12 @@ class Field(EntryMixin, Frame):
 
     def insert_addon(
             self,
-            widget: Type[Union[Button, Label, CheckToggle]],
+            widget: Type[FieldAddonWidget],
             position: Literal['before', 'after'],
             name: str | None = None,
             pack_options: dict[str, Any] = None,
             **kwargs: Any
-    ):
+    ) -> FieldAddonWidget:
         """Insert a widget addon before or after the entry input.
 
         Addons are Button, Label, or CheckToggle widgets positioned inside the field container,
@@ -392,6 +547,7 @@ class Field(EntryMixin, Frame):
         Args:
             widget: Widget class to instantiate. Must be Button, Label, or CheckToggle.
             position: Position relative to the entry input:
+
                 - 'before': Insert to the left of the entry (prefix)
                 - 'after': Insert to the right of the entry (suffix)
             name: Optional name for the addon. If provided, the addon can be
@@ -401,7 +557,7 @@ class Field(EntryMixin, Frame):
                 apply when placing the addon widget. Common options include
                 padx, pady, etc. The side and after/before options are set
                 automatically based on position.
-            **kwargs (Any): Additional keyword arguments passed to the widget constructor.
+            **kwargs: Additional keyword arguments passed to the widget constructor.
                 For Button: text, command, icon, accent, variant, etc.
                 For Label: text, icon, image, accent, etc.
                 For CheckToggle: text, icon, signal, command, accent, etc.
@@ -441,6 +597,8 @@ class Field(EntryMixin, Frame):
         # bind focus events to field frame
         instance.bind('<FocusIn>', lambda _: self._field.state(['focus']), add=True)
         instance.bind('<FocusOut>', lambda _: self._field.state(['!focus']), add=True)
+
+        return instance
 
     def _reserve_message_space(self) -> None:
         if not self._show_messages:

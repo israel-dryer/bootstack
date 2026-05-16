@@ -18,22 +18,6 @@ class PasswordEntry(Field):
     including character masking and a toggle button to temporarily reveal the password.
     The widget automatically inserts a visibility toggle button (eye icon) that shows
     the password while pressed and hides it when released.
-
-    !!! note "Events"
-
-        - `<<Input>>`: Triggered on each keystroke.
-        - `<<Change>>`: Triggered when value changes after commit.
-        - `<<Valid>>`: Triggered when validation passes.
-        - `<<Invalid>>`: Triggered when validation fails.
-        - `<<Validate>>`: Triggered after any validation.
-
-    Attributes:
-        entry_widget (TextEntryPart): The underlying text entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
@@ -44,14 +28,7 @@ class PasswordEntry(Field):
             message: str = None,
             show_visibility_toggle: bool = True,
             **kwargs: Unpack[FieldOptions]):
-        """Initialize a PasswordEntry widget.
-
-        Creates a password entry field with character masking and an optional
-        visibility toggle button. The widget automatically masks input characters
-        (default: '•') and provides a button to temporarily reveal the password
-        while pressed.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial password value to display (masked). Default is None.
             label: Optional label text to display above the entry field.
@@ -64,27 +41,21 @@ class PasswordEntry(Field):
                 Can be changed at runtime via `configure(show_visibility_toggle=...)`.
 
         Other Parameters:
-            show (str): Character to mask password input. Default is '•'.
-            required (bool): If True, field cannot be empty.
-            accent (str): Accent token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            allow_blank (bool): Allow empty input.
-            cursor (str): Cursor style when hovering.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment.
-            show_message (bool): If True, displays message area.
-            padding (str): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-
-        Note:
-            The visibility toggle button uses a press-and-hold interaction.
-            The password is only visible while the button is actively pressed,
-            providing a secure way to verify input without leaving it exposed.
+            show: Character to mask password input. Default is '•'.
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: Allow empty input.
+            cursor: Cursor style when hovering.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment.
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
         """
         # set default mask if not provided
         self._show_indicator = kwargs.get('show', '•')
@@ -128,6 +99,7 @@ class PasswordEntry(Field):
 
     @configure_delegate('show_visibility_toggle')
     def _delegate_show_visibility_toggle(self, value=None):
+        """Get or set the visibility of the eye-icon toggle button."""
         if value is None:
             return self._show_visibility_toggle
         else:

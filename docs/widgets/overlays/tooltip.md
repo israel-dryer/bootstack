@@ -45,7 +45,6 @@ Use Tooltip when:
 ### Consider a different control when...
 
 - the text is essential to completing the task — use labels or inline help
-
 - you need to show notifications or feedback — use [Toast](./toast.md)
 
 ---
@@ -96,7 +95,3 @@ Tooltips can be styled using the `accent` parameter (if supported).
 ### Framework concepts
 
 - [Widgets](../index.md) — overview of all widgets
-
-### API reference
-
-- [`bootstack.Tooltip`](../../reference/widgets/ToolTip.md)

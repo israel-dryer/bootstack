@@ -27,10 +27,6 @@ class Meter(Frame):
     - `.value` property - Direct property access
     - `configure(value=x)` - Via the configure interface
 
-    !!! note "Events"
-
-        `<<Change>>`: Fired whenever the meter value changes.
-          Provides `event.data` with keys: `value`, `prev_value`.
     """
 
     def __init__(
@@ -73,7 +69,6 @@ class Meter(Frame):
         Args:
             master: The parent widget.
             accent: Accent token for the meter indicator (e.g., 'primary', 'success').
-            bootstyle: DEPRECATED - Use `accent` instead.
 
             value: Current meter value.
             minvalue: Minimum value for the meter range.
@@ -102,8 +97,6 @@ class Meter(Frame):
             step_size: Increment step when in interactive mode.
             **kwargs: Additional keyword arguments passed to the Frame parent class.
 
-        !!! note "Events"
-            - `<<Change>>`: Emitted when the value changes (see on_changed()).
         """
         legacy = Meter._coerce_legacy_params(kwargs)
         super().__init__(master, **kwargs)
@@ -873,10 +866,22 @@ class Meter(Frame):
             self._value_var.set(value_updated)
 
     def on_changed(self, callback: Callable[[Any], Any]) -> str:
-        """Bind a callback to the `<<Change>>` virtual event."""
+        """Register a callback for meter value changes.
+
+        Args:
+            callback: Called with a Tkinter event; `event.data["value"]` is the
+                new value, `event.data["prev_value"]` is the previous value.
+
+        Returns:
+            Bind ID — pass to `off_changed()` to unregister.
+        """
         return self.bind('<<Change>>', callback, add="+")
 
-    def off_changed(self, bind_id: str):
-        """Remove a previously registered `<<Change>>` callback."""
+    def off_changed(self, bind_id: str) -> None:
+        """Unregister a callback registered with `on_changed()`.
+
+        Args:
+            bind_id: The bind ID returned by `on_changed()`.
+        """
         self.unbind('<<Change>>', bind_id)
 

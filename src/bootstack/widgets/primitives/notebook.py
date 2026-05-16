@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tkinter
 from tkinter import ttk
-from typing import Any, Callable, Literal, Optional, TypedDict
+from typing import Any, Callable, Literal, TypedDict
 
 from typing_extensions import Unpack
 
@@ -37,7 +37,6 @@ class NotebookKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     variant: str
     surface: str
@@ -63,36 +62,25 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
     is visible at a time. Tabs can be referenced by key (str), index (int), or
     widget instance.
 
-    !!! note "Events"
-
-        - `<<NotebookTabChange>>`: Triggered when the selected tab changes.
-        - `<<NotebookTabActivate>>`: Triggered when a tab becomes active.
-        - `<<NotebookTabDeactivate>>`: Triggered when a tab becomes inactive.
-
-        All events provide `event.data` with keys: `current` (TabRef), `previous`
-        (TabRef), `reason` ('user', 'api', 'hide', 'forget', 'reorder'),
-        `via` ('click', 'key', 'programmatic').
     """
 
     _ttk_base = ttk.Notebook
 
     def __init__(self, master: Master = None, **kwargs: Unpack[NotebookKwargs]) -> None:
-        """Create a themed bootstack Notebook with optional bootstyle extensions.
+        """Create a themed bootstack Notebook.
 
         Args:
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            padding (int | tuple): Extra space around the tab header and pane area.
-            height (int): Requested widget height in pixels.
-            width (int): Requested widget width in pixels.
-            style (str): Explicit ttk style name that overrides accent/variant.
-            accent (str): Accent token for styling, e.g. 'primary', 'secondary'.
-            variant (str): Style variant (if applicable).
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-                Combined style tokens (e.g., 'primary', 'secondary').
-            surface (str): Optional surface color token; inherits from the current theme if omitted.
-            style_options (dict): Additional options forwarded to the style builder.
+            padding: Extra space around the tab header and pane area.
+            height: Requested widget height in pixels.
+            width: Requested widget width in pixels.
+            style: Explicit ttk style name that overrides accent/variant.
+            accent: Accent token for styling, e.g. 'primary', 'secondary'.
+            variant: Style variant (if applicable).
+            surface: Optional surface color token; inherits from the current theme if omitted.
+            style_options: Additional options forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
         self._key_registry: dict[str, tkinter.Misc] = {}  # key -> widget
@@ -120,7 +108,7 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         self._last_change_reason = reason
         self._last_change_via = 'programmatic'
 
-    def _make_key(self, key: Optional[str]) -> str:
+    def _make_key(self, key: str | None) -> str:
         """Return a unique, stable key for a tab; auto generated (tabN) if none provided.
 
         Args:
@@ -273,16 +261,16 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         restored to its previous position.
 
         Args:
-            child (Widget | None): The widget to add as a tab. If None, creates a Frame.
-            key (str | None): A unique human-friendly identifier for referencing the tab.
-            text (str | None): The text of the tab label.
-            state (str | None): One of 'normal', 'disabled', 'hidden'.
-            sticky (str | None): How the content is positioned in the pane area.
-            compound (str | None): Image placement relative to text.
-            image (PhotoImage | None): The image to display in the tab.
-            underline (int | None): Index of character to underline in the label.
-            fmtargs (tuple | list): Format arguments for localized text.
-            **kwargs: When child is None, these are passed to Frame (e.g., padding, bootstyle).
+            child: The widget to add as a tab. If None, creates a Frame.
+            key: A unique human-friendly identifier for referencing the tab.
+            text: The text of the tab label.
+            state: One of 'normal', 'disabled', 'hidden'.
+            sticky: How the content is positioned in the pane area.
+            compound: Image placement relative to text.
+            image: The image to display in the tab.
+            underline: Index of character to underline in the label.
+            fmtargs: Format arguments for localized text.
+            **kwargs: When child is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The tab content widget (passed or created Frame).
@@ -310,17 +298,17 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         """Insert a widget as a tab at position `index`, optionally creating a Frame.
 
         Args:
-            index (str | int): Position to insert the widget. Defaults to 'end'.
-            child (Widget | None): The widget to insert as a tab. If None, creates a Frame.
-            key (str | None): A unique human-friendly identifier for referencing the tab.
-            text (str | None): The text of the tab label.
-            state (str | None): One of 'normal', 'disabled', 'hidden'.
-            sticky (str | None): How the content is positioned in the pane area.
-            compound (str | None): Image placement relative to text.
-            image (PhotoImage | None): The image to display in the tab.
-            underline (int | None): Index of character to underline in the label.
-            fmtargs (tuple | list): Format arguments for localized text.
-            **kwargs: When child is None, these are passed to Frame (e.g., padding, bootstyle).
+            index: Position to insert the widget. Defaults to 'end'.
+            child: The widget to insert as a tab. If None, creates a Frame.
+            key: A unique human-friendly identifier for referencing the tab.
+            text: The text of the tab label.
+            state: One of 'normal', 'disabled', 'hidden'.
+            sticky: How the content is positioned in the pane area.
+            compound: Image placement relative to text.
+            image: The image to display in the tab.
+            underline: Index of character to underline in the label.
+            fmtargs: Format arguments for localized text.
+            **kwargs: When child is None, these are passed to Frame (e.g., padding, accent).
 
         Returns:
             Widget: The tab content widget (passed or created Frame).
@@ -373,17 +361,17 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         """Configure or query tab configuration.
 
         Args:
-            tab (Tab): The tab to configure. Can be an index, key, or widget.
-            option (str): The option to query.
+            tab: The tab to configure. Can be an index, key, or widget.
+            option: The option to query.
 
         Other Parameters:
-            state (str): One of 'normal', 'disabled', 'hidden'.
-            sticky (str): How the content is positioned in the pane area.
-            padding (int | tuple): Extra space between notebook and pane.
-            text (str): The text of the tab label.
-            compound (str): Image placement relative to text.
-            image (PhotoImage): The image to display in the tab.
-            underline (int): Index of character to underline in the label.
+            state: One of 'normal', 'disabled', 'hidden'.
+            sticky: How the content is positioned in the pane area.
+            padding: Extra space between notebook and pane.
+            text: The text of the tab label.
+            compound: Image placement relative to text.
+            image: The image to display in the tab.
+            underline: Index of character to underline in the label.
 
         Returns:
             Any: The value of option if specified, otherwise None.
@@ -448,63 +436,61 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         return self.tab(key, option, **kwargs)
 
     def on_tab_activated(self, callback: Callable[[Any], Any]) -> str:
-        """Bind a callback to the `<<NotebookTabActivate>>` event.
+        """Register a callback for tab activation.
 
-        The `event.data` payload includes `current` (TabRef), `previous`
-        (TabRef), `reason` (ChangeReason), and `via` (ChangeMethod).
+        Called when a tab becomes the selected tab. `event.data` contains
+        `current` (TabRef), `previous` (TabRef), `reason`, and `via`.
 
         Args:
-            callback (Callable): Function to call when a tab is activated.
+            callback: Called with a Tkinter event on activation.
 
         Returns:
-            str: The funcid that can be used with `off_tab_activated()`.
+            Bind ID — pass to `off_tab_activated()` to unregister.
         """
         return self.bind("<<NotebookTabActivate>>", callback, add=True)
 
     def off_tab_activated(self, bind_id: str | None = None) -> None:
-        """Remove a `<<NotebookTabActivate>>` binding.
+        """Unregister a callback registered with `on_tab_activated()`.
 
         Args:
-            bind_id (str): The bind_id returned by `on_tab_activated()`.
+            bind_id: The bind ID returned by `on_tab_activated()`.
         """
         self.unbind("<<NotebookTabActivate>>", bind_id)
 
     def on_tab_deactivated(self, callback: Callable[[Any], Any]) -> str:
-        """Bind a callback to the `<<NotebookTabDeactivate>>` event.
+        """Register a callback for tab deactivation.
 
-        The `event.data` payload includes `current` (TabRef), `previous`
-        (TabRef), `reason` (ChangeReason), and `via` (ChangeMethod).
+        Called when a tab loses selection. `event.data` contains `current`
+        (TabRef), `previous` (TabRef), `reason`, and `via`.
 
         Args:
-            callback (Callable): Function to call when a tab is deactivated.
+            callback: Called with a Tkinter event on deactivation.
 
         Returns:
-            str: The funcid that can be used with `off_tab_deactivated()`.
+            Bind ID — pass to `off_tab_deactivated()` to unregister.
         """
         return self.bind("<<NotebookTabDeactivate>>", callback, add=True)
 
     def off_tab_deactivated(self, bind_id: str | None = None) -> None:
-        """Remove a `<<NotebookTabDeactivate>>` binding.
+        """Unregister a callback registered with `on_tab_deactivated()`.
 
         Args:
-            bind_id (str): The bind_id returned by `on_tab_deactivated()`.
+            bind_id: The bind ID returned by `on_tab_deactivated()`.
         """
         self.unbind("<<NotebookTabDeactivate>>", bind_id)
 
     def on_tab_changed(self, callback: Callable[[Any], Any]) -> str:
-        """Bind a callback to the `<<NotebookTabChange>>` event.
+        """Register a callback for tab selection changes.
 
-        This also emits `<<NotebookTabActivate>>` and `<<NotebookTabDeactivate>>`
-        events for the affected tabs.
-
-        The `event.data` payload includes `current` (TabRef), `previous`
-        (TabRef), `reason` (ChangeReason), and `via` (ChangeMethod).
+        Also fires `<<NotebookTabActivate>>` and `<<NotebookTabDeactivate>>`
+        for the affected tabs. `event.data` contains `current` (TabRef),
+        `previous` (TabRef), `reason`, and `via`.
 
         Args:
-            callback (Callable): Function to call when the tab selection changes.
+            callback: Called with a Tkinter event when the selected tab changes.
 
         Returns:
-            str: The funcid that can be used with `off_tab_changed()`.
+            Bind ID — pass to `off_tab_changed()` to unregister.
         """
 
         def build_payload(event: Any) -> Any:
@@ -543,9 +529,9 @@ class Notebook(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Noteb
         return self.bind("<<NotebookTabChange>>", wrapper, add=True)
 
     def off_tab_changed(self, bind_id: str | None = None) -> None:
-        """Remove a `<<NotebookTabChange>>` binding.
+        """Unregister a callback registered with `on_tab_changed()`.
 
         Args:
-            bind_id (str): The bind_id returned by `on_tab_changed()`.
+            bind_id: The bind ID returned by `on_tab_changed()`.
         """
         self.unbind("<<NotebookTabChange>>", bind_id)

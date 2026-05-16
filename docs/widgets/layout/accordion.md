@@ -50,13 +50,11 @@ Use `Accordion` when:
 
 - you want a structured, step-by-step flow (e.g., wizard-like forms)
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- sections should be independently collapsible -- use multiple [Expander](expander.md) widgets
-
-- content switching should use tabs -- use [Notebook](../views/notebook.md)
-
-- all sections should always be visible -- use [LabelFrame](labelframe.md) or [Frame](frame.md)
+- sections should be independently collapsible — use multiple [Expander](expander.md) widgets
+- content switching should use tabs — use [Notebook](../views/notebook.md)
+- all sections should always be visible — use [LabelFrame](labelframe.md) or [Frame](frame.md)
 
 ---
 
@@ -165,7 +163,7 @@ for exp in accordion.items():
     print(exp.cget('title'))
 
 # Get currently expanded sections
-for exp in accordion.expanded:
+for exp in accordion.items(expanded=True):
     print(f"Open: {exp.cget('title')}")
 
 # Query configuration
@@ -231,7 +229,3 @@ accordion.on_accordion_changed(on_accordion_changed)
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Accordion`](../../reference/widgets/Accordion.md)

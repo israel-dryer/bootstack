@@ -321,7 +321,7 @@ def _build_text_inputs_page(page):
     group4 = bs.LabelFrame(page, text="ScrolledText", padding=15)
     group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
 
-    text = bs.ScrolledText(group4, height=5, autohide=True)
+    text = bs.ScrolledText(group4, height=5, scrollbar_visibility='hover')
     text.pack(fill=BOTH, expand=YES)
     text.insert(END, "ScrolledText provides a multi-line text area with\n")
     text.insert(END, "automatic scrollbars that hide when not needed.\n\n")

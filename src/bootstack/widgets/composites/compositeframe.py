@@ -14,15 +14,6 @@ class Composite:
     It does not inherit from any visual widget, making it suitable as a
     coordination hub for widgets anywhere in the widget tree.
 
-    Attributes:
-        HOVER (str): State name constant for hover state ('hover').
-        ACTIVE (str): State name constant for active state ('active').
-        PRESSED (str): State name constant for pressed state ('pressed').
-        SELECTED (str): State name constant for selected state ('selected').
-        FOCUS (str): State name constant for focus state ('focus').
-        DISABLED (str): State name constant for disabled state ('disabled').
-        selected (bool): Read-only property for current selection state.
-        disabled (bool): Read-only property for current disabled state.
     """
 
     # state names
@@ -208,9 +199,6 @@ class CompositeFrame(Frame):
     Composite state coordinator. It provides a simple way to create containers
     with synchronized state management across child widgets.
 
-    Attributes:
-        selected (bool): Read-only property for current selection state.
-        disabled (bool): Read-only property for current disabled state.
     """
 
     def __init__(self, master: Master = None, select_on_click: bool = False, **kwargs: Any):

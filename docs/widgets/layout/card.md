@@ -36,11 +36,10 @@ Use `Card` when:
 
 - you need an elevated container that stands out from the background
 
-Consider a different control when:
+### Consider a different control when...
 
-- you need a collapsible container - use [Expander](expander.md)
-
-- you need a titled border - use [LabelFrame](labelframe.md)
+- you need a collapsible container — use [Expander](expander.md)
+- you need a titled border — use [LabelFrame](labelframe.md)
 
 ---
 
@@ -84,7 +83,3 @@ card2.pack(side="left", fill="both", expand=True, padx=(5, 0))
 - [LabelFrame](labelframe.md) - container with a titled border
 
 - [Expander](expander.md) - collapsible container
-
-### API reference
-
-- [`bootstack.Card`](../../reference/widgets/Card.md)

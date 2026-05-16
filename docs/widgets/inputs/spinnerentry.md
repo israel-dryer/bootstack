@@ -205,7 +205,7 @@ size.insert_addon(bs.Button, position='before', icon='rulers')
     <img src="../../assets/widgets-spinnerentry-addons.png" alt="Spinner Entry Addons"/>
 </div>
 
-!!! link "See [TextEntry — Add-ons](textentry.md#add-ons) for the full add-on API."
+!!! link "See [TextEntry](textentry.md) for the full add-on API."
 
 ### Events
 
@@ -267,7 +267,3 @@ Typing is always allowed unless the field is set to readonly.
 - [TextEntry](textentry.md) — general field control
 - [Scale](scale.md) — slider-based numeric adjustment
 - [Form](../forms/form.md) — build forms from field definitions
-
-### API reference
-
-- [`bootstack.SpinnerEntry`](../../reference/widgets/SpinnerEntry.md)

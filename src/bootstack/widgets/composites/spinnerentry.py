@@ -4,7 +4,7 @@ Provides a specialized entry field with a built-in spinbox for selecting
 values from a list or numeric range.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
 from typing_extensions import Unpack
 
@@ -19,43 +19,22 @@ class SpinnerEntry(Field):
     SpinnerEntry extends the Field widget to provide a spinbox input that can
     handle both predefined text values and numeric ranges. The widget includes
     built-in up/down arrow buttons and supports keyboard/mouse wheel interaction.
-
-    !!! note "Events"
-
-        - `<<Change>>`  : Fired when value changes after commit.
-        - `<<Input>>`   : Fired on each keystroke.
-        - `<<Valid>>`   : Fired when validation passes.
-        - `<<Invalid>>` : Fired when validation fails.
-
-    Attributes:
-        entry_widget (SpinnerEntryPart): The underlying spinbox entry widget.
-        label_widget (Label): The label widget above the entry.
-        message_widget (Label): The message label widget below the entry.
-        addons (dict[str, Widget]): Dictionary of inserted addon widgets by name.
-        variable (Variable): Tkinter Variable linked to entry text.
-        signal (Signal): Signal object for reactive updates.
     """
 
     def __init__(
             self,
             master: Master = None,
-            value: Union[int, float, str] = '',
+            value: int | float | str = '',
             label: str = None,
             message: str = None,
-            values: List[str] = None,
-            minvalue: Union[int, float] = None,
-            maxvalue: Union[int, float] = None,
-            increment: Union[int, float] = 1,
+            values: list[str] = None,
+            minvalue: int | float = None,
+            maxvalue: int | float = None,
+            increment: int | float = 1,
             wrap: bool = False,
             **kwargs: Unpack[FieldOptions]
     ):
-        """Initialize a SpinnerEntry widget.
-
-        Creates a spinner entry field with optional label, validation, and either
-        a predefined list of values or a numeric range. The widget includes built-in
-        up/down arrows for cycling through values or adjusting numbers.
-
-        Args:
+        """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial value to display. Can be string, integer, or float
                 depending on whether using text values or numeric range.
@@ -77,27 +56,22 @@ class SpinnerEntry(Field):
             wrap: If True, values wrap around at boundaries. Default is False.
 
         Other Parameters:
-            value_format (str): ICU format pattern for parsing/formatting.
-            locale (str): Locale identifier for formatting (e.g., 'en_US').
-            required (bool): If True, field cannot be empty.
-            color (str): Color token for the focus ring and active border.
-            bootstyle (str): DEPRECATED - Use `color` instead.
-            allow_blank (bool): If True, empty input is allowed.
-            cursor (str): Cursor style when hovering.
-            font (str): Font for text display.
-            foreground (str): Text color.
-            initial_focus (bool): If True, widget receives focus on creation.
-            justify (str): Text alignment.
-            show_message (bool): If True, displays message area.
-            padding (str): Padding around entry widget.
-            takefocus (bool): If True, widget accepts Tab focus.
-            textvariable (Variable): Tkinter Variable to link with text.
-            textsignal (Signal): Signal object for reactive updates.
-            width (int): Width in characters.
-
-        Note:
-            Use either 'values' (for text mode) OR 'minvalue/maxvalue' (for numeric mode),
-            not both. If both are provided, 'values' takes precedence.
+            value_format: ICU format pattern for parsing/formatting.
+            locale: Locale identifier for formatting (e.g., 'en_US').
+            required: If True, field cannot be empty.
+            accent: Accent token for the focus ring and active border.
+            allow_blank: If True, empty input is allowed.
+            cursor: Cursor style when hovering.
+            font: Font for text display.
+            foreground: Text color.
+            initial_focus: If True, widget receives focus on creation.
+            justify: Text alignment.
+            show_message: If True, displays message area.
+            padding: Padding around entry widget.
+            takefocus: If True, widget accepts Tab focus.
+            textvariable: Tkinter Variable to link with text.
+            textsignal: Signal object for reactive updates.
+            width: Width in characters.
         """
         # Build kwargs for Field initialization
         # Map minvalue/maxvalue to from_/to for the underlying Spinbox
@@ -127,19 +101,13 @@ class SpinnerEntry(Field):
         self._wrap = wrap
 
     @property
-    def values(self) -> List[str]:
+    def values(self) -> list[str]:
         """Get the list of valid values (text mode only)."""
         return self._values
 
     @configure_delegate('values')
-    def _delegate_values(self, value: List[str] = None):
-        """Get or set the list of valid values.
-
-        Can be accessed via:
-            widget.configure(values=['A', 'B', 'C'])
-            widget['values'] = ['A', 'B', 'C']
-            widget.cget('values')
-        """
+    def _delegate_values(self, value: list[str] = None):
+        """Get or set the list of valid values."""
         if value is None:
             return self._values
 
@@ -152,14 +120,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('minvalue')
-    def _delegate_minvalue(self, value: Union[int, float] = None):
-        """Get or set the minimum value (numeric mode).
-
-        Can be accessed via:
-            widget.configure(minvalue=0)
-            widget['minvalue'] = 0
-            widget.cget('minvalue')
-        """
+    def _delegate_minvalue(self, value: int | float = None):
+        """Get or set the minimum value (numeric mode)."""
         if value is None:
             return self._minvalue
 
@@ -172,14 +134,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('maxvalue')
-    def _delegate_maxvalue(self, value: Union[int, float] = None):
-        """Get or set the maximum value (numeric mode).
-
-        Can be accessed via:
-            widget.configure(maxvalue=100)
-            widget['maxvalue'] = 100
-            widget.cget('maxvalue')
-        """
+    def _delegate_maxvalue(self, value: int | float = None):
+        """Get or set the maximum value (numeric mode)."""
         if value is None:
             return self._maxvalue
 
@@ -192,14 +148,8 @@ class SpinnerEntry(Field):
         return None
 
     @configure_delegate('increment')
-    def _delegate_increment(self, value: Union[int, float] = None):
-        """Get or set the increment step size (numeric mode).
-
-        Can be accessed via:
-            widget.configure(increment=5)
-            widget['increment'] = 5
-            widget.cget('increment')
-        """
+    def _delegate_increment(self, value: int | float = None):
+        """Get or set the increment step size (numeric mode)."""
         if value is None:
             return self._increment
 
@@ -213,13 +163,7 @@ class SpinnerEntry(Field):
 
     @configure_delegate('wrap')
     def _delegate_wrap(self, value: bool = None):
-        """Get or set the wrap setting.
-
-        Can be accessed via:
-            widget.configure(wrap=True)
-            widget['wrap'] = True
-            widget.cget('wrap')
-        """
+        """Get or set the wrap setting."""
         if value is None:
             return self._wrap
 

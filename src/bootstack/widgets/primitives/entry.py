@@ -37,7 +37,6 @@ class EntryKwargs(TypedDict, total=False):
     name: str
 
     # bootstack-specific extensions
-    bootstyle: str  # DEPRECATED: Use accent and variant instead
     accent: str
     density: Literal['default', 'compact']
     variant: str
@@ -46,7 +45,7 @@ class EntryKwargs(TypedDict, total=False):
 
 
 class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Entry):
-    """bootstack wrapper for `ttk.Entry` with bootstyle support."""
+    """bootstack wrapper for `ttk.Entry` with themed styling support."""
 
     _ttk_base = ttk.Entry
 
@@ -57,29 +56,27 @@ class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMi
             master: Parent widget. If None, uses the default root window.
 
         Other Parameters:
-            textvariable (Variable): Tk variable linked to the entry text.
-            textsignal (Signal[str]): Reactive Signal linked to the entry text (auto-synced with textvariable).
-            show (str): Substitute character for masked input.
-            width (int): Width in characters.
-            exportselection (bool): Whether selection is exported to X clipboard.
-            justify (str): Text alignment inside the entry.
-            validate (str): Validation mode.
-            validatecommand (Callable): Validation callback.
-            invalidcommand (Callable): Callback executed on validation failure.
-            xscrollcommand (Callable): Horizontal scroll callback.
-            font (str | Font): Font for the entry text.
-            foreground (str): Text color.
-            background (str): Background color.
-            state (str): Widget state.
-            takefocus (bool): Whether the widget participates in focus traversal.
-            style (str): Explicit ttk style name (overrides accent/variant).
-            accent (str): Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            variant (str): Style variant, e.g. 'default'.
-            density (str): The vertical and horizontal compactness, e.g. 'default', 'compact'.
-            bootstyle (str): DEPRECATED - Use `accent` and `variant` instead.
-                Combined style tokens (e.g., 'primary').
-            surface (str): Optional surface token; otherwise inherited.
-            style_options (dict): Optional dict forwarded to the style builder.
+            textvariable: Tk variable linked to the entry text.
+            textsignal: Reactive Signal linked to the entry text (auto-synced with textvariable).
+            show: Substitute character for masked input.
+            width: Width in characters.
+            exportselection: Whether selection is exported to X clipboard.
+            justify: Text alignment inside the entry.
+            validate: Validation mode.
+            validatecommand: Validation callback.
+            invalidcommand: Callback executed on validation failure.
+            xscrollcommand: Horizontal scroll callback.
+            font: Font for the entry text.
+            foreground: Text color.
+            background: Background color.
+            state: Widget state.
+            takefocus: Whether the widget participates in focus traversal.
+            style: Explicit ttk style name (overrides accent/variant).
+            accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
+            variant: Style variant, e.g. 'default'.
+            density: Vertical and horizontal compactness, e.g. 'default', 'compact'.
+            surface: Optional surface token; otherwise inherited.
+            style_options: Optional dict forwarded to the style builder.
         """
         if kwargs.get('density') == 'compact':
             kwargs['font'] = 'caption'

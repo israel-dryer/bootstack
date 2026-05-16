@@ -5,3 +5,6 @@ This capability documents one focused aspect of the **widget interface** (Tk/Tcl
 > **Note**: You typically won’t use `bootstack.core.capabilities.focus` directly. This page describes the behavior that widgets expose.
 
 ::: bootstack.core.capabilities.focus.FocusMixin
+    options:
+      filters:
+        - "!^_"

@@ -6,7 +6,7 @@ import tkinter
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 from tkinter import StringVar
-from typing import Any, Callable, Iterable, Literal, Optional
+from typing import Any, Callable, Iterable, Literal, TypedDict
 
 from babel import dates
 from babel.core import Locale
@@ -83,6 +83,14 @@ def _longest_month_title_length() -> int:
     return max_length
 
 
+class DateSelectEventData(TypedDict):
+    """Payload for `<<DateSelect>>` events."""
+    date: date
+    """Selected date in single mode (the most recently clicked date)."""
+    range: tuple[date, 'date | None']
+    """Selected range as (start, end). end is None if only start is set."""
+
+
 class Calendar(ttk.Frame):
     """Inline calendar widget for selecting dates.
 
@@ -106,34 +114,32 @@ class Calendar(ttk.Frame):
             show_week_numbers: bool = False,
             first_weekday: int | None = None,
             accent: str = None,
-            bootstyle: str = None,
             padding: int | tuple[int, int] | tuple[int, int, int, int] | str | None = None,
     ) -> None:
         """Initialize a Calendar widget.
 
         Args:
             master: Parent widget. If None, uses the default root window.
-            value (date | datetime | str): Initial selected date for single selection mode.
-            start_date (date | datetime | str): Range start date. Use `value` instead
+            value: Initial selected date for single selection mode.
+            start_date: Range start date. Use `value` instead
                 for single selection mode.
-            end_date (date | datetime | str): Range end date. Only used when
+            end_date: Range end date. Only used when
                 `selection_mode='range'`.
-            disabled_dates (Iterable): Collection of dates that cannot be selected.
-            selection_mode (str): Selection mode - `'single'` for single date or
+            disabled_dates: Collection of dates that cannot be selected.
+            selection_mode: Selection mode - `'single'` for single date or
                 `'range'` for date range selection.
-            max_date (date | datetime | str): Maximum selectable date. Dates after
+            max_date: Maximum selectable date. Dates after
                 this are disabled.
-            min_date (date | datetime | str): Minimum selectable date. Dates before
+            min_date: Minimum selectable date. Dates before
                 this are disabled.
-            show_outside_days (bool): Whether to show days from adjacent months.
+            show_outside_days: Whether to show days from adjacent months.
                 Defaults to True for single mode, False for range mode.
-            show_week_numbers (bool): Whether to display ISO week numbers in the
+            show_week_numbers: Whether to display ISO week numbers in the
                 leftmost column.
-            first_weekday (int | None): First day of the week. 0=Monday, 6=Sunday.
+            first_weekday: First day of the week. 0=Monday, 6=Sunday.
                 If None, uses the locale default.
-            accent (str): Accent token for selected dates and highlights (e.g., 'primary', 'success').
-            bootstyle (str): DEPRECATED - Use `accent` instead.
-            padding (int | tuple | str): Padding around the widget.
+            accent: Accent token for selected dates and highlights (e.g., 'primary', 'success').
+            padding: Padding around the widget.
         """
         super().__init__(master, padding=padding)
 
@@ -156,7 +162,7 @@ class Calendar(ttk.Frame):
             except Exception:
                 first_weekday = 0  # fallback to Monday (ISO standard)
         self._first_weekday = first_weekday
-        self._accent = accent or bootstyle or PRIMARY
+        self._accent = accent or PRIMARY
         self._calendar = calendar.Calendar(firstweekday=first_weekday)
 
         # Allow 'value' as alias for 'start_date' (reads better in single mode)
@@ -181,7 +187,7 @@ class Calendar(ttk.Frame):
         self._min_date = self._coerce_date(min_date)
 
         self._title_var = ttk.StringVar()
-        self._locked_size: Optional[tuple[int, int]] = None
+        self._locked_size: tuple[int, int] | None = None
 
         self._header_frame: ttk.Frame | None = None
         self._months_frame: ttk.Frame | None = None
@@ -299,7 +305,7 @@ class Calendar(ttk.Frame):
 
     # Legacy delegate (for configure() compatibility) -----------------
     @configure_delegate("date")
-    def _delegate_date(self, value: date | datetime | str | None = None) -> Optional[date]:
+    def _delegate_date(self, value: date | datetime | str | None = None) -> date | None:
         """Get or set the current selected date via configure()."""
         if value is None:
             return self._selected_date
@@ -308,11 +314,27 @@ class Calendar(ttk.Frame):
 
     # Event binding ---------------------------------------------------
     def on_date_selected(self, callback: Callable) -> str:
-        """Bind to `<<DateSelect>>`. Callback receives `event.data = {'date': date, 'range': tuple[date, date | None]}`."""
+        """Register a callback for `<<DateSelect>>` events.
+
+        Args:
+            callback: Called when a date is selected or a range is updated.
+                Receives a Tk event object; `event.data` is a
+                `DateSelectEventData` dict with keys:
+                - `date`: the most recently clicked date.
+                - `range`: `(start, end)` tuple; `end` is None if only the
+                  start of a range has been set.
+
+        Returns:
+            Bind ID — pass to `off_date_selected()` to unsubscribe.
+        """
         return self.bind("<<DateSelect>>", callback, add=True)
 
     def off_date_selected(self, bind_id: str | None = None) -> None:
-        """Unbind from `<<DateSelect>>`."""
+        """Unsubscribe from `<<DateSelect>>`.
+
+        Args:
+            bind_id: ID returned by `on_date_selected()`. If None, removes all.
+        """
         return self.unbind("<<DateSelect>>", bind_id)
 
     # --- UI construction --------------------------------------------

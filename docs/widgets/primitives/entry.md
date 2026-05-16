@@ -38,11 +38,9 @@ Use `Entry` when:
 
 ### Consider a different control when...
 
-- **you want labels, helper text, and standardized events** - prefer [TextEntry](../inputs/textentry.md)
-
-- **you want commit-based validation with messages** - prefer [TextEntry](../inputs/textentry.md)
-
-- **you are building application forms** - prefer [TextEntry](../inputs/textentry.md) or specialized input controls
+- you want labels, helper text, and standardized events — use [TextEntry](../inputs/textentry.md)
+- you want commit-based validation with messages — use [TextEntry](../inputs/textentry.md)
+- you are building application forms — use [TextEntry](../inputs/textentry.md) or specialized input controls
 
 ---
 
@@ -170,7 +168,3 @@ If you want user-friendly validation messages and commit-based validation, prefe
 - [Events and Signals](../../guides/reactivity.md)
 
 - [Localization](../../guides/localization.md)
-
-### API reference
-
-- [`bootstack.Entry`](../../reference/widgets/Entry.md)

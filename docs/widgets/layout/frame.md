@@ -46,11 +46,11 @@ Use `Frame` when:
 - you want to apply a shared background/surface to a region
 - you're manually managing child widgets with `pack()` or `grid()`
 
-**Consider a different control when:**
+### Consider a different control when...
 
-- you want automatic vertical/horizontal stacking with gaps -> use [PackFrame](packframe.md)
-- you need a 2D grid layout with auto-placement -> use [GridFrame](gridframe.md)
-- the group needs a visible label (a titled section) -> use [LabelFrame](labelframe.md)
+- you want automatic vertical/horizontal stacking with gaps — use [PackFrame](packframe.md)
+- you need a 2D grid layout with auto-placement — use [GridFrame](gridframe.md)
+- the group needs a visible label (a titled section) — use [LabelFrame](labelframe.md)
 
 ---
 
@@ -139,7 +139,3 @@ pane.pack_propagate(False)
 - [Layout Properties](../../guides/layout.md)
 
 - [Layout](../../architecture/geometry-and-layout.md)
-
-### API reference
-
-- [`bootstack.Frame`](../../reference/widgets/Frame.md)
