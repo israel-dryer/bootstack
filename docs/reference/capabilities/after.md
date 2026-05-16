@@ -9,4 +9,4 @@ extensions).
 ::: bootstack.core.capabilities.after.AfterMixin
     options:
       filters:
-        - "public"
+        - "!^_"

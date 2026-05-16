@@ -9,4 +9,4 @@ extensions).
 ::: bootstack.core.capabilities.grab.GrabMixin
     options:
       filters:
-        - "public"
+        - "!^_"

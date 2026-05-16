@@ -9,4 +9,4 @@ extensions).
 ::: bootstack.core.capabilities.bind.BindingsMixin
     options:
       filters:
-        - "public"
+        - "!^_"

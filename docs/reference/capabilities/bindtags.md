@@ -9,4 +9,4 @@ extensions).
 ::: bootstack.core.capabilities.bindtags.BindtagsMixin
     options:
       filters:
-        - "public"
+        - "!^_"

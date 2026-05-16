@@ -384,8 +384,7 @@ summary = true
 unwrap_annotated = true
 
 filters = [
-    "public",
-    "!^_[^_]",
+    "!^_",
     "!^winfo_",
     "!^(pack|grid|place)(_|$)",
     "!^(bind|unbind)(_|$)",
