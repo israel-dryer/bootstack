@@ -117,7 +117,10 @@ class ToggleGroup(Frame):
 
     @property
     def variable(self) -> 'tk.Variable':
-        """Get the underlying tk.Variable."""
+        """Get the underlying tk.Variable.
+
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
+        """
         return self._variable
 
     @variable.setter

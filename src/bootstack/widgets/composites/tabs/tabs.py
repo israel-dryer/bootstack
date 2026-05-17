@@ -438,7 +438,10 @@ class Tabs(Frame):
 
     @property
     def variable(self) -> tk.Variable:
-        """Get the underlying tk.Variable for tab selection."""
+        """Get the underlying tk.Variable for tab selection.
+
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
+        """
         return self._variable
 
     @property

@@ -127,6 +127,8 @@ class TextSignalMixin:
 
         Returns:
             The tk.Variable (usually StringVar) for this widget's text.
+
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
         """
         if not hasattr(self, '_textvariable'):
             # Trigger lazy creation via textsignal
@@ -245,6 +247,8 @@ class SignalMixin:
 
         Returns:
             The tk.Variable (IntVar, BooleanVar, DoubleVar, etc.) for this widget's value.
+
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
         """
         if not hasattr(self, '_variable'):
             # Trigger lazy creation via signal

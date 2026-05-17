@@ -807,7 +807,10 @@ class SideNav(Frame):
 
     @property
     def variable(self) -> Variable | None:
-        """Get the selection variable."""
+        """Get the selection variable.
+
+        See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
+        """
         return self._selection_var
 
     # --- Configuration Delegates ---
