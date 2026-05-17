@@ -4,14 +4,14 @@ from tkinter import ttk
 from typing import Any, Callable, Literal, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
-from bootstack.core.mixins.ttk_state import TtkStateMixin
-from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.widgets.internal.wrapper_base import TTKWrapperBase
+from bootstack._core.mixins.ttk_state import TtkStateMixin
+from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
+from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins import IconMixin, TextSignalMixin, LocalizationMixin
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class ButtonKwargs(TypedDict, total=False):

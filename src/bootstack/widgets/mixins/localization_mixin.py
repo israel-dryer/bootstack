@@ -13,19 +13,19 @@ from __future__ import annotations
 from typing import Any, Dict
 from tkinter import StringVar, Misc
 
-from bootstack.core.capabilities.localization import (
+from bootstack._core.capabilities.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,
     get_current_locale,
     create_formatted_signal,
 )
-from bootstack.core.localization.specs import (
+from bootstack.i18n.specs import (
     LocalizedSpec,
     LocalizedTextSpec,
     LocalizedValueSpec,
 )
-from bootstack.runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings
 
 
 class LocalizationMixin(Misc):

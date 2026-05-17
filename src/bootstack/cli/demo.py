@@ -8,7 +8,7 @@ demonstrating a widget group.
 
 import bootstack as bs
 from bootstack.constants import *
-from bootstack.core.signals import Signal
+from bootstack.signals import Signal
 from bootstack.widgets.composites.tabs.tabview import TabView
 
 

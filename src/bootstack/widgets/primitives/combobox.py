@@ -5,14 +5,14 @@ from typing import Any, Literal, TypedDict, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
-from bootstack.core.mixins.ttk_state import TtkStateMixin
-from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.widgets.internal.wrapper_base import TTKWrapperBase
+from bootstack._core.mixins.ttk_state import TtkStateMixin
+from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
+from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.types import Master
 from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class ComboboxKwargs(TypedDict, total=False):
@@ -155,7 +155,7 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
 
     def _subscribe_theme_changes(self) -> None:
         """Re-style any already-created popdown when the theme changes."""
-        from bootstack.core.publisher import Channel, Publisher
+        from bootstack._core.publisher import Channel, Publisher
         name = str(self)
         Publisher.subscribe(name=name, func=self._apply_popdown_style, channel=Channel.STD)
         self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), '+')

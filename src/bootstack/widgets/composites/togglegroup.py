@@ -7,12 +7,12 @@ from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets.primitives.radiotoggle import RadioToggle
 from bootstack.widgets.primitives.checktoggle import CheckToggle
-from bootstack.core.variables import SetVar
+from bootstack._core.variables import SetVar
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives import Frame
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
     import tkinter as tk
 
 
@@ -97,7 +97,7 @@ class ToggleGroup(Frame):
             self._variable = signal_value.var
         elif variable_value is not None:
             # Variable provided - wrap in Signal
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             self._variable = variable_value
             self._signal = Signal.from_variable(variable_value)
             # Set initial value if provided
@@ -105,7 +105,7 @@ class ToggleGroup(Frame):
                 self._variable.set(initial_value)
         else:
             # Neither provided - create internal variable
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             if self._mode == 'single':
                 internal_var = StringVar(value=initial_value or '')
             else:
@@ -121,7 +121,7 @@ class ToggleGroup(Frame):
     @variable.setter
     def variable(self, value: 'tk.Variable') -> None:
         """Set the variable."""
-        from bootstack.core.signals import Signal
+        from bootstack.signals import Signal
         self._variable = value
         self._signal = Signal.from_variable(value)
 

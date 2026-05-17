@@ -4,8 +4,8 @@ import json
 # import tomllib
 from importlib import resources
 
-from bootstack.runtime.app import get_app_settings
-from bootstack.core.exceptions import ThemeError
+from bootstack._runtime.app import get_app_settings
+from bootstack._core.exceptions import ThemeError
 from bootstack.style.utility import (
     shade_color, tint_color, color_to_hsl, hsl_to_hex, best_foreground
 )

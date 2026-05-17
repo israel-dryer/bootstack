@@ -15,7 +15,7 @@ from tkinter import Widget
 from bootstack.widgets.primitives import Frame
 from bootstack.constants import BOTH, PRIMARY, YES
 from bootstack.dialogs.dialog import Dialog
-from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets.composites.calendar import Calendar
 
 ttk = SimpleNamespace(Frame=Frame)

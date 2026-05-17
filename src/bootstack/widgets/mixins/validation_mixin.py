@@ -10,8 +10,8 @@ from tkinter import TclError
 from tkinter.ttk import Widget
 from typing import Any, Callable
 
-from bootstack.core.validation import ValidationRule
-from bootstack.core.validation.types import RuleTriggerType, RuleType, ValidationOptions
+from bootstack.validation import ValidationRule
+from bootstack.validation.types import RuleTriggerType, RuleType, ValidationOptions
 
 
 class ValidationMixin(Widget):

@@ -57,7 +57,7 @@ def _ensure_icon_provider():
 from bootstack.style.theme_provider import ThemeProvider, use_theme
 from bootstack.style.utility import best_foreground, color_to_hsl, darken_color, lighten_color, mix_colors, \
     relative_luminance
-from bootstack.runtime.utility import scale_size
+from bootstack._runtime.utility import scale_size
 
 # Source images are created at this resolution multiplier (e.g., 2x)
 # This allows measurements from source images to be used directly in code
@@ -550,7 +550,7 @@ class BootstyleBuilderBase:
             Icon sizes are automatically scaled based on DPI settings. The default size of 20px provides
             a balanced appearance, being slightly larger than the visible text (16px) but not overwhelming.
         """
-        from bootstack.runtime.utility import scale_size
+        from bootstack._runtime.utility import scale_size
 
         # Apply DPI scaling to default size
         scaled_default = scale_size(default_size)

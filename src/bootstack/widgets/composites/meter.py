@@ -6,7 +6,7 @@ from warnings import warn
 from PIL import Image, ImageDraw, ImageTk
 from PIL.Image import Resampling
 
-from bootstack.core.exceptions import ConfigurationWarning
+from bootstack._core.exceptions import ConfigurationWarning
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master

@@ -5,15 +5,15 @@ from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
 from typing_extensions import Unpack
 
-from bootstack.core.mixins.ttk_state import TtkStateMixin
-from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.widgets.internal.wrapper_base import TTKWrapperBase
+from bootstack._core.mixins.ttk_state import TtkStateMixin
+from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
+from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins import IconMixin, LocalizationMixin, SignalMixin, TextSignalMixin
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class RadioButtonKwargs(TypedDict, total=False):

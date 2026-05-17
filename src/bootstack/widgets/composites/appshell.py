@@ -17,7 +17,7 @@ from bootstack.widgets.composites.sidenav import SideNav
 from bootstack.widgets.composites.pagestack import PageStack
 from bootstack.widgets.composites.scrollview import ScrollView
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.runtime.app import App
+from bootstack._runtime.app import App
 
 
 class AppShellKwargs(TypedDict, total=False):

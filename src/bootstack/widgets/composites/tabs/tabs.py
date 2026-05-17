@@ -16,7 +16,7 @@ from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class Tabs(Frame):
@@ -96,12 +96,12 @@ class Tabs(Frame):
             self._variable = signal.var
         elif variable is not None:
             # Variable provided - wrap in Signal
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             self._variable = variable
             self._signal = Signal.from_variable(variable)
         else:
             # Neither provided - create internal variable and signal
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             self._variable = tk.StringVar()
             self._signal = Signal.from_variable(self._variable)
 

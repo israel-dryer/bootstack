@@ -6,7 +6,7 @@ and an optional calendar picker button.
 
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Iterable, Literal
-from bootstack.core.localization.intl_format import DateFormatSpec
+from bootstack.i18n.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
@@ -222,7 +222,7 @@ class DateEntry(Field):
 
     def _format_range_display(self, start: date, end: date) -> str:
         """Format a date range as 'Jan 1 – Jan 31, 2025' using value_format."""
-        from bootstack.core.localization import IntlFormatter, MessageCatalog
+        from bootstack.i18n import IntlFormatter, MessageCatalog
         fmt = IntlFormatter(locale=MessageCatalog.locale())
         start_str = fmt.format(start, self._value_format)
         end_str = fmt.format(end, self._value_format)

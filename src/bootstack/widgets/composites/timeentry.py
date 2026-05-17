@@ -7,12 +7,12 @@ list of time values at specified intervals.
 from __future__ import annotations
 
 import datetime
-from bootstack.core.localization.intl_format import DateFormatSpec
+from bootstack.i18n.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
-from bootstack.runtime.app import get_app_settings
-from bootstack.core.localization import IntlFormatter
+from bootstack._runtime.app import get_app_settings
+from bootstack.i18n import IntlFormatter
 from bootstack.widgets.composites.field import FieldOptions
 from bootstack.widgets.composites.selectbox import SelectBox
 from bootstack.widgets.types import Master

@@ -45,89 +45,45 @@ from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 # (see constants.py which re-exports from core.constants)
 
 if TYPE_CHECKING:
-    from bootstack.api.menu import MenuManager, create_menu, create_menu_items
-    from bootstack.api.app import App, AppShell, App as Window, Toplevel, AppSettings, get_app_settings, get_current_app, Shortcuts, Shortcut, get_shortcuts
-    from bootstack.api.style import (
-        Font,
-        Style,
-        Typography,
-        get_style,
-        get_style_builder,
-        get_theme,
-        get_theme_provider,
-        set_theme,
-        toggle_theme,
-        get_theme_color,
-        get_themes,
-        register_user_theme,
+    from bootstack._runtime.app import App, AppSettings, Window, get_app_settings, get_current_app
+    from bootstack._runtime.toplevel import Toplevel
+    from bootstack._runtime.menu import MenuManager, create_menu, create_menu_items
+    from bootstack._runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
+    from bootstack.widgets.composites.appshell import AppShell
+    from bootstack.style import (
+        Font, Style, Typography,
+        get_style, get_style_builder, get_theme, get_theme_provider,
+        set_theme, toggle_theme, get_theme_color, get_themes, register_user_theme,
     )
-    from bootstack.api.widgets import (
-        Button,
-        ButtonGroup,
-        Card,
-        CheckButton,
-        Combobox,
-        ContextMenu,
-        ContextMenuItem,
-        DateEntry,
-        Calendar,
-        DropdownButton,
-        Entry,
-        Field,
-        FieldOptions,
-        FloodGauge,
-        Form,
-        Frame,
-        GridFrame,
-        Label,
-        LabelFrame,
-        LabeledScale,
-        ListItem,
-        ListView,
-        MenuBar,
-        MenuButton,
-        Meter,
-        SideNav,
-        SideNavItem,
-        SideNavGroup,
-        SideNavHeader,
-        SideNavSeparator,
-        Notebook,
-        NumericEntry,
-        OptionMenu,
-        PackFrame,
-        PageStack,
-        PanedWindow,
-        PasswordEntry,
-        PathEntry,
-        Progressbar,
-        RadioButton,
-        RadioGroup,
-        Scale,
-        Scrollbar,
-        ScrolledText,
-        ScrollView,
-        SelectBox,
-        Separator,
-        SideNav,
-        SpinnerEntry,
-        SizeGrip,
-        Spinbox,
-        Switch,
-        TableView,
-        TextEntry,
-        TimeEntry,
-        Toast,
-        Toolbar,
-        ToggleGroup,
-        ToolTip,
-        TreeView,
-        TK_WIDGETS,
-        TTK_WIDGETS,
+    from bootstack.widgets import (
+        Accordion, Badge, Button, ButtonGroup, Calendar, Card,
+        CheckButton, CheckToggle, Combobox, ContextMenu, ContextMenuItem,
+        DateEntry, DropdownButton, Entry, Expander, Field, FieldOptions,
+        FloodGauge, Form, Frame, GridFrame, Label, LabelFrame,
+        LabeledScale, ListItem, ListView, MenuBar, MenuButton, Meter,
+        Notebook, NumericEntry, OptionMenu, PackFrame, PanedWindow,
+        PageStack, PasswordEntry, PathEntry, Progressbar, RadioButton,
+        RadioGroup, RadioToggle, Scale, Scrollbar, ScrolledText,
+        ScrollView, SelectBox, Separator, SideNav, SideNavItem,
+        SideNavGroup, SideNavHeader, SideNavSeparator, SizeGrip, Spinbox,
+        SpinnerEntry, Switch, TableView, TextEntry, TimeEntry, Toast,
+        ToggleGroup, Toolbar, ToolTip, TreeView, TK_WIDGETS, TTK_WIDGETS,
     )
-    from bootstack.api.localization import MessageCatalog, L, LV, IntlFormatter
-    from bootstack.api.utils import Image
+    from bootstack.dialogs import (
+        Dialog, DialogButton, FilterDialog, FormDialog,
+        MessageDialog, MessageBox, QueryDialog, QueryBox,
+        DateDialog, FontDialog, ColorChooser, ColorChooserDialog, ColorDropperDialog,
+    )
+    from bootstack.data import (
+        BaseDataSource, MemoryDataSource, SqliteDataSource,
+        FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
+    )
+    from bootstack.i18n import MessageCatalog, L, LV, IntlFormatter
+    from bootstack._core.images import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
+    from bootstack.signals import Signal, TraceOperation
+    from bootstack.validation import ValidationRule, ValidationResult
+    from bootstack._core.variables import SetVar
 
 
 _TK_EXPORTS = [
@@ -154,62 +110,99 @@ _TTK_PRIMITIVES = [
 ]
 
 _MODULE_EXPORTS = {
-    # Application & Windows (includes menu and shortcuts)
-    "bootstack.api.app": [
-        "App", "AppShell", "Toplevel", "Window", "AppSettings", "get_app_settings", "get_current_app",
-        "MenuManager", "create_menu", "create_menu_items",
-        "Shortcuts", "Shortcut", "get_shortcuts",
-    ],
+    # Application & Windows
+    "bootstack._runtime.app": ["App", "AppSettings", "Window", "get_app_settings", "get_current_app"],
+    "bootstack._runtime.toplevel": ["Toplevel"],
+    "bootstack._runtime.menu": ["MenuManager", "create_menu", "create_menu_items"],
+    "bootstack._runtime.shortcuts": ["Shortcuts", "Shortcut", "get_shortcuts"],
+    "bootstack.widgets.composites.appshell": ["AppShell"],
     # Style & Theming
-    "bootstack.api.style": [
+    "bootstack.style": [
         "BootstrapIcon", "Font", "Style", "Typography",
-        "get_style", "get_style_builder", "get_theme",
-        "get_theme_provider", "set_theme", "get_theme_color",
-        "toggle_theme", "get_themes",
-        "register_user_theme",
+        "get_style", "get_style_builder", "get_theme", "get_theme_provider",
+        "set_theme", "get_theme_color", "toggle_theme", "get_themes", "register_user_theme",
     ],
-    # Widgets
-    "bootstack.api.widgets": [
-        *_TTK_PRIMITIVES,
-        "Badge",
-        "ButtonGroup",
-        "Card",
-        "CheckToggle",
-        "RadioToggle",
-        "Calendar", "ContextMenu", "ContextMenuItem", "DateEntry",
-        "Accordion", "DropdownButton", "Expander", "Field", "FieldOptions", "FloodGauge", "Form",
-        "GridFrame", "LabeledScale", "ListItem", "ListView", "MenuBar", "Meter",
-        "SideNav", "SideNavItem", "SideNavGroup",
-        "SideNavHeader", "SideNavSeparator",
-        "NumericEntry", "PackFrame", "PageStack",
-        "PasswordEntry", "PathEntry", "RadioGroup", "ScrolledText", "ScrollView", "SpinnerEntry",
-        "SelectBox", "TableView", "TextEntry", "TimeEntry", "Toast", "Toolbar", "ToggleGroup", "Switch",
-        "ToolTip", "TK_WIDGETS", "TTK_WIDGETS",
-    ],
+    # Primitives
+    "bootstack.widgets.primitives.badge": ["Badge"],
+    "bootstack.widgets.primitives.button": ["Button"],
+    "bootstack.widgets.primitives.card": ["Card"],
+    "bootstack.widgets.primitives.checkbutton": ["CheckButton"],
+    "bootstack.widgets.primitives.checktoggle": ["CheckToggle"],
+    "bootstack.widgets.primitives.combobox": ["Combobox"],
+    "bootstack.widgets.primitives.entry": ["Entry"],
+    "bootstack.widgets.primitives.frame": ["Frame"],
+    "bootstack.widgets.primitives.gridframe": ["GridFrame"],
+    "bootstack.widgets.primitives.label": ["Label"],
+    "bootstack.widgets.primitives.labelframe": ["LabelFrame"],
+    "bootstack.widgets.primitives.menubutton": ["MenuButton"],
+    "bootstack.widgets.primitives.notebook": ["Notebook"],
+    "bootstack.widgets.primitives.optionmenu": ["OptionMenu"],
+    "bootstack.widgets.primitives.packframe": ["PackFrame"],
+    "bootstack.widgets.primitives.panedwindow": ["PanedWindow"],
+    "bootstack.widgets.primitives.progressbar": ["Progressbar"],
+    "bootstack.widgets.primitives.radiobutton": ["RadioButton"],
+    "bootstack.widgets.primitives.radiotoggle": ["RadioToggle"],
+    "bootstack.widgets.primitives.scale": ["Scale"],
+    "bootstack.widgets.primitives.scrollbar": ["Scrollbar"],
+    "bootstack.widgets.primitives.separator": ["Separator"],
+    "bootstack.widgets.primitives.sizegrip": ["SizeGrip"],
+    "bootstack.widgets.primitives.spinbox": ["Spinbox"],
+    "bootstack.widgets.primitives.switch": ["Switch"],
+    "bootstack.widgets.primitives.treeview": ["TreeView"],
+    # Composites
+    "bootstack.widgets.composites.accordion": ["Accordion"],
+    "bootstack.widgets.composites.buttongroup": ["ButtonGroup"],
+    "bootstack.widgets.composites.calendar": ["Calendar"],
+    "bootstack.widgets.composites.contextmenu": ["ContextMenu", "ContextMenuItem"],
+    "bootstack.widgets.composites.dateentry": ["DateEntry"],
+    "bootstack.widgets.composites.dropdownbutton": ["DropdownButton"],
+    "bootstack.widgets.composites.expander": ["Expander"],
+    "bootstack.widgets.composites.field": ["Field", "FieldOptions"],
+    "bootstack.widgets.composites.floodgauge": ["FloodGauge"],
+    "bootstack.widgets.composites.form": ["Form"],
+    "bootstack.widgets.composites.labeledscale": ["LabeledScale"],
+    "bootstack.widgets.composites.list": ["ListItem", "ListView"],
+    "bootstack.widgets.composites.menubar": ["MenuBar"],
+    "bootstack.widgets.composites.meter": ["Meter"],
+    "bootstack.widgets.composites.numericentry": ["NumericEntry"],
+    "bootstack.widgets.composites.pagestack": ["PageStack"],
+    "bootstack.widgets.composites.passwordentry": ["PasswordEntry"],
+    "bootstack.widgets.composites.pathentry": ["PathEntry"],
+    "bootstack.widgets.composites.radiogroup": ["RadioGroup"],
+    "bootstack.widgets.composites.scrolledtext": ["ScrolledText"],
+    "bootstack.widgets.composites.scrollview": ["ScrollView"],
+    "bootstack.widgets.composites.selectbox": ["SelectBox"],
+    "bootstack.widgets.composites.sidenav": ["SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator"],
+    "bootstack.widgets.composites.spinnerentry": ["SpinnerEntry"],
+    "bootstack.widgets.composites.tableview": ["TableView"],
+    "bootstack.widgets.composites.textentry": ["TextEntry"],
+    "bootstack.widgets.composites.timeentry": ["TimeEntry"],
+    "bootstack.widgets.composites.toast": ["Toast"],
+    "bootstack.widgets.composites.togglegroup": ["ToggleGroup"],
+    "bootstack.widgets.composites.toolbar": ["Toolbar"],
+    "bootstack.widgets.composites.tooltip": ["ToolTip"],
+    # Widget constants
+    "bootstack.widgets": ["TK_WIDGETS", "TTK_WIDGETS"],
     # Dialogs
-    "bootstack.api.dialogs": [
+    "bootstack.dialogs": [
         "Dialog", "DialogButton", "FilterDialog", "FormDialog",
         "MessageDialog", "MessageBox", "QueryDialog", "QueryBox",
         "DateDialog", "FontDialog",
         "ColorChooser", "ColorChooserDialog", "ColorDropperDialog",
     ],
     # Data Sources
-    "bootstack.api.data": [
+    "bootstack.data": [
         "BaseDataSource", "MemoryDataSource", "SqliteDataSource",
         "FileDataSource", "FileSourceConfig",
         "DataSourceProtocol", "Record", "Primitive",
     ],
     # Internationalization
-    "bootstack.api.i18n": [
-        "MessageCatalog", "L", "LV", "IntlFormatter"
-    ],
+    "bootstack.i18n": ["MessageCatalog", "L", "LV", "IntlFormatter"],
     # Utilities
-    "bootstack.api.utils": [
-        "Image",
-        "Signal", "TraceOperation",
-        "ValidationRule", "ValidationResult",
-        "SetVar",
-    ],
+    "bootstack._core.images": ["Image"],
+    "bootstack.signals": ["Signal", "TraceOperation"],
+    "bootstack.validation": ["ValidationRule", "ValidationResult"],
+    "bootstack._core.variables": ["SetVar"],
 }
 
 # Auto-generate lazy exports and categorized export lists
@@ -241,13 +234,13 @@ def __dir__():
 
 
 # Patch Tk widgets for autostyle
-from bootstack.runtime.tk_patch import install_tk_autostyle
+from bootstack._runtime.tk_patch import install_tk_autostyle
 
 # Install enhanced events on import
-from bootstack.runtime.events import install_enhanced_events
+from bootstack._runtime.events import install_enhanced_events
 
 # Install visual focus
-from bootstack.runtime.visual_focus import install_visual_focus
+from bootstack._runtime.visual_focus import install_visual_focus
 
 install_tk_autostyle()
 install_enhanced_events()

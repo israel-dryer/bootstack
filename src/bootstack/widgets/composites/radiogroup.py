@@ -12,7 +12,7 @@ from bootstack.widgets.primitives import Frame
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
     import tkinter as tk
 
 
@@ -105,7 +105,7 @@ class RadioGroup(Frame):
             self._variable = signal_value.var
         elif variable_value is not None:
             # Variable provided - wrap in Signal
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             self._variable = variable_value
             self._signal = Signal.from_variable(variable_value)
             # Set initial value if provided
@@ -113,7 +113,7 @@ class RadioGroup(Frame):
                 self._variable.set(initial_value)
         else:
             # Neither provided - create internal variable
-            from bootstack.core.signals import Signal
+            from bootstack.signals import Signal
             internal_var = StringVar(value=initial_value or '')
             self._variable = internal_var
             self._signal = Signal.from_variable(internal_var)
@@ -191,7 +191,7 @@ class RadioGroup(Frame):
     @variable.setter
     def variable(self, value: 'tk.Variable') -> None:
         """Set the variable."""
-        from bootstack.core.signals import Signal
+        from bootstack.signals import Signal
         self._variable = value
         self._signal = Signal.from_variable(value)
         # Update all buttons to use new variable

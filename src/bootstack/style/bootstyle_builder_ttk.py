@@ -5,7 +5,7 @@ from typing import Callable, Dict, Optional
 
 from typing_extensions import Any, ParamSpec, Protocol, TypeVar
 
-from bootstack.core.exceptions import BootstyleBuilderError
+from bootstack._core.exceptions import BootstyleBuilderError
 from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.theme_provider import ThemeProvider

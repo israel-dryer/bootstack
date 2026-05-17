@@ -7,8 +7,8 @@ for creating specialized entry widgets like TextEntry, PasswordEntry, NumberEntr
 from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, Type, TypedDict, cast
 
-from bootstack.core.signals import Signal
-from bootstack.core.validation.types import RuleType
+from bootstack.signals import Signal
+from bootstack.validation.types import RuleType
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
@@ -16,9 +16,9 @@ from bootstack.widgets.primitives.checkbutton import CheckButton
 from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.mixins.entry_mixin import EntryMixin
-from bootstack.widgets.parts.numberentry_part import NumberEntryPart
-from bootstack.widgets.parts.textentry_part import TextEntryPart
-from bootstack.widgets.parts.spinnerentry_part import SpinnerEntryPart
+from bootstack.widgets._parts.numberentry_part import NumberEntryPart
+from bootstack.widgets._parts.textentry_part import TextEntryPart
+from bootstack.widgets._parts.spinnerentry_part import SpinnerEntryPart
 from bootstack.widgets.types import Master
 
 FieldKind = Literal['text', 'numeric', 'spinbox']

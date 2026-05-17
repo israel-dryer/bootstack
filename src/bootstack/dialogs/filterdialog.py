@@ -12,10 +12,10 @@ from types import SimpleNamespace
 from bootstack.widgets.primitives import CheckButton, Frame, Label, Separator
 from bootstack.widgets.types import Master
 from bootstack.widgets.composites.textentry import TextEntry
-from bootstack.runtime.app import Window
+from bootstack._runtime.app import Window
 from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets.composites.scrollview import ScrollView
-from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack._runtime.window_utilities import AnchorPoint
 
 ttk = SimpleNamespace(
     Checkbutton=CheckButton,
