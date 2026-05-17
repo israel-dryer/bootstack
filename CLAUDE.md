@@ -144,7 +144,7 @@ new or unstarted pages.
 
 ---
 
-## Current state (as of Session 19)
+## Current state (as of Session 20)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -198,10 +198,17 @@ src/bootstack/
     ├── composites/
     ├── mixins/
     ├── primitives/
-    └── types.py    Master, EventCallback, CommandCallback, WidgetDensity
+    └── types.py    Shared type aliases and base TypedDicts — see below
 ```
 
 All public names accessible via `bs.*` — internal paths with `_` prefix are not for direct import.
+
+**`widgets/types.py` public types (Session 20):**
+- Primitive aliases: `Master`, `EventCallback`, `CommandCallback`
+- Geometry: `Anchor`, `Orient`, `Justify`, `Relief`, `CompoundMode`, `Fill`, `Sticky`, `Side`, `BorderMode`, `Direction`
+- State/density: `WidgetState`, `WidgetDensity`
+- Styling tokens: `AccentToken`, `VariantToken`, `SurfaceToken`
+- Base TypedDicts: `BaseWidgetKwargs`, `StyledKwargs` (all primitive `*Kwargs` inherit from `StyledKwargs`)
 
 ### Source — docstring state (complete as of Session 18)
 
@@ -369,6 +376,61 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 20 — Type system, typing sweep, docstring quality (2026-05-16)
+
+**Type system (`widgets/types.py`):**
+- Added Literal type aliases: `Anchor`, `Orient`, `Justify`, `Relief`, `CompoundMode`,
+  `Fill`, `Sticky`, `Side`, `BorderMode`, `Direction`, `WidgetState`, `AccentToken`,
+  `VariantToken`, `SurfaceToken`
+- Added `BaseWidgetKwargs` and `StyledKwargs` TypedDicts
+- All 20 primitive `*Kwargs` TypedDicts now inherit from `StyledKwargs`, removing
+  8 duplicated base fields each
+- Literal aliases replace inline `Literal[...]` across all widget TypedDicts
+
+**`constants.py` cleanup:**
+- Removed ttkbootstrap-era names: `BootColor`, `BootType`, `PRIMARY`–`DARK`,
+  `OUTLINE`–`SQUARE`, `FULL`/`SEMI`, `TREE`/`HEADINGS`/`TREEHEADINGS`, `MeterMode`,
+  `TreeviewDisplay`
+- Type aliases that were duplicates of `widgets/types.py` now re-exported from there
+- Runtime sentinels (`N`, `LEFT`, `RAISED`, `NORMAL`, etc.) unchanged
+
+**Bare `**kwargs` fixed:**
+- Primitives: `PackFrame`, `GridFrame` → `Unpack[FrameKwargs]`; removed local type alias duplicates
+- Composites: `Accordion`, `Expander`, `ListView`, `TableView`, `Tabs`, `TabView`,
+  `TabItem`, `_CommandItemFrame` → `Unpack[FrameKwargs]` or `Unpack[CompositeFrameKwargs]`
+- New TypedDicts: `CompositeFrameKwargs`, `ListItemKwargs`
+- `CheckToggle`, `RadioToggle`, `Switch` → re-use parent TypedDicts
+
+**Public API additions:**
+- `Tabs`, `TabView`, `TabItem` exported to `bs.*` (were implemented but not wired up)
+- `CompositeFrame`, `CompositeFrameKwargs`, `ListItemKwargs` exported to `bs.*`
+- All `widgets/types.py` type aliases exported to `bs.*`
+- `widgets/__init__.py` gains `TYPE_CHECKING` imports for full IDE support on `bs.*` widgets
+
+**Widget mixin improvements:**
+- `configure_mixin.py`: typed all public methods; added docstrings to internal helpers
+- `validation_mixin.py`: typed `event` params; expanded `off_*` and `__init__` docs
+- `icon_mixin.py`, `font_mixin.py`: expanded delegate method docstrings
+- `localization_mixin.py`: typed `_on_locale_changed` event param
+
+**Docstring quality:**
+- `variable=`/`textvariable=` parameter descriptions in all Args/Other Parameters sections
+  now end with `See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).`
+- Same link added to `textvariable`/`variable` property docstrings in `signal_mixin.py`
+  and all composite widgets with their own `variable` property
+
+**Docs + build fixes:**
+- Updated 44 docs files with new module paths after Session 19 reorganization
+- Fixed `FileDialogType`, `ScrollDirection`, `ScrollbarVisibility`, `ContextMenuTrigger`
+  `:::` block paths; ran full 152-path audit — all resolve correctly
+- Removed 35 unused imports across widgets, `_core`, `_runtime`, `data`, `style`
+- Added `[tool.ruff.lint]` per-file-ignores to suppress F401 false positives in `__init__.py`
+
+**What's NOT done:** Widget page migrations, examples taxonomy, API reference expansion —
+all still pending from prior sessions.
+
+---
 
 ### Session 19 — Source package reorganization (2026-05-16)
 
