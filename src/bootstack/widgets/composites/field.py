@@ -8,7 +8,7 @@ from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, Type, TypedDict, cast
 
 from bootstack.signals import Signal
-from bootstack.core.validation.types import RuleType
+from bootstack.validation.types import RuleType
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label

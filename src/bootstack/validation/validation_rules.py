@@ -1,8 +1,8 @@
 import re
 from typing import Callable
 
-from bootstack.core.validation.types import RuleTriggerType, RuleType
-from bootstack.core.validation.validation_result import ValidationResult
+from bootstack.validation.types import RuleTriggerType, RuleType
+from bootstack.validation.validation_result import ValidationResult
 
 
 class ValidationRule:

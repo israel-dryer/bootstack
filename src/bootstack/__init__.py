@@ -82,7 +82,7 @@ if TYPE_CHECKING:
     from bootstack.core.images import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
     from bootstack.signals import Signal, TraceOperation
-    from bootstack.core.validation import ValidationRule, ValidationResult
+    from bootstack.validation import ValidationRule, ValidationResult
     from bootstack.core.variables import SetVar
 
 
@@ -201,7 +201,7 @@ _MODULE_EXPORTS = {
     # Utilities
     "bootstack.core.images": ["Image"],
     "bootstack.signals": ["Signal", "TraceOperation"],
-    "bootstack.core.validation": ["ValidationRule", "ValidationResult"],
+    "bootstack.validation": ["ValidationRule", "ValidationResult"],
     "bootstack.core.variables": ["SetVar"],
 }
 
