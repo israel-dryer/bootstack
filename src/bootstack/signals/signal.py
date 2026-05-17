@@ -3,7 +3,7 @@ import weakref
 from itertools import count
 from typing import Any, Callable, Generic, Type, TypeVar
 
-from bootstack.core.signals.types import TraceOperation
+from bootstack.signals.types import TraceOperation
 from bootstack.core.variables import SetVar
 
 T = TypeVar("T")

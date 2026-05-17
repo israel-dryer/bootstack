@@ -12,7 +12,7 @@ from bootstack.widgets.mixins import IconMixin, LocalizationMixin, TextSignalMix
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class MenuButtonKwargs(TypedDict, total=False):

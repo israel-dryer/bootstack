@@ -20,7 +20,7 @@ from bootstack.core.localization.specs import (
 )
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 # =============================================================================
@@ -200,12 +200,12 @@ def create_formatted_signal(
         - formatter_callback: The callback function for locale change updates
 
     Examples:
-        >>> from bootstack.core.signals import Signal
+        >>> from bootstack.signals import Signal
         >>> price = Signal(1234.56)
         >>> formatted, formatter = create_formatted_signal(price, "currency")
         >>> # formatted.get() returns locale-formatted currency string
     """
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
     formatted_signal: Signal[str] = Signal("")
 

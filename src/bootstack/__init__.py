@@ -81,7 +81,7 @@ if TYPE_CHECKING:
     from bootstack.core.localization import MessageCatalog, L, LV, IntlFormatter
     from bootstack.core.images import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
-    from bootstack.core.signals import Signal, TraceOperation
+    from bootstack.signals import Signal, TraceOperation
     from bootstack.core.validation import ValidationRule, ValidationResult
     from bootstack.core.variables import SetVar
 
@@ -200,7 +200,7 @@ _MODULE_EXPORTS = {
     "bootstack.core.localization": ["MessageCatalog", "L", "LV", "IntlFormatter"],
     # Utilities
     "bootstack.core.images": ["Image"],
-    "bootstack.core.signals": ["Signal", "TraceOperation"],
+    "bootstack.signals": ["Signal", "TraceOperation"],
     "bootstack.core.validation": ["ValidationRule", "ValidationResult"],
     "bootstack.core.variables": ["SetVar"],
 }

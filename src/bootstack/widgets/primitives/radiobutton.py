@@ -13,7 +13,7 @@ from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class RadioButtonKwargs(TypedDict, total=False):

@@ -12,7 +12,7 @@ from bootstack.widgets.types import Master
 from ..mixins import SignalMixin
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class ScaleKwargs(TypedDict, total=False):

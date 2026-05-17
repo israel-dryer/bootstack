@@ -12,7 +12,7 @@ from bootstack.widgets.types import Master
 from bootstack.core.capabilities.signals import normalize_signal
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class ToggleEventData(TypedDict):

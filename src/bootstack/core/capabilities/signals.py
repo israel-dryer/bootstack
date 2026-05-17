@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 # =============================================================================
@@ -97,7 +97,7 @@ def normalize_signal(
         the value cannot be normalized (e.g., string Tcl name, None).
 
     Examples:
-        >>> from bootstack.core.signals import Signal
+        >>> from bootstack.signals import Signal
         >>> sig = Signal("hello")
         >>> binding = normalize_signal(sig)
         >>> binding.signal is sig
@@ -125,7 +125,7 @@ def normalize_signal(
 
     if is_variable(value):
         # It's a tk.Variable - wrap it in a Signal
-        from bootstack.core.signals import Signal
+        from bootstack.signals import Signal
         signal = Signal.from_variable(value)
         return SignalBinding(
             signal=signal,
@@ -154,7 +154,7 @@ def create_signal(default_value: Any) -> SignalBinding:
         >>> binding.signal.get()
         0.0
     """
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
     signal = Signal(default_value)
     return SignalBinding(
         signal=signal,

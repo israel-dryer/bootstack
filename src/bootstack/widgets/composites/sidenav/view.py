@@ -20,7 +20,7 @@ from bootstack.widgets.composites.sidenav.header import SideNavHeader
 from bootstack.widgets.composites.sidenav.separator import SideNavSeparator
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
-from bootstack.core.signals import Signal
+from bootstack.signals import Signal
 
 
 DisplayMode = Literal['expanded', 'compact', 'minimal']

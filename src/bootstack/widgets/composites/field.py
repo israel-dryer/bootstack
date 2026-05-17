@@ -7,7 +7,7 @@ for creating specialized entry widgets like TextEntry, PasswordEntry, NumberEntr
 from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, Type, TypedDict, cast
 
-from bootstack.core.signals import Signal
+from bootstack.signals import Signal
 from bootstack.core.validation.types import RuleType
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame

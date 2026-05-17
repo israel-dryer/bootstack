@@ -16,7 +16,7 @@ from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
     from bootstack.widgets.composites.sidenav.item import SideNavItem
 
 

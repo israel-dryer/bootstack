@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from . import colorutils, publisher, localization, validation, signals, capabilities
+from . import colorutils, publisher, localization, validation, capabilities
 from bootstack.core.exceptions import (
     TTKBootstrapError,
     LayoutError,
@@ -20,7 +20,6 @@ __all__ = [
     "publisher",
     "localization",
     "validation",
-    "signals",
     "capabilities",
     "TTKBootstrapError",
     "LayoutError",

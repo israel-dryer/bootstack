@@ -11,7 +11,7 @@ from bootstack.widgets.types import Master
 from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
-    from bootstack.core.signals import Signal
+    from bootstack.signals import Signal
 
 
 class SpinboxKwargs(TypedDict, total=False):
