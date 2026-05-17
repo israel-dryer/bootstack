@@ -7,7 +7,11 @@ toolbar at top, sidebar navigation on the left, and page content on the right.
 from __future__ import annotations
 
 import sys
-from typing import Callable, Literal
+from typing import Any, Callable, Literal, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bootstack.widgets.composites.sidenav import SideNavGroup, SideNavHeader, SideNavSeparator
+    from bootstack.widgets.primitives.frame import Frame
 
 from typing_extensions import TypedDict, Unpack
 
@@ -254,12 +258,12 @@ class AppShell(App):
         key: str,
         text: str = '',
         icon: str | dict = None,
-        page=None,
+        page: Frame | None = None,
         group: str = None,
         is_footer: bool = False,
         scrollable: bool = False,
-        **nav_kwargs,
-    ):
+        **nav_kwargs: Any,
+    ) -> Frame:
         """Add a navigation item and its corresponding page in one call.
 
         Args:
@@ -331,8 +335,8 @@ class AppShell(App):
         text: str = '',
         icon: str | dict = None,
         is_expanded: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> SideNavGroup:
         """Add a navigation group.
 
         Passthrough to `nav.add_group()`.
@@ -351,7 +355,7 @@ class AppShell(App):
             raise RuntimeError("Cannot add groups when show_nav=False.")
         return self._nav.add_group(key, text=text, icon=icon, is_expanded=is_expanded, **kwargs)
 
-    def add_header(self, text: str, **kwargs):
+    def add_header(self, text: str, **kwargs: Any) -> SideNavHeader:
         """Add a section header to the navigation.
 
         Passthrough to `nav.add_header()`.
@@ -367,7 +371,7 @@ class AppShell(App):
             raise RuntimeError("Cannot add headers when show_nav=False.")
         return self._nav.add_header(text, **kwargs)
 
-    def add_separator(self, **kwargs):
+    def add_separator(self, **kwargs: Any) -> SideNavSeparator:
         """Add a separator to the navigation.
 
         Passthrough to `nav.add_separator()`.

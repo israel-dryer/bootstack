@@ -84,7 +84,7 @@ title: General
 
 ## PathEntry types
 
-::: bootstack.widgets.types.FileDialogType
+::: bootstack.widgets.composites.pathentry.FileDialogType
     options:
       show_root_toc_entry: false
       heading_level: 2
