@@ -79,16 +79,12 @@ class ConfigureDelegationMixin:
         return True, value
 
     def configure(self, cnf: str | dict | None = None, **kwargs: Any) -> Any:
-        """Configure widget options, routing custom keys to their delegate handlers.
-
-        Mirrors the tkinter ``configure`` signature. Custom keys registered via
-        ``@configure_delegate`` are handled first; remaining keys are forwarded
-        to the parent class.
+        """Set one or more widget options, or query the current value of a named option.
 
         Args:
-            cnf: Option name (str) to query, a dict of options to set, or None
-                to set options from ``**kwargs``.
-            **kwargs: Option names and values to set.
+            cnf: Option name to query (e.g. ``'accent'``), a dict of options to
+                set, or None when passing options as keyword arguments.
+            **kwargs: Option names and values to set (e.g. ``accent='primary'``).
         """
         if kwargs:
             for _k in list(kwargs.keys()):
@@ -151,16 +147,16 @@ class CustomConfigMixin(ConfigureDelegationMixin):
         return set(self._custom_config_store.keys()) | set(self._configure_delegate_map.keys())
 
     def configure(self, cnf: str | dict | None = None, **kwargs: Any) -> Any:
-        """Set or query options using a tkinter-compatible shape.
+        """Set one or more widget options, or query the current value of a named option.
 
         Args:
-            cnf: Option name to query (str), a dict of options to set, or
-                None to return all current option values.
-            **kwargs: Option names and values to set.
+            cnf: Option name to query (e.g. ``'accent'``), a dict of options to
+                set, or None when passing options as keyword arguments.
+            **kwargs: Option names and values to set (e.g. ``accent='primary'``).
 
         Returns:
             When ``cnf`` is None, a dict of all options in tkinter tuple format.
-            When ``cnf`` is a string, a single ``(name, dbName, dbClass, default, current)``
+            When ``cnf`` is a string, a ``(name, dbName, dbClass, default, current)``
             tuple. None when setting options.
         """
         if isinstance(cnf, dict):
