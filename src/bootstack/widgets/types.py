@@ -65,11 +65,14 @@ SurfaceToken = Literal['content', 'card', 'chrome', 'overlay', 'input']
 Fill = Literal['none', 'x', 'y', 'both']
 """Fill axis for the pack geometry manager."""
 
-Sticky = Fill
-"""Sticky directions for the grid geometry manager (same values as Fill)."""
+Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw', 'nse', 'nsw', 'new', 'sew', '']
+"""Sticky directions for the grid geometry manager."""
 
 Side = Literal['left', 'top', 'right', 'bottom']
 """Side placement for the pack geometry manager."""
+
+Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
+"""Layout direction for PackFrame and GridFrame."""
 
 BorderMode = Literal['inside', 'outside']
 """Border mode for the place geometry manager."""

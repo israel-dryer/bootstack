@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Literal, Any
+from typing import Any, Literal
 
-from bootstack.widgets.primitives.frame import Frame
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Anchor, Direction, Fill, Master, Side, Sticky
 
-Direction = Literal["vertical", "horizontal", "row", "column", "row-reverse", "column-reverse"]
-Fill = Literal["none", "x", "y", "both"]
-Side = Literal["top", "bottom", "left", "right"]
-Anchor = Literal["n", "ne", "e", "se", "s", "sw", "w", "nw", "center"]
-Sticky = Literal["n", "s", "e", "w", "ns", "ew", "nsew", "ne", "nw", "se", "sw", "nse", "nsw", "new", "sew", ""]
 AutoFlow = Literal["row", "column", "row-dense", "column-dense", "none"]
 Gap = int | tuple[int, int]
 
@@ -54,7 +51,7 @@ class GridFrame(Frame):
         sticky_items: Sticky | None = None,
         propagate: bool | None = None,
         auto_flow: AutoFlow = "row",
-        **kwargs: Any,
+        **kwargs: Unpack[FrameKwargs],
     ) -> None:
         """Create a GridFrame with automatic grid-based layout.
 
@@ -71,6 +68,8 @@ class GridFrame(Frame):
                 Defaults to None (Tk default behaviour).
             auto_flow: Auto-placement mode — `'row'` (default), `'column'`,
                 `'row-dense'`, `'column-dense'`, or `'none'`.
+
+        Other Parameters:
             **kwargs: Additional keyword arguments forwarded to `Frame`.
         """
         super().__init__(master, **kwargs)

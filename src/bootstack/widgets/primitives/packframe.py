@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Literal, Any
+from typing import Any
 
-from bootstack.widgets.primitives.frame import Frame
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import Master
-
-Direction = Literal["vertical", "horizontal", "row", "column", "row-reverse", "column-reverse"]
-Fill = Literal["none", "x", "y", "both"]
-Side = Literal["top", "bottom", "left", "right"]
-Anchor = Literal["n", "ne", "e", "se", "s", "sw", "w", "nw", "center"]
+from bootstack.widgets.types import Anchor, Direction, Fill, Master, Side
 
 
 class PackFrame(Frame):
@@ -45,7 +42,7 @@ class PackFrame(Frame):
         expand_items: bool | None = None,
         anchor_items: Anchor | None = None,
         propagate: bool | None = None,
-        **kwargs: Any,
+        **kwargs: Unpack[FrameKwargs],
     ) -> None:
         """Create a PackFrame with automatic pack-based layout.
 
@@ -64,6 +61,8 @@ class PackFrame(Frame):
                 anchor is applied.
             propagate: If False, the frame will not resize to fit its contents.
                 Defaults to None (Tk default behaviour).
+
+        Other Parameters:
             **kwargs: Additional keyword arguments forwarded to `Frame`.
         """
         super().__init__(master, **kwargs)

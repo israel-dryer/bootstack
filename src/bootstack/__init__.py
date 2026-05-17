@@ -47,7 +47,8 @@ from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 if TYPE_CHECKING:
     from bootstack.widgets.types import (
         BaseWidgetKwargs, StyledKwargs,
-        Anchor, Orient, Justify, Relief, CompoundMode,
+        Anchor, BorderMode, CompoundMode, Direction,
+        Fill, Justify, Orient, Relief, Side, Sticky,
         WidgetState, WidgetDensity,
         AccentToken, VariantToken, SurfaceToken,
     )
@@ -121,7 +122,8 @@ _MODULE_EXPORTS = {
     # Widget type aliases and base TypedDicts
     "bootstack.widgets.types": [
         "BaseWidgetKwargs", "StyledKwargs",
-        "Anchor", "Orient", "Justify", "Relief", "CompoundMode",
+        "Anchor", "BorderMode", "CompoundMode", "Direction",
+        "Fill", "Justify", "Orient", "Relief", "Side", "Sticky",
         "WidgetState", "WidgetDensity",
         "AccentToken", "VariantToken", "SurfaceToken",
     ],
