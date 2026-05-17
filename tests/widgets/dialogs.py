@@ -33,4 +33,6 @@ root = bs.App(settings=bs.AppSettings(locale='ko'))
 
 root.after(100, run_test)
 
+
+
 root.mainloop()
