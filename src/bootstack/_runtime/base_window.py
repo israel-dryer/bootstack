@@ -23,7 +23,7 @@ import tkinter
 from typing import Literal, Optional, Tuple, Callable, Any
 
 from bootstack.core.localization import MessageCatalog
-from bootstack.runtime.window_utilities import AnchorPoint, WindowPositioning, WindowSizing
+from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning, WindowSizing
 
 
 def on_visibility_alpha(event: tkinter.Event) -> None:
@@ -103,7 +103,7 @@ class BaseWindow:
         # Get window_style from AppSettings if not explicitly provided
         if window_style is None:
             try:
-                from bootstack.runtime.app import get_app_settings
+                from bootstack._runtime.app import get_app_settings
                 window_style = get_app_settings().window_style
             except (ImportError, RuntimeError):
                 # No app registered yet, use default

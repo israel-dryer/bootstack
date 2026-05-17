@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings
 from bootstack.core.exceptions import BootstyleParsingError
 from bootstack.style.token_maps import (COLOR_TOKENS, CONTAINER_CLASSES, ORIENT_CLASSES, WIDGET_CLASS_MAP)
 

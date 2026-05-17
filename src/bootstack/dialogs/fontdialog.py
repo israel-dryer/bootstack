@@ -10,8 +10,8 @@ from typing_extensions import Unpack
 from bootstack.constants import *
 from bootstack.core.localization import MessageCatalog
 from bootstack.dialogs.dialog import Dialog, DialogButton, ShowOptions
-from bootstack.runtime.app import Window
-from bootstack.runtime.utility import scale_size
+from bootstack._runtime.app import Window
+from bootstack._runtime.utility import scale_size
 from bootstack.style.style import get_style
 from bootstack.widgets.primitives import (
     CheckButton,

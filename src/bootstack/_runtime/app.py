@@ -21,8 +21,8 @@ from bootstack.core.localization.intl_format import detect_locale
 from bootstack.core.localization.msgcat import MessageCatalog
 from bootstack.core.publisher import Publisher
 from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.runtime.base_window import BaseWindow
-from bootstack.runtime.utility import enable_high_dpi_awareness
+from bootstack._runtime.base_window import BaseWindow
+from bootstack._runtime.utility import enable_high_dpi_awareness
 
 _current_app: App | None = None
 
@@ -710,7 +710,7 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         # If the saved position is on a now-disconnected monitor, drag it
         # back into a visible region so the window doesn't open invisibly.
         try:
-            from bootstack.runtime.window_utilities import WindowPositioning
+            from bootstack._runtime.window_utilities import WindowPositioning
             x, y = self.winfo_x(), self.winfo_y()
             x, y = WindowPositioning.ensure_on_screen(self, x, y)
             self.geometry(f'+{x}+{y}')

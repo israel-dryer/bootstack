@@ -7,7 +7,7 @@ from PIL import Image, ImageChops, ImageColor, ImageOps, ImageDraw
 from PIL.ImageTk import PhotoImage
 
 from bootstack.core.images import Image as ImageService
-from bootstack.runtime.utility import clamp
+from bootstack._runtime.utility import clamp
 from bootstack.style.types import ColorModel
 
 ASSETS_DIR = Path(__file__).parent.parent / "assets" / "widgets"
@@ -440,7 +440,7 @@ def recolor_element_image(
     source_resolution = manifest.get("default_dpi", 2.0)
 
     # Calculate cross-platform scale factor
-    from bootstack.runtime.utility import _ScalingState
+    from bootstack._runtime.utility import _ScalingState
     scale = _ScalingState.get_image_scale(source_resolution=source_resolution)
 
     # Create cache key from all parameters

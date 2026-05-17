@@ -25,7 +25,7 @@ from bootstack.core.localization.specs import (
     LocalizedTextSpec,
     LocalizedValueSpec,
 )
-from bootstack.runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings
 
 
 class LocalizationMixin(Misc):

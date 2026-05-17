@@ -5,7 +5,7 @@ import tkinter
 from typing import Any, Optional, Tuple
 
 from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.runtime.base_window import BaseWindow
+from bootstack._runtime.base_window import BaseWindow
 
 
 class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):

@@ -82,7 +82,7 @@ class MessageCatalog:
                 locale changes (default `"<<LocaleChanged>>"`).
         """
         # Ensure a Tk exists so msgcat calls work even if root is omitted
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         _ = root or get_default_root()
 
         MessageCatalog._domain = domain
@@ -164,7 +164,7 @@ class MessageCatalog:
         Args:
             lang: Locale code (e.g. `en`, `de_DE`).
         """
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
 
         tcl_lang = MessageCatalog._to_msgcat_locale(lang)
@@ -271,7 +271,7 @@ class MessageCatalog:
         Returns:
             Localized and formatted string.
         """
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
 
         # Fast-path: if an override exists for this locale and formatting args were
@@ -338,7 +338,7 @@ class MessageCatalog:
             The active normalized locale code (or Tcl's current code when
             queried).
         """
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         if new_locale:
             # switch gettext + msgcat
@@ -357,7 +357,7 @@ class MessageCatalog:
     @staticmethod
     def preferences() -> list[str]:
         """Return Tcl msgcat locale preferences (ordered)."""
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         items = root.tk.eval("::msgcat::mcpreferences").split(" ")
         return items[0:-1] if len(items) > 0 else []
@@ -373,7 +373,7 @@ class MessageCatalog:
             Number of files loaded, as reported by Tcl.
         """
         msgs = Path(dirname).as_posix()
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         return int(root.tk.eval(f"::msgcat::mcload [list {msgs}]"))
 
@@ -388,7 +388,7 @@ class MessageCatalog:
         """
         loc = MessageCatalog._normalize_lang(locale)
         MessageCatalog._overrides.setdefault(loc, {})[src] = translated or ""
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         root.tk.eval("::msgcat::mcset %s {%s} {%s}" % (MessageCatalog._to_msgcat_locale(locale), src, translated or ""))
 
@@ -412,7 +412,7 @@ class MessageCatalog:
             MessageCatalog._overrides.setdefault(loc, {})[k] = v
 
         # update Tcl msgcat
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         messages = " ".join(["{%s}" % x for x in args])
         out = f"::msgcat::mcmset {MessageCatalog._to_msgcat_locale(locale)} {{{messages}}}"
@@ -420,6 +420,6 @@ class MessageCatalog:
 
     @staticmethod
     def max(*src: str) -> int:
-        from bootstack.runtime.app import get_default_root
+        from bootstack._runtime.app import get_default_root
         root = get_default_root()
         return int(root.tk.eval(f"::msgcat::mcmax {' '.join(src)}"))

@@ -16,7 +16,7 @@ from bootstack.dialogs.dialog import Dialog, DialogButton, ButtonSpec
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.types import Master
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH as FORM_MIN_COL_WIDTH
-from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack._runtime.window_utilities import AnchorPoint
 
 
 class FormDialog:

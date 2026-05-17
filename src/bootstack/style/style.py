@@ -6,7 +6,7 @@ import weakref
 from tkinter.ttk import Style as ttkStyle
 from typing import Dict, Optional, Set
 
-from bootstack.runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.theme_provider import ThemeProvider, use_theme
 from bootstack.widgets.types import Master

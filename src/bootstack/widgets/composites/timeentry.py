@@ -11,7 +11,7 @@ from bootstack.core.localization.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
-from bootstack.runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings
 from bootstack.core.localization import IntlFormatter
 from bootstack.widgets.composites.field import FieldOptions
 from bootstack.widgets.composites.selectbox import SelectBox

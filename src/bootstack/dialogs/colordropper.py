@@ -13,9 +13,9 @@ from tkinter import Canvas, Variable
 from PIL import ImageGrab, ImageTk
 from PIL.Image import Resampling
 
-from bootstack.runtime.toplevel import Toplevel
+from bootstack._runtime.toplevel import Toplevel
 import bootstack.core.colorutils as colorutils
-import bootstack.runtime.utility as utility
+import bootstack._runtime.utility as utility
 from bootstack.constants import *
 
 ttk = SimpleNamespace(Canvas=Canvas, Toplevel=Toplevel, Variable=Variable)

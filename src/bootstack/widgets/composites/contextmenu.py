@@ -7,10 +7,10 @@ radiobuttons, and separators.
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
 from typing import Any, Callable, Literal
 
-from bootstack.runtime.window_utilities import AnchorPoint
+from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets.types import WidgetDensity
 
-from bootstack.runtime.shortcuts import get_shortcuts
+from bootstack._runtime.shortcuts import get_shortcuts
 from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
 from bootstack.widgets.primitives import RadioToggle, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.primitives.button import Button
@@ -1011,7 +1011,7 @@ class _NativeContextMenu(CustomConfigMixin):
         sizing, dismissal, and typography on the host platform.
         """
         import tkinter as tk
-        from bootstack.runtime.menu import MenuManager
+        from bootstack._runtime.menu import MenuManager
 
         super().__init__()
         self._master = master
@@ -1107,11 +1107,11 @@ class _NativeContextMenu(CustomConfigMixin):
 
         Accepts a registered key, a modifier pattern (`'Mod+S'`,
         `'F5'`), or a literal display string. See
-        `bootstack.runtime.shortcuts.format_shortcut` for details.
+        `bootstack._runtime.shortcuts.format_shortcut` for details.
         """
         if not shortcut:
             return None
-        from bootstack.runtime.shortcuts import format_shortcut
+        from bootstack._runtime.shortcuts import format_shortcut
         display = format_shortcut(shortcut)
         return display or None
 
@@ -1724,7 +1724,7 @@ class ContextMenu:
 
     def _bind_trigger(self, target: Misc, trigger: str) -> None:
         """Bind `target`'s activation event to show this menu at the click."""
-        from bootstack.runtime.utility import bind_right_click
+        from bootstack._runtime.utility import bind_right_click
 
         def show_at(event):
             self.show(position=(event.x_root, event.y_root))

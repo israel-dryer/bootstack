@@ -4,9 +4,9 @@ from types import SimpleNamespace
 from typing import Any, Literal
 
 from bootstack.constants import *
-from bootstack.runtime.toplevel import Toplevel
-from bootstack.runtime.utility import scale_size
-from bootstack.runtime.window_utilities import WindowPositioning, AnchorPoint
+from bootstack._runtime.toplevel import Toplevel
+from bootstack._runtime.utility import scale_size
+from bootstack._runtime.window_utilities import WindowPositioning, AnchorPoint
 from bootstack.widgets.primitives import Button, Frame, Label
 
 ttk = SimpleNamespace(

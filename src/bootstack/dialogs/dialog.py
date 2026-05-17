@@ -14,8 +14,8 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, T
 
 import bootstack as bs
 from bootstack.widgets.types import Master
-from bootstack.runtime.toplevel import Toplevel
-from bootstack.runtime.window_utilities import AnchorPoint, WindowPositioning
+from bootstack._runtime.toplevel import Toplevel
+from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 
 # --- Types -----------------------------------------------------------------
 

@@ -39,7 +39,7 @@ from typing import Any, Optional, Union
 
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.core.localization import MessageCatalog
-from bootstack.runtime.shortcuts import format_shortcut
+from bootstack._runtime.shortcuts import format_shortcut
 from bootstack.style.style import get_style
 
 
@@ -387,7 +387,7 @@ def create_menu_items(items: list[dict], menu: tk.Menu = None) -> tk.Menu:
         bs.MenuButton(app, text="File", menu=bs.create_menu_items(items)).pack()
     """
     if menu is None:
-        from bootstack.runtime.app import get_current_app
+        from bootstack._runtime.app import get_current_app
         menu = tk.Menu(get_current_app(), tearoff=0)
     root = menu.winfo_toplevel() if hasattr(menu, 'winfo_toplevel') else menu
     if not hasattr(root, '_menu_manager'):
@@ -450,7 +450,7 @@ def create_menu(items: list[dict], parent: Any = None) -> tk.Menu:
             bs.MenuButton(dlg, text="Menu", menu=bs.create_menu(items, parent=dlg)).pack()
     """
     if parent is None:
-        from bootstack.runtime.app import get_current_app
+        from bootstack._runtime.app import get_current_app
         parent = get_current_app()
 
     root = parent.winfo_toplevel() if hasattr(parent, 'winfo_toplevel') else parent

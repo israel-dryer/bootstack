@@ -45,10 +45,10 @@ from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 # (see constants.py which re-exports from core.constants)
 
 if TYPE_CHECKING:
-    from bootstack.runtime.app import App, AppSettings, Window, get_app_settings, get_current_app
-    from bootstack.runtime.toplevel import Toplevel
-    from bootstack.runtime.menu import MenuManager, create_menu, create_menu_items
-    from bootstack.runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
+    from bootstack._runtime.app import App, AppSettings, Window, get_app_settings, get_current_app
+    from bootstack._runtime.toplevel import Toplevel
+    from bootstack._runtime.menu import MenuManager, create_menu, create_menu_items
+    from bootstack._runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
     from bootstack.widgets.composites.appshell import AppShell
     from bootstack.style import (
         Font, Style, Typography,
@@ -111,10 +111,10 @@ _TTK_PRIMITIVES = [
 
 _MODULE_EXPORTS = {
     # Application & Windows
-    "bootstack.runtime.app": ["App", "AppSettings", "Window", "get_app_settings", "get_current_app"],
-    "bootstack.runtime.toplevel": ["Toplevel"],
-    "bootstack.runtime.menu": ["MenuManager", "create_menu", "create_menu_items"],
-    "bootstack.runtime.shortcuts": ["Shortcuts", "Shortcut", "get_shortcuts"],
+    "bootstack._runtime.app": ["App", "AppSettings", "Window", "get_app_settings", "get_current_app"],
+    "bootstack._runtime.toplevel": ["Toplevel"],
+    "bootstack._runtime.menu": ["MenuManager", "create_menu", "create_menu_items"],
+    "bootstack._runtime.shortcuts": ["Shortcuts", "Shortcut", "get_shortcuts"],
     "bootstack.widgets.composites.appshell": ["AppShell"],
     # Style & Theming
     "bootstack.style": [
@@ -234,13 +234,13 @@ def __dir__():
 
 
 # Patch Tk widgets for autostyle
-from bootstack.runtime.tk_patch import install_tk_autostyle
+from bootstack._runtime.tk_patch import install_tk_autostyle
 
 # Install enhanced events on import
-from bootstack.runtime.events import install_enhanced_events
+from bootstack._runtime.events import install_enhanced_events
 
 # Install visual focus
-from bootstack.runtime.visual_focus import install_visual_focus
+from bootstack._runtime.visual_focus import install_visual_focus
 
 install_tk_autostyle()
 install_enhanced_events()

@@ -17,7 +17,7 @@ from bootstack.constants import *
 from bootstack.core import colorutils
 from bootstack.core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
 from bootstack.core.localization import MessageCatalog
-from bootstack.runtime import utility
+from bootstack._runtime import utility
 from bootstack.style.style import get_style
 from bootstack.widgets.composites.tooltip import ToolTip
 from bootstack.widgets.primitives import Button, Entry, Frame, Label, Notebook, Spinbox

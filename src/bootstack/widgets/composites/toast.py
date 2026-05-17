@@ -1,11 +1,11 @@
 from tkinter import Widget, Misc
 
-from bootstack.runtime.toplevel import Toplevel
+from bootstack._runtime.toplevel import Toplevel
 from typing import Any, Callable, Literal, Sequence
 
 from typing_extensions import TypedDict, Unpack
 
-from bootstack.runtime.window_utilities import WindowPositioning, AnchorPoint
+from bootstack._runtime.window_utilities import WindowPositioning, AnchorPoint
 
 
 class IconSpec(TypedDict, total=False):
