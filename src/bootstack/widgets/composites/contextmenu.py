@@ -5,6 +5,7 @@ radiobuttons, and separators.
 """
 
 from tkinter import BooleanVar, IntVar, Misc, StringVar, TclError, Toplevel, Widget
+from typing_extensions import Unpack
 from typing import Any, Callable, Literal
 
 from bootstack._runtime.window_utilities import AnchorPoint
@@ -15,7 +16,7 @@ from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
 from bootstack.widgets.primitives import RadioToggle, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.types import Master
-from bootstack.widgets.composites.compositeframe import CompositeFrame
+from bootstack.widgets.composites.compositeframe import CompositeFrame, CompositeFrameKwargs
 from bootstack.widgets.mixins import CustomConfigMixin, configure_delegate
 
 
@@ -48,7 +49,7 @@ class _CommandItemFrame(CompositeFrame):
     Uses CompositeFrame for automatic state propagation across children.
     """
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master: Master, **kwargs: Unpack[CompositeFrameKwargs]):
         """Create a command item container frame."""
         self._button: Button | None = None  # Must be set before super().__init__
         super().__init__(master, **kwargs)
@@ -85,7 +86,7 @@ class ContextMenuItem:
         kwargs: Additional keyword arguments for the item.
     """
 
-    def __init__(self, type: str, **kwargs) -> None:
+    def __init__(self, type: str, **kwargs: Any) -> None:
         """Initialize a context menu item.
 
         Args:

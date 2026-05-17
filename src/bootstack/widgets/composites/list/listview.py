@@ -2,10 +2,12 @@
 
 from tkinter import TclError
 from typing import Any, Callable, Literal
+from typing_extensions import Unpack
 
 from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets.composites.list.listitem import ListItem
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
+from bootstack.widgets.types import Master
 from bootstack.widgets.primitives.scrollbar import Scrollbar
 from bootstack.widgets.mixins import configure_delegate
 
@@ -29,9 +31,7 @@ class ListView(Frame):
 
     """
 
-    def __init__(
-            self,
-            master=None,
+    def __init__(self, master: Master = None,
             items: list = None,
             datasource: DataSourceProtocol = None,
             _row_factory: Callable = None,
@@ -48,7 +48,7 @@ class ListView(Frame):
             enable_hover: bool = True,
             select_on_click: bool = None,
             density: Literal['default', 'compact'] = 'default',
-            **kwargs
+            **kwargs: Unpack[FrameKwargs]
     ):
         """Initialize a ListView widget.
 
@@ -248,7 +248,7 @@ class ListView(Frame):
         return None
 
     @staticmethod
-    def _default_row_factory(master, **kwargs):
+    def _default_row_factory(master, **kwargs: Unpack[FrameKwargs]):
         """Create a default `ListItem`.
 
         Args:

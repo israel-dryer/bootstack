@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from tkinter import Widget, Variable
+from typing_extensions import Unpack
 from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import configure_delegate
@@ -54,7 +55,7 @@ class Expander(Frame):
         signal: 'Signal[Any]' = None,
         variable: Variable = None,
         value: Any = None,
-        **kwargs
+        **kwargs: Unpack[FrameKwargs]
     ):
         """Create an Expander widget.
 
@@ -290,7 +291,7 @@ class Expander(Frame):
         if self._variable is not None and self._value is not None:
             self._variable.set(self._value)
 
-    def add(self, widget: Widget = None, **kwargs) -> Widget:
+    def add(self, widget: Widget = None, **kwargs: Unpack[FrameKwargs]) -> Widget:
         """Add content widget, or create and return an empty frame.
 
         Args:

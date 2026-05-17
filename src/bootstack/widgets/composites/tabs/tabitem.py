@@ -5,8 +5,9 @@ __all__ = ['TabItem']
 
 from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing_extensions import Unpack
 
-from bootstack.widgets.composites.compositeframe import CompositeFrame
+from bootstack.widgets.composites.compositeframe import CompositeFrame, CompositeFrameKwargs
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.mixins import configure_delegate
@@ -39,7 +40,7 @@ class TabItem(CompositeFrame):
         closable: bool | Literal['hover'] = False,
         close_command: Callable = None,
         variant: Literal['pill', 'bar'] = 'bar',
-        **kwargs
+        **kwargs: Unpack[CompositeFrameKwargs]
     ):
         """Create a TabItem widget.
 

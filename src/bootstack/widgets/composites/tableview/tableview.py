@@ -12,7 +12,7 @@ from collections import OrderedDict
 from tkinter import font as tkfont
 
 from typing import Callable
-from typing_extensions import Literal, TypedDict
+from typing_extensions import Literal, TypedDict, Unpack
 
 from bootstack.widgets.types import Master
 
@@ -24,7 +24,7 @@ from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets.composites.contextmenu import ContextMenu
 from bootstack.widgets.composites.dropdownbutton import DropdownButton
 from bootstack.widgets.primitives.entry import Entry
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.scrollbar import Scrollbar
 from bootstack.widgets.composites.selectbox import SelectBox
@@ -129,7 +129,7 @@ class TableView(Frame):
             context_menus: Literal['none', 'headers', 'rows', 'all'] = 'all',
             column_min_width: int = 40,
             column_auto_width: bool = False,
-            **kwargs,
+            **kwargs: Unpack[FrameKwargs],
     ):
         """
         Create a TableView backed by an in-memory SqliteDataSource.

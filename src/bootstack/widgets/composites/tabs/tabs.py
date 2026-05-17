@@ -5,10 +5,11 @@ __all__ = ['Tabs']
 
 import tkinter as tk
 from tkinter import Variable
+from typing_extensions import Unpack
 from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.tabs.tabitem import TabItem
@@ -45,7 +46,7 @@ class Tabs(Frame):
         variable: Variable = None,
         signal: 'Signal[Any]' = None,
         accent: str = None,
-        **kwargs
+        **kwargs: Unpack[FrameKwargs]
     ):
         """Create a Tabs widget.
 

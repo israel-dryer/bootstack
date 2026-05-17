@@ -4,9 +4,10 @@ from __future__ import annotations
 __all__ = ['TabView']
 
 import tkinter as tk
+from typing_extensions import Unpack
 from typing import Any, Callable, Literal
 
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.composites.tabs.tabs import Tabs
 from bootstack.widgets.composites.tabs.tabitem import TabItem
 from bootstack.widgets.composites.pagestack import PageStack
@@ -35,7 +36,7 @@ class TabView(Frame):
         enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         accent: str = None,
-        **kwargs
+        **kwargs: Unpack[FrameKwargs]
     ):
         """Create a TabView widget.
 
@@ -300,7 +301,7 @@ class TabView(Frame):
         """
         return tuple(self._tab_map.keys())
 
-    def configure_tab(self, key: str, option: str = None, **kwargs):
+    def configure_tab(self, key: str, option: str = None, **kwargs: Unpack[FrameKwargs]):
         """Configure a specific tab by its key.
 
         Args:

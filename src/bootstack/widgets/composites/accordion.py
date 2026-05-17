@@ -1,9 +1,10 @@
 """Accordion widget - a container of mutually exclusive expanders."""
 from __future__ import annotations
 
+from typing_extensions import Unpack
 from typing import Any, Callable, TYPE_CHECKING, TypedDict
 
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.composites.expander import Expander
 from bootstack.widgets.mixins import configure_delegate
@@ -37,7 +38,7 @@ class Accordion(Frame):
         show_separators: bool = False,
         accent: str = None,
         variant: str = None,
-        **kwargs
+        **kwargs: Unpack[FrameKwargs]
     ):
         """Create an Accordion widget.
 
