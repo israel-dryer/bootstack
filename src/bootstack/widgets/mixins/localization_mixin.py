@@ -10,6 +10,7 @@ localization capability module.
 
 from __future__ import annotations
 
+import tkinter
 from typing import Any, Dict
 from tkinter import StringVar, Misc
 
@@ -149,7 +150,7 @@ class LocalizationMixin(Misc):
         value = apply_spec(spec)
         self._apply_localized_value(field_name, value)
 
-    def _on_locale_changed(self, event=None):
+    def _on_locale_changed(self, event: tkinter.Event | None = None) -> None:
         """Handle locale change events by refreshing all localized fields.
 
         Args:

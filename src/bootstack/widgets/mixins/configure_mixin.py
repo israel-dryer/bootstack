@@ -36,7 +36,8 @@ class ConfigureDelegationMixin:
 
     _configure_delegate_map: dict[str, str] = {}
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:  # noqa: D401
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Build the key→handler map from all @configure_delegate methods in the MRO."""
         super().__init_subclass__(**kwargs)
         mapping: dict[str, str] = {}
         for base in reversed(cls.__mro__):
@@ -48,6 +49,11 @@ class ConfigureDelegationMixin:
         cls._configure_delegate_map = mapping
 
     def _config_delegate_set(self, key: str, value: Any) -> bool:
+        """Invoke the delegate handler for `key` with `value`.
+
+        Returns:
+            True if a handler was found and called, False otherwise.
+        """
         method_name = self._configure_delegate_map.get(key)
         if not method_name:
             return False
@@ -56,6 +62,12 @@ class ConfigureDelegationMixin:
         return True
 
     def _config_delegate_get(self, key: str) -> tuple[bool, Any]:
+        """Query the delegate handler for `key`.
+
+        Returns:
+            A ``(handled, value)`` tuple. ``handled`` is False if no handler
+            exists for the key.
+        """
         method_name = self._configure_delegate_map.get(key)
         if not method_name:
             return False, None
@@ -66,44 +78,55 @@ class ConfigureDelegationMixin:
             return True, str(value)
         return True, value
 
-    def configure(self, cnf=None, **kwargs):
-        """Configure widget options, handling custom delegated options first."""
-        # Handle custom delegated keys
+    def configure(self, cnf: str | dict | None = None, **kwargs: Any) -> Any:
+        """Configure widget options, routing custom keys to their delegate handlers.
+
+        Mirrors the tkinter ``configure`` signature. Custom keys registered via
+        ``@configure_delegate`` are handled first; remaining keys are forwarded
+        to the parent class.
+
+        Args:
+            cnf: Option name (str) to query, a dict of options to set, or None
+                to set options from ``**kwargs``.
+            **kwargs: Option names and values to set.
+        """
         if kwargs:
             for _k in list(kwargs.keys()):
                 if _k in self._configure_delegate_map:
                     if self._config_delegate_set(_k, kwargs[_k]):
                         kwargs.pop(_k, None)
 
-        # Getter path for delegated keys
         if isinstance(cnf, str) and cnf in self._configure_delegate_map:
             handled, value = self._config_delegate_get(cnf)
             if handled:
                 # Return in standard Tkinter format: (name, dbName, dbClass, default, current)
                 return (cnf, cnf, cnf.capitalize(), None, value)
 
-        # Forward remaining options to parent
         return super().configure(cnf, **kwargs)
 
     config = configure
 
-    def __setitem__(self, key, value):
-        """Set configuration option via indexing."""
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Set a configuration option using ``widget[key] = value`` syntax."""
         if key in self._configure_delegate_map:
             self._config_delegate_set(key, value)
             return
         return super().__setitem__(key, value)
 
-    def __getitem__(self, key):
-        """Get configuration option via indexing."""
+    def __getitem__(self, key: str) -> Any:
+        """Return the current value of a configuration option using ``widget[key]`` syntax."""
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:
                 return value
         return super().__getitem__(key)
 
-    def cget(self, key):
-        """Get configuration option."""
+    def cget(self, key: str) -> Any:
+        """Return the current value of a configuration option.
+
+        Args:
+            key: Option name, e.g. ``'accent'``, ``'icon'``.
+        """
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:
@@ -119,33 +142,40 @@ class CustomConfigMixin(ConfigureDelegationMixin):
     widgets but do not inherit from them directly.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        self._custom_config_store = {}
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        self._custom_config_store: dict[str, Any] = {}
         super().__init__(*args, **kwargs)
 
-    def _all_option_keys(self):
-        """Return all known option keys."""
+    def _all_option_keys(self) -> set[str]:
+        """Return the union of stored keys and delegated keys."""
         return set(self._custom_config_store.keys()) | set(self._configure_delegate_map.keys())
 
-    def configure(self, cnf=None, **kwargs):
-        """Set or query options using a tkinter-compatible shape."""
-        # allow dict passthrough like tkinter
+    def configure(self, cnf: str | dict | None = None, **kwargs: Any) -> Any:
+        """Set or query options using a tkinter-compatible shape.
+
+        Args:
+            cnf: Option name to query (str), a dict of options to set, or
+                None to return all current option values.
+            **kwargs: Option names and values to set.
+
+        Returns:
+            When ``cnf`` is None, a dict of all options in tkinter tuple format.
+            When ``cnf`` is a string, a single ``(name, dbName, dbClass, default, current)``
+            tuple. None when setting options.
+        """
         if isinstance(cnf, dict):
             kwargs.update(cnf)
             cnf = None
 
-        # Handle delegated setters first
         if kwargs:
             for _k in list(kwargs.keys()):
                 if _k in self._configure_delegate_map:
                     if self._config_delegate_set(_k, kwargs[_k]):
                         kwargs.pop(_k, None)
 
-        # Store any remaining options
         for key, value in kwargs.items():
             self._custom_config_store[key] = value
 
-        # Getter semantics
         if cnf is None:
             return {
                 key: (key, key, key.capitalize(), None, self.cget(key))
@@ -159,23 +189,27 @@ class CustomConfigMixin(ConfigureDelegationMixin):
 
     config = configure
 
-    def __setitem__(self, key, value):
-        """Set option via dictionary style."""
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Set an option using ``obj[key] = value`` syntax."""
         if key in self._configure_delegate_map:
             if self._config_delegate_set(key, value):
                 return
         self._custom_config_store[key] = value
 
-    def __getitem__(self, key):
-        """Get option via dictionary style."""
+    def __getitem__(self, key: str) -> Any:
+        """Return an option value using ``obj[key]`` syntax."""
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:
                 return value
         return self._custom_config_store.get(key)
 
-    def cget(self, key):
-        """Return the current value for an option."""
+    def cget(self, key: str) -> Any:
+        """Return the current value for an option.
+
+        Args:
+            key: Option name to query.
+        """
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:

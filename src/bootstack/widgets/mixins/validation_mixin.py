@@ -6,6 +6,7 @@ that allows passing data directly through virtual events.
 
 from __future__ import annotations
 
+import tkinter
 from tkinter import TclError
 from tkinter.ttk import Widget
 from typing import Any, Callable
@@ -28,8 +29,13 @@ class ValidationMixin(Widget):
     SEQ_KEYUP = '<KeyRelease>'
     SEQ_BLUR = '<FocusOut>'
 
-    def __init__(self, *args, **kwargs):
-        """Initialize validation mixin."""
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Set up validation state before the widget is fully initialized.
+
+        Initialises the rule list, debounce tracking, and optional convenience
+        callbacks. Binds ``<<KeyRelease>>`` and ``<<FocusOut>>`` to trigger
+        debounced validation automatically.
+        """
         # Validation rules
         self._rules: list[ValidationRule] = []
 
@@ -118,24 +124,36 @@ class ValidationMixin(Widget):
         """Register callback for invalid validation."""
         self._on_invalid_command = func
 
-    def off_invalid(self, bind_id: str | None = None):
-        """Remove the callback for the <<Invalid>> event"""
+    def off_invalid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Invalid>>` events.
+
+        Args:
+            bind_id: ID returned by `on_invalid()`. If None, removes all bindings.
+        """
         self.unbind('<<Invalid>>', bind_id)
 
     def on_valid(self, func: Callable[[dict[str, Any]], None]) -> None:
         """Register callback for valid validation."""
         self._on_valid_command = func
 
-    def off_valid(self, bind_id: str | None = None):
-        """Remove the callback for the <<Valid>> event"""
+    def off_valid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Valid>>` events.
+
+        Args:
+            bind_id: ID returned by `on_valid()`. If None, removes all bindings.
+        """
         self.unbind('<<Valid>>', bind_id)
 
     def on_validated(self, func: Callable[[dict[str, Any]], None]) -> None:
         """Register callback for any validation (valid or invalid)."""
         self._on_validated_command = func
 
-    def off_validated(self, bind_id: str | None = None):
-        """Remove the callback for validated event"""
+    def off_validated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Validate>>` events.
+
+        Args:
+            bind_id: ID returned by `on_validated()`. If None, removes all bindings.
+        """
         self.unbind('<<Validate>>', bind_id)
 
     # ---------------- Internals ----------------
@@ -178,17 +196,17 @@ class ValidationMixin(Widget):
 
     # ----- optional dispatchers for on_* convenience -----
 
-    def _dispatch_validated(self, event) -> None:
-        """Dispatch validated event to registered callback."""
+    def _dispatch_validated(self, event: tkinter.Event) -> None:
+        """Forward `<<Validate>>` event data to the `on_validated` callback."""
         if self._on_validated_command:
             self._on_validated_command(event.data)
 
-    def _dispatch_valid(self, event) -> None:
-        """Dispatch valid event to registered callback."""
+    def _dispatch_valid(self, event: tkinter.Event) -> None:
+        """Forward `<<Valid>>` event data to the `on_valid` callback."""
         if self._on_valid_command:
             self._on_valid_command(event.data)
 
-    def _dispatch_invalid(self, event) -> None:
-        """Dispatch invalid event to registered callback."""
+    def _dispatch_invalid(self, event: tkinter.Event) -> None:
+        """Forward `<<Invalid>>` event data to the `on_invalid` callback."""
         if self._on_invalid_command:
             self._on_invalid_command(event.data)

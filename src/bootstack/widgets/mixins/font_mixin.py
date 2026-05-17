@@ -330,8 +330,22 @@ class FontMixin:
         return value
 
     @configure_delegate("font")
-    def _delegate_font(self, value: Any = None):
-        """Get or set the widget font, resolving modifier syntax at runtime."""
+    def _delegate_font(self, value: Any = None) -> Any:
+        """Get or set the widget font, resolving bootstack modifier syntax.
+
+        Accepts a plain font name, a token name (e.g. ``'body'``,
+        ``'heading-lg'``), a modifier expression (e.g. ``'body[bold]'``,
+        ``'[16][italic]'``), or a Tk font tuple. Modifier expressions are
+        merged with the widget's current font so only the specified
+        attributes change.
+
+        Args:
+            value: Font specification, or None to query the current font.
+
+        Returns:
+            Current font value when querying, otherwise the result of
+            the underlying ``configure(font=...)`` call.
+        """
         if value is None:
             return self._ttk_base.cget(self, "font")  # type: ignore[misc]
 
