@@ -57,6 +57,7 @@ class RadioGroup(Frame):
             labelanchor: Label position - 'n' (top, default), 's' (bottom),
                 'e' (right), 'w' (left), or combinations like 'nw', 'ne', etc.
             variable: Optional tk.StringVar for controlling the selected value.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Optional Signal instance for reactive programming.
             value: Initial selected value.
             state: Initial state for all buttons - 'normal' (default) or 'disabled'.

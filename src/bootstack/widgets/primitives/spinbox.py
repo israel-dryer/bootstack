@@ -52,6 +52,7 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             wrap: Whether to wrap between min/max.
             command: Callback when the value changes.
             textvariable: Tk variable linked to the entry text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             format: Display format string.
             width: Widget width in characters.

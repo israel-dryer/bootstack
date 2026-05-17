@@ -18,6 +18,7 @@ class RadioToggle(RadioButton):
         Other Parameters:
             text: Text to display.
             textvariable: Tk variable linked to the text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             command: Callable invoked when the value is selected.
             image: Image to display.
@@ -25,6 +26,7 @@ class RadioToggle(RadioButton):
             icon_only: Removes the additional padding added for label text.
             compound: Placement of the image relative to text.
             variable: Linked Tk variable that receives the selected value.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Reactive Signal that receives the selected value (auto-synced with variable).
             value: The value assigned to `variable` when this radio is selected.
             padding: Extra space around the content.

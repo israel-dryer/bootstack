@@ -75,6 +75,7 @@ class Tabs(Frame):
                 orientation, shows "New Tab" at the bottom. Fires `<<TabAdd>>`
                 event when clicked.
             variable: Tk variable for tracking selected tab value.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Reactive Signal for tracking selected tab value.
             accent: Accent token for styling tabs.
             **kwargs: Additional arguments passed to Frame.

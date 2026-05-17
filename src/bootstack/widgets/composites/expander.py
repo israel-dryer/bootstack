@@ -71,6 +71,7 @@ class Expander(Frame):
             icon_position: Position of chevron relative to title.
             signal: Reactive Signal for selection state (preferred over variable).
             variable: Tk variable for selection state (synced with signal).
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             value: Value to set on signal/variable when selected.
             **kwargs: Additional arguments passed to Frame. Use `accent` and `variant`
                 for styling the header and chevron.

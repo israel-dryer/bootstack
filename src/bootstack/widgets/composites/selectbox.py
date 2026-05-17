@@ -57,6 +57,7 @@ class SelectBox(Field):
             padding: Padding around the entry widget.
             state: The widget state ('normal', 'disabled', 'readonly').
             textvariable: Tkinter Variable to link with the entry text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal object for reactive text updates.
             width: Width of the entry in characters.
             required: If True, field cannot be empty.

@@ -58,6 +58,7 @@ class MenuButton(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, 
             state: Widget state — 'normal', 'active', 'disabled', or 'readonly'.
             takefocus: Whether the widget participates in focus traversal.
             textvariable: Tk variable linked to the text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             style: Explicit ttk style name (overrides accent/variant).
             accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.

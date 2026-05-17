@@ -46,6 +46,7 @@ class TextEntry(Field):
             show: Character to mask input (e.g., '*' for passwords).
             takefocus: If True, widget accepts Tab focus.
             textvariable: Tkinter Variable to link with text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal object for reactive updates.
             width: Width in characters.
             required: If True, field cannot be empty. Adds 'required'

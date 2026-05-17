@@ -57,6 +57,7 @@ class ToggleGroup(Frame):
             variant: Style variant (e.g., 'outline', 'ghost').
             variable: Optional tk.Variable for controlling the value. For single mode,
                 use StringVar; for multi mode, use SetVar.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Optional Signal instance for reactive programming.
             value: Initial value - string for single mode, set for multi mode.
             show_border: If True, draws a border around the group.

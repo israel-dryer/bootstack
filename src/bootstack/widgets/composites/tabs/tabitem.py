@@ -52,6 +52,7 @@ class TabItem(CompositeFrame):
                 'right', 'top', 'bottom', 'center', or 'none'. Default is 'left'.
             value: Value to set on signal/variable when this tab is selected.
             variable: Tk variable for selection state (synced with signal).
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             orient: Orientation hint for styling ('horizontal' or 'vertical').
                 Default is 'horizontal'.
             signal: Reactive Signal for selection state (preferred over variable).

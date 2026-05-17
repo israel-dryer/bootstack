@@ -77,6 +77,7 @@ class SideNavGroup(Frame):
             icon: Icon name or configuration dict.
             signal: Reactive signal for selection state.
             variable: Shared variable for selection tracking.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             is_expanded: Initial expansion state. Default False.
             **kwargs: Additional arguments passed to Frame.
         """

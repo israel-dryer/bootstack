@@ -65,6 +65,7 @@ class TimeEntry(SelectBox):
             allow_blank: Allow empty input.
             width: Width in characters.
             textvariable: Tkinter Variable to link with text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal object for reactive updates.
         """
         self._interval = interval

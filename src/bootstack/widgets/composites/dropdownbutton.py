@@ -71,6 +71,7 @@ class DropdownButton(MenuButton):
             takefocus: Participation in focus traversal.
             style: Explicit ttk style name.
             textvariable: Existing Tk variable for the label text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal bound to the textvariable.
             accent: Accent token for styling (e.g., 'primary', 'danger').
             variant: Style variant (e.g., 'outline', 'ghost').
@@ -184,6 +185,7 @@ class DropdownButton(MenuButton):
             text: str = None,
             value: Any = None,
             variable: Any = None,
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> ContextMenuItemResult:
@@ -193,6 +195,7 @@ class DropdownButton(MenuButton):
             text: Item label text.
             value: Value assigned to `variable` when this item is selected.
             variable: Tkinter Variable shared across the radio group.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable invoked when the item is selected.
             key: Unique identifier. Auto-generated if not provided.
         """

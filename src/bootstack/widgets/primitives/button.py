@@ -50,6 +50,7 @@ class Button(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, Widg
         Other Parameters:
             text: Text to display on the button.
             textvariable: Tk variable linked to the button text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the button text (auto-synced with textvariable).
             command: Callable invoked when the button is pressed.
             image: Image to display on the button.

@@ -45,6 +45,7 @@ class Scale(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin,
             to: Maximum value.
             value: Initial value.
             variable: Tk variable linked to the value.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Reactive Signal linked to the value (auto-synced with variable).
             orient: Orientation of the scale ('horizontal' or 'vertical').
             length: Scale length in pixels.

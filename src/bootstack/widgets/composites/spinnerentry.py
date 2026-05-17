@@ -70,6 +70,7 @@ class SpinnerEntry(Field):
             padding: Padding around entry widget.
             takefocus: If True, widget accepts Tab focus.
             textvariable: Tkinter Variable to link with text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal object for reactive updates.
             width: Width in characters.
         """

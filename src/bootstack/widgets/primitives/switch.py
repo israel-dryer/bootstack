@@ -16,6 +16,7 @@ class Switch(CheckButton):
         Other Parameters:
             text: Text to display on the toggle.
             textvariable: Tk variable linked to the text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             command: Callable invoked when the toggle changes state.
             image: Image to display.
@@ -23,6 +24,7 @@ class Switch(CheckButton):
             icon_only: If True, removes the additional padding reserved for text.
             compound: Placement of the image relative to text.
             variable: Linked variable controlling the on/off state.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Reactive Signal controlling the on/off state (auto-synced with variable).
             value: Initial state for the widget's associated variable (defaults to None when unset).
             onvalue: Value set in `variable` when selected.

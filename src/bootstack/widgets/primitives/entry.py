@@ -48,6 +48,7 @@ class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMi
 
         Other Parameters:
             textvariable: Tk variable linked to the entry text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the entry text (auto-synced with textvariable).
             show: Substitute character for masked input.
             width: Width in characters.

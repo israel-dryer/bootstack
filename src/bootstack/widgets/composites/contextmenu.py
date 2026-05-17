@@ -379,6 +379,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
             text: str = None,
             value: Any = None,
             variable: StringVar | IntVar = None,
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None
     ) -> RadioToggle:
@@ -388,6 +389,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
             text: Radiobutton text label.
             value: Value to set when selected.
             variable: Tkinter Variable to link with.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Function to call when selected.
             key: Optional unique identifier. Auto-generated if not provided.
         """
@@ -1204,6 +1206,7 @@ class _NativeContextMenu(CustomConfigMixin):
             text: str = None,
             value: Any = None,
             variable: StringVar | IntVar = None,
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> str:
@@ -1799,6 +1802,7 @@ class ContextMenu:
             text: str = None,
             value: Any = None,
             variable: Any = None,
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> ContextMenuItemResult:
@@ -1808,6 +1812,7 @@ class ContextMenu:
             text: Item label text.
             value: Value assigned to `variable` when this item is selected.
             variable: Tkinter Variable shared across the radio group.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable invoked when the item is selected.
             key: Unique identifier. Auto-generated if not provided.
         """

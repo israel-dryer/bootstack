@@ -49,6 +49,7 @@ class LabeledScale(Frame):
                 'to' parameter. Defaults to 100.
             variable: A tkinter variable to associate with the scale. If None,
                 creates an IntVar or DoubleVar based on dtype. Defaults to None.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             dtype: Data type for the scale value, either int or float. Determines
                 the type of variable created if variable is None. Defaults to int.
             compound: Label position relative to the scale. Use 'before' for

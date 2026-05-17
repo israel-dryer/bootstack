@@ -58,6 +58,7 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
         Other Parameters:
             text: Text to display.
             textvariable: Tk variable linked to the text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             command: Callable invoked when the value toggles.
             image: Image to display.
@@ -72,6 +73,7 @@ class CheckButton(LocalizationMixin, SignalMixin, TextSignalMixin, IconMixin, TT
                 to True. Set to False to hide the indicator (e.g. when using icons alone).
             compound: Placement of the image relative to text.
             variable: Linked variable controlling the on/off state.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             localize: Determines the widget's localization mode.
             signal: Reactive Signal controlling the on/off state (auto-synced with variable).
             value: Initial state for the widget's associated variable (defaults to None when unset).

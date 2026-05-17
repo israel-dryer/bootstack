@@ -93,6 +93,7 @@ class SideNav(Frame):
             pane_width: Custom pane width. Uses default based on mode.
             signal: Reactive signal for selection state.
             variable: Tk variable for selection state.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             accent: Accent color for selection indicators. Default 'primary'.
             **kwargs: Additional arguments passed to Frame.
         """

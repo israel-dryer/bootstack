@@ -92,6 +92,7 @@ class FieldOptions(TypedDict, total=False):
         state: The widget state. One of 'normal', 'disabled', or 'readonly'.
         takefocus: If True, widget can receive focus via Tab key.
         textvariable: Tkinter Variable to link with the entry text.
+            See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
         textsignal: Signal object for reactive text updates.
         width: Width of the entry in characters.
         required: If True, field cannot be empty (adds validation rule).
@@ -182,6 +183,7 @@ class Field(EntryMixin, Frame):
             font: Font specification.
             justify: Text alignment ('left', 'center', 'right').
             textvariable: Tkinter Variable linked to entry text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal for reactive text updates.
             minvalue: Minimum allowed value (numeric kind only).
             maxvalue: Maximum allowed value (numeric kind only).

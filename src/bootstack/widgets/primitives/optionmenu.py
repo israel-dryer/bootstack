@@ -73,6 +73,7 @@ class OptionMenu(MenuButton):
             takefocus: Participation in focus traversal.
             style: Explicit ttk style name (overrides accent/variant).
             textvariable: Existing Tk variable to bind; new StringVar created if omitted.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Signal bound to the textvariable.
             accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
             variant: Style variant, e.g. 'solid', 'outline'.

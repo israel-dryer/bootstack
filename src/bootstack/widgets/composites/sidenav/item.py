@@ -88,6 +88,7 @@ class SideNavItem(Frame):
             icon: Icon name or configuration dict.
             signal: Reactive signal for selection state (preferred).
             variable: Shared variable for radio group selection.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             is_enabled: Whether the item is interactive. Default True.
             indent_level: Nesting level for indentation (0 = root, 1 = child). Default 0.
             command: Callback invoked when item is clicked.

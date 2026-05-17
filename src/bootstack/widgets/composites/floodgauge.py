@@ -14,7 +14,9 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
 
     Attributes:
         variable: Tkinter IntVar for value binding.
+            See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
         textvariable: Tkinter StringVar for text binding.
+            See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
     """
 
     def __init__(
@@ -54,8 +56,10 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
             thickness: Size in pixels along the minor axis.
             increment: Step size for `step()` and animations.
             variable: Tkinter IntVar for value binding. Auto-created if not provided.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textvariable: Tkinter StringVar for text binding. Auto-created if not
                 provided.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
         """
 
         self._variable = kwargs.pop("variable", IntVar(value=value))

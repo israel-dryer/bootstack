@@ -55,6 +55,7 @@ class Label(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, Widge
         Other Parameters:
             text: Text to display in the label.
             textvariable: Tk variable linked to the label text.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the label text (auto-synced with textvariable).
             image: Image to display.
             icon: Theme-aware icon spec handled by the style system.

@@ -49,6 +49,7 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
         Other Parameters:
             values: Sequence of values to display.
             textvariable: Tk variable linked to the selected value.
+                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             textsignal: Reactive Signal linked to the text (auto-synced with textvariable).
             state: Widget state; 'readonly' restricts to list items.
             width: Width in characters.
