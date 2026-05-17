@@ -185,7 +185,6 @@ class DropdownButton(MenuButton):
             text: str = None,
             value: Any = None,
             variable: Any = None,
-                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> ContextMenuItemResult:

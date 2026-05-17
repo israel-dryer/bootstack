@@ -379,7 +379,6 @@ class _ToplevelContextMenu(CustomConfigMixin):
             text: str = None,
             value: Any = None,
             variable: StringVar | IntVar = None,
-                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None
     ) -> RadioToggle:
@@ -1206,7 +1205,6 @@ class _NativeContextMenu(CustomConfigMixin):
             text: str = None,
             value: Any = None,
             variable: StringVar | IntVar = None,
-                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> str:
@@ -1802,7 +1800,6 @@ class ContextMenu:
             text: str = None,
             value: Any = None,
             variable: Any = None,
-                See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Callable = None,
             key: str = None,
     ) -> ContextMenuItemResult:
