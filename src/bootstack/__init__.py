@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         ScrollView, SelectBox, Separator, SideNav, SideNavItem,
         SideNavGroup, SideNavHeader, SideNavSeparator, SizeGrip, Spinbox,
         SpinnerEntry, Switch, TableView, TextEntry, TimeEntry, Toast,
+        TabItem, Tabs, TabView,
         ToggleGroup, Toolbar, ToolTip, TreeView, TK_WIDGETS, TTK_WIDGETS,
     )
     from bootstack.dialogs import (
@@ -194,6 +195,9 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.sidenav": ["SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator"],
     "bootstack.widgets.composites.spinnerentry": ["SpinnerEntry"],
     "bootstack.widgets.composites.tableview": ["TableView"],
+    "bootstack.widgets.composites.tabs.tabs": ["Tabs"],
+    "bootstack.widgets.composites.tabs.tabview": ["TabView"],
+    "bootstack.widgets.composites.tabs.tabitem": ["TabItem"],
     "bootstack.widgets.composites.textentry": ["TextEntry"],
     "bootstack.widgets.composites.timeentry": ["TimeEntry"],
     "bootstack.widgets.composites.toast": ["Toast"],

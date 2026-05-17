@@ -64,6 +64,9 @@ if TYPE_CHECKING:
     )
     from bootstack.widgets.composites.spinnerentry import SpinnerEntry
     from bootstack.widgets.composites.tableview import TableView
+    from bootstack.widgets.composites.tabs.tabs import Tabs
+    from bootstack.widgets.composites.tabs.tabview import TabView
+    from bootstack.widgets.composites.tabs.tabitem import TabItem
     from bootstack.widgets.composites.textentry import TextEntry
     from bootstack.widgets.composites.timeentry import TimeEntry
     from bootstack.widgets.composites.toast import Toast
@@ -129,6 +132,7 @@ __all__ = [
     'MenuBar', 'Meter', 'NumericEntry', 'PageStack', 'PasswordEntry',
     'PathEntry', 'RadioGroup', 'ScrolledText', 'ScrollView', 'SelectBox',
     'SideNav', 'SideNavItem', 'SideNavGroup', 'SideNavHeader', 'SideNavSeparator',
-    'SpinnerEntry', 'TableView', 'TextEntry', 'TimeEntry', 'Toast',
+    'SpinnerEntry', 'TableView', 'TabItem', 'Tabs', 'TabView',
+    'TextEntry', 'TimeEntry', 'Toast',
     'ToggleGroup', 'Toolbar', 'ToolTip',
 ]
