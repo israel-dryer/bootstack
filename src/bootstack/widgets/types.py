@@ -59,6 +59,22 @@ SurfaceToken = Literal['content', 'card', 'chrome', 'overlay', 'input']
 """Background surface context token."""
 
 # ---------------------------------------------------------------------------
+# Geometry manager literals
+# ---------------------------------------------------------------------------
+
+Fill = Literal['none', 'x', 'y', 'both']
+"""Fill axis for the pack geometry manager."""
+
+Sticky = Fill
+"""Sticky directions for the grid geometry manager (same values as Fill)."""
+
+Side = Literal['left', 'top', 'right', 'bottom']
+"""Side placement for the pack geometry manager."""
+
+BorderMode = Literal['inside', 'outside']
+"""Border mode for the place geometry manager."""
+
+# ---------------------------------------------------------------------------
 # Base TypedDicts
 # ---------------------------------------------------------------------------
 

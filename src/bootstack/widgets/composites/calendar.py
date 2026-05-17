@@ -12,7 +12,7 @@ from babel import dates
 from babel.core import Locale
 from bootstack.widgets.primitives import Button, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.types import Master
-from bootstack.constants import BOTH, CENTER, LEFT, NSEW, PRIMARY, X, Y, YES
+from bootstack.constants import BOTH, CENTER, LEFT, NSEW, X, Y, YES
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets.mixins import configure_delegate
@@ -162,7 +162,7 @@ class Calendar(ttk.Frame):
             except Exception:
                 first_weekday = 0  # fallback to Monday (ISO standard)
         self._first_weekday = first_weekday
-        self._accent = accent or PRIMARY
+        self._accent = accent or 'primary'
         self._calendar = calendar.Calendar(firstweekday=first_weekday)
 
         # Allow 'value' as alias for 'start_date' (reads better in single mode)

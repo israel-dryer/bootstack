@@ -13,7 +13,7 @@ from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
 from tkinter import Widget
 
 from bootstack.widgets.primitives import Frame
-from bootstack.constants import BOTH, PRIMARY, YES
+from bootstack.constants import BOTH, YES
 from bootstack.dialogs.dialog import Dialog
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets.composites.calendar import Calendar
@@ -233,7 +233,7 @@ class DateDialog:
         self._master = master
         self._first_weekday = first_weekday
         self._initial_date = initial_date or datetime.today().date()
-        self._accent = accent or PRIMARY
+        self._accent = accent or 'primary'
         self._disabled_dates = disabled_dates
         self._min_date = min_date
         self._max_date = max_date

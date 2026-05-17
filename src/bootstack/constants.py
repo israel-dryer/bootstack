@@ -1,325 +1,319 @@
-"""Constants and type aliases for bootstack.
+"""Runtime string constants for bootstack.
 
-This module defines constants and type aliases used throughout bootstack,
-including tkinter/ttk configuration values and bootstack-specific enums.
+This module provides symbolic string constants for use with tkinter geometry
+managers, widget states, and other APIs that accept fixed string values.
 
-The module provides:
-    - Type aliases using Literal for better type checking
-    - Standard tkinter constants (anchor, fill, relief, etc.)
-    - TTkbootstrap-specific constants (bootstyle colors and types)
-    - Final-typed constants for IDE autocomplete
+Type aliases (Literal types for type checking) live in
+``bootstack.widgets.types`` and are re-exported here for convenience.
 
-All constants are exported in __all__ for easy wildcard import:
-    ```python
-    from bootstack.constants import *
-    ```
+Example::
 
-Type Aliases:
-    Anchor: Widget anchor positions (n, s, e, w, nw, ne, sw, se, center)
-    Fill: Fill modes for pack geometry manager (none, x, y, both)
-    Side: Widget placement side (left, top, right, bottom)
-    Relief: Border relief style (raised, sunken, flat, ridge, groove, solid)
-    Orient: Widget orientation (horizontal, vertical)
-    State: Widget state (normal, disabled, active, hidden, readonly)
-    BootColor: Bootstyle color names (primary, secondary, success, etc.)
-    BootType: Bootstyle type modifiers (outline, link, toggle, etc.)
-
-Example:
-    ```python
     import bootstack as bs
-    from bootstack.constants import *
+    from bootstack.constants import LEFT, X, NORMAL
 
-    root = bs.Window()
-
-    # Use constants for cleaner code
-    btn = bs.Button(root, text="OK", bootstyle=SUCCESS)
+    btn = bs.Button(root, text="OK")
     btn.pack(side=LEFT, fill=X, padx=10)
-
-    root.mainloop()
-    ```
 """
 from __future__ import annotations
 
 from typing import Final, Literal
 
-# ---------------------------
-# Type aliases (Literal unions)
-# ---------------------------
+# Re-export type aliases from widgets.types so ``from bootstack.constants import *``
+# continues to work as before.
+from bootstack.widgets.types import (
+    Anchor,
+    BorderMode,
+    CompoundMode,
+    Fill,
+    Justify,
+    Orient,
+    Relief,
+    Side,
+    Sticky,
+    AccentToken,
+    SurfaceToken,
+    VariantToken,
+    WidgetDensity,
+    WidgetState,
+)
 
-Anchor = Literal["nw", "n", "ne", "w", "center", "e", "sw", "s", "se"]
-
-# Tk uses the same value set for -fill and many APIs call this "sticky"
-Sticky = Literal["none", "x", "y", "both"]
-Fill = Sticky
-
-Side = Literal["left", "top", "right", "bottom"]
-
-Relief = Literal["raised", "sunken", "flat", "ridge", "groove", "solid"]
-
-Orient = Literal["horizontal", "vertical"]
-
-Tabs = Literal["numeric"]
-
-Wrap = Literal["char", "word"]
-
-Align = Literal["baseline"]
+# ---------------------------------------------------------------------------
+# Literal types that remain canonical here (not in widgets.types)
+# ---------------------------------------------------------------------------
 
 TkBoolean = Literal[0, 1, True, False]
+"""Tk-style boolean: 0/1 or True/False."""
 
-BorderMode = Literal["inside", "outside"]
+State = Literal['normal', 'disabled', 'active', 'hidden', 'readonly']
+"""Full widget state set including ``'hidden'`` (Canvas) and ``'readonly'`` (ttk).
+For ttk widget construction kwargs prefer ``WidgetState`` from ``bootstack.widgets.types``.
+"""
 
-State = Literal["normal", "disabled", "active", "hidden", "readonly"]
+MenuItemType = Literal['cascade', 'checkbutton', 'command', 'radiobutton', 'separator']
+"""Menu item type for ``tk.Menu.add_*`` calls."""
 
-MenuItemType = Literal["cascade", "checkbutton", "command", "radiobutton", "separator"]
+ActiveStyle = Literal['none', 'dotbox', 'underline']
+"""Active-item highlight style for ``tk.Listbox``."""
 
-SelectMode = Literal["single", "browse", "multiple", "extended"]
+PieStyle = Literal['pieslice', 'chord', 'arc']
+"""Arc/pie style for ``Canvas.create_arc``."""
 
-ActiveStyle = Literal["none", "dotbox", "underline"]
+LineCap = Literal['butt', 'projecting', 'round']
+"""Line cap style for Canvas lines."""
 
-PieStyle = Literal["pieslice", "chord", "arc"]
+LineJoin = Literal['bevel', 'miter', 'round']
+"""Line join style for Canvas lines."""
 
-LineCap = Literal["butt", "projecting", "round"]
+IndexPos = Literal['first', 'last']
+"""Named index positions used by several widget methods."""
 
-LineJoin = Literal["bevel", "miter", "round"]
+ViewArg = Literal['moveto', 'scroll', 'units', 'pages']
+"""Arguments accepted by ``xview()`` / ``yview()`` scroll methods."""
 
-IndexPos = Literal["first", "last"]
+TtkTheme = Literal['clam', 'alt', 'default']
+"""Built-in base ttk theme names."""
 
-ViewArg = Literal["moveto", "scroll", "units", "pages"]
+Tabs = Literal['numeric']
+"""Tab alignment mode for the Text widget."""
 
-TtkTheme = Literal["clam", "alt", "default"]
+Align = Literal['baseline']
+"""Text alignment for embedded windows/images in the Text widget."""
 
-MeterMode = Literal["full", "semi"]
+Wrap = Literal['none', 'char', 'word']
+"""Text wrapping mode for the ``tk.Text`` widget."""
 
-ProgressMode = Literal["determinate", "indeterminate"]
+SelectMode = Literal['single', 'browse', 'multiple', 'extended']
+"""Item selection mode for ``tk.Listbox``."""
 
-BootColor = Literal["primary", "secondary", "success", "danger", "warning", "info", "light", "dark"]
+ProgressMode = Literal['determinate', 'indeterminate']
+"""Progress mode for the Progressbar widget."""
 
-BootType = Literal["outline", "link", "toggle", "inverse", "striped", "toolbutton", "square"]
-
-TreeviewDisplay = Literal["tree", "headings", "tree headings"]
-
-# ---------------------------
+# ---------------------------------------------------------------------------
 # Booleans (legacy Tk style)
-# ---------------------------
-NO = FALSE = OFF = 0  # type: Final[TkBoolean]
-YES = TRUE = ON = 1  # type: Final[TkBoolean]
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+NO: Final[TkBoolean] = 0
+FALSE: Final[TkBoolean] = 0
+OFF: Final[TkBoolean] = 0
+YES: Final[TkBoolean] = 1
+TRUE: Final[TkBoolean] = 1
+ON: Final[TkBoolean] = 1
+
+# ---------------------------------------------------------------------------
 # -anchor / -sticky
-# ---------------------------
-N: Final[Anchor] = "n"
-S: Final[Anchor] = "s"
-W: Final[Anchor] = "w"
-E: Final[Anchor] = "e"
-NW: Final[Anchor] = "nw"
-SW: Final[Anchor] = "sw"
-NE: Final[Anchor] = "ne"
-SE: Final[Anchor] = "se"
-NS: Final[Anchor] = "ns"
-EW: Final[Anchor] = "ew"
-NSEW: Final[Anchor] = "nsew"
-CENTER: Final[Anchor] = "center"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+N: Final[Anchor] = 'n'
+S: Final[Anchor] = 's'
+W: Final[Anchor] = 'w'
+E: Final[Anchor] = 'e'
+NW: Final[Anchor] = 'nw'
+SW: Final[Anchor] = 'sw'
+NE: Final[Anchor] = 'ne'
+SE: Final[Anchor] = 'se'
+NS: Final[str] = 'ns'
+EW: Final[str] = 'ew'
+NSEW: Final[str] = 'nsew'
+CENTER: Final[Anchor] = 'center'
+
+# ---------------------------------------------------------------------------
 # -fill
-# ---------------------------
-NONE: Final[Fill] = "none"
-X: Final[Fill] = "x"
-Y: Final[Fill] = "y"
-BOTH: Final[Fill] = "both"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+NONE: Final[Fill] = 'none'
+X: Final[Fill] = 'x'
+Y: Final[Fill] = 'y'
+BOTH: Final[Fill] = 'both'
+
+# ---------------------------------------------------------------------------
 # -side
-# ---------------------------
-LEFT: Final[Side] = "left"
-TOP: Final[Side] = "top"
-RIGHT: Final[Side] = "right"
-BOTTOM: Final[Side] = "bottom"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+LEFT: Final[Side] = 'left'
+TOP: Final[Side] = 'top'
+RIGHT: Final[Side] = 'right'
+BOTTOM: Final[Side] = 'bottom'
+
+# ---------------------------------------------------------------------------
 # -relief
-# ---------------------------
-RAISED: Final[Relief] = "raised"
-SUNKEN: Final[Relief] = "sunken"
-FLAT: Final[Relief] = "flat"
-RIDGE: Final[Relief] = "ridge"
-GROOVE: Final[Relief] = "groove"
-SOLID: Final[Relief] = "solid"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+RAISED: Final[Relief] = 'raised'
+SUNKEN: Final[Relief] = 'sunken'
+FLAT: Final[Relief] = 'flat'
+RIDGE: Final[Relief] = 'ridge'
+GROOVE: Final[Relief] = 'groove'
+SOLID: Final[Relief] = 'solid'
+
+# ---------------------------------------------------------------------------
 # -orient
-# ---------------------------
-HORIZONTAL: Final[Orient] = "horizontal"
-VERTICAL: Final[Orient] = "vertical"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
-# -tabs
-# ---------------------------
-NUMERIC: Final[Tabs] = "numeric"
+HORIZONTAL: Final[Orient] = 'horizontal'
+VERTICAL: Final[Orient] = 'vertical'
 
-# ---------------------------
-# -wrap
-# ---------------------------
-CHAR: Final[Wrap] = "char"
-WORD: Final[Wrap] = "word"
+# ---------------------------------------------------------------------------
+# -wrap (Text widget)
+# ---------------------------------------------------------------------------
 
-# ---------------------------
-# -align
-# ---------------------------
-BASELINE: Final[Align] = "baseline"
+CHAR: Final[Wrap] = 'char'
+WORD: Final[Wrap] = 'word'
 
-# ---------------------------
-# -bordermode
-# ---------------------------
-INSIDE: Final[BorderMode] = "inside"
-OUTSIDE: Final[BorderMode] = "outside"
+# ---------------------------------------------------------------------------
+# -tabs (Text widget)
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+NUMERIC: Final[Tabs] = 'numeric'
+
+# ---------------------------------------------------------------------------
+# -align (Text widget)
+# ---------------------------------------------------------------------------
+
+BASELINE: Final[Align] = 'baseline'
+
+# ---------------------------------------------------------------------------
+# -bordermode (place geometry manager)
+# ---------------------------------------------------------------------------
+
+INSIDE: Final[BorderMode] = 'inside'
+OUTSIDE: Final[BorderMode] = 'outside'
+
+# ---------------------------------------------------------------------------
 # Special tags / marks / positions
-# ---------------------------
-SEL: Final[str] = "sel"
-SEL_FIRST: Final[str] = "sel.first"
-SEL_LAST: Final[str] = "sel.last"
-END: Final[str] = "end"
-INSERT: Final[str] = "insert"
-CURRENT: Final[str] = "current"
-ANCHOR: Final[str] = "anchor"
-ALL: Final[str] = "all"  # e.g., Canvas.delete(ALL)
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+SEL: Final[str] = 'sel'
+SEL_FIRST: Final[str] = 'sel.first'
+SEL_LAST: Final[str] = 'sel.last'
+END: Final[str] = 'end'
+INSERT: Final[str] = 'insert'
+CURRENT: Final[str] = 'current'
+ANCHOR: Final[str] = 'anchor'
+ALL: Final[str] = 'all'
+
+# ---------------------------------------------------------------------------
 # States
-# ---------------------------
-NORMAL: Final[State] = "normal"
-DISABLED: Final[State] = "disabled"
-ACTIVE: Final[State] = "active"
-HIDDEN: Final[State] = "hidden"  # Canvas state
-READONLY: Final[State] = "readonly"  # ttk state
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+NORMAL: Final[State] = 'normal'
+DISABLED: Final[State] = 'disabled'
+ACTIVE: Final[State] = 'active'
+HIDDEN: Final[State] = 'hidden'
+READONLY: Final[State] = 'readonly'
+
+# ---------------------------------------------------------------------------
 # Menu item types
-# ---------------------------
-CASCADE: Final[MenuItemType] = "cascade"
-CHECKBUTTON: Final[MenuItemType] = "checkbutton"
-COMMAND: Final[MenuItemType] = "command"
-RADIOBUTTON: Final[MenuItemType] = "radiobutton"
-SEPARATOR: Final[MenuItemType] = "separator"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
+CASCADE: Final[MenuItemType] = 'cascade'
+CHECKBUTTON: Final[MenuItemType] = 'checkbutton'
+COMMAND: Final[MenuItemType] = 'command'
+RADIOBUTTON: Final[MenuItemType] = 'radiobutton'
+SEPARATOR: Final[MenuItemType] = 'separator'
+
+# ---------------------------------------------------------------------------
 # Listbox modes / styles
-# ---------------------------
-SINGLE: Final[SelectMode] = "single"
-BROWSE: Final[SelectMode] = "browse"
-MULTIPLE: Final[SelectMode] = "multiple"
-EXTENDED: Final[SelectMode] = "extended"
+# ---------------------------------------------------------------------------
 
-DOTBOX: Final[ActiveStyle] = "dotbox"
-UNDERLINE: Final[ActiveStyle] = "underline"
-# (NONE from Fill is also a valid ActiveStyle value)
+SINGLE: Final[SelectMode] = 'single'
+BROWSE: Final[SelectMode] = 'browse'
+MULTIPLE: Final[SelectMode] = 'multiple'
+EXTENDED: Final[SelectMode] = 'extended'
 
-# ---------------------------
+DOTBOX: Final[ActiveStyle] = 'dotbox'
+UNDERLINE: Final[ActiveStyle] = 'underline'
+
+# ---------------------------------------------------------------------------
 # Canvas styles
-# ---------------------------
-PIESLICE: Final[PieStyle] = "pieslice"
-CHORD: Final[PieStyle] = "chord"
-ARC: Final[PieStyle] = "arc"
+# ---------------------------------------------------------------------------
 
-FIRST: Final[IndexPos] = "first"
-LAST: Final[IndexPos] = "last"
+PIESLICE: Final[PieStyle] = 'pieslice'
+CHORD: Final[PieStyle] = 'chord'
+ARC: Final[PieStyle] = 'arc'
 
-BUTT: Final[LineCap] = "butt"
-PROJECTING: Final[LineCap] = "projecting"
-ROUND: Final[LineCap] = "round"
+FIRST: Final[IndexPos] = 'first'
+LAST: Final[IndexPos] = 'last'
 
-BEVEL: Final[LineJoin] = "bevel"
-MITER: Final[LineJoin] = "miter"
-# ROUND already defined above for LineCap; same literal is valid for LineJoin too
+BUTT: Final[LineCap] = 'butt'
+PROJECTING: Final[LineCap] = 'projecting'
+ROUND: Final[LineCap] = 'round'
 
-# ---------------------------
+BEVEL: Final[LineJoin] = 'bevel'
+MITER: Final[LineJoin] = 'miter'
+
+# ---------------------------------------------------------------------------
 # xview / yview args
-# ---------------------------
-MOVETO: Final[ViewArg] = "moveto"
-SCROLL: Final[ViewArg] = "scroll"
-UNITS: Final[ViewArg] = "units"
-PAGES: Final[ViewArg] = "pages"
+# ---------------------------------------------------------------------------
 
-# ---------------------------
-# Themes / ttk themes
-# ---------------------------
-DEFAULT: Final[str] = "default"
-DEFAULT_THEME: Final[str] = "bootstrap-light"
-# Shared minimum column width default for form layouts
+MOVETO: Final[ViewArg] = 'moveto'
+SCROLL: Final[ViewArg] = 'scroll'
+UNITS: Final[ViewArg] = 'units'
+PAGES: Final[ViewArg] = 'pages'
+
+# ---------------------------------------------------------------------------
+# Themes / layout defaults
+# ---------------------------------------------------------------------------
+
+DEFAULT: Final[str] = 'default'
+DEFAULT_THEME: Final[str] = 'bootstrap-light'
 DEFAULT_MIN_COL_WIDTH: Final[int] = 275
 
-TTK_CLAM: Final[TtkTheme] = "clam"
-TTK_ALT: Final[TtkTheme] = "alt"
-TTK_DEFAULT: Final[TtkTheme] = "default"
+TTK_CLAM: Final[TtkTheme] = 'clam'
+TTK_ALT: Final[TtkTheme] = 'alt'
+TTK_DEFAULT: Final[TtkTheme] = 'default'
 
-# ---------------------------
-# Meter / progressbar
-# ---------------------------
-FULL: Final[MeterMode] = "full"
-SEMI: Final[MeterMode] = "semi"
-DETERMINATE: Final[ProgressMode] = "determinate"
-INDETERMINATE: Final[ProgressMode] = "indeterminate"
+# ---------------------------------------------------------------------------
+# Progressbar modes
+# ---------------------------------------------------------------------------
 
-# ---------------------------
-# Bootstyle colors / types
-# ---------------------------
-PRIMARY: Final[BootColor] = "primary"
-SECONDARY: Final[BootColor] = "secondary"
-SUCCESS: Final[BootColor] = "success"
-DANGER: Final[BootColor] = "danger"
-WARNING: Final[BootColor] = "warning"
-INFO: Final[BootColor] = "info"
-LIGHT: Final[BootColor] = "light"
-DARK: Final[BootColor] = "dark"
+DETERMINATE: Final[ProgressMode] = 'determinate'
+INDETERMINATE: Final[ProgressMode] = 'indeterminate'
 
-OUTLINE: Final[BootType] = "outline"
-LINK: Final[BootType] = "link"
-TOGGLE: Final[BootType] = "toggle"
-INVERSE: Final[BootType] = "inverse"
-STRIPED: Final[BootType] = "striped"
-TOOLBUTTON: Final[BootType] = "toolbutton"
-SQUARE: Final[BootType] = "square"
-
-# ---------------------------
-# Treeview
-# ---------------------------
-TREE: Final[TreeviewDisplay] = "tree"
-HEADINGS: Final[TreeviewDisplay] = "headings"
-TREEHEADINGS: Final[TreeviewDisplay] = "tree headings"
-
-# ---------------------------
+# ---------------------------------------------------------------------------
 # Public exports
-# ---------------------------
+# ---------------------------------------------------------------------------
+
 __all__ = [
-    # literals (type aliases)
-    "Anchor", "Sticky", "Fill", "Side", "Relief", "Orient", "Tabs", "Wrap",
-    "Align", "BorderMode", "State", "MenuItemType", "SelectMode", "ActiveStyle",
-    "PieStyle", "LineCap", "LineJoin", "IndexPos", "ViewArg", "TtkTheme",
-    "MeterMode", "ProgressMode", "BootColor", "BootType", "TreeviewDisplay",
-    # constants
-    "NO", "FALSE", "OFF", "YES", "TRUE", "ON",
-    "N", "S", "W", "E", "NW", "SW", "NE", "SE", "NS", "EW", "NSEW", "CENTER",
-    "NONE", "X", "Y", "BOTH",
-    "LEFT", "TOP", "RIGHT", "BOTTOM",
-    "RAISED", "SUNKEN", "FLAT", "RIDGE", "GROOVE", "SOLID",
-    "HORIZONTAL", "VERTICAL",
-    "NUMERIC",
-    "CHAR", "WORD",
-    "BASELINE",
-    "INSIDE", "OUTSIDE",
-    "SEL", "SEL_FIRST", "SEL_LAST", "END", "INSERT", "CURRENT", "ANCHOR", "ALL",
-    "NORMAL", "DISABLED", "ACTIVE", "HIDDEN", "READONLY",
-    "CASCADE", "CHECKBUTTON", "COMMAND", "RADIOBUTTON", "SEPARATOR",
-    "SINGLE", "BROWSE", "MULTIPLE", "EXTENDED",
-    "DOTBOX", "UNDERLINE",
-    "PIESLICE", "CHORD", "ARC", "FIRST", "LAST",
-    "BUTT", "PROJECTING", "ROUND", "BEVEL", "MITER",
-    "MOVETO", "SCROLL", "UNITS", "PAGES",
-    "DEFAULT", "DEFAULT_THEME", "DEFAULT_MIN_COL_WIDTH", "TTK_CLAM", "TTK_ALT", "TTK_DEFAULT",
-    "FULL", "SEMI", "DETERMINATE", "INDETERMINATE",
-    "PRIMARY", "SECONDARY", "SUCCESS", "DANGER", "WARNING", "INFO", "LIGHT", "DARK",
-    "OUTLINE", "LINK", "TOGGLE", "INVERSE", "STRIPED", "TOOLBUTTON", "SQUARE",
-    "TREE", "HEADINGS", "TREEHEADINGS",
+    # Re-exported type aliases (canonical source: bootstack.widgets.types)
+    'Anchor', 'AccentToken', 'BorderMode', 'CompoundMode', 'Fill', 'Justify',
+    'Orient', 'Relief', 'Side', 'Sticky', 'SurfaceToken', 'VariantToken',
+    'WidgetDensity', 'WidgetState',
+    # Literal types canonical to this module
+    'ActiveStyle', 'Align', 'IndexPos', 'LineJoin', 'LineCap', 'MenuItemType',
+    'PieStyle', 'ProgressMode', 'SelectMode', 'State', 'Tabs', 'TkBoolean',
+    'TtkTheme', 'ViewArg', 'Wrap',
+    # Boolean sentinels
+    'NO', 'FALSE', 'OFF', 'YES', 'TRUE', 'ON',
+    # Anchor / sticky
+    'N', 'S', 'W', 'E', 'NW', 'SW', 'NE', 'SE', 'NS', 'EW', 'NSEW', 'CENTER',
+    # Fill
+    'NONE', 'X', 'Y', 'BOTH',
+    # Side
+    'LEFT', 'TOP', 'RIGHT', 'BOTTOM',
+    # Relief
+    'RAISED', 'SUNKEN', 'FLAT', 'RIDGE', 'GROOVE', 'SOLID',
+    # Orient
+    'HORIZONTAL', 'VERTICAL',
+    # Text widget
+    'CHAR', 'WORD', 'NUMERIC', 'BASELINE',
+    # Place geometry
+    'INSIDE', 'OUTSIDE',
+    # Tags / marks
+    'SEL', 'SEL_FIRST', 'SEL_LAST', 'END', 'INSERT', 'CURRENT', 'ANCHOR', 'ALL',
+    # States
+    'NORMAL', 'DISABLED', 'ACTIVE', 'HIDDEN', 'READONLY',
+    # Menu
+    'CASCADE', 'CHECKBUTTON', 'COMMAND', 'RADIOBUTTON', 'SEPARATOR',
+    # Listbox
+    'SINGLE', 'BROWSE', 'MULTIPLE', 'EXTENDED', 'DOTBOX', 'UNDERLINE',
+    # Canvas
+    'PIESLICE', 'CHORD', 'ARC', 'FIRST', 'LAST',
+    'BUTT', 'PROJECTING', 'ROUND', 'BEVEL', 'MITER',
+    # Scroll
+    'MOVETO', 'SCROLL', 'UNITS', 'PAGES',
+    # Themes / defaults
+    'DEFAULT', 'DEFAULT_THEME', 'DEFAULT_MIN_COL_WIDTH',
+    'TTK_CLAM', 'TTK_ALT', 'TTK_DEFAULT',
+    # Progressbar
+    'DETERMINATE', 'INDETERMINATE',
 ]
