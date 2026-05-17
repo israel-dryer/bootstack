@@ -1,5 +1,7 @@
 from tkinter import TclError
-from typing import Any
+from typing import Any, Literal
+
+from typing_extensions import Unpack
 
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import configure_delegate
@@ -7,7 +9,21 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.separator import Separator
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, WidgetDensity
+
+
+class ListItemKwargs(StyledKwargs, total=False):
+    """Kwargs for ListItem."""
+    show_separator: bool
+    show_chevron: bool
+    focusable: bool
+    hoverable: bool
+    draggable: bool
+    removable: bool
+    selection_mode: Literal['none', 'single', 'multi']
+    show_selection_controls: bool
+    select_on_click: bool
+    density: WidgetDensity
 
 
 class ListItem(CompositeFrame):
@@ -33,7 +49,7 @@ class ListItem(CompositeFrame):
         - item_index: Zero-based index of the item in the list.
     """
 
-    def __init__(self, master: Master = None, **kwargs: Any):
+    def __init__(self, master: Master = None, **kwargs: Unpack[ListItemKwargs]) -> None:
         """Initialize a ListItem widget.
 
         Args:

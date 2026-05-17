@@ -1,11 +1,13 @@
-from bootstack.widgets.primitives.checkbutton import CheckButton
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.checkbutton import CheckButton, CheckButtonKwargs
 from bootstack.widgets.types import Master
 
 
 class Switch(CheckButton):
     """bootstack wrapper for `ttk.Checkbutton` that renders with a Switch style"""
 
-    def __init__(self, master: Master = None, **kwargs):
+    def __init__(self, master: Master = None, **kwargs: Unpack[CheckButtonKwargs]) -> None:
         """Create a themed bootstack Switch.
 
         Args:

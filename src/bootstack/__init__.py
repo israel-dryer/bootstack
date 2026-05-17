@@ -45,11 +45,19 @@ from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
 # (see constants.py which re-exports from core.constants)
 
 if TYPE_CHECKING:
+    from bootstack.widgets.types import (
+        BaseWidgetKwargs, StyledKwargs,
+        Anchor, Orient, Justify, Relief, CompoundMode,
+        WidgetState, WidgetDensity,
+        AccentToken, VariantToken, SurfaceToken,
+    )
     from bootstack._runtime.app import App, AppSettings, Window, get_app_settings, get_current_app
     from bootstack._runtime.toplevel import Toplevel
     from bootstack._runtime.menu import MenuManager, create_menu, create_menu_items
     from bootstack._runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
     from bootstack.widgets.composites.appshell import AppShell
+    from bootstack.widgets.composites.compositeframe import CompositeFrame, CompositeFrameKwargs
+    from bootstack.widgets.composites.list.listitem import ListItemKwargs
     from bootstack.style import (
         Font, Style, Typography,
         get_style, get_style_builder, get_theme, get_theme_provider,
@@ -110,6 +118,13 @@ _TTK_PRIMITIVES = [
 ]
 
 _MODULE_EXPORTS = {
+    # Widget type aliases and base TypedDicts
+    "bootstack.widgets.types": [
+        "BaseWidgetKwargs", "StyledKwargs",
+        "Anchor", "Orient", "Justify", "Relief", "CompoundMode",
+        "WidgetState", "WidgetDensity",
+        "AccentToken", "VariantToken", "SurfaceToken",
+    ],
     # Application & Windows
     "bootstack._runtime.app": ["App", "AppSettings", "Window", "get_app_settings", "get_current_app"],
     "bootstack._runtime.toplevel": ["Toplevel"],
@@ -161,7 +176,9 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.floodgauge": ["FloodGauge"],
     "bootstack.widgets.composites.form": ["Form"],
     "bootstack.widgets.composites.labeledscale": ["LabeledScale"],
+    "bootstack.widgets.composites.compositeframe": ["CompositeFrame", "CompositeFrameKwargs"],
     "bootstack.widgets.composites.list": ["ListItem", "ListView"],
+    "bootstack.widgets.composites.list.listitem": ["ListItemKwargs"],
     "bootstack.widgets.composites.menubar": ["MenuBar"],
     "bootstack.widgets.composites.meter": ["Meter"],
     "bootstack.widgets.composites.numericentry": ["NumericEntry"],

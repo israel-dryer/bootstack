@@ -2,8 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Any
 
-from bootstack.widgets.primitives.frame import Frame
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.types import Master
+
+
+class CompositeFrameKwargs(FrameKwargs, total=False):
+    """Kwargs for CompositeFrame — extends FrameKwargs with state-coordination options."""
+    select_on_click: bool
 
 
 class Composite:
@@ -201,7 +208,7 @@ class CompositeFrame(Frame):
 
     """
 
-    def __init__(self, master: Master = None, select_on_click: bool = False, **kwargs: Any):
+    def __init__(self, master: Master = None, select_on_click: bool = False, **kwargs: Unpack[FrameKwargs]) -> None:
         """Initialize the CompositeFrame.
 
         Args:

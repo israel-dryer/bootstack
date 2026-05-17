@@ -1,13 +1,15 @@
 from typing import Literal
 
-from bootstack.widgets.primitives.radiobutton import RadioButton
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.radiobutton import RadioButton, RadioButtonKwargs
 from bootstack.widgets.types import Master
 
 
 class RadioToggle(RadioButton):
     """bootstack wrapper for `ttk.Radiobutton` that renders with a toggle badge style."""
 
-    def __init__(self, master: Master = None, **kwargs):
+    def __init__(self, master: Master = None, **kwargs: Unpack[RadioButtonKwargs]) -> None:
         """Create a themed bootstack RadioToggle.
 
         Args:

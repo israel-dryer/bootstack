@@ -1,13 +1,15 @@
 from typing import Literal
 
-from bootstack.widgets.primitives.checkbutton import CheckButton
+from typing_extensions import Unpack
+
+from bootstack.widgets.primitives.checkbutton import CheckButton, CheckButtonKwargs
 from bootstack.widgets.types import Master
 
 
 class CheckToggle(CheckButton):
     """bootstack wrapper for `ttk.Checkbutton` that renders with a ToolButton style"""
 
-    def __init__(self, master: Master = None, **kwargs):
+    def __init__(self, master: Master = None, **kwargs: Unpack[CheckButtonKwargs]) -> None:
         """Create a themed bootstack CheckToggle.
 
         Args:
