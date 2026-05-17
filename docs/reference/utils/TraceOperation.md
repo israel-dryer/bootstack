@@ -1,3 +1,3 @@
 # TraceOperation
 
-::: bootstack.core.signals.signal.TraceOperation
+::: bootstack.signals.types.TraceOperation

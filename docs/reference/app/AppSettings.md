@@ -1,3 +1,3 @@
 # AppSettings
 
-::: bootstack.runtime.app.AppSettings
+::: bootstack._runtime.app.AppSettings

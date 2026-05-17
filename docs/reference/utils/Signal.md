@@ -1,3 +1,3 @@
 # Signal
 
-::: bootstack.core.signals.signal.Signal
+::: bootstack.signals.signal.Signal

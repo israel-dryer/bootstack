@@ -1,6 +1,6 @@
 # App
 
-::: bootstack.runtime.app.App
+::: bootstack._runtime.app.App
     options:
         inherited_members:
             # Window manager pass-throughs

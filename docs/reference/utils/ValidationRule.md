@@ -1,3 +1,3 @@
 # ValidationRule
 
-::: bootstack.core.validation.ValidationRule
+::: bootstack.validation.ValidationRule

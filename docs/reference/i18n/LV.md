@@ -1,3 +1,3 @@
 # LV
 
-::: bootstack.core.localization.specs.LV
+::: bootstack.i18n.specs.LV

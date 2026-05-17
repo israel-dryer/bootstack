@@ -4,4 +4,4 @@ In-memory datasource with filtering, sorting, and pagination. Implements [DataSo
 
 For persistent storage, see [SqliteDataSource](SqliteDataSource.md). For file loading, see [FileDataSource](FileDataSource.md). See the [DataSource Guide](../../guides/datasource.md) for usage examples.
 
-::: bootstack.datasource.memory_source.MemoryDataSource
+::: bootstack.data.memory_source.MemoryDataSource

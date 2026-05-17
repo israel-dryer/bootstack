@@ -10,7 +10,7 @@ title: General
       heading_level: 2
       show_inheritance_diagram: false
 
-::: bootstack.runtime.window_utilities.AnchorPoint
+::: bootstack._runtime.window_utilities.AnchorPoint
     options:
       show_root_toc_entry: false
       heading_level: 2
@@ -58,25 +58,25 @@ title: General
 
 ## Format types
 
-::: bootstack.core.localization.intl_format.NumberPreset
+::: bootstack.i18n.intl_format.NumberPreset
     options:
       show_root_toc_entry: false
       heading_level: 2
       show_inheritance_diagram: false
 
-::: bootstack.core.localization.intl_format.NumberFormatSpec
+::: bootstack.i18n.intl_format.NumberFormatSpec
     options:
       show_root_toc_entry: false
       heading_level: 2
       show_inheritance_diagram: false
 
-::: bootstack.core.localization.intl_format.DatePreset
+::: bootstack.i18n.intl_format.DatePreset
     options:
       show_root_toc_entry: false
       heading_level: 2
       show_inheritance_diagram: false
 
-::: bootstack.core.localization.intl_format.DateFormatSpec
+::: bootstack.i18n.intl_format.DateFormatSpec
     options:
       show_root_toc_entry: false
       heading_level: 2
@@ -118,7 +118,7 @@ title: General
       heading_level: 2
       show_inheritance_diagram: false
 
-::: bootstack.core.validation.types.RuleType
+::: bootstack.validation.types.RuleType
     options:
       show_root_toc_entry: false
       heading_level: 2

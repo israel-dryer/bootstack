@@ -2,9 +2,9 @@
 
 This capability documents one focused aspect of the **widget interface** (Tk/Tcl-style behavior + bootstack extensions).
 
-> **Note**: You typically won’t use `bootstack.core.capabilities.pack` directly. This page describes the behavior that widgets expose.
+> **Note**: You typically won’t use `bootstack._core.capabilities.pack` directly. This page describes the behavior that widgets expose.
 
-::: bootstack.core.capabilities.pack.PackMixin
+::: bootstack._core.capabilities.pack.PackMixin
     options:
       filters:
         - "!^_"

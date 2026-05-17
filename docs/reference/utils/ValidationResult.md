@@ -1,3 +1,3 @@
 # ValidationResult
 
-::: bootstack.core.validation.ValidationResult
+::: bootstack.validation.ValidationResult

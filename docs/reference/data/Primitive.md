@@ -1,3 +1,3 @@
 # Primitive
 
-::: bootstack.datasource.types.Primitive
+::: bootstack.data.types.Primitive

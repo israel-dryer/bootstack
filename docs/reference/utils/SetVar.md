@@ -1,3 +1,3 @@
 # SetVar
 
-::: bootstack.core.variables.SetVar
+::: bootstack._core.variables.SetVar

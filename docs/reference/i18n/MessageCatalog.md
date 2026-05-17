@@ -1,3 +1,3 @@
 # MessageCatalog
 
-::: bootstack.core.localization.msgcat.MessageCatalog
+::: bootstack.i18n.msgcat.MessageCatalog

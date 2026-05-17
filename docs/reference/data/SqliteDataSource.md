@@ -4,4 +4,4 @@ SQLite-backed datasource with persistence and SQL-native filtering. Extends [Bas
 
 For in-memory storage, see [MemoryDataSource](MemoryDataSource.md). See the [DataSource Guide](../../guides/datasource.md) for usage examples.
 
-::: bootstack.datasource.sqlite_source.SqliteDataSource
+::: bootstack.data.sqlite_source.SqliteDataSource

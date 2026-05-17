@@ -10,17 +10,17 @@ Capabilities are implemented via internal modules/mixins, but the behavior they 
 
 | Capability                      | Implementation                                |
 |---------------------------------|-----------------------------------------------|
-| [after](after.md)               | `bootstack.core.capabilities.after`        |
-| [bind](bind.md)                 | `bootstack.core.capabilities.bind`         |
-| [bindtags](bindtags.md)         | `bootstack.core.capabilities.bindtags`     |
-| [busy](busy.md)                 | `bootstack.core.capabilities.busy`         |
-| [clipboard](clipboard.md)       | `bootstack.core.capabilities.clipboard`    |
-| [focus](focus.md)               | `bootstack.core.capabilities.focus`        |
-| [grab](grab.md)                 | `bootstack.core.capabilities.grab`         |
-| [grid](grid.md)                 | `bootstack.core.capabilities.grid`         |
-| [localization](localization.md) | `bootstack.core.capabilities.localization` |
-| [pack](pack.md)                 | `bootstack.core.capabilities.pack`         |
-| [place](place.md)               | `bootstack.core.capabilities.place`        |
-| [selection](selection.md)       | `bootstack.core.capabilities.selection`    |
-| [signals](signals.md)           | `bootstack.core.capabilities.signals`      |
-| [winfo](winfo.md)               | `bootstack.core.capabilities.winfo`        |
+| [after](after.md)               | `bootstack._core.capabilities.after`        |
+| [bind](bind.md)                 | `bootstack._core.capabilities.bind`         |
+| [bindtags](bindtags.md)         | `bootstack._core.capabilities.bindtags`     |
+| [busy](busy.md)                 | `bootstack._core.capabilities.busy`         |
+| [clipboard](clipboard.md)       | `bootstack._core.capabilities.clipboard`    |
+| [focus](focus.md)               | `bootstack._core.capabilities.focus`        |
+| [grab](grab.md)                 | `bootstack._core.capabilities.grab`         |
+| [grid](grid.md)                 | `bootstack._core.capabilities.grid`         |
+| [localization](localization.md) | `bootstack._core.capabilities.localization` |
+| [pack](pack.md)                 | `bootstack._core.capabilities.pack`         |
+| [place](place.md)               | `bootstack._core.capabilities.place`        |
+| [selection](selection.md)       | `bootstack._core.capabilities.selection`    |
+| [signals](signals.md)           | `bootstack._core.capabilities.signals`      |
+| [winfo](winfo.md)               | `bootstack._core.capabilities.winfo`        |

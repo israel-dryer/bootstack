@@ -43,7 +43,7 @@ Stores all data in memory. Fast and simple for small datasets.
     See [MemoryDataSource](../reference/data/MemoryDataSource.md) for full API details.
 
 ```python
-from bootstack.datasource import MemoryDataSource
+from bootstack.data import MemoryDataSource
 
 # Create datasource with page size
 ds = MemoryDataSource(page_size=10)
@@ -71,7 +71,7 @@ Stores data in a SQLite database. Ideal for large datasets or when persistence i
     See [SqliteDataSource](../reference/data/SqliteDataSource.md) for full API details.
 
 ```python
-from bootstack.datasource import SqliteDataSource
+from bootstack.data import SqliteDataSource
 
 # Create with database file (or ":memory:" for in-memory)
 ds = SqliteDataSource("data.db", page_size=50)
@@ -98,7 +98,7 @@ Loads data from CSV, JSON, or JSONL files with configurable loading strategies.
     See [FileDataSource](../reference/data/FileDataSource.md) and [FileSourceConfig](../reference/data/FileSourceConfig.md) for full API details.
 
 ```python
-from bootstack.datasource import FileDataSource
+from bootstack.data import FileDataSource
 
 # Load from CSV
 ds = FileDataSource("employees.csv", page_size=20)
@@ -120,7 +120,7 @@ FileDataSource supports multiple loading strategies for different file sizes:
 | `"auto"` | Automatically select based on file size |
 
 ```python
-from bootstack.datasource import FileDataSource, FileSourceConfig
+from bootstack.data import FileDataSource, FileSourceConfig
 
 config = FileSourceConfig(
     loading_strategy="lazy",
@@ -288,7 +288,7 @@ DataSources integrate with data-aware widgets like ListView:
 
 ```python
 import bootstack as bs
-from bootstack.datasource import MemoryDataSource
+from bootstack.data import MemoryDataSource
 
 app = bs.App()
 
@@ -318,7 +318,7 @@ To create a custom DataSource, extend `BaseDataSource` and implement the require
 ### Using BaseDataSource
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 
 class RedisDataSource(BaseDataSource):
     """Custom datasource backed by Redis."""
@@ -408,7 +408,7 @@ Available hooks:
 For maximum flexibility, implement `DataSourceProtocol` directly:
 
 ```python
-from bootstack.datasource import DataSourceProtocol
+from bootstack.data import DataSourceProtocol
 
 class APIDataSource:
     """DataSource backed by a REST API."""

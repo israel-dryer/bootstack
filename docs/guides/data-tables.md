@@ -123,7 +123,7 @@ For anything beyond a quick demo, build the datasource yourself and pass it as
 in-memory for a working buffer, or pointed at a file for persistence.
 
 ```python
-from bootstack.datasource import SqliteDataSource
+from bootstack.data import SqliteDataSource
 
 ds = SqliteDataSource(":memory:", page_size=50)
 ds.set_data(records)
@@ -141,7 +141,7 @@ plug into TableView directly — they expect different storage. To use a CSV fil
 with TableView, load it via `FileDataSource` and hand the records to TableView:
 
 ```python
-from bootstack.datasource import FileDataSource
+from bootstack.data import FileDataSource
 
 loader = FileDataSource("readings.csv", page_size=10_000)
 loader.load()

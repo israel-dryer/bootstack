@@ -1,3 +1,3 @@
 # Image
 
-::: bootstack.core.images.Image
+::: bootstack._core.images.Image

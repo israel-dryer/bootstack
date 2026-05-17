@@ -1,3 +1,3 @@
 # Record
 
-::: bootstack.datasource.types.Record
+::: bootstack.data.types.Record

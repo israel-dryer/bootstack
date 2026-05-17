@@ -1,3 +1,3 @@
 # IntlFormatter
 
-::: bootstack.core.localization.intl_format.IntlFormatter
+::: bootstack.i18n.intl_format.IntlFormatter

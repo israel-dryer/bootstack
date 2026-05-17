@@ -1,3 +1,3 @@
 # MenuManager
 
-::: bootstack.runtime.menu.MenuManager
+::: bootstack._runtime.menu.MenuManager
