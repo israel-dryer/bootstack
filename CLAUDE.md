@@ -144,7 +144,7 @@ new or unstarted pages.
 
 ---
 
-## Current state (as of Session 18)
+## Current state (as of Session 19)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -177,6 +177,31 @@ primitives/, views/, plus `data-display/tableview.md`.
   All action, input, layout, and selection widgets covered.
   Remaining categories (data-display, navigation, views, forms, dialogs, overlays,
   primitives) still need pages.
+
+### Source — package structure (as of Session 19)
+
+```
+src/bootstack/
+├── _core/          internal infrastructure (capabilities, colorutils, mixins, publisher, images, variables)
+├── _runtime/       Tk patches & startup hooks (app, toplevel, menu, shortcuts, events)
+├── assets/         themes, locales, icons
+├── cli/            CLI commands
+├── data/           DataSource classes (BaseDataSource, MemoryDataSource, SqliteDataSource, FileDataSource)
+├── dialogs/        dialog implementations
+├── i18n/           MessageCatalog, L, LV, IntlFormatter
+├── signals/        Signal, TraceOperation
+├── style/          Style, Theme, Typography, builders
+├── validation/     ValidationRule, ValidationResult
+└── widgets/
+    ├── _internal/  TTKWrapperBase (private)
+    ├── _parts/     entry sub-components (private)
+    ├── composites/
+    ├── mixins/
+    ├── primitives/
+    └── types.py    Master, EventCallback, CommandCallback, WidgetDensity
+```
+
+All public names accessible via `bs.*` — internal paths with `_` prefix are not for direct import.
 
 ### Source — docstring state (complete as of Session 18)
 
@@ -344,6 +369,32 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 19 — Source package reorganization (2026-05-16)
+
+Full restructure of `src/bootstack/` to clarify public vs internal boundaries
+and improve module navigability. Merged as PR #44.
+
+**Changes:**
+- Removed `api/` (11 files, ~5500 lines) — pure pass-through re-export layer.
+  `bootstack/__init__.py` now imports directly from implementation modules.
+- Replaced `style/__init__.py` (5498 lines of entirely commented-out dead code
+  from the ttkbootstrap era) with a clean 30-line aggregator.
+- `runtime/` → `_runtime/`, `core/` → `_core/` — internal plumbing; `_` prefix
+  signals "don't import from here directly, use `bs.*`".
+- `datasource/` → `data/` — shorter, cleaner name.
+- `core/signals/` → `signals/`, `core/validation/` → `validation/`,
+  `core/localization/` → `i18n/` — promoted to top-level as they are public API.
+- `widgets/internal/` → `widgets/_internal/`, `widgets/parts/` → `widgets/_parts/`.
+- `widgets/types.py` tightened: `FileDialogType` moved inline to `pathentry.py`,
+  `ScrollDirection`/`ScrollbarVisibility` to `scrolledtext.py`, `WidgetKwargs` deleted.
+- Module READMEs (`signals/`, `i18n/`, `data/`) rewritten — removed all ttkbootstrap
+  references, updated import paths.
+- Bug fix: `entry_mixin.py` imported `TextEntryPart` from wrong module.
+
+**What's NOT done:** Everything in the docs open items list is unchanged.
+
+---
 
 ### Session 18 — on_*/off_* standard completion + CLAUDE.md optimization (2026-05-16)
 
