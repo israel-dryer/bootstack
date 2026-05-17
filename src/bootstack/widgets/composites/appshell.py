@@ -18,6 +18,7 @@ from bootstack.widgets.composites.pagestack import PageStack
 from bootstack.widgets.composites.scrollview import ScrollView
 from bootstack.widgets.mixins import configure_delegate
 from bootstack._runtime.app import App
+from bootstack.widgets.types import WidgetDensity
 
 
 class AppShellKwargs(TypedDict, total=False):
@@ -32,7 +33,7 @@ class AppShellKwargs(TypedDict, total=False):
     show_toolbar: bool
     show_window_controls: bool
     draggable: bool
-    toolbar_density: Literal['default', 'compact']
+    toolbar_density: WidgetDensity
     show_nav: bool
     nav_display_mode: Literal['expanded', 'compact', 'minimal']
     nav_accent: str

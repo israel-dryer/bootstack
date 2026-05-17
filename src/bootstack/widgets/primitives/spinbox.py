@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TypedDict, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, WidgetState, WidgetDensity
 from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class SpinboxKwargs(TypedDict, total=False):
+class SpinboxKwargs(StyledKwargs, total=False):
     # Standard ttk.Spinbox options
     from_: float
     to: float
@@ -27,18 +27,10 @@ class SpinboxKwargs(TypedDict, total=False):
     textsignal: Signal[Any]
     format: str
     width: int
-    state: Literal['normal','disabled','readonly'] | str
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
+    state: WidgetState
 
     # bootstack-specific extensions
-    accent: str
-    density: Literal['default', 'compact']
-    surface: str
-    style_options: dict[str, Any]
+    density: WidgetDensity
 
 
 class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Spinbox):

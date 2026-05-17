@@ -1,40 +1,31 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
 from bootstack.widgets.composites.contextmenu import ContextMenu, ContextMenuItem, ContextMenuItemResult
 from bootstack.widgets.primitives.menubutton import MenuButton
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class DropdownButtonKwargs(TypedDict, total=False):
+class DropdownButtonKwargs(StyledKwargs, total=False):
     image: Any
     icon: Any
     icon_only: bool
-    compound: Literal['text', 'image', 'top', 'bottom', 'left', 'right', 'center', 'none'] | str
+    compound: CompoundMode
     padding: Any
     width: int
     underline: int
-    state: Literal['normal', 'active', 'disabled', 'readonly'] | str
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
+    state: WidgetState
     default: Any
-    name: str
     textvariable: Any
     textsignal: Signal[str]
-    accent: str
-    density: Literal['default', 'compact']
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
+    density: WidgetDensity
     popdown_options: dict[str, Any]
     show_dropdown_button: bool
     dropdown_button_icon: str | dict
@@ -327,4 +318,3 @@ class DropdownButton(MenuButton):
         else:
             self.configure_style_options(dropdown_button_icon=value)
             return self.rebuild_style()
-

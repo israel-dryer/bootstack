@@ -19,7 +19,7 @@ from bootstack.widgets.composites.sidenav.group import SideNavGroup
 from bootstack.widgets.composites.sidenav.header import SideNavHeader
 from bootstack.widgets.composites.sidenav.separator import SideNavSeparator
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, SurfaceToken
 from bootstack.signals import Signal
 
 
@@ -36,12 +36,12 @@ class SideNavKwargs(TypedDict, total=False):
     pane_width: int
     signal: Any
     variable: Variable
-    accent: str
+    accent: AccentToken | str
     # Frame options
     padding: Any
     width: int
     height: int
-    surface: str
+    surface: SurfaceToken | str
 
 
 class SideNav(Frame):

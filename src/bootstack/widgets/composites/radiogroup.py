@@ -9,7 +9,7 @@ from bootstack.widgets.primitives.radiobutton import RadioButton
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives import Frame
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, Orient, SurfaceToken, WidgetState
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -20,14 +20,14 @@ class RadioGroupKwargs(TypedDict, total=False):
     variable: Any
     signal: Signal[Any]
     value: str
-    orient: Literal['horizontal', 'vertical']
-    accent: str
+    orient: Orient
+    accent: AccentToken | str
     text: str
     labelanchor: Literal['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']
-    state: Literal['normal', 'disabled']
+    state: WidgetState
     show_indicator: bool
     show_border: bool
-    surface: str
+    surface: SurfaceToken | str
     style_options: dict[str, Any]
     # Frame options
     padding: Any

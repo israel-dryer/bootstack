@@ -11,7 +11,7 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.gridframe import GridFrame
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, CompoundMode, VariantToken, WidgetState
 
 Region = Literal["before", "center", "after"]
 
@@ -22,12 +22,12 @@ class MenuBarButtonKwargs(TypedDict, total=False):
     image: Any
     icon: Any
     icon_only: bool
-    compound: str
+    compound: CompoundMode
     padding: Any
     width: int
-    state: str
-    accent: str
-    variant: str
+    state: WidgetState
+    accent: AccentToken | str
+    variant: VariantToken | str
 
 
 class MenuBarMenuKwargs(TypedDict, total=False):
@@ -35,12 +35,12 @@ class MenuBarMenuKwargs(TypedDict, total=False):
     image: Any
     icon: Any
     icon_only: bool
-    compound: str
+    compound: CompoundMode
     padding: Any
     width: int
-    state: str
-    accent: str
-    variant: str
+    state: WidgetState
+    accent: AccentToken | str
+    variant: VariantToken | str
     popdown_options: dict[str, Any]
     show_dropdown_button: bool
     dropdown_button_icon: str | dict

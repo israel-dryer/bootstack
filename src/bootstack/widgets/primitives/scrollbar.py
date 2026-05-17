@@ -1,30 +1,21 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, TypedDict
+from typing import Any
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Orient
 
 
-class ScrollbarKwargs(TypedDict, total=False):
+class ScrollbarKwargs(StyledKwargs, total=False):
     # Standard ttk.Scrollbar options
-    orient: Any
+    orient: Orient
     command: Any
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
 
 
 class Scrollbar(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scrollbar):
@@ -49,5 +40,3 @@ class Scrollbar(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scro
             style_options: Optional dict forwarded to the style builder.
         """
         super().__init__(master, **kwargs)
-
-

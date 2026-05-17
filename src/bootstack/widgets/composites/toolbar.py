@@ -12,19 +12,19 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, SurfaceToken, WidgetDensity
 
 
 class ToolbarKwargs(TypedDict, total=False):
     show_window_controls: bool
     draggable: bool
     button_variant: str
-    density: Literal['default', 'compact']
+    density: WidgetDensity
     padding: Any
     # Frame options
     width: int
     height: int
-    surface: str
+    surface: SurfaceToken | str
     show_border: bool
 
 

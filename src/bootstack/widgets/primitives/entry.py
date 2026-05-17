@@ -1,27 +1,27 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, Optional, TypedDict, TYPE_CHECKING
+from typing import Any, Literal, Optional, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Justify, WidgetState, WidgetDensity
 from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class EntryKwargs(TypedDict, total=False):
+class EntryKwargs(StyledKwargs, total=False):
     # Standard ttk.Entry options
     textvariable: Any
     textsignal: Signal[str]
     show: Any
     width: int
     exportselection: bool
-    justify: Any
+    justify: Justify
     validate: Any
     validatecommand: Any
     invalidcommand: Any
@@ -29,19 +29,10 @@ class EntryKwargs(TypedDict, total=False):
     font: Any
     foreground: str
     background: str
-    state: Literal['normal', 'disabled', 'readonly'] | str
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
+    state: WidgetState
 
     # bootstack-specific extensions
-    accent: str
-    density: Literal['default', 'compact']
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
+    density: WidgetDensity
 
 
 class Entry(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Entry):

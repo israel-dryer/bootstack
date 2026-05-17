@@ -1,45 +1,38 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TypedDict, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Justify, WidgetState, WidgetDensity
 from ..mixins import TextSignalMixin, configure_delegate
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class ComboboxKwargs(TypedDict, total=False):
+class ComboboxKwargs(StyledKwargs, total=False):
     # Standard ttk.Combobox options
     values: Any
     textvariable: Any
     textsignal: Signal[Any]
-    state: Literal['normal', 'readonly', 'disabled'] | str
+    state: WidgetState
     width: int
     height: int
     postcommand: Any
-    justify: Any
+    justify: Justify
     exportselection: bool
     xscrollcommand: Any
     font: Any
     foreground: str
     background: str
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    accent: str
-    density: Literal['default', 'compact']
-    surface: str
-    style_options: dict[str, Any]
+    density: WidgetDensity
 
 
 class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Combobox):
@@ -159,4 +152,3 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
         name = str(self)
         Publisher.subscribe(name=name, func=self._apply_popdown_style, channel=Channel.STD)
         self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), '+')
-

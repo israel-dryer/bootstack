@@ -1,29 +1,22 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, TypedDict
+from typing import Any
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Orient
 
 
-class SeparatorKwargs(TypedDict, total=False):
+class SeparatorKwargs(StyledKwargs, total=False):
     # Standard ttk.Separator options
-    orient: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
+    orient: Orient
 
     # bootstack-specific extensions
-    accent: str
-    surface: str
     thickness: int
     length: int
-    style_options: dict[str, Any]
 
 
 class Separator(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Separator):
@@ -49,5 +42,3 @@ class Separator(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Sepa
         """
         kwargs.update(style_options=self._capture_style_options(['thickness', 'length'], kwargs))
         super().__init__(master, **kwargs)
-
-

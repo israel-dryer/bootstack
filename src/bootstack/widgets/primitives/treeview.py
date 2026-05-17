@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, WidgetDensity
 
 
-class TreeViewKwargs(TypedDict, total=False):
+class TreeViewKwargs(StyledKwargs, total=False):
     # Standard ttk.Treeview options
     columns: Any
     displaycolumns: Any
@@ -18,19 +18,13 @@ class TreeViewKwargs(TypedDict, total=False):
     height: int
     padding: Any
     selectmode: Literal['browse','extended','none'] | str
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    surface: str
-    density: Literal['default', 'compact']
+    density: WidgetDensity
     border_color: str
     show_border: bool
     select_background: str
     header_background: str
-    style_options: dict[str, Any]
 
 
 class TreeView(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Treeview):
@@ -73,5 +67,3 @@ class TreeView(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Treev
         ],
             kwargs))
         super().__init__(master, **kwargs)
-
-

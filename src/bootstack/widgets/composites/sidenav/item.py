@@ -11,7 +11,7 @@ from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, VariantToken
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -29,8 +29,8 @@ class SideNavItemKwargs(TypedDict, total=False):
     padding_x: int
     padding_y: int
     icon_gap: int
-    accent: str
-    variant: str
+    accent: AccentToken | str
+    variant: VariantToken | str
     # Frame options
     padding: Any
     width: int

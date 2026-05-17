@@ -19,7 +19,7 @@ from bootstack.widgets.mixins.entry_mixin import EntryMixin
 from bootstack.widgets._parts.numberentry_part import NumberEntryPart
 from bootstack.widgets._parts.textentry_part import TextEntryPart
 from bootstack.widgets._parts.spinnerentry_part import SpinnerEntryPart
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, Justify, VariantToken, WidgetDensity, WidgetState
 
 FieldKind = Literal['text', 'numeric', 'spinbox']
 
@@ -99,20 +99,20 @@ class FieldOptions(TypedDict, total=False):
         localize: Determines the field label localization mode. 'auto', True, False.
     """
     allow_blank: bool
-    accent: str
-    density: Literal['default', 'compact']
-    variant: str
+    accent: AccentToken | str
+    density: WidgetDensity
+    variant: VariantToken | str
     cursor: str
     value_format: str
     exportselection: bool
     font: str
     foreground: str
     initial_focus: bool
-    justify: str
+    justify: Justify
     show_message: bool
     padding: str
     show: str
-    state: Literal['normal', 'disabled', 'readonly']
+    state: WidgetState
     takefocus: bool
     textvariable: Variable
     textsignal: Signal

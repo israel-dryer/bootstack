@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TYPE_CHECKING, TypedDict
+from typing import Any, Literal, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
@@ -9,37 +9,28 @@ from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins import IconMixin, LocalizationMixin, TextSignalMixin
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class MenuButtonKwargs(TypedDict, total=False):
+class MenuButtonKwargs(StyledKwargs, total=False):
     # Standard ttk.Menubutton options
     text: Any
     image: Any
     icon: Any
     icon_only: bool
-    compound: Literal['text', 'image', 'top', 'bottom', 'left', 'right', 'center', 'none'] | str
+    compound: CompoundMode
     direction: Any
     menu: Any
     padding: Any
-    state: Literal['normal', 'active', 'disabled', 'readonly'] | str
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
+    state: WidgetState
     textvariable: Any
     textsignal: Signal[Any]
 
     # bootstack-specific extensions
-    accent: str
-    density: Literal['default', 'compact']
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
+    density: WidgetDensity
     localize: bool | Literal['auto']
 
 

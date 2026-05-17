@@ -9,7 +9,7 @@ from bootstack.widgets.primitives import Frame
 from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.primitives.radiobutton import RadioButton
 from bootstack.widgets.primitives.radiotoggle import RadioToggle
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, Orient, SurfaceToken, VariantToken, WidgetDensity, WidgetState
 
 if TYPE_CHECKING:
     import tkinter as tk
@@ -20,12 +20,12 @@ ButtonGroupItem = Button | CheckToggle | RadioButton | RadioToggle
 
 
 class ButtonGroupKwargs(TypedDict, total=False):
-    orient: Literal['horizontal', 'vertical']
-    accent: str
-    variant: str
-    state: Literal['normal', 'disabled']
-    surface: str
-    density: Literal['default', 'compact']
+    orient: Orient
+    accent: AccentToken | str
+    variant: VariantToken | str
+    state: WidgetState
+    surface: SurfaceToken | str
+    density: WidgetDensity
     style_options: dict[str, Any]
     # Frame options
     padding: Any

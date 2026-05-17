@@ -12,7 +12,7 @@ from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.i18n import MessageCatalog
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.primitives import Frame
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState
 
 ChangeReason = Literal['user', 'api', 'hide', 'forget', 'reorder', 'unknown']
 ChangeMethod = Literal['click', 'key', 'programmatic', 'unknown']
@@ -26,30 +26,22 @@ class TabRef(TypedDict):
     label: str | None
 
 
-class NotebookKwargs(TypedDict, total=False):
+class NotebookKwargs(StyledKwargs, total=False):
     # Standard ttk.Notebook options
     padding: Any
     height: int
     width: int
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
 
 
 class TabOptions(TypedDict, total=False):
-    state: Literal['normal', 'disabled', 'hidden']
+    state: WidgetState
     sticky: str
     padding: str | float | tuple[str | float] | tuple[str | float, str | float] | tuple[
         str | float, str | float, str | float] | tuple[str | float, str | float, str | float, str | float]
     text: str
-    compound: Literal["top", "left", "center", "right", "bottom", "none"]
+    compound: CompoundMode
     image: Any
     underline: int
     fmtargs: tuple[Any, ...] | list[Any]

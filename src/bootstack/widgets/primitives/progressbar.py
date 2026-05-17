@@ -1,40 +1,32 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TypedDict, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Orient
 from ..mixins import SignalMixin
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class ProgressbarKwargs(TypedDict, total=False):
+class ProgressbarKwargs(StyledKwargs, total=False):
     # Standard ttk.Progressbar options
     mode: Literal['determinate', 'indeterminate'] | str
-    orient: Any
+    orient: Orient
     length: Any
     maximum: float
     value: float
     variable: Any
     signal: Signal[Any]
     phase: int
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
 
 
 class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Progressbar):
@@ -88,5 +80,3 @@ class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
         if value is None:
             return self.get()
         self.set(value)
-
-

@@ -1,37 +1,28 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, TypedDict
+from typing import Any
 
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs
 from bootstack.style.style import get_style
 from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
 from ..mixins import configure_delegate
 
 
-class FrameKwargs(TypedDict, total=False):
+class FrameKwargs(StyledKwargs, total=False):
     # Standard ttk.Frame options
     padding: Any
     width: int
     height: int
-    style: str
-    cursor: str
-    name: str
-    takefocus: bool
-    class_: str
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
     input_background: str
     show_border: bool
-    style_options: dict[str, Any]
 
 
 class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
@@ -202,4 +193,3 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
         else:
             self.configure_style_options(show_border=True)
             return self.rebuild_style()
-

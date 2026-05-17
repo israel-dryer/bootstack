@@ -1,30 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any
 
 from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.frame import Frame
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs
 
 
-class CardKwargs(TypedDict, total=False):
+class CardKwargs(StyledKwargs, total=False):
     # Standard ttk.Frame options
     padding: Any
     width: int
     height: int
-    style: str
-    cursor: str
-    name: str
-    takefocus: bool
-    class_: str
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
     show_border: bool
-    style_options: dict[str, Any]
 
 
 class Card(Frame):

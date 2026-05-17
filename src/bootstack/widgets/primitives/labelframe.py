@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal
 
 from typing_extensions import Unpack
 
@@ -9,27 +9,20 @@ from bootstack._core.mixins.ttk_state import TtkStateMixin
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins import LocalizationMixin
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Relief
 
 
-class LabelFrameKwargs(TypedDict, total=False):
+class LabelFrameKwargs(StyledKwargs, total=False):
     # Standard ttk.Labelframe options
     text: Any
     labelanchor: Any
     padding: Any
-    relief: Any
+    relief: Relief
     borderwidth: Any
     width: int
     height: int
-    style: str
-    class_: str
-    cursor: str
-    name: str
 
     # bootstack-specific extensions
-    accent: str
-    surface: str
-    style_options: dict[str, Any]
     localize: bool | Literal['auto']
 
 

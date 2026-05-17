@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
@@ -10,13 +10,13 @@ from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.mixins import IconMixin, LocalizationMixin, SignalMixin, TextSignalMixin
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, StyledKwargs, Anchor, CompoundMode, WidgetState
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class CheckButtonKwargs(TypedDict, total=False):
+class CheckButtonKwargs(StyledKwargs, total=False):
     # Standard ttk.Checkbutton options
     text: Any
     command: Callable[[], Any] | None
@@ -26,30 +26,21 @@ class CheckButtonKwargs(TypedDict, total=False):
     off_icon: Any
     icon_only: bool
     show_indicator: bool
-    compound: Literal['text', 'image', 'top', 'bottom', 'left', 'right', 'center', 'none'] | str
+    compound: CompoundMode
     variable: Any
     signal: Signal[Any]
     value: Any
     onvalue: Any
     offvalue: Any
     padding: Any
-    anchor: str
+    anchor: Anchor
     width: int
     underline: int
-    state: Literal['normal', 'active', 'disabled', 'readonly'] | str
-    takefocus: Any
-    style: str
-    class_: str
-    cursor: str
-    name: str
+    state: WidgetState
     textvariable: Any
     textsignal: Signal[str]
 
     # bootstack-specific extensions
-    accent: str
-    variant: str
-    surface: str
-    style_options: dict[str, Any]
     localize: bool | Literal['auto']
 
 

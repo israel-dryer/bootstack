@@ -13,7 +13,7 @@ from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.composites.contextmenu import ContextMenu
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -27,7 +27,7 @@ class SideNavGroupKwargs(TypedDict, total=False):
     signal: Any
     variable: Variable
     is_expanded: bool
-    accent: str
+    accent: AccentToken | str
     # Frame options
     padding: Any
     width: int
