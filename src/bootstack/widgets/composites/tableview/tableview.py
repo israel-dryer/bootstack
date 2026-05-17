@@ -31,7 +31,7 @@ from bootstack.widgets.composites.selectbox import SelectBox
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.composites.textentry import TextEntry
 from bootstack.widgets.primitives.treeview import TreeView
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 
 from .types import (
     parse_selection_mode as _parse_selection_mode,

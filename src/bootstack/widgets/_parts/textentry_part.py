@@ -1,7 +1,7 @@
 from tkinter import Event, TclError
 from typing import Any, Callable
 
-from bootstack.core.localization import MessageCatalog, IntlFormatter
+from bootstack.i18n import MessageCatalog, IntlFormatter
 from bootstack.widgets.primitives.entry import Entry
 from bootstack.widgets.mixins import ValidationMixin
 from bootstack.widgets.mixins.configure_mixin import configure_delegate

@@ -13,7 +13,7 @@ from babel.core import Locale
 from bootstack.widgets.primitives import Button, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.types import Master
 from bootstack.constants import BOTH, CENTER, LEFT, NSEW, PRIMARY, X, Y, YES
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets.mixins import configure_delegate
 

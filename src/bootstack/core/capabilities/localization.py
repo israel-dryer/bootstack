@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-from bootstack.core.localization.msgcat import MessageCatalog
-from bootstack.core.localization.specs import (
+from bootstack.i18n.msgcat import MessageCatalog
+from bootstack.i18n.specs import (
     LocalizedSpec,
     LocalizedTextSpec,
     LocalizedValueSpec,
@@ -58,7 +58,7 @@ def resolve_text(
         >>> spec is None
         True
 
-        >>> from bootstack.core.localization.specs import L
+        >>> from bootstack.i18n.specs import L
         >>> spec = resolve_text(L("greeting"))
         >>> spec.key
         'greeting'
@@ -145,7 +145,7 @@ def apply_spec(spec: LocalizedSpec, locale: str | None = None) -> str:
         The resolved, localized string value.
 
     Examples:
-        >>> from bootstack.core.localization.specs import L, LV
+        >>> from bootstack.i18n.specs import L, LV
         >>> spec = L("hello")
         >>> result = apply_spec(spec)  # Uses current locale
         >>> isinstance(result, str)

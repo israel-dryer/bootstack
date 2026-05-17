@@ -8,7 +8,7 @@ from typing import Any, Optional
 from typing_extensions import Unpack
 
 from bootstack.constants import *
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack.dialogs.dialog import Dialog, DialogButton, ShowOptions
 from bootstack._runtime.app import Window
 from bootstack._runtime.utility import scale_size

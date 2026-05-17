@@ -20,7 +20,7 @@ from bootstack.core.capabilities.localization import (
     get_current_locale,
     create_formatted_signal,
 )
-from bootstack.core.localization.specs import (
+from bootstack.i18n.specs import (
     LocalizedSpec,
     LocalizedTextSpec,
     LocalizedValueSpec,

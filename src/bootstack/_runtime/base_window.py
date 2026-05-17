@@ -22,7 +22,7 @@ import sys
 import tkinter
 from typing import Literal, Optional, Tuple, Callable, Any
 
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning, WindowSizing
 
 

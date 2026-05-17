@@ -17,8 +17,8 @@ from babel.numbers import get_decimal_symbol, get_group_symbol
 from typing_extensions import Unpack
 
 from bootstack.constants import *
-from bootstack.core.localization.intl_format import detect_locale
-from bootstack.core.localization.msgcat import MessageCatalog
+from bootstack.i18n.intl_format import detect_locale
+from bootstack.i18n.msgcat import MessageCatalog
 from bootstack.core.publisher import Publisher
 from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow

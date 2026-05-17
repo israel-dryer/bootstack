@@ -9,7 +9,7 @@ from typing import Any, Callable, List, Optional
 from bootstack.widgets.primitives import Frame, Label
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.constants import *
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from .dialog import ButtonRole, Dialog, DialogButton
 
 ttk = SimpleNamespace(Frame=Frame, Label=Label)

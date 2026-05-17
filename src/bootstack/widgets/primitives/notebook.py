@@ -9,7 +9,7 @@ from typing_extensions import Unpack
 from bootstack.core import NavigationError
 from bootstack.core.mixins.ttk_state import TtkStateMixin
 from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.primitives import Frame
 from bootstack.widgets.types import Master

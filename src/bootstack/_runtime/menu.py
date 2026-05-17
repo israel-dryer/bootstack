@@ -38,7 +38,7 @@ from tkinter import font, ttk
 from typing import Any, Optional, Union
 
 from ttkbootstrap_icons_bs import BootstrapIcon
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack._runtime.shortcuts import format_shortcut
 from bootstack.style.style import get_style
 

@@ -14,7 +14,7 @@ ttk = SimpleNamespace(
     Frame=Frame,
     Label=Label,
 )
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack.dialogs.datedialog import DateDialog
 from bootstack.dialogs.dialog import Dialog, DialogButton
 from bootstack.dialogs.fontdialog import FontDialog

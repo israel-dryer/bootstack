@@ -16,7 +16,7 @@ from PIL import ImageColor
 from bootstack.constants import *
 from bootstack.core import colorutils
 from bootstack.core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
-from bootstack.core.localization import MessageCatalog
+from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style
 from bootstack.widgets.composites.tooltip import ToolTip

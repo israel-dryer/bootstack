@@ -78,7 +78,7 @@ if TYPE_CHECKING:
         BaseDataSource, MemoryDataSource, SqliteDataSource,
         FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
     )
-    from bootstack.core.localization import MessageCatalog, L, LV, IntlFormatter
+    from bootstack.i18n import MessageCatalog, L, LV, IntlFormatter
     from bootstack.core.images import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
     from bootstack.signals import Signal, TraceOperation
@@ -197,7 +197,7 @@ _MODULE_EXPORTS = {
         "DataSourceProtocol", "Record", "Primitive",
     ],
     # Internationalization
-    "bootstack.core.localization": ["MessageCatalog", "L", "LV", "IntlFormatter"],
+    "bootstack.i18n": ["MessageCatalog", "L", "LV", "IntlFormatter"],
     # Utilities
     "bootstack.core.images": ["Image"],
     "bootstack.signals": ["Signal", "TraceOperation"],
