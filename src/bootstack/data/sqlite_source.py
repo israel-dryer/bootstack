@@ -31,8 +31,8 @@ import csv
 import sqlite3
 from typing import Any, Dict, List, Optional, Union, Sequence
 
-from bootstack.datasource.base import BaseDataSource
-from bootstack.datasource.types import Primitive, Record
+from bootstack.data.base import BaseDataSource
+from bootstack.data.types import Primitive, Record
 
 # Internal column names — reserved by SqliteDataSource, never exposed to user data.
 _ROW_ID = "_bs_row_id"

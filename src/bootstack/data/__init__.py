@@ -13,7 +13,7 @@ All datasources support:
     - CSV export
 
 Usage:
-    from bootstack.datasource import MemoryDataSource, SqliteDataSource, FileDataSource
+    from bootstack.data import MemoryDataSource, SqliteDataSource, FileDataSource
 
     # In-memory datasource
     ds = MemoryDataSource(page_size=20)
@@ -33,11 +33,11 @@ Usage:
     page1 = ds.get_page(0)
 """
 
-from bootstack.datasource.base import BaseDataSource
-from bootstack.datasource.memory_source import MemoryDataSource
-from bootstack.datasource.sqlite_source import SqliteDataSource
-from bootstack.datasource.file_source import FileDataSource, FileSourceConfig
-from bootstack.datasource.types import DataSourceProtocol, Record, Primitive
+from bootstack.data.base import BaseDataSource
+from bootstack.data.memory_source import MemoryDataSource
+from bootstack.data.sqlite_source import SqliteDataSource
+from bootstack.data.file_source import FileDataSource, FileSourceConfig
+from bootstack.data.types import DataSourceProtocol, Record, Primitive
 
 __all__ = [
     'BaseDataSource',

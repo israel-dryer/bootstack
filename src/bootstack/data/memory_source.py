@@ -46,8 +46,8 @@ import re
 from collections.abc import Sequence
 from typing import Any, Dict, List, Optional, Union, Mapping, Iterable, Tuple
 
-from bootstack.datasource.base import BaseDataSource
-from bootstack.datasource.types import Primitive
+from bootstack.data.base import BaseDataSource
+from bootstack.data.types import Primitive
 
 
 class MemoryDataSource(BaseDataSource):

@@ -3,7 +3,7 @@
 from tkinter import TclError
 from typing import Any, Callable, Literal
 
-from bootstack.datasource import MemoryDataSource, DataSourceProtocol
+from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets.composites.list.listitem import ListItem
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.scrollbar import Scrollbar

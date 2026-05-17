@@ -74,7 +74,7 @@ if TYPE_CHECKING:
         MessageDialog, MessageBox, QueryDialog, QueryBox,
         DateDialog, FontDialog, ColorChooser, ColorChooserDialog, ColorDropperDialog,
     )
-    from bootstack.datasource import (
+    from bootstack.data import (
         BaseDataSource, MemoryDataSource, SqliteDataSource,
         FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
     )
@@ -191,7 +191,7 @@ _MODULE_EXPORTS = {
         "ColorChooser", "ColorChooserDialog", "ColorDropperDialog",
     ],
     # Data Sources
-    "bootstack.datasource": [
+    "bootstack.data": [
         "BaseDataSource", "MemoryDataSource", "SqliteDataSource",
         "FileDataSource", "FileSourceConfig",
         "DataSourceProtocol", "Record", "Primitive",

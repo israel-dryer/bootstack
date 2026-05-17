@@ -51,8 +51,8 @@ from typing import (
     Any, Callable, Dict, Iterator, List, Literal, Optional, Union
 )
 
-from bootstack.datasource.memory_source import MemoryDataSource
-from bootstack.datasource.types import Record, Primitive
+from bootstack.data.memory_source import MemoryDataSource
+from bootstack.data.types import Record, Primitive
 
 
 @dataclass

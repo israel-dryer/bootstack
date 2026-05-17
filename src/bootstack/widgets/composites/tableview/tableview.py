@@ -18,7 +18,7 @@ from bootstack.widgets.types import Master
 
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.style.style import get_style
-from bootstack.datasource.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
+from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
 from bootstack.widgets.primitives.button import Button
 from bootstack.runtime.utility import bind_right_click
 from bootstack.widgets.composites.contextmenu import ContextMenu

@@ -21,7 +21,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Sequence, Mapping
 
-from bootstack.datasource.types import Primitive, Record
+from bootstack.data.types import Primitive, Record
 
 
 class BaseDataSource(ABC):
