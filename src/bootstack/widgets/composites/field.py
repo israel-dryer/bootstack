@@ -16,9 +16,9 @@ from bootstack.widgets.primitives.checkbutton import CheckButton
 from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.mixins.entry_mixin import EntryMixin
-from bootstack.widgets.parts.numberentry_part import NumberEntryPart
-from bootstack.widgets.parts.textentry_part import TextEntryPart
-from bootstack.widgets.parts.spinnerentry_part import SpinnerEntryPart
+from bootstack.widgets._parts.numberentry_part import NumberEntryPart
+from bootstack.widgets._parts.textentry_part import TextEntryPart
+from bootstack.widgets._parts.spinnerentry_part import SpinnerEntryPart
 from bootstack.widgets.types import Master
 
 FieldKind = Literal['text', 'numeric', 'spinbox']

@@ -7,7 +7,7 @@ from typing_extensions import Unpack
 
 from bootstack.core.mixins.ttk_state import TtkStateMixin
 from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
-from bootstack.widgets.internal.wrapper_base import TTKWrapperBase
+from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.types import Master
 from bootstack.style.style import get_style
 from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk

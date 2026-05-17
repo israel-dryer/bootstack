@@ -7,7 +7,7 @@ wheel support.
 
 
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.parts.textentry_part import TextEntryPart
+from bootstack.widgets._parts.textentry_part import TextEntryPart
 
 
 class NumberEntryPart(TextEntryPart):

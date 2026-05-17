@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bootstack.widgets.parts.numberentry_part import NumberEntryPart
-    from bootstack.widgets.parts.numberentry_part import TextEntryPart
+    from bootstack.widgets._parts.numberentry_part import NumberEntryPart
+    from bootstack.widgets._parts.textentry_part import TextEntryPart
 
 
 class EntryMixin:
