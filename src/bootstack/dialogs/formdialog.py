@@ -384,7 +384,6 @@ class FormDialog:
     def _calculate_required_width(self) -> int:
         """Calculate the required minimum width for the dialog based on form structure."""
         try:
-            from bootstack.widgets.composites.form import GroupItem, TabsItem
 
             # Start by finding the maximum width requirement
             max_content_width = self._find_max_content_width(self._items, self._col_count, self._min_col_width)

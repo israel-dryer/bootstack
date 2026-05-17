@@ -18,8 +18,6 @@ if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 from bootstack._core.capabilities.signals import (
-    is_signal,
-    is_variable,
     normalize_signal,
     create_signal,
     infer_default_value_for_widget,

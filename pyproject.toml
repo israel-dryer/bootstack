@@ -109,3 +109,9 @@ first_value = "1"
 filename = "pyproject.toml"
 search = "version = \"{current_version}\""
 replace = "version = \"{new_version}\""
+
+[tool.ruff.lint]
+# F401: imported but unused
+# __init__.py uses dynamic __all__ + lazy __getattr__ + TYPE_CHECKING re-exports
+# that ruff cannot statically trace. Suppress false positives there.
+per-file-ignores = { "src/bootstack/__init__.py" = ["F401"] }

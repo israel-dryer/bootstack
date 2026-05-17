@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Callable, Dict, Optional
+from typing import Dict, Optional
 from collections.abc import Sequence
 
 from typing_extensions import Any, Protocol

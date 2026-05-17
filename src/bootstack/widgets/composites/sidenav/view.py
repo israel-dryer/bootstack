@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from tkinter import Variable
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
 

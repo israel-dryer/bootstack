@@ -9,7 +9,6 @@ from bootstack.widgets.mixins.font_mixin import FontMixin
 from bootstack.widgets.mixins.icon_mixin import IconMixin
 from bootstack.widgets.mixins.signal_mixin import SignalMixin, TextSignalMixin
 from bootstack.widgets.mixins.validation_mixin import ValidationMixin
-from bootstack.widgets.mixins.entry_mixin import EntryMixin
 from bootstack.widgets.mixins.localization_mixin import LocalizationMixin
 
 __all__ = [

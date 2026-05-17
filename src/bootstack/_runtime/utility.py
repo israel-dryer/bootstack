@@ -129,7 +129,6 @@ def enable_high_dpi_awareness(root=None, scaling=None):
             The scaling factor that was applied, or None if no scaling
             was applied.
     """
-    import platform
 
     # Enable DPI awareness on Windows
     try:

@@ -7,7 +7,7 @@ toolbar at top, sidebar navigation on the left, and page content on the right.
 from __future__ import annotations
 
 import sys
-from typing import Any, Callable, Literal
+from typing import Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
 
@@ -16,7 +16,6 @@ from bootstack.widgets.composites.toolbar import Toolbar
 from bootstack.widgets.composites.sidenav import SideNav
 from bootstack.widgets.composites.pagestack import PageStack
 from bootstack.widgets.composites.scrollview import ScrollView
-from bootstack.widgets.mixins import configure_delegate
 from bootstack._runtime.app import App
 from bootstack.widgets.types import WidgetDensity
 

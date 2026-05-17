@@ -10,7 +10,6 @@ from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
     normalize_button_density,
-    entry_font,
     entry_padding,
     entry_image_key,
 )

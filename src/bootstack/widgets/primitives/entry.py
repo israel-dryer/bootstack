@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any, Literal, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin

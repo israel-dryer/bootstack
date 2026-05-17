@@ -10,7 +10,7 @@ required Tcl variable name automatically.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable, Tuple
+from typing import Any, Iterable, Tuple
 
 import tkinter as tk
 import tkinter.ttk as ttk

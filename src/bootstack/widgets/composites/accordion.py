@@ -1,7 +1,7 @@
 """Accordion widget - a container of mutually exclusive expanders."""
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, TYPE_CHECKING, TypedDict
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.separator import Separator

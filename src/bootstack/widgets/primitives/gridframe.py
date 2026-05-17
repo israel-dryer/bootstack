@@ -7,7 +7,7 @@ from typing_extensions import Unpack
 
 from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import Anchor, Direction, Fill, Master, Side, Sticky
+from bootstack.widgets.types import Master, Sticky
 
 AutoFlow = Literal["row", "column", "row-dense", "column-dense", "none"]
 Gap = int | tuple[int, int]

@@ -43,16 +43,15 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
-    Any, Callable, Dict, Iterator, List, Literal, Optional, Union
+    Any, Callable, Dict, Iterator, List, Literal, Optional
 )
 
 from bootstack.data.memory_source import MemoryDataSource
-from bootstack.data.types import Record, Primitive
+from bootstack.data.types import Record
 
 
 @dataclass

@@ -12,7 +12,6 @@ from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.composites.field import Field, FieldOptions
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
-from bootstack.i18n.intl_format import NumberFormatSpec
 
 
 class NumericEntry(Field):

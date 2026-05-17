@@ -1,5 +1,4 @@
 import tkinter
-from collections.abc import ValuesView
 from typing import Any, Callable
 
 from typing_extensions import TypedDict, Unpack

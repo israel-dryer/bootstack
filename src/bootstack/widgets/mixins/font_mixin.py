@@ -96,10 +96,10 @@ the modifier syntax, and apply the resolved font specification to the underlying
 from __future__ import annotations
 
 import re
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bootstack.style.typography import Typography, FontTokenNames
+    pass
 
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 

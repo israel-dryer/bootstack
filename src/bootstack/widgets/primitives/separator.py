@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from tkinter import ttk
-from typing import Any
 from typing_extensions import Unpack
 
 from bootstack._core.mixins.ttk_state import TtkStateMixin

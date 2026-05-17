@@ -16,7 +16,7 @@ from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.dialogs.datedialog import DateDialog
+    pass
 
 
 class DateEntry(Field):

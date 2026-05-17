@@ -17,13 +17,10 @@ from bootstack._core.capabilities.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,
-    get_current_locale,
     create_formatted_signal,
 )
 from bootstack.i18n.specs import (
     LocalizedSpec,
-    LocalizedTextSpec,
-    LocalizedValueSpec,
 )
 from bootstack._runtime.app import get_app_settings
 

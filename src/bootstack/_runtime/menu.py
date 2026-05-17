@@ -34,7 +34,7 @@ Examples:
     ```
 """
 import tkinter as tk
-from tkinter import font, ttk
+from tkinter import font
 from typing import Any, Optional, Union
 
 from ttkbootstrap_icons_bs import BootstrapIcon

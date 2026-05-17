@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 from .msgcat import MessageCatalog
 from .intl_format import IntlFormatter, FormatSpec

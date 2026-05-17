@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from tkinter import StringVar
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
