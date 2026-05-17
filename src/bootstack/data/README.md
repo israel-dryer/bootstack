@@ -51,7 +51,7 @@ Built-in datasources that inherit from `BaseDataSource`:
 Best for small to medium datasets that fit comfortably in memory.
 
 ```python
-from bootstack.datasource import MemoryDataSource
+from bootstack.data import MemoryDataSource
 
 ds = MemoryDataSource(page_size=20)
 ds.set_data([
@@ -75,7 +75,7 @@ page = ds.get_page(0)
 Best for large datasets requiring persistence or SQL capabilities.
 
 ```python
-from bootstack.datasource import SqliteDataSource
+from bootstack.data import SqliteDataSource
 
 # Persistent database
 ds = SqliteDataSource("mydata.db", page_size=50)
@@ -96,7 +96,7 @@ ds = SqliteDataSource(":memory:", page_size=50)
 Best for loading data from files with preprocessing needs.
 
 ```python
-from bootstack.datasource import FileDataSource, FileSourceConfig
+from bootstack.data import FileDataSource, FileSourceConfig
 
 # Simple CSV loading
 ds = FileDataSource("data.csv")
@@ -125,7 +125,7 @@ ds.load()
 This is the easiest and most common approach. You get utility methods for free and only need to implement storage-specific logic.
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 from typing import Any, Dict, List, Optional
 
 class RedisDataSource(BaseDataSource):
@@ -216,7 +216,7 @@ class RedisDataSource(BaseDataSource):
 For maximum flexibility, implement the `DataSourceProtocol` without inheritance. This is useful when you need to integrate with existing classes or have complex inheritance requirements.
 
 ```python
-from bootstack.datasource import DataSourceProtocol
+from bootstack.data import DataSourceProtocol
 from typing import List, Dict, Any, Optional
 
 class APIDataSource:
@@ -374,7 +374,7 @@ Override these to add custom behavior:
 ### Example 1: MongoDB DataSource
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 from pymongo import MongoClient
 
 class MongoDataSource(BaseDataSource):
@@ -438,7 +438,7 @@ class MongoDataSource(BaseDataSource):
 ### Example 2: Cached API DataSource
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 import requests
 from functools import lru_cache
 from datetime import datetime, timedelta
@@ -495,7 +495,7 @@ class CachedAPIDataSource(BaseDataSource):
 ### Example 3: Multi-Source DataSource
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 
 class MultiSourceDataSource(BaseDataSource):
     """Aggregates data from multiple datasources."""
@@ -591,7 +591,7 @@ class MyDataSource:
 ### After (Inheriting BaseDataSource)
 
 ```python
-from bootstack.datasource import BaseDataSource
+from bootstack.data import BaseDataSource
 
 class MyDataSource(BaseDataSource):
     def __init__(self, page_size=10):
