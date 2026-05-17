@@ -4,7 +4,7 @@ from itertools import count
 from typing import Any, Callable, Generic, Type, TypeVar
 
 from bootstack.signals.types import TraceOperation
-from bootstack.core.variables import SetVar
+from bootstack._core.variables import SetVar
 
 T = TypeVar("T")
 U = TypeVar("U")

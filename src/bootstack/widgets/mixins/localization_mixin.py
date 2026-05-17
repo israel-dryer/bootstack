@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import Any, Dict
 from tkinter import StringVar, Misc
 
-from bootstack.core.capabilities.localization import (
+from bootstack._core.capabilities.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,

@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter
 from typing import Any, Optional, Tuple
 
-from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
+from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow
 
 

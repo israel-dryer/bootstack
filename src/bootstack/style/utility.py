@@ -6,7 +6,7 @@ from typing import Tuple, Union, cast
 from PIL import Image, ImageChops, ImageColor, ImageOps, ImageDraw
 from PIL.ImageTk import PhotoImage
 
-from bootstack.core.images import Image as ImageService
+from bootstack._core.images import Image as ImageService
 from bootstack._runtime.utility import clamp
 from bootstack.style.types import ColorModel
 

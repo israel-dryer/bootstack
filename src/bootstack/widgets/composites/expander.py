@@ -9,7 +9,7 @@ from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.compositeframe import CompositeFrame
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master
-from bootstack.core.capabilities.signals import normalize_signal
+from bootstack._core.capabilities.signals import normalize_signal
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal

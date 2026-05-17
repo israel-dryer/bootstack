@@ -19,8 +19,8 @@ from typing_extensions import Unpack
 from bootstack.constants import *
 from bootstack.i18n.intl_format import detect_locale
 from bootstack.i18n.msgcat import MessageCatalog
-from bootstack.core.publisher import Publisher
-from bootstack.core.mixins.widget import WidgetCapabilitiesMixin
+from bootstack._core.publisher import Publisher
+from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow
 from bootstack._runtime.utility import enable_high_dpi_awareness
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from . import colorutils, publisher, capabilities
-from bootstack.core.exceptions import (
+from bootstack._core.exceptions import (
     TTKBootstrapError,
     LayoutError,
     ThemeError,

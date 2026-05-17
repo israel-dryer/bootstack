@@ -1,7 +1,7 @@
 import tkinter as tk
 from typing import Any, Literal
 
-from bootstack.core.exceptions import ConfigurationWarning
+from bootstack._core.exceptions import ConfigurationWarning
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.mixins import configure_delegate

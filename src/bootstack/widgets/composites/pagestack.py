@@ -6,7 +6,7 @@ from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets.primitives import Frame
 from bootstack.widgets.types import Master
-from bootstack.core import NavigationError
+from bootstack._core import NavigationError
 
 
 class PageOptions(TypedDict, total=False):

@@ -7,7 +7,7 @@ from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets.primitives.radiotoggle import RadioToggle
 from bootstack.widgets.primitives.checktoggle import CheckToggle
-from bootstack.core.variables import SetVar
+from bootstack._core.variables import SetVar
 from bootstack.widgets.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.primitives import Frame
 

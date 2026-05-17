@@ -79,11 +79,11 @@ if TYPE_CHECKING:
         FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
     )
     from bootstack.i18n import MessageCatalog, L, LV, IntlFormatter
-    from bootstack.core.images import Image
+    from bootstack._core.images import Image
     from ttkbootstrap_icons_bs import BootstrapIcon
     from bootstack.signals import Signal, TraceOperation
     from bootstack.validation import ValidationRule, ValidationResult
-    from bootstack.core.variables import SetVar
+    from bootstack._core.variables import SetVar
 
 
 _TK_EXPORTS = [
@@ -199,10 +199,10 @@ _MODULE_EXPORTS = {
     # Internationalization
     "bootstack.i18n": ["MessageCatalog", "L", "LV", "IntlFormatter"],
     # Utilities
-    "bootstack.core.images": ["Image"],
+    "bootstack._core.images": ["Image"],
     "bootstack.signals": ["Signal", "TraceOperation"],
     "bootstack.validation": ["ValidationRule", "ValidationResult"],
-    "bootstack.core.variables": ["SetVar"],
+    "bootstack._core.variables": ["SetVar"],
 }
 
 # Auto-generate lazy exports and categorized export lists

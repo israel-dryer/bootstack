@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from typing import Mapping, Any
 
-from bootstack.core.capabilities.after import AfterMixin
-from bootstack.core.capabilities.bind import BindingsMixin
-from bootstack.core.capabilities.bindtags import BindtagsMixin
-from bootstack.core.capabilities.clipboard import ClipboardMixin
-from bootstack.core.capabilities.focus import FocusMixin
-from bootstack.core.capabilities.grab import GrabMixin
-from bootstack.core.capabilities.grid import GridMixin
-from bootstack.core.capabilities.pack import PackMixin
-from bootstack.core.capabilities.place import PlaceMixin
-from bootstack.core.capabilities.selection import SelectionMixin
-from bootstack.core.capabilities.winfo import WinfoMixin
+from bootstack._core.capabilities.after import AfterMixin
+from bootstack._core.capabilities.bind import BindingsMixin
+from bootstack._core.capabilities.bindtags import BindtagsMixin
+from bootstack._core.capabilities.clipboard import ClipboardMixin
+from bootstack._core.capabilities.focus import FocusMixin
+from bootstack._core.capabilities.grab import GrabMixin
+from bootstack._core.capabilities.grid import GridMixin
+from bootstack._core.capabilities.pack import PackMixin
+from bootstack._core.capabilities.place import PlaceMixin
+from bootstack._core.capabilities.selection import SelectionMixin
+from bootstack._core.capabilities.winfo import WinfoMixin
 
 
 class WidgetCapabilitiesMixin(

@@ -9,7 +9,7 @@ Capabilities:
     localization: Text translation and value formatting
 """
 
-from bootstack.core.capabilities.signals import (
+from bootstack._core.capabilities.signals import (
     SignalBinding,
     is_signal,
     is_variable,
@@ -19,7 +19,7 @@ from bootstack.core.capabilities.signals import (
     query_binding,
 )
 
-from bootstack.core.capabilities.localization import (
+from bootstack._core.capabilities.localization import (
     resolve_text,
     resolve_variable_text,
     apply_spec,

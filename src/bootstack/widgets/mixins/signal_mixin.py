@@ -17,7 +17,7 @@ from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
-from bootstack.core.capabilities.signals import (
+from bootstack._core.capabilities.signals import (
     is_signal,
     is_variable,
     normalize_signal,
