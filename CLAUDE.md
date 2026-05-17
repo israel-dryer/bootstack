@@ -11,6 +11,12 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
 - **Active branch:** `docs/restructure` — single long-lived branch for the docs
   initiative. Stay on it. PRs go `docs/restructure` → `main`, never per-session
   branches to `main`.
+- **Parallel design initiative on `design/widget-redesign`:** seven RFCs
+  covering TextArea/CodeEditor, Slider/RangeSlider, TreeView, Menu, Toplevel,
+  and Notebook/Spinbox. Start at
+  [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
+  Designs settled; implementation pending on per-widget `feat/*` branches off
+  `main`.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
