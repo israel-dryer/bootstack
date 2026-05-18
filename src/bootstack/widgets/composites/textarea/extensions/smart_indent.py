@@ -18,14 +18,14 @@ if TYPE_CHECKING:
 class SmartIndent(EditFilter):
     """Provides auto-indent on Return and optional Tab-to-spaces conversion.
 
-    On ``<Return>``:
+    On `<Return>`:
         Inserts a newline followed by the same leading whitespace as the
         current line, so the cursor lands at the same indent level.
 
-    On ``<Tab>`` (when ``insert_spaces=True``):
-        Inserts ``tab_width`` spaces instead of a literal tab character.
+    On `<Tab>` (when `insert_spaces=True`):
+        Inserts `tab_width` spaces instead of a literal tab character.
 
-    Install via ``core.add_filter(SmartIndent())``.
+    Install via `core.add_filter(SmartIndent())`.
     """
 
     def __init__(self, tab_width: int = 4, insert_spaces: bool = True) -> None:

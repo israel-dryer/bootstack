@@ -9,11 +9,11 @@ if TYPE_CHECKING:
 
 
 class ChangeNotifier(EditFilter):
-    """Fires ``<<Change>>`` on the core's Text widget after every edit.
+    """Fires `<<Change>>` on the core's Text widget after every edit.
 
-    The event payload (``event.data``) is a dict with keys:
-    - ``op``: ``"insert"`` or ``"delete"``
-    - ``index``: The position where the edit occurred (Tk index string).
+    The event payload (`event.data`) is a dict with keys:
+    - `op`: `"insert"` or `"delete"`
+    - `index`: The position where the edit occurred (Tk index string).
     """
 
     def __init__(self) -> None:

@@ -21,7 +21,7 @@ _PADY = 1    # top padding to align with text widget baseline
 class LineNumbers(Sidebar):
     """Displays line numbers alongside the text, scroll-synced.
 
-    Add to a ``CodeEditor`` or ``TextArea`` core via::
+    Add to a `CodeEditor` or `TextArea` core via::
 
         core.add_sidebar(LineNumbers())
     """

@@ -5,7 +5,7 @@ Tests: language= at construction, set_language() switching, pygments_style=,
 """
 import bootstack as bs
 
-app = bs.App(title="CodeEditor v3 — Syntax Highlighting", size=(820, 680))
+app = bs.App(title="CodeEditor v3 — Syntax Highlighting", minsize=(820, 680), theme="dark")
 log_var = bs.Signal("")
 
 def log(msg):

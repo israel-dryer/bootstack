@@ -146,8 +146,8 @@ class _MultilineCore(tk.Frame):
         """Attach a sidebar widget to this core.
 
         Args:
-            sidebar: A ``Sidebar`` instance.
-            side: ``"left"`` (default) — only left sidebars are supported
+            sidebar: A `Sidebar` instance.
+            side: `"left"` (default) — only left sidebars are supported
                 in the current layout.
         """
         self._sidebars.append(sidebar)
@@ -157,7 +157,7 @@ class _MultilineCore(tk.Frame):
         """Detach a sidebar widget from this core.
 
         Args:
-            sidebar: The ``Sidebar`` instance to remove.
+            sidebar: The `Sidebar` instance to remove.
         """
         if sidebar in self._sidebars:
             self._sidebars.remove(sidebar)
@@ -312,9 +312,9 @@ class _MultilineCore(tk.Frame):
 
         Args:
             name: Style identifier referenced in decoration objects.
-            **attrs: Style attributes — ``foreground``, ``background``,
-                ``font``, ``underline``, ``spacing1``, ``spacing3``.
-                Values may be theme tokens (e.g. ``'primary'``) or literal
+            **attrs: Style attributes — `foreground`, `background`,
+                `font`, `underline`, `spacing1`, `spacing3`.
+                Values may be theme tokens (e.g. `'primary'`) or literal
                 Tk color/font strings.
         """
         self._style_registry.define_style(name, **attrs)
@@ -324,7 +324,7 @@ class _MultilineCore(tk.Frame):
 
         Args:
             layer: The decoration layer to update.
-            decorations: Sequence of ``RangeDecoration`` or ``LineDecoration``.
+            decorations: Sequence of `RangeDecoration` or `LineDecoration`.
         """
         self._decoration_diff.set_decorations(layer, decorations)
 
@@ -348,88 +348,88 @@ class _MultilineCore(tk.Frame):
     # ── event subscription ────────────────────────────────────────────────
 
     def on_change(self, callback: Callable) -> str:
-        """Register a callback for ``<<Change>>`` events.
+        """Register a callback for `<<Change>>` events.
 
         Args:
-            callback: Receives the Tk event. ``event.data`` contains
-                ``{"op": "insert"|"delete", "index": str}``.
+            callback: Receives the Tk event. `event.data` contains
+                `{"op": "insert"|"delete", "index": str}`.
 
         Returns:
-            Bind ID — pass to ``off_change()`` to unsubscribe.
+            Bind ID — pass to `off_change()` to unsubscribe.
         """
         return self.text.bind("<<Change>>", callback, add="+")
 
     def off_change(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+        """Unsubscribe from `<<Change>>`.
 
         Args:
-            bind_id: ID returned by ``on_change()``. If None, removes all.
+            bind_id: ID returned by `on_change()`. If None, removes all.
         """
         self.text.unbind("<<Change>>", bind_id)
 
     def on_modified(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextModified>>`` events.
+        """Register a callback for `<<TextModified>>` events.
 
-        Fires when the dirty state changes. ``event.data["is_dirty"]``
+        Fires when the dirty state changes. `event.data["is_dirty"]`
         reflects the new state.
 
         Args:
-            callback: Receives the Tk event with ``event.data = {"is_dirty": bool}``.
+            callback: Receives the Tk event with `event.data = {"is_dirty": bool}`.
 
         Returns:
-            Bind ID — pass to ``off_modified()`` to unsubscribe.
+            Bind ID — pass to `off_modified()` to unsubscribe.
         """
         return self.text.bind("<<TextModified>>", callback, add="+")
 
     def off_modified(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextModified>>``.
+        """Unsubscribe from `<<TextModified>>`.
 
         Args:
-            bind_id: ID returned by ``on_modified()``. If None, removes all.
+            bind_id: ID returned by `on_modified()`. If None, removes all.
         """
         self.text.unbind("<<TextModified>>", bind_id)
 
     def on_undo(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextUndo>>`` events.
+        """Register a callback for `<<TextUndo>>` events.
 
-        Fires after an undo completes. ``event.data["value"]`` is the
+        Fires after an undo completes. `event.data["value"]` is the
         text content after the undo.
 
         Args:
-            callback: Receives the Tk event with ``event.data = {"value": str}``.
+            callback: Receives the Tk event with `event.data = {"value": str}`.
 
         Returns:
-            Bind ID — pass to ``off_undo()`` to unsubscribe.
+            Bind ID — pass to `off_undo()` to unsubscribe.
         """
         return self.text.bind("<<TextUndo>>", callback, add="+")
 
     def off_undo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextUndo>>``.
+        """Unsubscribe from `<<TextUndo>>`.
 
         Args:
-            bind_id: ID returned by ``on_undo()``. If None, removes all.
+            bind_id: ID returned by `on_undo()`. If None, removes all.
         """
         self.text.unbind("<<TextUndo>>", bind_id)
 
     def on_redo(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextRedo>>`` events.
+        """Register a callback for `<<TextRedo>>` events.
 
-        Fires after a redo completes. ``event.data["value"]`` is the
+        Fires after a redo completes. `event.data["value"]` is the
         text content after the redo.
 
         Args:
-            callback: Receives the Tk event with ``event.data = {"value": str}``.
+            callback: Receives the Tk event with `event.data = {"value": str}`.
 
         Returns:
-            Bind ID — pass to ``off_redo()`` to unsubscribe.
+            Bind ID — pass to `off_redo()` to unsubscribe.
         """
         return self.text.bind("<<TextRedo>>", callback, add="+")
 
     def off_redo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextRedo>>``.
+        """Unsubscribe from `<<TextRedo>>`.
 
         Args:
-            bind_id: ID returned by ``on_redo()``. If None, removes all.
+            bind_id: ID returned by `on_redo()`. If None, removes all.
         """
         self.text.unbind("<<TextRedo>>", bind_id)
 

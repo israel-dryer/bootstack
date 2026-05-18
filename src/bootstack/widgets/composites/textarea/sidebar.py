@@ -14,20 +14,20 @@ if TYPE_CHECKING:
 class Sidebar:
     """Base class for gutter widgets placed alongside the Text area.
 
-    Subclass and override ``_build(core)`` to create the sidebar widget,
-    then override ``on_scroll`` and ``on_change`` as needed.
+    Subclass and override `_build(core)` to create the sidebar widget,
+    then override `on_scroll` and `on_change` as needed.
 
     The sidebar is placed in column 0 of the core's grid (left side).
-    The core calls ``on_scroll`` whenever the main text scrolls and
-    ``on_change`` (via the ``<<Change>>`` event) whenever content changes.
+    The core calls `on_scroll` whenever the main text scrolls and
+    `on_change` (via the `<<Change>>` event) whenever content changes.
     """
 
     def attach(self, core: _MultilineCore, side: Literal["left"] = "left") -> None:
         """Attach this sidebar to *core* and add it to the grid.
 
         Args:
-            core: The ``_MultilineCore`` to attach to.
-            side: Layout side. Only ``"left"`` is currently supported.
+            core: The `_MultilineCore` to attach to.
+            side: Layout side. Only `"left"` is currently supported.
         """
         self._core = core
         self._side = side
@@ -45,10 +45,10 @@ class Sidebar:
     # ── override in subclasses ────────────────────────────────────────────
 
     def _build(self, core: _MultilineCore) -> None:
-        """Create the sidebar widget and grid it. Called by ``attach``."""
+        """Create the sidebar widget and grid it. Called by `attach`."""
 
     def _destroy(self) -> None:
-        """Release resources. Called by ``detach``."""
+        """Release resources. Called by `detach`."""
 
     def on_scroll(self, first: str, last: str) -> None:
         """Called when the main text scrolls.

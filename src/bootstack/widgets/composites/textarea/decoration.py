@@ -13,7 +13,7 @@ class Position:
     col: int
 
     def to_tk(self) -> str:
-        """Convert to a Tk text index string (e.g. ``'3.7'``)."""
+        """Convert to a Tk text index string (e.g. `'3.7'`)."""
         return f"{self.line}.{self.col}"
 
 

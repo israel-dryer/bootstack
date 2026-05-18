@@ -3,6 +3,8 @@
 Tests: show_indent_guides=True, Ctrl+F find bar, match navigation,
        case-sensitive toggle, regex toggle, set_language() with search open.
 """
+import print
+
 import bootstack as bs
 from bootstack.widgets.composites.textarea.extensions.indent_guides import IndentGuides
 

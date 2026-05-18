@@ -22,17 +22,17 @@ if TYPE_CHECKING:
 class CodeEditor(Frame):
     """A code editor widget with line numbers, bracket matching, and smart indent.
 
-    CodeEditor wraps ``_MultilineCore`` with editor-grade defaults and
-    pre-installed extensions. It is not Field-wrapped — use ``TextArea``
+    CodeEditor wraps `_MultilineCore` with editor-grade defaults and
+    pre-installed extensions. It is not Field-wrapped — use `TextArea`
     for labeled form inputs.
 
     Pre-installed extensions:
-    - ``LineNumbers`` sidebar (when ``show_line_numbers=True``)
-    - ``BracketMatcher`` — highlights matching bracket pairs
-    - ``SmartIndent`` — auto-indent on Return, Tab-to-spaces
+    - `LineNumbers` sidebar (when `show_line_numbers=True`)
+    - `BracketMatcher` — highlights matching bracket pairs
+    - `SmartIndent` — auto-indent on Return, Tab-to-spaces
 
-    Add your own extensions with ``editor.install(filter)`` and remove
-    them with ``editor.uninstall(filter)``.
+    Add your own extensions with `editor.install(filter)` and remove
+    them with `editor.uninstall(filter)`.
     """
 
     def __init__(
@@ -234,7 +234,7 @@ class CodeEditor(Frame):
         """Install a custom filter extension.
 
         Args:
-            f: The ``EditFilter`` to add.
+            f: The `EditFilter` to add.
         """
         self._core.add_filter(f)
 
@@ -242,7 +242,7 @@ class CodeEditor(Frame):
         """Remove a previously installed filter extension.
 
         Args:
-            f: The ``EditFilter`` to remove.
+            f: The `EditFilter` to remove.
         """
         self._core.remove_filter(f)
 
@@ -251,84 +251,84 @@ class CodeEditor(Frame):
         self._core.focus_set()
 
     def on_change(self, callback: Callable) -> str:
-        """Register a callback for ``<<Change>>`` events.
+        """Register a callback for `<<Change>>` events.
 
         Args:
             callback: Receives the Tk event.
 
         Returns:
-            Bind ID — pass to ``off_change()`` to unsubscribe.
+            Bind ID — pass to `off_change()` to unsubscribe.
         """
         return self._core.on_change(callback)
 
     def off_change(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+        """Unsubscribe from `<<Change>>`.
 
         Args:
-            bind_id: ID returned by ``on_change()``. If None, removes all.
+            bind_id: ID returned by `on_change()`. If None, removes all.
         """
         self._core.off_change(bind_id)
 
     def on_modified(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextModified>>`` events.
+        """Register a callback for `<<TextModified>>` events.
 
         Args:
-            callback: Receives event with ``event.data = {"is_dirty": bool}``.
+            callback: Receives event with `event.data = {"is_dirty": bool}`.
 
         Returns:
-            Bind ID — pass to ``off_modified()`` to unsubscribe.
+            Bind ID — pass to `off_modified()` to unsubscribe.
         """
         return self._core.on_modified(callback)
 
     def off_modified(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextModified>>``.
+        """Unsubscribe from `<<TextModified>>`.
 
         Args:
-            bind_id: ID returned by ``on_modified()``. If None, removes all.
+            bind_id: ID returned by `on_modified()`. If None, removes all.
         """
         self._core.off_modified(bind_id)
 
     def on_undo(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextUndo>>`` events.
+        """Register a callback for `<<TextUndo>>` events.
 
         Args:
-            callback: Receives event with ``event.data = {"value": str}``.
+            callback: Receives event with `event.data = {"value": str}`.
 
         Returns:
-            Bind ID — pass to ``off_undo()`` to unsubscribe.
+            Bind ID — pass to `off_undo()` to unsubscribe.
         """
         return self._core.on_undo(callback)
 
     def off_undo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextUndo>>``.
+        """Unsubscribe from `<<TextUndo>>`.
 
         Args:
-            bind_id: ID returned by ``on_undo()``. If None, removes all.
+            bind_id: ID returned by `on_undo()`. If None, removes all.
         """
         self._core.off_undo(bind_id)
 
     def on_redo(self, callback: Callable) -> str:
-        """Register a callback for ``<<TextRedo>>`` events.
+        """Register a callback for `<<TextRedo>>` events.
 
         Args:
-            callback: Receives event with ``event.data = {"value": str}``.
+            callback: Receives event with `event.data = {"value": str}`.
 
         Returns:
-            Bind ID — pass to ``off_redo()`` to unsubscribe.
+            Bind ID — pass to `off_redo()` to unsubscribe.
         """
         return self._core.on_redo(callback)
 
     def off_redo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<TextRedo>>``.
+        """Unsubscribe from `<<TextRedo>>`.
 
         Args:
-            bind_id: ID returned by ``on_redo()``. If None, removes all.
+            bind_id: ID returned by `on_redo()`. If None, removes all.
         """
         self._core.off_redo(bind_id)
 
     @property
     def core(self) -> _MultilineCore:
-        """The internal ``_MultilineCore`` — for advanced extension use."""
+        """The internal `_MultilineCore` — for advanced extension use."""
         return self._core
 
     def show_search(self) -> None:

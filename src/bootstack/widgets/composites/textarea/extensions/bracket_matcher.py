@@ -28,10 +28,10 @@ _FLASH_MS = 500     # how long to show the highlight
 class BracketMatcher(EditFilter):
     """Highlights matching bracket pairs when the cursor rests on a bracket.
 
-    Install via ``core.add_filter(BracketMatcher())``.
-    The highlight tag ``bs::bracket::match`` is applied to both the bracket
+    Install via `core.add_filter(BracketMatcher())`.
+    The highlight tag `bs::bracket::match` is applied to both the bracket
     under the cursor and its matching partner. It is removed after
-    ``_FLASH_MS`` milliseconds or on the next cursor move.
+    `_FLASH_MS` milliseconds or on the next cursor move.
     """
 
     def __init__(self) -> None:

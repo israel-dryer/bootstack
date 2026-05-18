@@ -22,12 +22,12 @@ if TYPE_CHECKING:
 class EditFilter:
     """Sits in the mutation chain between user code and the Tk Text widget.
 
-    Subclass and override ``insert`` and/or ``delete`` to intercept edits.
-    Always forward to ``self.delegate.insert`` / ``self.delegate.delete``
+    Subclass and override `insert` and/or `delete` to intercept edits.
+    Always forward to `self.delegate.insert` / `self.delegate.delete`
     unless you intend to suppress the edit.
 
-    Attribute reads (``self.get(...)``, ``self.tag_add(...)``, etc.) forward
-    automatically to the next delegate via ``__getattr__``, so a filter
+    Attribute reads (`self.get(...)`, `self.tag_add(...)`, etc.) forward
+    automatically to the next delegate via `__getattr__`, so a filter
     behaves like the Text widget itself when reading state.
     """
 
@@ -75,7 +75,7 @@ class _BottomFilter:
 
     WidgetRedirector.register() returns an OriginalCommand callable for each
     intercepted operation. Calling it routes directly to the renamed Tcl proc
-    (e.g. ``.!text_orig insert ...``) without going back through the chain.
+    (e.g. `.!text_orig insert ...`) without going back through the chain.
     """
 
     def __init__(self, orig_insert, orig_delete, text: tk.Text) -> None:

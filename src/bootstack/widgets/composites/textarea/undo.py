@@ -90,8 +90,8 @@ class UndoManager(EditFilter):
 
     Intercepts every insert/delete, records canonical operations, and groups
     consecutive same-class single-character inserts into one undo block.
-    Provides ``undo()``, ``redo()``, ``undo_block_start()``,
-    ``undo_block_stop()``, and ``reset_undo()`` via the owning core.
+    Provides `undo()`, `redo()`, `undo_block_start()`,
+    `undo_block_stop()`, and `reset_undo()` via the owning core.
     """
 
     MAX_UNDO = 1000
