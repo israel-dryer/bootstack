@@ -80,14 +80,14 @@ shell.mainloop()
 `PackFrame` and `GridFrame` let you describe a layout once instead of repeating geometry calls on each child:
 
 ```python
-form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), padding=12)
+form = bs.GridFrame(app, columns=["auto", 1], gap=(12, 6), sticky_items="ew", padding=12)
 form.pack(fill="both", expand=True)
 
-form.add(bs.Label(form, text="Name"))
-form.add(bs.Entry(form))
-form.add(bs.Label(form, text="Email"))
-form.add(bs.Entry(form))
-form.add(bs.Button(form, text="Submit", accent="primary"), columnspan=2)
+bs.Label(form, text="Name").grid()
+bs.TextEntry(form).grid()
+bs.Label(form, text="Email").grid()
+bs.TextEntry(form).grid()
+bs.Button(form, text="Submit", accent="primary").grid(columnspan=2)
 ```
 
 ### Semantic styling
