@@ -11,12 +11,11 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
 - **Active branch:** `docs/restructure` — single long-lived branch for the docs
   initiative. Stay on it. PRs go `docs/restructure` → `main`, never per-session
   branches to `main`.
-- **Parallel design initiative on `design/widget-redesign`:** seven RFCs
-  covering TextArea/CodeEditor, Slider/RangeSlider, TreeView, Menu, Toplevel,
-  and Notebook/Spinbox. Start at
+- **Widget redesign initiative — `feat/*` branches off `main`:** RFCs on
+  `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
-  Designs settled; implementation pending on per-widget `feat/*` branches off
-  `main`.
+  **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
+  **Remaining:** TextArea/CodeEditor, Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
@@ -150,7 +149,7 @@ new or unstarted pages.
 
 ---
 
-## Current state (as of Session 20)
+## Current state (as of Session 21)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -278,6 +277,8 @@ All public names accessible via `bs.*` — internal paths with `_` prefix are no
     - Scale needs API design pass (`from_`/`to` naming, `on_changed`, `<<Change>>`)
     - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
     - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
+    - `TabView(variant='pill')` crashes — style builder has no pill builder for
+      `TabItem.TFrame`. Fix in `bootstyle_builder_ttk.py`.
 
 11. **Badge working-tree state, parked.** `docs_scripts/widgets_badge_examples.py`
     uses icon kwargs that don't work; `widgets_badge_quickstart.py` and
@@ -382,6 +383,46 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 21 — Widget redesign: Toplevel polish + TabView parity (2026-05-17)
+
+Two widget redesign RFCs implemented and merged to `main`.
+
+**Toplevel polish (PR #45) — `_runtime/base_window.py`, `_runtime/toplevel.py`, `_runtime/app.py`:**
+- Multi-handler close chain on `BaseWindow`: `add_close_handler`, `remove_close_handler`,
+  `_close_dispatch`, `_do_close`. `on_close()` now delegates to `add_close_handler`.
+- `_setup_window` centering now explicit via `center_on_parent`/`center_on_screen` kwargs
+  (old always-center default removed).
+- `Toplevel`: `modal=False|True|"window"|"app"` with transient auto-promotion;
+  `center_on_parent=`, `center_on_screen=`; `on_close=`; `result` property;
+  `block_until_closed()`. `show()` calls `grab_set`/`grab_set_global` when modal.
+- `App`: `center_on_screen=True` (default preserves old behavior), `on_close=`,
+  `_do_close()` override (withdraw on macOS native, destroy elsewhere).
+- Visual test: `tests/features/toplevel_polish.py`.
+
+**TabView parity (PR #46) — `widgets/composites/tabs/`:**
+- `tv["key"]` — `__getitem__` returning the page widget.
+- Locale-aware labels — `<<LocaleChanged>>` retranslates tab text via `MessageCatalog`.
+- Typed events — new `events.py` with `TabRef`, `TabChangeEventData`,
+  `TabActivateEventData`, `TabDeactivateEventData`, `ChangeReason`, `ChangeMethod`.
+  `on_tab_changed` now receives a full payload (breaking change from key string).
+  Adds `on_tab_activated`/`on_tab_deactivated`. Reason/via tracking via
+  `_next_reason`/`_next_via` flags set before programmatic changes.
+- `hide_tab`/`show_tab`/`forget_tab` — hide keeps tab registered; `remove()` aliased
+  to `forget_tab()`. `Tabs` gains `hide()`/`show()` with position-preserving re-pack.
+- Fixed: `TabView.add()` now passes `key=` to `Tabs.add()` so both share the same
+  key namespace (was the cause of hide/show KeyErrors before the fix).
+- New exports to `bs.*`: all event TypedDicts and Literal aliases.
+- Visual test: `tests/features/tabview_parity.py`.
+- Also fixed README GridFrame example (`form.add()` → `.grid()`, `bs.Entry` → `bs.TextEntry`).
+
+**Known gap surfaced:** `TabView(variant='pill')` crashes — no pill builder registered
+for `TabItem.TFrame`. Noted in open item #10 and memory `project_api_gaps.md`.
+
+**What's NOT done:** Remaining redesign RFCs (TextArea/CodeEditor, Slider/RangeSlider,
+TreeView, Menu, Notebook removal + Spinbox rename). Docs work unchanged.
+
+---
 
 ### Session 20 — Type system, typing sweep, docstring quality (2026-05-16)
 
