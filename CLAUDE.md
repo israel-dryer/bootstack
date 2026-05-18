@@ -15,7 +15,9 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
   `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
   **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
-  **Remaining:** TextArea/CodeEditor, Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
+  **In progress:** TextArea/CodeEditor on `feat/textarea-codeeditor` — phases 1–7 done,
+  Phase 8 (PygmentsHighlighter) remaining. See Session 22 handoff.
+  **Remaining:** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
@@ -149,7 +151,7 @@ new or unstarted pages.
 
 ---
 
-## Current state (as of Session 21)
+## Current state (as of Session 22)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -383,6 +385,61 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 22 — TextArea + CodeEditor phases 1–7 (2026-05-18)
+
+**Branch:** `feat/textarea-codeeditor` (off `main`). Not yet PRed — Phase 8 pending.
+
+**What was built (7 commits):**
+
+| Phase | Component | Status |
+|---|---|---|
+| 1–3 | `_MultilineCore`, `FilterChain`, `EditFilter`, `ChangeNotifier`, `UndoManager`, `bs.TextArea` | ✅ Done |
+| 4 | `StyleRegistry`, `DecorationDiff`, `Position`/`RangeDecoration`/`LineDecoration` | ✅ Done |
+| 5 | `Sidebar` base, `LineNumbers` extension | ✅ Done |
+| 6 | `BracketMatcher`, `SmartIndent` extensions | ✅ Done |
+| 7 | `bs.CodeEditor` (v2 milestone — no syntax highlighting) | ✅ Done |
+| 8 | `PygmentsHighlighter` (v3 milestone) | ⬜ **Next** |
+| 9 | `SearchOverlay`, `IndentGuides` | ⬜ Pending |
+
+**Key architecture decisions made this session:**
+- `FilterChain` uses `idlelib.redirector.WidgetRedirector` (required: Tk key bindings call the Tcl command directly, bypassing Python-level overrides). `_BottomFilter` uses `OriginalCommand` objects returned by `register()` — no raw Tcl.
+- `undo=False` on `tk.Text`. `UndoManager` owns the stack with character-class grouping (alphanum / newline / punct) giving word-level undo matching IDLE's behavior. Ctrl+Z / Ctrl+Shift+Z.
+- `bs.ScrolledText` removed; replaced by `bs.TextArea`. Migration: `bs.TextArea(parent, scrollbars="vertical", ...)`.
+- `CodeEditor` pre-installs `LineNumbers`, `BracketMatcher`, `SmartIndent`. `show_line_numbers=True` default. `tab_width=4`, `insert_spaces=True`, `auto_indent=True` configurable.
+- Enriched virtual events: `<<TextModified>>` (data: `{is_dirty}`), `<<TextUndo>>` / `<<TextRedo>>` (data: `{value}`), `<<Change>>` (data: `{op, index}`).
+- SmartIndent: auto-indent on Enter deliberately does NOT detect end-of-function — that's language-specific and deferred to a future `PythonSmartIndent` extension.
+- `goto_line(n)` requires `editor.focus_set()` after calling to make cursor visible.
+
+**Module layout (new):**
+```
+src/bootstack/widgets/composites/textarea/
+├── __init__.py
+├── codeeditor.py         # bs.CodeEditor
+├── textarea.py           # bs.TextArea
+├── core.py               # _MultilineCore
+├── filter.py             # EditFilter, FilterChain, _BottomFilter
+├── change.py             # ChangeNotifier
+├── undo.py               # UndoManager
+├── decoration.py         # Position, RangeDecoration, LineDecoration, WidgetDecoration
+├── style_registry.py     # StyleRegistry
+├── diff.py               # DecorationDiff
+├── sidebar.py            # Sidebar base
+└── extensions/
+    ├── line_numbers.py   # LineNumbers
+    ├── bracket_matcher.py # BracketMatcher
+    └── smart_indent.py   # SmartIndent
+```
+
+**Visual tests:** `tests/features/textarea_v1.py`, `tests/features/codeeditor_v2.py`
+
+**What's next (Phase 8):** `PygmentsHighlighter` in `extensions/pygments_highlighter.py`.
+Uses tag-as-dirty-tracker pattern (IDLE's ColorDelegator TODO/SYNC approach):
+- Mark `__dirty__` ranges on insert/delete
+- Debounced retokenize: scan dirty ranges, apply Pygments tokens as Tk tags via `set_decorations()`
+- Pygments 2.20 is installed. Ship as always-available (not optional extra) since it's already present.
+
+---
 
 ### Session 21 — Widget redesign: Toplevel polish + TabView parity (2026-05-17)
 
