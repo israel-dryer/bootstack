@@ -1,30 +1,44 @@
-"""TextArea — labeled multi-line text input."""
+"""TextArea — labeled multi-line text input with validation support."""
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Callable, Literal
+from typing import Callable, TypedDict
 
 from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.textarea.core import _MultilineCore, ScrollbarMode
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
+    from bootstack.validation.validation_rules import ValidationRule
+
+
+class TextAreaInputEventData(TypedDict):
+    """Payload for `<<Input>>` events — fires on each edit."""
+    value: str
+
+
+class TextAreaValidationEventData(TypedDict):
+    """Payload for `<<Valid>>`, `<<Invalid>>`, and `<<Validate>>` events."""
+    value: str
+    is_valid: bool
+    message: str
 
 
 class TextArea(Frame):
-    """A labeled, scrollable multi-line text input.
+    """A labeled, scrollable multi-line text input with validation support.
 
-    TextArea is the multi-line counterpart to ``TextEntry``. It wraps a
-    ``tk.Text`` widget with label/message chrome, scrollbars, undo/redo, and
-    reactive signal binding.
+    `TextArea` is the multi-line counterpart to `TextEntry`. It provides the
+    same field chrome (label, message, focus border, validation) while wrapping
+    a multi-line `tk.Text` widget with undo/redo, scrollbars, and reactive
+    signal binding.
 
-    Use this for form comment boxes, note fields, and any other multi-line
-    prose input. For code editing, see ``CodeEditor``.
+    Use this for comment boxes, note fields, and any other multi-line prose
+    input in a form context. For code editing see `CodeEditor`.
 
-    Replaces ``bs.ScrolledText``.
+    Replaces `bs.ScrolledText`.
     """
 
     def __init__(
@@ -34,6 +48,9 @@ class TextArea(Frame):
         value: str = "",
         textsignal: Signal | None = None,
         label: str | None = None,
+        message: str | None = None,
+        show_message: bool = False,
+        required: bool = False,
         placeholder: str | None = None,
         max_length: int | None = None,
         read_only: bool = False,
@@ -41,51 +58,91 @@ class TextArea(Frame):
         height: int = 4,
         scrollbars: ScrollbarMode = "auto",
         font: str = "body",
-        on_change: Callable | None = None,
+        accent: AccentToken | str = "primary",
         on_input: Callable | None = None,
+        on_changed: Callable | None = None,
         on_blur: Callable | None = None,
+        on_valid: Callable | None = None,
+        on_invalid: Callable | None = None,
+        on_validated: Callable | None = None,
     ) -> None:
         """Create a TextArea widget.
 
         Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial text content.
-            textsignal: Reactive ``Signal[str]`` — the TextArea displays and
+            textsignal: Reactive `Signal[str]` — the TextArea displays and
                 tracks the signal's value.
             label: Optional label displayed above the text area.
+            message: Optional hint text shown below the text area. Replaced
+                by validation error messages when validation fails.
+            show_message: If True, the message area is always visible. Auto-
+                enabled when `message=` or `required=True` is set.
+            required: If True, marks the field as required and adds a
+                validation rule that rejects empty input.
             placeholder: Placeholder text shown when the widget is empty.
-                Removed on first focus.
+                Cleared on first focus.
             max_length: If set, inserts beyond this character count are blocked.
             read_only: If True, the text is not editable.
-            wrap: If True, text wraps at the widget boundary (word wrap).
-                If False, horizontal scrolling is enabled.
+            wrap: If True (default), long lines wrap at the widget boundary.
+                If False, horizontal scrolling is used.
             height: Visible row count. Default is 4.
-            scrollbars: Scrollbar visibility — ``"auto"`` (shown when needed),
-                ``"vertical"`` (always), ``"both"`` (always, both axes),
-                or ``"none"``.
-            font: Font token. Defaults to ``"body"``.
-            on_change: Callback invoked after each edit (``<<Change>>`` event).
-            on_input: Alias for ``on_change`` — provided for API consistency
-                with other input widgets.
-            on_blur: Callback invoked when the widget loses focus.
+            scrollbars: Scrollbar visibility mode — `"auto"` (shown when
+                needed), `"vertical"`, `"both"`, or `"none"`.
+            font: Font token. Defaults to `"body"`.
+            accent: Accent token for the focus border. Defaults to `"primary"`.
+            on_input: Callback invoked on every edit. Receives `event.data`
+                of type `TextAreaInputEventData`.
+            on_changed: Callback invoked when the widget loses focus. Receives
+                `event.data` of type `TextAreaInputEventData`.
+            on_blur: Callback invoked when the widget loses focus (alias for
+                `on_changed` — use either, not both).
+            on_valid: Callback invoked after successful validation. Receives
+                `event.data` of type `TextAreaValidationEventData`.
+            on_invalid: Callback invoked after failed validation. Receives
+                `event.data` of type `TextAreaValidationEventData`.
+            on_validated: Callback invoked after any validation, pass or fail.
+                Receives `event.data` of type `TextAreaValidationEventData`.
         """
         super().__init__(master)
 
-        self._label_text = label
-        self._placeholder = placeholder
+        self._accent = accent
+        self._placeholder_text = placeholder
         self._max_length = max_length
         self._showing_placeholder = False
+        self._original_message = message or ""
+        self._rules: list[ValidationRule] = []
+        self._message_showing = False
+
+        # ── grid layout ───────────────────────────────────────────────────
+        # Row 0: label (optional)
+        # Row 1: field frame with text area (expands)
+        # Row 2: message label (optional)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        _row = 0
 
         # ── label ─────────────────────────────────────────────────────────
         if label:
-            self._label_widget = Label(self, text=label, font="caption")
-            self._label_widget.pack(anchor="w", pady=(0, 2))
-        else:
-            self._label_widget = None
+            _lbl_text = f"{label} *" if required else label
+            Label(self, text=_lbl_text, font="caption").grid(
+                row=_row, column=0, sticky="w", pady=(0, 2),
+            )
+            _row += 1
+
+        self.grid_rowconfigure(_row, weight=1)
+
+        # ── field frame (provides the themed focus border) ────────────────
+        self._field_frame = Frame(
+            self, accent=accent, ttk_class="TField", padding=2,
+        )
+        self._field_frame.grid(row=_row, column=0, sticky="nsew")
+        _row += 1
 
         # ── core ──────────────────────────────────────────────────────────
         self._core = _MultilineCore(
-            self,
+            self._field_frame,
             value=value,
             wrap=wrap,
             height=height,
@@ -95,6 +152,26 @@ class TextArea(Frame):
         )
         self._core.pack(fill="both", expand=True)
 
+        # ── message label ─────────────────────────────────────────────────
+        self._message_lbl = Label(self, text=message or "", font="caption",
+                                  accent="secondary")
+        self._message_row = _row
+
+        if show_message or message or required:
+            self._show_message_area()
+
+        # ── focus border ──────────────────────────────────────────────────
+        self._core.text.bind(
+            "<FocusIn>",
+            lambda _: self._field_frame.state(["focus"]),
+            add="+",
+        )
+        self._core.text.bind(
+            "<FocusOut>",
+            lambda _: self._field_frame.state(["!focus"]),
+            add="+",
+        )
+
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
             self._core.bind_signal(textsignal)
@@ -103,38 +180,53 @@ class TextArea(Frame):
         self._default_fg = self._core.text.cget("foreground")
         if placeholder and not value and textsignal is None:
             self._show_placeholder()
-            self._core.text.bind("<FocusIn>", self._on_focus_in, add="+")
-            self._core.text.bind("<FocusOut>", self._on_focus_out, add="+")
+        if placeholder:
+            self._core.text.bind("<FocusIn>", self._on_focus_in_placeholder, add="+")
 
         # ── max_length filter ─────────────────────────────────────────────
         if max_length is not None:
             from bootstack.widgets.composites.textarea.filter import EditFilter
 
-            max_len = max_length
+            _limit = max_length
 
             class _MaxLenFilter(EditFilter):
                 def insert(self, index, chars, tags=None):
                     current = len(self.get("1.0", "end-1c"))
-                    allowed = max(0, max_len - current)
+                    allowed = max(0, _limit - current)
                     if allowed > 0:
                         self.delegate.insert(index, chars[:allowed], tags)
 
             self._core.add_filter(_MaxLenFilter())
 
-        # ── callbacks ─────────────────────────────────────────────────────
-        if on_change is not None:
-            self._core.on_change(on_change)
+        # ── required rule ─────────────────────────────────────────────────
+        if required:
+            self.add_validation_rule("required")
+
+        # ── internal event wiring ─────────────────────────────────────────
+        # Fire <<Input>> on every edit, <<Changed>> + validation on blur.
+        self._core.text.bind("<<Change>>", self._on_core_change, add="+")
+        self._core.text.bind("<FocusOut>", self._on_focus_out, add="+")
+
+        # ── constructor callbacks ─────────────────────────────────────────
         if on_input is not None:
-            self._core.on_change(on_input)
+            self.on_input(on_input)
+        if on_changed is not None:
+            self.on_changed(on_changed)
         if on_blur is not None:
-            self._core.text.bind("<FocusOut>", on_blur, add="+")
+            self.on_changed(on_blur)
+        if on_valid is not None:
+            self.on_valid(on_valid)
+        if on_invalid is not None:
+            self.on_invalid(on_invalid)
+        if on_validated is not None:
+            self.on_validated(on_validated)
 
     # ── placeholder ───────────────────────────────────────────────────────
 
     def _show_placeholder(self) -> None:
         self._showing_placeholder = True
         self._core.text.configure(state=tk.NORMAL)
-        self._core.text.insert("1.0", self._placeholder)
+        self._core.text.insert("1.0", self._placeholder_text)
         self._core.text.configure(foreground="grey")
 
     def _hide_placeholder(self) -> None:
@@ -142,15 +234,107 @@ class TextArea(Frame):
         self._core.text.delete("1.0", tk.END)
         self._core.text.configure(foreground=self._default_fg)
 
-    def _on_focus_in(self, _event: tk.Event) -> None:
+    def _on_focus_in_placeholder(self, _event: tk.Event) -> None:
         if self._showing_placeholder:
             self._hide_placeholder()
 
-    def _on_focus_out(self, _event: tk.Event) -> None:
-        if not self._core.value:
-            self._show_placeholder()
+    # ── message / error area ──────────────────────────────────────────────
 
-    # ── public API ────────────────────────────────────────────────────────
+    def _show_message_area(self) -> None:
+        if not self._message_showing:
+            self._message_lbl.grid(
+                row=self._message_row, column=0,
+                sticky="w", pady=(2, 0),
+            )
+            self._message_showing = True
+
+    def _show_error(self, message: str) -> None:
+        self._show_message_area()
+        self._message_lbl.configure(text=message, accent="danger")
+        try:
+            self._field_frame.configure(accent="danger")
+        except Exception:
+            pass
+
+    def _clear_error(self) -> None:
+        self._message_lbl.configure(text=self._original_message, accent="secondary")
+        try:
+            self._field_frame.configure(accent=self._accent)
+        except Exception:
+            pass
+
+    # ── validation ────────────────────────────────────────────────────────
+
+    def add_validation_rule(
+        self,
+        rule_type: str,
+        message: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Add a validation rule to this field.
+
+        Args:
+            rule_type: Rule name — `"required"`, `"pattern"`, `"stringLength"`,
+                `"email"`, `"custom"`, etc.
+            message: Custom error message. If None, the rule's default is used.
+            **kwargs: Rule-specific parameters (e.g. `minLength=`, `pattern=`,
+                `func=` for custom rules).
+        """
+        from bootstack.validation.validation_rules import ValidationRule
+        self._rules.append(ValidationRule(rule_type, message=message, **kwargs))
+        self._show_message_area()
+
+    def validate(self) -> bool:
+        """Run all validation rules immediately and return True if valid.
+
+        Triggers the same `<<Valid>>` / `<<Invalid>>` / `<<Validate>>` events
+        as blur-triggered validation.
+        """
+        return self._run_validation(trigger="manual")
+
+    def _run_validation(self, trigger: str = "blur") -> bool:
+        value = self.value
+        for rule in self._rules:
+            if rule.trigger not in ("always", trigger):
+                continue
+            result = rule.validate(value)
+            if not result.is_valid:
+                self._show_error(result.message)
+                data: TextAreaValidationEventData = {
+                    "value": value, "is_valid": False, "message": result.message,
+                }
+                self.event_generate("<<Invalid>>", data=data, when="tail")
+                self.event_generate("<<Validate>>", data=data, when="tail")
+                return False
+        self._clear_error()
+        data = {"value": value, "is_valid": True, "message": ""}
+        self.event_generate("<<Valid>>", data=data, when="tail")
+        self.event_generate("<<Validate>>", data=data, when="tail")
+        return True
+
+    # ── internal event dispatch ───────────────────────────────────────────
+
+    def _on_core_change(self, _event: tk.Event) -> None:
+        if not self._showing_placeholder:
+            self.event_generate(
+                "<<Input>>",
+                data={"value": self.value},
+                when="tail",
+            )
+
+    def _on_focus_out(self, _event: tk.Event) -> None:
+        if self._placeholder_text and not self._core.value:
+            self._show_placeholder()
+        if not self._showing_placeholder:
+            self.event_generate(
+                "<<Changed>>",
+                data={"value": self.value},
+                when="tail",
+            )
+        if self._rules:
+            self._run_validation(trigger="blur")
+
+    # ── public value API ──────────────────────────────────────────────────
 
     @property
     def value(self) -> str:
@@ -194,83 +378,57 @@ class TextArea(Frame):
         """Set focus to the text area."""
         self._core.focus_set()
 
-    def on_change(self, callback: Callable) -> str:
-        """Register a callback for ``<<Change>>`` events.
+    @property
+    def core(self) -> _MultilineCore:
+        """The internal `_MultilineCore` — for advanced filter/decoration use."""
+        return self._core
+
+    # ── event subscriptions ───────────────────────────────────────────────
+
+    def on_input(self, callback: Callable[[TextAreaInputEventData], None]) -> str:
+        """Register a callback for `<<Input>>` events.
+
+        Fires on every edit. `event.data["value"]` is the current text.
 
         Args:
-            callback: Receives the Tk event. ``event.data`` has
-                ``{"op": "insert"|"delete", "index": str}``.
+            callback: Receives the Tk event. `event.data` is
+                `TextAreaInputEventData`.
 
         Returns:
-            Bind ID — pass to ``off_change()`` to unsubscribe.
+            Bind ID — pass to `off_input()` to unsubscribe.
         """
-        return self._core.on_change(callback)
+        return self.bind("<<Input>>", callback, add="+")
 
-    def off_change(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+    def off_input(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Input>>`.
 
         Args:
-            bind_id: ID returned by ``on_change()``. If None, removes all.
+            bind_id: ID returned by `on_input()`. If None, removes all.
         """
-        self._core.off_change(bind_id)
+        self.unbind("<<Input>>", bind_id)
 
-    def on_modified(self, callback: Callable) -> str:
-        """Register a callback for ``<<Modified>>`` events (dirty state changed).
+    def on_changed(self, callback: Callable[[TextAreaInputEventData], None]) -> str:
+        """Register a callback for `<<Changed>>` events.
+
+        Fires when the widget loses focus. `event.data["value"]` is the
+        current text.
 
         Args:
-            callback: Called when the dirty state changes. Check
-                ``self.is_dirty`` for the new state.
+            callback: Receives the Tk event. `event.data` is
+                `TextAreaInputEventData`.
 
         Returns:
-            Bind ID — pass to ``off_modified()`` to unsubscribe.
+            Bind ID — pass to `off_changed()` to unsubscribe.
         """
-        return self._core.on_modified(callback)
+        return self.bind("<<Changed>>", callback, add="+")
 
-    def off_modified(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Modified>>``.
+    def off_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Changed>>`.
 
         Args:
-            bind_id: ID returned by ``on_modified()``. If None, removes all.
+            bind_id: ID returned by `on_changed()`. If None, removes all.
         """
-        self._core.off_modified(bind_id)
-
-    def on_undo(self, callback: Callable) -> str:
-        """Register a callback for ``<<Undo>>`` events.
-
-        Args:
-            callback: Called when an undo operation completes.
-
-        Returns:
-            Bind ID — pass to ``off_undo()`` to unsubscribe.
-        """
-        return self._core.on_undo(callback)
-
-    def off_undo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Undo>>``.
-
-        Args:
-            bind_id: ID returned by ``on_undo()``. If None, removes all.
-        """
-        self._core.off_undo(bind_id)
-
-    def on_redo(self, callback: Callable) -> str:
-        """Register a callback for ``<<Redo>>`` events.
-
-        Args:
-            callback: Called when a redo operation completes.
-
-        Returns:
-            Bind ID — pass to ``off_redo()`` to unsubscribe.
-        """
-        return self._core.on_redo(callback)
-
-    def off_redo(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Redo>>``.
-
-        Args:
-            bind_id: ID returned by ``on_redo()``. If None, removes all.
-        """
-        self._core.off_redo(bind_id)
+        self.unbind("<<Changed>>", bind_id)
 
     def on_blur(self, callback: Callable) -> str:
         """Register a callback for focus-out events.
@@ -279,7 +437,7 @@ class TextArea(Frame):
             callback: Called when the text area loses focus.
 
         Returns:
-            Bind ID — pass to ``off_blur()`` to unsubscribe.
+            Bind ID — pass to `off_blur()` to unsubscribe.
         """
         return self._core.text.bind("<FocusOut>", callback, add="+")
 
@@ -287,11 +445,138 @@ class TextArea(Frame):
         """Unsubscribe from focus-out events.
 
         Args:
-            bind_id: ID returned by ``on_blur()``. If None, removes all.
+            bind_id: ID returned by `on_blur()`. If None, removes all.
         """
         self._core.text.unbind("<FocusOut>", bind_id)
 
-    @property
-    def core(self) -> _MultilineCore:
-        """The internal ``_MultilineCore`` — for advanced filter/decoration use."""
-        return self._core
+    def on_valid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+        """Register a callback for `<<Valid>>` events.
+
+        Fires after all validation rules pass.
+
+        Args:
+            callback: Receives the Tk event. `event.data` is
+                `TextAreaValidationEventData`.
+
+        Returns:
+            Bind ID — pass to `off_valid()` to unsubscribe.
+        """
+        return self.bind("<<Valid>>", callback, add="+")
+
+    def off_valid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Valid>>`.
+
+        Args:
+            bind_id: ID returned by `on_valid()`. If None, removes all.
+        """
+        self.unbind("<<Valid>>", bind_id)
+
+    def on_invalid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+        """Register a callback for `<<Invalid>>` events.
+
+        Fires when any validation rule fails.
+
+        Args:
+            callback: Receives the Tk event. `event.data` is
+                `TextAreaValidationEventData`.
+
+        Returns:
+            Bind ID — pass to `off_invalid()` to unsubscribe.
+        """
+        return self.bind("<<Invalid>>", callback, add="+")
+
+    def off_invalid(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Invalid>>`.
+
+        Args:
+            bind_id: ID returned by `on_invalid()`. If None, removes all.
+        """
+        self.unbind("<<Invalid>>", bind_id)
+
+    def on_validated(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+        """Register a callback for `<<Validate>>` events.
+
+        Fires after any validation pass, whether the result is valid or not.
+
+        Args:
+            callback: Receives the Tk event. `event.data` is
+                `TextAreaValidationEventData`.
+
+        Returns:
+            Bind ID — pass to `off_validated()` to unsubscribe.
+        """
+        return self.bind("<<Validate>>", callback, add="+")
+
+    def off_validated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<Validate>>`.
+
+        Args:
+            bind_id: ID returned by `on_validated()`. If None, removes all.
+        """
+        self.unbind("<<Validate>>", bind_id)
+
+    def on_modified(self, callback: Callable) -> str:
+        """Register a callback for `<<TextModified>>` events.
+
+        Fires when the dirty state changes. `event.data["is_dirty"]` is the
+        new state.
+
+        Args:
+            callback: Receives the Tk event.
+
+        Returns:
+            Bind ID — pass to `off_modified()` to unsubscribe.
+        """
+        return self._core.on_modified(callback)
+
+    def off_modified(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TextModified>>`.
+
+        Args:
+            bind_id: ID returned by `on_modified()`. If None, removes all.
+        """
+        self._core.off_modified(bind_id)
+
+    def on_undo(self, callback: Callable) -> str:
+        """Register a callback for `<<TextUndo>>` events.
+
+        Fires after an undo completes. `event.data["value"]` is the text
+        content after the undo.
+
+        Args:
+            callback: Receives the Tk event.
+
+        Returns:
+            Bind ID — pass to `off_undo()` to unsubscribe.
+        """
+        return self._core.on_undo(callback)
+
+    def off_undo(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TextUndo>>`.
+
+        Args:
+            bind_id: ID returned by `on_undo()`. If None, removes all.
+        """
+        self._core.off_undo(bind_id)
+
+    def on_redo(self, callback: Callable) -> str:
+        """Register a callback for `<<TextRedo>>` events.
+
+        Fires after a redo completes. `event.data["value"]` is the text
+        content after the redo.
+
+        Args:
+            callback: Receives the Tk event.
+
+        Returns:
+            Bind ID — pass to `off_redo()` to unsubscribe.
+        """
+        return self._core.on_redo(callback)
+
+    def off_redo(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TextRedo>>`.
+
+        Args:
+            bind_id: ID returned by `on_redo()`. If None, removes all.
+        """
+        self._core.off_redo(bind_id)
