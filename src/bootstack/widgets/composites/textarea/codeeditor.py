@@ -105,18 +105,19 @@ class CodeEditor(Frame):
             read_only=read_only,
         )
 
-        # ── search overlay (docks below the core) ─────────────────────────
+        # ── search overlay ────────────────────────────────────────────────
         self._search = SearchOverlay(self, self._core)
 
-        # Pack layout: core fills the frame; search overlay starts hidden.
+        # _core fills the frame; _search is permanently placed at the bottom
+        # and rendered at all times — hidden by keeping _core on top (lift).
+        # show_search() just lifts _search; hide_search() lifts _core back.
+        # This means there is never a first-render delay on open.
         self._core.pack(fill="both", expand=True)
-
-        # Pre-warm the search overlay so the first show() is instant.
-        # pack → update_idletasks forces Tk to measure all child widgets and
-        # cache their sizes; pack_forget hides it until the user opens it.
-        self._search.pack(side="bottom", fill="x", before=self._core)
-        self.update_idletasks()
-        self._search.pack_forget()
+        self._search.place(
+            x=0, rely=1.0, relwidth=1.0,
+            height=self._search._height, anchor="sw",
+        )
+        self._core.lift()
 
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
@@ -337,6 +338,7 @@ class CodeEditor(Frame):
     def hide_search(self) -> None:
         """Hide the find bar and clear search highlights."""
         self._search.hide()
+
 
     # ── internal ─────────────────────────────────────────────────────────
 

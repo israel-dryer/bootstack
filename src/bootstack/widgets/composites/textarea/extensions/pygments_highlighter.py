@@ -178,17 +178,20 @@ class PygmentsHighlighter(EditFilter):
 
     # ── internal ──────────────────────────────────────────────────────────
 
-    def _apply_widget_colors(self, core: _MultilineCore) -> None:
+    def _apply_widget_colors(self, core: _MultilineCore, notify: bool = True) -> None:
         kw: dict = {"background": self._style_bg}
         if self._style_fg:
             kw["foreground"] = self._style_fg
-        # Cursor should be visible against the style background.
         kw["insertbackground"] = self._style_fg or _contrast_color(self._style_bg)
         try:
             core.text.configure(**kw)
-            # Notify extensions (IndentGuides, SearchOverlay) that the editor
-            # background changed so they can re-calibrate their colors.
-            core.text.event_generate("<<EditorBgChanged>>", when="tail")
+            if notify:
+                # Notify extensions that the editor background changed so they
+                # can re-calibrate colors.  Only fire on deliberate style
+                # application (attach / set_language), not on every
+                # <<ThemeChanged>> — extensions already receive that event
+                # directly and cascading it causes unnecessary repaints.
+                core.text.event_generate("<<EditorBgChanged>>", when="tail")
         except Exception:
             pass
 
@@ -208,7 +211,7 @@ class PygmentsHighlighter(EditFilter):
 
     def _on_theme_changed(self, _event=None) -> None:
         if self._core is not None:
-            self._apply_widget_colors(self._core)
+            self._apply_widget_colors(self._core, notify=False)
 
     def _schedule(self) -> None:
         self._cancel()

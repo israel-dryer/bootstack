@@ -128,20 +128,23 @@ class SearchOverlay(PackFrame):
         core.text.bind("<<ThemeChanged>>",   self._on_theme_changed, add="+")
         core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
 
+        # Measure natural height once all children are packed so place()
+        # can position the overlay without triggering a geometry pass.
+        self.update_idletasks()
+        self._height = max(self.winfo_reqheight(), 44)
+
     # ── public API ────────────────────────────────────────────────────────
 
     def show(self) -> None:
         """Show the find bar and focus the search input."""
         self._sync_colors()
-        # Pack before the core so it claims space from the bottom without
-        # needing a full grid relayout.
-        self.pack(side="bottom", fill="x", before=self._core)
+        self.lift()  # reveal above _core — instant, no re-render
         self._find_entry.focus_set()
         self._run_search()
 
     def hide(self) -> None:
         """Hide the find bar and clear all highlights."""
-        self.pack_forget()
+        self._core.lift()  # drop _search back behind _core — instant
         self._core.clear_decorations(_LAYER)
         self._matches = []
         self._current = -1
