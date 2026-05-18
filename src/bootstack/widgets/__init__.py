@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from bootstack.widgets.composites.passwordentry import PasswordEntry
     from bootstack.widgets.composites.pathentry import PathEntry
     from bootstack.widgets.composites.radiogroup import RadioGroup
-    from bootstack.widgets.composites.textarea import TextArea
+    from bootstack.widgets.composites.textarea import TextArea, CodeEditor
     from bootstack.widgets.composites.textarea.filter import EditFilter
     from bootstack.widgets.composites.scrollview import ScrollView
     from bootstack.widgets.composites.selectbox import SelectBox
@@ -135,7 +135,7 @@ __all__ = [
     'DropdownButton', 'Expander', 'Field', 'FieldOptions', 'FloodGauge',
     'Form', 'LabeledScale', 'ListItem', 'ListItemKwargs', 'ListView',
     'MenuBar', 'Meter', 'NumericEntry', 'PageStack', 'PasswordEntry',
-    'PathEntry', 'RadioGroup', 'TextArea', 'EditFilter', 'ScrollView', 'SelectBox',
+    'PathEntry', 'RadioGroup', 'TextArea', 'CodeEditor', 'EditFilter', 'ScrollView', 'SelectBox',
     'SideNav', 'SideNavItem', 'SideNavGroup', 'SideNavHeader', 'SideNavSeparator',
     'SpinnerEntry', 'TableView', 'TabItem', 'Tabs', 'TabView',
     'TabRef', 'TabChangeEventData', 'TabActivateEventData', 'TabDeactivateEventData',
