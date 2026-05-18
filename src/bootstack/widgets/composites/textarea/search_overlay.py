@@ -16,6 +16,7 @@ from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.primitives.checktoggle import CheckToggle
+from bootstack.widgets.composites.textentry import TextEntry
 from bootstack.widgets.composites.textarea.decoration import Position, RangeDecoration
 
 if TYPE_CHECKING:
@@ -43,6 +44,7 @@ class SearchOverlay(Frame):
         self._after_id: str | None = None
         self._case_var = tk.BooleanVar(value=False)
         self._regex_var = tk.BooleanVar(value=False)
+        self._syncing_colors = False
 
         # ── register decoration styles ─────────────────────────────────
         core.register_layer(_LAYER, priority=10)
@@ -60,12 +62,8 @@ class SearchOverlay(Frame):
 
         Label(self, text="Find:").pack(side="left", padx=(0, 4))
 
-        self._find_var = tk.StringVar()
-        self._find_var.trace_add("write", self._on_query_changed)
-        # tk.Entry (not ttk.Entry) so we can configure background/foreground
-        # directly via configure() without triggering ttk <<ThemeChanged>> events
-        # which would create an infinite loop with PygmentsHighlighter.
-        self._find_entry = tk.Entry(self, textvariable=self._find_var, width=28)
+        self._find_entry = TextEntry(self, width=28, density="compact")
+        self._find_entry.on_changed(self._on_query_changed)
         self._find_entry.pack(side="left")
 
         self._count_lbl = Label(self, text="", width=8)
@@ -102,9 +100,12 @@ class SearchOverlay(Frame):
         self._regex_toggle.pack(side="left")
 
         # ── key bindings on the find entry ────────────────────────────
-        self._find_entry.bind("<Return>",       lambda _: self._next_match())
-        self._find_entry.bind("<Shift-Return>",  lambda _: self._prev_match())
-        self._find_entry.bind("<Escape>",        lambda _: self.hide())
+        # TextEntry wraps an inner entry widget; bind to the inner widget
+        # so key events are captured when the entry has focus.
+        inner = self._find_entry.entry_widget
+        inner.bind("<Return>",      lambda _: self._next_match())
+        inner.bind("<Shift-Return>", lambda _: self._prev_match())
+        inner.bind("<Escape>",       lambda _: self.hide())
 
         # ── key bindings on the editor text widget ────────────────────
         # Ctrl+F on Windows/Linux; Command+F on macOS (aqua windowing system).
@@ -130,7 +131,6 @@ class SearchOverlay(Frame):
         self._sync_colors()
         self.grid()
         self._find_entry.focus_set()
-        self._find_entry.select_range(0, "end")
         self._run_search()
 
     def hide(self) -> None:
@@ -150,7 +150,7 @@ class SearchOverlay(Frame):
 
     def _run_search(self) -> None:
         self._after_id = None
-        query = self._find_var.get()
+        query = self._find_entry.value or ""
         if not query:
             self._core.clear_decorations(_LAYER)
             self._matches = []
@@ -244,24 +244,11 @@ class SearchOverlay(Frame):
         self._apply_decorations(self._core.value)
 
     def _set_entry_state(self, state: str) -> None:
+        # Use the TextEntry's accent to signal error/warning visually.
+        accent_map = {"error": "danger", "no_match": "warning"}
+        accent = accent_map.get(state, "primary")
         try:
-            from bootstack.style.style import get_theme_provider
-            colors = get_theme_provider().colors
-            if state == "error":
-                bg = colors.get("danger", "#dc3545")
-                fg = "#ffffff"
-            elif state == "no_match":
-                bg = colors.get("warning", "#ffc107")
-                fg = "#000000"
-            else:
-                bg = colors.get("inputbg", "white")
-                fg = colors.get("inputfg", "black")
-        except Exception:
-            bg_map = {"error": "#dc3545", "no_match": "#ffc107"}
-            bg = bg_map.get(state, "white")
-            fg = "#ffffff" if state == "error" else "#000000"
-        try:
-            self._find_entry.configure(foreground=fg)
+            self._find_entry.configure(accent=accent)
         except Exception:
             pass
 
@@ -275,7 +262,7 @@ class SearchOverlay(Frame):
         if self.winfo_ismapped():
             self.hide()
 
-    def _on_query_changed(self, *_) -> None:
+    def _on_query_changed(self, _event=None) -> None:
         self._schedule_search()
 
     def _on_option_changed(self) -> None:
@@ -289,28 +276,15 @@ class SearchOverlay(Frame):
         self._sync_colors()
 
     def _sync_colors(self) -> None:
-        """Adapt match highlight and entry colors to the editor's current background."""
+        """Re-apply match highlight colors to the decoration styles."""
+        if self._syncing_colors:
+            return
+        self._syncing_colors = True
         try:
-            bg = self._core.text.cget("background")
-            lum = _luminance(bg)
-        except Exception:
-            lum = 200.0
-
-        # Yellow/orange with black text is readable on both light and dark backgrounds.
-        self._core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
-        self._core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
-
-        # Sync the tk.Entry colors directly — using ttk.Style.configure() here
-        # would fire <<ThemeChanged>> and create an infinite loop.
-        dark = lum <= 128
-        try:
-            self._find_entry.configure(
-                background="#3c3f41" if dark else "white",
-                foreground="#bbbbbb" if dark else "black",
-                insertbackground="#bbbbbb" if dark else "black",
-            )
-        except Exception:
-            pass
+            self._core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
+            self._core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
+        finally:
+            self._syncing_colors = False
 
     def _schedule_search(self) -> None:
         if self._after_id is not None:
