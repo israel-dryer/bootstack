@@ -317,15 +317,21 @@ def _build_text_inputs_page(page):
         message="Select a directory",
     ).pack(fill=X)
 
-    # ScrolledText
-    group4 = bs.LabelFrame(page, text="ScrolledText", padding=15)
+    # TextArea
+    group4 = bs.LabelFrame(page, text="TextArea", padding=15)
     group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
 
-    text = bs.ScrolledText(group4, height=5, scrollbar_visibility='hover')
+    text = bs.TextArea(
+        group4,
+        height=5,
+        scrollbars='auto',
+        value=(
+            "TextArea provides a multi-line text input with\n"
+            "automatic scrollbars, undo/redo, and signal binding.\n\n"
+            "Try typing more text to see scrollbars appear!"
+        ),
+    )
     text.pack(fill=BOTH, expand=YES)
-    text.insert(END, "ScrolledText provides a multi-line text area with\n")
-    text.insert(END, "automatic scrollbars that hide when not needed.\n\n")
-    text.insert(END, "Try typing more text to see scrollbars appear!")
 
 
 # -- Numeric & Date -----------------------------------------------------------
