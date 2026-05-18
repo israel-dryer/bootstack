@@ -12,6 +12,11 @@ from bootstack.widgets.primitives.scrollbar import Scrollbar
 from bootstack.widgets.composites.textarea.filter import EditFilter, FilterChain
 from bootstack.widgets.composites.textarea.change import ChangeNotifier
 from bootstack.widgets.composites.textarea.undo import UndoManager
+from bootstack.widgets.composites.textarea.style_registry import StyleRegistry
+from bootstack.widgets.composites.textarea.diff import DecorationDiff
+from bootstack.widgets.composites.textarea.decoration import (
+    LineDecoration, Position, RangeDecoration,
+)
 from bootstack.widgets.types import Master
 
 
@@ -87,6 +92,10 @@ class _MultilineCore(tk.Frame):
 
         self._install_filter(self._undo_manager)
         self._install_filter(self._change_notifier)
+
+        # ── style registry + decoration diff ─────────────────────────────
+        self._style_registry = StyleRegistry(self)
+        self._decoration_diff = DecorationDiff(self, self._style_registry)
 
         # ── mousewheel ────────────────────────────────────────────────────
         self._scroll_tag = f"_mcore_{id(self)}"
@@ -254,6 +263,46 @@ class _MultilineCore(tk.Frame):
     def undo_block_stop(self) -> None:
         """End a compound undo block."""
         self._undo_manager.undo_block_stop()
+
+    # ── decoration / style API ────────────────────────────────────────────
+
+    def register_layer(self, name: str, priority: int = 0) -> None:
+        """Register a decoration layer.
+
+        Args:
+            name: Layer identifier. Used to namespace Tk tags.
+            priority: Tag raise order — higher priority layers render on top.
+        """
+        self._decoration_diff.register_layer(name, priority)
+
+    def define_style(self, name: str, **attrs) -> None:
+        """Define a named text style for use in decorations.
+
+        Args:
+            name: Style identifier referenced in decoration objects.
+            **attrs: Style attributes — ``foreground``, ``background``,
+                ``font``, ``underline``, ``spacing1``, ``spacing3``.
+                Values may be theme tokens (e.g. ``'primary'``) or literal
+                Tk color/font strings.
+        """
+        self._style_registry.define_style(name, **attrs)
+
+    def set_decorations(self, layer: str, decorations) -> None:
+        """Apply a decoration set to *layer*, diffing against the previous set.
+
+        Args:
+            layer: The decoration layer to update.
+            decorations: Sequence of ``RangeDecoration`` or ``LineDecoration``.
+        """
+        self._decoration_diff.set_decorations(layer, decorations)
+
+    def clear_decorations(self, layer: str) -> None:
+        """Remove all decorations from *layer*.
+
+        Args:
+            layer: The layer to clear.
+        """
+        self._decoration_diff.clear_layer(layer)
 
     # ── internal Tk event enrichment ─────────────────────────────────────
 
