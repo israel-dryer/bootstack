@@ -20,7 +20,8 @@ from __future__ import annotations
 
 import sys
 import tkinter
-from typing import Literal, Optional, Tuple, Callable, Any
+import warnings
+from typing import Literal, Optional, Tuple, Callable, Any, List
 
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning, WindowSizing
@@ -74,6 +75,8 @@ class BaseWindow:
             overrideredirect: bool = False,
             alpha: float = 1.0,
             window_style: Optional[str] = None,
+            center_on_parent: Optional[tkinter.Misc] = None,
+            center_on_screen: bool = False,
     ) -> None:
         """Configure common window properties.
 
@@ -95,6 +98,10 @@ class BaseWindow:
             window_style: Windows-only pywinstyles effect. Options include
                 'mica', 'acrylic', 'aero', 'transparent', 'win7', etc.
                 If None, uses AppSettings.window_style (defaults to 'mica').
+            center_on_parent: If provided, center window over this parent widget
+                after layout. Ignored when `position` is also given.
+            center_on_screen: If True, center window on screen after layout.
+                Ignored when `position` or `center_on_parent` is also given.
 
         Note:
             The window must already be initialized (tkinter.Tk.__init__ or
@@ -129,9 +136,6 @@ class BaseWindow:
             width, height = size
             self.geometry(f"{width}x{height}")
 
-        # Track whether we should center (defer until after constraints)
-        _should_center = (position is None)
-
         if position is not None:
             xpos, ypos = position
             self.geometry(f"+{xpos}+{ypos}")
@@ -161,13 +165,17 @@ class BaseWindow:
         # Alpha transparency (platform-aware)
         self._setup_alpha(alpha)
 
-        # Center window on screen if no explicit position was provided
-        if _should_center:
-            # Update geometry to ensure size is applied before centering
+        # Centering (only when no explicit position given)
+        if position is None:
             self.update_idletasks()
-            x, y = WindowPositioning.center_on_screen(self)
-            x, y = WindowPositioning.ensure_on_screen(self, x, y)
-            self.geometry(f'+{x}+{y}')
+            if center_on_parent is not None:
+                x, y = WindowPositioning.center_on_parent(self, center_on_parent)
+                x, y = WindowPositioning.ensure_on_screen(self, x, y)
+                self.geometry(f'+{x}+{y}')
+            elif center_on_screen:
+                x, y = WindowPositioning.center_on_screen(self)
+                x, y = WindowPositioning.ensure_on_screen(self, x, y)
+                self.geometry(f'+{x}+{y}')
 
     def _apply_window_style(self) -> None:
         """Apply pywinstyles effect on Windows.
@@ -295,6 +303,72 @@ class BaseWindow:
         """Handle locale change events by updating the localized title."""
         if self._title_message_id:
             self.title(self._title_message_id)
+
+    # -------------------------------------------------------------------------
+    # Close handler chain
+    # -------------------------------------------------------------------------
+
+    def _init_close_handlers(self) -> None:
+        """Initialize the close handler list and register the dispatch function.
+
+        Idempotent — safe to call multiple times.
+        """
+        if not hasattr(self, '_close_handlers'):
+            self._close_handlers: List[Callable[[], bool | None]] = []
+            self.protocol("WM_DELETE_WINDOW", self._close_dispatch)
+
+    def _close_dispatch(self) -> None:
+        """WM_DELETE_WINDOW handler that runs registered close handlers.
+
+        Runs each handler in registration order. If any returns ``False`` the
+        close is vetoed and the window stays open. If all pass (return ``None``
+        or ``True``), ``_do_close()`` is called to perform the actual close.
+        """
+        for handler in list(getattr(self, '_close_handlers', [])):
+            try:
+                result = handler()
+            except Exception:
+                result = None
+            if result is False:
+                return
+        self._do_close()
+
+    def _do_close(self) -> None:
+        """Perform the default close action.
+
+        Subclasses may override this to change what happens after all handlers
+        pass. The default is ``self.destroy()``.
+        """
+        try:
+            self.destroy()
+        except tkinter.TclError:
+            pass
+
+    def add_close_handler(self, callback: Callable[[], bool | None]) -> None:
+        """Register a callback invoked when the window's close button is clicked.
+
+        Handlers are called in registration order. Return ``False`` from a
+        handler to veto the close; return ``None`` or ``True`` to allow it.
+        All handlers that pass are run before the window closes.
+
+        Args:
+            callback: Called with no arguments when close is requested.
+                Return ``False`` to cancel the close, ``None`` or ``True`` to proceed.
+        """
+        self._init_close_handlers()
+        self._close_handlers.append(callback)
+
+    def remove_close_handler(self, callback: Callable[[], bool | None]) -> None:
+        """Remove a previously registered close handler.
+
+        Args:
+            callback: The handler to remove. No-op if not found.
+        """
+        if hasattr(self, '_close_handlers'):
+            try:
+                self._close_handlers.remove(callback)
+            except ValueError:
+                pass
 
     # -------------------------------------------------------------------------
     # Window manager (wm) — pass-throughs with modern docstrings
@@ -508,17 +582,17 @@ class BaseWindow:
     # Convenience wrappers: intent-based names for common tasks
     # -------------------------------------------------------------------------
 
-    def on_close(self, handler: Callable[[], Any]) -> None:
+    def on_close(self, handler: Callable[[], bool | None]) -> None:
         """Register a handler for the window close button.
 
-        This is a convenience wrapper for:
-
-            protocol("WM_DELETE_WINDOW", handler)
+        Equivalent to ``add_close_handler(handler)``. Handlers are called in
+        registration order; return ``False`` to veto the close.
 
         Args:
-            handler: A callable invoked when the user requests to close the window.
+            handler: Called with no arguments when close is requested.
+                Return ``False`` to cancel, ``None`` or ``True`` to proceed.
         """
-        self.protocol("WM_DELETE_WINDOW", handler)
+        self.add_close_handler(handler)
 
     def hide(self) -> None:
         """Hide the window (alias for `withdraw()`)."""

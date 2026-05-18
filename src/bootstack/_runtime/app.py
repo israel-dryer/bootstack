@@ -464,6 +464,8 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             transient: object | None = None,
             override_redirect: bool = False,
             window_style: str | None | object = _USE_SETTINGS,
+            center_on_screen: bool = True,
+            on_close: Callable | None = None,
             **kwargs: Unpack[TkKwargs],
     ) -> None:
         """Initializes the application window.
@@ -496,6 +498,12 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             transient: The parent window for this window.
             override_redirect: If `True`, creates a window without standard
                 decorations (title bar, borders, etc.).
+            center_on_screen: If True (default), center the app window on
+                the screen when ``mainloop()`` starts.
+            on_close: Callback invoked when the user clicks the close button.
+                Return ``False`` to veto the close; return ``None`` or ``True``
+                to allow it. Equivalent to calling ``add_close_handler(fn)``
+                after construction.
             **kwargs: Additional keyword arguments to pass to the
                 underlying `tkinter.Tk` constructor.
         """
@@ -531,6 +539,8 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         self._transient = transient
         self._alpha = alpha
         self._override_redirect = override_redirect
+        self._center_on_screen = center_on_screen
+        self._on_close_kwarg = on_close
 
         # Register app
         if not has_current_app():
@@ -639,6 +649,10 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         apply_class_bindings(self)
         apply_all_bindings(self)
 
+        # Register on_close= kwarg handler after all other setup is complete
+        if self._on_close_kwarg is not None:
+            self.add_close_handler(self._on_close_kwarg)
+
     def mainloop(self, n=0) -> None:
         """Start the application event loop
 
@@ -646,9 +660,29 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             n (int): A threshold that keeps the window open if at least n windows is open. This is an archaic c-level
                 detail that should not be adjusted unless you have a specific reason.
         """
-        self.place_window_center()
+        if self._center_on_screen:
+            self.place_window_center()
         self.show()
         super().mainloop(n=n)
+
+    def _do_close(self) -> None:
+        """Default close action for App.
+
+        On macOS with native quit behavior, hiding the window (withdraw) is the
+        correct action when the close button is clicked — the app stays in the
+        Dock and can be re-opened. On all other platforms (and macOS without
+        native behavior), the window is destroyed.
+        """
+        if (
+            getattr(self, 'winsys', None) == 'aqua'
+            and getattr(self.settings, 'macos_quit_behavior', None) == 'native'
+        ):
+            self.withdraw()
+        else:
+            try:
+                self.destroy()
+            except tkinter.TclError:
+                pass
 
     def close(self) -> None:
         """Close the application window (destroys the Tk root)"""
@@ -783,12 +817,11 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         into `macos_quit_behavior='native'` behave correctly without
         each app duplicating the boilerplate.
         """
-        # Close button → withdraw. We replace the protocol unconditionally
-        # because the default Tk behavior on close is to destroy, which is
-        # wrong on Mac. Apps that want to hook close should call
-        # `app.on_close(my_handler)` after construction; that overrides
-        # this default.
-        self.protocol('WM_DELETE_WINDOW', self.withdraw)
+        # Close button → _do_close() (which withdraws on macOS native).
+        # Initialise the handler chain so that any later add_close_handler()
+        # calls stack on top of the dispatch mechanism rather than overwriting
+        # the protocol registration.
+        self._init_close_handlers()
 
         # Cmd+Q / Dock → Quit fire <<AppleQuit>>; that's the real quit signal.
         try:
