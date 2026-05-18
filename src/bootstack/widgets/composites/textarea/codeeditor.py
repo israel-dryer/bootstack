@@ -40,6 +40,7 @@ class CodeEditor(Frame):
         value: str = "",
         textsignal: Signal | None = None,
         language: str | None = None,
+        pygments_style: str = "default",
         read_only: bool = False,
         wrap: bool = False,
         tab_width: int = 4,
@@ -57,10 +58,12 @@ class CodeEditor(Frame):
         Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial text content.
-            textsignal: Reactive ``Signal[str]`` bound to the editor content.
+            textsignal: Reactive `Signal[str]` bound to the editor content.
             language: Pygments lexer name for syntax highlighting (e.g.
-                ``'python'``, ``'sql'``). Requires ``bootstack[code]``.
-                Ignored if Pygments is not installed.
+                `'python'`, `'sql'`). Pass `None` to disable highlighting.
+            pygments_style: Pygments style name for syntax colors (e.g.
+                `'default'`, `'monokai'`, `'dracula'`). Defaults to
+                `'default'`.
             read_only: If True, the editor is not editable.
             wrap: If True, long lines wrap. Defaults to False (horizontal
                 scroll) which is the typical code editor behavior.
@@ -70,19 +73,21 @@ class CodeEditor(Frame):
                 indentation. Default is True.
             show_line_numbers: If True (default), shows a line number
                 gutter to the left of the text.
-            scrollbars: Scrollbar visibility mode. Defaults to ``"both"``
+            scrollbars: Scrollbar visibility mode. Defaults to `"both"`
                 (always show both axes).
             font: Font for the editor. Defaults to the system fixed-width
-                font (``"TkFixedFont"``).
-            extensions: Additional ``EditFilter`` instances to install
+                font (`"TkFixedFont"`).
+            extensions: Additional `EditFilter` instances to install
                 on top of the built-in set.
-            on_change: Callback for ``<<Change>>`` events.
+            on_change: Callback for `<<Change>>` events.
             on_cursor_move: Callback for cursor movement events.
         """
         super().__init__(master)
 
         self._language = language
+        self._pygments_style = pygments_style
         self._show_line_numbers = show_line_numbers
+        self._highlighter = None
 
         # ── core ──────────────────────────────────────────────────────────
         self._core = _MultilineCore(
@@ -190,10 +195,13 @@ class CodeEditor(Frame):
         """Set or change the syntax highlighting language.
 
         Args:
-            language: Pygments lexer name (e.g. ``'python'``), or ``None``
+            language: Pygments lexer name (e.g. `'python'`), or `None`
                 to disable syntax highlighting.
         """
         self._language = language
+        if self._highlighter is not None:
+            self._core.remove_filter(self._highlighter)
+            self._highlighter = None
         if language is not None:
             self._try_install_highlighter(language)
 
@@ -301,14 +309,9 @@ class CodeEditor(Frame):
     # ── internal ─────────────────────────────────────────────────────────
 
     def _try_install_highlighter(self, language: str) -> None:
-        """Install PygmentsHighlighter if Pygments is available."""
-        try:
-            from bootstack.widgets.composites.textarea.extensions.pygments_highlighter import (
-                PygmentsHighlighter,
-            )
-            h = PygmentsHighlighter(language)
-            self._core.add_filter(h)
-        except ImportError:
-            pass  # bootstack[code] not installed
-        except Exception:
-            pass  # unknown language or other error
+        from bootstack.widgets.composites.textarea.extensions.pygments_highlighter import (
+            PygmentsHighlighter,
+        )
+        h = PygmentsHighlighter(language, pygments_style=self._pygments_style)
+        self._core.add_filter(h)
+        self._highlighter = h

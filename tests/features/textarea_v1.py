@@ -5,7 +5,7 @@ on_change=, undo/redo, is_dirty, textsignal=.
 """
 import bootstack as bs
 
-app = bs.App(title="TextArea v1", size=(640, 680))
+app = bs.App(title="TextArea v1", minsize=(640, 680))
 log_var = bs.Signal("")
 
 def log(msg):
@@ -81,3 +81,7 @@ bs.Label(app, textsignal=log_var, font="caption",
          surface="chrome").pack(fill="x", padx=12, pady=6, anchor="w")
 
 app.mainloop()
+
+
+
+
