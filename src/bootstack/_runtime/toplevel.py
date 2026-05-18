@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import tkinter
-from typing import Any, Optional, Tuple
+import warnings
+from typing import Any, Callable, Literal, Optional, Tuple
 
 from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack._runtime.base_window import BaseWindow
@@ -43,6 +44,10 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             toolwindow: bool = False,
             alpha: float = 1.0,
             window_style: Optional[str] = None,
+            modal: Literal[False, True, "window", "app"] = False,
+            center_on_parent: bool = False,
+            center_on_screen: bool = False,
+            on_close: Optional[Callable[[], bool | None]] = None,
             **kwargs: Any,
     ) -> None:
         """Initialize a top-level window.
@@ -51,7 +56,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             title: The title that appears on the window titlebar.
             icon: A PhotoImage used for the titlebar icon. If None, the default bootstack icon is used.
             size: Window size as (width, height). Applied via `geometry`.
-            position: Window position as (x, y). Applied via `geometry`.
+            position: Window position as (x, y). Applied via `geometry`. Overrides `center_on_*`.
             minsize: Minimum permissible window size as (width, height).
             maxsize: Maximum permissible window size as (width, height).
             resizable: Whether the user may resize the window as (x, y).
@@ -64,6 +69,21 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             window_style: Windows-only pywinstyles effect. Options include
                 'mica', 'acrylic', 'aero', 'transparent', 'win7', etc.
                 Defaults to 'mica'. Set to None to disable.
+            modal: Modality level. ``False`` (default) — non-modal. ``True`` or
+                ``"window"`` — window-level modal: grabs input from parent only.
+                ``"app"`` — app-level modal: grabs input from all windows.
+                When modal is truthy and `transient` is not set, a transient
+                parent is inferred from `master` or the current app.
+            center_on_parent: If True, center this window over its transient
+                parent (or master). Ignored when `position` is given. Falls
+                back to `center_on_screen` behavior when no parent is found.
+                Mutually exclusive with `center_on_screen`.
+            center_on_screen: If True, center this window on the screen.
+                Ignored when `position` or `center_on_parent` is given.
+            on_close: Callback invoked when the user clicks the close button.
+                Return ``False`` to veto the close; return ``None`` or ``True``
+                to allow it. Equivalent to calling ``add_close_handler(fn)``
+                after construction.
             **kwargs: Other keyword arguments passed to `tkinter.Toplevel`.
         """
         # Extract iconify kwarg if present
@@ -74,6 +94,12 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
 
         # Setup window system info
         self.winsys: str = self.tk.call("tk", "windowingsystem")
+
+        # result storage for block_until_closed() pattern
+        self._result: Any = None
+
+        # modal level — stored for use in show()
+        self._modal = modal
 
         # Apply Aqua MacWindowStyle BEFORE any setup that might pump the
         # event loop (icons, geometry, update_idletasks). Tk's docs require
@@ -101,6 +127,39 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
         # Setup icon (use default bootstack icon if no icon provided)
         self._setup_icon(icon, default_icon_enabled=True)
 
+        # Resolve the centering parent.  When center_on_parent=True we need a
+        # parent widget; prefer the explicit transient, then self.master.
+        _center_parent: Optional[tkinter.Misc] = None
+        _effective_center_screen = center_on_screen
+        if center_on_parent and position is None:
+            _center_parent = transient or (self.master if isinstance(self.master, tkinter.Misc) else None)
+            if _center_parent is None:
+                warnings.warn(
+                    "Toplevel center_on_parent=True but no parent window detected; "
+                    "centering on screen instead.",
+                    stacklevel=2,
+                )
+                _effective_center_screen = True
+
+        # Auto-promote transient when modal is truthy and no transient given
+        _resolved_transient = transient
+        if modal and transient is None:
+            parent = self.master if isinstance(self.master, tkinter.Misc) else None
+            if parent is None:
+                try:
+                    from bootstack._runtime.app import get_current_app
+                    parent = get_current_app()
+                except RuntimeError:
+                    pass
+            if parent is not None:
+                _resolved_transient = parent
+            else:
+                warnings.warn(
+                    "Toplevel modal=True but no parent window could be inferred. "
+                    "Modality may not work correctly.",
+                    stacklevel=2,
+                )
+
         # Setup window using BaseWindow
         self._setup_window(
             title=title,
@@ -109,10 +168,12 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             minsize=minsize,
             maxsize=maxsize,
             resizable=resizable,
-            transient=transient,
+            transient=_resolved_transient,
             overrideredirect=overrideredirect,
             alpha=alpha,
             window_style=window_style,
+            center_on_parent=_center_parent,
+            center_on_screen=_effective_center_screen if _center_parent is None else False,
         )
 
         # Handle iconify
@@ -129,3 +190,67 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
 
         if toolwindow and self.winsys == "win32":
             self.attributes("-toolwindow", 1)
+
+        # Register on_close handler
+        if on_close is not None:
+            self.add_close_handler(on_close)
+
+    # -------------------------------------------------------------------------
+    # show() override — applies grab when modal
+    # -------------------------------------------------------------------------
+
+    def show(self) -> None:
+        """Show the window and apply modal grab if configured."""
+        super().show()
+        if self._modal:
+            try:
+                if self._modal == "app":
+                    self.grab_set_global()
+                else:
+                    self.grab_set()
+                self.focus_set()
+            except tkinter.TclError:
+                pass
+
+    # -------------------------------------------------------------------------
+    # result property + block_until_closed()
+    # -------------------------------------------------------------------------
+
+    @property
+    def result(self) -> Any:
+        """Value set by the window's content before it closes.
+
+        Defaults to ``None``. Set this attribute before calling
+        ``destroy()`` to return a value from ``block_until_closed()``.
+
+        See [block_until_closed()][bootstack.Toplevel.block_until_closed].
+        """
+        return self._result
+
+    @result.setter
+    def result(self, value: Any) -> None:
+        self._result = value
+
+    def block_until_closed(self) -> Any:
+        """Show this window and block until it is destroyed.
+
+        Calls ``show()`` to make the window visible, then enters a nested
+        event loop via ``wait_window()`` that blocks until the window is
+        destroyed. Returns ``self.result``.
+
+        Set ``self.result`` (or ``self.result = value``) before calling
+        ``destroy()`` to pass a return value back to the caller.
+
+        Returns:
+            The value of ``self.result`` at the time the window was destroyed.
+
+        Note:
+            Do not call this from within an existing ``block_until_closed()``
+            chain unless you understand the implications of nested event loops.
+        """
+        self.show()
+        try:
+            self.wait_window(self)
+        except tkinter.TclError:
+            pass
+        return self._result
