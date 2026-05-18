@@ -82,7 +82,7 @@ class SearchOverlay(Frame):
         Separator(self, orient="vertical").pack(side="left", fill="y", padx=10)
 
         self._case_toggle = CheckToggle(
-            self, text="Aa", variable=self._case_var,
+            self, icon="type", icon_only=True, variable=self._case_var,
             onvalue=True, offvalue=False,
             command=self._on_option_changed,
             density="compact",
@@ -90,7 +90,7 @@ class SearchOverlay(Frame):
         self._case_toggle.pack(side="left")
 
         self._regex_toggle = CheckToggle(
-            self, text=".*", variable=self._regex_var,
+            self, icon="regex", icon_only=True, variable=self._regex_var,
             onvalue=True, offvalue=False,
             command=self._on_option_changed,
             density="compact",
