@@ -4,7 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Callable, TypedDict
 
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.gridframe import GridFrame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.textarea.core import _MultilineCore, ScrollbarMode
 from bootstack.widgets.types import Master, AccentToken
@@ -13,6 +13,15 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
     from bootstack.validation.validation_rules import ValidationRule
+
+
+def _resolve_color(token: str, fallback: str) -> str:
+    """Resolve a bootstack color token to a hex string."""
+    try:
+        from bootstack.style.style import get_theme_provider
+        return get_theme_provider().colors.get(token, fallback)
+    except Exception:
+        return fallback
 
 
 class TextAreaInputEventData(TypedDict):
@@ -27,7 +36,7 @@ class TextAreaValidationEventData(TypedDict):
     message: str
 
 
-class TextArea(Frame):
+class TextArea(GridFrame):
     """A labeled, scrollable multi-line text input with validation support.
 
     `TextArea` is the multi-line counterpart to `TextEntry`. It provides the
@@ -104,7 +113,9 @@ class TextArea(Frame):
             on_validated: Callback invoked after any validation, pass or fail.
                 Receives `event.data` of type `TextAreaValidationEventData`.
         """
-        super().__init__(master)
+        # GridFrame rows: auto (label) | 1 (field, expands) | auto (message)
+        super().__init__(master, rows=["auto", 1, "auto"], columns=[1],
+                         auto_flow="none", gap=(0, 2))
 
         self._accent = accent
         self._placeholder_text = placeholder
@@ -114,35 +125,16 @@ class TextArea(Frame):
         self._rules: list[ValidationRule] = []
         self._message_showing = False
 
-        # ── grid layout ───────────────────────────────────────────────────
-        # Row 0: label (optional)
-        # Row 1: field frame with text area (expands)
-        # Row 2: message label (optional)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
-
-        _row = 0
-
-        # ── label ─────────────────────────────────────────────────────────
+        # ── label (row 0) ─────────────────────────────────────────────────
         if label:
             _lbl_text = f"{label} *" if required else label
             Label(self, text=_lbl_text, font="caption").grid(
-                row=_row, column=0, sticky="w", pady=(0, 2),
+                row=0, column=0, sticky="w",
             )
-            _row += 1
 
-        self.grid_rowconfigure(_row, weight=1)
-
-        # ── field frame (provides the themed focus border) ────────────────
-        self._field_frame = Frame(
-            self, accent=accent, ttk_class="TField", padding=2,
-        )
-        self._field_frame.grid(row=_row, column=0, sticky="nsew")
-        _row += 1
-
-        # ── core ──────────────────────────────────────────────────────────
+        # ── core (row 1) ──────────────────────────────────────────────────
         self._core = _MultilineCore(
-            self._field_frame,
+            self,
             value=value,
             wrap=wrap,
             height=height,
@@ -150,26 +142,48 @@ class TextArea(Frame):
             font=font,
             read_only=read_only,
         )
-        self._core.pack(fill="both", expand=True)
+        self._core.grid(row=1, column=0, sticky="nsew")
 
-        # ── message label ─────────────────────────────────────────────────
+        # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",
                                   accent="secondary")
-        self._message_row = _row
+        self._message_lbl.grid(row=2, column=0, sticky="w")
+        self._message_lbl.grid_remove()
 
         if show_message or message or required:
             self._show_message_area()
 
-        # ── focus border ──────────────────────────────────────────────────
+        # ── border via tk.Frame highlightthickness ────────────────────────
+        # _MultilineCore is a tk.Frame, so highlightthickness gives a native
+        # border that wraps the entire textarea (text + scrollbars) without
+        # clipping issues from a ttk wrapper frame.
+        self._border_inactive = _resolve_color("secondary", "#cccccc")
+        self._border_active = _resolve_color(accent, "#0d6efd")
+        self._border_error = _resolve_color("danger", "#dc3545")
+        self._core.configure(
+            highlightthickness=2,
+            highlightbackground=self._border_inactive,
+            highlightcolor=self._border_inactive,
+        )
+
         self._core.text.bind(
             "<FocusIn>",
-            lambda _: self._field_frame.state(["focus"]),
+            lambda _: self._core.configure(
+                highlightbackground=self._border_active,
+                highlightcolor=self._border_active,
+            ),
             add="+",
         )
         self._core.text.bind(
             "<FocusOut>",
-            lambda _: self._field_frame.state(["!focus"]),
+            lambda _: self._core.configure(
+                highlightbackground=self._border_inactive,
+                highlightcolor=self._border_inactive,
+            ),
             add="+",
+        )
+        self._core.text.bind(
+            "<<ThemeChanged>>", self._on_theme_changed, add="+"
         )
 
         # ── signal binding ────────────────────────────────────────────────
@@ -242,26 +256,32 @@ class TextArea(Frame):
 
     def _show_message_area(self) -> None:
         if not self._message_showing:
-            self._message_lbl.grid(
-                row=self._message_row, column=0,
-                sticky="w", pady=(2, 0),
-            )
+            self._message_lbl.grid()
             self._message_showing = True
 
     def _show_error(self, message: str) -> None:
         self._show_message_area()
         self._message_lbl.configure(text=message, accent="danger")
-        try:
-            self._field_frame.configure(accent="danger")
-        except Exception:
-            pass
+        self._core.configure(
+            highlightbackground=self._border_error,
+            highlightcolor=self._border_error,
+        )
 
     def _clear_error(self) -> None:
         self._message_lbl.configure(text=self._original_message, accent="secondary")
-        try:
-            self._field_frame.configure(accent=self._accent)
-        except Exception:
-            pass
+        self._core.configure(
+            highlightbackground=self._border_inactive,
+            highlightcolor=self._border_inactive,
+        )
+
+    def _on_theme_changed(self, _event: tk.Event = None) -> None:
+        self._border_inactive = _resolve_color("secondary", "#cccccc")
+        self._border_active = _resolve_color(self._accent, "#0d6efd")
+        self._border_error = _resolve_color("danger", "#dc3545")
+        # Reapply current border color without changing focus state
+        focused = self._core.text == self._core.text.focus_get()
+        color = self._border_active if focused else self._border_inactive
+        self._core.configure(highlightbackground=color, highlightcolor=color)
 
     # ── validation ────────────────────────────────────────────────────────
 
@@ -374,7 +394,7 @@ class TextArea(Frame):
         """End a compound undo block."""
         self._core.undo_block_stop()
 
-    def focus_set(self) -> None:
+    def focus_set(self, *args, **kwargs) -> None:
         """Set focus to the text area."""
         self._core.focus_set()
 
