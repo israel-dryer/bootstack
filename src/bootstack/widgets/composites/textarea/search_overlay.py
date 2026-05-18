@@ -1,8 +1,8 @@
-"""SearchOverlay — find bar for CodeEditor.
+"""SearchOverlay — find/replace bar for CodeEditor.
 
-A compact panel that docks at the bottom of the editor. Opened with
-Ctrl+F, closed with Esc. Highlights all matches via the decoration layer
-system and navigates through them with arrow buttons or Enter/Shift+Enter.
+Docks at the bottom of the editor as a z-order overlay (always place()'d,
+shown by lift(), hidden by lowering _core back on top).  Opened with
+Ctrl+F (find) or Ctrl+H (find + replace).  Closed with Esc.
 """
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ import re
 import bisect
 from typing import TYPE_CHECKING
 
-from tkinter import Event as TkEvent
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.separator import Separator
@@ -32,128 +31,221 @@ _DEBOUNCE_MS = 120
 
 
 class SearchOverlay(PackFrame):
-    """Find bar that docks at the bottom of the editor.
+    """Find/replace bar that overlays the bottom of the editor.
 
     Created and owned by `CodeEditor` — not part of the public API.
-    Interact via `CodeEditor.show_search()` / `CodeEditor.hide_search()`.
+    Use `CodeEditor.show_search()` / `CodeEditor.show_replace()` /
+    `CodeEditor.hide_search()`.
     """
 
     def __init__(self, parent: Master, core: _MultilineCore) -> None:
-        super().__init__(parent, surface="chrome", padding=(8, 4), direction="horizontal")
+        super().__init__(parent, surface="chrome", padding=(8, 4), direction="vertical")
         self._core = core
-        self._matches: list[tuple[int, int]] = []   # (start_offset, end_offset)
-        self._current: int = -1                      # index into _matches
+        self._matches: list[tuple[int, int]] = []
+        self._current: int = -1
         self._after_id: str | None = None
         self._case_sig = Signal(False)
         self._regex_sig = Signal(False)
-        self._count_sig = Signal("0/0")
+        self._count_sig = Signal("")
         self._syncing_colors = False
+        self._visible = False
+        self._replace_visible = False
 
-        # ── register decoration styles ─────────────────────────────────
+        # ── decoration styles ─────────────────────────────────────────────
         core.register_layer(_LAYER, priority=10)
-        # foreground="#000000" ensures matched text is readable on both light
-        # (yellow bg) and dark (orange bg) editor backgrounds.
         core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
         core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
 
-        # ── layout ────────────────────────────────────────────────────
+        # ── find row ──────────────────────────────────────────────────────
+        _fr = PackFrame(self, direction="horizontal").pack(fill="x")
+
         self._close_btn = Button(
-            self, icon="x-lg", icon_only=True, variant="ghost", density="compact", command=self.hide)
+            _fr, icon="x-lg", icon_only=True, variant="ghost",
+            density="compact", command=self.hide,
+        )
         self._close_btn.pack()
 
-        self._find_entry = TextEntry(self, density="compact")
-        self._find_entry.insert_addon(Label, position='before', icon='search')
+        self._find_entry = TextEntry(_fr, density="compact")
+        self._find_entry.insert_addon(Label, position="before", icon="search")
         self._find_entry.on_changed(self._on_query_changed)
-        self._find_entry.pack(fill='x', expand=True)
+        self._find_entry.pack(fill="x", expand=True)
 
-        Separator(self, orient="vertical").pack(fill="y", padx=16)
+        Separator(_fr, orient="vertical").pack(fill="y", padx=16)
 
         self._case_toggle = CheckToggle(
-            self, icon="type", icon_only=True, signal=self._case_sig,
+            _fr, icon="type", icon_only=True, signal=self._case_sig,
             onvalue=True, offvalue=False,
-            command=self._on_option_changed,
-            density="compact",
+            command=self._on_option_changed, density="compact",
         )
         self._case_toggle.pack(padx=(0, 4))
 
         self._regex_toggle = CheckToggle(
-            self, icon="regex", icon_only=True, signal=self._regex_sig,
+            _fr, icon="regex", icon_only=True, signal=self._regex_sig,
             onvalue=True, offvalue=False,
-            command=self._on_option_changed,
-            density="compact",
+            command=self._on_option_changed, density="compact",
         )
         self._regex_toggle.pack()
 
-        # match container - only shows when there are matches
-        self._match_container = PackFrame(self, direction='horizontal').pack(padx=(16, 0))
-        Separator(self._match_container, orient='vertical').pack(fill='y')
+        _mc = PackFrame(_fr, direction="horizontal").pack(padx=(16, 0))
+        Separator(_mc, orient="vertical").pack(fill="y")
 
-        self._count_lbl = Label(self._match_container, textsignal=self._count_sig)
+        self._count_lbl = Label(_mc, textsignal=self._count_sig)
         self._count_lbl.pack(padx=(16, 0))
 
         self._prev_btn = Button(
-            self._match_container, icon="arrow-up", icon_only=True, variant="ghost",
+            _mc, icon="arrow-up", icon_only=True, variant="ghost",
             density="compact", command=self._prev_match,
         )
         self._prev_btn.pack()
 
         self._next_btn = Button(
-            self._match_container, icon="arrow-down", icon_only=True, variant="ghost",
+            _mc, icon="arrow-down", icon_only=True, variant="ghost",
             density="compact", command=self._next_match,
         )
         self._next_btn.pack()
 
-        # ── key bindings on the find entry ────────────────────────────
-        # TextEntry wraps an inner entry widget; bind to the inner widget
-        # so key events are captured when the entry has focus.
-        inner = self._find_entry.entry_widget
-        inner.bind("<Return>",      lambda _: self._next_match())
-        inner.bind("<Shift-Return>", lambda _: self._prev_match())
-        inner.bind("<Escape>",       lambda _: self.hide())
+        # ── replace row (hidden by default) ───────────────────────────────
+        self._replace_row = PackFrame(self, direction="horizontal", padding=(0, 4, 0, 0))
 
-        # ── key bindings on the editor text widget ────────────────────
-        # Ctrl+F on Windows/Linux; Command+F on macOS (aqua windowing system).
+        self._replace_entry = TextEntry(self._replace_row, density="compact")
+        self._replace_entry.insert_addon(Label, position="before", icon="pencil")
+        self._replace_entry.pack(fill="x", expand=True)
+
+        self._replace_btn = Button(
+            self._replace_row, text="Replace",
+            variant="ghost", density="compact",
+            command=self._replace_current,
+        )
+        self._replace_btn.pack(padx=(8, 0))
+
+        self._replace_all_btn = Button(
+            self._replace_row, text="Replace All",
+            variant="ghost", density="compact",
+            command=self._replace_all,
+        )
+        self._replace_all_btn.pack(padx=(4, 0))
+
+        # ── key bindings — find entry ─────────────────────────────────────
+        _fi = self._find_entry.entry_widget
+        _fi.bind("<Return>",       lambda _: self._next_match())
+        _fi.bind("<Shift-Return>", lambda _: self._prev_match())
+        _fi.bind("<Escape>",       lambda _: self.hide())
+
+        # ── key bindings — replace entry ──────────────────────────────────
+        _ri = self._replace_entry.entry_widget
+        _ri.bind("<Return>",  lambda _: self._replace_current())
+        _ri.bind("<Escape>",  lambda _: self.hide())
+
+        # ── key bindings — editor text widget ─────────────────────────────
         core.text.bind("<Control-f>", self._on_ctrl_f, add="+")
         core.text.bind("<Control-F>", self._on_ctrl_f, add="+")
+        core.text.bind("<Control-h>", self._on_ctrl_h, add="+")
+        core.text.bind("<Control-H>", self._on_ctrl_h, add="+")
         if core.winsys == "aqua":
             core.text.bind("<Command-f>", self._on_ctrl_f, add="+")
             core.text.bind("<Command-F>", self._on_ctrl_f, add="+")
-        core.text.bind("<Escape>",    self._on_editor_escape, add="+")
-
-        # Re-run search when content changes (while search bar is open).
-        core.text.bind("<<Change>>", self._on_content_changed, add="+")
-
-        # Re-sync colors when the bootstack theme changes or when the Pygments
-        # highlighter changes the editor background (<<EditorBgChanged>>).
-        core.text.bind("<<ThemeChanged>>",   self._on_theme_changed, add="+")
+            core.text.bind("<Command-h>", self._on_ctrl_h, add="+")
+            core.text.bind("<Command-H>", self._on_ctrl_h, add="+")
+        core.text.bind("<Escape>",     self._on_editor_escape, add="+")
+        core.text.bind("<<Change>>",   self._on_content_changed, add="+")
+        core.text.bind("<<ThemeChanged>>",    self._on_theme_changed, add="+")
         core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
 
-        # Measure natural height once all children are packed so place()
-        # can position the overlay without triggering a geometry pass.
+        # Measure find-row-only height for initial place() sizing.
         self.update_idletasks()
         self._height = max(self.winfo_reqheight(), 44)
 
     # ── public API ────────────────────────────────────────────────────────
 
-    def show(self) -> None:
-        """Show the find bar and focus the search input."""
+    def show(self, replace: bool = False) -> None:
+        """Show the find bar, optionally with the replace row visible.
+
+        Args:
+            replace: If True, show the replace row and focus the replace entry.
+        """
         self._sync_colors()
-        self.lift()  # reveal above _core — instant, no re-render
-        self._find_entry.focus_set()
+        self._visible = True
+        self._set_replace_visible(replace)
+        self.lift()
+        if replace and self._replace_visible:
+            self._replace_entry.focus_set()
+        else:
+            self._find_entry.focus_set()
         self._run_search()
 
     def hide(self) -> None:
-        """Hide the find bar and clear all highlights."""
-        self._core.lift()  # drop _search back behind _core — instant
+        """Hide the find/replace bar and clear all highlights."""
+        self._visible = False
+        self._core.lift()
         self._core.clear_decorations(_LAYER)
         self._matches = []
         self._current = -1
-        self._count_sig.set("0 / 0")
+        self._count_sig.set("")
         self._set_entry_state("normal")
         try:
             self._core.text.focus_set()
         except Exception:
             pass
+
+    # ── replace logic ─────────────────────────────────────────────────────
+
+    def _replace_current(self) -> None:
+        """Replace the current match with the replace entry text."""
+        if not self._matches or self._current < 0:
+            return
+        if self._core._read_only:
+            return
+        text = self._core.value
+        start, end = self._matches[self._current]
+        replacement = self._expand_replacement(text[start:end])
+        line_starts = _build_line_starts(text)
+        s = _offset_to_position(line_starts, start).to_tk()
+        e = _offset_to_position(line_starts, end).to_tk()
+        self._core.undo_block_start()
+        self._core.text.delete(s, e)
+        self._core.text.insert(s, replacement)
+        self._core.undo_block_stop()
+        self._run_search()
+
+    def _replace_all(self) -> None:
+        """Replace every match with the replace entry text."""
+        if not self._matches:
+            return
+        if self._core._read_only:
+            return
+        text = self._core.value
+        line_starts = _build_line_starts(text)
+        # Process last-to-first so earlier offsets stay valid.
+        ops = [
+            (
+                _offset_to_position(line_starts, start).to_tk(),
+                _offset_to_position(line_starts, end).to_tk(),
+                self._expand_replacement(text[start:end]),
+            )
+            for start, end in reversed(self._matches)
+        ]
+        count = len(ops)
+        self._core.undo_block_start()
+        for s, e, r in ops:
+            self._core.text.delete(s, e)
+            self._core.text.insert(s, r)
+        self._core.undo_block_stop()
+        self._run_search()
+        self._count_sig.set(f"{count} replaced")
+
+    def _expand_replacement(self, matched_text: str) -> str:
+        """Return the replacement string, expanding regex back-references."""
+        replacement = self._replace_entry.value or ""
+        if self._regex_sig.get():
+            try:
+                query = self._find_entry.value or ""
+                flags = 0 if self._case_sig.get() else re.IGNORECASE
+                m = re.fullmatch(query, matched_text, flags)
+                if m:
+                    return m.expand(replacement)
+            except Exception:
+                pass
+        return replacement
 
     # ── search logic ──────────────────────────────────────────────────────
 
@@ -164,7 +256,7 @@ class SearchOverlay(PackFrame):
             self._core.clear_decorations(_LAYER)
             self._matches = []
             self._current = -1
-            self._count_sig.set("0 / 0")
+            self._count_sig.set("")
             self._set_entry_state("normal")
             return
 
@@ -172,10 +264,10 @@ class SearchOverlay(PackFrame):
         flags = 0 if self._case_sig.get() else re.IGNORECASE
 
         try:
-            if self._regex_sig.get():
-                pattern = re.compile(query, flags)
-            else:
-                pattern = re.compile(re.escape(query), flags)
+            pattern = re.compile(
+                query if self._regex_sig.get() else re.escape(query),
+                flags,
+            )
         except re.error:
             self._set_entry_state("error")
             self._core.clear_decorations(_LAYER)
@@ -189,13 +281,12 @@ class SearchOverlay(PackFrame):
         if not self._matches:
             self._core.clear_decorations(_LAYER)
             self._current = -1
-            self._count_sig.set("0 / 0")
+            self._count_sig.set("")
             self._set_entry_state("no_match")
             return
 
         self._set_entry_state("normal")
 
-        # Pick the closest match to the current cursor position.
         try:
             idx = self._core.text.index("insert")
             line_no, col_no = idx.split(".")
@@ -204,37 +295,31 @@ class SearchOverlay(PackFrame):
             cursor_offset = 0
 
         starts = [m[0] for m in self._matches]
-        pos = bisect.bisect_left(starts, cursor_offset)
-        self._current = pos % len(self._matches)
-
+        self._current = bisect.bisect_left(starts, cursor_offset) % len(self._matches)
         self._apply_decorations(text)
 
     def _apply_decorations(self, text: str) -> None:
-        """Build and apply match decorations, scrolling the current match into view."""
         if not self._matches:
             self._core.clear_decorations(_LAYER)
             return
 
         line_starts = _build_line_starts(text)
-        decorations: list[RangeDecoration] = []
-
-        for i, (start, end) in enumerate(self._matches):
-            style = _STYLE_CURRENT if i == self._current else _STYLE_MATCH
-            decorations.append(RangeDecoration(
+        decorations = [
+            RangeDecoration(
                 _offset_to_position(line_starts, start),
                 _offset_to_position(line_starts, end),
-                style,
-            ))
-
+                _STYLE_CURRENT if i == self._current else _STYLE_MATCH,
+            )
+            for i, (start, end) in enumerate(self._matches)
+        ]
         self._core.set_decorations(_LAYER, decorations)
 
         total = len(self._matches)
         self._count_sig.set(f"{self._current + 1} / {total}")
 
-        # Scroll current match into view.
         if 0 <= self._current < total:
             start_offset = self._matches[self._current][0]
-            pos = _offset_to_position(line_starts, start_offset)
+            pos = _offset_to_position(_build_line_starts(text), start_offset)
             try:
                 self._core.text.see(pos.to_tk())
             except Exception:
@@ -252,23 +337,40 @@ class SearchOverlay(PackFrame):
         self._current = (self._current - 1) % len(self._matches)
         self._apply_decorations(self._core.value)
 
-    def _set_entry_state(self, state: str) -> None:
-        # Use the TextEntry's accent to signal error/warning visually.
-        accent_map = {"error": "danger", "no_match": "warning"}
-        accent = accent_map.get(state, "primary")
+    def _set_replace_visible(self, visible: bool) -> None:
+        if visible == self._replace_visible:
+            return
+        self._replace_visible = visible
+        if visible:
+            self._replace_row.pack(fill="x")
+        else:
+            self._replace_row.pack_forget()
+        self.update_idletasks()
+        self._height = max(self.winfo_reqheight(), 44)
         try:
-            self._find_entry.configure(accent=accent)
+            self.place_configure(height=self._height)
+        except Exception:
+            pass
+
+    def _set_entry_state(self, state: str) -> None:
+        accent_map = {"error": "danger", "no_match": "warning"}
+        try:
+            self._find_entry.configure(accent=accent_map.get(state, "primary"))
         except Exception:
             pass
 
     # ── event handlers ────────────────────────────────────────────────────
 
-    def _on_ctrl_f(self, _event: TkEvent) -> str:
-        self.show()
+    def _on_ctrl_f(self, _event) -> str:
+        self.show(replace=False)
         return "break"
 
-    def _on_editor_escape(self, _event: TkEvent) -> None:
-        if self.winfo_ismapped():
+    def _on_ctrl_h(self, _event) -> str:
+        self.show(replace=True)
+        return "break"
+
+    def _on_editor_escape(self, _event) -> None:
+        if self._visible:
             self.hide()
 
     def _on_query_changed(self, _event=None) -> None:
@@ -277,15 +379,14 @@ class SearchOverlay(PackFrame):
     def _on_option_changed(self) -> None:
         self._schedule_search()
 
-    def _on_content_changed(self, _event: TkEvent) -> None:
-        if self.winfo_ismapped():
+    def _on_content_changed(self, _event) -> None:
+        if self._visible:
             self._schedule_search()
 
-    def _on_theme_changed(self, _event: TkEvent = None) -> None:
+    def _on_theme_changed(self, _event=None) -> None:
         self._sync_colors()
 
     def _sync_colors(self) -> None:
-        """Re-apply match highlight colors to the decoration styles."""
         if self._syncing_colors:
             return
         self._syncing_colors = True
@@ -307,7 +408,6 @@ class SearchOverlay(PackFrame):
 # ── position helpers ──────────────────────────────────────────────────────
 
 def _build_line_starts(text: str) -> list[int]:
-    """Return the character offset of the first character on each line."""
     starts = [0]
     for i, ch in enumerate(text):
         if ch == "\n":
@@ -316,21 +416,18 @@ def _build_line_starts(text: str) -> list[int]:
 
 
 def _offset_to_position(line_starts: list[int], offset: int) -> Position:
-    """Convert a character offset to a (line, col) Position."""
     line_idx = bisect.bisect_right(line_starts, offset) - 1
     col = offset - line_starts[line_idx]
     return Position(line_idx + 1, col)
 
 
 def _position_to_offset(text: str, line: int, col: int) -> int:
-    """Convert a (1-indexed line, 0-indexed col) pair to a character offset."""
     lines = text.split("\n")
     offset = sum(len(lines[i]) + 1 for i in range(min(line - 1, len(lines))))
     return offset + min(col, len(lines[line - 1]) if line <= len(lines) else 0)
 
 
 def _luminance(hex_color: str) -> float:
-    """Return perceptual luminance (0–255) for a hex color string."""
     h = hex_color.lstrip("#")
     if len(h) < 6:
         return 200.0

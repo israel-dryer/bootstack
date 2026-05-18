@@ -333,10 +333,14 @@ class CodeEditor(Frame):
 
     def show_search(self) -> None:
         """Show the find bar and focus the search input."""
-        self._search.show()
+        self._search.show(replace=False)
+
+    def show_replace(self) -> None:
+        """Show the find/replace bar with the replace row visible."""
+        self._search.show(replace=True)
 
     def hide_search(self) -> None:
-        """Hide the find bar and clear search highlights."""
+        """Hide the find/replace bar and clear search highlights."""
         self._search.hide()
 
 
