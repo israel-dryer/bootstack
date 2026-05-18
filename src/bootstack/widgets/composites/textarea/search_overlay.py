@@ -8,19 +8,21 @@ from __future__ import annotations
 
 import re
 import bisect
-import tkinter as tk
 from typing import TYPE_CHECKING
 
-from bootstack.widgets.primitives.frame import Frame
+from tkinter import Event as TkEvent
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.button import Button
 from bootstack.widgets.primitives.separator import Separator
 from bootstack.widgets.primitives.checktoggle import CheckToggle
+from bootstack.widgets.primitives.packframe import PackFrame
 from bootstack.widgets.composites.textentry import TextEntry
 from bootstack.widgets.composites.textarea.decoration import Position, RangeDecoration
+from bootstack.signals.signal import Signal
 
 if TYPE_CHECKING:
     from bootstack.widgets.composites.textarea.core import _MultilineCore
+    from bootstack.widgets.types import Master
 
 
 _LAYER = "search"
@@ -29,21 +31,22 @@ _STYLE_CURRENT = "search_current"
 _DEBOUNCE_MS = 120
 
 
-class SearchOverlay(Frame):
+class SearchOverlay(PackFrame):
     """Find bar that docks at the bottom of the editor.
 
     Created and owned by `CodeEditor` — not part of the public API.
     Interact via `CodeEditor.show_search()` / `CodeEditor.hide_search()`.
     """
 
-    def __init__(self, parent: tk.Misc, core: _MultilineCore) -> None:
-        super().__init__(parent, padding=(6, 4), surface="chrome")
+    def __init__(self, parent: Master, core: _MultilineCore) -> None:
+        super().__init__(parent, surface="chrome", padding=(8, 4), direction="horizontal")
         self._core = core
         self._matches: list[tuple[int, int]] = []   # (start_offset, end_offset)
         self._current: int = -1                      # index into _matches
         self._after_id: str | None = None
-        self._case_var = tk.BooleanVar(value=False)
-        self._regex_var = tk.BooleanVar(value=False)
+        self._case_sig = Signal(False)
+        self._regex_sig = Signal(False)
+        self._count_sig = Signal("0/0")
         self._syncing_colors = False
 
         # ── register decoration styles ─────────────────────────────────
@@ -55,49 +58,50 @@ class SearchOverlay(Frame):
 
         # ── layout ────────────────────────────────────────────────────
         self._close_btn = Button(
-            self, icon="x-lg", icon_only=True, variant="ghost", density="compact",
-            command=self.hide,
-        )
-        self._close_btn.pack(side="left", padx=(0, 8))
+            self, icon="x-lg", icon_only=True, variant="ghost", density="compact", command=self.hide)
+        self._close_btn.pack()
 
-        Label(self, text="Find:").pack(side="left", padx=(0, 4))
-
-        self._find_entry = TextEntry(self, width=28, density="compact")
+        self._find_entry = TextEntry(self, density="compact")
+        self._find_entry.insert_addon(Label, position='before', icon='search')
         self._find_entry.on_changed(self._on_query_changed)
-        self._find_entry.pack(side="left")
+        self._find_entry.pack(fill='x', expand=True)
 
-        self._count_lbl = Label(self, text="", width=8)
-        self._count_lbl.pack(side="left", padx=(6, 0))
-
-        self._prev_btn = Button(
-            self, icon="chevron-up", icon_only=True, variant="ghost",
-            density="compact", command=self._prev_match,
-        )
-        self._prev_btn.pack(side="left")
-
-        self._next_btn = Button(
-            self, icon="chevron-down", icon_only=True, variant="ghost",
-            density="compact", command=self._next_match,
-        )
-        self._next_btn.pack(side="left")
-
-        Separator(self, orient="vertical").pack(side="left", fill="y", padx=10)
+        Separator(self, orient="vertical").pack(fill="y", padx=16)
 
         self._case_toggle = CheckToggle(
-            self, icon="type", icon_only=True, variable=self._case_var,
+            self, icon="type", icon_only=True, signal=self._case_sig,
             onvalue=True, offvalue=False,
             command=self._on_option_changed,
             density="compact",
         )
-        self._case_toggle.pack(side="left")
+        self._case_toggle.pack(padx=(0, 4))
 
         self._regex_toggle = CheckToggle(
-            self, icon="regex", icon_only=True, variable=self._regex_var,
+            self, icon="regex", icon_only=True, signal=self._regex_sig,
             onvalue=True, offvalue=False,
             command=self._on_option_changed,
             density="compact",
         )
-        self._regex_toggle.pack(side="left")
+        self._regex_toggle.pack()
+
+        # match container - only shows when there are matches
+        self._match_container = PackFrame(self, direction='horizontal').pack(padx=(16, 0))
+        Separator(self._match_container, orient='vertical').pack(fill='y')
+
+        self._count_lbl = Label(self._match_container, textsignal=self._count_sig)
+        self._count_lbl.pack(padx=(16, 0))
+
+        self._prev_btn = Button(
+            self._match_container, icon="arrow-up", icon_only=True, variant="ghost",
+            density="compact", command=self._prev_match,
+        )
+        self._prev_btn.pack()
+
+        self._next_btn = Button(
+            self._match_container, icon="arrow-down", icon_only=True, variant="ghost",
+            density="compact", command=self._next_match,
+        )
+        self._next_btn.pack()
 
         # ── key bindings on the find entry ────────────────────────────
         # TextEntry wraps an inner entry widget; bind to the inner widget
@@ -129,17 +133,19 @@ class SearchOverlay(Frame):
     def show(self) -> None:
         """Show the find bar and focus the search input."""
         self._sync_colors()
-        self.grid()
+        # Pack before the core so it claims space from the bottom without
+        # needing a full grid relayout.
+        self.pack(side="bottom", fill="x", before=self._core)
         self._find_entry.focus_set()
         self._run_search()
 
     def hide(self) -> None:
         """Hide the find bar and clear all highlights."""
-        self.grid_remove()
+        self.pack_forget()
         self._core.clear_decorations(_LAYER)
         self._matches = []
         self._current = -1
-        self._count_lbl.configure(text="")
+        self._count_sig.set("0 / 0")
         self._set_entry_state("normal")
         try:
             self._core.text.focus_set()
@@ -155,15 +161,15 @@ class SearchOverlay(Frame):
             self._core.clear_decorations(_LAYER)
             self._matches = []
             self._current = -1
-            self._count_lbl.configure(text="")
+            self._count_sig.set("0 / 0")
             self._set_entry_state("normal")
             return
 
         text = self._core.value
-        flags = 0 if self._case_var.get() else re.IGNORECASE
+        flags = 0 if self._case_sig.get() else re.IGNORECASE
 
         try:
-            if self._regex_var.get():
+            if self._regex_sig.get():
                 pattern = re.compile(query, flags)
             else:
                 pattern = re.compile(re.escape(query), flags)
@@ -172,7 +178,7 @@ class SearchOverlay(Frame):
             self._core.clear_decorations(_LAYER)
             self._matches = []
             self._current = -1
-            self._count_lbl.configure(text="bad regex")
+            self._count_sig.set("bad regex")
             return
 
         self._matches = [(m.start(), m.end()) for m in pattern.finditer(text)]
@@ -180,7 +186,7 @@ class SearchOverlay(Frame):
         if not self._matches:
             self._core.clear_decorations(_LAYER)
             self._current = -1
-            self._count_lbl.configure(text="no matches")
+            self._count_sig.set("0 / 0")
             self._set_entry_state("no_match")
             return
 
@@ -220,7 +226,7 @@ class SearchOverlay(Frame):
         self._core.set_decorations(_LAYER, decorations)
 
         total = len(self._matches)
-        self._count_lbl.configure(text=f"{self._current + 1} / {total}")
+        self._count_sig.set(f"{self._current + 1} / {total}")
 
         # Scroll current match into view.
         if 0 <= self._current < total:
@@ -254,11 +260,11 @@ class SearchOverlay(Frame):
 
     # ── event handlers ────────────────────────────────────────────────────
 
-    def _on_ctrl_f(self, _event: tk.Event) -> str:
+    def _on_ctrl_f(self, _event: TkEvent) -> str:
         self.show()
         return "break"
 
-    def _on_editor_escape(self, _event: tk.Event) -> None:
+    def _on_editor_escape(self, _event: TkEvent) -> None:
         if self.winfo_ismapped():
             self.hide()
 
@@ -268,11 +274,11 @@ class SearchOverlay(Frame):
     def _on_option_changed(self) -> None:
         self._schedule_search()
 
-    def _on_content_changed(self, _event: tk.Event) -> None:
+    def _on_content_changed(self, _event: TkEvent) -> None:
         if self.winfo_ismapped():
             self._schedule_search()
 
-    def _on_theme_changed(self, _event: tk.Event = None) -> None:
+    def _on_theme_changed(self, _event: TkEvent = None) -> None:
         self._sync_colors()
 
     def _sync_colors(self) -> None:

@@ -108,13 +108,10 @@ class CodeEditor(Frame):
         # ── search overlay (docks below the core) ─────────────────────────
         self._search = SearchOverlay(self, self._core)
 
-        # Grid layout: row 0 = editor, row 1 = search bar (hidden by default).
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=0)
-        self.grid_columnconfigure(0, weight=1)
-        self._core.grid(row=0, column=0, sticky="nsew")
-        self._search.grid(row=1, column=0, sticky="ew")
-        self._search.grid_remove()
+        # Pack layout: core fills the frame; search overlay is hidden until
+        # show_search() is called, at which point it packs before the core
+        # using pack(before=) to claim space from the bottom without a relayout.
+        self._core.pack(fill="both", expand=True)
 
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
