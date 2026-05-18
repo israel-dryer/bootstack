@@ -49,7 +49,8 @@ class IndentGuides(EditFilter):
         self._core = core
         core.register_layer(_LAYER, priority=0)
         self._apply_guide_style(core)
-        core.text.bind("<<ThemeChanged>>", self._on_theme_changed, add="+")
+        core.text.bind("<<ThemeChanged>>",   self._on_theme_changed, add="+")
+        core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
         self._schedule()
 
     def detach(self, core: _MultilineCore) -> None:

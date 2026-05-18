@@ -44,11 +44,15 @@ class SearchOverlay(Frame):
         self._after_id: str | None = None
         self._case_var = tk.BooleanVar(value=False)
         self._regex_var = tk.BooleanVar(value=False)
+        # Unique ttk style name so we can update the entry field colors at runtime.
+        self._entry_style = f"SearchOverlay{id(self)}.TEntry"
 
         # ── register decoration styles ─────────────────────────────────
         core.register_layer(_LAYER, priority=10)
-        core.define_style(_STYLE_MATCH, background="#ffff60")
-        core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#ffffff")
+        # foreground="#000000" ensures matched text is readable on both light
+        # (yellow bg) and dark (orange bg) editor backgrounds.
+        core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
+        core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
 
         # ── layout ────────────────────────────────────────────────────
         self._close_btn = Button(
@@ -61,7 +65,8 @@ class SearchOverlay(Frame):
 
         self._find_var = tk.StringVar()
         self._find_var.trace_add("write", self._on_query_changed)
-        self._find_entry = ttk.Entry(self, textvariable=self._find_var, width=28)
+        self._find_entry = ttk.Entry(self, textvariable=self._find_var, width=28,
+                                     style=self._entry_style)
         self._find_entry.pack(side="left")
 
         self._count_lbl = Label(self, text="", width=8)
@@ -71,13 +76,13 @@ class SearchOverlay(Frame):
             self, icon="chevron-up", icon_only=True, variant="ghost",
             density="compact", command=self._prev_match,
         )
-        self._prev_btn.pack(side="left", padx=(6, 0))
+        self._prev_btn.pack(side="left")
 
         self._next_btn = Button(
             self, icon="chevron-down", icon_only=True, variant="ghost",
             density="compact", command=self._next_match,
         )
-        self._next_btn.pack(side="left", padx=(2, 0))
+        self._next_btn.pack(side="left")
 
         Separator(self, orient="vertical").pack(side="left", fill="y", padx=10)
 
@@ -95,7 +100,7 @@ class SearchOverlay(Frame):
             command=self._on_option_changed,
             density="compact",
         )
-        self._regex_toggle.pack(side="left", padx=(4, 0))
+        self._regex_toggle.pack(side="left")
 
         # ── key bindings on the find entry ────────────────────────────
         self._find_entry.bind("<Return>",       lambda _: self._next_match())
@@ -114,13 +119,16 @@ class SearchOverlay(Frame):
         # Re-run search when content changes (while search bar is open).
         core.text.bind("<<Change>>", self._on_content_changed, add="+")
 
-        # Theme change: redefine styles with updated colors.
-        core.text.bind("<<ThemeChanged>>", self._on_theme_changed, add="+")
+        # Re-sync colors when the bootstack theme changes or when the Pygments
+        # highlighter changes the editor background (<<EditorBgChanged>>).
+        core.text.bind("<<ThemeChanged>>",   self._on_theme_changed, add="+")
+        core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
 
     # ── public API ────────────────────────────────────────────────────────
 
     def show(self) -> None:
         """Show the find bar and focus the search input."""
+        self._sync_colors()
         self.grid()
         self._find_entry.focus_set()
         self._find_entry.select_range(0, "end")
@@ -278,10 +286,30 @@ class SearchOverlay(Frame):
         if self.winfo_ismapped():
             self._schedule_search()
 
-    def _on_theme_changed(self, _event: tk.Event) -> None:
-        self._core.define_style(_STYLE_MATCH, background="#ffff60")
-        self._core.define_style(_STYLE_CURRENT, background="#ff8000",
-                                foreground="#ffffff")
+    def _on_theme_changed(self, _event: tk.Event = None) -> None:
+        self._sync_colors()
+
+    def _sync_colors(self) -> None:
+        """Adapt match highlight and entry colors to the editor's current background."""
+        try:
+            bg = self._core.text.cget("background")
+            lum = _luminance(bg)
+        except Exception:
+            lum = 200.0
+
+        # Yellow/orange with black text is readable on both light and dark backgrounds.
+        self._core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
+        self._core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
+
+        # Sync the entry field background to the editor's brightness.
+        try:
+            ttk.Style(self).configure(
+                self._entry_style,
+                fieldbackground="#3c3f41" if lum <= 128 else "white",
+                foreground="#bbbbbb" if lum <= 128 else "black",
+            )
+        except Exception:
+            pass
 
     def _schedule_search(self) -> None:
         if self._after_id is not None:
@@ -315,3 +343,15 @@ def _position_to_offset(text: str, line: int, col: int) -> int:
     lines = text.split("\n")
     offset = sum(len(lines[i]) + 1 for i in range(min(line - 1, len(lines))))
     return offset + min(col, len(lines[line - 1]) if line <= len(lines) else 0)
+
+
+def _luminance(hex_color: str) -> float:
+    """Return perceptual luminance (0–255) for a hex color string."""
+    h = hex_color.lstrip("#")
+    if len(h) < 6:
+        return 200.0
+    try:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        return 0.299 * r + 0.587 * g + 0.114 * b
+    except Exception:
+        return 200.0

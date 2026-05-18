@@ -186,6 +186,9 @@ class PygmentsHighlighter(EditFilter):
         kw["insertbackground"] = self._style_fg or _contrast_color(self._style_bg)
         try:
             core.text.configure(**kw)
+            # Notify extensions (IndentGuides, SearchOverlay) that the editor
+            # background changed so they can re-calibrate their colors.
+            core.text.event_generate("<<EditorBgChanged>>", when="tail")
         except Exception:
             pass
 
