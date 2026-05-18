@@ -157,6 +157,7 @@ class Tabs(Frame):
         # Tab tracking by key
         self._tabs: dict[str, TabItem] = {}
         self._tab_order: list[str] = []
+        self._hidden: set[str] = set()
         self._counter = 0  # For auto-generating keys
 
     def _create_divider(self):
@@ -373,6 +374,59 @@ class Tabs(Frame):
         self._tab_order.remove(key)
         tab.pack_forget()
         tab.destroy()
+
+    def hide(self, key: str) -> None:
+        """Hide a tab without removing it from the registry.
+
+        The tab disappears from the bar but can be restored with ``show()``.
+
+        Args:
+            key: Key of the tab to hide.
+
+        Raises:
+            KeyError: If no tab with the given key exists.
+        """
+        if key not in self._tabs:
+            raise KeyError(f"No tab with key '{key}'")
+        if key not in self._hidden:
+            self._hidden.add(key)
+            self._tabs[key].pack_forget()
+
+    def show(self, key: str) -> None:
+        """Restore a previously hidden tab to the bar.
+
+        Args:
+            key: Key of the tab to show.
+
+        Raises:
+            KeyError: If no tab with the given key exists.
+        """
+        if key not in self._tabs:
+            raise KeyError(f"No tab with key '{key}'")
+        if key in self._hidden:
+            self._hidden.discard(key)
+            tab = self._tabs[key]
+            pack_opts: dict = {'fill': 'x'}
+            if self._tab_width == 'stretch' and self._orient == 'horizontal':
+                pack_opts['expand'] = True
+            # Re-insert at the correct position relative to visible tabs
+            next_visible = self._next_visible_tab_after(key)
+            if next_visible is not None:
+                tab.pack(before=self._tabs[next_visible], **pack_opts)
+            elif self._add_button is not None:
+                tab.pack(before=self._add_button, **pack_opts)
+            else:
+                tab.pack(**pack_opts)
+
+    def _next_visible_tab_after(self, key: str) -> str | None:
+        """Return the key of the next visible tab after *key* in tab order."""
+        found = False
+        for k in self._tab_order:
+            if found and k not in self._hidden:
+                return k
+            if k == key:
+                found = True
+        return None
 
     def item(self, key: str) -> TabItem:
         """Get a tab by its key.

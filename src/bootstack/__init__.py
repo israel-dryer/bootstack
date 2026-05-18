@@ -77,6 +77,8 @@ if TYPE_CHECKING:
         SideNavGroup, SideNavHeader, SideNavSeparator, SizeGrip, Spinbox,
         SpinnerEntry, Switch, TableView, TextEntry, TimeEntry, Toast,
         TabItem, Tabs, TabView,
+        TabRef, TabChangeEventData, TabActivateEventData, TabDeactivateEventData,
+        ChangeReason, ChangeMethod,
         ToggleGroup, Toolbar, ToolTip, TreeView, TK_WIDGETS, TTK_WIDGETS,
     )
     from bootstack.dialogs import (
@@ -198,6 +200,10 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.tabs.tabs": ["Tabs"],
     "bootstack.widgets.composites.tabs.tabview": ["TabView"],
     "bootstack.widgets.composites.tabs.tabitem": ["TabItem"],
+    "bootstack.widgets.composites.tabs.events": [
+        "TabRef", "TabChangeEventData", "TabActivateEventData",
+        "TabDeactivateEventData", "ChangeReason", "ChangeMethod",
+    ],
     "bootstack.widgets.composites.textentry": ["TextEntry"],
     "bootstack.widgets.composites.timeentry": ["TimeEntry"],
     "bootstack.widgets.composites.toast": ["Toast"],

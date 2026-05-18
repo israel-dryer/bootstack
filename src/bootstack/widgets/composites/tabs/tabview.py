@@ -10,6 +10,10 @@ from typing import Any, Callable, Literal
 from bootstack.widgets.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets.composites.tabs.tabs import Tabs
 from bootstack.widgets.composites.tabs.tabitem import TabItem
+from bootstack.widgets.composites.tabs.events import (
+    ChangeMethod, ChangeReason,
+    TabActivateEventData, TabChangeEventData, TabDeactivateEventData, TabRef,
+)
 from bootstack.widgets.composites.pagestack import PageStack
 from bootstack.widgets.types import Master
 
@@ -94,14 +98,34 @@ class TabView(Frame):
             self._tabs.pack(side='left', fill='y')
             self._page_stack.pack(side='left', fill='both', expand=True)
 
-        # Bind variable trace to navigate pages
-        self._trace_id = self._tab_variable.trace_add('write', self._on_tab_selected)
-
         # Track tabs by key for removal
         self._tab_map: dict[str, TabItem] = {}
 
+        # Tab text tokens for locale retranslation — key → original text
+        self._tab_locale_tokens: dict[str, str] = {}
+
+        # Hidden tab keys (tab bar hidden, page still registered)
+        self._hidden_tabs: set[str] = set()
+
+        # Typed-event state — defaults represent a user click
+        self._prev_key: str | None = None
+        self._next_reason: ChangeReason = "user"
+        self._next_via: ChangeMethod = "click"
+
+        # Bind variable trace to navigate pages and fire typed events
+        self._trace_id = self._tab_variable.trace_add('write', self._on_tab_selected)
+
+        # Locale retranslation
+        self.winfo_toplevel().bind(
+            "<<LocaleChanged>>", self._on_locale_changed, add='+'
+        )
+
         # Clean up trace on destroy
         self.bind('<Destroy>', self._on_destroy, add='+')
+
+    # -------------------------------------------------------------------------
+    # Internal
+    # -------------------------------------------------------------------------
 
     def _on_destroy(self, event=None):
         """Clean up variable trace when widget is destroyed."""
@@ -115,13 +139,78 @@ class TabView(Frame):
             self._trace_id = None
 
     def _on_tab_selected(self, *args):
-        """Handle tab selection to navigate page stack."""
+        """Handle tab selection — navigate page stack and fire typed events."""
         key = self._tab_variable.get()
-        if key and key in self._tab_map:
-            # Only navigate if not already on this page
-            current = self._page_stack.current()
-            if current is None or current[0] != key:
-                self._page_stack.navigate(key)
+        if not key or key not in self._tab_map:
+            return
+
+        prev_key = self._prev_key
+        reason: ChangeReason = self._next_reason
+        via: ChangeMethod = self._next_via
+
+        # Reset to user-click defaults for the next change
+        self._next_reason = "user"
+        self._next_via = "click"
+
+        if key == prev_key:
+            return
+
+        # Navigate page stack
+        current_page = self._page_stack.current()
+        if current_page is None or current_page[0] != key:
+            self._page_stack.navigate(key)
+
+        # Build typed event payload
+        def _tab_ref(k: str) -> TabRef:
+            return TabRef(key=k, text=self._tab_locale_tokens.get(k, k))
+
+        current_ref = _tab_ref(key)
+        previous_ref = _tab_ref(prev_key) if prev_key else None
+
+        payload: TabChangeEventData = {
+            "current": current_ref,
+            "previous": previous_ref,
+            "reason": reason,
+            "via": via,
+        }
+
+        self.event_generate('<<TabChanged>>', data=payload, when='tail')
+
+        # Per-tab lifecycle events
+        if prev_key and prev_key in self._tab_map:
+            deactivate: TabDeactivateEventData = {
+                "key": prev_key,
+                "text": self._tab_locale_tokens.get(prev_key, prev_key),
+            }
+            self.event_generate('<<TabDeactivate>>', data=deactivate, when='tail')
+
+        activate: TabActivateEventData = {
+            "key": key,
+            "text": self._tab_locale_tokens.get(key, key),
+        }
+        self.event_generate('<<TabActivate>>', data=activate, when='tail')
+
+        self._prev_key = key
+
+    def _on_locale_changed(self, _event=None):
+        """Retranslate all tab labels when the locale changes."""
+        try:
+            from bootstack.i18n import MessageCatalog
+        except ImportError:
+            return
+        for key, token in self._tab_locale_tokens.items():
+            if key in self._tab_map:
+                translated = MessageCatalog.translate(token)
+                self._tab_map[key].configure(text=translated)
+
+    def _set_next_change(self, reason: ChangeReason, via: ChangeMethod) -> None:
+        """Tag the next variable change with the given reason and method."""
+        self._next_reason = reason
+        self._next_via = via
+
+    # -------------------------------------------------------------------------
+    # Public API — tab management
+    # -------------------------------------------------------------------------
 
     def add(
         self,
@@ -151,56 +240,44 @@ class TabView(Frame):
         Returns:
             The page widget.
         """
-        # Determine effective closable value
         effective_closable = closable if closable is not None else self._tabs._enable_closing
 
-        # Create close command wrapper if closable but no command provided
         if effective_closable and close_command is None:
-            close_command = lambda k=key: self.remove(k)
+            close_command = lambda k=key: self.forget_tab(k)
 
-        # Add tab
         tab = self._tabs.add(
             text=text,
             icon=icon,
+            key=key,
             value=key,
             closable=closable,
             close_command=close_command,
             command=command,
         )
         self._tab_map[key] = tab
+        self._tab_locale_tokens[key] = text
 
-        # Add page
         page_widget = self._page_stack.add(key, page, **kwargs)
 
-        # If this is the first tab, select it
         if len(self._tab_map) == 1:
+            self._set_next_change("api", "programmatic")
             self._tab_variable.set(key)
 
         return page_widget
 
-    def remove(self, key: str) -> None:
-        """Remove a tab and its associated page.
+    def __getitem__(self, key: str) -> tk.Widget:
+        """Return the page widget for *key*.
 
         Args:
-            key: The identifier of the tab/page to remove.
+            key: Tab/page identifier.
+
+        Returns:
+            The page widget registered under *key*.
+
+        Raises:
+            KeyError: If no tab with the given key exists.
         """
-        # Remove tab
-        if key in self._tab_map:
-            tab = self._tab_map.pop(key)
-            self._tabs.remove(tab)
-            tab.destroy()
-
-        # Remove page
-        self._page_stack.remove(key)
-
-        # If the removed tab was selected, select another
-        if self._tab_variable.get() == key:
-            if self._tab_map:
-                # Select the first available tab
-                first_key = next(iter(self._tab_map))
-                self._tab_variable.set(first_key)
-            else:
-                self._tab_variable.set('')
+        return self._page_stack.item(key)
 
     def select(self, key: str) -> None:
         """Select a tab by its key.
@@ -208,7 +285,8 @@ class TabView(Frame):
         Args:
             key: The identifier of the tab to select.
         """
-        if key in self._tab_map:
+        if key in self._tab_map and key not in self._hidden_tabs:
+            self._set_next_change("api", "programmatic")
             self._tab_variable.set(key)
 
     def navigate(self, key: str, data: dict = None) -> None:
@@ -218,10 +296,107 @@ class TabView(Frame):
             key: The identifier of the tab/page to navigate to.
             data: Optional data to pass to the page.
         """
-        if key in self._tab_map:
+        if key in self._tab_map and key not in self._hidden_tabs:
+            self._set_next_change("api", "programmatic")
             self._tab_variable.set(key)
             if data:
                 self._page_stack.navigate(key, data=data)
+
+    def hide_tab(self, key: str) -> None:
+        """Hide a tab without removing it from the registry.
+
+        The tab disappears from the bar but remains registered. Restore it
+        with ``show_tab()``. If the hidden tab was selected, the next
+        available visible tab is selected automatically.
+
+        Args:
+            key: The identifier of the tab to hide.
+
+        Raises:
+            KeyError: If no tab with the given key exists.
+        """
+        if key not in self._tab_map:
+            raise KeyError(f"No tab with key '{key}'")
+        if key in self._hidden_tabs:
+            return
+
+        self._hidden_tabs.add(key)
+        self._tabs.hide(key)
+
+        if self._tab_variable.get() == key:
+            next_key = self._next_visible_key(exclude=key)
+            if next_key:
+                self._set_next_change("hide", "programmatic")
+                self._tab_variable.set(next_key)
+            else:
+                self._tab_variable.set('')
+                self._prev_key = None
+
+    def show_tab(self, key: str) -> None:
+        """Restore a previously hidden tab to the bar.
+
+        Args:
+            key: The identifier of the tab to show.
+
+        Raises:
+            KeyError: If no tab with the given key exists.
+        """
+        if key not in self._tab_map:
+            raise KeyError(f"No tab with key '{key}'")
+        self._hidden_tabs.discard(key)
+        self._tabs.show(key)
+
+    def forget_tab(self, key: str) -> None:
+        """Remove a tab and its page entirely.
+
+        Unlike ``hide_tab()``, the tab is unregistered and cannot be restored.
+        If the removed tab was selected, the next available tab is selected.
+
+        Args:
+            key: The identifier of the tab/page to remove.
+        """
+        if key not in self._tab_map:
+            return
+
+        was_selected = self._tab_variable.get() == key
+
+        tab = self._tab_map.pop(key)
+        self._tab_locale_tokens.pop(key, None)
+        self._hidden_tabs.discard(key)
+        self._tabs.remove(key)
+        tab.destroy()
+
+        self._page_stack.remove(key)
+
+        if was_selected:
+            next_key = self._next_visible_key()
+            if next_key:
+                self._set_next_change("forget", "programmatic")
+                self._tab_variable.set(next_key)
+            else:
+                self._tab_variable.set('')
+                self._prev_key = None
+
+    def remove(self, key: str) -> None:
+        """Remove a tab and its associated page.
+
+        Alias for ``forget_tab()``.
+
+        Args:
+            key: The identifier of the tab/page to remove.
+        """
+        self.forget_tab(key)
+
+    def _next_visible_key(self, exclude: str | None = None) -> str | None:
+        """Return the first visible (non-hidden) tab key, skipping *exclude*."""
+        for k in self._tab_map:
+            if k != exclude and k not in self._hidden_tabs:
+                return k
+        return None
+
+    # -------------------------------------------------------------------------
+    # Introspection
+    # -------------------------------------------------------------------------
 
     @property
     def tabs_widget(self) -> Tabs:
@@ -270,7 +445,7 @@ class TabView(Frame):
         return self._page_stack.keys()
 
     def tab(self, key: str) -> TabItem:
-        """Get a tab widget by its key.
+        """Get a TabItem by its key.
 
         Args:
             key: The identifier of the tab.
@@ -286,10 +461,10 @@ class TabView(Frame):
         return self._tab_map[key]
 
     def tabs(self) -> tuple[TabItem, ...]:
-        """Get all tab widgets.
+        """Get all TabItem widgets.
 
         Returns:
-            A tuple of all TabItem widgets.
+            A tuple of all TabItem widgets in the order they were added.
         """
         return tuple(self._tab_map.values())
 
@@ -297,11 +472,21 @@ class TabView(Frame):
         """Get all tab keys.
 
         Returns:
-            A tuple of all tab keys.
+            A tuple of all tab keys in the order they were added.
         """
         return tuple(self._tab_map.keys())
 
-    def configure_tab(self, key: str, option: str = None, **kwargs: Unpack[FrameKwargs]):
+    def keys(self) -> tuple[str, ...]:
+        """Get all tab keys.
+
+        Alias for ``tab_keys()``.
+
+        Returns:
+            A tuple of all tab keys in the order they were added.
+        """
+        return self.tab_keys()
+
+    def configure_tab(self, key: str, option: str | None = None, **kwargs: Unpack[FrameKwargs]):
         """Configure a specific tab by its key.
 
         Args:
@@ -317,12 +502,16 @@ class TabView(Frame):
             return tab.cget(option)
         tab.configure(**kwargs)
 
+    # -------------------------------------------------------------------------
+    # Events
+    # -------------------------------------------------------------------------
+
     def on_page_changed(self, callback: Callable) -> str:
-        """Register a callback for `<<PageChange>>` events (fires when the visible page changes).
+        """Register a callback for `<<PageChange>>` events.
 
         Args:
-            callback: Receives `event.data` with navigation info: `page`, `prev_page`,
-                `nav`, `index`, `length`, `can_back`, `can_forward`.
+            callback: Receives `event.data` with navigation info: `page`,
+                `prev_page`, `nav`, `index`, `length`, `can_back`, `can_forward`.
 
         Returns:
             Bind ID — pass to `off_page_changed()` to unsubscribe.
@@ -356,25 +545,70 @@ class TabView(Frame):
         """
         self._tabs.off_tab_added(bind_id)
 
-    def on_tab_changed(self, callback: Callable) -> Any:
-        """Register a callback for tab selection changes.
+    def on_tab_changed(self, callback: Callable[[TabChangeEventData], None]) -> str:
+        """Register a callback for `<<TabChanged>>` events.
 
         Args:
-            callback: Called with the new selected tab key (str) when the
-                selection changes.
+            callback: Receives a `TabChangeEventData` dict with keys
+                ``current`` (`TabRef`), ``previous`` (`TabRef | None`),
+                ``reason`` (`ChangeReason`), and ``via`` (`ChangeMethod`).
 
         Returns:
-            Subscription ID — pass to `off_tab_changed()` to unsubscribe.
+            Bind ID — pass to `off_tab_changed()` to unsubscribe.
         """
-        return self._tabs.on_tab_changed(callback)
+        return self.bind('<<TabChanged>>', callback, add='+')
 
-    def off_tab_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from tab selection changes.
+    def off_tab_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TabChanged>>`.
 
         Args:
-            bind_id: ID returned by `on_tab_changed()`.
+            bind_id: ID returned by `on_tab_changed()`. If None, removes all.
         """
-        self._tabs.off_tab_changed(bind_id)
+        self.unbind('<<TabChanged>>', bind_id)
+
+    def on_tab_activated(self, callback: Callable[[TabActivateEventData], None]) -> str:
+        """Register a callback for `<<TabActivate>>` events.
+
+        Fires when a tab becomes the selected (active) tab.
+
+        Args:
+            callback: Receives a `TabActivateEventData` dict with keys
+                ``key`` and ``text``.
+
+        Returns:
+            Bind ID — pass to `off_tab_activated()` to unsubscribe.
+        """
+        return self.bind('<<TabActivate>>', callback, add='+')
+
+    def off_tab_activated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TabActivate>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_activated()`. If None, removes all.
+        """
+        self.unbind('<<TabActivate>>', bind_id)
+
+    def on_tab_deactivated(self, callback: Callable[[TabDeactivateEventData], None]) -> str:
+        """Register a callback for `<<TabDeactivate>>` events.
+
+        Fires when a tab stops being the selected (active) tab.
+
+        Args:
+            callback: Receives a `TabDeactivateEventData` dict with keys
+                ``key`` and ``text``.
+
+        Returns:
+            Bind ID — pass to `off_tab_deactivated()` to unsubscribe.
+        """
+        return self.bind('<<TabDeactivate>>', callback, add='+')
+
+    def off_tab_deactivated(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<TabDeactivate>>`.
+
+        Args:
+            bind_id: ID returned by `on_tab_deactivated()`. If None, removes all.
+        """
+        self.unbind('<<TabDeactivate>>', bind_id)
 
     def on_tab_closed(self, callback: Callable) -> str:
         """Register a callback for `<<TabClose>>` events (fires when a tab's close button is clicked).

@@ -67,6 +67,10 @@ if TYPE_CHECKING:
     from bootstack.widgets.composites.tabs.tabs import Tabs
     from bootstack.widgets.composites.tabs.tabview import TabView
     from bootstack.widgets.composites.tabs.tabitem import TabItem
+    from bootstack.widgets.composites.tabs.events import (
+        TabRef, TabChangeEventData, TabActivateEventData, TabDeactivateEventData,
+        ChangeReason, ChangeMethod,
+    )
     from bootstack.widgets.composites.textentry import TextEntry
     from bootstack.widgets.composites.timeentry import TimeEntry
     from bootstack.widgets.composites.toast import Toast
@@ -133,6 +137,8 @@ __all__ = [
     'PathEntry', 'RadioGroup', 'ScrolledText', 'ScrollView', 'SelectBox',
     'SideNav', 'SideNavItem', 'SideNavGroup', 'SideNavHeader', 'SideNavSeparator',
     'SpinnerEntry', 'TableView', 'TabItem', 'Tabs', 'TabView',
+    'TabRef', 'TabChangeEventData', 'TabActivateEventData', 'TabDeactivateEventData',
+    'ChangeReason', 'ChangeMethod',
     'TextEntry', 'TimeEntry', 'Toast',
     'ToggleGroup', 'Toolbar', 'ToolTip',
 ]
