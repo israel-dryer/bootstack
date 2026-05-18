@@ -9,7 +9,6 @@ from __future__ import annotations
 import re
 import bisect
 import tkinter as tk
-import tkinter.ttk as ttk
 from typing import TYPE_CHECKING
 
 from bootstack.widgets.primitives.frame import Frame
@@ -44,8 +43,6 @@ class SearchOverlay(Frame):
         self._after_id: str | None = None
         self._case_var = tk.BooleanVar(value=False)
         self._regex_var = tk.BooleanVar(value=False)
-        # Unique ttk style name so we can update the entry field colors at runtime.
-        self._entry_style = f"SearchOverlay{id(self)}.TEntry"
 
         # ── register decoration styles ─────────────────────────────────
         core.register_layer(_LAYER, priority=10)
@@ -65,8 +62,10 @@ class SearchOverlay(Frame):
 
         self._find_var = tk.StringVar()
         self._find_var.trace_add("write", self._on_query_changed)
-        self._find_entry = ttk.Entry(self, textvariable=self._find_var, width=28,
-                                     style=self._entry_style)
+        # tk.Entry (not ttk.Entry) so we can configure background/foreground
+        # directly via configure() without triggering ttk <<ThemeChanged>> events
+        # which would create an infinite loop with PygmentsHighlighter.
+        self._find_entry = tk.Entry(self, textvariable=self._find_var, width=28)
         self._find_entry.pack(side="left")
 
         self._count_lbl = Label(self, text="", width=8)
@@ -301,12 +300,14 @@ class SearchOverlay(Frame):
         self._core.define_style(_STYLE_MATCH, background="#ffff60", foreground="#000000")
         self._core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#000000")
 
-        # Sync the entry field background to the editor's brightness.
+        # Sync the tk.Entry colors directly — using ttk.Style.configure() here
+        # would fire <<ThemeChanged>> and create an infinite loop.
+        dark = lum <= 128
         try:
-            ttk.Style(self).configure(
-                self._entry_style,
-                fieldbackground="#3c3f41" if lum <= 128 else "white",
-                foreground="#bbbbbb" if lum <= 128 else "black",
+            self._find_entry.configure(
+                background="#3c3f41" if dark else "white",
+                foreground="#bbbbbb" if dark else "black",
+                insertbackground="#bbbbbb" if dark else "black",
             )
         except Exception:
             pass
