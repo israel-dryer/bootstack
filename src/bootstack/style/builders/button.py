@@ -357,7 +357,7 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     # button element images
     normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
     pressed_img = recolor_element_image(image_key, pressed, surface, surface, surface)
-    hovered_img = recolor_element_image(image_key, hovered, surface, surface, surface)
+    hovered_img = recolor_element_image(image_key, hovered, hovered, surface, surface)
     focused_img = recolor_element_image(image_key, focused, accent_color, focused_ring, surface)
     focused_hovered_img = recolor_element_image(image_key, hovered, accent_color, focused_ring, surface)
     focused_pressed_img = recolor_element_image(image_key, pressed, accent_color, focused_ring, surface)

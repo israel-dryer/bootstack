@@ -89,7 +89,7 @@ def build_desktop_tokens(
         default_mono = "Cascadia Mono"
     elif system == "darwin":
         default_ui = "SF Pro Text"
-        default_mono = "SF Mono"
+        default_mono = "Menlo"
         # Tk's pt-to-pixel conversion uses the active scaling factor.
         # macOS defaults to 1.0 (72 DPI baseline) vs ~1.334 on Win/Linux,
         # so the same point size renders ~25% smaller on Mac. Bump the

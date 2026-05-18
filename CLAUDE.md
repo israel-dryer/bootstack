@@ -14,13 +14,10 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
 - **Widget redesign initiative — `feat/*` branches off `main`:** RFCs on
   `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
-  **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46),
-  TextArea + CodeEditor (PR #47 — open).
-  **Next planned:** Styling architecture redesign — move away from PIL image-based
-  widget styling (`recolor_element_image`) toward `clam` theme as the base with
-  pure TTK style attribute overrides. This eliminates the 150ms+ per-page PIL
-  rendering cost identified in Session 24. See performance notes in Session 24 handoff.
-  **Remaining (post-styling redesign):** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
+  **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
+  **Completed + PRed:** TextArea/CodeEditor on `feat/textarea-codeeditor` — all phases
+  done including replace bar, TextArea form field parity, docstring cleanup. See Session 23 handoff.
+  **Remaining:** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
@@ -154,7 +151,7 @@ new or unstarted pages.
 
 ---
 
-## Current state (as of Session 21)
+## Current state (as of Session 22)
 
 ### Guides — complete
 - `guides/validation.md`, `guides/color-and-theming.md`, `guides/spacing-and-alignment.md`
@@ -389,40 +386,106 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 
 ## Handoff log
 
-### Session 24 — Gallery performance investigation + TextArea/CodeEditor wrap-up (2026-05-18)
+### Session 23 — CodeEditor Phase 8 — PygmentsHighlighter (2026-05-18)
 
-**Branches:** `feat/textarea-codeeditor` PRed as #47 (open). `main` untouched.
+**Branch:** `feat/textarea-codeeditor` (off `main`). Not yet PRed — Phase 9 pending.
 
-**What happened:**
+**What was built (1 commit):**
 
-TextArea/CodeEditor work wrapped up with:
-- Replace bar added to `SearchOverlay` (Ctrl+H / Cmd+H)
-- `TextArea` rewritten as a proper form field: `GridFrame` base, focus border via
-  `highlightthickness`, `add_validation_rule`, `on_input`/`on_changed`, `required=`,
-  `message=`, `accent=`. TypedDicts: `TextAreaInputEventData`, `TextAreaValidationEventData`.
-- Docstring cleanup across all textarea module files (106 double-backtick pairs → single).
-- `TextAreaInputEventData` / `TextAreaValidationEventData` exported to `bs.*`.
-- Visual demo: `tests/features/textarea_v2.py`.
+| Phase | Component | Status |
+|---|---|---|
+| 1–3 | `_MultilineCore`, `FilterChain`, `EditFilter`, `ChangeNotifier`, `UndoManager`, `bs.TextArea` | ✅ Done |
+| 4 | `StyleRegistry`, `DecorationDiff`, `Position`/`RangeDecoration`/`LineDecoration` | ✅ Done |
+| 5 | `Sidebar` base, `LineNumbers` extension | ✅ Done |
+| 6 | `BracketMatcher`, `SmartIndent` extensions | ✅ Done |
+| 7 | `bs.CodeEditor` (v2 milestone — no syntax highlighting) | ✅ Done |
+| 8 | `PygmentsHighlighter` (v3 milestone) | ✅ **Done** |
+| 9 | `SearchOverlay`, `IndentGuides` | ⬜ Pending |
 
-**Gallery performance investigation:**
+**Key architecture decisions (Phase 8):**
+- Full-document retokenize on 150 ms debounce (not dirty-range incremental). Correct for all languages including multi-line strings/comments; fast enough for typical files.
+- Token family → style name mapping via `_TOKEN_TO_STYLE` dict + parent-chain walk (`t = t.parent`). Terminates at `Token` root (its `parent` is `None` class attribute).
+- 16 token families: keyword, string, string_doc, comment, number, operator, name_builtin/function/class/decorator/exception/namespace/tag/attribute, punctuation, error.
+- `name_tag` / `name_attribute` added specifically to cover JSON keys (`Token.Name.Tag`) and HTML/XML attributes (`Token.Name.Attribute`).
+- Colors extracted from Pygments style via `style_for_token()` — literal hex, not theme tokens. `pygments_style=` param on `CodeEditor` (default `"default"`).
+- `CodeEditor` stores `_highlighter` ref; `set_language()` removes old highlighter before installing new one. `set_language(None)` disables highlighting.
+- Pygments ships as always-available (already in env). No optional-extra guard.
 
-User reported "extreme sluggishness" in the gallery. Extensive profiling showed the
-performance is **pre-existing and unchanged** by the redesign work.
+**Visual test:** `tests/features/codeeditor_v3.py`
 
-Key findings:
-- First visit to buttons page: **~2000ms** — same at baseline (`4c9d5f2`) and now.
-- Root cause: `recolor_element_image()` (PIL pixel-level color mapping for button
-  state images). Called 233+ times per page = 150ms Python + 150ms rendering.
-- `update_idletasks` after page switch: ~289ms baseline → ~382ms on main → ~436ms
-  on current branch. Variance makes exact attribution difficult; no single change
-  causes a dramatic jump.
-- Subsequent visits to the same page: 30–50ms (fast — images cached).
+**What's next (Phase 9):** `SearchOverlay` (find/replace bar) and `IndentGuides` extension.
 
-**Planned next: styling architecture redesign.**
-Replace PIL image-based button rendering (`recolor_element_image`) with pure TTK
-`clam`-based styles. Button borders, focus rings, and state changes via TTK style
-attributes instead of per-state recolored PNG images. Expected result: eliminate
-the ~2s first-visit lag entirely.
+### Session 23 — Phase 8–9 complete + performance work (2026-05-18)
+
+**Branch:** `feat/textarea-codeeditor`. Not yet PRed.
+
+**What was built:**
+
+| Phase | Component | Status |
+|---|---|---|
+| 8 | `PygmentsHighlighter` — syntax highlighting via Pygments | ✅ Done |
+| 9 | `IndentGuides` + `SearchOverlay` | ✅ Done |
+
+**PygmentsHighlighter (Phase 8):**
+- `extensions/pygments_highlighter.py` — debounced full-document retokenize (150ms)
+- 16 token families via parent-chain walk; `name_tag`/`name_attribute` for JSON/HTML
+- Extracts bg/fg from Pygments style; applies to text widget; `<<EditorBgChanged>>` notifies extensions
+- `pygments_style=` param on `CodeEditor` (default `"default"`). 49 Pygments styles supported.
+- `_on_theme_changed` uses `notify=False` to avoid cascade on resize/focus
+
+**IndentGuides (Phase 9):**
+- `extensions/indent_guides.py` — marks last space of each tab-stop with subtle bg
+- Guide color computed from text widget background (luminance-based); updates on `<<ThemeChanged>>` and `<<EditorBgChanged>>`
+- `show_indent_guides=` on `CodeEditor` (default `False`)
+
+**SearchOverlay (Phase 9):**
+- `search_overlay.py` — `PackFrame`-based find bar using `bs.*` widgets throughout
+- Bootstrap icons: `x-lg` (close), `chevron-up/down` (nav), `type` (case), `regex` (regex)
+- `bs.TextEntry` for find input with `insert_addon(Label, icon='search')`
+- `bs.Signal` for match count and toggle state
+- Ctrl+F / Command+F (macOS); Esc to close; Enter/Shift+Enter for next/prev
+- Z-order show/hide: overlay is permanently `place()`'d at the bottom, hidden behind `_core.lift()`. `show()` = `self.lift()`, `hide()` = `self._core.lift()` — instant, no re-render
+- Match highlight: yellow bg + `foreground="#000000"` (readable on dark and light themes)
+- `_syncing_colors` re-entrancy guard on `_sync_colors()`
+
+**Visual tests:** `tests/features/codeeditor_v3.py`, `tests/features/codeeditor_v4.py`
+
+**Known remaining rendering note:** First-frame widget initialization flash on search open is consistent with bootstack's normal rendering behaviour across the app — not specific to the search overlay.
+
+### Session 22 — TextArea + CodeEditor phases 1–7 (2026-05-18)
+
+**Key architecture decisions made this session:**
+- `FilterChain` uses `idlelib.redirector.WidgetRedirector` (required: Tk key bindings call the Tcl command directly, bypassing Python-level overrides). `_BottomFilter` uses `OriginalCommand` objects returned by `register()` — no raw Tcl.
+- `undo=False` on `tk.Text`. `UndoManager` owns the stack with character-class grouping (alphanum / newline / punct) giving word-level undo matching IDLE's behavior. Ctrl+Z / Ctrl+Shift+Z.
+- `bs.ScrolledText` removed; replaced by `bs.TextArea`. Migration: `bs.TextArea(parent, scrollbars="vertical", ...)`.
+- `CodeEditor` pre-installs `LineNumbers`, `BracketMatcher`, `SmartIndent`. `show_line_numbers=True` default. `tab_width=4`, `insert_spaces=True`, `auto_indent=True` configurable.
+- Enriched virtual events: `<<TextModified>>` (data: `{is_dirty}`), `<<TextUndo>>` / `<<TextRedo>>` (data: `{value}`), `<<Change>>` (data: `{op, index}`).
+- SmartIndent: auto-indent on Enter deliberately does NOT detect end-of-function — that's language-specific and deferred to a future `PythonSmartIndent` extension.
+- `goto_line(n)` requires `editor.focus_set()` after calling to make cursor visible.
+
+**Module layout (new):**
+```
+src/bootstack/widgets/composites/textarea/
+├── __init__.py
+├── codeeditor.py         # bs.CodeEditor
+├── textarea.py           # bs.TextArea
+├── core.py               # _MultilineCore
+├── filter.py             # EditFilter, FilterChain, _BottomFilter
+├── change.py             # ChangeNotifier
+├── undo.py               # UndoManager
+├── decoration.py         # Position, RangeDecoration, LineDecoration, WidgetDecoration
+├── style_registry.py     # StyleRegistry
+├── diff.py               # DecorationDiff
+├── sidebar.py            # Sidebar base
+└── extensions/
+    ├── line_numbers.py   # LineNumbers
+    ├── bracket_matcher.py # BracketMatcher
+    └── smart_indent.py   # SmartIndent
+```
+
+**Visual tests:** `tests/features/textarea_v1.py`, `tests/features/codeeditor_v2.py`
+
+---
 
 ### Session 21 — Widget redesign: Toplevel polish + TabView parity (2026-05-17)
 
