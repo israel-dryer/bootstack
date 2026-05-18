@@ -486,7 +486,7 @@ class TabView(Frame):
         """
         return self.tab_keys()
 
-    def configure_tab(self, key: str, option: str = None, **kwargs: Unpack[FrameKwargs]):
+    def configure_tab(self, key: str, option: str | None = None, **kwargs: Unpack[FrameKwargs]):
         """Configure a specific tab by its key.
 
         Args:
