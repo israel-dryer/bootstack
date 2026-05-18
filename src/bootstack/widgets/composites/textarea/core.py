@@ -78,9 +78,15 @@ class _MultilineCore(tk.Frame):
             self.text.configure(xscrollcommand=self._on_xscroll)
 
         # ── layout ────────────────────────────────────────────────────────
+        # col 0: left sidebars (auto-sized, initially empty)
+        # col 1: text (fills available space)
+        # col 2: vertical scrollbar
+        self._sidebars: list = []         # list of attached Sidebar instances
+        self._text_col = 1                # text widget column (shifts right if needed)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-        self.text.grid(row=0, column=0, sticky="nsew")
+        self.grid_columnconfigure(0, weight=0)   # sidebar column
+        self.grid_columnconfigure(1, weight=1)   # text column
+        self.text.grid(row=0, column=1, sticky="nsew")
 
         self._update_scrollbar_layout()
 
@@ -134,15 +140,41 @@ class _MultilineCore(tk.Frame):
         f.detach(self)
         self._chain.remove(f)
 
+    # ── sidebar management ────────────────────────────────────────────────
+
+    def add_sidebar(self, sidebar, side: str = "left") -> None:
+        """Attach a sidebar widget to this core.
+
+        Args:
+            sidebar: A ``Sidebar`` instance.
+            side: ``"left"`` (default) — only left sidebars are supported
+                in the current layout.
+        """
+        self._sidebars.append(sidebar)
+        sidebar.attach(self, side=side)
+
+    def remove_sidebar(self, sidebar) -> None:
+        """Detach a sidebar widget from this core.
+
+        Args:
+            sidebar: The ``Sidebar`` instance to remove.
+        """
+        if sidebar in self._sidebars:
+            self._sidebars.remove(sidebar)
+            sidebar.detach(self)
+
     # ── scrollbars ────────────────────────────────────────────────────────
 
     def _on_yscroll(self, first: str, last: str) -> None:
         self._vscroll.set(first, last)
+        for sb in self._sidebars:
+            sb.on_scroll(first, last)
         if self._scrollbar_mode == "auto":
+            vscroll_col = self._text_col + 1
             if float(first) <= 0.0 and float(last) >= 1.0:
                 self._vscroll.grid_remove()
             else:
-                self._vscroll.grid(row=0, column=1, sticky="ns")
+                self._vscroll.grid(row=0, column=vscroll_col, sticky="ns")
 
     def _on_xscroll(self, first: str, last: str) -> None:
         self._hscroll.set(first, last)
@@ -150,22 +182,22 @@ class _MultilineCore(tk.Frame):
             if float(first) <= 0.0 and float(last) >= 1.0:
                 self._hscroll.grid_remove()
             else:
-                self._hscroll.grid(row=1, column=0, sticky="ew")
+                self._hscroll.grid(row=1, column=self._text_col, sticky="ew")
 
     def _update_scrollbar_layout(self) -> None:
         mode = self._scrollbar_mode
+        vscroll_col = self._text_col + 1
         if mode in ("vertical", "both", "auto"):
-            self._vscroll.grid(row=0, column=1, sticky="ns")
+            self._vscroll.grid(row=0, column=vscroll_col, sticky="ns")
         else:
             self._vscroll.grid_remove()
 
         if mode == "both":
-            self._hscroll.grid(row=1, column=0, sticky="ew")
+            self._hscroll.grid(row=1, column=self._text_col, sticky="ew")
         else:
             self._hscroll.grid_remove()
 
         if mode == "auto":
-            # Start hidden; _on_yscroll will show when needed
             self._vscroll.grid_remove()
             self._hscroll.grid_remove()
 
