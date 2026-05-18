@@ -11,6 +11,7 @@ from typing import Callable, Literal
 from bootstack.widgets.primitives.scrollbar import Scrollbar
 from bootstack.widgets.composites.textarea.filter import EditFilter, FilterChain
 from bootstack.widgets.composites.textarea.change import ChangeNotifier
+from bootstack.widgets.composites.textarea.undo import UndoManager
 from bootstack.widgets.types import Master
 
 
@@ -50,14 +51,16 @@ class _MultilineCore(tk.Frame):
         # Detect windowing system for mousewheel handling
         self.winsys: str = self.tk.call("tk", "windowingsystem")
 
-        # ── text widget (undo=True enables Tk's built-in undo/redo) ──────
+        # ── text widget ───────────────────────────────────────────────────
+        # undo=False: we manage the undo stack ourselves via UndoManager
+        # (character-class grouping for word-level undo, matching IDLE).
         wrap_mode = tk.WORD if wrap else tk.NONE
         self.text = tk.Text(
             self,
             wrap=wrap_mode,
             height=height,
             font=font,
-            undo=True,
+            undo=False,
             **text_kwargs,
         )
 
@@ -79,7 +82,10 @@ class _MultilineCore(tk.Frame):
         # ── filter chain ──────────────────────────────────────────────────
         self._chain = FilterChain(self.text)
 
+        self._undo_manager = UndoManager()
         self._change_notifier = ChangeNotifier()
+
+        self._install_filter(self._undo_manager)
         self._install_filter(self._change_notifier)
 
         # ── mousewheel ────────────────────────────────────────────────────
@@ -89,15 +95,18 @@ class _MultilineCore(tk.Frame):
         # ── initial value ─────────────────────────────────────────────────
         if value:
             self.text.insert("1.0", value)
-            self.text.edit_reset()   # clear undo history after seeding
+            self._undo_manager.reset_undo()   # clear history after seeding
 
         if read_only:
             self.text.configure(state=tk.DISABLED)
 
-        # ── enrich Tk's built-in virtual events with payload ──────────────
+        # Keyboard undo/redo (Ctrl+Z / Ctrl+Shift+Z)
+        self.text.bind("<Control-z>", lambda e: (self._undo_manager.undo(), "break")[1], add="+")
+        self.text.bind("<Control-Z>", lambda e: (self._undo_manager.redo(), "break")[1], add="+")
+
+        # <<Modified>> still fires from Tk's edit_modified flag (independent
+        # of the undo stack) — enrich with is_dirty payload.
         self.text.bind("<<Modified>>", self._on_tk_modified, add="+")
-        self.text.bind("<<Undo>>",     self._on_tk_undo,     add="+")
-        self.text.bind("<<Redo>>",     self._on_tk_redo,     add="+")
 
         self.bind("<Destroy>", self._on_destroy, add="+")
 
@@ -222,35 +231,29 @@ class _MultilineCore(tk.Frame):
     @property
     def is_dirty(self) -> bool:
         """True if the content has changed since last save."""
-        return bool(self.text.edit_modified())
+        return self._undo_manager.is_dirty
 
     def mark_saved(self) -> None:
         """Mark current state as the clean baseline."""
-        self.text.edit_modified(False)
+        self._undo_manager.mark_saved()
 
     # ── undo / redo ───────────────────────────────────────────────────────
 
     def undo(self) -> None:
         """Undo the last edit."""
-        try:
-            self.text.edit_undo()
-        except tk.TclError:
-            pass
+        self._undo_manager.undo()
 
     def redo(self) -> None:
         """Redo the last undone edit."""
-        try:
-            self.text.edit_redo()
-        except tk.TclError:
-            pass
+        self._undo_manager.redo()
 
     def undo_block_start(self) -> None:
-        """Begin a compound undo block (inserts an undo separator)."""
-        self.text.edit_separator()
+        """Begin a compound undo block."""
+        self._undo_manager.undo_block_start()
 
     def undo_block_stop(self) -> None:
-        """End a compound undo block (inserts an undo separator)."""
-        self.text.edit_separator()
+        """End a compound undo block."""
+        self._undo_manager.undo_block_stop()
 
     # ── internal Tk event enrichment ─────────────────────────────────────
 
@@ -258,20 +261,6 @@ class _MultilineCore(tk.Frame):
         self.text.event_generate(
             "<<TextModified>>",
             data={"is_dirty": self.is_dirty},
-            when="tail",
-        )
-
-    def _on_tk_undo(self, _event=None) -> None:
-        self.text.event_generate(
-            "<<TextUndo>>",
-            data={"value": self.value},
-            when="tail",
-        )
-
-    def _on_tk_redo(self, _event=None) -> None:
-        self.text.event_generate(
-            "<<TextRedo>>",
-            data={"value": self.value},
             when="tail",
         )
 
