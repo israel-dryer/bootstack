@@ -12,6 +12,11 @@ import tkinter as tk
 import tkinter.ttk as ttk
 from typing import TYPE_CHECKING
 
+from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets.primitives.label import Label
+from bootstack.widgets.primitives.button import Button
+from bootstack.widgets.primitives.separator import Separator
+from bootstack.widgets.primitives.checktoggle import CheckToggle
 from bootstack.widgets.composites.textarea.decoration import Position, RangeDecoration
 
 if TYPE_CHECKING:
@@ -24,7 +29,7 @@ _STYLE_CURRENT = "search_current"
 _DEBOUNCE_MS = 120
 
 
-class SearchOverlay(ttk.Frame):
+class SearchOverlay(Frame):
     """Find bar that docks at the bottom of the editor.
 
     Created and owned by `CodeEditor` — not part of the public API.
@@ -32,7 +37,7 @@ class SearchOverlay(ttk.Frame):
     """
 
     def __init__(self, parent: tk.Misc, core: _MultilineCore) -> None:
-        super().__init__(parent, padding=(4, 3))
+        super().__init__(parent, padding=(6, 4), surface="chrome")
         self._core = core
         self._matches: list[tuple[int, int]] = []   # (start_offset, end_offset)
         self._current: int = -1                      # index into _matches
@@ -46,40 +51,51 @@ class SearchOverlay(ttk.Frame):
         core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#ffffff")
 
         # ── layout ────────────────────────────────────────────────────
-        self._close_btn = ttk.Button(self, text="✕", width=2,
-                                     command=self.hide)
-        self._close_btn.pack(side="left", padx=(0, 6))
+        self._close_btn = Button(
+            self, icon="x-lg", icon_only=True, variant="ghost", density="compact",
+            command=self.hide,
+        )
+        self._close_btn.pack(side="left", padx=(0, 8))
 
-        ttk.Label(self, text="Find:").pack(side="left", padx=(0, 4))
+        Label(self, text="Find:").pack(side="left", padx=(0, 4))
 
         self._find_var = tk.StringVar()
         self._find_var.trace_add("write", self._on_query_changed)
         self._find_entry = ttk.Entry(self, textvariable=self._find_var, width=28)
         self._find_entry.pack(side="left")
 
-        self._count_lbl = ttk.Label(self, text="", width=8)
+        self._count_lbl = Label(self, text="", width=8)
         self._count_lbl.pack(side="left", padx=(6, 0))
 
-        self._prev_btn = ttk.Button(self, text="↑", width=2,
-                                    command=self._prev_match)
+        self._prev_btn = Button(
+            self, icon="chevron-up", icon_only=True, variant="ghost",
+            density="compact", command=self._prev_match,
+        )
         self._prev_btn.pack(side="left", padx=(6, 0))
 
-        self._next_btn = ttk.Button(self, text="↓", width=2,
-                                    command=self._next_match)
+        self._next_btn = Button(
+            self, icon="chevron-down", icon_only=True, variant="ghost",
+            density="compact", command=self._next_match,
+        )
         self._next_btn.pack(side="left", padx=(2, 0))
 
-        ttk.Separator(self, orient="vertical").pack(side="left",
-                                                    fill="y", padx=8)
+        Separator(self, orient="vertical").pack(side="left", fill="y", padx=10)
 
-        self._case_btn = ttk.Checkbutton(self, text="Aa",
-                                         variable=self._case_var,
-                                         command=self._on_option_changed)
-        self._case_btn.pack(side="left")
+        self._case_toggle = CheckToggle(
+            self, text="Aa", variable=self._case_var,
+            onvalue=True, offvalue=False,
+            command=self._on_option_changed,
+            density="compact",
+        )
+        self._case_toggle.pack(side="left")
 
-        self._regex_btn = ttk.Checkbutton(self, text=".*",
-                                          variable=self._regex_var,
-                                          command=self._on_option_changed)
-        self._regex_btn.pack(side="left", padx=(4, 0))
+        self._regex_toggle = CheckToggle(
+            self, text=".*", variable=self._regex_var,
+            onvalue=True, offvalue=False,
+            command=self._on_option_changed,
+            density="compact",
+        )
+        self._regex_toggle.pack(side="left", padx=(4, 0))
 
         # ── key bindings on the find entry ────────────────────────────
         self._find_entry.bind("<Return>",       lambda _: self._next_match())
@@ -87,8 +103,12 @@ class SearchOverlay(ttk.Frame):
         self._find_entry.bind("<Escape>",        lambda _: self.hide())
 
         # ── key bindings on the editor text widget ────────────────────
+        # Ctrl+F on Windows/Linux; Command+F on macOS (aqua windowing system).
         core.text.bind("<Control-f>", self._on_ctrl_f, add="+")
         core.text.bind("<Control-F>", self._on_ctrl_f, add="+")
+        if core.winsys == "aqua":
+            core.text.bind("<Command-f>", self._on_ctrl_f, add="+")
+            core.text.bind("<Command-F>", self._on_ctrl_f, add="+")
         core.text.bind("<Escape>",    self._on_editor_escape, add="+")
 
         # Re-run search when content changes (while search bar is open).
@@ -193,8 +213,7 @@ class SearchOverlay(ttk.Frame):
         self._core.set_decorations(_LAYER, decorations)
 
         total = len(self._matches)
-        n = self._current + 1
-        self._count_lbl.configure(text=f"{n} / {total}")
+        self._count_lbl.configure(text=f"{self._current + 1} / {total}")
 
         # Scroll current match into view.
         if 0 <= self._current < total:
