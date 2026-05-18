@@ -70,6 +70,17 @@ def _extract_colors(style_cls) -> dict[str, str]:
     return colors
 
 
+def _contrast_color(hex_color: str) -> str:
+    """Return black or white for maximum contrast against `hex_color`."""
+    h = hex_color.lstrip("#")
+    try:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+        luminance = 0.299 * r + 0.587 * g + 0.114 * b
+        return "#000000" if luminance > 128 else "#ffffff"
+    except Exception:
+        return "#000000"
+
+
 class PygmentsHighlighter(EditFilter):
     """Syntax highlighting via Pygments.
 
@@ -112,6 +123,20 @@ class PygmentsHighlighter(EditFilter):
         # in the per-token hot path to skip style-name lookups with no color.
         self._active_styles: frozenset[str] = frozenset(self._style_colors)
 
+        # Background and default foreground from the Pygments style.
+        self._style_bg: str = style_cls.background_color
+        raw_fg = (
+            style_cls.style_for_token(Token.Text).get("color")
+            or style_cls.style_for_token(Token).get("color")
+        )
+        self._style_fg: str | None = f"#{raw_fg}" if raw_fg else None
+
+        # Saved originals — restored on detach.
+        self._orig_bg: str | None = None
+        self._orig_fg: str | None = None
+        self._orig_ibg: str | None = None
+        self._theme_bind_id: str | None = None
+
     # ── EditFilter protocol ───────────────────────────────────────────────
 
     def attach(self, core: _MultilineCore) -> None:
@@ -119,12 +144,28 @@ class PygmentsHighlighter(EditFilter):
         core.register_layer(_LAYER, priority=1)
         for style_name, color in self._style_colors.items():
             core.define_style(style_name, foreground=color)
+        # Save current text-widget colors before overriding them.
+        self._orig_bg = core.text.cget("background")
+        self._orig_fg = core.text.cget("foreground")
+        self._orig_ibg = core.text.cget("insertbackground")
+        self._apply_widget_colors(core)
+        # Re-apply after theme changes (theme engine resets widget colors).
+        self._theme_bind_id = core.text.bind(
+            "<<ThemeChanged>>", self._on_theme_changed, add="+"
+        )
         self._schedule()
 
     def detach(self, core: _MultilineCore) -> None:
         self._cancel()
+        if self._theme_bind_id is not None and self._core is not None:
+            try:
+                self._core.text.unbind("<<ThemeChanged>>", self._theme_bind_id)
+            except Exception:
+                pass
+        self._theme_bind_id = None
         if self._core is not None:
             core.clear_decorations(_LAYER)
+            self._restore_widget_colors(core)
         self._core = None
 
     def insert(self, index: str, chars: str, tags=None) -> None:
@@ -136,6 +177,35 @@ class PygmentsHighlighter(EditFilter):
         self._schedule()
 
     # ── internal ──────────────────────────────────────────────────────────
+
+    def _apply_widget_colors(self, core: _MultilineCore) -> None:
+        kw: dict = {"background": self._style_bg}
+        if self._style_fg:
+            kw["foreground"] = self._style_fg
+        # Cursor should be visible against the style background.
+        kw["insertbackground"] = self._style_fg or _contrast_color(self._style_bg)
+        try:
+            core.text.configure(**kw)
+        except Exception:
+            pass
+
+    def _restore_widget_colors(self, core: _MultilineCore) -> None:
+        kw: dict = {}
+        if self._orig_bg is not None:
+            kw["background"] = self._orig_bg
+        if self._orig_fg is not None:
+            kw["foreground"] = self._orig_fg
+        if self._orig_ibg is not None:
+            kw["insertbackground"] = self._orig_ibg
+        if kw:
+            try:
+                core.text.configure(**kw)
+            except Exception:
+                pass
+
+    def _on_theme_changed(self, _event=None) -> None:
+        if self._core is not None:
+            self._apply_widget_colors(self._core)
 
     def _schedule(self) -> None:
         self._cancel()
