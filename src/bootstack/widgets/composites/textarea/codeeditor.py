@@ -108,10 +108,15 @@ class CodeEditor(Frame):
         # ── search overlay (docks below the core) ─────────────────────────
         self._search = SearchOverlay(self, self._core)
 
-        # Pack layout: core fills the frame; search overlay is hidden until
-        # show_search() is called, at which point it packs before the core
-        # using pack(before=) to claim space from the bottom without a relayout.
+        # Pack layout: core fills the frame; search overlay starts hidden.
         self._core.pack(fill="both", expand=True)
+
+        # Pre-warm the search overlay so the first show() is instant.
+        # pack → update_idletasks forces Tk to measure all child widgets and
+        # cache their sizes; pack_forget hides it until the user opens it.
+        self._search.pack(side="bottom", fill="x", before=self._core)
+        self.update_idletasks()
+        self._search.pack_forget()
 
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
