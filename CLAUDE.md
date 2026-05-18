@@ -14,8 +14,13 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
 - **Widget redesign initiative — `feat/*` branches off `main`:** RFCs on
   `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
-  **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
-  **Remaining:** TextArea/CodeEditor, Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
+  **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46),
+  TextArea + CodeEditor (PR #47 — open).
+  **Next planned:** Styling architecture redesign — move away from PIL image-based
+  widget styling (`recolor_element_image`) toward `clam` theme as the base with
+  pure TTK style attribute overrides. This eliminates the 150ms+ per-page PIL
+  rendering cost identified in Session 24. See performance notes in Session 24 handoff.
+  **Remaining (post-styling redesign):** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
@@ -383,6 +388,41 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 24 — Gallery performance investigation + TextArea/CodeEditor wrap-up (2026-05-18)
+
+**Branches:** `feat/textarea-codeeditor` PRed as #47 (open). `main` untouched.
+
+**What happened:**
+
+TextArea/CodeEditor work wrapped up with:
+- Replace bar added to `SearchOverlay` (Ctrl+H / Cmd+H)
+- `TextArea` rewritten as a proper form field: `GridFrame` base, focus border via
+  `highlightthickness`, `add_validation_rule`, `on_input`/`on_changed`, `required=`,
+  `message=`, `accent=`. TypedDicts: `TextAreaInputEventData`, `TextAreaValidationEventData`.
+- Docstring cleanup across all textarea module files (106 double-backtick pairs → single).
+- `TextAreaInputEventData` / `TextAreaValidationEventData` exported to `bs.*`.
+- Visual demo: `tests/features/textarea_v2.py`.
+
+**Gallery performance investigation:**
+
+User reported "extreme sluggishness" in the gallery. Extensive profiling showed the
+performance is **pre-existing and unchanged** by the redesign work.
+
+Key findings:
+- First visit to buttons page: **~2000ms** — same at baseline (`4c9d5f2`) and now.
+- Root cause: `recolor_element_image()` (PIL pixel-level color mapping for button
+  state images). Called 233+ times per page = 150ms Python + 150ms rendering.
+- `update_idletasks` after page switch: ~289ms baseline → ~382ms on main → ~436ms
+  on current branch. Variance makes exact attribution difficult; no single change
+  causes a dramatic jump.
+- Subsequent visits to the same page: 30–50ms (fast — images cached).
+
+**Planned next: styling architecture redesign.**
+Replace PIL image-based button rendering (`recolor_element_image`) with pure TTK
+`clam`-based styles. Button borders, focus rings, and state changes via TTK style
+attributes instead of per-state recolored PNG images. Expected result: eliminate
+the ~2s first-visit lag entirely.
 
 ### Session 21 — Widget redesign: Toplevel polish + TabView parity (2026-05-17)
 
