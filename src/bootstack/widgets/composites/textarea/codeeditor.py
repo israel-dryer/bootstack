@@ -10,6 +10,8 @@ from bootstack.widgets.composites.textarea.filter import EditFilter
 from bootstack.widgets.composites.textarea.extensions.line_numbers import LineNumbers
 from bootstack.widgets.composites.textarea.extensions.bracket_matcher import BracketMatcher
 from bootstack.widgets.composites.textarea.extensions.smart_indent import SmartIndent
+from bootstack.widgets.composites.textarea.extensions.indent_guides import IndentGuides
+from bootstack.widgets.composites.textarea.search_overlay import SearchOverlay
 from bootstack.widgets.types import Master
 
 from typing import TYPE_CHECKING
@@ -47,6 +49,7 @@ class CodeEditor(Frame):
         insert_spaces: bool = True,
         auto_indent: bool = True,
         show_line_numbers: bool = True,
+        show_indent_guides: bool = False,
         scrollbars: ScrollbarMode = "both",
         font: str = "TkFixedFont",
         extensions: list[EditFilter] | None = None,
@@ -73,6 +76,8 @@ class CodeEditor(Frame):
                 indentation. Default is True.
             show_line_numbers: If True (default), shows a line number
                 gutter to the left of the text.
+            show_indent_guides: If True, draws subtle vertical guide marks
+                at each indent stop. Defaults to False.
             scrollbars: Scrollbar visibility mode. Defaults to `"both"`
                 (always show both axes).
             font: Font for the editor. Defaults to the system fixed-width
@@ -99,7 +104,17 @@ class CodeEditor(Frame):
             font=font,
             read_only=read_only,
         )
-        self._core.pack(fill="both", expand=True)
+
+        # ── search overlay (docks below the core) ─────────────────────────
+        self._search = SearchOverlay(self, self._core)
+
+        # Grid layout: row 0 = editor, row 1 = search bar (hidden by default).
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_columnconfigure(0, weight=1)
+        self._core.grid(row=0, column=0, sticky="nsew")
+        self._search.grid(row=1, column=0, sticky="ew")
+        self._search.grid_remove()
 
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
@@ -123,6 +138,13 @@ class CodeEditor(Frame):
             self._core.add_filter(self._smart_indent)
         else:
             self._smart_indent = None
+
+        # ── indent guides ─────────────────────────────────────────────────
+        if show_indent_guides:
+            self._indent_guides = IndentGuides(tab_width=tab_width)
+            self._core.add_filter(self._indent_guides)
+        else:
+            self._indent_guides = None
 
         # ── user-supplied extensions ──────────────────────────────────────
         if extensions:
@@ -305,6 +327,14 @@ class CodeEditor(Frame):
     def core(self) -> _MultilineCore:
         """The internal ``_MultilineCore`` — for advanced extension use."""
         return self._core
+
+    def show_search(self) -> None:
+        """Show the find bar and focus the search input."""
+        self._search.show()
+
+    def hide_search(self) -> None:
+        """Hide the find bar and clear search highlights."""
+        self._search.hide()
 
     # ── internal ─────────────────────────────────────────────────────────
 

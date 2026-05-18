@@ -1,0 +1,298 @@
+"""SearchOverlay — find bar for CodeEditor.
+
+A compact panel that docks at the bottom of the editor. Opened with
+Ctrl+F, closed with Esc. Highlights all matches via the decoration layer
+system and navigates through them with arrow buttons or Enter/Shift+Enter.
+"""
+from __future__ import annotations
+
+import re
+import bisect
+import tkinter as tk
+import tkinter.ttk as ttk
+from typing import TYPE_CHECKING
+
+from bootstack.widgets.composites.textarea.decoration import Position, RangeDecoration
+
+if TYPE_CHECKING:
+    from bootstack.widgets.composites.textarea.core import _MultilineCore
+
+
+_LAYER = "search"
+_STYLE_MATCH = "search_match"
+_STYLE_CURRENT = "search_current"
+_DEBOUNCE_MS = 120
+
+
+class SearchOverlay(ttk.Frame):
+    """Find bar that docks at the bottom of the editor.
+
+    Created and owned by `CodeEditor` — not part of the public API.
+    Interact via `CodeEditor.show_search()` / `CodeEditor.hide_search()`.
+    """
+
+    def __init__(self, parent: tk.Misc, core: _MultilineCore) -> None:
+        super().__init__(parent, padding=(4, 3))
+        self._core = core
+        self._matches: list[tuple[int, int]] = []   # (start_offset, end_offset)
+        self._current: int = -1                      # index into _matches
+        self._after_id: str | None = None
+        self._case_var = tk.BooleanVar(value=False)
+        self._regex_var = tk.BooleanVar(value=False)
+
+        # ── register decoration styles ─────────────────────────────────
+        core.register_layer(_LAYER, priority=10)
+        core.define_style(_STYLE_MATCH, background="#ffff60")
+        core.define_style(_STYLE_CURRENT, background="#ff8000", foreground="#ffffff")
+
+        # ── layout ────────────────────────────────────────────────────
+        self._close_btn = ttk.Button(self, text="✕", width=2,
+                                     command=self.hide)
+        self._close_btn.pack(side="left", padx=(0, 6))
+
+        ttk.Label(self, text="Find:").pack(side="left", padx=(0, 4))
+
+        self._find_var = tk.StringVar()
+        self._find_var.trace_add("write", self._on_query_changed)
+        self._find_entry = ttk.Entry(self, textvariable=self._find_var, width=28)
+        self._find_entry.pack(side="left")
+
+        self._count_lbl = ttk.Label(self, text="", width=8)
+        self._count_lbl.pack(side="left", padx=(6, 0))
+
+        self._prev_btn = ttk.Button(self, text="↑", width=2,
+                                    command=self._prev_match)
+        self._prev_btn.pack(side="left", padx=(6, 0))
+
+        self._next_btn = ttk.Button(self, text="↓", width=2,
+                                    command=self._next_match)
+        self._next_btn.pack(side="left", padx=(2, 0))
+
+        ttk.Separator(self, orient="vertical").pack(side="left",
+                                                    fill="y", padx=8)
+
+        self._case_btn = ttk.Checkbutton(self, text="Aa",
+                                         variable=self._case_var,
+                                         command=self._on_option_changed)
+        self._case_btn.pack(side="left")
+
+        self._regex_btn = ttk.Checkbutton(self, text=".*",
+                                          variable=self._regex_var,
+                                          command=self._on_option_changed)
+        self._regex_btn.pack(side="left", padx=(4, 0))
+
+        # ── key bindings on the find entry ────────────────────────────
+        self._find_entry.bind("<Return>",       lambda _: self._next_match())
+        self._find_entry.bind("<Shift-Return>",  lambda _: self._prev_match())
+        self._find_entry.bind("<Escape>",        lambda _: self.hide())
+
+        # ── key bindings on the editor text widget ────────────────────
+        core.text.bind("<Control-f>", self._on_ctrl_f, add="+")
+        core.text.bind("<Control-F>", self._on_ctrl_f, add="+")
+        core.text.bind("<Escape>",    self._on_editor_escape, add="+")
+
+        # Re-run search when content changes (while search bar is open).
+        core.text.bind("<<Change>>", self._on_content_changed, add="+")
+
+        # Theme change: redefine styles with updated colors.
+        core.text.bind("<<ThemeChanged>>", self._on_theme_changed, add="+")
+
+    # ── public API ────────────────────────────────────────────────────────
+
+    def show(self) -> None:
+        """Show the find bar and focus the search input."""
+        self.grid()
+        self._find_entry.focus_set()
+        self._find_entry.select_range(0, "end")
+        self._run_search()
+
+    def hide(self) -> None:
+        """Hide the find bar and clear all highlights."""
+        self.grid_remove()
+        self._core.clear_decorations(_LAYER)
+        self._matches = []
+        self._current = -1
+        self._count_lbl.configure(text="")
+        self._set_entry_state("normal")
+        try:
+            self._core.text.focus_set()
+        except Exception:
+            pass
+
+    # ── search logic ──────────────────────────────────────────────────────
+
+    def _run_search(self) -> None:
+        self._after_id = None
+        query = self._find_var.get()
+        if not query:
+            self._core.clear_decorations(_LAYER)
+            self._matches = []
+            self._current = -1
+            self._count_lbl.configure(text="")
+            self._set_entry_state("normal")
+            return
+
+        text = self._core.value
+        flags = 0 if self._case_var.get() else re.IGNORECASE
+
+        try:
+            if self._regex_var.get():
+                pattern = re.compile(query, flags)
+            else:
+                pattern = re.compile(re.escape(query), flags)
+        except re.error:
+            self._set_entry_state("error")
+            self._core.clear_decorations(_LAYER)
+            self._matches = []
+            self._current = -1
+            self._count_lbl.configure(text="bad regex")
+            return
+
+        self._matches = [(m.start(), m.end()) for m in pattern.finditer(text)]
+
+        if not self._matches:
+            self._core.clear_decorations(_LAYER)
+            self._current = -1
+            self._count_lbl.configure(text="no matches")
+            self._set_entry_state("no_match")
+            return
+
+        self._set_entry_state("normal")
+
+        # Pick the closest match to the current cursor position.
+        try:
+            idx = self._core.text.index("insert")
+            line_no, col_no = idx.split(".")
+            cursor_offset = _position_to_offset(text, int(line_no), int(col_no))
+        except Exception:
+            cursor_offset = 0
+
+        starts = [m[0] for m in self._matches]
+        pos = bisect.bisect_left(starts, cursor_offset)
+        self._current = pos % len(self._matches)
+
+        self._apply_decorations(text)
+
+    def _apply_decorations(self, text: str) -> None:
+        """Build and apply match decorations, scrolling the current match into view."""
+        if not self._matches:
+            self._core.clear_decorations(_LAYER)
+            return
+
+        line_starts = _build_line_starts(text)
+        decorations: list[RangeDecoration] = []
+
+        for i, (start, end) in enumerate(self._matches):
+            style = _STYLE_CURRENT if i == self._current else _STYLE_MATCH
+            decorations.append(RangeDecoration(
+                _offset_to_position(line_starts, start),
+                _offset_to_position(line_starts, end),
+                style,
+            ))
+
+        self._core.set_decorations(_LAYER, decorations)
+
+        total = len(self._matches)
+        n = self._current + 1
+        self._count_lbl.configure(text=f"{n} / {total}")
+
+        # Scroll current match into view.
+        if 0 <= self._current < total:
+            start_offset = self._matches[self._current][0]
+            pos = _offset_to_position(line_starts, start_offset)
+            try:
+                self._core.text.see(pos.to_tk())
+            except Exception:
+                pass
+
+    def _next_match(self) -> None:
+        if not self._matches:
+            return
+        self._current = (self._current + 1) % len(self._matches)
+        self._apply_decorations(self._core.value)
+
+    def _prev_match(self) -> None:
+        if not self._matches:
+            return
+        self._current = (self._current - 1) % len(self._matches)
+        self._apply_decorations(self._core.value)
+
+    def _set_entry_state(self, state: str) -> None:
+        try:
+            from bootstack.style.style import get_theme_provider
+            colors = get_theme_provider().colors
+            if state == "error":
+                bg = colors.get("danger", "#dc3545")
+                fg = "#ffffff"
+            elif state == "no_match":
+                bg = colors.get("warning", "#ffc107")
+                fg = "#000000"
+            else:
+                bg = colors.get("inputbg", "white")
+                fg = colors.get("inputfg", "black")
+        except Exception:
+            bg_map = {"error": "#dc3545", "no_match": "#ffc107"}
+            bg = bg_map.get(state, "white")
+            fg = "#ffffff" if state == "error" else "#000000"
+        try:
+            self._find_entry.configure(foreground=fg)
+        except Exception:
+            pass
+
+    # ── event handlers ────────────────────────────────────────────────────
+
+    def _on_ctrl_f(self, _event: tk.Event) -> str:
+        self.show()
+        return "break"
+
+    def _on_editor_escape(self, _event: tk.Event) -> None:
+        if self.winfo_ismapped():
+            self.hide()
+
+    def _on_query_changed(self, *_) -> None:
+        self._schedule_search()
+
+    def _on_option_changed(self) -> None:
+        self._schedule_search()
+
+    def _on_content_changed(self, _event: tk.Event) -> None:
+        if self.winfo_ismapped():
+            self._schedule_search()
+
+    def _on_theme_changed(self, _event: tk.Event) -> None:
+        self._core.define_style(_STYLE_MATCH, background="#ffff60")
+        self._core.define_style(_STYLE_CURRENT, background="#ff8000",
+                                foreground="#ffffff")
+
+    def _schedule_search(self) -> None:
+        if self._after_id is not None:
+            try:
+                self._core.text.after_cancel(self._after_id)
+            except Exception:
+                pass
+        self._after_id = self._core.text.after(_DEBOUNCE_MS, self._run_search)
+
+
+# ── position helpers ──────────────────────────────────────────────────────
+
+def _build_line_starts(text: str) -> list[int]:
+    """Return the character offset of the first character on each line."""
+    starts = [0]
+    for i, ch in enumerate(text):
+        if ch == "\n":
+            starts.append(i + 1)
+    return starts
+
+
+def _offset_to_position(line_starts: list[int], offset: int) -> Position:
+    """Convert a character offset to a (line, col) Position."""
+    line_idx = bisect.bisect_right(line_starts, offset) - 1
+    col = offset - line_starts[line_idx]
+    return Position(line_idx + 1, col)
+
+
+def _position_to_offset(text: str, line: int, col: int) -> int:
+    """Convert a (1-indexed line, 0-indexed col) pair to a character offset."""
+    lines = text.split("\n")
+    offset = sum(len(lines[i]) + 1 for i in range(min(line - 1, len(lines))))
+    return offset + min(col, len(lines[line - 1]) if line <= len(lines) else 0)
