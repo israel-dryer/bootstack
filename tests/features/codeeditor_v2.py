@@ -16,15 +16,9 @@ def log(msg):
 
 # ── main editor ───────────────────────────────────────────────────────────────
 
-SAMPLE = '''\
-def greet(name):
-    """Say hello."""
-    msg = f"Hello, {name}!"
-    return msg
-
-result = greet("World")
-print(result)
-'''
+SAMPLE = "\n".join(
+    [f"# line {i:>3}" for i in range(1, 51)]
+)
 
 editor = bs.CodeEditor(
     app,
@@ -44,8 +38,13 @@ bs.Separator(app).pack(fill="x")
 ctrl = bs.PackFrame(app, direction="row", gap=6, padding=8)
 ctrl.pack(fill="x")
 
-bs.Button(ctrl, text="goto line 3",
-          command=lambda: (editor.goto_line(3), log("goto_line(3)"))).pack(side="left")
+def do_goto():
+    editor.goto_line(25)
+    editor.focus_set()
+    pos = editor.core.text.index("insert")
+    log(f"goto_line(25) -> cursor at {pos}")
+
+bs.Button(ctrl, text="goto line 25", command=do_goto).pack(side="left")
 bs.Button(ctrl, text="Undo",   command=editor.undo).pack(side="left")
 bs.Button(ctrl, text="Redo",   command=editor.redo).pack(side="left")
 bs.Button(ctrl, text="is_dirty?",
