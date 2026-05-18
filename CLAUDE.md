@@ -15,8 +15,8 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
   `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
   **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
-  **In progress:** TextArea/CodeEditor on `feat/textarea-codeeditor` — phases 1–8 done,
-  Phase 9 (SearchOverlay, IndentGuides) remaining. See Session 23 handoff.
+  **Completed + PRed:** TextArea/CodeEditor on `feat/textarea-codeeditor` — all phases
+  done including replace bar, TextArea form field parity, docstring cleanup. See Session 23 handoff.
   **Remaining:** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
