@@ -15,8 +15,8 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
   `design/widget-redesign`. Start at
   [`development/widget-redesign-overview.md`](development/widget-redesign-overview.md).
   **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
-  **In progress:** TextArea/CodeEditor on `feat/textarea-codeeditor` — phases 1–7 done,
-  Phase 8 (PygmentsHighlighter) remaining. See Session 22 handoff.
+  **In progress:** TextArea/CodeEditor on `feat/textarea-codeeditor` — phases 1–8 done,
+  Phase 9 (SearchOverlay, IndentGuides) remaining. See Session 23 handoff.
   **Remaining:** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
@@ -386,11 +386,11 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 
 ## Handoff log
 
-### Session 22 — TextArea + CodeEditor phases 1–7 (2026-05-18)
+### Session 23 — CodeEditor Phase 8 — PygmentsHighlighter (2026-05-18)
 
-**Branch:** `feat/textarea-codeeditor` (off `main`). Not yet PRed — Phase 8 pending.
+**Branch:** `feat/textarea-codeeditor` (off `main`). Not yet PRed — Phase 9 pending.
 
-**What was built (7 commits):**
+**What was built (1 commit):**
 
 | Phase | Component | Status |
 |---|---|---|
@@ -399,8 +399,23 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 | 5 | `Sidebar` base, `LineNumbers` extension | ✅ Done |
 | 6 | `BracketMatcher`, `SmartIndent` extensions | ✅ Done |
 | 7 | `bs.CodeEditor` (v2 milestone — no syntax highlighting) | ✅ Done |
-| 8 | `PygmentsHighlighter` (v3 milestone) | ⬜ **Next** |
+| 8 | `PygmentsHighlighter` (v3 milestone) | ✅ **Done** |
 | 9 | `SearchOverlay`, `IndentGuides` | ⬜ Pending |
+
+**Key architecture decisions (Phase 8):**
+- Full-document retokenize on 150 ms debounce (not dirty-range incremental). Correct for all languages including multi-line strings/comments; fast enough for typical files.
+- Token family → style name mapping via `_TOKEN_TO_STYLE` dict + parent-chain walk (`t = t.parent`). Terminates at `Token` root (its `parent` is `None` class attribute).
+- 16 token families: keyword, string, string_doc, comment, number, operator, name_builtin/function/class/decorator/exception/namespace/tag/attribute, punctuation, error.
+- `name_tag` / `name_attribute` added specifically to cover JSON keys (`Token.Name.Tag`) and HTML/XML attributes (`Token.Name.Attribute`).
+- Colors extracted from Pygments style via `style_for_token()` — literal hex, not theme tokens. `pygments_style=` param on `CodeEditor` (default `"default"`).
+- `CodeEditor` stores `_highlighter` ref; `set_language()` removes old highlighter before installing new one. `set_language(None)` disables highlighting.
+- Pygments ships as always-available (already in env). No optional-extra guard.
+
+**Visual test:** `tests/features/codeeditor_v3.py`
+
+**What's next (Phase 9):** `SearchOverlay` (find/replace bar) and `IndentGuides` extension.
+
+### Session 22 — TextArea + CodeEditor phases 1–7 (2026-05-18)
 
 **Key architecture decisions made this session:**
 - `FilterChain` uses `idlelib.redirector.WidgetRedirector` (required: Tk key bindings call the Tcl command directly, bypassing Python-level overrides). `_BottomFilter` uses `OriginalCommand` objects returned by `register()` — no raw Tcl.
@@ -432,12 +447,6 @@ src/bootstack/widgets/composites/textarea/
 ```
 
 **Visual tests:** `tests/features/textarea_v1.py`, `tests/features/codeeditor_v2.py`
-
-**What's next (Phase 8):** `PygmentsHighlighter` in `extensions/pygments_highlighter.py`.
-Uses tag-as-dirty-tracker pattern (IDLE's ColorDelegator TODO/SYNC approach):
-- Mark `__dirty__` ranges on insert/delete
-- Debounced retokenize: scan dirty ranges, apply Pygments tokens as Tk tags via `set_decorations()`
-- Pygments 2.20 is installed. Ship as always-available (not optional extra) since it's already present.
 
 ---
 
