@@ -415,6 +415,43 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 
 **What's next (Phase 9):** `SearchOverlay` (find/replace bar) and `IndentGuides` extension.
 
+### Session 23 — Phase 8–9 complete + performance work (2026-05-18)
+
+**Branch:** `feat/textarea-codeeditor`. Not yet PRed.
+
+**What was built:**
+
+| Phase | Component | Status |
+|---|---|---|
+| 8 | `PygmentsHighlighter` — syntax highlighting via Pygments | ✅ Done |
+| 9 | `IndentGuides` + `SearchOverlay` | ✅ Done |
+
+**PygmentsHighlighter (Phase 8):**
+- `extensions/pygments_highlighter.py` — debounced full-document retokenize (150ms)
+- 16 token families via parent-chain walk; `name_tag`/`name_attribute` for JSON/HTML
+- Extracts bg/fg from Pygments style; applies to text widget; `<<EditorBgChanged>>` notifies extensions
+- `pygments_style=` param on `CodeEditor` (default `"default"`). 49 Pygments styles supported.
+- `_on_theme_changed` uses `notify=False` to avoid cascade on resize/focus
+
+**IndentGuides (Phase 9):**
+- `extensions/indent_guides.py` — marks last space of each tab-stop with subtle bg
+- Guide color computed from text widget background (luminance-based); updates on `<<ThemeChanged>>` and `<<EditorBgChanged>>`
+- `show_indent_guides=` on `CodeEditor` (default `False`)
+
+**SearchOverlay (Phase 9):**
+- `search_overlay.py` — `PackFrame`-based find bar using `bs.*` widgets throughout
+- Bootstrap icons: `x-lg` (close), `chevron-up/down` (nav), `type` (case), `regex` (regex)
+- `bs.TextEntry` for find input with `insert_addon(Label, icon='search')`
+- `bs.Signal` for match count and toggle state
+- Ctrl+F / Command+F (macOS); Esc to close; Enter/Shift+Enter for next/prev
+- Z-order show/hide: overlay is permanently `place()`'d at the bottom, hidden behind `_core.lift()`. `show()` = `self.lift()`, `hide()` = `self._core.lift()` — instant, no re-render
+- Match highlight: yellow bg + `foreground="#000000"` (readable on dark and light themes)
+- `_syncing_colors` re-entrancy guard on `_sync_colors()`
+
+**Visual tests:** `tests/features/codeeditor_v3.py`, `tests/features/codeeditor_v4.py`
+
+**Known remaining rendering note:** First-frame widget initialization flash on search open is consistent with bootstack's normal rendering behaviour across the app — not specific to the search overlay.
+
 ### Session 22 — TextArea + CodeEditor phases 1–7 (2026-05-18)
 
 **Key architecture decisions made this session:**
