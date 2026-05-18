@@ -2,7 +2,7 @@
 
 Styles are defined once with semantic tokens (theme colors, font tokens).
 On <<ThemeChanged>>, all configured tags are reconfigured automatically.
-Each (layer, style) pair gets its own Tk tag: ``bs::{layer}::{style}``.
+Each (layer, style) pair gets its own Tk tag: `bs::{layer}::{style}`.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ class StyleRegistry:
 
     Styles are defined with semantic attributes (theme tokens, font tokens).
     The registry resolves tokens to concrete colors/fonts at configure time
-    and reconfigures on ``<<ThemeChanged>>``.
+    and reconfigures on `<<ThemeChanged>>`.
     """
 
     def __init__(self, core: _MultilineCore) -> None:
@@ -50,11 +50,11 @@ class StyleRegistry:
 
         Args:
             name: Style identifier used in decoration objects.
-            foreground: Text color — a theme token (e.g. ``'primary'``) or
-                literal color string. ``None`` leaves foreground unchanged.
-            background: Background color — token or literal. ``None`` leaves
+            foreground: Text color — a theme token (e.g. `'primary'`) or
+                literal color string. `None` leaves foreground unchanged.
+            background: Background color — token or literal. `None` leaves
                 background unchanged.
-            font: Font token (e.g. ``'code[bold]'``) or font name. ``None``
+            font: Font token (e.g. `'code[bold]'`) or font name. `None`
                 leaves font unchanged.
             underline: If True, underline text in this style.
             underline_color: Color for the underline (Tk 8.7+).
@@ -74,6 +74,18 @@ class StyleRegistry:
                 'cursor': cursor,
             }.items() if v is not None and v is not False
         }
+        # If any Tk tags already exist for this style, re-apply immediately so
+        # that callers who redefine a style (e.g. swapping syntax highlighters)
+        # see the new color without having to trigger a full redecoration.
+        suffix = f"::{name}"
+        attrs = self._resolve(self._styles[name])
+        if attrs:
+            for tag in self._configured:
+                if tag.endswith(suffix):
+                    try:
+                        self._text.tag_configure(tag, **attrs)
+                    except tk.TclError:
+                        pass
 
     def configure_tag(self, layer: str, style: str) -> None:
         """Create and configure the Tk tag for a (layer, style) pair."""
