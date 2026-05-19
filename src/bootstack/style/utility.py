@@ -10,7 +10,6 @@ from bootstack._core.images import Image as ImageService
 from bootstack._runtime.utility import clamp
 from bootstack.style.types import ColorModel
 
-ASSETS_DIR = Path(__file__).parent.parent / "assets" / "widgets"
 ELEMENTS_DIR = Path(__file__).parent.parent / "assets" / "elements"
 
 
@@ -330,18 +329,6 @@ def make_transparent(alpha, foreground, background='#fff'):
     return '#{:02x}{:02x}{:02x}'.format(*rgb_int)
 
 
-def open_image(name: str) -> Image.Image:
-    """
-    Load a white-layout image from file.
-
-    Args:
-        name: The asset name without extension (e.g. "add" loads "add.png")
-
-    Returns:
-        A Pillow RGBA Image object.
-    """
-    path = ASSETS_DIR / f"{name}.png"
-    return Image.open(path).convert("RGBA")
 
 
 def _open_element_image(filename: str) -> Image.Image:
