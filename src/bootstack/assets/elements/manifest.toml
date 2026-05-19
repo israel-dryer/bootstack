@@ -130,22 +130,22 @@ padding = 0
 
 [images.checkbox_checked]
 file = "checkbox-checked.png"
-width = 48
-height = 48
+width = 44
+height = 44
 border = 0
 padding = 0
 
 [images.checkbox_unchecked]
 file = "checkbox-unchecked.png"
-width = 48
-height = 48
+width = 44
+height = 44
 border = 0
 padding = 0
 
 [images.checkbox_indeterminate]
 file = "checkbox-indeterminate.png"
-width = 48
-height = 48
+width = 44
+height = 44
 border = 0
 padding = 0
 
