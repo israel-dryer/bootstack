@@ -30,15 +30,15 @@ app = bs.App(theme="dark")
 # app.update_idletasks()
 # app.place_center()
 
-f1 = bs.PackFrame(direction='horizontal', gap=8).pack()
+f1 = bs.PackFrame(direction='horizontal', gap=16, padding=16).pack()
 b1 = bs.Button(f1, icon='bootstrap', text='Button', command=lambda: check_height()).pack()
 b2 = bs.Button(f1, icon='bootstrap', icon_only=True, command=lambda: check_height()).pack()
 
-f2 = bs.PackFrame(direction='horizontal', gap=8).pack()
+f2 = bs.PackFrame(direction='horizontal', gap=16, padding=16).pack()
 bs.Button(f2, icon='bootstrap', variant='outline', text='Button').pack()
 bs.Button(f2, icon='bootstrap', icon_only=True, variant='outline').pack()
 
-f2 = bs.PackFrame(direction='horizontal', gap=8).pack()
+f2 = bs.PackFrame(direction='horizontal', gap=16, padding=16).pack()
 bs.Button(f2, icon='bootstrap', accent='primary', variant='ghost', text='Button').pack()
 bs.Button(f2, icon='bootstrap', accent='primary', icon_only=True, variant='ghost').pack()
 

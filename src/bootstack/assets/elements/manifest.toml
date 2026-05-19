@@ -24,16 +24,16 @@ padding = 0
 
 [images.button_default]
 file = "button-default.png"
-width = 88
-height = 88
-border = 16
+width = 80
+height = 80
+border = 8
 padding = 0
 
 [images.button_compact]
 file = "button-compact.png"
-width = 60
-height = 60
-border = 14
+width = 64
+height = 64
+border = 8
 padding = 0
 
 # Button Group
