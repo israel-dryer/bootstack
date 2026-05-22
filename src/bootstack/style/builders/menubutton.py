@@ -117,18 +117,17 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     normal = b.color(accent_token)
     foreground = b.on_color(normal)
     pressed = b.pressed(normal)
-    hovered = focused = b.active(normal)
-    focused_border = b.focus_border(normal)
+    active = focused = b.active(normal)
     disabled = b.disabled()
-    focused_ring = b.focus_ring(normal, surface)
+    focused_ring = b.color('foreground')
     foreground_disabled = b.disabled('text', disabled)
 
-    normal_img = recolor_element_image(image_key, normal, normal, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface)
-    hovered_img = recolor_element_image(image_key, hovered, hovered, surface)
-    focused_img = recolor_element_image(image_key, focused, focused_border, focused_ring)
-    focused_hovered_img = recolor_element_image(image_key, hovered, focused_border, focused_ring)
-    focused_pressed_img = recolor_element_image(image_key, pressed, focused_border, focused_ring)
+    normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
     disabled_img = recolor_element_image(image_key, disabled, disabled, surface, surface)
 
     if show_dropdown:
@@ -143,20 +142,17 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
             [
                 ('disabled', disabled_img.image),
                 ('background focus pressed', focused_pressed_img.image),
-                ('background focus hover', focused_hovered_img.image),
+                ('background focus hover', focused_active_img.image),
                 ('background focus', focused_img.image),
                 ('pressed', pressed_img.image),
-                ('hover', hovered_img.image),
+                ('active', active_img.image),
             ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
     b.configure_style(
         ttk_style,
-        background=surface,
-        foreground=foreground,
         stipple="gray12",
-        relief='flat',
         font=button_font(density),
         takefocus=True,
         padding=_menubutton_padding(b, icon_only, density),
@@ -165,7 +161,7 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
     state_spec = dict(
         foreground=[('disabled', foreground_disabled), ('', foreground)],
-        background=[('disabled', disabled)]
+        background=[('disabled', disabled), ('', surface)]
     )
 
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
@@ -199,17 +195,17 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     disabled = foreground_disabled
     normal = surface
     pressed = b.active(foreground_normal)
+    active = foreground_normal
     focused = hovered = pressed
-    focused_border = b.focus_border(foreground_normal)
-    focused_ring = b.focus_ring(foreground_normal, surface)
+    focused_ring = b.color('foreground')
 
     # button element images
-    normal_img = recolor_element_image(image_key, normal, foreground_normal, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface)
-    hovered_img = recolor_element_image(image_key, hovered, hovered, surface)
-    focused_img = recolor_element_image(image_key, focused, focused_border, focused_ring)
-    focused_hovered_img = recolor_element_image(image_key, hovered, focused_border, focused_ring)
-    focused_pressed_img = recolor_element_image(image_key, pressed, focused_border, focused_ring)
+    normal_img = recolor_element_image(image_key, normal, foreground_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, active, active, focused_ring)
+    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring)
     disabled_img = recolor_element_image(image_key, surface, disabled, surface, surface)
 
     if show_dropdown:
@@ -224,19 +220,16 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
             [
                 ('disabled', disabled_img.image),
                 ('background focus pressed', focused_pressed_img.image),
-                ('background focus hover', focused_hovered_img.image),
+                ('background focus active', focused_active_img.image),
                 ('background focus', focused_img.image),
                 ('pressed', pressed_img.image),
-                ('hover', hovered_img.image),
+                ('active', active_img.image),
             ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
     b.configure_style(
         ttk_style,
-        background=surface,
-        foreground=foreground_normal,
-        relief='flat',
         stipple="gray12",
         font=button_font(density),
         takefocus=True,
@@ -251,78 +244,7 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
             ('hover', foreground_active),
             ('', foreground_normal)
         ],
-        background=[('disabled', surface)]
-    )
-
-    state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
-    b.map_style(ttk_style, **state_spec)
-
-
-@BootstyleBuilderTTk.register_builder('text', 'TMenubutton')
-def build_text_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    """Configure the text menubutton style.
-
-    Style options include:
-        * show_dropdown_button: Show/hide the dropdown chevron (default: True)
-        * dropdown_button_icon: Icon name for the dropdown indicator (default: 'caret-down-fill')
-        * icon: Optional icon specification for the button content
-        * icon_only: Whether the button shows only an icon
-        * density: Button density ('default' or 'compact')
-    """
-    accent_token = accent or 'foreground'
-    surface_token = options.get('surface', 'content')
-    density = options.get('density', 'default')
-    show_dropdown = options.get('show_dropdown_button', True)
-    dropdown_icon = options.get('dropdown_button_icon', 'caret-down-fill')
-    icon_only = options.get('icon_only', False)
-    image_key = f'button_{normalize_button_density(density)}'
-
-    surface = b.color(surface_token)
-    foreground_normal = b.color(accent_token)
-    foreground_disabled = b.disabled('text', surface)
-
-    # button element images
-    normal_img = recolor_element_image(image_key, surface, surface, surface, surface)
-    focused_img = recolor_element_image(image_key, surface, surface, surface, surface)
-    disabled_img = recolor_element_image(image_key, surface, surface, surface, surface)
-
-    if show_dropdown:
-        _create_spacer(b, ttk_style, density)
-        _create_chevron_images(b, ttk_style, foreground_normal, foreground_disabled, icon_name=dropdown_icon, density=density)
-
-    b.create_style_element_image(
-        ElementImage(
-            f'{ttk_style}.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border
-        ).state_specs(
-            [
-                ('disabled', disabled_img.image),
-                ('focus', focused_img.image),
-            ]))
-
-    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
-
-    b.configure_style(
-        ttk_style,
-        background=surface,
-        foreground=foreground_normal,
-        relief='flat',
-        stipple="gray12",
-        font=button_font(density),
-        takefocus=True,
-        padding=_menubutton_padding(b, icon_only, density),
-        anchor="center" if icon_only else "w"
-    )
-
-    from bootstack.style.typography import Font
-
-    state_spec = dict(
-        font=[('background focus', Font('body[bold]'))],
-        foreground=[
-            ('disabled', foreground_disabled),
-            ('', foreground_normal)
-        ],
-        background=[('disabled', surface)]
+        background=[('disabled', surface), ('', surface)]
     )
 
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
@@ -351,20 +273,21 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     surface = b.color(surface_token)
 
     normal = surface
-    pressed = b.subtle(accent_token, surface)
-    focused = hovered = pressed
-    focused_ring = b.focus_ring(focused, surface)
+    active = b.subtle(accent_token, surface)
+    pressed = b.pressed(active)
+    focused = b.focus(active)
+    focused_ring = b.color('foreground')
 
     foreground_normal = b.color(accent_token)
     foreground_disabled = b.disabled('text', surface)
 
     # button element images
     normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, surface, surface, surface)
-    hovered_img = recolor_element_image(image_key, hovered, surface, surface, surface)
-    focused_img = recolor_element_image(image_key, focused, foreground_normal, focused_ring, surface)
-    focused_hovered_img = recolor_element_image(image_key, hovered, foreground_normal, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, foreground_normal, focused_ring, surface)
+    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
     disabled_img = recolor_element_image(image_key, surface, surface, surface, surface)
 
     if show_dropdown:
@@ -379,19 +302,16 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
             [
                 ('disabled', disabled_img.image),
                 ('background focus pressed', focused_pressed_img.image),
-                ('background focus hover', focused_hovered_img.image),
+                ('background focus active', focused_active_img.image),
                 ('background focus', focused_img.image),
                 ('pressed', pressed_img.image),
-                ('hover', hovered_img.image),
+                ('active', active_img.image),
             ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
     b.configure_style(
         ttk_style,
-        background=surface,
-        foreground=foreground_normal,
-        relief='flat',
         stipple="gray12",
         font=button_font(density),
         takefocus=True,
@@ -401,7 +321,7 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
     state_spec = dict(
         foreground=[('disabled', foreground_disabled), ('', foreground_normal)],
-        background=[('disabled', surface)]
+        background=[('disabled', surface), ('', surface)]
     )
 
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))

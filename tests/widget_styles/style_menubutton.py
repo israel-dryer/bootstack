@@ -58,6 +58,5 @@ if __name__ == '__main__':
     create_menubutton_frame("default", 'Solid Menubutton').pack(side=LEFT)
     create_menubutton_frame('outline', 'Outline Menubutton').pack(side=LEFT)
     create_menubutton_frame('ghost', 'Ghost Menubutton').pack(side=LEFT)
-    create_menubutton_frame('text', 'Text Menubutton').pack(side=LEFT)
 
     root.mainloop()
