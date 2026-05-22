@@ -54,7 +54,6 @@ if __name__ == '__main__':
     button_style_frame('solid', 'Solid Button').pack(side='left')
     button_style_frame('outline', 'Outline Button').pack(side='left')
     button_style_frame('ghost', 'Ghost Button').pack(side='left')
-    button_style_frame('text', 'Text Button').pack(side='left')
     button_style_frame('link', 'Link Button').pack(side='left')
 
     theme_btn = bs.Button(

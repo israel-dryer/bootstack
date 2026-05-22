@@ -119,8 +119,9 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
 
     disabled = foreground_disabled
     normal = surface
+    active = foreground_normal
     pressed = b.active(foreground_normal)
-    focused = hovered = pressed
+    focused = b.focus(foreground_normal)
     focused_ring = b.color('foreground')
 
 
@@ -128,9 +129,9 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
     # button element images
     normal_img = recolor_element_image(image_key, normal, foreground_normal, surface, surface)
     pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    hovered_img = recolor_element_image(image_key, hovered, hovered, surface, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
     focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_hovered_img = recolor_element_image(image_key, hovered, hovered, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
     focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
     disabled_img = recolor_element_image(image_key, surface, disabled, surface, surface)
 
@@ -145,10 +146,10 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
             [
                 ('disabled', disabled_img.image),
                 ('background focus pressed', focused_pressed_img.image),
-                ('background focus hover', focused_hovered_img.image),
+                ('background focus active', focused_active_img.image),
                 ('background focus', focused_img.image),
                 ('pressed', pressed_img.image),
-                ('hover', hovered_img.image),
+                ('active', active_img.image),
             ])
     )
 
@@ -174,75 +175,6 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
             ('hover', foreground_active),
             ('', foreground_normal)
         ], background=[('disabled', surface), ('', surface)]
-    )
-
-    state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
-
-    b.map_style(ttk_style, **state_spec)
-
-
-@BootstyleBuilderTTk.register_builder('text', 'TButton')
-def build_text_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    """
-    Configure the text button style.
-
-    Style options include:
-        * icon
-        * icon_only
-        * anchor
-    """
-    anchor = options.get('anchor', 'center')
-    accent_token = accent or 'foreground'
-    surface_token = options.get('surface', 'content')
-    density = options.get('density', 'default')
-    icon_only = options.get('icon_only', False)
-    image_key = f'button_{normalize_button_density(density)}'
-
-    surface = b.color(surface_token)
-    focus_ring = b.color('foreground')
-    foreground_normal = b.color(accent_token) if accent else b.on_color(surface)
-    foreground_active = b.active(foreground_normal)
-    foreground_pressed = b.pressed(foreground_normal)
-    foreground_disabled = b.disabled('text', surface)
-
-    # button element images
-    normal_img = recolor_element_image(image_key, surface, surface, surface, surface)
-    focused_img = recolor_element_image(image_key, surface, surface, focus_ring, surface)
-    disabled_img = recolor_element_image(image_key, surface, surface, surface, surface)
-
-    b.create_style_element_image(
-        ElementImage(
-            f'{ttk_style}.Button.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border).state_specs(
-            [
-                ('disabled', disabled_img.image),
-                ('background focus', focused_img.image),
-            ])
-    )
-
-    b.create_style_layout(
-        ttk_style,
-        button_layout(ttk_style),
-    )
-
-    padding = button_padding(b, icon_only, density)
-
-    b.configure_style(
-        ttk_style,
-        relief='flat',
-        stipple="gray12",
-        padding=padding,
-        anchor=anchor,
-        font=button_font(density)
-    )
-
-    state_spec = dict(
-        foreground=[
-            ('disabled', foreground_disabled),
-            ('pressed !disabled', foreground_pressed),
-            ('active !disabled', foreground_active),
-            ('', foreground_normal)],
-        background=[('disabled', surface), ('', surface)]
     )
 
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
