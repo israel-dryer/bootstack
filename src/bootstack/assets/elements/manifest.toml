@@ -8,16 +8,16 @@ base = "assets/elements"
 
 [images.badge_pill]
 file = "badge-pill.png"
-width = 32
-height = 32 
-border = 15
+width = 36
+height = 36
+border = 16
 padding = 0
 
 [images.badge_square]
 file = "badge-square.png"
-width = 32
-height = 32
-border = 11
+width = 36
+height = 36
+border = 8
 padding = 0
 
 # Button
