@@ -152,20 +152,12 @@ padding = 0
 
 # Radio Button
 
-[images.radio_selected]
-file = "radio-selected.png"
+[images.radiobutton]
+file = "radiobutton.png"
 width = 48
 height = 48
 border = 0
 padding = 0
-
-[images.radio_unselected]
-file = "radio-unselected.png"
-width = 48
-height = 48
-border = 0
-padding = 0
-
 
 # Switch
 
