@@ -22,11 +22,9 @@ def build_checkbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     foreground_disabled = b.disabled('text', background)
 
     normal = b.color(accent_token)
-    pressed = b.pressed(normal)
-    hovered = b.active(normal)
     border = b.border(background)
-    focus = hovered
-    focus_ring = b.focus_ring(normal, background)
+    focus = b.focus(normal)
+    focus_ring = b.color('foreground')
     disabled = b.disabled()
 
     show_indicator = options.get('show_indicator', True)
@@ -35,27 +33,20 @@ def build_checkbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
         spacer_img = create_transparent_image(6, 1)
         b.create_style_element_image(ElementImage(f'{ttk_style}.spacer', spacer_img, sticky="ew"))
 
-        normal_checked_img = recolor_element_image('checkbox_checked', background, normal, background)
-        normal_unchecked_img = recolor_element_image('checkbox_unchecked', background, border, background)
-        normal_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, normal, background)
+        normal_checked_img = recolor_element_image('checkbox_checked', background, normal, background, background)
+        normal_unchecked_img = recolor_element_image('checkbox_unchecked', background, border, background, background)
+        normal_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, normal, background, background)
 
-        hovered_checked_img = recolor_element_image('checkbox_checked', background, hovered, background)
-        hovered_unchecked_img = recolor_element_image('checkbox_unchecked', background_hover, border, background)
-        hovered_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, hovered, background)
+        focus_checked_img = recolor_element_image('checkbox_checked', background, focus, focus_ring, background)
+        focus_unchecked_img = recolor_element_image('checkbox_unchecked', background_hover, focus, focus_ring, background)
+        focus_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, focus, focus_ring, background)
 
-        pressed_checked_img = recolor_element_image('checkbox_checked', background, pressed, background)
-        pressed_unchecked_img = recolor_element_image('checkbox_unchecked', background_hover, pressed, background)
-        pressed_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, pressed, background)
-
-        focus_checked_img = recolor_element_image('checkbox_checked', background, focus, focus_ring)
-        focus_unchecked_img = recolor_element_image('checkbox_unchecked', background_hover, focus, focus_ring)
-        focus_indeterminate_img = recolor_element_image('checkbox_indeterminate', background, focus, focus_ring)
-
-        disabled_checked_img = recolor_element_image('checkbox_checked', disabled, foreground_disabled, background)
+        disabled_checked_img = recolor_element_image(
+            'checkbox_checked', disabled, foreground_disabled, background, background)
         disabled_unchecked_img = recolor_element_image(
-            'checkbox_unchecked', foreground_disabled, foreground_disabled, background)
+            'checkbox_unchecked', foreground_disabled, foreground_disabled, background, background)
         disabled_indeterminate_img = recolor_element_image(
-            'checkbox_indeterminate', disabled, foreground_disabled, background)
+            'checkbox_indeterminate', disabled, foreground_disabled, background, background)
 
         b.create_style_element_image(
             ElementImage(f'{ttk_style}.indicator', normal_unchecked_img.image, sticky="ns").state_specs(
@@ -66,19 +57,9 @@ def build_checkbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
                     ('disabled !selected !alternate', disabled_unchecked_img.image),
 
                     # Focused states
-                    ('focus alternate !selected', focus_indeterminate_img.image),
-                    ('focus selected', focus_checked_img.image),
-                    ('focus !selected !alternate', focus_unchecked_img.image),
-
-                    # Pressed states
-                    ('pressed alternate !selected', pressed_indeterminate_img.image),
-                    ('pressed selected', pressed_checked_img.image),
-                    ('pressed !selected !alternate', pressed_unchecked_img.image),
-
-                    # Hover states
-                    ('hover alternate !selected', hovered_indeterminate_img.image),
-                    ('hover selected', hovered_checked_img.image),
-                    ('hover !selected !alternate', hovered_unchecked_img.image),
+                    ('background focus alternate !selected', focus_indeterminate_img.image),
+                    ('background focus selected', focus_checked_img.image),
+                    ('background focus !selected !alternate', focus_unchecked_img.image),
 
                     # Normal base states
                     ('alternate !selected', normal_indeterminate_img.image),
