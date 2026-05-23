@@ -367,8 +367,8 @@ padding = 0
 
 [images.field]
 file = "field.png"
-width = 72
-height = 72
+width = 52
+height = 52
 border = 4
 padding = 0
 
@@ -376,48 +376,34 @@ padding = 0
 
 [images.input_default]
 file = "input-default.png"
-width = 88
-height = 88
+width = 80
+height = 80
 border = 16
 padding = 0
 
-[images.input_after_default]
-file = "input-after-default.png"
-width = 72
-height = 72
-border = 4
+[images.input_addon_default]
+file = "input-addon-default.png"
+width = 64
+height = 64
+border = 14
 padding = 0
 
-[images.input_before_default]
-file = "input-before-default.png"
-width = 72
-height = 72
-border = 4
-padding = 0
 
 ## Input (compact)
 
 [images.input_compact]
 file = "input-compact.png"
-width = 60
-height = 60
+width = 64
+height = 64
 border = 14
 padding = 0
 
-[images.input_after_compact]
-file = "input-after-compact.png"
+[images.input_addon_compact]
+file = "input-addon-compact.png"
 width = 48
 height = 48
-border = 4
+border = 12
 padding = 0
-
-[images.input_before_compact]
-file = "input-before-compact.png"
-width = 48
-height = 48
-border = 4
-padding = 0
-
 
 # border
 
