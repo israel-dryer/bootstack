@@ -87,9 +87,9 @@ class NumericEntry(Field):
 
         # buttons
         self.insert_addon(
-            Button, position="after", name="decrement", icon="dash", command=self.decrement, icon_only=True)
+            Button, position="after", name="decrement", icon="dash-lg", command=self.decrement, icon_only=True)
         self.insert_addon(
-            Button, position="after", name="increment", icon="plus", command=self.increment, icon_only=True)
+            Button, position="after", name="increment", icon="plus-lg", command=self.increment, icon_only=True)
         self._delegate_show_spin_buttons(show_spin_buttons)
 
         self.entry_widget.bind('<<StateChanged>>', self._on_entry_state_changed, add=True)
