@@ -178,34 +178,32 @@ padding = 0
 
 # Scale (slider)
 
-# Radio Button
-
 [images.slider_handle_focus]
 file = "slider-handle-focus.png"
-width = 48
-height = 48
+width = 36
+height = 36
 border = 0
 padding = 0
 
 [images.slider_handle]
 file = "slider-handle.png"
-width = 48
-height = 48
+width = 36
+height = 36
 border = 0
 padding = 0
 
 [images.slider_track_horizontal]
-file = "slider-track-horizontal.png"
-width = 328
-height = 8
-border = [8, 0]
+file = "slider-track-h.png"
+width = 24
+height = 12
+border = [4, 0]
 padding = 0
 
 [images.slider_track_vertical]
-file = "slider-track-vertical.png"
-width = 8
-height = 328
-border = [0, 8]
+file = "slider-track-v.png"
+width = 12
+height = 24
+border = [0, 4]
 padding = 0
 
 # Progress Bar

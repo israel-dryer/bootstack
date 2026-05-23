@@ -26,13 +26,12 @@ def build_scale_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pri
     track_disabled = b.disabled("background")
 
     # style images
-    handle_normal_img = recolor_element_image("slider_handle", background, handle_normal)
-    handle_pressed_img = recolor_element_image("slider_handle_focus", background, handle_normal)
-    handle_focus_img = recolor_element_image("slider_handle_focus", background, handle_pressed)
-    handle_disabled_img = recolor_element_image("slider_handle", handle_disabled, handle_disabled)
+    handle_normal_img = recolor_element_image("slider_handle", background, handle_normal, background, background)
+    handle_pressed_img = recolor_element_image("slider_handle", background, handle_pressed, background, background)
+    handle_disabled_img = recolor_element_image("slider_handle", handle_disabled, handle_disabled, background, background)
 
-    track_normal_img = recolor_element_image(f"slider_track_{orient.lower()}", track_color)
-    track_disabled_img = recolor_element_image(f"slider_track_{orient.lower()}", track_disabled)
+    track_normal_img = recolor_element_image(f"slider_track_{orient.lower()}", background, track_color)
+    track_disabled_img = recolor_element_image(f"slider_track_{orient.lower()}", background, track_disabled)
     sticky = "ew" if orient == "Horizontal" else "ns"
     side = "left" if orient == "Horizontal" else "top"
 
@@ -44,7 +43,6 @@ def build_scale_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pri
                      ).state_specs(
             [
                 ('disabled', handle_disabled_img.image),
-                ('background focus', handle_focus_img.image),
                 ('pressed', handle_pressed_img.image),
             ]))
 
