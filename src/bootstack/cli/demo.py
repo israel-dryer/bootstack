@@ -714,7 +714,7 @@ def _build_progress_page(page):
         fill=X, pady=(0, 8),
     )
     bs.Progressbar(
-        group2, value=75, maximum=100, accent="success", variant="striped",
+        group2, value=75, maximum=100, accent="success",
     ).pack(fill=X, pady=(0, 8))
     bs.Progressbar(
         group2, value=45, maximum=100, accent="danger",

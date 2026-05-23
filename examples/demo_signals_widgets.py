@@ -212,7 +212,7 @@ class SignalsDemo(bs.Window):
             frame,
             maximum=100,
             signal=self.volume,
-            bootstyle="info-striped",
+            accent="info",
             mode="determinate"
         )
         progressbar.pack(fill="x")
