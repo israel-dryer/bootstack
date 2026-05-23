@@ -241,6 +241,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     addon_background = b.color(accent or fill_token)
 
     active = b.active(addon_background)
+    pressed = b.pressed(addon_background)
 
     if use_active_states:
         surface_active = active
@@ -260,14 +261,17 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
 
     if use_active_states:
         active_img = recolor_element_image(img_key, input_background, surface_active, surface, surface)
+        pressed_img = recolor_element_image(img_key, input_background, pressed, surface, surface)
     else:
         active_img = normal_img
+        pressed_img = normal_img
 
     # addon element - set explicit height to match field height
     height = field_height(b, density)
     b.create_style_element_image(
         ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height).state_specs([
-            ('selected', selected_img.image),
+            ('selected !disabled', selected_img.image),
+            ('pressed !disabled', pressed_img.image),
             ('active', active_img.image),
             ('', normal_img.image)
         ]))
@@ -312,7 +316,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     if icon is not None:
         icon = b.normalize_icon_spec(icon)
         # Use density-aware icon size for addon icons
-        addon_icon_size = b.scale(16) if density == 'compact' else b.scale(17)
+        addon_icon_size = b.scale(18) if density == 'compact' else b.scale(20)
         icon['size'] = addon_icon_size
         state_spec['image'] = b.map_stateful_icons(icon, state_spec['foreground'])
 
