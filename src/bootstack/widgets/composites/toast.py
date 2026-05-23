@@ -249,7 +249,7 @@ class Toast:
                 header,
                 icon="x-lg",
                 accent=muted_foreground,
-                variant="text",
+                variant="ghost",
                 style_options={"icon_only": True},
                 command=self.hide
             ).pack(side='right')

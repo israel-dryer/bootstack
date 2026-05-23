@@ -26,7 +26,7 @@ def _client_border_image(surface: str, accent: str, show_border: bool):
 def _border_image(surface: str, accent: str, border: str, show_border: bool):
     border_accent = border if show_border else surface
     return recolor_element_image(
-        "border",
+        "card",
         accent,
         border_accent,
         surface,

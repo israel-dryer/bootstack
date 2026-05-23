@@ -1,16 +1,11 @@
-"""Treeview widget style builders.
-
-This module contains style builders for ttk.Treeview widget and variants.
-
-TODO there is a strange bug that causes the treeview to request more size when the custom border element is used.
-"""
+"""Treeview widget style builders."""
 import tkinter as tk
 from tkinter import font
 
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
-from bootstack.style.utility import create_transparent_image, recolor_element_image
+from bootstack.style.utility import create_transparent_image
 from bootstack.style.builders.utils import normalize_button_density
 
 
@@ -202,26 +197,6 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
 
         b.configure_style(f'{ttk_style}.Item', padding=b.scale(item_padding))
 
-    # customize the tree field
-    border_img = recolor_element_image('border', surface, border_color, surface, surface)
-
-    b.create_style_element_image(
-        ElementImage(
-            f'{ttk_style}.field', border_img.image, sticky='nsew',
-            border=border_img.meta.border, padding=border_img.meta.border,
-            width=0, height=0
-        )
-    )
-
-    b.create_style_layout(
-        ttk_style, Element(f'{ttk_style}.field', sticky="nsew").children(
-            [
-                Element('Treeview.padding', sticky="nsew").children(
-                    [
-                        Element('Treeview.treearea', sticky="nsew")
-                    ]),
-            ]))
-
     # configure header
     heading_font = 'caption' if density == 'compact' else 'label'
     b.configure_style(
@@ -238,16 +213,20 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
     )
 
     # configure tree body
+    show_border = options.get('show_border', True)
     b.configure_style(
         ttk_style,
         font=body_font,
         background=surface,
         fieldbackground=surface,
         foreground=on_surface,
-        borderwidth=0,
+        borderwidth=1 if show_border else 0,
+        bordercolor=border_color,
+        darkcolor=surface,
+        lightcolor=surface,
         padding=0,
         rowheight=row_height,
-        relief='flat'
+        relief='solid' if show_border else 'flat'
     )
 
     b.map_style(
