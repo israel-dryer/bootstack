@@ -163,15 +163,15 @@ padding = 0
 
 [images.switch_on]
 file = "switch-on.png"
-width = 80
-height = 48
+width = 100
+height = 60
 border = 0
 padding = 0
 
 [images.switch_off]
 file = "switch-off.png"
-width = 80
-height = 48
+width = 100
+height = 60
 border = 0
 padding = 0
 

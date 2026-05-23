@@ -20,19 +20,18 @@ def build_switch_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pr
     foreground_disabled = b.disabled('text', background)
 
     normal = b.color(accent_token)
-    hovered = b.active(normal)
     border = b.border(background)
-    focus = hovered
-    focus_ring = b.focus_ring(normal, background)
+    focus = b.focus(normal)
+    focus_ring = b.color('foreground')
 
-    normal_checked_img = recolor_element_image('switch_on', background, normal, background)
-    normal_unchecked_img = recolor_element_image('switch_off', background, border, background)
+    normal_checked_img = recolor_element_image('switch_on', normal, background, background, background)
+    normal_unchecked_img = recolor_element_image('switch_off', border, background, background, background)
 
-    focus_checked_img = recolor_element_image('switch_on', background, focus, focus_ring)
-    focus_unchecked_img = recolor_element_image('switch_off', background, border, focus_ring)
+    focus_checked_img = recolor_element_image('switch_on', focus, background, focus_ring, background)
+    focus_unchecked_img = recolor_element_image('switch_off', border, background, focus_ring, background)
 
-    disabled_checked_img = recolor_element_image('switch_on', background, foreground_disabled, background)
-    disabled_unchecked_img = recolor_element_image('switch_off', foreground_disabled, foreground_disabled, background)
+    disabled_checked_img = recolor_element_image('switch_on', background, foreground_disabled, background, background)
+    disabled_unchecked_img = recolor_element_image('switch_off', border, foreground_disabled, background, background)
 
     spacer_img = create_transparent_image(6, 1)
     b.create_style_element_image(ElementImage(f'{ttk_style}.spacer', spacer_img, sticky="ew"))
@@ -45,8 +44,8 @@ def build_switch_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pr
                 ('disabled !selected !alternate', disabled_unchecked_img.image),
 
                 # Focused states
-                ('focus selected', focus_checked_img.image),
-                ('focus !selected !alternate', focus_unchecked_img.image),
+                ('background focus selected', focus_checked_img.image),
+                ('background focus !selected !alternate', focus_unchecked_img.image),
 
                 # Normal base states
                 ('selected', normal_checked_img.image),
@@ -63,5 +62,5 @@ def build_switch_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pr
             ])
     )
 
-    b.configure_style(ttk_style, background=background, foreground=foreground, font="body")
-    b.map_style(ttk_style, background=[], foreground=[('disabled', foreground_disabled), ('', foreground)])
+    b.configure_style(ttk_style, font="body")
+    b.map_style(ttk_style, background=[('', background)], foreground=[('disabled', foreground_disabled), ('', foreground)])
