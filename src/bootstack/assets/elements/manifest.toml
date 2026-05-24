@@ -353,32 +353,16 @@ padding = 0
 # Navigation Button
 # Left border must fully contain the indicator bar to prevent stretching
 
-[images.nav_button_default]
-file = "nav-button-default.png"
-width = 88
-height = 88
-border = [12, 16, 16, 16]
+[images.navitem_default]
+file = "navitem-default.png"
+width = 72
+height = 72
+border = 8
 padding = 0
 
-[images.nav_button_compact]
-file = "nav-button-compact.png"
-width = 60
-height = 60
-border = [10, 14, 14, 14]
-padding = 0
-
-# Navigation Icon Button (icon-only with lighter selection indicator)
-
-[images.nav_icon_button_default]
-file = "nav-icon-button-default.png"
-width = 88
-height = 88
-border = [12, 16, 16, 16]
-padding = 0
-
-[images.nav_icon_button_compact]
-file = "nav-icon-button-compact.png"
-width = 60
-height = 60
-border = [10, 14, 14, 14]
+[images.navitem_compact]
+file = "navitem-compact.png"
+width = 48
+height = 48
+border = 8
 padding = 0
