@@ -197,7 +197,7 @@ def _build_buttons_page(page):
 
     row = bs.Frame(group)
     row.pack(fill=X)
-    for color in ("primary", "secondary", "success", "info", "warning", "danger"):
+    for color in ("default", "primary", "success", "warning", "danger"):
         bs.Button(row, text=color.title(), accent=color).pack(
             side=LEFT, padx=2, expand=YES, fill=X,
         )
