@@ -252,61 +252,25 @@ height = 60
 border = 6
 padding = 0
 
-# Notebook
-
-[images.notebook_client_border]
-file = "notebook-client-border.png"
-width = 200
-height = 200
-border = 2
-padding = 0
-
-[images.notebook_pill]
-file = "notebook-tab-pill.png"
-width = 84
-height = 52
-border = 8
-padding = 0
-
-[images.notebook_tab_active]
-file = "notebook-tab-active.png"
-width = 60
-height = 60
-border = 8
-padding = 0
-
-[images.notebook_tab_normal]
-file = "notebook-tab-normal.png"
-width = 60
-height = 60
-border = 8
-padding = 0
-
-[images.notebook_tab_bar]
-file = "notebook-tab-bar.png"
-width = 104
-height = 56
-border = [16, 6]
-padding = 0
-
 
 # List Item
 
-[images.list_item_separated]
-file = "list-item-separated.png"
+[images.listrow_default]
+file = "listrow-default.png"
 width = 56
 height = 56
-border = [8, 2, 2, 2]
+border = 6
 padding = 0
 resample = "nearest"
 
-[images.list_item]
-file = "list-item.png"
-width = 56
-height = 56
-border = [8, 2, 2, 2]
+[images.listrow_compact]
+file = "listrow-compact.png"
+width = 44
+height = 44
+border = 6
 padding = 0
 resample = "nearest"
+
 
 # Menu
 
