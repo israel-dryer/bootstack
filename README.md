@@ -97,7 +97,6 @@ Widgets take an `accent` (color intent) and `variant` (visual weight) instead of
 ```python
 bs.Button(app, text="Save", accent="primary")                       # solid (default)
 bs.Button(app, text="Cancel", accent="secondary", variant="outline")
-bs.Button(app, text="Learn more", accent="info", variant="link")
 bs.Label(app, text="Heading", font="heading-lg")
 ```
 

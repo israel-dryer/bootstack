@@ -83,7 +83,6 @@ Variants control **visual emphasis** — how loud a control is. Accent says
 bs.Button(app, text="Primary",   accent="primary")                       # solid
 bs.Button(app, text="Outlined",  accent="primary", variant="outline")
 bs.Button(app, text="Ghosted",   accent="primary", variant="ghost")
-bs.Button(app, text="Learn more", accent="info",   variant="link")
 
 bs.Switch(app, text="Dark mode")
 bs.Switch(app, text="Notifications", accent="success")

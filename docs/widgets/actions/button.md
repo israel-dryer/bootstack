@@ -60,8 +60,6 @@ The `accent` parameter accepts semantic color tokens:
 bs.Button(app, text="Primary", accent="primary").pack(pady=4)
 bs.Button(app, text="Outline", accent="primary", variant="outline").pack(pady=4)
 bs.Button(app, text="Ghost",   accent="primary", variant="ghost").pack(pady=4)
-bs.Button(app, text="Link",    accent="primary", variant="link").pack(pady=4)
-bs.Button(app, text="Text",    accent="secondary", variant="text").pack(pady=4)
 ```
 
 ### Variants
@@ -99,28 +97,6 @@ Use for low-emphasis, contextual actions embedded in panels, lists, or toolbars 
 
 ```python
 bs.Button(app, text="Ghost", variant="ghost")
-```
-
-**Link**
-Use for navigation or "take me somewhere" actions that should read like text (e.g., "View details", "Open settings").
-
-<figure markdown>
-![link button](../../assets/widgets-button-link.png)
-</figure>
-
-```python
-bs.Button(app, text="Link", variant="link")
-```
-
-**Text**
-Use for the lowest-emphasis utility actions — especially in dense UIs — where you want minimal chrome but still want button semantics (e.g., "Edit", "Clear", "Dismiss").
-
-<figure markdown>
-![text button](../../assets/widgets-button-text.png)
-</figure>
-
-```python
-bs.Button(app, text="Text", variant="text")
 ```
 
 ---

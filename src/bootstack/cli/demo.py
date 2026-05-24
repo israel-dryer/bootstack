@@ -208,7 +208,7 @@ def _build_buttons_page(page):
 
     row2 = bs.Frame(group2)
     row2.pack(fill=X, pady=(0, 8))
-    for variant_name in ("solid", "outline", "link", "ghost"):
+    for variant_name in ("solid", "outline", "ghost"):
         bs.Button(
             row2, text=variant_name.title(), accent="primary", variant=variant_name,
         ).pack(side=LEFT, padx=2, expand=YES, fill=X)

@@ -5,6 +5,8 @@ This module contains style builders for ttk.Button widgets and variants.
 
 from __future__ import annotations
 
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -20,7 +22,7 @@ from bootstack.style.builders.utils import (
 
 @BootstyleBuilderTTk.register_builder('solid', 'TButton')
 @BootstyleBuilderTTk.register_builder('default', 'TButton')
-def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the button style.
 
@@ -30,29 +32,42 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
         * anchor
     """
     anchor = options.get('anchor', 'center')
-    accent_token = accent or 'primary'
-    surface_token = options.get('surface', 'content')
     density = options.get('density', 'default')
 
+    surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
-    normal = b.color(accent_token)
-    foreground = b.on_color(normal)
-    pressed = b.pressed(normal)
-    hovered = focused = b.active(normal)
-    disabled = b.disabled()
+
+    # background colors
+    if accent is None:
+        bg_normal = b.elevate(surface, 1)
+    else:
+        bg_normal = b.color(accent)
+
+    bg_pressed = b.pressed(bg_normal)
+    bg_active = focused = b.active(bg_normal)
+    bg_disabled = b.disabled()
+
+    # foreground colors
+    fg_normal = b.on_color(bg_normal)
+    fg_disabled = b.disabled('text', bg_disabled)
+
+    # border colors
+    bd_normal = b.border(bg_normal)
+    bd_pressed = b.border(bg_pressed)
+    bd_active = b.active(bg_active)
+
     focused_ring = b.color('foreground')
-    foreground_disabled = b.disabled('text', disabled)
 
     icon_only = options.get('icon_only', False)
     image_key = f'button_{normalize_button_density(density)}'
 
-    normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    hovered_img = recolor_element_image(image_key, hovered, hovered, surface, surface)
+    normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    hovered_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
     focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_hovered_img = recolor_element_image(image_key, hovered, focused, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, focused, focused_ring, surface)
-    disabled_img = recolor_element_image(image_key, disabled, disabled, surface, surface)
+    focused_hovered_img = recolor_element_image(image_key, bd_active, focused, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bd_pressed, focused, focused_ring, surface)
+    disabled_img = recolor_element_image(image_key, bg_disabled, bg_disabled, surface, surface)
 
 
     b.create_style_element_image(
@@ -69,7 +84,7 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
                 ('background focus hover', focused_hovered_img.image),
                 ('background focus', focused_img.image),
                 ('pressed', pressed_img.image),
-                ('hover', hovered_img.image),
+                ('active', hovered_img.image),
             ]))
 
     b.create_style_layout(
@@ -86,8 +101,8 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     )
 
     state_spec = dict(
-        foreground=[('disabled', foreground_disabled), ('', foreground)],
-        background=[('disabled', disabled), ('', surface)]
+        foreground=[('disabled', fg_disabled), ('', fg_normal)],
+        background=[('disabled', bg_disabled), ('', surface)]
     )
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
 
@@ -105,35 +120,46 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
         * anchor
     """
     anchor = options.get('anchor', 'center')
-    accent_token = accent or 'primary'
-    surface_token = options.get('surface', 'content')
-    density = options.get('density', 'default')
     icon_only = options.get('icon_only', False)
+    density = options.get('density', 'default')
     image_key = f'button_{normalize_button_density(density)}'
 
+    surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
 
-    foreground_normal = b.color(accent_token)
-    foreground_disabled = b.disabled('text', surface)
-    foreground_active = b.on_color(foreground_normal)
+    accent_color = b.elevate(surface, 1) if accent is None else b.color(accent)
 
-    disabled = foreground_disabled
-    normal = surface
-    active = foreground_normal
-    pressed = b.active(foreground_normal)
-    focused = b.focus(foreground_normal)
-    focused_ring = b.color('foreground')
+    # background colors
+    bg_normal = surface
+    bg_active = b.active(bg_normal) if accent is None else accent_color
+    bg_pressed = b.pressed(bg_normal if accent is None else accent_color)
+    bg_focused = b.focus(bg_normal if accent is None else accent_color)
+    bg_focus_ring = b.color('foreground')
+    bg_disabled = b.disabled('text', surface)
 
+    # foreground colors
+    if accent is None:
+        fg_normal = b.on_color(bg_normal)
+    else:
+        fg_normal = accent_color
 
+    fg_disabled = b.disabled('text', surface)
+    fg_active = b.on_color(bg_normal if accent is None else accent_color)
+
+    # border colors
+    bd_normal = b.border(bg_normal) if accent is None else fg_normal
+    bd_active = b.border(bg_active)
+    bd_pressed = b.border(bg_pressed)
+    bd_focused = b.border(bg_focused)
 
     # button element images
-    normal_img = recolor_element_image(image_key, normal, foreground_normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    active_img = recolor_element_image(image_key, active, active, surface, surface)
-    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
-    disabled_img = recolor_element_image(image_key, surface, disabled, surface, surface)
+    normal_img = recolor_element_image(image_key, surface, bd_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
+    focused_img = recolor_element_image(image_key, bg_focused, bd_focused, bg_focus_ring, surface)
+    focused_active_img = recolor_element_image(image_key, bg_active, bd_active, bg_focus_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, bg_focus_ring, surface)
+    disabled_img = recolor_element_image(image_key, surface, bg_disabled, surface, surface)
 
     b.create_style_element_image(
         ElementImage(
@@ -170,10 +196,10 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
 
     state_spec = dict(
         foreground=[
-            ('disabled', foreground_disabled),
-            ('background focus', foreground_active),
-            ('hover', foreground_active),
-            ('', foreground_normal)
+            ('disabled', fg_disabled),
+            ('background focus', fg_active),
+            ('hover', fg_active),
+            ('', fg_normal)
         ], background=[('disabled', surface), ('', surface)]
     )
 
@@ -264,7 +290,6 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
         * anchor
     """
     anchor = options.get('anchor', 'center')
-    accent_token = accent or 'secondary'
     surface_token = options.get('surface', 'content')
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', False)
@@ -272,23 +297,23 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
 
     surface = b.color(surface_token)
 
-    accent_color = b.color(accent_token)
-    normal = surface
-    active = b.subtle(accent_token, surface)
-    focused = b.focus(active)
-    pressed = b.pressed(active)
+    # background colors
+    bg_normal = surface
+    bg_active = bg_focused = b.elevate(surface, 1) if accent is None else b.subtle(accent, surface)
+    bg_pressed = b.active(bg_active)
     focused_ring = b.color('foreground')
 
-    foreground_normal = accent_color if accent else b.on_color(surface)
-    foreground_disabled = b.disabled('text', surface)
+    # foreground colors
+    fg_normal = b.on_color(bg_normal) if accent is None else b.color(accent)
+    fg_disabled = b.disabled('text', surface)
 
     # button element images
-    normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    active_img = recolor_element_image(image_key, active, active, surface, surface)
-    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_active_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
+    normal_img = recolor_element_image(image_key, bg_normal, bg_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bg_pressed, surface, surface)
+    active_img = recolor_element_image(image_key, bg_active, bg_active, surface, surface)
+    focused_img = recolor_element_image(image_key, bg_focused, bg_focused, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, bg_focused, bg_focused, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bg_pressed, bg_pressed, focused_ring, surface)
     disabled_img = recolor_element_image(image_key, surface, surface, surface, surface)
 
     b.create_style_element_image(
@@ -319,7 +344,7 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     )
 
     state_spec = dict(
-        foreground=[('disabled', foreground_disabled), ('', foreground_normal)],
+        foreground=[('disabled', fg_disabled), ('', fg_normal)],
         background=[('disabled', surface), ('', surface)]
     )
 
