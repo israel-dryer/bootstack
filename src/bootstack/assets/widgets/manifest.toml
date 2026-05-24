@@ -2,7 +2,7 @@ version = 1
 default_dpi = 2.0
 
 [paths]
-base = "assets/elements"
+base = "assets/widgets"
 
 # Badge
 
@@ -10,14 +10,14 @@ base = "assets/elements"
 file = "badge-pill.png"
 width = 36
 height = 36
-border = 16
+border = 18
 padding = 0
 
 [images.badge_square]
 file = "badge-square.png"
 width = 36
 height = 36
-border = 8
+border = 6
 padding = 0
 
 # Button
@@ -41,89 +41,89 @@ padding = 0
 ## Button Group - Default
 
 [images.button_group_vertical_after_default]
-file = "buttongroup-after-v-default.png"
+file = "button-group-after-v-default.png"
 width = 80
 height = 74
-border = [16, 6, 16, 16]
+border = 8
 padding = 0
 
 [images.button_group_vertical_center_default]
-file = "buttongroup-center-v-default.png"
-width = 80
-height = 68
-border = [10, 10, 10, 6]
+file = "button-group-center-v-default.png"
+width = 72
+height = 72
+border = 8
 padding = 0
 
 [images.button_group_vertical_before_default]
-file = "buttongroup-before-v-default.png"
-width = 80
-height = 74
-border = [16, 16, 16, 6]
+file = "button-group-before-v-default.png"
+width = 72
+height = 72
+border = 10
 padding = 0
 
 [images.button_group_horizontal_after_default]
-file = "buttongroup-after-h-default.png"
-width = 74
-height = 80
-border = [6, 16, 16, 16]
+file = "button-group-after-h-default.png"
+width = 72
+height = 72
+border = [8, 10, 10, 10]
 padding = 0
 
 [images.button_group_horizontal_center_default]
-file = "buttongroup-center-h-default.png"
-width = 68
-height = 80
-border = [10, 10, 6, 10]
+file = "button-group-center-h-default.png"
+width = 72
+height = 72
+border = [8, 10, 10, 10]
 padding = 0
 
 [images.button_group_horizontal_before_default]
-file = "buttongroup-before-h-default.png"
-width = 74
-height = 80
-border = [16, 16, 6, 16]
+file = "button-group-before-h-default.png"
+width = 72
+height = 72
+border = 10
 padding = 0
 
 ## Button Group - Compact
 
 [images.button_group_vertical_after_compact]
-file = "buttongroup-after-v-compact.png"
-width = 64
-height = 58
-border = [14, 4, 14, 14]
+file = "button-group-after-v-compact.png"
+width = 48
+height = 48
+border = 8
 padding = 0
 
 [images.button_group_vertical_center_compact]
-file = "buttongroup-center-v-compact.png"
-width = 64
-height = 52
-border = [14, 6, 14, 4]
+file = "button-group-center-v-compact.png"
+width = 48
+height = 48
+border = 8
 padding = 0
 
 [images.button_group_vertical_before_compact]
-file = "buttongroup-before-v-compact.png"
-width = 64
-height = 58
-border = [14, 14, 14, 4]
+file = "button-group-before-v-compact.png"
+width = 48
+height = 48
+border = 8
 padding = 0
 
 [images.button_group_horizontal_after_compact]
-file = "buttongroup-after-h-compact.png"
+file = "button-group-after-h-compact.png"
 width = 58
 height = 64
-border = [4, 14, 14, 14]
+border = [4, 12, 12, 12]
 padding = 0
 
 [images.button_group_horizontal_center_compact]
-file = "buttongroup-center-h-compact.png"
-width = 52
-height = 64
-border = [6, 14, 4, 14]
+file = "button-group-center-h-compact.png"
+width = 48
+height = 48
+border = 8
 padding = 0
 
 [images.button_group_horizontal_before_compact]
-file = "buttongroup-before-h-compact.png"
+file = "button-group-before-h-compact.png"
 width = 58
 height = 64
-border = [14, 14, 4, 14]
+border = [12, 12, 4, 12]
 padding = 0
 
 # Checkbox
@@ -152,25 +152,33 @@ padding = 0
 
 # Radio Button
 
-[images.radiobutton]
-file = "radiobutton.png"
+[images.radio_selected]
+file = "radio-selected.png"
 width = 48
 height = 48
 border = 0
 padding = 0
 
+[images.radio_unselected]
+file = "radio-unselected.png"
+width = 48
+height = 48
+border = 0
+padding = 0
+
+
 # Switch
 
 [images.switch_on]
 file = "switch-on.png"
-width = 88
+width = 80
 height = 48
 border = 0
 padding = 0
 
 [images.switch_off]
 file = "switch-off.png"
-width = 88
+width = 80
 height = 48
 border = 0
 padding = 0
@@ -178,79 +186,117 @@ padding = 0
 
 # Scale (slider)
 
+# Radio Button
+
 [images.slider_handle_focus]
 file = "slider-handle-focus.png"
-width = 36
-height = 36
+width = 48
+height = 48
 border = 0
 padding = 0
 
 [images.slider_handle]
 file = "slider-handle.png"
-width = 36
-height = 36
+width = 48
+height = 48
 border = 0
 padding = 0
 
 [images.slider_track_horizontal]
-file = "slider-track-h.png"
-width = 24
-height = 12
-border = [4, 0]
+file = "slider-track-horizontal.png"
+width = 328
+height = 8
+border = [8, 0]
 padding = 0
 
 [images.slider_track_vertical]
-file = "slider-track-v.png"
-width = 12
-height = 24
-border = [0, 4]
+file = "slider-track-vertical.png"
+width = 8
+height = 328
+border = [0, 8]
 padding = 0
 
 # Progress Bar
 
 [images.progress_bar_horizontal_default]
-file = "progressbar-h-default.png"
-width = 32
-height = 16
-border = [8, 0]
+file = "progress-bar-solid.png"
+width = 20
+height = 20
+border = 0
 padding = 0
 
 [images.progress_bar_vertical_default]
-file = "progressbar-v-default.png"
-width = 16
-height = 32
-border = [0, 8]
+file = "progress-bar-solid.png"
+width = 20
+height = 20
+border = 0
 padding = 0
 
 [images.progress_bar_horizontal_thin]
-file = "progressbar-h-compact.png"
-width = 16
-height = 8
-border = [4, 0]
+file = "progress-bar-thin.png"
+width = 12
+height = 12
+border = 0
 padding = 0
 
 [images.progress_bar_vertical_thin]
-file = "progressbar-v-compact.png"
-width = 8
-height = 16
-border = [0, 4]
+file = "progress-bar-thin.png"
+width = 12
+height = 12
+border = 0
 padding = 0
+
+[images.progress_bar_horizontal_striped]
+file = "progress-bar-horizontal-striped.png"
+width = 256
+height = 20
+border = 1
+padding = 0
+
+[images.progress_bar_vertical_striped]
+file = "progress-bar-vertical-striped.png"
+width = 20
+height = 256
+border = 1
+padding = 1
+
+[images.progress_bar_horizontal_trough]
+file = "progress-bar-solid.png"
+width = 20
+height = 20
+border = 1
+padding = 1
+
+[images.progress_bar_vertical_trough]
+file = "progress-bar-solid.png"
+width = 20
+height = 20
+border = 1
+padding = 1
 
 # Tabs
 
-[images.tab_horizontal]
-file = "tab-h.png"
-width = 60
-height = 60
-border = 6
+[images.tabs_bar_horizontal]
+file = "tabs-bar-horizontal.png"
+width = 84
+height = 52
+border = [31, 8]
 padding = 0
 
-[images.tab_vertical]
-file = "tab-v.png"
-width = 60
-height = 60
-border = 6
+[images.tabs_bar_vertical]
+file = "tabs-bar-vertical.png"
+width = 52
+height = 84
+border = [8, 18]
 padding = 0
+
+[images.tabs_pill]
+file = "tabs-pill.png"
+width = 84
+height = 52
+border = 16
+padding = 0
+
 
 # Notebook
 
@@ -321,8 +367,8 @@ padding = 0
 
 [images.field]
 file = "field.png"
-width = 52
-height = 52
+width = 72
+height = 72
 border = 4
 padding = 0
 
@@ -330,42 +376,46 @@ padding = 0
 
 [images.input_default]
 file = "input-default.png"
-width = 80
-height = 80
+width = 88
+height = 88
 border = 16
 padding = 0
 
-[images.input_addon_default]
-file = "input-addon-default.png"
-width = 64
-height = 64
-border = 14
+[images.input_after_default]
+file = "input-after-default.png"
+width = 72
+height = 72
+border = 4
 padding = 0
 
+[images.input_before_default]
+file = "input-before-default.png"
+width = 72
+height = 72
+border = 4
+padding = 0
 
 ## Input (compact)
 
 [images.input_compact]
 file = "input-compact.png"
-width = 64
-height = 64
+width = 60
+height = 60
 border = 14
 padding = 0
 
-[images.input_addon_compact]
-file = "input-addon-compact.png"
+[images.input_after_compact]
+file = "input-after-compact.png"
 width = 48
 height = 48
-border = 12
+border = 4
 padding = 0
 
-# card
-
-[images.card]
-file = "card.png"
-width = 40
-height = 40
-border = 12
+[images.input_before_compact]
+file = "input-before-compact.png"
+width = 48
+height = 48
+border = 4
 padding = 0
 
 

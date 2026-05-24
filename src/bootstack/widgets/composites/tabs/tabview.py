@@ -31,7 +31,6 @@ class TabView(Frame):
         self,
         master: Master = None,
         orient: Literal['horizontal', 'vertical'] = 'horizontal',
-        variant: Literal['pill', 'bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
         tab_width: None | int | Literal['stretch'] = None,
@@ -48,7 +47,6 @@ class TabView(Frame):
             master: Parent widget. If None, uses the default root window.
             orient: Orientation of the tab bar. 'horizontal' places tabs above
                 the content, 'vertical' places tabs to the left. Default is 'horizontal'.
-            variant: Visual style variant ('pill' or 'bar').
             show_divider: Whether to show a divider between tabs and content.
             compound: How to position icon relative to text in tabs.
             tab_width: Width of tabs (None, integer, or 'stretch').
@@ -65,7 +63,6 @@ class TabView(Frame):
         super().__init__(master, **kwargs)
 
         self._orient = orient
-        self._variant = variant
         self._accent = accent
 
         # Create internal variable for tab selection
@@ -75,7 +72,6 @@ class TabView(Frame):
         self._tabs = Tabs(
             self,
             orient=orient,
-            variant=variant,
             show_divider=show_divider,
             compound=compound,
             tab_width=tab_width,

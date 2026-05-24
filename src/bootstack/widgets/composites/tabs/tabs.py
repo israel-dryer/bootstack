@@ -28,7 +28,6 @@ class Tabs(Frame):
 
     Attributes:
         orient: The orientation of the tab bar ('horizontal' or 'vertical').
-        variant: The visual style variant ('pill' or 'bar').
     """
 
     def __init__(
@@ -306,7 +305,6 @@ class Tabs(Frame):
         # Apply container defaults
         tab_kwargs = {
             'compound': self._compound,
-            'variant': self._variant,
             'orient': self._orient,
             'padding': self._tab_padding,
             'anchor': self._tab_anchor,
