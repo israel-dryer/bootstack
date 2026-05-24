@@ -50,7 +50,7 @@ Use `Expander` when:
 
 - content should always be visible — use [LabelFrame](labelframe.md) or [Frame](frame.md)
 - you need multiple exclusive sections (only one open at a time) — use [Accordion](accordion.md)
-- you need tabbed navigation — use [Notebook](../views/notebook.md)
+- you need tabbed navigation — use [TabView](../views/tabview.md)
 
 ---
 
@@ -230,8 +230,6 @@ exp.configure(icon_expanded={'name': 'caret-up', 'size': 14})
 - [LabelFrame](labelframe.md) -- always-visible labeled container
 
 - [Frame](frame.md) -- general-purpose container
-
-- [Notebook](../views/notebook.md) -- tabbed content switching
 
 - [PanedWindow](panedwindow.md) -- resizable split panes
 

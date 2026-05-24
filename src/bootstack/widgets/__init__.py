@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from bootstack.widgets.primitives.label import Label
     from bootstack.widgets.primitives.labelframe import LabelFrame
     from bootstack.widgets.primitives.menubutton import MenuButton
-    from bootstack.widgets.primitives.notebook import Notebook
     from bootstack.widgets.primitives.optionmenu import OptionMenu
     from bootstack.widgets.primitives.packframe import PackFrame
     from bootstack.widgets.primitives.panedwindow import PanedWindow
@@ -88,7 +87,6 @@ TTK_WIDGETS = (
     ttk.Labelframe,
     ttk.Label,
     ttk.Menubutton,
-    ttk.Notebook,
     ttk.Panedwindow,
     ttk.Progressbar,
     ttk.Radiobutton,
@@ -126,7 +124,7 @@ __all__ = [
     # Primitives
     'Badge', 'Button', 'Card', 'CheckButton', 'CheckToggle', 'Combobox',
     'Entry', 'Frame', 'GridFrame', 'Label', 'LabelFrame', 'MenuButton',
-    'Notebook', 'OptionMenu', 'PackFrame', 'PanedWindow', 'Progressbar',
+    'OptionMenu', 'PackFrame', 'PanedWindow', 'Progressbar',
     'RadioButton', 'RadioToggle', 'Scale', 'Scrollbar', 'Separator',
     'SizeGrip', 'Spinbox', 'Switch', 'TreeView',
     # Composites

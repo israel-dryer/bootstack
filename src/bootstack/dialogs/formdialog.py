@@ -436,7 +436,6 @@ class FormDialog:
                             if isinstance(tab, dict):
                                 tab_items = tab.get('items', [])
                                 tab_width = self._find_max_content_width(tab_items, parent_col_count, parent_min_col_width)
-                                # Add Notebook borders = 20px
                                 max_width = max(max_width, tab_width + 20)
 
                 elif isinstance(item, GroupItem):
@@ -453,7 +452,6 @@ class FormDialog:
                     for tab in item.tabs:
                         tab_items = tab.items if hasattr(tab, 'items') else []
                         tab_width = self._find_max_content_width(tab_items, parent_col_count, parent_min_col_width)
-                        # Add Notebook borders
                         max_width = max(max_width, tab_width + 20)
         except:
             pass

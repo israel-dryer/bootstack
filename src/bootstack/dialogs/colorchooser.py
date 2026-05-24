@@ -20,7 +20,8 @@ from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style
 from bootstack.widgets.composites.tooltip import ToolTip
-from bootstack.widgets.primitives import Button, Entry, Frame, Label, Notebook, Spinbox
+from bootstack.widgets.primitives import Button, Entry, Frame, Label, Spinbox
+from bootstack.widgets.composites.tabs.tabview import TabView
 # from bootstack.validation import add_range_validation, add_validation, validator
 from .colordropper import ColorDropperDialog
 
@@ -31,7 +32,6 @@ ttk = SimpleNamespace(
     Frame=Frame,
     IntVar=IntVar,
     Label=Label,
-    Notebook=Notebook,
     Spinbox=Spinbox,
     StringVar=StringVar,
     use_style=get_style,
@@ -84,7 +84,7 @@ class ColorChooser(ttk.Frame):
         self.bframe = ttk.Frame(self, padding=(5, 0, 5, 5))
         self.bframe.pack(fill=X)
 
-        self.notebook = ttk.Notebook(self.tframe)
+        self.notebook = TabView(self.tframe)
         self.notebook.pack(fill=BOTH)
 
         self.style = ttk.use_style()
@@ -116,12 +116,11 @@ class ColorChooser(ttk.Frame):
         self.spectrum_point = utility.scale_size(self, 12)
 
         # build widgets
-        spectrum_frame = ttk.Frame(self.notebook)
-        self.color_spectrum = self.create_spectrum(spectrum_frame)
+        advanced_page = self.notebook.add('advanced', text='color.advanced')
+        self.color_spectrum = self.create_spectrum(advanced_page)
         self.color_spectrum.pack(fill=X, side=TOP)
         self.luminance_scale = self.create_luminance_scale(self.tframe)
         self.luminance_scale.pack(fill=X)
-        self.notebook.add(spectrum_frame, text='color.advanced')
 
         palette_keys = ("primary", "secondary", "success", "info", "warning", "danger", "light", "dark")
         themed_colors = [
@@ -129,12 +128,12 @@ class ColorChooser(ttk.Frame):
             for c in palette_keys
         ]
         themed_colors = [c or "#ffffff" for c in themed_colors]
-        self.themed_swatches = self.create_swatches(
-            self.notebook, themed_colors)
-        self.standard_swatches = self.create_swatches(
-            self.notebook, STD_COLORS)
-        self.notebook.add(self.themed_swatches, text='color.themed')
-        self.notebook.add(self.standard_swatches, text='color.standard')
+        themed_page = self.notebook.add('themed', text='color.themed')
+        self.themed_swatches = self.create_swatches(themed_page, themed_colors)
+        self.themed_swatches.pack(fill=BOTH, expand=YES)
+        standard_page = self.notebook.add('standard', text='color.standard')
+        self.standard_swatches = self.create_swatches(standard_page, STD_COLORS)
+        self.standard_swatches.pack(fill=BOTH, expand=YES)
         preview_frame = self.create_preview(self.bframe)
         preview_frame.pack(side=LEFT, fill=BOTH, expand=YES, padx=(0, 5))
         self.color_entries = self.create_value_inputs(self.bframe)
@@ -227,9 +226,7 @@ class ColorChooser(ttk.Frame):
 
     def create_preview(self, master: tkinter.Misc) -> ttk.Frame:
         """Create the preview frame for original and new colors"""
-        ng_style = self.notebook.cget('style')
-        # set the border color to match the notebook border color
-        border_color = self.style.lookup(ng_style, 'bordercolor') or "#000000"
+        border_color = self.style.lookup('TFrame', 'bordercolor') or "#000000"
         container = ttk.Frame(master)
 
         # the frame and label for the original color (current)

@@ -11,7 +11,7 @@ This guide covers:
 
 - **AppShell** — the fastest way to get toolbar + sidebar + pages
 - **SideNav** — standalone sidebar navigation with display modes and groups
-- **Tabs** — category-based switching with [Notebook](../widgets/views/notebook.md)
+- **Tabs** — category-based switching with [TabView](../widgets/views/tabview.md)
 - **Stacked views** — flow-based navigation with [PageStack](../widgets/views/pagestack.md)
 - **Custom sidebar** — rolling your own navigation panel
 
@@ -23,7 +23,7 @@ This guide covers:
 |---------|----------|--------|
 | **AppShell** | Most desktop apps — toolbar, sidebar, and pages in one call | `AppShell` |
 | **SideNav + PageStack** | Custom layouts where you control toolbar/content placement | `SideNav` + `PageStack` |
-| **Tabs** | Category switching, settings panels, dashboards | `Notebook` |
+| **Tabs** | Category switching, settings panels, dashboards | `TabView` |
 | **Stacked views** | Wizards, multi-step flows, drill-down navigation | `PageStack` |
 | **Custom sidebar** | Unusual layouts where built-in widgets don't fit | `PageStack` + custom sidebar |
 
@@ -86,7 +86,7 @@ shell.on_page_changed(lambda e: print(f"Now on: {shell.current_page}"))
 ### When to use something else
 
 - You need a custom toolbar position or multiple toolbars — use `SideNav` + `PageStack` directly
-- You need horizontal tabs — use `Notebook`
+- You need horizontal tabs — use `TabView`
 - You need a plain window — use `App`
 
 !!! link "AppShell Reference"
@@ -182,9 +182,9 @@ nav.add_item("cloud", text="Cloud", icon="cloud", group="files")
 
 ---
 
-## Tabs with Notebook
+## Tabs with TabView
 
-Use `Notebook` when users need **random access** to related views. Tabs are visible and clickable,
+Use `TabView` when users need **random access** to related views. Tabs are visible and clickable,
 making it easy to switch between categories.
 
 ```python
@@ -192,14 +192,14 @@ import bootstack as bs
 
 app = bs.App(size=(300, 200))
 
-notebook = bs.Notebook(app, accent="primary")
+tabview = bs.TabView(app, accent="primary")
 
-notebook.pack(fill="both", expand=True, padx=10, pady=10)
+tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
 # Create tabs
-home = notebook.add(text="Home", key="home")
-settings = notebook.add(text="Settings", key="settings")
-about = notebook.add(text="About", key="about")
+home = tabview.add("home", text="Home")
+settings = tabview.add("settings", text="Settings")
+about = tabview.add("about", text="About")
 
 # Add content to each tab
 bs.Label(home, text="Welcome to the application").pack(anchor="w")
@@ -297,13 +297,13 @@ bs.Label(home, text="Dashboard", font="heading-xl").pack(anchor="w", padx=20, pa
 # Page with tabs inside
 settings = shell.add_page("settings", text="Settings", icon="gear")
 
-tabs = bs.Notebook(settings, padding=10)
+tabs = bs.TabView(settings, padding=10)
 tabs.pack(fill="both", expand=True, padx=10, pady=10)
 
-general = tabs.add(text="General", key="general")
+general = tabs.add("general", text="General")
 bs.Label(general, text="General settings").pack(anchor="w")
 
-advanced = tabs.add(text="Advanced", key="advanced")
+advanced = tabs.add("advanced", text="Advanced")
 bs.Label(advanced, text="Advanced options").pack(anchor="w")
 
 shell.mainloop()
@@ -395,7 +395,7 @@ stack.navigate("user-detail", data={"user_id": 42})
 
 When switching views, consider whether state should be preserved:
 
-- **Notebook tabs** preserve state by default (widgets stay alive)
+- **TabView tabs** preserve state by default (widgets stay alive)
 - **PageStack pages** also preserve state (pages aren't destroyed)
 - For forms, save state explicitly before navigating away
 
@@ -406,6 +406,6 @@ When switching views, consider whether state should be preserved:
 - [AppShell](../widgets/navigation/appshell.md) — app window with built-in navigation
 - [SideNav](../widgets/navigation/sidenav.md) — standalone sidebar navigation
 - [Toolbar](../widgets/navigation/toolbar.md) — horizontal toolbar
-- [Notebook](../widgets/views/notebook.md) — tabbed view container
+- [TabView](../widgets/views/tabview.md) — tabbed view container
 - [PageStack](../widgets/views/pagestack.md) — stacked views with history
 - [App Structure](app-structure.md) — organizing your application code

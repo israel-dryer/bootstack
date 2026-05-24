@@ -229,6 +229,4 @@ tabview.on_page_changed(on_page_change)
 
 - [PageStack](pagestack.md) - history-based navigation
 
-- [Notebook](notebook.md) - traditional ttk tabbed container
-
 - [PanedWindow](../layout/panedwindow.md) - resizable multi-view layouts

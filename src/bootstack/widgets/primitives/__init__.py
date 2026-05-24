@@ -12,7 +12,6 @@ from .gridframe import GridFrame
 from .label import Label
 from .labelframe import LabelFrame
 from .menubutton import MenuButton
-from .notebook import Notebook
 from .packframe import PackFrame
 from .panedwindow import PanedWindow
 from .progressbar import Progressbar
@@ -39,7 +38,6 @@ __all__ = [
     "Label",
     "LabelFrame",
     "MenuButton",
-    "Notebook",
     "PackFrame",
     "PanedWindow",
     "Progressbar",

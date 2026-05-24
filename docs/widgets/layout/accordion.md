@@ -53,7 +53,7 @@ Use `Accordion` when:
 ### Consider a different control when...
 
 - sections should be independently collapsible — use multiple [Expander](expander.md) widgets
-- content switching should use tabs — use [Notebook](../views/notebook.md)
+- content switching should use tabs — use [TabView](../views/tabview.md)
 - all sections should always be visible — use [LabelFrame](labelframe.md) or [Frame](frame.md)
 
 ---
@@ -217,8 +217,6 @@ accordion.on_accordion_changed(on_accordion_changed)
 ### Related widgets
 
 - [Expander](expander.md) -- individual collapsible section
-
-- [Notebook](../views/notebook.md) -- tabbed content switching
 
 - [LabelFrame](labelframe.md) -- always-visible labeled container
 

@@ -20,11 +20,11 @@ bs.Button(lf, text='Submit', command=lambda: bs.MessageCatalog.locale('fr')).pac
 
 bs.CheckButton(lf, text='Close').pack(padx=20, pady=20)
 
-bs.TextEntry(lf, label="Submit").pack(padx=20, pady=20)
+bs.TextEntry(lf, label="Submit").pack(padx=20, pady=20, fill='x')
 
-bs.NumericEntry(lf, label="Cancel", value_format="currency").pack(padx=20, pady=20)
+bs.NumericEntry(lf, label="Cancel", value_format="currency").pack(padx=20, pady=20, fill='x')
 
-bs.DateEntry(lf, label="Birthday", value="March 14, 1981").pack(padx=20, pady=20)
+bs.DateEntry(lf, label="Birthday", value="March 14, 1981").pack(padx=20, pady=20, fill='x')
 
 
 
