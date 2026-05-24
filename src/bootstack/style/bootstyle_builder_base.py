@@ -116,6 +116,12 @@ class BootstyleBuilderBase:
 
     # ----- Color Utilities & Transformers -----
 
+    @staticmethod
+    def default(value: Optional[str] = None):
+        if value == 'default':
+            return None
+        return value
+
     def _parse_color_token(self, token: str):
         """Parse a color token into head and ordered list of modifiers.
 
