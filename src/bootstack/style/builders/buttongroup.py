@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.builders.utils import button_padding, apply_icon_mapping, icon_size, button_font
 from bootstack.style.element import Element, ElementImage
@@ -20,7 +22,7 @@ def _toolbutton_layout(ttk_style: str) -> Element:
 
 @BootstyleBuilderTTk.register_builder('solid', 'ButtonGroup')
 @BootstyleBuilderTTk.register_builder('default', 'ButtonGroup')
-def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the button style.
 
@@ -46,21 +48,16 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     selected = b.selected(accent_color)
     active = b.active(accent_color)
     pressed = b.pressed(accent_color)
-    focus_ring = b.focus_inner(accent_color)
-    focus_border = b.focus_border(accent_color)
     on_selected = b.on_color(selected)
     on_accent = b.on_color(accent_color)
 
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
-    normal_img = recolor_element_image(image_key, accent_color, accent_color, accent_color, surface)
-    normal_focus_img = recolor_element_image(image_key, accent_color, focus_border, focus_ring, surface)
-    active_img = recolor_element_image(image_key, active, active, active, surface)
-    active_focus_img = recolor_element_image(image_key, active, focus_border, focus_ring, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, pressed, surface)
-    selected_img = recolor_element_image(image_key, selected, selected, selected, surface)
-    selected_focus_img = recolor_element_image(image_key, selected, focus_border, focus_ring, surface)
+    normal_img = recolor_element_image(image_key, accent_color, accent_color, surface, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
+    selected_img = recolor_element_image(image_key, selected, selected, surface, surface)
 
     disabled_img = recolor_element_image(image_key, disabled, disabled, surface, disabled)
 
@@ -71,9 +68,6 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background active focus', active_focus_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('active', active_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
@@ -85,8 +79,6 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
@@ -145,23 +137,17 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     accent_color = b.color(accent_token)
     active = b.active(accent_color)
     pressed = b.pressed(accent_color)
-    focus_ring = b.focus_inner(accent_color)
-    focus_border = b.focus_border(accent_color)
 
     on_selected = b.on_color(accent_color)
-    accent_focus = b.elevate(accent_color, 2)
     on_accent = b.on_color(accent_color)
 
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
     normal_img = recolor_element_image(image_key, surface, accent_color, surface, surface)
-    normal_focus_img = recolor_element_image(image_key, surface, focus_border, focus_ring, surface)
-    active_img = recolor_element_image(image_key, active, active, active, surface)
-    active_focus_img = recolor_element_image(image_key, active, focus_border, focus_ring, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, pressed, surface)
-    selected_img = recolor_element_image(image_key, accent_color, accent_color, accent_color, surface)
-    selected_focus_img = recolor_element_image(image_key, accent_focus, focus_border, focus_ring, surface)
+    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
+    selected_img = recolor_element_image(image_key, accent_color, accent_color, surface, surface)
 
     disabled_img = recolor_element_image(image_key, disabled, disabled, surface, disabled)
 
@@ -172,9 +158,6 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background active focus', active_focus_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('active', active_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
@@ -186,8 +169,6 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
@@ -258,9 +239,6 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     subtle = b.subtle(accent_token, surface)
     pressed = b.active(subtle)
 
-    focus_border = b.focus_border(accent_color)
-    focus_ring = b.focus_ring(accent_color, surface)
-
     # Border color: subtle when show_border is True, otherwise transparent
     border_color = b.border(surface)
 
@@ -273,18 +251,15 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
 
     # Normal state: transparent background with optional subtle border
     normal_img = recolor_element_image(image_key, surface, border_color, surface, surface)
-    normal_focus_img = recolor_element_image(image_key, surface, focus_border, focus_ring, surface)
 
     # Active/hover: subtle background
     active_img = recolor_element_image(image_key, subtle, border_color, subtle, surface)
-    active_focus_img = recolor_element_image(image_key, subtle, focus_border, focus_ring, surface)
 
     # Pressed: darker subtle
     pressed_img = recolor_element_image(image_key, pressed, border_color, pressed, surface)
 
     # Selected: subtle background
     selected_img = recolor_element_image(image_key, subtle, border_color, subtle, surface)
-    selected_focus_img = recolor_element_image(image_key, subtle, focus_border, focus_ring, surface)
 
     disabled_img = recolor_element_image(image_key, surface, border_color, surface, surface)
 
@@ -295,9 +270,6 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background active focus', active_focus_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('active', active_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
@@ -309,8 +281,6 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
                 [
                     ('disabled', disabled_img.image),
                     ('pressed !selected', pressed_img.image),
-                    ('background focus selected', selected_focus_img.image),
-                    ('background focus !selected', normal_focus_img.image),
                     ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
