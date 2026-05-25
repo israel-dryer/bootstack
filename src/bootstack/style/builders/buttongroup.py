@@ -54,7 +54,7 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
 
     # foreground colors
     fg_selected = b.on_color(bg_selected)
-    fg_normal = b.on_color(accent_color)
+    fg_normal = b.on_color(bg_normal)
     fg_disabled = b.disabled('text', bg_disabled)
 
     # border colors
@@ -153,7 +153,7 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
 
     # foreground colors
     fg_normal = b.on_color(bg_normal) if accent is None else accent_color
-    fg_selected = b.on_color(bg_normal)
+    fg_selected = b.on_color(bg_selected)
     fg_active = b.on_color(bg_active)
     fg_pressed = b.on_color(bg_pressed)
     fg_disabled = b.disabled('text', bg_disabled)
@@ -202,7 +202,7 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     b.configure_style(
         ttk_style,
         background=surface,
-        foreground=bg_normal,
+        foreground=fg_normal,
         stipple="gray12",
         relief='flat',
         padding=button_padding(b, icon_only, density),
