@@ -27,7 +27,7 @@ def _build_home_page(page):
         page,
         text="Modern UI framework for Python",
         font="body",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 20))
 
     content = bs.LabelFrame(page, text="About This Gallery", padding=20)
@@ -57,7 +57,7 @@ def _build_typography_page(page):
     bs.Label(
         page,
         text="Semantic font tokens for consistent text styling.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Font tokens
@@ -83,7 +83,7 @@ def _build_typography_page(page):
         group1.columnconfigure(0, weight=0, minsize=200)
         group1.columnconfigure(1, weight=1)
         bs.Label(group1, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group1, text=f"font=\"{token}\"", font="code", accent="secondary").grid(row=i, column=1, sticky=W, pady=2)
+        bs.Label(group1, text=f"font=\"{token}\"", font="code", accent="default").grid(row=i, column=1, sticky=W, pady=2)
 
     # Font modifiers
     group2 = bs.LabelFrame(page, text="Font Modifiers", padding=15)
@@ -100,7 +100,7 @@ def _build_typography_page(page):
     group2.columnconfigure(1, weight=1)
     for i, (token, desc) in enumerate(modifiers):
         bs.Label(group2, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group2, text=f"font=\"{token}\"", font="code", accent="secondary").grid(row=i, column=1, sticky=W, pady=2)
+        bs.Label(group2, text=f"font=\"{token}\"", font="code", accent="default").grid(row=i, column=1, sticky=W, pady=2)
 
 
 # -- Icons --------------------------------------------------------------------
@@ -115,7 +115,7 @@ def _build_icons_page(page):
     bs.Label(
         page,
         text="Bootstrap Icons available via the icon parameter.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Icon gallery
@@ -159,7 +159,7 @@ def _build_icons_page(page):
     ctx_row.pack(fill=X, pady=(0, 8))
     bs.Button(ctx_row, text="Save", icon="save").pack(side=LEFT, padx=(0, 8))
     bs.Button(ctx_row, text="Delete", icon="trash", accent="danger").pack(side=LEFT, padx=(0, 8))
-    bs.Button(ctx_row, text="Settings", icon="gear", accent="secondary").pack(side=LEFT, padx=(0, 8))
+    bs.Button(ctx_row, text="Settings", icon="gear", accent="default").pack(side=LEFT, padx=(0, 8))
     bs.Button(ctx_row, icon="plus-lg", icon_only=True, accent="success").pack(side=LEFT, padx=(0, 8))
     bs.Button(ctx_row, icon="x-lg", icon_only=True, accent="danger").pack(side=LEFT)
 
@@ -169,7 +169,7 @@ def _build_icons_page(page):
 
     color_row = bs.Frame(group4)
     color_row.pack(fill=X)
-    for color in ("primary", "secondary", "success", "info", "warning", "danger"):
+    for color in ("primary", "success", "warning", "danger"):
         f = bs.Frame(color_row)
         f.pack(side=LEFT, padx=8)
         bs.Label(f, icon="heart-fill", icon_only=True, accent=color).pack()
@@ -188,7 +188,7 @@ def _build_buttons_page(page):
     bs.Label(
         page,
         text="Buttons and button-like widgets for triggering actions.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Color variants
@@ -217,7 +217,7 @@ def _build_buttons_page(page):
     row3.pack(fill=X)
     bs.Button(row3, text="Disabled Solid", accent="primary", state=DISABLED).pack(
         side=LEFT, padx=2, expand=YES, fill=X)
-    bs.Button(row3, text="Disabled Outline", accent="secondary", variant="outline", state=DISABLED).pack(
+    bs.Button(row3, text="Disabled Outline", accent="default", variant="outline", state=DISABLED).pack(
         side=LEFT, padx=2, expand=YES, fill=X)
 
     # DropdownButton
@@ -247,7 +247,7 @@ def _build_buttons_page(page):
     group4.pack(fill=X, padx=20, pady=(0, 10))
 
     for accent, variant in [
-        ("default", "solid"),("primary", "solid"), ("secondary", "outline"), ("success", "ghost"),
+        ("default", "solid"), ("primary", "solid"), ("danger", "outline"), ("success", "ghost"),
     ]:
         bg = bs.ButtonGroup(group4, accent=accent, variant=variant)
         bg.pack(side=LEFT, padx=(0, 12))
@@ -268,7 +268,7 @@ def _build_text_inputs_page(page):
     bs.Label(
         page,
         text="Specialized entry widgets for text, passwords, and file paths.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # TextEntry
@@ -338,7 +338,7 @@ def _build_numeric_page(page):
     bs.Label(
         page,
         text="Numeric entries, sliders, and date/time pickers.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # NumericEntry
@@ -397,7 +397,7 @@ def _build_selection_page(page):
     bs.Label(
         page,
         text="Checkboxes, switches, radio buttons, toggle groups, and option menus.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # CheckButton + Switch
@@ -497,7 +497,7 @@ def _build_calendar_page(page):
     bs.Label(
         page,
         text="Interactive date picker with single and range selection modes.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     group = bs.LabelFrame(page, text="Single Selection", padding=15)
@@ -525,7 +525,7 @@ def _build_forms_page(page):
     bs.Label(
         page,
         text="Spec-driven form builder for consistent data-entry UIs.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Inferred form (from data)
@@ -588,7 +588,7 @@ def _build_data_page(page):
     bs.Label(
         page,
         text="Labels, badges, trees, and tables for presenting data.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Labels with accents
@@ -597,7 +597,7 @@ def _build_data_page(page):
 
     row = bs.Frame(group)
     row.pack(fill=X)
-    for color in ("primary", "secondary", "success", "info", "warning", "danger"):
+    for color in ("primary", "success", "warning", "danger"):
         bs.Label(
             row, text=color.title(), accent=color, padding=(8, 4),
         ).pack(side=LEFT, padx=2)
@@ -608,7 +608,7 @@ def _build_data_page(page):
 
     row2 = bs.Frame(group2)
     row2.pack(fill=X)
-    for color in ("primary", "success", "warning", "danger", "info"):
+    for color in ("primary", "success", "warning", "danger"):
         bs.Badge(
             row2, text=color.title(), accent=color,
         ).pack(side=LEFT, padx=4)
@@ -685,7 +685,7 @@ def _build_progress_page(page):
     bs.Label(
         page,
         text="Progress bars, meters, and gauges for showing values and status.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     slider_value = Signal[float](65.0)
@@ -723,7 +723,7 @@ def _build_progress_page(page):
     meter_row.pack()
 
     for amount, label, color in [
-        (45, "CPU Usage", "info"),
+        (45, "CPU Usage", "primary"),
         (78, "Memory", "warning"),
         (92, "Disk", "danger"),
     ]:
@@ -769,7 +769,7 @@ def _build_layout_page(page):
     bs.Label(
         page,
         text="Containers, expandable panels, and split panes for organizing content.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Card
@@ -860,7 +860,7 @@ def _build_navigation_page(page):
     bs.Label(
         page,
         text="Tab-based navigation widgets for organizing content into views.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # TabView with icons
@@ -950,7 +950,7 @@ def _build_overlays_page(page):
     bs.Label(
         page,
         text="Toasts, tooltips, and other overlay widgets.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # ToolTip
@@ -968,11 +968,11 @@ def _build_overlays_page(page):
     btn1.pack(side=LEFT, padx=(0, 8))
     bs.ToolTip(btn1, text="This is a basic tooltip.")
 
-    btn2 = bs.Button(row, text="Info Tooltip", accent="info")
+    btn2 = bs.Button(row, text="Info Tooltip", accent="primary")
     btn2.pack(side=LEFT, padx=(0, 8))
-    bs.ToolTip(btn2, text="Tooltips can have accent colors.", accent="info")
+    bs.ToolTip(btn2, text="Tooltips can have accent colors.", accent="primary")
 
-    btn3 = bs.Button(row, text="Long Tooltip", accent="secondary")
+    btn3 = bs.Button(row, text="Long Tooltip", accent="default")
     btn3.pack(side=LEFT)
     bs.ToolTip(
         btn3,
@@ -1028,7 +1028,7 @@ def _build_dialogs_page(page):
     bs.Label(
         page,
         text="Click buttons to launch various dialog types.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # MessageBox / MessageDialog
@@ -1122,7 +1122,7 @@ def _build_theme_page(page):
     bs.Label(
         page,
         text="Switch themes to see all widgets update in real time.",
-        accent="secondary",
+        accent="default",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     group = bs.LabelFrame(page, text="Theme Selector", padding=15)
@@ -1161,13 +1161,8 @@ def _build_theme_page(page):
 
     accent_row = bs.Frame(group2)
     accent_row.pack(fill=X, pady=(0, 10))
-    for color in ("primary", "secondary", "success", "info", "warning", "danger"):
+    for color in ("primary", "success", "warning", "danger"):
         bs.Button(accent_row, text=color.title(), accent=color).pack(side=LEFT, padx=4, expand=YES, fill=X)
-
-    extra_row = bs.Frame(group2)
-    extra_row.pack(fill=X)
-    for color in ("light", "dark"):
-        bs.Button(extra_row, text=color.title(), accent=color).pack(side=LEFT, padx=4, expand=YES, fill=X)
 
     # Surface colors
     group3 = bs.LabelFrame(page, text="Surfaces", padding=15)

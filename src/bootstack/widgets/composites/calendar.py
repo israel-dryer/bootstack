@@ -381,7 +381,7 @@ class Calendar(ttk.Frame):
             master=self._header_frame,
             textvariable=self._title_var,
             anchor=CENTER,
-            accent="secondary",
+            accent="default",
             font='caption[bold]',
             width=title_width,
         )
@@ -482,7 +482,7 @@ class Calendar(ttk.Frame):
                     master=header,
                     icon='chevron-double-left',
                     icon_only=True,
-                    accent="secondary",
+                    accent="default",
                     variant="ghost",
                     density='compact',
                     command=self._on_prev_year,
@@ -493,7 +493,7 @@ class Calendar(ttk.Frame):
                 prev_month = ttk.Button(
                     master=header,
                     icon='chevron-left',
-                    accent="secondary",
+                    accent="default",
                     variant="ghost",
                     density='compact',
                     icon_only=True,
@@ -507,7 +507,7 @@ class Calendar(ttk.Frame):
                     master=header,
                     textvariable=title_var,
                     anchor=CENTER,
-                    accent="secondary",
+                    accent="default",
                     font='caption[bold]',
                     width=title_width,
                 )
@@ -516,7 +516,7 @@ class Calendar(ttk.Frame):
                 next_month = ttk.Button(
                     master=header,
                     icon='chevron-right',
-                    accent="secondary",
+                    accent="default",
                     variant="ghost",
                     density='compact',
                     icon_only=True,
@@ -529,7 +529,7 @@ class Calendar(ttk.Frame):
                     master=header,
                     icon='chevron-double-right',
                     icon_only=True,
-                    accent="secondary",
+                    accent="default",
                     variant="ghost",
                     density='compact',
                     command=self._on_next_year,
@@ -637,7 +637,7 @@ class Calendar(ttk.Frame):
                 text=col,
                 anchor=CENTER,
                 padding=5,
-                accent="secondary",
+                accent="default",
                 font='caption[bold]',
             ).pack(side=LEFT, fill=X, expand=YES)
 

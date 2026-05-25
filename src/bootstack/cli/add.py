@@ -386,13 +386,9 @@ def _render_theme(name: str, mode: str) -> str:
         "shades": _BASE_SHADES,
         "semantic": {
             "primary": f"blue[{step}]",
-            "secondary": f"gray[{step}]",
             "success": f"green[{step}]",
-            "info": f"cyan[{step}]",
             "warning": f"yellow[{step}]",
             "danger": f"red[{step}]",
-            "light": "gray[100]",
-            "dark": "gray[900]",
         },
     }
     import json as _json
