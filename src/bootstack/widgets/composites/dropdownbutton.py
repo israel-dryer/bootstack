@@ -5,7 +5,7 @@ from typing import Any, Callable, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.widgets.composites.contextmenu import ContextMenu, ContextMenuItem, ContextMenuItemResult
-from bootstack.widgets.primitives.menubutton import MenuButton
+from bootstack.widgets.primitives._menubutton import MenuButton
 from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState, WidgetDensity
 
