@@ -726,7 +726,7 @@ def muted_foreground(background: str, min_contrast: float = 4.5) -> str:
     lum = relative_luminance(background)
     bg_rgb = hex_to_rgb(background)
 
-    base_color = "#495057" if lum > 0.5 else "#adb5bd"
+    base_color = "#6c757d" if lum > 0.5 else "#adb5bd"
 
     fg_rgb = hex_to_rgb(base_color)
     if contrast_ratio(bg_rgb, fg_rgb) >= min_contrast:
