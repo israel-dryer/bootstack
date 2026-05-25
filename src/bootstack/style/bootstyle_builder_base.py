@@ -56,7 +56,7 @@ def _ensure_icon_provider():
 
 from bootstack.style.theme_provider import ThemeProvider, use_theme
 from bootstack.style.utility import best_foreground, color_to_hsl, darken_color, lighten_color, mix_colors, \
-    relative_luminance
+    muted_foreground as _muted_foreground, relative_luminance
 from bootstack._runtime.utility import scale_size
 
 # Source images are created at this resolution multiplier (e.g., 2x)
@@ -410,52 +410,8 @@ class BootstyleBuilderBase:
         return best_foreground(color, unique)
 
     def muted_foreground(self, background: str, min_contrast: float = 4.5) -> str:
-        """Return a muted foreground color with adequate contrast.
-
-        Generates a subdued text color that maintains readability across
-        varying backgrounds by ensuring minimum WCAG contrast requirements.
-
-        Args:
-            background: The background color to contrast against.
-            min_contrast: Minimum WCAG contrast ratio (4.5 for AA, 7.0 for AAA).
-                         Default is 4.5 (AA standard for normal text).
-
-        Returns:
-            A muted foreground color with adequate contrast against the background.
-        """
-        from bootstack.style.utility import hex_to_rgb, contrast_ratio
-
-        lum = relative_luminance(background)
-        bg_rgb = hex_to_rgb(background)
-
-        # Determine if we need light or dark muted text
-        if lum > 0.5:
-            # Light background -> use muted dark text
-            base_color = "#495057"  # Dark gray
-        else:
-            # Dark background -> use muted light text
-            base_color = "#adb5bd"  # Light gray
-
-        # Check if base muted color has adequate contrast
-        fg_rgb = hex_to_rgb(base_color)
-        ratio = contrast_ratio(bg_rgb, fg_rgb)
-
-        if ratio >= min_contrast:
-            return base_color
-
-        # If not enough contrast, adjust toward pure black/white
-        target = "#000000" if lum > 0.5 else "#ffffff"
-
-        # Binary search for minimum adjustment needed
-        for weight in [0.2, 0.4, 0.6, 0.8, 1.0]:
-            adjusted = mix_colors(target, base_color, weight)
-            adjusted_rgb = hex_to_rgb(adjusted)
-            ratio = contrast_ratio(bg_rgb, adjusted_rgb)
-            if ratio >= min_contrast:
-                return adjusted
-
-        # Fallback to pure contrast
-        return target
+        """Return a muted foreground color with adequate contrast against background."""
+        return _muted_foreground(background, min_contrast)
 
     def disabled(self, role: str = "background", surface: str | None = None) -> str:
         """Return a disabled color mixed with the surface.

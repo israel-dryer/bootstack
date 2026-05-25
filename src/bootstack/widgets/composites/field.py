@@ -231,7 +231,7 @@ class Field(EntryMixin, Frame):
             text=f"{label_text}*" if required else label_text,
             font="label[normal]"
         )
-        self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="foreground[muted]")
+        self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="muted")
 
         # field container & field - pass density for styling via style_options
         field_padding = 5

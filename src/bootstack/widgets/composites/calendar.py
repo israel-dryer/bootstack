@@ -381,7 +381,7 @@ class Calendar(ttk.Frame):
             master=self._header_frame,
             textvariable=self._title_var,
             anchor=CENTER,
-            accent="foreground[muted]",
+            accent="muted",
             font='caption[bold]',
             width=title_width,
         )
@@ -507,7 +507,7 @@ class Calendar(ttk.Frame):
                     master=header,
                     textvariable=title_var,
                     anchor=CENTER,
-                    accent="foreground[muted]",
+                    accent="muted",
                     font='caption[bold]',
                     width=title_width,
                 )
@@ -637,7 +637,7 @@ class Calendar(ttk.Frame):
                 text=col,
                 anchor=CENTER,
                 padding=5,
-                accent="foreground[muted]",
+                accent="muted",
                 font='caption[bold]',
             ).pack(side=LEFT, fill=X, expand=YES)
 

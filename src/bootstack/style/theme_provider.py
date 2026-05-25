@@ -294,6 +294,10 @@ class ThemeProvider:
         # Surface tokens - semantic ramps for container backgrounds
         self._build_surface_tokens(colors)
 
+        # Neutral text tokens — pre-computed for direct use as accent tokens
+        from bootstack.style.utility import muted_foreground
+        colors['muted'] = muted_foreground(colors['background'])
+
         self._colors.clear()
         self._colors.update(**colors)
 

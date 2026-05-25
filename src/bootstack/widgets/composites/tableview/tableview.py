@@ -964,9 +964,9 @@ class TableView(Frame):
         bar.grid(row=3, column=0, sticky="ew", pady=(4, 0))
         status_frame = Frame(bar)
         status_frame.pack(side="left", fill="x", expand=True)
-        self._filter_label = Label(status_frame, text="", anchor="w", accent="foreground[muted]")
+        self._filter_label = Label(status_frame, text="", anchor="w", accent="muted")
         self._filter_label.pack(side="left", padx=(0, 4))
-        self._sort_label = Label(status_frame, text="", anchor="w", accent="foreground[muted]")
+        self._sort_label = Label(status_frame, text="", anchor="w", accent="muted")
         self._sort_label.pack(side="left", padx=(8, 4))
 
         if not self._show_table_status:

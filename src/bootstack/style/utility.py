@@ -708,3 +708,35 @@ def best_foreground(bg_color: str, candidates: list[str] = None) -> str:
         return contrast_ratio(bg_rgb, fg_rgb)
 
     return max(candidates, key=contrast)
+
+
+def muted_foreground(background: str, min_contrast: float = 4.5) -> str:
+    """Return a muted foreground color with adequate contrast against background.
+
+    Generates a subdued text color — readable but visually subordinate to the
+    primary foreground. Suitable for captions, secondary labels, and helper text.
+
+    Args:
+        background: The background hex color to contrast against.
+        min_contrast: Minimum WCAG contrast ratio (default 4.5 for AA).
+
+    Returns:
+        A muted foreground hex color.
+    """
+    lum = relative_luminance(background)
+    bg_rgb = hex_to_rgb(background)
+
+    base_color = "#495057" if lum > 0.5 else "#adb5bd"
+
+    fg_rgb = hex_to_rgb(base_color)
+    if contrast_ratio(bg_rgb, fg_rgb) >= min_contrast:
+        return base_color
+
+    target = "#000000" if lum > 0.5 else "#ffffff"
+    for weight in [0.2, 0.4, 0.6, 0.8, 1.0]:
+        adjusted = mix_colors(target, base_color, weight)
+        adjusted_rgb = hex_to_rgb(adjusted)
+        if contrast_ratio(bg_rgb, adjusted_rgb) >= min_contrast:
+            return adjusted
+
+    return target

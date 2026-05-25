@@ -27,7 +27,7 @@ def _build_home_page(page):
         page,
         text="Modern UI framework for Python",
         font="body",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 20))
 
     content = bs.LabelFrame(page, text="About This Gallery", padding=20)
@@ -57,7 +57,7 @@ def _build_typography_page(page):
     bs.Label(
         page,
         text="Semantic font tokens for consistent text styling.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Font tokens
@@ -83,7 +83,7 @@ def _build_typography_page(page):
         group1.columnconfigure(0, weight=0, minsize=200)
         group1.columnconfigure(1, weight=1)
         bs.Label(group1, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group1, text=f"font=\"{token}\"", font="code", accent="foreground[muted]").grid(row=i, column=1, sticky=W, pady=2)
+        bs.Label(group1, text=f"font=\"{token}\"", font="code", accent="muted").grid(row=i, column=1, sticky=W, pady=2)
 
     # Font modifiers
     group2 = bs.LabelFrame(page, text="Font Modifiers", padding=15)
@@ -100,7 +100,7 @@ def _build_typography_page(page):
     group2.columnconfigure(1, weight=1)
     for i, (token, desc) in enumerate(modifiers):
         bs.Label(group2, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group2, text=f"font=\"{token}\"", font="code", accent="foreground[muted]").grid(row=i, column=1, sticky=W, pady=2)
+        bs.Label(group2, text=f"font=\"{token}\"", font="code", accent="muted").grid(row=i, column=1, sticky=W, pady=2)
 
 
 # -- Icons --------------------------------------------------------------------
@@ -115,7 +115,7 @@ def _build_icons_page(page):
     bs.Label(
         page,
         text="Bootstrap Icons available via the icon parameter.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Icon gallery
@@ -188,7 +188,7 @@ def _build_buttons_page(page):
     bs.Label(
         page,
         text="Buttons and button-like widgets for triggering actions.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Color variants
@@ -268,7 +268,7 @@ def _build_text_inputs_page(page):
     bs.Label(
         page,
         text="Specialized entry widgets for text, passwords, and file paths.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # TextEntry
@@ -338,7 +338,7 @@ def _build_numeric_page(page):
     bs.Label(
         page,
         text="Numeric entries, sliders, and date/time pickers.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # NumericEntry
@@ -397,7 +397,7 @@ def _build_selection_page(page):
     bs.Label(
         page,
         text="Checkboxes, switches, radio buttons, toggle groups, and option menus.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # CheckButton + Switch
@@ -497,7 +497,7 @@ def _build_calendar_page(page):
     bs.Label(
         page,
         text="Interactive date picker with single and range selection modes.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     group = bs.LabelFrame(page, text="Single Selection", padding=15)
@@ -525,7 +525,7 @@ def _build_forms_page(page):
     bs.Label(
         page,
         text="Spec-driven form builder for consistent data-entry UIs.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Inferred form (from data)
@@ -588,7 +588,7 @@ def _build_data_page(page):
     bs.Label(
         page,
         text="Labels, badges, trees, and tables for presenting data.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Labels with accents
@@ -685,7 +685,7 @@ def _build_progress_page(page):
     bs.Label(
         page,
         text="Progress bars, meters, and gauges for showing values and status.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     slider_value = Signal[float](65.0)
@@ -769,7 +769,7 @@ def _build_layout_page(page):
     bs.Label(
         page,
         text="Containers, expandable panels, and split panes for organizing content.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # Card
@@ -860,7 +860,7 @@ def _build_navigation_page(page):
     bs.Label(
         page,
         text="Tab-based navigation widgets for organizing content into views.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # TabView with icons
@@ -950,7 +950,7 @@ def _build_overlays_page(page):
     bs.Label(
         page,
         text="Toasts, tooltips, and other overlay widgets.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # ToolTip
@@ -1028,7 +1028,7 @@ def _build_dialogs_page(page):
     bs.Label(
         page,
         text="Click buttons to launch various dialog types.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     # MessageBox / MessageDialog
@@ -1122,7 +1122,7 @@ def _build_theme_page(page):
     bs.Label(
         page,
         text="Switch themes to see all widgets update in real time.",
-        accent="foreground[muted]",
+        accent="muted",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
     group = bs.LabelFrame(page, text="Theme Selector", padding=15)
