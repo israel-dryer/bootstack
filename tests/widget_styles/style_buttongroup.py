@@ -15,10 +15,19 @@ solid1.add('One')
 solid1.add('Two')
 solid1.add('Three')
 
+bs.Label(frame, text='Primary Accent').pack()
+solid2 = bs.ButtonGroup(frame, orient=orient, accent='primary').pack()
+solid2.add('One')
+solid2.add('Two')
+
 outline1 = bs.ButtonGroup(frame, variant='outline', orient=orient).pack()
 outline1.add('One')
 outline1.add('Two')
 outline1.add('Three')
+
+outline2 = bs.ButtonGroup(frame, variant='outline', accent='primary', orient=orient).pack()
+outline2.add('One')
+outline2.add('Two')
 
 ghost1 = bs.ButtonGroup(frame, variant='ghost', orient=orient).pack()
 ghost1.add(icon='justify-left', icon_only=True)
@@ -40,6 +49,10 @@ ghost2 = bs.ButtonGroup(frame, variant='ghost', orient=orient, density='compact'
 ghost2.add(icon='justify-left', icon_only=True)
 ghost2.add(icon='justify', icon_only=True)
 ghost2.add(icon='justify-right', icon_only=True)
+
+ghost3 = bs.ButtonGroup(frame, variant='ghost', orient=orient, accent='success').pack()
+ghost3.add(icon='justify-left', icon_only=True)
+ghost3.add(icon='justify', icon_only=True)
 
 bs.Separator(app).pack(fill='x', pady=8)
 bs.Button(app, text='Toggle Theme', command=bs.toggle_theme).pack(padx=16, pady=8)

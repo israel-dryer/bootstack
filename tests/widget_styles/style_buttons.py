@@ -24,14 +24,13 @@ def button_style_frame(bootstyle, widget_name):
         icon="bootstrap",
     ).pack(padx=5, pady=5, fill='both')
 
-    for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'dark', 'light']:
+    for color in ['primary', 'success', 'warning', 'danger']:
         bs.Button(
             master=frame,
             text=color.title(),
             accent=color,
             variant=bootstyle,
             compound="left",
-            cursor="hand2" if bootstyle == "link" else None,
             icon="bootstrap",
         ).pack(padx=5, pady=5, fill='both')
 
@@ -39,7 +38,6 @@ def button_style_frame(bootstyle, widget_name):
         master=frame,
         text='disabled',
         state='disabled',
-        cursor="hand2" if bootstyle == "link" else None,
         accent=color,
         variant=bootstyle,
     ).pack(padx=5, pady=5, fill='both')
@@ -54,7 +52,6 @@ if __name__ == '__main__':
     button_style_frame('solid', 'Solid Button').pack(side='left')
     button_style_frame('outline', 'Outline Button').pack(side='left')
     button_style_frame('ghost', 'Ghost Button').pack(side='left')
-    button_style_frame('link', 'Link Button').pack(side='left')
 
     theme_btn = bs.Button(
         root, cursor="hand2", icon="sun", command=lambda: bs.set_theme('light'),

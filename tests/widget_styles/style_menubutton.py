@@ -1,62 +1,33 @@
 import bootstack as bs
-from bootstack.constants import *
 
 
-def create_menubutton_frame(bootstyle, testname):
-    frame = bs.Frame(root, padding=5)
+def create_menubutton_frame(master, variant, testname):
 
-    title = bs.Label(
-        master=frame,
-        text=testname,
-        anchor=CENTER
-    )
-    title.pack(padx=5, pady=2, fill=BOTH)
+    frame = bs.PackFrame(master, padding=16, gap=8, fill_items='both')
 
-    bs.Separator(frame).pack(padx=5, pady=5, fill=X)
+    bs.Label(master=frame, text=testname, anchor='center').pack()
+    bs.Separator(frame).pack()
+    bs.MenuButton(master=frame, variant=variant, text='default').pack()
+    bs.MenuButton(master=frame, variant=variant, density='compact', text='compact').pack()
 
-    btn = bs.MenuButton(
-        master=frame,
-        variant=bootstyle,
-        text='default',
-    )
-    btn.pack(padx=5, pady=5, fill=BOTH)
+    for color in ['primary', 'success', 'warning', 'danger']:
+        bs.MenuButton(master=frame, text=color, accent=color, variant=variant).pack()
 
-    btn = bs.MenuButton(
-        master=frame,
-        variant=bootstyle,
-        density='compact',
-        text='compact',
-    )
-    btn.pack(padx=5, pady=5, fill=BOTH)
-
-    for color in ['primary', 'secondary', 'success', 'info', 'warning', 'danger']:
-        btn = bs.MenuButton(
-            master=frame,
-            text=color,
-            accent=color,
-            variant=bootstyle
-        )
-        btn.pack(padx=5, pady=5, fill=BOTH)
-
-    btn = bs.MenuButton(
-        master=frame,
-        text='disabled',
-        state=DISABLED,
-        variant=bootstyle,
-    )
-    btn.pack(padx=5, pady=5, fill=BOTH)
+    bs.MenuButton(master=frame, text='disabled', state='disabled', variant=variant).pack()
 
     return frame
 
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = bs.Window()
+    app = bs.App()
 
-    bs.Button(text="Change Theme", command=bs.toggle_theme).pack(padx=10, pady=10)
+    frm = bs.PackFrame(app, padding=16, direction='horizontal').pack()
 
-    create_menubutton_frame("default", 'Solid Menubutton').pack(side=LEFT)
-    create_menubutton_frame('outline', 'Outline Menubutton').pack(side=LEFT)
-    create_menubutton_frame('ghost', 'Ghost Menubutton').pack(side=LEFT)
+    bs.Button(app, text="Change Theme", command=bs.toggle_theme).pack(pady=16)
 
-    root.mainloop()
+    create_menubutton_frame(frm, "default", 'Solid Menubutton').pack()
+    create_menubutton_frame(frm, 'outline', 'Outline Menubutton').pack()
+    create_menubutton_frame(frm, 'ghost', 'Ghost Menubutton').pack()
+
+    app.mainloop()

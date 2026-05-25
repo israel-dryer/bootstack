@@ -55,7 +55,8 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     # border colors
     bd_normal = b.border(bg_normal)
     bd_pressed = b.border(bg_pressed)
-    bd_active = b.active(bg_active)
+    bd_active = b.border(bg_active)
+    bd_disabled = b.border(bg_disabled)
 
     focused_ring = b.color('foreground')
 
@@ -68,7 +69,7 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
     focused_hovered_img = recolor_element_image(image_key, bd_active, focused, focused_ring, surface)
     focused_pressed_img = recolor_element_image(image_key, bd_pressed, focused, focused_ring, surface)
-    disabled_img = recolor_element_image(image_key, bg_disabled, bg_disabled, surface, surface)
+    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, surface)
 
 
     b.create_style_element_image(

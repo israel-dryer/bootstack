@@ -5,6 +5,8 @@ This module contains style builders for ttk.Menubutton widgets and variants.
 
 from __future__ import annotations
 
+from typing import Optional
+
 from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
@@ -57,18 +59,15 @@ def _create_chevron_images(
     normal_chevron = BootstrapIcon(icon_name, size=size, color=foreground).image
     disabled_chevron = BootstrapIcon(icon_name, size=size, color=disabled).image
 
-    state_specs = [
-        ('disabled', disabled_chevron),
-    ]
+    state_specs = [('disabled', disabled_chevron)]
 
     if active:
         active_chevron = BootstrapIcon(icon_name, size=size, color=active).image
-        state_specs.extend(
-            [
-                ('background focus !disabled', active_chevron),
-                ('hover !disabled', active_chevron),
-                ('pressed !disabled', active_chevron),
-            ])
+        state_specs.extend([
+            ('background focus !disabled', active_chevron),
+            ('hover !disabled', active_chevron),
+            ('pressed !disabled', active_chevron),
+        ])
 
     state_specs.append(('', normal_chevron))
 
@@ -95,7 +94,7 @@ def _menubutton_padding(b: BootstyleBuilderTTk, icon_only: bool, density: str) -
 
 @BootstyleBuilderTTk.register_builder('solid', 'TMenubutton')
 @BootstyleBuilderTTk.register_builder('default', 'TMenubutton')
-def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the solid menubutton style.
 
     Style options include:
@@ -105,48 +104,58 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         * icon_only: Whether the button shows only an icon
         * density: Button density ('default' or 'compact')
     """
-    accent_token = accent or 'primary'
-    surface_token = options.get('surface', 'content')
+    accent = b.default(accent)
     density = options.get('density', 'default')
     show_dropdown = options.get('show_dropdown_button', True)
     dropdown_icon = options.get('dropdown_button_icon', 'caret-down-fill')
     icon_only = options.get('icon_only', False)
     image_key = f'button_{normalize_button_density(density)}'
 
+    surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
-    normal = b.color(accent_token)
-    foreground = b.on_color(normal)
-    pressed = b.pressed(normal)
-    active = focused = b.active(normal)
-    disabled = b.disabled()
-    focused_ring = b.color('foreground')
-    foreground_disabled = b.disabled('text', disabled)
 
-    normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    active_img = recolor_element_image(image_key, active, active, surface, surface)
+    # background colors
+    bg_normal = b.elevate(surface, 1) if accent is None else b.color(accent)
+    bg_pressed = b.pressed(bg_normal)
+    bg_active = focused = b.active(bg_normal)
+    bg_disabled = b.disabled()
+
+    # foreground colors
+    fg_normal = b.on_color(bg_normal)
+    fg_disabled = b.disabled('text', bg_disabled)
+
+    # border colors
+    bd_normal = b.border(bg_normal)
+    bd_pressed = b.border(bg_pressed)
+    bd_active = b.border(bg_active)
+    bd_disabled = b.border(bg_disabled)
+
+    focused_ring = b.color('foreground')
+
+    normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
     focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
-    disabled_img = recolor_element_image(image_key, disabled, disabled, surface, surface)
+    focused_active_img = recolor_element_image(image_key, bd_active, focused, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bd_pressed, focused, focused_ring, surface)
+    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, surface)
 
     if show_dropdown:
         _create_spacer(b, ttk_style, density)
-        _create_chevron_images(b, ttk_style, foreground, foreground_disabled, icon_name=dropdown_icon, density=density)
+        _create_chevron_images(b, ttk_style, fg_normal, fg_disabled, icon_name=dropdown_icon, density=density)
 
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
             border=normal_img.meta.border, padding=normal_img.meta.border
-        ).state_specs(
-            [
-                ('disabled', disabled_img.image),
-                ('background focus pressed', focused_pressed_img.image),
-                ('background focus hover', focused_active_img.image),
-                ('background focus', focused_img.image),
-                ('pressed', pressed_img.image),
-                ('active', active_img.image),
-            ]))
+        ).state_specs([
+            ('disabled', disabled_img.image),
+            ('background focus pressed', focused_pressed_img.image),
+            ('background focus hover', focused_active_img.image),
+            ('background focus', focused_img.image),
+            ('pressed', pressed_img.image),
+            ('active', active_img.image),
+        ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
@@ -160,8 +169,8 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     )
 
     state_spec = dict(
-        foreground=[('disabled', foreground_disabled), ('', foreground)],
-        background=[('disabled', disabled), ('', surface)]
+        foreground=[('disabled', fg_disabled), ('', fg_normal)],
+        background=[('disabled', bg_disabled), ('', surface)]
     )
 
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
@@ -169,7 +178,7 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
 
 @BootstyleBuilderTTk.register_builder('outline', 'TMenubutton')
-def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the outline menubutton style.
 
     Style options include:
@@ -179,52 +188,59 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
         * icon_only: Whether the button shows only an icon
         * density: Button density ('default' or 'compact')
     """
-    accent_token = accent or 'primary'
-    surface_token = options.get('surface', 'content')
+    accent = b.default(accent)
     density = options.get('density', 'default')
     show_dropdown = options.get('show_dropdown_button', True)
     dropdown_icon = options.get('dropdown_button_icon', 'caret-down-fill')
     icon_only = options.get('icon_only', False)
     image_key = f'button_{normalize_button_density(density)}'
 
+    surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
-    foreground_normal = b.color(accent_token)
-    foreground_disabled = b.disabled('text', surface)
-    foreground_active = b.on_color(foreground_normal)
 
-    disabled = foreground_disabled
-    normal = surface
-    pressed = b.active(foreground_normal)
-    active = foreground_normal
-    focused = hovered = pressed
-    focused_ring = b.color('foreground')
+    accent_color = b.elevate(surface, 1) if accent is None else b.color(accent)
 
-    # button element images
-    normal_img = recolor_element_image(image_key, normal, foreground_normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    active_img = recolor_element_image(image_key, active, active, surface, surface)
-    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_active_img = recolor_element_image(image_key, active, active, focused_ring)
-    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring)
-    disabled_img = recolor_element_image(image_key, surface, disabled, surface, surface)
+    # background colors
+    bg_normal = surface
+    bg_active = accent_color
+    bg_pressed = b.active(accent_color)
+    bg_focus_ring = b.color('foreground')
+    bg_disabled = b.disabled('text', surface)
+
+    # foreground colors
+    fg_normal = b.on_color(bg_normal) if accent is None else accent_color
+    fg_disabled = b.disabled('text', surface)
+    fg_active = b.on_color(bg_normal if accent is None else accent_color)
+
+    # border colors
+    bd_normal = b.border(bg_normal) if accent is None else fg_normal
+    bd_active = b.border(bg_active)
+    bd_pressed = b.border(bg_pressed)
+
+    normal_img = recolor_element_image(image_key, surface, bd_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
+    focused_img = recolor_element_image(image_key, surface, bd_active, bg_focus_ring, surface)
+    focused_active_img = recolor_element_image(image_key, bg_active, bd_active, bg_focus_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, bg_focus_ring, surface)
+    disabled_img = recolor_element_image(image_key, surface, bg_disabled, surface, surface)
 
     if show_dropdown:
         _create_spacer(b, ttk_style, density)
-        _create_chevron_images(b, ttk_style, foreground_normal, disabled, foreground_active, dropdown_icon, density)
+        _create_chevron_images(b, ttk_style, fg_normal, fg_disabled, fg_active, dropdown_icon, density)
 
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
             border=normal_img.meta.border, padding=normal_img.meta.border
-        ).state_specs(
-            [
-                ('disabled', disabled_img.image),
-                ('background focus pressed', focused_pressed_img.image),
-                ('background focus active', focused_active_img.image),
-                ('background focus', focused_img.image),
-                ('pressed', pressed_img.image),
-                ('active', active_img.image),
-            ]))
+        ).state_specs([
+            ('disabled', disabled_img.image),
+            ('background focus pressed', focused_pressed_img.image),
+            ('background focus active', focused_active_img.image),
+            ('background focus', focused_img.image),
+            ('pressed', pressed_img.image),
+            ('active', active_img.image),
+        ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
@@ -239,10 +255,11 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
 
     state_spec = dict(
         foreground=[
-            ('disabled', foreground_disabled),
-            ('background focus', foreground_active),
-            ('hover', foreground_active),
-            ('', foreground_normal)
+            ('disabled', fg_disabled),
+            ('background focus pressed', fg_active),
+            ('background focus active', fg_active),
+            ('hover', fg_active),
+            ('', fg_normal)
         ],
         background=[('disabled', surface), ('', surface)]
     )
@@ -252,7 +269,7 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
 
 
 @BootstyleBuilderTTk.register_builder('ghost', 'TMenubutton')
-def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the ghost menubutton style.
 
     Style options include:
@@ -262,51 +279,50 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         * icon_only: Whether the button shows only an icon
         * density: Button density ('default' or 'compact')
     """
-    accent_token = accent or 'secondary'
-    surface_token = options.get('surface', 'content')
+    accent = b.default(accent)
     density = options.get('density', 'default')
     show_dropdown = options.get('show_dropdown_button', True)
     dropdown_icon = options.get('dropdown_button_icon', 'caret-down-fill')
     icon_only = options.get('icon_only', False)
     image_key = f'button_{normalize_button_density(density)}'
 
+    surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
 
-    normal = surface
-    active = b.subtle(accent_token, surface)
-    pressed = b.pressed(active)
-    focused = b.focus(active)
+    # background colors
+    bg_normal = surface
+    bg_active = bg_focused = b.elevate(surface, 1) if accent is None else b.subtle(accent, surface)
+    bg_pressed = b.active(bg_active)
     focused_ring = b.color('foreground')
 
-    foreground_normal = b.color(accent_token)
-    foreground_disabled = b.disabled('text', surface)
+    # foreground colors
+    fg_normal = b.on_color(bg_normal) if accent is None else b.color(accent)
+    fg_disabled = b.disabled('text', surface)
 
-    # button element images
-    normal_img = recolor_element_image(image_key, normal, normal, surface, surface)
-    pressed_img = recolor_element_image(image_key, pressed, pressed, surface, surface)
-    active_img = recolor_element_image(image_key, active, active, surface, surface)
-    focused_img = recolor_element_image(image_key, focused, focused, focused_ring, surface)
-    focused_active_img = recolor_element_image(image_key, active, active, focused_ring, surface)
-    focused_pressed_img = recolor_element_image(image_key, pressed, pressed, focused_ring, surface)
+    normal_img = recolor_element_image(image_key, bg_normal, bg_normal, surface, surface)
+    pressed_img = recolor_element_image(image_key, bg_pressed, bg_pressed, surface, surface)
+    active_img = recolor_element_image(image_key, bg_active, bg_active, surface, surface)
+    focused_img = recolor_element_image(image_key, bg_focused, bg_focused, focused_ring, surface)
+    focused_active_img = recolor_element_image(image_key, bg_focused, bg_focused, focused_ring, surface)
+    focused_pressed_img = recolor_element_image(image_key, bg_pressed, bg_pressed, focused_ring, surface)
     disabled_img = recolor_element_image(image_key, surface, surface, surface, surface)
 
     if show_dropdown:
         _create_spacer(b, ttk_style, density)
-        _create_chevron_images(b, ttk_style, foreground_normal, foreground_disabled, icon_name=dropdown_icon, density=density)
+        _create_chevron_images(b, ttk_style, fg_normal, fg_disabled, icon_name=dropdown_icon, density=density)
 
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
             border=normal_img.meta.border, padding=normal_img.meta.border
-        ).state_specs(
-            [
-                ('disabled', disabled_img.image),
-                ('background focus pressed', focused_pressed_img.image),
-                ('background focus active', focused_active_img.image),
-                ('background focus', focused_img.image),
-                ('pressed', pressed_img.image),
-                ('active', active_img.image),
-            ]))
+        ).state_specs([
+            ('disabled', disabled_img.image),
+            ('background focus pressed', focused_pressed_img.image),
+            ('background focus active', focused_active_img.image),
+            ('background focus', focused_img.image),
+            ('pressed !disabled', pressed_img.image),
+            ('active !disabled', active_img.image),
+        ]))
 
     b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
 
@@ -320,7 +336,7 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     )
 
     state_spec = dict(
-        foreground=[('disabled', foreground_disabled), ('', foreground_normal)],
+        foreground=[('disabled', fg_disabled), ('', fg_normal)],
         background=[('disabled', surface), ('', surface)]
     )
 

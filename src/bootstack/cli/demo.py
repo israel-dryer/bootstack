@@ -216,34 +216,29 @@ def _build_buttons_page(page):
     row3 = bs.Frame(group2)
     row3.pack(fill=X)
     bs.Button(row3, text="Disabled Solid", accent="primary", state=DISABLED).pack(
-        side=LEFT, padx=2, expand=YES, fill=X,
-    )
-    bs.Button(
-        row3, text="Disabled Outline", accent="secondary",
-        variant="outline", state=DISABLED,
-    ).pack(side=LEFT, padx=2, expand=YES, fill=X)
+        side=LEFT, padx=2, expand=YES, fill=X)
+    bs.Button(row3, text="Disabled Outline", accent="secondary", variant="outline", state=DISABLED).pack(
+        side=LEFT, padx=2, expand=YES, fill=X)
 
     # DropdownButton
     group3 = bs.LabelFrame(page, text="DropdownButton", padding=15)
     group3.pack(fill=X, padx=20, pady=(0, 10))
 
-    dd = bs.DropdownButton(group3, text="File", accent="primary")
+    dd = bs.DropdownButton(group3, text="File")
     dd.pack(side=LEFT, padx=(0, 8))
     dd.add_command(text="New")
     dd.add_command(text="Open")
     dd.add_separator()
     dd.add_command(text="Exit")
 
-    dd2 = bs.DropdownButton(
-        group3, text="Edit", accent="secondary", variant="outline",
-    )
+    dd2 = bs.DropdownButton(group3, text="Edit", accent="primary")
     dd2.pack(side=LEFT, padx=(0, 8))
     dd2.add_command(text="Cut")
     dd2.add_command(text="Copy")
     dd2.add_command(text="Paste")
 
     # MenuButton
-    mb = bs.MenuButton(group3, text="Options", accent="info")
+    mb = bs.MenuButton(group3, text="Options", accent="danger", variant="outline")
     mb.pack(side=LEFT)
     menu = bs.Menu(mb, tearoff=0)
     menu.add_command(label="Settings")
@@ -255,7 +250,7 @@ def _build_buttons_page(page):
     group4.pack(fill=X, padx=20, pady=(0, 10))
 
     for accent, variant in [
-        ("primary", "solid"), ("secondary", "outline"), ("success", "ghost"),
+        ("default", "solid"),("primary", "solid"), ("secondary", "outline"), ("success", "ghost"),
     ]:
         bg = bs.ButtonGroup(group4, accent=accent, variant=variant)
         bg.pack(side=LEFT, padx=(0, 12))
