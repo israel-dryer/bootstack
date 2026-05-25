@@ -28,7 +28,7 @@ from bootstack.style.builders.utils import (
 @BootstyleBuilderTTk.register_builder('default', 'TField')
 def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -66,7 +66,7 @@ def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None
 @BootstyleBuilderTTk.register_builder('input', 'TField')
 def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -121,7 +121,7 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
 @BootstyleBuilderTTk.register_builder('spinner', 'TField')
 def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -232,7 +232,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     """
 
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
     img_key = entry_image_key('input_addon', density)
     icon_only = options.get('icon_only', False)
