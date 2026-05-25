@@ -936,14 +936,14 @@ class Form(Frame):
         if role == "primary":
             return ("primary", None)
         if role == "secondary":
-            return ("secondary", None)
+            return ("default", None)
         if role == "danger":
             return ("danger", None)
         if role == "cancel":
-            return ("secondary", "outline")
+            return ("default", "outline")
         if role == "help":
-            return ("info", "link")
-        return ("secondary", None)
+            return ("primary", "link")
+        return ("default", None)
 
     # --- inference ------------------------------------------------------
     def _infer_items_from_data(self, data: Mapping[str, Any]) -> list[FieldItem]:

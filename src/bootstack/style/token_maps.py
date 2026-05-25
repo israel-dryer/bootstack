@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 COLOR_TOKENS = {
-    'primary', 'secondary', 'success', 'info',
-    'warning', 'danger', 'light', 'dark',
+    'primary', 'success', 'warning', 'danger',
     'foreground', 'background', 'white', 'black',
     'blue', 'indigo', 'purple', 'red', 'orange',
     'yellow', 'green', 'teal', 'cyan', 'gray',

@@ -122,7 +122,7 @@ class ColorChooser(ttk.Frame):
         self.luminance_scale = self.create_luminance_scale(self.tframe)
         self.luminance_scale.pack(fill=X)
 
-        palette_keys = ("primary", "secondary", "success", "info", "warning", "danger", "light", "dark")
+        palette_keys = ("primary", "success", "warning", "danger")
         themed_colors = [
             (self.colors.get(c) if isinstance(self.colors, dict) else getattr(self.colors, c, None))
             for c in palette_keys

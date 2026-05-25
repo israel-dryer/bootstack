@@ -618,7 +618,7 @@ class Field(EntryMixin, Frame):
     def _clear_error(self, _: Any) -> None:
         """Clear the error message and restore the original message text."""
         self._message_lbl['text'] = self._message_text or ''
-        self._message_lbl['accent'] = "secondary"
+        self._message_lbl['accent'] = "default"
 
     def _set_addons_state(self, disabled: bool) -> None:
         """Configure addon widgets based on whether the entry is interactive."""

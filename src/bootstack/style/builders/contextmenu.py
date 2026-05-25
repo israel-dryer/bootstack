@@ -176,7 +176,7 @@ def build_context_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     density = normalize_button_density(options.get('density', 'default'))
 
     surface = b.color(surface_token)
-    muted = b.color('secondary')
+    muted = b.color('gray[500]')
     on_disabled = b.disabled('text', surface)
 
     active = b.active(surface)

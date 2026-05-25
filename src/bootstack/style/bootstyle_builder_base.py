@@ -194,8 +194,8 @@ class BootstyleBuilderBase:
             if result is None:
                 raise ValueError(
                     f"Invalid color token: '{token}'. "
-                    f"Valid color tokens include: primary, secondary, success, info, warning, danger, "
-                    f"light, dark, background, foreground, or a hex color like '#ff0000'."
+                    f"Valid color tokens include: primary, success, warning, danger, "
+                    f"background, foreground, or a hex color like '#ff0000'."
                 )
             return result
 
@@ -218,8 +218,8 @@ class BootstyleBuilderBase:
             if result is None:
                 raise ValueError(
                     f"Invalid color token: '{token}'. "
-                    f"Valid color tokens include: primary, secondary, success, info, warning, danger, "
-                    f"light, dark, background, foreground, or a hex color like '#ff0000'."
+                    f"Valid color tokens include: primary, success, warning, danger, "
+                    f"background, foreground, or a hex color like '#ff0000'."
                 )
             return result
 

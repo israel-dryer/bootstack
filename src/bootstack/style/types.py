@@ -8,7 +8,7 @@ ColorModel = Literal['hex', 'hsl', 'rgb']
 # === Color Types ===
 
 # supports subtle variants, e.g., 'primary[subtle]'
-SemanticColor = Literal['primary', 'secondary', 'success', 'info', 'warning', 'danger', 'light', 'dark']
+SemanticColor = Literal['primary', 'success', 'warning', 'danger']
 UtilityColor = Literal['foreground', 'background']
 
 # supports shade variants 100-900, e.g. `blue[300]`

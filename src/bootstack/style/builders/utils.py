@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 
 # Standard bootstack color tokens
 COLORS = {
-    'primary', 'secondary', 'success', 'info',
-    'warning', 'danger', 'light', 'dark', 'blue'
+    'primary', 'success', 'warning', 'danger', 'blue'
 }
 
 

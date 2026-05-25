@@ -38,7 +38,7 @@ class PathEntry(Field):
             dialog: FileDialogType = "openfilename",
             dialog_options: dict[str, Any] | None = None,
             button_text: str = "Browse",
-            button_accent: str = "secondary",
+            button_accent: str = "default",
             label: str = None,
             message: str = None,
             **kwargs: Unpack[FieldOptions]
