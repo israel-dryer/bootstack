@@ -237,13 +237,10 @@ def _build_buttons_page(page):
     dd2.add_command(text="Copy")
     dd2.add_command(text="Paste")
 
-    # MenuButton
-    mb = bs.MenuButton(group3, text="Options", accent="danger", variant="outline")
+    mb = bs.DropdownButton(group3, text="Options", accent="danger", variant="outline")
     mb.pack(side=LEFT)
-    menu = bs.Menu(mb, tearoff=0)
-    menu.add_command(label="Settings")
-    menu.add_command(label="Preferences")
-    mb["menu"] = menu
+    mb.add_command(text="Settings")
+    mb.add_command(text="Preferences")
 
     # ButtonGroup
     group4 = bs.LabelFrame(page, text="ButtonGroup", padding=15)
