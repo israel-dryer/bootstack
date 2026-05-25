@@ -178,7 +178,7 @@ class FileDataSourceDemo:
 
         # Progress bar
         self.progress_var = bs.IntVar()
-        self.progress = bs.Progressbar(parent, variable=self.progress_var, maximum=100, bootstyle="success-striped")
+        self.progress = bs.Progressbar(parent, variable=self.progress_var, maximum=100, accent="success")
         self.progress.pack(fill=X, pady=5)
 
     def _create_treeview(self, parent):

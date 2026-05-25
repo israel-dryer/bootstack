@@ -9,7 +9,7 @@ import bootstack as bs
 
 
 def main():
-    app = bs.App(theme='rose-light', title='Card Demo', size=(600, 600))
+    app = bs.App(theme='rose-light', title='Card Demo', minsize=(600, 600))
 
     container = bs.Frame(app, padding=20)
     container.pack(fill='both', expand=True)

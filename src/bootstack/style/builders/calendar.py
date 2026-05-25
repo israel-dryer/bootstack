@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.builders.utils import toolbutton_layout, button_padding, button_font, apply_icon_mapping, icon_size
 from bootstack.style.element import ElementImage
@@ -26,12 +28,11 @@ def build_calendar_day_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, 
     accent_color = b.color(accent_token)
 
     active = b.active(accent_color)
-    accent_focus = b.focus(accent_color)
     on_accent = b.on_color(accent_color)
 
     selected = b.selected(accent_color)
 
-    focus_ring = b.focus_ring(accent_focus, surface)
+    focus_ring = b.color('foreground')
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
@@ -48,10 +49,10 @@ def build_calendar_day_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, 
             f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
             [
                 ('disabled', disabled_img.image),
-                ('pressed', selected_focus_img.image),
-                ('focus selected', selected_focus_img.image),
+                ('pressed', selected_img.image),
+                ('background focus selected', selected_focus_img.image),
+                ('background focus !selected', normal_focus_img.image),
                 ('selected', selected_img.image),
-                ('focus !selected', normal_focus_img.image),
                 ('active !focus', active_img.image),
                 ('', normal_img.image)
             ]))
@@ -75,9 +76,9 @@ def build_calendar_day_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, 
     state_spec = dict(
         foreground=[
             ('disabled', on_disabled),
+            ('pressed', on_accent),
             ('selected', on_accent),
             ('active', on_accent),
-            ('pressed', on_accent),
             ('', on_surface)
         ],
     )
@@ -108,7 +109,7 @@ def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str
     accent_focus = b.focus(accent_color)
     on_accent = b.on_color(accent_color)
 
-    focus_ring = b.focus_ring(accent_focus, surface)
+    focus_ring = b.color('foreground')
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
@@ -125,10 +126,10 @@ def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str
             f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
             [
                 ('disabled', disabled_img.image),
-                ('pressed', selected_focus_img.image),
-                ('focus selected', selected_focus_img.image),
+                ('pressed', selected_img.image),
+                ('background focus selected', selected_focus_img.image),
+                ('background focus !selected', normal_focus_img.image),
                 ('selected', selected_img.image),
-                ('focus !selected', normal_focus_img.image),
                 ('active !focus', active_img.image),
                 ('', normal_img.image)
             ]))
@@ -153,9 +154,9 @@ def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str
         background=[('selected', accent_color)],
         foreground=[
             ('disabled', on_disabled),
+            ('pressed', on_accent),
             ('selected', on_accent),
             ('active', on_accent),
-            ('pressed', on_accent),
             ('', on_surface)
         ],
     )
@@ -166,7 +167,7 @@ def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str
 
 
 @BootstyleBuilderTTk.register_builder('calendar-outside', 'Toolbutton')
-def build_calendar_outside_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_calendar_outside_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure style for outside/disabled calendar days.
 
@@ -212,17 +213,16 @@ def build_calendar_date_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
     accent_selected = b.selected(accent_color)
 
     surface_active = b.active(surface)
-    accent_focus = b.focus(accent_color)
     on_accent = b.on_color(accent_color)
 
-    focus_ring = b.focus_ring(accent_focus, surface)
+    focus_ring = b.color('foreground')
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
     normal_img = recolor_element_image('button_compact', surface, surface, surface, surface)
     normal_focus_img = recolor_element_image('button_compact', surface, surface, focus_ring, surface)
     active_img = recolor_element_image('button_compact', surface_active, surface_active, surface, surface)
-    selected_img = recolor_element_image('button_compact', accent_selected, accent_selected, focus_ring, accent_subtle)
+    selected_img = recolor_element_image('button_compact', accent_selected, accent_selected, accent_subtle, accent_subtle)
     selected_focus_img = recolor_element_image('button_compact', accent_selected, accent_selected, focus_ring, accent_subtle)
 
     disabled_img = recolor_element_image('button_compact', disabled, disabled, surface, surface)
@@ -233,9 +233,9 @@ def build_calendar_date_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
             [
                 ('disabled', disabled_img.image),
                 ('pressed', selected_img.image),
-                ('focus selected', selected_focus_img.image),
+                ('background focus selected', selected_focus_img.image),
                 ('selected', selected_img.image),
-                ('focus !selected', normal_focus_img.image),
+                ('background focus !selected', normal_focus_img.image),
                 ('active !focus', active_img.image),
                 ('', normal_img.image)
             ]))

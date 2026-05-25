@@ -15,7 +15,7 @@ from bootstack.widgets.composites.list import ListItem
 
 def main():
     """Main demo application"""
-    root = bs.Window(title="ListItem Widget Demo", theme="darkly")
+    root = bs.Window(title="ListItem Widget Demo")
     root.geometry("700x650")
 
     # Create main container with padding

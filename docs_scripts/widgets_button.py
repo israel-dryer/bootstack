@@ -52,38 +52,6 @@ ghost_focus.state(['focus'])
 
 bs.Button(ghost, text='disabled', state='disabled', variant="ghost").pack(side='left', padx=8)
 
-# link buttons
-link = bs.Frame(app, padding=(16, 8))
-link.pack(side='top')
-
-bs.Label(link, font="label", text='Link', width=10).pack(side='left')
-bs.Button(link, text='default', variant="link").pack(side='left', padx=8)
-link_active = bs.Button(link, text='active', state='active', variant="link")
-link_active.pack(side='left', padx=8)
-link_active.state(['hover'])
-
-link_focus = bs.Button(link, text='focus', state='focus', variant="link")
-link_focus.pack(side='left', padx=8)
-link_focus.state(['focus'])
-
-bs.Button(link, text='disabled', state='disabled', variant="link").pack(side='left', padx=8)
-
-# text buttons
-text = bs.Frame(app, padding=(16, 8))
-text.pack(side='top')
-
-bs.Label(text, font="label", text='Text', width=10).pack(side='left')
-bs.Button(text, text='default', variant="text").pack(side='left', padx=8)
-text_active = bs.Button(text, text='active', state='active', variant="text")
-text_active.pack(side='left', padx=8)
-text_active.state(['hover'])
-
-text_focus = bs.Button(text, text='focus', state='focus', variant="text")
-text_focus.pack(side='left', padx=8, ipadx=2)
-text_focus.state(['focus'])
-
-bs.Button(text, text='disabled', state='disabled', variant="text").pack(side='left', padx=8)
-
 icons = bs.Frame(app, padding=(16, 8))
 icons.pack(side='top')
 

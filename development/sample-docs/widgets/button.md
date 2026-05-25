@@ -62,7 +62,6 @@ The supported variants for the button are solid (default), outline, ghost, link,
 bs.Button(text='Submit')
 bs.Button(text='Submit', bootstyle='outline')
 bs.Button(text='Submit', bootstyle='ghost')
-bs.Button(text='Submit', bootstyle='link')
 bs.Button(text='Submit', bootstyle='text')
 ```
 
@@ -71,7 +70,7 @@ bs.Button(text='Submit', bootstyle='text')
 ```python
 bs.Button(text='Submit', bootstyle='primary')
 bs.Button(text='Submit', bootstyle='secondary-outline')
-bs.Button(text='Submit', bootstyle='info-link')
+
 ```
 
 ---

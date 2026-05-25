@@ -53,7 +53,7 @@ class DialogButton:
     default: bool = False  # default button (Enter)
     command: Callable[[Dialog], None] | None = None
     accent: str | None = None  # accent token (e.g., 'primary', 'danger')
-    variant: str | None = None  # style variant (e.g., 'outline', 'link')
+    variant: str | None = None  # style variant (e.g., 'outline', 'ghost')
     icon: str | dict[str, Any] | None = None  # passed straight to bs.Button(icon=...)
 
 

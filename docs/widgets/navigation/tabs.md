@@ -232,6 +232,4 @@ tabs.bind("<<TabSelect>>", lambda e: print("Tab selected"))
 
 - [PageStack](../views/pagestack.md) - stack-based navigation
 
-- [Notebook](../views/notebook.md) - traditional tabbed container
-
 - [SideNav](sidenav.md) - vertical navigation list

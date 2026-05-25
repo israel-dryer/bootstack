@@ -197,7 +197,7 @@ def _build_buttons_page(page):
 
     row = bs.Frame(group)
     row.pack(fill=X)
-    for color in ("primary", "secondary", "success", "info", "warning", "danger"):
+    for color in ("default", "primary", "success", "warning", "danger"):
         bs.Button(row, text=color.title(), accent=color).pack(
             side=LEFT, padx=2, expand=YES, fill=X,
         )
@@ -208,7 +208,7 @@ def _build_buttons_page(page):
 
     row2 = bs.Frame(group2)
     row2.pack(fill=X, pady=(0, 8))
-    for variant_name in ("solid", "outline", "link", "ghost"):
+    for variant_name in ("solid", "outline", "ghost"):
         bs.Button(
             row2, text=variant_name.title(), accent="primary", variant=variant_name,
         ).pack(side=LEFT, padx=2, expand=YES, fill=X)
@@ -216,34 +216,29 @@ def _build_buttons_page(page):
     row3 = bs.Frame(group2)
     row3.pack(fill=X)
     bs.Button(row3, text="Disabled Solid", accent="primary", state=DISABLED).pack(
-        side=LEFT, padx=2, expand=YES, fill=X,
-    )
-    bs.Button(
-        row3, text="Disabled Outline", accent="secondary",
-        variant="outline", state=DISABLED,
-    ).pack(side=LEFT, padx=2, expand=YES, fill=X)
+        side=LEFT, padx=2, expand=YES, fill=X)
+    bs.Button(row3, text="Disabled Outline", accent="secondary", variant="outline", state=DISABLED).pack(
+        side=LEFT, padx=2, expand=YES, fill=X)
 
     # DropdownButton
     group3 = bs.LabelFrame(page, text="DropdownButton", padding=15)
     group3.pack(fill=X, padx=20, pady=(0, 10))
 
-    dd = bs.DropdownButton(group3, text="File", accent="primary")
+    dd = bs.DropdownButton(group3, text="File")
     dd.pack(side=LEFT, padx=(0, 8))
     dd.add_command(text="New")
     dd.add_command(text="Open")
     dd.add_separator()
     dd.add_command(text="Exit")
 
-    dd2 = bs.DropdownButton(
-        group3, text="Edit", accent="secondary", variant="outline",
-    )
+    dd2 = bs.DropdownButton(group3, text="Edit", accent="primary")
     dd2.pack(side=LEFT, padx=(0, 8))
     dd2.add_command(text="Cut")
     dd2.add_command(text="Copy")
     dd2.add_command(text="Paste")
 
     # MenuButton
-    mb = bs.MenuButton(group3, text="Options", accent="info")
+    mb = bs.MenuButton(group3, text="Options", accent="danger", variant="outline")
     mb.pack(side=LEFT)
     menu = bs.Menu(mb, tearoff=0)
     menu.add_command(label="Settings")
@@ -255,7 +250,7 @@ def _build_buttons_page(page):
     group4.pack(fill=X, padx=20, pady=(0, 10))
 
     for accent, variant in [
-        ("primary", "solid"), ("secondary", "outline"), ("success", "ghost"),
+        ("default", "solid"),("primary", "solid"), ("secondary", "outline"), ("success", "ghost"),
     ]:
         bg = bs.ButtonGroup(group4, accent=accent, variant=variant)
         bg.pack(side=LEFT, padx=(0, 12))
@@ -714,7 +709,7 @@ def _build_progress_page(page):
         fill=X, pady=(0, 8),
     )
     bs.Progressbar(
-        group2, value=75, maximum=100, accent="success", variant="striped",
+        group2, value=75, maximum=100, accent="success",
     ).pack(fill=X, pady=(0, 8))
     bs.Progressbar(
         group2, value=45, maximum=100, accent="danger",
@@ -860,7 +855,7 @@ def _build_layout_page(page):
 
 
 def _build_navigation_page(page):
-    """TabView and Notebook demonstrations."""
+    """TabView demonstrations."""
     bs.Label(
         page, text="Navigation", font="heading-xl",
     ).pack(anchor=W, padx=20, pady=(20, 10))
@@ -871,49 +866,79 @@ def _build_navigation_page(page):
         accent="secondary",
     ).pack(anchor=W, padx=20, pady=(0, 15))
 
-    # TabView
-    group = bs.LabelFrame(page, text="TabView (bar variant)", padding=15)
+    # TabView with icons
+    group = bs.LabelFrame(page, text="TabView (with icons)", padding=15)
     group.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
 
-    tv = TabView(group, variant="bar")
+    tv = TabView(group, height=80)
     tv.pack(fill=BOTH, expand=YES)
 
-    tab1 = tv.add("dashboard", text="Dashboard")
-    bs.Label(tab1, text="Dashboard content goes here.", padding=20).pack(expand=YES)
+    p1 = tv.add("dashboard", text="Dashboard", icon="house")
+    bs.Label(p1, text="Dashboard content goes here.", padding=20).pack(expand=YES)
 
-    tab2 = tv.add("analytics", text="Analytics")
-    bs.Label(tab2, text="Analytics content goes here.", padding=20).pack(expand=YES)
+    p2 = tv.add("files", text="Files", icon="folder2")
+    bs.Label(p2, text="Browse your files here.", padding=20).pack(expand=YES)
 
-    tab3 = tv.add("settings", text="Settings")
-    bs.Label(tab3, text="Settings content goes here.", padding=20).pack(expand=YES)
+    p3 = tv.add("settings", text="Settings", icon="gear")
+    bs.Label(p3, text="Configure your settings.", padding=20).pack(expand=YES)
 
-    # TabView with accent
-    group2 = bs.LabelFrame(page, text="TabView (with accent)", padding=15)
+    # TabView with closable + addable tabs
+    group2 = bs.LabelFrame(page, text="TabView (closable + addable)", padding=15)
     group2.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
 
-    tv2 = TabView(group2, variant="bar", accent="success")
+    tv2 = TabView(group2, height=80, enable_closing=True, enable_adding=True)
     tv2.pack(fill=BOTH, expand=YES)
 
-    p1 = tv2.add("all", text="All")
-    bs.Label(p1, text="Showing all items.", padding=20).pack(expand=YES)
+    _dyn_counter = [1]
 
-    p2 = tv2.add("active", text="Active")
-    bs.Label(p2, text="Showing active items.", padding=20).pack(expand=YES)
+    def _on_add_tab(event):
+        _dyn_counter[0] += 1
+        key = f"doc{_dyn_counter[0]}"
+        p = tv2.add(key, text=f"Document {_dyn_counter[0]}", icon="file-text")
+        bs.Label(p, text=f"Content for Document {_dyn_counter[0]}.", padding=20).pack(expand=YES)
 
-    p3 = tv2.add("archived", text="Archived")
-    bs.Label(p3, text="Showing archived items.", padding=20).pack(expand=YES)
+    p = tv2.add("doc1", text="Document 1", icon="file-text")
+    bs.Label(p, text="Content for Document 1.", padding=20).pack(expand=YES)
+    tv2.on_tab_added(_on_add_tab)
 
-    # Notebook
-    group3 = bs.LabelFrame(page, text="Notebook (classic tabs)", padding=15)
+    # TabView with accent
+    group3 = bs.LabelFrame(page, text="TabView (with accent)", padding=15)
     group3.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
 
-    nb = bs.Notebook(group3)
-    nb.pack(fill=BOTH, expand=YES)
+    tv3 = TabView(group3, height=80, accent="success")
+    tv3.pack(fill=BOTH, expand=YES)
 
-    for label in ("General", "Advanced", "About"):
-        f = bs.Frame(nb, padding=15)
-        nb.add(f, text=label)
-        bs.Label(f, text=f"{label} tab content.").pack(expand=YES)
+    pa = tv3.add("all", text="All")
+    bs.Label(pa, text="Showing all items.", padding=20).pack(expand=YES)
+
+    pb = tv3.add("active", text="Active")
+    bs.Label(pb, text="Showing active items.", padding=20).pack(expand=YES)
+
+    pc = tv3.add("archived", text="Archived")
+    bs.Label(pc, text="Showing archived items.", padding=20).pack(expand=YES)
+
+    # Vertical TabView
+    group4 = bs.LabelFrame(page, text="TabView (vertical)", padding=15)
+    group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
+
+    tv4 = TabView(group4, orient="vertical", height=160, enable_adding=True)
+    tv4.pack(fill=BOTH, expand=YES)
+
+    _vert_counter = [2]
+
+    def _on_add_vert(event):
+        _vert_counter[0] += 1
+        key = f"vpage{_vert_counter[0]}"
+        vp = tv4.add(key, text=f"Page {_vert_counter[0]}", icon="file")
+        bs.Label(vp, text=f"Content for Page {_vert_counter[0]}.", padding=20).pack(expand=YES)
+
+    vp1 = tv4.add("general", text="General", icon="sliders")
+    bs.Label(vp1, text="General settings and preferences.", padding=20).pack(expand=YES)
+
+    vp2 = tv4.add("account", text="Account", icon="person")
+    bs.Label(vp2, text="Account information and profile.", padding=20).pack(expand=YES)
+
+    tv4.on_tab_added(_on_add_vert)
 
 
 # -- Overlays ----------------------------------------------------------------

@@ -20,7 +20,7 @@ variants_frame.pack(anchor='w', padx=8, fill='x')
 bar_frame = bs.Frame(variants_frame)
 bar_frame.pack(side='left', padx=(0, 24))
 bs.Label(bar_frame, text="Bar (default):").pack(anchor='w')
-bar_tabs = Tabs(bar_frame, variant='bar')
+bar_tabs = Tabs(bar_frame)
 bar_tabs.add(text='Home', value='home', icon='house')
 bar_tabs.add(text='Files', value='files', icon='folder2')
 bar_tabs.add(text='Settings', value='settings', icon='gear')
@@ -96,7 +96,7 @@ dynamic_tabview.pack(anchor='w', padx=8, fill='x')
 # --- Vertical TabView with enable_adding ---
 bs.Label(app, text="Vertical TabView with enable_adding:", font='heading').pack(anchor='w', padx=8, pady=(16, 4))
 
-vert_tabview = TabView(app, orient='vertical', variant='bar', height=160, enable_adding=True)
+vert_tabview = TabView(app, orient='vertical', height=160, enable_adding=True)
 vert_counter = [0]
 
 def on_add_vert(event):

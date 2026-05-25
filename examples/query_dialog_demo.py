@@ -218,13 +218,13 @@ instructions = bs.Label(
 )
 instructions.pack(pady=(0, 15))
 
-# Create notebook for organized demos
-notebook = bs.Notebook(content)
-notebook.pack(fill='both', expand=True)
+# Create tabview for organized demos
+tabview = bs.TabView(content)
+tabview.pack(fill='both', expand=True)
 
 # Tab 1: String Inputs
-string_frame = bs.Frame(notebook, padding=10)
-notebook.add(string_frame, text="String Input")
+string_frame = tabview.add("string", text="String Input")
+string_frame.configure(padding=10)
 
 string_demos = [
     ("Simple String", demo_get_string, "primary"),
@@ -242,8 +242,8 @@ for label, command, style in string_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 2: Item Selection
-item_frame = bs.Frame(notebook, padding=10)
-notebook.add(item_frame, text="Item Selection")
+item_frame = tabview.add("items", text="Item Selection")
+item_frame.configure(padding=10)
 
 item_demos = [
     ("Select from List", demo_get_item, "success"),
@@ -261,8 +261,8 @@ for label, command, style in item_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 3: Numeric Inputs
-numeric_frame = bs.Frame(notebook, padding=10)
-notebook.add(numeric_frame, text="Numeric Input")
+numeric_frame = tabview.add("numeric", text="Numeric Input")
+numeric_frame.configure(padding=10)
 
 numeric_demos = [
     ("Integer Input", demo_get_integer, "primary"),
@@ -282,8 +282,8 @@ for label, command, style in numeric_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 4: Special Pickers
-picker_frame = bs.Frame(notebook, padding=10)
-notebook.add(picker_frame, text="Special Pickers")
+picker_frame = tabview.add("pickers", text="Special Pickers")
+picker_frame.configure(padding=10)
 
 picker_demos = [
     ("Color Picker", demo_get_color, "primary"),
@@ -302,8 +302,8 @@ for label, command, style in picker_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 5: Advanced
-advanced_frame = bs.Frame(notebook, padding=10)
-notebook.add(advanced_frame, text="Advanced")
+advanced_frame = tabview.add("advanced", text="Advanced")
+advanced_frame.configure(padding=10)
 
 advanced_demos = [
     ("Positioned Dialog", demo_positioned_dialog, "secondary"),

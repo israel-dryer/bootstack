@@ -10,7 +10,6 @@ Shows various uses of FormDialog for data entry in modal dialogs:
 from datetime import date
 
 import bootstack as bs
-from bootstack.constants import *
 from bootstack.dialogs import FormDialog, DialogButton
 from bootstack.widgets.composites.form import FieldItem, GroupItem, TabItem, TabsItem
 
@@ -300,7 +299,7 @@ def demo_registration_form(parent):
 
 
 def main():
-    app = bs.Window(title="FormDialog Demo", theme="flatly")
+    app = bs.App(title="FormDialog Demo")
     #app.geometry("600x400")
 
     # Title

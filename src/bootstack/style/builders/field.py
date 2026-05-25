@@ -6,6 +6,8 @@ the Entry containers.
 
 from __future__ import annotations
 
+from typing import Optional
+
 from ttkbootstrap_icons_bs import BootstrapIcon
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
@@ -210,63 +212,66 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
 
 
 @BootstyleBuilderTTk.register_builder('prefix', 'TField')
-def build_field_prefix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    build_field_addon_style(b, ttk_style, accent, 'before', **options)
+def build_field_prefix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+    build_field_addon_style(b, ttk_style, accent, **options)
 
 
 @BootstyleBuilderTTk.register_builder('suffix', 'TField')
-def build_field_suffix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    build_field_addon_style(b, ttk_style, accent, 'after', **options)
+def build_field_suffix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+    build_field_addon_style(b, ttk_style, accent, **options)
 
 
-def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, variant: str, **options):
+def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """Build prefix/suffix addon styles for entry fields.
 
     Args:
         b: The bootstyle builder instance.
         ttk_style: The TTK style name.
-        _: Unused accent parameter.
-        variant: 'before' for prefix, 'after' for suffix.
+        accent: Accent color of the button, if provided.
         **options: Style options including 'density', 'surface', 'use_active_states', 'icon'.
     """
+
     surface_token = options.get('surface', 'content')
     fill_token = options.get('input_background') or 'content'
     density = normalize_button_density(options.get('density', 'default'))
     use_active_states = options.get('use_active_states', False)
-    fill = b.color(fill_token)
+    surface = b.color(surface_token)
+
+    input_background = b.color(fill_token)
+    addon_background = b.color(accent or fill_token)
+
+    active = b.active(addon_background)
+    pressed = b.pressed(addon_background)
 
     if use_active_states:
-        surface_active = b.active(fill)
-        surface_pressed = b.pressed(fill)
+        surface_active = active
     else:
-        surface_active = surface_pressed = fill
+        surface_active = addon_background
 
-    border = b.border(fill)
-    foreground = b.on_color(fill)
+    foreground = b.on_color(addon_background)
     foreground_disabled = b.disabled('text')
-    normal = b.disabled(surface=fill)
-    surface_selected = b.selected(fill)
+
+
 
     # addon element images - use density-aware images from manifest
     # variant is 'before' or 'after', maps to input_before_* or input_after_*
-    img_key = entry_image_key(f'input_{variant}', density)
-    normal_img = recolor_element_image(img_key, normal, border)
-    selected_img = recolor_element_image(img_key, surface_selected, border)
+    img_key = entry_image_key('input_addon', density)
+    normal_img = recolor_element_image(img_key, input_background, addon_background, surface, surface)
+    selected_img = recolor_element_image(img_key, input_background, surface_active, surface, surface)
 
     if use_active_states:
-        active_img = recolor_element_image(img_key, surface_active, border)
-        pressed_img = recolor_element_image(img_key, surface_pressed, border)
+        active_img = recolor_element_image(img_key, input_background, surface_active, surface, surface)
+        pressed_img = recolor_element_image(img_key, input_background, pressed, surface, surface)
     else:
-        active_img = pressed_img = normal_img
+        active_img = normal_img
+        pressed_img = normal_img
 
     # addon element - set explicit height to match field height
     height = field_height(b, density)
     b.create_style_element_image(
         ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height).state_specs([
-            ('selected pressed', selected_img.image),
-            ('selected active', selected_img.image),
-            ('selected', selected_img.image),
-            ('pressed', pressed_img.image),
+            ('selected !disabled', selected_img.image),
+            ('pressed !disabled', pressed_img.image),
             ('active', active_img.image),
             ('', normal_img.image)
         ]))
@@ -288,7 +293,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, vari
         addon_padding = b.scale((8, 0))
     b.configure_style(
         ttk_style,
-        background=fill,
+        background=input_background,
         foreground=foreground,
         relief='flat',
         stipple="gray12",
@@ -311,7 +316,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, _: str, vari
     if icon is not None:
         icon = b.normalize_icon_spec(icon)
         # Use density-aware icon size for addon icons
-        addon_icon_size = b.scale(16) if density == 'compact' else b.scale(17)
+        addon_icon_size = b.scale(18) if density == 'compact' else b.scale(20)
         icon['size'] = addon_icon_size
         state_spec['image'] = b.map_stateful_icons(icon, state_spec['foreground'])
 

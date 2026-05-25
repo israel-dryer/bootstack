@@ -64,7 +64,6 @@ Variants are applied using the `variant` parameter alongside `accent`.
 ```python
 bs.Button(app, text="Save", accent="primary")  # solid (default)
 bs.Button(app, text="Cancel", accent="secondary", variant="outline")
-bs.Button(app, text="Learn More", accent="info", variant="link")
 ```
 
 How to apply them in real layouts is covered in:

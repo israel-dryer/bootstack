@@ -70,7 +70,7 @@ if TYPE_CHECKING:
         DateEntry, DropdownButton, Entry, Expander, Field, FieldOptions,
         FloodGauge, Form, Frame, GridFrame, Label, LabelFrame,
         LabeledScale, ListItem, ListView, MenuBar, MenuButton, Meter,
-        Notebook, NumericEntry, OptionMenu, PackFrame, PanedWindow,
+        NumericEntry, OptionMenu, PackFrame, PanedWindow,
         PageStack, PasswordEntry, PathEntry, Progressbar, RadioButton,
         RadioGroup, RadioToggle, Scale, Scrollbar,
         TextArea, TextAreaInputEventData, TextAreaValidationEventData,
@@ -118,7 +118,7 @@ _TK_EXPORTS = [
 # Organized by category for clarity
 _TTK_PRIMITIVES = [
     "Button", "CheckButton", "Combobox", "Entry", "Frame", "Label",
-    "LabelFrame", "MenuButton", "Notebook", "OptionMenu", "PanedWindow",
+    "LabelFrame", "MenuButton", "OptionMenu", "PanedWindow",
     "Progressbar", "RadioButton", "Scale", "Scrollbar", "Separator",
     "SizeGrip", "Spinbox", "TreeView",
 ]
@@ -157,7 +157,6 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.primitives.label": ["Label"],
     "bootstack.widgets.primitives.labelframe": ["LabelFrame"],
     "bootstack.widgets.primitives.menubutton": ["MenuButton"],
-    "bootstack.widgets.primitives.notebook": ["Notebook"],
     "bootstack.widgets.primitives.optionmenu": ["OptionMenu"],
     "bootstack.widgets.primitives.packframe": ["PackFrame"],
     "bootstack.widgets.primitives.panedwindow": ["PanedWindow"],

@@ -305,8 +305,8 @@ class Style(ttkStyle):
         Examples:
             >>> Style._parse_style_name("success.TButton")
             {'widget_class': 'TButton', 'variant': 'solid'}
-            >>> Style._parse_style_name("info.Striped.TProgressbar")
-            {'widget_class': 'TProgressbar', 'variant': 'striped'}
+            >>> Style._parse_style_name("info.Thin.TProgressbar")
+            {'widget_class': 'TProgressbar', 'variant': 'thin'}
         """
         # Split into parts
         parts = ttk_style.split('.')

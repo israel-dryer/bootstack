@@ -234,7 +234,7 @@ class Field(EntryMixin, Frame):
         self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="secondary")
 
         # field container & field - pass density for styling via style_options
-        field_padding = 4 if self._density == 'compact' else 5
+        field_padding = 5
         self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density})
 
         if kind == "numeric":
@@ -532,6 +532,7 @@ class Field(EntryMixin, Frame):
             widget: Type[FieldAddonWidget],
             position: Literal['before', 'after'],
             name: str | None = None,
+            accent: str | None = None,
             pack_options: dict[str, Any] = None,
             **kwargs: Any
     ) -> FieldAddonWidget:
@@ -555,10 +556,11 @@ class Field(EntryMixin, Frame):
             name: Optional name for the addon. If provided, the addon can be
                 retrieved from the addons dictionary using this name. If None,
                 the widget's string representation is used as the key.
-            pack_options: Optional dictionary of additional pack() options to
-                apply when placing the addon widget. Common options include
-                padx, pady, etc. The side and after/before options are set
-                automatically based on position.
+            accent: Optional accent color for the addon. Default to surface color. Prefer to use an accent if using
+                a text-only button.
+            pack_options: Optional dictionary of additional pack() options to apply when placing the addon widget.
+                Common options include padx, pady, etc. The side and after/before options are set automatically based
+                on position.
             **kwargs: Additional keyword arguments passed to the widget constructor.
                 For Button: text, command, icon, accent, variant, etc.
                 For Label: text, icon, image, accent, etc.
@@ -581,7 +583,7 @@ class Field(EntryMixin, Frame):
                 kwargs['style_options'].update(use_active_states=True, density=self._density, icon_only=icon_only)
             else:
                 kwargs['style_options'] = dict(use_active_states=True, density=self._density, icon_only=icon_only)
-        instance = widget(master=self._field, **kwargs)
+        instance = widget(master=self._field, accent=accent, **kwargs)
         key = name or str(instance)
         self._addons[key] = instance
 

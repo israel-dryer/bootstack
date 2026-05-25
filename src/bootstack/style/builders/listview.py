@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -54,10 +56,12 @@ def build_list_item_separated_style(b: BootstyleBuilderTTk, ttk_style: str, acce
 def build_list_item_style(
         b: BootstyleBuilderTTk,
         ttk_style: str,
-        accent: str = None,
+        accent: Optional[str] = None,
         variant: str = 'item',
         **options
 ):
+    # TODO add density option
+
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
     accent_token = accent or 'primary'
@@ -70,12 +74,12 @@ def build_list_item_style(
 
     # Use separated image for separated variant, otherwise use standard list_item
     is_separated = 'separated' in variant
-    image_key = 'list_item_separated' if is_separated else 'list_item'
+    image_key = 'listrow_default'
     border_normal = b.border(background) if is_separated else background
 
-    normal_img = recolor_element_image(image_key, background, border_normal, background)
-    active_img = recolor_element_image(image_key, active, border_normal, active)
-    selected_img = recolor_element_image(image_key, selected, border_normal, indicator)
+    normal_img = recolor_element_image(image_key, background, border_normal, background, None, border_normal)
+    active_img = recolor_element_image(image_key, active, border_normal, active, None, border_normal)
+    selected_img = recolor_element_image(image_key, selected, border_normal, indicator, None, indicator)
 
     focus_img = recolor_element_image(image_key, active, border_normal, active)
     focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, pressed)

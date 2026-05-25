@@ -5,6 +5,8 @@ This module provides navigation-specific styling with selection indicator bars.
 
 from __future__ import annotations
 
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -15,7 +17,7 @@ from bootstack.style.builders.toolbutton import (
 
 
 @BootstyleBuilderTTk.register_builder('default', 'NavigationView.TFrame')
-def build_navigationview_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_navigationview_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """Build SideNav frame style for group expanders.
 
     Uses standard button assets (no selection indicator needed since
@@ -121,9 +123,7 @@ def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', False)
     anchor = options.get('anchor', 'center' if icon_only else 'w')
-    # Use lighter indicator assets for icon-only buttons
-    asset_prefix = 'nav_icon_button' if icon_only else 'nav_button'
-    image_key = f'{asset_prefix}_{normalize_button_density(density)}'
+    image_key = f'navitem_{normalize_button_density(density)}'
 
     surface = b.color(surface_token)
     surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
@@ -203,9 +203,7 @@ def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, a
     surface_token = options.get('surface', 'content')
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', False)
-    # Use lighter indicator assets for icon-only (compact) mode
-    asset_prefix = 'nav_icon_button' if icon_only else 'nav_button'
-    image_key = f'{asset_prefix}_{normalize_button_density(density)}'
+    image_key = f'navitem_{normalize_button_density(density)}'
 
     surface = b.color(surface_token)
     surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)

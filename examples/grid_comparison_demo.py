@@ -125,12 +125,13 @@ def create_with_gridframe(parent: bs.Frame) -> bs.GridFrame:
 def main():
     app = bs.App(title="Grid Comparison Demo", theme="cosmo", size=(900, 500))
 
-    # Create a notebook to show both approaches side by side
-    notebook = bs.Notebook(app)
-    notebook.pack(fill="both", expand=True, padx=10, pady=10)
+    # Create a tabview to show both approaches side by side
+    tabview = bs.TabView(app)
+    tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
     # Tab 1: Regular Frame approach
-    frame_tab = notebook.add(text="Frame + grid()", key="frame", padding=10)
+    frame_tab = tabview.add("frame", text="Frame + grid()")
+    frame_tab.configure(padding=10)
 
     info1 = bs.Label(
         frame_tab,
@@ -144,7 +145,8 @@ def main():
     frame_example.pack(fill="both", expand=True)
 
     # Tab 2: GridFrame approach
-    gridframe_tab = notebook.add(text="GridFrame", key="gridframe", padding=10)
+    gridframe_tab = tabview.add("gridframe", text="GridFrame")
+    gridframe_tab.configure(padding=10)
 
     info2 = bs.Label(
         gridframe_tab,

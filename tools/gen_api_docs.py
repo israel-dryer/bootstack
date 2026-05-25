@@ -59,7 +59,6 @@ API_MODULES = {
             "Label": "bootstack.widgets.primitives.label.Label",
             "LabelFrame": "bootstack.widgets.primitives.labelframe.LabelFrame",
             "MenuButton": "bootstack.widgets.primitives.menubutton.MenuButton",
-            "Notebook": "bootstack.widgets.primitives.notebook.Notebook",
             "OptionMenu": "bootstack.widgets.primitives.optionmenu.OptionMenu",
             "PanedWindow": "bootstack.widgets.primitives.panedwindow.PanedWindow",
             "Progressbar": "bootstack.widgets.primitives.progressbar.Progressbar",

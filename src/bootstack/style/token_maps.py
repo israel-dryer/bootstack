@@ -22,7 +22,6 @@ WIDGET_CLASS_MAP = {
     'checkbutton': 'TCheckbutton',
     'radiobutton': 'TRadiobutton',
     'combobox': 'TCombobox',
-    'notebook': 'TNotebook',
     'treeview': 'Treeview',
     'separator': 'TSeparator',
     'sizegrip': 'TSizegrip',

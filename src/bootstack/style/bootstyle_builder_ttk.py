@@ -84,7 +84,7 @@ class BootstyleBuilderTTk(BootstyleBuilderBase):
         """Register a builder for a specific widget variant.
 
         Args:
-            variant: Variant name (e.g., 'solid', 'outline', 'link')
+            variant: Variant name (e.g., 'solid', 'outline', 'ghost')
             widget_class: TTK widget class (e.g., 'TButton', 'TLabel')
 
         Returns:

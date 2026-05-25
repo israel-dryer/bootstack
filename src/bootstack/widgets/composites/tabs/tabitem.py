@@ -39,7 +39,7 @@ class TabItem(CompositeFrame):
         command: Callable = None,
         closable: bool | Literal['hover'] = False,
         close_command: Callable = None,
-        variant: Literal['pill', 'bar'] = 'bar',
+        variant: Literal['pill', 'bar'] = 'default',
         **kwargs: Unpack[CompositeFrameKwargs]
     ):
         """Create a TabItem widget.

@@ -142,7 +142,7 @@ class MessageCatalog:
                 return p
         here = Path(__file__).resolve()
         candidates = [
-            here.parents[2] / "assets" / "locales",      # package assets: src/bootstack/assets/locales
+            here.parents[1] / "assets" / "locales",      # package assets: src/bootstack/assets/locales
             here.parent / "locales",                     # module-local: bootstack/localization/locales
             here.parents[1] / "locales",                 # package-local: src/bootstack/locales
             here.parents[3] / "locales",                 # repo root: .../bootstack/locales

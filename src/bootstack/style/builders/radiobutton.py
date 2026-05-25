@@ -17,15 +17,13 @@ def build_radiobutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     surface_token = options.get('surface', 'content')
 
     background = b.color(surface_token)
-    background_hover = b.active(background)
     foreground = b.on_color(background)
     foreground_disabled = b.disabled('text', background)
 
     normal = b.color(accent_token)
-    hovered = b.active(normal)
     border = b.border(background)
-    focus = hovered
-    focus_ring = b.focus_ring(normal, background)
+    focus = b.focus(normal)
+    focus_ring = b.color('foreground')
 
     show_indicator = options.get('show_indicator', True)
 
@@ -33,29 +31,29 @@ def build_radiobutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
         spacer_img = create_transparent_image(6, 1)
         b.create_style_element_image(ElementImage(f'{ttk_style}.spacer', spacer_img, sticky="ew"))
 
-        normal_checked_img = recolor_element_image('radio_selected', background, normal, background)
-        normal_unchecked_img = recolor_element_image('radio_unselected', background, border, background)
+        normal_selected_img = recolor_element_image('radiobutton', normal, normal, background, background)
+        normal_unselected_img = recolor_element_image('radiobutton', background, border, background, background)
 
-        focus_checked_img = recolor_element_image('radio_selected', background, focus, focus_ring)
-        focus_unchecked_img = recolor_element_image('radio_unselected', background_hover, focus, focus_ring)
+        focus_selected_img = recolor_element_image('radiobutton', focus, focus, focus_ring, background)
+        focus_unselected_img = recolor_element_image('radiobutton', background, focus, focus_ring, background)
 
-        disabled_checked_img = recolor_element_image('radio_selected', background, foreground_disabled, background)
-        disabled_unchecked_img = recolor_element_image('radio_unselected', background, foreground_disabled, background)
+        disabled_selected_img = recolor_element_image('radiobutton', foreground_disabled, foreground_disabled, background, background)
+        disabled_unselected_img = recolor_element_image('radiobutton', background, foreground_disabled, background, background)
 
         b.create_style_element_image(
-            ElementImage(f'{ttk_style}.indicator', normal_unchecked_img.image, sticky="ns", padding=b.scale(4)).state_specs(
+            ElementImage(f'{ttk_style}.indicator', normal_unselected_img.image, sticky="ns", padding=b.scale(4)).state_specs(
                 [
                     # Disabled states
-                    ('disabled selected', disabled_checked_img.image),
-                    ('disabled !selected !alternate', disabled_unchecked_img.image),
+                    ('disabled selected', disabled_selected_img.image),
+                    ('disabled !selected !alternate', disabled_unselected_img.image),
 
                     # Focused states
-                    ('focus selected', focus_checked_img.image),
-                    ('focus !selected !alternate', focus_unchecked_img.image),
+                    ('background focus selected', focus_selected_img.image),
+                    ('background focus !selected !alternate', focus_unselected_img.image),
 
                     # Normal base states
-                    ('selected', normal_checked_img.image),
-                    ('!selected !alternate', normal_unchecked_img.image),
+                    ('selected', normal_selected_img.image),
+                    ('!selected !alternate', normal_unselected_img.image),
                 ]
             ))
 

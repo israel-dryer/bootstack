@@ -17,8 +17,8 @@ from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.primitives.labelframe import LabelFrame
 from bootstack.widgets.mixins import configure_delegate
-from bootstack.widgets.primitives.notebook import Notebook
 from bootstack.widgets.composites.numericentry import NumericEntry
+from bootstack.widgets.composites.tabs.tabview import TabView
 from bootstack.widgets.composites.passwordentry import PasswordEntry
 from bootstack.widgets.primitives.scale import Scale
 from bootstack.widgets.composites.selectbox import SelectBox
@@ -93,7 +93,7 @@ class TabItem:
 
 @dataclass
 class TabsItem:
-    """Notebook container with one or more TabItem entries."""
+    """Tab container with one or more TabItem entries."""
     tabs: list[TabItem | Mapping[str, Any]] = field(default_factory=list)
     label: str | None = None
     width: int | None = None
@@ -492,13 +492,19 @@ class Form(Frame):
                 columnspan = item.columnspan
                 rowspan = item.rowspan
             elif isinstance(item, TabsItem):
-                notebook = Notebook(parent, width=item.width, height=item.height)
-                for tab in self._normalize_tabs(item.tabs):
-                    tab_frame = Frame(notebook, padding=tab.padding)
+                tv_kwargs = {}
+                if item.width is not None:
+                    tv_kwargs['width'] = item.width
+                if item.height is not None:
+                    tv_kwargs['height'] = item.height
+                tabview = TabView(parent, **tv_kwargs)
+                for i, tab in enumerate(self._normalize_tabs(item.tabs)):
+                    page = tabview.add(f'tab_{i}', text=tab.label)
+                    if tab.padding is not None:
+                        page.configure(padding=tab.padding)
                     self._build_items(
-                        tab_frame, self._normalize_items(tab.items), col_count=col_count, min_col_width=min_col_width)
-                    notebook.add(tab_frame, text=tab.label)
-                widget = notebook
+                        page, self._normalize_items(tab.items), col_count=col_count, min_col_width=min_col_width)
+                widget = tabview
                 columnspan = item.columnspan
                 rowspan = item.rowspan
 

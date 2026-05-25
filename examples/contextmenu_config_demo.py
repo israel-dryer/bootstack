@@ -1,18 +1,17 @@
 """Demonstrate ContextMenu configuration helpers (configure_item, insert_item, remove_item, move_item)."""
 
 import bootstack as bs
-from bootstack.constants import *
 from bootstack import ContextMenu
 
 
 def main():
-    app = bs.Window("ContextMenu config demo", theme="flatly", size=(480, 320))
+    app = bs.Window("ContextMenu config demo",  minsize=(480, 320))
 
-    status = bs.Label(app, text="Right-click inside the box to open the menu.", anchor=W)
-    status.pack(fill=X, padx=10, pady=(10, 0))
+    status = bs.Label(app, text="Right-click inside the box to open the menu.", anchor='w')
+    status.pack(fill='x', padx=10, pady=(10, 0))
 
     target = bs.Frame(app, surface='content[2]', padding=30)
-    target.pack(fill=BOTH, expand=YES, padx=10, pady=10)
+    target.pack(fill='both', expand=True, padx=10, pady=10)
     bs.Label(target, text="Right-click here").pack()
 
     menu = ContextMenu(app, target=target, anchor="nw", attach="nw", offset=(4, 4))
@@ -28,7 +27,7 @@ def main():
 
     # --- demo controls -----------------------------------------------------
     control_frame = bs.Frame(app, padding=10)
-    control_frame.pack(fill=X, padx=10, pady=10)
+    control_frame.pack(fill='x', padx=10, pady=10)
 
     def configure_first_item():
         """Use configure_item getter/setter."""
@@ -57,10 +56,10 @@ def main():
         except IndexError as exc:
             status.config(text=str(exc))
 
-    bs.Button(control_frame, text="Configure first item", command=configure_first_item).pack(side=LEFT, padx=5)
-    bs.Button(control_frame, text="Insert item @1", command=insert_new_item).pack(side=LEFT, padx=5)
-    bs.Button(control_frame, text="Move last -> first", command=move_last_to_first).pack(side=LEFT, padx=5)
-    bs.Button(control_frame, text="Remove item @1", command=remove_second).pack(side=LEFT, padx=5)
+    bs.Button(control_frame, text="Configure first item", command=configure_first_item).pack(side='left', padx=5)
+    bs.Button(control_frame, text="Insert item @1", command=insert_new_item).pack(side='left', padx=5)
+    bs.Button(control_frame, text="Move last -> first", command=move_last_to_first).pack(side='left', padx=5)
+    bs.Button(control_frame, text="Remove item @1", command=remove_second).pack(side='left', padx=5)
 
     app.mainloop()
 

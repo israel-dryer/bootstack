@@ -387,6 +387,7 @@ def recolor_element_image(
     black_color: str = "#ffffff",
     magenta_color: str | None = None,
     transparent_color: str | None = None,
+    cyan_color: str | None = None,
 ) -> ElementImageResult:
     """Recolor an element image from the manifest and return scaled image with metadata.
 
@@ -409,6 +410,7 @@ def recolor_element_image(
         black_color: Replace black/dark areas with this color (hex string)
         magenta_color: Replace magenta (#ff00ff) with this color, if provided
         transparent_color: Fill fully transparent areas with this color
+        cyan_color: Replace cyan (#00ffff) with this color, if provided
 
     Returns:
         ElementImageResult containing:
@@ -446,7 +448,7 @@ def recolor_element_image(
     # Create cache key from all parameters
     cache_key = (
         "element", key, white_color, black_color,
-        magenta_color, transparent_color, scale
+        magenta_color, transparent_color, cyan_color, scale
     )
 
     # Check if we've already created this exact result
@@ -464,6 +466,7 @@ def recolor_element_image(
     bg_rgb = color_to_rgb(black_color)
     mag_rgb = color_to_rgb(magenta_color) if magenta_color else None
     trans_rgb = color_to_rgb(transparent_color) if transparent_color else None
+    cyan_rgb = color_to_rgb(cyan_color) if cyan_color else None
 
     # Luminance-based recoloring via per-channel LUTs applied to grayscale.
     # Output channel value = round(bg + (fg - bg) * gray / 255). PIL applies
@@ -489,6 +492,17 @@ def recolor_element_image(
         mag_solid = Image.new("RGBA", img.size, (*mag_rgb, 255))
         composited = Image.composite(mag_solid, result, mag_mask)
         # composite replaces alpha too; restore the original alpha.
+        nr, ng, nb, _ = composited.split()
+        result = Image.merge("RGBA", (nr, ng, nb, alpha))
+
+    # Cyan passthrough: pixels whose source RGB is exactly (0, 255, 255).
+    if cyan_rgb:
+        r_eq = r_src.point([255 if i == 0 else 0 for i in range(256)])
+        g_eq = g_src.point([255 if i == 255 else 0 for i in range(256)])
+        b_eq = b_src.point([255 if i == 255 else 0 for i in range(256)])
+        cyan_mask = ImageChops.multiply(ImageChops.multiply(r_eq, g_eq), b_eq)
+        cyan_solid = Image.new("RGBA", img.size, (*cyan_rgb, 255))
+        composited = Image.composite(cyan_solid, result, cyan_mask)
         nr, ng, nb, _ = composited.split()
         result = Image.merge("RGBA", (nr, ng, nb, alpha))
 

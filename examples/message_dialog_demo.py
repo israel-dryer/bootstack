@@ -206,13 +206,13 @@ instructions = bs.Label(
 )
 instructions.pack(pady=(0, 15))
 
-# Create notebook for organized demos
-notebook = bs.Notebook(content)
-notebook.pack(fill='both', expand=True)
+# Create tabview for organized demos
+tabview = bs.TabView(content)
+tabview.pack(fill='both', expand=True)
 
 # Tab 1: Standard Dialogs
-standard_frame = bs.Frame(notebook, padding=10)
-notebook.add(standard_frame, text="Standard Dialogs")
+standard_frame = tabview.add("standard", text="Standard Dialogs")
+standard_frame.configure(padding=10)
 
 standard_demos = [
     ("Info Dialog", demo_show_info, "info"),
@@ -232,8 +232,8 @@ for label, command, style in standard_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 2: Button Variations
-buttons_frame = bs.Frame(notebook, padding=10)
-notebook.add(buttons_frame, text="Button Variations")
+buttons_frame = tabview.add("buttons", text="Button Variations")
+buttons_frame.configure(padding=10)
 
 button_demos = [
     ("OK", demo_ok, "secondary"),
@@ -254,8 +254,8 @@ for label, command, style in button_demos:
     btn.pack(pady=5, fill='x')
 
 # Tab 3: Custom Options
-custom_frame = bs.Frame(notebook, padding=10)
-notebook.add(custom_frame, text="Custom Options")
+custom_frame = tabview.add("custom", text="Custom Options")
+custom_frame.configure(padding=10)
 
 custom_demos = [
     ("Custom Icon (String)", demo_custom_icon_string, "primary"),

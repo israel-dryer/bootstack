@@ -340,7 +340,7 @@ def demo_mixed_layout(parent):
 
 
 def main():
-    app = bs.Window(title="Grouped Form Demo", theme="flatly", size=(650, 500))
+    app = bs.Window(title="Grouped Form Demo", minsize=(650, 500))
 
     # Title
     title = bs.Label(

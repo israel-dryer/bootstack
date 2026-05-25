@@ -19,12 +19,7 @@ class CardKwargs(StyledKwargs, total=False):
 
 
 class Card(Frame):
-    """A convenience wrapper for Frame with card styling.
-
-    Card is a Frame with `surface='card'` and `show_border=True` by default,
-    providing an elevated container with a visible border for grouping content.
-
-    """
+    """A frame with card styling"""
 
     def __init__(self, master: Master = None, **kwargs: Unpack[CardKwargs]) -> None:
         """Create a themed Card container.
@@ -39,7 +34,6 @@ class Card(Frame):
             takefocus: Widget accepts focus during keyboard traversal.
             style: Explicit ttk style name (overrides accent/variant).
             accent: Accent/color token for the card. Default 'card'.
-            variant: Style variant (if applicable).
             surface: Surface token for the parent background.
             show_border: Draw a border around the card. Default True.
             style_options: Optional dict forwarded to the style builder.
@@ -47,4 +41,5 @@ class Card(Frame):
         kwargs.setdefault('accent', 'card')
         kwargs.setdefault('show_border', True)
         kwargs.setdefault('padding', 16)
+        kwargs.setdefault('variant', 'card')
         super().__init__(master, **kwargs)

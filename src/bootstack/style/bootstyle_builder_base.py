@@ -116,6 +116,12 @@ class BootstyleBuilderBase:
 
     # ----- Color Utilities & Transformers -----
 
+    @staticmethod
+    def default(value: Optional[str] = None):
+        if value == 'default':
+            return None
+        return value
+
     def _parse_color_token(self, token: str):
         """Parse a color token into head and ordered list of modifiers.
 
@@ -233,21 +239,21 @@ class BootstyleBuilderBase:
 
     def subtle(self, token: str, surface: str | None = None, role: str = "background") -> str:
         """Return a subtle instance of this color for background or text."""
-        # Parse token to handle compound tokens like 'primary[subtle]' or 'primary[100]'
-        parsed = self._parse_color_token(token)
-        if parsed:
-            base_key = parsed["head"]
-            # If first modifier is a shade, include it in the lookup key
-            modifiers = parsed["modifiers"]
-            if modifiers and modifiers[0][0] == "shade":
-                base_key = f"{base_key}[{modifiers[0][1]}]"
-            base_color = self.colors.get(base_key)
+        if token and token.startswith('#'):
+            base_color = token
         else:
-            base_color = self.colors.get(token)
+            parsed = self._parse_color_token(token)
+            if parsed:
+                base_key = parsed["head"]
+                modifiers = parsed["modifiers"]
+                if modifiers and modifiers[0][0] == "shade":
+                    base_key = f"{base_key}[{modifiers[0][1]}]"
+                base_color = self.colors.get(base_key)
+            else:
+                base_color = self.colors.get(token)
 
-        # Fallback if lookup failed
-        if base_color is None:
-            base_color = self.colors.get(token) or self.colors.get('foreground')
+            if base_color is None:
+                base_color = self.colors.get(token) or self.colors.get('foreground')
 
         surface_val = surface or self.colors.get('background')
 

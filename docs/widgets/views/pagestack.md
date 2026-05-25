@@ -60,8 +60,8 @@ Use `PageStack` when:
 
 ### Consider a different control when...
 
-- users need random access to views — use [Notebook](notebook.md)
-- the interaction model is "switch categories" — use [Notebook](notebook.md)
+- users need random access to views — use [TabView](tabview.md)
+- the interaction model is "switch categories" — use [TabView](tabview.md)
 - multiple views must be visible simultaneously — use [PanedWindow](../layout/panedwindow.md)
 
 ---
@@ -219,7 +219,7 @@ Navigation events include:
 
 - Provide clear Back/Next controls when history is involved
 
-- Avoid mixing PageStack flow navigation with tabs (`Notebook`) in the same region
+- Avoid mixing PageStack flow navigation with tabs (`TabView`) in the same region
 
 !!! tip "Think like a flow"
     PageStack works best when users think in terms of steps or screens, not categories.
@@ -230,7 +230,7 @@ Navigation events include:
 
 ### Related widgets
 
-- [Notebook](notebook.md) - tabbed views without history
+- [TabView](tabview.md) - tabbed views without history
 
 - [Frame](../layout/frame.md) - typical page container
 

@@ -52,7 +52,7 @@ WidgetDensity = Literal['default', 'compact']
 AccentToken = Literal['primary', 'secondary', 'success', 'warning', 'danger', 'info', 'light', 'dark']
 """Semantic color accent token. Accepts modifiers: `'primary[+1]'`, `'primary[500]'`, `'primary[subtle]'`."""
 
-VariantToken = Literal['solid', 'outline', 'ghost', 'link', 'toggle']
+VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
 """Widget style variant."""
 
 SurfaceToken = Literal['content', 'card', 'chrome', 'overlay', 'input']
