@@ -13,12 +13,9 @@ ASSETS_DIR = Path(__file__).parent
 ICON_PATH = ASSETS_DIR / "bootstack.png"
 THEMES_DIR = ASSETS_DIR / "themes"
 LOCALES_DIR = ASSETS_DIR / "locales"
-WIDGETS_DIR = ASSETS_DIR / "widgets"
-
 __all__ = [
     "ASSETS_DIR",
     "ICON_PATH",
     "THEMES_DIR",
     "LOCALES_DIR",
-    "WIDGETS_DIR",
 ]

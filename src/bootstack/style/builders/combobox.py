@@ -11,6 +11,7 @@ from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
     normalize_button_density,
+    button_height,
     entry_font,
     entry_padding,
     entry_icon_size,
@@ -22,7 +23,7 @@ from bootstack.style.builders.utils import (
 @BootstyleBuilderTTk.register_builder('default', 'TCombobox')
 def build_combobox_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -47,7 +48,7 @@ def build_combobox_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = N
     disabled_img = recolor_element_image(img_key, disabled, border, container_surface, container_surface)
 
     b.create_style_element_image(
-        ElementImage(f'{ttk_style}.field', normal_img.image, sticky='nsew', border=normal_img.meta.border).state_specs(
+        ElementImage(f'{ttk_style}.field', normal_img.image, sticky='nsew', border=normal_img.meta.border, height=button_height(b, density)).state_specs(
             [
                 ('disabled', disabled_img.image),
                 ('readonly', disabled_img.image),

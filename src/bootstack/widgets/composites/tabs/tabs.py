@@ -38,6 +38,7 @@ class Tabs(Frame):
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
         tab_width: None | int | Literal['stretch'] = None,
+        tab_min_width: int = 80,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
         enable_closing: bool | Literal['hover'] = False,
@@ -62,6 +63,8 @@ class Tabs(Frame):
             tab_width: Width of tabs. None for auto-sizing, an integer for
                 fixed character width, or 'stretch' to expand tabs to fill
                 available space (horizontal only). Default is None.
+            tab_min_width: Minimum tab width in pixels. Tabs will not shrink
+                below this value regardless of label content. Default is 80.
             tab_padding: Padding for all tabs as (horizontal, vertical).
                 Default is (12, 8).
             tab_anchor: Anchor for tab text/icon alignment. If None, defaults
@@ -85,6 +88,7 @@ class Tabs(Frame):
         self._variant = variant
         self._compound = compound
         self._tab_width = tab_width
+        self._tab_min_width = tab_min_width
         self._tab_padding = tab_padding
         self._enable_closing = enable_closing
         self._enable_adding = enable_adding
@@ -183,12 +187,15 @@ class Tabs(Frame):
             return
 
         if self._orient == 'horizontal':
-            # Plus icon only
+            # Use TabItem.TButton so the button sizes to content (no button_height
+            # constraint), naturally matching the tab item's content-driven height
             self._add_button = Button(
                 self._tab_bar,
-                icon='plus',
+                icon={'name': 'plus-lg', 'size': 16},
                 icon_only=True,
-                variant='ghost',
+                ttk_class='TabItem.TButton',
+                variant='icon',
+                padding=(8, 8),
                 command=self._on_add_click,
             )
             self._add_button.pack()
@@ -308,6 +315,7 @@ class Tabs(Frame):
             'orient': self._orient,
             'padding': self._tab_padding,
             'anchor': self._tab_anchor,
+            'min_width': self._tab_min_width,
         }
 
         # Apply tab_width if specified (not 'stretch')

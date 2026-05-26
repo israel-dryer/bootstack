@@ -146,7 +146,7 @@ class TextArea(GridFrame):
 
         # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",
-                                  accent="secondary")
+                                  accent="muted")
         self._message_lbl.grid(row=2, column=0, sticky="w")
         self._message_lbl.grid_remove()
 
@@ -157,7 +157,7 @@ class TextArea(GridFrame):
         # _MultilineCore is a tk.Frame, so highlightthickness gives a native
         # border that wraps the entire textarea (text + scrollbars) without
         # clipping issues from a ttk wrapper frame.
-        self._border_inactive = _resolve_color("secondary", "#cccccc")
+        self._border_inactive = _resolve_color("gray[300]", "#cccccc")
         self._border_active = _resolve_color(accent, "#0d6efd")
         self._border_error = _resolve_color("danger", "#dc3545")
         self._core.configure(
@@ -268,14 +268,14 @@ class TextArea(GridFrame):
         )
 
     def _clear_error(self) -> None:
-        self._message_lbl.configure(text=self._original_message, accent="secondary")
+        self._message_lbl.configure(text=self._original_message, accent="muted")
         self._core.configure(
             highlightbackground=self._border_inactive,
             highlightcolor=self._border_inactive,
         )
 
     def _on_theme_changed(self, _event: tk.Event = None) -> None:
-        self._border_inactive = _resolve_color("secondary", "#cccccc")
+        self._border_inactive = _resolve_color("gray[300]", "#cccccc")
         self._border_active = _resolve_color(self._accent, "#0d6efd")
         self._border_error = _resolve_color("danger", "#dc3545")
         # Reapply current border color without changing focus state

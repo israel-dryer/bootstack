@@ -125,7 +125,6 @@ for _pkg in ("bootstack", "ttkbootstrap_icons", "ttkbootstrap_icons_bs"):
 
 hiddenimports = [
     "bootstack",
-    "bootstack.themes",
     "bootstack.style",
     "bootstack.widgets",
     "ttkbootstrap_icons",

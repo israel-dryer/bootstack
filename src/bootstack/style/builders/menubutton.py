@@ -14,6 +14,7 @@ from bootstack.style.utility import create_transparent_image, recolor_element_im
 from bootstack.style.builders.utils import (
     apply_icon_mapping,
     button_font,
+    button_height,
     icon_size,
     normalize_button_density,
 )
@@ -147,7 +148,8 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border
+            border=normal_img.meta.border, padding=normal_img.meta.border,
+            height=button_height(b, density),
         ).state_specs([
             ('disabled', disabled_img.image),
             ('background focus pressed', focused_pressed_img.image),
@@ -232,7 +234,8 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border
+            border=normal_img.meta.border, padding=normal_img.meta.border,
+            height=button_height(b, density),
         ).state_specs([
             ('disabled', disabled_img.image),
             ('background focus pressed', focused_pressed_img.image),
@@ -314,7 +317,8 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border
+            border=normal_img.meta.border, padding=normal_img.meta.border,
+            height=button_height(b, density),
         ).state_specs([
             ('disabled', disabled_img.image),
             ('background focus pressed', focused_pressed_img.image),

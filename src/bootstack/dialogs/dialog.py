@@ -504,11 +504,11 @@ class Dialog:
         if role == "primary":
             return ("primary", None)
         if role == "secondary":
-            return ("secondary", None)
+            return ("default", None)
         if role == "danger":
             return ("danger", None)
         if role == "cancel":
-            return ("secondary", "outline")
+            return ("default", "outline")
         if role == "help":
-            return ("info", "link")
-        return ("secondary", None)
+            return ("primary", "link")
+        return ("default", None)

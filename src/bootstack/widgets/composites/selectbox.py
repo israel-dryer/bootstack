@@ -17,6 +17,8 @@ class SelectBox(Field):
     items. Selecting an item updates the field value and emits `<<Change>>`.
     """
 
+    _POPUP_MAX_HEIGHT = 200  # px — popup never exceeds this, but shrinks to fit fewer items
+
     def __init__(
             self,
             master: Master = None,
@@ -129,6 +131,9 @@ class SelectBox(Field):
         # Create popup content frame with items
         self._popup_frame = self._create_popup_frame(toplevel, popup_state)
 
+        # Shrink popup to fit content (still withdrawn — resize is invisible)
+        self._fit_popup_height(toplevel)
+
         # Setup event bindings based on mode
         self._setup_popup_bindings(toplevel, popup_state, close_popup)
 
@@ -150,23 +155,29 @@ class SelectBox(Field):
         else:
             toplevel.focus_force()
 
-    def _create_popup_toplevel(self):
-        """Create and position the popup toplevel window."""
+    def _compute_popup_position(self, height: int) -> tuple[int, int, int]:
+        """Return (x, y, width) for a popup of the given height.
+
+        Flips above the entry when there isn't enough room below — matches
+        Tk's combobox PlacePopdown behavior.
+        """
         x = self.winfo_rootx() + (1 if self._search_enabled else 3)
         gap_below = 8 if self._search_enabled else 5
         gap_above = 4 if self._search_enabled else 1
         entry_top = self.entry_widget.winfo_rooty()
         entry_bottom = entry_top + self.entry_widget.winfo_height()
         width = self.winfo_width() - (2 if self._search_enabled else 6)
-        max_height = 200  # Maximum popup height in pixels
-
-        # Flip above the entry when there isn't enough room below — matches
-        # Tk's combobox PlacePopdown behavior.
         screen_h = self.winfo_screenheight()
-        if entry_bottom + gap_below + max_height > screen_h and entry_top - gap_above - max_height >= 0:
-            y = entry_top - gap_above - max_height
+        if entry_bottom + gap_below + height > screen_h and entry_top - gap_above - height >= 0:
+            y = entry_top - gap_above - height
         else:
             y = entry_bottom + gap_below
+        return x, y, width
+
+    def _create_popup_toplevel(self):
+        """Create the popup toplevel window (withdrawn, provisional max-height size)."""
+        max_h = self._POPUP_MAX_HEIGHT
+        x, y, width = self._compute_popup_position(max_h)
 
         # The base_window.py warning about overrideredirect on Aqua applies
         # to full app windows that combine it with grab/transient semantics;
@@ -177,10 +188,26 @@ class SelectBox(Field):
         toplevel.withdraw()
         toplevel.overrideredirect(True)
         toplevel.minsize(width, 0)
-        toplevel.maxsize(width * 2, max_height)
-        toplevel.geometry(f"{width}x{max_height}+{x}+{y}")
-
+        toplevel.maxsize(width * 2, max_h)
+        toplevel.geometry(f"{width}x{max_h}+{x}+{y}")
         return toplevel
+
+    def _fit_popup_height(self, toplevel):
+        """Shrink the popup to fit its content, up to _POPUP_MAX_HEIGHT.
+
+        Called after the popup frame is built but before deiconify, so the
+        window is still withdrawn and the resize is invisible.
+        """
+        toplevel.update_idletasks()
+
+        item_h = self._item_labels[0].winfo_reqheight() if self._item_labels else 32
+        n = len(self._item_labels)
+        # 8px overhead: outer_frame border (2px each side) + padding (3px each side)
+        content_h = n * item_h + 8
+        actual_h = max(min(content_h, self._POPUP_MAX_HEIGHT), item_h)
+
+        x, y, width = self._compute_popup_position(actual_h)
+        toplevel.geometry(f"{width}x{actual_h}+{x}+{y}")
 
     def _create_popup_frame(self, toplevel, popup_state):
         """Create popup frame with scrollable item list."""

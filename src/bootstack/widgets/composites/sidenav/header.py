@@ -29,7 +29,7 @@ class SideNavHeader(Frame):
 
     DEFAULT_PADDING = (8, 20, 8, 4)
     DEFAULT_FONT = 'label'
-    DEFAULT_ACCENT = 'secondary'
+    DEFAULT_ACCENT = 'default'
 
     def __init__(
         self,

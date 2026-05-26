@@ -28,7 +28,7 @@ from bootstack.style.builders.utils import (
 @BootstyleBuilderTTk.register_builder('default', 'TField')
 def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -66,7 +66,7 @@ def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None
 @BootstyleBuilderTTk.register_builder('input', 'TField')
 def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -121,7 +121,7 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
 @BootstyleBuilderTTk.register_builder('spinner', 'TField')
 def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)
@@ -228,48 +228,55 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
         b: The bootstyle builder instance.
         ttk_style: The TTK style name.
         accent: Accent color of the button, if provided.
-        **options: Style options including 'density', 'surface', 'use_active_states', 'icon'.
+        **options: Style options including 'density', 'surface', 'icon', 'icon_only'.
     """
 
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
-    use_active_states = options.get('use_active_states', False)
-    surface = b.color(surface_token)
-
-    input_background = b.color(fill_token)
-    addon_background = b.color(accent or fill_token)
-
-    active = b.active(addon_background)
-    pressed = b.pressed(addon_background)
-
-    if use_active_states:
-        surface_active = active
-    else:
-        surface_active = addon_background
-
-    foreground = b.on_color(addon_background)
-    foreground_disabled = b.disabled('text')
-
-
-
-    # addon element images - use density-aware images from manifest
-    # variant is 'before' or 'after', maps to input_before_* or input_after_*
     img_key = entry_image_key('input_addon', density)
-    normal_img = recolor_element_image(img_key, input_background, addon_background, surface, surface)
-    selected_img = recolor_element_image(img_key, input_background, surface_active, surface, surface)
+    icon_only = options.get('icon_only', False)
 
-    if use_active_states:
-        active_img = recolor_element_image(img_key, input_background, surface_active, surface, surface)
-        pressed_img = recolor_element_image(img_key, input_background, pressed, surface, surface)
+    # background colors
+    input_background= b.color(fill_token)
+
+    # if not icon only, then must show button, otherwise accent will decide whether button is shown.
+    show_button = (accent is None and not icon_only) or accent is not None
+
+    bg_normal = input_background if not show_button else b.elevate(input_background, 1)
+    bg_active = b.active(bg_normal)
+    bg_pressed = b.pressed(bg_normal)
+
+    # foreground colors
+    fg_normal = b.on_color(bg_normal)
+    fg_disabled = b.disabled('text')
+
+    if show_button:
+        bg_disabled = b.disabled('background', input_background)
+        bd_normal = b.border(bg_normal)
+        bd_pressed = b.border(bg_pressed) if show_button else bg_pressed
+        bd_active = b.border(bg_active) if show_button else bg_active
+        bd_disabled = b.border(bg_disabled)
     else:
-        active_img = normal_img
-        pressed_img = normal_img
+        bg_disabled = bg_normal
+        bd_normal = bg_normal
+        bd_active = bg_active
+        bd_pressed = bg_pressed
+        bd_disabled = bg_disabled
+
+
+    normal_img = recolor_element_image(img_key, bg_normal, bd_normal, None, input_background)
+    active_img = recolor_element_image(img_key, bg_active, bd_active, None, input_background)
+    pressed_img = recolor_element_image(img_key, bg_pressed, bd_pressed, None, input_background)
+    disabled_img = recolor_element_image(img_key, bg_disabled, bd_disabled, None, input_background)
+    selected_img = active_img
+
 
     # addon element - set explicit height to match field height
     height = field_height(b, density)
     b.create_style_element_image(
-        ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height).state_specs([
+        ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height, padding=0).state_specs([
+            ('disabled', disabled_img.image),
             ('selected !disabled', selected_img.image),
             ('pressed !disabled', pressed_img.image),
             ('active', active_img.image),
@@ -286,15 +293,14 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
             ]))
 
     # Add horizontal padding - less for icon-only buttons
-    icon_only = options.get('icon_only', False)
     if icon_only:
         addon_padding = b.scale((5, 0)) if density == 'compact' else b.scale((4, 0))
     else:
-        addon_padding = b.scale((8, 0))
+        addon_padding = b.scale((12, 0))
     b.configure_style(
         ttk_style,
-        background=input_background,
-        foreground=foreground,
+        background=bg_normal,
+        foreground=fg_normal,
         relief='flat',
         stipple="gray12",
         padding=addon_padding,
@@ -306,11 +312,11 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
 
     state_spec = dict(
         foreground=[
-            ('disabled', foreground_disabled),
-            ('selected !disabled', foreground),
-            ('pressed !disabled', foreground),
-            ('hover !disabled', foreground),
-            ('', foreground)
+            ('disabled', fg_disabled),
+            ('selected !disabled', fg_normal),
+            ('pressed !disabled', fg_normal),
+            ('hover !disabled', fg_normal),
+            ('', fg_normal)
         ])
 
     if icon is not None:

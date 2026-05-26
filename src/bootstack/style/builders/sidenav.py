@@ -29,7 +29,7 @@ def build_navigationview_frame_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     image_key = f'button_{density}'
 
     surface = b.color(surface_token)
-    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
     surface_pressed = b.pressed(surface_hover)
 
     disabled = b.disabled()
@@ -74,7 +74,7 @@ def build_navigationview_label_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     surface_token = options.get('surface', 'content')
 
     surface = b.color(surface_token)
-    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
     surface_pressed = b.pressed(surface_hover)
     on_surface = b.on_color(surface)
 
@@ -126,7 +126,7 @@ def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     image_key = f'navitem_{normalize_button_density(density)}'
 
     surface = b.color(surface_token)
-    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
     surface_pressed = b.pressed(surface_hover)
     on_surface = b.on_color(surface)
 
@@ -206,7 +206,7 @@ def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, a
     image_key = f'navitem_{normalize_button_density(density)}'
 
     surface = b.color(surface_token)
-    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
     surface_pressed = b.pressed(surface_hover)
 
     active = b.subtle(accent_token, surface)
@@ -268,7 +268,7 @@ def build_navigationbutton_label_style(b: BootstyleBuilderTTk, ttk_style: str, a
     density = options.get('density', 'default')
 
     surface = b.color(surface_token)
-    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.subtle('secondary', surface)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
     surface_pressed = b.pressed(surface_hover)
     on_surface = b.on_color(surface)
 

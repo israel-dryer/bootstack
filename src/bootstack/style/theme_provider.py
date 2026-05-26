@@ -294,6 +294,10 @@ class ThemeProvider:
         # Surface tokens - semantic ramps for container backgrounds
         self._build_surface_tokens(colors)
 
+        # Neutral text tokens — pre-computed for direct use as accent tokens
+        from bootstack.style.utility import muted_foreground
+        colors['muted'] = muted_foreground(colors['background'])
+
         self._colors.clear()
         self._colors.update(**colors)
 
@@ -340,7 +344,6 @@ class ThemeProvider:
                 'content': bg,                                         # Theme background
                 'card': tinted_surface(min(bg_lightness + 4, 20)),    # Elevated cards
                 'overlay': tinted_surface(min(bg_lightness + 7, 25)), # Menus, dialogs
-                'input': tinted_surface(max(bg_lightness - 5, 2)),    # Recessed inputs
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(min(bg_lightness + 12, 30))
@@ -352,7 +355,6 @@ class ThemeProvider:
                 'content': bg,                                         # Theme background
                 'card': tinted_surface(max(bg_lightness - 4, 92)),    # Slightly darker for contrast
                 'overlay': tinted_surface(max(bg_lightness - 2, 96)), # Subtle for popups
-                'input': tinted_surface(max(bg_lightness - 5, 90)),   # Recessed inputs
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(max(bg_lightness - 20, 70))

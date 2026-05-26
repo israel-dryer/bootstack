@@ -167,6 +167,10 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             if current_style:
                 current_variant = extract_variant_from_style(current_style, widget_class)
 
+        # Coerce 'default' to None — means "no accent, use widget's neutral style"
+        if value == 'default':
+            value = None
+
         # Store the new accent
         setattr(self, '_accent', value)
 

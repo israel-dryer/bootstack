@@ -156,7 +156,7 @@ class MessageDialog:
             elif is_default:
                 accent = "primary"
             else:
-                accent = "secondary"
+                accent = "default"
 
             # Determine button role
             role: ButtonRole

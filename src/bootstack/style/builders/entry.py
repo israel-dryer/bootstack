@@ -18,7 +18,7 @@ from bootstack.style.builders.utils import (
 @BootstyleBuilderTTk.register_builder('default', 'TEntry')
 def build_entry_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
-    fill_token = options.get('input_background') or 'content'
+    fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
 
     fill = b.color(fill_token)

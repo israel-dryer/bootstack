@@ -318,6 +318,8 @@ class Bootstyle:
 
             # Extract accent/variant parameters
             accent = kwargs.pop("accent", None)
+            if accent == 'default':
+                accent = None
             variant = kwargs.pop("variant", None)
             kwargs.pop("bootstyle", None)  # removed param — discard silently
 
