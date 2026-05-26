@@ -40,6 +40,7 @@ class TabItem(CompositeFrame):
         closable: bool | Literal['hover'] = False,
         close_command: Callable = None,
         variant: Literal['pill', 'bar'] = 'default',
+        min_width: int = None,
         **kwargs: Unpack[CompositeFrameKwargs]
     ):
         """Create a TabItem widget.
@@ -61,6 +62,8 @@ class TabItem(CompositeFrame):
                 'hover'=visible only on hover (space reserved).
             close_command: Callback invoked when close button is clicked.
             variant: Tab style variant ('pill' or 'bar').
+            min_width: Minimum tab width in pixels. The tab will not shrink below
+                this width regardless of label content. Default is None (no minimum).
             **kwargs: Additional arguments passed to CompositeFrame.
         """
         self._text = text
@@ -72,6 +75,7 @@ class TabItem(CompositeFrame):
         self._close_command = close_command
         self._variant = variant
         self._orient = orient
+        self._min_width = min_width
         self._accent = None  # Will be set from kwargs
 
         # Selection state - signal/variable syncing
@@ -109,6 +113,9 @@ class TabItem(CompositeFrame):
 
         self._build_widget(accent, surface)
 
+        if self._min_width:
+            self.after_idle(self._apply_min_width)
+
         # Set up signal/variable after widget is built
         if signal is not None:
             self._set_signal_or_variable(signal)
@@ -120,6 +127,14 @@ class TabItem(CompositeFrame):
 
         # Bind destroy handler to clean up variable trace
         self.bind('<Destroy>', self._on_destroy, add='+')
+
+    def _apply_min_width(self):
+        """Enforce minimum tab width after the first layout pass."""
+        if not self.winfo_exists():
+            return
+        if self.winfo_reqwidth() < self._min_width:
+            self.pack_propagate(False)
+            self.configure(width=self._min_width, height=self.winfo_reqheight())
 
     def _on_destroy(self, event=None):
         """Clean up variable trace when widget is destroyed."""
@@ -147,7 +162,12 @@ class TabItem(CompositeFrame):
         if self._width is not None:
             label_opts['width'] = self._width
 
-        # Main label for text/icon
+        # Close button must be packed before the label so it reserves right-side
+        # space before the label claims all available width with expand=True
+        if self._closable:
+            self._create_close_button(accent, style_opts)
+
+        # Main label for text/icon — fills remaining space
         self._label = Label(
             self,
             text=self._text,
@@ -163,10 +183,6 @@ class TabItem(CompositeFrame):
         )
         self.register_composite(self._label)
         self._label.pack(side='left', fill='both', expand=True)
-
-        # Close button (optional - show when closable is True or 'hover')
-        if self._closable:
-            self._create_close_button(accent, style_opts)
 
     def _create_close_button(self, accent: str = None, style_opts: dict = None):
         """Create the close button widget."""
@@ -190,7 +206,13 @@ class TabItem(CompositeFrame):
             **style_opts
         )
         self.register_composite(self._close_button)
-        self._close_button.place(relx=1.0, rely=0.5, anchor='e', x=4)
+        # Pack on the right; if label already exists (deferred creation), insert
+        # before it in pack order so the label's expand=True fills remaining space
+        pack_opts = {'side': 'right', 'padx': (8, 0)}
+        if self._label is not None:
+            self._close_button.pack(before=self._label, **pack_opts)
+        else:
+            self._close_button.pack(**pack_opts)
 
     def _set_signal_or_variable(self, value: Any):
         """Set up signal/variable binding with trace for selection updates."""
