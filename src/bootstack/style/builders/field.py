@@ -240,10 +240,10 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     # background colors
     input_background= b.color(fill_token)
 
-    # if icon_only, the add-on will display as a button in rested state to show proper separation
-    show_button = accent is None and icon_only
+    # if not icon only, then must show button, otherwise accent will decide whether button is shown.
+    show_button = (accent is None and not icon_only) or accent is not None
 
-    bg_normal = input_background if show_button else b.elevate(input_background, 1)
+    bg_normal = input_background if not show_button else b.elevate(input_background, 1)
     bg_active = b.active(bg_normal)
     bg_pressed = b.pressed(bg_normal)
 
@@ -251,16 +251,18 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     fg_normal = b.on_color(bg_normal)
     fg_disabled = b.disabled('text')
 
-    if not icon_only:
+    if show_button:
         bg_disabled = b.disabled('background', input_background)
         bd_normal = b.border(bg_normal)
-        bd_pressed = b.border(bg_pressed)
-        bd_active = b.border(bg_active)
+        bd_pressed = b.border(bg_pressed) if show_button else bg_pressed
+        bd_active = b.border(bg_active) if show_button else bg_active
         bd_disabled = b.border(bg_disabled)
     else:
         bg_disabled = bg_normal
-        bd_normal = bd_pressed = bd_active = bd_disabled = bg_normal
-
+        bd_normal = bg_normal
+        bd_active = bg_active
+        bd_pressed = bg_pressed
+        bd_disabled = bg_disabled
 
 
     normal_img = recolor_element_image(img_key, bg_normal, bd_normal, None, input_background)
