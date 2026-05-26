@@ -13,6 +13,7 @@ from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
     apply_icon_mapping,
     button_font,
+    button_height,
     button_layout,
     button_padding,
     icon_size,
@@ -78,7 +79,8 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
             normal_img.image,
             sticky="nsew",
             border=normal_img.meta.border,
-            padding=normal_img.meta.border
+            padding=normal_img.meta.border,
+            height=button_height(b, density),
         ).state_specs(
             [
                 ('disabled', disabled_img.image),
@@ -168,7 +170,8 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
             normal_img.image,
             sticky="nsew",
             border=normal_img.meta.border,
-            padding=normal_img.meta.border
+            padding=normal_img.meta.border,
+            height=button_height(b, density),
         ).state_specs(
             [
                 ('disabled', disabled_img.image),
@@ -251,7 +254,8 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     b.create_style_element_image(
         ElementImage(
             f'{ttk_style}.Button.border', normal_img.image, sticky="nsew",
-            border=normal_img.meta.border, padding=normal_img.meta.border).state_specs(
+            border=normal_img.meta.border, padding=normal_img.meta.border,
+            height=button_height(b, density)).state_specs(
             [
                 ('disabled', disabled_img.image),
                 ('background focus pressed', focused_pressed_img.image),

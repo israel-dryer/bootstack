@@ -273,7 +273,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     # addon element - set explicit height to match field height
     height = field_height(b, density)
     b.create_style_element_image(
-        ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height).state_specs([
+        ElementImage(f'{ttk_style}.border', normal_img.image, border=normal_img.meta.border, height=height, padding=0).state_specs([
             ('disabled', disabled_img.image),
             ('selected !disabled', selected_img.image),
             ('pressed !disabled', pressed_img.image),
@@ -294,7 +294,7 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     if icon_only:
         addon_padding = b.scale((5, 0)) if density == 'compact' else b.scale((4, 0))
     else:
-        addon_padding = b.scale((8, 0))
+        addon_padding = b.scale((12, 0))
     b.configure_style(
         ttk_style,
         background=bg_normal,

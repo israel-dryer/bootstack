@@ -231,6 +231,19 @@ def button_font(density: str) -> str:
     return 'caption' if density == 'compact' else 'body'
 
 
+def button_height(b: BootstyleBuilderTTk, density: str) -> int:
+    """Get button height based on density, matching the total height of input fields.
+
+    Args:
+        b: The bootstyle builder instance.
+        density: The button density ('default' or 'compact').
+
+    Returns:
+        Scaled height in pixels.
+    """
+    return b.scale(37) if density == 'compact' else b.scale(43)
+
+
 def button_padding(b: BootstyleBuilderTTk, icon_only: bool, density: Any) -> int | tuple[int, ...]:
     """Calculate button padding based on options.
 
