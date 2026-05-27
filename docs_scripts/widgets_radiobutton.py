@@ -1,6 +1,6 @@
 import bootstack as bs
 
-app = bs.App(theme="docs-dark")
+app = bs.App(theme="dark")
 
 r1 = bs.Frame(app, padding=10)
 r1.pack(side='top', fill='x')

@@ -4,7 +4,7 @@ from bootstack import ContextMenuItem
 
 
 def main():
-    root = bs.App(title="MenuBar Demo", size=(600, 400), theme='docs-dark')
+    root = bs.App(title="MenuBar Demo", size=(600, 400), theme='dark')
 
     status = bs.Label(root, text="Select a menu item...", anchor="w")
 

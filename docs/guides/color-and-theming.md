@@ -345,7 +345,7 @@ bs.toggle_theme()  # switches between ocean-light and ocean-dark
 ```
 
 Without those settings, `"light"` and `"dark"` resolve to the built-in
-defaults (`docs-light` / `docs-dark`).
+defaults (`bootstrap-light` / `bootstrap-dark`).
 
 A simple toggle button:
 

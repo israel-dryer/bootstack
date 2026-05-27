@@ -3,7 +3,7 @@ import bootstack as bs
 from bootstack.widgets.composites import Accordion
 from bootstack.widgets.primitives import Label, Button
 
-app = bs.App(title="Accordion Demo", size=(400, 500), theme="dark")
+app = bs.App(title="Accordion Demo", minsize=(400, 500), theme="dark")
 
 # Basic accordion (single selection, collapsible)
 Label(app, text="Basic Accordion (single selection)", font='heading').pack(pady=(10, 5))
