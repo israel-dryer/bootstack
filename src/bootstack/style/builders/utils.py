@@ -379,6 +379,10 @@ def entry_height(b: BootstyleBuilderTTk, density: str) -> int:
     return b.scale(25) if density == 'compact' else b.scale(31)
 
 
+def _snap_even(v: int) -> int:
+    return v if v % 2 == 0 else v + 1
+
+
 def entry_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
     """Get icon size for entry widgets (chevrons, spinner arrows).
 
@@ -387,9 +391,9 @@ def entry_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
         density: The entry density ('default' or 'compact').
 
     Returns:
-        Scaled icon size in pixels.
+        Scaled icon size in pixels, snapped to an even number.
     """
-    return b.scale(12) if density == 'compact' else b.scale(14)
+    return _snap_even(b.scale(12) if density == 'compact' else b.scale(14))
 
 
 def entry_image_key(base: str, density: str) -> str:
@@ -413,9 +417,9 @@ def spinner_arrow_height(b: BootstyleBuilderTTk, density: str) -> int:
         density: The entry density ('default' or 'compact').
 
     Returns:
-        Scaled arrow height in pixels.
+        Scaled arrow height in pixels, snapped to an even number.
     """
-    return b.scale(10) if density == 'compact' else b.scale(13)
+    return _snap_even(b.scale(10) if density == 'compact' else b.scale(13))
 
 
 def spinner_arrow_width(b: BootstyleBuilderTTk) -> int:
@@ -425,9 +429,9 @@ def spinner_arrow_width(b: BootstyleBuilderTTk) -> int:
         b: The bootstyle builder instance.
 
     Returns:
-        Scaled arrow width in pixels.
+        Scaled arrow width in pixels, snapped to an even number.
     """
-    return b.scale(16)
+    return _snap_even(b.scale(16))
 
 
 def chevron_width(b: BootstyleBuilderTTk) -> int:
@@ -437,6 +441,6 @@ def chevron_width(b: BootstyleBuilderTTk) -> int:
         b: The bootstyle builder instance.
 
     Returns:
-        Scaled chevron width in pixels.
+        Scaled chevron width in pixels, snapped to an even number.
     """
-    return b.scale(16)
+    return _snap_even(b.scale(16))

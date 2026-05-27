@@ -985,7 +985,7 @@ class _NativeContextMenu(CustomConfigMixin):
     Internal backend used by `ContextMenu` on macOS so the popup is a real
     NSMenu — sidesteps the key-window/activation issues that affect a
     reused overrideredirect Toplevel. Theming follows the system menu look;
-    icons resolve through `BootstrapIcon` and re-render on theme change.
+    icons re-render on theme change via the bootstack image service.
     """
 
     def __init__(

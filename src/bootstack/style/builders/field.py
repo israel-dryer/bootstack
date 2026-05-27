@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
@@ -137,10 +137,10 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
 
     # add arrow images - use density-aware icon size
     icon_size = entry_icon_size(b, density)
-    arrow_up_normal_img = BootstrapIcon('caret-up-fill', color=foreground, size=icon_size).image
-    arrow_up_disabled_img = BootstrapIcon('caret-up-fill', color=disabled_fg, size=icon_size).image
-    arrow_down_normal_img = BootstrapIcon('caret-down-fill', color=foreground, size=icon_size).image
-    arrow_down_disabled_img = BootstrapIcon('caret-down-fill', color=disabled_fg, size=icon_size).image
+    arrow_up_normal_img = _ImageService.get_icon('caret-up-fill', icon_size, foreground)
+    arrow_up_disabled_img = _ImageService.get_icon('caret-up-fill', icon_size, disabled_fg)
+    arrow_down_normal_img = _ImageService.get_icon('caret-down-fill', icon_size, foreground)
+    arrow_down_disabled_img = _ImageService.get_icon('caret-down-fill', icon_size, disabled_fg)
 
     # Arrow element images
     arrow_height = spinner_arrow_height(b, density)

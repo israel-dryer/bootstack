@@ -38,9 +38,6 @@ Menu = _tkMenu
 Text = _tkText
 Canvas = _tkCanvas
 TkFrame = _tkFrame  # Exported as TkFrame to avoid conflict with bs.Frame
-# Eagerly import BootstrapIcon to prevent circular import during style bootstrapping
-from ttkbootstrap_icons_bs import BootstrapIcon  # noqa: E402
-
 # Constants are available via bootstack.constants module
 # (see constants.py which re-exports from core.constants)
 
@@ -94,7 +91,6 @@ if TYPE_CHECKING:
     )
     from bootstack.i18n import MessageCatalog, L, LV, IntlFormatter
     from bootstack._core.images import Image
-    from ttkbootstrap_icons_bs import BootstrapIcon
     from bootstack.signals import Signal, TraceOperation
     from bootstack.validation import ValidationRule, ValidationResult
     from bootstack._core.variables import SetVar
@@ -140,7 +136,7 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.appshell": ["AppShell"],
     # Style & Theming
     "bootstack.style": [
-        "BootstrapIcon", "Font", "Style", "Typography",
+        "Font", "Style", "Typography",
         "get_style", "get_style_builder", "get_theme", "get_theme_provider",
         "set_theme", "get_theme_color", "toggle_theme", "get_themes", "register_user_theme",
     ],

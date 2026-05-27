@@ -2,10 +2,11 @@
 
 This module contains style builders for ttk.Scrollbar widget variants.
 """
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
+from bootstack.style.builders.utils import _snap_even
 
 
 @BootstyleBuilderTTk.register_builder('square', 'TScrollbar')
@@ -31,12 +32,12 @@ def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: s
 
     show_arrows = options.get('show_arrows', True)
     if show_arrows:
-        arrow_size = b.scale(18)
+        arrow_size = _snap_even(b.scale(18))
 
         # arrow [left]
-        arrow_left_normal = BootstrapIcon('caret-left-fill', arrow_size, thumb_normal).image
-        arrow_left_active = BootstrapIcon('caret-left-fill', arrow_size, thumb_active).image
-        arrow_left_pressed = BootstrapIcon('caret-left-fill', arrow_size, thumb_pressed).image
+        arrow_left_normal = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_normal)
+        arrow_left_active = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_active)
+        arrow_left_pressed = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.leftarrow', arrow_left_normal,
@@ -49,9 +50,9 @@ def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: s
         )
 
         # arrow [right]
-        arrow_right_normal = BootstrapIcon('caret-right-fill', arrow_size, thumb_normal).image
-        arrow_right_active = BootstrapIcon('caret-right-fill', arrow_size, thumb_active).image
-        arrow_right_pressed = BootstrapIcon('caret-right-fill', arrow_size, thumb_pressed).image
+        arrow_right_normal = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_normal)
+        arrow_right_active = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_active)
+        arrow_right_pressed = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.rightarrow', arrow_right_normal,
@@ -110,12 +111,12 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
 
     show_arrows = options.get('show_arrows', True)
     if show_arrows:
-        arrow_size = b.scale(18)
+        arrow_size = _snap_even(b.scale(18))
 
         # arrow [up]
-        arrow_up_normal = BootstrapIcon('caret-up-fill', arrow_size, thumb_normal).image
-        arrow_up_active = BootstrapIcon('caret-up-fill', arrow_size, thumb_active).image
-        arrow_up_pressed = BootstrapIcon('caret-up-fill', arrow_size, thumb_pressed).image
+        arrow_up_normal = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_normal)
+        arrow_up_active = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_active)
+        arrow_up_pressed = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.uparrow', arrow_up_normal,
@@ -128,9 +129,9 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
         )
 
         # arrow [down]
-        arrow_down_normal = BootstrapIcon('caret-down-fill', arrow_size, thumb_normal).image
-        arrow_down_active = BootstrapIcon('caret-down-fill', arrow_size, thumb_active).image
-        arrow_down_pressed = BootstrapIcon('caret-down-fill', arrow_size, thumb_pressed).image
+        arrow_down_normal = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_normal)
+        arrow_down_active = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_active)
+        arrow_down_pressed = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.downarrow', arrow_down_normal,
@@ -223,12 +224,12 @@ def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, ac
 
     show_arrows = options.get('show_arrows', True)
     if show_arrows:
-        arrow_size = b.scale(18)
+        arrow_size = _snap_even(b.scale(18))
 
         # arrow [up]
-        arrow_up_normal = BootstrapIcon('caret-up-fill', arrow_size, thumb_normal).image
-        arrow_up_active = BootstrapIcon('caret-up-fill', arrow_size, thumb_active).image
-        arrow_up_pressed = BootstrapIcon('caret-up-fill', arrow_size, thumb_pressed).image
+        arrow_up_normal = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_normal)
+        arrow_up_active = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_active)
+        arrow_up_pressed = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.uparrow', arrow_up_normal,
@@ -241,9 +242,9 @@ def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, ac
         )
 
         # arrow [down]
-        arrow_down_normal = BootstrapIcon('caret-down-fill', arrow_size, thumb_normal).image
-        arrow_down_active = BootstrapIcon('caret-down-fill', arrow_size, thumb_active).image
-        arrow_down_pressed = BootstrapIcon('caret-down-fill', arrow_size, thumb_pressed).image
+        arrow_down_normal = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_normal)
+        arrow_down_active = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_active)
+        arrow_down_pressed = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.downarrow', arrow_down_normal,
@@ -308,12 +309,12 @@ def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, 
     show_arrows = options.get('show_arrows', True)
     if show_arrows:
         # arrow elements
-        arrow_size = b.scale(18)
+        arrow_size = _snap_even(b.scale(18))
 
         # arrow [left]
-        arrow_left_normal = BootstrapIcon('caret-left-fill', arrow_size, thumb_normal).image
-        arrow_left_active = BootstrapIcon('caret-left-fill', arrow_size, thumb_active).image
-        arrow_left_pressed = BootstrapIcon('caret-left-fill', arrow_size, thumb_pressed).image
+        arrow_left_normal = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_normal)
+        arrow_left_active = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_active)
+        arrow_left_pressed = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.leftarrow', arrow_left_normal,
@@ -326,9 +327,9 @@ def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, 
         )
 
         # arrow [right]
-        arrow_right_normal = BootstrapIcon('caret-right-fill', arrow_size, thumb_normal).image
-        arrow_right_active = BootstrapIcon('caret-right-fill', arrow_size, thumb_active).image
-        arrow_right_pressed = BootstrapIcon('caret-right-fill', arrow_size, thumb_pressed).image
+        arrow_right_normal = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_normal)
+        arrow_right_active = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_active)
+        arrow_right_pressed = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_pressed)
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.rightarrow', arrow_right_normal,

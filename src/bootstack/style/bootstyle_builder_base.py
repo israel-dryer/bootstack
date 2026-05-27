@@ -6,54 +6,6 @@ from typing import List, Optional, Tuple, Union
 
 from typing_extensions import Any, TypedDict
 
-from ttkbootstrap_icons_bs import BootstrapIcon
-from ttkbootstrap_icons_bs.provider import BootstrapFontProvider
-from ttkbootstrap_icons.providers import BaseFontProvider
-from ttkbootstrap_icons.icon import Icon
-
-# Custom y_bias for better vertical alignment in compound buttons.
-# Default Bootstrap provider uses 0.02.
-_ICON_Y_BIAS = 0.02
-_icon_provider_initialized = False
-
-
-class _TtkBootstrapIconProvider(BootstrapFontProvider):
-    """Custom Bootstrap icon provider with adjusted y_bias for bootstack.
-
-    The default Bootstrap provider uses y_bias=0.02, but bootstack buttons
-    need y_bias=0.08 for proper vertical alignment of icons with text.
-    """
-
-    def __init__(self):
-        # Bypass BootstrapFontProvider.__init__ and call BaseFontProvider directly
-        # to allow setting a custom y_bias value
-        BaseFontProvider.__init__(
-            self,
-            name="bootstrap",
-            display_name="Bootstrap Icons",
-            package="ttkbootstrap_icons_bs.assets",
-            homepage="https://icons.getbootstrap.com/",
-            license_url="https://github.com/twbs/icons/blob/main/LICENSE",
-            icon_version="1.13.1",
-            default_style="outline",
-            y_bias=_ICON_Y_BIAS,
-            styles={
-                "fill": {"filename": "bootstrap.ttf", "predicate": BootstrapFontProvider._is_fill_style},
-                "outline": {"filename": "bootstrap.ttf", "predicate": BootstrapFontProvider._is_outline_style},
-            }
-        )
-
-
-def _ensure_icon_provider():
-    """Initialize the custom icon provider if not already done."""
-    global _icon_provider_initialized
-    if _icon_provider_initialized:
-        return
-    provider = _TtkBootstrapIconProvider()
-    Icon.initialize_with_provider(provider)
-    _icon_provider_initialized = True
-
-
 from bootstack.style.theme_provider import ThemeProvider, use_theme
 from bootstack.style.utility import best_foreground, color_to_hsl, darken_color, lighten_color, mix_colors, \
     muted_foreground as _muted_foreground, relative_luminance
@@ -623,19 +575,10 @@ class BootstyleBuilderBase:
                 cache[key] = img
                 return img
 
-            # Ensure our custom icon provider is initialized with the correct y_bias
-            _ensure_icon_provider()
-
-            # Call the provider directly; it returns an icon object with `.image`
-            try:
-                icon_obj = BootstrapIcon(name=name, size=size, color=color)  # type: ignore[misc]
-            except TypeError:
-                icon_obj = BootstrapIcon(name, size, color)  # type: ignore[misc]
-            if icon_obj is None:
-                return None
-
-            cache[key] = icon_obj.image
-            return icon_obj.image
+            from bootstack._core.images import Image
+            img = Image.get_icon(name, size, color or "black")
+            cache[key] = img
+            return img
 
         state_image_specs: list[tuple[str, Any]] = []
 

@@ -95,24 +95,9 @@ if config.build and config.build.datas.include:
 # Collect package data (themes, fonts, icon glyphmaps, locales, etc.)
 # =============================================================================
 
-# PyInstaller's collect_data_files walks a package and grabs every non-.py
-# file, returning (src, dest) tuples in the form `datas` expects. We use it
-# here for bootstack's own assets, plus a downstream workaround:
-#
-# WORKAROUND (until upstream fixes ship):
-#   ttkbootstrap_icons ships a complete _pyinstaller/ hook directory, but
-#   its pyproject.toml does not declare the `pyinstaller40` entry point, so
-#   PyInstaller never discovers those hooks. ttkbootstrap_icons_bs also has
-#   no hook of its own. Both manifest at runtime as:
-#       ModuleNotFoundError: No module named 'ttkbootstrap_icons_bs.assets'
-#   We bundle their data files manually here so frozen apps actually work.
-#   Tracked at: https://github.com/israel-dryer/bootstack-icons/issues
-#   Once upstream lands the entry point + a `hook-ttkbootstrap_icons_bs.py`,
-#   the two icon-package entries below can be dropped — PyInstaller will
-#   pick them up automatically.
 from PyInstaller.utils.hooks import collect_data_files
 
-for _pkg in ("bootstack", "ttkbootstrap_icons", "ttkbootstrap_icons_bs"):
+for _pkg in ("bootstack",):
     try:
         datas += collect_data_files(_pkg)
     except Exception as _e:  # pragma: no cover
@@ -127,8 +112,6 @@ hiddenimports = [
     "bootstack",
     "bootstack.style",
     "bootstack.widgets",
-    "ttkbootstrap_icons",
-    "ttkbootstrap_icons_bs",
     "PIL",
     "PIL._tkinter_finder",
     "babel.numbers",
