@@ -91,7 +91,7 @@ def build_tab_item_bar_label(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
             ('', surface),
         ]
     )
-    state_spec = _apply_icon_mapping(b, options, state_spec, b.scale(18))
+    state_spec = _apply_icon_mapping(b, options, state_spec, 18)
     b.map_style(ttk_style, **state_spec)
 
 
@@ -162,7 +162,7 @@ def build_tab_item_bar_button(b: BootstyleBuilderTTk, ttk_style: str, accent: Op
             ]
         )
 
-    state_spec = _apply_icon_mapping(b, options, state_spec, b.scale(12))
+    state_spec = _apply_icon_mapping(b, options, state_spec, 12)
     b.map_style(ttk_style, **state_spec)
 
 
@@ -200,5 +200,5 @@ def build_tab_item_icon_button(b: BootstyleBuilderTTk, ttk_style: str, _: Option
         ]
     )
 
-    state_spec = _apply_icon_mapping(b, options, state_spec, b.scale(12))
+    state_spec = _apply_icon_mapping(b, options, state_spec, 12)
     b.map_style(ttk_style, **state_spec)

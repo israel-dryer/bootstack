@@ -37,7 +37,7 @@ import tkinter as tk
 from tkinter import font
 from typing import Any, Optional, Union
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime.shortcuts import format_shortcut
 from bootstack.style.style import get_style
@@ -133,8 +133,6 @@ class MenuManager:
 
         if winsys == 'aqua':
             try:
-                # winfo_rgb returns 16-bit channels; pack into a hex string
-                # BootstrapIcon (and PIL underneath) understands.
                 r, g, b = self.parent.winfo_rgb('systemTextColor')
                 return f'#{r >> 8:02x}{g >> 8:02x}{b >> 8:02x}'
             except tk.TclError:
@@ -148,9 +146,7 @@ class MenuManager:
 
         # Update all menu items (including cascades)
         for menu, index, icon_name, size in self.menu_items.values():
-            # Recreate the icon with new foreground color
-            new_icon = BootstrapIcon(icon_name, size, fg_color)
-
+            new_icon = _ImageService.get_icon(icon_name, size, fg_color)
             try:
                 menu.entryconfigure(index, image=new_icon)
             except tk.TclError:
@@ -188,7 +184,7 @@ class MenuManager:
         if not name:
             return None, None, 0
         try:
-            icon = BootstrapIcon(name, size, self._menu_icon_color())
+            icon = _ImageService.get_icon(name, size, self._menu_icon_color())
         except Exception:
             return None, None, 0
         return icon, name, size

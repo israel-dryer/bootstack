@@ -2,11 +2,11 @@
 import tkinter as tk
 from tkinter import font
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image
-from bootstack.style.builders.utils import normalize_button_density
+from bootstack.style.builders.utils import normalize_button_density, _snap_even
 
 
 def _tk_version_at_least(major: int, minor: int, patch: int) -> bool:
@@ -164,19 +164,20 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
         # Use custom image indicator with user1/user2 states (works on Tk < 8.6.13)
         open_icon = options.get('open_icon', 'chevron-right')
         closed_icon = options.get('close_icon', 'chevron-down')
-        icon_size = b.scale(_treeview_icon_size(density))
+        icon_size = _snap_even(b.scale(_treeview_icon_size(density)))
 
-        expand_icon_normal = BootstrapIcon(open_icon, icon_size, on_surface).image
-        expand_icon_selected = BootstrapIcon(open_icon, icon_size, on_select).image
-        collapse_icon_normal = BootstrapIcon(closed_icon, icon_size, on_surface).image
-        collapse_icon_selected = BootstrapIcon(closed_icon, icon_size, on_select).image
+        expand_icon_normal = _ImageService.get_icon(open_icon, icon_size, on_surface)
+        expand_icon_selected = _ImageService.get_icon(open_icon, icon_size, on_select)
+        collapse_icon_normal = _ImageService.get_icon(closed_icon, icon_size, on_surface)
+        collapse_icon_selected = _ImageService.get_icon(closed_icon, icon_size, on_select)
         leaf = create_transparent_image(icon_size, icon_size)
 
-        indicator_height = 12 if density == 'compact' else 14
+        indicator_height = _snap_even(b.scale(12 if density == 'compact' else 14))
+        indicator_width = _snap_even(icon_size + b.scale(10))
         b.create_style_element_image(
             ElementImage(
                 f'{ttk_style}.indicator', expand_icon_normal,
-                sticky='w', height=b.scale(indicator_height), width=b.scale(icon_size + 10)).state_specs(
+                sticky='w', height=indicator_height, width=indicator_width).state_specs(
                 [
                     ('user2', leaf),
                     ('user1 selected', collapse_icon_selected),

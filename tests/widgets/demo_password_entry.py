@@ -3,7 +3,7 @@ import bootstack as bs
 app = bs.App()
 
 
-pe = bs.PasswordEntry(accent='info')
+pe = bs.PasswordEntry()
 pe.pack(padx=10, pady=10, fill='x')
 
 

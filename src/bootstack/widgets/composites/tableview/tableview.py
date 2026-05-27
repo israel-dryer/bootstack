@@ -16,7 +16,7 @@ from typing_extensions import Literal, TypedDict, Unpack
 
 from bootstack.widgets.types import Master
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
 from bootstack.widgets.primitives.button import Button
@@ -1688,8 +1688,8 @@ class TableView(Frame):
             if fg == self._heading_fg and self._icon_sort_up:
                 return
             self._heading_fg = fg
-            self._icon_sort_up = BootstrapIcon("sort-up", 20, fg)
-            self._icon_sort_down = BootstrapIcon("sort-down", 20, fg)
+            self._icon_sort_up = _ImageService.get_icon("sort-up", 20, fg)
+            self._icon_sort_down = _ImageService.get_icon("sort-down", 20, fg)
         except Exception:
             self._icon_sort_up = None
             self._icon_sort_down = None

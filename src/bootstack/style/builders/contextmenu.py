@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.builders.utils import apply_icon_mapping, button_font, normalize_button_density
@@ -65,8 +65,8 @@ def build_context_check_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
     )
 
     icon_empty = create_transparent_image(16, 16)
-    icon_pressed = BootstrapIcon('check', 16, on_pressed)
-    icon_normal = BootstrapIcon('check', 16, on_surface)
+    icon_pressed = _ImageService.get_icon('check', 16, on_pressed)
+    icon_normal = _ImageService.get_icon('check', 16, on_surface)
 
     state_spec['image'] = [
         ('selected pressed', icon_pressed),
@@ -123,8 +123,8 @@ def build_context_radio_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
     )
 
     icon_empty = create_transparent_image(16, 16)
-    icon_pressed = BootstrapIcon('check', 16, on_pressed)
-    icon_normal = BootstrapIcon('check', 16, on_surface)
+    icon_pressed = _ImageService.get_icon('check', 16, on_pressed)
+    icon_normal = _ImageService.get_icon('check', 16, on_surface)
 
     state_spec['image'] = [
         ('selected pressed', icon_pressed),

@@ -70,7 +70,7 @@ def build_analysis_page(page):
         header,
         text="Run-A15  ·  CH-1 through CH-4  ·  15 samples",
         font="body",
-        accent="secondary",
+        accent="muted",
     ).pack()
 
     # Top row: parameters (left, fixed) | summary + status (right, expands)
@@ -134,7 +134,7 @@ def build_analysis_page(page):
         variant="outline", command=lambda: None,
     ).pack()
     bs.Button(
-        btn_row, text="Export", icon="download", accent="secondary",
+        btn_row, text="Export", icon="download", accent="muted",
         variant="outline", command=lambda: None,
     ).pack()
 
@@ -148,7 +148,7 @@ def build_analysis_page(page):
 
     def _stat_cell(parent, label, value, color=None, big=True):
         cell = bs.PackFrame(parent, direction="vertical", anchor_items="w")
-        bs.Label(cell, text=label, font="caption", accent="secondary").pack()
+        bs.Label(cell, text=label, font="caption", accent="muted").pack()
         bs.Label(
             cell, text=value,
             font="heading-lg[bold]" if big else "body-xl[bold]",
@@ -159,8 +159,8 @@ def build_analysis_page(page):
     row1 = bs.PackFrame(summary, direction="horizontal", gap=18)
     row1.pack(fill=X, pady=(0, 8))
     for label, value, color in [
-        ("Min",    "0.8794", "info"),
-        ("Max",    "2.1583", "info"),
+        ("Min",    "0.8794", "success"),
+        ("Max",    "2.1583", "success"),
         ("Mean",   "1.2543", "primary"),
         ("StdDev", "0.4127", "primary"),
     ]:
@@ -201,17 +201,17 @@ def build_analysis_page(page):
 
     state_row = bs.PackFrame(info, direction="vertical", anchor_items="w")
     state_row.pack(anchor="w")
-    bs.Label(state_row, text="State", font="caption", accent="secondary").pack()
+    bs.Label(state_row, text="State", font="caption", accent="muted").pack()
     bs.Badge(state_row, text="Complete", accent="success", variant="pill").pack(pady=(4, 0))
 
     eta_block = bs.PackFrame(info, direction="vertical", anchor_items="w")
     eta_block.pack(anchor="w")
-    bs.Label(eta_block, text="Elapsed", font="caption", accent="secondary").pack()
+    bs.Label(eta_block, text="Elapsed", font="caption", accent="muted").pack()
     bs.Label(eta_block, text="0:00:42", font="heading-md[bold]").pack()
 
     started_block = bs.PackFrame(info, direction="vertical", anchor_items="w")
     started_block.pack(anchor="w")
-    bs.Label(started_block, text="Started", font="caption", accent="secondary").pack()
+    bs.Label(started_block, text="Started", font="caption", accent="muted").pack()
     bs.Label(started_block, text="13:44:15", font="body[bold]").pack()
 
     # --- Data table (TreeView for compact, no pager) -----------------------
@@ -249,7 +249,7 @@ def build_results_page(page):
         header,
         text="Cross-run readings  ·  filtered & exportable",
         font="body",
-        accent="secondary",
+        accent="muted",
     ).pack()
 
     # Filter toolbar
@@ -305,10 +305,10 @@ def build_results_page(page):
     footer.pack(fill=X, padx=20, pady=(0, 20))
     bs.Label(
         footer, text=f"{len(RESULTS_ROWS)} records",
-        font="body", accent="secondary",
+        font="body", accent="muted",
     ).grid(row=0, column=0, sticky="w")
     bs.Button(
-        footer, text="Export", icon="download", accent="secondary",
+        footer, text="Export", icon="download", accent="muted",
         variant="outline", command=lambda: None,
     ).grid(row=0, column=1, sticky="e")
 

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image, recolor_element_image
@@ -57,13 +57,13 @@ def _create_chevron_images(
         density: Button density ('default' or 'compact')
     """
     size = _chevron_size(density)
-    normal_chevron = BootstrapIcon(icon_name, size=size, color=foreground).image
-    disabled_chevron = BootstrapIcon(icon_name, size=size, color=disabled).image
+    normal_chevron = _ImageService.get_icon(icon_name, size, foreground)
+    disabled_chevron = _ImageService.get_icon(icon_name, size, disabled)
 
     state_specs = [('disabled', disabled_chevron)]
 
     if active:
-        active_chevron = BootstrapIcon(icon_name, size=size, color=active).image
+        active_chevron = _ImageService.get_icon(icon_name, size, active)
         state_specs.extend([
             ('background focus !disabled', active_chevron),
             ('hover !disabled', active_chevron),

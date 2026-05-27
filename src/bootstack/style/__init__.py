@@ -1,5 +1,4 @@
 """Style engine, theming, and typography for bootstack."""
-from ttkbootstrap_icons_bs import BootstrapIcon
 from bootstack.style.style import (
     Style,
     get_style,
@@ -15,7 +14,6 @@ from bootstack.style.theme_provider import register_user_theme
 from bootstack.style.typography import Font, Typography
 
 __all__ = [
-    "BootstrapIcon",
     "Font",
     "Style",
     "Typography",

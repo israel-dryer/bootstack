@@ -36,12 +36,17 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Hashable
+from typing import Any, Hashable
 
-from PIL import Image as PILImage
+from PIL import Image as PILImage, ImageDraw, ImageFilter, ImageFont
 from PIL.ImageTk import PhotoImage as PILPhotoImage
+
+_ICONS_DIR = Path(__file__).parent.parent / "assets" / "icons"
+_ICON_Y_BIAS = 0.02
+_ICON_PAD_FACTOR = 0.10
 
 
 @dataclass(frozen=True)
@@ -91,6 +96,9 @@ class Image:
     """
 
     _cache: dict[Hashable, PILPhotoImage] = {}
+    _icon_font_bytes: bytes | None = None
+    _icon_glyphmap: dict[str, str] | None = None
+    _icon_font_cache: dict[int, Any] = {}
 
     # =========================================================================
     # Cache Management
@@ -281,3 +289,101 @@ class Image:
         pil = PILImage.new("RGBA", (width, height), (255, 255, 255, 0))
         photo = PILPhotoImage(image=pil)
         return cls.set_cached(cache_key, photo)
+
+    # =========================================================================
+    # Icon Rendering
+    # =========================================================================
+
+    @classmethod
+    def _load_icon_assets(cls) -> tuple[bytes, dict[str, str]]:
+        if cls._icon_font_bytes is not None:
+            return cls._icon_font_bytes, cls._icon_glyphmap  # type: ignore[return-value]
+        cls._icon_font_bytes = (_ICONS_DIR / "bootstrap.ttf").read_bytes()
+        raw: dict[str, int] = json.loads((_ICONS_DIR / "glyphmap.json").read_text(encoding="utf-8"))
+        cls._icon_glyphmap = {name: chr(cp) for name, cp in raw.items()}
+        return cls._icon_font_bytes, cls._icon_glyphmap
+
+    @classmethod
+    def _get_icon_font(cls, size: int) -> ImageFont.FreeTypeFont:
+        font = cls._icon_font_cache.get(size)
+        if font is None:
+            font_bytes, _ = cls._load_icon_assets()
+            font = ImageFont.truetype(io.BytesIO(font_bytes), size)
+            cls._icon_font_cache[size] = font
+        return font
+
+    @classmethod
+    def get_icon(cls, name: str, size: int, color: str) -> PILPhotoImage:
+        """Render a Bootstrap icon and return a cached Tk PhotoImage.
+
+        Even-pixel snapping is applied before rendering to eliminate half-pixel
+        LANCZOS blur at non-integer DPI scale factors (e.g., 125%, 150%).
+
+        Args:
+            name: Bootstrap icon name (e.g., ``"house"``, ``"arrow-right-fill"``).
+            size: Requested pixel size. Snapped to the nearest even integer.
+            color: Foreground color as a hex string (e.g., ``"#ffffff"``).
+
+        Returns:
+            A cached Tk-compatible PhotoImage for the icon.
+        """
+        size = size if size % 2 == 0 else size + 1
+        key = ("icon", name, size, color)
+        cached = cls.get_cached(key)
+        if cached is not None:
+            return cached
+        pil = cls._render_icon(name, size, color)
+        photo = PILPhotoImage(image=pil)
+        return cls.set_cached(key, photo)
+
+    @classmethod
+    def _render_icon(cls, name: str, size: int, color: str) -> PILImage.Image:
+        _, glyphmap = cls._load_icon_assets()
+        glyph = glyphmap.get(name)
+        if glyph is None:
+            return PILImage.new("RGBA", (size, size), (0, 0, 0, 0))
+
+        if size < 32:
+            oversample = 3
+        elif size < 64:
+            oversample = 2
+        else:
+            oversample = 1
+
+        canvas_size = size * oversample
+        pad = int(canvas_size * _ICON_PAD_FACTOR)
+        inner_w = canvas_size - 2 * pad
+        inner_h = canvas_size - 2 * pad
+        eff_size = max(1, canvas_size)
+
+        font = cls._get_icon_font(eff_size)
+        ascent, descent = font.getmetrics()
+        bbox = font.getbbox(glyph)
+        glyph_w = bbox[2] - bbox[0]
+        glyph_h = bbox[3] - bbox[1]
+
+        if glyph_w > inner_w or glyph_h > inner_h:
+            scale_factor = min(inner_w / max(glyph_w, 1), inner_h / max(glyph_h, 1)) * 0.95
+            scaled_size = max(1, int(eff_size * scale_factor))
+            font = cls._get_icon_font(scaled_size)
+            ascent, descent = font.getmetrics()
+            bbox = font.getbbox(glyph)
+            glyph_w = bbox[2] - bbox[0]
+            glyph_h = bbox[3] - bbox[1]
+
+        full_height = ascent + descent
+        img = PILImage.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(img)
+
+        dx = pad + (inner_w - glyph_w) // 2 - bbox[0]
+        dy = pad + (inner_h - full_height) // 2 + (ascent - bbox[3])
+        if _ICON_Y_BIAS:
+            dy += int(canvas_size * _ICON_Y_BIAS)
+
+        draw.text((dx, dy), glyph, font=font, fill=color)
+
+        if oversample > 1:
+            img = img.resize((size, size), PILImage.Resampling.LANCZOS)
+            img = img.filter(ImageFilter.UnsharpMask(radius=0.6, percent=60, threshold=0))
+
+        return img

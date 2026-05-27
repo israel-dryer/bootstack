@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from typing import Any, Callable, List, Optional
 
 from bootstack.widgets.primitives import Frame, Label
-from ttkbootstrap_icons_bs import BootstrapIcon
+from bootstack._core.images import Image as _ImageService
 from bootstack.constants import *
 from bootstack.i18n import MessageCatalog
 from .dialog import ButtonRole, Dialog, DialogButton
@@ -116,9 +116,9 @@ class MessageDialog:
                 # Generate icon image
                 if icon_name:
                     if icon_color:
-                        icon_image = BootstrapIcon(icon_name, icon_size, icon_color).image
+                        icon_image = _ImageService.get_icon(icon_name, icon_size, icon_color)
                     else:
-                        icon_image = BootstrapIcon(icon_name, icon_size).image
+                        icon_image = _ImageService.get_icon(icon_name, icon_size, "#000000")
 
                     self._img = icon_image
                     icon_lbl = ttk.Label(container, image=self._img)

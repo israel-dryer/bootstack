@@ -69,6 +69,6 @@ def _apply_icon_mapping(b: BootstyleBuilderTTk, options: dict, state_spec: dict)
     if icon is None:
         return state_spec
 
-    icon = b.normalize_icon_spec(icon, b.scale(20))
+    icon = b.normalize_icon_spec(icon, 20)
     state_spec['image'] = b.map_stateful_icons(icon, state_spec['foreground'])
     return state_spec

@@ -169,7 +169,7 @@ def _list_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
     Returns:
         Scaled icon size in pixels.
     """
-    return b.scale(16) if density == 'compact' else b.scale(18)
+    return 16 if density == 'compact' else 18
 
 
 @BootstyleBuilderTTk.register_builder('icon', 'ListView.TButton')

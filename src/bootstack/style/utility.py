@@ -512,13 +512,17 @@ def recolor_element_image(
         backing = Image.new("RGBA", img.size, (*trans_rgb, 255))
         result = Image.alpha_composite(backing, result)
 
+    def _snap_even(v: int) -> int:
+        return v if v % 2 == 0 else v + 1
+
     # Scale the image
     # Use rounding (+ 0.5) to ensure image size matches metadata dimensions exactly.
     # This prevents centering issues caused by mismatched image/border calculations.
+    # Even-pixel snap eliminates half-pixel LANCZOS blur at 125%/150% DPI scales.
     if scale != 1.0:
         new_size = (
-            max(1, int(result.width * scale + 0.5)),
-            max(1, int(result.height * scale + 0.5))
+            _snap_even(max(1, int(result.width * scale + 0.5))),
+            _snap_even(max(1, int(result.height * scale + 0.5))),
         )
         # Use NEAREST for sharp-edge assets (avoids antialiasing at color boundaries)
         # Use LANCZOS for smooth assets (rounded corners, gradients)
@@ -537,8 +541,8 @@ def recolor_element_image(
     source_padding = info.get("padding", 0)
 
     meta = ElementMeta(
-        width=max(1, int(source_width * scale + 0.5)),
-        height=max(1, int(source_height * scale + 0.5)),
+        width=_snap_even(max(1, int(source_width * scale + 0.5))),
+        height=_snap_even(max(1, int(source_height * scale + 0.5))),
         border=_scale_border_or_padding(source_border, scale),
         padding=_scale_border_or_padding(source_padding, scale),
     )
