@@ -8,6 +8,7 @@ from bootstack.widgets.public.grid import Grid
 from bootstack.widgets.public.app import App
 from bootstack.widgets.public.primitives.button import Button
 from bootstack.widgets.public.primitives.label import Badge, Label
+from bootstack.widgets.public.primitives.textfield import TextField
 
 __all__ = [
     "App",
@@ -22,6 +23,7 @@ __all__ = [
     "PublicContainer",
     "PublicWidgetBase",
     "Subscription",
+    "TextField",
     "UnknownEventError",
     "VStack",
 ]
