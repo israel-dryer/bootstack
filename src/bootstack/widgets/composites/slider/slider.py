@@ -18,6 +18,10 @@ from ._shared import (
 
 
 class Slider(ConfigureDelegationMixin, tk.Frame):
+    # Slider manages its own styling and theming; skip autostyle registration
+    # for this widget and all tk children created inside it.
+    _bs_autostyle = False
+
     """A themed horizontal or vertical slider widget.
 
     Replaces ``ttk.Scale`` with full theming support, optional tick marks,
@@ -154,14 +158,12 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
                 highlightthickness=HL,
                 highlightcolor=self._colors['bg'],
                 highlightbackground=self._colors['bg'],
-                autostyle=False,
                 **kw,
             )
             self.pack_propagate(False)
             self._canvas = tk.Canvas(
                 self, width=1, height=cross_size,
                 bd=0, highlightthickness=0, bg=self._colors['bg'],
-                autostyle=False,
             )
             self._canvas.place(x=0, y=0, relwidth=1, height=cross_size)
         else:
@@ -173,14 +175,12 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
                 highlightthickness=HL,
                 highlightcolor=self._colors['bg'],
                 highlightbackground=self._colors['bg'],
-                autostyle=False,
                 **kw,
             )
             self.pack_propagate(False)
             self._canvas = tk.Canvas(
                 self, width=cross_size, height=1,
                 bd=0, highlightthickness=0, bg=self._colors['bg'],
-                autostyle=False,
             )
             self._canvas.place(x=0, y=0, relheight=1, width=cross_size)
 

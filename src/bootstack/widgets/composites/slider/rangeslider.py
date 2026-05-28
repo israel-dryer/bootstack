@@ -18,6 +18,8 @@ from ._shared import (
 
 
 class RangeSlider(ConfigureDelegationMixin, tk.Frame):
+    _bs_autostyle = False
+
     """A themed two-handle range slider widget.
 
     Provides a low-value and high-value handle that define a selected range
@@ -168,14 +170,12 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
                 highlightthickness=HL,
                 highlightcolor=self._colors['bg'],
                 highlightbackground=self._colors['bg'],
-                autostyle=False,
                 **kw,
             )
             self.pack_propagate(False)
             self._canvas = tk.Canvas(
                 self, width=1, height=cross_size,
                 bd=0, highlightthickness=0, bg=self._colors['bg'],
-                autostyle=False,
             )
             self._canvas.place(x=0, y=0, relwidth=1, height=cross_size)
         else:
@@ -187,14 +187,12 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
                 highlightthickness=HL,
                 highlightcolor=self._colors['bg'],
                 highlightbackground=self._colors['bg'],
-                autostyle=False,
                 **kw,
             )
             self.pack_propagate(False)
             self._canvas = tk.Canvas(
                 self, width=cross_size, height=1,
                 bd=0, highlightthickness=0, bg=self._colors['bg'],
-                autostyle=False,
             )
             self._canvas.place(x=0, y=0, relheight=1, width=cross_size)
 

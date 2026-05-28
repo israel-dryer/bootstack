@@ -456,6 +456,17 @@ class Bootstyle:
 
             # capture bootstrap arguments
             auto_style = kwargs.pop("autostyle", True)
+
+            # Class-level opt-out: widget manages its own styling
+            if auto_style and not getattr(type(self), '_bs_autostyle', True):
+                auto_style = False
+
+            # Parent-level opt-out: parent manages styling for its children
+            if auto_style:
+                master = args[0] if args else kwargs.get('master')
+                if master is not None and not getattr(master, '_bs_autostyle', True):
+                    auto_style = False
+
             inherit_surface = kwargs.pop('inherit_surface', None)
             if inherit_surface is None:
                 inherit_surface = get_app_settings().inherit_surface_color
