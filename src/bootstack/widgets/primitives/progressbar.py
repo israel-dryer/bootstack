@@ -60,11 +60,11 @@ class Progressbar(SignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
 
     def get(self) -> float:
         """Return the current progress value."""
-        return self.cget('value')
+        return float(ttk.Progressbar.cget(self, 'value'))
 
     def set(self, value: float) -> None:
         """Set the progress value."""
-        self.configure(value=value)
+        ttk.Progressbar.configure(self, value=value)
 
     @property
     def value(self) -> float:
