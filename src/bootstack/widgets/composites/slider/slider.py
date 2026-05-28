@@ -268,7 +268,9 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
 
         self._var.trace_add("write", self._on_var_write)
         root = self.nametowidget(".")
-        root.bind("<<ThemeChanged>>", lambda e: self._on_theme_changed(), add="+")
+        _tid = root.bind("<<ThemeChanged>>", lambda e: self._on_theme_changed(), add="+")
+        self.bind("<Destroy>", lambda e, r=root, b=_tid: r.unbind("<<ThemeChanged>>", b), add="+")
+        self.bind("<Map>", lambda e: self._on_map(), add="+")
 
     # ------------------------------------------------------------------
     # Layout helpers
@@ -551,7 +553,15 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._var.set(new)
         self.event_generate("<<Commit>>", data={"value": new})
 
+    def _on_map(self) -> None:
+        if getattr(self, '_theme_update_pending', False):
+            self._on_theme_changed()
+
     def _on_theme_changed(self) -> None:
+        if not self.winfo_viewable():
+            self._theme_update_pending = True
+            return
+        self._theme_update_pending = False
         self._colors = resolve_colors(self._accent, self._surface, get_widget_bg(self.master))
         colors = self._colors
         self.configure(

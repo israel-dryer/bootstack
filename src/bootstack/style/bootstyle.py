@@ -483,15 +483,10 @@ class Bootstyle:
             # ==== Update widget style & register for theme changes =====
 
             from bootstack.style.style import get_style
-            from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
             style = get_style()
-            builder_tk = BootstyleBuilderBuilderTk(
-                theme_provider=style.theme_provider if style else None,
-                style_instance=style
-            )
             surface = getattr(self, '_surface', 'content')
-            builder_tk.call_builder(self, surface=surface)
-
+            style._get_tk_builder().call_builder(self, surface=surface)
+            self._bs_theme_version = style._theme_version
             style.register_tk_widget(self)
 
         return __init__wrapper

@@ -10,7 +10,6 @@ from bootstack._core.mixins.widget import WidgetCapabilitiesMixin
 from bootstack.widgets._internal.wrapper_base import TTKWrapperBase
 from bootstack.widgets.types import Master, StyledKwargs
 from bootstack.style.style import get_style
-from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
 from ..mixins import configure_delegate
 
 
@@ -92,10 +91,7 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
             return
 
         style = get_style()
-        builder_tk = BootstyleBuilderBuilderTk(
-            theme_provider=style.theme_provider if style else None,
-            style_instance=style,
-        )
+        builder_tk = style._get_tk_builder()
 
         for child in self._iter_descendants():
             try:
@@ -136,10 +132,7 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
             return
 
         style = get_style()
-        builder_tk = BootstyleBuilderBuilderTk(
-            theme_provider=style.theme_provider if style else None,
-            style_instance=style,
-        )
+        builder_tk = style._get_tk_builder()
 
         for child in self._iter_descendants():
             try:
