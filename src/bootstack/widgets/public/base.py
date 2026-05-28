@@ -3,10 +3,10 @@ from __future__ import annotations
 import tkinter
 from typing import Any, Callable
 
-from bootstack.widgets.v2.context import current_container
-from bootstack.widgets.v2.events import resolve_event
-from bootstack.widgets.v2.subscription import Subscription
-from bootstack.widgets.v2.exceptions import ParentResolutionError
+from bootstack.widgets.public.context import current_container
+from bootstack.widgets.public.events import resolve_event
+from bootstack.widgets.public.subscription import Subscription
+from bootstack.widgets.public.exceptions import ParentResolutionError
 
 
 class PublicWidgetBase:
@@ -34,7 +34,7 @@ class PublicWidgetBase:
     def _split_layout_kwargs(kwargs: dict) -> dict:
         """Pop and return layout kwargs from `kwargs`, mutating it in place."""
         # Lazy import breaks the container ↔ base circular dependency.
-        from bootstack.widgets.v2.container import (
+        from bootstack.widgets.public.container import (
             PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS,
         )
         place_mode = any(k in kwargs for k in PLACE_TRIGGER_KEYS)

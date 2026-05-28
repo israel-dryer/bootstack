@@ -28,8 +28,8 @@ PLACE_TRIGGER_KEYS = frozenset({"x", "y", "relx", "rely", "relwidth", "relheight
 # ---  PublicContainer  -------------------------------------------------------
 # Imported here (after constants) to avoid circular imports in base.py.
 
-from bootstack.widgets.v2.base import PublicWidgetBase  # noqa: E402
-from bootstack.widgets.v2.context import push_container, pop_container  # noqa: E402
+from bootstack.widgets.public.base import PublicWidgetBase  # noqa: E402
+from bootstack.widgets.public.context import push_container, pop_container  # noqa: E402
 
 
 class PublicContainer(PublicWidgetBase):

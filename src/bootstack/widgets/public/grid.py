@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from bootstack.widgets.primitives.gridframe import GridFrame
-from bootstack.widgets.v2.container import PublicContainer, GRID_KEYS
+from bootstack.widgets.public.container import PublicContainer, GRID_KEYS
 
 
 class Grid(PublicContainer):

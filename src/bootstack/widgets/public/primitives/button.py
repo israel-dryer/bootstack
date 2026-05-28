@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from bootstack.widgets.primitives.button import Button as _InternalButton
-from bootstack.widgets.v2.base import PublicWidgetBase
-from bootstack.widgets.v2.events import register_widget_events
+from bootstack.widgets.public.base import PublicWidgetBase
+from bootstack.widgets.public.events import register_widget_events
 
 
 class Button(PublicWidgetBase):

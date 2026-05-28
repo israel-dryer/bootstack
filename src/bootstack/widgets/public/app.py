@@ -4,7 +4,7 @@ from typing import Any
 
 from bootstack._runtime.app import App as _InternalApp
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.v2.container import PublicContainer, PACK_KEYS
+from bootstack.widgets.public.container import PublicContainer, PACK_KEYS
 
 
 class App(PublicContainer):

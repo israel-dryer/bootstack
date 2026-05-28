@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.v2.container import PublicContainer, PACK_KEYS
+from bootstack.widgets.public.container import PublicContainer, PACK_KEYS
 
 
 class _StackBase(PublicContainer):

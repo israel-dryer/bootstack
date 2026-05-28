@@ -4,11 +4,11 @@ from __future__ import annotations
 import threading
 import pytest
 
-from bootstack.widgets.v2.base import PublicWidgetBase
-from bootstack.widgets.v2.context import push_container, pop_container, current_container, _stack
-from bootstack.widgets.v2.events import resolve_event, register_widget_events, GLOBAL_EVENT_MAP
-from bootstack.widgets.v2.exceptions import UnknownEventError
-from bootstack.widgets.v2.subscription import Subscription
+from bootstack.widgets.public.base import PublicWidgetBase
+from bootstack.widgets.public.context import push_container, pop_container, current_container, _stack
+from bootstack.widgets.public.events import resolve_event, register_widget_events, GLOBAL_EVENT_MAP
+from bootstack.widgets.public.exceptions import UnknownEventError
+from bootstack.widgets.public.subscription import Subscription
 
 
 # ---------------------------------------------------------------------------
@@ -156,7 +156,7 @@ def test_resolve_event_class_map_takes_precedence():
 
 
 def test_event_enum_values_are_strings():
-    from bootstack.widgets.v2.events import Event
+    from bootstack.widgets.public.events import Event
     assert Event.Widget.CLICK == "click"
     assert Event.Input.CHANGE == "change"
     assert Event.App.THEME_CHANGE == "theme_change"
@@ -168,7 +168,7 @@ def test_event_enum_values_are_strings():
 
 @pytest.mark.gui
 def test_button_inside_hstack_placement():
-    from bootstack.widgets.v2 import App, HStack, Button
+    from bootstack.widgets.public import App, HStack, Button
 
     with App(title="Test") as app:
         with HStack(gap=8) as row:
@@ -183,7 +183,7 @@ def test_button_inside_hstack_placement():
 
 @pytest.mark.gui
 def test_explicit_parent_overrides_context_stack():
-    from bootstack.widgets.v2 import App, HStack, VStack, Button
+    from bootstack.widgets.public import App, HStack, VStack, Button
 
     with App() as app:
         with VStack() as outer:
@@ -196,7 +196,7 @@ def test_explicit_parent_overrides_context_stack():
 
 @pytest.mark.gui
 def test_button_tk_property_returns_internal():
-    from bootstack.widgets.v2 import App, VStack, Button
+    from bootstack.widgets.public import App, VStack, Button
     import tkinter.ttk as ttk
 
     with App() as app:
@@ -209,7 +209,7 @@ def test_button_tk_property_returns_internal():
 
 @pytest.mark.gui
 def test_button_on_unknown_event_raises():
-    from bootstack.widgets.v2 import App, VStack, Button
+    from bootstack.widgets.public import App, VStack, Button
 
     with App() as app:
         with VStack():

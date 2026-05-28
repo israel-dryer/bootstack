@@ -4,7 +4,7 @@ import threading
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bootstack.widgets.v2.container import PublicContainer
+    from bootstack.widgets.public.container import PublicContainer
 
 _local = threading.local()
 

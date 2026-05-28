@@ -99,7 +99,7 @@ def resolve_event(public_widget: object, name: str) -> str:
         3. Pass-through literal `<...>` or `<<...>>` strings unchanged.
         4. Raise `UnknownEventError`.
     """
-    from bootstack.widgets.v2.exceptions import UnknownEventError
+    from bootstack.widgets.public.exceptions import UnknownEventError
 
     if name.startswith("<") and name.endswith(">"):
         return name

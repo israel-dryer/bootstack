@@ -526,10 +526,10 @@ See memory `project_api_gaps.md` for full list. Key items:
 
 ## Handoff log
 
-### Session 28 — v2 base layer plan (2026-05-28)
+### Session 28 — public layer plan (2026-05-28)
 
 - **`development/v2_base_layer_plan.md`** — full implementation plan for the
-  v2 public API base layer. 7 phases (A foundations → B `PublicWidgetBase`
+  public API base layer. 7 phases (A foundations → B `PublicWidgetBase`
   → C container protocol → D `HStack`/`VStack`/`Grid` → E `App` →
   F reference `Button` → G smoke tests). Dependencies and acceptance
   criteria are explicit; per-widget migration is deferred.
@@ -540,7 +540,7 @@ See memory `project_api_gaps.md` for full list. Key items:
     avoids shadowing `tk.Widget.tk` (the Tcl interp handle), and makes
     `.pack()`/`.bind()` physically inaccessible on public widgets so the
     escape hatch (`widget.tk.pack(...)`) is the only path to raw Tk.
-  - **File location:** `src/bootstack/widgets/v2/` during development. No
+  - **File location:** `src/bootstack/widgets/public/` during development. No
     edits to existing `widgets/primitives/*` or `_runtime/*` except a
     one-line `Signal.tk` property alias.
   - **`App` owns an internal `PackFrame` content frame.** `app.tk` returns
@@ -551,7 +551,7 @@ See memory `project_api_gaps.md` for full list. Key items:
     `PublicWidgetBase._split_layout_kwargs`, called before the internal
     widget is constructed so pack/grid kwargs never leak into the ttk
     ctor. `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS`, `PLACE_TRIGGER_KEYS` are
-    module-level frozensets in `v2/container.py`. PLACE collisions on
+    module-level frozensets in `public/container.py`. PLACE collisions on
     `width`/`height`/`anchor` are left as widget options (deferred per
     earlier CLAUDE.md decision).
   - **Event resolution is two-level:** widget-class map (walked via MRO)
@@ -598,17 +598,17 @@ criteria. Per-widget migration of the remaining ~40 widgets is out of scope
 for the first PR and follows after the base layer lands.
 
 **Branch:** `feat/public-api-base` off `main`. New code lives at
-`src/bootstack/widgets/v2/`; no edits to existing `widgets/primitives/*` or
+`src/bootstack/widgets/public/`; no edits to existing `widgets/primitives/*` or
 `_runtime/*` except the `Signal.tk` property alias (Phase A6).
 
 **Status: COMPLETE (Session 29).** All 7 phases implemented and passing.
 All acceptance criteria met. Next step: open PR `feat/public-api-base` → `main`,
 then begin per-widget migration.
 
-### Session 29 — v2 base layer implementation (2026-05-28)
+### Session 29 — public layer implementation (2026-05-28)
 
 - **All 7 phases implemented** on `feat/public-api-base`.
-- **Files created under `src/bootstack/widgets/v2/`:**
+- **Files created under `src/bootstack/widgets/public/`:**
   - `exceptions.py` — `BootstackV2Error`, `UnknownEventError`, `ParentResolutionError`
   - `events.py` — `Event` namespace (`_Widget`, `_Input`, `_Selection`, `_App`);
     `GLOBAL_EVENT_MAP`; `register_widget_events`; `resolve_event` (two-level lookup)
@@ -627,7 +627,7 @@ then begin per-widget migration.
 - **`Signal.tk` property** added to `src/bootstack/signals/signal.py` (aliases `var`).
 - **Circular import** between `base.py` and `container.py` resolved by lazy import
   of layout key constants inside `_split_layout_kwargs` static method.
-- **Tests:** `tests/widgets/v2/test_base_layer.py` — 11 non-GUI tests (context
+- **Tests:** `tests/widgets/public/test_base_layer.py` — 11 non-GUI tests (context
   stack, kwarg splitting, event resolution, subscription, Event enum), 6 GUI-gated
   integration tests. All 11 non-GUI tests pass; `pytest.mark.gui` registered in
   `pyproject.toml`.
