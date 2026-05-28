@@ -98,9 +98,10 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
 
         self.bind("<Configure>", self._on_resize)
 
-        # Bind to root to receive theme change events
         root = self.nametowidget('.')
-        root.bind('<<ThemeChanged>>', lambda e: self._update_theme_colors(), add='+')
+        _tid = root.bind('<<ThemeChanged>>', lambda e: self._update_theme_colors(), add='+')
+        self.bind("<Destroy>", lambda e, r=root, b=_tid: r.unbind("<<ThemeChanged>>", b), add="+")
+        self.bind("<Map>", lambda e: self._on_map(), add="+")
 
         self._draw()
 
@@ -251,6 +252,10 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         self._text = self._textvariable.get()
         self._draw()
 
+    def _on_map(self) -> None:
+        if getattr(self, '_theme_update_pending', False):
+            self._update_theme_colors()
+
     def _update_theme_colors(self) -> None:
         """Update widget colors based on current theme and accent."""
         from bootstack.style.style import get_style
@@ -260,6 +265,10 @@ class FloodGauge(ConfigureDelegationMixin, Canvas):
         self._bar_color = b.color(self._accent)
         self._trough_color = b.border(b.subtle(self._accent, surface))
         self._text_color = b.on_color(self._bar_color)
+        if not self.winfo_viewable():
+            self._theme_update_pending = True
+            return
+        self._theme_update_pending = False
         self._draw()
 
     def _on_resize(self, event: Event) -> None:

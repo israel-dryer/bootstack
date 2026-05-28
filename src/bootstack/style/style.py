@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tkinter
 import weakref
 from tkinter.ttk import Style as ttkStyle
 from typing import Dict, Optional, Set
@@ -77,6 +78,12 @@ class Style(ttkStyle):
 
         # Track legacy Tk widgets for theme-change restyling
         self._tk_widgets = weakref.WeakSet()
+
+        # Incremented on every theme change so widgets can detect a missed restyle
+        self._theme_version: int = 0
+
+        # Cached Tk builder — lazily initialized, reused across all widget creations
+        self._cached_tk_builder = None
 
         self.theme_use(theme)
         self._initialized = True
@@ -177,9 +184,13 @@ class Style(ttkStyle):
             accent: Optional accent token (e.g., "success", "blue[100]")
             options: Optional custom style options
         """
-        # Check if already exists in this theme
+        # Fast path: Python-side set lookup before crossing into Tcl
+        if ttk_style in self._style_registry:
+            return
+        # Fallback for styles known to Tcl but not our registry (e.g. external theme changes)
         if self.style_exists(ttk_style):
-            return  # Already created for this theme
+            self.register_style(ttk_style, options)
+            return
 
         # Call builder with widget class, variant, and parsed accent
         self._style_builder.call_builder(
@@ -229,6 +240,9 @@ class Style(ttkStyle):
 
         self._rebuild_all_styles()
 
+        # Bump version so hidden widgets know they missed this theme change
+        self._theme_version += 1
+
         # Re-apply Tk widget styling (legacy widgets)
         self._rebuild_all_tk_widgets()
 
@@ -275,21 +289,60 @@ class Style(ttkStyle):
                 **options
             )
 
+    def _get_tk_builder(self):
+        """Return the cached Tk builder, creating it on first call."""
+        if self._cached_tk_builder is None:
+            from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
+            self._cached_tk_builder = BootstyleBuilderBuilderTk(
+                theme_provider=self._theme_provider,
+                style_instance=self,
+            )
+        return self._cached_tk_builder
+
+    def _restyle_single_tk_widget(self, widget) -> None:
+        """Restyle one Tk widget and stamp it with the current theme version."""
+        try:
+            surface = getattr(widget, '_surface', 'content')
+            self._get_tk_builder().call_builder(widget, surface=surface)
+            widget._bs_theme_version = self._theme_version
+        except Exception:
+            pass
+
     def register_tk_widget(self, widget) -> None:
         """Register a Tk widget to be restyled on theme changes."""
         self._tk_widgets.add(widget)
 
-    def _rebuild_all_tk_widgets(self) -> None:
-        """Restyle all registered Tk widgets on theme change."""
-        from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
-        builder_tk = BootstyleBuilderBuilderTk(theme_provider=self._theme_provider, style_instance=self)
+        # Lazily restyle if a theme change happened while the widget was hidden.
+        # <Map> fires when a widget transitions from unmapped to mapped (e.g. when
+        # its page is shown after pack_forget), so this is the right hook point.
+        style = self
 
+        def _on_map(event):
+            w = event.widget
+            if getattr(w, '_bs_theme_version', -1) != style._theme_version:
+                style._restyle_single_tk_widget(w)
+
+        # Use BaseWidget.bind to bypass any bind() override on subclasses
+        # (e.g. _MultilineCore forwards bind() to self.text, which doesn't exist
+        # yet when this is called from inside __init__).
+        tkinter.BaseWidget.bind(widget, '<Map>', _on_map, add='+')
+
+    def _rebuild_all_tk_widgets(self) -> None:
+        """Restyle all currently visible Tk widgets on theme change.
+
+        Widgets that are hidden (winfo_viewable() == 0, e.g. on a background page)
+        are skipped here — their <Map> handler will restyle them the next time
+        their page is shown.
+        """
+        version = self._theme_version
         for widget in list(self._tk_widgets):
             try:
-                surface = getattr(widget, '_surface', 'background')
-                builder_tk.call_builder(widget, surface=surface)
+                if not widget.winfo_viewable():
+                    continue  # deferred to <Map> handler
+                surface = getattr(widget, '_surface', 'content')
+                self._get_tk_builder().call_builder(widget, surface=surface)
+                widget._bs_theme_version = version
             except Exception:
-                # ignore incompatible or unmapped widgets
                 pass
 
     @staticmethod
