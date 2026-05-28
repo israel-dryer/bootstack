@@ -109,6 +109,11 @@ filename = "pyproject.toml"
 search = "version = \"{current_version}\""
 replace = "version = \"{new_version}\""
 
+[tool.pytest.ini_options]
+markers = [
+    "gui: requires a Tk display (deselect with -m 'not gui')",
+]
+
 [tool.ruff.lint]
 # F401: imported but unused
 # __init__.py uses dynamic __all__ + lazy __getattr__ + TYPE_CHECKING re-exports
