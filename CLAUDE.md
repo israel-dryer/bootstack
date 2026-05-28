@@ -520,6 +520,7 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
 - `TabView(variant='pill')` crashes — no pill style builder for `TabItem.TFrame`
 - `on_changed`/`on_input` callback shape inconsistency vs `on_valid`/`on_invalid`
+- `Field` message label (`_message_lbl`) shows gray background when `required=True` auto-enables `show_message` and validation first fires — background doesn't match surface
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
 
 ---
