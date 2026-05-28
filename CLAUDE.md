@@ -17,7 +17,9 @@ and a CLI (`bootstack start`, `bootstack gallery`, etc.).
   **Implemented (merged to main):** Toplevel polish (PR #45), TabView parity (PR #46).
   **Completed + PRed:** TextArea/CodeEditor on `feat/textarea-codeeditor` — all phases
   done including replace bar, TextArea form field parity, docstring cleanup. See Session 23 handoff.
-  **Remaining:** Slider/RangeSlider, TreeView, Menu, Notebook removal + Spinbox rename.
+  **Completed (on main, not yet PRed):** Slider/RangeSlider — full custom widget replacing
+  `ttk.Scale`; `bs.Scale` removed from public API. See Session 24 handoff.
+  **Remaining:** TreeView, Menu, Notebook removal + Spinbox rename.
 - **Docs build tool:** `zensical` (config `zensical.toml`). Build: `zensical build`.
   Preview: `zensical serve`.
 - **Link validation is disabled** (`invalid_links = false` in `zensical.toml`).
@@ -276,7 +278,6 @@ All public names accessible via `bs.*` — internal paths with `_` prefix are no
     - `ToggleGroup` `padding=` kwarg causes `TypeError` (field.py insert_addon)
     - `insert_addon` passes `density=` to `CheckButton` causing `TclError`
     - `Meter` deprecated param names not yet cleaned from source
-    - Scale needs API design pass (`from_`/`to` naming, `on_changed`, `<<Change>>`)
     - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
     - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
     - `TabView(variant='pill')` crashes — style builder has no pill builder for
@@ -385,6 +386,45 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 ---
 
 ## Handoff log
+
+### Session 24 — Slider/RangeSlider redesign + Scale removal (2026-05-28)
+
+**Branch:** `main` (direct commits, not yet PRed).
+
+**What was built:**
+
+- **`bs.Slider`** — full custom canvas widget replacing `ttk.Scale`. Horizontal and
+  vertical orientations, `show_value` badge (orientation-aware pixel measurement via
+  `tkfont`), tick marks with major/minor, `show_minmax` end labels, disabled state
+  (muted handle + fill), Signal-first binding, `<<Change>>` with `prev_value`,
+  `<<Commit>>` on release. Configure delegates for `value`, `minvalue`, `maxvalue`,
+  `accent`, `state`, `tick_format`, `tick_interval`, `show_value`, `minor_ticks`,
+  `tick_labels`, `surface`.
+- **`bs.RangeSlider`** — two-handle variant. Lo/hi signals, `<<Change>>` with
+  `prev_lovalue`/`prev_hivalue`, correct vertical fill math
+  (`fill_start = end - lo_pos`, `fill_end = end - hi_pos` for CCW-rotated PIL image).
+  Same configure delegate set as Slider.
+- **`bs.LabeledScale`** — rewritten as a thin subclass of Slider with `show_value=True`.
+  `dtype=` casts the `value` property return type. `self.scale` retained for compat.
+- **`bs.Scale` removed** — `primitives/scale.py` deleted; stripped from all `__init__.py`
+  exports. `form.py` editor type `'scale'` kept as deprecated alias → `'slider'` is
+  canonical. `cli/demo.py` and `examples/demo_signals_widgets.py` updated to use Slider.
+- **TypedDicts:** `SliderEventData`, `SliderCommitEventData`, `RangeSliderEventData`,
+  `RangeSliderCommitEventData` all exported from `bs.*`.
+- **Visual test:** `tests/features/slider_v2.py`
+
+**Key architecture notes:**
+- PIL `rotate(90)` is CCW: left of horizontal image → bottom of vertical track.
+  Single-slider fill: `fill_px = end - pos`. RangeSlider fill: `fill_start = end - lo_pos`,
+  `fill_end = end - hi_pos` (NOT `hi_pos - start` / `lo_pos - start`).
+- Vertical badge_zone uses `tkfont.Font.measure()` for actual badge width, not the
+  fixed `BADGE_H` height constant.
+- Vertical tick_zone uses `_measure_max_label_width()` for actual label pixel width.
+- `style/builders/scale.py` retained — still used for `ttk.Scale` auto-styling.
+
+**What's NOT done:** Slider/RangeSlider API reference page. PR to main not opened yet.
+
+---
 
 ### Session 23 — CodeEditor Phase 8 — PygmentsHighlighter (2026-05-18)
 
@@ -522,8 +562,8 @@ Two widget redesign RFCs implemented and merged to `main`.
 **Known gap surfaced:** `TabView(variant='pill')` crashes — no pill builder registered
 for `TabItem.TFrame`. Noted in open item #10 and memory `project_api_gaps.md`.
 
-**What's NOT done:** Remaining redesign RFCs (TextArea/CodeEditor, Slider/RangeSlider,
-TreeView, Menu, Notebook removal + Spinbox rename). Docs work unchanged.
+**What's NOT done:** Remaining redesign RFCs (TextArea/CodeEditor, TreeView, Menu,
+Notebook removal + Spinbox rename). Docs work unchanged.
 
 ---
 

@@ -2,9 +2,7 @@ import bootstack as bs
 
 app = bs.App()
 
-
-pe = bs.PasswordEntry()
-pe.pack(padx=10, pady=10, fill='x')
-
+bs.TextEntry().pack(padx=10, pady=10)
+bs.PasswordEntry().pack(padx=10, pady=10)
 
 app.mainloop()

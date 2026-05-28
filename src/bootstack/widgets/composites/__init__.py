@@ -14,6 +14,7 @@ from bootstack.widgets.composites.sidenav import (
 )
 from bootstack.widgets.composites.tabs import Tabs, TabView
 from bootstack.widgets.composites.selectbox import SelectBox
+from bootstack.widgets.composites.slider import Slider, RangeSlider
 from bootstack.widgets.composites.toolbar import Toolbar
 
 __all__ = [
@@ -26,11 +27,13 @@ __all__ = [
     'MemoryDataSource',
     'DataSourceProtocol',
     'MenuBar',
+    'RangeSlider',
     'SideNav',
     'SideNavItem',
     'SideNavGroup',
     'SideNavHeader',
     'SideNavSeparator',
+    'Slider',
     'Tabs',
     'TabView',
     'SelectBox',

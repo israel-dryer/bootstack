@@ -168,19 +168,17 @@ class SignalsDemo(bs.Window):
         frame.columnconfigure(1, weight=1)
 
     def _create_scale_section(self, parent):
-        """Create scale widget section with signal binding."""
-        frame = bs.LabelFrame(parent, text="Scale Widget with Signal", padding=15)
+        """Create slider widget section with signal binding."""
+        frame = bs.LabelFrame(parent, text="Slider Widget with Signal", padding=15)
         frame.pack(fill="x", pady=(0, 15))
 
         bs.Label(frame, text="Volume:").grid(row=0, column=0, sticky="w", padx=(0, 10))
 
-        # Scale widget connected to volume signal
-        scale = bs.Scale(
+        scale = bs.Slider(
             frame,
-            from_=0,
-            to=100,
+            minvalue=0,
+            maxvalue=100,
             signal=self.volume,
-            bootstyle="info"
         )
         scale.grid(row=0, column=1, sticky="ew", padx=(0, 10))
 

@@ -20,7 +20,7 @@ from bootstack.widgets.mixins import configure_delegate
 from bootstack.widgets.composites.numericentry import NumericEntry
 from bootstack.widgets.composites.tabs.tabview import TabView
 from bootstack.widgets.composites.passwordentry import PasswordEntry
-from bootstack.widgets.primitives.scale import Scale
+from bootstack.widgets.composites.slider.slider import Slider
 from bootstack.widgets.composites.selectbox import SelectBox
 from bootstack.widgets.primitives.spinbox import Spinbox
 from bootstack.widgets.composites.textentry import TextEntry
@@ -45,7 +45,8 @@ EditorType = Literal[
     'toggle',
     'switch',
     'checkbutton',
-    'scale',
+    'slider',
+    'scale',  # deprecated alias for 'slider'
 ]
 
 
@@ -589,8 +590,13 @@ class Form(Frame):
                 field_widget = Switch(container, variable=variable, **filtered_options)
             elif editor == 'checkbutton':
                 field_widget = CheckButton(container, variable=variable, **filtered_options)
-            elif editor == 'scale':
-                field_widget = Scale(container, variable=variable, **filtered_options)
+            elif editor in ('slider', 'scale'):
+                slider_opts = dict(filtered_options)
+                if 'from_' in slider_opts:
+                    slider_opts['minvalue'] = slider_opts.pop('from_')
+                if 'to' in slider_opts:
+                    slider_opts['maxvalue'] = slider_opts.pop('to')
+                field_widget = Slider(container, variable=variable, **slider_opts)
             else:
                 field_widget = TextEntry(
                     container, value=initial_value or "", label=label_text, textvariable=variable, **options)
@@ -801,7 +807,7 @@ class Form(Frame):
         dtype = item.dtype
         if editor in ('checkbutton', 'toggle'):
             return BooleanVar(value=bool(initial) if initial is not None else False)
-        if editor in ('numericentry', 'spinbox', 'scale') or dtype in ('int', int, 'float', float):
+        if editor in ('numericentry', 'spinbox', 'slider', 'scale') or dtype in ('int', int, 'float', float):
             if dtype in ('float', float):
                 return DoubleVar(value=float(initial) if initial is not None else 0.0)
             return IntVar(value=int(initial) if initial is not None else 0)

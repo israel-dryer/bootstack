@@ -171,7 +171,7 @@ class SideNav(Frame):
         if self._collapsible:
             self._menu_button = Button(
                 self._pane_frame,
-                icon='list',
+                icon='layout-sidebar',
                 icon_only=True,
                 variant='ghost',
                 command=self.toggle_pane,

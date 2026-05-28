@@ -843,7 +843,7 @@ class TableView(Frame):
         if self._show_column_chooser:
             self._column_chooser_btn = Button(
                 bar,
-                icon="layout-three-columns",
+                icon="table-columns",
                 icon_only=True,
                 accent="foreground",
                 variant="ghost",
@@ -875,7 +875,7 @@ class TableView(Frame):
         if self._editing['adding']:
             Button(
                 bar,
-                icon="plus-lg",
+                icon="plus-circle",
                 text="table.add_record",
                 accent="foreground",
                 variant="ghost",

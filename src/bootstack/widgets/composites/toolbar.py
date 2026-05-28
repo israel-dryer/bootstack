@@ -109,7 +109,7 @@ class Toolbar(Frame):
         # Maximize/Restore button
         self._maximize_btn = Button(
             self._controls_frame,
-            icon='app',
+            icon='fullscreen',
             icon_only=True,
             variant='ghost',
             density='compact',
@@ -141,10 +141,10 @@ class Toolbar(Frame):
         # Check current state and toggle
         if window.state() == 'zoomed':
             window.state('normal')
-            self._maximize_btn.configure(icon='app')
+            self._maximize_btn.configure(icon='fullscreen')
         else:
             window.state('zoomed')
-            self._maximize_btn.configure(icon='copy')
+            self._maximize_btn.configure(icon='fullscreen-exit')
 
     def _on_close(self):
         """Handle close button click."""

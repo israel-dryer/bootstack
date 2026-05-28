@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from bootstack.widgets.primitives.progressbar import Progressbar
     from bootstack.widgets.primitives.radiobutton import RadioButton
     from bootstack.widgets.primitives.radiotoggle import RadioToggle
-    from bootstack.widgets.primitives.scale import Scale
     from bootstack.widgets.primitives.scrollbar import Scrollbar
     from bootstack.widgets.primitives.separator import Separator
     from bootstack.widgets.primitives.sizegrip import SizeGrip
@@ -44,7 +43,6 @@ if TYPE_CHECKING:
     from bootstack.widgets.composites.field import Field, FieldOptions
     from bootstack.widgets.composites.floodgauge import FloodGauge
     from bootstack.widgets.composites.form import Form
-    from bootstack.widgets.composites.labeledscale import LabeledScale
     from bootstack.widgets.composites.list import ListItem, ListView
     from bootstack.widgets.composites.list.listitem import ListItemKwargs
     from bootstack.widgets.composites.menubar import MenuBar
@@ -73,6 +71,7 @@ if TYPE_CHECKING:
     from bootstack.widgets.composites.textentry import TextEntry
     from bootstack.widgets.composites.timeentry import TimeEntry
     from bootstack.widgets.composites.toast import Toast
+    from bootstack.widgets.composites.slider import Slider, RangeSlider, SliderEventData, SliderCommitEventData, RangeSliderEventData, RangeSliderCommitEventData
     from bootstack.widgets.composites.togglegroup import ToggleGroup
     from bootstack.widgets.composites.toolbar import Toolbar
     from bootstack.widgets.composites.tooltip import ToolTip
@@ -124,13 +123,13 @@ __all__ = [
     'Badge', 'Button', 'Card', 'CheckButton', 'CheckToggle', 'Combobox',
     'Entry', 'Frame', 'GridFrame', 'Label', 'LabelFrame',
     'OptionMenu', 'PackFrame', 'PanedWindow', 'Progressbar',
-    'RadioButton', 'RadioToggle', 'Scale', 'Scrollbar', 'Separator',
+    'RadioButton', 'RadioToggle', 'Scrollbar', 'Separator',
     'SizeGrip', 'Spinbox', 'Switch', 'TreeView',
     # Composites
     'Accordion', 'AppShell', 'ButtonGroup', 'Calendar', 'CompositeFrame',
     'CompositeFrameKwargs', 'ContextMenu', 'ContextMenuItem', 'DateEntry',
     'DropdownButton', 'Expander', 'Field', 'FieldOptions', 'FloodGauge',
-    'Form', 'LabeledScale', 'ListItem', 'ListItemKwargs', 'ListView',
+    'Form', 'ListItem', 'ListItemKwargs', 'ListView',
     'MenuBar', 'Meter', 'NumericEntry', 'PageStack', 'PasswordEntry',
     'PathEntry', 'RadioGroup', 'TextArea', 'CodeEditor', 'EditFilter', 'ScrollView', 'SelectBox',
     'SideNav', 'SideNavItem', 'SideNavGroup', 'SideNavHeader', 'SideNavSeparator',

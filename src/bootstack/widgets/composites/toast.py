@@ -247,7 +247,7 @@ class Toast:
         if self._show_close_button:
             bs.Button(
                 header,
-                icon="x-lg",
+                icon="x",
                 accent=muted_foreground,
                 variant="ghost",
                 style_options={"icon_only": True},

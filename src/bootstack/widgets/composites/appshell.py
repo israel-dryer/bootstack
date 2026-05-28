@@ -184,7 +184,7 @@ class AppShell(App):
             # Hamburger button (only when nav is present)
             if show_nav:
                 self._toolbar.add_button(
-                    icon='list',
+                    icon='layout-sidebar',
                     command=self._toggle_nav,
                 )
 

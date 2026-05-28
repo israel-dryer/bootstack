@@ -66,10 +66,11 @@ if TYPE_CHECKING:
         CheckButton, CheckToggle, Combobox, ContextMenu, ContextMenuItem,
         DateEntry, DropdownButton, Entry, Expander, Field, FieldOptions,
         FloodGauge, Form, Frame, GridFrame, Label, LabelFrame,
-        LabeledScale, ListItem, ListView, MenuBar, Meter,
+        ListItem, ListView, MenuBar, Meter,
         NumericEntry, OptionMenu, PackFrame, PanedWindow,
         PageStack, PasswordEntry, PathEntry, Progressbar, RadioButton,
-        RadioGroup, RadioToggle, Scale, Scrollbar,
+        RadioGroup, RadioToggle, Scrollbar,
+        Slider, RangeSlider, SliderEventData, SliderCommitEventData, RangeSliderEventData, RangeSliderCommitEventData,
         TextArea, TextAreaInputEventData, TextAreaValidationEventData,
         CodeEditor, EditFilter,
         ScrollView, SelectBox, Separator, SideNav, SideNavItem,
@@ -115,7 +116,7 @@ _TK_EXPORTS = [
 _TTK_PRIMITIVES = [
     "Button", "CheckButton", "Combobox", "Entry", "Frame", "Label",
     "LabelFrame", "OptionMenu", "PanedWindow",
-    "Progressbar", "RadioButton", "Scale", "Scrollbar", "Separator",
+    "Progressbar", "RadioButton", "Scrollbar", "Separator",
     "SizeGrip", "Spinbox", "TreeView",
 ]
 
@@ -158,7 +159,6 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.primitives.progressbar": ["Progressbar"],
     "bootstack.widgets.primitives.radiobutton": ["RadioButton"],
     "bootstack.widgets.primitives.radiotoggle": ["RadioToggle"],
-    "bootstack.widgets.primitives.scale": ["Scale"],
     "bootstack.widgets.primitives.scrollbar": ["Scrollbar"],
     "bootstack.widgets.primitives.separator": ["Separator"],
     "bootstack.widgets.primitives.sizegrip": ["SizeGrip"],
@@ -176,7 +176,6 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.field": ["Field", "FieldOptions"],
     "bootstack.widgets.composites.floodgauge": ["FloodGauge"],
     "bootstack.widgets.composites.form": ["Form"],
-    "bootstack.widgets.composites.labeledscale": ["LabeledScale"],
     "bootstack.widgets.composites.compositeframe": ["CompositeFrame", "CompositeFrameKwargs"],
     "bootstack.widgets.composites.list": ["ListItem", "ListView"],
     "bootstack.widgets.composites.list.listitem": ["ListItemKwargs"],
@@ -187,6 +186,7 @@ _MODULE_EXPORTS = {
     "bootstack.widgets.composites.passwordentry": ["PasswordEntry"],
     "bootstack.widgets.composites.pathentry": ["PathEntry"],
     "bootstack.widgets.composites.radiogroup": ["RadioGroup"],
+    "bootstack.widgets.composites.slider": ["Slider", "RangeSlider", "SliderEventData", "SliderCommitEventData", "RangeSliderEventData", "RangeSliderCommitEventData"],
     "bootstack.widgets.composites.textarea": [
         "TextArea", "TextAreaInputEventData", "TextAreaValidationEventData",
         "CodeEditor",

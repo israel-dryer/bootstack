@@ -60,7 +60,7 @@ class SearchOverlay(PackFrame):
         _fr = PackFrame(self, direction="horizontal").pack(fill="x")
 
         self._close_btn = Button(
-            _fr, icon="x-lg", icon_only=True, variant="ghost",
+            _fr, icon="x", icon_only=True, variant="ghost",
             density="compact", command=self.hide,
         )
         self._close_btn.pack()
@@ -93,13 +93,13 @@ class SearchOverlay(PackFrame):
         self._count_lbl.pack(padx=(16, 0))
 
         self._prev_btn = Button(
-            _mc, icon="arrow-up", icon_only=True, variant="ghost",
+            _mc, icon="chevron-up", icon_only=True, variant="ghost",
             density="compact", command=self._prev_match,
         )
         self._prev_btn.pack()
 
         self._next_btn = Button(
-            _mc, icon="arrow-down", icon_only=True, variant="ghost",
+            _mc, icon="chevron-down", icon_only=True, variant="ghost",
             density="compact", command=self._next_match,
         )
         self._next_btn.pack()
