@@ -24,6 +24,21 @@ PLACE_KEYS = frozenset({
 # Presence of any of these signals "use place() instead of pack()/grid()"
 PLACE_TRIGGER_KEYS = frozenset({"x", "y", "relx", "rely", "relwidth", "relheight"})
 
+# Human-readable aliases for Tk's single-character fill values.
+# Accepted everywhere fill= or fill_items= appears in the public API.
+_FILL_ALIASES: dict[str, str] = {
+    "horizontal": "x",
+    "vertical":   "y",
+    "all":        "both",
+}
+
+
+def normalize_fill(value: str | None) -> str | None:
+    """Resolve a fill alias to its Tk value, passing through unknowns unchanged."""
+    if value is None:
+        return None
+    return _FILL_ALIASES.get(value, value)
+
 
 # ---  PublicContainer  -------------------------------------------------------
 # Imported here (after constants) to avoid circular imports in base.py.
@@ -53,6 +68,8 @@ class PublicContainer(PublicWidgetBase):
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         """Place `child._internal` under this container."""
+        if "fill" in layout_kw:
+            layout_kw["fill"] = normalize_fill(layout_kw["fill"])
         place_mode = any(k in layout_kw for k in PLACE_TRIGGER_KEYS)
         tk_widget = child._internal
 

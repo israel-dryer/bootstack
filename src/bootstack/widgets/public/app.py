@@ -4,7 +4,7 @@ from typing import Any
 
 from bootstack._runtime.app import App as _InternalApp
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.public.container import PublicContainer, PACK_KEYS
+from bootstack.widgets.public.container import PublicContainer, PACK_KEYS, normalize_fill
 
 
 class App(PublicContainer):
@@ -52,7 +52,7 @@ class App(PublicContainer):
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
             "gap": gap,
-            "fill_items": fill_items,
+            "fill_items": normalize_fill(fill_items),
             "expand_items": expand_items,
             "anchor_items": anchor_items,
         }
