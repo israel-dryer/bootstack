@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from bootstack.widgets.primitives.packframe import PackFrame
-from bootstack.widgets.public.container import PublicContainer, PACK_KEYS
+from bootstack.widgets.public.container import PublicContainer, PACK_KEYS, normalize_fill
 
 
 class _StackBase(PublicContainer):
@@ -36,7 +36,7 @@ class _StackBase(PublicContainer):
 
         layout_kw: dict[str, Any] = {}
         if fill is not None:
-            layout_kw["fill"] = fill
+            layout_kw["fill"] = normalize_fill(fill)
         if expand is not None:
             layout_kw["expand"] = expand
         if anchor is not None:
@@ -47,7 +47,7 @@ class _StackBase(PublicContainer):
         frame_kwargs: dict[str, Any] = {
             "direction": self._direction,
             "gap": gap,
-            "fill_items": fill_items,
+            "fill_items": normalize_fill(fill_items),
             "expand_items": expand_items,
             "anchor_items": anchor_items,
         }
