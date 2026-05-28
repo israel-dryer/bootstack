@@ -7,14 +7,17 @@ from bootstack.widgets.public.stacks import HStack, VStack
 from bootstack.widgets.public.grid import Grid
 from bootstack.widgets.public.app import App
 from bootstack.widgets.public.primitives.button import Button
+from bootstack.widgets.public.primitives.label import Badge, Label
 
 __all__ = [
     "App",
-    "Button",
+    "Badge",
     "BootstackV2Error",
+    "Button",
     "Event",
     "Grid",
     "HStack",
+    "Label",
     "ParentResolutionError",
     "PublicContainer",
     "PublicWidgetBase",
