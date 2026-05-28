@@ -178,17 +178,10 @@ padding = 0
 
 # Scale (slider)
 
-[images.slider_handle_focus]
-file = "slider-handle-focus.png"
-width = 36
-height = 36
-border = 0
-padding = 0
-
 [images.slider_handle]
 file = "slider-handle.png"
-width = 36
-height = 36
+width = 44
+height = 44
 border = 0
 padding = 0
 

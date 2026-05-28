@@ -330,7 +330,7 @@ def _build_text_inputs_page(page):
 
 
 def _build_numeric_page(page):
-    """NumericEntry, SpinnerEntry, Scale, LabeledScale, DateEntry, TimeEntry."""
+    """NumericEntry, SpinnerEntry, Slider, DateEntry, TimeEntry."""
     bs.Label(
         page, text="Numeric & Date", font="heading-xl",
     ).pack(anchor=W, padx=20, pady=(20, 10))
@@ -363,17 +363,15 @@ def _build_numeric_page(page):
         "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], value="Jan",
     ).pack(fill=X)
 
-    # Scale + LabeledScale
-    group3 = bs.LabelFrame(page, text="Scale & LabeledScale", padding=15)
+    # Slider
+    group3 = bs.LabelFrame(page, text="Slider", padding=15)
     group3.pack(fill=X, padx=20, pady=(0, 10))
 
-    bs.Label(group3, text="Scale:").pack(anchor=W)
-    bs.Scale(group3, from_=0, to=100, value=50).pack(fill=X, pady=(0, 12))
+    bs.Label(group3, text="Basic:").pack(anchor=W)
+    bs.Slider(group3, value=50).pack(fill=X, pady=(0, 12))
 
-    bs.Label(group3, text="LabeledScale (with value display):").pack(anchor=W)
-    bs.LabeledScale(
-        group3, minvalue=0, maxvalue=100, value=65,
-    ).pack(fill=X, pady=(0, 4))
+    bs.Label(group3, text="With value badge:").pack(anchor=W)
+    bs.Slider(group3, value=65, show_value=True, tick_interval=25).pack(fill=X, pady=(0, 4))
 
     # DateEntry + TimeEntry
     group4 = bs.LabelFrame(page, text="DateEntry & TimeEntry", padding=15)
@@ -677,7 +675,7 @@ def _build_data_page(page):
 
 
 def _build_progress_page(page):
-    """Progressbar, Meter, FloodGauge, Scale (interactive)."""
+    """Progressbar, Meter, FloodGauge, Slider (interactive)."""
     bs.Label(
         page, text="Progress & Meters", font="heading-xl",
     ).pack(anchor=W, padx=20, pady=(20, 10))
@@ -690,13 +688,13 @@ def _build_progress_page(page):
 
     slider_value = Signal[float](65.0)
 
-    # Scale driving progress bars
+    # Slider driving progress bars
     group = bs.LabelFrame(
-        page, text="Scale (drag to control progress bars)", padding=15,
+        page, text="Slider (drag to control progress bars)", padding=15,
     )
     group.pack(fill=X, padx=20, pady=(0, 10))
 
-    bs.Scale(group, from_=0, to=100, signal=slider_value).pack(fill=X)
+    bs.Slider(group, minvalue=0, maxvalue=100, signal=slider_value).pack(fill=X)
 
     # Progressbar
     group2 = bs.LabelFrame(page, text="Progressbar", padding=15)

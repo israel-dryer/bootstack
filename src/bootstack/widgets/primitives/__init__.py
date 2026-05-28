@@ -16,7 +16,6 @@ from .panedwindow import PanedWindow
 from .progressbar import Progressbar
 from .radiobutton import RadioButton
 from .radiotoggle import RadioToggle
-from .scale import Scale
 from .scrollbar import Scrollbar
 from .separator import Separator
 from .sizegrip import SizeGrip
@@ -41,7 +40,6 @@ __all__ = [
     "Progressbar",
     "RadioButton",
     "RadioToggle",
-    "Scale",
     "Scrollbar",
     "Separator",
     "SizeGrip",

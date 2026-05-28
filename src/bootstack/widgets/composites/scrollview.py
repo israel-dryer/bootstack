@@ -357,7 +357,9 @@ class ScrollView(Frame):
         self.horizontal_scrollbar.grid_remove()
 
     def _on_canvas_configure(self, event):
-        """Update visibility when the viewport size changes."""
+        """Pin content width to viewport and update visibility."""
+        if self._window_id and self._direction in ('vertical', 'both'):
+            self.canvas.itemconfig(self._window_id, width=event.width)
         self._update_scrollbar_visibility()
 
     def _on_canvas_scroll_y(self, first, last):

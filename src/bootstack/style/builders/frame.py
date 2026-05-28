@@ -32,16 +32,11 @@ def build_card(b: BootstyleBuilderTTk, ttk_style: str, _: Optional[str] = None, 
     surface = b.color(surface_token)
     stroke = b.border(surface)
 
-    if show_border:
-        border_img = recolor_element_image('card', surface, stroke, surface, surface)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.border',
-                border_img.image,
-                border=border_img.meta.border,
-                padding=border_img.meta.border,
-                sticky="nsew")
-        )
-        b.create_style_layout(ttk_style, Element(f'{ttk_style}.border', sticky="nsew", border=border_img.meta.border))
-
-    b.configure_style(ttk_style, background=surface)
+    b.configure_style(
+        ttk_style,
+        background=surface,
+        bordercolor=stroke,
+        darkcolor=surface,
+        lightcolor=surface,
+        relief='raised' if show_border else 'flat',
+    )

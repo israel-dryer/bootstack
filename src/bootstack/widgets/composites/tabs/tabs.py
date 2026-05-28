@@ -204,7 +204,7 @@ class Tabs(Frame):
             self._add_button = Button(
                 self._tab_bar,
                 text='New',
-                icon='plus',
+                icon='plus-lg',
                 variant='ghost',
                 padding=2,
                 command=self._on_add_click,

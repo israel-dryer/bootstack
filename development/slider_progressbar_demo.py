@@ -7,17 +7,10 @@ Run: python development/slider_progressbar_demo.py
 """
 import tkinter as tk
 from tkinter import ttk
-
-try:
-    from PIL import Image, ImageDraw, ImageTk
-    _PIL = True
-except ImportError:
-    _PIL = False
+from PIL import Image, ImageDraw, ImageTk
 
 
 def _make_handle(size: int, fill: str, border: str, border_px: int = 3):
-    if not _PIL:
-        return None
     s = size * 2
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -25,6 +18,21 @@ def _make_handle(size: int, fill: str, border: str, border_px: int = 3):
     p = border_px * 2
     d.ellipse([p, p, s - 1 - p, s - 1 - p], fill=fill)
     return ImageTk.PhotoImage(img.resize((size, size), Image.LANCZOS))
+
+
+def _make_track(track_w: int, track_h: int, fill_start: int, fill_end: int,
+                trough_color: str, fill_color: str):
+    if track_w < 1:
+        return None
+    r = track_h // 2
+    img = Image.new("RGBA", (track_w, track_h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([0, 0, track_w - 1, track_h - 1], radius=r, fill=trough_color)
+    fw = fill_end - fill_start
+    if fw >= 1:
+        d.rounded_rectangle([fill_start, 0, min(fill_end, track_w) - 1, track_h - 1],
+                            radius=r, fill=fill_color)
+    return ImageTk.PhotoImage(img)
 
 
 class _Slider(tk.Frame):
@@ -37,9 +45,10 @@ class _Slider(tk.Frame):
                  accent="#0d6efd", **kw):
         handle_size = handle_img.width() if handle_img else 18
         bg = kw.get("bg", master.cget("bg"))
-        super().__init__(master, height=handle_size,
+        _HL = 2
+        super().__init__(master, height=handle_size + _HL * 2,
                          takefocus=True,
-                         highlightthickness=2,
+                         highlightthickness=_HL,
                          highlightcolor=accent,
                          highlightbackground=bg,
                          **kw)
@@ -47,16 +56,15 @@ class _Slider(tk.Frame):
 
         self._max = maximum
         self._half = handle_size // 2
+        self._accent = accent
         self._var = tk.DoubleVar(value=value)
         self._handle_img = handle_img
 
         self._canvas = tk.Canvas(self, height=self.TRACK_H, bg=bg, highlightthickness=0)
         self._canvas.place(x=self._half, rely=0.5, anchor="w",
                            height=self.TRACK_H, width=100)
-        self._trough = self._canvas.create_rectangle(
-            0, 0, 100, self.TRACK_H, fill=self.TROUGH_COLOR, outline="")
-        self._fill = self._canvas.create_rectangle(
-            0, 0, 0, self.TRACK_H, fill=accent, outline="")
+        self._track_photo = None
+        self._track_img = self._canvas.create_image(0, 0, anchor="nw")
 
         if handle_img:
             self._handle = tk.Label(self, image=handle_img, bd=0, bg=bg, cursor="hand2")
@@ -69,16 +77,15 @@ class _Slider(tk.Frame):
             w.bind("<Button-1>", self._on_click)
             w.bind("<B1-Motion>", self._on_drag)
 
-        self.bind("<Left>",       lambda e: self._step(-self.STEP))
-        self.bind("<Right>",      lambda e: self._step(+self.STEP))
-        self.bind("<Down>",       lambda e: self._step(-self.STEP))
-        self.bind("<Up>",         lambda e: self._step(+self.STEP))
+        self.bind("<Left>",        lambda e: self._step(-self.STEP))
+        self.bind("<Right>",       lambda e: self._step(+self.STEP))
+        self.bind("<Down>",        lambda e: self._step(-self.STEP))
+        self.bind("<Up>",          lambda e: self._step(+self.STEP))
         self.bind("<Shift-Left>",  lambda e: self._step(-self.STEP_LARGE))
         self.bind("<Shift-Right>", lambda e: self._step(+self.STEP_LARGE))
-        self.bind("<Home>",       lambda e: self._var.set(0))
-        self.bind("<End>",        lambda e: self._var.set(self._max))
+        self.bind("<Home>",        lambda e: self._var.set(0))
+        self.bind("<End>",         lambda e: self._var.set(self._max))
 
-        # Clicking track/handle focuses the frame for keyboard input
         for w in (self._canvas, self._handle):
             w.bind("<Button-1>", self._focus_and_click, add=True)
 
@@ -91,13 +98,12 @@ class _Slider(tk.Frame):
     def _on_configure(self, event: tk.Event):
         w = event.width
         if w > self._half * 2:
-            track_w = w - self._half * 2
-            self._canvas.place_configure(width=track_w)
-            self._canvas.coords(self._trough, 0, 0, track_w, self.TRACK_H)
+            self._canvas.place_configure(width=w - self._half * 2)
             self._sync()
 
     def _track_range(self):
-        return self._half, self.winfo_width() - self._half
+        hl = int(self.cget("highlightthickness"))
+        return self._half, self.winfo_width() - 2 * hl - self._half
 
     def _on_click(self, event: tk.Event):
         x = event.widget.winfo_x() + event.x
@@ -115,8 +121,12 @@ class _Slider(tk.Frame):
         start, end = self._track_range()
         ratio = self._var.get() / self._max
         track_w = end - start
-        self._canvas.coords(self._fill, 0, 0, int(ratio * track_w), self.TRACK_H)
-        self._handle.place_configure(x=start + int(ratio * track_w))
+        fill_px = int(ratio * track_w)
+        self._track_photo = _make_track(
+            int(track_w), self.TRACK_H, 0, fill_px, self.TROUGH_COLOR, self._accent)
+        if self._track_photo:
+            self._canvas.itemconfig(self._track_img, image=self._track_photo)
+        self._handle.place_configure(x=start + fill_px)
 
     @property
     def value(self) -> float:
@@ -133,9 +143,10 @@ class _RangeSlider(tk.Frame):
                  accent="#0d6efd", **kw):
         handle_size = handle_img.width() if handle_img else 18
         bg = kw.get("bg", master.cget("bg"))
-        super().__init__(master, height=handle_size,
+        _HL = 2
+        super().__init__(master, height=handle_size + _HL * 2,
                          takefocus=True,
-                         highlightthickness=2,
+                         highlightthickness=_HL,
                          highlightcolor=accent,
                          highlightbackground=bg,
                          **kw)
@@ -143,19 +154,18 @@ class _RangeSlider(tk.Frame):
 
         self._max = maximum
         self._half = handle_size // 2
+        self._accent = accent
         self._lo = tk.DoubleVar(value=lo)
         self._hi = tk.DoubleVar(value=hi)
         self._handle_img = handle_img
         self._dragging = None
-        self._focus_handle = "lo"  # which handle receives keyboard input
+        self._focus_handle = "lo"
 
         self._canvas = tk.Canvas(self, height=self.TRACK_H, bg=bg, highlightthickness=0)
         self._canvas.place(x=self._half, rely=0.5, anchor="w",
                            height=self.TRACK_H, width=100)
-        self._trough = self._canvas.create_rectangle(
-            0, 0, 100, self.TRACK_H, fill=self.TROUGH_COLOR, outline="")
-        self._fill = self._canvas.create_rectangle(
-            0, 0, 0, self.TRACK_H, fill=accent, outline="")
+        self._track_photo = None
+        self._track_img = self._canvas.create_image(0, 0, anchor="nw")
 
         if handle_img:
             self._handle_lo = tk.Label(self, image=handle_img, bd=0, bg=bg, cursor="hand2")
@@ -194,13 +204,12 @@ class _RangeSlider(tk.Frame):
     def _on_configure(self, event: tk.Event):
         w = event.width
         if w > self._half * 2:
-            track_w = w - self._half * 2
-            self._canvas.place_configure(width=track_w)
-            self._canvas.coords(self._trough, 0, 0, track_w, self.TRACK_H)
+            self._canvas.place_configure(width=w - self._half * 2)
             self._sync()
 
     def _track_range(self):
-        return self._half, self.winfo_width() - self._half
+        hl = int(self.cget("highlightthickness"))
+        return self._half, self.winfo_width() - 2 * hl - self._half
 
     def _x_to_value(self, x: int) -> float:
         start, end = self._track_range()
@@ -251,14 +260,17 @@ class _RangeSlider(tk.Frame):
 
     def _cycle_handle(self, event: tk.Event):
         self._focus_handle = "hi" if self._focus_handle == "lo" else "lo"
-        return "break"  # prevent Tab from moving focus out of the widget
+        return "break"
 
     def _sync(self, *_):
         start, end = self._track_range()
         track_w = end - start
         lo_x = int((self._lo.get() / self._max) * track_w)
         hi_x = int((self._hi.get() / self._max) * track_w)
-        self._canvas.coords(self._fill, lo_x, 0, hi_x, self.TRACK_H)
+        self._track_photo = _make_track(
+            int(track_w), self.TRACK_H, lo_x, hi_x, self.TROUGH_COLOR, self._accent)
+        if self._track_photo:
+            self._canvas.itemconfig(self._track_img, image=self._track_photo)
         self._handle_lo.place_configure(x=start + lo_x)
         self._handle_hi.place_configure(x=start + hi_x)
 
@@ -321,3 +333,4 @@ class Demo(tk.Tk):
 
 if __name__ == "__main__":
     Demo().mainloop()
+
