@@ -310,6 +310,11 @@ class Signal(Generic[T]):
     def var(self) -> tk.Variable:
         return self._var
 
+    @property
+    def tk(self) -> tk.Variable:
+        """Underlying `tk.Variable`. UNSUPPORTED — escape-hatch use only."""
+        return self._var
+
     def __str__(self) -> str:
         return self._name
 

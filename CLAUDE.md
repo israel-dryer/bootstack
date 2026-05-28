@@ -526,6 +526,49 @@ See memory `project_api_gaps.md` for full list. Key items:
 
 ## Handoff log
 
+### Session 28 — v2 base layer plan (2026-05-28)
+
+- **`development/v2_base_layer_plan.md`** — full implementation plan for the
+  v2 public API base layer. 7 phases (A foundations → B `PublicWidgetBase`
+  → C container protocol → D `HStack`/`VStack`/`Grid` → E `App` →
+  F reference `Button` → G smoke tests). Dependencies and acceptance
+  criteria are explicit; per-widget migration is deferred.
+- **Key architectural decisions:**
+  - **Composition, not inheritance.** Public widgets are plain Python
+    objects holding an internal `tk.Widget` as `self._internal`, reachable
+    via the `.tk` property. They are NOT `tk.Widget` subclasses. Reasons:
+    avoids shadowing `tk.Widget.tk` (the Tcl interp handle), and makes
+    `.pack()`/`.bind()` physically inaccessible on public widgets so the
+    escape hatch (`widget.tk.pack(...)`) is the only path to raw Tk.
+  - **File location:** `src/bootstack/widgets/v2/` during development. No
+    edits to existing `widgets/primitives/*` or `_runtime/*` except a
+    one-line `Signal.tk` property alias.
+  - **`App` owns an internal `PackFrame` content frame.** `app.tk` returns
+    the `tk.Tk` root; children are parented to and placed in the content
+    frame via `App._child_master()` returning `self._content_frame`. The
+    settled "App behaves as a VStack" design.
+  - **Layout-key splitting** lives in
+    `PublicWidgetBase._split_layout_kwargs`, called before the internal
+    widget is constructed so pack/grid kwargs never leak into the ttk
+    ctor. `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS`, `PLACE_TRIGGER_KEYS` are
+    module-level frozensets in `v2/container.py`. PLACE collisions on
+    `width`/`height`/`anchor` are left as widget options (deferred per
+    earlier CLAUDE.md decision).
+  - **Event resolution is two-level:** widget-class map (walked via MRO)
+    → `GLOBAL_EVENT_MAP` → literal `<...>` pass-through → `UnknownEventError`.
+    `Event.Widget.CLICK` etc. are `str`-valued enum members so they
+    compare equal to plain strings. The global map holds only true
+    cross-widget events; widget-specific virtuals like `<<TreeviewSelect>>`
+    register per-class via `register_widget_events(cls, mapping)`.
+  - **`Subscription`** wraps `(internal_widget, sequence, bind_id)`. Holds
+    a reference to the internal widget so `.cancel()` can call
+    `unbind(sequence, bind_id)`. Idempotent; context-manager support.
+  - **Constructor order** for every public widget: resolve parent → split
+    layout kwargs → construct internal → attach to parent. Subclasses
+    don't call `super().__init__()` (there is no Python super to call);
+    base provides static helpers.
+- **Next step:** Sonnet executes the plan on branch `feat/public-api-base`.
+
 ### Session 27 — API design + autostyle pre-work (2026-05-28)
 
 - **Extensive API design session.** All target API decisions settled and
@@ -544,78 +587,53 @@ See memory `project_api_gaps.md` for full list. Key items:
 
 ---
 
-## Opus implementation briefing (read this before planning)
+## v2 base layer — implementation status
 
-**What you are being asked to do:** Produce a step-by-step implementation plan
-for the bootstack public API base layer. Sonnet will execute from your plan, so
-it must be specific enough that each step is unambiguous — file paths, class
-names, method signatures, what calls what.
+**Plan written:** `development/v2_base_layer_plan.md` (Session 28). Covers
+the base layer only: context stack, `PublicWidgetBase`, `Subscription`,
+`Event` enum + two-level resolution, container `guide_layout` protocol,
+`HStack`/`VStack`/`Grid`, `App`, and `Button` as a reference primitive.
+Structured in 7 phases (A–G) with explicit dependencies and acceptance
+criteria. Per-widget migration of the remaining ~40 widgets is out of scope
+for the first PR and follows after the base layer lands.
 
-**What exists today:** A working internal widget library (TTK/Tk wrappers,
-theming, signals, composites). The target API is a clean public layer over those
-internals. Users never touch `tk.*`, `ttk.*`, or any internal class.
+**Branch:** `feat/public-api-base` off `main`. New code lives at
+`src/bootstack/widgets/v2/`; no edits to existing `widgets/primitives/*` or
+`_runtime/*` except the `Signal.tk` property alias (Phase A6).
 
-**What needs to be built first (the base layer):**
+**Status: COMPLETE (Session 29).** All 7 phases implemented and passing.
+All acceptance criteria met. Next step: open PR `feat/public-api-base` → `main`,
+then begin per-widget migration.
 
-1. **Context stack** (`src/bootstack/_runtime/context.py` or similar)
-   - Thread-local stack: `push_container(widget)`, `pop_container()`,
-     `current_container() → widget | None`
-   - `parent=` kwarg resolution: explicit `parent=` → context stack → root window
+### Session 29 — v2 base layer implementation (2026-05-28)
 
-2. **`PublicWidgetBase`** — the base every public widget inherits from
-   - Resolves parent via context stack
-   - Splits layout kwargs from widget kwargs (`PACK_KEYS`, `GRID_KEYS`,
-     `PLACE_KEYS` frozen sets)
-   - Calls parent's `guide_layout(child, layout_kw)` → merges container
-     defaults with child overrides → calls `pack()`/`grid()`/`place()`
-   - Exposes `.tk` property (underlying internal widget)
-   - `__enter__`/`__exit__` for use as context manager (pushes/pops stack)
-
-3. **`Subscription`** (`src/bootstack/signals/subscription.py` or similar)
-   - Wraps a Tk bind ID + widget + sequence
-   - `.cancel()` — calls `widget.unbind(sequence, bind_id)`
-   - Context manager support — cancels on `__exit__`
-
-4. **`Event` enum** (`src/bootstack/events.py` or similar)
-   - Full namespace as documented in "Target API design decisions"
-   - String values that map to Tk sequences via two-level lookup
-   - `GLOBAL_EVENT_MAP` and per-widget-class override maps
-
-5. **`on()` / `emit()` methods** on `PublicWidgetBase`
-   - `on(event, handler) → Subscription`
-   - `emit(event, data={})`
-   - Two-level resolution: widget-class map → global map → `UnknownEventError`
-
-6. **Container `guide_layout` protocol**
-   - `HStack`, `VStack`, `Grid` each implement `guide_layout(child, method,
-     options) → (method, merged_options)`
-   - Container defaults (gap, fill, expand, anchor) merged with child overrides
-   - Child placement is automatic — no `.attach()` required
-
-**Key files to read before planning:**
-- `CLAUDE.md` — all settled design decisions
-- `development/v2_api_proposal.md` — full target API per widget
-- `src/bootstack/widgets/_internal/wrapper_base.py` — `TTKWrapperBase`,
-  `ConfigureDelegationMixin` — what public widgets will wrap
-- `src/bootstack/style/bootstyle.py` — `override_ttk_widget_constructor`,
-  `override_tk_widget_constructor` — autostyle mechanism
-- `src/bootstack/_core/publisher.py` — current pub/sub (being replaced by
-  `Subscription` for the public API)
-- `src/bootstack/widgets/primitives/packframe.py` and `gridframe.py` —
-  existing layout guidance logic to adapt/reuse
-- `src/bootstack/signals/signal.py` — `Signal[T]` implementation
-
-**Constraints to respect:**
-- Internal widgets are unchanged — public layer wraps them, does not replace
-- No circular imports — public layer imports internal; internal never imports public
-- The `autostyle` mechanism (`_bs_autostyle`) is the established pattern for
-  canvas-based composites that manage their own theming
-- Branch: `feat/public-api-base` off `main`
-
-**Output format:** A numbered implementation plan. Each step should include:
-the file(s) to create or modify, the specific classes/functions/methods to
-write, any non-obvious design decisions, and dependencies on prior steps.
-Group into phases if some steps must come before others can start.
+- **All 7 phases implemented** on `feat/public-api-base`.
+- **Files created under `src/bootstack/widgets/v2/`:**
+  - `exceptions.py` — `BootstackV2Error`, `UnknownEventError`, `ParentResolutionError`
+  - `events.py` — `Event` namespace (`_Widget`, `_Input`, `_Selection`, `_App`);
+    `GLOBAL_EVENT_MAP`; `register_widget_events`; `resolve_event` (two-level lookup)
+  - `subscription.py` — `Subscription` (idempotent cancel, context-manager support)
+  - `context.py` — thread-local container stack (`push_container`, `pop_container`,
+    `current_container`)
+  - `container.py` — `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS`, `PLACE_TRIGGER_KEYS`
+    constants + `PublicContainer` class with `guide_layout`, `__enter__`/`__exit__`
+  - `base.py` — `PublicWidgetBase` with `_resolve_parent`, `_split_layout_kwargs`,
+    `_attach_to_parent`, `.tk` property, `.on()`, `.emit()`
+  - `stacks.py` — `HStack`, `VStack` (wrap `PackFrame`)
+  - `grid.py` — `Grid` (wraps `GridFrame`)
+  - `app.py` — `App` (wraps `_runtime.app.App` + internal `PackFrame` content frame)
+  - `primitives/button.py` — reference `Button` implementation
+  - `__init__.py` — re-exports all public symbols
+- **`Signal.tk` property** added to `src/bootstack/signals/signal.py` (aliases `var`).
+- **Circular import** between `base.py` and `container.py` resolved by lazy import
+  of layout key constants inside `_split_layout_kwargs` static method.
+- **Tests:** `tests/widgets/v2/test_base_layer.py` — 11 non-GUI tests (context
+  stack, kwarg splitting, event resolution, subscription, Event enum), 6 GUI-gated
+  integration tests. All 11 non-GUI tests pass; `pytest.mark.gui` registered in
+  `pyproject.toml`.
+- **Acceptance criteria verified:** imports, `btn.tk` returns `ttk.Button`,
+  `Subscription.cancel()` works, `UnknownEventError` raised for unknown events,
+  no regressions in existing test suite.
 
 ### Session 26 — Performance fixes (2026-05-28)
 
