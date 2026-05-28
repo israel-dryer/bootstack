@@ -122,7 +122,10 @@ class TextArea(PublicWidgetBase):
 
     def select_all(self) -> None:
         """Select all text content."""
-        self._internal._core.text.tag_add("sel", "1.0", "end")
+        tw = self._internal._core.text
+        tw.focus_set()
+        tw.tag_add("sel", "1.0", "end-1c")
+        tw.mark_set("insert", "end-1c")
 
     # ----- Event shorthands -----
 
