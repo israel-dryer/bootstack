@@ -6,13 +6,15 @@ from bootstack.widgets.public.primitives.numericentry import NumericEntry
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
 from bootstack.widgets.public.primitives.select import Select
+from bootstack.widgets.public.primitives.passwordentry import PasswordEntry
 from bootstack.widgets.public.primitives.separator import Separator
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
+from bootstack.widgets.public.primitives.textarea import TextArea
 from bootstack.widgets.public.primitives.textfield import TextField
 
 __all__ = [
     "Badge", "Button", "Checkbox", "Gauge", "Label", "NumericEntry",
-    "ProgressBar", "RadioGroup", "RangeSlider", "Select", "Separator",
-    "Slider", "Spinbox", "Switch", "TextField", "ToggleButton",
+    "PasswordEntry", "ProgressBar", "RadioGroup", "RangeSlider", "Select",
+    "Separator", "Slider", "Spinbox", "Switch", "TextArea", "TextField", "ToggleButton",
 ]
