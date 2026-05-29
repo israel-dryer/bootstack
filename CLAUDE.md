@@ -638,6 +638,60 @@ then begin per-widget migration.
   `Subscription.cancel()` works, `UnknownEventError` raised for unknown events,
   no regressions in existing test suite.
 
+### Session 30 — Per-widget migration (2026-05-28)
+
+Continued migrating internal widgets to the public layer. All widgets live in
+`src/bootstack/widgets/public/primitives/`. Each PR followed the same pattern:
+wrap the highest-level internal, rename Tk-isms, add a visual test under
+`tests/features/`, open PR.
+
+**Widgets completed this session (all merged to `main`):**
+- **PR #55** — `Label`, `Badge` (`_internal_class` pattern for Badge subclass)
+- **PR #56** — `TextField` (wraps `composites/TextEntry`; overrides `on()` to
+  route `<<Change>>` etc. to inner `_entry`)
+- **PR #57** — `Checkbox`, `Switch`, `ToggleButton` (shared `_BooleanControlBase`;
+  `command=` wired to generate `<<Change>>`/`<<ToggleOn>>`/`<<ToggleOff>>`)
+- **PR #58** — `RadioGroup` (fixes `options=` gap; signal trace → `<<Change>>`)
+- **PR #59** — `Select` (wraps `SelectBox`), `NumericEntry` (wraps `NumericEntry`;
+  `min_value=`/`max_value=`/`step=` replace `minvalue=`/`maxvalue=`/`increment=`)
+- **PR #60** — `Slider`, `RangeSlider` (canvas-based; events fire on widget directly;
+  value setters coerce to float; `RangeSlider.value` → `(lo, hi)` tuple)
+- **PR #61** — `ProgressBar`, `Gauge` (wraps `Meter`; **fixes Progressbar setter
+  infinite recursion** — `get()`/`set()` now call `ttk.Progressbar` directly);
+  `style=` replaces `meter_type=`
+- **PR #62** — `Spinbox`, `Separator`; **fill= aliases** (`"horizontal"`→`"x"`,
+  `"vertical"`→`"y"`, `"all"`→`"both"`) in `container.py`/`stacks.py`/`app.py`
+- **PR #63** — `PasswordEntry` (`mask_char=`, `show_toggle=`, `reveal()`/`hide()`),
+  `TextArea` (`_core.text` event routing; `placeholder=` supported; `select_all()`
+  fix: `focus_set()` + `end-1c`)
+- **PR #64** — `Expander` (`PublicContainer`; children → `_content_frame`),
+  `Accordion` (`add()` → `_AccordionSection` context manager), `ToggleGroup`
+  (fixes `options=` gap; `mode='single'|'multi'`)
+
+**Key patterns established:**
+- Field-composite wrappers (TextField, Select, NumericEntry, PasswordEntry) override
+  `on()` to route input events to `self._internal._entry`
+- TextArea routes events to `self._internal._core.text`
+- Canvas/frame widgets (Slider, ProgressBar, Expander) bind directly on `self._internal`
+- `_BooleanControlBase` / `_internal_class` for shared-constructor widget families
+- Signal trace → `event_generate("<<Change>>")` for composites whose change
+  notification doesn't go through Tk's bind system (RadioGroup, ToggleGroup)
+
+**Bugs fixed in internals:**
+- `Progressbar.get()`/`set()` infinite recursion — bypasses delegate with
+  `ttk.Progressbar.configure(self, ...)` directly
+- `TextArea.select_all()` — needs `focus_set()` and `"end-1c"` not `"end"`
+
+**Known issues logged (see Open source bugs above):**
+- `TextArea` border: raw Tk Text border instead of Field-style themed border
+- `ToggleGroup` solid variant: poor contrast on selected buttons
+- `Field` message label gray background on `required=True` fields
+- Field composite default width grows with addon slots (gap #13)
+
+**Next step:** `Tabs` (TabView composite), then `Toast`, `Tooltip`, `Card`.
+`Tabs` wraps `composites/tabs/` — check `TabView.__init__` and `<<TabChanged>>`
+event routing before implementing. Branch off `main` as `feat/public-tabs`.
+
 ### Session 26 — Performance fixes (2026-05-28)
 
 - **PR #53** (`perf/theme-change-accumulation` → `main`).
