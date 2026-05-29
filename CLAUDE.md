@@ -426,11 +426,14 @@ src/bootstack/
 ├── style/          Style, Theme, Typography, builders
 ├── validation/     ValidationRule, ValidationResult
 └── widgets/
-    ├── _internal/  TTKWrapperBase (private)
-    ├── _parts/     entry sub-components (private)
-    ├── composites/
-    ├── mixins/
-    ├── primitives/
+    ├── _core/      public framework internals (base, container, context, events, exceptions, subscription)
+    ├── _impl/      all internal widget implementation (never import directly)
+    │   ├── primitives/   TTK widget subclasses
+    │   ├── composites/   complex internal widgets
+    │   ├── mixins/       shared mixins
+    │   ├── _internal/    TTKWrapperBase
+    │   └── _parts/       entry sub-components
+    ├── app.py, stacks.py, button.py, ...  (flat public widget surface, ~40 files)
     └── types.py    Shared type aliases and base TypedDicts
 ```
 
@@ -826,9 +829,41 @@ Deferred because: ~540 import changes across ~150 files; purely internal
 reorganization with no public API effect; cleaner as its own focused PR.
 Branch: `refactor/widget-structure` off `main` after #81 merges.
 
+**Remaining work (after Session 35):**
+- ~~Merge PR #81~~ — done
+- ~~`refactor/widget-structure`~~ — done (Session 36, PR pending)
+- Gallery/examples rebuild using public API (separate effort)
+- ToggleGroup solid variant contrast — user handling
+  `src/bootstack/style/builders/toolbutton.py`
+
+### Session 36 — Widget directory restructure (2026-05-29)
+
+**PR:** `refactor/widget-structure` → `main` (branch, pending merge)
+
+**What changed:** Migrated `widgets/` to the settled target layout from Session 35.
+All 204 files changed (~540 import updates across ~150 source files + 25 test files).
+No public API effect — `bs.*` names unchanged.
+
+**New structure:**
+- `widgets/_core/` — public framework internals (base, container, context, events,
+  exceptions, subscription); re-exported via `widgets/_core/__init__.py`
+- `widgets/_impl/` — all internal implementation (composites, mixins, primitives,
+  _internal, _parts); never import directly
+- `widgets/*.py` — flat public widget surface (~40 files, formerly `widgets/public/primitives/`)
+- `widgets/__init__.py` — lean (TYPE_CHECKING + TTK_WIDGETS/TK_WIDGETS); public API
+  lives in `bootstack/__init__.py` which imports from flat module paths directly
+
+**Key design note — circular import:** `widgets/__init__` cannot eagerly import widgets
+because `constants.py` → `widgets.types` triggers `widgets/__init__` before `style.style`
+is initialized. `bootstack/__init__` now imports directly from flat module paths (e.g.
+`from bootstack.widgets.button import Button`) instead of `from bootstack.widgets import (...)`.
+
+**Tests:** 28 non-GUI tests pass. Pre-existing CLI spec template failure unchanged
+(`test_spec_template_bundles_icon_package_assets` — `ttkbootstrap_icons` not in
+rewritten spec template from Session 35, unrelated to this PR).
+
 **Remaining work:**
-- Merge PR #81
-- `refactor/widget-structure` — widget directory restructure (see above)
+- Merge `refactor/widget-structure` PR
 - Gallery/examples rebuild using public API (separate effort)
 - ToggleGroup solid variant contrast — user handling
   `src/bootstack/style/builders/toolbutton.py`

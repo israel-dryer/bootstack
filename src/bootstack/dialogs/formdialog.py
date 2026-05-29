@@ -1,4 +1,4 @@
-"""FormDialog - A dialog that embeds a Form widget for data entry.
+﻿"""FormDialog - A dialog that embeds a Form widget for data entry.
 
 This module provides FormDialog, which combines the Dialog and Form widgets
 to create modal or non-modal dialogs for structured data entry.
@@ -10,10 +10,10 @@ from tkinter import Widget
 from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Sequence, Tuple, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from bootstack.widgets.composites.form import FormItem
+    from bootstack.widgets._impl.composites.form import FormItem
 
 from bootstack.dialogs.dialog import Dialog, DialogButton, ButtonSpec
-from bootstack.widgets.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets.types import Master
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH as FORM_MIN_COL_WIDTH
 from bootstack._runtime.window_utilities import AnchorPoint
@@ -211,8 +211,8 @@ class FormDialog:
     def _build_form_content(self, parent):
         """Builder callback that creates the Form widget inside the dialog."""
         # Import Form here to avoid circular import
-        from bootstack.widgets.composites.form import Form
-        from bootstack.widgets.composites.scrollview import ScrollView
+        from bootstack.widgets._impl.composites.form import Form
+        from bootstack.widgets._impl.composites.scrollview import ScrollView
 
         # Configure parent to allow stretching
         parent.columnconfigure(0, weight=1)
@@ -419,7 +419,7 @@ class FormDialog:
 
         # Check all items for nested layouts
         try:
-            from bootstack.widgets.composites.form import GroupItem, TabsItem
+            from bootstack.widgets._impl.composites.form import GroupItem, TabsItem
 
             for item in items:
                 if isinstance(item, dict):

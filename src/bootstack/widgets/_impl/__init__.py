@@ -1,0 +1,1 @@
+"""Internal widget implementation — do not import directly from user code."""

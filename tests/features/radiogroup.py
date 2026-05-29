@@ -1,5 +1,5 @@
 """Visual test for public RadioGroup widget."""
-from bootstack.widgets.public import App, VStack, HStack, RadioGroup, Label, Button
+from bootstack.widgets import App, VStack, HStack, RadioGroup, Label, Button
 from bootstack.signals import Signal
 
 

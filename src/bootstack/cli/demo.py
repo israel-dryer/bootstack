@@ -1,4 +1,4 @@
-"""
+﻿"""
 Widget Gallery
 
 An AppShell-based showcase of bootstack widgets, organized by category
@@ -9,7 +9,7 @@ demonstrating a widget group.
 import bootstack as bs
 from bootstack.constants import *
 from bootstack.signals import Signal
-from bootstack.widgets.composites.tabs.tabview import TabView
+from bootstack.widgets._impl.composites.tabs.tabview import TabView
 
 
 # =============================================================================

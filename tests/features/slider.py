@@ -1,5 +1,5 @@
 """Visual test for public Slider and RangeSlider widgets."""
-from bootstack.widgets.public import App, VStack, HStack, Label, Slider, RangeSlider, Button
+from bootstack.widgets import App, VStack, HStack, Label, Slider, RangeSlider, Button
 from bootstack.signals import Signal
 
 

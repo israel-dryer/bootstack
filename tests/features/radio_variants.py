@@ -1,5 +1,5 @@
 """Visual test for public Radio and RadioToggleButton widgets."""
-from bootstack.widgets.public import (
+from bootstack.widgets import (
     App, VStack, HStack, Label, Separator,
     Radio, RadioToggleButton,
 )

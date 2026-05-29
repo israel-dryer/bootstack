@@ -1,5 +1,5 @@
 """Visual test for ScrollView, SpinnerField, TimeField, and MenuBar."""
-from bootstack.widgets.public import (
+from bootstack.widgets import (
     App, VStack, HStack, Label, Button,
     MenuBar, ScrollView, SpinnerField, TimeField,
 )

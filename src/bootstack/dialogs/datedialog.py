@@ -1,4 +1,4 @@
-"""Dialog wrapper around the Calendar widget.
+﻿"""Dialog wrapper around the Calendar widget.
 
 Exposes a chrome-less, popover-capable date picker dialog that can close on
 outside clicks and forwards Calendar options (disabled dates, bounds, etc.).
@@ -12,11 +12,11 @@ from types import SimpleNamespace
 from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
 from tkinter import Widget
 
-from bootstack.widgets.primitives import Frame
+from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
 from bootstack.dialogs.dialog import Dialog
 from bootstack._runtime.window_utilities import AnchorPoint
-from bootstack.widgets.composites.calendar import Calendar
+from bootstack.widgets._impl.composites.calendar import Calendar
 
 ttk = SimpleNamespace(Frame=Frame)
 

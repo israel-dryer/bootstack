@@ -1,0 +1,22 @@
+"""Public framework internals — extend here, do not import directly from user code."""
+from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.container import PublicContainer
+from bootstack.widgets._core.context import push_container, pop_container, current_container
+from bootstack.widgets._core.events import Event, register_widget_events, resolve_event
+from bootstack.widgets._core.exceptions import BootstackV2Error, UnknownEventError, ParentResolutionError
+from bootstack.widgets._core.subscription import Subscription
+
+__all__ = [
+    "BootstackV2Error",
+    "Event",
+    "ParentResolutionError",
+    "PublicContainer",
+    "PublicWidgetBase",
+    "Subscription",
+    "UnknownEventError",
+    "current_container",
+    "pop_container",
+    "push_container",
+    "register_widget_events",
+    "resolve_event",
+]

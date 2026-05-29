@@ -1,5 +1,5 @@
 """Visual test for public AppShell and Window."""
-from bootstack.widgets.public import (
+from bootstack.widgets import (
     AppShell, Window,
     VStack, HStack, Label, Button, Separator, TextField, ToggleGroup,
 )
