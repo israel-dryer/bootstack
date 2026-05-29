@@ -3,8 +3,10 @@ from bootstack.widgets.public.primitives.button import Button
 from bootstack.widgets.public.primitives.card import Card
 from bootstack.widgets.public.primitives.expander import Accordion, Expander
 from bootstack.widgets.public.primitives.gauge import Gauge
+from bootstack.widgets.public.primitives.groupbox import GroupBox
 from bootstack.widgets.public.primitives.label import Badge, Label
 from bootstack.widgets.public.primitives.numericentry import NumericEntry
+from bootstack.widgets.public.primitives.pagestack import PageStack
 from bootstack.widgets.public.primitives.passwordentry import PasswordEntry
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
@@ -12,6 +14,7 @@ from bootstack.widgets.public.primitives.scrollbar import Scrollbar
 from bootstack.widgets.public.primitives.select import Select
 from bootstack.widgets.public.primitives.separator import Separator
 from bootstack.widgets.public.primitives.sizegrip import SizeGrip
+from bootstack.widgets.public.primitives.splitview import SplitView
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
 from bootstack.widgets.public.primitives.tabs import TabChangeEventData, TabRef, Tabs
@@ -25,6 +28,7 @@ __all__ = [
     "Accordion", "Badge", "Button", "Card", "Checkbox", "Expander", "Gauge",
     "Label", "NumericEntry", "PasswordEntry", "ProgressBar", "RadioGroup",
     "RangeSlider", "Select", "Separator", "Slider", "Spinbox", "Switch",
+    "GroupBox", "PageStack", "SplitView",
     "TabChangeEventData", "TabRef", "Tabs", "TextArea", "TextField", "Toast",
     "toast", "ToggleButton", "ToggleGroup", "Tooltip", "Scrollbar", "SizeGrip",
 ]
