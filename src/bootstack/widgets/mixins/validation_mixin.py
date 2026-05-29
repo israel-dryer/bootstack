@@ -43,9 +43,9 @@ class ValidationMixin(Widget):
         self._debounce_ids: dict[str, str] = {}
 
         # Optional convenience callbacks
-        self._on_invalid_command: Callable[[dict[str, Any]], None] | None = None
-        self._on_valid_command: Callable[[dict[str, Any]], None] | None = None
-        self._on_validated_command: Callable[[dict[str, Any]], None] | None = None
+        self._on_invalid_command: Callable | None = None
+        self._on_valid_command: Callable | None = None
+        self._on_validated_command: Callable | None = None
 
         super().__init__(*args, **kwargs)  # next in MRO must be a Tk/ttk widget
         self._setup_validation_binds()
@@ -120,8 +120,8 @@ class ValidationMixin(Widget):
         return ran_rule
 
     # Optional: ergonomic callback registration
-    def on_invalid(self, func: Callable[[dict[str, Any]], None]) -> None:
-        """Register callback for invalid validation."""
+    def on_invalid(self, func: Callable) -> None:
+        """Register callback for `<<Invalid>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
         self._on_invalid_command = func
 
     def off_invalid(self, bind_id: str | None = None) -> None:
@@ -132,8 +132,8 @@ class ValidationMixin(Widget):
         """
         self.unbind('<<Invalid>>', bind_id)
 
-    def on_valid(self, func: Callable[[dict[str, Any]], None]) -> None:
-        """Register callback for valid validation."""
+    def on_valid(self, func: Callable) -> None:
+        """Register callback for `<<Valid>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
         self._on_valid_command = func
 
     def off_valid(self, bind_id: str | None = None) -> None:
@@ -144,8 +144,8 @@ class ValidationMixin(Widget):
         """
         self.unbind('<<Valid>>', bind_id)
 
-    def on_validated(self, func: Callable[[dict[str, Any]], None]) -> None:
-        """Register callback for any validation (valid or invalid)."""
+    def on_validated(self, func: Callable) -> None:
+        """Register callback for `<<Validate>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
         self._on_validated_command = func
 
     def off_validated(self, bind_id: str | None = None) -> None:
@@ -197,16 +197,13 @@ class ValidationMixin(Widget):
     # ----- optional dispatchers for on_* convenience -----
 
     def _dispatch_validated(self, event: tkinter.Event) -> None:
-        """Forward `<<Validate>>` event data to the `on_validated` callback."""
         if self._on_validated_command:
-            self._on_validated_command(event.data)
+            self._on_validated_command(event)
 
     def _dispatch_valid(self, event: tkinter.Event) -> None:
-        """Forward `<<Valid>>` event data to the `on_valid` callback."""
         if self._on_valid_command:
-            self._on_valid_command(event.data)
+            self._on_valid_command(event)
 
     def _dispatch_invalid(self, event: tkinter.Event) -> None:
-        """Forward `<<Invalid>>` event data to the `on_invalid` callback."""
         if self._on_invalid_command:
-            self._on_invalid_command(event.data)
+            self._on_invalid_command(event)

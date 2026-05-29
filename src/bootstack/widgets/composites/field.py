@@ -415,13 +415,12 @@ class Field(EntryMixin, Frame):
         """
         self._entry.off_enter(bind_id)
 
-    def on_valid(self, callback: Callable[[ValidationEventData], None]) -> None:
+    def on_valid(self, callback: Callable) -> None:
         """Register a callback for `<<Valid>>` events (fires when validation passes).
 
         Args:
-            callback: Receives a `ValidationEventData` dict with keys
-                `value` (committed value), `is_valid` (`True`), and
-                `message` (empty string on pass).
+            callback: Receives the event; `event.data` is a `ValidationEventData`
+                dict with keys `value`, `is_valid` (`True`), and `message`.
         """
         self._entry.on_valid(callback)
 
@@ -434,13 +433,12 @@ class Field(EntryMixin, Frame):
         """
         self._entry.off_valid(bind_id)
 
-    def on_invalid(self, callback: Callable[[ValidationEventData], None]) -> None:
+    def on_invalid(self, callback: Callable) -> None:
         """Register a callback for `<<Invalid>>` events (fires when validation fails).
 
         Args:
-            callback: Receives a `ValidationEventData` dict with keys
-                `value` (committed value), `is_valid` (`False`), and
-                `message` (validation error text).
+            callback: Receives the event; `event.data` is a `ValidationEventData`
+                dict with keys `value`, `is_valid` (`False`), and `message`.
         """
         self._entry.on_invalid(callback)
 
@@ -453,13 +451,12 @@ class Field(EntryMixin, Frame):
         """
         self._entry.off_invalid(bind_id)
 
-    def on_validated(self, callback: Callable[[ValidationEventData], None]) -> None:
+    def on_validated(self, callback: Callable) -> None:
         """Register a callback for `<<Validate>>` events (fires after any validation).
 
         Args:
-            callback: Receives a `ValidationEventData` dict with keys
-                `value` (committed value), `is_valid` (bool), and
-                `message` (validation message or empty string).
+            callback: Receives the event; `event.data` is a `ValidationEventData`
+                dict with keys `value`, `is_valid` (bool), and `message`.
         """
         self._entry.on_validated(callback)
 

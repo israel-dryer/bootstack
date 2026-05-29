@@ -438,7 +438,7 @@ class TextArea(GridFrame):
         """
         self._core.text.unbind("<FocusOut>", bind_id)
 
-    def on_valid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_valid(self, callback: Callable) -> str:
         """Register a callback for `<<Valid>>` events.
 
         Fires after all validation rules pass.
@@ -460,7 +460,7 @@ class TextArea(GridFrame):
         """
         self.unbind("<<Valid>>", bind_id)
 
-    def on_invalid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_invalid(self, callback: Callable) -> str:
         """Register a callback for `<<Invalid>>` events.
 
         Fires when any validation rule fails.
@@ -482,7 +482,7 @@ class TextArea(GridFrame):
         """
         self.unbind("<<Invalid>>", bind_id)
 
-    def on_validated(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_validated(self, callback: Callable) -> str:
         """Register a callback for `<<Validate>>` events.
 
         Fires after any validation pass, whether the result is valid or not.
