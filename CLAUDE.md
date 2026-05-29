@@ -497,7 +497,7 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 - **`on_changed`/`on_input` callbacks receive a Tkinter event object** (`event.data["value"]`).
   **`on_valid`/`on_invalid`/`on_validated` callbacks receive a plain dict** (`data["value"]`).
 - **`text=Signal(...)` does NOT work for reactive labels.** Use `textsignal=signal` instead.
-- **`bs.Label` uses `.text` not `.value`** to get/set the display string. All other widgets use `.value`. Planned to unify as `.value` in a future session.
+- **`bs.Label` uses `.text` not `.value`** to get/set the display string. This is intentional — `.text` is semantically correct for a display-only widget; `.value` is reserved for data-bearing widgets (Entry, Checkbox, Slider, etc.).
 - **`value=` is ignored when `signal=` or `variable=` is also passed** on CheckButton,
   CheckToggle, Switch, RadioButton, RadioToggle. Seed the Signal directly: `bs.Signal(True)`.
 - **`ToggleGroup(padding=N)` raises `TypeError`** — source bug, do not pass `padding=`.
@@ -525,7 +525,7 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; needs a style-builder fix
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
 - `ListView` hover state blends with striped rows — hover highlight too similar to alternate row background; needs contrast bump in ListView style builder
-- `Label.text` vs `.value` inconsistency — all other public widgets use `.value`; `Label`/`Badge` use `.text`. Planned fix: make `.value` primary, keep `.text` as alias
+- `Label`/`Badge` use `.text` (not `.value`) — this is settled and intentional; `.value` is for data-bearing widgets only
 
 ---
 
@@ -735,9 +735,8 @@ branch (commit a857ef2) before continuing misc-widgets work.
 (more universal) but not urgent. `TimeEntry`/`SpinnerEntry` pending migration as
 `TimeField`/`SpinnerField` in misc-widgets batch.
 
-**Known issue logged:** `Label.text` vs `.value` inconsistency — all other widgets
-use `.value`; `Label`/`Badge` use `.text`. Agreed to unify as `.value` in a future
-session (`.text` kept as alias).
+**Settled:** `Label`/`Badge` keep `.text` as the canonical property. `.value` is for
+data-bearing widgets only; a display-only label has no "value" in the semantic sense.
 
 **PR #76** (`fix/public-api-drift` → `main`) — merged.
 
@@ -763,8 +762,7 @@ events to `self._internal._entry` (same pattern as `TextField`, `Select`, `Numbe
 **Visual test:** `tests/features/misc_widgets.py`
 
 **Next steps:** Merge PR #77, then determine remaining widgets to migrate.
-Notable gaps: `DateField` needs review against v2 proposal; `Label.text` → `.value`
-unification (alias `.text` to `.value`); open bugs from the known-issues list.
+Notable gaps: `DateField` needs review against v2 proposal; open bugs from the known-issues list.
 
 ### Session 26 — Performance fixes (2026-05-28)
 
