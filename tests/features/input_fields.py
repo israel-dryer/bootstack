@@ -59,7 +59,7 @@ def main():
             with VStack(gap=8, fill="x", expand=True):
                 Label("Select directory")
                 pf_dir = PathField(
-                    dialog="askdirectory",
+                    dialog="directory",
                     button_label="Browse…",
                     label="Directory",
                     message="Pick a folder",

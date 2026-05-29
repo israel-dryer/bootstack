@@ -25,7 +25,7 @@ class PathField(PublicWidgetBase):
     Args:
         value: Initial path string.
         dialog: Dialog type — `'openfilename'` (default), `'saveasfilename'`,
-            `'askdirectory'`, or `'askopenfilenames'` (multiple files).
+            `'directory'`, or `'openfilenames'` (multiple files).
         dialog_options: Extra kwargs forwarded to the native dialog
             (e.g. `{'filetypes': [('Images', '*.png')]}`).
         button_label: Browse button label. Default `'Browse'`.
