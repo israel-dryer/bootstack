@@ -106,6 +106,19 @@ class ButtonGroup(PublicWidgetBase):
 
     # ----- Properties -----
 
+    def item(self, key: str) -> Any:
+        """Return the button item object for `key`.
+
+        Args:
+            key: Key returned by `add()`.
+        """
+        return self._internal.item(key)
+
+    @property
+    def items(self) -> tuple[Any, ...]:
+        """All button items in insertion order."""
+        return self._internal.items()
+
     @property
     def keys(self) -> tuple[str, ...]:
         """Keys of all buttons in insertion order."""

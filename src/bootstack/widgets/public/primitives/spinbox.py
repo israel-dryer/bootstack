@@ -27,6 +27,7 @@ class Spinbox(PublicWidgetBase):
         max_value: Maximum numeric value.
         step: Increment between values. Default `1`.
         wrap: If True, wraps from max back to min and vice versa.
+        value_format: Display format string (e.g. `'%.2f'`).
         text_signal: Reactive `Signal` linked to the displayed text.
         width: Width in character cells.
         disabled: If True, widget is non-interactive.
@@ -44,6 +45,7 @@ class Spinbox(PublicWidgetBase):
         max_value: float | None = None,
         step: float = 1,
         wrap: bool = False,
+        value_format: str | None = None,
         text_signal: Any = None,
         width: int | None = None,
         disabled: bool = False,
@@ -66,6 +68,8 @@ class Spinbox(PublicWidgetBase):
             if max_value is not None:
                 internal_kwargs["to"] = max_value
             internal_kwargs["increment"] = step
+        if value_format is not None:
+            internal_kwargs["format"] = value_format
         if text_signal is not None:
             internal_kwargs["textsignal"] = text_signal
         if width is not None:

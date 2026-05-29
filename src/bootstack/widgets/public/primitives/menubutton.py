@@ -20,6 +20,8 @@ class MenuButton(PublicWidgetBase):
         icon: Icon shown on the button.
         icon_only: If True, hides the label (icon only).
         show_arrow: If True (default), shows the dropdown chevron.
+        menu_options: Extra kwargs forwarded to the underlying `ContextMenu`
+            (e.g. `{'anchor': 'se', 'offset': 4}`).
         disabled: If True, button is non-interactive.
         accent: Accent token, e.g. `'primary'`, `'danger'`.
         variant: Style variant, e.g. `'outline'`, `'ghost'`.
@@ -36,6 +38,7 @@ class MenuButton(PublicWidgetBase):
         icon: str | None = None,
         icon_only: bool = False,
         show_arrow: bool = True,
+        menu_options: dict[str, Any] | None = None,
         disabled: bool = False,
         accent: str | None = None,
         variant: str | None = None,
@@ -50,6 +53,8 @@ class MenuButton(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {
             "show_dropdown_button": show_arrow,
         }
+        if menu_options is not None:
+            internal_kwargs["popdown_options"] = menu_options
         if label:
             internal_kwargs["text"] = label
         if items is not None:
@@ -137,6 +142,35 @@ class MenuButton(PublicWidgetBase):
         result = self._internal.add_checkbutton(**kw)
         return result.key if hasattr(result, "key") else key or label
 
+    def add_radio_item(
+        self,
+        label: str,
+        *,
+        value: Any = None,
+        on_click: Callable[[], Any] | None = None,
+        key: str | None = None,
+    ) -> str:
+        """Add a radio-button item to the dropdown.
+
+        Args:
+            label: Item label text.
+            value: Value associated with this radio item.
+            on_click: Callback fired on selection.
+            key: Unique string key. Auto-generated if omitted.
+
+        Returns:
+            The key assigned to this item.
+        """
+        kw: dict[str, Any] = {"text": label}
+        if value is not None:
+            kw["value"] = value
+        if on_click is not None:
+            kw["command"] = on_click
+        if key is not None:
+            kw["key"] = key
+        result = self._internal.add_radiobutton(**kw)
+        return result.key if hasattr(result, "key") else key or label
+
     def add_separator(self, *, key: str | None = None) -> None:
         """Add a horizontal separator to the dropdown."""
         kw: dict[str, Any] = {}
@@ -166,6 +200,19 @@ class MenuButton(PublicWidgetBase):
         self._internal.show_menu()
 
     # ----- Properties -----
+
+    def item(self, key: str) -> Any:
+        """Return the item object for `key`.
+
+        Args:
+            key: Key returned by an `add_*` method.
+        """
+        return self._internal.context_menu.item(key)
+
+    @property
+    def items(self) -> list[Any]:
+        """All menu items in insertion order."""
+        return self._internal.items() or []
 
     @property
     def keys(self) -> tuple[str, ...]:

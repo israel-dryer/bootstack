@@ -518,7 +518,6 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `Meter` deprecated param names (`amountused`, `amounttotal`, `subtext`, `stripethickness`) not yet removed from source
 - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
-- `TabView(variant='pill')` crashes — no pill style builder for `TabItem.TFrame`
 - `on_changed`/`on_input` callback shape inconsistency vs `on_valid`/`on_invalid`
 - `Field` message label (`_message_lbl`) shows gray background when `required=True` auto-enables `show_message` and validation first fires — background doesn't match surface
 - `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
@@ -795,7 +794,6 @@ fully superseded by merged PRs; style-asset branch had pre-Session-31 CLAUDE.md 
 - `DateField` — review against `development/v2_api_proposal.md`
 - `TextArea` border — adopt Field-style focus-ring/border instead of raw Tk Text border
 - `Field` message label gray background on `required=True`
-- `TabView(variant='pill')` crash — no pill style builder for `TabItem.TFrame`
 - Spinbox, GroupBox, PathField, MenuButton, ButtonGroup, SplitView, PageStack —
   confirm public wrappers exist and are correct
 
