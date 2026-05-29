@@ -1,5 +1,5 @@
 """Visual test for public ProgressBar and Gauge widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Grid, Label, ProgressBar, Gauge, Button
 )
 

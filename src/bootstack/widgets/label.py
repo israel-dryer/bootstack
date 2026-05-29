@@ -15,7 +15,11 @@ class Label(PublicWidgetBase):
         text: Text to display.
         text_signal: Reactive `Signal` linked to the label text.
         icon: Bootstrap Icons name.
-        icon_only: If True, show only the icon.
+        icon_only: If True, show only the icon. Auto-detected when `text` is
+            empty and `icon` is provided.
+        icon_position: Where to place the icon relative to text — `'left'`
+            (default), `'right'`, `'top'`, `'bottom'`. Only relevant when
+            both `text` and `icon` are provided.
         anchor: Content alignment within the label area.
         justify: Multi-line text justification.
         padding: Inner spacing.
@@ -43,6 +47,7 @@ class Label(PublicWidgetBase):
         text_signal: Any = None,
         icon: str | None = None,
         icon_only: bool = False,
+        icon_position: str = "left",
         anchor: str | None = None,
         justify: str | None = None,
         padding: Any = None,
@@ -73,7 +78,15 @@ class Label(PublicWidgetBase):
             internal_kwargs["textsignal"] = text_signal
         if icon is not None:
             internal_kwargs["icon"] = icon
-        if icon_only:
+            has_text = bool(text) or text_signal is not None
+            if not has_text or icon_only:
+                # No text — show icon only; compound="image" hides text slot
+                internal_kwargs["icon_only"] = True
+                internal_kwargs["compound"] = "image"
+            else:
+                # Text + icon — position icon relative to text
+                internal_kwargs["compound"] = icon_position
+        elif icon_only:
             internal_kwargs["icon_only"] = True
         if anchor is not None:
             internal_kwargs["anchor"] = anchor

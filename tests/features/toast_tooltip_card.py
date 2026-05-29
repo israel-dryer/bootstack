@@ -1,5 +1,5 @@
 """Visual test for public Toast, Tooltip, and Card widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Card, Label, Button, Separator,
     TextField, Badge, Toast, toast, Tooltip,
 )

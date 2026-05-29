@@ -198,7 +198,7 @@ class AppShell:
         """
         return self._internal.add_header(text, **kwargs)
 
-    def add_nav_separator(self, **kwargs: Any) -> Any:
+    def add_separator(self, **kwargs: Any) -> Any:
         """Add a separator to the nav sidebar.
 
         Returns:

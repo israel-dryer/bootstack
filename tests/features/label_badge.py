@@ -1,5 +1,5 @@
 """Visual test for public Label and Badge widgets."""
-from bootstack.widgets import App, VStack, HStack, Label, Badge, Button
+from bootstack import App, VStack, HStack, Label, Badge, Button
 from bootstack.signals import Signal
 
 

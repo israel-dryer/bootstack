@@ -1,4 +1,4 @@
-﻿from tkinter import Toplevel
+from tkinter import Toplevel
 
 from typing_extensions import Unpack
 
@@ -257,6 +257,7 @@ class SelectBox(Field):
                 text=item,
                 accent=accent,
                 variant='selectbox_item',
+                takefocus=False,
                 command=lambda v=item: self._on_item_click(v, toplevel, popup_state)
             )
             btn.pack(fill='x')
@@ -550,8 +551,19 @@ class SelectBox(Field):
     def value(self, value):
         """Set the selected value and emit `<<Change>>` when it differs."""
         prev_value = Field.value.fget(self)
+        is_readonly = self.entry_widget.instate(['readonly'])
+        if is_readonly:
+            self.entry_widget.state(['!readonly'])
         Field.value.fset(self, value)
         new_value = Field.value.fget(self)
+        display_text = str(new_value) if new_value is not None else ''
+        try:
+            self.entry_widget.delete(0, 'end')
+            self.entry_widget.insert(0, display_text)
+        except Exception:
+            pass
+        if is_readonly:
+            self.entry_widget.state(['readonly'])
         if new_value != prev_value:
             self.entry_widget._prev_changed_value = new_value
             if not getattr(self, "_suppress_changed_event", False):

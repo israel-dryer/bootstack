@@ -1,5 +1,5 @@
 """Visual test for public PasswordField and TextArea widgets."""
-from bootstack.widgets import App, VStack, HStack, Label, PasswordField, TextArea, Button
+from bootstack import App, VStack, HStack, Label, PasswordField, TextArea, Button
 
 
 def main():

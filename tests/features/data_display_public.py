@@ -1,5 +1,5 @@
 """Visual test for public ListView, Tree, and Table."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator, Tabs,
     ListView, Tree, Table,
 )

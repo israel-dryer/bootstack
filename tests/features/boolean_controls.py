@@ -1,5 +1,5 @@
 """Visual test for public Checkbox, Switch, and ToggleButton widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Checkbox, Switch, ToggleButton, Button
 )
 from bootstack.signals import Signal

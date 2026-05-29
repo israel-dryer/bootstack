@@ -1,5 +1,5 @@
 """Visual test for ButtonGroup, ContextMenu, MenuButton, and Toolbar."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator,
     ButtonGroup, ContextMenu, MenuButton, Toolbar,
 )

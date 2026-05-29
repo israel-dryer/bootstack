@@ -1,5 +1,5 @@
 """Visual test for public SizeGrip and Scrollbar widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, TextArea, Separator, SizeGrip, Scrollbar,
 )
 

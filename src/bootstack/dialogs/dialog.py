@@ -12,7 +12,9 @@ import tkinter
 from tkinter import Widget
 from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, TypedDict, Union
 
-import bootstack as bs
+from bootstack.widgets._impl.primitives.button import Button as _Button
+from bootstack.widgets._impl.primitives.frame import Frame as _Frame
+from bootstack.widgets._impl.primitives.separator import Separator as _Separator
 from bootstack.widgets.types import Master
 from bootstack._runtime.toplevel import Toplevel
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
@@ -54,7 +56,7 @@ class DialogButton:
     command: Callable[[Dialog], None] | None = None
     accent: str | None = None  # accent token (e.g., 'primary', 'danger')
     variant: str | None = None  # style variant (e.g., 'outline', 'ghost')
-    icon: str | dict[str, Any] | None = None  # passed straight to bs.Button(icon=...)
+    icon: str | dict[str, Any] | None = None  # passed straight to _Button(icon=...)
 
 
 ButtonSpec = Union[DialogButton, Mapping[str, Any]]
@@ -170,9 +172,9 @@ class Dialog:
         self._window_style = window_style
 
         self._toplevel: Toplevel | None = None
-        self._content: bs.Frame | None = None
-        self._footer: bs.Frame | None = None
-        self._border_frame: bs.Frame | None = None
+        self._content: _Frame | None = None
+        self._footer: _Frame | None = None
+        self._border_frame: _Frame | None = None
 
         self.result: Any = None
 
@@ -318,13 +320,13 @@ class Dialog:
 
         if self._undecorated:
             self._toplevel.overrideredirect(True)
-            self._border_frame = bs.Frame(self._toplevel, show_border=True, padding=2)
+            self._border_frame = _Frame(self._toplevel, show_border=True, padding=2)
             self._border_frame.pack(fill='both', expand=True)
 
     def _build_content(self):
         parent = self._border_frame if self._undecorated else self._toplevel
         padding = 2 if self._undecorated else 0
-        self._content = bs.Frame(parent, padding=padding)
+        self._content = _Frame(parent, padding=padding)
 
         if self._undecorated:
             self._content.pack(fill="both", side="top", expand=False)
@@ -339,18 +341,18 @@ class Dialog:
         footer_padding = 6 if self._undecorated else 4
 
         if self._footer_builder:
-            self._footer = bs.Frame(parent, padding=footer_padding)
+            self._footer = _Frame(parent, padding=footer_padding)
             self._footer.pack(side="bottom", fill="x")
-            bs.Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
+            _Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
             self._footer_builder(self._footer)
             return
 
         if not self._buttons:
             return
 
-        self._footer = bs.Frame(parent, padding=footer_padding)
+        self._footer = _Frame(parent, padding=footer_padding)
         self._footer.pack(side="bottom", fill="x")
-        bs.Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
+        _Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
 
         self._create_standard_buttons(self._footer)
 
@@ -359,8 +361,8 @@ class Dialog:
 
         Buttons are packed right-to-left so first button appears rightmost.
         """
-        default_button: bs.Button | None = None
-        cancel_button: bs.Button | None = None
+        default_button: _Button | None = None
+        cancel_button: _Button | None = None
 
         for spec in reversed(self._buttons):
             # Get accent/variant from spec or derive from role
@@ -380,7 +382,7 @@ class Dialog:
 
                 return cmd
 
-            btn = bs.Button(
+            btn = _Button(
                 parent,
                 text=spec.text,
                 accent=accent,
