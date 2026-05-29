@@ -32,6 +32,8 @@ class TextArea(PublicWidgetBase):
             `'both'`, or `'none'`.
         font: Font token. Default `'body'`.
         accent: Accent token for the focus border.
+        show_border: If True (default), wraps the text area in a themed
+            border with a focus ring.
         parent: Override the context-stack parent.
     """
 
@@ -51,6 +53,7 @@ class TextArea(PublicWidgetBase):
         scrollbars: str = "auto",
         font: Any = "body",
         accent: str = "primary",
+        show_border: bool = True,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -65,6 +68,7 @@ class TextArea(PublicWidgetBase):
             "wrap": wrap,
             "height": height,
             "scrollbars": scrollbars,
+            "show_border": show_border,
             "font": font,
             "accent": accent,
         }

@@ -46,7 +46,7 @@ class _MultilineCore(tk.Frame):
         read_only: bool = False,
         **text_kwargs,
     ) -> None:
-        super().__init__(master)
+        super().__init__(master, highlightthickness=0, borderwidth=0)
 
         self._scrollbar_mode = scrollbars
         self._read_only = read_only
@@ -66,6 +66,8 @@ class _MultilineCore(tk.Frame):
             height=height,
             font=font,
             undo=False,
+            borderwidth=0,
+            highlightthickness=0,
             **text_kwargs,
         )
 

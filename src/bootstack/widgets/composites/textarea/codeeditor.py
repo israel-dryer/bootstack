@@ -52,6 +52,8 @@ class CodeEditor(Frame):
         show_indent_guides: bool = False,
         scrollbars: ScrollbarMode = "both",
         font: str = "TkFixedFont",
+        show_border: bool = True,
+        accent: str = "primary",
         extensions: list[EditFilter] | None = None,
         on_change: Callable | None = None,
         on_cursor_move: Callable | None = None,
@@ -84,10 +86,17 @@ class CodeEditor(Frame):
                 font (`"TkFixedFont"`).
             extensions: Additional `EditFilter` instances to install
                 on top of the built-in set.
+            show_border: If True (default), styles the editor frame as a
+                themed border that gains a focus ring on interaction.
+            accent: Accent token for the focus border. Defaults to `"primary"`.
             on_change: Callback for `<<Change>>` events.
             on_cursor_move: Callback for cursor movement events.
         """
-        super().__init__(master)
+        frame_kw = (
+            {"ttk_class": "TField", "accent": accent, "padding": 5}
+            if show_border else {}
+        )
+        super().__init__(master, **frame_kw)
 
         self._language = language
         self._pygments_style = pygments_style
@@ -104,6 +113,14 @@ class CodeEditor(Frame):
             font=font,
             read_only=read_only,
         )
+
+        if show_border:
+            self._core.text.bind(
+                "<FocusIn>", lambda _: self.state(["focus"]), add="+",
+            )
+            self._core.text.bind(
+                "<FocusOut>", lambda _: self.state(["!focus"]), add="+",
+            )
 
         # ── search overlay ────────────────────────────────────────────────
         self._search = SearchOverlay(self, self._core)
