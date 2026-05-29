@@ -11,33 +11,33 @@ from bootstack.widgets.composites.tableview.tableview import (
 from bootstack.widgets.public.base import PublicWidgetBase
 
 
-class TableView(PublicWidgetBase):
+class Table(PublicWidgetBase):
     """A feature-rich data table with sorting, filtering, search, and grouping.
 
     Backed by an in-memory `SqliteDataSource`. Supply `rows=` to pre-load
-    data, or pass an existing `datasource=` for a shared data source.
+    data, or pass an existing `data_source=` for a shared data source.
 
-    Note: `datasource` must be a `SqliteDataSource`. `MemoryDataSource` and
+    Note: `data_source` must be a `SqliteDataSource`. `MemoryDataSource` and
     `FileDataSource` are not accepted.
 
     Args:
         columns: Column definitions — list of column-ID strings or dicts with
             keys `'text'`, `'key'`, `'width'`, and `'minwidth'`.
         rows: Initial data rows (list of dicts or sequences).
-        datasource: Existing `SqliteDataSource` to use instead of creating one.
+        data_source: Existing `SqliteDataSource` to use instead of creating one.
         selection_mode: `'none'`, `'single'` (default), or `'multi'`.
         sorting_mode: `'single'` (default) or `'none'`.
-        enable_search: Show the search bar. Default `True`.
-        enable_filtering: Enable column filtering. Default `True`.
+        searchable: Show the search bar. Default `True`.
+        allow_filter: Enable column filtering. Default `True`.
         paging_mode: `'standard'` (default, paginated) or `'virtual'`.
         page_size: Rows per page in standard paging mode. Default `25`.
-        enable_adding: Allow adding rows via a form dialog. Default `False`.
-        enable_editing: Allow editing rows via a form dialog. Default `False`.
-        enable_deleting: Allow deleting rows. Default `False`.
-        enable_exporting: Enable CSV/Excel export. Default `False`.
+        allow_add: Allow adding rows via a form dialog. Default `False`.
+        allow_edit: Allow editing rows via a form dialog. Default `False`.
+        allow_delete: Allow deleting rows. Default `False`.
+        allow_export: Enable CSV/Excel export. Default `False`.
         striped: Alternate row background colors. Default `False`.
-        allow_grouping: Allow grouping rows by a column. Default `False`.
-        show_table_status: Show filter/sort/group status and pager. Default `True`.
+        allow_group: Allow grouping rows by a column. Default `False`.
+        show_status_bar: Show filter/sort/group status and pager. Default `True`.
         parent: Override the context-stack parent.
     """
 
@@ -46,20 +46,20 @@ class TableView(PublicWidgetBase):
         *,
         columns: list[str | dict] | None = None,
         rows: list | None = None,
-        datasource: Any = None,
+        data_source: Any = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
         sorting_mode: Literal["single", "none"] = "single",
-        enable_search: bool = True,
-        enable_filtering: bool = True,
+        searchable: bool = True,
+        allow_filter: bool = True,
         paging_mode: Literal["standard", "virtual"] = "standard",
         page_size: int = 25,
-        enable_adding: bool = False,
-        enable_editing: bool = False,
-        enable_deleting: bool = False,
-        enable_exporting: bool = False,
+        allow_add: bool = False,
+        allow_edit: bool = False,
+        allow_delete: bool = False,
+        allow_export: bool = False,
         striped: bool = False,
-        allow_grouping: bool = False,
-        show_table_status: bool = True,
+        allow_group: bool = False,
+        show_status_bar: bool = True,
         show_column_chooser: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -71,25 +71,25 @@ class TableView(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {
             "selection_mode": selection_mode,
             "sorting_mode": sorting_mode,
-            "enable_search": enable_search,
-            "enable_filtering": enable_filtering,
+            "enable_search": searchable,
+            "enable_filtering": allow_filter,
             "paging_mode": paging_mode,
             "page_size": page_size,
-            "enable_adding": enable_adding,
-            "enable_editing": enable_editing,
-            "enable_deleting": enable_deleting,
-            "enable_exporting": enable_exporting,
+            "enable_adding": allow_add,
+            "enable_editing": allow_edit,
+            "enable_deleting": allow_delete,
+            "enable_exporting": allow_export,
             "striped": striped,
-            "allow_grouping": allow_grouping,
-            "show_table_status": show_table_status,
+            "allow_grouping": allow_group,
+            "show_table_status": show_status_bar,
             "show_column_chooser": show_column_chooser,
         }
         if columns is not None:
             internal_kwargs["columns"] = columns
         if rows is not None:
             internal_kwargs["rows"] = rows
-        if datasource is not None:
-            internal_kwargs["datasource"] = datasource
+        if data_source is not None:
+            internal_kwargs["datasource"] = data_source
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalTableView(tk_master, **internal_kwargs)

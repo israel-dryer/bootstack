@@ -25,7 +25,7 @@ class Select(PublicWidgetBase):
         message: Hint text displayed below the field.
         required: If True, field cannot be left empty.
         searchable: If True, typing filters the option list.
-        allow_custom: If True, users may type values not in `options`.
+        allow_custom_values: If True, users may type values not in `options`.
         disabled: If True, field is non-interactive.
         read_only: If True, value is visible but the popup cannot be opened.
         width: Width in character cells.
@@ -44,7 +44,7 @@ class Select(PublicWidgetBase):
         message: str | None = None,
         required: bool = False,
         searchable: bool = False,
-        allow_custom: bool = False,
+        allow_custom_values: bool = False,
         disabled: bool = False,
         read_only: bool = False,
         width: int | None = None,
@@ -61,7 +61,7 @@ class Select(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {
             "items": options or [],
             "enable_search": searchable,
-            "allow_custom_values": allow_custom,
+            "allow_custom_values": allow_custom_values,
         }
         if value is not None:
             internal_kwargs["value"] = value

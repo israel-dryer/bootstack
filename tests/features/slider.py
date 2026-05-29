@@ -18,7 +18,7 @@ def main():
         Slider(
             25, min_value=0, max_value=100,
             show_value=True,
-            tick_interval=25,
+            tick_step=25,
             fill="x", expand=True,
         )
 
@@ -41,14 +41,14 @@ def main():
         # RangeSlider
         Label("RangeSlider — basic")
         r1 = RangeSlider(20, 75, min_value=0, max_value=100, fill="x", expand=True)
-        r1.on_change(lambda e: readout.set(f"range: {r1.lo:.0f} – {r1.hi:.0f}"))
+        r1.on_change(lambda e: readout.set(f"range: {r1.low_value:.0f} – {r1.high_value:.0f}"))
 
         # RangeSlider with value badges and ticks
         Label("RangeSlider — show_value + ticks")
         RangeSlider(
             10, 90, min_value=0, max_value=100,
             show_value=True,
-            tick_interval=10,
+            tick_step=10,
             fill="x", expand=True,
         )
 

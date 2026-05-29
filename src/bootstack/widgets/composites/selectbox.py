@@ -101,11 +101,14 @@ class SelectBox(Field):
 
     def _bind_readonly_selection_on_click(self):
         """Bind entry click to show popup when in readonly mode."""
+        self.entry_widget.configure(cursor="hand2")
         self.entry_widget.bind('<Button-1>', lambda _: self.after_idle(self._show_selection_options), add='+')
 
     def _show_selection_options(self):
         """Create and display the popup list of selectable items."""
         if not self._items or self._popup_open:
+            return
+        if self.entry_widget.instate(['disabled']):
             return
 
         self._popup_open = True

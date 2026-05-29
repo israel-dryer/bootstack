@@ -33,7 +33,7 @@ def main():
             Tooltip(b2, "Anchored below the button.", anchor_point="s", window_point="n", delay=200)
 
             b3 = Button("Long tip", variant="ghost")
-            Tooltip(b3, "This is a longer tooltip that will wrap when it exceeds the wraplength.", wraplength=180, delay=200)
+            Tooltip(b3, "This is a longer tooltip that will wrap when it exceeds the wrap_width.", wrap_width=180, delay=200)
 
         Separator(fill="x")
 
@@ -69,17 +69,17 @@ def main():
 
         with HStack(gap=8):
             Button(
-                "With buttons",
+                "With actions",
                 variant="outline",
                 on_click=lambda: Toast(
                     title="Delete item?",
                     message="This action cannot be undone.",
                     accent="warning",
-                    buttons=[
+                    actions=[
                         {"text": "Cancel", "variant": "ghost"},
                         {"text": "Delete", "accent": "danger"},
                     ],
-                    on_dismissed=lambda btn: print(f"Dismissed via: {btn}"),
+                    on_dismiss=lambda btn: print(f"Dismissed via: {btn}"),
                 ).show(),
             )
             Button(
@@ -88,7 +88,7 @@ def main():
                 on_click=lambda: Toast(
                     title="Persistent toast",
                     message="Close me manually.",
-                    memo="no timeout",
+                    detail="no timeout",
                     duration=None,
                 ).show(),
             )

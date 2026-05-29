@@ -1,25 +1,25 @@
-"""Visual test for public PasswordEntry and TextArea widgets."""
-from bootstack.widgets.public import App, VStack, HStack, Label, PasswordEntry, TextArea, Button
+"""Visual test for public PasswordField and TextArea widgets."""
+from bootstack.widgets.public import App, VStack, HStack, Label, PasswordField, TextArea, Button
 
 
 def main():
-    with App(title="PasswordEntry + TextArea — visual test", minsize=(480, 100), padding=24, gap=14) as app:
+    with App(title="PasswordField + TextArea — visual test", minsize=(480, 100), padding=24, gap=14) as app:
 
-        # PasswordEntry variants
-        Label("PasswordEntry — basic (with visibility toggle)")
-        PasswordEntry(label="Password")
+        # PasswordField variants
+        Label("PasswordField — basic (with visibility toggle)")
+        PasswordField(label="Password")
 
-        Label("PasswordEntry — custom mask character")
-        PasswordEntry("secret", label="API key", mask_char="*")
+        Label("PasswordField — custom mask character")
+        PasswordField("secret", label="API key", mask_char="*")
 
-        Label("PasswordEntry — no visibility toggle")
-        PasswordEntry(label="PIN", show_toggle=False)
+        Label("PasswordField — no visibility toggle")
+        PasswordField(label="PIN", show_visibility_toggle=False)
 
-        Label("PasswordEntry — required")
-        PasswordEntry(label="Required password", required=True)
+        Label("PasswordField — required")
+        PasswordField(label="Required password", required=True)
 
-        Label("PasswordEntry — disabled")
-        PasswordEntry("hidden", label="Disabled", disabled=True)
+        Label("PasswordField — disabled")
+        PasswordField("hidden", label="Disabled", disabled=True)
 
         # TextArea variants
         Label("TextArea — basic")

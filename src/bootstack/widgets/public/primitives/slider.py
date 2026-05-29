@@ -26,7 +26,7 @@ class Slider(PublicWidgetBase):
         orient: `'horizontal'` (default) or `'vertical'`.
         show_value: Show a floating badge displaying the current value.
         show_minmax: Show min/max labels at the track ends.
-        tick_interval: Spacing between major tick marks. `None` disables ticks.
+        tick_step: Spacing between major tick marks. `None` disables ticks.
         minor_ticks: Number of minor ticks between each major tick.
         tick_labels: Show numeric labels at major tick positions.
         tick_format: Format string for tick and badge labels, e.g. `'{:.1f}°C'`.
@@ -43,7 +43,7 @@ class Slider(PublicWidgetBase):
         orient: str = "horizontal",
         show_value: bool = False,
         show_minmax: bool = False,
-        tick_interval: float | None = None,
+        tick_step: float | None = None,
         minor_ticks: int = 0,
         tick_labels: bool = True,
         tick_format: str = "{:.0f}",
@@ -62,7 +62,7 @@ class Slider(PublicWidgetBase):
             "orient": orient,
             "show_value": show_value,
             "show_minmax": show_minmax,
-            "tick_interval": tick_interval,
+            "tick_interval": tick_step,
             "minor_ticks": minor_ticks,
             "tick_labels": tick_labels,
             "tick_format": tick_format,
@@ -112,15 +112,15 @@ class RangeSlider(PublicWidgetBase):
     """A two-handle slider for selecting a low/high value range.
 
     Args:
-        lo_value: Initial low-handle value. Default `0`.
-        hi_value: Initial high-handle value. Default `100`.
+        low_value: Initial low-handle value. Default `0`.
+        high_value: Initial high-handle value. Default `100`.
         min_value: Minimum of the range. Default `0`.
         max_value: Maximum of the range. Default `100`.
-        lo_signal: Reactive `Signal[float]` linked to the low handle.
-        hi_signal: Reactive `Signal[float]` linked to the high handle.
+        low_signal: Reactive `Signal[float]` linked to the low handle.
+        high_signal: Reactive `Signal[float]` linked to the high handle.
         orient: `'horizontal'` (default) or `'vertical'`.
         show_value: Show floating badges on both handles.
-        tick_interval: Spacing between major tick marks.
+        tick_step: Spacing between major tick marks.
         minor_ticks: Number of minor ticks between each major tick.
         tick_labels: Show numeric labels at major tick positions.
         tick_format: Format string for tick and badge labels.
@@ -129,16 +129,16 @@ class RangeSlider(PublicWidgetBase):
 
     def __init__(
         self,
-        lo_value: float = 0,
-        hi_value: float = 100,
+        low_value: float = 0,
+        high_value: float = 100,
         *,
         min_value: float = 0,
         max_value: float = 100,
-        lo_signal: Any = None,
-        hi_signal: Any = None,
+        low_signal: Any = None,
+        high_signal: Any = None,
         orient: str = "horizontal",
         show_value: bool = False,
-        tick_interval: float | None = None,
+        tick_step: float | None = None,
         minor_ticks: int = 0,
         tick_labels: bool = True,
         tick_format: str = "{:.0f}",
@@ -151,21 +151,21 @@ class RangeSlider(PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
-            "lovalue": lo_value,
-            "hivalue": hi_value,
+            "lovalue": low_value,
+            "hivalue": high_value,
             "minvalue": min_value,
             "maxvalue": max_value,
             "orient": orient,
             "show_value": show_value,
-            "tick_interval": tick_interval,
+            "tick_interval": tick_step,
             "minor_ticks": minor_ticks,
             "tick_labels": tick_labels,
             "tick_format": tick_format,
         }
-        if lo_signal is not None:
-            internal_kwargs["lo_signal"] = lo_signal
-        if hi_signal is not None:
-            internal_kwargs["hi_signal"] = hi_signal
+        if low_signal is not None:
+            internal_kwargs["lo_signal"] = low_signal
+        if high_signal is not None:
+            internal_kwargs["hi_signal"] = high_signal
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalRangeSlider(tk_master, **internal_kwargs)
@@ -174,24 +174,24 @@ class RangeSlider(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def lo(self) -> float:
+    def low_value(self) -> float:
         return self._internal.lovalue
 
-    @lo.setter
-    def lo(self, v: float) -> None:
+    @low_value.setter
+    def low_value(self, v: float) -> None:
         self._internal._lo_signal.set(float(v))
 
     @property
-    def hi(self) -> float:
+    def high_value(self) -> float:
         return self._internal.hivalue
 
-    @hi.setter
-    def hi(self, v: float) -> None:
+    @high_value.setter
+    def high_value(self, v: float) -> None:
         self._internal._hi_signal.set(float(v))
 
     @property
     def value(self) -> tuple[float, float]:
-        """Current `(lo, hi)` values as a tuple."""
+        """Current `(low, high)` values as a tuple."""
         return (self._internal.lovalue, self._internal.hivalue)
 
     # ----- Event shorthands -----

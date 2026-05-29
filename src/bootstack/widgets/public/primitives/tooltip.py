@@ -18,7 +18,7 @@ class Tooltip:
         text: Tooltip text content.
         delay: Milliseconds before the tooltip appears. Default `250`.
         accent: Accent token for tooltip styling.
-        wraplength: Maximum line width in pixels before text wraps. Default `None` (no wrap).
+        wrap_width: Maximum line width in pixels before text wraps. Default `None` (no wrap).
         justify: Text alignment — `'left'` (default), `'center'`, or `'right'`.
         anchor_point: Widget anchor for tooltip positioning (e.g. `'n'`, `'se'`).
         window_point: Tooltip anchor matched to `anchor_point`.
@@ -32,7 +32,7 @@ class Tooltip:
         *,
         delay: int = 250,
         accent: str | None = None,
-        wraplength: int | None = None,
+        wrap_width: int | None = None,
         justify: Literal["left", "center", "right"] = "left",
         anchor_point: str | None = None,
         window_point: str | None = None,
@@ -48,8 +48,8 @@ class Tooltip:
         }
         if accent is not None:
             internal_kwargs["accent"] = accent
-        if wraplength is not None:
-            internal_kwargs["wraplength"] = wraplength
+        if wrap_width is not None:
+            internal_kwargs["wraplength"] = wrap_width
         if anchor_point is not None:
             internal_kwargs["anchor_point"] = anchor_point
         if window_point is not None:
