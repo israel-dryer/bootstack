@@ -104,9 +104,9 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
 
     view_src = (target / "src" / "myapp" / "views" / "main_view.py").read_text(encoding="utf-8")
     if container == "grid":
-        assert "ttk.GridFrame" in view_src
+        assert "bs.Grid" in view_src
     else:
-        assert "ttk.PackFrame" in view_src
+        assert "bs.VStack" in view_src
 
 
 # ---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ def test_create_appshell_project(tmp_path: Path, simple: bool) -> None:
     assert cfg["settings"]["theme"] == "superhero"
 
     main_src = (target / "src" / "myshell" / "main.py").read_text(encoding="utf-8")
-    assert "ttk.AppShell" in main_src
+    assert "bs.AppShell" in main_src
     assert 'os.environ.get("BOOTSTACK_THEME", "superhero")' in main_src
     assert "HomePage" in main_src and "SettingsPage" in main_src
 
@@ -178,7 +178,7 @@ def test_create_view(tmp_path: Path, container: str) -> None:
     classes = [n.name for n in ast.walk(mod) if isinstance(n, ast.ClassDef)]
     assert "ProfileView" in classes
     src = out.read_text(encoding="utf-8")
-    assert ("ttk.GridFrame" if container == "grid" else "ttk.PackFrame") in src
+    assert ("bs.Grid" if container == "grid" else "bs.VStack") in src
 
 
 def test_create_dialog(tmp_path: Path) -> None:
@@ -197,7 +197,7 @@ def test_create_page_camel_to_snake(tmp_path: Path) -> None:
     assert "DashboardPage" in classes
     # Page title strips trailing 'Page' for the heading
     src = out.read_text(encoding="utf-8")
-    assert 'text="Dashboard"' in src
+    assert '"Dashboard"' in src
 
 
 # ---------------------------------------------------------------------------

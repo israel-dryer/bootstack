@@ -760,6 +760,79 @@ events to `self._internal._entry` (same pattern as `TextField`, `Select`, `Numbe
 **Next steps:** Merge PR #77, then determine remaining widgets to migrate.
 Notable gaps: `DateField` needs review against v2 proposal; open bugs from the known-issues list.
 
+### Session 35 — Namespace migration + Card layout + widget structure plan (2026-05-29)
+
+**PR #81** (`feat/namespace-migration` → `main`) — 2 commits, pending merge:
+
+**Namespace migration:**
+- `bootstack/__init__.py` replaced lazy-import system with direct imports from
+  the public layer. All widgets now exported under public names (`TextField`,
+  `Checkbox`, `Select`, `NumberField`, `Tree`, `Table`, `Gauge`, etc.).
+  `Form`, `SideNav`, `Calendar` kept from internals (no public equivalent yet).
+  Non-widget utilities unchanged (style, data, i18n, signals, AppSettings, etc.).
+- `pyproject.toml`: added `testpaths` — pytest now scopes to `tests/cli` and
+  `tests/widgets/public` only; old `tests/widgets/` scripts are manual visual
+  demos.
+- `ContextMenuItem` added to public namespace.
+- CLI templates rewritten to use context-manager layout (Grid, VStack) and
+  public API naming. Views are plain classes, not subclasses of internal widgets.
+- CLI test assertions updated to match new template output.
+
+**Card layout:**
+- `Card` now accepts `layout=` kwarg: `'vstack'` (default), `'hstack'`, `'grid'`.
+  Backed by an internal `PackFrame`/`GridFrame` inside the card surface.
+- Child-guidance kwargs added: `gap`, `fill_items`, `expand_items`,
+  `anchor_items`, `columns`, `rows`, `sticky_items`, `auto_flow`.
+- `_child_master()` returns the layout frame; children are managed by the layout
+  engine rather than placed directly on the card surface.
+
+**`*_items` defaults fix (VStack, HStack, Card, Grid):**
+- `_merge_layout_options` now applies `fill_items`/`expand_items`/`anchor_items`
+  as defaults when not set per-child. Fixes canvas-based widgets (Slider,
+  RangeSlider, Gauge) that bypass PackFrame's `_on_child_pack` hook.
+- Grid/Card(grid): `sticky_items` applied as default in `_merge_layout_options`.
+
+**form_demo.py** rewritten using the public API; 118 → 72 lines.
+
+**Widget directory structure — settled, deferred to next PR:**
+
+Final target structure:
+```
+widgets/
+  _core/           # public framework internals (base, container, context,
+                   # events, exceptions, subscription) — extend here, don't
+                   # import directly from user code
+  _impl/           # all internal widget implementation (never import directly)
+    primitives/    # TTK widget subclasses (was widgets/primitives/)
+    composites/    # complex internal widgets (was widgets/composites/)
+    mixins/        # shared mixins (was widgets/mixins/)
+    _internal/     # TTK wrapper base (unchanged)
+    _parts/        # entry sub-components (unchanged)
+  # Everything below is the public widget surface — flat
+  types.py
+  app.py
+  appshell.py
+  window.py
+  stacks.py
+  grid.py
+  dialogs.py
+  button.py
+  label.py
+  textfield.py
+  card.py
+  ... (~40 widget files, all flat)
+```
+Deferred because: ~540 import changes across ~150 files; purely internal
+reorganization with no public API effect; cleaner as its own focused PR.
+Branch: `refactor/widget-structure` off `main` after #81 merges.
+
+**Remaining work:**
+- Merge PR #81
+- `refactor/widget-structure` — widget directory restructure (see above)
+- Gallery/examples rebuild using public API (separate effort)
+- ToggleGroup solid variant contrast — user handling
+  `src/bootstack/style/builders/toolbutton.py`
+
 ### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
 
 **PRs #79 and #80 opened** (pending merge at session end).

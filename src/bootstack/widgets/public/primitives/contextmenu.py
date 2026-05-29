@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from bootstack.widgets.composites.contextmenu import ContextMenu as _InternalContextMenu
+from bootstack.widgets.composites.contextmenu import ContextMenuItem
 
 _TRIGGER_MAP: dict[str | None, str | None] = {
     "right_click": "right-click",

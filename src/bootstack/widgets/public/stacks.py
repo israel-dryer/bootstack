@@ -67,6 +67,10 @@ class _StackBase(PublicContainer):
             frame_kwargs["height"] = height
         frame_kwargs.update(extra_kw)
 
+        self._fill_items = normalize_fill(fill_items)
+        self._expand_items = expand_items
+        self._anchor_items = anchor_items
+
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = PackFrame(tk_master, **frame_kwargs)
         self._attach_to_parent(layout_kw)
@@ -76,6 +80,12 @@ class _StackBase(PublicContainer):
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
         options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
+        if "fill" not in options and self._fill_items:
+            options["fill"] = self._fill_items
+        if "expand" not in options and self._expand_items is not None:
+            options["expand"] = self._expand_items
+        if "anchor" not in options and self._anchor_items:
+            options["anchor"] = self._anchor_items
         return ("pack", options)
 
 
