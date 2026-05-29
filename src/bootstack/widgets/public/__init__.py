@@ -16,8 +16,10 @@ from bootstack.widgets.public.primitives.numericentry import NumericEntry
 from bootstack.widgets.public.primitives.passwordentry import PasswordEntry
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
+from bootstack.widgets.public.primitives.scrollbar import Scrollbar
 from bootstack.widgets.public.primitives.select import Select
 from bootstack.widgets.public.primitives.separator import Separator
+from bootstack.widgets.public.primitives.sizegrip import SizeGrip
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
 from bootstack.widgets.public.primitives.tabs import TabChangeEventData, TabRef, Tabs
@@ -49,8 +51,10 @@ __all__ = [
     "PublicWidgetBase",
     "RadioGroup",
     "RangeSlider",
+    "Scrollbar",
     "Select",
     "Separator",
+    "SizeGrip",
     "Slider",
     "Spinbox",
     "Subscription",
