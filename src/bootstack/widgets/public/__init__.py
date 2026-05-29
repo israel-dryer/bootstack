@@ -8,6 +8,8 @@ from bootstack.widgets.public.grid import Grid
 from bootstack.widgets.public.app import App
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
+from bootstack.widgets.public.primitives.codeeditor import CodeEditor
+from bootstack.widgets.composites.textarea.filter import EditFilter
 from bootstack.widgets.public.primitives.card import Card
 from bootstack.widgets.public.primitives.datefield import DateField
 from bootstack.widgets.public.primitives.expander import Accordion, Expander
@@ -43,7 +45,9 @@ __all__ = [
     "Button",
     "Card",
     "Checkbox",
+    "CodeEditor",
     "DateField",
+    "EditFilter",
     "Event",
     "Expander",
     "Gauge",
