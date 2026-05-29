@@ -7,7 +7,7 @@ Bug 2: undecorated=True + show_window_controls=True
   → clicking Minimize raises TclError:
     cannot iconify ".": override-redirect flag is set
 """
-from bootstack.widgets.public import AppShell, VStack, Label, Button, Separator
+from bootstack.widgets import AppShell, VStack, Label, Button, Separator
 
 
 def repro_bug1():

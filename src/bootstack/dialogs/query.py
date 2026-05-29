@@ -1,4 +1,4 @@
-"""Query dialogs and querybox facade for data input."""
+﻿"""Query dialogs and querybox facade for data input."""
 
 import textwrap
 import tkinter
@@ -6,7 +6,7 @@ from datetime import date
 from types import SimpleNamespace
 from typing import Any, Callable, List, Optional
 
-from bootstack.widgets.primitives import Combobox, Frame, Label
+from bootstack.widgets._impl.primitives import Combobox, Frame, Label
 from bootstack.constants import *
 
 ttk = SimpleNamespace(
@@ -19,9 +19,9 @@ from bootstack.dialogs.datedialog import DateDialog
 from bootstack.dialogs.dialog import Dialog, DialogButton
 from bootstack.dialogs.fontdialog import FontDialog
 from bootstack.dialogs.message import MessageBox
-from bootstack.widgets.composites.textentry import TextEntry
-from bootstack.widgets.composites.numericentry import NumericEntry
-from bootstack.widgets.composites.dateentry import DateEntry
+from bootstack.widgets._impl.composites.textentry import TextEntry
+from bootstack.widgets._impl.composites.numericentry import NumericEntry
+from bootstack.widgets._impl.composites.dateentry import DateEntry
 
 EntryWidget = TextEntry | NumericEntry | DateEntry
 

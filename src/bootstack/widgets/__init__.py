@@ -4,77 +4,62 @@ from tkinter import ttk
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    # Static imports for type checkers and IDE support.
-    # These are never executed at runtime — avoids the circular import that
-    # eager aggregation would cause (style.style → widgets.types → widgets.__init__
-    # → widget cascade → style.style).
-    from bootstack.widgets.primitives.badge import Badge
-    from bootstack.widgets.primitives.button import Button
-    from bootstack.widgets.primitives.card import Card
-    from bootstack.widgets.primitives.checkbutton import CheckButton
-    from bootstack.widgets.primitives.checktoggle import CheckToggle
-    from bootstack.widgets.primitives.combobox import Combobox
-    from bootstack.widgets.primitives.entry import Entry
-    from bootstack.widgets.primitives.frame import Frame
-    from bootstack.widgets.primitives.gridframe import GridFrame
-    from bootstack.widgets.primitives.label import Label
-    from bootstack.widgets.primitives.labelframe import LabelFrame
-    from bootstack.widgets.primitives.optionmenu import OptionMenu
-    from bootstack.widgets.primitives.packframe import PackFrame
-    from bootstack.widgets.primitives.panedwindow import PanedWindow
-    from bootstack.widgets.primitives.progressbar import Progressbar
-    from bootstack.widgets.primitives.radiobutton import RadioButton
-    from bootstack.widgets.primitives.radiotoggle import RadioToggle
-    from bootstack.widgets.primitives.scrollbar import Scrollbar
-    from bootstack.widgets.primitives.separator import Separator
-    from bootstack.widgets.primitives.sizegrip import SizeGrip
-    from bootstack.widgets.primitives.spinbox import Spinbox
-    from bootstack.widgets.primitives.switch import Switch
-    from bootstack.widgets.primitives.treeview import TreeView
-    from bootstack.widgets.composites.accordion import Accordion
-    from bootstack.widgets.composites.appshell import AppShell
-    from bootstack.widgets.composites.buttongroup import ButtonGroup
-    from bootstack.widgets.composites.calendar import Calendar
-    from bootstack.widgets.composites.compositeframe import CompositeFrame, CompositeFrameKwargs
-    from bootstack.widgets.composites.contextmenu import ContextMenu, ContextMenuItem
-    from bootstack.widgets.composites.dateentry import DateEntry
-    from bootstack.widgets.composites.dropdownbutton import DropdownButton
-    from bootstack.widgets.composites.expander import Expander
-    from bootstack.widgets.composites.field import Field, FieldOptions
-    from bootstack.widgets.composites.floodgauge import FloodGauge
-    from bootstack.widgets.composites.form import Form
-    from bootstack.widgets.composites.list import ListItem, ListView
-    from bootstack.widgets.composites.list.listitem import ListItemKwargs
-    from bootstack.widgets.composites.menubar import MenuBar
-    from bootstack.widgets.composites.meter import Meter
-    from bootstack.widgets.composites.numericentry import NumericEntry
-    from bootstack.widgets.composites.pagestack import PageStack
-    from bootstack.widgets.composites.passwordentry import PasswordEntry
-    from bootstack.widgets.composites.pathentry import PathEntry
-    from bootstack.widgets.composites.radiogroup import RadioGroup
-    from bootstack.widgets.composites.textarea import TextArea, CodeEditor
-    from bootstack.widgets.composites.textarea.filter import EditFilter
-    from bootstack.widgets.composites.scrollview import ScrollView
-    from bootstack.widgets.composites.selectbox import SelectBox
-    from bootstack.widgets.composites.sidenav import (
-        SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
+    from bootstack.widgets.dialogs import (
+        alert, confirm,
+        ask_string, ask_integer, ask_float, ask_date, ask_item,
+        FormDialog, Dialog, DialogButton,
     )
-    from bootstack.widgets.composites.spinnerentry import SpinnerEntry
-    from bootstack.widgets.composites.tableview import TableView
-    from bootstack.widgets.composites.tabs.tabs import Tabs
-    from bootstack.widgets.composites.tabs.tabview import TabView
-    from bootstack.widgets.composites.tabs.tabitem import TabItem
-    from bootstack.widgets.composites.tabs.events import (
-        TabRef, TabChangeEventData, TabActivateEventData, TabDeactivateEventData,
-        ChangeReason, ChangeMethod,
-    )
-    from bootstack.widgets.composites.textentry import TextEntry
-    from bootstack.widgets.composites.timeentry import TimeEntry
-    from bootstack.widgets.composites.toast import Toast
-    from bootstack.widgets.composites.slider import Slider, RangeSlider, SliderEventData, SliderCommitEventData, RangeSliderEventData, RangeSliderCommitEventData
-    from bootstack.widgets.composites.togglegroup import ToggleGroup
-    from bootstack.widgets.composites.toolbar import Toolbar
-    from bootstack.widgets.composites.tooltip import ToolTip
+    from bootstack.widgets._core.events import Event
+    from bootstack.widgets._core.exceptions import BootstackV2Error, UnknownEventError, ParentResolutionError
+    from bootstack.widgets._core.subscription import Subscription
+    from bootstack.widgets._core.container import PublicContainer
+    from bootstack.widgets._core.base import PublicWidgetBase
+    from bootstack.widgets.stacks import HStack, VStack
+    from bootstack.widgets.grid import Grid
+    from bootstack.widgets.app import App
+    from bootstack.widgets.appshell import AppShell
+    from bootstack.widgets.window import Window
+    from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
+    from bootstack.widgets.button import Button
+    from bootstack.widgets.buttongroup import ButtonGroup
+    from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
+    from bootstack.widgets.codeeditor import CodeEditor
+    from bootstack.widgets._impl.composites.textarea.filter import EditFilter
+    from bootstack.widgets.card import Card
+    from bootstack.widgets.datefield import DateField
+    from bootstack.widgets.expander import Accordion, Expander
+    from bootstack.widgets.gauge import Gauge
+    from bootstack.widgets.groupbox import GroupBox
+    from bootstack.widgets.label import Badge, Label
+    from bootstack.widgets.listview import ListView
+    from bootstack.widgets.menubutton import MenuButton
+    from bootstack.widgets.numberfield import NumberField
+    from bootstack.widgets.pagestack import PageStack
+    from bootstack.widgets.pathfield import PathField
+    from bootstack.widgets.passwordfield import PasswordField
+    from bootstack.widgets.progressbar import ProgressBar
+    from bootstack.widgets.radio_variants import Radio, RadioToggleButton
+    from bootstack.widgets.radiogroup import RadioGroup
+    from bootstack.widgets.menubar import MenuBar
+    from bootstack.widgets.scrollbar import Scrollbar
+    from bootstack.widgets.scrollview import ScrollView
+    from bootstack.widgets.select import Select
+    from bootstack.widgets.separator import Separator
+    from bootstack.widgets.sizegrip import SizeGrip
+    from bootstack.widgets.splitview import SplitView
+    from bootstack.widgets.slider import RangeSlider, Slider
+    from bootstack.widgets.spinbox import Spinbox
+    from bootstack.widgets.spinnerfield import SpinnerField
+    from bootstack.widgets.timefield import TimeField
+    from bootstack.widgets.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
+    from bootstack.widgets.tabs import TabChangeEventData, TabRef, Tabs
+    from bootstack.widgets.textarea import TextArea
+    from bootstack.widgets.tree import Tree
+    from bootstack.widgets.textfield import TextField
+    from bootstack.widgets.toast import Toast, toast
+    from bootstack.widgets.togglegroup import ToggleGroup
+    from bootstack.widgets.toolbar import Toolbar
+    from bootstack.widgets.tooltip import Tooltip
 
 TTK_WIDGETS = (
     ttk.Button,
@@ -116,26 +101,3 @@ TK_WIDGETS = (
     tk.OptionMenu,
     tk.Spinbox,
 )
-
-__all__ = [
-    'TTK_WIDGETS', 'TK_WIDGETS',
-    # Primitives
-    'Badge', 'Button', 'Card', 'CheckButton', 'CheckToggle', 'Combobox',
-    'Entry', 'Frame', 'GridFrame', 'Label', 'LabelFrame',
-    'OptionMenu', 'PackFrame', 'PanedWindow', 'Progressbar',
-    'RadioButton', 'RadioToggle', 'Scrollbar', 'Separator',
-    'SizeGrip', 'Spinbox', 'Switch', 'TreeView',
-    # Composites
-    'Accordion', 'AppShell', 'ButtonGroup', 'Calendar', 'CompositeFrame',
-    'CompositeFrameKwargs', 'ContextMenu', 'ContextMenuItem', 'DateEntry',
-    'DropdownButton', 'Expander', 'Field', 'FieldOptions', 'FloodGauge',
-    'Form', 'ListItem', 'ListItemKwargs', 'ListView',
-    'MenuBar', 'Meter', 'NumericEntry', 'PageStack', 'PasswordEntry',
-    'PathEntry', 'RadioGroup', 'TextArea', 'CodeEditor', 'EditFilter', 'ScrollView', 'SelectBox',
-    'SideNav', 'SideNavItem', 'SideNavGroup', 'SideNavHeader', 'SideNavSeparator',
-    'SpinnerEntry', 'TableView', 'TabItem', 'Tabs', 'TabView',
-    'TabRef', 'TabChangeEventData', 'TabActivateEventData', 'TabDeactivateEventData',
-    'ChangeReason', 'ChangeMethod',
-    'TextEntry', 'TimeEntry', 'Toast',
-    'ToggleGroup', 'Toolbar', 'ToolTip',
-]

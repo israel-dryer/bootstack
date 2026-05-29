@@ -1,5 +1,5 @@
 """Visual test for public TextField widget."""
-from bootstack.widgets.public import App, VStack, HStack, TextField, Label, Button
+from bootstack.widgets import App, VStack, HStack, TextField, Label, Button
 from bootstack.signals import Signal
 
 

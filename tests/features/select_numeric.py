@@ -1,5 +1,5 @@
 """Visual test for public Select and NumberField widgets."""
-from bootstack.widgets.public import (
+from bootstack.widgets import (
     App, VStack, HStack, Label, Select, NumberField, Button
 )
 from bootstack.signals import Signal

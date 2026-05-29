@@ -1,4 +1,4 @@
-"""Color chooser widget for bootstack dialogs.
+﻿"""Color chooser widget for bootstack dialogs.
 
 This module provides a comprehensive color selection widget with multiple
 selection methods including RGB sliders, HSL controls, standard color palette,
@@ -19,9 +19,9 @@ from bootstack._core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style
-from bootstack.widgets.composites.tooltip import ToolTip
-from bootstack.widgets.primitives import Button, Entry, Frame, Label, Spinbox
-from bootstack.widgets.composites.tabs.tabview import TabView
+from bootstack.widgets._impl.composites.tooltip import ToolTip
+from bootstack.widgets._impl.primitives import Button, Entry, Frame, Label, Spinbox
+from bootstack.widgets._impl.composites.tabs.tabview import TabView
 # from bootstack.validation import add_range_validation, add_validation, validator
 from .colordropper import ColorDropperDialog
 

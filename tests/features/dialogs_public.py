@@ -1,5 +1,5 @@
 """Visual test for public dialog functions and FormDialog."""
-from bootstack.widgets.public import (
+from bootstack.widgets import (
     App, VStack, HStack, Label, Button, Separator,
     alert, confirm, ask_string, ask_integer, ask_float, ask_date, ask_item,
     FormDialog,

@@ -1,4 +1,4 @@
-"""FontDialog implementation for selecting and previewing fonts."""
+﻿"""FontDialog implementation for selecting and previewing fonts."""
 
 import tkinter
 from tkinter import Text, Variable, font
@@ -13,7 +13,7 @@ from bootstack.dialogs.dialog import Dialog, DialogButton, ShowOptions
 from bootstack._runtime.app import Window
 from bootstack._runtime.utility import scale_size
 from bootstack.style.style import get_style
-from bootstack.widgets.primitives import (
+from bootstack.widgets._impl.primitives import (
     CheckButton,
     Frame,
     Label,

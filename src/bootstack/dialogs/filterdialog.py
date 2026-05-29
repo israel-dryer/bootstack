@@ -1,4 +1,4 @@
-"""FilterDialog - A dialog for filtering and selecting multiple items from a list.
+﻿"""FilterDialog - A dialog for filtering and selecting multiple items from a list.
 
 This module provides a multi-select dialog with optional search and select-all
 functionality. Items can be displayed with checkboxes, and the dialog supports
@@ -9,12 +9,12 @@ from tkinter import Widget
 from typing import Any, Callable, Literal, Optional, Tuple, Union
 from types import SimpleNamespace
 
-from bootstack.widgets.primitives import CheckButton, Frame, Label, Separator
+from bootstack.widgets._impl.primitives import CheckButton, Frame, Label, Separator
 from bootstack.widgets.types import Master
-from bootstack.widgets.composites.textentry import TextEntry
+from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack._runtime.app import Window
 from bootstack.dialogs import Dialog, DialogButton
-from bootstack.widgets.composites.scrollview import ScrollView
+from bootstack.widgets._impl.composites.scrollview import ScrollView
 from bootstack._runtime.window_utilities import AnchorPoint
 
 ttk = SimpleNamespace(

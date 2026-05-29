@@ -1,4 +1,4 @@
-"""Message dialogs and messagebox facade for bootstack."""
+﻿"""Message dialogs and messagebox facade for bootstack."""
 
 import logging
 import textwrap
@@ -6,7 +6,7 @@ import tkinter
 from types import SimpleNamespace
 from typing import Any, Callable, List, Optional
 
-from bootstack.widgets.primitives import Frame, Label
+from bootstack.widgets._impl.primitives import Frame, Label
 from bootstack._core.images import Image as _ImageService
 from bootstack.constants import *
 from bootstack.i18n import MessageCatalog

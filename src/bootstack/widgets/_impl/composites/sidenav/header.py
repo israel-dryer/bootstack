@@ -1,0 +1,76 @@
+﻿"""SideNavHeader widget for section labels in navigation menus."""
+
+from typing import Any
+
+from typing_extensions import TypedDict, Unpack
+
+from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.label import Label
+from bootstack.widgets._impl.mixins import configure_delegate
+from bootstack.widgets.types import Master
+
+
+class SideNavHeaderKwargs(TypedDict, total=False):
+    text: str
+    # Frame options
+    padding: Any
+    width: int
+    height: int
+
+
+class SideNavHeader(Frame):
+    """A non-selectable section header for grouping navigation items.
+
+    SideNavHeader provides a text label to identify groups of related
+    navigation items. Unlike SideNavItem, headers are not selectable
+    and serve only as visual labels. Uses the 'label' font token for styling.
+
+    """
+
+    DEFAULT_PADDING = (8, 20, 8, 4)
+    DEFAULT_FONT = 'label'
+    DEFAULT_ACCENT = 'default'
+
+    def __init__(
+        self,
+        master: Master = None,
+        text: str = '',
+        **kwargs: Unpack[SideNavHeaderKwargs]
+    ):
+        """Initialize a SideNavHeader.
+
+        Args:
+            master: Parent widget.
+            text: The header text to display.
+            **kwargs: Additional arguments passed to Frame.
+        """
+        self._text = text
+
+        # Default padding: more top margin for visual separation between sections
+        kwargs.setdefault('padding', self.DEFAULT_PADDING)
+
+        super().__init__(master, **kwargs)
+
+        # Create header label with 'label' font (smaller, bold) and secondary accent
+        self._text_label = Label(
+            self,
+            text=text,
+            font=self.DEFAULT_FONT,
+            accent=self.DEFAULT_ACCENT,
+            anchor='w',
+        )
+        self._text_label.pack(fill='x')
+
+    @property
+    def text(self) -> str:
+        """Get the header text."""
+        return self._text
+
+    @configure_delegate('text')
+    def _delegate_text(self, value: str = None):
+        """Configure the header text."""
+        if value is None:
+            return self._text
+        self._text = value
+        self._text_label.configure(text=value)
+        return None
