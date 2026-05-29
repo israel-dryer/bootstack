@@ -522,7 +522,7 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `on_changed`/`on_input` callback shape inconsistency vs `on_valid`/`on_invalid`
 - `Field` message label (`_message_lbl`) shows gray background when `required=True` auto-enables `show_message` and validation first fires — background doesn't match surface
 - `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
-- `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; needs a style-builder fix
+- `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
 - `ListView` hover state blends with striped rows — hover highlight too similar to alternate row background; needs contrast bump in ListView style builder
 - `Label`/`Badge` use `.text` (not `.value`) — this is settled and intentional; `.value` is for data-bearing widgets only
@@ -763,6 +763,41 @@ events to `self._internal._entry` (same pattern as `TextField`, `Select`, `Numbe
 
 **Next steps:** Merge PR #77, then determine remaining widgets to migrate.
 Notable gaps: `DateField` needs review against v2 proposal; open bugs from the known-issues list.
+
+### Session 33 — Style asset recoloring + branch cleanup (2026-05-29)
+
+**PRs #77 and #78 merged** at session start. All misc widgets and style fixes landed.
+
+**Asset color channel convention settled** (saved to memory `feedback_asset_color_channels.md`):
+- White → fill, Black → border, Magenta → focus ring, Transparent → surface behind widget
+- Ghost/no-border style: pass fill color for both `white_color` and `black_color`
+- Always pass `transparent_color` for button-family assets — never leave as `None`
+
+**Style fixes shipped in PR #78** (`fix/style-asset-recoloring`):
+- `style/builders/menubar.py` — added `transparent_color=surface` to all three
+  `recolor_element_image` calls; was `None`, leaving raw transparent corners
+- `style/builders/field.py` — `build_field_addon_style`: magenta channel changed from
+  `None` → `input_background` for all non-focused states (was leaking raw pink)
+- `style/builders/scrollbar.py` — removed ALL arrow infrastructure from all four builder
+  functions; scrollbars are now fully arrow-free (`arrowsize=0`); removed unused imports
+- `widgets/composites/selectbox.py` — `on_canvas_configure` subtracts 2px from canvas
+  width so list content doesn't touch the scrollbar
+- Scrollbar assets (user): updated to 8px rendered thickness (16px at 2× source)
+
+**ToggleGroup solid variant contrast** — investigated Bootstrap toggle pattern (normal =
+full accent, selected = clearly darker). Attempted fixes reverted; user will handle
+`src/bootstack/style/builders/toolbutton.py` directly.
+
+**Stale branches deleted:** `fix/style-asset-recoloring` and `feat/public-radio` (both
+fully superseded by merged PRs; style-asset branch had pre-Session-31 CLAUDE.md content).
+
+**Remaining work (next session):**
+- `DateField` — review against `development/v2_api_proposal.md`
+- `TextArea` border — adopt Field-style focus-ring/border instead of raw Tk Text border
+- `Field` message label gray background on `required=True`
+- `TabView(variant='pill')` crash — no pill style builder for `TabItem.TFrame`
+- Spinbox, GroupBox, PathField, MenuButton, ButtonGroup, SplitView, PageStack —
+  confirm public wrappers exist and are correct
 
 ### Session 26 — Performance fixes (2026-05-28)
 
