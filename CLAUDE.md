@@ -760,6 +760,45 @@ events to `self._internal._entry` (same pattern as `TextField`, `Select`, `Numbe
 **Next steps:** Merge PR #77, then determine remaining widgets to migrate.
 Notable gaps: `DateField` needs review against v2 proposal; open bugs from the known-issues list.
 
+### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
+
+**PRs #79 and #80 opened** (pending merge at session end).
+
+**PR #79** (`fix/public-api-gaps` → `main`) — 6 commits:
+- Public API gaps filled: `DateField.picker_button`, `Spinbox.value_format`,
+  `SplitView.sash_positions`/`min_size`, `MenuButton.add_radio_item`/`item`/`items`/`menu_options`,
+  `ButtonGroup.item`/`items`
+- `TextArea`/`CodeEditor` border: replaced raw `highlightthickness` with `Frame(ttk_class="TField",
+  padding=5)`; both now have consistent focus ring; `show_border=True` default; label gets
+  `padx=(4,0)` matching Field
+- Validation callback shape: `on_valid`/`on_invalid`/`on_validated` now pass Tkinter Event
+  (not unwrapped dict), matching `on_input`/`on_changed`
+- `secondary` color token restored across all 12 theme JSONs, `COLOR_TOKENS`, `AccentToken`;
+  field addon style builder now uses accent color for button background when `accent is not None`
+- `PathField` browse button: replaced text button with `folder2-open` icon-only (position=after),
+  matching DateField calendar picker pattern; removed `button_label`/`button_accent` params
+- `Field`/`TextArea` message label: `accent="secondary"` replaces `"muted"`/`"default"` —
+  fixes gray background on `required=True` fields
+- `ListView` hover: `active = b.elevate(b.color(base_token), 2)` gives consistent hover
+  across striped and unstriped rows; base extracted by stripping modifier from surface token
+- TabView pill variant bug removed (never existed)
+
+**PR #80** (`fix/issue-40-window-controls` → `main`) — fixes GitHub issue #40:
+- `Toolbar._sync_maximize_state`: hides maximize button when `resizable=(False, False)`
+- `Toolbar._on_minimize`: temporarily lifts `overrideredirect`, iconifies, restores on `<Map>`
+- Repro script: `tests/features/issue_40_repro.py`
+
+**`secondary` token decisions:**
+- Buttons: keep `accent="default"` everywhere it was changed in the removal commit
+- PathField browse button: now icon-only, no accent needed
+- Field/TextArea message labels: restored to `accent="secondary"` (this was the root fix)
+
+**Remaining work (next session):**
+- **Migrate `bs.*` namespace** — wire public widgets as canonical exports in
+  `bootstack/__init__.py`, replacing old internal widgets (`Entry`→`TextField`,
+  `DateEntry`→`DateField`, `CheckButton`→`Checkbox`, etc.)
+- ToggleGroup solid variant contrast — user handling `src/bootstack/style/builders/toolbutton.py`
+
 ### Session 33 — Style asset recoloring + branch cleanup (2026-05-29)
 
 **PRs #77 and #78 merged** at session start. All misc widgets and style fixes landed.
