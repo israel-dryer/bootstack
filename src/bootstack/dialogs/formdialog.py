@@ -269,27 +269,32 @@ class FormDialog:
 
         # Calculate dialog size: content + padding (10x2) + dialog chrome (~40)
         dialog_width = measured_width + 60
-        dialog_height = 500  # Default height, will adjust after geometry update
 
-        # Apply user minsize if provided
+        _MIN_HEIGHT = 150
+        _MAX_HEIGHT = 800
+
+        min_height = _MIN_HEIGHT
         if self._user_minsize:
             user_width, user_height = self._user_minsize
             dialog_width = max(user_width, dialog_width)
-            dialog_height = max(user_height, dialog_height)
+            min_height = max(user_height, _MIN_HEIGHT)
 
-        if self._height:
-            dialog_height = self._height + 100
-
-        dialog_height = min(dialog_height, 800)
         # Store the intended content width for pre-show sizing of the scrollview
         self._desired_canvas_width = measured_width
 
-        # Set minsize and geometry BEFORE forcing layout
         if self._dialog.toplevel:
-            self._dialog.toplevel.minsize(dialog_width, dialog_height)
-            self._dialog.toplevel.geometry(f"{dialog_width}x{dialog_height}")
+            # Seed width and minimum height, then measure natural content height
+            self._dialog.toplevel.minsize(dialog_width, min_height)
+            self._dialog.toplevel.geometry(f"{dialog_width}x{min_height}")
+            self._dialog.toplevel.update_idletasks()
 
-            # Force complete geometry calculation while window is still withdrawn
+            if self._height:
+                dialog_height = min(self._height + 100, _MAX_HEIGHT)
+            else:
+                natural = self._dialog.toplevel.winfo_reqheight()
+                dialog_height = min(max(natural, min_height), _MAX_HEIGHT)
+
+            self._dialog.toplevel.geometry(f"{dialog_width}x{dialog_height}")
             self._dialog.toplevel.update_idletasks()
 
     def _schedule_initial_layout(self):
