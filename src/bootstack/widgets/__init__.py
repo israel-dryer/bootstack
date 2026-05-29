@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
     from bootstack.widgets.codeeditor import CodeEditor
     from bootstack.widgets._impl.composites.textarea.filter import EditFilter
-    from bootstack.widgets.card import Card
     from bootstack.widgets.datefield import DateField
     from bootstack.widgets.expander import Accordion, Expander
     from bootstack.widgets.gauge import Gauge

@@ -87,14 +87,10 @@ def _build_icons_page():
         with bs.GroupBox("Common Icons", fill="horizontal"):
             with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
                 for name in icon_names[:10]:
-                    with bs.VStack(gap=4, anchor_items="center"):
-                        bs.Label(icon=name, icon_only=True)
-                        bs.Label(name, font="caption")
+                    bs.Label(name, icon=name)
             with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
                 for name in icon_names[10:]:
-                    with bs.VStack(gap=4, anchor_items="center"):
-                        bs.Label(icon=name, icon_only=True)
-                        bs.Label(name, font="caption")
+                    bs.Label(name, icon=name)
 
         with bs.GroupBox("Icon Sizes", fill="horizontal"):
             with bs.HStack(gap=20):
@@ -320,10 +316,9 @@ def _build_data_page():
         bs.Label("Data Display", font="heading-xl")
         bs.Label("Labels, badges, trees, and tables for presenting data.", accent="secondary")
 
-        with bs.GroupBox("Labels", fill="horizontal"):
-            with bs.HStack(gap=4):
-                for color in ("primary", "success", "warning", "danger"):
-                    bs.Label(color.title(), accent=color, padding=(8, 4))
+        with bs.GroupBox("Labels", fill="horizontal", layout="hstack", gap=4):
+            for color in ("primary", "secondary", "success", "warning", "danger"):
+                bs.Label(color.title(), accent=color, padding=(8, 4))
 
         with bs.GroupBox("Badges", fill="horizontal", gap=6):
             with bs.HStack(gap=8):
@@ -402,7 +397,7 @@ def _build_layout_page():
                     ("Revenue", "$45,678",       "success"),
                     ("Errors",  "12 today",      "danger"),
                 ]:
-                    with bs.Card(padding=16):
+                    with bs.VStack(variant='card', padding=16):
                         bs.Label(title, accent=color, font="body[bold]")
                         bs.Label(body, font="heading-lg")
 
@@ -554,13 +549,15 @@ def _build_theme_page():
         bs.Label("Themes", font="heading-xl")
         bs.Label("Switch themes to see all widgets update in real time.", accent="secondary")
 
-        with bs.GroupBox("Theme Selector", fill="horizontal"):
+        with bs.GroupBox("Theme Selector", fill="horizontal", layout="grid", columns=2):
             style = bs.get_style()
             theme_names = sorted(s["name"] for s in style.theme_provider.list_themes())
+
             with bs.HStack(gap=8):
                 bs.Label("Theme:", width=10)
                 sel = bs.Select(options=theme_names, value=style.current_theme, fill="horizontal")
                 sel.on_change(lambda e: sel._internal.after(0, lambda: bs.set_theme(sel.value)))
+
             with bs.HStack(gap=8):
                 bs.Label("Quick:", width=10)
                 bs.Button("Toggle Light / Dark", on_click=bs.toggle_theme)

@@ -80,7 +80,6 @@ from bootstack.widgets.grid import Grid
 from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.button import Button
 from bootstack.widgets.buttongroup import ButtonGroup
-from bootstack.widgets.card import Card
 from bootstack.widgets.codeeditor import CodeEditor
 from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets.datefield import DateField
