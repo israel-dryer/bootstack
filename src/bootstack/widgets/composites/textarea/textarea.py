@@ -165,7 +165,7 @@ class TextArea(GridFrame):
 
         # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",
-                                  accent="muted")
+                                  accent="secondary")
         self._message_lbl.grid(row=2, column=0, sticky="w")
         self._message_lbl.grid_remove()
 
@@ -250,7 +250,7 @@ class TextArea(GridFrame):
         self._message_lbl.configure(text=message, accent="danger")
 
     def _clear_error(self) -> None:
-        self._message_lbl.configure(text=self._original_message, accent="muted")
+        self._message_lbl.configure(text=self._original_message, accent="secondary")
 
     # ── validation ────────────────────────────────────────────────────────
 
