@@ -522,6 +522,7 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `on_changed`/`on_input` callback shape inconsistency vs `on_valid`/`on_invalid`
 - `Field` message label (`_message_lbl`) shows gray background when `required=True` auto-enables `show_message` and validation first fires — background doesn't match surface
 - `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
+- `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; needs a style-builder fix
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
 
 ---
