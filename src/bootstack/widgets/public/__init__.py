@@ -11,6 +11,8 @@ from bootstack.widgets.public.base import PublicWidgetBase
 from bootstack.widgets.public.stacks import HStack, VStack
 from bootstack.widgets.public.grid import Grid
 from bootstack.widgets.public.app import App
+from bootstack.widgets.public.appshell import AppShell
+from bootstack.widgets.public.window import Window
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
 from bootstack.widgets.public.primitives.buttongroup import ButtonGroup
@@ -50,6 +52,7 @@ __all__ = [
     "Accordion",
     "alert",
     "App",
+    "AppShell",
     "ask_date",
     "ask_float",
     "ask_integer",
@@ -111,4 +114,5 @@ __all__ = [
     "Tooltip",
     "UnknownEventError",
     "VStack",
+    "Window",
 ]
