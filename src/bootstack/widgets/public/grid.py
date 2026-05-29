@@ -65,6 +65,8 @@ class Grid(PublicContainer):
             frame_kwargs["height"] = height
         frame_kwargs.update(extra_kw)
 
+        self._sticky_items = sticky_items
+
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = GridFrame(tk_master, **frame_kwargs)
         self._attach_to_parent(layout_kw)
@@ -74,4 +76,6 @@ class Grid(PublicContainer):
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
+        if "sticky" not in options and self._sticky_items:
+            options["sticky"] = self._sticky_items
         return ("grid", options)

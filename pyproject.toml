@@ -110,12 +110,11 @@ search = "version = \"{current_version}\""
 replace = "version = \"{new_version}\""
 
 [tool.pytest.ini_options]
+testpaths = ["tests/cli", "tests/widgets/public"]
 markers = [
     "gui: requires a Tk display (deselect with -m 'not gui')",
 ]
 
 [tool.ruff.lint]
-# F401: imported but unused
-# __init__.py uses dynamic __all__ + lazy __getattr__ + TYPE_CHECKING re-exports
-# that ruff cannot statically trace. Suppress false positives there.
+# F401: imported but unused — suppress for __init__.py where all imports are public re-exports
 per-file-ignores = { "src/bootstack/__init__.py" = ["F401"] }

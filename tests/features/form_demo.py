@@ -1,119 +1,85 @@
-"""Form demo — look and feel review for bs widget composition.
+"""Form demo — look and feel review using the public API.
 
 Run: python tests/features/form_demo.py
 """
 import bootstack as bs
 
+with bs.App(title="Create Account", size=(680, 760)) as app:
+    with bs.ScrollView(fill="both", expand=True):
+        with bs.VStack(padding=24, gap=12, fill="horizontal", fill_items="horizontal"):
 
-class FormDemo(bs.App):
-    def __init__(self):
-        super().__init__(title="Create Account", minsize=(680, 760))
-        self._build()
+            # ── Header ─────────────────────────────────────────────────
+            bs.Label("Create your account", font="heading-lg[bold]")
+            bs.Label("Fill in the details below to get started.", font="body")
 
-    def _build(self):
-        scroll = bs.ScrollView(self)
-        scroll.pack(fill="both", expand=True)
-        c = scroll.add(padding=24)
+            # ── Personal information ────────────────────────────────────
+            with bs.Card(gap=12, fill_items="horizontal"):
+                bs.Label("Personal information", font="body[bold]")
+                with bs.Grid(columns=2, gap=12, sticky_items="ew"):
+                    bs.TextField(label="First name")
+                    bs.TextField(label="Last name")
+                    bs.TextField(label="Email address", columnspan=2)
+                    bs.TextField(label="Username")
+                    bs.PasswordField(label="Password")
 
-        # ── Header ─────────────────────────────────────────────────────
-        bs.Label(c, text="Create your account", font="heading-lg[bold]").pack(anchor="w")
-        bs.Label(c, text="Fill in the details below to get started.", font="body").pack(anchor="w", pady=(4, 20))
+            # ── Location & language ─────────────────────────────────────
+            with bs.Card(gap=12, fill_items="horizontal"):
+                bs.Label("Location & language", font="body[bold]")
+                with bs.Grid(columns=2, gap=12, sticky_items="ew"):
+                    countries = ["United States", "United Kingdom", "Canada",
+                                 "Australia", "Germany", "France", "Japan"]
+                    bs.Select(label="Country", options=countries, allow_custom_values=True)
 
-        # ── Personal information ────────────────────────────────────────
-        card1 = bs.Card(c)
-        card1.pack(fill="x", pady=(0, 12))
-        bs.Label(card1, text="Personal information", font="body[bold]").pack(anchor="w", pady=(0, 12))
+                    languages = ["English", "Spanish", "French", "German",
+                                 "Japanese", "Portuguese"]
+                    bs.Select(label="Language", options=languages)
 
-        g1 = bs.GridFrame(card1, columns=2, gap=12, sticky_items="ew")
-        g1.pack(fill="x")
-        bs.TextEntry(g1, label="First name").grid()
-        bs.TextEntry(g1, label="Last name").grid()
-        bs.TextEntry(g1, label="Email address").grid(columnspan=2)
-        bs.TextEntry(g1, label="Username").grid()
-        bs.PasswordEntry(g1, label="Password").grid()
+                    bs.TextField(label="City")
+                    bs.NumberField(label="Age", min_value=18, max_value=120)
 
-        # ── Location & language ─────────────────────────────────────────
-        card2 = bs.Card(c)
-        card2.pack(fill="x", pady=(0, 12))
-        bs.Label(card2, text="Location & language", font="body[bold]").pack(anchor="w", pady=(0, 12))
+            # ── Plan ───────────────────────────────────────────────────
+            with bs.Card(gap=8, fill_items="horizontal"):
+                bs.Label("Choose your plan", font="body[bold]")
+                rg = bs.RadioGroup(orient="vertical")
+                rg.add("Free — basic features, up to 3 projects", value="free")
+                rg.add("Pro — all features, unlimited projects", value="pro")
+                rg.add("Team — collaboration + admin panel", value="team")
+                rg.value = "free"
 
-        g2 = bs.GridFrame(card2, columns=2, gap=12, sticky_items="ew")
-        g2.pack(fill="x")
+            # ── Notifications ───────────────────────────────────────────
+            with bs.Card(gap=8):
+                bs.Label("Notifications", font="body[bold]")
+                with bs.HStack(gap=32):
+                    bs.Switch("Email")
+                    bs.Switch("SMS", value=True)
+                    bs.Switch("Browser push")
+                    bs.Switch("Marketing")
 
-        countries = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Japan"]
-        bs.SelectBox(g2, label="Country", enable_search=True, items=countries).grid()
+            # ── Budget ─────────────────────────────────────────────────
+            with bs.Card(gap=8, fill_items="horizontal"):
+                bs.Label("Budget settings", font="body[bold]")
+                bs.Label("Monthly spend limit", font="body")
+                bs.Slider(
+                    min_value=0, max_value=500, value=100,
+                    tick_step=100, show_value=True,
+                    tick_format="${:.0f}", accent="success",
+                )
+                bs.Label("Target audience age range", font="body")
+                bs.RangeSlider(
+                    min_value=18, max_value=65,
+                    low_value=25, high_value=45,
+                    show_value=True, accent="primary",
+                )
 
-        languages = ["English", "Spanish", "French", "German", "Japanese", "Portuguese"]
-        bs.SelectBox(g2, label="Language", items=languages).grid()
+            # ── Agreement ───────────────────────────────────────────────
+            with bs.Card(gap=8, fill_items='horizontal'):
+                bs.Checkbox("I agree to the Terms of Service and Privacy Policy")
+                bs.Checkbox("I confirm I am 18 years of age or older")
 
-        bs.TextEntry(g2, label="City").grid()
-        bs.NumericEntry(g2, label="Age", minvalue=18, maxvalue=120).grid()
+            # ── Actions ─────────────────────────────────────────────────
+            with bs.HStack(gap=8, fill="horizontal"):
+                bs.Button("Cancel", variant="ghost", expand=True, anchor="w")
+                bs.Button("Save draft", variant="outline")
+                bs.Button("Create account", icon="person-plus", accent="primary")
 
-        # ── Plan ───────────────────────────────────────────────────────
-        card3 = bs.Card(c)
-        card3.pack(fill="x", pady=(0, 12))
-        bs.Label(card3, text="Choose your plan", font="body[bold]").pack(anchor="w", pady=(0, 12))
-
-        rg = bs.RadioGroup(card3)
-        rg.add(text="Free — basic features, up to 3 projects", value="free", key="free")
-        rg.add(text="Pro — all features, unlimited projects", value="pro", key="pro")
-        rg.add(text="Team — collaboration + admin panel", value="team", key="team")
-        rg.set("free")
-        rg.pack(fill="x")
-
-        # ── Notifications ───────────────────────────────────────────────
-        card4 = bs.Card(c)
-        card4.pack(fill="x", pady=(0, 12))
-        bs.Label(card4, text="Notifications", font="body[bold]").pack(anchor="w", pady=(0, 12))
-
-        sw_row = bs.PackFrame(card4, direction="row", gap=32, fill_items="none")
-        sw_row.pack(anchor="w")
-        bs.Switch(sw_row, text="Email").pack()
-        bs.Switch(sw_row, text="SMS", value=True).pack()
-        bs.Switch(sw_row, text="Browser push").pack()
-        bs.Switch(sw_row, text="Marketing").pack()
-
-        # ── Budget ──────────────────────────────────────────────────────
-        card5 = bs.Card(c)
-        card5.pack(fill="x", pady=(0, 12))
-        bs.Label(card5, text="Budget settings", font="body[bold]").pack(anchor="w", pady=(0, 8))
-        bs.Label(card5, text="Monthly spend limit", font="body").pack(anchor="w", pady=(0, 4))
-        bs.Slider(card5, minvalue=0, maxvalue=500, value=100, tick_interval=100, show_value=True, tick_format="${:.0f}",
-            accent="success").pack(fill="x", pady=(0, 16))
-
-        bs.Label(card5, text="Target audience age range", font="body").pack(anchor="w", pady=(0, 4))
-        bs.RangeSlider(card5, minvalue=18, maxvalue=65, lovalue=25, hivalue=45,
-            show_value=True, accent="primary",
-        ).pack(fill="x")
-
-        # ── Scale vs Slider comparison ──────────────────────────────────
-        card_cmp = bs.Card(c)
-        card_cmp.pack(fill="x", pady=(0, 12))
-        bs.Label(card_cmp, text="Scale vs Slider — size alignment check",
-                 font="body[bold]").pack(anchor="w", pady=(0, 12))
-
-        bs.Label(card_cmp, text="bs.Scale (original ttk)", font="body").pack(
-            anchor="w", pady=(0, 4))
-        bs.Scale(card_cmp, from_=0, to=100, value=60, orient="horizontal").pack(
-            fill="x", pady=(0, 16))
-
-        bs.Label(card_cmp, text="bs.Slider", font="body").pack(
-            anchor="w", pady=(0, 4))
-        bs.Slider(card_cmp, value=60).pack(fill="x")
-
-        # ── Agreement ───────────────────────────────────────────────────
-        card6 = bs.Card(c)
-        card6.pack(fill="x", pady=(0, 24))
-        bs.CheckButton(card6, text="I agree to the Terms of Service and Privacy Policy").pack(anchor="w", pady=(0, 8))
-        bs.CheckButton(card6, text="I confirm I am 18 years of age or older").pack(anchor="w")
-
-        # ── Actions ─────────────────────────────────────────────────────
-        actions = bs.PackFrame(c, direction="row", gap=8)
-        actions.pack(fill="x")
-        bs.Button(actions, text="Cancel", variant="ghost").pack(side="left", expand=True, anchor='w')
-        bs.Button(actions, text="Save draft", variant="outline").pack()
-        bs.Button(actions, text="Create account", icon="person-plus", accent="primary").pack()
-
-
-if __name__ == "__main__":
-    FormDemo().mainloop()
+app.run()
