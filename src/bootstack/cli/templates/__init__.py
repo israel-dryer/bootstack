@@ -29,16 +29,14 @@ from {module_name}.views.main_view import MainView
 
 def main() -> None:
     """Application entry point."""
-    app = bs.App(
+    with bs.App(
         title="{app_name}",
-        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
+        settings={{"theme": os.environ.get("BOOTSTACK_THEME", "{theme}")}},
         size=(800, 600),
-    )
+    ) as app:
+        MainView()
 
-    # Create and display main view
-    MainView(app).pack(fill="both", expand=True)
-
-    app.mainloop()
+    app.run()
 
 
 if __name__ == "__main__":
@@ -56,50 +54,36 @@ MAIN_VIEW_GRID_TEMPLATE = '''\
 import bootstack as bs
 
 
-class MainView(bs.GridFrame):
-    """Main view using GridFrame layout."""
+class MainView:
+    """Main application view using a grid layout."""
 
-    def __init__(self, master, **kwargs):
-        super().__init__(
-            master,
+    def __init__(self, parent=None):
+        with bs.Grid(
+            parent=parent,
             columns=["auto", 1],
             gap=10,
             padding=20,
-            **kwargs,
-        )
-        self._create_widgets()
+            sticky_items="ew",
+            fill="both",
+            expand=True,
+        ) as self.root:
+            self._build()
 
-    def _create_widgets(self) -> None:
-        """Create and layout widgets."""
-        # Header
-        bs.Label(
-            self,
-            text="Welcome to {app_name}",
-            font=("TkDefaultFont", 18, "bold"),
-        ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 20))
-
-        # Example form layout
-        bs.Label(self, text="Name:").grid(row=1, column=0, sticky="e")
-        self.name_entry = bs.Entry(self)
-        self.name_entry.grid(row=1, column=1, sticky="ew")
-
-        bs.Label(self, text="Email:").grid(row=2, column=0, sticky="e")
-        self.email_entry = bs.Entry(self)
-        self.email_entry.grid(row=2, column=1, sticky="ew")
-
-        # Action button
+    def _build(self) -> None:
+        bs.Label("Welcome to {app_name}", font="heading-lg[bold]", columnspan=2)
+        bs.Label("Name:")
+        self.name_field = bs.TextField()
+        bs.Label("Email:")
+        self.email_field = bs.TextField()
         bs.Button(
-            self,
-            text="Get Started",
+            "Get Started",
             accent="primary",
-            command=self._on_submit,
-        ).grid(row=3, column=0, columnspan=2, pady=(20, 0))
+            on_click=self._on_submit,
+            columnspan=2,
+        )
 
     def _on_submit(self) -> None:
-        """Handle form submission."""
-        name = self.name_entry.get()
-        email = self.email_entry.get()
-        print(f"Name: {{name}}, Email: {{email}}")
+        print(f"Name: {{self.name_field.value}}, Email: {{self.email_field.value}}")
 '''
 
 
@@ -109,61 +93,27 @@ MAIN_VIEW_PACK_TEMPLATE = '''\
 import bootstack as bs
 
 
-class MainView(bs.PackFrame):
-    """Main view using PackFrame layout."""
+class MainView:
+    """Main application view using a vertical stack layout."""
 
-    def __init__(self, master, **kwargs):
-        super().__init__(
-            master,
-            direction="vertical",
+    def __init__(self, parent=None):
+        with bs.VStack(
+            parent=parent,
             gap=10,
             padding=20,
-            **kwargs,
-        )
-        self._create_widgets()
+            fill="both",
+            expand=True,
+        ) as self.root:
+            self._build()
 
-    def _create_widgets(self) -> None:
-        """Create and layout widgets."""
-        # Header
-        header = bs.Label(
-            self,
-            text="Welcome to {app_name}",
-            font=("TkDefaultFont", 18, "bold"),
-        )
-        self.add(header)
-
-        # Spacer
-        self.add(bs.Frame(self, height=10))
-
-        # Name field
-        name_frame = bs.PackFrame(self, direction="horizontal", gap=10)
-        bs.Label(name_frame, text="Name:", width=10).pack(side="left")
-        self.name_entry = bs.Entry(name_frame)
-        self.name_entry.pack(side="left", fill="x", expand=True)
-        self.add(name_frame, fill_items="x")
-
-        # Email field
-        email_frame = bs.PackFrame(self, direction="horizontal", gap=10)
-        bs.Label(email_frame, text="Email:", width=10).pack(side="left")
-        self.email_entry = bs.Entry(email_frame)
-        self.email_entry.pack(side="left", fill="x", expand=True)
-        self.add(email_frame, fill_items="x")
-
-        # Action button
-        self.add(bs.Frame(self, height=10))
-        btn = bs.Button(
-            self,
-            text="Get Started",
-            accent="primary",
-            command=self._on_submit,
-        )
-        self.add(btn)
+    def _build(self) -> None:
+        bs.Label("Welcome to {app_name}", font="heading-lg[bold]")
+        self.name_field = bs.TextField(label="Name:", fill="horizontal")
+        self.email_field = bs.TextField(label="Email:", fill="horizontal")
+        bs.Button("Get Started", accent="primary", on_click=self._on_submit)
 
     def _on_submit(self) -> None:
-        """Handle form submission."""
-        name = self.name_entry.get()
-        email = self.email_entry.get()
-        print(f"Name: {{name}}, Email: {{email}}")
+        print(f"Name: {{self.name_field.value}}, Email: {{self.email_field.value}}")
 '''
 
 
@@ -179,27 +129,23 @@ VIEW_GRID_TEMPLATE = '''\
 import bootstack as bs
 
 
-class {class_name}(bs.GridFrame):
-    """{class_name} using GridFrame layout."""
+class {class_name}:
+    """{class_name} view."""
 
-    def __init__(self, master, **kwargs):
-        super().__init__(
-            master,
+    def __init__(self, parent=None):
+        with bs.Grid(
+            parent=parent,
             columns=["auto", 1],
             gap=10,
             padding=20,
-            **kwargs,
-        )
-        self._create_widgets()
+            sticky_items="ew",
+            fill="both",
+            expand=True,
+        ) as self.root:
+            self._build()
 
-    def _create_widgets(self) -> None:
-        """Create and layout widgets."""
-        bs.Label(
-            self,
-            text="{class_name}",
-            font=("TkDefaultFont", 14, "bold"),
-        ).grid(row=0, column=0, columnspan=2, sticky="w")
-
+    def _build(self) -> None:
+        bs.Label("{class_name}", font="heading-lg[bold]", columnspan=2)
         # Add your widgets here
 '''
 
@@ -212,28 +158,21 @@ VIEW_PACK_TEMPLATE = '''\
 import bootstack as bs
 
 
-class {class_name}(bs.PackFrame):
-    """{class_name} using PackFrame layout."""
+class {class_name}:
+    """{class_name} view."""
 
-    def __init__(self, master, **kwargs):
-        super().__init__(
-            master,
-            direction="vertical",
+    def __init__(self, parent=None):
+        with bs.VStack(
+            parent=parent,
             gap=10,
             padding=20,
-            **kwargs,
-        )
-        self._create_widgets()
+            fill="both",
+            expand=True,
+        ) as self.root:
+            self._build()
 
-    def _create_widgets(self) -> None:
-        """Create and layout widgets."""
-        header = bs.Label(
-            self,
-            text="{class_name}",
-            font=("TkDefaultFont", 14, "bold"),
-        )
-        self.add(header)
-
+    def _build(self) -> None:
+        bs.Label("{class_name}", font="heading-lg[bold]")
         # Add your widgets here
 '''
 
@@ -381,28 +320,24 @@ from {module_name}.pages.settings_page import SettingsPage
 
 def main() -> None:
     """Application entry point."""
-    shell = bs.AppShell(
+    with bs.AppShell(
         title="{app_name}",
-        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
+        settings={{"theme": os.environ.get("BOOTSTACK_THEME", "{theme}")}},
         size=(1000, 650),
-    )
+    ) as shell:
+        shell.toolbar.add_button(icon="sun", on_click=bs.toggle_theme)
 
-    # Add a theme toggle button to the toolbar
-    shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
+        with shell.add_page("home", text="Home", icon="house"):
+            HomePage()
 
-    # Navigation pages
-    home = shell.add_page("home", text="Home", icon="house")
-    HomePage(home)
+        shell.add_separator()
 
-    shell.add_separator()
+        with shell.add_page("settings", text="Settings", icon="gear", is_footer=True):
+            SettingsPage()
 
-    # Footer pages
-    settings = shell.add_page("settings", text="Settings", icon="gear", is_footer=True)
-    SettingsPage(settings)
+        shell.navigate("home")
 
-    # Start on the home page
-    shell.navigate("home")
-    shell.mainloop()
+    shell.run()
 
 
 if __name__ == "__main__":
@@ -417,43 +352,26 @@ import bootstack as bs
 
 
 class HomePage:
-    """Home page content.
+    """Home page content."""
 
-    Pages in an AppShell are not widget subclasses. The `parent` frame
-    is created by `shell.add_page()` and this class populates it.
-    """
-
-    def __init__(self, parent):
-        self.parent = parent
-        self._build()
+    def __init__(self, parent=None):
+        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+            self._build()
 
     def _build(self):
+        bs.Label("Welcome to {app_name}", font="heading-xl[bold]")
         bs.Label(
-            self.parent,
-            text="Welcome to {app_name}",
-            font="heading-xl",
-        ).pack(anchor="w", padx=20, pady=(20, 10))
-
-        bs.Label(
-            self.parent,
-            text="This is your home page. Edit this file to get started.",
-            wraplength=500,
-        ).pack(anchor="w", padx=20, pady=(0, 20))
-
-        content = bs.LabelFrame(self.parent, text="Getting Started", padding=20)
-        content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        bs.Label(
-            content,
-            text=(
+            "This is your home page. Edit this file to get started.",
+            wrap_width=500,
+        )
+        with bs.GroupBox("Getting Started", fill="both", expand=True):
+            bs.Label(
                 "Add your widgets here.\\n\\n"
                 "To add another page:\\n"
-                "  1. Run 'bootstack add page <Name>' to generate the file under pages/.\\n"
-                "  2. In main.py, import it, call shell.add_page(...), and pass\\n"
-                "     the returned frame to your page class. The CLI prints the\\n"
-                "     exact lines to paste."
-            ),
-        ).pack(expand=True)
+                "  1. Run \\'bootstack add page <Name>\\' to generate the file.\\n"
+                "  2. In main.py, add a \\'with shell.add_page(...):\\' block\\n"
+                "     and instantiate your page class inside it."
+            )
 '''
 
 
@@ -464,41 +382,19 @@ import bootstack as bs
 
 
 class SettingsPage:
-    """Settings page content.
+    """Settings page content."""
 
-    Pages in an AppShell are not widget subclasses. The `parent` frame
-    is created by `shell.add_page()` and this class populates it.
-    """
-
-    def __init__(self, parent):
-        self.parent = parent
-        self._build()
+    def __init__(self, parent=None):
+        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+            self._build()
 
     def _build(self):
-        bs.Label(
-            self.parent,
-            text="Settings",
-            font="heading-xl",
-        ).pack(anchor="w", padx=20, pady=(20, 10))
-
-        bs.Label(
-            self.parent,
-            text="Configure your application preferences.",
-            wraplength=500,
-        ).pack(anchor="w", padx=20, pady=(0, 20))
-
-        content = bs.LabelFrame(self.parent, text="Preferences", padding=20)
-        content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        # Example settings
-        theme_frame = bs.Frame(content)
-        theme_frame.pack(fill="x", pady=(0, 10))
-        bs.Label(theme_frame, text="Theme:", width=15).pack(side="left")
-        bs.Button(
-            theme_frame,
-            text="Toggle Light/Dark",
-            command=bs.toggle_theme,
-        ).pack(side="left")
+        bs.Label("Settings", font="heading-xl[bold]")
+        bs.Label("Configure your application preferences.", wrap_width=500)
+        with bs.GroupBox("Preferences", fill="both", expand=True):
+            with bs.HStack(gap=8):
+                bs.Label("Theme:")
+                bs.Button("Toggle Light / Dark", on_click=bs.toggle_theme)
 '''
 
 
@@ -509,27 +405,16 @@ import bootstack as bs
 
 
 class {class_name}:
-    """{page_title} page content.
+    """{page_title} page content."""
 
-    Pages in an AppShell are not widget subclasses. The `parent` frame
-    is created by `shell.add_page()` and this class populates it.
-    """
-
-    def __init__(self, parent):
-        self.parent = parent
-        self._build()
+    def __init__(self, parent=None):
+        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+            self._build()
 
     def _build(self):
-        bs.Label(
-            self.parent,
-            text="{page_title}",
-            font="heading-xl",
-        ).pack(anchor="w", padx=20, pady=(20, 10))
-
-        content = bs.LabelFrame(self.parent, text="Content", padding=20)
-        content.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-
-        # Add your widgets here
+        bs.Label("{page_title}", font="heading-xl[bold]")
+        with bs.GroupBox("Content", fill="both", expand=True):
+            pass  # Add your widgets here
 '''
 
 

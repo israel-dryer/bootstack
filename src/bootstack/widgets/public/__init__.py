@@ -16,7 +16,7 @@ from bootstack.widgets.public.window import Window
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
 from bootstack.widgets.public.primitives.buttongroup import ButtonGroup
-from bootstack.widgets.public.primitives.contextmenu import ContextMenu
+from bootstack.widgets.public.primitives.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets.public.primitives.codeeditor import CodeEditor
 from bootstack.widgets.composites.textarea.filter import EditFilter
 from bootstack.widgets.public.primitives.card import Card
@@ -74,6 +74,7 @@ __all__ = [
     "CodeEditor",
     "confirm",
     "ContextMenu",
+    "ContextMenuItem",
     "DateField",
     "Dialog",
     "DialogButton",

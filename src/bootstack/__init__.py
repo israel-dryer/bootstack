@@ -74,7 +74,7 @@ from bootstack.widgets.public import (
     App, AppShell, Window, HStack, VStack, Grid,
     # Widgets
     Accordion, Badge, Button, ButtonGroup, Card, Checkbox, CodeEditor,
-    ContextMenu, DateField, EditFilter, Expander, Gauge, GroupBox,
+    ContextMenu, ContextMenuItem, DateField, EditFilter, Expander, Gauge, GroupBox,
     Label, ListView, MenuBar, MenuButton, NumberField, PageStack,
     PathField, PasswordField, ProgressBar, Radio, RadioGroup,
     RadioToggleButton, RangeSlider, Scrollbar, ScrollView, Select,
