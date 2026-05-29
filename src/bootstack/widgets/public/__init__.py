@@ -13,6 +13,8 @@ from bootstack.widgets.public.grid import Grid
 from bootstack.widgets.public.app import App
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
+from bootstack.widgets.public.primitives.buttongroup import ButtonGroup
+from bootstack.widgets.public.primitives.contextmenu import ContextMenu
 from bootstack.widgets.public.primitives.codeeditor import CodeEditor
 from bootstack.widgets.composites.textarea.filter import EditFilter
 from bootstack.widgets.public.primitives.card import Card
@@ -21,6 +23,7 @@ from bootstack.widgets.public.primitives.expander import Accordion, Expander
 from bootstack.widgets.public.primitives.gauge import Gauge
 from bootstack.widgets.public.primitives.groupbox import GroupBox
 from bootstack.widgets.public.primitives.label import Badge, Label
+from bootstack.widgets.public.primitives.menubutton import MenuButton
 from bootstack.widgets.public.primitives.numericentry import NumericEntry
 from bootstack.widgets.public.primitives.pagestack import PageStack
 from bootstack.widgets.public.primitives.pathfield import PathField
@@ -40,6 +43,7 @@ from bootstack.widgets.public.primitives.textarea import TextArea
 from bootstack.widgets.public.primitives.textfield import TextField
 from bootstack.widgets.public.primitives.toast import Toast, toast
 from bootstack.widgets.public.primitives.togglegroup import ToggleGroup
+from bootstack.widgets.public.primitives.toolbar import Toolbar
 from bootstack.widgets.public.primitives.tooltip import Tooltip
 
 __all__ = [
@@ -54,10 +58,12 @@ __all__ = [
     "Badge",
     "BootstackV2Error",
     "Button",
+    "ButtonGroup",
     "Card",
     "Checkbox",
     "CodeEditor",
     "confirm",
+    "ContextMenu",
     "DateField",
     "Dialog",
     "DialogButton",
@@ -70,6 +76,7 @@ __all__ = [
     "GroupBox",
     "HStack",
     "Label",
+    "MenuButton",
     "NumericEntry",
     "PageStack",
     "ParentResolutionError",
@@ -100,6 +107,7 @@ __all__ = [
     "toast",
     "ToggleButton",
     "ToggleGroup",
+    "Toolbar",
     "Tooltip",
     "UnknownEventError",
     "VStack",

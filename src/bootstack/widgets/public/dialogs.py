@@ -268,9 +268,14 @@ class FormDialog:
 
         self._internal = _InternalFormDialog(master=parent, **internal_kwargs)
 
-    def show(self) -> None:
-        """Display the dialog and block until it is closed."""
+    def show(self) -> "FormDialog":
+        """Display the dialog and block until it is closed.
+
+        Returns:
+            `self` — allows chaining: `dlg = FormDialog(...).show(); dlg.result`.
+        """
         self._internal.show()
+        return self
 
     @property
     def result(self) -> dict[str, Any] | None:
