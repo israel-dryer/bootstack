@@ -6,7 +6,7 @@ from bootstack.widgets.public import (
 
 
 PEOPLE = [
-    {"id": i, "name": n, "role": r, "dept": d}
+    {"id": i, "title": n, "text": r, "caption": d, "name": n, "role": r, "dept": d}
     for i, (n, r, d) in enumerate([
         ("Alice Chen",    "Engineer",  "Engineering"),
         ("Bob Smith",     "Designer",  "Design"),

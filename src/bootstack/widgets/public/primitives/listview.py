@@ -15,6 +15,11 @@ class ListView(PublicWidgetBase):
 
     Each record dict should have an `'id'` key; one is auto-generated if absent.
 
+    Note: `ListItem` renders only the `'title'`, `'text'`, `'caption'`, `'icon'`,
+    and `'badge'` keys. Other keys are stored and returned by `get_selected()` /
+    events but are not displayed. Map your data to these keys, or supply a custom
+    `row_factory` via `.tk` for fully custom row rendering.
+
     Args:
         items: Initial list of record dicts.
         datasource: `DataSourceProtocol` implementation for data access.
