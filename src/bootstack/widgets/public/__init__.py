@@ -9,12 +9,14 @@ from bootstack.widgets.public.app import App
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
 from bootstack.widgets.public.primitives.card import Card
+from bootstack.widgets.public.primitives.datefield import DateField
 from bootstack.widgets.public.primitives.expander import Accordion, Expander
 from bootstack.widgets.public.primitives.gauge import Gauge
 from bootstack.widgets.public.primitives.groupbox import GroupBox
 from bootstack.widgets.public.primitives.label import Badge, Label
 from bootstack.widgets.public.primitives.numericentry import NumericEntry
 from bootstack.widgets.public.primitives.pagestack import PageStack
+from bootstack.widgets.public.primitives.pathfield import PathField
 from bootstack.widgets.public.primitives.passwordentry import PasswordEntry
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
@@ -40,6 +42,7 @@ __all__ = [
     "Button",
     "Card",
     "Checkbox",
+    "DateField",
     "Event",
     "Expander",
     "Gauge",
@@ -50,6 +53,7 @@ __all__ = [
     "NumericEntry",
     "PageStack",
     "ParentResolutionError",
+    "PathField",
     "PasswordEntry",
     "ProgressBar",
     "PublicContainer",
