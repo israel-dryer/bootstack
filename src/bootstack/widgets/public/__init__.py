@@ -19,6 +19,7 @@ from bootstack.widgets.public.primitives.pagestack import PageStack
 from bootstack.widgets.public.primitives.pathfield import PathField
 from bootstack.widgets.public.primitives.passwordentry import PasswordEntry
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
+from bootstack.widgets.public.primitives.radio_variants import Radio, RadioToggleButton
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
 from bootstack.widgets.public.primitives.scrollbar import Scrollbar
 from bootstack.widgets.public.primitives.select import Select
@@ -58,7 +59,9 @@ __all__ = [
     "ProgressBar",
     "PublicContainer",
     "PublicWidgetBase",
+    "Radio",
     "RadioGroup",
+    "RadioToggleButton",
     "RangeSlider",
     "Scrollbar",
     "Select",
