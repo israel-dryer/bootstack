@@ -265,10 +265,10 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
         bd_disabled = bg_disabled
 
 
-    normal_img = recolor_element_image(img_key, bg_normal, bd_normal, None, input_background)
-    active_img = recolor_element_image(img_key, bg_active, bd_active, None, input_background)
-    pressed_img = recolor_element_image(img_key, bg_pressed, bd_pressed, None, input_background)
-    disabled_img = recolor_element_image(img_key, bg_disabled, bd_disabled, None, input_background)
+    normal_img = recolor_element_image(img_key, bg_normal, bd_normal, input_background, input_background)
+    active_img = recolor_element_image(img_key, bg_active, bd_active, input_background, input_background)
+    pressed_img = recolor_element_image(img_key, bg_pressed, bd_pressed, input_background, input_background)
+    disabled_img = recolor_element_image(img_key, bg_disabled, bd_disabled, input_background, input_background)
     selected_img = active_img
 
 

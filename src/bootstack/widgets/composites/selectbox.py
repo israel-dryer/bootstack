@@ -233,7 +233,7 @@ class SelectBox(Field):
 
         # Make inner frame fill the canvas width
         def on_canvas_configure(event):
-            scrollview.canvas.itemconfig(scrollview._window_id, width=event.width)
+            scrollview.canvas.itemconfig(scrollview._window_id, width=event.width - 2)
         scrollview.canvas.bind('<Configure>', on_canvas_configure, add='+')
 
         # Expand scrollregion to include vertical padding so content doesn't clip borders

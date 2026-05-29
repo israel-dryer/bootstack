@@ -2,11 +2,9 @@
 
 This module contains style builders for ttk.Scrollbar widget variants.
 """
-from bootstack._core.images import Image as _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
-from bootstack.style.builders.utils import _snap_even
 
 
 @BootstyleBuilderTTk.register_builder('square', 'TScrollbar')
@@ -22,58 +20,15 @@ def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: s
     surface = b.color(surface_token)
     border_color = b.border(surface)
 
-    if accent is not None:
-        thumb_normal = b.color(accent)
-    else:
-        thumb_normal = border_color
-
+    thumb_normal = b.color(accent) if accent is not None else border_color
     thumb_active = b.active(thumb_normal)
     thumb_pressed = b.pressed(thumb_normal)
 
-    show_arrows = options.get('show_arrows', True)
-    if show_arrows:
-        arrow_size = _snap_even(b.scale(18))
-
-        # arrow [left]
-        arrow_left_normal = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_normal)
-        arrow_left_active = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_active)
-        arrow_left_pressed = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.leftarrow', arrow_left_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_left_pressed),
-                    ('active', arrow_left_active),
-                    ('', arrow_left_normal),
-                ])
-        )
-
-        # arrow [right]
-        arrow_right_normal = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_normal)
-        arrow_right_active = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_active)
-        arrow_right_pressed = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.rightarrow', arrow_right_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_right_pressed),
-                    ('active', arrow_right_active),
-                    ('', arrow_right_normal),
-                ])
-        )
-
-    scrollbar_elements = [
-        Element(f'{ttk_style}.leftarrow', side="left", sticky=""),
-        Element(f'{ttk_style}.rightarrow', side="right", sticky=""),
-        Element(f'{ttk_style}.thumb', sticky="ew"),
-    ]
-
     b.create_style_layout(
         ttk_style,
-        Element('Horizontal.Scrollbar.trough', sticky="we").children(
-            scrollbar_elements if show_arrows else [scrollbar_elements[-1]])
+        Element('Horizontal.Scrollbar.trough', sticky="we").children([
+            Element(f'{ttk_style}.thumb', sticky="ew"),
+        ])
     )
 
     b.configure_style(
@@ -86,7 +41,7 @@ def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: s
         lightcolor=thumb_normal,
         gripcount=0,
         relief='flat',
-        arrowsize=12,
+        arrowsize=0,
     )
     b.map_style(
         ttk_style,
@@ -101,58 +56,15 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     surface = b.color(surface_token)
     border_color = b.border(surface)
 
-    if accent is not None:
-        thumb_normal = b.color(accent)
-    else:
-        thumb_normal = border_color
-
+    thumb_normal = b.color(accent) if accent is not None else border_color
     thumb_active = b.active(thumb_normal)
     thumb_pressed = b.pressed(thumb_normal)
 
-    show_arrows = options.get('show_arrows', True)
-    if show_arrows:
-        arrow_size = _snap_even(b.scale(18))
-
-        # arrow [up]
-        arrow_up_normal = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_normal)
-        arrow_up_active = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_active)
-        arrow_up_pressed = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.uparrow', arrow_up_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_up_pressed),
-                    ('active', arrow_up_active),
-                    ('', arrow_up_normal),
-                ])
-        )
-
-        # arrow [down]
-        arrow_down_normal = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_normal)
-        arrow_down_active = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_active)
-        arrow_down_pressed = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.downarrow', arrow_down_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_down_pressed),
-                    ('active', arrow_down_active),
-                    ('', arrow_down_normal),
-                ])
-        )
-
-    scrollbar_elements = [
-        Element(f'{ttk_style}.uparrow', side="top", sticky=""),
-        Element(f'{ttk_style}.downarrow', side="bottom", sticky=""),
-        Element(f'{ttk_style}.thumb', sticky="ns"),
-    ]
-
     b.create_style_layout(
         ttk_style,
-        Element('Vertical.Scrollbar.trough', sticky="ns").children(
-            scrollbar_elements if show_arrows else [scrollbar_elements[-1]]),
+        Element('Vertical.Scrollbar.trough', sticky="ns").children([
+            Element(f'{ttk_style}.thumb', sticky="ns"),
+        ]),
     )
 
     b.configure_style(
@@ -165,7 +77,7 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
         lightcolor=thumb_normal,
         gripcount=0,
         relief='flat',
-        arrowsize=12,
+        arrowsize=0,
     )
     b.map_style(
         ttk_style,
@@ -179,13 +91,6 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
 @BootstyleBuilderTTk.register_builder('round', 'TScrollbar')
 @BootstyleBuilderTTk.register_builder('rounded', 'TScrollbar')
 def build_rounded_scrollbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    """
-    Builds the 'rounded' scrollbar style
-
-    Style options:
-        * show_arrows
-
-    """
     if options.get('orient', 'vertical') == 'vertical':
         _build_rounded_vertical_scrollbar(b, ttk_style, accent, **options)
     else:
@@ -197,15 +102,10 @@ def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, ac
     surface = b.color(surface_token)
     border_color = b.border(surface)
 
-    if accent is not None:
-        thumb_normal = b.color(accent)
-    else:
-        thumb_normal = border_color
-
+    thumb_normal = b.color(accent) if accent is not None else border_color
     thumb_active = b.active(thumb_normal)
     thumb_pressed = b.pressed(thumb_normal)
 
-    # thumb element
     thumb_normal_img = recolor_element_image('scrollbar_vertical', thumb_normal, thumb_active, surface, surface)
     thumb_active_img = recolor_element_image('scrollbar_vertical', thumb_active, thumb_active, surface, surface)
     thumb_pressed_img = recolor_element_image('scrollbar_vertical', thumb_pressed, thumb_pressed, surface, surface)
@@ -222,57 +122,19 @@ def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, ac
             ]),
     )
 
-    show_arrows = options.get('show_arrows', True)
-    if show_arrows:
-        arrow_size = _snap_even(b.scale(18))
-
-        # arrow [up]
-        arrow_up_normal = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_normal)
-        arrow_up_active = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_active)
-        arrow_up_pressed = _ImageService.get_icon('caret-up-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.uparrow', arrow_up_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_up_pressed),
-                    ('active', arrow_up_active),
-                    ('', arrow_up_normal),
-                ])
-        )
-
-        # arrow [down]
-        arrow_down_normal = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_normal)
-        arrow_down_active = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_active)
-        arrow_down_pressed = _ImageService.get_icon('caret-down-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.downarrow', arrow_down_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_down_pressed),
-                    ('active', arrow_down_active),
-                    ('', arrow_down_normal),
-                ])
-        )
-
-    scrollbar_elements = [
-        Element(f'{ttk_style}.uparrow', side="top", sticky=""),
-        Element(f'{ttk_style}.downarrow', side="bottom", sticky=""),
-        Element(f'{ttk_style}.thumb', sticky="ns"),
-    ]
-
     b.create_style_layout(
         ttk_style,
-        Element('Vertical.Scrollbar.trough', sticky="ns").children(
-            scrollbar_elements if show_arrows else [scrollbar_elements[-1]]),
+        Element('Vertical.Scrollbar.trough', sticky="ns").children([
+            Element(f'{ttk_style}.thumb', sticky="ns"),
+        ]),
     )
 
     b.configure_style(
         ttk_style,
         troughcolor=surface,
         bordercolor=surface,
-        relief='flat'
+        relief='flat',
+        arrowsize=0,
     )
 
 
@@ -281,15 +143,10 @@ def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, 
     surface = b.color(surface_token)
     border_color = b.border(surface)
 
-    if accent is not None:
-        thumb_normal = b.color(accent)
-    else:
-        thumb_normal = border_color
-
+    thumb_normal = b.color(accent) if accent is not None else border_color
     thumb_active = b.active(thumb_normal)
     thumb_pressed = b.pressed(thumb_normal)
 
-    # thumb element
     thumb_normal_img = recolor_element_image('scrollbar_horizontal', thumb_normal, thumb_active, surface, surface)
     thumb_active_img = recolor_element_image('scrollbar_horizontal', thumb_active, thumb_active, surface, surface)
     thumb_pressed_img = recolor_element_image('scrollbar_horizontal', thumb_pressed, thumb_pressed, surface, surface)
@@ -306,56 +163,17 @@ def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, 
             ]),
     )
 
-    show_arrows = options.get('show_arrows', True)
-    if show_arrows:
-        # arrow elements
-        arrow_size = _snap_even(b.scale(18))
-
-        # arrow [left]
-        arrow_left_normal = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_normal)
-        arrow_left_active = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_active)
-        arrow_left_pressed = _ImageService.get_icon('caret-left-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.leftarrow', arrow_left_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_left_pressed),
-                    ('active', arrow_left_active),
-                    ('', arrow_left_normal),
-                ])
-        )
-
-        # arrow [right]
-        arrow_right_normal = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_normal)
-        arrow_right_active = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_active)
-        arrow_right_pressed = _ImageService.get_icon('caret-right-fill', arrow_size, thumb_pressed)
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.rightarrow', arrow_right_normal,
-                padding=2, border=2, width=arrow_size, height=arrow_size).state_specs(
-                [
-                    ('pressed', arrow_right_pressed),
-                    ('active', arrow_right_active),
-                    ('', arrow_right_normal),
-                ])
-        )
-
-    scrollbar_elements = [
-        Element(f'{ttk_style}.leftarrow', side="left", sticky=""),
-        Element(f'{ttk_style}.rightarrow', side="right", sticky=""),
-        Element(f'{ttk_style}.thumb', sticky="ew"),
-    ]
-
     b.create_style_layout(
         ttk_style,
-        Element('Horizontal.Scrollbar.trough', sticky="we").children(
-            scrollbar_elements if show_arrows else [scrollbar_elements[-1]])
+        Element('Horizontal.Scrollbar.trough', sticky="we").children([
+            Element(f'{ttk_style}.thumb', sticky="ew"),
+        ])
     )
 
     b.configure_style(
         ttk_style,
         troughcolor=surface,
         bordercolor=surface,
-        relief='flat'
+        relief='flat',
+        arrowsize=0,
     )

@@ -330,16 +330,16 @@ padding = 0
 
 [images.scrollbar_horizontal]
 file = "scrollbar-horizontal.png"
-width = 60
-height = 20
-border = [12, 2]
+width = 36
+height = 16
+border = [10, 0]
 padding = 0
 
 [images.scrollbar_vertical]
 file = "scrollbar-vertical.png"
-width = 20
-height = 60
-border = [2, 12]
+width = 16
+height = 36
+border = [0, 10]
 padding = 0
 
 
