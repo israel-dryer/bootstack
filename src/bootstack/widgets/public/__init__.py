@@ -34,13 +34,17 @@ from bootstack.widgets.public.primitives.passwordfield import PasswordField
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radio_variants import Radio, RadioToggleButton
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
+from bootstack.widgets.public.primitives.menubar import MenuBar
 from bootstack.widgets.public.primitives.scrollbar import Scrollbar
+from bootstack.widgets.public.primitives.scrollview import ScrollView
 from bootstack.widgets.public.primitives.select import Select
 from bootstack.widgets.public.primitives.separator import Separator
 from bootstack.widgets.public.primitives.sizegrip import SizeGrip
 from bootstack.widgets.public.primitives.splitview import SplitView
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
+from bootstack.widgets.public.primitives.spinnerfield import SpinnerField
+from bootstack.widgets.public.primitives.timefield import TimeField
 from bootstack.widgets.public.primitives.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
 from bootstack.widgets.public.primitives.tabs import TabChangeEventData, TabRef, Tabs
 from bootstack.widgets.public.primitives.textarea import TextArea
@@ -96,13 +100,16 @@ __all__ = [
     "RadioGroup",
     "RadioToggleButton",
     "RangeSlider",
+    "MenuBar",
     "Scrollbar",
+    "ScrollView",
     "Select",
     "Separator",
     "SizeGrip",
     "SplitView",
     "Slider",
     "Spinbox",
+    "SpinnerField",
     "Subscription",
     "Switch",
     "TabChangeEventData",
@@ -113,6 +120,7 @@ __all__ = [
     "TableRowEventData",
     "TableRowsEventData",
     "TextArea",
+    "TimeField",
     "Tree",
     "TextField",
     "Toast",

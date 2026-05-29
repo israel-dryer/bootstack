@@ -364,7 +364,7 @@ their methods become module-level `bs.*` functions. Internal singletons
   params still in source). Renamed to `Gauge` to drop ttkbootstrap association.
 - **`Combobox` → removed.** Replaced by `Select` (was `SelectBox`). Covers
   the use case with a better API and popup list.
-- **`Spinbox` → kept.** Distinct form factor from `NumericEntry` — cycles
+- **`Spinbox` → kept.** Distinct form factor from `NumberField` — cycles
   through a fixed list of text or numeric values; different visual and use case.
 
 ### Pre-work before implementation starts
@@ -491,13 +491,13 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 - **`bs.Form` uses `col_count=`, not `columns=`.**
 - **`Form.validate()` only fires rules with trigger `always` or `manual`.** `blur`/`key` rules are skipped.
 - **`Dialog.show()` / `FormDialog.show()` return `None`** — set `self.result`. Use `dlg.show(); if dlg.result: ...`
-- **`bs.TableView` only accepts `SqliteDataSource`**, not `MemoryDataSource` or `FileDataSource`.
-- **`bs.SelectBox` emits `<<Change>>`**, not `<<SelectionChange>>`.
+- **`bs.Table` only accepts `SqliteDataSource`**, not `MemoryDataSource` or `FileDataSource`.
+- **`bs.Select` (internal `SelectBox`) emits `<<Change>>`**, not `<<SelectionChange>>`.
 - **All Field-based widgets emit `<<Change>>`** (not `<<Changed>>`) and `<<Validate>>`** (not `<<Validated>>`).
 - **`on_changed`/`on_input` callbacks receive a Tkinter event object** (`event.data["value"]`).
   **`on_valid`/`on_invalid`/`on_validated` callbacks receive a plain dict** (`data["value"]`).
 - **`text=Signal(...)` does NOT work for reactive labels.** Use `textsignal=signal` instead.
-- **`bs.TreeView` not `bs.Treeview`.** Capital V.
+- **`bs.Label` uses `.text` not `.value`** to get/set the display string. All other widgets use `.value`. Planned to unify as `.value` in a future session.
 - **`value=` is ignored when `signal=` or `variable=` is also passed** on CheckButton,
   CheckToggle, Switch, RadioButton, RadioToggle. Seed the Signal directly: `bs.Signal(True)`.
 - **`ToggleGroup(padding=N)` raises `TypeError`** — source bug, do not pass `padding=`.
@@ -524,6 +524,8 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; needs a style-builder fix
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
+- `ListView` hover state blends with striped rows — hover highlight too similar to alternate row background; needs contrast bump in ListView style builder
+- `Label.text` vs `.value` inconsistency — all other public widgets use `.value`; `Label`/`Badge` use `.text`. Planned fix: make `.value` primary, keep `.text` as alias
 
 ---
 
@@ -652,16 +654,16 @@ wrap the highest-level internal, rename Tk-isms, add a visual test under
 - **PR #57** — `Checkbox`, `Switch`, `ToggleButton` (shared `_BooleanControlBase`;
   `command=` wired to generate `<<Change>>`/`<<ToggleOn>>`/`<<ToggleOff>>`)
 - **PR #58** — `RadioGroup` (fixes `options=` gap; signal trace → `<<Change>>`)
-- **PR #59** — `Select` (wraps `SelectBox`), `NumericEntry` (wraps `NumericEntry`;
+- **PR #59** — `Select` (wraps `SelectBox`), `NumberField` (wraps `NumericEntry`;
   `min_value=`/`max_value=`/`step=` replace `minvalue=`/`maxvalue=`/`increment=`)
 - **PR #60** — `Slider`, `RangeSlider` (canvas-based; events fire on widget directly;
   value setters coerce to float; `RangeSlider.value` → `(lo, hi)` tuple)
 - **PR #61** — `ProgressBar`, `Gauge` (wraps `Meter`; **fixes Progressbar setter
   infinite recursion** — `get()`/`set()` now call `ttk.Progressbar` directly);
-  `style=` replaces `meter_type=`
+  `meter_type=` replaces internal `meter_type=` (public name settled as `meter_type=`)
 - **PR #62** — `Spinbox`, `Separator`; **fill= aliases** (`"horizontal"`→`"x"`,
   `"vertical"`→`"y"`, `"all"`→`"both"`) in `container.py`/`stacks.py`/`app.py`
-- **PR #63** — `PasswordEntry` (`mask_char=`, `show_toggle=`, `reveal()`/`hide()`),
+- **PR #63** — `PasswordField` (`mask_char=`, `show_visibility_toggle=`, `reveal()`/`hide()`),
   `TextArea` (`_core.text` event routing; `placeholder=` supported; `select_all()`
   fix: `focus_set()` + `end-1c`)
 - **PR #64** — `Expander` (`PublicContainer`; children → `_content_frame`),
@@ -669,7 +671,7 @@ wrap the highest-level internal, rename Tk-isms, add a visual test under
   (fixes `options=` gap; `mode='single'|'multi'`)
 
 **Key patterns established:**
-- Field-composite wrappers (TextField, Select, NumericEntry, PasswordEntry) override
+- Field-composite wrappers (TextField, Select, NumberField, PasswordField) override
   `on()` to route input events to `self._internal._entry`
 - TextArea routes events to `self._internal._core.text`
 - Canvas/frame widgets (Slider, ProgressBar, Expander) bind directly on `self._internal`
@@ -688,9 +690,81 @@ wrap the highest-level internal, rename Tk-isms, add a visual test under
 - `Field` message label gray background on `required=True` fields
 - Field composite default width grows with addon slots (gap #13)
 
-**Next step:** `Tabs` (TabView composite), then `Toast`, `Tooltip`, `Card`.
-`Tabs` wraps `composites/tabs/` — check `TabView.__init__` and `<<TabChanged>>`
-event routing before implementing. Branch off `main` as `feat/public-tabs`.
+**Next steps after Session 30:** `Tabs`, `Toast`, `Tooltip`, `Card`, `ListView`,
+`TreeView`, `TableView`, `AppShell`, `Window` — all completed in subsequent sessions
+(see PRs #65–75). API drift cleanup and misc-widgets batch followed (Session 31).
+
+### Session 31 — API drift cleanup + SelectBox bug fixes (2026-05-28)
+
+Full audit of all public wrappers against `development/v2_api_proposal.md` revealed
+widespread drift in class names and kwarg names. All drift fixed in `fix/public-api-drift`
+branch (commit a857ef2) before continuing misc-widgets work.
+
+**Class renames (file renames + rewrites):**
+- `NumericEntry` → `NumberField` (`numericentry.py` → `numberfield.py`)
+- `PasswordEntry` → `PasswordField` (`passwordentry.py` → `passwordfield.py`);
+  `show_toggle=` → `show_visibility_toggle=`
+- `TreeView` → `Tree` (`treeview.py` → `tree.py`)
+- `TableView` → `Table` (`tableview.py` → `table.py`)
+
+**Kwarg renames across 10 widgets:**
+- `Gauge`: `style=` → `meter_type=`, `step_size=` → `step=`
+- `ProgressBar`: `maximum=` → `max_value=`
+- `Slider`: `tick_interval=` → `tick_step=`
+- `RangeSlider`: `lo_value/hi_value` → `low_value/high_value`; `lo_signal/hi_signal` →
+  `low_signal/high_signal`; `.lo`/`.hi` properties → `.low_value`/`.high_value`
+- `RadioGroup`: `label=` → `title=` (group border label; still maps to internal `text=`)
+- `Select`: `allow_custom=` → `allow_custom_values=`
+- `Tabs`: `enable_closing=` → `allow_close=`, `enable_adding=` → `allow_add=`,
+  `add()` `text=` → `label=`
+- `ListView`: `datasource=` → `data_source=`, `enable_removing=` → `allow_remove=`,
+  `enable_dragging=` → `allow_reorder=`, `show_separator=` → `show_separators=`,
+  `.datasource` property → `.data_source`
+- `Toast`: `memo=` → `detail=`, `buttons=` → `actions=`, `alert=` → `play_sound=`,
+  `on_dismissed=` → `on_dismiss=`
+- `Tooltip`: `wraplength=` → `wrap_width=`
+
+**SelectBox internal bug fixes** (in `widgets/composites/selectbox.py`):
+- Disabled `Select` no longer opens popup on field click — `_show_selection_options`
+  now checks `entry_widget.instate(['disabled'])` and returns early.
+- Readonly entry (non-searchable, non-custom mode) now shows `hand2` pointer cursor
+  set in `_bind_readonly_selection_on_click`.
+
+**Naming convention confirmed:** "Field" suffix is correct for all text-input widgets
+(matches MUI, Radix, SwiftUI, Compose). `DateField` could arguably be `DatePicker`
+(more universal) but not urgent. `TimeEntry`/`SpinnerEntry` pending migration as
+`TimeField`/`SpinnerField` in misc-widgets batch.
+
+**Known issue logged:** `Label.text` vs `.value` inconsistency — all other widgets
+use `.value`; `Label`/`Badge` use `.text`. Agreed to unify as `.value` in a future
+session (`.text` kept as alias).
+
+**PR #76** (`fix/public-api-drift` → `main`) — merged.
+
+### Session 32 — Misc-widgets batch (2026-05-28)
+
+Added `ScrollView`, `SpinnerField`, `TimeField`, and `MenuBar` to the public layer
+on `feat/public-misc-widgets` (PR #77).
+
+**Files created under `src/bootstack/widgets/public/primitives/`:**
+- `scrollview.py` — `ScrollView` (`PublicContainer`; children → `_internal.add()` content
+  frame; exposes `scroll_to_top/bottom/left/right`, `yview/xview_moveto`,
+  `enable/disable_scrolling`, `refresh_bindings`)
+- `spinnerfield.py` — `SpinnerField` (two modes: fixed `options=` list or numeric range
+  via `min_value=`/`max_value=`/`step=`; `wrap=`; maps to internal `SpinnerEntry`)
+- `timefield.py` — `TimeField` (time-input with searchable interval dropdown;
+  `value_format=`, `interval=`, `min_time=`/`max_time=`; maps to internal `TimeEntry`)
+- `menubar.py` — `MenuBar` (three-region bar: `before`/`center`/`after`;
+  `add_button`, `add_label`, `add_menu`)
+
+Both `SpinnerField` and `TimeField` override `on()` to route `<<Change>>`/`<Return>`
+events to `self._internal._entry` (same pattern as `TextField`, `Select`, `NumberField`).
+
+**Visual test:** `tests/features/misc_widgets.py`
+
+**Next steps:** Merge PR #77, then determine remaining widgets to migrate.
+Notable gaps: `DateField` needs review against v2 proposal; `Label.text` → `.value`
+unification (alias `.text` to `.value`); open bugs from the known-issues list.
 
 ### Session 26 — Performance fixes (2026-05-28)
 
