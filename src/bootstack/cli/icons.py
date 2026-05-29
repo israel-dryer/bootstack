@@ -29,46 +29,52 @@ _RENDER_BATCH = 200
 
 def run_icons() -> None:
     import tkinter as tk
-    import bootstack as bs
+    from bootstack.signals import Signal
     from bootstack._core.images import Image
-    from bootstack.constants import X, Y, BOTH, LEFT, YES
+    from bootstack._runtime.app import App as _App
+    from bootstack.widgets._impl.primitives.frame import Frame as _Frame
+    from bootstack.widgets._impl.primitives.label import Label as _Label
+    from bootstack.widgets._impl.primitives.packframe import PackFrame as _PackFrame
+    from bootstack.widgets._impl.primitives.scrollbar import Scrollbar as _Scrollbar
+    from bootstack.widgets._impl.primitives.separator import Separator as _Separator
+    from bootstack.widgets._impl.composites.textentry import TextEntry as _TextEntry
 
-    app = bs.App(title="Bootstrap Icons", size=(990, 720))
+    app = _App(title="Bootstrap Icons", size=(990, 720))
 
     # ── Top bar ──────────────────────────────────────────────────────────────
-    topbar = bs.PackFrame(app, direction="row", padding=(12, 8), gap=10)
-    topbar.pack(fill=X)
+    topbar = _PackFrame(app, direction="row", padding=(12, 8), gap=10)
+    topbar.pack(fill="x")
 
-    search = bs.TextEntry(topbar, width=30)
-    search.insert_addon(bs.Label, position="before", icon="search", icon_only=True)
-    search.pack(side=LEFT)
+    search = _TextEntry(topbar, width=30)
+    search.insert_addon(_Label, position="before", icon="search", icon_only=True)
+    search.pack(side="left")
 
-    count_sig = bs.Signal("loading…")
-    bs.Label(topbar, textsignal=count_sig, font="caption", accent="muted").pack(side="right")
+    count_sig = Signal("loading…")
+    _Label(topbar, textsignal=count_sig, font="caption", accent="muted").pack(side="right")
 
-    bs.Separator(app, orient="horizontal").pack(fill=X)
+    _Separator(app, orient="horizontal").pack(fill="x")
 
     # ── Canvas + scrollbar ───────────────────────────────────────────────────
-    content = bs.Frame(app)
-    content.pack(fill=BOTH, expand=YES)
+    content = _Frame(app)
+    content.pack(fill="both", expand=True)
 
-    vsb = bs.Scrollbar(content, orient="vertical")
-    vsb.pack(side="right", fill=Y)
+    vsb = _Scrollbar(content, orient="vertical")
+    vsb.pack(side="right", fill="y")
 
     canvas = tk.Canvas(content, highlightthickness=0, bd=0)
-    canvas.pack(side=LEFT, fill=BOTH, expand=YES)
+    canvas.pack(side="left", fill="both", expand=True)
 
     canvas.configure(yscrollcommand=vsb.set)
     vsb.configure(command=canvas.yview)
 
     # ── Status bar ───────────────────────────────────────────────────────────
-    bs.Separator(app, orient="horizontal").pack(fill=X)
-    status_sig = bs.Signal(
+    _Separator(app, orient="horizontal").pack(fill="x")
+    status_sig = Signal(
         "Click an icon to copy its name  ·  use as  icon=\"name\"  on any widget"
     )
-    statusbar = bs.PackFrame(app, direction="row", padding=(12, 4))
-    statusbar.pack(fill=X)
-    bs.Label(statusbar, textsignal=status_sig, font="caption", accent="muted").pack(side=LEFT)
+    statusbar = _PackFrame(app, direction="row", padding=(12, 4))
+    statusbar.pack(fill="x")
+    _Label(statusbar, textsignal=status_sig, font="caption", accent="muted").pack(side="left")
 
     # ── Data + render state ──────────────────────────────────────────────────
     _, glyphmap = Image._load_icon_assets()
@@ -88,7 +94,8 @@ def run_icons() -> None:
 
     def _theme_colors() -> tuple[str, str]:
         try:
-            style = bs.get_style()
+            from bootstack.style import get_style
+            style = get_style()
             return style.colors.get("background", "#ffffff"), style.colors.get("foreground", "#212529")
         except Exception:
             return "#ffffff", "#212529"

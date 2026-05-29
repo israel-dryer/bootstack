@@ -74,9 +74,6 @@ class ButtonGroup(PublicWidgetBase):
         Returns:
             The key assigned to this button.
         """
-        if key is None:
-            key = f"widget_{self._internal._counter}"
-
         btn_kwargs: dict[str, Any] = {}
         if icon is not None:
             btn_kwargs["icon"] = icon
@@ -85,6 +82,8 @@ class ButtonGroup(PublicWidgetBase):
         btn_kwargs.update(kwargs)
 
         self._internal.add(label or None, key=key, command=on_click, **btn_kwargs)
+        if key is None:
+            key = f"widget_{self._internal._counter - 1}"
         return key
 
     def remove(self, key: str) -> None:

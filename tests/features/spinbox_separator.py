@@ -1,5 +1,5 @@
 """Visual test for public Spinbox and Separator widgets."""
-from bootstack.widgets import App, VStack, HStack, Label, Spinbox, Separator
+from bootstack import App, VStack, HStack, Label, Spinbox, Separator
 
 
 def main():

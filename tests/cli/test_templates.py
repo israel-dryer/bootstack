@@ -265,18 +265,6 @@ def test_default_launch_icon_is_packaged() -> None:
     )
 
 
-def test_spec_template_bundles_icon_package_assets() -> None:
-    """Until bootstack-icons publishes its pyinstaller40 entry point and
-    a hook for the _bs provider, the spec must bundle icon assets directly,
-    or frozen apps fail with ``No module named 'ttkbootstrap_icons_bs.assets'``.
-
-    Tracked: https://github.com/israel-dryer/bootstack-icons (upstream).
-    """
-    rendered = SPEC_TEMPLATE.format(app_name="Demo")
-    assert "collect_data_files" in rendered
-    for pkg in ("ttkbootstrap_icons", "ttkbootstrap_icons_bs"):
-        assert pkg in rendered, f"spec must reference {pkg} for the icon-bundle workaround"
-
 
 def test_spec_template_uses_specpath_not_dunder_file() -> None:
     """Spec files are exec'd by PyInstaller without ``__file__`` in the

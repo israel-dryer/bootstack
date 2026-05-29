@@ -1,15 +1,12 @@
-﻿"""
+"""
 Widget Gallery
 
-An AppShell-based showcase of bootstack widgets, organized by category
-to mirror the documentation structure. Each sidebar item opens a page
-demonstrating a widget group.
+An AppShell-based showcase of bootstack widgets, organized by category.
+Each sidebar item opens a page demonstrating a widget group.
 """
 
 import bootstack as bs
-from bootstack.constants import *
 from bootstack.signals import Signal
-from bootstack.widgets._impl.composites.tabs.tabview import TabView
 
 
 # =============================================================================
@@ -17,1170 +14,567 @@ from bootstack.widgets._impl.composites.tabs.tabview import TabView
 # =============================================================================
 
 
-def _build_home_page(page):
-    """Welcome / overview page."""
-    bs.Label(
-        page, text="bootstack", font="heading-xl[bold]",
-    ).pack(anchor=W, padx=20, pady=(20, 4))
-
-    bs.Label(
-        page,
-        text="Modern UI framework for Python",
-        font="body",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 20))
-
-    content = bs.LabelFrame(page, text="About This Gallery", padding=20)
-    content.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 20))
-
-    bs.Label(
-        content,
-        text=(
-            "Browse the sidebar to explore bootstack widgets by category.\n\n"
-            "Each page demonstrates a group of related widgets with\n"
-            "color variants, style options, and interactive examples.\n\n"
-            "Use the theme toggle in the toolbar or visit the Theme\n"
-            "page to try different themes."
-        ),
-    ).pack(expand=YES)
+def _build_home_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("bootstack", font="heading-xl[bold]")
+        bs.Label("Modern UI framework for Python", accent="secondary")
+        with bs.GroupBox("About This Gallery", fill="horizontal"):
+            bs.Label(
+                "Browse the sidebar to explore bootstack widgets by category.\n\n"
+                "Each page demonstrates a group of related widgets with\n"
+                "color variants, style options, and interactive examples.\n\n"
+                "Use the theme toggle in the toolbar or visit the Themes\n"
+                "page to try different themes."
+            )
 
 
 # -- Typography ---------------------------------------------------------------
 
 
-def _build_typography_page(page):
-    """Font tokens and modifiers showcase."""
-    bs.Label(
-        page, text="Typography", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_typography_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Typography", font="heading-xl")
+        bs.Label("Semantic font tokens for consistent text styling.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Semantic font tokens for consistent text styling.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Font Tokens", fill="horizontal"):
+            for token, desc in [
+                ("display-xl", "Display XL"),
+                ("display-lg", "Display LG"),
+                ("heading-xl", "Heading XL"),
+                ("heading-lg", "Heading LG"),
+                ("heading-md", "Heading MD"),
+                ("heading-sm", "Heading SM"),
+                ("body-xl", "Body XL"),
+                ("body-lg", "Body LG"),
+                ("body",     "Body (default)"),
+                ("body-sm",  "Body SM"),
+                ("label",    "Label"),
+                ("caption",  "Caption"),
+                ("code",     "Code"),
+            ]:
+                with bs.HStack(gap=12, fill="horizontal"):
+                    bs.Label(desc, font=token, width=22)
+                    bs.Label(f'font="{token}"', font="code", accent="secondary")
 
-    # Font tokens
-    group1 = bs.LabelFrame(page, text="Font Tokens", padding=15)
-    group1.pack(fill=X, padx=20, pady=(0, 10))
-
-    fonts = [
-        ("display-xl", "Display XL"),
-        ("display-lg", "Display LG"),
-        ("heading-xl", "Heading XL"),
-        ("heading-lg", "Heading LG"),
-        ("heading-md", "Heading MD"),
-        ("heading-sm", "Heading SM"),
-        ("body-xl", "Body XL"),
-        ("body-lg", "Body LG"),
-        ("body", "Body (default)"),
-        ("body-sm", "Body SM"),
-        ("label", "Label"),
-        ("caption", "Caption"),
-        ("code", "Code"),
-    ]
-    for i, (token, desc) in enumerate(fonts):
-        group1.columnconfigure(0, weight=0, minsize=200)
-        group1.columnconfigure(1, weight=1)
-        bs.Label(group1, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group1, text=f"font=\"{token}\"", font="code", accent="muted").grid(row=i, column=1, sticky=W, pady=2)
-
-    # Font modifiers
-    group2 = bs.LabelFrame(page, text="Font Modifiers", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    modifiers = [
-        ("body[bold]", "Bold"),
-        ("body[italic]", "Italic"),
-        ("body[bold][italic]", "Bold Italic"),
-        ("body[underline]", "Underline"),
-        ("heading-md[bold]", "Heading Bold"),
-    ]
-    group2.columnconfigure(0, weight=0, minsize=200)
-    group2.columnconfigure(1, weight=1)
-    for i, (token, desc) in enumerate(modifiers):
-        bs.Label(group2, text=desc, font=token).grid(row=i, column=0, sticky=W, pady=2)
-        bs.Label(group2, text=f"font=\"{token}\"", font="code", accent="muted").grid(row=i, column=1, sticky=W, pady=2)
+        with bs.GroupBox("Font Modifiers", fill="horizontal"):
+            for token, desc in [
+                ("body[bold]",          "Bold"),
+                ("body[italic]",        "Italic"),
+                ("body[bold][italic]",  "Bold Italic"),
+                ("body[underline]",     "Underline"),
+                ("heading-md[bold]",    "Heading Bold"),
+            ]:
+                with bs.HStack(gap=12, fill="horizontal"):
+                    bs.Label(desc, font=token, width=22)
+                    bs.Label(f'font="{token}"', font="code", accent="secondary")
 
 
 # -- Icons --------------------------------------------------------------------
 
 
-def _build_icons_page(page):
-    """Bootstrap Icons showcase."""
-    bs.Label(
-        page, text="Icons", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
-
-    bs.Label(
-        page,
-        text="Bootstrap Icons available via the icon parameter.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
-
-    # Icon gallery
-    group1 = bs.LabelFrame(page, text="Common Icons", padding=15)
-    group1.pack(fill=X, padx=20, pady=(0, 10))
-
+def _build_icons_page():
     icon_names = [
         "house", "gear", "person", "search", "bell",
         "envelope", "heart", "star", "trash", "pencil",
         "folder", "file-earmark-text", "download", "upload", "check-circle",
         "exclamation-triangle", "info-circle", "x-circle", "arrow-left", "arrow-right",
     ]
-    icon_row = bs.Frame(group1)
-    icon_row.pack(fill=X, pady=(0, 8))
-    for i, name in enumerate(icon_names):
-        if i > 0 and i % 10 == 0:
-            icon_row = bs.Frame(group1)
-            icon_row.pack(fill=X, pady=(0, 8))
-        f = bs.Frame(icon_row)
-        f.pack(side=LEFT, padx=6)
-        bs.Label(f, icon=name, icon_only=True).pack()
-        bs.Label(f, text=name, font="caption").pack()
 
-    # Icon sizes
-    group2 = bs.LabelFrame(page, text="Icon Sizes", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Icons", font="heading-xl")
+        bs.Label("Bootstrap Icons via the icon= parameter.", accent="secondary")
 
-    size_row = bs.Frame(group2)
-    size_row.pack(fill=X)
-    for size in (12, 16, 20, 24, 32, 48):
-        f = bs.Frame(size_row)
-        f.pack(side=LEFT, padx=10)
-        bs.Label(f, icon={"name": "star-fill", "size": size}, icon_only=True).pack()
-        bs.Label(f, text=f"{size}px", font="caption").pack()
+        with bs.GroupBox("Common Icons", fill="horizontal"):
+            with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
+                for name in icon_names[:10]:
+                    with bs.VStack(gap=4, anchor_items="center"):
+                        bs.Label(icon=name, icon_only=True)
+                        bs.Label(name, font="caption")
+            with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
+                for name in icon_names[10:]:
+                    with bs.VStack(gap=4, anchor_items="center"):
+                        bs.Label(icon=name, icon_only=True)
+                        bs.Label(name, font="caption")
 
-    # Icons in context
-    group3 = bs.LabelFrame(page, text="Icons in Context", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Icon Sizes", fill="horizontal"):
+            with bs.HStack(gap=20):
+                for size in (12, 16, 20, 24, 32, 48):
+                    with bs.VStack(gap=4, anchor_items="center"):
+                        bs.Label(icon={"name": "star-fill", "size": size}, icon_only=True)
+                        bs.Label(f"{size}px", font="caption")
 
-    ctx_row = bs.Frame(group3)
-    ctx_row.pack(fill=X, pady=(0, 8))
-    bs.Button(ctx_row, text="Save", icon="save").pack(side=LEFT, padx=(0, 8))
-    bs.Button(ctx_row, text="Delete", icon="trash", accent="danger").pack(side=LEFT, padx=(0, 8))
-    bs.Button(ctx_row, text="Settings", icon="gear", accent="default").pack(side=LEFT, padx=(0, 8))
-    bs.Button(ctx_row, icon="plus-lg", icon_only=True, accent="success").pack(side=LEFT, padx=(0, 8))
-    bs.Button(ctx_row, icon="x-lg", icon_only=True, accent="danger").pack(side=LEFT)
-
-    # Accent-colored icons
-    group4 = bs.LabelFrame(page, text="Accent Colors on Icons", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    color_row = bs.Frame(group4)
-    color_row.pack(fill=X)
-    for color in ("primary", "success", "warning", "danger"):
-        f = bs.Frame(color_row)
-        f.pack(side=LEFT, padx=8)
-        bs.Label(f, icon="heart-fill", icon_only=True, accent=color).pack()
-        bs.Label(f, text=color, font="caption").pack()
+        with bs.GroupBox("Icons in Context", fill="horizontal"):
+            with bs.HStack(gap=8):
+                bs.Button("Save",     icon="save")
+                bs.Button("Delete",   icon="trash",  accent="danger")
+                bs.Button("Settings", icon="gear",   accent="default")
+                bs.Button(icon="plus-lg",  icon_only=True, accent="success")
+                bs.Button(icon="x-lg",     icon_only=True, accent="danger")
 
 
 # -- Actions ------------------------------------------------------------------
 
 
-def _build_buttons_page(page):
-    """Buttons, dropdown buttons, button groups."""
-    bs.Label(
-        page, text="Actions", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_buttons_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Actions", font="heading-xl")
+        bs.Label("Buttons and button-like widgets for triggering actions.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Buttons and button-like widgets for triggering actions.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Button — Color Variants", fill="x", expand_items=True, fill_items="x", gap=4, layout="hstack"):
+            for color in ("default", "primary", "success", "warning", "danger"):
+                bs.Button(color.title(), accent=color)
 
-    # Color variants
-    group = bs.LabelFrame(page, text="Button — Color Variants", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Button — Style Variants", fill="horizontal", gap=6):
+            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+                for variant in ("solid", "outline", "ghost"):
+                    bs.Button(variant.title(), accent="primary", variant=variant)
+            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+                bs.Button("Disabled Solid",   accent="primary",  disabled=True)
+                bs.Button("Disabled Outline", accent="default",  variant="outline", disabled=True)
 
-    row = bs.Frame(group)
-    row.pack(fill=X)
-    for color in ("default", "primary", "success", "warning", "danger"):
-        bs.Button(row, text=color.title(), accent=color).pack(
-            side=LEFT, padx=2, expand=YES, fill=X,
-        )
-
-    # Style variants
-    group2 = bs.LabelFrame(page, text="Button — Style Variants", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    row2 = bs.Frame(group2)
-    row2.pack(fill=X, pady=(0, 8))
-    for variant_name in ("solid", "outline", "ghost"):
-        bs.Button(
-            row2, text=variant_name.title(), accent="primary", variant=variant_name,
-        ).pack(side=LEFT, padx=2, expand=YES, fill=X)
-
-    row3 = bs.Frame(group2)
-    row3.pack(fill=X)
-    bs.Button(row3, text="Disabled Solid", accent="primary", state=DISABLED).pack(
-        side=LEFT, padx=2, expand=YES, fill=X)
-    bs.Button(row3, text="Disabled Outline", accent="default", variant="outline", state=DISABLED).pack(
-        side=LEFT, padx=2, expand=YES, fill=X)
-
-    # DropdownButton
-    group3 = bs.LabelFrame(page, text="DropdownButton", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    dd = bs.DropdownButton(group3, text="File")
-    dd.pack(side=LEFT, padx=(0, 8))
-    dd.add_command(text="New")
-    dd.add_command(text="Open")
-    dd.add_separator()
-    dd.add_command(text="Exit")
-
-    dd2 = bs.DropdownButton(group3, text="Edit", accent="primary")
-    dd2.pack(side=LEFT, padx=(0, 8))
-    dd2.add_command(text="Cut")
-    dd2.add_command(text="Copy")
-    dd2.add_command(text="Paste")
-
-    mb = bs.DropdownButton(group3, text="Options", accent="danger", variant="outline")
-    mb.pack(side=LEFT)
-    mb.add_command(text="Settings")
-    mb.add_command(text="Preferences")
-
-    # ButtonGroup
-    group4 = bs.LabelFrame(page, text="ButtonGroup", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    for accent, variant in [
-        ("default", "solid"), ("primary", "solid"), ("danger", "outline"), ("success", "ghost"),
-    ]:
-        bg = bs.ButtonGroup(group4, accent=accent, variant=variant)
-        bg.pack(side=LEFT, padx=(0, 12))
-        bg.add(text="Cut", icon="scissors")
-        bg.add(text="Copy", icon="copy")
-        bg.add(text="Paste", icon="clipboard")
+        with bs.GroupBox("ButtonGroup", fill="horizontal", gap=12, layout="grid", columns=2):
+            for accent, variant in [
+                ("default", "solid"), ("primary", "solid"),
+                ("danger", "outline"), ("success", "ghost"),
+            ]:
+                bg = bs.ButtonGroup(accent=accent, variant=variant)
+                bg.add("Cut",   icon="scissors")
+                bg.add("Copy",  icon="copy")
+                bg.add("Paste", icon="clipboard")
 
 
 # -- Text Inputs -------------------------------------------------------------
 
 
-def _build_text_inputs_page(page):
-    """TextEntry, PasswordEntry, PathEntry, ScrolledText."""
-    bs.Label(
-        page, text="Text Inputs", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_text_inputs_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Text Inputs", font="heading-xl")
+        bs.Label("Specialized entry widgets for text, passwords, and file paths.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Specialized entry widgets for text, passwords, and file paths.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("TextField", fill="horizontal", gap=6):
+            bs.TextField(label="Name",     message="Enter your full name",  fill="horizontal")
+            bs.TextField(label="Email",    message="example@email.com",     fill="horizontal")
+            bs.TextField(label="Disabled", value="Read only", disabled=True, fill="horizontal")
 
-    # TextEntry
-    group = bs.LabelFrame(page, text="TextEntry", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("PasswordField", fill="horizontal"):
+            bs.PasswordField(label="Password", message="Click the eye to toggle", fill="horizontal")
 
-    bs.TextEntry(
-        group, label="Name", message="Enter your full name",
-    ).pack(fill=X, pady=(0, 8))
+        with bs.GroupBox("PathField", fill="horizontal", gap=6):
+            bs.PathField(label="File",   dialog="openfilename", message="Select a file",      fill="horizontal")
+            bs.PathField(label="Folder", dialog="directory",    message="Select a directory", fill="horizontal")
 
-    bs.TextEntry(
-        group, label="Email", message="example@email.com",
-    ).pack(fill=X, pady=(0, 8))
-
-    bs.TextEntry(
-        group, label="Disabled", value="Read only", state=DISABLED,
-    ).pack(fill=X)
-
-    # PasswordEntry
-    group2 = bs.LabelFrame(page, text="PasswordEntry", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.PasswordEntry(
-        group2, label="Password", message="Click the eye to toggle visibility",
-    ).pack(fill=X)
-
-    # PathEntry
-    group3 = bs.LabelFrame(page, text="PathEntry", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.PathEntry(
-        group3, label="File", dialog="openfilename",
-        message="Select a file to open",
-    ).pack(fill=X, pady=(0, 8))
-
-    bs.PathEntry(
-        group3, label="Folder", dialog="directory",
-        message="Select a directory",
-    ).pack(fill=X)
-
-    # TextArea
-    group4 = bs.LabelFrame(page, text="TextArea", padding=15)
-    group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    text = bs.TextArea(
-        group4,
-        height=5,
-        scrollbars='auto',
-        value=(
-            "TextArea provides a multi-line text input with\n"
-            "automatic scrollbars, undo/redo, and signal binding.\n\n"
-            "Try typing more text to see scrollbars appear!"
-        ),
-    )
-    text.pack(fill=BOTH, expand=YES)
+        with bs.GroupBox("TextArea", fill="both", expand=True):
+            bs.TextArea(
+                value=(
+                    "TextArea provides a multi-line text input with\n"
+                    "automatic scrollbars, undo/redo, and signal binding.\n\n"
+                    "Try typing more text to see scrollbars appear!"
+                ),
+                fill="both", expand=True,
+            )
 
 
 # -- Numeric & Date -----------------------------------------------------------
 
 
-def _build_numeric_page(page):
-    """NumericEntry, SpinnerEntry, Slider, DateEntry, TimeEntry."""
-    bs.Label(
-        page, text="Numeric & Date", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_numeric_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Numeric & Date", font="heading-xl")
+        bs.Label("Numeric entries, sliders, and date/time pickers.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Numeric entries, sliders, and date/time pickers.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("NumberField", fill="horizontal"):
+            bs.NumberField(label="Quantity", value=42,    min_value=0, max_value=100, fill="horizontal")
+            bs.NumberField(label="Price",    value=19.99, step=0.01,   fill="horizontal")
 
-    # NumericEntry
-    group = bs.LabelFrame(page, text="NumericEntry", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("SpinnerField", fill="horizontal"):
+            bs.SpinnerField(
+                label="Month",
+                options=["Jan","Feb","Mar","Apr","May","Jun",
+                         "Jul","Aug","Sep","Oct","Nov","Dec"],
+                value="Jan", fill="horizontal",
+            )
 
-    bs.NumericEntry(
-        group, label="Quantity", value=42, minvalue=0, maxvalue=100,
-    ).pack(fill=X, pady=(0, 8))
+        with bs.GroupBox("Slider", fill="horizontal"):
+            bs.Label("Basic:")
+            bs.Slider(value=50, fill="horizontal")
+            bs.Label("With value badge:")
+            bs.Slider(value=65, show_value=True, tick_step=25, fill="horizontal")
 
-    bs.NumericEntry(
-        group, label="Price", value=19.99, increment=0.01,
-        value_format="currency",
-    ).pack(fill=X)
-
-    # SpinnerEntry
-    group2 = bs.LabelFrame(page, text="SpinnerEntry", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.SpinnerEntry(
-        group2, label="Month", values=["Jan", "Feb", "Mar", "Apr", "May",
-        "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], value="Jan",
-    ).pack(fill=X)
-
-    # Slider
-    group3 = bs.LabelFrame(page, text="Slider", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Label(group3, text="Basic:").pack(anchor=W)
-    bs.Slider(group3, value=50).pack(fill=X, pady=(0, 12))
-
-    bs.Label(group3, text="With value badge:").pack(anchor=W)
-    bs.Slider(group3, value=65, show_value=True, tick_interval=25).pack(fill=X, pady=(0, 4))
-
-    # DateEntry + TimeEntry
-    group4 = bs.LabelFrame(page, text="DateEntry & TimeEntry", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    row = bs.Frame(group4)
-    row.pack(fill=X, pady=(0, 8))
-    bs.DateEntry(row, label="Date").pack(side=LEFT, fill=X, expand=YES, padx=(0, 8))
-    bs.TimeEntry(row, label="Time").pack(side=LEFT, fill=X, expand=YES)
+        with bs.GroupBox("DateField & TimeField", fill="horizontal"):
+            with bs.HStack(gap=12, fill="horizontal", fill_items="horizontal", expand_items=True):
+                bs.DateField(label="Date")
+                bs.TimeField(label="Time")
 
 
 # -- Selection ----------------------------------------------------------------
 
 
-def _build_selection_page(page):
-    """CheckButton, Switch, RadioButton, RadioGroup, ToggleGroup, OptionMenu, SelectBox."""
-    bs.Label(
-        page, text="Selection", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_selection_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Selection", font="heading-xl")
+        bs.Label("Checkboxes, switches, radio buttons, toggle groups, and selects.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Checkboxes, switches, radio buttons, toggle groups, and option menus.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Checkbox & Switch", fill="horizontal", gap=8):
+            with bs.HStack(gap=12):
+                bs.Checkbox("Default", accent="primary")
+                bs.Checkbox("Success", accent="success")
+                bs.Checkbox("Disabled", disabled=True)
+            with bs.HStack(gap=12):
+                bs.Switch("Notifications", accent="primary")
+                bs.Switch("Dark Mode",     accent="success")
+                bs.Switch("Disabled",      disabled=True)
 
-    # CheckButton + Switch
-    group = bs.LabelFrame(page, text="CheckButton & Switch", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("RadioGroup", fill="horizontal"):
+            rg = bs.RadioGroup(value="opt1", accent="primary", fill="horizontal")
+            rg.add("Option 1", value="opt1")
+            rg.add("Option 2", value="opt2")
+            rg.add("Option 3", value="opt3")
 
-    row = bs.Frame(group)
-    row.pack(fill=X, pady=(0, 10))
-    cb1 = bs.CheckButton(row, text="Default", accent="primary")
-    cb1.pack(side=LEFT, padx=(0, 12))
-    cb1.invoke()
-    bs.CheckButton(row, text="Success", accent="success").pack(
-        side=LEFT, padx=(0, 12),
-    )
-    bs.CheckButton(row, text="Disabled", state=DISABLED).pack(side=LEFT)
+        with bs.GroupBox("ToggleGroup", fill="horizontal", gap=6):
+            bs.Label("Single select:")
+            tg = bs.ToggleGroup(mode="single", accent="primary", variant="outline", value="B")
+            tg.add("Bold",      value="B")
+            tg.add("Italic",    value="I")
+            tg.add("Underline", value="U")
+            bs.Label("Multi select:")
+            tg2 = bs.ToggleGroup(mode="multi", accent="success", variant="outline")
+            tg2.add("Python",     value="python")
+            tg2.add("JavaScript", value="javascript")
+            tg2.add("Rust",       value="rust")
 
-    row2 = bs.Frame(group)
-    row2.pack(fill=X)
-    s1 = bs.Switch(row2, text="Notifications", accent="primary")
-    s1.pack(side=LEFT, padx=(0, 12))
-    s1.invoke()
-    bs.Switch(row2, text="Dark Mode", accent="success").pack(
-        side=LEFT, padx=(0, 12),
-    )
-    bs.Switch(row2, text="Disabled", state=DISABLED).pack(side=LEFT)
-
-    # RadioButton + RadioGroup
-    group2 = bs.LabelFrame(page, text="RadioButton & RadioGroup", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Label(group2, text="Individual RadioButtons:").pack(anchor=W, pady=(0, 4))
-    row3 = bs.Frame(group2)
-    row3.pack(fill=X, pady=(0, 10))
-    radio_var = bs.StringVar(value="a")
-    for text, val in [("Alpha", "a"), ("Beta", "b"), ("Gamma", "c")]:
-        bs.RadioButton(
-            row3, text=text, value=val, variable=radio_var,
-        ).pack(side=LEFT, padx=(0, 12))
-
-    bs.Label(group2, text="RadioGroup (managed):").pack(anchor=W, pady=(0, 4))
-    rg = bs.RadioGroup(group2, value="opt1", accent="primary")
-    rg.pack(fill=X)
-    rg.add(text="Option 1", value="opt1")
-    rg.add(text="Option 2", value="opt2")
-    rg.add(text="Option 3", value="opt3")
-
-    # ToggleGroup
-    group3 = bs.LabelFrame(page, text="ToggleGroup", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Label(group3, text="Single select:").pack(anchor=W, pady=(0, 4))
-    tg = bs.ToggleGroup(
-        group3, mode="single", accent="primary", variant="outline", value="B",
-    )
-    tg.pack(anchor=W, pady=(0, 10))
-    tg.add(text="Bold", value="B")
-    tg.add(text="Italic", value="I")
-    tg.add(text="Underline", value="U")
-
-    bs.Label(group3, text="Multi select:").pack(anchor=W, pady=(0, 4))
-    tg2 = bs.ToggleGroup(
-        group3, mode="multi", accent="success", variant="outline",
-    )
-    tg2.pack(anchor=W)
-    tg2.add(text="Python", value="python")
-    tg2.add(text="JavaScript", value="javascript")
-    tg2.add(text="Rust", value="rust")
-
-    # OptionMenu + SelectBox
-    group4 = bs.LabelFrame(page, text="OptionMenu & SelectBox", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    row4 = bs.Frame(group4)
-    row4.pack(fill=X, pady=(0, 8))
-    bs.Label(row4, text="OptionMenu:", width=12).pack(side=LEFT)
-    bs.OptionMenu(
-        row4, value="Red",
-        options=["Red", "Green", "Blue", "Yellow"],
-    ).pack(side=LEFT)
-
-    bs.SelectBox(
-        group4, label="SelectBox:",
-        items=["Small", "Medium", "Large", "Extra Large"],
-        value="Medium",
-    ).pack(fill=X)
+        with bs.GroupBox("Select", fill="horizontal"):
+            bs.Select(
+                label="Size:",
+                options=["Small", "Medium", "Large", "Extra Large"],
+                value="Medium", fill="horizontal",
+            )
 
 
 # -- Calendar -----------------------------------------------------------------
 
 
-def _build_calendar_page(page):
-    """Calendar widget demonstration."""
-    bs.Label(
-        page, text="Calendar", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_calendar_page():
+    from bootstack.widgets._core.context import current_container as _cc
 
-    bs.Label(
-        page,
-        text="Interactive date picker with single and range selection modes.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True):
+        bs.Label("Calendar", font="heading-xl")
+        bs.Label("Interactive date picker.", accent="secondary")
 
-    group = bs.LabelFrame(page, text="Single Selection", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Single Selection", fill="horizontal"):
+            bs.Calendar(_cc()._child_master(), accent="primary").pack()
 
-    bs.Calendar(group, accent="primary").pack()
-
-    group2 = bs.LabelFrame(page, text="Range Selection", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Calendar(
-        group2, selection_mode="range", accent="success",
-    ).pack()
+        with bs.GroupBox("Range Selection", fill="horizontal"):
+            bs.Calendar(_cc()._child_master(), selection_mode="range", accent="success").pack()
 
 
 # -- Forms --------------------------------------------------------------------
 
 
-def _build_forms_page(page):
-    """Form widget with various editor types and grouping."""
-    bs.Label(
-        page, text="Forms", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_forms_page():
+    from bootstack.widgets._core.context import current_container as _cc
 
-    bs.Label(
-        page,
-        text="Spec-driven form builder for consistent data-entry UIs.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Forms", font="heading-xl")
+        bs.Label("Spec-driven form builder for consistent data-entry UIs.", accent="secondary")
 
-    # Inferred form (from data)
-    bs.Label(page, text="Inferred Form", font="body[bold]").pack(anchor=W, padx=20, pady=(0, 4))
-
-    form1 = bs.Form(
-        page,
-        data={
-            "first_name": "Jane",
-            "last_name": "Doe",
-            "age": 34,
-            "email": "jane@example.com",
-            "salary": 120000.50,
-            "active": True,
-        },
-        col_count=2,
-        min_col_width=220,
-    )
-    form1.pack(fill=X, padx=20)
-
-    # Explicit form with groups
-    bs.Label(page, text="Explicit Form Layout", font="body[bold]").pack(anchor=W, padx=20, pady=(16, 4))
-
-    form2 = bs.Form(
-        page,
-        data={"username": "jdoe", "role": "Admin", "newsletter": True, "timezone": "UTC"},
-        items=[
-            {
-                "type": "group",
-                "label": "Profile",
-                "col_count": 2,
-                "items": [
-                    {"key": "username", "label": "Username"},
-                    {"key": "password", "label": "Password", "editor": "passwordentry"},
-                    {"key": "role", "label": "Role", "editor": "selectbox", "items": ["Admin", "User", "Viewer"]},
-                ],
+        bs.Label("Inferred Form", font="body[bold]")
+        bs.Form(
+            _cc()._child_master(),
+            data={
+                "first_name": "Jane", "last_name": "Doe",
+                "age": 34, "email": "jane@example.com",
+                "salary": 120000.50, "active": True,
             },
-            {
-                "type": "group",
-                "label": "Preferences",
-                "items": [
-                    {"key": "newsletter", "label": "Newsletter", "editor": "switch"},
-                    {"key": "timezone", "label": "Time Zone", "editor": "selectbox", "items": ["UTC", "US/Eastern", "US/Central", "US/Pacific"]},
-                ],
-            },
-        ],
-    )
-    form2.pack(fill=X, padx=20, pady=(0, 15))
+            col_count=2, min_col_width=220,
+        ).pack(fill="horizontal")
+
+        bs.Label("Explicit Layout", font="body[bold]")
+        bs.Form(
+            _cc()._child_master(),
+            data={"username": "jdoe", "role": "Admin", "newsletter": True},
+            items=[
+                {
+                    "type": "group", "label": "Profile", "col_count": 2,
+                    "items": [
+                        {"key": "username", "label": "Username"},
+                        {"key": "password", "label": "Password", "editor": "passwordentry"},
+                        {"key": "role", "label": "Role", "editor": "selectbox",
+                         "items": ["Admin", "User", "Viewer"]},
+                    ],
+                },
+                {
+                    "type": "group", "label": "Preferences",
+                    "items": [
+                        {"key": "newsletter", "label": "Newsletter", "editor": "switch"},
+                    ],
+                },
+            ],
+        ).pack(fill="horizontal")
 
 
 # -- Data Display -------------------------------------------------------------
 
 
-def _build_data_page(page):
-    """Label, Badge, TreeView, TableView."""
-    bs.Label(
-        page, text="Data Display", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_data_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Data Display", font="heading-xl")
+        bs.Label("Labels, badges, trees, and tables for presenting data.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Labels, badges, trees, and tables for presenting data.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Labels", fill="horizontal"):
+            with bs.HStack(gap=4):
+                for color in ("primary", "success", "warning", "danger"):
+                    bs.Label(color.title(), accent=color, padding=(8, 4))
 
-    # Labels with accents
-    group = bs.LabelFrame(page, text="Labels", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Badges", fill="horizontal", gap=6):
+            with bs.HStack(gap=8):
+                for color in ("primary", "success", "warning", "danger"):
+                    bs.Badge(color.title(), accent=color)
+            with bs.HStack(gap=8):
+                bs.Badge("Pill",  accent="primary", variant="pill")
+                bs.Badge("99+",   accent="danger",  variant="pill")
+                bs.Badge("New",   accent="success")
 
-    row = bs.Frame(group)
-    row.pack(fill=X)
-    for color in ("primary", "success", "warning", "danger"):
-        bs.Label(
-            row, text=color.title(), accent=color, padding=(8, 4),
-        ).pack(side=LEFT, padx=2)
-
-    # Badges
-    group2 = bs.LabelFrame(page, text="Badges", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    row2 = bs.Frame(group2)
-    row2.pack(fill=X)
-    for color in ("primary", "success", "warning", "danger"):
-        bs.Badge(
-            row2, text=color.title(), accent=color,
-        ).pack(side=LEFT, padx=4)
-
-    row3 = bs.Frame(group2)
-    row3.pack(fill=X, pady=(8, 0))
-    bs.Badge(row3, text="Pill", accent="primary", variant="pill").pack(
-        side=LEFT, padx=4,
-    )
-    bs.Badge(row3, text="99+", accent="danger", variant="pill").pack(
-        side=LEFT, padx=4,
-    )
-    bs.Badge(row3, text="New", accent="success").pack(side=LEFT, padx=4)
-
-    # TreeView
-    group3 = bs.LabelFrame(page, text="TreeView", padding=15)
-    group3.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    columns = ("name", "status", "progress")
-    tree = bs.TreeView(group3, columns=columns, show="headings", height=5)
-
-    tree.heading("name", text="Task Name")
-    tree.heading("status", text="Status")
-    tree.heading("progress", text="Progress")
-
-    tree.column("name", width=200)
-    tree.column("status", width=100, anchor=CENTER)
-    tree.column("progress", width=100, anchor=CENTER)
-
-    for item in [
-        ("Database Migration", "Complete", "100%"),
-        ("API Integration", "In Progress", "65%"),
-        ("UI Redesign", "In Progress", "40%"),
-        ("Testing Suite", "Pending", "0%"),
-        ("Documentation", "In Progress", "80%"),
-    ]:
-        tree.insert("", END, values=item)
-
-    tree.pack(fill=BOTH, expand=YES)
-    tree.selection_set(tree.get_children()[0])
-
-    # TableView
-    group4 = bs.LabelFrame(page, text="TableView", padding=15, height=300)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-    group4.pack_propagate(False)
-
-    tv = bs.TableView(
-        group4,
-        columns=[
-            {"text": "Name", "stretch": True},
-            {"text": "Department", "width": 120},
-            {"text": "Salary", "width": 100, "anchor": "e"},
-        ],
-        rows=[
-            ("Alice Johnson", "Engineering", "$120,000"),
-            ("Bob Smith", "Marketing", "$85,000"),
-            ("Carol White", "Engineering", "$115,000"),
-            ("David Brown", "Design", "$95,000"),
-            ("Eve Davis", "Marketing", "$88,000"),
-        ],
-    )
-    tv.pack(fill=BOTH, expand=YES)
+        with bs.GroupBox("Tree", fill="both", expand=True):
+            columns = ("name", "status", "progress")
+            tree = bs.Tree(columns=columns, show="headings", height=5, fill="both", expand=True)
+            tree.heading("name",     text="Task Name")
+            tree.heading("status",   text="Status")
+            tree.heading("progress", text="Progress")
+            tree.column("name",     width=200)
+            tree.column("status",   width=100, anchor="center")
+            tree.column("progress", width=100, anchor="center")
+            for item in [
+                ("Database Migration", "Complete",    "100%"),
+                ("API Integration",    "In Progress", "65%"),
+                ("UI Redesign",        "In Progress", "40%"),
+                ("Testing Suite",      "Pending",     "0%"),
+                ("Documentation",      "In Progress", "80%"),
+            ]:
+                tree.insert("", "end", values=item)
+            tree.selection_set(tree.get_children()[0])
 
 
 # -- Progress & Meters --------------------------------------------------------
 
 
-def _build_progress_page(page):
-    """Progressbar, Meter, FloodGauge, Slider (interactive)."""
-    bs.Label(
-        page, text="Progress & Meters", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_progress_page():
+    slider_value = Signal(65.0)
 
-    bs.Label(
-        page,
-        text="Progress bars, meters, and gauges for showing values and status.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Progress & Meters", font="heading-xl")
+        bs.Label("Progress bars and gauges for showing values and status.", accent="secondary")
 
-    slider_value = Signal[float](65.0)
+        with bs.GroupBox("Slider (drag to control progress bars)", fill="horizontal"):
+            bs.Slider(min_value=0, max_value=100, signal=slider_value, fill="horizontal")
 
-    # Slider driving progress bars
-    group = bs.LabelFrame(
-        page, text="Slider (drag to control progress bars)", padding=15,
-    )
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("ProgressBar", fill="horizontal", gap=6):
+            bs.ProgressBar(signal=slider_value, max_value=100, fill="horizontal")
+            bs.ProgressBar(value=75,  max_value=100, accent="success", fill="horizontal")
+            bs.ProgressBar(value=45,  max_value=100, accent="danger",  fill="horizontal")
+            bs.ProgressBar(value=30,  max_value=100, accent="warning", fill="horizontal")
 
-    bs.Slider(group, minvalue=0, maxvalue=100, signal=slider_value).pack(fill=X)
-
-    # Progressbar
-    group2 = bs.LabelFrame(page, text="Progressbar", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Progressbar(group2, signal=slider_value, maximum=100).pack(
-        fill=X, pady=(0, 8),
-    )
-    bs.Progressbar(
-        group2, value=75, maximum=100, accent="success",
-    ).pack(fill=X, pady=(0, 8))
-    bs.Progressbar(
-        group2, value=45, maximum=100, accent="danger",
-    ).pack(fill=X, pady=(0, 8))
-    bs.Progressbar(
-        group2, value=30, maximum=100, accent="warning", variant="thin",
-    ).pack(fill=X)
-
-    # Meters
-    group3 = bs.LabelFrame(page, text="Meter", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    meter_row = bs.Frame(group3)
-    meter_row.pack()
-
-    for amount, label, color in [
-        (45, "CPU Usage", "primary"),
-        (78, "Memory", "warning"),
-        (92, "Disk", "danger"),
-    ]:
-        bs.Meter(
-            meter_row,
-            metersize=120,
-            amountused=amount,
-            amounttotal=100,
-            subtext=label,
-            accent=color,
-            interactive=True,
-        ).pack(side=LEFT, padx=10)
-
-    # FloodGauge
-    # Note: FloodGauge has a known issue with theme changes, so we
-    # guard against errors during the demo.
-    group4 = bs.LabelFrame(page, text="FloodGauge", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    fg_row = bs.Frame(group4)
-    fg_row.pack(fill=X)
-
-    for val, color, mask in [
-        (65, "primary", "{}%"),
-        (82, "success", "{}% Done"),
-        (35, "danger", "{}% Used"),
-    ]:
-        bs.FloodGauge(
-            fg_row, value=val, maximum=100, accent=color,
-            mask=mask, length=150, thickness=40,
-        ).pack(side=LEFT, padx=4, expand=YES)
+        with bs.GroupBox("Gauge", fill="horizontal"):
+            with bs.HStack(gap=16, anchor_items="center"):
+                for amount, label, color in [
+                    (45, "CPU Usage", "primary"),
+                    (78, "Memory",    "warning"),
+                    (92, "Disk",      "danger"),
+                ]:
+                    bs.Gauge(
+                        value=amount, max_value=100,
+                        subtitle=label, accent=color,
+                        interactive=True,
+                    )
 
 
 # -- Layout -------------------------------------------------------------------
 
 
-def _build_layout_page(page):
-    """Card, LabelFrame, Expander, Accordion, PanedWindow, Separator."""
-    bs.Label(
-        page, text="Layout", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_layout_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Layout", font="heading-xl")
+        bs.Label("Containers, expandable panels, and split panes.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Containers, expandable panels, and split panes for organizing content.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Card", fill="horizontal"):
+            with bs.HStack(gap=8, fill="horizontal", fill_items="horizontal", expand_items=True):
+                for title, body, color in [
+                    ("Users",   "1,234 active", "primary"),
+                    ("Revenue", "$45,678",       "success"),
+                    ("Errors",  "12 today",      "danger"),
+                ]:
+                    with bs.Card(padding=16):
+                        bs.Label(title, accent=color, font="body[bold]")
+                        bs.Label(body, font="heading-lg")
 
-    # Card
-    group = bs.LabelFrame(page, text="Card", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Expander", fill="horizontal"):
+            with bs.Expander("Click to expand", expanded=False, fill="horizontal"):
+                bs.Label("This content is revealed when the expander is opened.", padding=10)
+            with bs.Expander("Already expanded", expanded=True, fill="horizontal"):
+                bs.Label("Expanders can start open or closed.", padding=10)
 
-    card_row = bs.Frame(group)
-    card_row.pack(fill=X)
+        with bs.GroupBox("Accordion", fill="horizontal"):
+            acc = bs.Accordion(fill="horizontal")
+            with acc.add("Section 1"):
+                bs.Label("Content for section one.", padding=10)
+            with acc.add("Section 2"):
+                bs.Label("Content for section two.", padding=10)
+            with acc.add("Section 3"):
+                bs.Label("Content for section three.", padding=10)
 
-    for title, body, color in [
-        ("Users", "1,234 active", "primary"),
-        ("Revenue", "$45,678", "success"),
-        ("Errors", "12 today", "danger"),
-    ]:
-        card = bs.Card(card_row, padding=16)
-        card.pack(side=LEFT, padx=4, expand=YES, fill=X)
-        bs.Label(card, text=title, accent=color, font="body[bold]").pack(anchor=W)
-        bs.Label(card, text=body, font="heading-lg").pack(anchor=W)
+        with bs.GroupBox("SplitView", fill="both", expand=True):
+            sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
+            with sv.add():
+                with bs.VStack(padding=10, anchor_items="center", expand=True, fill="both"):
+                    bs.Label("Left Pane")
+                    bs.Label("Drag the sash to resize", accent="secondary", font="caption")
+            with sv.add():
+                with bs.VStack(padding=10, anchor_items="center", expand=True, fill="both"):
+                    bs.Label("Right Pane")
+                    bs.Label("Both panes are resizable", accent="secondary", font="caption")
 
-    # Expander
-    group2 = bs.LabelFrame(page, text="Expander", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    exp = bs.Expander(group2, title="Click to expand", expanded=False)
-    exp.pack(fill=X, pady=(0, 8))
-    bs.Label(
-        exp.content, text="This content is revealed when the expander is opened.",
-        padding=10,
-    ).pack(fill=X)
-
-    exp2 = bs.Expander(group2, title="Already expanded", expanded=True)
-    exp2.pack(fill=X)
-    bs.Label(
-        exp2.content, text="Expanders can start open or closed.",
-        padding=10,
-    ).pack(fill=X)
-
-    # Accordion
-    group3 = bs.LabelFrame(page, text="Accordion", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    acc = bs.Accordion(group3)
-    acc.pack(fill=X)
-
-    sec1 = acc.add(title="Section 1")
-    bs.Label(sec1.content, text="Content for section one.", padding=10).pack(fill=X)
-
-    sec2 = acc.add(title="Section 2")
-    bs.Label(sec2.content, text="Content for section two.", padding=10).pack(fill=X)
-
-    sec3 = acc.add(title="Section 3")
-    bs.Label(sec3.content, text="Content for section three.", padding=10).pack(fill=X)
-
-    # PanedWindow
-    group4 = bs.LabelFrame(page, text="PanedWindow", padding=15)
-    group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    pw = bs.PanedWindow(group4, orient=HORIZONTAL)
-    pw.pack(fill=BOTH, expand=YES)
-
-    left = bs.LabelFrame(pw, text="Left Pane", padding=10)
-    bs.Label(left, text="Drag the\nsash to resize", justify=CENTER).pack(expand=YES)
-    pw.add(left, weight=1)
-
-    right = bs.LabelFrame(pw, text="Right Pane", padding=10)
-    bs.Label(right, text="Both panes\nare resizable", justify=CENTER).pack(expand=YES)
-    pw.add(right, weight=1)
-
-    # Separator
-    group5 = bs.LabelFrame(page, text="Separator", padding=15)
-    group5.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Separator(group5).pack(fill=X, pady=(0, 8))
-    bs.Separator(group5, accent="primary").pack(fill=X, pady=(0, 8))
-    bs.Separator(group5, accent="success").pack(fill=X, pady=(0, 8))
-    bs.Separator(group5, accent="danger").pack(fill=X)
+        with bs.GroupBox("Separator", fill="horizontal", gap=8):
+            bs.Separator(fill="horizontal")
+            bs.Separator(accent="primary",  fill="horizontal")
+            bs.Separator(accent="success",  fill="horizontal")
+            bs.Separator(accent="danger",   fill="horizontal")
 
 
 # -- Navigation ---------------------------------------------------------------
 
 
-def _build_navigation_page(page):
-    """TabView demonstrations."""
-    bs.Label(
-        page, text="Navigation", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_navigation_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Navigation", font="heading-xl")
+        bs.Label("Tab-based navigation widgets.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Tab-based navigation widgets for organizing content into views.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Tabs (horizontal)", fill="both", expand=True):
+            tabs = bs.Tabs(fill="both", expand=True)
+            with tabs.add("dashboard", label="Dashboard", icon="house"):
+                bs.Label("Dashboard content goes here.", padding=20)
+            with tabs.add("files", label="Files", icon="folder2"):
+                bs.Label("Browse your files here.", padding=20)
+            with tabs.add("settings", label="Settings", icon="gear"):
+                bs.Label("Configure your settings.", padding=20)
 
-    # TabView with icons
-    group = bs.LabelFrame(page, text="TabView (with icons)", padding=15)
-    group.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    tv = TabView(group, height=80)
-    tv.pack(fill=BOTH, expand=YES)
-
-    p1 = tv.add("dashboard", text="Dashboard", icon="house")
-    bs.Label(p1, text="Dashboard content goes here.", padding=20).pack(expand=YES)
-
-    p2 = tv.add("files", text="Files", icon="folder2")
-    bs.Label(p2, text="Browse your files here.", padding=20).pack(expand=YES)
-
-    p3 = tv.add("settings", text="Settings", icon="gear")
-    bs.Label(p3, text="Configure your settings.", padding=20).pack(expand=YES)
-
-    # TabView with closable + addable tabs
-    group2 = bs.LabelFrame(page, text="TabView (closable + addable)", padding=15)
-    group2.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    tv2 = TabView(group2, height=80, enable_closing=True, enable_adding=True)
-    tv2.pack(fill=BOTH, expand=YES)
-
-    _dyn_counter = [1]
-
-    def _on_add_tab(event):
-        _dyn_counter[0] += 1
-        key = f"doc{_dyn_counter[0]}"
-        p = tv2.add(key, text=f"Document {_dyn_counter[0]}", icon="file-text")
-        bs.Label(p, text=f"Content for Document {_dyn_counter[0]}.", padding=20).pack(expand=YES)
-
-    p = tv2.add("doc1", text="Document 1", icon="file-text")
-    bs.Label(p, text="Content for Document 1.", padding=20).pack(expand=YES)
-    tv2.on_tab_added(_on_add_tab)
-
-    # TabView with accent
-    group3 = bs.LabelFrame(page, text="TabView (with accent)", padding=15)
-    group3.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    tv3 = TabView(group3, height=80, accent="success")
-    tv3.pack(fill=BOTH, expand=YES)
-
-    pa = tv3.add("all", text="All")
-    bs.Label(pa, text="Showing all items.", padding=20).pack(expand=YES)
-
-    pb = tv3.add("active", text="Active")
-    bs.Label(pb, text="Showing active items.", padding=20).pack(expand=YES)
-
-    pc = tv3.add("archived", text="Archived")
-    bs.Label(pc, text="Showing archived items.", padding=20).pack(expand=YES)
-
-    # Vertical TabView
-    group4 = bs.LabelFrame(page, text="TabView (vertical)", padding=15)
-    group4.pack(fill=BOTH, expand=YES, padx=20, pady=(0, 10))
-
-    tv4 = TabView(group4, orient="vertical", height=160, enable_adding=True)
-    tv4.pack(fill=BOTH, expand=YES)
-
-    _vert_counter = [2]
-
-    def _on_add_vert(event):
-        _vert_counter[0] += 1
-        key = f"vpage{_vert_counter[0]}"
-        vp = tv4.add(key, text=f"Page {_vert_counter[0]}", icon="file")
-        bs.Label(vp, text=f"Content for Page {_vert_counter[0]}.", padding=20).pack(expand=YES)
-
-    vp1 = tv4.add("general", text="General", icon="sliders")
-    bs.Label(vp1, text="General settings and preferences.", padding=20).pack(expand=YES)
-
-    vp2 = tv4.add("account", text="Account", icon="person")
-    bs.Label(vp2, text="Account information and profile.", padding=20).pack(expand=YES)
-
-    tv4.on_tab_added(_on_add_vert)
+        with bs.GroupBox("Tabs (closable + addable)", fill="both", expand=True):
+            tabs2 = bs.Tabs(allow_close=True, allow_add=True, fill="both", expand=True)
+            with tabs2.add("doc1", label="Document 1", icon="file-text"):
+                bs.Label("Content for Document 1.", padding=20)
 
 
-# -- Overlays ----------------------------------------------------------------
+# -- Overlays -----------------------------------------------------------------
 
 
-def _build_overlays_page(page):
-    """Toast and ToolTip demonstrations."""
-    bs.Label(
-        page, text="Overlays", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_overlays_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Overlays", font="heading-xl")
+        bs.Label("Toasts and tooltips.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Toasts, tooltips, and other overlay widgets.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Tooltip", fill="horizontal"):
+            bs.Label("Hover over the buttons below:")
+            with bs.HStack(gap=8):
+                b1 = bs.Button("Default",  accent="primary")
+                b2 = bs.Button("Accented", accent="primary")
+                b3 = bs.Button("Long tip", accent="default")
+            bs.Tooltip(b1, "This is a basic tooltip.")
+            bs.Tooltip(b2, "Tooltips can have accent colors.", accent="primary")
+            bs.Tooltip(b3, "This is a longer tooltip that wraps. "
+                           "It shows how tooltips handle multi-line content.",
+                       wrap_width=200)
 
-    # ToolTip
-    group = bs.LabelFrame(page, text="ToolTip", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Toast", fill="horizontal"):
+            bs.Label("Click buttons to show toast notifications:")
 
-    bs.Label(
-        group, text="Hover over the buttons below to see tooltips:",
-    ).pack(anchor=W, pady=(0, 8))
+            def show_toast(title, message, accent):
+                bs.Toast(title=title, message=message, accent=accent, duration=3000).show()
 
-    row = bs.Frame(group)
-    row.pack(fill=X)
-
-    btn1 = bs.Button(row, text="Default Tooltip", accent="primary")
-    btn1.pack(side=LEFT, padx=(0, 8))
-    bs.ToolTip(btn1, text="This is a basic tooltip.")
-
-    btn2 = bs.Button(row, text="Info Tooltip", accent="primary")
-    btn2.pack(side=LEFT, padx=(0, 8))
-    bs.ToolTip(btn2, text="Tooltips can have accent colors.", accent="primary")
-
-    btn3 = bs.Button(row, text="Long Tooltip", accent="default")
-    btn3.pack(side=LEFT)
-    bs.ToolTip(
-        btn3,
-        text="This is a longer tooltip that wraps text. It shows how "
-        "tooltips handle multi-line content with wraplength.",
-        wraplength=200,
-    )
-
-    # Toast
-    group2 = bs.LabelFrame(page, text="Toast", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Label(
-        group2, text="Click buttons to show toast notifications:",
-    ).pack(anchor=W, pady=(0, 8))
-
-    row2 = bs.Frame(group2)
-    row2.pack(fill=X)
-
-    def show_toast(title, message, accent):
-        bs.Toast(
-            title=title,
-            message=message,
-            accent=accent,
-            duration=3000,
-        ).show()
-
-    bs.Button(
-        row2, text="Success Toast", accent="success",
-        command=lambda: show_toast("Success", "Operation completed.", "success"),
-    ).pack(side=LEFT, padx=(0, 8))
-
-    bs.Button(
-        row2, text="Warning Toast", accent="warning",
-        command=lambda: show_toast("Warning", "Check your settings.", "warning"),
-    ).pack(side=LEFT, padx=(0, 8))
-
-    bs.Button(
-        row2, text="Error Toast", accent="danger",
-        command=lambda: show_toast("Error", "Something went wrong.", "danger"),
-    ).pack(side=LEFT)
+            with bs.HStack(gap=8):
+                bs.Button("Success", accent="success",
+                          on_click=lambda: show_toast("Success", "Operation completed.", "success"))
+                bs.Button("Warning", accent="warning",
+                          on_click=lambda: show_toast("Warning", "Check your settings.", "warning"))
+                bs.Button("Error",   accent="danger",
+                          on_click=lambda: show_toast("Error", "Something went wrong.", "danger"))
 
 
 # -- Dialogs ------------------------------------------------------------------
 
 
-def _build_dialogs_page(page):
-    """Dialog demonstrations — each button launches a dialog."""
-    bs.Label(
-        page, text="Dialogs", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_dialogs_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Dialogs", font="heading-xl")
+        bs.Label("Click buttons to launch dialog types.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Click buttons to launch various dialog types.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Alert & Confirm", fill="horizontal"):
+            with bs.HStack(gap=8):
+                bs.Button("alert()",   on_click=lambda: bs.alert("Operation complete."))
+                bs.Button("confirm()", accent="warning",
+                          on_click=lambda: bs.Toast(
+                              title="Result",
+                              detail=f"confirm() → {bs.confirm('Continue?')}",
+                              duration=2000,
+                          ).show())
 
-    # MessageBox / MessageDialog
-    group1 = bs.LabelFrame(page, text="MessageBox & MessageDialog", padding=15)
-    group1.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Input Dialogs", fill="horizontal"):
+            def _ask(fn, *args, **kw):
+                result = fn(*args, **kw)
+                if result is not None:
+                    bs.Toast(title="Result", detail=str(result), duration=2000).show()
 
-    row1 = bs.Frame(group1)
-    row1.pack(fill=X)
+            with bs.HStack(gap=8):
+                bs.Button("ask_string()",
+                          on_click=lambda: _ask(bs.ask_string, "Enter your name:"))
+                bs.Button("ask_integer()",
+                          on_click=lambda: _ask(bs.ask_integer, "Enter age:", min_value=0, max_value=120))
+                bs.Button("ask_date()",
+                          on_click=lambda: _ask(bs.ask_date, "Pick a date:"))
 
-    def show_message_ok():
-        bs.MessageBox.ok("This is an informational message.", title="Info")
+        with bs.GroupBox("FormDialog", fill="horizontal"):
+            def _show_form():
+                dlg = bs.FormDialog(
+                    title="Settings",
+                    data={"name": "", "email": ""},
+                    items=[
+                        {"key": "name",  "label": "Name"},
+                        {"key": "email", "label": "Email"},
+                    ],
+                )
+                dlg.show()
+                if dlg.result:
+                    bs.Toast(title="Form Result", message=str(dlg.result), duration=3000).show()
 
-    def show_message_yesno():
-        result = bs.MessageBox.yesno("Do you want to continue?", title="Confirm")
-        bs.Toast(title="Result", message=f"You chose: {result}", duration=2000).show()
-
-    def show_message_okcancel():
-        result = bs.MessageBox.okcancel("Save changes before closing?", title="Save")
-        bs.Toast(title="Result", message=f"You chose: {result}", duration=2000).show()
-
-    bs.Button(row1, text="Info (OK)", command=show_message_ok).pack(side=LEFT, padx=(0, 8))
-    bs.Button(row1, text="Yes / No", command=show_message_yesno).pack(side=LEFT, padx=(0, 8))
-    bs.Button(row1, text="OK / Cancel", command=show_message_okcancel).pack(side=LEFT)
-
-    # QueryBox
-    group2 = bs.LabelFrame(page, text="QueryBox", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    row2 = bs.Frame(group2)
-    row2.pack(fill=X)
-
-    def show_query_string():
-        result = bs.QueryBox.get_string("Enter your name:", title="String Input")
-        if result is not None:
-            bs.Toast(title="Input", message=f"You entered: {result}", duration=2000).show()
-
-    def show_query_integer():
-        result = bs.QueryBox.get_integer("Enter a number:", title="Integer Input", minvalue=0, maxvalue=100)
-        if result is not None:
-            bs.Toast(title="Input", message=f"You entered: {result}", duration=2000).show()
-
-    bs.Button(row2, text="Get String", command=show_query_string).pack(side=LEFT, padx=(0, 8))
-    bs.Button(row2, text="Get Integer", command=show_query_integer).pack(side=LEFT)
-
-    # ColorChooser
-    group3 = bs.LabelFrame(page, text="ColorChooser", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    color_swatch = bs.Label(group3, text="  Selected Color  ", padding=8, surface="card")
-    color_swatch.pack(side=LEFT, padx=(0, 12))
-
-    def show_color_chooser():
-        result = bs.ColorChooserDialog().show()
-        if result:
-            bs.Toast(title="Color", message=f"Selected: {result}", duration=2000).show()
-
-    bs.Button(group3, text="Choose Color", command=show_color_chooser).pack(side=LEFT)
-
-    # FontDialog
-    group4 = bs.LabelFrame(page, text="FontDialog", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    def show_font_dialog():
-        result = bs.FontDialog().show()
-        if result:
-            bs.Toast(title="Font", message=f"Selected: {result}", duration=2000).show()
-
-    bs.Button(group4, text="Choose Font", command=show_font_dialog).pack(side=LEFT)
-
-    # DateDialog
-    group5 = bs.LabelFrame(page, text="DateDialog", padding=15)
-    group5.pack(fill=X, padx=20, pady=(0, 10))
-
-    def show_date_dialog():
-        result = bs.DateDialog().show()
-        if result:
-            bs.Toast(title="Date", message=f"Selected: {result}", duration=2000).show()
-
-    bs.Button(group5, text="Pick Date", command=show_date_dialog).pack(side=LEFT)
+            bs.Button("Open FormDialog", accent="primary", on_click=_show_form)
 
 
 # -- Themes -------------------------------------------------------------------
 
 
-def _build_theme_page(page):
-    """Theme settings page."""
-    bs.Label(
-        page, text="Themes", font="heading-xl",
-    ).pack(anchor=W, padx=20, pady=(20, 10))
+def _build_theme_page():
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Themes", font="heading-xl")
+        bs.Label("Switch themes to see all widgets update in real time.", accent="secondary")
 
-    bs.Label(
-        page,
-        text="Switch themes to see all widgets update in real time.",
-        accent="muted",
-    ).pack(anchor=W, padx=20, pady=(0, 15))
+        with bs.GroupBox("Theme Selector", fill="horizontal"):
+            style = bs.get_style()
+            theme_names = sorted(s["name"] for s in style.theme_provider.list_themes())
+            with bs.HStack(gap=8):
+                bs.Label("Theme:", width=10)
+                sel = bs.Select(options=theme_names, value=style.current_theme, fill="horizontal")
+                sel.on_change(lambda e: sel._internal.after(0, lambda: bs.set_theme(sel.value)))
+            with bs.HStack(gap=8):
+                bs.Label("Quick:", width=10)
+                bs.Button("Toggle Light / Dark", on_click=bs.toggle_theme)
 
-    group = bs.LabelFrame(page, text="Theme Selector", padding=15)
-    group.pack(fill=X, padx=20, pady=(0, 10))
+        with bs.GroupBox("Accent Colors", fill="horizontal"):
+            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+                for color in ("primary", "secondary", "success", "warning", "danger"):
+                    bs.Button(color.title(), accent=color)
 
-    style = bs.get_style()
-    theme_names = sorted(
-        s["name"] for s in style.theme_provider.list_themes()
-    )
-
-    row = bs.Frame(group)
-    row.pack(fill=X, pady=(0, 10))
-    bs.Label(row, text="Theme:", width=12).pack(side=LEFT)
-
-    combo = bs.Combobox(row, values=theme_names, width=20, state="readonly")
-    combo.pack(side=LEFT)
-    combo.set(style.current_theme)
-
-    def on_change(event):
-        style.theme_use(combo.get())
-        combo.selection_clear()
-
-    combo.bind("<<ComboboxSelected>>", on_change)
-
-    # Quick toggle
-    row2 = bs.Frame(group)
-    row2.pack(fill=X)
-    bs.Label(row2, text="Quick:", width=12).pack(side=LEFT)
-    bs.Button(
-        row2, text="Toggle Light / Dark", command=bs.toggle_theme,
-    ).pack(side=LEFT)
-
-    # Semantic accent colors
-    group2 = bs.LabelFrame(page, text="Semantic Colors", padding=15)
-    group2.pack(fill=X, padx=20, pady=(0, 10))
-
-    accent_row = bs.Frame(group2)
-    accent_row.pack(fill=X, pady=(0, 10))
-    for color in ("primary", "success", "warning", "danger"):
-        bs.Button(accent_row, text=color.title(), accent=color).pack(side=LEFT, padx=4, expand=YES, fill=X)
-
-    # Surface colors
-    group3 = bs.LabelFrame(page, text="Surfaces", padding=15)
-    group3.pack(fill=X, padx=20, pady=(0, 10))
-
-    surface_row = bs.Frame(group3)
-    surface_row.pack(fill=X)
-    for surface in ("chrome", "content", "card", "overlay", "input"):
-        f = bs.Frame(surface_row, surface=surface, padding=12)
-        f.pack(side=LEFT, padx=4, expand=YES, fill=X)
-        bs.Label(f, text=surface.title(), surface=surface).pack()
-
-    # Stroke / border colors
-    group4 = bs.LabelFrame(page, text="Borders & Strokes", padding=15)
-    group4.pack(fill=X, padx=20, pady=(0, 10))
-
-    bs.Label(group4, text="stroke").pack(anchor=W)
-    bs.Separator(group4).pack(fill=X, pady=(2, 8))
-    bs.Label(group4, text="stroke_subtle").pack(anchor=W)
-    bs.Separator(group4, accent="stroke_subtle").pack(fill=X, pady=(2, 0))
+        with bs.GroupBox("Surfaces", fill="horizontal"):
+            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+                for surface in ("chrome", "content", "card", "overlay", "input"):
+                    with bs.VStack(padding=12, anchor_items="center", surface=surface):
+                        bs.Label(surface.title(), surface=surface)
 
 
 # =============================================================================
@@ -1190,99 +584,88 @@ def _build_theme_page(page):
 
 def run_demo():
     """Run the bootstack widget gallery as an AppShell application."""
-    shell = bs.AppShell(
+    with bs.AppShell(
         title="Widget Gallery",
-        theme="bootstrap-light",
+        settings={"theme": "bootstrap-light"},
         size=(1100, 750),
-    )
+    ) as shell:
 
-    # Toolbar: theme toggle
-    shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
+        shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
 
-    # Page definitions: (key, text, icon, builder, scrollable, extra_kwargs)
-    pages = [
-        # Home
-        ("home", "Home", "house", _build_home_page, False, {}),
-        # Actions
-        ("buttons", "Buttons", "hand-index-thumb", _build_buttons_page, True, {}),
-        # Inputs
-        ("text-inputs", "Text Inputs", "input-cursor-text", _build_text_inputs_page, True, {}),
-        ("numeric", "Numeric Date", "123", _build_numeric_page, True, {}),
-        ("forms", "Forms", "journal-text", _build_forms_page, True, {}),
-        # Selection
-        ("selection", "Selection", "ui-checks", _build_selection_page, True, {}),
-        ("calendar", "Calendar", "calendar3", _build_calendar_page, True, {}),
-        # Data Display
-        ("data", "Data Tables", "table", _build_data_page, True, {}),
-        ("progress", "Progress", "speedometer2", _build_progress_page, True, {}),
-        # Layout
-        ("layout", "Containers", "layout-wtf", _build_layout_page, True, {}),
-        # Navigation
-        ("navigation", "Tabs Views", "window-stack", _build_navigation_page, True, {}),
-        # Overlays
-        ("overlays", "Overlays", "layers", _build_overlays_page, True, {}),
-        # Dialogs
-        ("dialogs", "Dialogs", "chat-square-text", _build_dialogs_page, True, {}),
-        # Design System
-        ("themes", "Themes", "palette", _build_theme_page, True, {}),
-        ("typography", "Typography", "fonts", _build_typography_page, True, {}),
-        ("icons", "Icons", "grid-3x3-gap", _build_icons_page, True, {}),
-    ]
+        # Page registry: key → (page_frame, builder)
+        _pages: dict[str, tuple[object, object]] = {}
 
-    # Sidebar structure (headers and separators between groups)
-    sidebar_structure = {
-        "buttons": ("separator", "Actions"),
-        "text-inputs": ("separator", "Inputs"),
-        "selection": ("separator", "Selection"),
-        "data": ("separator", "Data Display"),
-        "layout": ("separator", "Layout"),
-        "themes": ("separator", "Design System"),
-    }
+        def _register(key, builder, *, text, icon, scrollable=False):
+            page = shell.add_page(key, text=text, icon=icon, scrollable=scrollable)
+            _pages[key] = (page, builder)
 
-    # Register all pages (lightweight — no widget building yet)
-    _builders = {}  # key -> (builder, page_widget)
+        _register("home",       _build_home_page,       text="Home",        icon="house")
 
-    for key, text, icon, builder, scrollable, kwargs in pages:
-        # Insert sidebar headers/separators before certain pages
-        if key in sidebar_structure:
-            shell.add_separator()
-            shell.add_header(sidebar_structure[key][1])
+        shell.add_separator()
+        shell.add_header("Actions")
+        _register("buttons",    _build_buttons_page,    text="Buttons",     icon="hand-index-thumb",   scrollable=True)
 
-        page = shell.add_page(key, text=text, icon=icon, scrollable=scrollable, **kwargs)
-        _builders[key] = (builder, page)
+        shell.add_separator()
+        shell.add_header("Inputs")
+        _register("text-inputs", _build_text_inputs_page, text="Text Inputs", icon="input-cursor-text", scrollable=True)
+        _register("numeric",    _build_numeric_page,    text="Numeric & Date", icon="123",             scrollable=True)
+        _register("forms",      _build_forms_page,      text="Forms",       icon="journal-text",       scrollable=True)
 
-    # Build only the home page eagerly
-    _built = set()
-    _build_home_page(_builders["home"][1])
-    _built.add("home")
+        shell.add_separator()
+        shell.add_header("Selection")
+        _register("selection",  _build_selection_page,  text="Selection",   icon="ui-checks",          scrollable=True)
+        _register("calendar",   _build_calendar_page,   text="Calendar",    icon="calendar3",          scrollable=True)
 
-    # Lazy-build pages on first navigation via PageStack hook
-    _orig_ps_navigate = shell.pages.navigate
+        shell.add_separator()
+        shell.add_header("Data Display")
+        _register("data",       _build_data_page,       text="Data Tables", icon="table",              scrollable=True)
+        _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
 
-    def _lazy_ps_navigate(key, data=None, **kwargs):
-        if key not in _built and key in _builders:
-            builder, page = _builders[key]
-            builder(page)
+        shell.add_separator()
+        shell.add_header("Layout")
+        _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
+        _register("navigation", _build_navigation_page, text="Tab Views",   icon="window-stack",       scrollable=True)
+
+        shell.add_separator()
+        shell.add_header("Overlays & Dialogs")
+        _register("overlays",   _build_overlays_page,   text="Overlays",    icon="layers",             scrollable=True)
+        _register("dialogs",    _build_dialogs_page,    text="Dialogs",     icon="chat-square-text",   scrollable=True)
+
+        shell.add_separator()
+        shell.add_header("Design System")
+        _register("themes",     _build_theme_page,      text="Themes",      icon="palette",            scrollable=True)
+        _register("typography", _build_typography_page, text="Typography",  icon="fonts",              scrollable=True)
+        _register("icons",      _build_icons_page,      text="Icons",       icon="grid-3x3-gap",       scrollable=True)
+
+        # Lazy-build: construct page content only on first visit
+        _built: set[str] = set()
+
+        def _build_page(key: str) -> None:
+            if key in _built:
+                return
+            page, builder = _pages[key]
+            with page:
+                builder()
             _built.add(key)
-        return _orig_ps_navigate(key, data=data, **kwargs)
 
-    shell.pages.navigate = _lazy_ps_navigate
+        # Build home page immediately; all others on first navigation
+        _build_page("home")
 
-    shell.navigate("home")
-    shell.mainloop()
+        def _on_page_changed(event) -> None:
+            key = event.data.get("page") if hasattr(event, "data") else None
+            if key:
+                _build_page(key)
+
+        shell.on_page_changed(_on_page_changed)
+        shell.navigate("home")
+
+    shell.run()
 
 
 def setup_demo(master):
-    """Setup the demo widgets - legacy compatibility.
-
-    Note: The gallery now uses AppShell, so this legacy entry point
-    creates a simplified widget showcase in the given master frame.
-    """
-    from bootstack.constants import BOTH, YES
-
-    bs.Label(
-        master,
-        text="Use 'bootstack gallery' to launch the Widget Gallery.",
-        font="heading-lg",
-        padding=40,
-    ).pack(fill=BOTH, expand=YES)
+    """Legacy entry point — the gallery now uses AppShell."""
+    with bs.VStack(parent=master, fill="both", expand=True, padding=40):
+        bs.Label(
+            "Use 'bootstack gallery' to launch the Widget Gallery.",
+            font="heading-lg",
+        )

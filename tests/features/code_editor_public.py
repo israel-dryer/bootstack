@@ -1,5 +1,5 @@
 """Visual test for the public CodeEditor widget."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator, CodeEditor,
 )
 

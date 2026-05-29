@@ -1,5 +1,5 @@
 """Visual test for public GroupBox, SplitView, and PageStack widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator,
     GroupBox, SplitView, PageStack, TextField, RadioGroup,
 )

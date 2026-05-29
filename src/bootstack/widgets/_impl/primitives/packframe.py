@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tkinter as tk
 from typing import Any
@@ -7,6 +7,7 @@ from typing_extensions import Unpack
 
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
+from bootstack.widgets._core.container import normalize_fill
 from bootstack.widgets.types import Anchor, Direction, Fill, Master, Side
 
 
@@ -134,6 +135,9 @@ class PackFrame(Frame):
 
         # User options override everything
         options.update(user_options)
+        # Normalize fill aliases so "horizontal"/"vertical" reach tkinter as "x"/"y"
+        if "fill" in options:
+            options["fill"] = normalize_fill(options["fill"])
         return options
 
     def _repack_all(self) -> None:

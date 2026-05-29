@@ -1,5 +1,5 @@
 """Visual test for public Tabs widget."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator, TextField, Tabs,
 )
 from bootstack.signals import Signal

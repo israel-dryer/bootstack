@@ -2,7 +2,7 @@
 from datetime import date
 
 import bootstack as bs
-from bootstack.widgets import App, VStack, HStack, Label, Separator, DateField, PathField
+from bootstack import App, VStack, HStack, Label, Separator, DateField, PathField
 
 
 def main():

@@ -1,5 +1,5 @@
 """Visual test for public Expander, Accordion, and ToggleGroup widgets."""
-from bootstack.widgets import (
+from bootstack import (
     App, VStack, HStack, Label, Button, Separator,
     Expander, Accordion, ToggleGroup, TextField,
 )

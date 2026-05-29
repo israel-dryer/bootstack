@@ -14,6 +14,11 @@ class IconSpec(TypedDict, total=False):
     color: str | None
 
 
+from bootstack.widgets._impl.primitives.frame import Frame as _Frame
+from bootstack.widgets._impl.primitives.label import Label as _Label
+from bootstack.widgets._impl.primitives.button import Button as _Button
+from bootstack.widgets._impl.primitives.separator import Separator as _Separator
+
 class ToastConfig(TypedDict, total=False):
     """Configuration options for Toast widget."""
     title: str | None
@@ -198,8 +203,7 @@ class Toast:
         self._toplevel = None
 
     def _build_toast(self) -> None:
-        import bootstack as bs
-        # ----- Configuration Options -------
+                # ----- Configuration Options -------
 
         has_title = self._title is not None
         has_title_and_message = has_title and self._message is not None
@@ -224,18 +228,18 @@ class Toast:
 
         # ------ Toast Layout ------
 
-        container = bs.Frame(top, padding=4, accent=self._accent)
+        container = _Frame(top, padding=4, accent=self._accent)
         container.pack(fill='both', expand=True)
 
-        header = bs.Frame(container, padding=(8, 0, 0, 0))
+        header = _Frame(container, padding=(8, 0, 0, 0))
         header.pack(side='top', fill='x')
 
         # icon
         if self._icon:
-            bs.Label(header, icon=self._icon).pack(side='left', padx=(0, 8))
+            _Label(header, icon=self._icon).pack(side='left', padx=(0, 8))
 
         # title
-        bs.Label(
+        _Label(
             header,
             text=self._title if has_title else self._message,
             font=resolved_title_font,
@@ -245,7 +249,7 @@ class Toast:
 
         # close
         if self._show_close_button:
-            bs.Button(
+            _Button(
                 header,
                 icon="x",
                 accent=muted_foreground,
@@ -256,7 +260,7 @@ class Toast:
 
         # memo
         if self._memo:
-            bs.Label(
+            _Label(
                 header,
                 text=self._memo,
                 font="caption",
@@ -265,8 +269,8 @@ class Toast:
 
         # message
         if has_title_and_message:
-            bs.Separator(container).pack(side='top', fill='x')
-            bs.Label(
+            _Separator(container).pack(side='top', fill='x')
+            _Label(
                 container,
                 text=self._message,
                 wraplength=400,
@@ -284,14 +288,14 @@ class Toast:
 
                 return inner
 
-            bs.Separator(container).pack(side='top', fill='x', pady=4)
-            button_frame = bs.Frame(container)
+            _Separator(container).pack(side='top', fill='x', pady=4)
+            button_frame = _Frame(container)
             button_frame.pack(side='top', fill='x')
 
             for i, button_options in enumerate(self._buttons):
                 func = button_options.get('command', None)
                 button_opts = {k: v for k, v in button_options.items() if k != 'command'}
-                bs.Button(
+                _Button(
                     button_frame,
                     **button_opts,
                     command=execute_command(button_options, func)
