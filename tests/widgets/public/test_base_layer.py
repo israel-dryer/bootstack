@@ -1,4 +1,4 @@
-"""Smoke tests for the v2 public API base layer."""
+"""Smoke tests for the public API base layer."""
 from __future__ import annotations
 
 import threading
