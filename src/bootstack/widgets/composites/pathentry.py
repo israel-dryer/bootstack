@@ -37,8 +37,6 @@ class PathEntry(Field):
             value: str | None = None,
             dialog: FileDialogType = "openfilename",
             dialog_options: dict[str, Any] | None = None,
-            button_text: str = "Browse",
-            button_accent: str = None,
             label: str = None,
             message: str = None,
             **kwargs: Unpack[FieldOptions]
@@ -61,9 +59,6 @@ class PathEntry(Field):
             dialog_options: Dictionary of options to pass to the file dialog.
                 Common options: title, initialdir, initialfile, filetypes,
                 defaultextension, multiple.
-            button_text: Text to display on the browse button. Default is "Browse".
-                Can be changed at runtime via `configure(button_text=...)`.
-            button_accent: Accent color for the browse button. Defaults to None (neutral elevated style).
             label: Label text to display above the entry field (from FieldOptions).
             message: Message text to display below the field.
 
@@ -87,18 +82,16 @@ class PathEntry(Field):
         self._dialog = dialog
         self._dialog_options = dialog_options
         self._dialog_result = None
-        self._button_text = button_text
-        self._button_accent = button_accent
         self._prev_value: str | None = value
 
         super().__init__(master=master, label=label, message=message, value=value, **kwargs)
 
         self.insert_addon(
             Button,
-            position="before",
+            position="after",
             name="dialog-button",
-            text=self._button_text,
-            accent=self._button_accent,
+            icon="folder2-open",
+            icon_only=True,
             command=self._show_file_chooser
         )
 

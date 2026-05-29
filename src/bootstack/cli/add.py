@@ -386,6 +386,7 @@ def _render_theme(name: str, mode: str) -> str:
         "shades": _BASE_SHADES,
         "semantic": {
             "primary": f"blue[{step}]",
+            "secondary": f"gray[{step}]",
             "success": f"green[{step}]",
             "warning": f"yellow[{step}]",
             "danger": f"red[{step}]",

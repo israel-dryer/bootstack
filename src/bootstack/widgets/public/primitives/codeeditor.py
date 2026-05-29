@@ -49,6 +49,9 @@ class CodeEditor(PublicWidgetBase):
         scrollbars: Scrollbar visibility — `'both'` (default), `'auto'`,
             `'vertical'`, or `'none'`.
         font: Font for the editor. Default `'TkFixedFont'`.
+        show_border: If True (default), styles the editor frame as a themed
+            border with a focus ring.
+        accent: Accent token for the focus border. Default `'primary'`.
         extensions: Additional `EditFilter` instances to install on top of
             the built-in set.
         parent: Override the context-stack parent.
@@ -70,6 +73,8 @@ class CodeEditor(PublicWidgetBase):
         show_indent_guides: bool = False,
         scrollbars: str = "both",
         font: str = "TkFixedFont",
+        show_border: bool = True,
+        accent: str = "primary",
         extensions: list[EditFilter] | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -92,6 +97,8 @@ class CodeEditor(PublicWidgetBase):
             "show_indent_guides": show_indent_guides,
             "scrollbars": scrollbars,
             "font": font,
+            "show_border": show_border,
+            "accent": accent,
         }
         if text_signal is not None:
             internal_kwargs["textsignal"] = text_signal

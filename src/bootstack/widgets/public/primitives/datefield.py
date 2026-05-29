@@ -131,6 +131,11 @@ class DateField(PublicWidgetBase):
     # ----- Properties -----
 
     @property
+    def picker_button(self):
+        """The calendar picker button widget, or `None` if hidden."""
+        return self._internal.addons.get('date-picker')
+
+    @property
     def value(self) -> "date | tuple[date, date] | None":
         """Selected date, or `(start, end)` tuple in range mode."""
         return self._internal.value

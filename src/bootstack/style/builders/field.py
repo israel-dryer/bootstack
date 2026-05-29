@@ -243,7 +243,12 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
     # if not icon only, then must show button, otherwise accent will decide whether button is shown.
     show_button = (accent is None and not icon_only) or accent is not None
 
-    bg_normal = input_background if not show_button else b.elevate(input_background, 1)
+    if not show_button:
+        bg_normal = input_background
+    elif accent is not None:
+        bg_normal = b.color(accent)
+    else:
+        bg_normal = b.elevate(input_background, 1)
     bg_active = b.active(bg_normal)
     bg_pressed = b.pressed(bg_normal)
 

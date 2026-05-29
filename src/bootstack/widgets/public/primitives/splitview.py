@@ -99,7 +99,7 @@ class SplitView(PublicWidgetBase):
 
     # ----- Pane management -----
 
-    def add(self, *, weight: int = 1) -> _SplitPane:
+    def add(self, *, weight: int = 1, min_size: int | None = None) -> _SplitPane:
         """Add a pane and return a context manager for placing its children.
 
         Usage::
@@ -110,15 +110,25 @@ class SplitView(PublicWidgetBase):
         Args:
             weight: Relative size weight when the container is resized.
                 Higher values take proportionally more space.
+            min_size: Minimum pane size in pixels.
 
         Returns:
             `_SplitPane` — use as a context manager to place children.
         """
         frame = _InternalFrame(self._internal)
-        self._internal.add(frame, weight=weight)
+        add_kw: dict[str, Any] = {"weight": weight}
+        if min_size is not None:
+            add_kw["minsize"] = min_size
+        self._internal.add(frame, **add_kw)
         return _SplitPane(frame)
 
     # ----- Sash control -----
+
+    @property
+    def sash_positions(self) -> list[int]:
+        """Current position of every sash in pixels, in order."""
+        n = len(self._internal.panes())
+        return [self._internal.sashpos(i) for i in range(max(0, n - 1))]
 
     def sash_position(self, index: int, position: int | None = None) -> int | None:
         """Get or set the position of a sash.

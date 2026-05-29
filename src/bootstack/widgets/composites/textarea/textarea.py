@@ -4,6 +4,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Callable, TypedDict
 
+from bootstack.widgets.primitives.frame import Frame
 from bootstack.widgets.primitives.gridframe import GridFrame
 from bootstack.widgets.primitives.label import Label
 from bootstack.widgets.composites.textarea.core import _MultilineCore, ScrollbarMode
@@ -13,15 +14,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
     from bootstack.validation.validation_rules import ValidationRule
-
-
-def _resolve_color(token: str, fallback: str) -> str:
-    """Resolve a bootstack color token to a hex string."""
-    try:
-        from bootstack.style.style import get_theme_provider
-        return get_theme_provider().colors.get(token, fallback)
-    except Exception:
-        return fallback
 
 
 class TextAreaInputEventData(TypedDict):
@@ -68,6 +60,7 @@ class TextArea(GridFrame):
         scrollbars: ScrollbarMode = "auto",
         font: str = "body",
         accent: AccentToken | str = "primary",
+        show_border: bool = True,
         on_input: Callable | None = None,
         on_changed: Callable | None = None,
         on_blur: Callable | None = None,
@@ -100,6 +93,8 @@ class TextArea(GridFrame):
                 needed), `"vertical"`, `"both"`, or `"none"`.
             font: Font token. Defaults to `"body"`.
             accent: Accent token for the focus border. Defaults to `"primary"`.
+            show_border: If True (default), wraps the text area in a themed
+                border that gains a focus ring on interaction.
             on_input: Callback invoked on every edit. Receives `event.data`
                 of type `TextAreaInputEventData`.
             on_changed: Callback invoked when the widget loses focus. Receives
@@ -129,12 +124,22 @@ class TextArea(GridFrame):
         if label:
             _lbl_text = f"{label} *" if required else label
             Label(self, text=_lbl_text, font="caption").grid(
-                row=0, column=0, sticky="w",
+                row=0, column=0, sticky="w", padx=(4, 0),
             )
 
         # ── core (row 1) ──────────────────────────────────────────────────
+        if show_border:
+            self._field_frame = Frame(
+                self, accent=accent, padding=5, ttk_class="TField",
+            )
+            self._field_frame.grid(row=1, column=0, sticky="nsew")
+            core_parent = self._field_frame
+        else:
+            self._field_frame = None
+            core_parent = self
+
         self._core = _MultilineCore(
-            self,
+            core_parent,
             value=value,
             wrap=wrap,
             height=height,
@@ -142,49 +147,30 @@ class TextArea(GridFrame):
             font=font,
             read_only=read_only,
         )
-        self._core.grid(row=1, column=0, sticky="nsew")
+
+        if show_border:
+            self._core.pack(fill="both", expand=True)
+            self._core.text.bind(
+                "<FocusIn>",
+                lambda _: self._field_frame.state(["focus"]),
+                add="+",
+            )
+            self._core.text.bind(
+                "<FocusOut>",
+                lambda _: self._field_frame.state(["!focus"]),
+                add="+",
+            )
+        else:
+            self._core.grid(row=1, column=0, sticky="nsew")
 
         # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",
-                                  accent="muted")
+                                  accent="secondary")
         self._message_lbl.grid(row=2, column=0, sticky="w")
         self._message_lbl.grid_remove()
 
         if show_message or message or required:
             self._show_message_area()
-
-        # ── border via tk.Frame highlightthickness ────────────────────────
-        # _MultilineCore is a tk.Frame, so highlightthickness gives a native
-        # border that wraps the entire textarea (text + scrollbars) without
-        # clipping issues from a ttk wrapper frame.
-        self._border_inactive = _resolve_color("gray[300]", "#cccccc")
-        self._border_active = _resolve_color(accent, "#0d6efd")
-        self._border_error = _resolve_color("danger", "#dc3545")
-        self._core.configure(
-            highlightthickness=2,
-            highlightbackground=self._border_inactive,
-            highlightcolor=self._border_inactive,
-        )
-
-        self._core.text.bind(
-            "<FocusIn>",
-            lambda _: self._core.configure(
-                highlightbackground=self._border_active,
-                highlightcolor=self._border_active,
-            ),
-            add="+",
-        )
-        self._core.text.bind(
-            "<FocusOut>",
-            lambda _: self._core.configure(
-                highlightbackground=self._border_inactive,
-                highlightcolor=self._border_inactive,
-            ),
-            add="+",
-        )
-        self._core.text.bind(
-            "<<ThemeChanged>>", self._on_theme_changed, add="+"
-        )
 
         # ── signal binding ────────────────────────────────────────────────
         if textsignal is not None:
@@ -262,26 +248,9 @@ class TextArea(GridFrame):
     def _show_error(self, message: str) -> None:
         self._show_message_area()
         self._message_lbl.configure(text=message, accent="danger")
-        self._core.configure(
-            highlightbackground=self._border_error,
-            highlightcolor=self._border_error,
-        )
 
     def _clear_error(self) -> None:
-        self._message_lbl.configure(text=self._original_message, accent="muted")
-        self._core.configure(
-            highlightbackground=self._border_inactive,
-            highlightcolor=self._border_inactive,
-        )
-
-    def _on_theme_changed(self, _event: tk.Event = None) -> None:
-        self._border_inactive = _resolve_color("gray[300]", "#cccccc")
-        self._border_active = _resolve_color(self._accent, "#0d6efd")
-        self._border_error = _resolve_color("danger", "#dc3545")
-        # Reapply current border color without changing focus state
-        focused = self._core.text == self._core.text.focus_get()
-        color = self._border_active if focused else self._border_inactive
-        self._core.configure(highlightbackground=color, highlightcolor=color)
+        self._message_lbl.configure(text=self._original_message, accent="secondary")
 
     # ── validation ────────────────────────────────────────────────────────
 
@@ -469,7 +438,7 @@ class TextArea(GridFrame):
         """
         self._core.text.unbind("<FocusOut>", bind_id)
 
-    def on_valid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_valid(self, callback: Callable) -> str:
         """Register a callback for `<<Valid>>` events.
 
         Fires after all validation rules pass.
@@ -491,7 +460,7 @@ class TextArea(GridFrame):
         """
         self.unbind("<<Valid>>", bind_id)
 
-    def on_invalid(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_invalid(self, callback: Callable) -> str:
         """Register a callback for `<<Invalid>>` events.
 
         Fires when any validation rule fails.
@@ -513,7 +482,7 @@ class TextArea(GridFrame):
         """
         self.unbind("<<Invalid>>", bind_id)
 
-    def on_validated(self, callback: Callable[[TextAreaValidationEventData], None]) -> str:
+    def on_validated(self, callback: Callable) -> str:
         """Register a callback for `<<Validate>>` events.
 
         Fires after any validation pass, whether the result is valid or not.

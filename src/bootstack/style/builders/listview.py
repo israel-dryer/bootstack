@@ -26,8 +26,9 @@ def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str =
     hoverable = options.get('hoverable', True)
     accent_token = accent or 'primary'
     surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
     background = b.color(surface_token)
-    active = b.elevate(background, 1)
+    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent_token, background)
     b.configure_style(ttk_style, background=background, relief='flat')
@@ -64,11 +65,12 @@ def build_list_item_style(
 
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
     accent_token = accent or 'primary'
 
     background = b.color(surface_token)
     indicator = b.color(accent_token)
-    active = b.elevate(background, 1)
+    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent_token, background)
 
@@ -113,10 +115,11 @@ def build_list_item_style(
 def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
-    active = b.elevate(background, 1)
+    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent or 'primary', background)
 
@@ -177,10 +180,11 @@ def _list_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
 def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
-    active = b.elevate(background, 1)
+    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent or 'primary', background)
     on_background = b.on_color(background)
@@ -244,10 +248,11 @@ def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
     """
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
     foreground_token = options.get('foreground', None)
 
     background = b.color(surface_token)
-    active = b.elevate(background, 1)
+    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent or 'primary', background)
     on_selected = b.on_color(selected)

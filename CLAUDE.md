@@ -518,9 +518,6 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `Meter` deprecated param names (`amountused`, `amounttotal`, `subtext`, `stripethickness`) not yet removed from source
 - `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
-- `TabView(variant='pill')` crashes — no pill style builder for `TabItem.TFrame`
-- `on_changed`/`on_input` callback shape inconsistency vs `on_valid`/`on_invalid`
-- `Field` message label (`_message_lbl`) shows gray background when `required=True` auto-enables `show_message` and validation first fires — background doesn't match surface
 - `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
@@ -687,7 +684,6 @@ wrap the highest-level internal, rename Tk-isms, add a visual test under
 **Known issues logged (see Open source bugs above):**
 - `TextArea` border: raw Tk Text border instead of Field-style themed border
 - `ToggleGroup` solid variant: poor contrast on selected buttons
-- `Field` message label gray background on `required=True` fields
 - Field composite default width grows with addon slots (gap #13)
 
 **Next steps after Session 30:** `Tabs`, `Toast`, `Tooltip`, `Card`, `ListView`,
@@ -794,8 +790,6 @@ fully superseded by merged PRs; style-asset branch had pre-Session-31 CLAUDE.md 
 **Remaining work (next session):**
 - `DateField` — review against `development/v2_api_proposal.md`
 - `TextArea` border — adopt Field-style focus-ring/border instead of raw Tk Text border
-- `Field` message label gray background on `required=True`
-- `TabView(variant='pill')` crash — no pill style builder for `TabItem.TFrame`
 - Spinbox, GroupBox, PathField, MenuButton, ButtonGroup, SplitView, PageStack —
   confirm public wrappers exist and are correct
 
