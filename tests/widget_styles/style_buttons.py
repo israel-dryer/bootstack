@@ -24,7 +24,7 @@ def button_style_frame(bootstyle, widget_name):
         icon="bootstrap",
     ).pack(padx=5, pady=5, fill='both')
 
-    for color in ['primary', 'success', 'warning', 'danger']:
+    for color in ['primary', 'secondary', 'success', 'warning', 'danger']:
         bs.Button(
             master=frame,
             text=color.title(),
@@ -47,7 +47,7 @@ def button_style_frame(bootstyle, widget_name):
 
 if __name__ == '__main__':
     # create visual widget style tests
-    root = bs.App(theme="ocean-dark")
+    root = bs.App(theme="dark")
 
     button_style_frame('solid', 'Solid Button').pack(side='left')
     button_style_frame('outline', 'Outline Button').pack(side='left')

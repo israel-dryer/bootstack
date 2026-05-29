@@ -28,8 +28,6 @@ class PathField(PublicWidgetBase):
             `'directory'`, or `'openfilenames'` (multiple files).
         dialog_options: Extra kwargs forwarded to the native dialog
             (e.g. `{'filetypes': [('Images', '*.png')]}`).
-        button_label: Browse button label. Default `'Browse'`.
-        button_accent: Accent token for the browse button.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
         required: Mark field as required.
@@ -46,8 +44,6 @@ class PathField(PublicWidgetBase):
         *,
         dialog: str = "openfilename",
         dialog_options: dict[str, Any] | None = None,
-        button_label: str = "Browse",
-        button_accent: str | None = None,
         label: str | None = None,
         message: str | None = None,
         required: bool = False,
@@ -63,16 +59,11 @@ class PathField(PublicWidgetBase):
 
         tk_master = self._parent._child_master() if self._parent else None
 
-        internal_kwargs: dict[str, Any] = {
-            "dialog": dialog,
-            "button_text": button_label,
-        }
+        internal_kwargs: dict[str, Any] = {"dialog": dialog}
         if value:
             internal_kwargs["value"] = value
         if dialog_options is not None:
             internal_kwargs["dialog_options"] = dialog_options
-        if button_accent is not None:
-            internal_kwargs["button_accent"] = button_accent
         if label is not None:
             internal_kwargs["label"] = label
         if message is not None:

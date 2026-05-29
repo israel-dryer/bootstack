@@ -60,7 +60,6 @@ def main():
                 Label("Select directory")
                 pf_dir = PathField(
                     dialog="directory",
-                    button_label="Browse…",
                     label="Directory",
                     message="Pick a folder",
                 )
