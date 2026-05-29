@@ -22,14 +22,14 @@ class ListView(PublicWidgetBase):
 
     Args:
         items: Initial list of record dicts.
-        datasource: `DataSourceProtocol` implementation for data access.
+        data_source: `DataSourceProtocol` implementation for data access.
         selection_mode: `'none'` (default), `'single'`, or `'multi'`.
         show_selection_controls: Show checkboxes/radio buttons alongside items.
         show_chevron: Show a chevron indicator on each item.
-        enable_removing: Show a remove button on each item.
-        enable_dragging: Show a drag handle and allow row reordering.
+        allow_remove: Show a remove button on each item.
+        allow_reorder: Show a drag handle and allow row reordering.
         striped: Alternate row background colors.
-        show_separator: Show a separator line between items.
+        show_separators: Show a separator line between items.
         scrollbar_visibility: `'always'` (default) or `'never'`.
         density: Item density — `'default'` or `'compact'`.
         accent: Accent token for selection and drag indicator.
@@ -40,14 +40,14 @@ class ListView(PublicWidgetBase):
         self,
         *,
         items: list | None = None,
-        datasource: Any = None,
+        data_source: Any = None,
         selection_mode: Literal["none", "single", "multi"] = "none",
         show_selection_controls: bool = False,
         show_chevron: bool = False,
-        enable_removing: bool = False,
-        enable_dragging: bool = False,
+        allow_remove: bool = False,
+        allow_reorder: bool = False,
         striped: bool = False,
-        show_separator: bool = True,
+        show_separators: bool = True,
         scrollbar_visibility: Literal["always", "never"] = "always",
         density: str = "default",
         accent: str | None = None,
@@ -62,17 +62,17 @@ class ListView(PublicWidgetBase):
             "selection_mode": selection_mode,
             "show_selection_controls": show_selection_controls,
             "show_chevron": show_chevron,
-            "enable_removing": enable_removing,
-            "enable_dragging": enable_dragging,
+            "enable_removing": allow_remove,
+            "enable_dragging": allow_reorder,
             "striped": striped,
-            "show_separator": show_separator,
+            "show_separator": show_separators,
             "scrollbar_visibility": scrollbar_visibility,
             "density": density,
         }
         if items is not None:
             internal_kwargs["items"] = items
-        if datasource is not None:
-            internal_kwargs["datasource"] = datasource
+        if data_source is not None:
+            internal_kwargs["datasource"] = data_source
         if accent is not None:
             internal_kwargs["accent"] = accent
         internal_kwargs.update(kwargs)
@@ -238,6 +238,6 @@ class ListView(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def datasource(self) -> Any:
+    def data_source(self) -> Any:
         """The underlying `DataSourceProtocol` instance."""
         return self._internal.get_datasource()

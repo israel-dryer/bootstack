@@ -1,12 +1,12 @@
-"""Visual test for public Select and NumericEntry widgets."""
+"""Visual test for public Select and NumberField widgets."""
 from bootstack.widgets.public import (
-    App, VStack, HStack, Label, Select, NumericEntry, Button
+    App, VStack, HStack, Label, Select, NumberField, Button
 )
 from bootstack.signals import Signal
 
 
 def main():
-    with App(title="Select + NumericEntry — visual test", minsize=(480, 100), padding=24, gap=14) as app:
+    with App(title="Select + NumberField — visual test", minsize=(480, 100), padding=24, gap=14) as app:
 
         readout = Signal("(nothing committed yet)")
 
@@ -24,26 +24,26 @@ def main():
             searchable=True,
         )
 
-        # Allow custom
+        # Allow custom values
         Label("Select — allow custom values")
-        Select(["Option A", "Option B"], label="Custom allowed", allow_custom=True)
+        Select(["Option A", "Option B"], label="Custom allowed", allow_custom_values=True)
 
         # Disabled
         Label("Select — disabled")
         Select(["One", "Two", "Three"], value="Two", disabled=True)
 
-        # NumericEntry — basic
-        Label("NumericEntry — basic")
-        num = NumericEntry(10, label="Quantity", min_value=0, max_value=100, step=5)
+        # NumberField — basic
+        Label("NumberField — basic")
+        num = NumberField(10, label="Quantity", min_value=0, max_value=100, step=5)
         num.on_change(lambda e: readout.set(f"qty: {num.value}"))
 
-        # NumericEntry — no spin buttons
-        Label("NumericEntry — no spin buttons")
-        NumericEntry(3.14, label="Float value", step=0.1, show_spin_buttons=False)
+        # NumberField — no steppers
+        Label("NumberField — no steppers")
+        NumberField(3.14, label="Float value", step=0.1, show_steppers=False)
 
-        # NumericEntry — disabled
-        Label("NumericEntry — disabled")
-        NumericEntry(99, label="Disabled", disabled=True)
+        # NumberField — disabled
+        Label("NumberField — disabled")
+        NumberField(99, label="Disabled", disabled=True)
 
         # Inline controls
         with HStack(gap=8, anchor_items="center"):

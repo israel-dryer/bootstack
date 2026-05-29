@@ -1,7 +1,7 @@
-"""Visual test for public ListView, TreeView, and TableView."""
+"""Visual test for public ListView, Tree, and Table."""
 from bootstack.widgets.public import (
     App, VStack, HStack, Label, Button, Separator, Tabs,
-    ListView, TreeView, TableView,
+    ListView, Tree, Table,
 )
 
 
@@ -30,7 +30,7 @@ def main():
         tabs = Tabs(fill="both", expand=True)
 
         # --- ListView tab ---
-        with tabs.add("listview", text="ListView"):
+        with tabs.add("listview", label="ListView"):
             with VStack(padding=16, gap=10, fill="both", expand=True):
                 Label("Virtual-scrolling list (multi-select, removable):",
                       font="heading-sm")
@@ -39,7 +39,7 @@ def main():
                     items=PEOPLE,
                     selection_mode="multi",
                     show_selection_controls=True,
-                    enable_removing=True,
+                    allow_remove=True,
                     striped=True,
                     fill="both",
                     expand=True,
@@ -49,7 +49,7 @@ def main():
 
                 def show_selection(_event=None):
                     selected = lv.get_selected()
-                    lbl_sel.value = f"Selected: {[r['name'] for r in selected]}"
+                    lbl_sel.text = f"Selected: {[r['name'] for r in selected]}"
 
                 lv.on_selection_changed(show_selection)
 
@@ -59,12 +59,12 @@ def main():
                     Button("Scroll Top",    on_click=lv.scroll_to_top)
                     Button("Scroll Bottom", on_click=lv.scroll_to_bottom)
 
-        # --- TreeView tab ---
-        with tabs.add("treeview", text="TreeView"):
+        # --- Tree tab ---
+        with tabs.add("tree", label="Tree"):
             with VStack(padding=16, gap=10, fill="both", expand=True):
                 Label("Hierarchical tree with columns:", font="heading-sm")
 
-                tv = TreeView(
+                tv = Tree(
                     columns=["role", "dept"],
                     show="tree headings",
                     fill="both",
@@ -92,7 +92,7 @@ def main():
                     sel = tv.selection()
                     if sel:
                         it = tv.item(sel[0])
-                        lbl_tv.value = f"Selected: {it['text']}"
+                        lbl_tv.text = f"Selected: {it['text']}"
 
                 tv.on_select(on_tv_select)
 
@@ -104,17 +104,17 @@ def main():
                            on_click=lambda: [tv.collapse(i)
                                              for i in tv.get_children()])
 
-        # --- TableView tab ---
-        with tabs.add("tableview", text="TableView"):
+        # --- Table tab ---
+        with tabs.add("table", label="Table"):
             with VStack(padding=16, gap=10, fill="both", expand=True):
                 Label("Sortable / filterable table:", font="heading-sm")
 
-                tbl = TableView(
+                tbl = Table(
                     columns=["name", "role", "dept"],
                     rows=PEOPLE,
                     selection_mode="multi",
-                    enable_search=True,
-                    enable_filtering=True,
+                    searchable=True,
+                    allow_filter=True,
                     striped=True,
                     fill="both",
                     expand=True,
@@ -124,7 +124,7 @@ def main():
 
                 def on_tbl_click(event):
                     rec = event.data.get("record", {})
-                    lbl_tbl.value = f"Clicked: {rec.get('name', '?')}"
+                    lbl_tbl.text = f"Clicked: {rec.get('name', '?')}"
 
                 tbl.on_row_click(on_tbl_click)
 

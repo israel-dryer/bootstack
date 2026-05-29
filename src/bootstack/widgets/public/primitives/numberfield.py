@@ -3,28 +3,30 @@ from __future__ import annotations
 import tkinter
 from typing import Any, Callable
 
-from bootstack.widgets.composites.passwordentry import PasswordEntry as _InternalPasswordEntry
+from bootstack.widgets.composites.numericentry import NumericEntry as _InternalNumericEntry
 from bootstack.widgets.public.base import PublicWidgetBase
 from bootstack.widgets.public.events import register_widget_events
 from bootstack.widgets.public.subscription import Subscription
 from bootstack.widgets.public.primitives.textfield import _INNER_ENTRY_SEQUENCES
 
-_PASSWORD_EVENTS: dict[str, str] = {
+_NUMBER_FIELD_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
     "submit": "<Return>",
 }
 
 
-class PasswordEntry(PublicWidgetBase):
-    """A masked text field for password input with an optional visibility toggle.
+class NumberField(PublicWidgetBase):
+    """A numeric input field with optional stepper buttons.
 
     Args:
-        value: Initial password value (displayed masked).
+        value: Initial numeric value.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
+        min_value: Minimum allowed value (inclusive).
+        max_value: Maximum allowed value (inclusive).
+        step: Increment/decrement step size.
+        show_steppers: If False, hides the +/− stepper buttons.
         required: If True, field cannot be left empty.
-        mask_char: Character used to mask input. Default `'•'`.
-        show_toggle: If True (default), shows the eye-icon visibility button.
         disabled: If True, field is non-interactive.
         read_only: If True, value is visible but not editable.
         width: Width in character cells.
@@ -35,13 +37,15 @@ class PasswordEntry(PublicWidgetBase):
 
     def __init__(
         self,
-        value: str = "",
+        value: int | float = 0,
         *,
         label: str | None = None,
         message: str | None = None,
+        min_value: int | float | None = None,
+        max_value: int | float | None = None,
+        step: int | float = 1,
+        show_steppers: bool = True,
         required: bool = False,
-        mask_char: str = "•",
-        show_toggle: bool = True,
         disabled: bool = False,
         read_only: bool = False,
         width: int | None = None,
@@ -56,15 +60,18 @@ class PasswordEntry(PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
-            "show": mask_char,
-            "show_visibility_toggle": show_toggle,
+            "value": value,
+            "increment": step,
+            "show_spin_buttons": show_steppers,
         }
-        if value:
-            internal_kwargs["value"] = value
         if label is not None:
             internal_kwargs["label"] = label
         if message is not None:
             internal_kwargs["message"] = message
+        if min_value is not None:
+            internal_kwargs["minvalue"] = min_value
+        if max_value is not None:
+            internal_kwargs["maxvalue"] = max_value
         if required:
             internal_kwargs["required"] = True
         if disabled:
@@ -79,7 +86,7 @@ class PasswordEntry(PublicWidgetBase):
             internal_kwargs["density"] = density
         internal_kwargs.update(kwargs)
 
-        self._internal = _InternalPasswordEntry(tk_master, **internal_kwargs)
+        self._internal = _InternalNumericEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
     # ----- Event routing -----
@@ -97,11 +104,11 @@ class PasswordEntry(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def value(self) -> str:
+    def value(self) -> int | float | None:
         return self._internal.value
 
     @value.setter
-    def value(self, v: str) -> None:
+    def value(self, v: int | float) -> None:
         self._internal.value = v
 
     @property
@@ -114,13 +121,13 @@ class PasswordEntry(PublicWidgetBase):
 
     # ----- Methods -----
 
-    def reveal(self) -> None:
-        """Remove character masking to show the password in plain text."""
-        self._internal.reveal()
+    def increment(self, steps: int = 1) -> None:
+        """Increment the value by `steps` × step size."""
+        self._internal.step(steps)
 
-    def hide(self) -> None:
-        """Restore character masking."""
-        self._internal.hide()
+    def decrement(self, steps: int = 1) -> None:
+        """Decrement the value by `steps` × step size."""
+        self._internal.step(-steps)
 
     # ----- Event shorthands -----
 
@@ -132,5 +139,13 @@ class PasswordEntry(PublicWidgetBase):
         """
         return self.on("change", handler)
 
+    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired on Enter key.
 
-register_widget_events(PasswordEntry, _PASSWORD_EVENTS)
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("submit", handler)
+
+
+register_widget_events(NumberField, _NUMBER_FIELD_EVENTS)

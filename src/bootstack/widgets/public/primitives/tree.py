@@ -8,16 +8,16 @@ from bootstack.widgets.public.events import register_widget_events
 from bootstack.widgets.public.subscription import Subscription
 
 
-_TREEVIEW_EVENTS: dict[str, str] = {
+_TREE_EVENTS: dict[str, str] = {
     "select":   "<<TreeviewSelect>>",
     "open":     "<<TreeviewOpen>>",
     "close":    "<<TreeviewClose>>",
 }
 
-register_widget_events(_InternalTreeView, _TREEVIEW_EVENTS)
+register_widget_events(_InternalTreeView, _TREE_EVENTS)
 
 
-class TreeView(PublicWidgetBase):
+class Tree(PublicWidgetBase):
     """A hierarchical tree/table widget backed by `ttk.Treeview`.
 
     Displays data in a tree structure (with optional columns). Rows are

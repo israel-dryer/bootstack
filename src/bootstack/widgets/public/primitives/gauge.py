@@ -20,10 +20,10 @@ class Gauge(PublicWidgetBase):
         value_format: Format string for the value (e.g. `'{:.1f}'`).
         size: Diameter in pixels. Default `200`.
         thickness: Arc width in pixels. Default `10`.
-        style: `'full'` (default) for a full circle or `'semi'` for a semicircle.
+        meter_type: `'full'` (default) for a full circle or `'semi'` for a semicircle.
         segment_width: Segment width for a dashed/segmented arc. `0` means solid.
         interactive: If True, the user can click/drag to change the value.
-        step_size: Increment used in interactive mode.
+        step: Increment used in interactive mode.
         show_text: If False, hides the value text.
         accent: Accent token for the arc colour.
         parent: Override the context-stack parent.
@@ -41,10 +41,10 @@ class Gauge(PublicWidgetBase):
         value_format: str = "{:.0f}",
         size: int = 200,
         thickness: int = 10,
-        style: str = "full",
+        meter_type: str = "full",
         segment_width: int = 0,
         interactive: bool = False,
-        step_size: int | float = 1,
+        step: int | float = 1,
         show_text: bool = True,
         accent: str | None = None,
         parent: Any = None,
@@ -62,10 +62,10 @@ class Gauge(PublicWidgetBase):
             "value_format": value_format,
             "size": size,
             "thickness": thickness,
-            "meter_type": style,
+            "meter_type": meter_type,
             "segment_width": segment_width,
             "interactive": interactive,
-            "step_size": step_size,
+            "step_size": step,
             "show_text": show_text,
         }
         if subtitle is not None:

@@ -25,7 +25,7 @@ class RadioGroup(PublicWidgetBase):
         signal: Reactive `Signal` that holds the selected value.
         value: Initially selected value.
         orient: `'horizontal'` (default) or `'vertical'`.
-        label: Group label displayed above (or beside) the buttons.
+        title: Group label displayed above (or beside) the buttons.
         accent: Accent token applied to all buttons, e.g. `'primary'`.
         disabled: If True, all buttons are non-interactive.
         parent: Override the context-stack parent.
@@ -38,7 +38,7 @@ class RadioGroup(PublicWidgetBase):
         signal: Any = None,
         value: Any = None,
         orient: str = "horizontal",
-        label: str | None = None,
+        title: str | None = None,
         accent: str | None = None,
         disabled: bool = False,
         parent: Any = None,
@@ -54,8 +54,8 @@ class RadioGroup(PublicWidgetBase):
             internal_kwargs["signal"] = signal
         if value is not None:
             internal_kwargs["value"] = value
-        if label is not None:
-            internal_kwargs["text"] = label
+        if title is not None:
+            internal_kwargs["text"] = title
         if accent is not None:
             internal_kwargs["accent"] = accent
         if disabled:

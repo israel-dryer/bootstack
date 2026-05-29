@@ -7,7 +7,7 @@ from bootstack.widgets.public import (
 def main():
     with App(title="ProgressBar + Gauge — visual test", minsize=(560, 100), padding=24, gap=16) as app:
 
-        pb = ProgressBar(0, maximum=100, accent="primary", fill="x", expand=True)
+        pb = ProgressBar(0, max_value=100, accent="primary", fill="x", expand=True)
 
         # ProgressBar variants
         Label("ProgressBar — accents")
@@ -38,9 +38,9 @@ def main():
 
         Label("Gauge — semi-circle")
         with HStack(gap=24):
-            Gauge(60, style="semi", value_suffix="°C", subtitle="Temp",
+            Gauge(60, meter_type="semi", value_suffix="°C", subtitle="Temp",
                   accent="danger", size=150, thickness=14)
-            Gauge(33, style="semi", value_suffix="%", subtitle="Load",
+            Gauge(33, meter_type="semi", value_suffix="%", subtitle="Load",
                   size=150, thickness=14)
 
     app.run()

@@ -12,7 +12,7 @@ class ProgressBar(PublicWidgetBase):
 
     Args:
         value: Initial progress value.
-        maximum: Value that represents 100% progress. Default `100`.
+        max_value: Value that represents 100% progress. Default `100`.
         mode: `'determinate'` (default) shows a fixed percentage;
             `'indeterminate'` animates continuously.
         orient: `'horizontal'` (default) or `'vertical'`.
@@ -26,7 +26,7 @@ class ProgressBar(PublicWidgetBase):
         self,
         value: float = 0,
         *,
-        maximum: float = 100,
+        max_value: float = 100,
         mode: str = "determinate",
         orient: str = "horizontal",
         signal: Any = None,
@@ -42,7 +42,7 @@ class ProgressBar(PublicWidgetBase):
 
         internal_kwargs: dict[str, Any] = {
             "value": value,
-            "maximum": maximum,
+            "maximum": max_value,
             "mode": mode,
             "orient": orient,
         }

@@ -55,9 +55,9 @@ class Tabs(PublicWidgetBase):
         show_divider: Show a divider line between the tab bar and the page area.
         tab_width: Fixed tab width in pixels, `'stretch'` to fill available space, or
             `None` (default, size to content).
-        enable_closing: Show close buttons on tabs. `True` = always, `False` = never,
+        allow_close: Show close buttons on tabs. `True` = always, `False` = never,
             `'hover'` = on hover. Default `False`.
-        enable_adding: Show an add-tab button that fires the `tab_add` event.
+        allow_add: Show an add-tab button that fires the `tab_add` event.
         accent: Accent token for the tab bar.
         parent: Override the context-stack parent.
     """
@@ -68,8 +68,8 @@ class Tabs(PublicWidgetBase):
         orient: Literal["horizontal", "vertical"] = "horizontal",
         show_divider: bool | None = None,
         tab_width: int | Literal["stretch"] | None = None,
-        enable_closing: bool | Literal["hover"] = False,
-        enable_adding: bool = False,
+        allow_close: bool | Literal["hover"] = False,
+        allow_add: bool = False,
         accent: str | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -81,8 +81,8 @@ class Tabs(PublicWidgetBase):
 
         internal_kwargs: dict[str, Any] = {
             "orient": orient,
-            "enable_closing": enable_closing,
-            "enable_adding": enable_adding,
+            "enable_closing": allow_close,
+            "enable_adding": allow_add,
         }
         if show_divider is not None:
             internal_kwargs["show_divider"] = show_divider
@@ -115,7 +115,7 @@ class Tabs(PublicWidgetBase):
         self,
         key: str,
         *,
-        text: str = "",
+        label: str = "",
         icon: str | None = None,
         closable: bool | Literal["hover"] | None = None,
         close_command: Callable | None = None,
@@ -124,12 +124,12 @@ class Tabs(PublicWidgetBase):
 
         Usage::
 
-            with tabs.add("home", text="Home"):
+            with tabs.add("home", label="Home"):
                 bs.Label("Content goes here")
 
         Args:
             key: Unique identifier for the tab/page.
-            text: Label displayed on the tab.
+            label: Label displayed on the tab.
             icon: Icon name displayed on the tab.
             closable: Close-button visibility for this tab. Overrides `enable_closing`.
             close_command: Called when the close button is clicked. Defaults to
@@ -146,7 +146,7 @@ class Tabs(PublicWidgetBase):
         if close_command is not None:
             add_kwargs["close_command"] = close_command
 
-        page_widget = self._internal.add(key, text=text, **add_kwargs)
+        page_widget = self._internal.add(key, text=label, **add_kwargs)
         return _TabPage(page_widget)
 
     def select(self, key: str) -> None:
