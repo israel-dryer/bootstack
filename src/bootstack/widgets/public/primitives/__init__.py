@@ -18,13 +18,17 @@ from bootstack.widgets.public.primitives.pathfield import PathField
 from bootstack.widgets.public.primitives.progressbar import ProgressBar
 from bootstack.widgets.public.primitives.radio_variants import Radio, RadioToggleButton
 from bootstack.widgets.public.primitives.radiogroup import RadioGroup
+from bootstack.widgets.public.primitives.menubar import MenuBar
 from bootstack.widgets.public.primitives.scrollbar import Scrollbar
+from bootstack.widgets.public.primitives.scrollview import ScrollView
 from bootstack.widgets.public.primitives.select import Select
 from bootstack.widgets.public.primitives.separator import Separator
 from bootstack.widgets.public.primitives.sizegrip import SizeGrip
 from bootstack.widgets.public.primitives.splitview import SplitView
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
+from bootstack.widgets.public.primitives.spinnerfield import SpinnerField
+from bootstack.widgets.public.primitives.timefield import TimeField
 from bootstack.widgets.public.primitives.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
 from bootstack.widgets.public.primitives.tabs import TabChangeEventData, TabRef, Tabs
 from bootstack.widgets.public.primitives.textarea import TextArea
@@ -38,13 +42,13 @@ from bootstack.widgets.public.primitives.tooltip import Tooltip
 __all__ = [
     "Accordion", "Badge", "Button", "ButtonGroup", "Card", "Checkbox", "CodeEditor",
     "ContextMenu", "Expander", "Gauge",
-    "Label", "ListView", "NumberField", "PasswordField", "ProgressBar",
+    "Label", "ListView", "MenuBar", "NumberField", "PasswordField", "ProgressBar",
     "Radio", "RadioGroup", "RadioToggleButton",
-    "RangeSlider", "Select", "Separator", "Slider", "Spinbox", "Switch",
-    "DateField", "GroupBox", "MenuButton", "PageStack", "PathField", "SplitView",
+    "RangeSlider", "Select", "Separator", "Slider", "Spinbox", "SpinnerField", "Switch",
+    "DateField", "GroupBox", "MenuButton", "PageStack", "PathField", "ScrollView", "SplitView",
     "TabChangeEventData", "TabRef", "Tabs", "Table",
     "TableSelectionEventData", "TableRowEventData", "TableRowsEventData",
-    "TextArea", "TextField", "Toast",
+    "TextArea", "TextField", "TimeField", "Toast",
     "toast", "ToggleButton", "ToggleGroup", "Toolbar", "Tooltip",
     "Tree", "Scrollbar", "SizeGrip",
 ]
