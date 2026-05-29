@@ -66,7 +66,7 @@ class SearchOverlay(PackFrame):
         self._close_btn.pack()
 
         self._find_entry = TextEntry(_fr, density="compact")
-        self._find_entry.insert_addon(Label, position="before", icon="search")
+        self._find_entry.insert_addon(Label, position="before", icon="search", icon_only=True)
         self._find_entry.on_changed(self._on_query_changed)
         self._find_entry.pack(fill="x", expand=True)
 
@@ -112,14 +112,14 @@ class SearchOverlay(PackFrame):
         self._replace_entry.pack(fill="x", expand=True)
 
         self._replace_btn = Button(
-            self._replace_row, text="Replace",
+            self._replace_row, icon="pencil", icon_only=True,
             variant="ghost", density="compact",
             command=self._replace_current,
         )
         self._replace_btn.pack(padx=(8, 0))
 
         self._replace_all_btn = Button(
-            self._replace_row, text="Replace All",
+            self._replace_row, icon="pencil-fill", icon_only=True,
             variant="ghost", density="compact",
             command=self._replace_all,
         )

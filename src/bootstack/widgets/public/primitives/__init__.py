@@ -1,5 +1,6 @@
 from bootstack.widgets.public.primitives.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.public.primitives.button import Button
+from bootstack.widgets.public.primitives.codeeditor import CodeEditor
 from bootstack.widgets.public.primitives.card import Card
 from bootstack.widgets.public.primitives.datefield import DateField
 from bootstack.widgets.public.primitives.expander import Accordion, Expander
@@ -28,7 +29,7 @@ from bootstack.widgets.public.primitives.togglegroup import ToggleGroup
 from bootstack.widgets.public.primitives.tooltip import Tooltip
 
 __all__ = [
-    "Accordion", "Badge", "Button", "Card", "Checkbox", "Expander", "Gauge",
+    "Accordion", "Badge", "Button", "Card", "Checkbox", "CodeEditor", "Expander", "Gauge",
     "Label", "NumericEntry", "PasswordEntry", "ProgressBar",
     "Radio", "RadioGroup", "RadioToggleButton",
     "RangeSlider", "Select", "Separator", "Slider", "Spinbox", "Switch",
