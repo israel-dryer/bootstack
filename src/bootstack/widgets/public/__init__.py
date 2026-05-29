@@ -25,6 +25,7 @@ from bootstack.widgets.public.primitives.expander import Accordion, Expander
 from bootstack.widgets.public.primitives.gauge import Gauge
 from bootstack.widgets.public.primitives.groupbox import GroupBox
 from bootstack.widgets.public.primitives.label import Badge, Label
+from bootstack.widgets.public.primitives.listview import ListView
 from bootstack.widgets.public.primitives.menubutton import MenuButton
 from bootstack.widgets.public.primitives.numericentry import NumericEntry
 from bootstack.widgets.public.primitives.pagestack import PageStack
@@ -40,8 +41,10 @@ from bootstack.widgets.public.primitives.sizegrip import SizeGrip
 from bootstack.widgets.public.primitives.splitview import SplitView
 from bootstack.widgets.public.primitives.slider import RangeSlider, Slider
 from bootstack.widgets.public.primitives.spinbox import Spinbox
+from bootstack.widgets.public.primitives.tableview import TableView, TableSelectionEventData, TableRowEventData, TableRowsEventData
 from bootstack.widgets.public.primitives.tabs import TabChangeEventData, TabRef, Tabs
 from bootstack.widgets.public.primitives.textarea import TextArea
+from bootstack.widgets.public.primitives.treeview import TreeView
 from bootstack.widgets.public.primitives.textfield import TextField
 from bootstack.widgets.public.primitives.toast import Toast, toast
 from bootstack.widgets.public.primitives.togglegroup import ToggleGroup
@@ -79,6 +82,7 @@ __all__ = [
     "GroupBox",
     "HStack",
     "Label",
+    "ListView",
     "MenuButton",
     "NumericEntry",
     "PageStack",
@@ -104,7 +108,12 @@ __all__ = [
     "TabChangeEventData",
     "TabRef",
     "Tabs",
+    "TableView",
+    "TableSelectionEventData",
+    "TableRowEventData",
+    "TableRowsEventData",
     "TextArea",
+    "TreeView",
     "TextField",
     "Toast",
     "toast",
