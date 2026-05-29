@@ -130,15 +130,43 @@ class Toolbar(Frame):
         )
         self._close_btn.pack(side='left', padx=2)
 
+        # Disable maximize if window is not resizable (checked after idle so
+        # the window geometry is finalised).
+        self.after_idle(self._sync_maximize_state)
+
+    def _sync_maximize_state(self) -> None:
+        """Hide the maximize button when the window is not resizable."""
+        try:
+            w, h = self.winfo_toplevel().resizable()
+            if not w and not h:
+                self._maximize_btn.pack_forget()
+        except Exception:
+            pass
+
     def _on_minimize(self):
         """Handle minimize button click."""
         window = self.winfo_toplevel()
-        window.iconify()
+        # override_redirect windows cannot be iconified directly — temporarily
+        # lift the flag, iconify, then restore it once the window is shown again.
+        if window.overrideredirect():
+            window.overrideredirect(False)
+            window.iconify()
+            window.bind('<Map>', self._on_restore_override_redirect, add='+')
+        else:
+            window.iconify()
+
+    def _on_restore_override_redirect(self, _event=None) -> None:
+        """Restore override_redirect after the window is deiconified."""
+        window = self.winfo_toplevel()
+        window.overrideredirect(True)
+        window.unbind('<Map>')
 
     def _on_maximize(self):
         """Handle maximize/restore button click."""
         window = self.winfo_toplevel()
-        # Check current state and toggle
+        w, h = window.resizable()
+        if not w and not h:
+            return
         if window.state() == 'zoomed':
             window.state('normal')
             self._maximize_btn.configure(icon='fullscreen')
