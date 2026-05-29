@@ -3,7 +3,8 @@ from __future__ import annotations
 import tkinter
 from typing import Any
 
-from bootstack.widgets._impl.primitives.labelframe import LabelFrame as _InternalLabelFrame
+from bootstack.widgets._impl.primitives.frame import Frame as _Frame
+from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
@@ -14,21 +15,23 @@ from bootstack.widgets._core.container import (
 class GroupBox(PublicContainer):
     """A labelled container that groups related content inside a bordered frame.
 
+    Renders as a small title label above a bordered content area — no
+    background bleed around the border. The content area has its own surface
+    token, independent of the surrounding page surface.
+
     Children are laid out according to `layout`. The default (`'vstack'`) stacks
     children top-to-bottom and fills them horizontally — the most common pattern
     for a group of form fields or stacked widgets.
 
     Args:
-        title: Text displayed in the border label.
+        title: Text displayed above the bordered content area.
         layout: Internal layout manager — `'vstack'` (default), `'hstack'`, or
             `'grid'`.
-        title_anchor: Where the label sits on the border edge —
-            `'nw'` (default), `'n'`, `'ne'`, `'w'`, `'e'`, `'sw'`, `'s'`, `'se'`.
-        padding: Space between the border and the content area.
-        accent: Accent token for border styling.
+        padding: Space between the border and the content area. Default `16`.
+        surface: Surface token for the content area background.
+        accent: Accent token for the title label and border.
         gap: Space between children in pixels.
-        fill_items: Default fill direction applied to each child. Defaults to
-            `'x'` for `'vstack'` layout so fields fill the group width.
+        fill_items: Default fill direction applied to each child.
         expand_items: Whether children expand to fill available space.
         anchor_items: Default anchor applied to each child.
         columns: Column definitions for `'grid'` layout.
@@ -46,14 +49,9 @@ class GroupBox(PublicContainer):
         title: str = "",
         *,
         layout: str = "vstack",
-        title_anchor: str | None = None,
-        padding: Any = 8,
+        padding: Any = 16,
+        surface: str | None = None,
         accent: str | None = None,
-        relief: str | None = None,
-        border_width: int | None = None,
-        width: int | None = None,
-        height: int | None = None,
-        # Child guidance — pack layouts
         gap: int = 0,
         fill_items: str | None = None,
         expand_items: bool | None = None,
@@ -82,29 +80,40 @@ class GroupBox(PublicContainer):
             layout_kw["anchor"] = anchor
         layout_kw.update(self._split_layout_kwargs(extra_kw))
 
-        frame_kwargs: dict[str, Any] = {"text": title}
-        if title_anchor is not None:
-            frame_kwargs["labelanchor"] = title_anchor
-        if padding is not None:
-            frame_kwargs["padding"] = padding
-        if accent is not None:
-            frame_kwargs["accent"] = accent
-        if relief is not None:
-            frame_kwargs["relief"] = relief
-        if border_width is not None:
-            frame_kwargs["borderwidth"] = border_width
-        if width is not None:
-            frame_kwargs["width"] = width
-        if height is not None:
-            frame_kwargs["height"] = height
-        frame_kwargs.update(extra_kw)
-
         tk_master = self._parent._child_master() if self._parent else None
-        self._internal = _InternalLabelFrame(tk_master, **frame_kwargs)
 
+        # Outer PackFrame — transparent, just stacks title + content vertically
+        self._internal = PackFrame(tk_master, direction="vertical", gap=4)
+
+        # Title label — small, muted, no background of its own
+        if title:
+            self._title_label = _Label(
+                self._internal,
+                text=title,
+                font="label",
+                accent=accent or "secondary",
+            )
+            self._title_label.pack(anchor="w", padx=2)
+        else:
+            self._title_label = None
+
+        # Content frame styled as a card. Surface must be set explicitly so
+        # _surface is propagated to all child widgets via _refresh_descendant_surfaces.
+        effective_surface = surface if surface is not None else (accent or "card")
+        content_kwargs: dict[str, Any] = {
+            "variant": "card",
+            "surface": effective_surface,
+            "padding": padding,
+        }
+        if accent is not None:
+            content_kwargs["accent"] = accent
+        self._content_frame = _Frame(self._internal, **content_kwargs)
+        self._content_frame.pack(fill="both", expand=True)
+
+        # Layout engine inside the content frame
         if layout in ("vstack", "hstack"):
             self._layout_frame = PackFrame(
-                self._internal,
+                self._content_frame,
                 direction="vertical" if layout == "vstack" else "horizontal",
                 gap=gap,
                 fill_items=normalize_fill(fill_items),
@@ -113,7 +122,7 @@ class GroupBox(PublicContainer):
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
-                self._internal,
+                self._content_frame,
                 columns=columns,
                 rows=rows,
                 gap=gap,
@@ -157,9 +166,10 @@ class GroupBox(PublicContainer):
 
     @property
     def title(self) -> str:
-        """The border label text."""
-        return self._internal.cget("text")
+        """The title label text."""
+        return self._title_label.cget("text") if self._title_label else ""
 
     @title.setter
     def title(self, value: str) -> None:
-        self._internal.configure(text=value)
+        if self._title_label:
+            self._title_label.configure(text=value)

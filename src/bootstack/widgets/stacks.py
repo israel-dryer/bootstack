@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any
 
@@ -57,8 +57,18 @@ class _StackBase(PublicContainer):
             frame_kwargs["accent"] = accent
         if variant is not None:
             frame_kwargs["variant"] = variant
-        if surface is not None:
-            frame_kwargs["surface"] = surface
+        # When variant='card', pick the surface based on what the parent is
+        # sitting on — step up one level so nested cards are distinguishable.
+        _SURFACE_STEPS = {"background": "card", "content": "card",
+                          "card": "overlay", "overlay": "overlay"}
+        if variant == 'card' and surface is None:
+            tk_master = self._parent._child_master() if self._parent else None
+            parent_surface = getattr(tk_master, '_surface', 'background') or 'background'
+            effective_surface = _SURFACE_STEPS.get(parent_surface, 'card')
+        else:
+            effective_surface = surface if surface is not None else None
+        if effective_surface is not None:
+            frame_kwargs["surface"] = effective_surface
         if show_border:
             frame_kwargs["show_border"] = show_border
         if width is not None:
