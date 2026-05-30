@@ -34,68 +34,63 @@ LIMIT 20;
 '''
 
 
-def main():
-    with App(title="CodeEditor — public layer", minsize=(780, 640), padding=16, gap=12) as app:
+with App(title="CodeEditor — public layer", minsize=(780, 640), padding=16, gap=12) as app:
 
-        Label("CodeEditor", font="heading-lg")
+    Label("CodeEditor", font="heading-lg")
 
-        with HStack(gap=12, fill="both", expand=True):
+    with HStack(gap=12, fill="both", expand=True):
 
-            with VStack(gap=6, fill="both", expand=True):
-                Label("Python — line numbers, syntax highlight")
-                py_editor = CodeEditor(
-                    _PYTHON_SAMPLE,
-                    language="python",
-                    pygments_style="default",
-                    show_line_numbers=True,
-                    fill="both",
-                    expand=True,
-                )
+        with VStack(gap=6, fill="both", expand=True):
+            Label("Python — line numbers, syntax highlight")
+            py_editor = CodeEditor(
+                _PYTHON_SAMPLE,
+                language="python",
+                pygments_style="default",
+                show_line_numbers=True,
+                fill="both",
+                expand=True,
+            )
 
-            with VStack(gap=6, fill="both", expand=True):
-                Label("SQL — no line numbers")
-                sql_editor = CodeEditor(
-                    _SQL_SAMPLE,
-                    language="sql",
-                    show_line_numbers=False,
-                    fill="both",
-                    expand=True,
-                )
+        with VStack(gap=6, fill="both", expand=True):
+            Label("SQL — no line numbers")
+            sql_editor = CodeEditor(
+                _SQL_SAMPLE,
+                language="sql",
+                show_line_numbers=False,
+                fill="both",
+                expand=True,
+            )
 
-        Separator(fill="x")
+    Separator(fill="x")
 
-        Label("Controls", font="heading-sm")
-        status_lbl = Label("is_dirty: False")
+    Label("Controls", font="heading-sm")
+    status_lbl = Label("is_dirty: False")
 
-        def _refresh_dirty(e=None):
-            status_lbl.value = f"is_dirty: {py_editor.is_dirty}"
+    def _refresh_dirty(e=None):
+        status_lbl.value = f"is_dirty: {py_editor.is_dirty}"
 
-        py_editor.on_change(_refresh_dirty)
+    py_editor.on_change(_refresh_dirty)
 
-        with HStack(gap=8):
-            Button("Mark saved", variant="outline",
-                   on_click=lambda: (py_editor.mark_saved(), _refresh_dirty()))
-            Button("Goto line 5", variant="outline",
-                   on_click=lambda: py_editor.goto_line(5))
-            Button("Select all", variant="outline",
-                   on_click=lambda: py_editor.select_all())
-            Button("Clear", variant="outline",
-                   on_click=lambda: (py_editor.clear(), _refresh_dirty()))
-            Button("Find (Ctrl+F)", variant="outline",
-                   on_click=lambda: py_editor.show_search())
-            Button("Replace", variant="outline",
-                   on_click=lambda: py_editor.show_replace())
+    with HStack(gap=8):
+        Button("Mark saved", variant="outline",
+               on_click=lambda: (py_editor.mark_saved(), _refresh_dirty()))
+        Button("Goto line 5", variant="outline",
+               on_click=lambda: py_editor.goto_line(5))
+        Button("Select all", variant="outline",
+               on_click=lambda: py_editor.select_all())
+        Button("Clear", variant="outline",
+               on_click=lambda: (py_editor.clear(), _refresh_dirty()))
+        Button("Find (Ctrl+F)", variant="outline",
+               on_click=lambda: py_editor.show_search())
+        Button("Replace", variant="outline",
+               on_click=lambda: py_editor.show_replace())
 
-        with HStack(gap=8):
-            Button("Toggle read-only", variant="outline",
-                   on_click=lambda: setattr(py_editor, "read_only", not py_editor.read_only))
-            Button("Python", on_click=lambda: setattr(py_editor, "language", "python"))
-            Button("JSON", on_click=lambda: setattr(py_editor, "language", "json"))
-            Button("None", variant="outline",
-                   on_click=lambda: setattr(py_editor, "language", None))
+    with HStack(gap=8):
+        Button("Toggle read-only", variant="outline",
+               on_click=lambda: setattr(py_editor, "read_only", not py_editor.read_only))
+        Button("Python", on_click=lambda: setattr(py_editor, "language", "python"))
+        Button("JSON", on_click=lambda: setattr(py_editor, "language", "json"))
+        Button("None", variant="outline",
+               on_click=lambda: setattr(py_editor, "language", None))
 
-    app.run()
-
-
-if __name__ == "__main__":
-    main()
+app.run()

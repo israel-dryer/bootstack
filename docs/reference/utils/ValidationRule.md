@@ -1,3 +1,0 @@
-# ValidationRule
-
-::: bootstack.validation.ValidationRule

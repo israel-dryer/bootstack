@@ -321,43 +321,37 @@ def _build_selection_page():
 
 
 def _build_calendar_page():
-    from bootstack.widgets._core.context import current_container as _cc
-
     with bs.VStack(padding=20, gap=12, fill="both", expand=True):
         bs.Label("Calendar", font="heading-xl")
         bs.Label("Interactive date picker.", accent="secondary")
 
         with bs.GroupBox("Single Selection", fill="horizontal"):
-            bs.Calendar(_cc()._child_master(), accent="primary").pack()
+            bs.Calendar(accent="primary")
 
         with bs.GroupBox("Range Selection", fill="horizontal"):
-            bs.Calendar(_cc()._child_master(), selection_mode="range", accent="success").pack()
+            bs.Calendar(selection_mode="range", accent="success")
 
 
 # -- Forms --------------------------------------------------------------------
 
 
 def _build_forms_page():
-    from bootstack.widgets._core.context import current_container as _cc
-
     with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
         bs.Label("Forms", font="heading-xl")
         bs.Label("Spec-driven form builder for consistent data-entry UIs.", accent="secondary")
 
         bs.Label("Inferred Form", font="body[bold]")
         bs.Form(
-            _cc()._child_master(),
             data={
                 "first_name": "Jane", "last_name": "Doe",
                 "age": 34, "email": "jane@example.com",
                 "salary": 120000.50, "active": True,
             },
             col_count=2, min_col_width=220,
-        ).pack(fill="horizontal")
+        )
 
         bs.Label("Explicit Layout", font="body[bold]")
         bs.Form(
-            _cc()._child_master(),
             data={"username": "jdoe", "role": "Admin", "newsletter": True},
             items=[
                 {
@@ -376,7 +370,7 @@ def _build_forms_page():
                     ],
                 },
             ],
-        ).pack(fill="horizontal")
+        )
 
 
 # -- Data Display -------------------------------------------------------------

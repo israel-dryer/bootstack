@@ -121,9 +121,11 @@ from bootstack.widgets.togglegroup import ToggleGroup
 from bootstack.widgets.toolbar import Toolbar
 from bootstack.widgets.tooltip import Tooltip
 
+from bootstack.widgets.calendar import Calendar
+from bootstack.widgets.form import Form
+from bootstack.widgets.form import FieldItem, GroupItem, TabsItem, TabItem, EditorType
+
 # ── Unmigrated widgets (no public equivalent yet) ─────────────────────────────
-from bootstack.widgets._impl.composites.form import Form
 from bootstack.widgets._impl.composites.sidenav import (
     SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
 )
-from bootstack.widgets._impl.composites.calendar import Calendar
