@@ -250,6 +250,20 @@ class Style(ttkStyle):
         from bootstack._core.publisher import Channel, Publisher  # lazy import
         Publisher.publish_message(Channel.STD, theme=name, mode=self._theme_provider.mode)
 
+        # Fire the bootstack theme-change event after full rebuild so handlers
+        # can safely read new colors. Uses get_default_root lazily to avoid
+        # importing app at module level.
+        try:
+            from bootstack._runtime.app import get_default_root
+            root = get_default_root()
+            root.event_generate(
+                "<<BsThemeChanged>>",
+                data={"theme": name, "mode": self._theme_provider.mode},
+                when="tail",
+            )
+        except Exception:
+            pass
+
         return self._current_theme
 
     def _rebuild_all_styles(self):

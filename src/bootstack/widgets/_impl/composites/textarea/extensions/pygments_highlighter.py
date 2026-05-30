@@ -114,7 +114,8 @@ class PygmentsHighlighter(EditFilter):
         super().__init__()
         self._core: _MultilineCore | None = None
         self._after_id: str | None = None
-        self._publisher_name: str | None = None
+        self._theme_bind_id: str | None = None
+        self._theme_root = None
 
         self._auto = pygments_style == "auto"
         self._light_style = light_style
@@ -153,23 +154,23 @@ class PygmentsHighlighter(EditFilter):
         self._orig_ibg = core.text.cget("insertbackground")
         self._apply_widget_colors(core)
 
-        # Subscribe to the framework Publisher — fires AFTER _rebuild_all_styles()
-        # so colors read from the style builder reflect the new theme.
-        from bootstack._core.publisher import Publisher, Channel
-        self._publisher_name = f"_pygments_{id(self)}"
-        Publisher.subscribe(
-            name=self._publisher_name,
-            func=self._on_framework_theme_changed,
-            channel=Channel.STD,
+        # Bind to <<BsThemeChanged>> on the root — fired by bootstack after full
+        # rebuild so colors and mode are already accurate when the handler runs.
+        self._theme_root = core.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            "<<BsThemeChanged>>", self._on_framework_theme_changed, add="+"
         )
         self._schedule()
 
     def detach(self, core: _MultilineCore) -> None:
         self._cancel()
-        if self._publisher_name is not None:
-            from bootstack._core.publisher import Publisher
-            Publisher.unsubscribe(self._publisher_name)
-            self._publisher_name = None
+        if self._theme_bind_id is not None and self._theme_root is not None:
+            try:
+                self._theme_root.unbind("<<BsThemeChanged>>", self._theme_bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
+            self._theme_root = None
         if self._core is not None:
             core.clear_decorations(_LAYER)
             self._restore_widget_colors(core)
@@ -240,12 +241,13 @@ class PygmentsHighlighter(EditFilter):
         )
         self._style_fg: str | None = f"#{raw_fg}" if raw_fg else None
 
-    def _on_framework_theme_changed(self, theme: str = None, mode: str = None, **kwargs) -> None:
-        """Called by the Publisher after _rebuild_all_styles() completes."""
+    def _on_framework_theme_changed(self, event=None) -> None:
+        """Called via <<BsThemeChanged>> after _rebuild_all_styles() completes."""
         if self._core is None:
             return
         if self._auto:
-            resolved = self._dark_style if mode == "dark" else self._light_style
+            mode = (event.data or {}).get("mode") if event else None
+            resolved = self._dark_style if mode == "dark" else self._resolve_auto_name()
             self._load_style(resolved)
             for sname, color in self._style_colors.items():
                 self._core.define_style(sname, foreground=color)

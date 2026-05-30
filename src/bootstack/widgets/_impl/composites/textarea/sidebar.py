@@ -22,6 +22,10 @@ class Sidebar:
     `on_change` (via the `<<Change>>` event) whenever content changes.
     """
 
+    def __init__(self) -> None:
+        self._theme_bind_id: str | None = None
+        self._theme_root = None
+
     def attach(self, core: _MultilineCore, side: Literal["left"] = "left") -> None:
         """Attach this sidebar to *core* and add it to the grid.
 
@@ -33,11 +37,21 @@ class Sidebar:
         self._side = side
         self._build(core)
         core.text.bind("<<Change>>", self._on_change_event, add="+")
+        root = core.winfo_toplevel()
+        self._theme_bind_id = root.bind(
+            "<<BsThemeChanged>>", self._on_theme_event, add="+"
+        )
+        self._theme_root = root
 
     def detach(self, core: _MultilineCore) -> None:
         """Remove this sidebar from the grid and release resources."""
         try:
             core.text.unbind("<<Change>>", None)
+        except Exception:
+            pass
+        try:
+            if self._theme_bind_id and self._theme_root:
+                self._theme_root.unbind("<<BsThemeChanged>>", self._theme_bind_id)
         except Exception:
             pass
         self._destroy()
@@ -64,8 +78,11 @@ class Sidebar:
     def update_font(self) -> None:
         """Called when the font changes."""
 
-    def update_colors(self) -> None:
+    def update_colors(self, event=None) -> None:
         """Called when the theme changes."""
 
     def _on_change_event(self, _event=None) -> None:
         self.on_change()
+
+    def _on_theme_event(self, event=None) -> None:
+        self.update_colors(event)

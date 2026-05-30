@@ -27,6 +27,7 @@ class LineNumbers(Sidebar):
     """
 
     def __init__(self) -> None:
+        super().__init__()
         self._widget: tk.Text | None = None
         self._core: _MultilineCore | None = None
         self._last_line_count: int = 0
@@ -82,7 +83,7 @@ class LineNumbers(Sidebar):
             font = self._core.text.cget("font")
             self._widget.configure(font=font)
 
-    def update_colors(self) -> None:
+    def update_colors(self, event=None) -> None:
         """Reapply theme colors."""
         self._apply_colors()
 
