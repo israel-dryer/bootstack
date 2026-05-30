@@ -24,10 +24,16 @@ class PathField(PublicWidgetBase):
 
     Args:
         value: Initial path string.
-        dialog: Dialog type — `'openfilename'` (default), `'saveasfilename'`,
-            `'directory'`, or `'openfilenames'` (multiple files).
-        dialog_options: Extra kwargs forwarded to the native dialog
-            (e.g. `{'filetypes': [('Images', '*.png')]}`).
+        mode: Dialog type — `'open'` (default), `'open_multiple'`, `'save'`,
+            or `'directory'`.
+        dialog_title: Title shown in the native picker window.
+        start_dir: Directory the dialog opens in.
+        file_filters: File type filters, e.g. `[('Images', '*.png *.jpg')]`.
+            Not used for `'directory'` mode.
+        default_extension: Extension appended automatically if omitted by the
+            user. `'save'` mode only.
+        default_filename: Suggested filename pre-filled in the dialog.
+            `'save'` mode only.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
         required: Mark field as required.
@@ -42,8 +48,12 @@ class PathField(PublicWidgetBase):
         self,
         value: str = "",
         *,
-        dialog: str = "openfilename",
-        dialog_options: dict[str, Any] | None = None,
+        mode: str = "open",
+        dialog_title: str | None = None,
+        start_dir: str | None = None,
+        file_filters: list | None = None,
+        default_extension: str | None = None,
+        default_filename: str | None = None,
         label: str | None = None,
         message: str | None = None,
         required: bool = False,
@@ -59,11 +69,19 @@ class PathField(PublicWidgetBase):
 
         tk_master = self._parent._child_master() if self._parent else None
 
-        internal_kwargs: dict[str, Any] = {"dialog": dialog}
+        internal_kwargs: dict[str, Any] = {"mode": mode}
         if value:
             internal_kwargs["value"] = value
-        if dialog_options is not None:
-            internal_kwargs["dialog_options"] = dialog_options
+        if dialog_title is not None:
+            internal_kwargs["dialog_title"] = dialog_title
+        if start_dir is not None:
+            internal_kwargs["start_dir"] = start_dir
+        if file_filters is not None:
+            internal_kwargs["file_filters"] = file_filters
+        if default_extension is not None:
+            internal_kwargs["default_extension"] = default_extension
+        if default_filename is not None:
+            internal_kwargs["default_filename"] = default_filename
         if label is not None:
             internal_kwargs["label"] = label
         if message is not None:

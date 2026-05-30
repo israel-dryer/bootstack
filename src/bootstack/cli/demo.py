@@ -156,8 +156,8 @@ def _build_text_inputs_page():
             bs.PasswordField(label="Password", message="Click the eye to toggle", fill="horizontal")
 
         with bs.GroupBox("PathField", fill="horizontal", gap=6):
-            bs.PathField(label="File",   dialog="openfilename", message="Select a file",      fill="horizontal")
-            bs.PathField(label="Folder", dialog="directory",    message="Select a directory", fill="horizontal")
+            bs.PathField(label="File",   mode="open", message="Select a file",      fill="horizontal")
+            bs.PathField(label="Folder", mode="directory",    message="Select a directory", fill="horizontal")
 
         with bs.GroupBox("TextArea", fill="both", expand=True):
             bs.TextArea(

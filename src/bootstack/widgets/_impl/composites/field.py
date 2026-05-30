@@ -206,10 +206,6 @@ class Field(EntryMixin, Frame):
         self._density = kwargs.pop('density', 'default')
         self._localize = cast(bool | Literal['auto'], kwargs.pop('localize', 'auto'))
         placeholder = kwargs.pop('placeholder', None)
-        # Default width=1 so the entry defers minimum sizing to the geometry
-        # manager (fill='x', expand=True) rather than enforcing a 20-char
-        # minimum. Addon buttons would otherwise push the column wider.
-        kwargs.setdefault('width', 1)
 
         # Field itself (outer Frame) doesn't need styling - only pass master
         super().__init__(master)
@@ -239,9 +235,11 @@ class Field(EntryMixin, Frame):
         )
         self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="secondary")
 
-        # field container & field - pass density for styling via style_options
+        # field container — fixed minimum pixel width so addon buttons (steppers,
+        # picker icons, etc.) live inside the minimum rather than adding to it.
+        # Prevents fields with addons from pushing grid columns wider than plain fields.
         field_padding = 5
-        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density})
+        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density}, width=200)
 
         if kind == "numeric":
             self._entry = NumberEntryPart(self._field, value=value, density=self._density, **kwargs)
