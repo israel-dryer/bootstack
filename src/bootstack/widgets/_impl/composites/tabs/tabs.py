@@ -34,7 +34,7 @@ class Tabs(Frame):
         self,
         master: Master = None,
         orient: Literal['horizontal', 'vertical'] = 'horizontal',
-        variant: Literal['pill', 'bar'] = 'bar',
+        variant: Literal['bar'] = 'bar',
         show_divider: bool = None,
         compound: Literal['left', 'right', 'top', 'bottom', 'center', 'none'] = 'left',
         tab_width: None | int | Literal['stretch'] = None,
@@ -54,8 +54,7 @@ class Tabs(Frame):
             master: Parent widget. If None, uses the default root window.
             orient: Orientation of the tab bar. 'horizontal' places tabs in a row,
                 'vertical' places tabs in a column. Default is 'horizontal'.
-            variant: Visual style variant ('pill' or 'bar').
-                Default is 'bar'.
+            variant: Visual style variant. Only 'bar' is supported.
             show_divider: Whether to show a divider line. If None (default),
                 automatically set to True for 'bar' variant, False for others.
             compound: How to position icon relative to text in tabs.

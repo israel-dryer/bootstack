@@ -39,7 +39,7 @@ class TabItem(CompositeFrame):
         command: Callable = None,
         closable: bool | Literal['hover'] = False,
         close_command: Callable = None,
-        variant: Literal['pill', 'bar'] = 'default',
+        variant: Literal['bar'] = 'default',
         min_width: int = None,
         **kwargs: Unpack[CompositeFrameKwargs]
     ):
@@ -61,7 +61,7 @@ class TabItem(CompositeFrame):
             closable: Close button visibility. True=always visible, False=hidden,
                 'hover'=visible only on hover (space reserved).
             close_command: Callback invoked when close button is clicked.
-            variant: Tab style variant ('pill' or 'bar').
+            variant: Tab style variant. Only 'bar' is supported.
             min_width: Minimum tab width in pixels. The tab will not shrink below
                 this width regardless of label content. Default is None (no minimum).
             **kwargs: Additional arguments passed to CompositeFrame.

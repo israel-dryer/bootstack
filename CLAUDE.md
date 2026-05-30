@@ -469,7 +469,8 @@ bs.PackFrame(parent, direction="vertical|horizontal|row|column|row-reverse|colum
              expand_items=True, anchor_items="n|ne|e|se|s|sw|w|nw|center")
 bs.GridFrame(parent, rows=N|[...], columns=N|[...], gap=N|(col_gap, row_gap),
              sticky_items="ew|nsew|...", auto_flow="row|column|row-dense|column-dense|none")
-bs.Card(parent)  # accent='card', show_border=True, padding=16
+bs.VStack(variant='card', padding=16)  # card surface; show_border=True default
+bs.GroupBox(title="Section", layout='vstack', padding=16)  # bordered section with title
 
 # Signals
 sig = bs.Signal(value)  # widgets accept signal=sig or textsignal=sig
@@ -519,12 +520,11 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `ToggleGroup` `padding=` kwarg causes `TypeError`
 - `insert_addon` passes `density=` to `CheckButton` causing `TclError`
 - `Meter` deprecated param names (`amountused`, `amounttotal`, `subtext`, `stripethickness`) not yet removed from source
-- `ToggleGroup`/`RadioGroup` need `options=` constructor parameter
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
-- `TextArea` uses the raw Tk Text widget border instead of the Field-style themed border — should adopt the same focus-ring/border approach as other Field composites
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
-- `ListView` hover state blends with striped rows — hover highlight too similar to alternate row background; needs contrast bump in ListView style builder
+- `TextField` `placeholder=` not supported — `TextEntry` composite (single-line) was never given placeholder logic; `TextArea` has it, `TextField` does not
+- `TabView` pill variant — never implemented; removed from type signatures and docstrings (Session 39)
 - `Label`/`Badge` use `.text` (not `.value`) — this is settled and intentional; `.value` is for data-bearing widgets only
 
 ---
@@ -831,8 +831,8 @@ Branch: `refactor/widget-structure` off `main` after #81 merges.
 
 **Remaining work (after Session 35):**
 - ~~Merge PR #81~~ — done
-- ~~`refactor/widget-structure`~~ — done (Session 36, PR pending)
-- Gallery/examples rebuild using public API (separate effort)
+- ~~`refactor/widget-structure`~~ — done (Session 36, PR #82)
+- ~~Gallery/examples rebuild using public API~~ — CLI gallery done (Session 37); `examples/` legacy demos separate effort
 - ToggleGroup solid variant contrast — user handling
   `src/bootstack/style/builders/toolbutton.py`
 
@@ -863,10 +863,90 @@ is initialized. `bootstack/__init__` now imports directly from flat module paths
 rewritten spec template from Session 35, unrelated to this PR).
 
 **Remaining work:**
-- Merge `refactor/widget-structure` PR
-- Gallery/examples rebuild using public API (separate effort)
+- ~~Merge `refactor/widget-structure` PR~~ — done (PR #82)
+- ~~Gallery/examples rebuild using public API~~ — CLI gallery done (Session 37); `examples/` legacy demos are a separate effort
 - ToggleGroup solid variant contrast — user handling
   `src/bootstack/style/builders/toolbutton.py`
+
+### Session 37 — Gallery rewrite + API gap fixes (2026-05-29)
+
+All work committed directly to `main`.
+
+**CLI gallery (`cli/demo.py`) fully rewritten for public API:**
+- `fill="horizontal"/"vertical"` throughout
+- Lazy page builds via `on_page_changed` hook; home page built eagerly
+- `Calendar`/`Form` use `current_container()._child_master()` for explicit parent
+- `Toast` uses `message=`; `FormDialog` uses `data=` with inferred editors
+- Theme selector uses `sel.on_change` + `after(0)` to defer outside the event
+
+**Bug fixes:**
+- `SelectBox` popup: set `takefocus=False` on items so `<FocusOut>` no longer
+  fires on the popup `Toplevel` before `<ButtonRelease-1>`, which was closing
+  the dropdown before `on_change` could fire — broke all `Select` widgets
+  after the enhanced-events migration
+- `SelectBox` value setter: lifts readonly state before updating so
+  `textsignal` propagates visually to the readonly entry, then restores it
+- `GroupBox`: mirrors `Card`'s `layout=` kwarg (`'vstack'` default, `'hstack'`,
+  `'grid'`); `fill_items=None` default; `padding=8`
+- `PackFrame._build_options`: normalizes `fill` aliases (`horizontal→x`,
+  `vertical→y`) via `normalize_fill` so internal and public callers both work
+- `AppShell`: `add_nav_separator` → `add_separator`
+- `ButtonGroup.add()`: fixed auto-key counter never advancing
+- `Toast`, `dialog.py`, `icons.py`: replaced `bs.X` widget calls with `_impl`
+  imports (prevents circular import during init)
+- `tests/features`: fixed 23 demo files to import from `bootstack` not
+  `bootstack.widgets`; removed stale `ttkbootstrap_icons` CLI test
+
+**Tests:** 28 non-GUI tests pass. Gallery starts immediately; all pages build on
+first navigation; `Select` dropdown, dialogs, and toasts all work correctly.
+
+### Session 38 — Remove Card + GroupBox composite + card surface elevation (2026-05-29)
+
+**PR #84** (`refactor/remove-card` → `main`) — merged:
+- `Card` removed — no unique value over `VStack/HStack/Grid(variant='card')`
+- Migration: `Card(layout='vstack')` → `VStack(variant='card')`,
+  `Card(layout='hstack')` → `HStack(variant='card')`,
+  `Card(layout='grid')` → `Grid(variant='card')`,
+  `Card()` → `VStack(variant='card')` (default was `vstack`)
+- `card.py` deleted; `Card` removed from `bootstack.__init__` and `widgets/__init__`
+- `cli/demo.py` and `tests/features/form_demo.py` updated
+
+**GroupBox composite + card surface elevation** (follow-on commit to `main`):
+
+*GroupBox:*
+- Replaced `ttk.LabelFrame` with a custom composite to eliminate background bleed:
+  outer `PackFrame` (transparent) → muted title `Label` → card-variant `Frame`
+  → layout engine (`PackFrame` or `GridFrame` per `layout=`)
+- Content frame uses `variant='card'`, `surface='card'` so `_surface` token
+  propagates to all descendants via `_refresh_descendant_surfaces`
+- `padding=16` default; title uses `font='label'`, `accent='secondary'`
+
+*Card variant frame builder (`style/builders/frame.py`):*
+- `stroke` token for borders — semantic, theme-aware contrast
+- `show_border=True` default for `variant='card'`
+- `surface` defaults to `'card'` token; `accent=` overrides the surface token
+- Removed hardcoded `padding=8` (padding is a widget-level concern, not style)
+
+*VStack/HStack surface stepping (`widgets/stacks.py`):*
+- `variant='card'` detects parent surface via `_child_master()._surface`
+- Steps up one level: `background`/`content` → `card`, `card` → `overlay`
+- Ensures nested cards render visually distinct from their parent surface
+
+*Label (`widgets/label.py`):*
+- `icon_position=` kwarg added (maps to `compound=`)
+- Auto-detects `icon_only` when `text` is empty and `icon` is provided
+- Default `compound='left'` when both text and icon are present
+
+**Tests:** 28 non-GUI tests pass.
+
+**Remaining work:**
+- ToggleGroup solid variant contrast — user handling
+  `src/bootstack/style/builders/toolbutton.py`
+- `TextField` `placeholder=` not supported (only `TextArea` has it)
+- `TabView` pill variant crash — builder not registered
+- `Meter`/`Gauge` deprecated param names still in source
+- `ListView` hover blends with striped rows
+- `examples/` legacy demos — separate effort
 
 ### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
 
