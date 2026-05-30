@@ -50,3 +50,14 @@ class FieldAddonMixin:
     def addons(self) -> dict[str, Any]:
         """Named addon widgets inserted via `insert_addon()`."""
         return self._internal.addons
+
+    def add_validation_rule(self, rule_type: Any, **kwargs: Any) -> None:
+        """Add a validation rule to the field.
+
+        Args:
+            rule_type: Rule identifier — e.g. `'required'`, `'min_length'`,
+                `'max_length'`, `'pattern'`, `'email'`.
+            **kwargs: Rule-specific options. `message=` overrides the default
+                failure message for all rule types.
+        """
+        self._internal.add_validation_rule(rule_type, **kwargs)

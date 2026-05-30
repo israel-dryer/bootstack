@@ -327,6 +327,83 @@ class Accordion(PublicWidgetBase):
         self._internal = _InternalAccordion(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+    # ----- Section management -----
+
+    def remove(self, key: str) -> None:
+        """Remove a section by key.
+
+        Args:
+            key: The key assigned when the section was added.
+        """
+        self._internal.remove(key)
+
+    def item(self, key: str) -> Any:
+        """Return the internal expander for a section.
+
+        Args:
+            key: Section key.
+        """
+        return self._internal.item(key)
+
+    def items(self, expanded: bool | None = None) -> tuple:
+        """Return all section expanders, optionally filtered by expansion state.
+
+        Args:
+            expanded: If `True`, return only expanded sections. If `False`,
+                only collapsed. If `None` (default), return all.
+        """
+        return self._internal.items(expanded)
+
+    def keys(self) -> tuple[str, ...]:
+        """Return all section keys in insertion order."""
+        return self._internal.keys()
+
+    def expand(self, key: str) -> None:
+        """Expand the section identified by `key`.
+
+        Args:
+            key: Section key.
+        """
+        self._internal.expand(key)
+
+    def collapse(self, key: str) -> None:
+        """Collapse the section identified by `key`.
+
+        Args:
+            key: Section key.
+        """
+        self._internal.collapse(key)
+
+    def expand_all(self) -> None:
+        """Expand all sections."""
+        self._internal.expand_all()
+
+    def collapse_all(self) -> None:
+        """Collapse all sections."""
+        self._internal.collapse_all()
+
+    # ----- Events -----
+
+    def on_accordion_changed(self, callback: Callable) -> str:
+        """Register a callback for `<<AccordionChange>>` events.
+
+        Args:
+            callback: Called when any section expands or collapses.
+                `event.data` contains `key`, `title`, and `expanded`.
+
+        Returns:
+            Bind ID — pass to `off_accordion_changed()` to unsubscribe.
+        """
+        return self._internal.on_accordion_changed(callback)
+
+    def off_accordion_changed(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<AccordionChange>>`.
+
+        Args:
+            bind_id: ID returned by `on_accordion_changed()`. If `None`, removes all.
+        """
+        self._internal.off_accordion_changed(bind_id)
+
     def add(
         self,
         title: str,

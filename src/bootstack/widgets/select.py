@@ -119,6 +119,15 @@ class Select(PublicWidgetBase):
         self._internal._items = list(items)
 
     @property
+    def selected_index(self) -> int:
+        """Zero-based index of the selected option, or `-1` if none selected."""
+        return self._internal.selected_index
+
+    @selected_index.setter
+    def selected_index(self, v: int) -> None:
+        self._internal.selected_index = v
+
+    @property
     def disabled(self) -> bool:
         return str(self._internal._entry.cget("state")) == "disabled"
 

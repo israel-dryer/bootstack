@@ -215,6 +215,82 @@ class ListView(PublicWidgetBase):
         """
         self._internal.off_item_insert(bind_id)
 
+    def on_item_update(self, callback: Callable) -> str:
+        """Register a callback for `<<ItemUpdate>>` events.
+
+        Args:
+            callback: Receives `event.data` — the updated record dict.
+
+        Returns:
+            Bind ID — pass to `off_item_update()` to unsubscribe.
+        """
+        return self._internal.on_item_update(callback)
+
+    def off_item_update(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<ItemUpdate>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_update()`. If `None`, removes all.
+        """
+        self._internal.off_item_update(bind_id)
+
+    def on_item_delete_fail(self, callback: Callable) -> str:
+        """Register a callback for `<<ItemDeleteFail>>` events.
+
+        Args:
+            callback: Receives `event.data` — the record dict that failed deletion.
+
+        Returns:
+            Bind ID — pass to `off_item_delete_fail()` to unsubscribe.
+        """
+        return self._internal.on_item_delete_fail(callback)
+
+    def off_item_delete_fail(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<ItemDeleteFail>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_delete_fail()`. If `None`, removes all.
+        """
+        self._internal.off_item_delete_fail(bind_id)
+
+    def on_item_drag_start(self, callback: Callable) -> str:
+        """Register a callback for `<<ItemDragStart>>` events.
+
+        Args:
+            callback: Receives `event.data` — the dragged record dict plus `source_index`.
+
+        Returns:
+            Bind ID — pass to `off_item_drag_start()` to unsubscribe.
+        """
+        return self._internal.on_item_drag_start(callback)
+
+    def off_item_drag_start(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<ItemDragStart>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_drag_start()`. If `None`, removes all.
+        """
+        self._internal.off_item_drag_start(bind_id)
+
+    def on_item_drag(self, callback: Callable) -> str:
+        """Register a callback for `<<ItemDrag>>` events (fired continuously during drag).
+
+        Args:
+            callback: Receives `event.data` — record dict plus `source_index` and `y`.
+
+        Returns:
+            Bind ID — pass to `off_item_drag()` to unsubscribe.
+        """
+        return self._internal.on_item_drag(callback)
+
+    def off_item_drag(self, bind_id: str | None = None) -> None:
+        """Unsubscribe from `<<ItemDrag>>`.
+
+        Args:
+            bind_id: ID returned by `on_item_drag()`. If `None`, removes all.
+        """
+        self._internal.off_item_drag(bind_id)
+
     def on_item_drag_end(self, callback: Callable) -> str:
         """Register a callback for `<<ItemDragEnd>>` events.
 

@@ -264,6 +264,18 @@ class Tabs(PublicWidgetBase):
         """All page keys in insertion order."""
         return self._internal.page_keys()
 
+    def item(self, key: str) -> Any:
+        """Return the tab header item for `key` (for runtime configuration).
+
+        Args:
+            key: Tab key assigned in `add()`.
+        """
+        return self._internal.item(key)
+
+    def items(self) -> tuple:
+        """Return all tab header items in insertion order."""
+        return self._internal.items()
+
     # ----- Event shorthands -----
 
     def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:

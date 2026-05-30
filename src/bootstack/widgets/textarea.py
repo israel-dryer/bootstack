@@ -9,8 +9,14 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 
 _TEXTAREA_EVENTS: dict[str, str] = {
-    "change": "<<Change>>",
-    "input":  "<KeyRelease>",
+    "change":   "<<Change>>",
+    "input":    "<KeyRelease>",
+    "blur":     "<FocusOut>",
+    "valid":    "<<Valid>>",
+    "invalid":  "<<Invalid>>",
+    "modified": "<<TextModified>>",
+    "undo":     "<<TextUndo>>",
+    "redo":     "<<TextRedo>>",
 }
 
 
@@ -114,6 +120,11 @@ class TextArea(PublicWidgetBase):
     def value(self, v: str) -> None:
         self._internal.value = v
 
+    @property
+    def is_dirty(self) -> bool:
+        """True if the content has changed since the last `mark_saved()` call."""
+        return self._internal.is_dirty
+
     # ----- Methods -----
 
     def clear(self) -> None:
@@ -130,6 +141,18 @@ class TextArea(PublicWidgetBase):
         tw.focus_set()
         tw.tag_add("sel", "1.0", "end-1c")
         tw.mark_set("insert", "end-1c")
+
+    def mark_saved(self) -> None:
+        """Reset the dirty flag — call after saving content."""
+        self._internal.mark_saved()
+
+    def undo(self) -> None:
+        """Undo the last edit."""
+        self._internal.undo()
+
+    def redo(self) -> None:
+        """Redo the last undone edit."""
+        self._internal.redo()
 
     # ----- Event shorthands -----
 
@@ -148,6 +171,54 @@ class TextArea(PublicWidgetBase):
             Subscription — call `.cancel()` to unsubscribe.
         """
         return self.on("input", handler)
+
+    def on_blur(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when the text area loses focus.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("blur", handler)
+
+    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("valid", handler)
+
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("invalid", handler)
+
+    def on_modified(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when the dirty state changes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("modified", handler)
+
+    def on_undo(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired after an undo operation.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("undo", handler)
+
+    def on_redo(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired after a redo operation.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("redo", handler)
 
 
 register_widget_events(TextArea, _TEXTAREA_EVENTS)

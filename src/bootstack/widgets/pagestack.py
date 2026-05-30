@@ -252,6 +252,18 @@ class PageStack(PublicWidgetBase):
         """All registered page keys in insertion order."""
         return self._internal.keys()
 
+    def item(self, key: str) -> Any:
+        """Return the page widget for `key`.
+
+        Args:
+            key: Page key assigned in `add()`.
+        """
+        return self._internal.item(key)
+
+    def items(self) -> tuple:
+        """Return all page widgets in insertion order."""
+        return self._internal.items()
+
     # ----- Event shorthands -----
 
     def on_page_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
