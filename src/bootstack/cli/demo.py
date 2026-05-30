@@ -204,12 +204,12 @@ def _build_selection_page():
             bs.Switch("Disabled",      disabled=True)
 
         with bs.GroupBox("RadioGroup", fill="horizontal"):
-            rg = bs.RadioGroup(value="opt1", accent="primary", fill="horizontal")
+            rg = bs.RadioGroup(value="opt1", accent="primary")
             rg.add("Option 1", value="opt1")
             rg.add("Option 2", value="opt2")
             rg.add("Option 3", value="opt3")
 
-        with bs.GroupBox("ToggleGroup", fill="horizontal", gap=6):
+        with bs.GroupBox("ToggleGroup", fill="horizontal", gap=6, layout="grid", columns=2):
             with bs.VStack():
                 bs.Label("Single select:")
                 tg = bs.ToggleGroup(mode="single", accent="primary", variant="outline", value="B")
@@ -305,14 +305,13 @@ def _build_data_page():
             for color in ("primary", "secondary", "success", "warning", "danger"):
                 bs.Label(color.title(), accent=color, padding=(8, 4))
 
-        with bs.GroupBox("Badges", fill="horizontal", gap=6):
-            with bs.HStack(gap=8):
-                for color in ("primary", "success", "warning", "danger"):
-                    bs.Badge(color.title(), accent=color)
-            with bs.HStack(gap=8):
-                bs.Badge("Pill",  accent="primary", variant="pill")
-                bs.Badge("99+",   accent="danger",  variant="pill")
-                bs.Badge("New",   accent="success")
+        with bs.GroupBox("Badges", fill="x", gap=16, layout="hstack"):
+            for color in ("primary", "secondary", "success", "warning", "danger"):
+                bs.Badge(color.title(), accent=color)
+
+            bs.Badge("Pill",  accent="primary", variant="pill")
+            bs.Badge("99+",   accent="danger",  variant="pill")
+            bs.Badge("New",   accent="success")
 
         with bs.GroupBox("Tree", fill="both", expand=True):
             columns = ("name", "status", "progress")
@@ -347,7 +346,7 @@ def _build_progress_page():
         with bs.GroupBox("Slider (drag to control progress bars)", fill="horizontal"):
             bs.Slider(min_value=0, max_value=100, signal=slider_value, fill="horizontal")
 
-        with bs.GroupBox("ProgressBar", fill="horizontal", gap=6):
+        with bs.GroupBox("ProgressBar", fill="horizontal", gap=8):
             bs.ProgressBar(signal=slider_value, max_value=100, fill="horizontal")
             bs.ProgressBar(value=75,  max_value=100, accent="success", fill="horizontal")
             bs.ProgressBar(value=45,  max_value=100, accent="danger",  fill="horizontal")
@@ -375,25 +374,24 @@ def _build_layout_page():
         bs.Label("Layout", font="heading-xl")
         bs.Label("Containers, expandable panels, and split panes.", accent="secondary")
 
-        with bs.GroupBox("Card", fill="horizontal"):
-            with bs.HStack(gap=8, fill="horizontal", fill_items="horizontal", expand_items=True):
-                for title, body, color in [
-                    ("Users",   "1,234 active", "primary"),
-                    ("Revenue", "$45,678",       "success"),
-                    ("Errors",  "12 today",      "danger"),
-                ]:
-                    with bs.VStack(variant='card', padding=16):
-                        bs.Label(title, accent=color, font="body[bold]")
-                        bs.Label(body, font="heading-lg")
+        with bs.GroupBox("Card", fill="horizontal", layout="hstack", fill_items="x", expand_items=True, gap=16):
+            for title, body, color in [
+                ("Users",   "1,234 active", "primary"),
+                ("Revenue", "$45,678",       "success"),
+                ("Errors",  "12 today",      "danger"),
+            ]:
+                with bs.Card(accent=color):
+                    bs.Label(title, accent=color, font="body[bold]")
+                    bs.Label(body, font="heading-lg")
 
         with bs.GroupBox("Expander", fill="horizontal"):
-            with bs.Expander("Click to expand", expanded=False, fill="horizontal"):
-                bs.Label("This content is revealed when the expander is opened.", padding=10)
-            with bs.Expander("Already expanded", expanded=True, fill="horizontal"):
-                bs.Label("Expanders can start open or closed.", padding=10)
+            with bs.Expander("Click to expand", expanded=False, fill="horizontal", padding=10):
+                bs.Label("This content is revealed when the expander is opened.")
+            with bs.Expander("Already expanded", expanded=True, fill="horizontal", padding=10):
+                bs.Label("Expanders can start open or closed.")
 
         with bs.GroupBox("Accordion", fill="horizontal"):
-            acc = bs.Accordion(fill="horizontal")
+            acc = bs.Accordion(fill="horizontal", show_border=True, show_separators=True)
             with acc.add("Section 1"):
                 bs.Label("Content for section one.", padding=10)
             with acc.add("Section 2"):
@@ -403,14 +401,12 @@ def _build_layout_page():
 
         with bs.GroupBox("SplitView", fill="both", expand=True):
             sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
-            with sv.add():
-                with bs.VStack(padding=10, anchor_items="center", expand=True, fill="both"):
-                    bs.Label("Left Pane")
-                    bs.Label("Drag the sash to resize", accent="secondary", font="caption")
-            with sv.add():
-                with bs.VStack(padding=10, anchor_items="center", expand=True, fill="both"):
-                    bs.Label("Right Pane")
-                    bs.Label("Both panes are resizable", accent="secondary", font="caption")
+            with sv.add(padding=10, anchor_items="center"):
+                bs.Label("Left Pane")
+                bs.Label("Drag the sash to resize", accent="secondary", font="caption")
+            with sv.add(padding=10, anchor_items="center"):
+                bs.Label("Right Pane")
+                bs.Label("Both panes are resizable", accent="secondary", font="caption")
 
         with bs.GroupBox("Separator", fill="horizontal", gap=8):
             bs.Separator(fill="horizontal")

@@ -56,7 +56,9 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
             show_border: Draw a border around the frame.
             style_options: Optional dict forwarded to the style builder.
         """
-        kwargs.update(style_options=self._capture_style_options(['show_border'], kwargs))
+        existing = kwargs.pop('style_options', {})
+        captured = self._capture_style_options(['show_border'], kwargs)
+        kwargs['style_options'] = {**existing, **captured}
         super().__init__(master, **kwargs)
 
     def configure_style_options(self, value=None, **kwargs):

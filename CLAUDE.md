@@ -523,8 +523,8 @@ See memory `project_api_gaps.md` for full list. Key items:
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
-- `TextField` `placeholder=` not supported — `TextEntry` composite (single-line) was never given placeholder logic; `TextArea` has it, `TextField` does not
-- `TabView` pill variant — never implemented; removed from type signatures and docstrings (Session 39)
+- ~~`TextField` `placeholder=` not supported~~ — fixed (Session 39)
+- ~~`TabView` pill variant~~ — removed (Session 39)
 - `Label`/`Badge` use `.text` (not `.value`) — this is settled and intentional; `.value` is for data-bearing widgets only
 
 ---
@@ -942,11 +942,103 @@ first navigation; `Select` dropdown, dialogs, and toasts all work correctly.
 **Remaining work:**
 - ToggleGroup solid variant contrast — user handling
   `src/bootstack/style/builders/toolbutton.py`
-- `TextField` `placeholder=` not supported (only `TextArea` has it)
-- `TabView` pill variant crash — builder not registered
+- ~~`TextField` `placeholder=` not supported~~ — done (Session 39)
+- ~~`TabView` pill variant crash~~ — removed (variant never existed; Session 39)
 - `Meter`/`Gauge` deprecated param names still in source
 - `ListView` hover blends with striped rows
 - `examples/` legacy demos — separate effort
+
+### Session 39 — Bug fixes, API cleanup, layout improvements (2026-05-29/30)
+
+All work committed directly to `main`.
+
+**`TextField` placeholder support:**
+- `placeholder=` added to `TextEntryPart`, `FieldOptions`, and `TextField`
+- Uses textvariable detach/reattach so the Signal is never set to placeholder text
+- `_handle_change` hides placeholder when Signal is set externally to a non-empty value
+- `commit()` guards against placeholder text being parsed as user input
+
+**`TabView` pill variant removed:**
+- `Literal['pill', 'bar']` → `Literal['bar']` in `tabs.py` and `tabitem.py` type hints
+  and docstrings; variant was never implemented
+
+**`GroupBox` reverted to `ttk.LabelFrame`:**
+- Custom composite (PackFrame + Label + card Frame) replaced with a simple wrapper
+  around the internal `LabelFrame` primitive
+- Card-surface approach abandoned: title-above-border is just a Label + bordered VStack,
+  not a true GroupBox; `ttk.LabelFrame` gives the classic embedded-title fieldset look
+- Layout engine (PackFrame/GridFrame) still lives inside the LabelFrame
+- `surface=` kwarg removed (not meaningful for LabelFrame)
+
+**`PathField` redesign:**
+- `dialog=` renamed to `mode=` with clean values: `'open'`, `'open_multiple'`,
+  `'save'`, `'directory'`
+- `dialog_options=` dict replaced with explicit typed kwargs:
+  `dialog_title=`, `start_dir=`, `file_filters=`, `default_extension=`,
+  `default_filename=` — each maps to the native `filedialog` kwarg internally
+- Browse button uses `folder` icon for all modes
+- Internal `_show_file_chooser` uses `_build_dialog_kwargs()` dict builder
+
+**Field frame minimum width:**
+- `width=200` set on `_field` frame (the `TField`-styled container) so addon
+  buttons (steppers, browse icon) live inside the minimum rather than adding to
+  it — prevents `NumberField` from pushing grid columns wider than plain `TextField`
+- Reverted short-lived `kwargs.setdefault('width', 1)` approach which collapsed
+  fields to unusable size when not in a fill layout
+
+**`margin=` layout kwarg:**
+- Added `'margin'` to `PACK_KEYS` and `GRID_KEYS` so it is stripped from widget
+  kwargs and converted to `padx=`/`pady=` in `guide_layout` via `_expand_margin()`
+- Convention: ttk order `(left, top, right, bottom)` for 4-value shorthand;
+  `(x, y)` for 2-value; `int` for uniform
+
+**Meter theme fix:**
+- `_handle_theme_changed` deferred via `after_idle` → `_apply_theme_update` so
+  `b.color()` reads the new theme's colors after `_rebuild_all_styles()` completes;
+  fixes gauge canvas staying at the previous theme's background on theme switch
+
+**Visual tests updated:** `tests/features/textfield.py` — placeholder test cases added.
+
+**Remaining work:**
+- ToggleGroup solid variant contrast — user handling
+  `src/bootstack/style/builders/toolbutton.py`
+- `Meter`/`Gauge` deprecated param names still in source
+- `ListView` hover blends with striped rows
+- `examples/` legacy demos — separate effort
+
+### Session 40 — Container pane layout engine (2026-05-30)
+
+**Branch:** `feat/container-pane-layout` → `main` (PR pending)
+
+**Core change:** Every container widget's `add()` method now returns a proper public
+type backed by a `PackFrame`/`GridFrame` layout engine. Previously all pane wrappers
+were private `_*` classes that hardcoded `pack()` with no guidance. Now they accept
+the same layout kwargs as `VStack`/`HStack`/`Grid`/`GroupBox`.
+
+**New public types** (replacing private `_` prefixed wrappers):
+- `AccordionSection` (was `_AccordionSection`) — returned by `Accordion.add()`
+- `SplitPane` (was `_SplitPane`) — returned by `SplitView.add()`
+- `StackPage` (was `_StackPage`) — returned by `PageStack.add()`
+- `TabPage` (was `_TabPage`) — returned by `Tabs.add()`
+
+All exported from `bs.*`.
+
+**Layout kwargs available on all pane types and `Expander`:**
+`layout=` (`'vstack'`/`'hstack'`/`'grid'`), `padding=`, `gap=`,
+`fill_items=`, `expand_items=`, `anchor_items=`,
+`columns=`, `rows=`, `sticky_items=`, `auto_flow=`
+
+**`Expander` additions:**
+- `show_border=`, `variant=` (`'default'`/`'solid'`), `icon_position=`,
+  `highlight=` now explicit kwargs (were buried in `**kwargs`)
+
+**`Accordion` additions:**
+- `show_separators=`, `show_border=`, `variant=`, `padding=` now explicit kwargs
+
+**`Expander` style builder fix** (`style/builders/expander.py`):
+- `b.elevate(surface_token, 1)` → `b.elevate(b.color(surface_token), 1)` —
+  `b.elevate()` expects a resolved color, not a token name
+- Removed stray `print()` debug statement
 
 ### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
 

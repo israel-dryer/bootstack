@@ -79,12 +79,13 @@ from bootstack.widgets.stacks import HStack, VStack
 from bootstack.widgets.grid import Grid
 from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.button import Button
+from bootstack.widgets.card import Card
 from bootstack.widgets.buttongroup import ButtonGroup
 from bootstack.widgets.codeeditor import CodeEditor
 from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets.datefield import DateField
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
-from bootstack.widgets.expander import Accordion, Expander
+from bootstack.widgets.expander import Accordion, AccordionSection, Expander
 from bootstack.widgets.gauge import Gauge
 from bootstack.widgets.groupbox import GroupBox
 from bootstack.widgets.label import Badge, Label
@@ -92,7 +93,7 @@ from bootstack.widgets.listview import ListView
 from bootstack.widgets.menubar import MenuBar
 from bootstack.widgets.menubutton import MenuButton
 from bootstack.widgets.numberfield import NumberField
-from bootstack.widgets.pagestack import PageStack
+from bootstack.widgets.pagestack import PageStack, StackPage
 from bootstack.widgets.pathfield import PathField
 from bootstack.widgets.passwordfield import PasswordField
 from bootstack.widgets.progressbar import ProgressBar
@@ -103,12 +104,12 @@ from bootstack.widgets.scrollview import ScrollView
 from bootstack.widgets.select import Select
 from bootstack.widgets.separator import Separator
 from bootstack.widgets.sizegrip import SizeGrip
-from bootstack.widgets.splitview import SplitView
+from bootstack.widgets.splitview import SplitView, SplitPane
 from bootstack.widgets.slider import RangeSlider, Slider
 from bootstack.widgets.spinbox import Spinbox
 from bootstack.widgets.spinnerfield import SpinnerField
 from bootstack.widgets.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
-from bootstack.widgets.tabs import TabChangeEventData, TabRef, Tabs
+from bootstack.widgets.tabs import TabChangeEventData, TabPage, TabRef, Tabs
 from bootstack.widgets.textarea import TextArea
 from bootstack.widgets.timefield import TimeField
 from bootstack.widgets.tree import Tree

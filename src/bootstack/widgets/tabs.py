@@ -5,8 +5,10 @@ from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tabs.tabview import TabView as _InternalTabView
 from bootstack.widgets._impl.composites.tabs.events import TabChangeEventData, TabRef
+from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.container import PACK_KEYS
+from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
@@ -18,20 +20,83 @@ _TABS_EVENTS: dict[str, str] = {
 }
 
 
-class _TabPage:
-    """Context-manager for placing children inside a tab's page frame."""
+class TabPage:
+    """Context-manager container returned by `Tabs.add()`.
 
-    def __init__(self, page_widget: tkinter.Widget) -> None:
+    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
+    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
+    `sticky_items=`, `auto_flow=`.
+    """
+
+    def __init__(
+        self,
+        page_widget: tkinter.Widget,
+        *,
+        layout: str = "vstack",
+        padding: Any = None,
+        gap: int = 0,
+        fill_items: str | None = None,
+        expand_items: bool | None = None,
+        anchor_items: str | None = None,
+        columns: int | list | None = None,
+        rows: int | list | None = None,
+        sticky_items: str | None = None,
+        auto_flow: str = "row",
+    ) -> None:
         self._page = page_widget
+        self._layout = layout
+
+        if layout in ("vstack", "hstack"):
+            self._layout_frame = PackFrame(
+                page_widget,
+                direction="vertical" if layout == "vstack" else "horizontal",
+                padding=padding,
+                gap=gap,
+                fill_items=normalize_fill(fill_items),
+                expand_items=expand_items,
+                anchor_items=anchor_items,
+            )
+        elif layout == "grid":
+            self._layout_frame = GridFrame(
+                page_widget,
+                columns=columns,
+                rows=rows,
+                padding=padding,
+                gap=gap,
+                sticky_items=sticky_items,
+                auto_flow=auto_flow,
+            )
+        else:
+            raise ValueError(
+                f"TabPage layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+            )
+
+        self._fill_items = normalize_fill(fill_items)
+        self._expand_items = expand_items
+        self._anchor_items = anchor_items
+        self._sticky_items = sticky_items
+        self._layout_frame.pack(fill="both", expand=True)
 
     def _child_master(self) -> tkinter.Widget:
-        return self._page
+        return self._layout_frame
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
+        if self._layout == "grid":
+            options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
+            if "sticky" not in options and self._sticky_items:
+                options["sticky"] = self._sticky_items
+            child._internal.grid(in_=self._child_master(), **options)
+            return
         options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        child._internal.pack(in_=self._page, **options)
+        if "fill" not in options and self._fill_items:
+            options["fill"] = self._fill_items
+        if "expand" not in options and self._expand_items is not None:
+            options["expand"] = self._expand_items
+        if "anchor" not in options and self._anchor_items:
+            options["anchor"] = self._anchor_items
+        child._internal.pack(in_=self._child_master(), **options)
 
-    def __enter__(self) -> "_TabPage":
+    def __enter__(self) -> "TabPage":
         push_container(self)
         return self
 
@@ -119,24 +184,37 @@ class Tabs(PublicWidgetBase):
         icon: str | None = None,
         closable: bool | Literal["hover"] | None = None,
         close_command: Callable | None = None,
-    ) -> _TabPage:
+        layout: str = "vstack",
+        padding: Any = None,
+        gap: int = 0,
+        fill_items: str | None = None,
+        expand_items: bool | None = None,
+        anchor_items: str | None = None,
+        columns: int | list | None = None,
+        rows: int | list | None = None,
+        sticky_items: str | None = None,
+        auto_flow: str = "row",
+    ) -> TabPage:
         """Add a tab and return a context manager for placing its children.
-
-        Usage::
-
-            with tabs.add("home", label="Home"):
-                bs.Label("Content goes here")
 
         Args:
             key: Unique identifier for the tab/page.
             label: Label displayed on the tab.
             icon: Icon name displayed on the tab.
-            closable: Close-button visibility for this tab. Overrides `enable_closing`.
-            close_command: Called when the close button is clicked. Defaults to
-                removing the tab via `forget_tab()`.
+            closable: Close-button visibility for this tab. Overrides `allow_close`.
+            close_command: Called when the close button is clicked.
+            layout: Internal layout — `'vstack'` (default), `'hstack'`, or `'grid'`.
+            gap: Space between children in pixels.
+            fill_items: Default fill direction applied to each child.
+            expand_items: Whether children expand to fill available space.
+            anchor_items: Default anchor applied to each child.
+            columns: Column definitions for `'grid'` layout.
+            rows: Row definitions for `'grid'` layout.
+            sticky_items: Default sticky value for grid children.
+            auto_flow: Grid auto-flow direction.
 
         Returns:
-            `_TabPage` — use as a context manager to place children.
+            `TabPage` — use as a context manager to place children.
         """
         add_kwargs: dict[str, Any] = {}
         if icon is not None:
@@ -147,7 +225,13 @@ class Tabs(PublicWidgetBase):
             add_kwargs["close_command"] = close_command
 
         page_widget = self._internal.add(key, text=label, **add_kwargs)
-        return _TabPage(page_widget)
+        return TabPage(
+            page_widget,
+            layout=layout, padding=padding, gap=gap, fill_items=fill_items,
+            expand_items=expand_items, anchor_items=anchor_items,
+            columns=columns, rows=rows, sticky_items=sticky_items,
+            auto_flow=auto_flow,
+        )
 
     def select(self, key: str) -> None:
         """Select the tab identified by `key`."""
@@ -209,4 +293,4 @@ class Tabs(PublicWidgetBase):
 
 register_widget_events(Tabs, _TABS_EVENTS)
 
-__all__ = ["Tabs", "TabChangeEventData", "TabRef"]
+__all__ = ["Tabs", "TabPage", "TabChangeEventData", "TabRef"]
