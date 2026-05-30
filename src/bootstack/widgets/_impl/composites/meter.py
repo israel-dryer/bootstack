@@ -98,37 +98,36 @@ class Meter(Frame):
             **kwargs: Additional keyword arguments passed to the Frame parent class.
 
         """
-        legacy = Meter._coerce_legacy_params(kwargs)
         super().__init__(master, **kwargs)
 
         # configuration
         self._dtype = dtype
-        self._size = legacy.get('size', size)
-        self._thickness = legacy.get('thickness', thickness)
-        self._indicator_width = legacy.get('indicator_width', indicator_width)
-        self._segment_width = legacy.get('segment_width', segment_width)
-        self._arc_range = legacy.get('arc_range', arc_range)
-        self._arc_offset = legacy.get('arc_offset', arc_offset)
-        self._minvalue = legacy.get('minvalue', minvalue)
-        self._maxvalue = legacy.get('maxvalue', maxvalue)
+        self._size = size
+        self._thickness = thickness
+        self._indicator_width = indicator_width
+        self._segment_width = segment_width
+        self._arc_range = arc_range
+        self._arc_offset = arc_offset
+        self._minvalue = minvalue
+        self._maxvalue = maxvalue
 
-        self._meter_type = legacy.get('meter_type', meter_type)
-        self._show_text = legacy.get('show_text', show_text)
+        self._meter_type = meter_type
+        self._show_text = show_text
         self._interactive = interactive
-        self._step_size = legacy.get('step_size', step_size)
+        self._step_size = step_size
 
-        self._value_format = legacy.get('value_format', value_format)
-        self._value_font = legacy.get('value_font', value_font or '-size 36 -weight bold')
-        self._value_prefix = legacy.get('value_prefix', value_prefix)
-        self._value_suffix = legacy.get('value_suffix', value_suffix)
+        self._value_format = value_format
+        self._value_font = value_font or '-size 36 -weight bold'
+        self._value_prefix = value_prefix
+        self._value_suffix = value_suffix
         self._accent = accent or 'primary'
 
-        self._subtitle = legacy.get('subtitle', subtitle)
-        self._secondary_font = legacy.get('secondary_font', secondary_font or '-size 9')
-        self._secondary_style = legacy.get('secondary_style', secondary_style or 'background[muted]')
+        self._subtitle = subtitle
+        self._secondary_font = secondary_font or '-size 9'
+        self._secondary_style = secondary_style or 'background[muted]'
 
         # color tokens (separate from resolved colors)
-        self._surface_token = 'background'  # Token name for surface color
+        self._surface_token = 'background'
 
         # state tracking
         self._towards_maximum = True
@@ -136,7 +135,6 @@ class Meter(Frame):
         self._binding = {}
 
         # widget variables
-        value = legacy.get('value', value)
         self._last_changed_value = value
         self._value_var = self._variable(value)
         self._value_var.trace_add('write', self._update_meter)  # Update meter when value changes
@@ -171,47 +169,6 @@ class Meter(Frame):
 
         # set widget geometry
         self._canvas.pack()
-
-    # ----- Configuration Delegates -----
-
-    @staticmethod
-    def _coerce_legacy_params(options):
-        param_map = dict(
-            amountused="value",
-            amountmin="minvalue",
-            amounttotal="maxvalue",
-            amountformat="value_format",
-            textleft="value_prefix",
-            textright="value_suffix",
-            textfont="value_font",
-            subtextfont="secondary_font",
-            subtextstyle="secondary_style",
-            subtext="subtitle",
-            metersize="size",
-            meterthickness="thickness",
-            wedgesize="indicator_width",
-            stripethickness="segment_width",
-            arcrange="arc_range",
-            arcoffset="arc_offset",
-            metertype="meter_type",
-            showtext="show_text",
-            stepsize="step_size"
-        )
-        legacy_params = dict()
-        legacy_keys = set()
-
-        for k, v in options.items():
-            if k in param_map:
-                legacy_params[param_map[k]] = v
-                legacy_keys.add(k)
-
-        if legacy_params:
-            for k in legacy_keys:
-                del options[k]
-            warn(
-                f'You are using a param signature for Meter which is deprecated. {legacy_keys}. See reference map: {param_map}',
-                DeprecationWarning)
-        return legacy_params
 
     @property
     def value(self):
