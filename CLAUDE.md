@@ -469,7 +469,8 @@ bs.PackFrame(parent, direction="vertical|horizontal|row|column|row-reverse|colum
              expand_items=True, anchor_items="n|ne|e|se|s|sw|w|nw|center")
 bs.GridFrame(parent, rows=N|[...], columns=N|[...], gap=N|(col_gap, row_gap),
              sticky_items="ew|nsew|...", auto_flow="row|column|row-dense|column-dense|none")
-bs.VStack(variant='card', padding=16)  # card surface; show_border=True default
+bs.Card(padding=16)                    # card surface, stepped nested surfaces
+bs.Card(accent='primary', gap=8)       # subtle primary background, primary border
 bs.GroupBox(title="Section", layout='vstack', padding=16)  # bordered section with title
 
 # Signals
@@ -1006,9 +1007,9 @@ All work committed directly to `main`.
 - `ListView` hover blends with striped rows
 - `examples/` legacy demos — separate effort
 
-### Session 40 — Container pane layout engine (2026-05-30)
+### Session 40 — Container pane layout engine + Card reinstatement (2026-05-30)
 
-**Branch:** `feat/container-pane-layout` → `main` (PR pending)
+**PR #85** (`feat/container-pane-layout` → `main`) — merged.
 
 **Core change:** Every container widget's `add()` method now returns a proper public
 type backed by a `PackFrame`/`GridFrame` layout engine. Previously all pane wrappers
@@ -1039,6 +1040,23 @@ All exported from `bs.*`.
 - `b.elevate(surface_token, 1)` → `b.elevate(b.color(surface_token), 1)` —
   `b.elevate()` expects a resolved color, not a token name
 - Removed stray `print()` debug statement
+
+**`Card` widget reinstated** (`widgets/card.py`):
+- `PublicContainer` backed by `PackFrame`/`GridFrame` with `variant='card'`,
+  `show_border=True`, `padding=16` default
+- Surface stepping: `background`/`content` → `card`, `card` → `overlay`
+- `accent=` support: background = `accent[subtle]` token (light tinted wash),
+  border = `b.color(accent)` (full accent), children inherit `accent[subtle]` surface
+- All existing `VStack(variant='card')` usages in `cli/demo.py` and `form_demo.py`
+  replaced with `Card()`
+
+**Card frame builder** (`style/builders/frame.py`):
+- `surface = b.color(surface_token)` — `accent[subtle]` resolves directly
+- `stroke = b.color(accent)` when accent, else `b.color('stroke')`
+
+**`Frame.__init__`** (`widgets/_impl/primitives/frame.py`):
+- Merges caller-supplied `style_options` with captured ones rather than replacing,
+  preserving extra style data passed to the frame
 
 ### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
 
