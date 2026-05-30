@@ -55,7 +55,7 @@ class Accordion(Frame):
         """
 
         if 'show_border' in kwargs:
-            kwargs.setdefault('padding', 3)  # required to avoid clipping corners
+            kwargs.setdefault('padding', 1)  # required to avoid clipping corners
 
         super().__init__(master, **kwargs)
 
