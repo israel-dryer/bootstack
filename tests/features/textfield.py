@@ -1,5 +1,5 @@
 """Visual test for public TextField widget."""
-from bootstack import App, VStack, HStack, TextField, Label, Button
+from bootstack import App, HStack, TextField, Label
 from bootstack.signals import Signal
 
 
@@ -17,6 +17,12 @@ def main():
 
         # With placeholder-style default value
         TextField("default text", label="Pre-filled")
+
+        # Placeholder — shown when empty/unfocused, clears on focus
+        TextField(placeholder="e.g. Jane Smith", label="Placeholder only")
+
+        # Placeholder with a pre-filled value — placeholder should NOT appear
+        TextField("Ada Lovelace", placeholder="e.g. Jane Smith", label="Placeholder + value")
 
         # Password field
         TextField(mask_char="*", label="Password")

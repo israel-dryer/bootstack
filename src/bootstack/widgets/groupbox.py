@@ -3,8 +3,7 @@ from __future__ import annotations
 import tkinter
 from typing import Any
 
-from bootstack.widgets._impl.primitives.frame import Frame as _Frame
-from bootstack.widgets._impl.primitives.label import Label as _Label
+from bootstack.widgets._impl.primitives.labelframe import LabelFrame as _LabelFrame
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
@@ -15,21 +14,16 @@ from bootstack.widgets._core.container import (
 class GroupBox(PublicContainer):
     """A labelled container that groups related content inside a bordered frame.
 
-    Renders as a small title label above a bordered content area — no
-    background bleed around the border. The content area has its own surface
-    token, independent of the surrounding page surface.
-
-    Children are laid out according to `layout`. The default (`'vstack'`) stacks
-    children top-to-bottom and fills them horizontally — the most common pattern
-    for a group of form fields or stacked widgets.
+    Renders as a `ttk.LabelFrame` — the title is embedded in the top border
+    line, giving the classic fieldset look. Children are laid out according
+    to `layout`.
 
     Args:
-        title: Text displayed above the bordered content area.
-        layout: Internal layout manager — `'vstack'` (default), `'hstack'`, or
-            `'grid'`.
-        padding: Space between the border and the content area. Default `16`.
-        surface: Surface token for the content area background.
-        accent: Accent token for the title label and border.
+        title: Text embedded in the top border.
+        layout: Internal layout manager — `'vstack'` (default), `'hstack'`,
+            or `'grid'`.
+        padding: Space between the border and the content. Default `16`.
+        accent: Accent token for the border and label.
         gap: Space between children in pixels.
         fill_items: Default fill direction applied to each child.
         expand_items: Whether children expand to fill available space.
@@ -50,7 +44,6 @@ class GroupBox(PublicContainer):
         *,
         layout: str = "vstack",
         padding: Any = 16,
-        surface: str | None = None,
         accent: str | None = None,
         gap: int = 0,
         fill_items: str | None = None,
@@ -82,38 +75,15 @@ class GroupBox(PublicContainer):
 
         tk_master = self._parent._child_master() if self._parent else None
 
-        # Outer PackFrame — transparent, just stacks title + content vertically
-        self._internal = PackFrame(tk_master, direction="vertical", gap=4)
-
-        # Title label — small, muted, no background of its own
-        if title:
-            self._title_label = _Label(
-                self._internal,
-                text=title,
-                font="label",
-                accent=accent or "secondary",
-            )
-            self._title_label.pack(anchor="w", padx=2)
-        else:
-            self._title_label = None
-
-        # Content frame styled as a card. Surface must be set explicitly so
-        # _surface is propagated to all child widgets via _refresh_descendant_surfaces.
-        effective_surface = surface if surface is not None else (accent or "card")
-        content_kwargs: dict[str, Any] = {
-            "variant": "card",
-            "surface": effective_surface,
-            "padding": padding,
-        }
+        lf_kwargs: dict[str, Any] = {"text": title, "padding": padding}
         if accent is not None:
-            content_kwargs["accent"] = accent
-        self._content_frame = _Frame(self._internal, **content_kwargs)
-        self._content_frame.pack(fill="both", expand=True)
+            lf_kwargs["accent"] = accent
 
-        # Layout engine inside the content frame
+        self._internal = _LabelFrame(tk_master, **lf_kwargs)
+
         if layout in ("vstack", "hstack"):
             self._layout_frame = PackFrame(
-                self._content_frame,
+                self._internal,
                 direction="vertical" if layout == "vstack" else "horizontal",
                 gap=gap,
                 fill_items=normalize_fill(fill_items),
@@ -122,7 +92,7 @@ class GroupBox(PublicContainer):
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
-                self._content_frame,
+                self._internal,
                 columns=columns,
                 rows=rows,
                 gap=gap,
@@ -166,10 +136,9 @@ class GroupBox(PublicContainer):
 
     @property
     def title(self) -> str:
-        """The title label text."""
-        return self._title_label.cget("text") if self._title_label else ""
+        """The text embedded in the border."""
+        return self._internal.cget("text")
 
     @title.setter
     def title(self, value: str) -> None:
-        if self._title_label:
-            self._title_label.configure(text=value)
+        self._internal.configure(text=value)
