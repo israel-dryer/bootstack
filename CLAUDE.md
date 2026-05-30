@@ -519,8 +519,8 @@ font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
 
 See memory `project_api_gaps.md` for full list. Key items:
 - `ToggleGroup` `padding=` kwarg causes `TypeError`
-- `insert_addon` passes `density=` to `CheckButton` causing `TclError`
-- `Meter` deprecated param names (`amountused`, `amounttotal`, `subtext`, `stripethickness`) not yet removed from source
+- ~~`insert_addon` passes `density=` to `CheckButton` causing `TclError`~~ — fixed (Session 41); `CheckButton` excluded at type level, `CheckToggle` is correct
+- ~~`Meter` deprecated param names~~ — removed (Session 41)
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
 - `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
 - `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
@@ -1057,6 +1057,82 @@ All exported from `bs.*`.
 **`Frame.__init__`** (`widgets/_impl/primitives/frame.py`):
 - Merges caller-supplied `style_options` with captured ones rather than replacing,
   preserving extra style data passed to the frame
+
+### Session 41 — API audit + Stream/Schedule + theme event + CodeEditor (2026-05-30)
+
+All work on `feat/stream-schedule` (PR #86, open). Earlier fixes committed to `main`.
+
+**Public wrapper audit + gap fixes (committed to `main`):**
+- Two-pass audit of all ~40 public wrappers vs internals — first pass via agent
+  (missed `insert_addon`), second pass by hand
+- `FieldAddonMixin` added to `_core/` — exposes `insert_addon('button'|'label'|'toggle', ...)`
+  and `addons` on all field wrappers (TextField, NumberField, DateField, PasswordField,
+  PathField, SpinnerField, TimeField); string type selector avoids exposing internal types
+- `add_validation_rule()` added to `FieldAddonMixin` — available on all field wrappers
+- Missing properties filled: `TextField.placeholder`, `NumberField.read_only`,
+  `Slider.min_value`/`max_value`/`disabled`, `ProgressBar.max_value`, `Select.selected_index`
+- Missing event shorthands: `on_valid`/`on_invalid` on TextField, NumberField, DateField;
+  `on_submit` on Spinbox; `on_change` on Gauge; `on_blur`/`on_valid`/`on_invalid`/
+  `on_modified`/`on_undo`/`on_redo` on TextArea; `is_dirty`, `mark_saved()`, `undo()`,
+  `redo()` on TextArea
+- Accordion: `remove()`, `item()`, `items()`, `keys()`, `expand()`, `collapse()`,
+  `expand_all()`, `collapse_all()`, `on_accordion_changed()`
+- Tabs: `item()`, `items()`; PageStack: `item()`, `items()`
+- ListView: `on_item_update`, `on_item_delete_fail`, `on_item_drag_start`, `on_item_drag`
+- `Field._delegate_state` added — `configure(state='readonly'/'disabled'/'normal')` now
+  properly sets entry state, syncs addons (including NumericEntry spin buttons), fires
+  `<<StateChanged>>`; was silently falling through to `ttk.Frame` before
+- `Spinbox` mousewheel containment — binds `<MouseWheel>` at instance level,
+  generates `<Up>`/`<Down>` explicitly, returns `"break"` to stop scroll leaking to ScrollView
+- Meter deprecated param compatibility shim (`_coerce_legacy_params`) removed
+- `insert_addon` implicit `icon_only` — when called with `icon=` and no `text=`,
+  defaults `icon_only=True` automatically
+
+**`<<BsThemeChanged>>` framework event (committed to `main`):**
+- `style.py` fires `<<BsThemeChanged>>` on the root after `_rebuild_all_styles()` and
+  `_rebuild_all_tk_widgets()` complete; carries `data={"theme": name, "mode": mode}`
+- `Publisher.publish_message` updated to accept `**kwargs`; `combobox._apply_popdown_style`
+  accepts `**kwargs` for compat
+- Rationale: `<<ThemeChanged>>` fires before rebuild (TTK internal); `<<BsThemeChanged>>`
+  fires after (correct timing for reading new theme colors)
+- Convention to revisit: standardize `<<Bs...>>` prefix for all framework-generated events;
+  evaluate retiring the legacy Publisher — see memory `project_event_naming_revisit.md`
+
+**CodeEditor auto theme switching (committed to `main`):**
+- `pygments_style` replaced by `theme="auto"`, `light_theme="default"`, `dark_theme="monokai"`
+  on both internal and public `CodeEditor`
+- `PygmentsHighlighter` subscribes to `<<BsThemeChanged>>` (not `<<ThemeChanged>>`);
+  in auto mode resolves light/dark Pygments style from `event.data["mode"]` and reloads
+- `Sidebar` base class now binds `<<BsThemeChanged>>` on `winfo_toplevel()` and calls
+  `update_colors()` — fixes `LineNumbers` background not updating on theme change
+- Gallery: Code Editor page added last under Inputs section
+
+**Stream + Schedule (PR #86 — `feat/stream-schedule`):**
+
+*`Schedule`* — `widget.schedule` lazy property on every public widget; also `bs.Schedule(widget)`:
+- `delay(ms, fn)`, `idle(fn)`, `at(dt, fn)`, `every(ms, fn)`
+- Returns `Job` handle with `.cancel()` and bool truthiness
+- Auto-cancels all jobs on `<Destroy>`; `every()` stops on callback exception
+- Direct `job.cancel()` removes job from internal set immediately via `_discard`
+- Accepts `PublicWidgetBase` or `tk.Misc`
+
+*`Stream`* — `widget.on(event)` (no handler) returns a composable `Stream`:
+- Operators: `map`, `filter`, `tap`, `debounce`, `throttle`, `delay`
+- `.listen(handler)` is the only terminal — activates lazy Tk binding
+- Returns `Handle` — public cancellable type (not `Subscription`)
+- `_Scheduler` tracks all pending tokens, cancels on `<Destroy>`
+- `delay` operator cleans up fired tokens immediately
+
+*`on()` overload* — all 22 public wrappers + all `on_*()` shorthands:
+- `widget.on(event, handler)` → `Subscription` (unchanged)
+- `widget.on(event)` → `Stream` (new, lazy)
+- `widget.on_change()` → `Stream`; `widget.on_change(handler)` → `Subscription`
+
+**Open items:**
+- ToggleGroup solid variant contrast — user handling `src/bootstack/style/builders/toolbutton.py`
+- Boolean widgets: `value=` silently ignored when `signal=` also passed
+- `<<Bs...>>` event naming convention + Publisher retirement — deferred (see memory)
+- PR #86 needs merge after review
 
 ### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
 
