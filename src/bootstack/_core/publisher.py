@@ -125,7 +125,7 @@ class Publisher:
         channel_subs = [s for s in subs if s.channel == channel]
         return channel_subs
 
-    def publish_message(channel, *args):
+    def publish_message(channel, *args, **kwargs):
         """Publish a message to all subscribers.
 
         Parameters:
@@ -134,11 +134,14 @@ class Publisher:
                 The name of the channel to subscribe.
 
             **args:
-                optional arguments to pass to the subscribers.
+                optional positional arguments to pass to the subscribers.
+
+            **kwargs:
+                optional keyword arguments to pass to the subscribers.
         """
         subs: list[Subscriber] = Publisher.get_subscribers(channel)
         for sub in subs:
-            sub.func(*args)
+            sub.func(*args, **kwargs)
 
     @staticmethod
     def clear_subscribers():

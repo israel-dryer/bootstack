@@ -110,7 +110,7 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
 
         self.configure(postcommand=on_popdown)
 
-    def _apply_popdown_style(self, create_if_missing: bool = False) -> None:
+    def _apply_popdown_style(self, create_if_missing: bool = False, **kwargs) -> None:
         """Apply theme colors and density font to the embedded popdown.
 
         Args:

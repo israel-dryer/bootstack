@@ -42,7 +42,9 @@ class CodeEditor(Frame):
         value: str = "",
         textsignal: Signal | None = None,
         language: str | None = None,
-        pygments_style: str = "default",
+        pygments_style: str = "auto",
+        light_theme: str = "default",
+        dark_theme: str = "monokai",
         read_only: bool = False,
         wrap: bool = False,
         tab_width: int = 4,
@@ -100,6 +102,8 @@ class CodeEditor(Frame):
 
         self._language = language
         self._pygments_style = pygments_style
+        self._light_theme = light_theme
+        self._dark_theme = dark_theme
         self._show_line_numbers = show_line_numbers
         self._highlighter = None
 
@@ -367,6 +371,11 @@ class CodeEditor(Frame):
         from bootstack.widgets._impl.composites.textarea.extensions.pygments_highlighter import (
             PygmentsHighlighter,
         )
-        h = PygmentsHighlighter(language, pygments_style=self._pygments_style)
+        h = PygmentsHighlighter(
+            language,
+            pygments_style=self._pygments_style,
+            light_style=self._light_theme,
+            dark_style=self._dark_theme,
+        )
         self._core.add_filter(h)
         self._highlighter = h

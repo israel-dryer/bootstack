@@ -37,7 +37,14 @@ class CodeEditor(PublicWidgetBase):
         text_signal: Reactive `Signal[str]` bound to the editor content.
         language: Pygments lexer name for syntax highlighting (e.g. `'python'`,
             `'sql'`). `None` disables highlighting.
-        pygments_style: Pygments color scheme (e.g. `'default'`, `'monokai'`).
+        theme: Pygments color scheme. `'auto'` (default) switches between
+            `light_theme` and `dark_theme` when the bootstack theme changes.
+            Pass an explicit Pygments style name (e.g. `'monokai'`, `'dracula'`)
+            to pin the scheme regardless of the bootstack theme.
+        light_theme: Pygments style used when `theme='auto'` and the active
+            bootstack theme is light. Default `'default'`.
+        dark_theme: Pygments style used when `theme='auto'` and the active
+            bootstack theme is dark. Default `'monokai'`.
         read_only: If True, content is visible but not editable.
         wrap: If True, long lines wrap. Default `False` (horizontal scroll).
         tab_width: Number of spaces per tab stop. Default `4`.
@@ -63,7 +70,9 @@ class CodeEditor(PublicWidgetBase):
         *,
         text_signal: Any = None,
         language: str | None = None,
-        pygments_style: str = "default",
+        theme: str = "auto",
+        light_theme: str = "default",
+        dark_theme: str = "monokai",
         read_only: bool = False,
         wrap: bool = False,
         tab_width: int = 4,
@@ -87,7 +96,9 @@ class CodeEditor(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {
             "value": value,
             "language": language,
-            "pygments_style": pygments_style,
+            "pygments_style": theme,
+            "light_theme": light_theme,
+            "dark_theme": dark_theme,
             "read_only": read_only,
             "wrap": wrap,
             "tab_width": tab_width,
@@ -150,6 +161,23 @@ class CodeEditor(PublicWidgetBase):
     @language.setter
     def language(self, v: str | None) -> None:
         self._internal.set_language(v)
+
+    @property
+    def theme(self) -> str:
+        """Active Pygments color scheme, or `'auto'` if tracking the bootstack theme."""
+        return self._internal._pygments_style
+
+    @theme.setter
+    def theme(self, v: str) -> None:
+        self._internal._pygments_style = v
+        if self._internal._highlighter is not None:
+            self._internal._highlighter._auto = (v == "auto")
+            if v != "auto":
+                self._internal._highlighter._load_style(v)
+                for sname, color in self._internal._highlighter._style_colors.items():
+                    self._internal._core.define_style(sname, foreground=color)
+            self._internal._highlighter._apply_widget_colors(self._internal._core)
+            self._internal._highlighter._schedule()
 
     @property
     def read_only(self) -> bool:

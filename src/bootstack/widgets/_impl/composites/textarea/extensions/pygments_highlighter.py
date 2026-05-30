@@ -95,74 +95,81 @@ class PygmentsHighlighter(EditFilter):
     Args:
         language: Pygments lexer name (e.g. `'python'`, `'sql'`,
             `'javascript'`). Unknown names fall back to plain text.
-        pygments_style: Pygments style name (e.g. `'default'`,
-            `'monokai'`, `'dracula'`). Defaults to `'default'`.
+        pygments_style: Pygments style name, or `'auto'` to track the
+            bootstack theme. When `'auto'`, `light_style` and `dark_style`
+            determine the actual Pygments style used.
+        light_style: Pygments style used in auto mode when the active
+            bootstack theme is light. Default `'default'`.
+        dark_style: Pygments style used in auto mode when the active
+            bootstack theme is dark. Default `'monokai'`.
     """
 
     def __init__(
         self,
         language: str,
         pygments_style: str = "default",
+        light_style: str = "default",
+        dark_style: str = "monokai",
     ) -> None:
         super().__init__()
         self._core: _MultilineCore | None = None
         self._after_id: str | None = None
+        self._publisher_name: str | None = None
+
+        self._auto = pygments_style == "auto"
+        self._light_style = light_style
+        self._dark_style = dark_style
 
         try:
             self._lexer = get_lexer_by_name(language, stripall=False, stripnl=False)
         except ClassNotFound:
             self._lexer = TextLexer()
 
-        try:
-            style_cls = get_style_by_name(pygments_style)
-        except ClassNotFound:
-            style_cls = get_style_by_name("default")
-
-        self._style_colors = _extract_colors(style_cls)
-        # Pre-compute the set of style names that actually have colors — used
-        # in the per-token hot path to skip style-name lookups with no color.
-        self._active_styles: frozenset[str] = frozenset(self._style_colors)
-
-        # Background and default foreground from the Pygments style.
-        self._style_bg: str = style_cls.background_color
-        raw_fg = (
-            style_cls.style_for_token(Token.Text).get("color")
-            or style_cls.style_for_token(Token).get("color")
-        )
-        self._style_fg: str | None = f"#{raw_fg}" if raw_fg else None
+        # Load initial style — auto resolves after attach when the theme is known.
+        initial = self._resolve_auto_name() if self._auto else pygments_style
+        self._load_style(initial)
 
         # Saved originals — restored on detach.
         self._orig_bg: str | None = None
         self._orig_fg: str | None = None
         self._orig_ibg: str | None = None
-        self._theme_bind_id: str | None = None
 
     # ── EditFilter protocol ───────────────────────────────────────────────
 
     def attach(self, core: _MultilineCore) -> None:
         self._core = core
+
+        # Resolve auto style now that we can query the theme provider.
+        if self._auto:
+            self._load_style(self._resolve_auto_name())
+
         core.register_layer(_LAYER, priority=1)
-        for style_name, color in self._style_colors.items():
-            core.define_style(style_name, foreground=color)
+        for sname, color in self._style_colors.items():
+            core.define_style(sname, foreground=color)
+
         # Save current text-widget colors before overriding them.
         self._orig_bg = core.text.cget("background")
         self._orig_fg = core.text.cget("foreground")
         self._orig_ibg = core.text.cget("insertbackground")
         self._apply_widget_colors(core)
-        # Re-apply after theme changes (theme engine resets widget colors).
-        self._theme_bind_id = core.text.bind(
-            "<<ThemeChanged>>", self._on_theme_changed, add="+"
+
+        # Subscribe to the framework Publisher — fires AFTER _rebuild_all_styles()
+        # so colors read from the style builder reflect the new theme.
+        from bootstack._core.publisher import Publisher, Channel
+        self._publisher_name = f"_pygments_{id(self)}"
+        Publisher.subscribe(
+            name=self._publisher_name,
+            func=self._on_framework_theme_changed,
+            channel=Channel.STD,
         )
         self._schedule()
 
     def detach(self, core: _MultilineCore) -> None:
         self._cancel()
-        if self._theme_bind_id is not None and self._core is not None:
-            try:
-                self._core.text.unbind("<<ThemeChanged>>", self._theme_bind_id)
-            except Exception:
-                pass
-        self._theme_bind_id = None
+        if self._publisher_name is not None:
+            from bootstack._core.publisher import Publisher
+            Publisher.unsubscribe(self._publisher_name)
+            self._publisher_name = None
         if self._core is not None:
             core.clear_decorations(_LAYER)
             self._restore_widget_colors(core)
@@ -209,9 +216,41 @@ class PygmentsHighlighter(EditFilter):
             except Exception:
                 pass
 
-    def _on_theme_changed(self, _event=None) -> None:
-        if self._core is not None:
-            self._apply_widget_colors(self._core, notify=False)
+    def _resolve_auto_name(self) -> str:
+        """Return the appropriate Pygments style name for the current theme mode."""
+        try:
+            from bootstack.style.style import get_theme_provider
+            mode = get_theme_provider().mode
+        except Exception:
+            mode = "light"
+        return self._dark_style if mode == "dark" else self._light_style
+
+    def _load_style(self, style_name: str) -> None:
+        """Load a Pygments style, updating all color state."""
+        try:
+            style_cls = get_style_by_name(style_name)
+        except ClassNotFound:
+            style_cls = get_style_by_name("default")
+        self._style_colors = _extract_colors(style_cls)
+        self._active_styles: frozenset[str] = frozenset(self._style_colors)
+        self._style_bg: str = style_cls.background_color
+        raw_fg = (
+            style_cls.style_for_token(Token.Text).get("color")
+            or style_cls.style_for_token(Token).get("color")
+        )
+        self._style_fg: str | None = f"#{raw_fg}" if raw_fg else None
+
+    def _on_framework_theme_changed(self, theme: str = None, mode: str = None, **kwargs) -> None:
+        """Called by the Publisher after _rebuild_all_styles() completes."""
+        if self._core is None:
+            return
+        if self._auto:
+            resolved = self._dark_style if mode == "dark" else self._light_style
+            self._load_style(resolved)
+            for sname, color in self._style_colors.items():
+                self._core.define_style(sname, foreground=color)
+        self._apply_widget_colors(self._core, notify=True)
+        self._schedule()
 
     def _schedule(self) -> None:
         self._cancel()

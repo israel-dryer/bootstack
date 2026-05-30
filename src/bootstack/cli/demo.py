@@ -157,6 +157,92 @@ def _build_text_inputs_page():
             )
 
 
+# -- Code Editor --------------------------------------------------------------
+
+
+_DEMO_PYTHON = '''\
+def greet(name: str) -> str:
+    """Return a friendly greeting."""
+    return f"Hello, {name}!"
+
+
+class Counter:
+    def __init__(self, start: int = 0):
+        self.value = start
+
+    def increment(self) -> None:
+        self.value += 1
+
+    def reset(self) -> None:
+        self.value = 0
+
+
+if __name__ == "__main__":
+    c = Counter()
+    for _ in range(5):
+        c.increment()
+    print(greet("bootstack"), c.value)
+'''
+
+_DEMO_JSON = '''\
+{
+    "name": "bootstack",
+    "version": "1.0.0",
+    "description": "Modern UI framework for Python",
+    "dependencies": {
+        "pillow": ">=10.0",
+        "pygments": ">=2.15"
+    },
+    "scripts": {
+        "demo": "python -m bootstack.cli demo"
+    }
+}
+'''
+
+
+def _build_code_editor_page():
+    with bs.VStack(padding=20, gap=12, fill="x", fill_items="x"):
+        bs.Label("Code Editor", font="heading-xl")
+        bs.Label("Full-featured code editor with syntax highlighting, undo/redo, and search.", accent="secondary")
+
+        with bs.GroupBox("Python", fill="x", gap=6):
+            editor = bs.CodeEditor(_DEMO_PYTHON, language="python", height=18, fill="x")
+
+            dirty_sig = Signal("clean")
+            editor.on_modified(lambda e: dirty_sig.set("modified"))
+            editor.mark_saved()
+
+            with bs.HStack(gap=6, anchor_items="center"):
+                bs.Label(text_signal=dirty_sig, accent="secondary")
+                bs.Button("Mark saved",  variant="outline", on_click=lambda: (editor.mark_saved(), dirty_sig.set("clean")))
+                bs.Button("Undo",        variant="outline", on_click=editor.undo)
+                bs.Button("Redo",        variant="outline", on_click=editor.redo)
+                bs.Button("Find (⌃F)",   variant="outline", on_click=editor.show_search)
+
+        with bs.GroupBox("JSON — read-only", fill="x"):
+            bs.CodeEditor(_DEMO_JSON, language="json", read_only=True, height=14, fill="x")
+
+        with bs.GroupBox("Language switcher", fill="x", gap=6):
+            _SNIPPETS = {
+                "python":     "def add(a, b):\n    return a + b\n\nresult = add(1, 2)\nprint(result)\n",
+                "json":       '{\n    "language": "json",\n    "active": true,\n    "count": 42\n}\n',
+                "sql":        "SELECT name, email\nFROM users\nWHERE active = 1\nORDER BY name ASC;\n",
+                "html":       "<section>\n  <h1>Hello</h1>\n  <p>A simple paragraph.</p>\n</section>\n",
+                "css":        "body {\n    font-family: sans-serif;\n    background: #f5f5f5;\n    margin: 0;\n}\n",
+                "javascript": "function greet(name) {\n    return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n",
+            }
+
+            live_editor = bs.CodeEditor(_SNIPPETS["python"], language="python", height=10, fill="x")
+
+            def _set_lang(lang: str) -> None:
+                live_editor.language = lang
+                live_editor.value = _SNIPPETS[lang]
+
+            with bs.HStack(gap=4):
+                for lang in _SNIPPETS:
+                    bs.Button(lang, variant="outline", on_click=lambda l=lang: _set_lang(l))
+
+
 # -- Numeric & Date -----------------------------------------------------------
 
 
@@ -585,9 +671,10 @@ def run_demo():
 
         shell.add_separator()
         shell.add_header("Inputs")
-        _register("text-inputs", _build_text_inputs_page, text="Text Inputs", icon="input-cursor-text", scrollable=True)
-        _register("numeric",    _build_numeric_page,    text="Numeric & Date", icon="123",             scrollable=True)
-        _register("forms",      _build_forms_page,      text="Forms",       icon="journal-text",       scrollable=True)
+        _register("text-inputs",  _build_text_inputs_page,  text="Text Inputs",  icon="input-cursor-text", scrollable=True)
+        _register("numeric",      _build_numeric_page,      text="Numeric & Date", icon="123",             scrollable=True)
+        _register("forms",        _build_forms_page,        text="Forms",        icon="journal-text",      scrollable=True)
+        _register("code-editor",  _build_code_editor_page,  text="Code Editor",  icon="code-slash",        scrollable=True)
 
         shell.add_separator()
         shell.add_header("Selection")

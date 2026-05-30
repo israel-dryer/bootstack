@@ -248,7 +248,7 @@ class Style(ttkStyle):
 
         # Publish theme-change event for legacy subscribers
         from bootstack._core.publisher import Channel, Publisher  # lazy import
-        Publisher.publish_message(Channel.STD)
+        Publisher.publish_message(Channel.STD, theme=name, mode=self._theme_provider.mode)
 
         return self._current_theme
 
