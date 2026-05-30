@@ -577,6 +577,7 @@ class Field(EntryMixin, Frame):
         kwargs.setdefault('anchor', 'center')
         if 'icon' in kwargs and 'text' not in kwargs:
             kwargs.setdefault('compound', 'image')
+            kwargs.setdefault('icon_only', True)
 
         if issubclass(widget, (Button, CheckButton)):
             icon_only = kwargs.get('icon_only', False)
