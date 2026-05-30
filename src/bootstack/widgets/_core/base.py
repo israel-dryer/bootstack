@@ -1,12 +1,16 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, overload
 
 from bootstack.widgets._core.context import current_container
 from bootstack.widgets._core.events import resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.exceptions import ParentResolutionError
+
+if TYPE_CHECKING:
+    from bootstack.widgets._core.schedule import Schedule
+    from bootstack.widgets._core.stream import Stream
 
 
 class PublicWidgetBase:
@@ -33,14 +37,11 @@ class PublicWidgetBase:
     @staticmethod
     def _split_layout_kwargs(kwargs: dict) -> dict:
         """Pop and return layout kwargs from `kwargs`, mutating it in place."""
-        # Lazy import breaks the container ↔ base circular dependency.
         from bootstack.widgets._core.container import (
             PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS,
         )
         place_mode = any(k in kwargs for k in PLACE_TRIGGER_KEYS)
         if place_mode:
-            # `width`/`height`/`anchor` can collide with widget options; leave
-            # them as widget kwargs unless a true trigger key is present too.
             layout_keys = (PLACE_KEYS - {"width", "height", "anchor"}) | PLACE_TRIGGER_KEYS
         else:
             layout_keys = PACK_KEYS | GRID_KEYS
@@ -65,11 +66,75 @@ class PublicWidgetBase:
         """Underlying tk/ttk widget. UNSUPPORTED — escape-hatch use only."""
         return self._internal
 
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription:
-        """Bind `handler` to `event` and return a `Subscription`."""
+    @property
+    def schedule(self) -> "Schedule":
+        """Scheduler tied to this widget's lifetime.
+
+        All jobs are automatically cancelled when the widget is destroyed.
+        First access creates the `Schedule` instance; subsequent accesses
+        return the same instance.
+
+        Usage::
+
+            self.schedule.delay(500, callback)
+            self.schedule.every(1000, tick)
+            job = self.schedule.idle(refresh)
+            job.cancel()
+        """
+        if not hasattr(self, "_schedule"):
+            from bootstack.widgets._core.schedule import Schedule
+            self._schedule = Schedule(self._internal)
+        return self._schedule
+
+    # ----- on() — overloaded -------------------------------------------------
+
+    @overload
+    def on(self, event: str) -> "Stream": ...
+    @overload
+    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+
+    def on(
+        self,
+        event: str,
+        handler: Callable[[tkinter.Event], Any] | None = None,
+    ) -> "Stream | Subscription":
+        """Bind `handler` to `event`, or return a composable `Stream`.
+
+        With a handler — binds immediately and returns a `Subscription`::
+
+            sub = widget.on("change", handler)
+            sub.cancel()
+
+        Without a handler — returns a `Stream` for operator chaining.
+        The Tk binding is created lazily when `.listen()` is called::
+
+            sub = widget.on("change").debounce(300).listen(handler)
+            sub.cancel()
+
+        Args:
+            event: Event name (e.g. `"change"`, `"click"`) or raw Tk
+                sequence (e.g. `"<Return>"`, `"<<Change>>"`).
+            handler: Optional callback. If omitted, a `Stream` is returned.
+
+        Returns:
+            `Subscription` when a handler is provided; `Stream` otherwise.
+        """
         sequence = resolve_event(self, str(event))
-        bind_id = self._internal.bind(sequence, handler, add="+")
-        return Subscription(self._internal, sequence, bind_id)
+
+        if handler is not None:
+            bind_id = self._internal.bind(sequence, handler, add="+")
+            return Subscription(self._internal, sequence, bind_id)
+
+        # No handler — return a lazy Stream.
+        from bootstack.widgets._core.stream import Stream
+
+        widget = self._internal
+
+        def _source(downstream: Callable[[tkinter.Event], Any]) -> Subscription:
+            bind_id = widget.bind(sequence, downstream, add="+")
+            return Subscription(widget, sequence, bind_id)
+
+        return Stream(self._internal, _source=_source)
 
     def emit(self, event: str, *, data: dict | None = None) -> None:
         """Synthesize `event` on the underlying widget."""

@@ -1,13 +1,14 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.composites.slider.slider import Slider as _InternalSlider
 from bootstack.widgets._impl.composites.slider.rangeslider import RangeSlider as _InternalRangeSlider
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _SLIDER_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -110,7 +111,11 @@ class Slider(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired continuously as the handle moves.
 
         The current value is available via `slider.value` inside the handler.
@@ -120,7 +125,11 @@ class Slider(PublicWidgetBase):
         """
         return self.on("change", handler)
 
-    def on_commit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_commit(self) -> Stream: ...
+    @overload
+    def on_commit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_commit(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the handle is released.
 
         Returns:
@@ -220,7 +229,11 @@ class RangeSlider(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired continuously as either handle moves.
 
         Returns:
@@ -228,7 +241,11 @@ class RangeSlider(PublicWidgetBase):
         """
         return self.on("change", handler)
 
-    def on_commit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_commit(self) -> Stream: ...
+    @overload
+    def on_commit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_commit(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a handle is released.
 
         Returns:

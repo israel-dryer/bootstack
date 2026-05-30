@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.composites.pagestack import PageStack as _InternalPageStack
 from bootstack.widgets._impl.primitives.packframe import PackFrame
@@ -11,6 +11,7 @@ from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fi
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _PAGESTACK_EVENTS: dict[str, str] = {
     "page_change": "<<PageChange>>",
@@ -266,7 +267,11 @@ class PageStack(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_page_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_page_change(self) -> Stream: ...
+    @overload
+    def on_page_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after every navigation.
 
         Returns:
@@ -274,7 +279,11 @@ class PageStack(PublicWidgetBase):
         """
         return self.on("page_change", handler)
 
-    def on_page_mount(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_page_mount(self) -> Stream: ...
+    @overload
+    def on_page_mount(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_page_mount(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a page is mounted.
 
         Returns:

@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.primitives.label import Label as _InternalLabel
 from bootstack.widgets._impl.primitives.badge import Badge as _InternalBadge
