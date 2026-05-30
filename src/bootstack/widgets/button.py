@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.primitives.button import Button as _InternalButton
 from bootstack.widgets._core.base import PublicWidgetBase

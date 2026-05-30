@@ -1,11 +1,12 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.treeview import TreeView as _InternalTreeView
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 
 _TREE_EVENTS: dict[str, str] = {
@@ -71,9 +72,18 @@ class Tree(PublicWidgetBase):
         self._internal = _InternalTreeView(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
-    def on(self, event: str, handler: Callable) -> Subscription:
+    @overload
+    def on(self, event: str) -> Stream: ...
+    @overload
+    def on(self, event: str, handler: Callable) -> Subscription: ...
+    def on(self, event: str, handler: Callable | None = None) -> Stream | Subscription:
         from bootstack.widgets._core.events import resolve_event
         sequence = resolve_event(self._internal, str(event))
+        if handler is None:
+            def _source(h):
+                _bid = self._internal.bind(sequence, h, add="+")
+                return Subscription(self._internal, sequence, _bid)
+            return Stream(self._internal, _source=_source)
         bind_id = self._internal.bind(sequence, handler, add="+")
         return Subscription(self._internal, sequence, bind_id)
 

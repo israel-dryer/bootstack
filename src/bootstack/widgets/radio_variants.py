@@ -1,13 +1,14 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _RADIO_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -110,7 +111,11 @@ class _RadioBase(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
         Returns:
@@ -118,7 +123,11 @@ class _RadioBase(PublicWidgetBase):
         """
         return self.on("change", handler)
 
-    def on_select(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_select(self) -> Stream: ...
+    @overload
+    def on_select(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
         Returns:

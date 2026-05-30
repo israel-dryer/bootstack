@@ -1,13 +1,14 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.composites.numericentry import NumericEntry as _InternalNumericEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
 _NUMBER_FIELD_EVENTS: dict[str, str] = {
@@ -97,10 +98,22 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def _entry_widget(self) -> tkinter.Misc:
         return self._internal._entry
 
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on(self, event: str) -> Stream: ...
+    @overload
+    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         from bootstack.widgets._core.events import resolve_event
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
+        _w = widget
+        if handler is None:
+            from bootstack.widgets._core.stream import Stream as _Stream
+            def _source(h):
+                widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
+                _bid = _w.bind(sequence, h, add="+")
+                return Subscription(_w, sequence, _bid)
+            return _Stream(self._internal, _source=_source)
         bind_id = widget.bind(sequence, handler, add="+")
         return Subscription(widget, sequence, bind_id)
 
@@ -142,7 +155,11 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value is committed.
 
         Returns:
@@ -150,7 +167,11 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         """
         return self.on("change", handler)
 
-    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_submit(self) -> Stream: ...
+    @overload
+    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_submit(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on Enter key.
 
         Returns:
@@ -158,7 +179,11 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         """
         return self.on("submit", handler)
 
-    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_valid(self) -> Stream: ...
+    @overload
+    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -166,7 +191,11 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         """
         return self.on("valid", handler)
 
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_invalid(self) -> Stream: ...
+    @overload
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:

@@ -1,12 +1,13 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _TOGGLEGROUP_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -118,7 +119,11 @@ class ToggleGroup(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selection changes.
 
         Returns:

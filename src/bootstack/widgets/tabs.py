@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable, Literal
+from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tabs.tabview import TabView as _InternalTabView
 from bootstack.widgets._impl.composites.tabs.events import TabChangeEventData, TabRef
@@ -12,6 +12,7 @@ from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fi
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _TABS_EVENTS: dict[str, str] = {
     "change":    "<<TabChanged>>",
@@ -162,17 +163,29 @@ class Tabs(PublicWidgetBase):
 
     # ----- Event routing -----
 
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on(self, event: str) -> Stream: ...
+    @overload
+    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
-        # <<TabAdd>> and <<TabClose>> are generated on the internal Tabs bar widget,
-        # not on the TabView frame itself.
-        if sequence in ("<<TabAdd>>", "<<TabClose>>"):
-            target = self._internal._tabs
-        else:
-            target = self._internal
-        bind_id = target.bind(sequence, handler, add="+")
-        return Subscription(target, sequence, bind_id)
+
+        def _target():
+            if sequence in ("<<TabAdd>>", "<<TabClose>>"):
+                return self._internal._tabs
+            return self._internal
+
+        if handler is None:
+            def _source(h):
+                t = _target()
+                _bid = t.bind(sequence, h, add="+")
+                return Subscription(t, sequence, _bid)
+            return Stream(self._internal, _source=_source)
+
+        t = _target()
+        bind_id = t.bind(sequence, handler, add="+")
+        return Subscription(t, sequence, bind_id)
 
     # ----- Tab management -----
 
@@ -278,7 +291,11 @@ class Tabs(PublicWidgetBase):
 
     # ----- Event shorthands -----
 
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_change(self) -> Stream: ...
+    @overload
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected tab changes.
 
         Returns:
@@ -286,7 +303,11 @@ class Tabs(PublicWidgetBase):
         """
         return self.on("change", handler)
 
-    def on_tab_close(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_tab_close(self) -> Stream: ...
+    @overload
+    def on_tab_close(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_tab_close(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
@@ -294,7 +315,11 @@ class Tabs(PublicWidgetBase):
         """
         return self.on("tab_close", handler)
 
-    def on_tab_add(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_tab_add(self) -> Stream: ...
+    @overload
+    def on_tab_add(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_tab_add(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the add-tab button is clicked.
 
         Returns:

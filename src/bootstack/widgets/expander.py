@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter
-from typing import Any, Callable
+from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.composites.expander import Expander as _InternalExpander
 from bootstack.widgets._impl.composites.accordion import Accordion as _InternalAccordion
@@ -14,6 +14,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
 
 _EXPANDER_EVENTS: dict[str, str] = {
     "expand":   "<<Toggle>>",
@@ -178,7 +179,11 @@ class Expander(PublicContainer):
 
     # ----- Event shorthands -----
 
-    def on_toggle(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+    @overload
+    def on_toggle(self) -> Stream: ...
+    @overload
+    def on_toggle(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_toggle(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the expander is expanded or collapsed.
 
         Returns:

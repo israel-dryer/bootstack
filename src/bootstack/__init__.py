@@ -66,6 +66,8 @@ from bootstack.widgets.types import (
 from bootstack.widgets._core.events import Event
 from bootstack.widgets._core.exceptions import BootstackV2Error, UnknownEventError, ParentResolutionError
 from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.schedule import Schedule, Job
+from bootstack.widgets._core.stream import Stream, Handle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PublicContainer
 from bootstack.widgets.dialogs import (
