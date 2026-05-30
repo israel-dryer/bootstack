@@ -6,12 +6,14 @@ from typing import Any
 PACK_KEYS = frozenset({
     "side", "fill", "expand", "anchor",
     "padx", "pady", "ipadx", "ipady",
+    "margin",
     "before", "after", "in_",
 })
 
 GRID_KEYS = frozenset({
     "row", "column", "rowspan", "columnspan",
     "sticky", "padx", "pady", "ipadx", "ipady",
+    "margin",
     "in_",
 })
 
@@ -38,6 +40,23 @@ def normalize_fill(value: str | None) -> str | None:
     if value is None:
         return None
     return _FILL_ALIASES.get(value, value)
+
+
+def _expand_margin(layout_kw: dict) -> None:
+    """Convert margin= to padx=/pady= in-place. Explicit padx/pady win."""
+    margin = layout_kw.pop("margin", None)
+    if margin is None:
+        return
+    if isinstance(margin, int):
+        padx = pady = margin
+    elif len(margin) == 2:
+        padx, pady = margin  # (horizontal, vertical)
+    else:
+        left, top, right, bottom = margin  # ttk order: left top right bottom
+        padx = (left, right)
+        pady = (top, bottom)
+    layout_kw.setdefault("padx", padx)
+    layout_kw.setdefault("pady", pady)
 
 
 # ---  PublicContainer  -------------------------------------------------------
@@ -70,6 +89,7 @@ class PublicContainer(PublicWidgetBase):
         """Place `child._internal` under this container."""
         if "fill" in layout_kw:
             layout_kw["fill"] = normalize_fill(layout_kw["fill"])
+        _expand_margin(layout_kw)
         place_mode = any(k in layout_kw for k in PLACE_TRIGGER_KEYS)
         tk_widget = child._internal
 

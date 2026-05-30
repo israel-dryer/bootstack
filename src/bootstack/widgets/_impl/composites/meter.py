@@ -803,6 +803,11 @@ class Meter(Frame):
         return int(normalized * self._arc_range + self._arc_offset)
 
     def _handle_theme_changed(self, *_):
+        # Defer until after _rebuild_all_styles() has run so b.color() returns
+        # the new theme's colors, not the previous theme's.
+        self.after_idle(self._apply_theme_update)
+
+    def _apply_theme_update(self):
         self._resolve_meter_styles()
         self._canvas.configure(background=self._surface)
         self._draw_base_meter_images()

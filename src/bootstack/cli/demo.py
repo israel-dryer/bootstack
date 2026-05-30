@@ -36,7 +36,7 @@ def _build_typography_page():
         bs.Label("Typography", font="heading-xl")
         bs.Label("Semantic font tokens for consistent text styling.", accent="secondary")
 
-        with bs.GroupBox("Font Tokens", fill="horizontal"):
+        with bs.GroupBox("Font Tokens", fill="horizontal", layout="grid", columns=['225px', 1], sticky_items="w"):
             for token, desc in [
                 ("display-xl", "Display XL"),
                 ("display-lg", "Display LG"),
@@ -52,11 +52,10 @@ def _build_typography_page():
                 ("caption",  "Caption"),
                 ("code",     "Code"),
             ]:
-                with bs.HStack(gap=12, fill="horizontal"):
-                    bs.Label(desc, font=token, width=22)
-                    bs.Label(f'font="{token}"', font="code", accent="secondary")
+                bs.Label(desc, font=token)
+                bs.Label(f'font="{token}"', font="code", accent="secondary")
 
-        with bs.GroupBox("Font Modifiers", fill="horizontal"):
+        with bs.GroupBox("Font Modifiers", fill="horizontal", layout="grid", columns=['225px', 1], sticky_items="w"):
             for token, desc in [
                 ("body[bold]",          "Bold"),
                 ("body[italic]",        "Italic"),
@@ -64,9 +63,8 @@ def _build_typography_page():
                 ("body[underline]",     "Underline"),
                 ("heading-md[bold]",    "Heading Bold"),
             ]:
-                with bs.HStack(gap=12, fill="horizontal"):
-                    bs.Label(desc, font=token, width=22)
-                    bs.Label(f'font="{token}"', font="code", accent="secondary")
+                bs.Label(desc, font=token)
+                bs.Label(f'font="{token}"', font="code", accent="secondary")
 
 
 # -- Icons --------------------------------------------------------------------
@@ -84,28 +82,20 @@ def _build_icons_page():
         bs.Label("Icons", font="heading-xl")
         bs.Label("Bootstrap Icons via the icon= parameter.", accent="secondary")
 
-        with bs.GroupBox("Common Icons", fill="horizontal"):
-            with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
-                for name in icon_names[:10]:
-                    bs.Label(name, icon=name)
-            with bs.HStack(gap=12, fill="horizontal", fill_items="both"):
-                for name in icon_names[10:]:
-                    bs.Label(name, icon=name)
+        with bs.GroupBox("Common Icons", fill="horizontal", layout="grid", columns=5, gap=8, sticky_items="w"):
+            for name in icon_names:
+                bs.Label(name, icon=name)
 
-        with bs.GroupBox("Icon Sizes", fill="horizontal"):
-            with bs.HStack(gap=20):
-                for size in (12, 16, 20, 24, 32, 48):
-                    with bs.VStack(gap=4, anchor_items="center"):
-                        bs.Label(icon={"name": "star-fill", "size": size}, icon_only=True)
-                        bs.Label(f"{size}px", font="caption")
+        with bs.GroupBox("Icon Sizes", fill="horizontal", layout="hstack", gap=16):
+            for size in (12, 16, 20, 24, 32, 48):
+                bs.Label(f"{size}px", icon={"name": "star-fill", "size": size})
 
-        with bs.GroupBox("Icons in Context", fill="horizontal"):
-            with bs.HStack(gap=8):
-                bs.Button("Save",     icon="save")
-                bs.Button("Delete",   icon="trash",  accent="danger")
-                bs.Button("Settings", icon="gear",   accent="default")
-                bs.Button(icon="plus-lg",  icon_only=True, accent="success")
-                bs.Button(icon="x-lg",     icon_only=True, accent="danger")
+        with bs.GroupBox("Icons in Context", fill="horizontal", layout="hstack", gap=16):
+            bs.Button("Save",     icon="save")
+            bs.Button("Delete",   icon="trash",  accent="danger")
+            bs.Button("Settings", icon="gear",   accent="default")
+            bs.Button(icon="plus-lg",  icon_only=True, accent="success")
+            bs.Button(icon="x-lg",     icon_only=True, accent="danger")
 
 
 # -- Actions ------------------------------------------------------------------
@@ -128,11 +118,8 @@ def _build_buttons_page():
                 bs.Button("Disabled Solid",   accent="primary",  disabled=True)
                 bs.Button("Disabled Outline", accent="default",  variant="outline", disabled=True)
 
-        with bs.GroupBox("ButtonGroup", fill="horizontal", gap=12, layout="grid", columns=2):
-            for accent, variant in [
-                ("default", "solid"), ("primary", "solid"),
-                ("danger", "outline"), ("success", "ghost"),
-            ]:
+        with bs.GroupBox("ButtonGroup", fill="horizontal", gap=12, layout="hstack"):
+            for accent, variant in [("primary", "solid"), ("danger", "outline"), ("success", "ghost")]:
                 bg = bs.ButtonGroup(accent=accent, variant=variant)
                 bg.add("Cut",   icon="scissors")
                 bg.add("Copy",  icon="copy")
@@ -178,15 +165,14 @@ def _build_numeric_page():
         bs.Label("Numeric & Date", font="heading-xl")
         bs.Label("Numeric entries, sliders, and date/time pickers.", accent="secondary")
 
-        with bs.GroupBox("NumberField", fill="horizontal"):
-            bs.NumberField(label="Quantity", value=42,    min_value=0, max_value=100, fill="horizontal")
-            bs.NumberField(label="Price",    value=19.99, step=0.01,   fill="horizontal")
+        with bs.GroupBox("NumberField", fill="horizontal", gap=8, layout="hstack", fill_items="x", expand_items=True):
+            bs.NumberField(label="Quantity", value=42,    min_value=0, max_value=100)
+            bs.NumberField(label="Price",    value=19.99, step=0.01)
 
         with bs.GroupBox("SpinnerField", fill="horizontal"):
             bs.SpinnerField(
                 label="Month",
-                options=["Jan","Feb","Mar","Apr","May","Jun",
-                         "Jul","Aug","Sep","Oct","Nov","Dec"],
+                options=["Jan","Feb","Mar","Apr","May","Jun", "Jul","Aug","Sep","Oct","Nov","Dec"],
                 value="Jan", fill="horizontal",
             )
 
@@ -196,10 +182,9 @@ def _build_numeric_page():
             bs.Label("With value badge:")
             bs.Slider(value=65, show_value=True, tick_step=25, fill="horizontal")
 
-        with bs.GroupBox("DateField & TimeField", fill="horizontal"):
-            with bs.HStack(gap=12, fill="horizontal", fill_items="horizontal", expand_items=True):
-                bs.DateField(label="Date")
-                bs.TimeField(label="Time")
+        with bs.GroupBox("DateField & TimeField", fill="x", gap=8, fill_items="x", expand_items=True, layout="hstack"):
+            bs.DateField(label="Date")
+            bs.TimeField(label="Time")
 
 
 # -- Selection ----------------------------------------------------------------
@@ -210,15 +195,13 @@ def _build_selection_page():
         bs.Label("Selection", font="heading-xl")
         bs.Label("Checkboxes, switches, radio buttons, toggle groups, and selects.", accent="secondary")
 
-        with bs.GroupBox("Checkbox & Switch", fill="horizontal", gap=8):
-            with bs.HStack(gap=12):
-                bs.Checkbox("Default", accent="primary")
-                bs.Checkbox("Success", accent="success")
-                bs.Checkbox("Disabled", disabled=True)
-            with bs.HStack(gap=12):
-                bs.Switch("Notifications", accent="primary")
-                bs.Switch("Dark Mode",     accent="success")
-                bs.Switch("Disabled",      disabled=True)
+        with bs.GroupBox("Checkbox & Switch", fill="x", gap=8, layout="grid", columns=6):
+            bs.Checkbox("Default", accent="primary", value=True)
+            bs.Checkbox("Success", accent="success", value=False)
+            bs.Checkbox("Disabled", disabled=True)
+            bs.Switch("Notifications", accent="primary", value=True)
+            bs.Switch("Dark Mode",     accent="success")
+            bs.Switch("Disabled",      disabled=True)
 
         with bs.GroupBox("RadioGroup", fill="horizontal"):
             rg = bs.RadioGroup(value="opt1", accent="primary", fill="horizontal")
@@ -227,16 +210,18 @@ def _build_selection_page():
             rg.add("Option 3", value="opt3")
 
         with bs.GroupBox("ToggleGroup", fill="horizontal", gap=6):
-            bs.Label("Single select:")
-            tg = bs.ToggleGroup(mode="single", accent="primary", variant="outline", value="B")
-            tg.add("Bold",      value="B")
-            tg.add("Italic",    value="I")
-            tg.add("Underline", value="U")
-            bs.Label("Multi select:")
-            tg2 = bs.ToggleGroup(mode="multi", accent="success", variant="outline")
-            tg2.add("Python",     value="python")
-            tg2.add("JavaScript", value="javascript")
-            tg2.add("Rust",       value="rust")
+            with bs.VStack():
+                bs.Label("Single select:")
+                tg = bs.ToggleGroup(mode="single", accent="primary", variant="outline", value="B")
+                tg.add("Bold",      value="B")
+                tg.add("Italic",    value="I")
+                tg.add("Underline", value="U")
+            with bs.VStack():
+                bs.Label("Multi select:")
+                tg2 = bs.ToggleGroup(mode="multi", accent="success", variant="outline")
+                tg2.add("Python",     value="python")
+                tg2.add("JavaScript", value="javascript")
+                tg2.add("Rust",       value="rust")
 
         with bs.GroupBox("Select", fill="horizontal"):
             bs.Select(

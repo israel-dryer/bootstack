@@ -324,7 +324,7 @@ CSS conventions apply throughout v2:
 - `padding` — space **inside** the widget, between its border and content
   (was `ipadx`/`ipady` in Tk)
 
-Both accept: `int` (uniform), `(x, y)` tuple, or `(top, right, bottom, left)`.
+Both accept: `int` (uniform), `(x, y)` tuple, or `(left, top, right, bottom)` (ttk convention).
 
 ### Dialogs and one-shot functions
 
