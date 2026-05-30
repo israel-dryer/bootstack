@@ -24,6 +24,7 @@ class TextEntryPart(ValidationMixin, Entry):
             value_format=None,
             initial_focus: bool = False,
             allow_blank: bool = True,
+            placeholder: str | None = None,
             **kwargs
     ):
         """Initialize a TextEntryPart widget with internationalization support.
@@ -43,12 +44,15 @@ class TextEntryPart(ValidationMixin, Entry):
             initial_focus: If True, widget receives focus when created.
             allow_blank: If True, empty input is parsed as None. If False, empty
                 input preserves the previous value.
+            placeholder: Text shown when the field is empty and unfocused.
             **kwargs: Additional keyword arguments passed to the Entry base class.
 
         Note:
             The widget automatically subscribes to text changes and sets up
             event handlers for `<FocusIn>`, `<FocusOut>`, and `<Return>`.
         """
+        self._placeholder_text = placeholder
+        self._showing_placeholder = False
         kwargs.setdefault('ttk_class', 'TField')
         kwargs.setdefault('variant', 'input')
         super().__init__(master, **kwargs)
@@ -98,6 +102,35 @@ class TextEntryPart(ValidationMixin, Entry):
         if initial_focus:
             self.focus()
 
+        # placeholder — shown when empty and unfocused; uses textvariable detach
+        # so the Signal is never set to the placeholder text
+        if placeholder:
+            self._default_fg = self.cget("foreground")
+            if not self.textsignal.get():
+                self._show_placeholder()
+            self.bind('<FocusIn>', self._on_focus_in_placeholder, add=True)
+            self.bind('<FocusOut>', self._on_focus_out_placeholder, add=True)
+
+    def _show_placeholder(self) -> None:
+        self._showing_placeholder = True
+        self.configure(textvariable='')
+        self.insert(0, self._placeholder_text)
+        self.configure(foreground='grey')
+
+    def _hide_placeholder(self) -> None:
+        self._showing_placeholder = False
+        self.delete(0, 'end')
+        self.configure(textvariable=self.textsignal.var)
+        self.configure(foreground=self._default_fg)
+
+    def _on_focus_in_placeholder(self, _event) -> None:
+        if self._showing_placeholder:
+            self._hide_placeholder()
+
+    def _on_focus_out_placeholder(self, _event) -> None:
+        if self._placeholder_text and not self.textsignal.get():
+            self._show_placeholder()
+
     def _store_prev_value(self, _: Any):
         """Store current value on focus-in to detect changes later."""
         self._prev_changed_value = self._value
@@ -119,7 +152,11 @@ class TextEntryPart(ValidationMixin, Entry):
         text = self.textsignal.get()
         if text == self._prev_change_text:
             return
-
+        if self._showing_placeholder:
+            if text:
+                self._hide_placeholder()
+            else:
+                return
         self._prev_change_text = text
         self.event_generate('<<Input>>', data={"text": text})
 
@@ -249,6 +286,8 @@ class TextEntryPart(ValidationMixin, Entry):
 
     def commit(self):
         """Parse display text, update value, and normalize display (called on FocusOut/Return)."""
+        if self._showing_placeholder:
+            return
         s = self.get().strip()
 
         # parse once

@@ -34,6 +34,7 @@ class TextField(PublicWidgetBase):
 
     Args:
         value: Initial text value.
+        placeholder: Text shown when the field is empty and unfocused.
         text_signal: Reactive `Signal` linked to the field text.
         label: Label displayed above the input.
         message: Hint text displayed below the input.
@@ -54,6 +55,7 @@ class TextField(PublicWidgetBase):
         self,
         value: str = "",
         *,
+        placeholder: str | None = None,
         text_signal: Any = None,
         label: str | None = None,
         message: str | None = None,
@@ -104,6 +106,8 @@ class TextField(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if density is not None:
             internal_kwargs["density"] = density
+        if placeholder is not None:
+            internal_kwargs["placeholder"] = placeholder
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalTextEntry(tk_master, **internal_kwargs)

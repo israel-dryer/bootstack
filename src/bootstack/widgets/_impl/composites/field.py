@@ -119,6 +119,7 @@ class FieldOptions(TypedDict, total=False):
     textsignal: Signal
     width: int
     required: bool
+    placeholder: str
     xscrollcommand: Callable[[int, int], None]
     localize: bool | Literal['auto']
 
@@ -204,6 +205,7 @@ class Field(EntryMixin, Frame):
         accent = kwargs.pop('accent', None)
         self._density = kwargs.pop('density', 'default')
         self._localize = cast(bool | Literal['auto'], kwargs.pop('localize', 'auto'))
+        placeholder = kwargs.pop('placeholder', None)
 
         # Field itself (outer Frame) doesn't need styling - only pass master
         super().__init__(master)
@@ -242,7 +244,7 @@ class Field(EntryMixin, Frame):
         elif kind == "spinbox":
             self._entry = SpinnerEntryPart(self._field, value=value, density=self._density, **kwargs)
         else:
-            self._entry = TextEntryPart(self._field, value=value, density=self._density, **kwargs)
+            self._entry = TextEntryPart(self._field, value=value, density=self._density, placeholder=placeholder, **kwargs)
 
         # attach widgets
         if label:
