@@ -6,6 +6,7 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.passwordentry import PasswordEntry as _InternalPasswordEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
@@ -15,7 +16,7 @@ _PASSWORD_FIELD_EVENTS: dict[str, str] = {
 }
 
 
-class PasswordField(PublicWidgetBase):
+class PasswordField(FieldAddonMixin, PublicWidgetBase):
     """A masked text field for password input with an optional visibility toggle.
 
     Args:

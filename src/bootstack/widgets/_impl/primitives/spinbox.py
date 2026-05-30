@@ -68,6 +68,19 @@ class Spinbox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkState
             kwargs['font'] = 'caption'
         kwargs.update(style_options=self._capture_style_options(['density'], kwargs))
         super().__init__(master, **kwargs)
+        # Handle mousewheel explicitly so we can return "break" and stop the
+        # event from leaking to parent scroll containers. Instance bindings run
+        # before class bindings in Tk's chain, so we must do the spin ourselves.
+        self.bind("<MouseWheel>", self._on_mousewheel)
+        self.bind("<Button-4>", self._on_mousewheel)
+        self.bind("<Button-5>", self._on_mousewheel)
+
+    def _on_mousewheel(self, event):
+        if event.delta > 0 or event.num == 4:
+            self.event_generate("<Up>")
+        else:
+            self.event_generate("<Down>")
+        return "break"
 
 
     @configure_delegate('density')

@@ -6,6 +6,7 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.pathentry import PathEntry as _InternalPathEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
@@ -15,7 +16,7 @@ _PATHFIELD_EVENTS: dict[str, str] = {
 }
 
 
-class PathField(PublicWidgetBase):
+class PathField(FieldAddonMixin, PublicWidgetBase):
     """A text field with a browse button that opens a native file/directory dialog.
 
     After the user picks a path, the field text is updated and a `change` event

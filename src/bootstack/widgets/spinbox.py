@@ -120,5 +120,13 @@ class Spinbox(PublicWidgetBase):
         """
         return self.on("change", handler)
 
+    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired on Enter key.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("submit", handler)
+
 
 register_widget_events(Spinbox, _SPINBOX_EVENTS)

@@ -6,6 +6,7 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.textentry import TextEntry as _InternalTextEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 
 # Events that fire on the inner entry part, not the outer Frame.
@@ -29,7 +30,7 @@ _TEXTFIELD_EVENTS: dict[str, str] = {
 }
 
 
-class TextField(PublicWidgetBase):
+class TextField(FieldAddonMixin, PublicWidgetBase):
     """Single-line text input with optional label, message, and validation.
 
     Args:
@@ -128,6 +129,11 @@ class TextField(PublicWidgetBase):
     # ----- Properties -----
 
     @property
+    def placeholder(self) -> str | None:
+        """Placeholder text shown when the field is empty and unfocused."""
+        return self._internal._entry._placeholder_text
+
+    @property
     def value(self) -> str:
         return self._internal.value
 
@@ -194,6 +200,22 @@ class TextField(PublicWidgetBase):
             Subscription — call `.cancel()` to unsubscribe.
         """
         return self.on("submit", handler)
+
+    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("valid", handler)
+
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("invalid", handler)
 
     def on_validate(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
         """Register a callback fired after any validation run.

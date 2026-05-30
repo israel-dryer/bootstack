@@ -6,16 +6,19 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.numericentry import NumericEntry as _InternalNumericEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
 _NUMBER_FIELD_EVENTS: dict[str, str] = {
-    "change": "<<Change>>",
-    "submit": "<Return>",
+    "change":  "<<Change>>",
+    "submit":  "<Return>",
+    "valid":   "<<Valid>>",
+    "invalid": "<<Invalid>>",
 }
 
 
-class NumberField(PublicWidgetBase):
+class NumberField(FieldAddonMixin, PublicWidgetBase):
     """A numeric input field with optional stepper buttons.
 
     Args:
@@ -119,6 +122,14 @@ class NumberField(PublicWidgetBase):
     def disabled(self, v: bool) -> None:
         self._internal.configure(state="disabled" if v else "normal")
 
+    @property
+    def read_only(self) -> bool:
+        return str(self._internal._entry.cget("state")) == "readonly"
+
+    @read_only.setter
+    def read_only(self, v: bool) -> None:
+        self._internal.configure(state="readonly" if v else "normal")
+
     # ----- Methods -----
 
     def increment(self, steps: int = 1) -> None:
@@ -146,6 +157,22 @@ class NumberField(PublicWidgetBase):
             Subscription — call `.cancel()` to unsubscribe.
         """
         return self.on("submit", handler)
+
+    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("valid", handler)
+
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("invalid", handler)
 
 
 register_widget_events(NumberField, _NUMBER_FIELD_EVENTS)

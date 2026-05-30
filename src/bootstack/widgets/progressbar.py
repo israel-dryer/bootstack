@@ -67,6 +67,14 @@ class ProgressBar(PublicWidgetBase):
     def value(self, v: float) -> None:
         self._internal.set(v)
 
+    @property
+    def max_value(self) -> float:
+        return float(self._internal.cget("maximum"))
+
+    @max_value.setter
+    def max_value(self, v: float) -> None:
+        self._internal.configure(maximum=float(v))
+
     # ----- Methods -----
 
     def start(self, interval: int = 50) -> None:

@@ -6,6 +6,7 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.spinnerentry import SpinnerEntry as _InternalSpinnerEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
@@ -15,7 +16,7 @@ _SPINNER_FIELD_EVENTS: dict[str, str] = {
 }
 
 
-class SpinnerField(PublicWidgetBase):
+class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     """A text-entry field with spin buttons for stepping through values.
 
     Supports two modes: a fixed list of text values (`options=`) or a numeric

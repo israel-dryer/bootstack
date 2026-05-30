@@ -84,6 +84,30 @@ class Slider(PublicWidgetBase):
     def value(self, v: float) -> None:
         self._internal._signal.set(float(v))
 
+    @property
+    def min_value(self) -> float:
+        return self._internal._minvalue
+
+    @min_value.setter
+    def min_value(self, v: float) -> None:
+        self._internal.configure(minvalue=float(v))
+
+    @property
+    def max_value(self) -> float:
+        return self._internal._maxvalue
+
+    @max_value.setter
+    def max_value(self, v: float) -> None:
+        self._internal.configure(maxvalue=float(v))
+
+    @property
+    def disabled(self) -> bool:
+        return self._internal._state == "disabled"
+
+    @disabled.setter
+    def disabled(self, v: bool) -> None:
+        self._internal.configure(state="disabled" if v else "normal")
+
     # ----- Event shorthands -----
 
     def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:

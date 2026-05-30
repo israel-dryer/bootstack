@@ -7,6 +7,7 @@ from typing import Any, Callable, Iterable
 from bootstack.widgets._impl.composites.dateentry import DateEntry as _InternalDateEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
@@ -19,7 +20,7 @@ _DATEFIELD_EVENTS: dict[str, str] = {
 }
 
 
-class DateField(PublicWidgetBase):
+class DateField(FieldAddonMixin, PublicWidgetBase):
     """A date input field with an optional calendar picker button.
 
     In `'single'` mode `value` returns a `date`; in `'range'` mode it returns
@@ -169,6 +170,22 @@ class DateField(PublicWidgetBase):
             Subscription — call `.cancel()` to unsubscribe.
         """
         return self.on("change", handler)
+
+    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("valid", handler)
+
+    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("invalid", handler)
 
 
 register_widget_events(DateField, _DATEFIELD_EVENTS)

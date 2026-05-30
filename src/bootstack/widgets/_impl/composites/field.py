@@ -528,6 +528,28 @@ class Field(EntryMixin, Frame):
             self._field.state(['disabled'])
         self._sync_addon_state()
 
+    @configure_delegate('state')
+    def _delegate_state(self, value=None):
+        if value is None:
+            states = self._entry.state()
+            if 'disabled' in states:
+                return 'disabled'
+            if 'readonly' in states:
+                return 'readonly'
+            return 'normal'
+        if value == 'disabled':
+            self._entry.state(['disabled', '!readonly'])
+            self._field.state(['disabled'])
+        elif value == 'readonly':
+            self._entry.state(['readonly', '!disabled'])
+            self._field.state(['!disabled'])
+        else:
+            self._entry.state(['!disabled', '!readonly'])
+            self._field.state(['!disabled'])
+        self._sync_addon_state()
+        self._entry.event_generate('<<StateChanged>>')
+        return None
+
     def insert_addon(
             self,
             widget: Type[FieldAddonWidget],
@@ -579,7 +601,7 @@ class Field(EntryMixin, Frame):
             kwargs.setdefault('compound', 'image')
             kwargs.setdefault('icon_only', True)
 
-        if issubclass(widget, (Button, CheckButton)):
+        if issubclass(widget, (Button, CheckToggle)):
             icon_only = kwargs.get('icon_only', False)
             if 'style_options' in kwargs:
                 kwargs['style_options'].update(use_active_states=True, density=self._density, icon_only=icon_only)

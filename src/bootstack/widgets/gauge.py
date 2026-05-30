@@ -1,10 +1,12 @@
 ﻿from __future__ import annotations
 
-from typing import Any
+import tkinter
+from typing import Any, Callable
 
 from bootstack.widgets._impl.composites.meter import Meter as _InternalMeter
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.subscription import Subscription
 
 
 class Gauge(PublicWidgetBase):
@@ -99,5 +101,19 @@ class Gauge(PublicWidgetBase):
     def subtitle(self, v: str) -> None:
         self._internal.subtitle = v
 
+    # ----- Event shorthands -----
 
-register_widget_events(Gauge, {})
+    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription:
+        """Register a callback fired when the gauge value changes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("change", handler)
+
+
+_GAUGE_EVENTS: dict[str, str] = {
+    "change": "<<Change>>",
+}
+
+register_widget_events(Gauge, _GAUGE_EVENTS)

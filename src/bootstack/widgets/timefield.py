@@ -7,6 +7,7 @@ from typing import Any, Callable
 from bootstack.widgets._impl.composites.timeentry import TimeEntry as _InternalTimeEntry
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 
@@ -16,7 +17,7 @@ _TIME_FIELD_EVENTS: dict[str, str] = {
 }
 
 
-class TimeField(PublicWidgetBase):
+class TimeField(FieldAddonMixin, PublicWidgetBase):
     """A time-input field with a searchable dropdown of time intervals.
 
     Displays a formatted time value and shows a dropdown list of times at
