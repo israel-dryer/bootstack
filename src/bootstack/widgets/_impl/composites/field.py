@@ -206,6 +206,10 @@ class Field(EntryMixin, Frame):
         self._density = kwargs.pop('density', 'default')
         self._localize = cast(bool | Literal['auto'], kwargs.pop('localize', 'auto'))
         placeholder = kwargs.pop('placeholder', None)
+        # Default width=1 so the entry defers minimum sizing to the geometry
+        # manager (fill='x', expand=True) rather than enforcing a 20-char
+        # minimum. Addon buttons would otherwise push the column wider.
+        kwargs.setdefault('width', 1)
 
         # Field itself (outer Frame) doesn't need styling - only pass master
         super().__init__(master)
