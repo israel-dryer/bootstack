@@ -13,7 +13,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
             bs.Label("Fill in the details below to get started.", font="body")
 
             # ── Personal information ────────────────────────────────────
-            with bs.VStack(variant='card', gap=12, fill_items="horizontal"):
+            with bs.Card(gap=12, fill_items="horizontal"):
                 bs.Label("Personal information", font="body[bold]")
                 with bs.Grid(columns=2, gap=12, sticky_items="ew"):
                     bs.TextField(label="First name")
@@ -23,7 +23,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
                     bs.PasswordField(label="Password")
 
             # ── Location & language ─────────────────────────────────────
-            with bs.VStack(variant='card', gap=12, fill_items="horizontal"):
+            with bs.Card(gap=12, fill_items="horizontal"):
                 bs.Label("Location & language", font="body[bold]")
                 with bs.Grid(columns=2, gap=12, sticky_items="ew"):
                     countries = ["United States", "United Kingdom", "Canada",
@@ -38,7 +38,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
                     bs.NumberField(label="Age", min_value=18, max_value=120)
 
             # ── Plan ───────────────────────────────────────────────────
-            with bs.VStack(variant='card', gap=8, fill_items="horizontal"):
+            with bs.Card(gap=8, fill_items="horizontal"):
                 bs.Label("Choose your plan", font="body[bold]")
                 rg = bs.RadioGroup(orient="vertical")
                 rg.add("Free — basic features, up to 3 projects", value="free")
@@ -47,7 +47,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
                 rg.value = "free"
 
             # ── Notifications ───────────────────────────────────────────
-            with bs.VStack(variant='card', gap=8):
+            with bs.Card(gap=8):
                 bs.Label("Notifications", font="body[bold]")
                 with bs.HStack(gap=32):
                     bs.Switch("Email")
@@ -56,7 +56,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
                     bs.Switch("Marketing")
 
             # ── Budget ─────────────────────────────────────────────────
-            with bs.VStack(variant='card', gap=8, fill_items="horizontal"):
+            with bs.Card(gap=8, fill_items="horizontal"):
                 bs.Label("Budget settings", font="body[bold]")
                 bs.Label("Monthly spend limit", font="body")
                 bs.Slider(
@@ -72,7 +72,7 @@ with bs.App(title="Create Account", size=(680, 760)) as app:
                 )
 
             # ── Agreement ───────────────────────────────────────────────
-            with bs.VStack(variant='card', gap=8, fill_items='horizontal'):
+            with bs.Card(gap=8, fill_items='horizontal'):
                 bs.Checkbox("I agree to the Terms of Service and Privacy Policy")
                 bs.Checkbox("I confirm I am 18 years of age or older")
 

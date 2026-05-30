@@ -380,7 +380,7 @@ def _build_layout_page():
                 ("Revenue", "$45,678",       "success"),
                 ("Errors",  "12 today",      "danger"),
             ]:
-                with bs.VStack(variant='card', padding=16):
+                with bs.Card(accent=color):
                     bs.Label(title, accent=color, font="body[bold]")
                     bs.Label(body, font="heading-lg")
 
