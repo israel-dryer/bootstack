@@ -9,8 +9,6 @@
 ![](https://img.shields.io/github/stars/israel-dryer/bootstack.svg)
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
-**bootstack** is a batteries-included desktop framework for Python, built on Tk.
-
 Python desktop apps without the ceremony.
 
 <picture>
