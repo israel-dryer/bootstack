@@ -28,15 +28,15 @@ html[data-color-mode="dark"] .bs-screenshot-light { border-color: #30363d; }
 html[data-color-mode="light"] .bs-screenshot-dark,
 html[data-color-mode="light"] .bs-screenshot-light { border-color: #d0d7de; }
 
-.bs-screenshot-dark { display: none; }
-.bs-screenshot-light { display: block; }
+.bs-screenshot-dark { display: none !important; }
+.bs-screenshot-light { display: block !important; }
 
 @media (prefers-color-scheme: dark) {
-    .bs-screenshot-dark { display: block; }
-    .bs-screenshot-light { display: none; }
+    .bs-screenshot-dark { display: block !important; }
+    .bs-screenshot-light { display: none !important; }
 }
 
-html[data-color-mode="dark"] .bs-screenshot-dark { display: block; }
-html[data-color-mode="dark"] .bs-screenshot-light { display: none; }
-html[data-color-mode="light"] .bs-screenshot-dark { display: none; }
-html[data-color-mode="light"] .bs-screenshot-light { display: block; }
+html[data-color-mode="dark"] .bs-screenshot-dark { display: block !important; }
+html[data-color-mode="dark"] .bs-screenshot-light { display: none !important; }
+html[data-color-mode="light"] .bs-screenshot-dark { display: none !important; }
+html[data-color-mode="light"] .bs-screenshot-light { display: block !important; }
