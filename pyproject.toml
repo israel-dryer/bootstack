@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bootstack"
 version = "0.1.0a9"
-description = "A full UI framework for Python desktop apps built on tkinter — rich widgets, theming, and application structure out of the box."
+description = "End-to-end Python desktop framework. Declarative layout, reactive signals, semantic styling, 60+ widgets, and PyInstaller support out of the box."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"

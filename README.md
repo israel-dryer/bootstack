@@ -35,6 +35,7 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **Forms and validation** — field-level validators, inline error messages, and a `FormDialog` for quick modal forms
 - **DataSource abstraction** — one interface over SQLite, in-memory, and file backends with filtering, sorting, pagination, and CRUD
 - **A real CLI** — scaffold, run, add pages/views/dialogs/themes, and package for distribution
+- **PyInstaller packaging built in** — `bootstack build` produces a standalone executable; no separate toolchain required
 
 ## Installation
 
