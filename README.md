@@ -9,8 +9,6 @@
 ![](https://img.shields.io/github/stars/israel-dryer/bootstack.svg)
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
-Python desktop apps without the ceremony.
-
 > **Active alpha.** APIs may change before the first stable release.
 
 <picture>
