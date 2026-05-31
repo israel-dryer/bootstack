@@ -37,14 +37,20 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Button | ✓ | `docs/api/button.rst` | `docs/examples/button.py` | ✓ |
 | Label  | ✓ | `docs/api/label.rst`  | `docs/examples/label.py`  | ✓ |
 | Badge  | ✓ | `docs/api/badge.rst`  | `docs/examples/badge.py`  | ✓ |
-| TextField | ✓ | `docs/api/textfield.rst` | `docs/examples/textfield.py` | ✓ |
+| TextField    | ✓ | `docs/api/textfield.rst`    | `docs/examples/textfield.py`    | ✓ |
+| PasswordField | ✓ | `docs/api/passwordfield.rst` | `docs/examples/passwordfield.py` | ✓ |
+| NumberField  | ✓ | `docs/api/numberfield.rst`  | `docs/examples/numberfield.py`  | ✓ |
+| Slider       | ✓ | `docs/api/slider.rst`       | `docs/examples/slider.py`       | ✓ |
+| RangeSlider  | ✓ | `docs/api/rangeslider.rst`  | `docs/examples/rangeslider.py`  | ✓ |
+| Checkbox     | ✓ | `docs/api/checkbox.rst`     | `docs/examples/checkbox.py`     | ✓ |
+| Select       | ✓ | `docs/api/select.rst`       | `docs/examples/selectfield.py`  | ✓ |
 
 ### What's next
 
 Continue widget by widget through the API categories in this order:
 Actions → Data Display → Inputs → Selection → Layout → Navigation → Overlays → Dialogs → Forms.
 
-Suggested next: PasswordField, NumberField, Slider, Checkbox, Select.
+Suggested next (Selection category): Switch, ToggleButton, RadioGroup, ToggleGroup.
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -155,6 +161,40 @@ CSS in `docs/_static/custom.css` handles `data-color-mode` switching
   `surface=` for background.
 - **Shibuya dark mode selector** — uses `html[data-color-mode="dark"]`, NOT
   `prefers-color-scheme`. Both are covered in `custom.css`.
+- **Hero vs full example split** — `docs/screenshots/<widget>.py` is the lean
+  hero (visual states only, may use `app.tk.after()` for focus/blur scaffolding).
+  `docs/examples/<widget>.py` is the full interactive demo. The screenshot runner
+  prefers `docs/screenshots/` and falls back to `docs/examples/`.
+- **Screenshot runner positioning** — window geometry is set via `after(0)` inside
+  `_run` so it fires after `App.__exit__` shows the window. Setting it before
+  `orig_run()` is overridden by the WM. Focus is forced via `after(50)` so the
+  window owns OS focus before hero widget `focus()` calls fire.
+- **`select.py` shadows stdlib** — naming an example file `select.py` shadows
+  Python's stdlib `select` module when run directly. Use `selectfield.py` instead.
+- **SelectBox disabled text fix** — `SelectBox.__init__` sets `entry.state(['readonly'])`
+  AFTER `Field.__init__` sets `['disabled', '!readonly']`, leaving entry in
+  `['disabled', 'readonly']`. Fixed in `field.py` by changing the foreground map
+  from `('disabled !readonly', ...)` to `('disabled', ...)` so muted text applies
+  regardless of the readonly flag.
+- **`GridFrame` equal columns** — use `uniform=f"col_w{weight}"` in `columnconfigure`
+  so equal-weight columns are truly equal regardless of children's minimum sizes.
+  Without `uniform`, Tkinter distributes extra space equally but still respects
+  each column's minimum, so a field with stepper buttons inflates its column.
+- **`tristate=False` default** — boolean controls (Checkbox, Switch, ToggleButton)
+  now seed `unchecked_value` by default when no `value=`/`signal=` is given,
+  preventing the indeterminate dash from appearing unexpectedly. `tristate=True`
+  opts Checkbox into the three-state behaviour (None/True/False).
+- **`on_icon`/`off_icon` vs `icon=`** — for stateful widgets (Checkbox, Switch),
+  use `on_icon=`/`off_icon=` to show different icons per state. A static `icon=`
+  only color-shifts; it does not change shape. ToggleButton may legitimately use
+  just one of `on_icon=` or `off_icon=`.
+- **`info` color token** — restored as a first-class semantic accent across all
+  12 themes (cyan[600] light / cyan[400] dark; teal for forest, blue for ocean).
+  Add to `AccentToken`, `token_maps.py`, and `cli/add.py` when creating new themes.
+- **Run examples after editing** — always run `python docs/examples/<widget>.py`
+  after making changes to verify it launches without errors before committing.
+  Runtime bugs (e.g. unsupported kwargs like `wrap=True` on HStack) are invisible
+  to static analysis.
 
 ---
 
