@@ -1,6 +1,12 @@
 Data Display
 ============
 
-Label, Badge, ListView, Tree, Table, ProgressBar, Gauge.
+Widgets for presenting data, status, and metrics.
 
-.. note:: Coming soon.
+.. toctree::
+   :maxdepth: 1
+
+   label
+   badge
+
+.. note:: ListView, Tree, Table, ProgressBar, and Gauge pages coming soon.
