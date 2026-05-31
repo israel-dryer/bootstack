@@ -65,6 +65,7 @@ docs = [
     "shibuya",
     "sphinx-autodoc-typehints",
     "sphinx-design",
+    "sphinx-autobuild",
 ]
 
 [project.urls]

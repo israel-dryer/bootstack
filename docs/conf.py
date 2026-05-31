@@ -75,8 +75,8 @@ html_theme = "shibuya"
 
 html_theme_options = {
     "github_url":  "https://github.com/israel-dryer/bootstack",
-    "light_logo":  "_static/bootstack-logo-light.png",
-    "dark_logo":   "_static/bootstack-logo-dark.png",
+    "light_logo":  "_static/bootstack-logo-light.svg",
+    "dark_logo":   "_static/bootstack-logo-dark.svg",
     "nav_links": [
         {
             "title": "Getting Started",
@@ -145,6 +145,8 @@ html_theme_options = {
 }
 
 html_static_path = ["_static"]
+html_css_files   = ["custom.css"]
+html_favicon     = "_static/favicon.ico"
 html_title       = "bootstack"
 html_short_title = "bootstack"
 
