@@ -49,8 +49,12 @@ Accent colors
 
 .. code-block:: python
 
+   bs.RangeSlider(20, 80, accent="primary")
+   bs.RangeSlider(20, 80, accent="secondary")
+   bs.RangeSlider(20, 80, accent="info")
    bs.RangeSlider(20, 80, accent="success")
    bs.RangeSlider(20, 80, accent="warning")
+   bs.RangeSlider(20, 80, accent="danger")
 
 Reactive binding
 ~~~~~~~~~~~~~~~~

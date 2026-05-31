@@ -12,12 +12,12 @@ with bs.App(title="Badge", padding=20, gap=14) as app:
 
     bs.Label("Accent Colors — Square", font="heading-sm[bold]")
     with bs.HStack(gap=8):
-        for accent in ("primary", "secondary", "success", "warning", "danger"):
+        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Badge(accent.title(), accent=accent)
 
     bs.Label("Accent Colors — Pill", font="heading-sm[bold]")
     with bs.HStack(gap=8):
-        for accent in ("primary", "secondary", "success", "warning", "danger"):
+        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Badge(accent.title(), accent=accent, variant="pill")
 
     bs.Label("In Context", font="heading-sm[bold]")

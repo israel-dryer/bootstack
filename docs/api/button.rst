@@ -32,11 +32,12 @@ themes without hard-coding any color.
 
    with bs.HStack(gap=8):
        bs.Button("Default")
-       bs.Button("Primary",  accent="primary")
-       bs.Button("Success",  accent="success")
-       bs.Button("Warning",  accent="warning")
-       bs.Button("Danger",   accent="danger")
-       bs.Button("Secondary",accent="secondary")
+       bs.Button("Primary",   accent="primary")
+       bs.Button("Secondary", accent="secondary")
+       bs.Button("Info",      accent="info")
+       bs.Button("Success",   accent="success")
+       bs.Button("Warning",   accent="warning")
+       bs.Button("Danger",    accent="danger")
 
 Style variants
 ~~~~~~~~~~~~~~

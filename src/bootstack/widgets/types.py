@@ -49,7 +49,7 @@ WidgetDensity = Literal['default', 'compact']
 # bootstack styling tokens
 # ---------------------------------------------------------------------------
 
-AccentToken = Literal['default', 'primary', 'secondary', 'success', 'warning', 'danger', 'muted']
+AccentToken = Literal['default', 'primary', 'secondary', 'info', 'success', 'warning', 'danger', 'muted']
 """Semantic color accent token. Accepts modifiers: `'primary[+1]'`, `'primary[500]'`, `'primary[subtle]'`."""
 
 VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']

@@ -387,6 +387,7 @@ def _render_theme(name: str, mode: str) -> str:
         "semantic": {
             "primary": f"blue[{step}]",
             "secondary": f"gray[{step}]",
+            "info": f"cyan[{step}]",
             "success": f"green[{step}]",
             "warning": f"yellow[{step}]",
             "danger": f"red[{step}]",

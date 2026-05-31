@@ -43,6 +43,7 @@ Accent colors
 
    bs.Badge("Primary",   accent="primary")
    bs.Badge("Secondary", accent="secondary")
+   bs.Badge("Info",      accent="info")
    bs.Badge("Success",   accent="success")
    bs.Badge("Warning",   accent="warning")
    bs.Badge("Danger",    accent="danger")

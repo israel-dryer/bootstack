@@ -18,7 +18,7 @@ with bs.App(title="Slider Demo", padding=20, gap=16, minsize=(500, 0)) as app:
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm[bold]")
     with bs.VStack(gap=8, fill="x"):
-        for accent in ("primary", "secondary", "success", "warning", "danger"):
+        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Slider(50, accent=accent, fill="x")
 
     # Value badge

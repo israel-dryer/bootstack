@@ -1,6 +1,11 @@
 Selection
 =========
 
-Checkbox, Switch, ToggleButton, RadioGroup, ToggleGroup, Select, Calendar.
+Widgets for choosing values from a set of options.
 
-.. note:: Coming soon.
+.. toctree::
+   :maxdepth: 1
+
+   checkbox
+
+.. note:: Switch, ToggleButton, RadioGroup, ToggleGroup, Select, and Calendar pages coming soon.

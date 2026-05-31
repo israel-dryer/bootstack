@@ -1,7 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton as _InternalCheckButton
 from bootstack.widgets._impl.primitives.switch import Switch as _InternalSwitch
@@ -10,6 +10,10 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _BOOLEAN_EVENTS: dict[str, str] = {
     "change":   "<<Change>>",
@@ -27,24 +31,28 @@ class _BooleanControlBase(PublicWidgetBase):
         self,
         label: str = "",
         *,
-        signal: Any = None,
+        signal: "Signal | None" = None,
         value: Any = None,
         checked_value: Any = True,
         unchecked_value: Any = False,
+        tristate: bool = False,
         on_change: Callable[[], Any] | None = None,
-        icon: str | None = None,
+        on_icon: str | None = None,
+        off_icon: str | None = None,
         icon_only: bool = False,
         show_indicator: bool = True,
         disabled: bool = False,
-        accent: str | None = None,
-        variant: str | None = None,
-        density: str | None = None,
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
+        density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         self._checked_value = checked_value
+        self._unchecked_value = unchecked_value
+        self._tristate = tristate
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -60,8 +68,10 @@ class _BooleanControlBase(PublicWidgetBase):
             internal_kwargs["onvalue"] = checked_value
         if unchecked_value is not False:
             internal_kwargs["offvalue"] = unchecked_value
-        if icon is not None:
-            internal_kwargs["icon"] = icon
+        if on_icon is not None:
+            internal_kwargs["on_icon"] = on_icon
+        if off_icon is not None:
+            internal_kwargs["off_icon"] = off_icon
         if icon_only:
             internal_kwargs["icon_only"] = True
         if not show_indicator:
@@ -78,9 +88,15 @@ class _BooleanControlBase(PublicWidgetBase):
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
 
-        # Seed initial value only when no signal was passed (mirrors internal behaviour).
-        if value is not None and signal is None:
-            self._internal.set(value)
+        # Seed initial value when no signal was passed.
+        # tristate=False: default to unchecked_value so the box never shows the
+        # indeterminate dash unexpectedly. tristate=True: leave unseeded so the
+        # initial state is None (indeterminate) unless value= was explicitly given.
+        if signal is None:
+            if value is not None:
+                self._internal.set(value)
+            elif not tristate:
+                self._internal.set(unchecked_value)
 
         # Wire command → virtual events so on_change() / on_check() subscriptions work.
         def _command():
@@ -100,7 +116,18 @@ class _BooleanControlBase(PublicWidgetBase):
 
     @property
     def value(self) -> Any:
-        return self._internal.get()
+        """The current value.
+
+        Returns ``checked_value`` when checked, ``unchecked_value`` when
+        unchecked, or ``None`` when in the indeterminate state (only possible
+        when ``tristate=True``).
+        """
+        v = self._internal.get()
+        if v == self._checked_value:
+            return self._checked_value
+        if v == self._unchecked_value:
+            return self._unchecked_value
+        return None
 
     @value.setter
     def value(self, v: Any) -> None:
@@ -108,6 +135,7 @@ class _BooleanControlBase(PublicWidgetBase):
 
     @property
     def checked(self) -> bool:
+        """Whether the control is in the checked/on state."""
         return self._internal.get() == self._checked_value
 
     @checked.setter
@@ -115,7 +143,13 @@ class _BooleanControlBase(PublicWidgetBase):
         self._internal.set(self._checked_value if v else self._internal.cget("offvalue"))
 
     @property
+    def signal(self) -> "Signal | None":
+        """The reactive ``Signal`` linked to this control, or ``None``."""
+        return getattr(self._internal, 'signal', None)
+
+    @property
     def disabled(self) -> bool:
+        """Whether the control is non-interactive."""
         return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter
@@ -138,7 +172,7 @@ class _BooleanControlBase(PublicWidgetBase):
         """Register a callback fired whenever the value changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 
@@ -147,10 +181,10 @@ class _BooleanControlBase(PublicWidgetBase):
     @overload
     def on_check(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
     def on_check(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
-        """Register a callback fired when the control is checked/selected.
+        """Register a callback fired when the control becomes checked/selected.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("check", handler)
 
@@ -159,10 +193,10 @@ class _BooleanControlBase(PublicWidgetBase):
     @overload
     def on_uncheck(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
     def on_uncheck(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
-        """Register a callback fired when the control is unchecked/deselected.
+        """Register a callback fired when the control becomes unchecked/deselected.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("uncheck", handler)
 
@@ -170,18 +204,43 @@ class _BooleanControlBase(PublicWidgetBase):
 class Checkbox(_BooleanControlBase):
     """A labelled checkbox — checked or unchecked.
 
+    The label is the first positional argument. All options are keyword-only.
+
     Args:
         label: Label text displayed beside the checkbox.
-        signal: Reactive `Signal` controlling the checked state.
-        value: Initial value (ignored when `signal=` is passed).
-        checked_value: Value that represents the checked state. Default `True`.
-        unchecked_value: Value that represents the unchecked state. Default `False`.
-        on_change: Callback fired on every toggle.
-        show_indicator: If False, hides the box indicator (use with `icon=`).
-        disabled: If True, widget is non-interactive.
-        accent: Accent token, e.g. `'primary'`, `'success'`.
-        variant: Style variant, e.g. `'round'`, `'square'`.
-        parent: Override the context-stack parent.
+        signal: Reactive ``Signal`` controlling the checked state. When
+            provided, ``value=`` is ignored — seed the Signal directly.
+        value: Initial value. Ignored when ``signal=`` is passed.
+        checked_value: Value representing the checked state. Defaults to
+            ``True``.
+        unchecked_value: Value representing the unchecked state. Defaults
+            to ``False``.
+        tristate: If ``True``, enables a third indeterminate state. When
+            indeterminate the box shows a dash indicator and ``value``
+            returns ``None``. If no ``value=`` or ``signal=`` is provided,
+            the checkbox starts in the indeterminate state. Defaults to
+            ``False``.
+        on_change: Shorthand callback fired on every toggle. Equivalent to
+            ``checkbox.on_change(fn)``.
+        on_icon: Bootstrap Icons name shown when the checkbox is checked.
+            Pair with ``off_icon=`` to display different icons per state,
+            e.g. ``on_icon="check-circle-fill", off_icon="circle"``.
+        off_icon: Bootstrap Icons name shown when the checkbox is unchecked.
+        icon_only: If ``True``, hides the label text and shows only the icon.
+            Combine with ``on_icon=``/``off_icon=`` and
+            ``show_indicator=False`` for fully icon-driven checkboxes.
+        show_indicator: If ``False``, hides the checkbox box indicator.
+            Useful when ``on_icon=``/``off_icon=`` serve as the visual cue.
+        disabled: If ``True``, widget is non-interactive and dimmed.
+            Defaults to ``False``.
+        accent: Accent token. One of ``'primary'``, ``'secondary'``,
+            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
+            ``'default'``.
+        variant: Style variant token (theme-defined, e.g. ``'round'``,
+            ``'square'``).
+        density: Padding density. ``'default'`` or ``'compact'``.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
     _internal_class = _InternalCheckButton
 
@@ -189,8 +248,29 @@ class Checkbox(_BooleanControlBase):
 class Switch(_BooleanControlBase):
     """A toggle switch — on or off.
 
-    Same kwargs as `Checkbox`. Visual difference only: renders as a
-    sliding track-and-thumb instead of a box.
+    Renders as a sliding track-and-thumb. Accepts the same kwargs as
+    :class:`Checkbox`.
+
+    Args:
+        label: Label text displayed beside the switch.
+        signal: Reactive ``Signal`` controlling the on/off state. When
+            provided, ``value=`` is ignored — seed the Signal directly.
+        value: Initial value. Ignored when ``signal=`` is passed.
+        checked_value: Value representing the on state. Defaults to
+            ``True``.
+        unchecked_value: Value representing the off state. Defaults to
+            ``False``.
+        on_change: Shorthand callback fired on every toggle.
+        on_icon: Bootstrap Icons name shown when the switch is on.
+            Pair with ``off_icon=`` to show different icons per state.
+        off_icon: Bootstrap Icons name shown when the switch is off.
+        disabled: If ``True``, widget is non-interactive and dimmed.
+        accent: Accent token. One of ``'primary'``, ``'secondary'``,
+            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
+            ``'default'``.
+        density: Padding density. ``'default'`` or ``'compact'``.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
     _internal_class = _InternalSwitch
 
@@ -198,8 +278,33 @@ class Switch(_BooleanControlBase):
 class ToggleButton(_BooleanControlBase):
     """A button that stays pressed when active — toolbar-style toggle.
 
-    Same kwargs as `Checkbox`. Visual difference only: renders as a
-    depressed button rather than a checkbox or switch.
+    Renders as a depressed button rather than a checkbox or switch.
+    Accepts the same kwargs as :class:`Checkbox`.
+
+    Args:
+        label: Button label text.
+        signal: Reactive ``Signal`` controlling the pressed state. When
+            provided, ``value=`` is ignored — seed the Signal directly.
+        value: Initial value. Ignored when ``signal=`` is passed.
+        checked_value: Value representing the pressed state. Defaults to
+            ``True``.
+        unchecked_value: Value representing the unpressed state. Defaults
+            to ``False``.
+        on_change: Shorthand callback fired on every toggle.
+        on_icon: Bootstrap Icons name shown when the button is pressed/active.
+            Can be used alone (e.g. ``on_icon="star-fill"`` to fill an icon
+            when active) or paired with ``off_icon=``.
+        off_icon: Bootstrap Icons name shown when the button is unpressed.
+            Can be used alone or paired with ``on_icon=``.
+        icon_only: If ``True``, shows only the icon with no label text.
+        disabled: If ``True``, widget is non-interactive and dimmed.
+        accent: Accent token. One of ``'primary'``, ``'secondary'``,
+            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
+            ``'default'``.
+        variant: Style variant token.
+        density: Padding density. ``'default'`` or ``'compact'``.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
     _internal_class = _InternalCheckToggle
 

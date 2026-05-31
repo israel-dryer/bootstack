@@ -52,10 +52,11 @@ Use ``accent=`` to apply a semantic text color that adapts to the active theme.
 .. code-block:: python
 
    bs.Label("Primary",   accent="primary",   font="body[bold]")
+   bs.Label("Secondary", accent="secondary", font="body[bold]")
+   bs.Label("Info",      accent="info",      font="body[bold]")
    bs.Label("Success",   accent="success",   font="body[bold]")
    bs.Label("Warning",   accent="warning",   font="body[bold]")
    bs.Label("Danger",    accent="danger",    font="body[bold]")
-   bs.Label("Secondary", accent="secondary", font="body[bold]")
 
 Icons
 ~~~~~

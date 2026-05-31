@@ -348,7 +348,7 @@ img = bs.Image.from_bytes(raw_bytes)
 bs.Button("Launch", image=img)
 
 # Color/font tokens
-accent="primary|secondary|success|warning|danger|default"
+accent="primary|secondary|info|success|warning|danger|default"
 variant="solid|outline|ghost|toggle"
 surface="content|card|chrome|overlay"
 font="body|heading-lg|heading-md[bold]|caption|code|body+2[italic]"

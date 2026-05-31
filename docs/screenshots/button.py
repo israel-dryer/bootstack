@@ -4,7 +4,7 @@ with bs.App(title="Button", padding=20, gap=14) as app:
 
     bs.Label("Accent Colors", font="heading-sm[bold]")
     with bs.HStack(gap=8):
-        for accent in ("default", "primary", "secondary", "success", "warning", "danger"):
+        for accent in ("default", "primary", "secondary", "info", "success", "warning", "danger"):
             bs.Button(accent.title(), accent=accent)
 
     bs.Label("Style Variants", font="heading-sm[bold]")

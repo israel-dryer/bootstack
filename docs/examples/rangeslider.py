@@ -27,7 +27,7 @@ with bs.App(title="RangeSlider Demo", padding=20, gap=16, minsize=(500, 0)) as a
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm[bold]")
     with bs.VStack(gap=8, fill="x"):
-        for accent in ("primary", "secondary", "success", "warning", "danger"):
+        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.RangeSlider(20, 80, accent=accent, fill="x")
 
     # Reactive binding

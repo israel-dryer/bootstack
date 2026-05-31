@@ -29,7 +29,7 @@ with bs.App(title="Label Demo", padding=20, gap=16) as app:
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm[bold]")
     with bs.HStack(gap=16):
-        for accent in ("primary", "secondary", "success", "warning", "danger"):
+        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Label(accent.title(), accent=accent, font="body[bold]")
 
     # Icons

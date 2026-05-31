@@ -22,6 +22,7 @@
   "semantic": {
     "primary": "teal[600]",
     "secondary": "purple[600]",
+    "info": "cyan[600]",
     "success": "green[600]",
     "warning": "yellow[600]",
     "danger": "pink[600]"

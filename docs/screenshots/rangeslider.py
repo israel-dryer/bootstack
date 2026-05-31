@@ -11,6 +11,7 @@ with bs.App(title="RangeSlider", padding=20, gap=14, minsize=(500, 1)) as app:
     bs.Label("Accent Colors", font="heading-sm[bold]")
     bs.RangeSlider(20, 80, accent="primary",   fill="x")
     bs.RangeSlider(20, 80, accent="secondary", fill="x")
+    bs.RangeSlider(20, 80, accent="info",      fill="x")
     bs.RangeSlider(20, 80, accent="success",   fill="x")
     bs.RangeSlider(20, 80, accent="warning",   fill="x")
     bs.RangeSlider(20, 80, accent="danger",    fill="x")

@@ -35,8 +35,11 @@ Accent colors
 .. code-block:: python
 
    bs.Slider(50, accent="primary")
+   bs.Slider(50, accent="secondary")
+   bs.Slider(50, accent="info")
    bs.Slider(50, accent="success")
    bs.Slider(50, accent="warning")
+   bs.Slider(50, accent="danger")
 
 Show value badge
 ~~~~~~~~~~~~~~~~

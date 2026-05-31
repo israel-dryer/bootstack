@@ -8,6 +8,7 @@ with bs.App(title="Slider", padding=20, gap=14, minsize=(500, 1)) as app:
     bs.Label("Accent Colors", font="heading-sm[bold]")
     bs.Slider(50, accent="primary",   fill="x")
     bs.Slider(50, accent="secondary", fill="x")
+    bs.Slider(50, accent="info",      fill="x")
     bs.Slider(50, accent="success",   fill="x")
     bs.Slider(50, accent="warning",   fill="x")
     bs.Slider(50, accent="danger",    fill="x")
