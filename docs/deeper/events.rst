@@ -1,0 +1,4 @@
+Events
+======
+
+.. note:: Coming soon.

@@ -1,3 +1,4 @@
 sphinx>=7.2
 shibuya
 sphinx-autodoc-typehints
+sphinx-design

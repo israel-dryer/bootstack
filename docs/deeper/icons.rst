@@ -1,0 +1,4 @@
+Icons
+=====
+
+.. note:: Coming soon.
