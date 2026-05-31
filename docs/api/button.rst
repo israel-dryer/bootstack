@@ -186,9 +186,6 @@ API
 Full Example
 ------------
 
-A complete runnable app demonstrating all Button features.
-Run with ``python docs/examples/button.py``.
-
 .. literalinclude:: ../../docs/examples/button.py
    :language: python
    :start-after: import bootstack as bs

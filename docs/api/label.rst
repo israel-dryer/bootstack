@@ -111,8 +111,6 @@ API
 Full Example
 ------------
 
-Run with ``python docs/examples/label.py``.
-
 .. literalinclude:: ../../docs/examples/label.py
    :language: python
    :start-after: import bootstack as bs

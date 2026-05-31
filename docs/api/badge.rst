@@ -76,8 +76,6 @@ API
 Full Example
 ------------
 
-Run with ``python docs/examples/badge.py``.
-
 .. literalinclude:: ../../docs/examples/badge.py
    :language: python
    :start-after: import bootstack as bs

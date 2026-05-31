@@ -138,8 +138,6 @@ API
 Full Example
 ------------
 
-Run with ``python docs/examples/passwordfield.py``.
-
 .. literalinclude:: ../../docs/examples/passwordfield.py
    :language: python
    :start-after: import bootstack as bs

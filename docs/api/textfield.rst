@@ -132,8 +132,6 @@ API
 Full Example
 ------------
 
-Run with ``python docs/examples/textfield.py``.
-
 .. literalinclude:: ../../docs/examples/textfield.py
    :language: python
    :start-after: import bootstack as bs
