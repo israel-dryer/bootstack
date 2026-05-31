@@ -260,10 +260,7 @@ class BaseWindow:
                     import bootstack
                     assets = Path(bootstack.__file__).parent / 'assets'
                     if sys.platform == 'win32':
-                        ico = assets / 'bootstack-light.ico'
-                        if not ico.exists():
-                            ico = assets / 'bootstack.ico'
-                        self.wm_iconbitmap(str(ico))
+                        self.wm_iconbitmap(str(assets / 'bootstack.ico'))
                     else:
                         self._icon = tkinter.PhotoImage(file=str(assets / 'bootstack.png'), master=self)
                         self.iconphoto(True, self._icon)
@@ -289,10 +286,7 @@ class BaseWindow:
                     import bootstack
                     assets = Path(bootstack.__file__).parent / 'assets'
                     if sys.platform == 'win32':
-                        ico = assets / 'bootstack-light.ico'
-                        if not ico.exists():
-                            ico = assets / 'bootstack.ico'
-                        self.wm_iconbitmap(str(ico))
+                        self.wm_iconbitmap(str(assets / 'bootstack.ico'))
                     else:
                         self._icon = tkinter.PhotoImage(file=str(assets / 'bootstack.png'), master=self)
                         self.iconphoto(True, self._icon)
