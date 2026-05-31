@@ -10,5 +10,6 @@ Widgets for choosing values from a set of options.
    select
    switch
    togglebutton
+   radiogroup
 
-.. note:: RadioGroup, ToggleGroup, and Calendar pages coming soon.
+.. note:: ToggleGroup and Calendar pages coming soon.
