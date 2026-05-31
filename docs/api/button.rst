@@ -8,6 +8,18 @@ argument.
 
    bs.Button("Save", accent="primary", on_click=handle_save)
 
+.. raw:: html
+
+   <picture>
+     <source media="(prefers-color-scheme: dark)"
+             srcset="/_static/examples/button-dark.png">
+     <source media="(prefers-color-scheme: light)"
+             srcset="/_static/examples/button-light.png">
+     <img src="/_static/examples/button-light.png"
+          alt="Button widget demo"
+          style="max-width:100%; border-radius:6px; margin:1rem 0;">
+   </picture>
+
 Usage
 -----
 
