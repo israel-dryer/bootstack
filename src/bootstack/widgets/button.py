@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class Button(PublicWidgetBase):
     """A clickable action trigger.
 
-    The button label is the first positional argument. All styling and
+    The button text is the first positional argument. All styling and
     behavior options are keyword-only.
 
     Layout kwargs (``fill``, ``expand``, ``margin``, ``anchor``, etc.) are
@@ -34,19 +34,19 @@ class Button(PublicWidgetBase):
             (no border, transparent background). Defaults to ``'solid'``.
         icon: Bootstrap Icons name (e.g. ``'save'``, ``'trash'``). See the
             full catalog at https://icons.getbootstrap.com.
-        icon_only: If ``True``, show only the icon — no label text. Set a
-            meaningful ``label`` anyway for accessibility.
-        icon_position: Position of the icon relative to the label. One of
+        icon_only: If ``True``, show only the icon with no text. Set
+            meaningful ``text`` anyway for accessibility.
+        icon_position: Position of the icon relative to the text. One of
             ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
         image: A ``bs.Image`` object to display on the button. Load one with
             ``bs.Image.open()``, ``bs.Image.from_bytes()``, or
             ``bs.Image.from_pil()``. Use when you need a custom image rather
             than a Bootstrap Icon. Combine with ``icon_position=`` to control
-            placement relative to the label.
+            placement relative to the text.
         width: Button width in character units. Useful for making a row of
             buttons uniform width (e.g. ``width=10``).
-        textsignal: Reactive ``Signal[str]`` bound to the label text. The
-            button label updates automatically when the signal changes.
+        textsignal: Reactive ``Signal[str]`` bound to the button text.
+            Updates automatically when the signal changes.
         density: Padding density. ``'default'`` (normal) or ``'compact'``
             (reduced padding, suited for toolbars).
         disabled: If ``True``, the button is non-interactive and visually
@@ -77,10 +77,9 @@ class Button(PublicWidgetBase):
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
-        internal_kwargs: dict[str, Any] = {
-            "text":     text,
-            "compound": icon_position,
-        }
+        internal_kwargs: dict[str, Any] = {"text": text}
+        if not icon_only:
+            internal_kwargs["compound"] = icon_position
         if on_click is not None:
             internal_kwargs["command"] = on_click
         if accent is not None:
@@ -109,7 +108,7 @@ class Button(PublicWidgetBase):
 
     @property
     def text(self) -> str:
-        """The button's label text."""
+        """The button's text."""
         return str(self._internal.cget("text"))
 
     @text.setter
