@@ -104,6 +104,7 @@ from bootstack.widgets.radiogroup import RadioGroup
 from bootstack.widgets.scrollbar import Scrollbar
 from bootstack.widgets.scrollview import ScrollView
 from bootstack.widgets.select import Select
+from bootstack.widgets.selectbutton import SelectButton
 from bootstack.widgets.separator import Separator
 from bootstack.widgets.sizegrip import SizeGrip
 from bootstack.widgets.splitview import SplitView, SplitPane
