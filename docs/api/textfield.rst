@@ -148,4 +148,5 @@ Full Example
 
 .. literalinclude:: ../../docs/examples/textfield.py
    :language: python
+   :linenos:
    :start-after: import bootstack as bs

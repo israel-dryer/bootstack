@@ -140,4 +140,5 @@ Full Example
 
 .. literalinclude:: ../../docs/examples/passwordfield.py
    :language: python
+   :linenos:
    :start-after: import bootstack as bs
