@@ -69,11 +69,11 @@ def _patch(cls):
             self.tk.after(150, _grab)
 
         # Position on the primary monitor at startup — moving the window at
-        # capture time clears the OS focus and loses the focus ring.
-        self.tk.geometry('+200+100')
         self.tk.attributes('-topmost', True)
-        # Get OS-level focus early so widget focus() calls in the hero fire
-        # while the window already owns focus — focus rings then render correctly.
+        # Schedule geometry and focus after the mainloop starts — the App's
+        # __exit__ shows the window after orig_run() begins, so geometry set
+        # before orig_run() gets overridden by the WM.
+        self.tk.after(0,  lambda: self.tk.geometry('+200+100'))
         self.tk.after(50, self.tk.focus_force)
         self.tk.after(delay, _capture)
         orig_run(self)

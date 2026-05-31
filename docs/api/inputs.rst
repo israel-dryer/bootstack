@@ -9,5 +9,7 @@ Widgets for accepting user input.
    textfield
    passwordfield
    numberfield
+   slider
+   rangeslider
 
-.. note:: PathField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
+.. note:: PathField, SpinnerField, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
