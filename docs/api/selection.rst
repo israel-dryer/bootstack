@@ -9,5 +9,6 @@ Widgets for choosing values from a set of options.
    checkbox
    select
    switch
+   togglebutton
 
-.. note:: ToggleButton, RadioGroup, ToggleGroup, and Calendar pages coming soon.
+.. note:: RadioGroup, ToggleGroup, and Calendar pages coming soon.

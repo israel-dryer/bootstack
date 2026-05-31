@@ -10,7 +10,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken, VariantToken
+from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -273,34 +273,76 @@ class Switch(_BooleanControlBase):
 class ToggleButton(_BooleanControlBase):
     """A button that stays pressed when active — toolbar-style toggle.
 
-    Renders as a depressed button rather than a checkbox or switch.
-    Accepts the same kwargs as :class:`Checkbox`.
+    Renders as a depressed button rather than a checkbox or switch. Commonly
+    used in toolbars and button groups to represent a persistent on/off state.
 
     Args:
         label: Button label text.
         signal: Reactive ``Signal`` controlling the pressed state. When
             provided, ``value=`` is ignored — seed the Signal directly.
         value: Initial value. Ignored when ``signal=`` is passed.
-        checked_value: Value representing the pressed state. Defaults to
-            ``True``.
-        unchecked_value: Value representing the unpressed state. Defaults
-            to ``False``.
-        on_change: Shorthand callback fired on every toggle.
-        on_icon: Bootstrap Icons name shown when the button is pressed/active.
-            Can be used alone (e.g. ``on_icon="star-fill"`` to fill an icon
-            when active) or paired with ``off_icon=``.
-        off_icon: Bootstrap Icons name shown when the button is unpressed.
+        checked_value: Value representing the pressed/active state. Defaults
+            to ``True``.
+        unchecked_value: Value representing the unpressed/inactive state.
+            Defaults to ``False``.
+        on_change: Shorthand callback fired on every toggle. Equivalent to
+            ``btn.on_change(fn)``.
+        on_icon: Bootstrap Icons name shown when the button is active/pressed.
+            Use alone to swap icon on activation, or pair with ``off_icon=``
+            to show different icons per state,
+            e.g. ``on_icon="star-fill", off_icon="star"``.
+        off_icon: Bootstrap Icons name shown when the button is inactive.
             Can be used alone or paired with ``on_icon=``.
         icon_only: If ``True``, shows only the icon with no label text.
+            Requires ``on_icon=`` or ``off_icon=`` to be set.
         disabled: If ``True``, widget is non-interactive and dimmed.
+            Defaults to ``False``.
         accent: Accent token. One of ``'primary'``, ``'secondary'``,
             ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
             ``'default'``.
-        variant: Style variant token.
+        variant: Style variant token (theme-defined).
+        density: Padding density. ``'default'`` or ``'compact'``.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """
     _internal_class = _InternalCheckToggle
+
+    def __init__(
+        self,
+        label: str = "",
+        *,
+        signal: "Signal | None" = None,
+        value: Any = None,
+        checked_value: Any = True,
+        unchecked_value: Any = False,
+        on_change: Callable[[], Any] | None = None,
+        on_icon: str | None = None,
+        off_icon: str | None = None,
+        icon_only: bool = False,
+        disabled: bool = False,
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
+        density: WidgetDensity | None = None,
+        parent: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            label,
+            signal=signal,
+            value=value,
+            checked_value=checked_value,
+            unchecked_value=unchecked_value,
+            on_change=on_change,
+            on_icon=on_icon,
+            off_icon=off_icon,
+            icon_only=icon_only,
+            disabled=disabled,
+            accent=accent,
+            variant=variant,
+            density=density,
+            parent=parent,
+            **kwargs,
+        )
 
 
 register_widget_events(Checkbox, _BOOLEAN_EVENTS)
