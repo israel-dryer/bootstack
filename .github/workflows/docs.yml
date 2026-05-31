@@ -26,17 +26,19 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install docs dependencies
-        run: |
-          pip install -r requirements-dev.txt
-          pip install -e .
+      - name: Install system dependencies
+        run: sudo apt-get install -y python3-tk
 
-      - name: Build site
-        run: zensical build
+      - name: Install package and docs dependencies
+        run: |
+          pip install -e ".[docs]"
+
+      - name: Build docs
+        run: sphinx-build docs docs/_build/html -b html -W --keep-going
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: docs/_build/html
 
   deploy:
     needs: build
