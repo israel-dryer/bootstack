@@ -3,3 +3,4 @@ shibuya
 sphinx-autodoc-typehints
 sphinx-design
 sphinx-autobuild
+sphinx-copybutton

@@ -16,7 +16,7 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
     basic = bs.TextField(value="Hello, bootstack!", fill="x")
 
     # Label and message
-    bs.Label("Label & Message", font="heading-sm[bold]")
+    bs.Label("Label and Message", font="heading-sm[bold]")
     bs.TextField(
         label="Email address",
         placeholder="you@example.com",

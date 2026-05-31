@@ -23,6 +23,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
     "sphinx_design",
+    "sphinx_copybutton",
 ]
 
 # ---------------------------------------------------------------------------

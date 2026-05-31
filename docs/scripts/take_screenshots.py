@@ -53,6 +53,9 @@ def _patch(cls):
 
     def _run(self):
         def _capture():
+            self.tk.attributes('-topmost', True)
+            self.tk.lift()
+            self.tk.focus_force()
             self.tk.update_idletasks()
             x = self.tk.winfo_rootx()
             y = self.tk.winfo_rooty()
@@ -63,6 +66,7 @@ def _patch(cls):
             ImageGrab.grab(bbox=(x, y, x + w, y + h)).save(output)
             self.tk.destroy()
 
+        self.tk.attributes('-topmost', True)
         self.tk.after(delay, _capture)
         orig_run(self)
 
