@@ -10,15 +10,14 @@ argument.
 
 .. raw:: html
 
-   <picture>
-     <source media="(prefers-color-scheme: dark)"
-             srcset="/_static/examples/button-dark.png">
-     <source media="(prefers-color-scheme: light)"
-             srcset="/_static/examples/button-light.png">
-     <img src="/_static/examples/button-light.png"
-          alt="Button widget demo"
-          style="max-width:100%; border-radius:6px; margin:1rem 0;">
-   </picture>
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-light.png"
+        alt="Button widget demo — light theme"
+        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-dark.png"
+        alt="Button widget demo — dark theme"
+        style="max-width:100%; border-radius:6px; margin:1rem 0;">
 
 Usage
 -----

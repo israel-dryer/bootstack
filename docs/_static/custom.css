@@ -4,3 +4,18 @@
     image-rendering: crisp-edges;
     image-rendering: -webkit-optimize-contrast;
 }
+
+/* Screenshot light/dark switching — responds to Shibuya's data-color-mode
+   toggle as well as the system prefers-color-scheme preference. */
+.bs-screenshot-dark { display: none; }
+.bs-screenshot-light { display: block; }
+
+@media (prefers-color-scheme: dark) {
+    .bs-screenshot-dark { display: block; }
+    .bs-screenshot-light { display: none; }
+}
+
+html[data-color-mode="dark"] .bs-screenshot-dark { display: block; }
+html[data-color-mode="dark"] .bs-screenshot-light { display: none; }
+html[data-color-mode="light"] .bs-screenshot-dark { display: none; }
+html[data-color-mode="light"] .bs-screenshot-light { display: block; }
