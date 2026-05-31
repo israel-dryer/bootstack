@@ -1,3 +1,8 @@
+/* Ensure all code blocks scroll horizontally rather than overflowing. */
+.highlight pre {
+    overflow-x: auto;
+}
+
 .nav-brand img {
     height: 28px;
     width: auto;
