@@ -98,7 +98,7 @@ class OptionMenu(MenuButton):
         if self._textvariable is None:
             self._textvariable = StringVar(value=str(value) if value is not None else "")
 
-        super().__init__(master, text=value, **kwargs)
+        super().__init__(master, text=value, style_options=style_options, **kwargs)
 
         # Configure the menubutton to use the textvariable
         self.configure(textvariable=self._textvariable)
