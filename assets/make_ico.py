@@ -19,5 +19,4 @@ def make_ico(src_dir: Path, out_path: Path) -> None:
     print(f"Saved: {out_path}")
 
 
-make_ico(assets / "light", dest / "bootstack-light.ico")
-make_ico(assets / "dark", dest / "bootstack-dark.ico")
+make_ico(assets / "icons", dest / "bootstack.ico")
