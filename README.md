@@ -10,14 +10,13 @@
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
 > **Active alpha.** APIs may change before the first stable release.
+> Documentation is coming soon.
 
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-light.png">
   <img alt="bootstack hero demo" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-light.png">
 </picture>
-
-> Documentation is coming soon.
 
 ## Why bootstack?
 
