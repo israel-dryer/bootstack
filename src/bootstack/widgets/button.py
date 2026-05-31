@@ -1,45 +1,86 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import overload, Any, Callable
+from typing import Any, Callable, Literal, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.primitives.button import Button as _InternalButton
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 
 class Button(PublicWidgetBase):
     """A clickable action trigger.
 
+    The button label is the first positional argument. All styling and
+    behavior options are keyword-only.
+
+    Layout kwargs (``fill``, ``expand``, ``margin``, ``anchor``, etc.) are
+    consumed by the parent container and do not reach the button itself.
+
     Args:
-        label: Button label text.
-        on_click: Callback fired when the button is clicked.
-        accent: Accent token, e.g. `'primary'`, `'danger'`.
-        variant: Style variant, e.g. `'solid'`, `'outline'`.
-        icon: Bootstrap Icons name.
-        icon_only: If True, show only the icon (no label).
-        disabled: If True, button is non-interactive.
-        parent: Override the context-stack parent.
+        text: Text displayed on the button.
+        on_click: Called with no arguments when the button is clicked.
+            Equivalent to subscribing to the ``'click'`` event.
+        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
+            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
+            Defaults to the theme's default button color.
+        variant: Visual weight token. One of ``'solid'`` (filled background),
+            ``'outline'`` (border, transparent background), ``'ghost'``
+            (no border, transparent background). Defaults to ``'solid'``.
+        icon: Bootstrap Icons name (e.g. ``'save'``, ``'trash'``). See the
+            full catalog at https://icons.getbootstrap.com.
+        icon_only: If ``True``, show only the icon — no label text. Set a
+            meaningful ``label`` anyway for accessibility.
+        icon_position: Position of the icon relative to the label. One of
+            ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
+        image: A ``bs.Image`` object to display on the button. Load one with
+            ``bs.Image.open()``, ``bs.Image.from_bytes()``, or
+            ``bs.Image.from_pil()``. Use when you need a custom image rather
+            than a Bootstrap Icon. Combine with ``icon_position=`` to control
+            placement relative to the label.
+        width: Button width in character units. Useful for making a row of
+            buttons uniform width (e.g. ``width=10``).
+        textsignal: Reactive ``Signal[str]`` bound to the label text. The
+            button label updates automatically when the signal changes.
+        density: Padding density. ``'default'`` (normal) or ``'compact'``
+            (reduced padding, suited for toolbars).
+        disabled: If ``True``, the button is non-interactive and visually
+            dimmed.
+        parent: Explicit parent widget. If omitted, the current context-stack
+            container is used.
     """
 
     def __init__(
         self,
-        label: str = "",
+        text: str = "",
         *,
         on_click: Callable[[], Any] | None = None,
-        accent: str | None = None,
-        variant: str | None = None,
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
         icon: str | None = None,
         icon_only: bool = False,
+        icon_position: Literal["left", "right", "top", "bottom"] = "left",
+        image: Any = None,
+        width: int | None = None,
+        textsignal: "Signal[str] | None" = None,
+        density: WidgetDensity | None = None,
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
-
         tk_master = self._parent._child_master() if self._parent else None
 
-        internal_kwargs: dict[str, Any] = {"text": label}
+        internal_kwargs: dict[str, Any] = {
+            "text":     text,
+            "compound": icon_position,
+        }
         if on_click is not None:
             internal_kwargs["command"] = on_click
         if accent is not None:
@@ -50,39 +91,66 @@ class Button(PublicWidgetBase):
             internal_kwargs["icon"] = icon
         if icon_only:
             internal_kwargs["icon_only"] = True
+        if image is not None:
+            internal_kwargs["image"] = image
+        if width is not None:
+            internal_kwargs["width"] = width
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
+        if density is not None:
+            internal_kwargs["density"] = density
         if disabled:
             internal_kwargs["state"] = "disabled"
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalButton(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+    # ----- Properties -----
+
     @property
-    def label(self) -> str:
+    def text(self) -> str:
+        """The button's label text."""
         return str(self._internal.cget("text"))
 
-    @label.setter
-    def label(self, value: str) -> None:
+    @text.setter
+    def text(self, value: str) -> None:
         self._internal.configure(text=value)
 
     @property
     def disabled(self) -> bool:
+        """Whether the button is non-interactive."""
         return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter
     def disabled(self, value: bool) -> None:
         self._internal.configure(state="disabled" if value else "normal")
 
+    # ----- Methods -----
+
     def click(self) -> None:
-        """Programmatically fire the button's command."""
+        """Programmatically invoke the button's command."""
         self._internal.invoke()
 
-    def on_click(self, handler: Callable[[], Any]):
-        """Register an additional click handler.
+    # ----- Events -----
+
+    @overload
+    def on_click(self) -> Stream: ...
+    @overload
+    def on_click(self, handler: Callable[[], Any]) -> Subscription: ...
+    def on_click(self, handler: Callable[[], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for button click events.
+
+        Called with no handler, returns a composable `Stream`. Called with a
+        handler, binds it immediately and returns a `Subscription`.
+
+        Args:
+            handler: Called with no arguments when the button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
+        if handler is None:
+            return self.on("click")
         return self.on("click", lambda e: handler())
 
 

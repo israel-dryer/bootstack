@@ -1,7 +1,7 @@
 Button
 ======
 
-A clickable action trigger. Accepts the button label as the first positional
+A clickable action trigger. Accepts the button text as the first positional
 argument.
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Icons
 ~~~~~
 
 Pass any `Bootstrap Icons <https://icons.getbootstrap.com>`_ name to ``icon=``.
-The icon appears to the left of the label by default.
+The icon appears to the left of the text by default.
 
 .. code-block:: python
 
@@ -52,10 +52,22 @@ The icon appears to the left of the label by default.
    bs.Button("Delete", icon="trash", accent="danger")
    bs.Button("Export", icon="download", accent="secondary", variant="outline")
 
+Icon position
+~~~~~~~~~~~~~
+
+Use ``icon_position=`` to control where the icon sits relative to the text.
+Defaults to ``'left'``.
+
+.. code-block:: python
+
+   bs.Button("Download", icon="download", icon_position="left")   # default
+   bs.Button("Next",     icon="arrow-right", icon_position="right")
+   bs.Button("Upload",   icon="upload", icon_position="top")
+
 Icon-only
 ~~~~~~~~~
 
-Set ``icon_only=True`` to show just the icon with no label text. Use for
+Set ``icon_only=True`` to show just the icon with no text. Use for
 compact toolbars and action rows.
 
 .. code-block:: python
@@ -64,6 +76,66 @@ compact toolbars and action rows.
        bs.Button(icon="plus-lg",  icon_only=True, accent="success")
        bs.Button(icon="dash-lg",  icon_only=True, accent="danger")
        bs.Button(icon="pencil",   icon_only=True, accent="secondary", variant="outline")
+
+Custom image
+~~~~~~~~~~~~
+
+Pass a ``bs.Image`` object to ``image=`` when you need something other than a
+Bootstrap Icon. ``bs.Image`` handles loading, caching, and DPI scaling.
+
+.. code-block:: python
+
+   img = bs.Image.open("logo.png")
+   bs.Button("Launch", image=img, icon_position="left")
+
+   # From bytes (e.g. an embedded resource)
+   img = bs.Image.from_bytes(raw_bytes)
+   bs.Button("Custom", image=img)
+
+Uniform width
+~~~~~~~~~~~~~
+
+Use ``width=`` (in character units) to make a row of buttons the same width.
+
+.. code-block:: python
+
+   with bs.HStack(gap=8):
+       bs.Button("Save",   accent="primary", width=10)
+       bs.Button("Cancel", width=10)
+       bs.Button("Reset",  accent="danger",  width=10)
+
+Reactive text
+~~~~~~~~~~~~~
+
+Bind a ``Signal[str]`` to ``textsignal=`` so the button text updates
+automatically.
+
+.. code-block:: python
+
+   running  = bs.Signal(False)
+   btn_text = bs.Signal("Start")
+
+   running.subscribe(lambda v: btn_text.set("Stop" if v else "Start"))
+
+   bs.Button(textsignal=btn_text, accent="primary",
+             on_click=lambda: running.set(not running.get()))
+
+   # Or set directly via the .text property
+   btn = bs.Button("Start", accent="primary")
+   btn.text = "Stop"
+
+Compact density
+~~~~~~~~~~~~~~~
+
+Use ``density='compact'`` to reduce padding — useful in toolbars where
+space is tight.
+
+.. code-block:: python
+
+   with bs.HStack(gap=4):
+       bs.Button("Cut",   icon="scissors", density="compact")
+       bs.Button("Copy",  icon="copy",     density="compact")
+       bs.Button("Paste", icon="clipboard",density="compact")
 
 Disabled state
 ~~~~~~~~~~~~~~
@@ -76,17 +148,24 @@ Disabled state
 Handling clicks
 ~~~~~~~~~~~~~~~
 
-Pass a callable to ``on_click=``. The callback receives no arguments.
+Pass a callable to ``on_click=`` at construction, or call ``.on_click()``
+afterwards. The callback receives no arguments.
 
 .. code-block:: python
 
-   def handle_save():
-       print("Saved!")
-
-   bs.Button("Save", accent="primary", on_click=handle_save)
-
-   # Or inline with a lambda
+   # At construction
+   bs.Button("Save",   accent="primary", on_click=handle_save)
    bs.Button("Cancel", on_click=lambda: print("Cancelled"))
+
+   # As a subscription (cancellable)
+   btn = bs.Button("Save", accent="primary")
+   sub = btn.on_click(handle_save)
+   sub.cancel()  # unsubscribe
+
+   # As a Stream (composable)
+   btn.on_click() \
+      .debounce(300) \
+      .listen(lambda: handle_save())
 
 API
 ---
@@ -99,35 +178,8 @@ Full Example
 ------------
 
 A complete runnable app demonstrating all Button features.
+Run with ``python docs/examples/button.py``.
 
-.. code-block:: python
-
-   import bootstack as bs
-
-   with bs.App(title="Button Demo", padding=20, gap=16) as app:
-
-       bs.Label("Accent Colors", font="heading-sm[bold]")
-       with bs.HStack(gap=8):
-           for accent in ("primary", "secondary", "success", "warning", "danger"):
-               bs.Button(accent.title(), accent=accent)
-
-       bs.Label("Style Variants", font="heading-sm[bold]")
-       with bs.HStack(gap=8):
-           bs.Button("Solid",   accent="primary", variant="solid")
-           bs.Button("Outline", accent="primary", variant="outline")
-           bs.Button("Ghost",   accent="primary", variant="ghost")
-
-       bs.Label("Icons", font="heading-sm[bold]")
-       with bs.HStack(gap=8):
-           bs.Button("Save",   icon="save")
-           bs.Button("Delete", icon="trash",    accent="danger")
-           bs.Button("Export", icon="download", accent="secondary", variant="outline")
-           bs.Button(icon="plus-lg", icon_only=True, accent="success")
-           bs.Button(icon="x-lg",   icon_only=True, accent="danger", variant="outline")
-
-       bs.Label("Disabled", font="heading-sm[bold]")
-       with bs.HStack(gap=8):
-           bs.Button("Disabled Solid",   accent="primary", disabled=True)
-           bs.Button("Disabled Outline", accent="primary", variant="outline", disabled=True)
-
-   app.run()
+.. literalinclude:: ../../docs/examples/button.py
+   :language: python
+   :start-after: import bootstack as bs
