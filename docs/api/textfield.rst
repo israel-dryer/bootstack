@@ -51,6 +51,20 @@ Set ``required=True`` to mark the field visually and prevent empty submission.
 
    bs.TextField(label="Username", required=True)
 
+Value formatting
+~~~~~~~~~~~~~~~~
+
+Use ``value_format=`` to display the value with a locale-aware ICU pattern.
+The raw string value is preserved internally; only the display changes.
+Requires localization to be enabled.
+
+.. code-block:: python
+
+   bs.TextField(value_format="#,##0.00", label="Decimal")
+   bs.TextField(value_format="percent",  label="Percent")
+   bs.TextField(value_format="currency", label="Currency")
+   bs.TextField(value_format="yyyy-MM-dd", label="Date")
+
 States
 ~~~~~~
 
