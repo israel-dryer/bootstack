@@ -1,13 +1,14 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import AccentToken, VariantToken, Orient
 
 _TOGGLEGROUP_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -17,31 +18,48 @@ _TOGGLEGROUP_EVENTS: dict[str, str] = {
 class ToggleGroup(PublicWidgetBase):
     """A group of toggle buttons — single-select or multi-select.
 
-    Options are passed at construction via `options=`. Each option is either
-    a plain string (label and value are the same) or a `(label, value)` tuple.
+    Options are supplied at construction via ``options=`` and can be added
+    at runtime with ``add()``. In ``'single'`` mode exactly one button is
+    active at a time; in ``'multi'`` mode any combination can be active.
 
     Args:
-        options: Choices, e.g. `["Grid", "List"]` or `[("Label", "val"), ...]`.
-        mode: `'single'` (default, radio behaviour) or `'multi'` (checkbox behaviour).
-        signal: Reactive `Signal` holding the selected value(s).
-        value: Initially selected value (string for `'single'`, set for `'multi'`).
-        orient: `'horizontal'` (default) or `'vertical'`.
-        accent: Accent token applied to all buttons.
-        variant: Style variant, e.g. `'outline'`, `'ghost'`.
-        disabled: If True, all buttons are non-interactive.
-        parent: Override the context-stack parent.
+        options: Choices for the group. Each item is either a plain string
+            (label and value are the same) or a ``(label, value)`` tuple,
+            e.g. ``["Grid", "List"]`` or
+            ``[("Grid view", "grid"), ("List view", "list")]``.
+        mode: Selection behaviour. ``'single'`` (default) enforces mutual
+            exclusivity like a radio group; ``'multi'`` allows any number
+            of buttons to be active simultaneously.
+        signal: Reactive ``Signal`` holding the selected value(s). In
+            ``'single'`` mode the signal value is a ``str``; in ``'multi'``
+            mode it is a ``set[str]``. When provided, ``value=`` is ignored
+            — seed the Signal directly.
+        value: Initial selection. A ``str`` for ``'single'`` mode or a
+            ``set[str]`` for ``'multi'`` mode. Ignored when ``signal=`` is
+            passed.
+        orient: Layout direction. ``'horizontal'`` (default) or
+            ``'vertical'``.
+        accent: Accent token applied to all buttons. One of ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``, ``'default'``.
+        variant: Style variant. ``'solid'`` (default), ``'outline'``, or
+            ``'ghost'``.
+        disabled: If ``True``, all buttons are non-interactive and dimmed.
+            Defaults to ``False``.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
 
     def __init__(
         self,
         options: list[str | tuple[str, Any]] | None = None,
         *,
-        mode: str = "single",
+        mode: Literal["single", "multi"] = "single",
         signal: Any = None,
         value: Any = None,
-        orient: str = "horizontal",
-        accent: str | None = None,
-        variant: str | None = None,
+        orient: Orient = "horizontal",
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -92,6 +110,7 @@ class ToggleGroup(PublicWidgetBase):
 
     @property
     def value(self) -> Any:
+        """The current selection. A ``str`` in single mode, ``set[str]`` in multi mode."""
         return self._internal.get()
 
     @value.setter
@@ -100,6 +119,7 @@ class ToggleGroup(PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"
 
     @disabled.setter
@@ -126,8 +146,10 @@ class ToggleGroup(PublicWidgetBase):
     def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selection changes.
 
+        The current value is available via ``group.value`` inside the handler.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 
