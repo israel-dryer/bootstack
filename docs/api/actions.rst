@@ -1,6 +1,11 @@
 Actions
 =======
 
-Button, ButtonGroup, MenuButton, DropdownButton, ContextMenu.
+Widgets that trigger operations or commands.
 
-.. note:: Coming soon.
+.. toctree::
+   :maxdepth: 1
+
+   button
+
+.. note:: ButtonGroup, MenuButton, DropdownButton, and ContextMenu pages coming soon.
