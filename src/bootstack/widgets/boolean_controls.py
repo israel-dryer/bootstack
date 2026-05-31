@@ -10,7 +10,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, VariantToken
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -44,7 +44,6 @@ class _BooleanControlBase(PublicWidgetBase):
         disabled: bool = False,
         accent: AccentToken | str | None = None,
         variant: VariantToken | str | None = None,
-        density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -82,8 +81,6 @@ class _BooleanControlBase(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if variant is not None:
             internal_kwargs["variant"] = variant
-        if density is not None:
-            internal_kwargs["density"] = density
         internal_kwargs.update(kwargs)
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
@@ -238,7 +235,6 @@ class Checkbox(_BooleanControlBase):
             ``'default'``.
         variant: Style variant token (theme-defined, e.g. ``'round'``,
             ``'square'``).
-        density: Padding density. ``'default'`` or ``'compact'``.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """
@@ -248,8 +244,8 @@ class Checkbox(_BooleanControlBase):
 class Switch(_BooleanControlBase):
     """A toggle switch — on or off.
 
-    Renders as a sliding track-and-thumb. Accepts the same kwargs as
-    :class:`Checkbox`.
+    Renders as a sliding track-and-thumb control. Use in place of a checkbox
+    when the action takes effect immediately (e.g. enable/disable a setting).
 
     Args:
         label: Label text displayed beside the switch.
@@ -260,15 +256,14 @@ class Switch(_BooleanControlBase):
             ``True``.
         unchecked_value: Value representing the off state. Defaults to
             ``False``.
-        on_change: Shorthand callback fired on every toggle.
-        on_icon: Bootstrap Icons name shown when the switch is on.
-            Pair with ``off_icon=`` to show different icons per state.
-        off_icon: Bootstrap Icons name shown when the switch is off.
+        on_change: Shorthand callback fired on every toggle. Equivalent to
+            ``switch.on_change(fn)``.
         disabled: If ``True``, widget is non-interactive and dimmed.
+            Defaults to ``False``.
         accent: Accent token. One of ``'primary'``, ``'secondary'``,
             ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
             ``'default'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        variant: Style variant token (theme-defined).
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """
@@ -302,7 +297,6 @@ class ToggleButton(_BooleanControlBase):
             ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
             ``'default'``.
         variant: Style variant token.
-        density: Padding density. ``'default'`` or ``'compact'``.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """

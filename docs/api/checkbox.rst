@@ -130,6 +130,7 @@ API
 .. autoclass:: bootstack.widgets.boolean_controls.Checkbox
    :members:
    :undoc-members:
+   :inherited-members: PublicWidgetBase
 
 Full Example
 ------------
