@@ -7,5 +7,6 @@ Widgets for accepting user input.
    :maxdepth: 1
 
    textfield
+   passwordfield
 
-.. note:: PasswordField, PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
+.. note:: PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, and TimeField pages coming soon.

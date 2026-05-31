@@ -1,8 +1,8 @@
-"""Take light and dark screenshots of every example in docs/examples/.
+"""Take light and dark screenshots of widget hero files.
 
-Runs each example in a subprocess with a monkey-patched bs.App/bs.AppShell
-that forces the theme, waits for the window to render, captures it, saves
-the image, then quits.
+Looks for a hero file in docs/screenshots/<name>.py first. If none exists,
+falls back to docs/examples/<name>.py. This lets hero shots stay lean and
+visually focused while the full examples carry interactive content.
 
 Output: docs/_static/examples/<name>-light.png
                                <name>-dark.png
@@ -20,9 +20,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO     = Path(__file__).parent.parent.parent
-EXAMPLES = REPO / "docs" / "examples"
-OUTPUT   = REPO / "docs" / "_static" / "examples"
+REPO        = Path(__file__).parent.parent.parent
+SCREENSHOTS = REPO / "docs" / "screenshots"
+EXAMPLES    = REPO / "docs" / "examples"
+OUTPUT      = REPO / "docs" / "_static" / "examples"
 
 THEMES = [
     ("light", "bootstrap-light"),
@@ -78,6 +79,15 @@ spec.loader.exec_module(mod)
 """
 
 
+def resolve_source(name: str) -> Path | None:
+    """Return the hero file if one exists, otherwise the example file."""
+    hero = SCREENSHOTS / f"{name}.py"
+    if hero.exists():
+        return hero
+    fallback = EXAMPLES / f"{name}.py"
+    return fallback if fallback.exists() else None
+
+
 def run_example(example: Path, theme: str, output: Path, delay: int = 800):
     env = {
         **os.environ,
@@ -98,7 +108,6 @@ def run_example(example: Path, theme: str, output: Path, delay: int = 800):
 def main():
     args = sys.argv[1:]
 
-    # Filter by widget name if provided
     filter_name = None
     themes = THEMES
     for arg in args:
@@ -109,24 +118,28 @@ def main():
         elif not arg.startswith("--"):
             filter_name = arg
 
-    examples = sorted(EXAMPLES.glob("*.py"))
+    # Collect widget names from both directories, deduplicated
+    names = sorted({p.stem for p in list(SCREENSHOTS.glob("*.py")) + list(EXAMPLES.glob("*.py"))})
     if filter_name:
-        examples = [e for e in examples if e.stem == filter_name]
+        names = [n for n in names if n == filter_name]
 
-    if not examples:
+    if not names:
         print(f"No examples found{f' matching {filter_name!r}' if filter_name else ''}.")
         sys.exit(1)
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
 
     ok = failed = 0
-    for example in examples:
-        name = example.stem
+    for name in names:
+        source = resolve_source(name)
+        if source is None:
+            continue
+        tag = "hero" if source.parent == SCREENSHOTS else "example"
         for suffix, theme in themes:
             out = OUTPUT / f"{name}-{suffix}.png"
-            print(f"  {name:20s} [{suffix:5s}]  ", end="", flush=True)
+            print(f"  {name:20s} [{suffix:5s}] ({tag})  ", end="", flush=True)
             try:
-                success = run_example(example, theme, out)
+                success = run_example(source, theme, out)
                 if success:
                     print(f"OK  {out.relative_to(REPO)}")
                     ok += 1

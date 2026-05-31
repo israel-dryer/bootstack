@@ -72,12 +72,19 @@ For each widget:
    - `Full Example` section: `.. literalinclude:: ../../docs/examples/<widget>.py`
      with `:start-after: import bootstack as bs`
 
-4. **Write `docs/examples/<widget>.py`** — a clean, runnable app. Rules:
+4. **Write `docs/examples/<widget>.py`** — a clean, runnable app that also
+   serves as the screenshot source. Rules:
+   - **Show visual states only** — basic usage, variants, accents, label/message,
+     states (disabled, read-only), density, etc. Omit interactive-only sections
+     (reactive binding, event callbacks, validation) — those read as blank/default
+     in a static screenshot and are better shown as RST code snippets in Usage.
    - No `app.tk.after(...)` or screenshot scaffolding in the example file
    - No `__setattr__` hacks — use proper function defs instead of assignment lambdas
    - No backslash line continuations — put stream chains inline or use a function
    - Use built-in `ValidationRule` types (`"stringLength"`, `"email"`, etc.)
      instead of `"custom"` when a built-in covers it
+   - Do not use `fill="x"` in RST doc snippets — layout kwargs belong only in
+     the example file where a real layout context exists
 
 5. **Take screenshots:**
    ```bash
@@ -112,6 +119,18 @@ CSS in `docs/_static/custom.css` handles `data-color-mode` switching
 
 ### Gotchas discovered during the docs pass
 
+- **No `fill="x"` in RST doc snippets** — layout kwargs like `fill=`, `expand=`,
+  `fill_items=`, `expand_items=` belong only in `docs/examples/<widget>.py`, not
+  in the Usage code blocks in `.rst` files. Snippets should show the widget's own
+  API, not layout concerns.
+- **Example files show visual states only** — interactive sections (reactive
+  binding, event callbacks, on_submit, validation) appear blank in a static
+  screenshot. Put them in RST Usage snippets instead; keep the example file to
+  things that read well visually (variants, accents, states, label/message, etc.).
+- **`winfo_ismapped()` vs `winfo_manager()`** — `winfo_ismapped()` returns False
+  at init time even for packed widgets (window not yet shown). Use
+  `bool(winfo_manager())` when you need to know if a widget has been geometry-managed,
+  regardless of visibility. Fixed in `PasswordEntry._apply_visibility_toggle`.
 - **`text_signal` → `textsignal`** — the old wrappers used `text_signal` (with
   underscore). It is now fixed in Button, Label, Badge, TextField. Watch for it
   in remaining wrappers.

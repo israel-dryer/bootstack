@@ -15,11 +15,11 @@ A compact styled chip for status indicators, counts, and tags. Inherits all
    <img class="bs-screenshot-light"
         src="/_static/examples/badge-light.png"
         alt="Badge demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/badge-dark.png"
         alt="Badge demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
 
 Usage
 -----

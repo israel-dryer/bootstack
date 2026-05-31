@@ -8,8 +8,8 @@ with App(title="PasswordField + TextArea — visual test", minsize=(480, 100), p
     Label("PasswordField — basic (with visibility toggle)")
     PasswordField(label="Password")
 
-    Label("PasswordField — custom mask character")
-    PasswordField("secret", label="API key", mask_char="*")
+    Label("PasswordField — custom mask")
+    PasswordField("secret", label="API key", mask="*")
 
     Label("PasswordField — no visibility toggle")
     PasswordField(label="PIN", show_visibility_toggle=False)

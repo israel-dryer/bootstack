@@ -13,11 +13,11 @@ argument.
    <img class="bs-screenshot-light"
         src="/_static/examples/button-light.png"
         alt="Button widget demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/button-dark.png"
         alt="Button widget demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
 
 Usage
 -----

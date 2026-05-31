@@ -13,11 +13,11 @@ colors. The display text is the first positional argument.
    <img class="bs-screenshot-light"
         src="/_static/examples/label-light.png"
         alt="Label demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/label-dark.png"
         alt="Label demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
 
 Usage
 -----

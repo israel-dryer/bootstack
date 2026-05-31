@@ -58,7 +58,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
         message: Hint or helper text displayed below the input.
         required: If ``True``, marks the field as required and prevents empty
             submission.
-        mask_char: Character used to mask each typed character (e.g. ``'*'``
+        mask: Character used to mask each typed character (e.g. ``'*'``
             for password inputs).
         read_only: If ``True``, text is visible and selectable but not
             editable.
@@ -84,7 +84,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
         label: str | None = None,
         message: str | None = None,
         required: bool = False,
-        mask_char: str | None = None,
+        mask: str | None = None,
         read_only: bool = False,
         disabled: bool = False,
         width: int | None = None,
@@ -114,8 +114,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["message"] = message
         if required:
             internal_kwargs["required"] = True
-        if mask_char is not None:
-            internal_kwargs["show"] = mask_char
+        if mask is not None:
+            internal_kwargs["show"] = mask
         if disabled:
             internal_kwargs["state"] = "disabled"
         elif read_only:

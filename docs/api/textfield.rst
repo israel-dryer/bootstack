@@ -6,18 +6,18 @@ validation, and reactive signal binding.
 
 .. code-block:: python
 
-   bs.TextField(label="Email", placeholder="you@example.com", fill="x")
+   bs.TextField(label="Email", placeholder="you@example.com")
 
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/textfield-light.png"
         alt="TextField demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/textfield-dark.png"
         alt="TextField demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%; border-radius:10px; margin:1rem 0;">
 
 Usage
 -----
@@ -27,7 +27,7 @@ Basic
 
 .. code-block:: python
 
-   bs.TextField(placeholder="Type something…", fill="x")
+   bs.TextField(placeholder="Type something…")
 
 Label and message
 ~~~~~~~~~~~~~~~~~
@@ -40,7 +40,6 @@ Use ``label=`` for a field title and ``message=`` for helper text below.
        label="Email address",
        placeholder="you@example.com",
        message="We'll never share your email.",
-       fill="x",
    )
 
 Required
@@ -50,7 +49,7 @@ Set ``required=True`` to mark the field visually and prevent empty submission.
 
 .. code-block:: python
 
-   bs.TextField(label="Username", required=True, fill="x")
+   bs.TextField(label="Username", required=True)
 
 States
 ~~~~~~
@@ -71,7 +70,7 @@ the field.
 .. code-block:: python
 
    name = bs.Signal("World")
-   bs.TextField(label="Name", textsignal=name, fill="x")
+   bs.TextField(label="Name", textsignal=name)
    bs.Label(textsignal=name, accent="secondary")   # updates as you type
 
 Live input events
@@ -84,7 +83,7 @@ typing, not just field exit.
 .. code-block:: python
 
    count = bs.Label("0 / 100", accent="secondary", font="caption")
-   field = bs.TextField(placeholder="Type…", fill="x")
+   field = bs.TextField(placeholder="Type…")
 
    def _update_count(e):
        count.text = f"{len(field.value)} / 100"
@@ -99,7 +98,7 @@ Submit on Enter
 
 .. code-block:: python
 
-   field = bs.TextField(placeholder="Search…", fill="x")
+   field = bs.TextField(placeholder="Search…")
    field.on_submit(lambda e: run_search(field.value))
 
 Validation
@@ -112,7 +111,7 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
 
    from bootstack.validation import ValidationRule
 
-   field = bs.TextField(label="Username", fill="x")
+   field = bs.TextField(label="Username")
    field.add_validation_rule(ValidationRule(
        "stringLength",
        message="Must be at least 3 characters.",

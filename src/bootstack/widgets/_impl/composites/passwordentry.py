@@ -114,9 +114,18 @@ class PasswordEntry(Field):
             value: If True, show the toggle button. If False, hide it.
         """
         self._show_visibility_toggle = value
-        if value and not self._visibility_toggle.winfo_ismapped():
+        is_managed = bool(self._visibility_toggle.winfo_manager())
+        if value and not is_managed:
             self._visibility_toggle.pack(**self._show_visibility_pack)
-        elif not value and self._visibility_toggle.winfo_ismapped():
+        elif not value and is_managed:
             self._show_visibility_pack = self._visibility_toggle.pack_info()
             self._visibility_toggle.pack_forget()
+
+    def reveal(self) -> None:
+        """Remove character masking to show the password in plain text."""
+        self.entry_widget['show'] = ''
+
+    def hide(self) -> None:
+        """Restore character masking."""
+        self.entry_widget['show'] = self._show_indicator
 
