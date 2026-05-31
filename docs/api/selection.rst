@@ -7,5 +7,6 @@ Widgets for choosing values from a set of options.
    :maxdepth: 1
 
    checkbox
+   select
 
-.. note:: Switch, ToggleButton, RadioGroup, ToggleGroup, Select, and Calendar pages coming soon.
+.. note:: Switch, ToggleButton, RadioGroup, ToggleGroup, and Calendar pages coming soon.
