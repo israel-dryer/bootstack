@@ -174,9 +174,7 @@ afterwards. The callback receives no arguments.
    sub.cancel()  # unsubscribe
 
    # As a Stream (composable)
-   btn.on_click() \
-      .debounce(300) \
-      .listen(lambda: handle_save())
+   btn.on_click().debounce(300).listen(lambda: handle_save())
 
 API
 ---

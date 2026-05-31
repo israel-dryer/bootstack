@@ -53,7 +53,6 @@ def _patch(cls):
     def _run(self):
         def _capture():
             self.tk.update_idletasks()
-            self.tk.update()
             x = self.tk.winfo_rootx()
             y = self.tk.winfo_rooty()
             w = self.tk.winfo_width()

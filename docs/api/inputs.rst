@@ -1,7 +1,11 @@
 Inputs
 ======
 
-TextField, PasswordField, PathField, NumberField, SpinnerField, Slider,
-RangeSlider, TextArea, CodeEditor, DateField, TimeField.
+Widgets for accepting user input.
 
-.. note:: Coming soon.
+.. toctree::
+   :maxdepth: 1
+
+   textfield
+
+.. note:: PasswordField, PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
