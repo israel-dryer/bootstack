@@ -79,8 +79,6 @@ class NumericEntry(Field):
 
         self._show_spin_buttons = show_spin_buttons
 
-        # passthrough methods — replaced below with def stubs for API visibility
-
         # pack info
         self._increment_pack_info = {}
         self._decrement_pack_info = {}

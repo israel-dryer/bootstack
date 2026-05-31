@@ -52,11 +52,7 @@ def _patch(cls):
         orig_init(self, *args, settings=settings, **kwargs)
 
     def _run(self):
-        def _capture():
-            self.tk.attributes('-topmost', True)
-            self.tk.lift()
-            self.tk.focus_force()
-            self.tk.update_idletasks()
+        def _grab():
             x = self.tk.winfo_rootx()
             y = self.tk.winfo_rooty()
             w = self.tk.winfo_width()
@@ -66,7 +62,19 @@ def _patch(cls):
             ImageGrab.grab(bbox=(x, y, x + w, y + h)).save(output)
             self.tk.destroy()
 
+        def _capture():
+            self.tk.attributes('-topmost', True)
+            self.tk.lift()
+            self.tk.update_idletasks()
+            self.tk.after(150, _grab)
+
+        # Position on the primary monitor at startup — moving the window at
+        # capture time clears the OS focus and loses the focus ring.
+        self.tk.geometry('+200+100')
         self.tk.attributes('-topmost', True)
+        # Get OS-level focus early so widget focus() calls in the hero fire
+        # while the window already owns focus — focus rings then render correctly.
+        self.tk.after(50, self.tk.focus_force)
         self.tk.after(delay, _capture)
         orig_run(self)
 

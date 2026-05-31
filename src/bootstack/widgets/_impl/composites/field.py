@@ -235,11 +235,8 @@ class Field(EntryMixin, Frame):
         )
         self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="secondary")
 
-        # field container — fixed minimum pixel width so addon buttons (steppers,
-        # picker icons, etc.) live inside the minimum rather than adding to it.
-        # Prevents fields with addons from pushing grid columns wider than plain fields.
         field_padding = 5
-        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density}, width=200)
+        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density})
 
         if kind == "numeric":
             self._entry = NumberEntryPart(self._field, value=value, density=self._density, **kwargs)
