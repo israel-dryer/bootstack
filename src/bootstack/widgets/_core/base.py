@@ -7,6 +7,7 @@ from bootstack.widgets._core.context import current_container
 from bootstack.widgets._core.events import resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.exceptions import ParentResolutionError
+from bootstack.widgets.types import Event
 
 if TYPE_CHECKING:
     from bootstack.widgets._core.schedule import Schedule
@@ -91,12 +92,12 @@ class PublicWidgetBase:
     @overload
     def on(self, event: str) -> "Stream": ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
 
     def on(
         self,
         event: str,
-        handler: Callable[[tkinter.Event], Any] | None = None,
+        handler: Callable[[Event], Any] | None = None,
     ) -> "Stream | Subscription":
         """Bind `handler` to `event`, or return a composable `Stream`.
 
@@ -112,8 +113,7 @@ class PublicWidgetBase:
             sub.cancel()
 
         Args:
-            event: Event name (e.g. `"change"`, `"click"`) or raw Tk
-                sequence (e.g. `"<Return>"`, `"<<Change>>"`).
+            event: Event name (e.g. `"change"`, `"click"`).
             handler: Optional callback. If omitted, a `Stream` is returned.
 
         Returns:
@@ -130,7 +130,7 @@ class PublicWidgetBase:
 
         widget = self._internal
 
-        def _source(downstream: Callable[[tkinter.Event], Any]) -> Subscription:
+        def _source(downstream: Callable[[Event], Any]) -> Subscription:
             bind_id = widget.bind(sequence, downstream, add="+")
             return Subscription(widget, sequence, bind_id)
 
