@@ -8,3 +8,4 @@ Expander, Separator.
    :maxdepth: 1
 
    separator
+   card
