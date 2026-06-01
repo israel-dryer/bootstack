@@ -8,3 +8,4 @@ blocking the application — tooltips, toasts, and other ephemeral surfaces.
    :maxdepth: 1
 
    tooltip
+   toast

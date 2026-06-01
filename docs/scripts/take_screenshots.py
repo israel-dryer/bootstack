@@ -59,7 +59,8 @@ def _patch(cls):
             h = self.tk.winfo_height()
             from pathlib import Path
             Path(output).parent.mkdir(parents=True, exist_ok=True)
-            ImageGrab.grab(bbox=(x, y, x + w, y + h)).save(output)
+            inset = 2  # trim window-border artifact from captured edges
+            ImageGrab.grab(bbox=(x + inset, y + inset, x + w - inset, y + h - inset)).save(output)
             self.tk.destroy()
 
         def _capture():
