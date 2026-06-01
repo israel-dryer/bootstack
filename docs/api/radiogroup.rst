@@ -35,9 +35,7 @@ stored value.
 
 .. code-block:: python
 
-   bs.RadioGroup(
-       [("Small", "s"), ("Medium", "m"), ("Large", "l")], value="m",
-   )
+   bs.RadioGroup([("Small", "s"), ("Medium", "m"), ("Large", "l")], value="m")
 
 Orientation
 ~~~~~~~~~~~

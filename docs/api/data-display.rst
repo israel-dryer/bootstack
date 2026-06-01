@@ -8,5 +8,7 @@ Widgets for presenting data, status, and metrics.
 
    label
    badge
+   progressbar
+   gauge
 
-.. note:: ListView, Tree, Table, ProgressBar, and Gauge pages coming soon.
+.. note:: ListView, Tree, and Table pages coming soon.

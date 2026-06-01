@@ -153,7 +153,7 @@ API
 Full Example
 ------------
 
-.. literalinclude:: ../../docs/examples/calendar.py
+.. literalinclude:: ../../docs/examples/calendarwidget.py
    :language: python
    :linenos:
    :start-after: import bootstack as bs

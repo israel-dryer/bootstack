@@ -52,8 +52,10 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 
 | Widget | Wrapper | Doc page | Example | Screenshots |
 |--------|---------|----------|---------|-------------|
-| Label  | ✓ | `docs/api/label.rst`  | `docs/examples/label.py`  | ✓ |
-| Badge  | ✓ | `docs/api/badge.rst`  | `docs/examples/badge.py`  | ✓ |
+| Label       | ✓ | `docs/api/label.rst`       | `docs/examples/label.py`       | ✓ |
+| Badge       | ✓ | `docs/api/badge.rst`       | `docs/examples/badge.py`       | ✓ |
+| ProgressBar | ✓ | `docs/api/progressbar.rst` | `docs/examples/progressbar.py` | ✓ |
+| Gauge       | ✓ | `docs/api/gauge.rst`       | `docs/examples/gauge.py`       | ✓ |
 
 **Selection category:**
 
@@ -66,14 +68,14 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | RadioGroup   | ✓ | `docs/api/radiogroup.rst`   | `docs/examples/radiogroup.py`   | ✓ |
 | ToggleGroup  | ✓ | `docs/api/togglegroup.rst`  | `docs/examples/togglegroup.py`  | ✓ |
 | SelectButton | ✓ | `docs/api/selectbutton.rst` | `docs/examples/selectbutton.py` | ✓ |
-| Calendar     | ✓ | `docs/api/calendar.rst`     | `docs/examples/calendar.py`     | ✓ |
+| Calendar     | ✓ | `docs/api/calendar.rst`     | `docs/examples/calendarwidget.py` | ✓ |
 
 ### What's next
 
 Continue widget by widget through the API categories in this order:
 Data Display → Layout → Navigation → Overlays → Dialogs → Forms.
 
-Suggested next (Data Display category): Tree, Table, ListView, Gauge, ProgressBar.
+Suggested next (Data Display category): ListView, Tree, Table.
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -193,8 +195,13 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   `_run` so it fires after `App.__exit__` shows the window. Setting it before
   `orig_run()` is overridden by the WM. Focus is forced via `after(50)` so the
   window owns OS focus before hero widget `focus()` calls fire.
-- **`select.py` shadows stdlib** — naming an example file `select.py` shadows
-  Python's stdlib `select` module when run directly. Use `selectfield.py` instead.
+- **`select.py` / `calendar.py` shadow stdlib** — naming an example file after a
+  stdlib module shadows it when `docs/examples/` is on `sys.path`. Use
+  `selectfield.py` and `calendarwidget.py` instead. Check before naming any new
+  example file.
+- **`&` in `bs.Label` text** — Tkinter consumes `&` as a mnemonic underline
+  indicator and strips it from the displayed text (leaving two spaces). Use
+  ``"and"`` instead of ``"&"`` in example section labels.
 - **SelectBox disabled text fix** — `SelectBox.__init__` sets `entry.state(['readonly'])`
   AFTER `Field.__init__` sets `['disabled', '!readonly']`, leaving entry in
   `['disabled', 'readonly']`. Fixed in `field.py` by changing the foreground map

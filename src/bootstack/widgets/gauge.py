@@ -1,34 +1,45 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable
+from typing import Literal, overload, Any, Callable
 
 from bootstack.widgets._impl.composites.meter import Meter as _InternalMeter
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import AccentToken
 
 
 class Gauge(PublicWidgetBase):
     """A circular gauge for displaying a value within a range.
 
+    Renders a circular arc gauge with an optional center text display. Supports
+    full-circle and semicircle layouts, solid and segmented arcs, and an
+    interactive drag mode for value input.
+
     Args:
-        value: Initial value.
-        min_value: Minimum of the range. Default `0`.
-        max_value: Maximum of the range. Default `100`.
-        subtitle: Text displayed below the value.
-        value_prefix: Text prepended to the value display (e.g. `'$'`).
-        value_suffix: Text appended to the value display (e.g. `'%'`).
-        value_format: Format string for the value (e.g. `'{:.1f}'`).
-        size: Diameter in pixels. Default `200`.
-        thickness: Arc width in pixels. Default `10`.
-        meter_type: `'full'` (default) for a full circle or `'semi'` for a semicircle.
-        segment_width: Segment width for a dashed/segmented arc. `0` means solid.
-        interactive: If True, the user can click/drag to change the value.
-        step: Increment used in interactive mode.
-        show_text: If False, hides the value text.
-        accent: Accent token for the arc colour.
+        value: Initial value. Defaults to ``0``.
+        min_value: Minimum of the range. Defaults to ``0``.
+        max_value: Maximum of the range. Defaults to ``100``.
+        subtitle: Secondary label displayed below the value text.
+        value_prefix: Text prepended to the displayed value (e.g. ``'$'``).
+        value_suffix: Text appended to the displayed value (e.g. ``'%'``).
+        value_format: Python format string applied to the value.
+            Defaults to ``'{:.0f}'`` (integer display).
+        size: Diameter of the gauge in pixels. Defaults to ``200``.
+        thickness: Width of the arc stroke in pixels. Defaults to ``10``.
+        variant: Shape variant. ``'full'`` (default) draws a complete 360° ring;
+            ``'semi'`` draws a half-circle arc along the bottom.
+        segment_width: Width of each dash segment for a dashed arc style.
+            ``0`` (default) draws a solid arc.
+        interactive: If ``True``, the user can click or drag the arc to change
+            the value. Defaults to ``False``.
+        step: Value increment per drag step in interactive mode. Defaults to ``1``.
+        show_text: If ``False``, hides the center value text. Defaults to ``True``.
+        accent: Color intent token for the arc. One of ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``. Defaults to the theme's default color.
         parent: Override the context-stack parent.
     """
 
@@ -44,12 +55,12 @@ class Gauge(PublicWidgetBase):
         value_format: str = "{:.0f}",
         size: int = 200,
         thickness: int = 10,
-        meter_type: str = "full",
+        variant: Literal["full", "semi"] = "full",
         segment_width: int = 0,
         interactive: bool = False,
         step: int | float = 1,
         show_text: bool = True,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -65,7 +76,7 @@ class Gauge(PublicWidgetBase):
             "value_format": value_format,
             "size": size,
             "thickness": thickness,
-            "meter_type": meter_type,
+            "meter_type": variant,
             "segment_width": segment_width,
             "interactive": interactive,
             "step_size": step,
@@ -112,7 +123,7 @@ class Gauge(PublicWidgetBase):
         """Register a callback fired when the gauge value changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 
