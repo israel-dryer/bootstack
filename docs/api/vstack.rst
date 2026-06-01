@@ -115,6 +115,15 @@ within its parent — separate from how it arranges its own children.
    with bs.VStack(fill="both", expand=True, gap=8):
        bs.Label("Grows with window")
 
+See also
+--------
+
+:class:`HStack <bootstack.widgets.stacks.HStack>` — horizontal equivalent.
+:class:`Grid <bootstack.widgets.grid.Grid>` — row and column layout.
+:class:`Card <bootstack.widgets.card.Card>` and
+:class:`GroupBox <bootstack.widgets.groupbox.GroupBox>` — VStack with an
+elevated background or labelled border.
+
 API
 ---
 

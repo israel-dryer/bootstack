@@ -112,6 +112,15 @@ within its parent — separate from how it arranges its own children.
        bs.Button("Edit")
        bs.Button("View")
 
+See also
+--------
+
+:class:`VStack <bootstack.widgets.stacks.VStack>` — vertical equivalent.
+:class:`Grid <bootstack.widgets.grid.Grid>` — row and column layout.
+:class:`Card <bootstack.widgets.card.Card>` and
+:class:`GroupBox <bootstack.widgets.groupbox.GroupBox>` — VStack/HStack with
+an elevated background or labelled border.
+
 API
 ---
 

@@ -91,6 +91,15 @@ token so each level has a visually distinct background.
        with bs.Card(padding=8, gap=4):        # overlay surface
            bs.Label("Inner")
 
+See also
+--------
+
+:class:`VStack <bootstack.widgets.stacks.VStack>`,
+:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Grid <bootstack.widgets.grid.Grid>` are the plain (no border, no
+surface) layout containers. Use ``Card`` when you want an elevated
+background and border around a group of content.
+
 API
 ---
 

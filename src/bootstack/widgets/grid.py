@@ -1,35 +1,82 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import PublicContainer, GRID_KEYS
+from bootstack.widgets.types import AccentToken, SurfaceToken, Fill, Anchor, Sticky
 
 
 class Grid(PublicContainer):
-    """Grid container — lays out children in rows and columns."""
+    """A container that arranges children in rows and columns.
+
+    Children are auto-placed left-to-right, top-to-bottom by default.
+    Column and row sizes are defined with ``columns=`` and ``rows=``;
+    omitting them lets the grid size itself to fit its children.
+
+    Args:
+        columns: Column definitions. An integer creates that many
+            equal-weight columns. A list sets per-column weights or
+            sizes — integers are relative weights, ``'auto'`` sizes to
+            content, ``'Npx'`` sets a fixed pixel width (e.g.
+            ``'120px'``). Defaults to ``None`` (single column, sized to
+            content).
+        rows: Row definitions, same format as ``columns``. Defaults to
+            ``None`` (rows added automatically as children are placed).
+        gap: Space in pixels between cells. An integer applies to both
+            axes; a 2-tuple ``(col_gap, row_gap)`` sets them
+            independently. Defaults to ``0``.
+        sticky_items: Default Tkinter sticky string applied to every
+            child cell (e.g. ``'ew'``, ``'nsew'``). Children can
+            override this with their own ``sticky=``. Defaults to
+            ``None`` (children sit at their natural size in the cell).
+        auto_flow: Auto-placement direction. One of ``'row'`` (default),
+            ``'column'``, ``'row-dense'``, or ``'column-dense'``.
+        padding: Space in pixels between the grid border and its
+            content. Accepts an integer (all sides) or a 2-tuple
+            ``(x, y)``. Defaults to ``None`` (no padding).
+        accent: Color intent token applied to the grid background. One
+            of ``'primary'``, ``'secondary'``, ``'info'``,
+            ``'success'``, ``'warning'``, ``'danger'``, ``'muted'``,
+            ``'default'``. Defaults to ``None``.
+        surface: Background surface token. One of ``'content'``,
+            ``'card'``, ``'chrome'``, ``'overlay'``. Defaults to
+            ``None`` (inherits from parent).
+        show_border: When ``True``, draws a 1 px border around the
+            grid. Use at least ``padding=1`` to give the border visual
+            clearance. Defaults to ``False``.
+        width: Fixed width in pixels. Disables frame propagation —
+            see the note in :class:`HStack` for sizing behavior.
+            Defaults to ``None``.
+        height: Fixed height in pixels. Disables frame propagation —
+            see the note in :class:`VStack` for sizing behavior.
+            Defaults to ``None``.
+        fill: Fill direction of the Grid itself within its parent.
+            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
+        expand: Whether the Grid expands to consume extra space in the
+            parent container. Defaults to ``None``.
+        anchor: Placement anchor of the Grid within its parent slot.
+        parent: Override the context-stack parent widget.
+    """
 
     def __init__(
         self,
         *,
         parent: Any = None,
-        rows: int | list | None = None,
-        columns: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         gap: int | tuple[int, int] = 0,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        sticky_items: Sticky | str | None = None,
+        auto_flow: Literal["row", "column", "row-dense", "column-dense", "none"] = "row",
         padding: Any = None,
-        accent: str | None = None,
-        variant: str | None = None,
-        surface: str | None = None,
+        accent: AccentToken | str | None = None,
+        surface: SurfaceToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
-        # Self-placement
-        fill: str | None = None,
+        fill: Fill | str | None = None,
         expand: bool | None = None,
-        anchor: str | None = None,
-        **extra_kw: Any,
+        anchor: Anchor | str | None = None,
     ) -> None:
         self._parent = self._resolve_parent(parent)
 
@@ -40,7 +87,6 @@ class Grid(PublicContainer):
             layout_kw["expand"] = expand
         if anchor is not None:
             layout_kw["anchor"] = anchor
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
 
         frame_kwargs: dict[str, Any] = {
             "rows": rows,
@@ -52,7 +98,6 @@ class Grid(PublicContainer):
         for k, v in {
             "padding": padding,
             "accent": accent,
-            "variant": variant,
             "surface": surface,
         }.items():
             if v is not None:
@@ -63,7 +108,6 @@ class Grid(PublicContainer):
             frame_kwargs["width"] = width
         if height is not None:
             frame_kwargs["height"] = height
-        frame_kwargs.update(extra_kw)
 
         self._sticky_items = sticky_items
 

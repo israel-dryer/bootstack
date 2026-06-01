@@ -91,6 +91,15 @@ sections within a larger form or dashboard.
            bs.Label("Status:")
            bs.Label("Connected", accent="success")
 
+See also
+--------
+
+:class:`VStack <bootstack.widgets.stacks.VStack>`,
+:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Grid <bootstack.widgets.grid.Grid>` are the plain (no border) layout
+containers. Use ``GroupBox`` when you want a labelled border around a group
+of related content.
+
 API
 ---
 
