@@ -78,12 +78,28 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Tooltip | ✓ | `docs/api/tooltip.rst` | `docs/examples/tooltip.py` | ✓ |
 | Toast   | ✓ | `docs/api/toast.rst`   | `docs/examples/toast.py`  | ✓ |
 
+**Layout category:**
+
+| Widget    | Wrapper | Doc page | Example | Screenshots |
+|-----------|---------|----------|---------|-------------|
+| Separator | ✓ | `docs/api/separator.rst` | `docs/examples/separator.py` | ✓ |
+| Card      | ✓ | `docs/api/card.rst`      | `docs/examples/card.py`      | ✓ |
+| GroupBox  | ✓ | `docs/api/groupbox.rst`  | `docs/examples/groupbox.py`  | ✓ |
+| VStack    | ✓ | `docs/api/vstack.rst`    | `docs/examples/vstack.py`    | ✓ |
+| HStack    | ✓ | `docs/api/hstack.rst`    | `docs/examples/hstack.py`    | ✓ |
+| Grid      | ✓ | `docs/api/grid.rst`      | `docs/examples/grid.py`      | ✓ |
+
 ### What's next
 
-Continue widget by widget through the API categories in this order:
-Data Display → Layout → Navigation → Dialogs → Forms.
+Continue Layout category widgets:
+- **Expander / Accordion** — collapsible container (suggested next)
+- **ScrollView** — scrollable canvas-backed container
+- **SplitView** — resizable pane divider
+- **PageStack** — tab-like page switching
 
-Suggested next (Data Display category): Tree, then Table.
+Then: Navigation → Dialogs → Forms.
+
+Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -317,6 +333,48 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   window at `+200+100` on screen.
 - **Screenshot runner 2 px inset** — `take_screenshots.py` now crops 2 px from each
   edge of the captured region to remove the Windows window-border artifact.
+- **Screenshot blurriness from browser downscaling** — if the captured PNG is wider
+  than the docs content column, the browser scales it down and it appears blurry.
+  Use `size=(W, H)` (not `minsize=`) on the example App to fix the window to a known
+  width. Target ~680-720px to stay within the pydata-sphinx-theme content column.
+- **Screenshot blurriness from fractional pixel positions** — narrow content centered
+  in a wide window renders text at sub-pixel positions. Fix by using `Grid(fill="x")`
+  or `VStack(fill="x")` for all top-level demo sections so content fills the full
+  window width and stays at integer pixel boundaries.
+- **`**extra_kw` removed from layout wrappers** — `Card`, `GroupBox`, `VStack`,
+  `HStack`, `Grid` no longer accept `**extra_kw`. All supported kwargs are now
+  explicit. Do not re-add it.
+- **`variant=` removed from VStack/HStack** — use `bs.Card` for card-variant layout.
+  VStack and HStack are plain layout containers only.
+- **`TLabelframe` removed from `CONTAINER_CLASSES`** — it was incorrectly included,
+  causing `accent=` to bleed into the surface/background instead of only coloring the
+  border. Fixed in `src/bootstack/style/token_maps.py`. GroupBox/LabelFrame `accent=`
+  now correctly controls border color only.
+- **`height=` / `width=` on VStack/HStack** — setting either disables frame
+  propagation. Setting **both** fully constrains the frame with no extra kwargs needed.
+  Setting only one collapses the other axis to zero — add `fill=` and `expand=True`
+  to let the parent control the unconstrained axis. The underlying pack geometry
+  manager has no "minsize" for frames; a Grid-backed refactor is a future improvement.
+- **`show_border=True` needs padding** — the border is drawn inside the frame edge.
+  Without at least `padding=1`, children render flush against it. Always pair
+  `show_border=True` with `padding=` for visual clearance.
+- **Grid `columns=N` integer shorthand** — passing an integer creates N equal-weight
+  columns. `columns=3` ≡ `columns=[1, 1, 1]`. Same for `rows=N`.
+- **Grid `0` weight == `'auto'`** — both map to `(weight=0, minsize=0)` in
+  `_parse_size`. Prefer `'auto'` for clarity; `0` reads as a mistake.
+- **`bs.Event` type** — `tkinter.Event` is no longer used in public API signatures.
+  All `on_*()` callbacks receive a `bootstack.widgets.types.Event` object, which is
+  an enriched event with a `data: Any` attribute for application-level payloads.
+  The `Event` class is the public type; do not reference `tkinter.Event` in docs or
+  docstrings.
+- **No Tkinter references in public docs** — the framework goal is to abstract the
+  underlying toolkit away entirely. Do not mention "Tkinter", "ttk", or "tk." in
+  user-facing docstrings or RST pages. Replace with neutral phrasing:
+  "anchor position" not "Tkinter anchor string"; "cell alignment" not "sticky string".
+- **Cross-referencing layout widgets** — all layout doc pages should have a "See also"
+  section pointing to related containers. Card/GroupBox reference VStack/HStack/Grid;
+  VStack/HStack/Grid reference each other and Card/GroupBox. Grid.rst also notes that
+  Card and GroupBox support `layout='grid'`.
 
 ---
 
