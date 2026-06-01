@@ -289,9 +289,10 @@ class ToolTip:
         else:
             anchor_x, anchor_y = widget_x, widget_y
 
-        # Calculate window offset based on window_point
-        w_width = max(self._toplevel.winfo_reqwidth(), self._toplevel.winfo_width())
-        w_height = max(self._toplevel.winfo_reqheight(), self._toplevel.winfo_height())
+        # Use req dimensions — the Toplevel is freshly created and withdrawn;
+        # winfo_width/height return the default 200×200 placeholder, not content size.
+        w_width = self._toplevel.winfo_reqwidth()
+        w_height = self._toplevel.winfo_reqheight()
 
         x_offset, y_offset = 0, 0
         if window_point == 'nw':
