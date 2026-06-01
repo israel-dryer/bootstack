@@ -13,5 +13,4 @@ Widgets for choosing values from a set of options.
    radiogroup
    togglegroup
    selectbutton
-
-.. note:: Calendar page coming soon.
+   calendar
