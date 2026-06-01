@@ -71,10 +71,17 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | SelectButton | ✓ | `docs/api/selectbutton.rst` | `docs/examples/selectbutton.py` | ✓ |
 | Calendar     | ✓ | `docs/api/calendar.rst`     | `docs/examples/calendarwidget.py` | ✓ |
 
+**Overlays category:**
+
+| Widget  | Wrapper | Doc page | Example | Screenshots |
+|---------|---------|----------|---------|-------------|
+| Tooltip | ✓ | `docs/api/tooltip.rst` | `docs/examples/tooltip.py` | ✓ |
+| Toast   | ✓ | `docs/api/toast.rst`   | `docs/examples/toast.py`  | ✓ |
+
 ### What's next
 
 Continue widget by widget through the API categories in this order:
-Data Display → Layout → Navigation → Overlays → Dialogs → Forms.
+Data Display → Layout → Navigation → Dialogs → Forms.
 
 Suggested next (Data Display category): Tree, then Table.
 
@@ -294,6 +301,22 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   example so the state transition is visible.
 - **RadioGroup `orient` parameter** — affects button layout inside the group.
   Show horizontal and vertical side by side using `HStack`, not as separate sections.
+- **Tooltip `_position_anchored` bug (fixed)** — `winfo_width/height` on a freshly
+  created withdrawn Toplevel returns the 200×200 default placeholder, not content
+  size. Fixed to use `winfo_reqwidth/reqheight` only in `_impl/composites/tooltip.py`.
+- **Tooltip hero screenshot** — `docs/screenshots/tooltip.py` simulates hover via
+  `btn.tk.event_generate('<Enter>')` at t=600ms (tooltip fires after 250ms delay at
+  t=850ms), then sets `topmost=True` at t=900ms so the tooltip wins z-order over the
+  app window lifted at t=800ms. Grab at t=950ms captures the live tooltip popup.
+- **Toast/Tooltip screenshot z-order** — the screenshot runner sets the app
+  `topmost=True` and lifts it at t=800ms. To capture a floating Toplevel (toast,
+  tooltip) in the screenshot, show it at t=850ms so it claims topmost AFTER the app.
+- **Toast hero** — force-show via `app.tk.after(850, lambda: bs.Toast(..., position='+X+Y').show())`.
+  Position must fall within the captured region: app client area is approximately
+  `(winfo_rootx, winfo_rooty)` to `(rootx+w, rooty+h)` where the runner places the
+  window at `+200+100` on screen.
+- **Screenshot runner 2 px inset** — `take_screenshots.py` now crops 2 px from each
+  edge of the captured region to remove the Windows window-border artifact.
 
 ---
 
