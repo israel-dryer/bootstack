@@ -4,6 +4,7 @@ from typing import Any
 
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets.types import AccentToken, SurfaceToken, Fill, Anchor
 
 
 class _StackBase(PublicContainer):
@@ -13,25 +14,73 @@ class _StackBase(PublicContainer):
         self,
         *,
         parent: Any = None,
-        # Self-placement (consumed by parent.guide_layout)
-        fill: str | None = None,
+        # Self-placement
+        fill: Fill | str | None = None,
         expand: bool | None = None,
-        anchor: str | None = None,
-        # Child-guidance defaults for children
+        anchor: Anchor | str | None = None,
+        # Child-guidance defaults
         gap: int = 0,
         padding: Any = None,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
+        anchor_items: Anchor | str | None = None,
         # Frame styling
-        accent: str | None = None,
-        variant: str | None = None,
-        surface: str | None = None,
+        accent: AccentToken | str | None = None,
+        surface: SurfaceToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
-        **extra_kw: Any,
     ) -> None:
+        """Create the stack container.
+
+        Args:
+            fill: Fill direction of this stack within its parent. One of
+                ``'x'``, ``'y'``, ``'both'``, or ``'none'``. Defaults to
+                ``None`` (no fill).
+            expand: Whether this stack expands to consume extra space in the
+                parent container. Defaults to ``None``.
+            anchor: Placement anchor of this stack within its parent slot.
+                Standard Tkinter anchor strings: ``'n'``, ``'s'``, ``'e'``,
+                ``'w'``, ``'center'``, etc.
+            gap: Spacing in pixels between child widgets. Defaults to ``0``.
+            padding: Space in pixels between the stack border and its
+                content. Accepts an integer (all sides) or a 2-tuple
+                ``(x, y)``. Defaults to ``None`` (no padding).
+            fill_items: Default ``fill`` direction applied to every child.
+                One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
+                Individual children can override this with their own
+                ``fill=``.
+            expand_items: When ``True``, each child expands to consume extra
+                space along the stack direction. Defaults to ``None``.
+            anchor_items: Default alignment anchor for children that do not
+                fill their slot. Standard Tkinter anchor strings: ``'n'``,
+                ``'s'``, ``'e'``, ``'w'``, ``'center'``, etc.
+            accent: Color intent token applied to the stack background. One
+                of ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
+                ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``.
+                Defaults to ``None`` (inherits from parent surface).
+            surface: Background surface token. One of ``'content'``,
+                ``'card'``, ``'chrome'``, ``'overlay'``. Overrides the
+                automatic surface inherited from the parent. Defaults to
+                ``None``.
+            show_border: When ``True``, draws a 1 px border around the
+                stack frame. Defaults to ``False``.
+            width: Fixed width of the stack in pixels. Disables frame
+                propagation so children cannot resize the container.
+                Setting both ``width=`` and ``height=`` fully constrains
+                the frame with no extra kwargs needed. When only
+                ``width=`` is set, height collapses to zero — add
+                ``fill='y'`` and ``expand=True`` to let the parent
+                control it. Defaults to ``None`` (size from children).
+            height: Fixed height of the stack in pixels. Disables frame
+                propagation so children cannot resize the container.
+                Setting both ``height=`` and ``width=`` fully constrains
+                the frame with no extra kwargs needed. When only
+                ``height=`` is set, width collapses to zero — add
+                ``fill='x'`` and ``expand=True`` to let the parent
+                control it. Defaults to ``None`` (size from children).
+            parent: Override the context-stack parent widget.
+        """
         self._parent = self._resolve_parent(parent)
 
         layout_kw: dict[str, Any] = {}
@@ -41,8 +90,6 @@ class _StackBase(PublicContainer):
             layout_kw["expand"] = expand
         if anchor is not None:
             layout_kw["anchor"] = anchor
-        # Grab any grid/pack/place kwargs the caller also passed
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
 
         frame_kwargs: dict[str, Any] = {
             "direction": self._direction,
@@ -55,27 +102,16 @@ class _StackBase(PublicContainer):
             frame_kwargs["padding"] = padding
         if accent is not None:
             frame_kwargs["accent"] = accent
-        if variant is not None:
-            frame_kwargs["variant"] = variant
-        # When variant='card', pick the surface based on what the parent is
-        # sitting on — step up one level so nested cards are distinguishable.
-        _SURFACE_STEPS = {"background": "card", "content": "card",
-                          "card": "overlay", "overlay": "overlay"}
-        if variant == 'card' and surface is None:
-            tk_master = self._parent._child_master() if self._parent else None
-            parent_surface = getattr(tk_master, '_surface', 'background') or 'background'
-            effective_surface = _SURFACE_STEPS.get(parent_surface, 'card')
-        else:
-            effective_surface = surface if surface is not None else None
-        if effective_surface is not None:
-            frame_kwargs["surface"] = effective_surface
+        if surface is not None:
+            frame_kwargs["surface"] = surface
         if show_border:
             frame_kwargs["show_border"] = show_border
         if width is not None:
             frame_kwargs["width"] = width
         if height is not None:
             frame_kwargs["height"] = height
-        frame_kwargs.update(extra_kw)
+        if width is not None or height is not None:
+            frame_kwargs["propagate"] = False
 
         self._fill_items = normalize_fill(fill_items)
         self._expand_items = expand_items
@@ -100,10 +136,35 @@ class _StackBase(PublicContainer):
 
 
 class HStack(_StackBase):
-    """Horizontal stack — lays out children left-to-right."""
+    """Horizontal stack — lays out children left-to-right with optional gap and alignment.
+
+    A lightweight container that packs children side by side using the pack
+    geometry manager. Use ``gap=`` to space children evenly, ``anchor_items=``
+    to align them vertically, and ``fill_items=`` to stretch them along the
+    horizontal axis.
+
+    Example::
+
+        with bs.HStack(gap=8, anchor_items="center"):
+            bs.Label("Name:")
+            bs.TextField()
+    """
     _direction = "horizontal"
 
 
 class VStack(_StackBase):
-    """Vertical stack — lays out children top-to-bottom."""
+    """Vertical stack — lays out children top-to-bottom with optional gap and alignment.
+
+    A lightweight container that packs children one above the other using the
+    pack geometry manager. Use ``gap=`` to space children evenly,
+    ``fill_items='x'`` to stretch them to the full width, and ``expand=True``
+    to let the stack grow vertically in its parent.
+
+    Example::
+
+        with bs.VStack(gap=12, fill_items="x", padding=16):
+            bs.Label("Title", font="heading-md[bold]")
+            bs.TextField()
+            bs.Button("Submit", accent="primary")
+    """
     _direction = "vertical"

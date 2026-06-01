@@ -10,3 +10,5 @@ Expander, Separator.
    separator
    card
    groupbox
+   vstack
+   hstack
