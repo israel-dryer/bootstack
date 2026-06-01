@@ -13,3 +13,4 @@ Expander, Separator.
    vstack
    hstack
    grid
+   accordion

@@ -87,7 +87,7 @@ from bootstack.widgets.codeeditor import CodeEditor
 from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets.datefield import DateField
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
-from bootstack.widgets.expander import Accordion, AccordionSection, Expander
+from bootstack.widgets.expander import Accordion, AccordionSection
 from bootstack.widgets.gauge import Gauge
 from bootstack.widgets.groupbox import GroupBox
 from bootstack.widgets.label import Badge, Label

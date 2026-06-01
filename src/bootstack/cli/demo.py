@@ -464,12 +464,6 @@ def _build_layout_page():
                     bs.Label(title, accent=color, font="body[bold]")
                     bs.Label(body, font="heading-lg")
 
-        with bs.GroupBox("Expander", fill="horizontal"):
-            with bs.Expander("Click to expand", expanded=False, fill="horizontal", padding=10):
-                bs.Label("This content is revealed when the expander is opened.")
-            with bs.Expander("Already expanded", expanded=True, fill="horizontal", padding=10):
-                bs.Label("Expanders can start open or closed.")
-
         with bs.GroupBox("Accordion", fill="horizontal"):
             acc = bs.Accordion(fill="horizontal", show_border=True, show_separators=True)
             with acc.add("Section 1"):

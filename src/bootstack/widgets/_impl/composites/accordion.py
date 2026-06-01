@@ -137,7 +137,7 @@ class Accordion(Frame):
             )
         else:
             # Configure existing expander
-            expander.configure(highlight=True)
+            expander.configure(highlight=False)
             if expanded is not None:
                 if expanded:
                     expander.expand()

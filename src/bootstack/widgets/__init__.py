@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from bootstack.widgets.codeeditor import CodeEditor
     from bootstack.widgets._impl.composites.textarea.filter import EditFilter
     from bootstack.widgets.datefield import DateField
-    from bootstack.widgets.expander import Accordion, Expander
+    from bootstack.widgets.expander import Accordion
     from bootstack.widgets.gauge import Gauge
     from bootstack.widgets.groupbox import GroupBox
     from bootstack.widgets.label import Badge, Label
