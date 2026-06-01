@@ -82,17 +82,17 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 
 | Widget    | Wrapper | Doc page | Example | Screenshots |
 |-----------|---------|----------|---------|-------------|
-| Separator | ✓ | `docs/api/separator.rst` | `docs/examples/separator.py` | ✓ |
-| Card      | ✓ | `docs/api/card.rst`      | `docs/examples/card.py`      | ✓ |
-| GroupBox  | ✓ | `docs/api/groupbox.rst`  | `docs/examples/groupbox.py`  | ✓ |
-| VStack    | ✓ | `docs/api/vstack.rst`    | `docs/examples/vstack.py`    | ✓ |
-| HStack    | ✓ | `docs/api/hstack.rst`    | `docs/examples/hstack.py`    | ✓ |
-| Grid      | ✓ | `docs/api/grid.rst`      | `docs/examples/grid.py`      | ✓ |
+| Separator  | ✓ | `docs/api/separator.rst`  | `docs/examples/separator.py`  | ✓ |
+| Card       | ✓ | `docs/api/card.rst`       | `docs/examples/card.py`       | ✓ |
+| GroupBox   | ✓ | `docs/api/groupbox.rst`   | `docs/examples/groupbox.py`   | ✓ |
+| VStack     | ✓ | `docs/api/vstack.rst`     | `docs/examples/vstack.py`     | ✓ |
+| HStack     | ✓ | `docs/api/hstack.rst`     | `docs/examples/hstack.py`     | ✓ |
+| Grid       | ✓ | `docs/api/grid.rst`       | `docs/examples/grid.py`       | ✓ |
+| Accordion  | ✓ | `docs/api/accordion.rst`  | `docs/examples/accordion.py`  | ✓ |
 
 ### What's next
 
 Continue Layout category widgets:
-- **Expander / Accordion** — collapsible container (suggested next)
 - **ScrollView** — scrollable canvas-backed container
 - **SplitView** — resizable pane divider
 - **PageStack** — tab-like page switching
@@ -375,6 +375,26 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   section pointing to related containers. Card/GroupBox reference VStack/HStack/Grid;
   VStack/HStack/Grid reference each other and Card/GroupBox. Grid.rst also notes that
   Card and GroupBox support `layout='grid'`.
+- **`Expander` is internal** — `bs.Expander` was removed from the public API. It is
+  used internally by `Accordion` only. Do not re-export it. The public collapsible
+  container is `bs.Accordion`.
+- **`Accordion` defaults** — `show_border=True`, `show_separators=True`, and body
+  `padding=16` are the defaults. This is the Bootstrap-style bordered accordion.
+  Pass `show_border=False` / `show_separators=False` for a plain look.
+- **`Accordion` header selected state** — uses `b.subtle()` (light tint, not
+  `b.selected()` which darkens 18%). Defined in
+  `src/bootstack/style/builders/expander.py` ghost variant. The solid variant uses
+  `b.color(accent)` for a full-color selected header. `highlight=True` is set on all
+  accordion sections by default.
+- **`Accordion` fill default** — `layout_kw.setdefault('fill', 'x')` is set in the
+  public wrapper so accordion always fills container width. Without this, headers
+  shrink to their text width when content is hidden.
+- **One doc page per widget** — never document more than one widget on a single RST
+  page, even if they are closely related (e.g. Expander and Accordion are separate).
+- **`[bold]` is redundant on heading fonts** — `heading-md`, `heading-lg` etc. are
+  already bold. Do not write `font="heading-md[bold]"`.
+- **`font="heading-md"` not `font="heading-md[bold]"`** — same as above; use the
+  token name only.
 
 ---
 
