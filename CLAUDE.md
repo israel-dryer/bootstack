@@ -32,25 +32,48 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 
 ### What's done
 
+**Actions category:**
+
 | Widget | Wrapper | Doc page | Example | Screenshots |
 |--------|---------|----------|---------|-------------|
 | Button | ✓ | `docs/api/button.rst` | `docs/examples/button.py` | ✓ |
-| Label  | ✓ | `docs/api/label.rst`  | `docs/examples/label.py`  | ✓ |
-| Badge  | ✓ | `docs/api/badge.rst`  | `docs/examples/badge.py`  | ✓ |
+
+**Inputs category:**
+
+| Widget | Wrapper | Doc page | Example | Screenshots |
+|--------|---------|----------|---------|-------------|
 | TextField    | ✓ | `docs/api/textfield.rst`    | `docs/examples/textfield.py`    | ✓ |
 | PasswordField | ✓ | `docs/api/passwordfield.rst` | `docs/examples/passwordfield.py` | ✓ |
 | NumberField  | ✓ | `docs/api/numberfield.rst`  | `docs/examples/numberfield.py`  | ✓ |
 | Slider       | ✓ | `docs/api/slider.rst`       | `docs/examples/slider.py`       | ✓ |
 | RangeSlider  | ✓ | `docs/api/rangeslider.rst`  | `docs/examples/rangeslider.py`  | ✓ |
+
+**Data Display category:**
+
+| Widget | Wrapper | Doc page | Example | Screenshots |
+|--------|---------|----------|---------|-------------|
+| Label  | ✓ | `docs/api/label.rst`  | `docs/examples/label.py`  | ✓ |
+| Badge  | ✓ | `docs/api/badge.rst`  | `docs/examples/badge.py`  | ✓ |
+
+**Selection category:**
+
+| Widget | Wrapper | Doc page | Example | Screenshots |
+|--------|---------|----------|---------|-------------|
 | Checkbox     | ✓ | `docs/api/checkbox.rst`     | `docs/examples/checkbox.py`     | ✓ |
 | Select       | ✓ | `docs/api/select.rst`       | `docs/examples/selectfield.py`  | ✓ |
+| Switch       | ✓ | `docs/api/switch.rst`       | `docs/examples/switch.py`       | ✓ |
+| ToggleButton | ✓ | `docs/api/togglebutton.rst` | `docs/examples/togglebutton.py` | ✓ |
+| RadioGroup   | ✓ | `docs/api/radiogroup.rst`   | `docs/examples/radiogroup.py`   | ✓ |
+| ToggleGroup  | ✓ | `docs/api/togglegroup.rst`  | `docs/examples/togglegroup.py`  | ✓ |
+| SelectButton | ✓ | `docs/api/selectbutton.rst` | `docs/examples/selectbutton.py` | ✓ |
+| Calendar     | ✓ | `docs/api/calendar.rst`     | `docs/examples/calendar.py`     | ✓ |
 
 ### What's next
 
 Continue widget by widget through the API categories in this order:
-Actions → Data Display → Inputs → Selection → Layout → Navigation → Overlays → Dialogs → Forms.
+Data Display → Layout → Navigation → Overlays → Dialogs → Forms.
 
-Suggested next (Selection category): Switch, ToggleButton, RadioGroup, ToggleGroup.
+Suggested next (Data Display category): Tree, Table, ListView, Gauge, ProgressBar.
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -120,8 +143,9 @@ For each widget:
         style="max-width:100%; border-radius:6px; margin:1rem 0;">
 ```
 
-CSS in `docs/_static/custom.css` handles `data-color-mode` switching
-(Shibuya uses `html[data-color-mode="dark"]`).
+CSS in `docs/_static/custom.css` handles `data-theme` switching.
+pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
+`"dark"` or `"light"` — selector is `[data-theme="dark"]`.
 
 ### Gotchas discovered during the docs pass
 
@@ -195,6 +219,51 @@ CSS in `docs/_static/custom.css` handles `data-color-mode` switching
   after making changes to verify it launches without errors before committing.
   Runtime bugs (e.g. unsupported kwargs like `wrap=True` on HStack) are invisible
   to static analysis.
+- **pydata-sphinx-theme migration** — switched from Shibuya. Key config changes:
+  `napoleon_use_param = True` (merges Napoleon Args + typehints into one Parameters
+  block); `html_theme = "pydata_sphinx_theme"`; autoclass for boolean controls needs
+  `:inherited-members: PublicWidgetBase` to show methods from `_BooleanControlBase`.
+- **Switch/ToggleButton unsupported features** — Switch does NOT support
+  `on_icon`/`off_icon`/`icon_only`/`show_indicator`/`tristate`/`density`.
+  ToggleButton does NOT support `tristate`/`show_indicator`. Only Checkbox
+  supports `tristate`. Give these widgets explicit `__init__` overrides so Sphinx
+  shows the correct signature (not the full `_BooleanControlBase` signature).
+- **`density=` on boolean controls** — Checkbox and Switch do NOT support `density=`
+  (removed from their public API). ToggleButton DOES support it via
+  `_capture_density_option()` in `CheckToggle`.
+- **`TTKWrapperBase.__init__wrapper` overwrites `self._accent`** — composite widgets
+  that pop `accent` from kwargs before calling `super().__init__()` will have
+  `self._accent` reset to `None` by the wrapper. Fix: store the accent in a local
+  variable, call super, then re-assign: `self._accent = accent_value`. Affects
+  `_InternalRadioGroup` (fixed) and `_InternalToggleGroup` (already handled).
+- **`_InternalRadioGroup` accent bug** — `RadioGroup.add()` uses `self._accent` to
+  style buttons, but `_BooleanControlBase.__init__wrapper` was overwriting it to
+  `None`. Fixed by storing accent before super() and restoring after in
+  `_impl/composites/radiogroup.py`.
+- **`ToggleGroup padding=` bug** — fixed. Added `if 'padding' not in kwargs: kwargs['padding'] = 1`
+  guard before `super().__init__()` in `_impl/composites/togglegroup.py`.
+- **`ToggleGroup state=` not extracted** — `state="disabled"` was leaking through
+  to the underlying ttk.Frame which rejects it. Fixed by popping `state` from kwargs
+  in `__init__` and applying it to buttons in `add()`.
+- **`OptionMenu.style_options` not passed to super** — `icon`, `icon_only`,
+  `show_dropdown_button`, `dropdown_button_icon` were being captured into
+  `style_options` but the dict was never passed to `super().__init__()`. Fixed in
+  `_impl/primitives/optionmenu.py`.
+- **`SelectButton`** — new public widget wrapping `OptionMenu` (internal). A
+  button-styled, non-editable value picker. Fills the gap between `Select`
+  (editable combobox) and `MenuButton` (action menu).
+- **Boolean control Sphinx signatures** — widgets that inherit `_BooleanControlBase`
+  without overriding `__init__` show ALL base class params in the Sphinx signature
+  (including unsupported ones). Give each subclass its own `__init__` that explicitly
+  lists only the params it supports.
+- **`autoclass` inherited-members for boolean controls** — use
+  `:inherited-members: PublicWidgetBase` so `toggle()`, `on_change()`, `on_check()`,
+  `on_uncheck()`, `value`, `checked`, `signal`, `disabled` appear in the API docs.
+- **ToggleButton variants** — supports `solid`, `outline`, `ghost` like Button.
+  Show variants with both inactive and active states side-by-side in the hero
+  example so the state transition is visible.
+- **RadioGroup `orient` parameter** — affects button layout inside the group.
+  Show horizontal and vertical side by side using `HStack`, not as separate sections.
 
 ---
 
@@ -320,9 +389,9 @@ src/bootstack/
 
 ```
 docs/
-├── conf.py                    Sphinx config (Shibuya theme, napoleon, sphinx-design)
+├── conf.py                    Sphinx config (pydata-sphinx-theme, napoleon, sphinx-design)
 ├── index.rst                  Root toctree (hidden, 5 sections)
-├── requirements.txt           sphinx, shibuya, sphinx-autodoc-typehints, sphinx-design, sphinx-autobuild
+├── requirements.txt           sphinx, pydata-sphinx-theme, sphinx-autodoc-typehints, sphinx-design, sphinx-autobuild
 ├── scripts/
 │   └── take_screenshots.py   Automated screenshot runner (light + dark)
 ├── examples/
@@ -462,13 +531,16 @@ def on_change(self, handler=None):
   only (Entry, Checkbox, Slider, etc.).
 - **`value=` is ignored when `signal=` is also passed** on boolean widgets
   (Checkbox, Switch, RadioButton, etc.) — seed the Signal directly.
-- **`ToggleGroup(padding=N)` raises `TypeError`** — known bug, do not pass `padding=`.
+- **`ToggleGroup(padding=N)`** — bug fixed; `padding=` is now safe to pass.
 - **`ValidationRule` first arg is the rule type string** — e.g.
   `ValidationRule("stringLength", min=3)`. Built-ins: `"required"`, `"email"`,
   `"pattern"`, `"stringLength"`, `"custom"`, `"compare"`.
 - **`bs.Form` uses `col_count=`**, not `columns=`.
 - **`bs.L(key, *fmtargs)` uses positional `%s`/`%d` format args**, not `{name}` kwargs.
 - **`RadioGroup.set()` validates against keys**, not values.
+- **`bs.SelectButton`** — new widget (button-styled value picker). Use instead of
+  `bs.OptionMenu` (internal only). Distinct from `bs.MenuButton` (action menu)
+  and `bs.Select` (editable combobox).
 - **`<<BsThemeChanged>>`** fires after rebuild (use this). `<<ThemeChanged>>`
   fires before (TTK internal — avoid for reading colors).
 
@@ -476,7 +548,6 @@ def on_change(self, handler=None):
 
 ## Open bugs
 
-- `ToggleGroup` `padding=` kwarg causes `TypeError`
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
 - `ToggleGroup` solid variant has poor contrast — user handling
   `src/bootstack/style/builders/toolbutton.py`
