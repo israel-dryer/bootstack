@@ -1,6 +1,5 @@
 ﻿from __future__ import annotations
 
-import tkinter
 from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.list.listview import ListView as _InternalListView
@@ -8,7 +7,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
 
 class ListView(PublicWidgetBase):
@@ -167,7 +166,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_click(self) -> Stream: ...
     @overload
-    def on_item_click(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_click(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_click(self, handler=None):
         """Fired when an item is clicked. ``event.data`` is the record dict.
 
@@ -179,7 +178,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_selection_changed(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_selection_changed(self, handler=None):
         """Fired when the selection changes. Call ``get_selected()`` to read it.
 
@@ -191,7 +190,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_delete(self) -> Stream: ...
     @overload
-    def on_item_delete(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_delete(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_delete(self, handler=None):
         """Fired after an item is removed. ``event.data`` is the deleted record.
 
@@ -203,7 +202,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_insert(self) -> Stream: ...
     @overload
-    def on_item_insert(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_insert(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_insert(self, handler=None):
         """Fired after an item is inserted. ``event.data`` is the new record.
 
@@ -215,7 +214,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_update(self) -> Stream: ...
     @overload
-    def on_item_update(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_update(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_update(self, handler=None):
         """Fired after an item is updated. ``event.data`` is the updated record.
 
@@ -227,7 +226,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_drag_start(self) -> Stream: ...
     @overload
-    def on_item_drag_start(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_drag_start(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_drag_start(self, handler=None):
         """Fired when a drag begins. ``event.data`` includes ``source_index``.
 
@@ -239,7 +238,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_drag_end(self) -> Stream: ...
     @overload
-    def on_item_drag_end(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on_item_drag_end(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_item_drag_end(self, handler=None):
         """Fired when a drag ends. ``event.data`` includes ``source_index`` and
         ``target_index``.

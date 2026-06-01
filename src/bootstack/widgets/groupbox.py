@@ -38,14 +38,14 @@ class GroupBox(PublicContainer):
         expand_items: When ``True``, each child expands to consume extra
             space along the pack direction. Defaults to ``None``.
         anchor_items: Default alignment anchor for children that do not fill
-            their slot. Standard Tkinter anchor strings: ``'n'``, ``'s'``,
-            ``'e'``, ``'w'``, ``'center'``, etc.
+            their slot. One of ``'n'``, ``'s'``, ``'e'``, ``'w'``,
+            ``'center'``, etc.
         columns: Column definitions for ``'grid'`` layout. An integer sets
             the number of equal-weight columns; a list sets per-column
             weights or sizes (e.g. ``[1, 2, 'auto']``).
         rows: Row definitions for ``'grid'`` layout, same format as
             ``columns``.
-        sticky_items: Default Tkinter sticky string for every grid child
+        sticky_items: Default cell alignment for every grid child
             (e.g. ``'ew'``, ``'nsew'``). Children can override this.
         auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
             ``'column'``, ``'row-dense'``, or ``'column-dense'``.

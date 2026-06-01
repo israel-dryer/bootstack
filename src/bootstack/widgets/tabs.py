@@ -13,6 +13,7 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import Event
 
 _TABS_EVENTS: dict[str, str] = {
     "change":    "<<TabChanged>>",
@@ -166,8 +167,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
 
@@ -294,8 +295,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected tab changes.
 
         Returns:
@@ -306,8 +307,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on_tab_close(self) -> Stream: ...
     @overload
-    def on_tab_close(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_tab_close(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_tab_close(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_tab_close(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
@@ -318,8 +319,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on_tab_add(self) -> Stream: ...
     @overload
-    def on_tab_add(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_tab_add(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_tab_add(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_tab_add(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the add-tab button is clicked.
 
         Returns:

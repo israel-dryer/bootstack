@@ -9,7 +9,7 @@ from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken, Justify, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, Justify, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -142,8 +142,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -270,8 +270,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_input(self) -> Stream: ...
     @overload
-    def on_input(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_input(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
         Unlike ``on_change()`` which fires on commit (blur or Enter),
@@ -286,8 +286,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field value changes.
 
         Returns:
@@ -298,8 +298,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_submit(self) -> Stream: ...
     @overload
-    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_submit(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_submit(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Enter.
 
         Returns:
@@ -310,8 +310,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_focus(self) -> Stream: ...
     @overload
-    def on_focus(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_focus(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_focus(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains focus.
 
         Returns:
@@ -322,8 +322,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_blur(self) -> Stream: ...
     @overload
-    def on_blur(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_blur(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_blur(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses focus.
 
         Returns:
@@ -334,8 +334,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_valid(self) -> Stream: ...
     @overload
-    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_valid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -346,8 +346,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_invalid(self) -> Stream: ...
     @overload
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:
@@ -358,8 +358,8 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_validate(self) -> Stream: ...
     @overload
-    def on_validate(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_validate(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_validate(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
         Returns:

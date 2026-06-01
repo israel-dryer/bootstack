@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tkinter
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.sidenav.view import SideNav as _InternalSideNav, DisplayMode
@@ -12,6 +11,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import Event
 from bootstack.signals import Signal
 
 
@@ -84,8 +84,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
         if handler is None:
@@ -307,8 +307,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_selection_changed(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected item changes.
 
         Args:
@@ -322,8 +322,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_back_requested(self) -> Stream: ...
     @overload
-    def on_back_requested(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_back_requested(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_back_requested(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_back_requested(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the back button is clicked.
 
         Returns:
@@ -334,8 +334,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_pane_toggled(self) -> Stream: ...
     @overload
-    def on_pane_toggled(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_pane_toggled(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_pane_toggled(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_pane_toggled(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the pane is opened or closed.
 
         Args:
@@ -349,8 +349,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_display_mode_changed(self) -> Stream: ...
     @overload
-    def on_display_mode_changed(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_display_mode_changed(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_display_mode_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_display_mode_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the display mode changes.
 
         Args:

@@ -31,16 +31,22 @@ Usage
 Column definitions
 ~~~~~~~~~~~~~~~~~~
 
-``columns=`` accepts an integer (equal-weight columns) or a list of per-column
-sizes:
+``columns=`` accepts an integer or a list of per-column sizes:
 
-- **Integer weight** — relative share of available space (e.g. ``1``, ``2``)
-- ``'auto'`` — sized to the widest child in that column
-- ``'Npx'`` — fixed pixel width (e.g. ``'120px'``)
+- **Integer** (shorthand) — creates that many equal-weight columns.
+  ``columns=3`` is equivalent to ``columns=[1, 1, 1]``.
+- **Integer weight in a list** — relative share of available space
+  (e.g. ``1``, ``2``). Weight ``0`` is equivalent to ``'auto'`` — prefer
+  ``'auto'`` for clarity.
+- ``'auto'`` — sized to the widest child in that column; does not grow.
+- ``'Npx'`` — fixed pixel width (e.g. ``'120px'``).
 
 .. code-block:: python
 
-   # Three equal columns
+   # Three equal columns — integer shorthand
+   bs.Grid(columns=3)
+
+   # Same, written explicitly
    bs.Grid(columns=[1, 1, 1])
 
    # Label column sizes to content; field column takes the rest
@@ -55,10 +61,19 @@ Row definitions
 ``rows=`` follows the same format as ``columns=``. When omitted, rows are
 added automatically as children are placed.
 
+- **Integer** (shorthand) — creates that many equal-weight rows.
+  ``rows=3`` is equivalent to ``rows=[1, 1, 1]``.
+- **Integer weight in a list** — relative share of available vertical space.
+- ``'auto'`` — sized to the tallest child in that row; does not grow.
+- ``'Npx'`` — fixed pixel height (e.g. ``'80px'``).
+
 .. code-block:: python
 
-   # Three equal rows
-   bs.Grid(rows=[1, 1, 1])
+   # Three equal rows — integer shorthand
+   bs.Grid(rows=3)
+
+   # Mixed: two auto-height rows, one that fills remaining space
+   bs.Grid(rows=["auto", 1, "auto"])
 
 Gap
 ~~~
@@ -74,9 +89,8 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
 Child alignment — sticky_items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``sticky_items=`` controls how children fill their cell. It accepts
-Tkinter sticky strings — any combination of ``'n'``, ``'s'``, ``'e'``,
-``'w'``:
+``sticky_items=`` controls how children fill their cell. Pass any
+combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``:
 
 - ``'ew'`` — stretch horizontally, natural height (most common for forms)
 - ``'nsew'`` — stretch to fill the entire cell

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tkinter
 from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton as _InternalCheckButton
@@ -10,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -164,8 +163,8 @@ class _BooleanControlBase(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the value changes.
 
         Returns:
@@ -176,8 +175,8 @@ class _BooleanControlBase(PublicWidgetBase):
     @overload
     def on_check(self) -> Stream: ...
     @overload
-    def on_check(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_check(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_check(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_check(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the control becomes checked/selected.
 
         Returns:
@@ -188,8 +187,8 @@ class _BooleanControlBase(PublicWidgetBase):
     @overload
     def on_uncheck(self) -> Stream: ...
     @overload
-    def on_uncheck(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_uncheck(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_uncheck(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_uncheck(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the control becomes unchecked/deselected.
 
         Returns:

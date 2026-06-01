@@ -40,8 +40,7 @@ class _StackBase(PublicContainer):
             expand: Whether this stack expands to consume extra space in the
                 parent container. Defaults to ``None``.
             anchor: Placement anchor of this stack within its parent slot.
-                Standard Tkinter anchor strings: ``'n'``, ``'s'``, ``'e'``,
-                ``'w'``, ``'center'``, etc.
+                One of ``'n'``, ``'s'``, ``'e'``, ``'w'``, ``'center'``, etc.
             gap: Spacing in pixels between child widgets. Defaults to ``0``.
             padding: Space in pixels between the stack border and its
                 content. Accepts an integer (all sides) or a 2-tuple

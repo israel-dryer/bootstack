@@ -8,6 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import Event
 
 _TEXTAREA_EVENTS: dict[str, str] = {
     "change":   "<<Change>>",
@@ -105,8 +106,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         sequence = resolve_event(self, str(event))
         if handler is None:
             from bootstack.widgets._core.stream import Stream as _Stream
@@ -169,8 +170,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value is committed (blur).
 
         Returns:
@@ -181,8 +182,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_input(self) -> Stream: ...
     @overload
-    def on_input(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_input(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
         Returns:
@@ -193,8 +194,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_blur(self) -> Stream: ...
     @overload
-    def on_blur(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_blur(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_blur(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the text area loses focus.
 
         Returns:
@@ -205,8 +206,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_valid(self) -> Stream: ...
     @overload
-    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_valid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -217,8 +218,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_invalid(self) -> Stream: ...
     @overload
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:
@@ -229,8 +230,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_modified(self) -> Stream: ...
     @overload
-    def on_modified(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_modified(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_modified(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_modified(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the dirty state changes.
 
         Returns:
@@ -241,8 +242,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_undo(self) -> Stream: ...
     @overload
-    def on_undo(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_undo(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_undo(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_undo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after an undo operation.
 
         Returns:
@@ -253,8 +254,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_redo(self) -> Stream: ...
     @overload
-    def on_redo(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_redo(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_redo(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_redo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after a redo operation.
 
         Returns:

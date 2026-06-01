@@ -53,8 +53,7 @@ Child alignment
 ~~~~~~~~~~~~~~~
 
 ``anchor_items=`` controls horizontal alignment of children that do not fill
-the full width. Accepts standard Tkinter anchor strings: ``'w'`` (left),
-``'center'``, ``'e'`` (right).
+the full width. Use ``'w'`` (left), ``'center'``, or ``'e'`` (right).
 
 .. code-block:: python
 

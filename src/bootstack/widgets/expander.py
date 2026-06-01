@@ -15,6 +15,7 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import Event
 
 _EXPANDER_EVENTS: dict[str, str] = {
     "expand":   "<<Toggle>>",
@@ -182,8 +183,8 @@ class Expander(PublicContainer):
     @overload
     def on_toggle(self) -> Stream: ...
     @overload
-    def on_toggle(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_toggle(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_toggle(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_toggle(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the expander is expanded or collapsed.
 
         Returns:

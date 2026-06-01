@@ -11,6 +11,7 @@ from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
+from bootstack.widgets.types import Event
 
 _DATEFIELD_EVENTS: dict[str, str] = {
     "change":   "<<Change>>",
@@ -127,8 +128,8 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         _w = widget
@@ -179,8 +180,8 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected date changes.
 
         Returns:
@@ -191,8 +192,8 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_valid(self) -> Stream: ...
     @overload
-    def on_valid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_valid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -203,8 +204,8 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_invalid(self) -> Stream: ...
     @overload
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_invalid(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:

@@ -26,10 +26,10 @@ class Grid(PublicContainer):
         gap: Space in pixels between cells. An integer applies to both
             axes; a 2-tuple ``(col_gap, row_gap)`` sets them
             independently. Defaults to ``0``.
-        sticky_items: Default Tkinter sticky string applied to every
-            child cell (e.g. ``'ew'``, ``'nsew'``). Children can
-            override this with their own ``sticky=``. Defaults to
-            ``None`` (children sit at their natural size in the cell).
+        sticky_items: Default cell alignment applied to every child
+            (e.g. ``'ew'``, ``'nsew'``). Children can override this
+            with their own ``sticky=``. Defaults to ``None`` (children
+            sit at their natural size in the cell).
         auto_flow: Auto-placement direction. One of ``'row'`` (default),
             ``'column'``, ``'row-dense'``, or ``'column-dense'``.
         padding: Space in pixels between the grid border and its

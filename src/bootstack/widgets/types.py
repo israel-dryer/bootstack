@@ -8,20 +8,65 @@ from typing import Any, Callable, Literal, TypedDict
 # ---------------------------------------------------------------------------
 
 Master = tkinter.Misc | None
-"""Parent widget. Pass any tkinter widget or `None` to use the default root window."""
+"""Parent widget."""
 
-EventCallback = Callable[[tkinter.Event], None]
-"""Callback that receives a Tkinter `Event` object."""
+
+class Event:
+    """Event object passed to callbacks registered via ``on_*()`` methods.
+
+    Carries the context of the event that fired, including the originating
+    widget, pointer position, and any application-level data attached when
+    the event was emitted.
+
+    Attributes:
+        widget: The widget that received the event.
+        data: Application-level payload attached when the event was emitted
+            via ``emit(data=...)``. ``None`` if no data was provided.
+        x: Pointer x position relative to the widget.
+        y: Pointer y position relative to the widget.
+        x_root: Pointer x position relative to the screen.
+        y_root: Pointer y position relative to the screen.
+        type: Event type identifier.
+        char: Character string for keyboard events.
+        keysym: Symbolic key name for keyboard events.
+        state: Modifier key / button state bitmask.
+        delta: Mouse wheel delta (positive = scroll up).
+        width: Widget width at the time of the event.
+        height: Widget height at the time of the event.
+    """
+
+    widget: Any
+    data: Any
+    x: int
+    y: int
+    x_root: int
+    y_root: int
+    type: Any
+    char: str
+    keysym: str
+    keysym_num: int
+    state: int
+    delta: int
+    width: int
+    height: int
+    num: int
+    serial: int
+    time: int
+    send_event: bool
+
+
+EventCallback = Callable[["Event"], None]
+"""Callback that receives an `Event` object."""
 
 CommandCallback = Callable[[], Any]
 """Callback invoked with no arguments, e.g. a button `command=`."""
 
 # ---------------------------------------------------------------------------
-# Tkinter geometry / layout literals
+# Layout literals
 # ---------------------------------------------------------------------------
 
 Anchor = Literal['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw', 'center']
-"""Standard Tkinter anchor positions."""
+"""Alignment anchor position."""
 
 Orient = Literal['horizontal', 'vertical']
 """Widget orientation."""
@@ -63,16 +108,16 @@ SurfaceToken = Literal['content', 'card', 'chrome', 'overlay']
 # ---------------------------------------------------------------------------
 
 Fill = Literal['none', 'x', 'y', 'both']
-"""Fill axis for the pack geometry manager."""
+"""Fill axis for stack layout."""
 
 Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw', 'nse', 'nsw', 'new', 'sew', '']
-"""Sticky directions for the grid geometry manager."""
+"""Cell alignment for Grid layout. Any combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``."""
 
 Side = Literal['left', 'top', 'right', 'bottom']
-"""Side placement for the pack geometry manager."""
+"""Side placement for stack layout."""
 
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
-"""Layout direction for PackFrame and GridFrame."""
+"""Layout direction."""
 
 BorderMode = Literal['inside', 'outside']
 """Border mode for the place geometry manager."""

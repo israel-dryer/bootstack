@@ -31,15 +31,15 @@ class Card(PublicContainer):
         expand_items: When ``True``, each child expands to take any extra
             space along the pack direction. Defaults to ``None`` (no expand).
         anchor_items: Default alignment anchor applied to each child when it
-            does not fill its slot. Standard Tkinter anchor strings:
-            ``'n'``, ``'s'``, ``'e'``, ``'w'``, ``'center'``, etc.
+            does not fill its slot. One of ``'n'``, ``'s'``, ``'e'``,
+            ``'w'``, ``'center'``, etc.
         columns: Column definitions for ``'grid'`` layout. An integer sets
             the number of equal-weight columns; a list sets per-column weights
             or sizes (e.g. ``[1, 2, 'auto']``).
         rows: Row definitions for ``'grid'`` layout, same format as
             ``columns``.
-        sticky_items: Default Tkinter sticky string applied to every grid
-            child (e.g. ``'ew'``, ``'nsew'``). Children can override this.
+        sticky_items: Default cell alignment applied to every grid child
+            (e.g. ``'ew'``, ``'nsew'``). Children can override this.
         auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
             ``'column'``, ``'row-dense'``, ``'column-dense'``, or ``'none'``.
         accent: Color intent token applied to the card border. One of

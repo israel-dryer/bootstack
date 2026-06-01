@@ -11,6 +11,7 @@ from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
+from bootstack.widgets.types import Event
 
 _TIME_FIELD_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -99,8 +100,8 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         from bootstack.widgets._core.events import resolve_event
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
@@ -139,8 +140,8 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the time value changes.
 
         Returns:
@@ -151,8 +152,8 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_submit(self) -> Stream: ...
     @overload
-    def on_submit(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_submit(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_submit(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when Enter is pressed.
 
         Returns:

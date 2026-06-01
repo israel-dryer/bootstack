@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tkinter
 from datetime import date, datetime
 from typing import overload, Any, Callable, Iterable, Literal
 
@@ -10,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import AccentToken
+from bootstack.widgets.types import AccentToken, Event
 
 
 class Calendar(PublicWidgetBase):
@@ -143,8 +142,8 @@ class Calendar(PublicWidgetBase):
     @overload
     def on_date_selected(self) -> Stream: ...
     @overload
-    def on_date_selected(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_date_selected(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_date_selected(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_date_selected(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a date or range is selected.
 
         In single mode the handler fires on every date click. In range mode
