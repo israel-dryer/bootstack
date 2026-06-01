@@ -73,7 +73,6 @@ class Card(PublicContainer):
         expand: bool | None = None,
         anchor: str | None = None,
         parent: Any = None,
-        **extra_kw: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         self._layout = layout
@@ -85,7 +84,6 @@ class Card(PublicContainer):
             layout_kw["expand"] = expand
         if anchor is not None:
             layout_kw["anchor"] = anchor
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
 
         tk_master = self._parent._child_master() if self._parent else None
 

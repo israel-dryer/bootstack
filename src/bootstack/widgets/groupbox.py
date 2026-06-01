@@ -9,33 +9,52 @@ from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
 )
+from bootstack.widgets.types import AccentToken
 
 
 class GroupBox(PublicContainer):
     """A labelled container that groups related content inside a bordered frame.
 
-    Renders as a `ttk.LabelFrame` — the title is embedded in the top border
+    Renders as a ``ttk.LabelFrame`` — the title is embedded in the top border
     line, giving the classic fieldset look. Children are laid out according
-    to `layout`.
+    to ``layout``.
 
     Args:
-        title: Text embedded in the top border.
-        layout: Internal layout manager — `'vstack'` (default), `'hstack'`,
-            or `'grid'`.
-        padding: Space between the border and the content. Default `16`.
-        accent: Accent token for the border and label.
-        gap: Space between children in pixels.
-        fill_items: Default fill direction applied to each child.
-        expand_items: Whether children expand to fill available space.
-        anchor_items: Default anchor applied to each child.
-        columns: Column definitions for `'grid'` layout.
-        rows: Row definitions for `'grid'` layout.
-        sticky_items: Default sticky value for grid children.
-        auto_flow: Grid auto-flow direction.
-        fill: Self-placement fill direction in parent.
-        expand: Self-placement expand flag.
-        anchor: Self-placement anchor.
-        parent: Override the context-stack parent.
+        title: Text label embedded in the top border line. Defaults to an
+            empty string (border only, no label).
+        layout: Internal layout manager. One of ``'vstack'`` (default),
+            ``'hstack'``, or ``'grid'``.
+        padding: Space in pixels between the border and the content. Accepts
+            an integer (all sides) or a 2-tuple ``(x, y)``. Defaults to
+            ``16``.
+        accent: Color intent token applied to the border and title label.
+            One of ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
+            ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``. When
+            omitted, the border uses the theme's default foreground color.
+        gap: Space in pixels between child widgets. Defaults to ``0``.
+        fill_items: Default ``fill`` direction applied to every child.
+            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
+            Individual children can override this with their own ``fill=``.
+        expand_items: When ``True``, each child expands to consume extra
+            space along the pack direction. Defaults to ``None``.
+        anchor_items: Default alignment anchor for children that do not fill
+            their slot. Standard Tkinter anchor strings: ``'n'``, ``'s'``,
+            ``'e'``, ``'w'``, ``'center'``, etc.
+        columns: Column definitions for ``'grid'`` layout. An integer sets
+            the number of equal-weight columns; a list sets per-column
+            weights or sizes (e.g. ``[1, 2, 'auto']``).
+        rows: Row definitions for ``'grid'`` layout, same format as
+            ``columns``.
+        sticky_items: Default Tkinter sticky string for every grid child
+            (e.g. ``'ew'``, ``'nsew'``). Children can override this.
+        auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
+            ``'column'``, ``'row-dense'``, or ``'column-dense'``.
+        fill: Fill direction of the GroupBox itself within its parent.
+            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
+        expand: Whether the GroupBox expands to consume extra space in the
+            parent container. Defaults to ``None``.
+        anchor: Placement anchor of the GroupBox within its parent slot.
+        parent: Override the context-stack parent widget.
     """
 
     def __init__(
@@ -44,7 +63,7 @@ class GroupBox(PublicContainer):
         *,
         layout: str = "vstack",
         padding: Any = 16,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         gap: int = 0,
         fill_items: str | None = None,
         expand_items: bool | None = None,
@@ -59,7 +78,6 @@ class GroupBox(PublicContainer):
         expand: bool | None = None,
         anchor: str | None = None,
         parent: Any = None,
-        **extra_kw: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         self._layout = layout
@@ -71,7 +89,6 @@ class GroupBox(PublicContainer):
             layout_kw["expand"] = expand
         if anchor is not None:
             layout_kw["anchor"] = anchor
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
 
         tk_master = self._parent._child_master() if self._parent else None
 
