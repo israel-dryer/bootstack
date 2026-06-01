@@ -39,11 +39,10 @@ class ListItem(CompositeFrame):
     Data fields:
         When update_data() is called, the following fields are recognized:
         - id: Unique identifier for the item (required for selection/removal).
-        - title: Main heading text displayed at the top.
-        - text: Body text displayed below the title.
-        - caption: Small caption text displayed at the bottom.
+        - title: Primary text displayed in bold body font.
+        - text: Secondary text displayed below the title.
         - icon: Icon name or configuration to display on the left.
-        - badge: Badge text displayed on the right.
+        - badge: Short label displayed on the right.
         - selected: Boolean indicating if the item is selected.
         - focused: Boolean indicating if the item has keyboard focus.
         - item_index: Zero-based index of the item in the list.
@@ -320,8 +319,7 @@ class ListItem(CompositeFrame):
 
     def _update_title(self, text=None):
         """Update title widget."""
-        # Use heading-sm font for compact, heading-lg for default
-        title_font = 'heading-sm' if self._density == 'compact' else 'heading-lg'
+        title_font = 'caption[bold]' if self._density == 'compact' else 'body[bold]'
         if text is not None:
             if not self._title_widget:
                 self._title_widget = Label(
@@ -377,47 +375,6 @@ class ListItem(CompositeFrame):
                     pass
                 finally:
                     self._text_widget = None
-
-    def _update_caption(self, text=None):
-        """Update caption widget. Caption is only visible in default density."""
-        # Caption is hidden in compact mode
-        if self._density == 'compact':
-            if self._caption_widget:
-                try:
-                    self._caption_widget.pack_forget()
-                    self._caption_widget.destroy()
-                except TclError:
-                    pass
-                finally:
-                    self._caption_widget = None
-            return
-
-        if text is not None:
-            if not self._caption_widget:
-                self._caption_widget = Label(
-                    self._center_frame,
-                    text=text,
-                    font='caption',
-                    anchor='w',
-                    variant='list',
-                    ttk_class='ListView.TLabel',
-                    takefocus=False,
-                    accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
-                )
-                self._caption_widget.pack(side='top', fill='x', padx=(0, 3))
-                self.register_composite(self._caption_widget)
-            else:
-                self._caption_widget.configure(text=text)
-        else:
-            if self._caption_widget:
-                try:
-                    self._caption_widget.pack_forget()
-                    self._caption_widget.destroy()
-                except TclError:
-                    pass
-                finally:
-                    self._caption_widget = None
 
     def _update_badge(self, text=None):
         """Update badge widget."""
@@ -679,9 +636,6 @@ class ListItem(CompositeFrame):
         self._item_index = self._data.get('item_index', 0)
 
         selected = bool(record.get('selected', False))
-        if self._state.get('selected') != selected:
-            self._update_selection(selected)
-            self._state['selected'] = selected
 
         # handle focus - apply tkinter focus to the widget that should have logical focus
         focused = bool(record.get('focused', False))
@@ -704,11 +658,10 @@ class ListItem(CompositeFrame):
                 self._data['focused'] = False
             self._state['focused'] = focused
 
-        # direct update for high-priority visuals
+        # Create/update field widgets first so they exist before selection state is applied
         for field, updater in {
             "title": self._update_title,
             "text": self._update_text,
-            "caption": self._update_caption,
             "icon": self._update_icon,
         }.items():
             value = record.get(field)
@@ -716,6 +669,20 @@ class ListItem(CompositeFrame):
                 updater(value)
                 self._state[field] = value
 
-        self.after_idle(self._update_chevron)
-        self.after_idle(self._update_drag)
-        self.after_idle(self._update_remove)
+        # Apply selection after widgets exist so _update_states reaches all composites
+        if self._state.get('selected') != selected:
+            self._update_selection(selected)
+            self._state['selected'] = selected
+
+        def _safe(fn):
+            def _call():
+                try:
+                    if self.winfo_exists():
+                        fn()
+                except TclError:
+                    pass
+            return _call
+
+        self.after_idle(_safe(self._update_chevron))
+        self.after_idle(_safe(self._update_drag))
+        self.after_idle(_safe(self._update_remove))

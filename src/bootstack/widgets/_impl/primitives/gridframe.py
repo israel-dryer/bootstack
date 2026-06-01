@@ -403,6 +403,10 @@ class GridFrame(Frame):
                 row, col = self._find_next_position(rowspan, colspan)
 
             self._occupy_area(row, col, rowspan, colspan)
+            # Auto-configure rows that weren't pre-defined via rows= with weight=1,
+            # matching the behaviour of explicitly specified rows.
+            if row >= len(self._row_defs):
+                self.rowconfigure(row, weight=1)
             grid_options = self._build_options(row, col, rowspan, colspan, options)
             tk.Grid.configure(widget, **grid_options)
             self._managed.append((widget, options, (row, col, rowspan, colspan)))

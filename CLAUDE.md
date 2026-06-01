@@ -56,6 +56,8 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Badge       | ✓ | `docs/api/badge.rst`       | `docs/examples/badge.py`       | ✓ |
 | ProgressBar | ✓ | `docs/api/progressbar.rst` | `docs/examples/progressbar.py` | ✓ |
 | Gauge       | ✓ | `docs/api/gauge.rst`       | `docs/examples/gauge.py`       | ✓ |
+| ListView    | ✓ | `docs/api/listview.rst`    | `docs/examples/listview.py`    | ✓ |
+
 
 **Selection category:**
 
@@ -75,7 +77,7 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 Continue widget by widget through the API categories in this order:
 Data Display → Layout → Navigation → Overlays → Dialogs → Forms.
 
-Suggested next (Data Display category): ListView, Tree, Table.
+Suggested next (Data Display category): Tree, Table. (ListView done)
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -207,6 +209,10 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   `['disabled', 'readonly']`. Fixed in `field.py` by changing the foreground map
   from `('disabled !readonly', ...)` to `('disabled', ...)` so muted text applies
   regardless of the readonly flag.
+- **`GridFrame` auto-placed rows had no weight** — rows not pre-defined via `rows=`
+  were never `rowconfigure`d, so they defaulted to `weight=0` and couldn't share
+  vertical space even with `sticky='nsew'`. Fixed in `gridframe.py`: `_on_child_grid`
+  now calls `self.rowconfigure(row, weight=1)` for any row beyond `_row_defs`.
 - **`GridFrame` equal columns** — use `uniform=f"col_w{weight}"` in `columnconfigure`
   so equal-weight columns are truly equal regardless of children's minimum sizes.
   Without `uniform`, Tkinter distributes extra space equally but still respects
