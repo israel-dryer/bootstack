@@ -465,13 +465,13 @@ def _build_layout_page():
                     bs.Label(body, font="heading-lg")
 
         with bs.GroupBox("Accordion", fill="horizontal"):
-            acc = bs.Accordion(fill="horizontal", show_border=True, show_separators=True)
-            with acc.add("Section 1"):
-                bs.Label("Content for section one.", padding=10)
+            acc = bs.Accordion(fill="horizontal", accent="primary")
+            with acc.add("Section 1", expanded=True):
+                bs.Label("Content for section one.")
             with acc.add("Section 2"):
-                bs.Label("Content for section two.", padding=10)
+                bs.Label("Content for section two.")
             with acc.add("Section 3"):
-                bs.Label("Content for section three.", padding=10)
+                bs.Label("Content for section three.")
 
         with bs.GroupBox("SplitView", fill="both", expand=True):
             sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
