@@ -5,24 +5,35 @@ from typing import Any
 from bootstack.widgets._impl.primitives.separator import Separator as _InternalSeparator
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets.types import AccentToken, Orient
 
 
 class Separator(PublicWidgetBase):
     """A horizontal or vertical dividing line.
 
+    Renders a thin themed line that can be used to visually divide sections
+    of a layout. The line color inherits from the active surface by default
+    and can be overridden with an accent token.
+
     Args:
-        orient: `'horizontal'` (default) or `'vertical'`.
-        accent: Accent token for the line colour.
-        thickness: Line thickness in pixels.
-        length: Fixed length in pixels. If not set, stretches to fill.
-        parent: Override the context-stack parent.
+        orient: Direction of the line. One of ``'horizontal'`` (default)
+            or ``'vertical'``.
+        accent: Color intent token applied to the line. One of
+            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
+            ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``.
+            When omitted, the line color is derived from the active surface.
+        thickness: Line thickness in pixels. Defaults to the theme value
+            (typically 1 px).
+        length: Fixed length in pixels. When omitted the line stretches to
+            fill the available space along its axis.
+        parent: Override the context-stack parent widget.
     """
 
     def __init__(
         self,
-        orient: str = "horizontal",
+        orient: Orient | str = "horizontal",
         *,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         thickness: int | None = None,
         length: int | None = None,
         parent: Any = None,
