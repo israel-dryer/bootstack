@@ -58,7 +58,6 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Gauge       | ✓ | `docs/api/gauge.rst`       | `docs/examples/gauge.py`       | ✓ |
 | ListView    | ✓ | `docs/api/listview.rst`    | `docs/examples/listview.py`    | ✓ |
 
-
 **Selection category:**
 
 | Widget | Wrapper | Doc page | Example | Screenshots |
@@ -77,7 +76,7 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 Continue widget by widget through the API categories in this order:
 Data Display → Layout → Navigation → Overlays → Dialogs → Forms.
 
-Suggested next (Data Display category): Tree, Table. (ListView done)
+Suggested next (Data Display category): Tree, then Table.
 
 ### Widget documentation pattern (established — follow exactly)
 
@@ -213,6 +212,24 @@ pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
   were never `rowconfigure`d, so they defaulted to `weight=0` and couldn't share
   vertical space even with `sticky='nsew'`. Fixed in `gridframe.py`: `_on_child_grid`
   now calls `self.rowconfigure(row, weight=1)` for any row beyond `_row_defs`.
+- **`ListView` requires a height constraint to scroll** — virtual scrolling measures
+  the visible container height to calculate `_visible_rows`. Without a height
+  constraint (from a fixed `size=` App, `sticky='nsew'` Grid, or explicit `height=`),
+  the ListView expands to fit its row pool and `_clamp_indices` prevents scrolling.
+  The public wrapper sets `pack_propagate(False)` to prevent the row pool from
+  feeding back into the layout (which caused an infinite resize loop in Grid
+  layouts). Use `height=N` for a self-contained height, or place inside a
+  height-constrained layout with `fill='both', expand=True`.
+- **`ListView` selection state applied before field widgets exist** — `_update_selection`
+  was called before `_update_title`/`_update_text`, so newly-created Label widgets
+  missed the `_update_states()` call and rendered without selected styling until
+  hover. Fixed in `listitem.py`: selection is now applied after field widgets are
+  created in `update_data`.
+- **`ListView` pre-selection must happen after window shows** — calling
+  `data_source.select_record()` + `reload()` inside `with bs.App():` sets TTK
+  state before the window is mapped. Selected rows render incompletely until the
+  first hover/expose event. Pre-select after the `with` block (window is shown)
+  and before `app.run()`.
 - **`GridFrame` equal columns** — use `uniform=f"col_w{weight}"` in `columnconfigure`
   so equal-weight columns are truly equal regardless of children's minimum sizes.
   Without `uniform`, Tkinter distributes extra space equally but still respects
