@@ -110,13 +110,34 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 
 **Dialogs category:**
 
-| Item        | Doc page | Example | Screenshots |
-|-------------|----------|---------|-------------|
-| Dialogs     | `docs/api/dialogs.rst` | `docs/examples/dialogs.py` | ✓ |
+Dialogs public API was fully audited and expanded this pass. Doc pages need to
+be split into 7 pages (see "What's next"). Current state: one combined
+`docs/api/dialogs.rst` covers everything; screenshots taken.
+
+| Item | Doc page | Example | Screenshots |
+|------|----------|---------|-------------|
+| Dialogs (combined, to be split) | `docs/api/dialogs.rst` | `docs/examples/dialogs.py` | ✓ |
+
+Planned split — each needs its own RST page:
+- `message-dialogs.rst` — `alert()`, `confirm()`
+- `input-dialogs.rst` — `ask_string()`, `ask_integer()`, `ask_float()`, `ask_item()`, `ask_date()`, `ask_date_range()`
+- `color-dialog.rst` — `ask_color()` (NEW, not yet public), `ColorChooserDialog`
+- `font-dialog.rst` — `ask_font()` (NEW, not yet public), `FontDialog`
+- `filter-dialog.rst` — `ask_filter()` (NEW, not yet public), `FilterDialog`
+- `dialog.rst` — `Dialog`, `DialogButton`
+- `formdialog.rst` — `FormDialog`
+
+`ColorDropperDialog` is NOT exposed publicly — it is part of `ColorChooserDialog` internally.
 
 ### What's next
 
-Continue with Forms.
+1. **Dialogs — split doc page and expose remaining dialogs:**
+   - Add `ask_color()`, `ask_font()`, `ask_filter()` / `bs.FilterDialog` to public API
+   - Audit `ColorChooserDialog`, `FontDialog`, `FilterDialog` wrappers for API consistency
+   - Split `docs/api/dialogs.rst` into 7 pages per the plan above
+   - `docs/api/dialogs.rst` becomes a category index (toctree only)
+
+2. **Forms** — after dialogs split is complete.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
@@ -530,6 +551,44 @@ path, not source-relative).
   `_InternalAppShell` still calls `self._nav.on_selection_changed(...)` — this
   works because it calls the internal SideNav method directly (not the public
   wrapper), but watch for drift if the internal is ever updated.
+- **Dialog API conventions (dialogs pass):**
+  - `Dialog.__init__` is fully keyword-only; `master=` renamed to `parent=`;
+    `minsize=`/`maxsize=` renamed to `min_size=`/`max_size=`.
+  - `Dialog.show()` is fully keyword-only.
+  - Internal dialog callers (`MessageDialog`, `QueryDialog`, `DateDialog`,
+    `_ChromeDialog`, `_InternalFormDialog`) all updated to use `parent=`,
+    `min_size=`, `max_size=`.
+  - `on_data_changed` → `on_data_change` (present tense) across `Form`,
+    `FormDialog` (public + internal).
+  - `ButtonRole` simplified to 4 values: `"primary"`, `"secondary"`,
+    `"danger"`, `"cancel"`. `"default"` and `"help"` removed.
+  - `"link"` was an invalid variant on `"help"` role — replaced with `"ghost"`,
+    then role was removed entirely. Always verify variants against
+    `VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']`.
+  - `Dialog` `content_builder` receives an internal `_Frame` — public widgets
+    cannot be used directly inside it via `parent=frame`. Use internal
+    `_Label`/`_Frame` primitives from `widgets/_impl/primitives/`.
+  - `Frame.configure(surface=...)` does NOT work at runtime — `surface=` is
+    constructor-only. To change a frame's surface after creation, use
+    `frame.configure_style_options(surface=...)`.
+  - `get_theme_color(token)` in `bootstack.style.style` returns the current
+    theme's hex color for any accent token (e.g. `"danger"`, `"warning"`).
+    Use this instead of hardcoding severity colors.
+  - `ask_item()` now uses `SelectBox` (styled, searchable, no arbitrary input)
+    instead of raw `Combobox`. Validation in `_on_submit` still checks
+    `result not in self._items` as a safety net.
+  - Alert/confirm layout: use two empty `_Frame` spacers with `expand=True`
+    around the content frame to vertically center it (classic tkinter trick).
+  - `severity=` on `alert()`/`confirm()`: auto-rings bell for `"warning"` and
+    `"danger"`; auto-derives confirm button color (`"danger"` → danger role,
+    `"warning"` → secondary + accent="warning"). Icon color comes from
+    `get_theme_color(severity)`.
+  - `min_size=` is the public convention (not `minsize=`). `App` runtime still
+    uses `minsize` internally — a future cleanup pass should expose `min_size`
+    explicitly on `App` like `AppShell` already does.
+- **Dialog category has 7 doc pages** (not one) — see "What's next" for the
+  split plan. `ColorDropperDialog` is internal to `ColorChooserDialog`, not
+  a standalone public class.
 
 ---
 
