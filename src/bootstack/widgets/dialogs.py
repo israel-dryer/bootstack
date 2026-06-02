@@ -1,22 +1,84 @@
 from __future__ import annotations
 
+import textwrap
 from datetime import date
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence
 
 from bootstack.dialogs.dialog import Dialog, DialogButton, ButtonSpec
-from bootstack.dialogs.message import MessageBox as _MessageBox
 from bootstack.dialogs.query import QueryBox as _QueryBox
 from bootstack.dialogs.formdialog import FormDialog as _InternalFormDialog
+from bootstack.dialogs.datedialog import DateDialog as _DateDialog
+from bootstack.widgets._impl.primitives.label import Label as _Label
+from bootstack.widgets._impl.primitives.frame import Frame as _Frame
+from bootstack._core.images import Image as _ImageService
+from bootstack.style.style import get_theme_color as _get_theme_color
 
 
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
 
+_SEVERITY_ICONS: dict[str, str] = {
+    "info":    "info-circle-fill",
+    "warning": "exclamation-triangle-fill",
+    "danger":  "x-circle-fill",
+    "success": "check-circle-fill",
+}
+
+SeverityToken = Literal["info", "warning", "danger", "success"]
+
+
+def _resolve_icon(
+    icon: str | None, severity: SeverityToken | None
+) -> tuple[str | None, str]:
+    """Return (icon_name, icon_color) based on explicit icon/severity."""
+    resolved = icon or _SEVERITY_ICONS.get(severity or "", None)
+    if severity and not icon:
+        try:
+            color = _get_theme_color(severity)
+        except Exception:
+            color = _get_theme_color("foreground")
+    else:
+        try:
+            color = _get_theme_color("foreground")
+        except Exception:
+            color = "#000000"
+    return resolved, color
+
+
+def _build_message_content(
+    message: str, icon: str | None, icon_color: str, frame: Any
+) -> None:
+    """Build message body — used by alert() and confirm()."""
+    # Two spacers sandwich the content for vertical centering
+    _Frame(frame).pack(fill="x", expand=True)
+    container = _Frame(frame, padding=(20, 0))
+    container.pack(fill="x")
+    _Frame(frame).pack(fill="x", expand=True)
+
+    if icon:
+        try:
+            img = _ImageService.get_icon(icon, 48, icon_color)
+            icon_lbl = _Label(container, image=img)
+            icon_lbl.image = img  # prevent GC
+            icon_lbl.pack(side="left", anchor="center", padx=(0, 16))
+        except Exception:
+            pass
+    msg_frame = _Frame(container)
+    msg_frame.pack(side="left", anchor="center")
+    for line in message.split("\n"):
+        wrapped = "\n".join(textwrap.wrap(line, width=60)) or line
+        _Label(msg_frame, text=wrapped).pack(anchor="w", pady=(0, 3))
+
+
 def alert(
     message: str,
     *,
     title: str = "",
+    ok_text: str = "OK",
+    severity: SeverityToken | None = None,
+    icon: str | None = None,
+    sound: bool | None = None,
     parent: Any = None,
 ) -> None:
     """Show a message dialog with an OK button.
@@ -24,29 +86,100 @@ def alert(
     Args:
         message: The message text to display.
         title: Dialog window title.
+        ok_text: Label for the OK button. Defaults to ``'OK'``.
+        severity: Visual severity level — sets a colored icon and controls the
+            default sound behavior. One of ``'info'``, ``'warning'``,
+            ``'danger'``, ``'success'``. ``'warning'`` and ``'danger'`` ring
+            the system bell by default; ``'info'`` and ``'success'`` are silent.
+        icon: Icon name override. Takes precedence over ``severity``.
+        sound: Override the alert sound. ``True`` always rings the bell,
+            ``False`` always suppresses it. ``None`` (default) defers to
+            ``severity``: rings for ``'warning'`` and ``'danger'``, silent
+            otherwise.
         parent: Parent widget. Defaults to the active root window.
     """
-    _MessageBox.ok(message, title=title or " ", master=parent)
+    resolved_icon, icon_color = _resolve_icon(icon, severity)
+    if sound is None:
+        sound = severity in ("warning", "danger")
+    dlg = Dialog(
+        title=title or " ",
+        content_builder=lambda f: _build_message_content(message, resolved_icon, icon_color, f),
+        buttons=[DialogButton(ok_text, role="secondary", result=True, default=True)],
+        alert=sound,
+        min_size=(400, 140),
+        parent=parent,
+    )
+    dlg.show()
 
 
 def confirm(
     message: str,
     *,
     title: str = "",
+    confirm_text: str = "Yes",
+    cancel_text: str = "No",
+    confirm_role: str = "primary",
+    severity: SeverityToken | None = None,
+    icon: str | None = None,
+    sound: bool | None = None,
     parent: Any = None,
 ) -> bool:
-    """Show a Yes/No confirmation dialog.
+    """Show a confirmation dialog.
 
     Args:
         message: The question text to display.
         title: Dialog window title.
+        confirm_text: Label for the confirm button. Defaults to ``'Yes'``.
+        cancel_text: Label for the cancel button. Defaults to ``'No'``.
+        confirm_role: Button role controlling styling. Use ``'danger'`` for
+            destructive actions, ``'primary'`` (default) for standard
+            confirmations. When ``'danger'``, the confirm button is not
+            focused by default so :kbd:`Enter` does not accidentally trigger it.
+            Automatically overridden to ``'danger'`` when ``severity='danger'``
+            and to warning styling when ``severity='warning'``, unless set
+            explicitly.
+        severity: Visual severity level — sets a colored icon, adjusts the
+            confirm button color for ``'danger'`` and ``'warning'``, and
+            controls the default sound behavior. One of ``'info'``,
+            ``'warning'``, ``'danger'``, ``'success'``.
+        icon: Icon name override. Takes precedence over ``severity``.
+        sound: Override the alert sound. ``True`` always rings the bell,
+            ``False`` always suppresses it. ``None`` (default) defers to
+            ``severity``: rings for ``'warning'`` and ``'danger'``, silent
+            otherwise.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        `True` if the user clicked Yes, `False` otherwise.
+        ``True`` if the user clicked the confirm button, ``False`` otherwise.
     """
-    result = _MessageBox.yesno(message, title=title or " ", master=parent)
-    return result == "Yes"
+    resolved_icon, icon_color = _resolve_icon(icon, severity)
+    if sound is None:
+        sound = severity in ("warning", "danger")
+
+    # Auto-derive confirm button styling from severity when not explicitly set
+    if confirm_role == "primary" and severity == "danger":
+        confirm_btn = DialogButton(confirm_text, role="danger", result=True, default=False)
+    elif confirm_role == "primary" and severity == "warning":
+        confirm_btn = DialogButton(confirm_text, role="secondary", accent="warning",
+                                   result=True, default=True)
+    else:
+        is_danger = confirm_role == "danger"
+        confirm_btn = DialogButton(confirm_text, role=confirm_role, result=True,
+                                   default=not is_danger)
+
+    dlg = Dialog(
+        title=title or " ",
+        content_builder=lambda f: _build_message_content(message, resolved_icon, icon_color, f),
+        buttons=[
+            DialogButton(cancel_text, role="cancel"),
+            confirm_btn,
+        ],
+        alert=sound,
+        min_size=(400, 140),
+        parent=parent,
+    )
+    dlg.show()
+    return dlg.result is True
 
 
 def ask_string(
@@ -54,6 +187,7 @@ def ask_string(
     *,
     title: str = "",
     value: str | None = None,
+    value_format: str | None = None,
     parent: Any = None,
 ) -> str | None:
     """Show a text-input dialog.
@@ -62,6 +196,8 @@ def ask_string(
         prompt: Prompt text displayed above the input field.
         title: Dialog window title.
         value: Pre-filled initial value.
+        value_format: ICU format pattern for parsing and displaying the value
+            (e.g. a phone mask or postal code pattern).
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -71,6 +207,7 @@ def ask_string(
         prompt,
         title=title or " ",
         value=value,
+        value_format=value_format,
         master=parent,
     )
 
@@ -83,6 +220,7 @@ def ask_integer(
     min_value: int | None = None,
     max_value: int | None = None,
     step: int | None = None,
+    value_format: str | None = None,
     parent: Any = None,
 ) -> int | None:
     """Show an integer-input dialog with optional range validation.
@@ -94,6 +232,8 @@ def ask_integer(
         min_value: Minimum accepted value.
         max_value: Maximum accepted value.
         step: Increment/decrement step size.
+        value_format: ICU format pattern for displaying the value
+            (e.g. ``'#,##0'`` for thousands separators).
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -106,6 +246,7 @@ def ask_integer(
         minvalue=min_value,
         maxvalue=max_value,
         increment=step,
+        value_format=value_format,
         master=parent,
     )
 
@@ -118,6 +259,7 @@ def ask_float(
     min_value: float | None = None,
     max_value: float | None = None,
     step: float | None = None,
+    value_format: str | None = None,
     parent: Any = None,
 ) -> float | None:
     """Show a float-input dialog with optional range validation.
@@ -129,6 +271,8 @@ def ask_float(
         min_value: Minimum accepted value.
         max_value: Maximum accepted value.
         step: Increment/decrement step size.
+        value_format: ICU format pattern for displaying the value
+            (e.g. ``'$#,##0.00'`` for currency, ``'#,##0.##'`` for decimals).
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -141,33 +285,89 @@ def ask_float(
         minvalue=min_value,
         maxvalue=max_value,
         increment=step,
+        value_format=value_format,
         master=parent,
     )
 
 
 def ask_date(
-    prompt: str = "",
     *,
     title: str = "",
     value: date | None = None,
+    min_date: date | None = None,
+    max_date: date | None = None,
+    first_weekday: int = 6,
+    disabled_dates: list[date] | None = None,
     parent: Any = None,
 ) -> date | None:
     """Show a calendar date-picker dialog.
 
     Args:
-        prompt: Prompt text (used as the dialog title when `title` is not set).
-        title: Dialog window title. Falls back to `prompt` when omitted.
-        value: Pre-selected initial date.
+        title: Dialog window title.
+        value: Pre-selected initial date. Defaults to today.
+        min_date: Earliest selectable date (inclusive).
+        max_date: Latest selectable date (inclusive).
+        first_weekday: First day of the week. ``0`` = Monday, ``6`` = Sunday
+            (default).
+        disabled_dates: Specific dates to disable from selection.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
         The selected `date`, or `None` if canceled.
     """
-    return _QueryBox.get_date(
+    dlg = _DateDialog(
         master=parent,
-        title=title or prompt or " ",
-        value=value,
+        title=title or " ",
+        initial_date=value,
+        min_date=min_date,
+        max_date=max_date,
+        first_weekday=first_weekday,
+        disabled_dates=disabled_dates,
     )
+    dlg.show()
+    return dlg.result
+
+
+def ask_date_range(
+    *,
+    title: str = "",
+    start_date: date | None = None,
+    end_date: date | None = None,
+    min_date: date | None = None,
+    max_date: date | None = None,
+    first_weekday: int = 6,
+    disabled_dates: list[date] | None = None,
+    parent: Any = None,
+) -> tuple[date, date] | None:
+    """Show a calendar dialog for selecting a start and end date range.
+
+    Args:
+        title: Dialog window title.
+        start_date: Pre-selected range start date.
+        end_date: Pre-selected range end date.
+        min_date: Earliest selectable date (inclusive).
+        max_date: Latest selectable date (inclusive).
+        first_weekday: First day of the week. ``0`` = Monday, ``6`` = Sunday
+            (default).
+        disabled_dates: Specific dates to disable from selection.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        A ``(start, end)`` tuple of `date` objects, or `None` if canceled.
+    """
+    dlg = _DateDialog(
+        master=parent,
+        title=title or " ",
+        selection_mode="range",
+        start_date=start_date,
+        end_date=end_date,
+        min_date=min_date,
+        max_date=max_date,
+        first_weekday=first_weekday,
+        disabled_dates=disabled_dates,
+    )
+    dlg.show()
+    return dlg.result
 
 
 def ask_item(
@@ -214,8 +414,9 @@ class FormDialog:
             from `data`.
         col_count: Number of form columns. Default `1`.
         min_col_width: Minimum column width in pixels.
-        on_data_changed: Callback invoked on every field change, receiving
+        on_data_change: Callback invoked on every field change, receiving
             the current data dict.
+        on_close: Callback fired when the dialog closes by any means.
         width: Explicit form width in pixels.
         height: Explicit form height in pixels.
         buttons: Footer button specs. Defaults to Cancel + OK.
@@ -233,7 +434,8 @@ class FormDialog:
         items: Sequence[Any] | None = None,
         col_count: int = 1,
         min_col_width: int | None = None,
-        on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+        on_data_change: Callable[[dict[str, Any]], Any] | None = None,
+        on_close: Callable[[], Any] | None = None,
         width: int | None = None,
         height: int | None = None,
         buttons: Iterable[ButtonSpec | str] | None = None,
@@ -253,8 +455,10 @@ class FormDialog:
             internal_kwargs["items"] = items
         if min_col_width is not None:
             internal_kwargs["min_col_width"] = min_col_width
-        if on_data_changed is not None:
-            internal_kwargs["on_data_changed"] = on_data_changed
+        if on_data_change is not None:
+            internal_kwargs["on_data_change"] = on_data_change
+        if on_close is not None:
+            internal_kwargs["on_close"] = on_close
         if width is not None:
             internal_kwargs["width"] = width
         if height is not None:
@@ -266,7 +470,7 @@ class FormDialog:
         if max_size is not None:
             internal_kwargs["maxsize"] = max_size
 
-        self._internal = _InternalFormDialog(master=parent, **internal_kwargs)
+        self._internal = _InternalFormDialog(parent, **internal_kwargs)
 
     def show(self) -> "FormDialog":
         """Display the dialog and block until it is closed.

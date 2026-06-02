@@ -71,7 +71,8 @@ from bootstack.widgets._core.stream import Stream, Handle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PublicContainer
 from bootstack.widgets.dialogs import (
-    alert, confirm, ask_string, ask_integer, ask_float, ask_date, ask_item,
+    alert, confirm, ask_string, ask_integer, ask_float,
+    ask_date, ask_date_range, ask_item,
     FormDialog, Dialog, DialogButton,
 )
 from bootstack.widgets.app import App

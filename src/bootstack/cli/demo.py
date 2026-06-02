@@ -577,7 +577,7 @@ def _build_dialogs_page():
                 bs.Button("ask_integer()",
                           on_click=lambda: _ask(bs.ask_integer, "Enter age:", min_value=0, max_value=120))
                 bs.Button("ask_date()",
-                          on_click=lambda: _ask(bs.ask_date, "Pick a date:"))
+                          on_click=lambda: _ask(bs.ask_date, title="Pick a date"))
 
         with bs.GroupBox("FormDialog", fill="horizontal"):
             def _show_form():

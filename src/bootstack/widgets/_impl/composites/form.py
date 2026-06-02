@@ -144,7 +144,7 @@ class Form(Frame):
             instances directly.
         col_count: Number of columns at the top level.
         min_col_width: Minimum width for each column in pixels.
-        on_data_changed: Optional callback invoked with the updated data dict
+        on_data_change: Optional callback invoked with the updated data dict
             whenever a field value changes.
         width: Requested width for the form container.
         height: Requested height for the form container.
@@ -162,7 +162,7 @@ class Form(Frame):
             items: Sequence[FormItem | Mapping[str, Any]] | None = None,
             col_count: int = 1,
             min_col_width: int = DEFAULT_MIN_COL_WIDTH,
-            on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+            on_data_change: Callable[[dict[str, Any]], Any] | None = None,
             width: int | None = None,
             height: int | None = None,
             accent: str | None = None,
@@ -177,7 +177,7 @@ class Form(Frame):
             items: Explicit form layout (FieldItem/GroupItem/TabsItem or mappings).
             col_count: Number of columns at the top level.
             min_col_width: Minimum width per column in pixels.
-            on_data_changed: Callback invoked with updated data when a field changes.
+            on_data_change: Callback invoked with updated data when a field changes.
             width: Requested form width; if None, size naturally.
             height: Requested form height; if None, size naturally.
             accent: Accent token for the form container.
@@ -188,7 +188,7 @@ class Form(Frame):
 
         self._data: dict[str, Any] = dict(data) if data else {}
         self.result: Any = None
-        self._on_data_changed = on_data_changed
+        self._on_data_change = on_data_change
         self._col_count = col_count
         self._min_col_width = min_col_width
         self._widgets: dict[str, Any] = {}
@@ -800,8 +800,8 @@ class Form(Frame):
             return
         new_value = self._read_value_from_widget(key)
         self._data[key] = new_value
-        if self._on_data_changed:
-            self._on_data_changed(dict(self._data))
+        if self._on_data_change:
+            self._on_data_change(dict(self._data))
 
     def _variable_for_item(self, item: FieldItem, initial: Any, editor: EditorType | None) -> Variable | None:
         dtype = item.dtype

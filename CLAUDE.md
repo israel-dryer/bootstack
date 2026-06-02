@@ -108,9 +108,15 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Toolbar    | ✓ | `docs/api/toolbar.rst`    | `docs/examples/toolbar.py`    | ✓ |
 | MenuButton | — | — (pending)               | —                             | — |
 
+**Dialogs category:**
+
+| Item        | Doc page | Example | Screenshots |
+|-------------|----------|---------|-------------|
+| Dialogs     | `docs/api/dialogs.rst` | `docs/examples/dialogs.py` | ✓ |
+
 ### What's next
 
-Continue with Dialogs, then Forms.
+Continue with Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 

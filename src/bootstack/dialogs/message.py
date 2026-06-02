@@ -84,12 +84,12 @@ class MessageDialog:
 
         # Create the underlying dialog
         self._dialog = Dialog(
-            master=master,
             title=title,
             content_builder=self._create_content,
             buttons=button_specs,
             alert=alert,
-            minsize=(300, 100),
+            min_size=(300, 100),
+            parent=master,
         )
         self._master = master
 

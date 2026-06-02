@@ -6,11 +6,11 @@ from datetime import date
 from types import SimpleNamespace
 from typing import Any, Callable, List, Optional
 
-from bootstack.widgets._impl.primitives import Combobox, Frame, Label
+from bootstack.widgets._impl.primitives import Frame, Label
+from bootstack.widgets._impl.composites.selectbox import SelectBox
 from bootstack.constants import *
 
 ttk = SimpleNamespace(
-    Combobox=Combobox,
     Frame=Frame,
     Label=Label,
 )
@@ -79,24 +79,24 @@ class QueryDialog:
 
         # Create the underlying dialog with inline button specifications
         self._dialog = Dialog(
-            master=master,
             title=title,
             content_builder=self._create_content,
             buttons=[
                 DialogButton(
-                    text="button.cancel",  # Use semantic key - built-in localization
+                    text="button.cancel",
                     role="cancel",
                     result=None,
                 ),
                 DialogButton(
-                    text="button.submit",  # Use semantic key - built-in localization
+                    text="button.submit",
                     role="primary",
                     default=True,
                     command=lambda dlg: self._on_submit(),
-                    closes=False,  # Don't close yet - we need to validate first
+                    closes=False,
                 ),
             ],
-            minsize=(350, 120),
+            min_size=(350, 120),
+            parent=master,
         )
 
     def _create_content(self, parent: tkinter.Widget) -> None:
@@ -112,11 +112,16 @@ class QueryDialog:
 
         # Create appropriate input field based on datatype and options
         if self._items is not None and len(self._items) > 0:
-            # Combobox for item selection
-            entry = ttk.Combobox(master=frame, values=self._items)
-            entry.bind("<KeyRelease>", self._on_filter_list)
-            if self._value:
-                entry.set(self._value)
+            entry = SelectBox(
+                frame,
+                items=self._items,
+                value=self._value if self._value else None,
+                allow_custom_values=False,
+                enable_search=True,
+                initial_focus=True,
+                show_message=False,
+                label=None,
+            )
         elif self._datatype == date:
             # DateEntry for date input
             kwargs = {"value": self._value} if self._value else {}
@@ -170,9 +175,16 @@ class QueryDialog:
 
         # Get value from widget - Field widgets use .value, Entry/Combobox use .get()
         if hasattr(self._entry_widget, 'value'):
-            # Field widgets (TextEntry, NumericEntry, DateEntry)
             result = self._entry_widget.value
-            # Field widgets handle their own validation, so we can use the value directly
+            # For item-selection dialogs, reject values not in the list
+            if self._items and result not in self._items:
+                msg = MessageCatalog.translate("validation.select_item")
+                MessageBox.ok(
+                    message=msg,
+                    title=MessageCatalog.translate("validation.out_of_range"),
+                    master=self._dialog.toplevel,
+                )
+                return
             if result is not None:
                 self._dialog.result = result
                 if self._dialog.toplevel:

@@ -30,7 +30,7 @@ class FormDialog:
         form: The embedded Form widget instance, accessible for advanced usage.
 
     Args:
-        master: Parent widget. If None, uses the default root window.
+        parent: Parent widget. If None, uses the default root window.
         title: Dialog window title. Defaults to "Form".
         data: Initial data backing the form. Keys become field names.
         items: Optional explicit form definition using FieldItem/GroupItem/TabsItem.
@@ -38,7 +38,7 @@ class FormDialog:
         col_count: Number of columns for form layout. Defaults to 1.
         min_col_width: Minimum width for each column in pixels. Defaults to the
             shared form default.
-        on_data_changed: Optional callback invoked when any field value changes.
+        on_data_change: Optional callback invoked when any field value changes.
             Receives the updated data dict as parameter.
         width: Requested width for the form. Defaults to None (auto-size).
         height: Requested height for the form. Defaults to None (auto-size).
@@ -59,14 +59,15 @@ class FormDialog:
 
     def __init__(
         self,
-        master: Master = None,
+        parent: Master = None,
         *,
         title: str = "Form",
         data: dict[str, Any] | None = None,
         items: Sequence[FormItem | Mapping[str, Any]] | None = None,
         col_count: int = 1,
         min_col_width: int | None = None,
-        on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+        on_data_change: Callable[[dict[str, Any]], Any] | None = None,
+        on_close: Callable[[], Any] | None = None,
         width: int | None = None,
         height: int | None = None,
         scrollable: bool = True,
@@ -81,13 +82,13 @@ class FormDialog:
         """Initialize a FormDialog that wraps a Form inside a Dialog.
 
         Args:
-            master: Parent widget. Defaults to the default root window.
+            parent: Parent widget. Defaults to the default root window.
             title: Dialog window title.
             data: Initial data backing the form; keys become field names.
             items: Optional explicit form layout (FieldItem/GroupItem/TabsItem or mappings).
             col_count: Number of columns for the form layout.
             min_col_width: Minimum width per column; defaults to the shared form default.
-            on_data_changed: Callback invoked when any field value changes.
+            on_data_change: Callback invoked when any field value changes.
             width: Explicit form width; if None, size naturally.
             height: Explicit form height; if None, size naturally.
             scrollable: Whether the form content should be scrollable.
@@ -104,7 +105,7 @@ class FormDialog:
         self._col_count = col_count
         # Use the shared form default when not provided to keep layouts consistent
         self._min_col_width = min_col_width if min_col_width is not None else FORM_MIN_COL_WIDTH
-        self._on_data_changed = on_data_changed
+        self._on_data_change = on_data_change
         self._width = width
         self._height = height
         self._scrollable = scrollable  # deprecated; kept for compatibility with callers
@@ -134,15 +135,16 @@ class FormDialog:
         # Create the dialog with form as content
         # We'll set the proper minsize after measuring the actual form
         self._dialog = Dialog(
-            master=master,
             title=title,
             content_builder=self._build_form_content,
             buttons=self._buttons,
-            minsize=minsize,  # Use user-provided or None initially
-            maxsize=maxsize,
+            min_size=minsize,
+            max_size=maxsize,
             resizable=resizable,
             alert=alert,
             mode=mode,
+            on_close=on_close,
+            parent=parent,
         )
 
         self.form: Any = None  # Form widget, imported lazily to avoid circular import
@@ -153,9 +155,9 @@ class FormDialog:
 
     def show(
             self,
+            *,
             position: Optional[Tuple[int, int]] = None,
             modal: Optional[bool] = None,
-            *,
             anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]] = None,
             anchor_point: AnchorPoint = 'center',
             window_point: AnchorPoint = 'center',
@@ -243,7 +245,7 @@ class FormDialog:
             items=self._items,
             col_count=self._col_count,
             min_col_width=self._min_col_width,
-            on_data_changed=self._on_data_changed,
+            on_data_change=self._on_data_change,
             width=None,  # Let form size naturally
             height=None if self._scrollable else self._height,
             buttons=None,

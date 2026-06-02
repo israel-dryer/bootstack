@@ -21,7 +21,7 @@ class Form(PublicWidgetBase):
             instances or equivalent dicts.
         col_count: Number of top-level columns. Default `1`.
         min_col_width: Minimum column width in pixels.
-        on_data_changed: Callback invoked with the updated data dict on
+        on_data_change: Callback invoked with the updated data dict on
             each field change.
         width: Fixed form width in pixels.
         height: Fixed form height in pixels.
@@ -40,7 +40,7 @@ class Form(PublicWidgetBase):
         items: Sequence[FormItem | Mapping[str, Any]] | None = None,
         col_count: int = 1,
         min_col_width: int = DEFAULT_MIN_COL_WIDTH,
-        on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+        on_data_change: Callable[[dict[str, Any]], Any] | None = None,
         width: int | None = None,
         height: int | None = None,
         accent: str | None = None,
@@ -57,8 +57,8 @@ class Form(PublicWidgetBase):
             kw["data"] = data
         if items is not None:
             kw["items"] = items
-        if on_data_changed is not None:
-            kw["on_data_changed"] = on_data_changed
+        if on_data_change is not None:
+            kw["on_data_change"] = on_data_change
         if width is not None:
             kw["width"] = width
         if height is not None:
