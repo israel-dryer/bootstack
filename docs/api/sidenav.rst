@@ -132,28 +132,28 @@ users toggle the pane. Control it programmatically with `toggle_pane()`,
 Selection
 ~~~~~~~~~
 
-Call `select()` to set the active item. Read it back via ``current_key``.
+Call `select()` to set the active item. Read it back via ``current``.
 
 .. code-block:: python
 
    nav.select("home")
-   nav.selected_key           # 'home'
+   nav.current                # 'home'
 
 Events
 ~~~~~~
 
-``on_selection_changed`` fires when the user clicks an item. The payload
-contains the newly selected key.
+``on_change`` fires when the user clicks an item. The payload contains the
+newly selected key.
 
 .. code-block:: python
 
    def on_select(event):
        key = event.data["key"]   # e.g. 'home'
 
-   nav.on_selection_changed(on_select)
+   nav.on_change(on_select)
 
    # Stream form
-   nav.on_selection_changed().listen(lambda e: print(e.data["key"]))
+   nav.on_change().listen(lambda e: print(e.data["key"]))
 
 Other events:
 

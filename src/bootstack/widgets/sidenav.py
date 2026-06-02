@@ -16,7 +16,7 @@ from bootstack.signals import Signal
 
 
 _SIDENAV_EVENTS: dict[str, str] = {
-    "selection_changed":    "<<SelectionChanged>>",
+    "change":               "<<SelectionChanged>>",
     "back_requested":       "<<BackRequested>>",
     "pane_toggled":         "<<PaneToggled>>",
     "display_mode_changed": "<<DisplayModeChanged>>",
@@ -180,7 +180,7 @@ class SideNav(PublicWidgetBase):
 
     # ----- Item access -----
 
-    def node(self, key: str) -> SideNavItem:
+    def item(self, key: str) -> SideNavItem:
         """Return the item with the given key.
 
         Args:
@@ -191,19 +191,19 @@ class SideNav(PublicWidgetBase):
         """
         return self._internal.node(key)
 
-    def nodes(self) -> tuple[SideNavItem, ...]:
+    def items(self) -> tuple[SideNavItem, ...]:
         """Return all main-area items in insertion order."""
         return self._internal.nodes()
 
-    def node_keys(self) -> tuple[str, ...]:
+    def item_keys(self) -> tuple[str, ...]:
         """Return all main-area item keys in insertion order."""
         return self._internal.node_keys()
 
-    def footer_nodes(self) -> tuple[SideNavItem, ...]:
+    def footer_items(self) -> tuple[SideNavItem, ...]:
         """Return all footer items in insertion order."""
         return self._internal.footer_nodes()
 
-    def footer_node_keys(self) -> tuple[str, ...]:
+    def footer_item_keys(self) -> tuple[str, ...]:
         """Return all footer item keys in insertion order."""
         return self._internal.footer_node_keys()
 
@@ -222,7 +222,7 @@ class SideNav(PublicWidgetBase):
         """Return all groups in insertion order."""
         return self._internal.groups()
 
-    def configure_node(self, key: str, option: str | None = None, **kwargs: Any) -> Any:
+    def configure_item(self, key: str, option: str | None = None, **kwargs: Any) -> Any:
         """Get or set options on a specific item.
 
         Args:
@@ -283,7 +283,7 @@ class SideNav(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def selected_key(self) -> str | None:
+    def current(self) -> str | None:
         """The currently selected item key, or `None`."""
         return self._internal.selected_key
 
@@ -305,10 +305,10 @@ class SideNav(PublicWidgetBase):
     # ----- Event shorthands -----
 
     @overload
-    def on_selection_changed(self) -> Stream: ...
+    def on_change(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected item changes.
 
         Args:
@@ -317,7 +317,7 @@ class SideNav(PublicWidgetBase):
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self.on("selection_changed", handler)
+        return self.on("change", handler)
 
     @overload
     def on_back_requested(self) -> Stream: ...

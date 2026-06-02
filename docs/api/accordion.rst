@@ -163,16 +163,16 @@ Managing sections
 Events
 ~~~~~~
 
-``on_accordion_changed()`` fires whenever any section expands or collapses.
+``on_change()`` fires whenever any section expands or collapses.
 
 .. code-block:: python
 
    acc = bs.Accordion()
 
-   acc.on_accordion_changed(lambda e: print("section changed"))
+   acc.on_change(lambda e: print("section changed"))
 
    # Stream (chainable)
-   acc.on_accordion_changed().listen(lambda e: print("changed"))
+   acc.on_change().listen(lambda e: print("changed"))
 
 Widget sizing
 ~~~~~~~~~~~~~

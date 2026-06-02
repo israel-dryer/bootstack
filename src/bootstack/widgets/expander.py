@@ -26,7 +26,7 @@ _EXPANDER_EVENTS: dict[str, str] = {
 }
 
 _ACCORDION_EVENTS: dict[str, str] = {
-    "accordion_changed": "<<AccordionChange>>",
+    "change": "<<AccordionChange>>",
 }
 
 
@@ -427,10 +427,10 @@ class Accordion(PublicWidgetBase):
     # ----- Events -----
 
     @overload
-    def on_accordion_changed(self) -> Stream: ...
+    def on_change(self) -> Stream: ...
     @overload
-    def on_accordion_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_accordion_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any section expands or collapses.
 
         ``event.data`` contains a list of the currently expanded internal
@@ -439,7 +439,7 @@ class Accordion(PublicWidgetBase):
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self.on("accordion_changed", handler)
+        return self.on("change", handler)
 
     def add(
         self,
