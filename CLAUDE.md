@@ -107,6 +107,42 @@ Continue Navigation category (Toolbar), then Dialogs → Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
+### AppShell deferred improvements (tackle as a dedicated pass)
+
+These were identified during the docs pass but require internal changes:
+
+1. **`nav_pane_width=` not wired** — public wrapper accepts it but the param is
+   not threaded through `_build_shell` → `SideNav(pane_width=...)`. Fix: add
+   `nav_pane_width: int | None = None` to internal `AppShell.__init__` and
+   `_build_shell`, then pass to `SideNav(pane_width=nav_pane_width)`.
+
+2. **Nav item density/font size not controllable** — row height, font size, and
+   icon size are hardcoded in the SideNav style builder. Fix: expose a
+   `nav_density: WidgetDensity` param on AppShell/SideNav that the item builder
+   respects (similar to `toolbar_density`).
+
+3. **`toolbar` and `nav` properties expose internals** — `shell.toolbar` returns
+   the internal composite (callers must use `command=` not `on_click=`);
+   `shell.nav` returns the internal SideNav, not the public wrapper. Fix: return
+   the public `Toolbar` and `SideNav` wrapper instances instead.
+
+4. **Group UX issues** — when a child item is selected, the parent group header
+   gets the same full selection highlight (should use a lighter "has-active-child"
+   style). Child items also have no visual indentation. Both are internal SideNav
+   style/layout issues.
+
+5. **`add_footer_area` / nav footer container** — currently only page-linked
+   items can go in the footer (`add_footer_page()`). Non-page widgets (e.g. a
+   user-menu `MenuButton`) have no placement API. Fix: expose a `footer_area`
+   layout container on AppShell (similar to how `toolbar` works).
+
+6. **Event naming in remaining widgets** — broader audit found past-tense event
+   names still needing rename to present tense:
+   - `SideNav.on_pane_toggled` → `on_pane_toggle`
+   - `SideNav.on_display_mode_changed` → `on_display_mode_change`
+   - `ListView.on_selection_changed` → `on_change`
+   - `Calendar.on_date_selected` → `on_date_change`
+
 ### Widget documentation pattern (established — follow exactly)
 
 For each widget:
@@ -464,6 +500,23 @@ path, not source-relative).
   already bold. Do not write `font="heading-md[bold]"`.
 - **`font="heading-md"` not `font="heading-md[bold]"`** — same as above; use the
   token name only.
+- **AppShell `toolbar`/`nav` expose internals** — `shell.toolbar` returns the
+  internal composite; use `command=` (not `on_click=`) on it. `shell.nav` returns
+  the internal SideNav, not the public wrapper. Do not document them as if they
+  were public wrappers.
+- **AppShell `nav_pane_width=` not wired** — the parameter isn't threaded through
+  to `_build_shell` → `SideNav`. Passing it currently raises `TypeError`. Deferred.
+- **API naming standardisation done (Navigation pass)** — renamed across SideNav,
+  Accordion, Tabs, AppShell: `on_change` (present tense), `current` property,
+  `add_footer_page()`, `item/items/item_keys` instead of `node/nodes/node_keys`,
+  `expanded=` instead of `is_expanded=`. Still pending: `on_pane_toggled`,
+  `on_display_mode_changed` (SideNav), `on_selection_changed` (ListView),
+  `on_date_selected` (Calendar).
+- **`Accordion.on_change` / `SideNav.on_change`** — renamed from
+  `on_accordion_changed` and `on_selection_changed` respectively. Internal
+  `_InternalAppShell` still calls `self._nav.on_selection_changed(...)` — this
+  works because it calls the internal SideNav method directly (not the public
+  wrapper), but watch for drift if the internal is ever updated.
 
 ---
 
