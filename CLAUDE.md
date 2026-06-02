@@ -136,10 +136,23 @@ Bugs fixed in internal dialog classes:
 
 ### What's next
 
-1. **Forms** — now that dialogs are complete.
-   - Audit `bs.Form` public wrapper and `FormItem`/`GroupItem`/`TabsItem` types
-   - Write `docs/api/forms.rst` (already exists as a stub — may need full content)
-   - Screenshots
+1. **Forms** — `docs/api/forms.rst` is a stub ("Coming soon."). Full pass needed:
+   - **Wrapper**: `src/bootstack/widgets/form.py` — `Form` class is well-written;
+     `FormItem`, `FieldItem`, `GroupItem`, `TabsItem`, `TabItem`, `EditorType` are
+     imported in the wrapper but NOT exported from `bs.*`. Add them.
+   - **Audit**: check `Form` against internal `_impl/composites/form.py` for any
+     missing methods, properties, or event shorthands.
+   - **Doc page**: replace the stub `docs/api/forms.rst` with a full page following
+     the widget documentation pattern. Split into sub-sections for auto-generated
+     forms (`data=`), explicit layouts (`items=`), groups, tabs, validation,
+     and signals. Note: `FormDialog` already has its own page (`formdialog.rst`).
+   - **Example**: `docs/examples/forms.py` — show data= auto-form, explicit items
+     with FieldItem, GroupItem, TabsItem, and a multi-column layout. Visual states
+     only (no submit/validation callbacks in the example file).
+   - **Screenshot**: use `app._capture_target` pattern if showing the form inside
+     a dialog is cleaner, or just capture the app window for embedded forms.
+
+2. **MenuButton** — still pending (Menus and Toolbars category). After Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
@@ -616,6 +629,25 @@ path, not source-relative).
 - **`ColorChoice` namedtuple** — `namedtuple('ColorChoice', 'rgb hsl hex')`. Exported
   as `bs.ColorChoice`. Fields: `rgb=(r,g,b)` 0–255, `hsl=(h,s,l)` 0–360/0–100/0–100,
   `hex` lowercase hex string.
+- **`ColorChooser` tabs removed** — the Advanced/Themed/Standard `TabView` was
+  removed; the chooser now shows the spectrum directly with no tab navigation. Also
+  removed: `STD_SHADES`, `STD_COLORS`, `create_swatches()`, `on_press_swatch()`.
+- **Dialog `show(position=, modal=)` on all wrappers** — `FormDialog`, `ColorChooserDialog`,
+  `FontDialog`, `FilterDialog` all expose `position: tuple[int,int] | None` and
+  `modal: bool | None` on their `show()` method. Pass through to the internal dialog.
+- **`app._capture_target` pattern for dialog screenshots** — set this attribute on
+  the `App` instance to a Toplevel; the screenshot runner captures that window instead
+  of the app window. Uses `winfo_rootx/y` for left/content-area alignment and
+  `geometry()` for the outer-frame y (includes title bar). Defined in
+  `docs/scripts/take_screenshots.py` `_RUNNER._grab`.
+- **`bs-dialog-screenshot` CSS class** — add to all dialog screenshot `<img>` tags
+  (in place of the inline `border-radius:6px`). Defined in `docs/_static/custom.css`.
+  Adds a 1px border + soft drop shadow appropriate for isolated dialog window captures.
+  Regular widget screenshots keep `bs-screenshot-light/dark` only.
+- **`FontDialog.result` typed as `Any`** — intentional; avoids surfacing
+  `tkinter.font.Font` in the public API. The actual return is a `font.Font` object;
+  the docstring explains it. Don't change to `font.Font | None` as that would require
+  importing tkinter in the public surface.
 
 ---
 
