@@ -104,19 +104,6 @@ Scrollbar visibility
    # Scrollbar appears during scroll, hides after 1.5 s
    bs.ScrollView(scrollbar_visibility="scroll", autohide_delay=1500)
 
-Scrollbar variant
-~~~~~~~~~~~~~~~~~
-
-``scrollbar_variant=`` controls the thumb shape on both scrollbars.
-
-.. code-block:: python
-
-   # Rounded thumb (default)
-   bs.ScrollView(scrollbar_variant="default")
-
-   # Flat rectangular thumb
-   bs.ScrollView(scrollbar_variant="square")
-
 Programmatic scroll control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
