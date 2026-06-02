@@ -6,14 +6,14 @@ from typing import Any
 PACK_KEYS = frozenset({
     "side", "fill", "expand", "anchor",
     "padx", "pady", "ipadx", "ipady",
-    "margin",
+    "margin", "margin_x", "margin_y",
     "before", "after", "in_",
 })
 
 GRID_KEYS = frozenset({
     "row", "column", "rowspan", "columnspan",
     "sticky", "padx", "pady", "ipadx", "ipady",
-    "margin",
+    "margin", "margin_x", "margin_y",
     "in_",
 })
 
@@ -43,20 +43,36 @@ def normalize_fill(value: str | None) -> str | None:
 
 
 def _expand_margin(layout_kw: dict) -> None:
-    """Convert margin= to padx=/pady= in-place. Explicit padx/pady win."""
+    """Convert margin=/marginx=/marginy= to padx=/pady= in-place.
+
+    Processing order: margin sets both axes as a baseline; marginx and
+    marginy override their respective axis. Explicit padx/pady always win.
+    """
     margin = layout_kw.pop("margin", None)
-    if margin is None:
-        return
-    if isinstance(margin, int):
-        padx = pady = margin
-    elif len(margin) == 2:
-        padx, pady = margin  # (horizontal, vertical)
-    else:
-        left, top, right, bottom = margin  # ttk order: left top right bottom
-        padx = (left, right)
-        pady = (top, bottom)
-    layout_kw.setdefault("padx", padx)
-    layout_kw.setdefault("pady", pady)
+    marginx = layout_kw.pop("margin_x", None)
+    marginy = layout_kw.pop("margin_y", None)
+
+    padx = pady = None
+
+    if margin is not None:
+        if isinstance(margin, (int, float)):
+            padx = pady = margin
+        elif len(margin) == 2:
+            padx, pady = margin  # (horizontal, vertical)
+        else:
+            left, top, right, bottom = margin
+            padx = (left, right)
+            pady = (top, bottom)
+
+    if marginx is not None:
+        padx = marginx
+    if marginy is not None:
+        pady = marginy
+
+    if padx is not None:
+        layout_kw.setdefault("padx", padx)
+    if pady is not None:
+        layout_kw.setdefault("pady", pady)
 
 
 # ---  PublicContainer  -------------------------------------------------------
