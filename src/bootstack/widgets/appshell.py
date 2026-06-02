@@ -1,10 +1,13 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
+from bootstack.widgets._core.subscription import Subscription
+from bootstack.widgets._core.stream import Stream
+from bootstack.widgets.types import Event, AccentToken, WidgetDensity
 
 
 class _PageFrame:
@@ -79,10 +82,10 @@ class AppShell:
         show_toolbar: bool = True,
         show_window_controls: bool = False,
         draggable: bool = False,
-        toolbar_density: str = "default",
+        toolbar_density: WidgetDensity = "default",
         show_nav: bool = True,
-        nav_display_mode: str = "expanded",
-        nav_accent: str = "primary",
+        nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
+        nav_accent: AccentToken = "primary",
         settings: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -217,35 +220,25 @@ class AppShell:
         """
         self._internal.navigate(key, data=data)
 
-    def select(self, key: str, data: dict | None = None) -> None:
-        """Alias for `navigate()`.
-
-        Args:
-            key: Page key to navigate to.
-            data: Optional data dict passed to the page.
-        """
-        self._internal.navigate(key, data=data)
-
     # ----- Events -----
 
-    def on_page_changed(self, callback: Callable) -> str:
-        """Register a callback for `<<PageChanged>>` events.
-
-        Args:
-            callback: Called when the active page changes.
+    @overload
+    def on_page_change(self) -> Stream: ...
+    @overload
+    def on_page_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the active page changes.
 
         Returns:
-            Bind ID — pass to `off_page_changed()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_page_changed(callback)
-
-    def off_page_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<PageChanged>>`.
-
-        Args:
-            bind_id: ID returned by `on_page_changed()`. If `None`, removes all.
-        """
-        self._internal.off_page_changed(bind_id)
+        if handler is None:
+            def _source(h: Callable) -> Subscription:
+                bid = self._internal.bind("<<PageChanged>>", h, add="+")
+                return Subscription(self._internal, "<<PageChanged>>", bid)
+            return Stream(self._internal, _source=_source)
+        bid = self._internal.bind("<<PageChanged>>", handler, add="+")
+        return Subscription(self._internal, "<<PageChanged>>", bid)
 
     # ----- Lifecycle -----
 
@@ -265,16 +258,20 @@ class AppShell:
 
     @property
     def toolbar(self) -> Any:
-        """The internal `Toolbar`, or `None` if `show_toolbar=False`.
+        """The internal toolbar composite, or `None` if ``show_toolbar=False``.
 
-        Note: This is the internal composite — use `command=` (not `on_click=`)
-        when calling `add_button()` on it.
+        Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on
+        this object — it exposes the internal API, not the public `Toolbar`
+        wrapper.
         """
         return self._internal.toolbar
 
     @property
     def nav(self) -> Any:
-        """The internal `SideNav`, or `None` if `show_nav=False`."""
+        """The internal sidebar navigation, or `None` if ``show_nav=False``.
+
+        Exposes the internal composite — not the public `SideNav` wrapper.
+        """
         return self._internal.nav
 
     @property
@@ -283,6 +280,6 @@ class AppShell:
         return self._internal.pages
 
     @property
-    def current_page(self) -> str | None:
+    def current(self) -> str | None:
         """Key of the currently displayed page, or `None`."""
         return self._internal.current_page

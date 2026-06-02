@@ -9,3 +9,4 @@ AppShell, Tabs, SideNav, PageStack, Toolbar.
    pagestack
    tabs
    sidenav
+   appshell
