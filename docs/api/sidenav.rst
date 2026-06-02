@@ -63,7 +63,7 @@ Use `add_group()` to create a collapsible section, then pass ``group=`` to
 
 .. code-block:: python
 
-   nav.add_group("docs", "Documents", icon="folder", is_expanded=True)
+   nav.add_group("docs", "Documents", icon="folder", expanded=True)
    nav.add_item("files", "Files", group="docs")
    nav.add_item("images", "Images", group="docs")
 

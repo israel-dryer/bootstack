@@ -15,7 +15,7 @@ with bs.App(title="SideNav", size=(680, 520), padding=0, gap=0) as app:
         nav.add_item("files", "Files", icon="folder")
         nav.add_item("images", "Images", icon="image")
 
-        nav.add_group("archive", "Archive", icon="archive", is_expanded=True)
+        nav.add_group("archive", "Archive", icon="archive", expanded=True)
         nav.add_item("recent", "Recent", group="archive")
         nav.add_item("backup", "Backup", group="archive")
 

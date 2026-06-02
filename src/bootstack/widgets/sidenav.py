@@ -125,7 +125,7 @@ class SideNav(PublicWidgetBase):
         text: str = "",
         *,
         icon: str | dict | None = None,
-        is_expanded: bool = False,
+        expanded: bool = False,
     ) -> SideNavGroup:
         """Add a collapsible navigation group.
 
@@ -133,12 +133,12 @@ class SideNav(PublicWidgetBase):
             key: Unique identifier for the group.
             text: Display text.
             icon: Icon name or configuration dict.
-            is_expanded: Start expanded. Default `False`.
+            expanded: Start expanded. Default `False`.
 
         Returns:
             The created `SideNavGroup`.
         """
-        return self._internal.add_group(key, text, icon=icon, is_expanded=is_expanded)
+        return self._internal.add_group(key, text, icon=icon, is_expanded=expanded)
 
     def add_header(self, text: str) -> SideNavHeader:
         """Add a non-selectable section header label.
