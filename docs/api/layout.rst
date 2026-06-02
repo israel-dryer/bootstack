@@ -15,3 +15,4 @@ Expander, Separator.
    grid
    accordion
    scrollview
+   splitview
