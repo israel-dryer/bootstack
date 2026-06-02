@@ -98,10 +98,11 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 |-----------|---------|----------|---------|-------------|
 | PageStack | ✓ | `docs/api/pagestack.rst` | `docs/examples/pagestack.py` | ✓ |
 | Tabs      | ✓ | `docs/api/tabs.rst`      | `docs/examples/tabs.py`      | ✓ |
+| SideNav   | ✓ | `docs/api/sidenav.rst`   | `docs/examples/sidenav.py`   | ✓ |
 
 ### What's next
 
-Continue Navigation category (SideNav, AppShell, Toolbar), then Dialogs → Forms.
+Continue Navigation category (AppShell, Toolbar), then Dialogs → Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 

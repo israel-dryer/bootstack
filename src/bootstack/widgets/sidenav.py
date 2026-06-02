@@ -11,7 +11,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import Event, AccentToken
 from bootstack.signals import Signal
 
 
@@ -54,7 +54,7 @@ class SideNav(PublicWidgetBase):
         is_pane_open: bool = True,
         pane_width: int | None = None,
         signal: "Signal[str] | None" = None,
-        accent: str = "primary",
+        accent: AccentToken = "primary",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -315,7 +315,7 @@ class SideNav(PublicWidgetBase):
             handler: Receives `event.data = {'key': str}` — newly selected key.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("selection_changed", handler)
 
@@ -327,7 +327,7 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the back button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("back_requested", handler)
 
@@ -342,7 +342,7 @@ class SideNav(PublicWidgetBase):
             handler: Receives `event.data = {'is_open': bool}`.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("pane_toggled", handler)
 
@@ -357,7 +357,7 @@ class SideNav(PublicWidgetBase):
             handler: Receives `event.data = {'mode': str}`.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("display_mode_changed", handler)
 
