@@ -79,16 +79,18 @@ Scrollbar visibility
 
 ``scrollbar_visibility=`` controls when the scrollbars appear.
 
-+------------+--------------------------------------------------------+
-| ``'always'``  | Scrollbars are always visible (default).            |
-+------------+--------------------------------------------------------+
-| ``'never'``   | Scrollbars are always hidden; scrolling still works.|
-+------------+--------------------------------------------------------+
-| ``'hover'``   | Scrollbars appear when the mouse enters the widget. |
-+------------+--------------------------------------------------------+
-| ``'scroll'``  | Scrollbars appear while scrolling, then fade after  |
-|               | ``autohide_delay`` ms of inactivity.                |
-+------------+--------------------------------------------------------+
+.. list-table::
+   :widths: 15 85
+
+   * - ``'always'``
+     - Scrollbars are always visible (default).
+   * - ``'never'``
+     - Scrollbars are always hidden; scrolling still works via mouse wheel.
+   * - ``'hover'``
+     - Scrollbars appear when the mouse enters the widget.
+   * - ``'scroll'``
+     - Scrollbars appear while scrolling, then auto-hide after
+       ``autohide_delay`` ms of inactivity.
 
 .. code-block:: python
 
