@@ -3,4 +3,7 @@ Navigation
 
 AppShell, Tabs, SideNav, PageStack, Toolbar.
 
-.. note:: Coming soon.
+.. toctree::
+   :maxdepth: 1
+
+   pagestack
