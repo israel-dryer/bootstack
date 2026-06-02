@@ -8,6 +8,9 @@ from bootstack.dialogs.dialog import Dialog, DialogButton, ButtonSpec
 from bootstack.dialogs.query import QueryBox as _QueryBox
 from bootstack.dialogs.formdialog import FormDialog as _InternalFormDialog
 from bootstack.dialogs.datedialog import DateDialog as _DateDialog
+from bootstack.dialogs.colorchooser import ColorChooserDialog as _InternalColorChooserDialog, ColorChoice
+from bootstack.dialogs.fontdialog import FontDialog as _InternalFontDialog
+from bootstack.dialogs.filterdialog import FilterDialog as _InternalFilterDialog
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack._core.images import Image as _ImageService
@@ -490,3 +493,253 @@ class FormDialog:
     def form(self) -> Any:
         """The embedded `Form` widget — for advanced programmatic access."""
         return self._internal.form
+
+
+# ---------------------------------------------------------------------------
+# ColorChooserDialog — public wrapper
+# ---------------------------------------------------------------------------
+
+class ColorChooserDialog:
+    """A dialog for choosing a color using a hue/saturation spectrum.
+
+    The chooser shows a full-spectrum canvas with a luminance slider below it.
+    Numeric fields on the right allow direct entry in RGB, HSL, or hex notation.
+    A screen dropper (unavailable on macOS) lets the user sample any pixel
+    on the desktop.
+
+    Args:
+        title: Dialog window title. Defaults to the localized "Color" string.
+        color: Initial color as a hex string (e.g. ``'#ff0000'``). Defaults to
+            the current theme background color.
+        parent: Parent widget. Defaults to the active root window.
+    """
+
+    def __init__(
+        self,
+        *,
+        title: str = "",
+        color: str | None = None,
+        parent: Any = None,
+    ) -> None:
+        self._internal = _InternalColorChooserDialog(
+            master=parent,
+            title=title or "color.chooser",
+            initial_color=color,
+        )
+
+    def show(self) -> "ColorChooserDialog":
+        """Display the dialog and block until it is closed.
+
+        Returns:
+            `self` — allows chaining: ``dlg = ColorChooserDialog(...).show(); dlg.result``.
+        """
+        self._internal.show()
+        return self
+
+    @property
+    def result(self) -> ColorChoice | None:
+        """The selected color, or ``None`` if canceled.
+
+        Returns a `ColorChoice` namedtuple with three attributes:
+
+        - ``rgb`` — ``(r, g, b)`` tuple, each 0–255.
+        - ``hsl`` — ``(h, s, l)`` tuple: hue 0–360, saturation and luminance 0–100.
+        - ``hex`` — lowercase hex string, e.g. ``'#ff0000'``.
+        """
+        return self._internal.result
+
+
+# ---------------------------------------------------------------------------
+# FontDialog — public wrapper
+# ---------------------------------------------------------------------------
+
+class FontDialog:
+    """A dialog for selecting a font family, size, weight, slant, and effects.
+
+    The dialog shows a scrollable list of font families, a size list, and
+    controls for weight (normal/bold), slant (roman/italic), underline, and
+    overstrike. A live preview panel shows sample text rendered in the
+    selected font.
+
+    Args:
+        title: Dialog window title. Defaults to the localized "Font" string.
+        default_font: Name of the initial font. Defaults to ``'TkDefaultFont'``.
+            Other built-in names: ``'TkFixedFont'``, ``'TkTextFont'``,
+            ``'TkHeadingFont'``.
+        parent: Parent widget. Defaults to the active root window.
+    """
+
+    def __init__(
+        self,
+        *,
+        title: str = "",
+        default_font: str = "TkDefaultFont",
+        parent: Any = None,
+    ) -> None:
+        self._internal = _InternalFontDialog(
+            title=title or "font.selector",
+            master=parent,
+            default_font=default_font,
+        )
+
+    def show(self) -> "FontDialog":
+        """Display the dialog and block until it is closed.
+
+        Returns:
+            `self` — allows chaining: ``dlg = FontDialog(...).show(); dlg.result``.
+        """
+        self._internal.show()
+        return self
+
+    @property
+    def result(self) -> Any:
+        """The selected font object, or ``None`` if canceled."""
+        return self._internal.result
+
+
+# ---------------------------------------------------------------------------
+# FilterDialog — public wrapper
+# ---------------------------------------------------------------------------
+
+class FilterDialog:
+    """A dialog for selecting multiple items from a list.
+
+    Displays a scrollable list of checkboxes. Optionally includes a search
+    box that narrows visible items and a "Select All" checkbox.
+
+    Args:
+        title: Dialog window title.
+        items: Items to display. Each item is a string or a dict with keys:
+
+            - ``text`` (str): Display label (required for dicts).
+            - ``value`` (Any): Value returned when selected. Defaults to ``text``.
+            - ``selected`` (bool): Initial check state. Defaults to ``False``.
+        enable_search: Include a search box that filters items by text.
+            Defaults to ``False``.
+        enable_select_all: Include a "Select All" checkbox. Defaults to ``False``.
+        parent: Parent widget. Defaults to the active root window.
+    """
+
+    def __init__(
+        self,
+        *,
+        title: str = "",
+        items: list[str | dict[str, Any]] | None = None,
+        enable_search: bool = False,
+        enable_select_all: bool = False,
+        parent: Any = None,
+    ) -> None:
+        self._title = title
+        self._items = items or []
+        self._enable_search = enable_search
+        self._enable_select_all = enable_select_all
+        self._parent = parent
+        self._result: list[Any] | None = None
+
+    def show(self) -> "FilterDialog":
+        """Display the dialog and block until it is closed.
+
+        Returns:
+            `self` — allows chaining: ``dlg = FilterDialog(...).show(); dlg.result``.
+        """
+        dlg = _InternalFilterDialog(
+            master=self._parent,
+            title=self._title or "Filter",
+            items=self._items,
+            enable_search=self._enable_search,
+            enable_select_all=self._enable_select_all,
+        )
+        dlg.show()
+        self._result = dlg.result
+        return self
+
+    @property
+    def result(self) -> list[Any] | None:
+        """List of selected values after closing, or ``None`` if canceled."""
+        return self._result
+
+
+# ---------------------------------------------------------------------------
+# Convenience functions — color, font, filter
+# ---------------------------------------------------------------------------
+
+def ask_color(
+    *,
+    title: str = "",
+    color: str | None = None,
+    parent: Any = None,
+) -> ColorChoice | None:
+    """Show a color chooser dialog.
+
+    Args:
+        title: Dialog window title.
+        color: Initial color as a hex string (e.g. ``'#ff0000'``). Defaults to
+            the current theme background color.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        A `ColorChoice` with ``rgb``, ``hsl``, and ``hex`` attributes, or
+        ``None`` if canceled.
+    """
+    dlg = ColorChooserDialog(title=title, color=color, parent=parent)
+    dlg.show()
+    return dlg.result
+
+
+def ask_font(
+    *,
+    title: str = "",
+    default_font: str = "TkDefaultFont",
+    parent: Any = None,
+) -> Any:
+    """Show a font selector dialog.
+
+    Args:
+        title: Dialog window title.
+        default_font: Name of the initial font. Defaults to ``'TkDefaultFont'``.
+            Other built-in names: ``'TkFixedFont'``, ``'TkTextFont'``,
+            ``'TkHeadingFont'``.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        The selected font object, or ``None`` if canceled.
+    """
+    dlg = FontDialog(title=title, default_font=default_font, parent=parent)
+    dlg.show()
+    return dlg.result
+
+
+def ask_filter(
+    items: list[str | dict[str, Any]],
+    *,
+    title: str = "",
+    enable_search: bool = False,
+    enable_select_all: bool = False,
+    parent: Any = None,
+) -> list[Any] | None:
+    """Show a multi-select filter dialog.
+
+    Args:
+        items: Items to display. Each item is a string or a dict with keys:
+
+            - ``text`` (str): Display label (required for dicts).
+            - ``value`` (Any): Value returned when selected. Defaults to ``text``.
+            - ``selected`` (bool): Initial check state. Defaults to ``False``.
+        title: Dialog window title.
+        enable_search: Include a search box that filters items by text.
+            Defaults to ``False``.
+        enable_select_all: Include a "Select All" checkbox. Defaults to ``False``.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        A list of selected values, or ``None`` if canceled.
+    """
+    dlg = FilterDialog(
+        title=title,
+        items=items,
+        enable_search=enable_search,
+        enable_select_all=enable_select_all,
+        parent=parent,
+    )
+    dlg.show()
+    return dlg.result

@@ -92,7 +92,7 @@ class FontDialog:
 
         # Create the underlying dialog
         self._dialog = Dialog(
-            master=master,
+            parent=master,
             title=title,
             content_builder=self._create_content,
             buttons=[
@@ -155,7 +155,7 @@ class FontDialog:
             container,
             command=listbox.yview,
             orient=VERTICAL,
-            variant="round",
+            variant="default",
         )
         listbox_vbar.pack(side=RIGHT, fill=Y)
         listbox.configure(yscrollcommand=listbox_vbar.set)
@@ -198,7 +198,7 @@ class FontDialog:
             master=container,
             orient=VERTICAL,
             command=sizes_listbox.yview,
-            variant="round",
+            variant="default",
         )
         sizes_listbox.configure(yscrollcommand=sizes_listbox_vbar.set)
         sizes_listbox.pack(side=LEFT, fill=Y, expand=YES, anchor=N)

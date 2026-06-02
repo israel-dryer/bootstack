@@ -321,7 +321,7 @@ class FilterDialog(ttk.Frame):
             List of selected item values, or None if canceled.
         """
         self._dialog: Dialog = Dialog(
-            master=self._master,
+            parent=self._master,
             title=self._title,
             content_builder=self._build_content,
             buttons=[
@@ -334,8 +334,8 @@ class FilterDialog(ttk.Frame):
                     command=self._on_ok
                 )
             ],
-            minsize=(250, 200),
-            maxsize=(250, 380),
+            min_size=(250, 200),
+            max_size=(250, 380),
             resizable=(False, True),
             mode="modal",
             undecorated=self._undecorated

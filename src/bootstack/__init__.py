@@ -73,7 +73,11 @@ from bootstack.widgets._core.container import PublicContainer
 from bootstack.widgets.dialogs import (
     alert, confirm, ask_string, ask_integer, ask_float,
     ask_date, ask_date_range, ask_item,
+    ask_color, ask_font, ask_filter,
     FormDialog, Dialog, DialogButton,
+    ColorChooserDialog, ColorChoice,
+    FontDialog,
+    FilterDialog,
 )
 from bootstack.widgets.app import App
 from bootstack.widgets.appshell import AppShell

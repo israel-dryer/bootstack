@@ -53,13 +53,33 @@ def _patch(cls):
 
     def _run(self):
         def _grab():
-            x = self.tk.winfo_rootx()
-            y = self.tk.winfo_rooty()
-            w = self.tk.winfo_width()
-            h = self.tk.winfo_height()
+            # If the example set app._capture_target to a Toplevel, capture
+            # that window directly instead of the app (useful for dialog heroes).
+            target = getattr(self, '_capture_target', None)
+            if target is not None:
+                # Capture the dialog window including its title bar.
+                # winfo_rootx/y = content-area origin (avoids DWM shadow).
+                # geometry() y = outer-frame top (title bar starts there).
+                target.update_idletasks()
+                import re
+                m = re.match(r'(\d+)x(\d+)\+(-?\d+)\+(-?\d+)', target.geometry())
+                rx = target.winfo_rootx()
+                ry = target.winfo_rooty()
+                cw = target.winfo_width()
+                ch = target.winfo_height()
+                gy = int(m.group(4)) if m else ry
+                title_h = ry - gy
+                x, y = rx, gy
+                w, h = cw, ch + title_h
+                inset = 0
+            else:
+                x = self.tk.winfo_rootx()
+                y = self.tk.winfo_rooty()
+                w = self.tk.winfo_width()
+                h = self.tk.winfo_height()
+                inset = 2  # trim window-border artifact from captured edges
             from pathlib import Path
             Path(output).parent.mkdir(parents=True, exist_ok=True)
-            inset = 2  # trim window-border artifact from captured edges
             ImageGrab.grab(bbox=(x + inset, y + inset, x + w - inset, y + h - inset)).save(output)
             self.tk.destroy()
 

@@ -110,34 +110,36 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 
 **Dialogs category:**
 
-Dialogs public API was fully audited and expanded this pass. Doc pages need to
-be split into 7 pages (see "What's next"). Current state: one combined
-`docs/api/dialogs.rst` covers everything; screenshots taken.
+Dialogs public API fully audited, expanded, and split into 7 pages. Hero
+screenshots for each page show the actual dialog window (modal=False +
+lift_dialog() pattern). `docs/api/dialogs.rst` is now a category index (toctree).
 
-| Item | Doc page | Example | Screenshots |
-|------|----------|---------|-------------|
-| Dialogs (combined, to be split) | `docs/api/dialogs.rst` | `docs/examples/dialogs.py` | ✓ |
+| Item | Doc page | Example | Hero screenshot |
+|------|----------|---------|-----------------|
+| Message Dialogs | `docs/api/message-dialogs.rst` | `docs/examples/message-dialogs.py` | `docs/screenshots/message-dialogs.py` |
+| Input Dialogs   | `docs/api/input-dialogs.rst`   | `docs/examples/input-dialogs.py`   | `docs/screenshots/input-dialogs.py`   |
+| Color Dialog    | `docs/api/color-dialog.rst`    | `docs/examples/color-dialog.py`    | `docs/screenshots/color-dialog.py`    |
+| Font Dialog     | `docs/api/font-dialog.rst`     | `docs/examples/font-dialog.py`     | `docs/screenshots/font-dialog.py`     |
+| Filter Dialog   | `docs/api/filter-dialog.rst`   | `docs/examples/filter-dialog.py`   | `docs/screenshots/filter-dialog.py`   |
+| Dialog          | `docs/api/dialog.rst`          | `docs/examples/dialog.py`          | `docs/screenshots/dialog.py`          |
+| FormDialog      | `docs/api/formdialog.rst`      | `docs/examples/formdialog.py`      | `docs/screenshots/formdialog.py`      |
 
-Planned split — each needs its own RST page:
-- `message-dialogs.rst` — `alert()`, `confirm()`
-- `input-dialogs.rst` — `ask_string()`, `ask_integer()`, `ask_float()`, `ask_item()`, `ask_date()`, `ask_date_range()`
-- `color-dialog.rst` — `ask_color()` (NEW, not yet public), `ColorChooserDialog`
-- `font-dialog.rst` — `ask_font()` (NEW, not yet public), `FontDialog`
-- `filter-dialog.rst` — `ask_filter()` (NEW, not yet public), `FilterDialog`
-- `dialog.rst` — `Dialog`, `DialogButton`
-- `formdialog.rst` — `FormDialog`
+New public API additions this pass:
+- `bs.ask_color()`, `bs.ColorChooserDialog`, `bs.ColorChoice`
+- `bs.ask_font()`, `bs.FontDialog`
+- `bs.ask_filter()`, `bs.FilterDialog`
 
-`ColorDropperDialog` is NOT exposed publicly — it is part of `ColorChooserDialog` internally.
+Bugs fixed in internal dialog classes:
+- `colorchooser.py`, `fontdialog.py`, `filterdialog.py`: `master=` → `parent=` in `Dialog()` constructor calls
+- `fontdialog.py`: scrollbar `variant="round"` → `variant="default"` (round not a valid scrollbar variant)
+- `filterdialog.py`: `minsize=`/`maxsize=` → `min_size=`/`max_size=` in `Dialog()` call
 
 ### What's next
 
-1. **Dialogs — split doc page and expose remaining dialogs:**
-   - Add `ask_color()`, `ask_font()`, `ask_filter()` / `bs.FilterDialog` to public API
-   - Audit `ColorChooserDialog`, `FontDialog`, `FilterDialog` wrappers for API consistency
-   - Split `docs/api/dialogs.rst` into 7 pages per the plan above
-   - `docs/api/dialogs.rst` becomes a category index (toctree only)
-
-2. **Forms** — after dialogs split is complete.
+1. **Forms** — now that dialogs are complete.
+   - Audit `bs.Form` public wrapper and `FormItem`/`GroupItem`/`TabsItem` types
+   - Write `docs/api/forms.rst` (already exists as a stub — may need full content)
+   - Screenshots
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
@@ -586,9 +588,34 @@ path, not source-relative).
   - `min_size=` is the public convention (not `minsize=`). `App` runtime still
     uses `minsize` internally — a future cleanup pass should expose `min_size`
     explicitly on `App` like `AppShell` already does.
-- **Dialog category has 7 doc pages** (not one) — see "What's next" for the
-  split plan. `ColorDropperDialog` is internal to `ColorChooserDialog`, not
-  a standalone public class.
+- **No Widget sizing section on dialog pages** — dialogs open as Toplevel windows,
+  not layout-managed widgets. The `fill=`/`expand=`/`row=`/`column=` placement kwargs
+  don't apply. Omit the `.. include:: ../shared/widget-sizing.rst` block from all
+  dialog doc pages.
+- **Dialog category has 7 doc pages** (split complete) — `dialogs.rst` is now
+  a toctree-only index. `ColorDropperDialog` is internal to `ColorChooserDialog`,
+  not a standalone public class.
+- **`ColorChooserDialog` internal cleanup pending** — `on_dialog_result()` /
+  `off_dialog_result()` on the internal class are unused by the public wrapper and
+  add noise. Candidate for removal in a future cleanup pass. The public wrapper uses
+  the blocking `show()` + `result` pattern; no `on_*` event needed.
+- **Dialog hero screenshot pattern** — open dialog non-modally at t=200ms
+  (`dialog.show(modal=False)`), then call `toplevel.attributes("-topmost", True)`
+  + `toplevel.lift()` at t=850ms. The dialog appears centered on the app window.
+  Screenshot at t=950ms captures the dialog on top. See `docs/screenshots/dialog.py`
+  as the reference. For oversized dialogs (FontDialog: 800x600), pass an explicit
+  `position=(200, 70)` and size the app to match: `position=(200, 70)` places
+  dialog title bar above the capture region so content starts at the screenshot top.
+- **`colorchooser.py` / `fontdialog.py` / `filterdialog.py` used `master=`** in
+  their internal `Dialog()` calls — already fixed to `parent=`. Check any new
+  dialog implementations for this.
+- **`fontdialog.py` scrollbar `variant="round"`** — round is not a valid scrollbar
+  variant (only `"default"`). Fixed. Do not use `variant="round"` on Scrollbar.
+- **`filterdialog.py` used `minsize=`/`maxsize=`** instead of `min_size=`/`max_size=`
+  in `Dialog()` — fixed. Always use `min_size=`/`max_size=` with `Dialog`.
+- **`ColorChoice` namedtuple** — `namedtuple('ColorChoice', 'rgb hsl hex')`. Exported
+  as `bs.ColorChoice`. Fields: `rgb=(r,g,b)` 0–255, `hsl=(h,s,l)` 0–360/0–100/0–100,
+  `hex` lowercase hex string.
 
 ---
 
