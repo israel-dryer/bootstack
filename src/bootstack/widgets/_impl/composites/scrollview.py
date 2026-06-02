@@ -55,6 +55,8 @@ class ScrollView(Frame):
             including those added dynamically. For manual refresh of bindings
             after adding many widgets at once, call refresh_bindings().
         """
+        canvas_height = kwargs.pop('height', None)
+        canvas_width = kwargs.pop('width', None)
         super().__init__(master, **kwargs)
 
         # configuration
@@ -79,11 +81,12 @@ class ScrollView(Frame):
         self._setup_scroll_tag_bindings()
 
         # Create canvas
-        self.canvas = Canvas(
-            self,
-            highlightthickness=0,
-            borderwidth=0
-        )
+        canvas_kw: dict[str, Any] = {"highlightthickness": 0, "borderwidth": 0}
+        if canvas_height is not None:
+            canvas_kw["height"] = canvas_height
+        if canvas_width is not None:
+            canvas_kw["width"] = canvas_width
+        self.canvas = Canvas(self, **canvas_kw)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
 
         # Create scrollbars

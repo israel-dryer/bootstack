@@ -106,6 +106,19 @@ Scrollbar visibility
    # Scrollbar appears during scroll, hides after 1.5 s
    bs.ScrollView(scrollbar_visibility="scroll", autohide_delay=1500)
 
+Border
+~~~~~~
+
+``show_border=True`` draws a 1 px border around the ScrollView frame.
+Pair it with ``padding=`` to prevent content from sitting flush against
+the border.
+
+.. code-block:: python
+
+   with bs.ScrollView(show_border=True, padding=4, fill="both", expand=True):
+       for i in range(30):
+           bs.Label(f"Row {i}")
+
 Programmatic scroll control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
