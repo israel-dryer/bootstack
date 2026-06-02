@@ -14,3 +14,4 @@ Expander, Separator.
    hstack
    grid
    accordion
+   scrollview

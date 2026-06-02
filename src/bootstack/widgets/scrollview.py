@@ -22,7 +22,9 @@ class ScrollView(PublicContainer):
             (auto-hides after `autohide_delay` ms of inactivity).
         autohide_delay: Milliseconds before scrollbars hide in `'scroll'` mode.
             Default `1000`.
-        scrollbar_variant: Scrollbar variant token (e.g. `'round'`).
+        scrollbar_variant: Style variant applied to both scrollbars.
+            ``'default'`` for a rounded thumb (default), ``'square'`` for a
+            flat rectangular thumb.
         parent: Override the context-stack parent.
     """
 
