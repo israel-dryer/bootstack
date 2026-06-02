@@ -160,7 +160,7 @@ scrollable container with vertical and/or horizontal scrollbars.
 :class:`SplitView <bootstack.widgets.splitview.SplitView>` —
 resizable split container with draggable sashes.
 
-:class:`Accordion <bootstack.widgets.accordion.Accordion>` —
+:class:`Accordion <bootstack.widgets.expander.Accordion>` —
 collapsible section container.
 
 :class:`VStack <bootstack.widgets.stacks.VStack>`,

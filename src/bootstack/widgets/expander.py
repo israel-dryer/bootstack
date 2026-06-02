@@ -445,6 +445,7 @@ class Accordion(PublicWidgetBase):
         self,
         title: str,
         *,
+        key: str | None = None,
         layout: Literal["vstack", "hstack", "grid"] = "vstack",
         padding: Any = 16,
         gap: int = 0,
@@ -462,6 +463,8 @@ class Accordion(PublicWidgetBase):
 
         Args:
             title: Section header text.
+            key: Unique identifier used with `item()`, `expand()`, `collapse()`,
+                and `remove()`. Auto-generated if omitted.
             layout: Body layout — ``'vstack'`` (default), ``'hstack'``, or
                 ``'grid'``.
             padding: Space between the section border and its body, in pixels.
@@ -486,6 +489,8 @@ class Accordion(PublicWidgetBase):
             `AccordionSection` — use as a context manager to place children.
         """
         exp_kwargs: dict[str, Any] = {}
+        if key is not None:
+            exp_kwargs["key"] = key
         if expanded is not None:
             exp_kwargs["expanded"] = expanded
         if icon is not None:
