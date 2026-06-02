@@ -475,13 +475,24 @@ class FormDialog:
 
         self._internal = _InternalFormDialog(parent, **internal_kwargs)
 
-    def show(self) -> "FormDialog":
+    def show(
+        self,
+        *,
+        position: tuple[int, int] | None = None,
+        modal: bool | None = None,
+    ) -> "FormDialog":
         """Display the dialog and block until it is closed.
 
+        Args:
+            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+                Defaults to centered on the parent window.
+            modal: Override the default modality. ``True`` blocks the parent;
+                ``False`` shows a non-blocking dialog.
+
         Returns:
-            `self` — allows chaining: `dlg = FormDialog(...).show(); dlg.result`.
+            `self` — allows chaining: ``dlg = FormDialog(...).show(); dlg.result``.
         """
-        self._internal.show()
+        self._internal.show(position=position, modal=modal)
         return self
 
     @property
@@ -527,13 +538,23 @@ class ColorChooserDialog:
             initial_color=color,
         )
 
-    def show(self) -> "ColorChooserDialog":
+    def show(
+        self,
+        *,
+        position: tuple[int, int] | None = None,
+        modal: bool = True,
+    ) -> "ColorChooserDialog":
         """Display the dialog and block until it is closed.
+
+        Args:
+            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+                Defaults to centered on the parent window.
+            modal: Block the parent window until closed. Default ``True``.
 
         Returns:
             `self` — allows chaining: ``dlg = ColorChooserDialog(...).show(); dlg.result``.
         """
-        self._internal.show()
+        self._internal.show(position=position, modal=modal)
         return self
 
     @property
@@ -582,13 +603,24 @@ class FontDialog:
             default_font=default_font,
         )
 
-    def show(self) -> "FontDialog":
+    def show(
+        self,
+        *,
+        position: tuple[int, int] | None = None,
+        modal: bool | None = None,
+    ) -> "FontDialog":
         """Display the dialog and block until it is closed.
+
+        Args:
+            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+                Defaults to centered on screen (the font dialog sizes itself on open).
+            modal: Override the default modality. ``True`` blocks the parent;
+                ``False`` shows a non-blocking dialog.
 
         Returns:
             `self` — allows chaining: ``dlg = FontDialog(...).show(); dlg.result``.
         """
-        self._internal.show()
+        self._internal.show(position=position, modal=modal)
         return self
 
     @property
@@ -636,8 +668,19 @@ class FilterDialog:
         self._parent = parent
         self._result: list[Any] | None = None
 
-    def show(self) -> "FilterDialog":
+    def show(
+        self,
+        *,
+        position: tuple[int, int] | None = None,
+        modal: bool | None = None,
+    ) -> "FilterDialog":
         """Display the dialog and block until it is closed.
+
+        Args:
+            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+                Defaults to centered on the parent window.
+            modal: Override the default modality. ``True`` blocks the parent;
+                ``False`` shows a non-blocking dialog.
 
         Returns:
             `self` — allows chaining: ``dlg = FilterDialog(...).show(); dlg.result``.
@@ -649,7 +692,7 @@ class FilterDialog:
             enable_search=self._enable_search,
             enable_select_all=self._enable_select_all,
         )
-        dlg.show()
+        dlg.show(position=position, modal=modal)
         self._result = dlg.result
         return self
 

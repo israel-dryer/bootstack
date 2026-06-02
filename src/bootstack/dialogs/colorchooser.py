@@ -43,7 +43,7 @@ PEN = '✛'
 
 
 class ColorChooser(ttk.Frame):
-    """Color chooser widget with multiple selection modes."""
+    """Color chooser widget — hue/saturation spectrum with luminance slider."""
 
     def __init__(
             self, master: Optional[tkinter.Misc], initial_color: Optional[str] = None,
@@ -395,15 +395,6 @@ class ColorChooser(ttk.Frame):
             self.sync_color_values(model)
             self.update_luminance_scale()
             self.update_spectrum_indicator()
-
-    def on_press_swatch(self, event: tkinter.Event) -> None:
-        """Update widget colors when a color swatch is clicked."""
-        button: tkFrame = self.nametowidget(event.widget)
-        color = button.cget('background')
-        self.hex.set(color)
-        self.sync_color_values(HEX)
-        self.update_luminance_scale()
-        self.update_spectrum_indicator()
 
     def on_spectrum_interaction(self, event: tkinter.Event) -> None:
         """Update widget colors when the color spectrum canvas is pressed"""
