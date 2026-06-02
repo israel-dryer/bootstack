@@ -91,13 +91,11 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | Accordion  | ✓ | `docs/api/accordion.rst`  | `docs/examples/accordion.py`  | ✓ |
 | ScrollView | ✓ | `docs/api/scrollview.rst` | `docs/examples/scrollview.py` | ✓ |
 | SplitView  | ✓ | `docs/api/splitview.rst`  | `docs/examples/splitview.py`  | ✓ |
+| PageStack  | ✓ | `docs/api/pagestack.rst`  | `docs/examples/pagestack.py`  | ✓ |
 
 ### What's next
 
-Continue Layout category widgets:
-- **PageStack** — tab-like page switching (wrapper already cleaned up, needs doc page + example + screenshots)
-
-Then: Navigation → Dialogs → Forms.
+Continue with Navigation category, then Dialogs → Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
