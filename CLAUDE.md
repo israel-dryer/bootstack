@@ -89,13 +89,13 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | HStack     | ✓ | `docs/api/hstack.rst`     | `docs/examples/hstack.py`     | ✓ |
 | Grid       | ✓ | `docs/api/grid.rst`       | `docs/examples/grid.py`       | ✓ |
 | Accordion  | ✓ | `docs/api/accordion.rst`  | `docs/examples/accordion.py`  | ✓ |
+| ScrollView | ✓ | `docs/api/scrollview.rst` | `docs/examples/scrollview.py` | ✓ |
+| SplitView  | ✓ | `docs/api/splitview.rst`  | `docs/examples/splitview.py`  | ✓ |
 
 ### What's next
 
 Continue Layout category widgets:
-- **ScrollView** — scrollable canvas-backed container
-- **SplitView** — resizable pane divider
-- **PageStack** — tab-like page switching
+- **PageStack** — tab-like page switching (wrapper already cleaned up, needs doc page + example + screenshots)
 
 Then: Navigation → Dialogs → Forms.
 
@@ -117,12 +117,19 @@ For each widget:
      handler → `Subscription`
    - Remove low-level kwargs that bypass semantic theming (`color=`,
      `background_color=`, `foreground=`) — use `accent=` / `surface=` instead
+   - **No explicit self-placement params** — `fill`, `expand`, `anchor`, `row`,
+     `column`, etc. must NOT appear as named parameters. Accept them via
+     `**kwargs` and route through `self._split_layout_kwargs(kwargs)`. See
+     ScrollView/SplitView as the reference implementation.
+   - **No `**extra_kw`** — the parameter must be named `**kwargs`.
    - Expand class docstring: valid values, defaults, behavior notes per kwarg
 
 3. **Write `docs/api/<widget>.rst`** — structure:
    - Brief intro + one code snippet
    - `.. raw:: html` light/dark screenshot block (see pattern below)
    - `Usage` section: one sub-section per feature (accents, variants, icons, states, etc.)
+   - `Widget sizing` section with shared include (see pattern below)
+   - `See also` section cross-referencing related widgets
    - `API` section: `.. autoclass:: bootstack.widgets.<name>.<Class>` with `:members:`
    - `Full Example` section: `.. literalinclude:: ../../docs/examples/<widget>.py`
      with `:start-after: import bootstack as bs`
@@ -173,8 +180,64 @@ CSS in `docs/_static/custom.css` handles `data-theme` switching.
 pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
 `"dark"` or `"light"` — selector is `[data-theme="dark"]`.
 
+### Widget sizing section pattern (add to every widget page)
+
+```rst
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+```
+
+The `docs/shared/widget-sizing.rst` fragment documents self-placement kwargs
+grouped by geometry manager (Stack, Grid). Path is file-relative from
+`docs/api/` — do NOT use a leading `/` (that would be an absolute filesystem
+path, not source-relative).
+
 ### Gotchas discovered during the docs pass
 
+- **Self-placement via `**kwargs` on all wrappers** — `fill`, `expand`,
+  `anchor`, `row`, `column`, `sticky`, etc. are NOT explicit params on any
+  public wrapper. Every wrapper accepts them via `**kwargs` routed through
+  `self._split_layout_kwargs(kwargs)`. VStack, HStack, Grid, Card, GroupBox,
+  ScrollView, SplitView, PageStack all follow this pattern. When writing new
+  wrappers, do NOT add explicit placement params — use `**kwargs`.
+- **`**kwargs` not `**extra_kw`** — the catch-all for remaining kwargs must
+  be named `**kwargs` for consistency. `**extra_kw` was the old convention;
+  it has been renamed throughout.
+- **`margin_x=` / `margin_y=`** — new public kwargs for axis-specific external
+  spacing. `margin=` sets all sides (int, 2-tuple, or 4-tuple); `margin_x=`
+  overrides horizontal (int or (left, right) tuple); `margin_y=` overrides
+  vertical (int or (top, bottom) tuple). Defined in
+  `widgets/_core/container.py` `_expand_margin`. Do NOT use `padx=`/`pady=`
+  in user-facing code — those are internal ttk names.
+- **`docs/shared/widget-sizing.rst`** — shared include fragment for the Widget
+  sizing section. Added to all 29 existing doc pages. New pages must include
+  it via `.. include:: ../shared/widget-sizing.rst` (file-relative path from
+  `docs/api/`). Content is grouped by Stack and Grid geometry managers.
+- **`.. include::` path is file-relative** — docutils `.. include::` resolves
+  paths relative to the file, NOT the Sphinx source root. From `docs/api/`,
+  use `../shared/widget-sizing.rst`. A leading `/` would be an absolute
+  filesystem path, not a source-relative path.
+- **ScrollView `height=`/`width=` go to the canvas** — the internal Frame
+  uses `grid_propagate=True`, so passing `height=` to the Frame is silently
+  ignored. The fix routes these to the canvas constructor in
+  `_InternalScrollView.__init__` so the viewport is constrained directly.
+- **No scrollbar variants on ScrollView** — `scrollbar_variant` was removed
+  from the public API. All registered variants ('default', 'round', 'rounded')
+  use the same builder and are visually identical. 'square' is the only
+  distinct variant but is also not exposed.
+- **SplitView `sash_thickness=`** — routes through `style_options` to the
+  internal PanedWindow builder. Default is `b.scale(6)` (~6 px). No other
+  scrollbar variants exist.
+- **American English spelling scrub pending** — British spellings found
+  throughout docs and docstrings. Fixed in this session: "labelled" → "labeled"
+  (boolean_controls.py, groupbox.py), "behaviour" → "behavior" (togglegroup.py,
+  packframe.py, gridframe.py), "cancelled" → "canceled" (dialogs.py). A full
+  scrub pass across all files is still needed.
+- **`StackPage` docstring referenced internal `Expander`** — replaced with
+  accurate description. Watch for stale internal references in docstrings of
+  context-manager container classes (SplitPane, StackPage, AccordionSection).
 - **No `fill="x"` in RST doc snippets** — layout kwargs like `fill=`, `expand=`,
   `fill_items=`, `expand_items=` belong only in `docs/examples/<widget>.py`, not
   in the Usage code blocks in `.rst` files. Snippets should show the widget's own
