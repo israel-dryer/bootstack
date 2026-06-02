@@ -1,7 +1,7 @@
 Navigation
 ==========
 
-AppShell, Tabs, SideNav, PageStack, Toolbar.
+AppShell, Tabs, SideNav, PageStack.
 
 .. toctree::
    :maxdepth: 1

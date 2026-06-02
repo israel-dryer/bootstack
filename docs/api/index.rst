@@ -9,6 +9,7 @@ API Reference
    selection
    data-display
    layout
+   menus-and-toolbars
    navigation
    overlays
    dialogs

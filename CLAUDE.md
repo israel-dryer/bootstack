@@ -101,9 +101,16 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 | SideNav   | ✓ | `docs/api/sidenav.rst`   | `docs/examples/sidenav.py`   | ✓ |
 | AppShell  | ✓ | `docs/api/appshell.rst`  | `docs/examples/appshell.py`  | ✓ |
 
+**Menus and Toolbars category:**
+
+| Widget     | Wrapper | Doc page | Example | Screenshots |
+|------------|---------|----------|---------|-------------|
+| Toolbar    | ✓ | `docs/api/toolbar.rst`    | `docs/examples/toolbar.py`    | ✓ |
+| MenuButton | — | — (pending)               | —                             | — |
+
 ### What's next
 
-Continue Navigation category (Toolbar), then Dialogs → Forms.
+Continue with Dialogs, then Forms.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
