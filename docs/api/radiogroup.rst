@@ -124,6 +124,11 @@ Programmatic control
    group.value = "B"        # select programmatically
    group.disabled = True    # lock the group
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

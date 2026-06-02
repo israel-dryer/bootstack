@@ -67,6 +67,11 @@ in a table cell, or in a sidebar item.
        bs.Badge("Complete", accent="success", variant="pill")
        bs.Badge("2 warnings", accent="warning")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

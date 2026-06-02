@@ -143,6 +143,11 @@ Programmatic control
    cal.get_range()                      # → (date(...), date(...))
    cal.set_range(date(2026, 6, 1), date(2026, 6, 14))
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

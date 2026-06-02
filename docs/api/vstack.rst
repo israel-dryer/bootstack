@@ -114,6 +114,11 @@ within its parent — separate from how it arranges its own children.
    with bs.VStack(fill="both", expand=True, gap=8):
        bs.Label("Grows with window")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

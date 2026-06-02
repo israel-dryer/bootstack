@@ -190,6 +190,11 @@ Accent
    bs.ListView(items=records, selection_mode="multi", accent="primary")
    bs.ListView(items=records, selection_mode="multi", accent="success")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

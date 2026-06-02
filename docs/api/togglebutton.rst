@@ -144,6 +144,11 @@ Programmatic control
 
    btn.disabled = True    # lock the button
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

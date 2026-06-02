@@ -91,6 +91,11 @@ token so each level has a visually distinct background.
        with bs.Card(padding=8, gap=4):        # overlay surface
            bs.Label("Inner")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

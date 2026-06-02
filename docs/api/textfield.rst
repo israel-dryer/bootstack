@@ -136,6 +136,11 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
    # Explicit validation check
    is_valid = field.validate()
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

@@ -139,6 +139,11 @@ label column and a ``1``-weight field column:
        bs.Label("Email")
        bs.TextField()
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

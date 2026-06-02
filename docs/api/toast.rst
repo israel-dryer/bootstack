@@ -132,6 +132,11 @@ Create with :class:`bs.Toast`, then call ``show()`` / ``hide()`` /
    # … when done …
    t.hide()
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

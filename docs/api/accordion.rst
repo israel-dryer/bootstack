@@ -174,6 +174,11 @@ Events
    # Stream (chainable)
    acc.on_accordion_changed().listen(lambda e: print("changed"))
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

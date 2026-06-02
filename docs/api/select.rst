@@ -96,6 +96,11 @@ Assign to ``.options`` to replace the list dynamically.
    sel = bs.Select(["A", "B", "C"])
    sel.options = ["X", "Y", "Z"]
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

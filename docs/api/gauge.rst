@@ -134,6 +134,11 @@ Listen for changes via ``on_change``:
    gauge = bs.Gauge(value=50, interactive=True)
    gauge.on_change(lambda e: print("value:", gauge.value))
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

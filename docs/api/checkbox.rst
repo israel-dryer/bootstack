@@ -124,6 +124,11 @@ Events
    # As a Stream
    chk.on_change().debounce(200).listen(lambda e: save())
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

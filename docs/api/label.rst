@@ -102,6 +102,11 @@ Bind a ``Signal[str]`` to ``textsignal=`` so the label updates automatically.
    bs.Label(textsignal=count_text, font="heading-md[bold]", accent="primary")
    bs.Button("+1", on_click=lambda: count.set(count.get() + 1))
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

@@ -78,6 +78,11 @@ Separators are typically placed between content blocks inside a
        bs.Separator(orient="vertical", length=16)
        bs.Label("Settings")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

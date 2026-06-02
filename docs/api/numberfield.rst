@@ -122,6 +122,11 @@ Validation
        trigger="blur",
    ))
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

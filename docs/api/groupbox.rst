@@ -91,6 +91,11 @@ sections within a larger form or dashboard.
            bs.Label("Status:")
            bs.Label("Connected", accent="success")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

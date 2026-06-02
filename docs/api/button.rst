@@ -177,6 +177,11 @@ afterwards. The callback receives no arguments.
    # As a Stream (composable)
    btn.on_click().debounce(300).listen(lambda: handle_save())
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

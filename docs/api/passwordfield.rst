@@ -128,6 +128,11 @@ The default mask is ``'•'``. Supply any single character via ``mask=``.
 
    bs.PasswordField(mask="*")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

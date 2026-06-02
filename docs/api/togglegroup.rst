@@ -118,6 +118,11 @@ Programmatic control
 
    group.add("D")          # add option at runtime
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

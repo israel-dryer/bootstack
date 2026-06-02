@@ -81,6 +81,11 @@ Disabled
 
    bs.Slider(30, disabled=True)
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

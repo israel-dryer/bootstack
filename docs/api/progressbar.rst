@@ -112,6 +112,11 @@ Set ``max_value`` to match your data's natural scale:
 
    bs.ProgressBar(value=750, max_value=1000, accent="info")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

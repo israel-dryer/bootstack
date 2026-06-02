@@ -116,6 +116,11 @@ the target widget.
    # … later …
    tip.destroy()
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

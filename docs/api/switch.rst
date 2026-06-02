@@ -107,6 +107,11 @@ Programmatic control
 
    sw.disabled = True         # lock the switch
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 

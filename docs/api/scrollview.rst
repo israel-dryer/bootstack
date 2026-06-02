@@ -165,6 +165,11 @@ wired up:
            bs.Label(f"Dynamic row {i}")
    sv.refresh_bindings()
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

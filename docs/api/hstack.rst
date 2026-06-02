@@ -112,6 +112,11 @@ within its parent — separate from how it arranges its own children.
        bs.Button("Edit")
        bs.Button("View")
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 See also
 --------
 

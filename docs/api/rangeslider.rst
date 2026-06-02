@@ -89,6 +89,11 @@ Disabled
 
    bs.RangeSlider(20, 80, disabled=True)
 
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
 API
 ---
 
