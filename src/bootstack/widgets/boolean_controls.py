@@ -198,7 +198,7 @@ class _BooleanControlBase(PublicWidgetBase):
 
 
 class Checkbox(_BooleanControlBase):
-    """A labelled checkbox — checked or unchecked.
+    """A labeled checkbox — checked or unchecked.
 
     The label is the first positional argument. All options are keyword-only.
 

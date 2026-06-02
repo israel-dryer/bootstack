@@ -14,10 +14,6 @@ class _StackBase(PublicContainer):
         self,
         *,
         parent: Any = None,
-        # Self-placement
-        fill: Fill | str | None = None,
-        expand: bool | None = None,
-        anchor: Anchor | str | None = None,
         # Child-guidance defaults
         gap: int = 0,
         padding: Any = None,
@@ -30,17 +26,11 @@ class _StackBase(PublicContainer):
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
+        **kwargs: Any,
     ) -> None:
         """Create the stack container.
 
         Args:
-            fill: Fill direction of this stack within its parent. One of
-                ``'x'``, ``'y'``, ``'both'``, or ``'none'``. Defaults to
-                ``None`` (no fill).
-            expand: Whether this stack expands to consume extra space in the
-                parent container. Defaults to ``None``.
-            anchor: Placement anchor of this stack within its parent slot.
-                One of ``'n'``, ``'s'``, ``'e'``, ``'w'``, ``'center'``, etc.
             gap: Spacing in pixels between child widgets. Defaults to ``0``.
             padding: Space in pixels between the stack border and its
                 content. Accepts an integer (all sides) or a 2-tuple
@@ -52,8 +42,8 @@ class _StackBase(PublicContainer):
             expand_items: When ``True``, each child expands to consume extra
                 space along the stack direction. Defaults to ``None``.
             anchor_items: Default alignment anchor for children that do not
-                fill their slot. Standard Tkinter anchor strings: ``'n'``,
-                ``'s'``, ``'e'``, ``'w'``, ``'center'``, etc.
+                fill their slot. One of ``'n'``, ``'s'``, ``'e'``,
+                ``'w'``, ``'center'``, etc.
             accent: Color intent token applied to the stack background. One
                 of ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
                 ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``.
@@ -67,28 +57,22 @@ class _StackBase(PublicContainer):
             width: Fixed width of the stack in pixels. Disables frame
                 propagation so children cannot resize the container.
                 Setting both ``width=`` and ``height=`` fully constrains
-                the frame with no extra kwargs needed. When only
-                ``width=`` is set, height collapses to zero — add
-                ``fill='y'`` and ``expand=True`` to let the parent
-                control it. Defaults to ``None`` (size from children).
+                the frame. When only ``width=`` is set, height collapses
+                to zero — pass ``fill='y', expand=True`` to let the
+                parent control it. Defaults to ``None`` (size from children).
             height: Fixed height of the stack in pixels. Disables frame
                 propagation so children cannot resize the container.
                 Setting both ``height=`` and ``width=`` fully constrains
-                the frame with no extra kwargs needed. When only
-                ``height=`` is set, width collapses to zero — add
-                ``fill='x'`` and ``expand=True`` to let the parent
-                control it. Defaults to ``None`` (size from children).
+                the frame. When only ``height=`` is set, width collapses
+                to zero — pass ``fill='x', expand=True`` to let the
+                parent control it. Defaults to ``None`` (size from children).
             parent: Override the context-stack parent widget.
+            **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+                ``row=``, ``column=``, etc.) forwarded to the parent
+                geometry manager.
         """
         self._parent = self._resolve_parent(parent)
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = normalize_fill(fill)
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         frame_kwargs: dict[str, Any] = {
             "direction": self._direction,

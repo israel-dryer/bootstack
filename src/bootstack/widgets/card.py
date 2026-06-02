@@ -47,12 +47,10 @@ class Card(PublicContainer):
             ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``. When
             set, the card interior uses a subtle tint of that accent. When
             omitted, the card uses the next surface step with no border color.
-        fill: Fill direction of the card itself within its parent container.
-            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-        expand: Whether the card expands to consume extra space in the parent.
-            Defaults to ``None``.
-        anchor: Placement anchor of the card within its parent slot.
         parent: Override the context-stack parent widget.
+        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+            ``row=``, ``column=``, etc.) forwarded to the parent
+            geometry manager.
     """
 
     def __init__(
@@ -69,21 +67,12 @@ class Card(PublicContainer):
         sticky_items: str | None = None,
         auto_flow: str = "row",
         accent: AccentToken | str | None = None,
-        fill: str | None = None,
-        expand: bool | None = None,
-        anchor: str | None = None,
         parent: Any = None,
+        **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         self._layout = layout
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = normalize_fill(fill)
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         tk_master = self._parent._child_master() if self._parent else None
 

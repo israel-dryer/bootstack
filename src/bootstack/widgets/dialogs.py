@@ -65,7 +65,7 @@ def ask_string(
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The entered string, or `None` if cancelled.
+        The entered string, or `None` if canceled.
     """
     return _QueryBox.get_string(
         prompt,
@@ -97,7 +97,7 @@ def ask_integer(
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The entered integer, or `None` if cancelled.
+        The entered integer, or `None` if canceled.
     """
     return _QueryBox.get_integer(
         prompt,
@@ -132,7 +132,7 @@ def ask_float(
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The entered float, or `None` if cancelled.
+        The entered float, or `None` if canceled.
     """
     return _QueryBox.get_float(
         prompt,
@@ -161,7 +161,7 @@ def ask_date(
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The selected `date`, or `None` if cancelled.
+        The selected `date`, or `None` if canceled.
     """
     return _QueryBox.get_date(
         master=parent,
@@ -188,7 +188,7 @@ def ask_item(
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The selected item string, or `None` if cancelled.
+        The selected item string, or `None` if canceled.
     """
     return _QueryBox.get_item(
         prompt,
@@ -279,7 +279,7 @@ class FormDialog:
 
     @property
     def result(self) -> dict[str, Any] | None:
-        """Form data dict after closing, or `None` if cancelled."""
+        """Form data dict after closing, or `None` if canceled."""
         return self._internal.result
 
     @property

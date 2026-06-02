@@ -27,7 +27,7 @@ class ToggleGroup(PublicWidgetBase):
             (label and value are the same) or a ``(label, value)`` tuple,
             e.g. ``["Grid", "List"]`` or
             ``[("Grid view", "grid"), ("List view", "list")]``.
-        mode: Selection behaviour. ``'single'`` (default) enforces mutual
+        mode: Selection behavior. ``'single'`` (default) enforces mutual
             exclusivity like a radio group; ``'multi'`` allows any number
             of buttons to be active simultaneously.
         signal: Reactive ``Signal`` holding the selected value(s). In

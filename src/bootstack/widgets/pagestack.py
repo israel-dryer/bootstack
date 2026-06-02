@@ -124,9 +124,10 @@ class PageStack(PublicWidgetBase):
         padding: Space around the page area.
         width: Requested width in pixels.
         height: Requested height in pixels.
-        fill: Self-placement fill direction in parent.
-        expand: Self-placement expand flag.
         parent: Override the context-stack parent.
+        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+            ``row=``, ``column=``, etc.) forwarded to the parent
+            geometry manager.
     """
 
     def __init__(
@@ -135,23 +136,11 @@ class PageStack(PublicWidgetBase):
         padding: Any = None,
         width: int | None = None,
         height: int | None = None,
-        # Self-placement
-        fill: str | None = None,
-        expand: bool | None = None,
-        anchor: str | None = None,
         parent: Any = None,
-        **extra_kw: Any,
+        **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = normalize_fill(fill)
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         ps_kwargs: dict[str, Any] = {}
         if padding is not None:
@@ -160,7 +149,6 @@ class PageStack(PublicWidgetBase):
             ps_kwargs["width"] = width
         if height is not None:
             ps_kwargs["height"] = height
-        ps_kwargs.update(extra_kw)
 
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = _InternalPageStack(tk_master, **ps_kwargs)

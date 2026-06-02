@@ -13,7 +13,7 @@ from bootstack.widgets.types import AccentToken
 
 
 class GroupBox(PublicContainer):
-    """A labelled container that groups related content inside a bordered frame.
+    """A labeled container that groups related content inside a bordered frame.
 
     Renders as a ``ttk.LabelFrame`` — the title is embedded in the top border
     line, giving the classic fieldset look. Children are laid out according
@@ -49,12 +49,10 @@ class GroupBox(PublicContainer):
             (e.g. ``'ew'``, ``'nsew'``). Children can override this.
         auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
             ``'column'``, ``'row-dense'``, or ``'column-dense'``.
-        fill: Fill direction of the GroupBox itself within its parent.
-            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-        expand: Whether the GroupBox expands to consume extra space in the
-            parent container. Defaults to ``None``.
-        anchor: Placement anchor of the GroupBox within its parent slot.
         parent: Override the context-stack parent widget.
+        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+            ``row=``, ``column=``, etc.) forwarded to the parent
+            geometry manager.
     """
 
     def __init__(
@@ -68,27 +66,16 @@ class GroupBox(PublicContainer):
         fill_items: str | None = None,
         expand_items: bool | None = None,
         anchor_items: str | None = None,
-        # Child guidance — grid layout
         columns: int | list | None = None,
         rows: int | list | None = None,
         sticky_items: str | None = None,
         auto_flow: str = "row",
-        # Self-placement
-        fill: str | None = None,
-        expand: bool | None = None,
-        anchor: str | None = None,
         parent: Any = None,
+        **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         self._layout = layout
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = normalize_fill(fill)
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         tk_master = self._parent._child_master() if self._parent else None
 

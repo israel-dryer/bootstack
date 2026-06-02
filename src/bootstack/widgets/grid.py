@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import PublicContainer, GRID_KEYS
-from bootstack.widgets.types import AccentToken, SurfaceToken, Fill, Anchor, Sticky
+from bootstack.widgets.types import AccentToken, SurfaceToken, Sticky
 
 
 class Grid(PublicContainer):
@@ -51,12 +51,10 @@ class Grid(PublicContainer):
         height: Fixed height in pixels. Disables frame propagation —
             see the note in :class:`VStack` for sizing behavior.
             Defaults to ``None``.
-        fill: Fill direction of the Grid itself within its parent.
-            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-        expand: Whether the Grid expands to consume extra space in the
-            parent container. Defaults to ``None``.
-        anchor: Placement anchor of the Grid within its parent slot.
         parent: Override the context-stack parent widget.
+        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+            ``row=``, ``column=``, etc.) forwarded to the parent
+            geometry manager.
     """
 
     def __init__(
@@ -74,19 +72,10 @@ class Grid(PublicContainer):
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
-        fill: Fill | str | None = None,
-        expand: bool | None = None,
-        anchor: Anchor | str | None = None,
+        **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = fill
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         frame_kwargs: dict[str, Any] = {
             "rows": rows,
