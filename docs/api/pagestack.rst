@@ -9,10 +9,13 @@ navigation is tracked automatically.
 .. code-block:: python
 
    ps = bs.PageStack(fill="both", expand=True)
+
    with ps.add("home"):
        bs.Label("Home page")
+
    with ps.add("settings"):
        bs.Label("Settings page")
+
    ps.navigate("home")
 
 .. raw:: html
