@@ -2,20 +2,14 @@
 
 This module contains style builders for ttk.Scrollbar widget variants.
 """
+from typing import Optional
+
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 
 
-@BootstyleBuilderTTk.register_builder('square', 'TScrollbar')
-def build_scrollbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
-    if options.get('orient', 'vertical') == 'vertical':
-        build_vertical_scrollbar(b, ttk_style, accent, **options)
-    else:
-        build_horizontal_scrollbar(b, ttk_style, accent, **options)
-
-
-def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
     border_color = b.border(surface)
@@ -51,7 +45,7 @@ def build_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: s
     )
 
 
-def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
     border_color = b.border(surface)
@@ -88,8 +82,6 @@ def build_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str
 
 
 @BootstyleBuilderTTk.register_builder('default', 'TScrollbar')
-@BootstyleBuilderTTk.register_builder('round', 'TScrollbar')
-@BootstyleBuilderTTk.register_builder('rounded', 'TScrollbar')
 def build_rounded_scrollbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     if options.get('orient', 'vertical') == 'vertical':
         _build_rounded_vertical_scrollbar(b, ttk_style, accent, **options)
@@ -97,7 +89,7 @@ def build_rounded_scrollbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent
         _build_rounded_horizontal_scrollbar(b, ttk_style, accent, **options)
 
 
-def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
     border_color = b.border(surface)
@@ -138,7 +130,7 @@ def _build_rounded_vertical_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, ac
     )
 
 
-def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+def _build_rounded_horizontal_scrollbar(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     surface_token = options.get('surface', 'content')
     surface = b.color(surface_token)
     border_color = b.border(surface)
