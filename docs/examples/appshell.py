@@ -4,12 +4,10 @@ with bs.AppShell(title="My App", size=(800, 540)) as shell:
 
     # ── Toolbar ───────────────────────────────────────────────────────────────
     shell.toolbar.add_spacer()
-    shell.toolbar.add_button(icon="sun-moon", command=bs.toggle_theme)
+    shell.toolbar.add_button(icon="circle-half", command=bs.toggle_theme)
 
-    # ── Nav groups and pages ──────────────────────────────────────────────────
-    shell.add_group("main", text="Main", expanded=True)
-
-    with shell.add_page("dashboard", text="Dashboard", icon="house", group="main"):
+    # ── Pages ─────────────────────────────────────────────────────────────────
+    with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
         with bs.VStack(fill="x", gap=12, padding=24):
             bs.Label("Dashboard", font="heading-lg")
             bs.Label("Welcome back. Here is your overview.")
@@ -24,7 +22,7 @@ with bs.AppShell(title="My App", size=(800, 540)) as shell:
                     bs.Label("Orders", font="caption")
                     bs.Label("340", font="heading-md")
 
-    with shell.add_page("inbox", text="Inbox", icon="inbox", group="main"):
+    with shell.add_page("inbox", text="Inbox", icon="inbox"):
         with bs.VStack(fill="x", gap=8, padding=24):
             bs.Label("Inbox", font="heading-lg")
             bs.Label("No new messages.")
@@ -42,8 +40,7 @@ with bs.AppShell(title="My App", size=(800, 540)) as shell:
             bs.Label("Images", font="heading-lg")
             bs.Label("Your images will appear here.")
 
-    # ── Footer nav item ───────────────────────────────────────────────────────
-    with shell.add_page("settings", text="Settings", icon="gear", is_footer=True):
+    with shell.add_footer_page("settings", text="Settings", icon="gear"):
         with bs.VStack(fill="x", gap=8, padding=24):
             bs.Label("Settings", font="heading-lg")
             bs.Label("Adjust your preferences.")

@@ -51,6 +51,9 @@ class AppShell:
     Args:
         title: Window title and (in undecorated mode) toolbar label.
         size: Initial window size as `(width, height)`.
+        theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
+        settings: ``AppSettings`` dict or instance for theme, locale, etc.
+        localize: Locale or ``MessageCatalog`` for internationalisation.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -74,6 +77,9 @@ class AppShell:
         *,
         title: str = "",
         size: tuple[int, int] | None = None,
+        theme: str | None = None,
+        settings: Any = None,
+        localize: Any = None,
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
@@ -86,7 +92,6 @@ class AppShell:
         show_nav: bool = True,
         nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
         nav_accent: AccentToken = "primary",
-        settings: Any = None,
         **kwargs: Any,
     ) -> None:
         init_kwargs: dict[str, Any] = {
@@ -102,6 +107,8 @@ class AppShell:
         }
         if size is not None:
             init_kwargs["size"] = size
+        if theme is not None:
+            init_kwargs["theme"] = theme
         if position is not None:
             init_kwargs["position"] = position
         if min_size is not None:
@@ -112,6 +119,8 @@ class AppShell:
             init_kwargs["resizable"] = resizable
         if settings is not None:
             init_kwargs["settings"] = settings
+        if localize is not None:
+            init_kwargs["localize"] = localize
         init_kwargs.update(kwargs)
 
         self._internal = _InternalAppShell(**init_kwargs)
@@ -134,7 +143,6 @@ class AppShell:
         text: str = "",
         icon: str | dict | None = None,
         group: str | None = None,
-        is_footer: bool = False,
         scrollable: bool = False,
         **nav_kwargs: Any,
     ) -> _PageFrame:
@@ -145,7 +153,6 @@ class AppShell:
             text: Display label in the sidebar.
             icon: Icon name or icon configuration dict.
             group: Key of the nav group to add this item to.
-            is_footer: If `True`, add the item to the footer section.
             scrollable: If `True`, wrap the page in a vertical `ScrollView`.
             **nav_kwargs: Extra kwargs forwarded to the internal nav item.
 
@@ -158,8 +165,35 @@ class AppShell:
             kw["icon"] = icon
         if group is not None:
             kw["group"] = group
-        if is_footer:
-            kw["is_footer"] = True
+        kw.update(nav_kwargs)
+        tk_frame = self._internal.add_page(key, **kw)
+        return _PageFrame(tk_frame)
+
+    def add_footer_page(
+        self,
+        key: str,
+        *,
+        text: str = "",
+        icon: str | dict | None = None,
+        scrollable: bool = False,
+        **nav_kwargs: Any,
+    ) -> _PageFrame:
+        """Add a nav item pinned to the sidebar footer and its page.
+
+        Args:
+            key: Unique identifier for the nav item and page.
+            text: Display label in the sidebar footer.
+            icon: Icon name or icon configuration dict.
+            scrollable: If `True`, wrap the page in a vertical `ScrollView`.
+            **nav_kwargs: Extra kwargs forwarded to the internal nav item.
+
+        Returns:
+            A `_PageFrame` context manager. Use with ``with`` to parent
+            child widgets into the page automatically.
+        """
+        kw: dict[str, Any] = {"text": text, "scrollable": scrollable, "is_footer": True}
+        if icon is not None:
+            kw["icon"] = icon
         kw.update(nav_kwargs)
         tk_frame = self._internal.add_page(key, **kw)
         return _PageFrame(tk_frame)

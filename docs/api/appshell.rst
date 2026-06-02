@@ -68,11 +68,11 @@ headers, and visual separators — the same structural elements as
 Footer items
 ~~~~~~~~~~~~
 
-Pass ``is_footer=True`` to pin a nav item to the bottom of the sidebar.
+Use `add_footer_page()` to pin a nav item to the bottom of the sidebar.
 
 .. code-block:: python
 
-   with shell.add_page("settings", text="Settings", icon="gear", is_footer=True):
+   with shell.add_footer_page("settings", text="Settings", icon="gear"):
        bs.Label("Settings page")
 
 Scrollable pages
