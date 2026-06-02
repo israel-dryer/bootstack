@@ -7,3 +7,4 @@ AppShell, Tabs, SideNav, PageStack, Toolbar.
    :maxdepth: 1
 
    pagestack
+   tabs

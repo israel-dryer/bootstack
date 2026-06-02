@@ -13,7 +13,7 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import Event, AccentToken
 
 _TABS_EVENTS: dict[str, str] = {
     "change":    "<<TabChanged>>",
@@ -25,9 +25,21 @@ _TABS_EVENTS: dict[str, str] = {
 class TabPage:
     """Context-manager container returned by `Tabs.add()`.
 
-    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
-    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
-    `sticky_items=`, `auto_flow=`.
+    Place child widgets inside the ``with`` block to add them to the tab's page.
+
+    Args:
+        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
+            or ``'grid'``.
+        padding: Space inside the page frame.
+        gap: Space between children in pixels.
+        fill_items: Default fill direction applied to each child.
+        expand_items: Whether children expand to fill available space.
+        anchor_items: Default anchor applied to each child.
+        columns: Column definitions for ``'grid'`` layout.
+        rows: Row definitions for ``'grid'`` layout.
+        sticky_items: Default sticky value for grid children.
+        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
+            ``'column'``.
     """
 
     def __init__(
@@ -112,9 +124,9 @@ class Tabs(PublicWidgetBase):
     Usage::
 
         tabs = bs.Tabs()
-        with tabs.add("home", text="Home"):
+        with tabs.add("home", label="Home"):
             bs.Label("Welcome")
-        with tabs.add("settings", text="Settings"):
+        with tabs.add("settings", label="Settings"):
             bs.Label("Settings here")
 
     Args:
@@ -137,7 +149,7 @@ class Tabs(PublicWidgetBase):
         tab_width: int | Literal["stretch"] | None = None,
         allow_close: bool | Literal["hover"] = False,
         allow_add: bool = False,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -300,7 +312,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when the selected tab changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 
@@ -312,7 +324,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("tab_close", handler)
 
@@ -324,7 +336,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when the add-tab button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("tab_add", handler)
 
