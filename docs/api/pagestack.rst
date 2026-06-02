@@ -1,0 +1,188 @@
+PageStack
+=========
+
+A browser-style navigation container that shows one page at a time. Add named
+pages with `.add()`, place child widgets inside each page using the returned
+context manager, then call `navigate()` to switch between them. Forward and back
+navigation is tracked automatically.
+
+.. code-block:: python
+
+   ps = bs.PageStack(fill="both", expand=True)
+   with ps.add("home"):
+       bs.Label("Home page")
+   with ps.add("settings"):
+       bs.Label("Settings page")
+   ps.navigate("home")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/pagestack-light.png"
+        alt="PageStack demo — light theme"
+        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/pagestack-dark.png"
+        alt="PageStack demo — dark theme"
+        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+
+Usage
+-----
+
+Adding pages
+~~~~~~~~~~~~
+
+Call `.add(key)` once per page. Use the returned ``StackPage`` as a context
+manager — child widgets created inside the ``with`` block are placed on that
+page.
+
+.. code-block:: python
+
+   ps = bs.PageStack(fill="both", expand=True)
+
+   with ps.add("home"):
+       bs.Label("Home page content")
+
+   with ps.add("settings"):
+       bs.Label("Settings page content")
+
+   ps.navigate("home")
+
+Navigating between pages
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Call `navigate()` with the target page key to switch the visible page. Only one
+page is visible at a time; the previous page is hidden automatically.
+
+.. code-block:: python
+
+   ps.navigate("home")
+   ps.navigate("settings")
+
+Back and forward
+~~~~~~~~~~~~~~~~
+
+Every `navigate()` call pushes a history entry. Use `back()` and `forward()`
+to move through history, guarded by `can_back` and `can_forward`.
+
+.. code-block:: python
+
+   ps.navigate("home")
+   ps.navigate("settings")
+
+   ps.can_back    # True
+   ps.back()      # → "home"
+
+   ps.can_forward # True
+   ps.forward()   # → "settings"
+
+Page layout modes
+~~~~~~~~~~~~~~~~~
+
+Each page has an independent internal layout controlled by the ``layout=``
+argument of `add()`. The default is ``'vstack'`` (vertical stack).
+
+.. code-block:: python
+
+   # Vertical stack (default)
+   with ps.add("home", layout="vstack", gap=8):
+       bs.Label("Row 1")
+       bs.Label("Row 2")
+
+   # Horizontal stack
+   with ps.add("toolbar", layout="hstack", gap=6):
+       bs.Button("Cut")
+       bs.Button("Copy")
+       bs.Button("Paste")
+
+   # Grid
+   with ps.add("form", layout="grid", columns=["auto", 1], gap=8, sticky_items="ew"):
+       bs.Label("Username")
+       bs.TextField()
+       bs.Label("Password")
+       bs.PasswordField()
+
+Passing data to pages
+~~~~~~~~~~~~~~~~~~~~~
+
+Pass an optional ``data`` dict to `navigate()`. The dict is forwarded to the
+page's `on_page_mount` event payload so the receiving page can act on it.
+
+.. code-block:: python
+
+   ps.navigate("detail", data={"record_id": 42})
+
+   def on_mount(event):
+       record_id = event.data.get("record_id")
+
+   ps.on_page_mount(on_mount)
+
+Events
+~~~~~~
+
+``on_page_change`` fires after every navigation. ``on_page_mount`` fires when
+a page becomes visible. Both receive an ``event.data`` dict with context about
+the transition.
+
+.. code-block:: python
+
+   def on_change(event):
+       page = event.data["page"]        # current page key
+       prev = event.data["prev_page"]   # previous page key (or None)
+       nav  = event.data["nav"]         # 'push', 'back', or 'forward'
+
+   ps.on_page_change(on_change)
+
+   # Stream form — compose with operators
+   ps.on_page_change().listen(lambda e: print(e.data["page"]))
+
+Introspection
+~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   ps.current        # key of the visible page, or None
+   ps.can_back       # True if back() would succeed
+   ps.can_forward    # True if forward() would succeed
+   ps.page_keys()    # ('home', 'settings', 'about')
+
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
+
+See also
+--------
+
+:class:`ScrollView <bootstack.widgets.scrollview.ScrollView>` —
+scrollable container with vertical and/or horizontal scrollbars.
+
+:class:`SplitView <bootstack.widgets.splitview.SplitView>` —
+resizable split container with draggable sashes.
+
+:class:`Accordion <bootstack.widgets.accordion.Accordion>` —
+collapsible section container.
+
+:class:`VStack <bootstack.widgets.stacks.VStack>`,
+:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Grid <bootstack.widgets.grid.Grid>` —
+non-navigating layout containers.
+
+API
+---
+
+.. autoclass:: bootstack.widgets.pagestack.PageStack
+   :members:
+   :undoc-members:
+
+.. autoclass:: bootstack.widgets.pagestack.StackPage
+   :members:
+   :undoc-members:
+
+Full Example
+------------
+
+.. literalinclude:: ../../docs/examples/pagestack.py
+   :language: python
+   :linenos:
+   :start-after: import bootstack as bs

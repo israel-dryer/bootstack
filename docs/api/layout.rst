@@ -2,7 +2,7 @@ Layout
 ======
 
 VStack, HStack, Grid, Card, GroupBox, SplitView, ScrollView, Accordion,
-Expander, Separator.
+PageStack, Separator.
 
 .. toctree::
    :maxdepth: 1
@@ -16,3 +16,4 @@ Expander, Separator.
    accordion
    scrollview
    splitview
+   pagestack

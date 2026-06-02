@@ -23,9 +23,21 @@ _PAGESTACK_EVENTS: dict[str, str] = {
 class StackPage:
     """Context-manager container returned by `PageStack.add()`.
 
-    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
-    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
-    `sticky_items=`, `auto_flow=`.
+    Place child widgets inside the ``with`` block to add them to the page.
+
+    Args:
+        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
+            or ``'grid'``.
+        padding: Space inside the page frame.
+        gap: Space between children in pixels.
+        fill_items: Default fill direction applied to each child.
+        expand_items: Whether children expand to fill available space.
+        anchor_items: Default anchor applied to each child.
+        columns: Column definitions for ``'grid'`` layout.
+        rows: Row definitions for ``'grid'`` layout.
+        sticky_items: Default sticky value for grid children.
+        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
+            ``'column'``.
     """
 
     def __init__(
@@ -264,7 +276,7 @@ class PageStack(PublicWidgetBase):
         """Register a callback fired after every navigation.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("page_change", handler)
 
@@ -276,7 +288,7 @@ class PageStack(PublicWidgetBase):
         """Register a callback fired when a page is mounted.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("page_mount", handler)
 
