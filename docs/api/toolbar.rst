@@ -8,11 +8,11 @@ Items are added left-to-right via ``add_button()``, ``add_label()``,
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-light.png"
+        src="/_static/examples/toolbar-hero-light.png"
         alt="Toolbar demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-dark.png"
+        src="/_static/examples/toolbar-hero-dark.png"
         alt="Toolbar demo — dark theme"
         style="max-width:100%;">
 
@@ -33,13 +33,24 @@ button. Omit ``label=`` to get an icon-only button.
    tb.add_button(icon="gear")                      # icon-only
    tb.add_button("Cancel")                         # text-only
 
-Use ``on_click=`` to attach a callback, and ``accent=`` / ``variant=`` to
-style individual buttons differently from the toolbar default.
+Use ``on_click=`` to attach a callback, and ``accent=`` to apply a color
+intent to individual buttons.
 
 .. code-block:: python
 
    tb.add_button("Publish", icon="cloud-upload", accent="primary", on_click=publish)
    tb.add_button("Discard", icon="trash", accent="danger", on_click=discard)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toolbar-accents-light.png"
+        alt="Toolbar accent buttons — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toolbar-accents-dark.png"
+        alt="Toolbar accent buttons — dark theme"
+        style="max-width:100%;">
 
 Separators and spacers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,6 +67,17 @@ to the right side.
    tb.add_button("Align left", icon="text-left")
    tb.add_spacer()
    tb.add_button(icon="gear")          # pinned to the right
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toolbar-separators-light.png"
+        alt="Toolbar separators and spacers — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toolbar-separators-dark.png"
+        alt="Toolbar separators and spacers — dark theme"
+        style="max-width:100%;">
 
 Labels
 ~~~~~~
@@ -81,6 +103,17 @@ toolbars such as a rich-text formatting strip.
    tb.add_button(icon="type-bold")
    tb.add_button(icon="type-italic")
    tb.add_button(icon="type-underline")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toolbar-density-light.png"
+        alt="Toolbar compact density — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toolbar-density-dark.png"
+        alt="Toolbar compact density — dark theme"
+        style="max-width:100%;">
 
 Button variant
 ~~~~~~~~~~~~~~
