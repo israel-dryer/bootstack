@@ -148,11 +148,6 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
         return getattr(self._internal, 'signal', None)
 
     @property
-    def placeholder(self) -> str | None:
-        """Placeholder text shown when the field is empty and unfocused."""
-        return self._internal._entry._placeholder_text
-
-    @property
     def read_only(self) -> bool:
         """Whether the field is visible but not editable."""
         return str(self._entry_widget().cget("state")) == "readonly"

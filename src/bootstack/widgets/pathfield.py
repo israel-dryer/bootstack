@@ -1,7 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.pathentry import PathEntry as _InternalPathEntry
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -10,11 +10,20 @@ from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _PATHFIELD_EVENTS: dict[str, str] = {
-    "change": "<<Change>>",
-    "submit": "<Return>",
+    "input":    "<<Input>>",
+    "change":   "<<Change>>",
+    "valid":    "<<Valid>>",
+    "invalid":  "<<Invalid>>",
+    "validate": "<<Validate>>",
+    "submit":   "<Return>",
+    "focus":    "<FocusIn>",
+    "blur":     "<FocusOut>",
 }
 
 
@@ -39,10 +48,15 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
             `'save'` mode only.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
+        placeholder: Ghost text shown when the field is empty and unfocused.
+        textsignal: Reactive `Signal[str]` bound to the field text. The
+            field value and signal stay in sync automatically.
         required: Mark field as required.
         disabled: If True, field is non-interactive.
         read_only: If True, value is visible but not editable.
-        accent: Accent token for the focus ring.
+        width: Width in character units.
+        accent: Accent token for the focus ring. One of `'primary'`,
+            `'secondary'`, `'success'`, `'warning'`, `'danger'`.
         density: Widget density — `'default'` or `'compact'`.
         parent: Override the context-stack parent.
     """
@@ -59,11 +73,14 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         default_filename: str | None = None,
         label: str | None = None,
         message: str | None = None,
+        placeholder: str | None = None,
+        textsignal: "Signal[str] | None" = None,
         required: bool = False,
         disabled: bool = False,
         read_only: bool = False,
-        accent: str | None = None,
-        density: str | None = None,
+        width: int | None = None,
+        accent: AccentToken | str | None = None,
+        density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -89,12 +106,18 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["label"] = label
         if message is not None:
             internal_kwargs["message"] = message
+        if placeholder is not None:
+            internal_kwargs["placeholder"] = placeholder
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
         if required:
             internal_kwargs["required"] = True
         if disabled:
             internal_kwargs["state"] = "disabled"
         elif read_only:
             internal_kwargs["state"] = "readonly"
+t        if width is not None:
+            internal_kwargs["width"] = width
         if accent is not None:
             internal_kwargs["accent"] = accent
         if density is not None:
@@ -115,17 +138,15 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         sequence = resolve_event(self, str(event))
-        widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-        _w = widget
+        target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
-            from bootstack.widgets._core.stream import Stream as _Stream
             def _source(h):
-                widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-                _bid = _w.bind(sequence, h, add="+")
-                return Subscription(_w, sequence, _bid)
-            return _Stream(self._internal, _source=_source)
-        bind_id = widget.bind(sequence, handler, add="+")
-        return Subscription(widget, sequence, bind_id)
+                t = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
+                bid = t.bind(sequence, h, add="+")
+                return Subscription(t, sequence, bid)
+            return Stream(self._internal, _source=_source)
+        bid = target.bind(sequence, handler, add="+")
+        return Subscription(target, sequence, bid)
 
     # ----- Properties -----
 
@@ -144,7 +165,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         return self._internal.dialog_result
 
     @property
+    def signal(self) -> "Signal[str] | None":
+        """The reactive `Signal` bound to this field, or `None`."""
+        return getattr(self._internal, "signal", None)
+
+    @property
     def disabled(self) -> bool:
+        """Whether the field is fully non-interactive."""
         return str(self._entry_widget().cget("state")) == "disabled"
 
     @disabled.setter
@@ -153,11 +180,83 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
+        """Whether the field is visible but not editable."""
         return str(self._entry_widget().cget("state")) == "readonly"
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
         self._internal.configure(state="readonly" if v else "normal")
+
+    # ----- Methods -----
+
+    def focus(self) -> None:
+        """Give keyboard focus to this field."""
+        self._entry_widget().focus_set()
+
+    def clear(self) -> None:
+        """Clear the field text."""
+        self._internal.value = ""
+
+    def commit(self) -> None:
+        """Manually parse the display text, update the value, and run validation.
+
+        Useful when you need to force a commit outside of the normal
+        blur/Enter flow.
+        """
+        self._internal._entry.commit()
+
+    def validate(self, trigger: str = "manual") -> bool:
+        """Run validation rules against the current value.
+
+        Args:
+            trigger: Validation trigger label. One of `'manual'`,
+                `'blur'`, `'key'`. Defaults to `'manual'`.
+
+        Returns:
+            `True` if all rules pass, `False` otherwise.
+        """
+        return self._internal._entry.validate(
+            self._internal._entry.value(), trigger=trigger
+        )
+
+    def select_all(self) -> None:
+        """Select all text in the field."""
+        self._entry_widget().selection_range(0, "end")
+
+    def select_range(self, start: int, end: int) -> None:
+        """Select text between ``start`` and ``end`` character positions.
+
+        Args:
+            start: Start index (0-based, inclusive).
+            end: End index (exclusive).
+        """
+        self._entry_widget().selection_range(start, end)
+
+    def set_cursor(self, index: int) -> None:
+        """Move the insertion cursor to ``index``.
+
+        Args:
+            index: Character position to place the cursor.
+        """
+        self._entry_widget().icursor(index)
+
+    def insert(self, index: int, text: str) -> None:
+        """Insert ``text`` at ``index``.
+
+        Args:
+            index: Character position to insert at.
+            text: Text to insert.
+        """
+        self._entry_widget().insert(index, text)
+
+    def delete(self, start: int, end: int | None = None) -> None:
+        """Delete characters from ``start`` to ``end``.
+
+        Args:
+            start: Start index (inclusive).
+            end: End index (exclusive). If ``None``, deletes to end of field.
+        """
+        self._entry_widget().delete(start, "end" if end is None else end)
 
     # ----- Event shorthands -----
 
@@ -168,10 +267,97 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the path value changes.
 
+        Fires after the user picks a path via the dialog or edits the field
+        directly and commits (blur or Enter).
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
+
+    @overload
+    def on_input(self) -> Stream: ...
+    @overload
+    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired on every keystroke in the text portion.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("input", handler)
+
+    @overload
+    def on_submit(self) -> Stream: ...
+    @overload
+    def on_submit(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the user presses Enter.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("submit", handler)
+
+    @overload
+    def on_focus(self) -> Stream: ...
+    @overload
+    def on_focus(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the field gains focus.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("focus", handler)
+
+    @overload
+    def on_blur(self) -> Stream: ...
+    @overload
+    def on_blur(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the field loses focus.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("blur", handler)
+
+    @overload
+    def on_valid(self) -> Stream: ...
+    @overload
+    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("valid", handler)
+
+    @overload
+    def on_invalid(self) -> Stream: ...
+    @overload
+    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("invalid", handler)
+
+    @overload
+    def on_validate(self) -> Stream: ...
+    @overload
+    def on_validate(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired after any validation run.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("validate", handler)
 
 
 register_widget_events(PathField, _PATHFIELD_EVENTS)

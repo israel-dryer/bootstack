@@ -11,5 +11,6 @@ Widgets for accepting user input.
    numberfield
    slider
    rangeslider
+   pathfield
 
-.. note:: PathField, SpinnerField, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
+.. note:: SpinnerField, TextArea, CodeEditor, DateField, and TimeField pages coming soon.
