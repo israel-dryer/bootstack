@@ -57,6 +57,7 @@ class TextArea(GridFrame):
         read_only: bool = False,
         wrap: bool = True,
         height: int = 4,
+        width: int | None = None,
         scrollbars: ScrollbarMode = "auto",
         font: str = "body",
         accent: AccentToken | str = "primary",
@@ -138,6 +139,9 @@ class TextArea(GridFrame):
             self._field_frame = None
             core_parent = self
 
+        core_kwargs: dict = {}
+        if width is not None:
+            core_kwargs["width"] = width
         self._core = _MultilineCore(
             core_parent,
             value=value,
@@ -146,6 +150,7 @@ class TextArea(GridFrame):
             scrollbars=scrollbars,
             font=font,
             read_only=read_only,
+            **core_kwargs,
         )
 
         if show_border:
