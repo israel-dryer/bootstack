@@ -44,20 +44,12 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Also update `docs/api/actions.rst` note — MenuButton is now in Menus and
 Toolbars; remove it from the "coming soon" list there.
 
-**Screenshot refresh needed** — earlier widget screenshot scenes were written
-before the centering fix was established. Any scene using `HStack` or placing
-a single widget without `HStack(fill="x")` will have left-offset content.
-Widgets to audit and retake: Button, SelectButton, and any others whose scenes
-have a button/widget row without `fill="x"` on the HStack. Run all scenes and
-visually inspect for left-side dead space.
-
 ### Next session
 
-1. **Screenshot refresh** — audit and fix centering on earlier widget scenes.
-2. **Continue docs pass** — next widget: ButtonGroup (Actions category), then
+1. **Continue docs pass** — next widget: ButtonGroup (Actions category), then
    the pending Inputs widgets (PathField, SpinnerField, TextArea, CodeEditor,
    DateField, TimeField). Follow the standard widget documentation pattern.
-3. **AppShell deferred improvements** (dedicated follow-on pass):
+2. **AppShell deferred improvements** (dedicated follow-on pass):
    - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
    - Nav item density/font hardcoded in SideNav style builder
    - `toolbar`/`nav` properties expose internals instead of public wrappers
@@ -133,6 +125,10 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 ### Screenshots
 - **HStack centering** — App's VStack centers children. For button-row scenes, wrap in
   `HStack(fill="x")` so buttons are left-aligned, not centered with dead space on the left.
+- **No `size=` by default** — omit `size=` from `bs.App` in screenshot scenes unless there
+  is a specific reason (popdown/dropdown needs room to render inside the capture bbox). Let
+  the window auto-fit its content. For input/field/slider rows use `minsize=(720, 1)` to
+  enforce a minimum width without locking height. Never add `size=` just to "feel right".
 - **Popdown menus in screenshots** — runner sets app `topmost=True` at t=800ms, grabs at
   t=950ms. Call `mb.show_menu()` at t=850ms (after topmost set, before grab). Size the
   app window tall enough to contain the menu within its capture bbox — the menu Toplevel
@@ -140,7 +136,8 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   grab.
 - **`_ToplevelContextMenu` topmost** — `show()` now sets `-topmost True` on the
   overrideredirect Toplevel so it appears above a parent with `-topmost True`.
-- **`size=` not `minsize=`** in screenshot files — always `size=(W,H)` for deterministic capture.
+- **SelectBox popup topmost** — `_create_popup_toplevel` sets `-topmost True` so the
+  popup appears above the screenshot runner's topmost window.
 - **Screenshot runner 2px inset** — crops 2px from each edge to remove Windows border artifact.
 - **Dialog hero pattern** — open non-modally at t=200ms, lift dialog at t=850ms, screenshot
   at t=950ms. Use `app._capture_target = <toplevel>` to capture a dialog instead of the app.
@@ -213,7 +210,7 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 ### Sliders / fields
 - **Slider/RangeSlider spacing** — `VStack gap=` does not visually separate tracks.
   Use `margin_y=10` on each widget. Track heights: plain ≈ 24px, ticks ≈ 45px, badge+ticks ≈ 65px.
-- **Screenshot widths** — Slider/RangeSlider need ≥860px. 3-column field states need ≥780px.
+- **Screenshot widths** — use `minsize=(720, 1)` for all input/field/slider scenes.
 - **`anchor_items="baseline"`** — invalid. Use `"s"`.
 - **`select.py` / `calendar.py` shadow stdlib** — use `selectfield.py` and `calendarwidget.py`.
 
