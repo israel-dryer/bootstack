@@ -31,6 +31,9 @@ html[data-theme="dark"] {
     --pst-color-border:        #495057;
     --pst-color-border-muted:  #373b3e;
     --pst-color-inline-code:   #e685b5;
+    /* Admonition note/info — align with primary palette */
+    --pst-color-info:          #6ea8fe;
+    --pst-color-info-bg:       #0d306e;
 }
 
 /* Ensure all code blocks scroll horizontally rather than overflowing. */

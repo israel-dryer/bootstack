@@ -11,11 +11,11 @@ definitions. Fields are placed on a grid; :class:`GroupItem
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/forms-light.png"
+        src="/_static/examples/forms-hero-light.png"
         alt="Form demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/forms-dark.png"
+        src="/_static/examples/forms-hero-dark.png"
         alt="Form demo — dark theme"
         style="max-width:100%;">
 
@@ -58,6 +58,17 @@ Use ``col_count=`` to distribute fields across multiple columns:
        },
        col_count=2,
    )
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/forms-columns-light.png"
+        alt="Form multiple columns — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/forms-columns-dark.png"
+        alt="Form multiple columns — dark theme"
+        style="max-width:100%;">
 
 Explicit fields
 ~~~~~~~~~~~~~~~
@@ -146,6 +157,17 @@ section with its own column layout:
        ],
    )
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/forms-grouped-light.png"
+        alt="Form grouped fields — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/forms-grouped-dark.png"
+        alt="Form grouped fields — dark theme"
+        style="max-width:100%;">
+
 Groups can be nested and placed in specific grid cells using ``column=``,
 ``row=``, and ``columnspan=``.
 
@@ -178,6 +200,17 @@ Use :class:`TabsItem <bootstack.widgets.form.TabsItem>` with
        ],
    )
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/forms-tabbed-light.png"
+        alt="Form tabbed layout — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/forms-tabbed-dark.png"
+        alt="Form tabbed layout — dark theme"
+        style="max-width:100%;">
+
 Validation
 ~~~~~~~~~~
 
@@ -186,15 +219,13 @@ field widgets via ``field(key)`` to attach rules:
 
 .. code-block:: python
 
-   from bootstack.validation import ValidationRule
-
    form = bs.Form(data={"email": "", "username": ""})
 
    form.field("email").add_validation_rule(
-       ValidationRule("email", message="Enter a valid email address.", trigger="blur")
+       "email", message="Enter a valid email address.", trigger="blur"
    )
    form.field("username").add_validation_rule(
-       ValidationRule("stringLength", min=3, message="At least 3 characters.", trigger="blur")
+       "stringLength", min=3, message="At least 3 characters.", trigger="blur"
    )
 
    if form.validate():
@@ -292,6 +323,8 @@ API
 
 .. autoclass:: bootstack.widgets.form.Form
    :members:
+   :undoc-members:
+   :exclude-members: tk
 
 FieldItem
 ~~~~~~~~~
