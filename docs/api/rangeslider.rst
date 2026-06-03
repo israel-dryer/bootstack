@@ -6,11 +6,11 @@ A two-handle track for selecting a low/high value range.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/rangeslider-light.png"
+        src="/_static/examples/rangeslider-hero-light.png"
         alt="RangeSlider demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/rangeslider-dark.png"
+        src="/_static/examples/rangeslider-hero-dark.png"
         alt="RangeSlider demo — dark theme"
         style="max-width:100%;">
 
@@ -28,6 +28,8 @@ Basic
 Show value badges
 ~~~~~~~~~~~~~~~~~
 
+Set ``show_value=True`` to display floating badges on both handles.
+
 .. code-block:: python
 
    bs.RangeSlider(20, 80, show_value=True)
@@ -35,10 +37,24 @@ Show value badges
 Tick marks
 ~~~~~~~~~~
 
+Use ``tick_step=`` to add major tick marks. ``minor_ticks=`` adds
+subdivisions between them.
+
 .. code-block:: python
 
    bs.RangeSlider(20, 80, tick_step=20)
    bs.RangeSlider(20, 80, tick_step=20, minor_ticks=4, show_value=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/rangeslider-ticks-light.png"
+        alt="RangeSlider tick marks — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/rangeslider-ticks-dark.png"
+        alt="RangeSlider tick marks — dark theme"
+        style="max-width:100%;">
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -51,6 +67,17 @@ Accent colors
    bs.RangeSlider(20, 80, accent="success")
    bs.RangeSlider(20, 80, accent="warning")
    bs.RangeSlider(20, 80, accent="danger")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/rangeslider-accents-light.png"
+        alt="RangeSlider accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/rangeslider-accents-dark.png"
+        alt="RangeSlider accent colors — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -74,9 +101,9 @@ Access both handles at once via ``.value``, or individually via
 .. code-block:: python
 
    rs = bs.RangeSlider(20, 80)
-   lo, hi = rs.value          # → (20.0, 80.0)
-   rs.low_value  = 30         # move low handle
-   rs.high_value = 70         # move high handle
+   lo, hi = rs.value      # → (20.0, 80.0)
+   rs.low_value  = 30     # move low handle
+   rs.high_value = 70     # move high handle
 
 Disabled
 ~~~~~~~~
@@ -85,10 +112,27 @@ Disabled
 
    bs.RangeSlider(20, 80, disabled=True)
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/rangeslider-disabled-light.png"
+        alt="RangeSlider disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/rangeslider-disabled-dark.png"
+        alt="RangeSlider disabled — dark theme"
+        style="max-width:100%;">
+
 Widget sizing
 ~~~~~~~~~~~~~
 
 .. include:: ../shared/widget-sizing.rst
+
+See also
+--------
+
+* :doc:`slider` — single-handle slider
+* :doc:`numberfield` — numeric input with typed entry
 
 API
 ---
@@ -96,6 +140,7 @@ API
 .. autoclass:: bootstack.widgets.slider.RangeSlider
    :members:
    :undoc-members:
+   :exclude-members: tk
 
 Full Example
 ------------
