@@ -43,27 +43,20 @@ New public API added (dialogs pass): `bs.ask_color()`, `bs.ColorChooserDialog`,
 `bs.ColorChoice`, `bs.ask_font()`, `bs.FontDialog`, `bs.ask_filter()`,
 `bs.FilterDialog`.
 
-**Pending:** Forms, MenuButton.
+**Done (wrapper ✓ · doc page ✓ · example ✓ · screenshots pending):**
+Forms — `docs/api/forms.rst`, `docs/examples/forms.py`.
+
+New public API added (forms pass): `bs.FormItem`, `EditorType` renamed to match
+public widget names, `on_data_change()` event shorthand, `<<BsDataChange>>` event.
+
+**Pending:** Forms screenshots, MenuButton.
 
 ### What's next
 
-1. **Forms** — `docs/api/forms.rst` is a stub ("Coming soon."). Full pass needed:
-   - **Wrapper**: `src/bootstack/widgets/form.py` — `Form` class is well-written;
-     `FormItem`, `FieldItem`, `GroupItem`, `TabsItem`, `TabItem`, `EditorType` are
-     imported in the wrapper but NOT exported from `bs.*`. Add them.
-   - **Audit**: check `Form` against internal `_impl/composites/form.py` for any
-     missing methods, properties, or event shorthands.
-   - **Doc page**: replace the stub `docs/api/forms.rst` with a full page following
-     the widget documentation pattern. Split into sub-sections for auto-generated
-     forms (`data=`), explicit layouts (`items=`), groups, tabs, validation,
-     and signals. Note: `FormDialog` already has its own page (`formdialog.rst`).
-   - **Example**: `docs/examples/forms.py` — show data= auto-form, explicit items
-     with FieldItem, GroupItem, TabsItem, and a multi-column layout. Visual states
-     only (no submit/validation callbacks in the example file).
-   - **Screenshot**: use `app._capture_target` pattern if showing the form inside
-     a dialog is cleaner, or just capture the app window for embedded forms.
+1. **Forms screenshots** — take `forms-light.png` / `forms-dark.png` via
+   `python docs/scripts/take_screenshots.py forms`. No code changes needed.
 
-2. **MenuButton** — still pending (Menus and Toolbars category). After Forms.
+2. **MenuButton** — still pending (Menus and Toolbars category). After Forms screenshots.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
