@@ -7,5 +7,6 @@ Widgets that trigger operations or commands.
    :maxdepth: 1
 
    button
+   buttongroup
 
-.. note:: ButtonGroup, DropdownButton, and ContextMenu pages coming soon.
+.. note:: DropdownButton and ContextMenu pages coming soon.

@@ -15,5 +15,6 @@ Widgets for accepting user input.
    spinnerfield
    textarea
    codeeditor
+   datefield
 
-.. note:: DateField and TimeField pages coming soon.
+.. note:: TimeField page coming soon.
