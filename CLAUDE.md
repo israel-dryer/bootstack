@@ -120,12 +120,17 @@ For each widget:
    - Expand class docstring: valid values, defaults, behavior notes per kwarg
 
 3. **Write `docs/api/<widget>.rst`** — structure:
-   - Brief intro + one code snippet
-   - `.. raw:: html` light/dark screenshot block (see pattern below)
+   - Brief intro (one sentence) — **no intro code block above the hero screenshot**
+   - `.. raw:: html` hero screenshot block (see pattern below)
    - `Usage` section: one sub-section per feature (accents, variants, icons, states, etc.)
+     Subsections with a focused screenshot use the same `.. raw:: html` pattern
+     referencing `<widget>-<scene>-light/dark.png`. Put the screenshot **after** the
+     code block in each subsection.
    - `Widget sizing` section with shared include (see pattern below)
    - `See also` section cross-referencing related widgets
    - `API` section: `.. autoclass:: bootstack.widgets.<name>.<Class>` with `:members:`
+     Add `:inherited-members: FieldAddonMixin` for field widgets; add
+     `:exclude-members: tk` on all widgets to hide the escape hatch.
    - `Full Example` section: `.. literalinclude:: ../../docs/examples/<widget>.py`
      with `:start-after: import bootstack as bs`
 
@@ -138,38 +143,90 @@ For each widget:
    - No `app.tk.after(...)` or screenshot scaffolding in the example file
    - No `__setattr__` hacks — use proper function defs instead of assignment lambdas
    - No backslash line continuations — put stream chains inline or use a function
-   - Use built-in `ValidationRule` types (`"stringLength"`, `"email"`, etc.)
-     instead of `"custom"` when a built-in covers it
+   - Use built-in rule type strings (`"stringLength"`, `"email"`, etc.) with
+     `add_validation_rule()` — never construct `ValidationRule` objects in user-facing code
    - Do not use `fill="x"` in RST doc snippets — layout kwargs belong only in
      the example file where a real layout context exists
 
-5. **Take screenshots:**
-   ```bash
-   python docs/scripts/take_screenshots.py <widget>         # both themes
-   python docs/scripts/take_screenshots.py <widget> --light # one theme
+5. **Write `docs/screenshots/<widget>.py`** — scene-based hero file. Each scene is a
+   self-contained callable that creates its own `bs.App` and calls `app.run()`.
+   Define a `SCENES` dict mapping scene names to callables. The runner probes for
+   `SCENES` and captures each separately.
+
+   **Hero scene guidelines:**
+   - Input widgets: 1–2 fields max. Show focused state with content + unfocused with
+     placeholder side by side. Use `anchor_items="n"` when fields have different heights.
+   - Button/action widgets: 2–3 key variants side by side.
+   - Layout/composite widgets: representative composition.
+   - Dial in `size=(W, H)` manually — height must be tight to content with ~20px
+     padding. Too much empty space below is the most common issue.
+
+   **Per-section scene guidelines:**
+   - Only add a scene for sections with visible UI to show (skip interactive-only sections).
+   - Scene content must match the RST code block exactly — same labels, values, rule types.
+   - Name scenes to match their RST subsection: `"states"`, `"validation"`, `"accents"`, etc.
+
+   ```python
+   # docs/screenshots/widget.py
+   import bootstack as bs
+
+   def hero():
+       with bs.App(title="Widget", size=(680, 120), padding=20) as app:
+           ...
+       app.run()
+
+   def states():
+       with bs.App(title="Widget — States", size=(680, 100), padding=20) as app:
+           ...
+       app.run()
+
+   SCENES = {"hero": hero, "states": states}
    ```
-   Screenshots save to `docs/_static/examples/<widget>-light.png` and `-dark.png`.
-   Focus rings won't show in automated screenshots — acceptable. Retake manually
-   if needed after running the example and focusing a field.
 
-6. **Wire into the category index** (`docs/api/<category>.rst`) — add to toctree.
+6. **Take screenshots:**
+   ```bash
+   py -3.12 docs/scripts/take_screenshots.py <widget>                  # all scenes, both themes
+   py -3.12 docs/scripts/take_screenshots.py <widget> --light          # all scenes, light only
+   py -3.12 docs/scripts/take_screenshots.py <widget> --scene hero     # one scene, both themes
+   ```
+   Scene outputs: `docs/_static/examples/<widget>-<scene>-light.png` and `-dark.png`.
+   Legacy (no SCENES): `docs/_static/examples/<widget>-light.png` and `-dark.png`.
 
-7. **Commit** on `feat/docs-api-improvements`.
+7. **Wire into the category index** (`docs/api/<category>.rst`) — add to toctree.
+
+8. **Commit** on `feat/docs-api-improvements`.
 
 ### Screenshot HTML pattern (copy-paste for each widget page)
 
+Hero (top of page):
 ```rst
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/<widget>-light.png"
+        src="/_static/examples/<widget>-hero-light.png"
         alt="<Widget> demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/<widget>-dark.png"
+        src="/_static/examples/<widget>-hero-dark.png"
         alt="<Widget> demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 ```
+
+Per-section (after the code block in a Usage subsection):
+```rst
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/<widget>-<scene>-light.png"
+        alt="<Widget> <scene> — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/<widget>-<scene>-dark.png"
+        alt="<Widget> <scene> — dark theme"
+        style="max-width:100%;">
+```
+
+Margin and border-radius are owned by `docs/_static/custom.css` — do NOT put them in inline styles.
 
 CSS in `docs/_static/custom.css` handles `data-theme` switching.
 pydata-sphinx-theme sets `document.documentElement.dataset.theme` to
