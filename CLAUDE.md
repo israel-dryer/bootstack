@@ -25,7 +25,7 @@ Go from nothing to something fast. The user should never need to `import tkinter
 **Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
 - Actions: Button, ButtonGroup
 - Inputs: TextField, PasswordField, NumberField, Slider, RangeSlider,
-  PathField, SpinnerField, TextArea, CodeEditor
+  PathField, SpinnerField, TextArea, CodeEditor, DateField, TimeField
 - Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
   SelectButton, Calendar
 - Data Display: Label, Badge, ProgressBar, Gauge, ListView
@@ -38,14 +38,15 @@ Go from nothing to something fast. The user should never need to `import tkinter
 - Forms
 
 **Pending:**
-- Inputs: DateField, TimeField
 - Data Display: Tree, Table (deferred — too complex for this pass)
 
-### Cross-cutting wrapper improvements (this session)
+### Cross-cutting wrapper improvements (this + prior session)
 - `commit()` and `set_cursor()` removed from all field widgets (TextField,
   PasswordField, NumberField, PathField, SpinnerField) — internal plumbing
 - `placeholder` property removed from TextField, PasswordField, PathField —
   constructor-only concern
+- `trigger=` param removed from `validate()` on all 8 field wrappers —
+  internal routing concern, callers are always doing a manual check
 - All field wrappers now have full event parity: 8 shorthands, typed tokens
 - `TextArea.width=` added (was missing; internal hardcoded default)
 - `CodeEditor.height=` added (was hardcoded to 20; now configurable)
@@ -54,12 +55,12 @@ Go from nothing to something fast. The user should never need to `import tkinter
   undefined `inner_sequences` in `on()` (crash), `text_signal` → `textsignal`
 - `CodeEditor`: `text_signal` → `textsignal`, removed `disabled` alias,
   cleaned up inline imports, added `signal` property
+- DateField calendar picker right-aligns to button side; `position_anchored`
+  now uses actual rendered size (`winfo_width`) for widget anchors
 
 ### Next session
 
-1. **Continue docs pass** — next widgets: DateField, TimeField (Inputs).
-   Follow the standard widget documentation pattern.
-2. **AppShell deferred improvements** (dedicated follow-on pass):
+1. **AppShell deferred improvements** (dedicated follow-on pass):
    - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
    - Nav item density/font hardcoded in SideNav style builder
    - `toolbar`/`nav` properties expose internals instead of public wrappers
