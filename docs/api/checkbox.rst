@@ -3,20 +3,16 @@ Checkbox
 
 A labelled checkbox for binary on/off input.
 
-.. code-block:: python
-
-   bs.Checkbox("Enable notifications")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/checkbox-light.png"
         alt="Checkbox demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/checkbox-dark.png"
         alt="Checkbox demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

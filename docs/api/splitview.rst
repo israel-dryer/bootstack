@@ -4,24 +4,16 @@ SplitView
 A resizable split container. Panes are separated by draggable sashes that
 can be moved at runtime to redistribute space.
 
-.. code-block:: python
-
-   sv = bs.SplitView(fill="both", expand=True)
-   with sv.add(weight=1):
-       bs.Label("Left pane")
-   with sv.add(weight=2):
-       bs.Label("Right pane")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/splitview-light.png"
         alt="SplitView demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/splitview-dark.png"
         alt="SplitView demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

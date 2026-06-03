@@ -5,23 +5,16 @@ A sidebar navigation panel with a scrollable item list, collapsible groups,
 section headers, separators, and a pinned footer. The pane can be toggled
 between expanded, compact, and minimal display modes at runtime.
 
-.. code-block:: python
-
-   nav = bs.SideNav(title="My App", fill="y")
-   nav.add_item("home", "Home", icon="house")
-   nav.add_item("settings", "Settings", icon="gear")
-   nav.select("home")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/sidenav-light.png"
         alt="SideNav demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/sidenav-dark.png"
         alt="SideNav demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

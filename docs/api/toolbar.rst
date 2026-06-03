@@ -5,24 +5,16 @@ A horizontal strip of buttons, labels, separators, and other widgets.
 Items are added left-to-right via ``add_button()``, ``add_label()``,
 ``add_separator()``, ``add_spacer()``, and ``add_widget()``.
 
-.. code-block:: python
-
-   tb = bs.Toolbar(fill="x")
-   tb.add_button("New", icon="file-earmark-plus")
-   tb.add_button("Open", icon="folder2-open")
-   tb.add_spacer()
-   tb.add_button(icon="gear")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/toolbar-light.png"
         alt="Toolbar demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/toolbar-dark.png"
         alt="Toolbar demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

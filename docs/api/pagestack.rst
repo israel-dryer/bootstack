@@ -6,28 +6,16 @@ pages with `.add()`, place child widgets inside each page using the returned
 context manager, then call `navigate()` to switch between them. Forward and back
 navigation is tracked automatically.
 
-.. code-block:: python
-
-   ps = bs.PageStack(fill="both", expand=True)
-
-   with ps.add("home"):
-       bs.Label("Home page")
-
-   with ps.add("settings"):
-       bs.Label("Settings page")
-
-   ps.navigate("home")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/pagestack-light.png"
         alt="PageStack demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/pagestack-dark.png"
         alt="PageStack demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

@@ -4,20 +4,16 @@ Toast
 A temporary notification that floats over the application and auto-dismisses
 after a configurable delay.
 
-.. code-block:: python
-
-   bs.toast("File saved.", title="Success", accent="success", icon="check-circle")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/toast-light.png"
         alt="Toast demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/toast-dark.png"
         alt="Toast demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

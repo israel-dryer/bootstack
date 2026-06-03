@@ -5,24 +5,16 @@ A list of collapsible sections, optionally limited to one open at a time.
 Each section is an :class:`Expander <bootstack.widgets.expander.Expander>`
 added via ``add()``.
 
-.. code-block:: python
-
-   acc = bs.Accordion()
-   with acc.add("Introduction", expanded=True):
-       bs.Label("First section.")
-   with acc.add("Details"):
-       bs.Label("Second section.")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/accordion-light.png"
         alt="Accordion demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/accordion-dark.png"
         alt="Accordion demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

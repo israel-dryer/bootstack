@@ -5,22 +5,16 @@ A canvas-backed scrollable container. Place child widgets inside the context
 block; they are stacked vertically inside the scrollable area by default.
 Mouse-wheel scrolling is automatically enabled for all descendants.
 
-.. code-block:: python
-
-   with bs.ScrollView(fill="both", expand=True):
-       for i in range(50):
-           bs.Label(f"Row {i}")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/scrollview-light.png"
         alt="ScrollView demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/scrollview-dark.png"
         alt="ScrollView demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

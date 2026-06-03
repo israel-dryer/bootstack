@@ -215,7 +215,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
             ``True`` if all rules pass, ``False`` otherwise.
         """
         return self._internal._entry.validate(
-            self._internal._entry.value, trigger=trigger
+            self._internal._entry.value(), trigger=trigger
         )
 
     def focus(self) -> None:

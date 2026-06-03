@@ -4,22 +4,16 @@ Badge
 A compact styled chip for status indicators, counts, and tags. Inherits all
 ``Label`` kwargs but renders with a fixed pill or square shape.
 
-.. code-block:: python
-
-   bs.Badge("New",      accent="success", variant="pill")
-   bs.Badge("99+",      accent="danger",  variant="pill")
-   bs.Badge("Complete", accent="success")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/badge-light.png"
         alt="Badge demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/badge-dark.png"
         alt="Badge demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

@@ -5,22 +5,16 @@ A container that groups related content with an elevated background and border.
 Uses the ``card`` surface token so the background steps up automatically from
 the parent surface (``background`` → ``card`` → ``overlay``).
 
-.. code-block:: python
-
-   with bs.Card(accent="primary", padding=16, gap=8):
-       bs.Label("Title", font="heading-md[bold]")
-       bs.Label("Body text goes here.")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/card-light.png"
         alt="Card demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/card-dark.png"
         alt="Card demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

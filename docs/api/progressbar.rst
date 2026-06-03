@@ -5,20 +5,16 @@ A horizontal or vertical progress indicator. Use the determinate mode to show
 a fixed fill proportional to a known value, or the indeterminate mode for
 operations whose duration is unknown.
 
-.. code-block:: python
-
-   bs.ProgressBar(value=65, accent="primary")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/progressbar-light.png"
         alt="ProgressBar demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/progressbar-dark.png"
         alt="ProgressBar demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

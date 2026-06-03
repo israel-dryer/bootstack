@@ -4,20 +4,16 @@ NumberField
 Numeric input with optional stepper buttons, bounds enforcement, and keyboard/
 mouse-wheel stepping.
 
-.. code-block:: python
-
-   bs.NumberField(label="Quantity", min_value=0, max_value=100)
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/numberfield-light.png"
         alt="NumberField demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/numberfield-dark.png"
         alt="NumberField demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

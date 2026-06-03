@@ -3,20 +3,16 @@ Calendar
 
 An inline calendar for single-date or date-range selection.
 
-.. code-block:: python
-
-   bs.Calendar(value="2026-05-15")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/calendar-light.png"
         alt="Calendar demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/calendar-dark.png"
         alt="Calendar demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

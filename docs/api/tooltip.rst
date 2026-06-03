@@ -4,20 +4,16 @@ Tooltip
 A small popup that appears when the mouse hovers over a widget. Tooltips can
 follow the mouse or anchor to a specific edge of the target.
 
-.. code-block:: python
-
-   tip = bs.Tooltip(button, "Click to save your changes")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/tooltip-light.png"
         alt="Tooltip demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/tooltip-dark.png"
         alt="Tooltip demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

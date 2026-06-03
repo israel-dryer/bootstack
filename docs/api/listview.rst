@@ -4,23 +4,16 @@ ListView
 A virtual-scrolling list for efficiently displaying large datasets. Only
 visible rows are rendered, making it suitable for thousands of records.
 
-.. code-block:: python
-
-   bs.ListView(items=[
-       {"title": "Alice", "text": "Engineering lead", "icon": "person-fill"},
-       {"title": "Bob",   "text": "Product manager",  "icon": "person-fill"},
-   ])
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/listview-light.png"
         alt="ListView demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/listview-dark.png"
         alt="ListView demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

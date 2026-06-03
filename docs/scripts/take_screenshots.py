@@ -4,17 +4,25 @@ Looks for a hero file in docs/screenshots/<name>.py first. If none exists,
 falls back to docs/examples/<name>.py. This lets hero shots stay lean and
 visually focused while the full examples carry interactive content.
 
-Output: docs/_static/examples/<name>-light.png
-                               <name>-dark.png
+Scene-aware: if a screenshots/<name>.py defines a SCENES dict, each scene is
+captured separately. Scene functions must be self-contained callables that
+create their own bs.App and call app.run().
+
+Output (no scenes):  docs/_static/examples/<name>-light.png
+                                            <name>-dark.png
+Output (scenes):     docs/_static/examples/<name>-<scene>-light.png
+                                            <name>-<scene>-dark.png
 
 Usage:
     python docs/scripts/take_screenshots.py
-    python docs/scripts/take_screenshots.py button          # single widget
-    python docs/scripts/take_screenshots.py button --light  # one theme only
+    python docs/scripts/take_screenshots.py button            # single widget
+    python docs/scripts/take_screenshots.py button --light    # one theme only
+    python docs/scripts/take_screenshots.py button --scene hero  # one scene only
 """
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -32,14 +40,16 @@ THEMES = [
 
 # Injected into each subprocess via python -c
 _RUNNER = r"""
-import os, importlib.util
+import os, importlib.util, sys
 import bootstack as bs
 from PIL import ImageGrab
 
-theme   = os.environ["BS_THEME"]
-output  = os.environ["BS_OUTPUT"]
-example = os.environ["BS_EXAMPLE"]
-delay   = int(os.environ.get("BS_DELAY", "800"))
+theme      = os.environ["BS_THEME"]
+output     = os.environ["BS_OUTPUT"]
+example    = os.environ["BS_EXAMPLE"]
+delay      = int(os.environ.get("BS_DELAY", "800"))
+scene_name = os.environ.get("BS_SCENE", "")
+probe_mode = os.environ.get("BS_PROBE", "")
 
 
 def _patch(cls):
@@ -57,9 +67,6 @@ def _patch(cls):
             # that window directly instead of the app (useful for dialog heroes).
             target = getattr(self, '_capture_target', None)
             if target is not None:
-                # Capture the dialog window including its title bar.
-                # winfo_rootx/y = content-area origin (avoids DWM shadow).
-                # geometry() y = outer-frame top (title bar starts there).
                 target.update_idletasks()
                 import re
                 m = re.match(r'(\d+)x(\d+)\+(-?\d+)\+(-?\d+)', target.geometry())
@@ -89,11 +96,7 @@ def _patch(cls):
             self.tk.update_idletasks()
             self.tk.after(150, _grab)
 
-        # Position on the primary monitor at startup — moving the window at
         self.tk.attributes('-topmost', True)
-        # Schedule geometry and focus after the mainloop starts — the App's
-        # __exit__ shows the window after orig_run() begins, so geometry set
-        # before orig_run() gets overridden by the WM.
         self.tk.after(0,  lambda: self.tk.geometry('+200+100'))
         self.tk.after(50, self.tk.focus_force)
         self.tk.after(delay, _capture)
@@ -109,7 +112,39 @@ _patch(bs.AppShell)
 spec = importlib.util.spec_from_file_location("_example", example)
 mod  = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
+
+if probe_mode:
+    import json
+    print(json.dumps(list(getattr(mod, 'SCENES', {}).keys())))
+    sys.exit(0)
+
+if scene_name and hasattr(mod, 'SCENES') and scene_name in mod.SCENES:
+    mod.SCENES[scene_name]()
+# else: exec_module already ran the app (non-scene scripts)
 """
+
+
+def probe_scenes(source: Path) -> list[str]:
+    """Return scene names from a screenshot script, or [] if none."""
+    env = {
+        **os.environ,
+        "BS_THEME":   "bootstrap-light",
+        "BS_OUTPUT":  "",
+        "BS_EXAMPLE": str(source),
+        "BS_PROBE":   "1",
+    }
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", _RUNNER],
+            env=env,
+            timeout=10,
+            cwd=str(REPO),
+            capture_output=True,
+            text=True,
+        )
+        return json.loads(result.stdout.strip()) if result.stdout.strip() else []
+    except Exception:
+        return []
 
 
 def resolve_source(name: str) -> Path | None:
@@ -121,7 +156,8 @@ def resolve_source(name: str) -> Path | None:
     return fallback if fallback.exists() else None
 
 
-def run_example(example: Path, theme: str, output: Path, delay: int = 800):
+def run_example(example: Path, theme: str, output: Path, delay: int = 800,
+                scene: str = "") -> bool:
     env = {
         **os.environ,
         "BS_THEME":   theme,
@@ -129,10 +165,12 @@ def run_example(example: Path, theme: str, output: Path, delay: int = 800):
         "BS_EXAMPLE": str(example),
         "BS_DELAY":   str(delay),
     }
+    if scene:
+        env["BS_SCENE"] = scene
     result = subprocess.run(
         [sys.executable, "-c", _RUNNER],
         env=env,
-        timeout=15,
+        timeout=20,
         cwd=str(REPO),
     )
     return result.returncode == 0
@@ -141,14 +179,18 @@ def run_example(example: Path, theme: str, output: Path, delay: int = 800):
 def main():
     args = sys.argv[1:]
 
-    filter_name = None
-    themes = THEMES
-    for arg in args:
+    filter_name  = None
+    filter_scene = None
+    themes       = THEMES
+
+    for i, arg in enumerate(args):
         if arg == "--light":
             themes = [t for t in THEMES if t[0] == "light"]
         elif arg == "--dark":
             themes = [t for t in THEMES if t[0] == "dark"]
-        elif not arg.startswith("--"):
+        elif arg == "--scene" and i + 1 < len(args):
+            filter_scene = args[i + 1]
+        elif not arg.startswith("--") and (i == 0 or args[i - 1] != "--scene"):
             filter_name = arg
 
     # Collect widget names from both directories, deduplicated
@@ -167,24 +209,39 @@ def main():
         source = resolve_source(name)
         if source is None:
             continue
-        tag = "hero" if source.parent == SCREENSHOTS else "example"
+
+        is_hero   = source.parent == SCREENSHOTS
+        tag       = "hero" if is_hero else "example"
+        scenes    = probe_scenes(source) if is_hero else []
+
+        if filter_scene and scenes:
+            scenes = [s for s in scenes if s == filter_scene]
+
         for suffix, theme in themes:
-            out = OUTPUT / f"{name}-{suffix}.png"
-            print(f"  {name:20s} [{suffix:5s}] ({tag})  ", end="", flush=True)
-            try:
-                success = run_example(source, theme, out)
-                if success:
-                    print(f"OK  {out.relative_to(REPO)}")
-                    ok += 1
-                else:
-                    print("FAIL  non-zero exit")
-                    failed += 1
-            except subprocess.TimeoutExpired:
-                print("FAIL  timeout")
-                failed += 1
-            except Exception as exc:
-                print(f"FAIL  {exc}")
-                failed += 1
+            if scenes:
+                for scene in scenes:
+                    out = OUTPUT / f"{name}-{scene}-{suffix}.png"
+                    label = f"{name}:{scene}"
+                    print(f"  {label:28s} [{suffix:5s}] ({tag})  ", end="", flush=True)
+                    try:
+                        success = run_example(source, theme, out, scene=scene)
+                        print(f"OK  {out.relative_to(REPO)}" if success else "FAIL  non-zero exit")
+                        ok += success; failed += not success
+                    except subprocess.TimeoutExpired:
+                        print("FAIL  timeout"); failed += 1
+                    except Exception as exc:
+                        print(f"FAIL  {exc}"); failed += 1
+            else:
+                out = OUTPUT / f"{name}-{suffix}.png"
+                print(f"  {name:28s} [{suffix:5s}] ({tag})  ", end="", flush=True)
+                try:
+                    success = run_example(source, theme, out)
+                    print(f"OK  {out.relative_to(REPO)}" if success else "FAIL  non-zero exit")
+                    ok += success; failed += not success
+                except subprocess.TimeoutExpired:
+                    print("FAIL  timeout"); failed += 1
+                except Exception as exc:
+                    print(f"FAIL  {exc}"); failed += 1
 
     print(f"\n{ok} succeeded, {failed} failed.")
 

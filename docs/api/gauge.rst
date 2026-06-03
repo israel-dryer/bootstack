@@ -5,20 +5,16 @@ A circular arc gauge for displaying a value within a range. Supports full-circle
 and semicircle layouts, solid and segmented arc styles, optional center text with
 prefix/suffix formatting, and an interactive drag mode.
 
-.. code-block:: python
-
-   bs.Gauge(value=72, value_suffix="%", subtitle="CPU", accent="primary")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/gauge-light.png"
         alt="Gauge demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/gauge-dark.png"
         alt="Gauge demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

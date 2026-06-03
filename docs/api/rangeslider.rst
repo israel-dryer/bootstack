@@ -3,20 +3,16 @@ RangeSlider
 
 A two-handle track for selecting a low/high value range.
 
-.. code-block:: python
-
-   bs.RangeSlider(20, 80)
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/rangeslider-light.png"
         alt="RangeSlider demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/rangeslider-dark.png"
         alt="RangeSlider demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

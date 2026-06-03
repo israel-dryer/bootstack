@@ -4,20 +4,16 @@ TextField
 Single-line text input with optional label, helper text, placeholder,
 validation, and reactive signal binding.
 
-.. code-block:: python
-
-   bs.TextField(label="Email", placeholder="you@example.com")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-light.png"
+        src="/_static/examples/textfield-hero-light.png"
         alt="TextField demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-dark.png"
+        src="/_static/examples/textfield-hero-dark.png"
         alt="TextField demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----
@@ -49,7 +45,19 @@ Set ``required=True`` to mark the field visually and prevent empty submission.
 
 .. code-block:: python
 
-   bs.TextField(label="Username", required=True)
+   bs.TextField(label="Username",     required=True, placeholder="Required field")
+   bs.TextField(label="Email address", placeholder="Optional field")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/textfield-required-light.png"
+        alt="TextField required — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/textfield-required-dark.png"
+        alt="TextField required — dark theme"
+        style="max-width:100%;">
 
 Value formatting
 ~~~~~~~~~~~~~~~~
@@ -65,14 +73,36 @@ Requires localization to be enabled.
    bs.TextField(value_format="currency", label="Currency")
    bs.TextField(value_format="yyyy-MM-dd", label="Date")
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/textfield-value-format-light.png"
+        alt="TextField value formatting — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/textfield-value-format-dark.png"
+        alt="TextField value formatting — dark theme"
+        style="max-width:100%;">
+
 States
 ~~~~~~
 
 .. code-block:: python
 
-   bs.TextField(value="Normal text")
-   bs.TextField(value="Cannot edit", read_only=True)
-   bs.TextField(value="Non-interactive", disabled=True)
+   bs.TextField(value="Editable",  label="Normal")
+   bs.TextField(value="Read only", label="Read only", read_only=True)
+   bs.TextField(value="Disabled",  label="Disabled",  disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/textfield-states-light.png"
+        alt="TextField states — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/textfield-states-dark.png"
+        alt="TextField states — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -123,18 +153,27 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
 
 .. code-block:: python
 
-   from bootstack.validation import ValidationRule
-
    field = bs.TextField(label="Username")
-   field.add_validation_rule(ValidationRule(
+   field.add_validation_rule(
        "stringLength",
        message="Must be at least 3 characters.",
        min=3,
        trigger="blur",
-   ))
+   )
 
    # Explicit validation check
    is_valid = field.validate()
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/textfield-validation-light.png"
+        alt="TextField validation — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/textfield-validation-dark.png"
+        alt="TextField validation — dark theme"
+        style="max-width:100%;">
 
 Widget sizing
 ~~~~~~~~~~~~~
@@ -147,6 +186,8 @@ API
 .. autoclass:: bootstack.widgets.textfield.TextField
    :members:
    :undoc-members:
+   :inherited-members:
+   :exclude-members: tk
 
 Full Example
 ------------

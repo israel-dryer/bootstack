@@ -6,24 +6,16 @@ auto-placed left-to-right, top-to-bottom by default. Column and row sizes
 are defined with ``columns=`` and ``rows=``; omitting them lets the grid
 size itself to fit its content.
 
-.. code-block:: python
-
-   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
-       bs.Label("Name:")
-       bs.TextField()
-       bs.Label("Email:")
-       bs.TextField()
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/grid-light.png"
         alt="Grid demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/grid-dark.png"
         alt="Grid demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

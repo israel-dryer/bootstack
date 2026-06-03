@@ -3,20 +3,16 @@ ToggleButton
 
 A button that stays pressed when active — toolbar-style toggle.
 
-.. code-block:: python
-
-   bs.ToggleButton("Bold")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/togglebutton-light.png"
         alt="ToggleButton demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/togglebutton-dark.png"
         alt="ToggleButton demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

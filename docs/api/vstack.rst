@@ -5,23 +5,16 @@ A container that stacks children top-to-bottom using the pack geometry manager.
 Use ``gap=`` for even spacing, ``fill_items='x'`` to stretch children to the
 full width, and ``fill='both', expand=True`` to let the stack grow with the window.
 
-.. code-block:: python
-
-   with bs.VStack(gap=12, fill_items="x", padding=16):
-       bs.Label("Title", font="heading-md[bold]")
-       bs.TextField()
-       bs.Button("Submit", accent="primary")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/vstack-light.png"
         alt="VStack demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/vstack-dark.png"
         alt="VStack demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

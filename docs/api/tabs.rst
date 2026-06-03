@@ -5,26 +5,16 @@ A tabbed container that shows one page at a time. Add named tabs with `.add()`,
 place child widgets inside each page using the returned context manager, then
 switch between pages by clicking tabs or calling `select()`.
 
-.. code-block:: python
-
-   tabs = bs.Tabs(fill="both", expand=True)
-
-   with tabs.add("home", label="Home"):
-       bs.Label("Welcome")
-
-   with tabs.add("settings", label="Settings"):
-       bs.Label("Adjust your preferences.")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/tabs-light.png"
         alt="Tabs demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/tabs-dark.png"
         alt="Tabs demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

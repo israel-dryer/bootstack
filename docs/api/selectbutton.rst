@@ -3,20 +3,16 @@ SelectButton
 
 A button that opens a dropdown value list and displays the current selection.
 
-.. code-block:: python
-
-   bs.SelectButton(["Light", "Dark", "Auto"], value="Light")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/selectbutton-light.png"
         alt="SelectButton demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/selectbutton-dark.png"
         alt="SelectButton demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

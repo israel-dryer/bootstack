@@ -6,22 +6,16 @@ Use ``gap=`` for even spacing, ``anchor_items='center'`` to vertically center
 mixed-height widgets, and ``fill_items='y'`` to stretch children to the full
 row height.
 
-.. code-block:: python
-
-   with bs.HStack(gap=8, anchor_items="center"):
-       bs.Label("Name:")
-       bs.TextField()
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/hstack-light.png"
         alt="HStack demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/hstack-dark.png"
         alt="HStack demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

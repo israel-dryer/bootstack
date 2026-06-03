@@ -8,20 +8,16 @@ definitions. Fields are placed on a grid; :class:`GroupItem
 <bootstack.widgets.form.GroupItem>` creates labeled sections and
 :class:`TabsItem <bootstack.widgets.form.TabsItem>` creates a tabbed layout.
 
-.. code-block:: python
-
-   bs.Form(data={"name": "", "email": "", "role": "Editor"})
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/forms-light.png"
         alt="Form demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/forms-dark.png"
         alt="Form demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

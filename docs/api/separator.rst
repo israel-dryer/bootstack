@@ -4,22 +4,16 @@ Separator
 A thin themed line used to visually divide sections of a layout. Renders
 horizontally by default and stretches to fill the available space.
 
-.. code-block:: python
-
-   bs.Separator()
-   bs.Separator(orient="vertical", length=24)
-   bs.Separator(accent="primary", thickness=2)
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/separator-light.png"
         alt="Separator demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/separator-dark.png"
         alt="Separator demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

@@ -3,20 +3,16 @@ ToggleGroup
 
 A group of toggle buttons — single-select or multi-select.
 
-.. code-block:: python
-
-   bs.ToggleGroup(["Day", "Week", "Month"], value="Week")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/togglegroup-light.png"
         alt="ToggleGroup demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/togglegroup-dark.png"
         alt="ToggleGroup demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

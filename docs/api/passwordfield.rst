@@ -3,20 +3,16 @@ PasswordField
 
 Masked text input for password entry with an optional visibility toggle.
 
-.. code-block:: python
-
-   bs.PasswordField(label="Password", placeholder="Enter password…")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/passwordfield-light.png"
         alt="PasswordField demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/passwordfield-dark.png"
         alt="PasswordField demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

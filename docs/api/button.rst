@@ -4,20 +4,16 @@ Button
 A clickable action trigger. Accepts the button text as the first positional
 argument.
 
-.. code-block:: python
-
-   bs.Button("Save", accent="primary", on_click=handle_save)
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/button-light.png"
         alt="Button widget demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/button-dark.png"
         alt="Button widget demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

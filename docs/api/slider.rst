@@ -3,20 +3,16 @@ Slider
 
 A single-handle track for selecting a numeric value within a range.
 
-.. code-block:: python
-
-   bs.Slider(50, min_value=0, max_value=100)
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/slider-light.png"
         alt="Slider demo — light theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/slider-dark.png"
         alt="Slider demo — dark theme"
-        style="max-width:100%; border-radius:10px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

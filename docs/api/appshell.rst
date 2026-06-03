@@ -6,24 +6,16 @@ sidebar navigation on the left, and a page stack for the content area. Add
 pages with `.add_page()` — each page is also wired into the sidebar
 automatically.
 
-.. code-block:: python
-
-   with bs.AppShell(title="My App", size=(900, 600)) as shell:
-       with shell.add_page("home", text="Home", icon="house"):
-           bs.Label("Welcome")
-       shell.navigate("home")
-   shell.run()
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/appshell-light.png"
         alt="AppShell demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/appshell-dark.png"
         alt="AppShell demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----

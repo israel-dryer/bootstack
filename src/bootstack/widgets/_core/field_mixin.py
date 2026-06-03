@@ -54,10 +54,28 @@ class FieldAddonMixin:
     def add_validation_rule(self, rule_type: Any, **kwargs: Any) -> None:
         """Add a validation rule to the field.
 
+        Rules run automatically on blur or key events depending on the rule
+        type, or manually via ``validate()``. Multiple rules can be added;
+        they are evaluated in order and stop at the first failure.
+
         Args:
-            rule_type: Rule identifier — e.g. `'required'`, `'min_length'`,
-                `'max_length'`, `'pattern'`, `'email'`.
-            **kwargs: Rule-specific options. `message=` overrides the default
-                failure message for all rule types.
+            rule_type: One of ``'required'``, ``'email'``, ``'stringLength'``,
+                ``'pattern'``, ``'compare'``, or ``'custom'``.
+            **kwargs: Rule-specific options:
+
+                - ``message`` *(all rules)* — override the default error message.
+                - ``trigger`` *(all rules)* — when to run: ``'blur'`` (default),
+                  ``'key'``, or ``'manual'``.
+                - ``min``, ``max`` *(stringLength)* — minimum/maximum character count.
+                - ``pattern`` *(pattern)* — regex string the value must match.
+                - ``other_field`` *(compare)* — field whose value must match.
+                - ``func`` *(custom)* — callable ``(value: str) -> bool``.
+
+        Example::
+
+            field.add_validation_rule("required")
+            field.add_validation_rule("stringLength", min=3, max=50)
+            field.add_validation_rule("email", message="Enter a valid email.")
+            field.add_validation_rule("custom", func=lambda v: v.isdigit())
         """
         self._internal.add_validation_rule(rule_type, **kwargs)

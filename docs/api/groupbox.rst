@@ -5,22 +5,16 @@ A labelled container that groups related content inside a bordered frame.
 The title is embedded in the top border line, giving the classic fieldset
 look familiar from HTML ``<fieldset>`` and desktop dialog panels.
 
-.. code-block:: python
-
-   with bs.GroupBox("Connection", accent="primary", padding=12, gap=8):
-       bs.Label("Host: localhost")
-       bs.Label("Port: 5432")
-
 .. raw:: html
 
    <img class="bs-screenshot-light"
         src="/_static/examples/groupbox-light.png"
         alt="GroupBox demo — light theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
    <img class="bs-screenshot-dark"
         src="/_static/examples/groupbox-dark.png"
         alt="GroupBox demo — dark theme"
-        style="max-width:100%; border-radius:6px; margin:1rem 0;">
+        style="max-width:100%;">
 
 Usage
 -----
