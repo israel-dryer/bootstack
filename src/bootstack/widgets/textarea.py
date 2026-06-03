@@ -177,17 +177,13 @@ class TextArea(PublicWidgetBase):
         """Clear all text content."""
         self._internal.value = ""
 
-    def validate(self, trigger: str = "manual") -> bool:
+    def validate(self) -> bool:
         """Run validation rules against the current value.
-
-        Args:
-            trigger: Validation trigger label. One of `'manual'`,
-                `'blur'`, `'key'`. Defaults to `'manual'`.
 
         Returns:
             `True` if all rules pass, `False` otherwise.
         """
-        return self._internal.validate(trigger=trigger)
+        return self._internal.validate()
 
     def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
         """Attach a validation rule to this field.

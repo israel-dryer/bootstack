@@ -175,17 +175,14 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
 
     # ----- Methods -----
 
-    def validate(self, trigger: str = "manual") -> bool:
-        """Trigger field validation programmatically.
-
-        Args:
-            trigger: Validation trigger name. Default `'manual'`.
+    def validate(self) -> bool:
+        """Run validation rules against the current value.
 
         Returns:
-            `True` if the current value passes all validation rules.
+            `True` if all rules pass, `False` otherwise.
         """
         return self._internal._entry.validate(
-            self._internal._entry.get(), trigger=trigger
+            self._internal._entry.get(), trigger="manual"
         )
 
     def focus(self) -> None:

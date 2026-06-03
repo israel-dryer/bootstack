@@ -201,18 +201,14 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
         """Clear the field value."""
         self._internal.value = ""
 
-    def validate(self, trigger: str = "manual") -> bool:
+    def validate(self) -> bool:
         """Run validation rules against the current value.
-
-        Args:
-            trigger: Validation trigger label. One of `'manual'`,
-                `'blur'`, `'key'`. Defaults to `'manual'`.
 
         Returns:
             `True` if all rules pass, `False` otherwise.
         """
         return self._internal._entry.validate(
-            self._internal._entry.value(), trigger=trigger
+            self._internal._entry.value(), trigger="manual"
         )
 
     def select_all(self) -> None:
