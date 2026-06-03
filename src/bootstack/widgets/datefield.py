@@ -205,9 +205,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
             `True` if the current value passes all validation rules.
         """
         return self._internal._entry.validate(
-            trigger,
-            self._internal._entry.get(),
-            self._internal._entry,
+            self._internal._entry.get(), trigger=trigger
         )
 
     def focus(self) -> None:

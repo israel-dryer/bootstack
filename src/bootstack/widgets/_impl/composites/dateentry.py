@@ -297,8 +297,6 @@ class DateEntry(Field):
             return
         self._active_date_dialog = None
 
-        position = self._picker_position()
-
         if self._selection_mode == "range":
             cur = self._range_value
             dialog = DateDialog(
@@ -346,7 +344,12 @@ class DateEntry(Field):
                     self.value = result
 
         dialog.on_result(lambda x: _on_result(x))
-        dialog.show(position=position)
+        dialog.show(
+            anchor_to=self._field,
+            anchor_point='se',
+            window_point='ne',
+            offset=(-4, 2),
+        )
 
         top = getattr(getattr(dialog, "_dialog", None), "toplevel", None)
         cleared = False

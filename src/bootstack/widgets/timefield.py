@@ -1,21 +1,29 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import datetime
 import tkinter
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.timeentry import TimeEntry as _InternalTimeEntry
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _TIME_FIELD_EVENTS: dict[str, str] = {
-    "change": "<<Change>>",
-    "submit": "<Return>",
+    "change":   "<<Change>>",
+    "validate": "<<Validate>>",
+    "valid":    "<<Valid>>",
+    "invalid":  "<<Invalid>>",
+    "submit":   "<Return>",
+    "focus":    "<FocusIn>",
+    "blur":     "<FocusOut>",
 }
 
 
@@ -27,20 +35,29 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     the list.
 
     Args:
-        value: Initial time value (`datetime.time` or `'HH:MM'` string).
-            Defaults to the current time.
-        value_format: ICU time format preset or pattern. Common values:
-            `'shortTime'` (default, e.g. `'3:30 PM'`), `'mediumTime'`,
-            `'HH:mm'`, `'h:mm a'`.
+        value: Initial time value — a `datetime.time` object or a time
+            string (e.g. `'14:30'` or `'2:30 PM'`). Defaults to the current
+            time.
+        value_format: ICU time format preset or pattern. Common presets:
+            `'shortTime'` (default, e.g. `'3:30 PM'`), `'longTime'`
+            (e.g. `'3:30:45 PM PST'`). Custom ICU patterns are also accepted:
+            `'HH:mm'` (24-hour), `'h:mm a'` (12-hour), `'HH:mm:ss'`.
         interval: Minute interval for dropdown entries. Default `30`.
         min_time: Earliest time shown in the dropdown.
         max_time: Latest time shown in the dropdown.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
-        required: If True, field cannot be left empty.
-        disabled: If True, field is non-interactive.
+        textsignal: Reactive `Signal[str]` bound to the field text. The
+            field value and signal stay in sync automatically.
+        required: If `True`, field cannot be left empty.
+        disabled: If `True`, field is non-interactive.
+        read_only: If `True`, free-text entry is blocked; user must pick
+            from the dropdown.
         width: Width in character cells.
-        accent: Accent token for the focus ring.
+        accent: Accent color for the focus ring — `'primary'`, `'secondary'`,
+            `'info'`, `'success'`, `'warning'`, `'danger'`, or `'default'`.
+            Default `'primary'`.
+        density: Widget density — `'default'` or `'compact'`.
         parent: Override the context-stack parent.
     """
 
@@ -54,10 +71,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         max_time: datetime.time | str | None = None,
         label: str | None = None,
         message: str | None = None,
+        textsignal: "Signal[str] | None" = None,
         required: bool = False,
         disabled: bool = False,
+        read_only: bool = False,
         width: int | None = None,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
+        density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -79,15 +99,22 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["label"] = label
         if message is not None:
             internal_kwargs["message"] = message
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
         if required:
             internal_kwargs["required"] = True
         if disabled:
             internal_kwargs["state"] = "disabled"
+        elif read_only:
+            internal_kwargs["state"] = "readonly"
         if width is not None:
             internal_kwargs["width"] = width
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
+        if density is not None:
+            internal_kwargs["density"] = density
+        internal_kwargs.update({k: v for k, v in kwargs.items()
+                                 if k not in internal_kwargs})
 
         self._internal = _InternalTimeEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -102,14 +129,12 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
-        from bootstack.widgets._core.events import resolve_event
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-        _w = widget
         if handler is None:
             from bootstack.widgets._core.stream import Stream as _Stream
             def _source(h):
-                widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
+                _w = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
                 _bid = _w.bind(sequence, h, add="+")
                 return Subscription(_w, sequence, _bid)
             return _Stream(self._internal, _source=_source)
@@ -119,12 +144,17 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def value(self) -> str:
-        """Current time value as a formatted string."""
+    def signal(self) -> "Signal[str] | None":
+        """The reactive signal bound to this field's text, if any."""
+        return getattr(self._internal, 'signal', None)
+
+    @property
+    def value(self) -> "datetime.time | None":
+        """Current time value, or `None` if the field is empty."""
         return self._internal.value
 
     @value.setter
-    def value(self, v: datetime.time | str) -> None:
+    def value(self, v: "datetime.time | str | None") -> None:
         self._internal.value = v
 
     @property
@@ -134,6 +164,45 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @disabled.setter
     def disabled(self, v: bool) -> None:
         self._internal.configure(state="disabled" if v else "normal")
+
+    @property
+    def read_only(self) -> bool:
+        return str(self._internal._entry.cget("state")) == "readonly"
+
+    @read_only.setter
+    def read_only(self, v: bool) -> None:
+        self._internal.configure(state="readonly" if v else "normal")
+
+    # ----- Methods -----
+
+    def validate(self, trigger: str = "manual") -> bool:
+        """Trigger field validation programmatically.
+
+        Args:
+            trigger: Validation trigger name. Default `'manual'`.
+
+        Returns:
+            `True` if the current value passes all validation rules.
+        """
+        return self._internal._entry.validate(
+            self._internal._entry.get(), trigger=trigger
+        )
+
+    def focus(self) -> None:
+        """Give keyboard focus to this field."""
+        self._entry_widget().focus_set()
+
+    def clear(self) -> None:
+        """Clear the field, setting the value to `None`."""
+        self._internal.value = None
+
+    def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
+        """Add a validation rule to this field.
+
+        Args:
+            rule_type: Rule identifier string (e.g. `'required'`).
+        """
+        self._internal.add_validation_rule(rule_type, **kwargs)
 
     # ----- Event shorthands -----
 
@@ -154,12 +223,72 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_submit(self, handler: Callable[[Event], Any]) -> Subscription: ...
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
-        """Register a callback fired when Enter is pressed.
+        """Register a callback fired when the user presses Return to confirm input.
 
         Returns:
             Subscription — call `.cancel()` to unsubscribe.
         """
         return self.on("submit", handler)
+
+    @overload
+    def on_valid(self) -> Stream: ...
+    @overload
+    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation passes.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("valid", handler)
+
+    @overload
+    def on_invalid(self) -> Stream: ...
+    @overload
+    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when validation fails.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("invalid", handler)
+
+    @overload
+    def on_validate(self) -> Stream: ...
+    @overload
+    def on_validate(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when a validation check runs.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("validate", handler)
+
+    @overload
+    def on_focus(self) -> Stream: ...
+    @overload
+    def on_focus(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the field gains keyboard focus.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("focus", handler)
+
+    @overload
+    def on_blur(self) -> Stream: ...
+    @overload
+    def on_blur(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the field loses keyboard focus.
+
+        Returns:
+            Subscription — call `.cancel()` to unsubscribe.
+        """
+        return self.on("blur", handler)
 
 
 register_widget_events(TimeField, _TIME_FIELD_EVENTS)

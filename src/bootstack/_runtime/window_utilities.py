@@ -612,10 +612,10 @@ import bootstack._runtime.toplevel            >>> parent = tkinter.Tk()
                 parent, anchor_point
             )
         else:
-            # Assume it's a widget
+            # Assume it's a widget — use actual rendered size, not minimum requested
             anchor_to.update_idletasks()
             anchor_x, anchor_y = WindowPositioning._get_anchor_coordinates(
-                anchor_to, anchor_point
+                anchor_to, anchor_point, use_requested_size=False
             )
 
         # Calculate window position based on window_point

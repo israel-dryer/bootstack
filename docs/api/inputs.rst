@@ -16,5 +16,4 @@ Widgets for accepting user input.
    textarea
    codeeditor
    datefield
-
-.. note:: TimeField page coming soon.
+   timefield
