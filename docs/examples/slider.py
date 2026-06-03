@@ -1,7 +1,7 @@
 """Slider — full feature demo.
 
 Demonstrates accent colors, value badge, min/max labels, tick marks,
-reactive binding, and disabled state.
+custom tick format, and disabled state.
 
 Run with:
     python docs/examples/slider.py
@@ -9,7 +9,7 @@ Run with:
 
 import bootstack as bs
 
-with bs.App(title="Slider Demo", padding=20, gap=16, minsize=(500, 0)) as app:
+with bs.App(title="Slider Demo", padding=20, gap=16) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm[bold]")
@@ -17,7 +17,7 @@ with bs.App(title="Slider Demo", padding=20, gap=16, minsize=(500, 0)) as app:
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm[bold]")
-    with bs.VStack(gap=8, fill="x"):
+    with bs.VStack(gap=6, fill="x"):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Slider(50, accent=accent, fill="x")
 
@@ -46,18 +46,6 @@ with bs.App(title="Slider Demo", padding=20, gap=16, minsize=(500, 0)) as app:
         show_value=True,
         fill="x",
     )
-
-    # Reactive binding
-    bs.Label("Reactive Binding", font="heading-sm[bold]")
-    with bs.VStack(gap=6, fill="x"):
-        volume = bs.Signal(50.0)
-        bs.Slider(signal=volume, fill="x")
-        vol_lbl = bs.Label("Volume: 50", accent="secondary", font="caption")
-
-        def _update_vol(v):
-            vol_lbl.text = f"Volume: {v:.0f}"
-
-        volume.subscribe(_update_vol)
 
     # Disabled
     bs.Label("Disabled", font="heading-sm[bold]")
