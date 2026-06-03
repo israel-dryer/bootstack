@@ -23,8 +23,9 @@ Go from nothing to something fast. The user should never need to `import tkinter
 ### Status
 
 **Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
-- Actions: Button
-- Inputs: TextField, PasswordField, NumberField, Slider, RangeSlider
+- Actions: Button, ButtonGroup
+- Inputs: TextField, PasswordField, NumberField, Slider, RangeSlider,
+  PathField, SpinnerField, TextArea, CodeEditor
 - Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
   SelectButton, Calendar
 - Data Display: Label, Badge, ProgressBar, Gauge, ListView
@@ -37,18 +38,27 @@ Go from nothing to something fast. The user should never need to `import tkinter
 - Forms
 
 **Pending:**
-- Actions: ButtonGroup
-- Inputs: PathField, SpinnerField, TextArea, CodeEditor, DateField, TimeField
+- Inputs: DateField, TimeField
 - Data Display: Tree, Table (deferred — too complex for this pass)
 
-Also update `docs/api/actions.rst` note — MenuButton is now in Menus and
-Toolbars; remove it from the "coming soon" list there.
+### Cross-cutting wrapper improvements (this session)
+- `commit()` and `set_cursor()` removed from all field widgets (TextField,
+  PasswordField, NumberField, PathField, SpinnerField) — internal plumbing
+- `placeholder` property removed from TextField, PasswordField, PathField —
+  constructor-only concern
+- All field wrappers now have full event parity: 8 shorthands, typed tokens
+- `TextArea.width=` added (was missing; internal hardcoded default)
+- `CodeEditor.height=` added (was hardcoded to 20; now configurable)
+- `LineNumbers` sidebar height bug fixed — no longer overrides `height=`
+- `TextArea` critical bugs fixed: `<<Change>>` vs `<<Changed>>` event name,
+  undefined `inner_sequences` in `on()` (crash), `text_signal` → `textsignal`
+- `CodeEditor`: `text_signal` → `textsignal`, removed `disabled` alias,
+  cleaned up inline imports, added `signal` property
 
 ### Next session
 
-1. **Continue docs pass** — next widget: ButtonGroup (Actions category), then
-   the pending Inputs widgets (PathField, SpinnerField, TextArea, CodeEditor,
-   DateField, TimeField). Follow the standard widget documentation pattern.
+1. **Continue docs pass** — next widgets: DateField, TimeField (Inputs).
+   Follow the standard widget documentation pattern.
 2. **AppShell deferred improvements** (dedicated follow-on pass):
    - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
    - Nav item density/font hardcoded in SideNav style builder
