@@ -6,12 +6,12 @@ A button that opens a dropdown value list and displays the current selection.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-light.png"
-        alt="SelectButton demo — light theme"
+        src="/_static/examples/selectbutton-hero-light.png"
+        alt="SelectButton — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-dark.png"
-        alt="SelectButton demo — dark theme"
+        src="/_static/examples/selectbutton-hero-dark.png"
+        alt="SelectButton — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -31,18 +31,43 @@ Accent colors
 
 .. code-block:: python
 
-   bs.SelectButton(["On", "Off"], accent="primary",   value="On")
-   bs.SelectButton(["On", "Off"], accent="success",   value="On")
-   bs.SelectButton(["On", "Off"], accent="danger",    value="On")
+   bs.SelectButton(["Primary"],   accent="primary",   value="Primary")
+   bs.SelectButton(["Secondary"], accent="secondary", value="Secondary")
+   bs.SelectButton(["Info"],      accent="info",      value="Info")
+   bs.SelectButton(["Success"],   accent="success",   value="Success")
+   bs.SelectButton(["Warning"],   accent="warning",   value="Warning")
+   bs.SelectButton(["Danger"],    accent="danger",    value="Danger")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/selectbutton-accents-light.png"
+        alt="SelectButton accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/selectbutton-accents-dark.png"
+        alt="SelectButton accent colors — dark theme"
+        style="max-width:100%;">
 
 Style variants
 ~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   bs.SelectButton(["A", "B", "C"], accent="primary", variant="solid")
-   bs.SelectButton(["A", "B", "C"], accent="primary", variant="outline")
-   bs.SelectButton(["A", "B", "C"], accent="primary", variant="ghost")
+   bs.SelectButton(["Solid"],   accent="primary", variant="solid")
+   bs.SelectButton(["Outline"], accent="primary", variant="outline")
+   bs.SelectButton(["Ghost"],   accent="primary", variant="ghost")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/selectbutton-variants-light.png"
+        alt="SelectButton style variants — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/selectbutton-variants-dark.png"
+        alt="SelectButton style variants — dark theme"
+        style="max-width:100%;">
 
 With icon
 ~~~~~~~~~
@@ -51,6 +76,19 @@ With icon
 
    bs.SelectButton(["Light", "Dark", "Auto"],
                    value="Dark", icon="moon-fill")
+   bs.SelectButton(["Small", "Medium", "Large"],
+                   value="Large", icon="fonts", accent="secondary")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/selectbutton-icon-light.png"
+        alt="SelectButton with icon — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/selectbutton-icon-dark.png"
+        alt="SelectButton with icon — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -71,6 +109,19 @@ Disabled
 .. code-block:: python
 
    bs.SelectButton(["A", "B", "C"], value="B", disabled=True)
+   bs.SelectButton(["A", "B", "C"], value="B", disabled=True,
+                   accent="primary", variant="outline")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/selectbutton-disabled-light.png"
+        alt="SelectButton disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/selectbutton-disabled-dark.png"
+        alt="SelectButton disabled — dark theme"
+        style="max-width:100%;">
 
 Events
 ~~~~~~

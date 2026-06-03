@@ -6,12 +6,12 @@ An inline calendar for single-date or date-range selection.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/calendar-light.png"
-        alt="Calendar demo — light theme"
+        src="/_static/examples/calendarwidget-hero-light.png"
+        alt="Calendar — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/calendar-dark.png"
-        alt="Calendar demo — dark theme"
+        src="/_static/examples/calendarwidget-hero-dark.png"
+        alt="Calendar — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -43,9 +43,20 @@ the second click sets the end date.
 
    bs.Calendar(
        selection_mode="range",
-       start_date=date(2026, 5, 8),
-       end_date=date(2026, 5, 22),
+       start_date=date(2026, 5, 20),
+       end_date=date(2026, 6, 10),
    )
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/calendarwidget-range-light.png"
+        alt="Calendar range selection — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/calendarwidget-range-dark.png"
+        alt="Calendar range selection — dark theme"
+        style="max-width:100%;">
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -87,7 +98,18 @@ Display ISO 8601 week numbers in the leftmost column.
 
 .. code-block:: python
 
-   bs.Calendar(show_week_numbers=True)
+   bs.Calendar(value=date(2026, 5, 15), show_week_numbers=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/calendarwidget-week-numbers-light.png"
+        alt="Calendar week numbers — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/calendarwidget-week-numbers-dark.png"
+        alt="Calendar week numbers — dark theme"
+        style="max-width:100%;">
 
 First weekday
 ~~~~~~~~~~~~~

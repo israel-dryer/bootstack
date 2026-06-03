@@ -6,12 +6,12 @@ A group of mutually exclusive radio buttons.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-light.png"
-        alt="RadioGroup demo — light theme"
+        src="/_static/examples/radiogroup-hero-light.png"
+        alt="RadioGroup — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-dark.png"
-        alt="RadioGroup demo — dark theme"
+        src="/_static/examples/radiogroup-hero-dark.png"
+        alt="RadioGroup — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -41,14 +41,39 @@ Orientation
    bs.RadioGroup(["A", "B", "C"], orient="horizontal")  # default
    bs.RadioGroup(["A", "B", "C"], orient="vertical")
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/radiogroup-orientation-light.png"
+        alt="RadioGroup orientation — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/radiogroup-orientation-dark.png"
+        alt="RadioGroup orientation — dark theme"
+        style="max-width:100%;">
+
 Accent colors
 ~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   bs.RadioGroup(["Off", "On"], accent="primary", value="On")
-   bs.RadioGroup(["Off", "On"], accent="success", value="On")
-   bs.RadioGroup(["Off", "On"], accent="danger",  value="On")
+   bs.RadioGroup(["Primary"],   accent="primary",   value="Primary")
+   bs.RadioGroup(["Secondary"], accent="secondary", value="Secondary")
+   bs.RadioGroup(["Info"],      accent="info",      value="Info")
+   bs.RadioGroup(["Success"],   accent="success",   value="Success")
+   bs.RadioGroup(["Warning"],   accent="warning",   value="Warning")
+   bs.RadioGroup(["Danger"],    accent="danger",    value="Danger")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/radiogroup-accents-light.png"
+        alt="RadioGroup accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/radiogroup-accents-dark.png"
+        alt="RadioGroup accent colors — dark theme"
+        style="max-width:100%;">
 
 Title
 ~~~~~
@@ -59,9 +84,23 @@ A ``title=`` adds a label rendered above the group.
 
    bs.RadioGroup(
        [("Small", "s"), ("Medium", "m"), ("Large", "l")],
-       title="Size",
-       value="m",
+       title="Size", value="m",
    )
+   bs.RadioGroup(
+       [("Light", "light"), ("Dark", "dark"), ("Auto", "auto")],
+       title="Theme", orient="vertical", value="auto",
+   )
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/radiogroup-title-light.png"
+        alt="RadioGroup title — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/radiogroup-title-dark.png"
+        alt="RadioGroup title — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -96,6 +135,17 @@ Disabled
 .. code-block:: python
 
    bs.RadioGroup(["Alpha", "Beta", "Gamma"], value="Beta", disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/radiogroup-disabled-light.png"
+        alt="RadioGroup disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/radiogroup-disabled-dark.png"
+        alt="RadioGroup disabled — dark theme"
+        style="max-width:100%;">
 
 Events
 ~~~~~~

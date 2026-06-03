@@ -6,12 +6,12 @@ A sliding track-and-thumb toggle for binary on/off input.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/switch-light.png"
-        alt="Switch demo — light theme"
+        src="/_static/examples/switch-hero-light.png"
+        alt="Switch — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/switch-dark.png"
-        alt="Switch demo — dark theme"
+        src="/_static/examples/switch-hero-dark.png"
+        alt="Switch — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -36,6 +36,17 @@ Accent colors
    bs.Switch("Success",   accent="success",   value=True)
    bs.Switch("Warning",   accent="warning",   value=True)
    bs.Switch("Danger",    accent="danger",    value=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/switch-accents-light.png"
+        alt="Switch accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/switch-accents-dark.png"
+        alt="Switch accent colors — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -70,6 +81,17 @@ Disabled
 
    bs.Switch("Cannot change", disabled=True)
    bs.Switch("Locked on",     value=True, disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/switch-disabled-light.png"
+        alt="Switch disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/switch-disabled-dark.png"
+        alt="Switch disabled — dark theme"
+        style="max-width:100%;">
 
 Events
 ~~~~~~

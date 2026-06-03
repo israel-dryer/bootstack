@@ -2,7 +2,7 @@ import bootstack as bs
 
 
 def hero():
-    with bs.App(title="TextField", size=(680, 120), padding=20, gap=12) as app:
+    with bs.App(title="TextField", minsize=(720, 1), padding=20, gap=12) as app:
         with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
             field = bs.TextField(
                 label="Email address",
@@ -20,7 +20,7 @@ def hero():
 
 
 def states():
-    with bs.App(title="TextField — States", size=(680, 120), padding=20) as app:
+    with bs.App(title="TextField — States", minsize=(720, 1), padding=20) as app:
         with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
             bs.TextField(value="Editable",  label="Normal")
             bs.TextField(value="Read only", label="Read only", read_only=True)
@@ -30,7 +30,7 @@ def states():
 
 
 def validation():
-    with bs.App(title="TextField — Validation", size=(680, 120), padding=20) as app:
+    with bs.App(title="TextField — Validation", minsize=(720, 1), padding=20) as app:
         field = bs.TextField(label="Username", value="ab", fill="x")
         field.add_validation_rule("stringLength", message="Must be at least 3 characters.", min=3, trigger="blur")
         app.tk.after(500, lambda: field.validate("blur"))
@@ -39,8 +39,8 @@ def validation():
 
 
 def required():
-    with bs.App(title="TextField — Required", size=(680, 100), padding=20) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
+    with bs.App(title="TextField — Required", minsize=(720, 1), padding=20) as app:
+        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
             bs.TextField(label="Username", required=True, placeholder="Required field")
             bs.TextField(label="Email address", placeholder="Optional field")
 
@@ -48,12 +48,12 @@ def required():
 
 
 def value_format():
-    with bs.App(title="TextField — Value Formatting", size=(680, 174), padding=20, gap=12) as app:
+    with bs.App(title="TextField — Value Formatting", minsize=(720, 1), padding=20, gap=12) as app:
         with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
-            bs.TextField(label="Decimal",  value="1234.5",    value_format="#,##0.00")
-            bs.TextField(label="Percent",  value="0.42",      value_format="percent")
+            bs.TextField(label="Decimal",  value="1234.5",     value_format="#,##0.00")
+            bs.TextField(label="Percent",  value="0.42",       value_format="percent")
         with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
-            bs.TextField(label="Currency", value="9.99",      value_format="currency")
+            bs.TextField(label="Currency", value="9.99",       value_format="currency")
             bs.TextField(label="Date",     value="2024-06-01", value_format="yyyy-MM-dd")
 
     app.run()

@@ -6,12 +6,12 @@ A labelled checkbox for binary on/off input.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-light.png"
-        alt="Checkbox demo — light theme"
+        src="/_static/examples/checkbox-tristate-light.png"
+        alt="Checkbox — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-dark.png"
-        alt="Checkbox demo — dark theme"
+        src="/_static/examples/checkbox-tristate-dark.png"
+        alt="Checkbox — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -37,6 +37,17 @@ Accent colors
    bs.Checkbox("Warning",   accent="warning",   value=True)
    bs.Checkbox("Danger",    accent="danger",    value=True)
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/checkbox-accents-light.png"
+        alt="Checkbox accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/checkbox-accents-dark.png"
+        alt="Checkbox accent colors — dark theme"
+        style="max-width:100%;">
+
 Custom state icons
 ~~~~~~~~~~~~~~~~~~
 
@@ -46,11 +57,52 @@ entirely with the icon pair.
 
 .. code-block:: python
 
-   # Icon replaces the box indicator — shows circle when unchecked,
-   # filled check-circle when checked
-   bs.Checkbox("Accept",
+   bs.Checkbox("Checked",
        on_icon="check-circle-fill", off_icon="circle",
-       show_indicator=False, accent="success")
+       show_indicator=False, accent="success", value=True)
+   bs.Checkbox("Unchecked",
+       on_icon="check-circle-fill", off_icon="circle",
+       show_indicator=False, accent="success", value=False)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/checkbox-custom-icons-light.png"
+        alt="Checkbox custom state icons — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/checkbox-custom-icons-dark.png"
+        alt="Checkbox custom state icons — dark theme"
+        style="max-width:100%;">
+
+Tristate
+~~~~~~~~
+
+Set ``tristate=True`` to enable a third indeterminate state (dash indicator).
+When no ``value=`` is given, the checkbox starts indeterminate. ``value``
+returns ``None`` in that state.
+
+.. code-block:: python
+
+   bs.Checkbox("Indeterminate", tristate=True)
+   bs.Checkbox("Checked",       tristate=True, value=True)
+   bs.Checkbox("Unchecked",     tristate=True, value=False)
+
+   chk = bs.Checkbox("Option", tristate=True)
+   print(chk.value)   # → None (indeterminate)
+   chk.checked = True
+   print(chk.value)   # → True
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/checkbox-tristate-light.png"
+        alt="Checkbox tristate — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/checkbox-tristate-dark.png"
+        alt="Checkbox tristate — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -75,24 +127,6 @@ are not ``True``/``False``.
 
    bs.Checkbox("Theme", checked_value="dark", unchecked_value="light")
 
-Tristate
-~~~~~~~~
-
-Set ``tristate=True`` to enable a third indeterminate state (dash indicator).
-When no ``value=`` is given, the checkbox starts indeterminate. ``value``
-returns ``None`` in that state.
-
-.. code-block:: python
-
-   bs.Checkbox("Indeterminate", tristate=True)
-   bs.Checkbox("Checked",       tristate=True, value=True)
-   bs.Checkbox("Unchecked",     tristate=True, value=False)
-
-   chk = bs.Checkbox("Option", tristate=True)
-   print(chk.value)   # → None (indeterminate)
-   chk.checked = True
-   print(chk.value)   # → True
-
 Disabled
 ~~~~~~~~
 
@@ -100,6 +134,17 @@ Disabled
 
    bs.Checkbox("Cannot change", disabled=True)
    bs.Checkbox("Locked on", value=True, disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/checkbox-disabled-light.png"
+        alt="Checkbox disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/checkbox-disabled-dark.png"
+        alt="Checkbox disabled — dark theme"
+        style="max-width:100%;">
 
 Events
 ~~~~~~

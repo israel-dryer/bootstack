@@ -6,12 +6,12 @@ A group of toggle buttons — single-select or multi-select.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-light.png"
-        alt="ToggleGroup demo — light theme"
+        src="/_static/examples/togglegroup-hero-light.png"
+        alt="ToggleGroup — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-dark.png"
-        alt="ToggleGroup demo — dark theme"
+        src="/_static/examples/togglegroup-hero-dark.png"
+        alt="ToggleGroup — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -37,6 +37,17 @@ initial selection as a ``set``.
    bs.ToggleGroup(["Bold", "Italic", "Underline"],
                   mode="multi", value={"Bold", "Underline"})
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/togglegroup-multi-light.png"
+        alt="ToggleGroup multi-select — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/togglegroup-multi-dark.png"
+        alt="ToggleGroup multi-select — dark theme"
+        style="max-width:100%;">
+
 Style variants
 ~~~~~~~~~~~~~~
 
@@ -44,26 +55,62 @@ Use ``variant=`` to control visual weight.
 
 .. code-block:: python
 
-   bs.ToggleGroup(["A", "B", "C"], variant="solid",   value="A")  # default
-   bs.ToggleGroup(["A", "B", "C"], variant="outline",  value="A")
-   bs.ToggleGroup(["A", "B", "C"], variant="ghost",    value="A")
+   bs.ToggleGroup(["Off", "On"], accent="primary", variant="solid",   value="On")  # default
+   bs.ToggleGroup(["Off", "On"], accent="primary", variant="outline", value="On")
+   bs.ToggleGroup(["Off", "On"], accent="primary", variant="ghost",   value="On")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/togglegroup-variants-light.png"
+        alt="ToggleGroup style variants — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/togglegroup-variants-dark.png"
+        alt="ToggleGroup style variants — dark theme"
+        style="max-width:100%;">
 
 Accent colors
 ~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   bs.ToggleGroup(["A", "B"], accent="primary",  value="A")
-   bs.ToggleGroup(["A", "B"], accent="success",  value="A")
-   bs.ToggleGroup(["A", "B"], accent="danger",   value="A")
+   bs.ToggleGroup(["Off", "On"], accent="primary",   value="On")
+   bs.ToggleGroup(["Off", "On"], accent="secondary", value="On")
+   bs.ToggleGroup(["Off", "On"], accent="info",      value="On")
+   bs.ToggleGroup(["Off", "On"], accent="success",   value="On")
+   bs.ToggleGroup(["Off", "On"], accent="warning",   value="On")
+   bs.ToggleGroup(["Off", "On"], accent="danger",    value="On")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/togglegroup-accents-light.png"
+        alt="ToggleGroup accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/togglegroup-accents-dark.png"
+        alt="ToggleGroup accent colors — dark theme"
+        style="max-width:100%;">
 
 Orientation
 ~~~~~~~~~~~
 
 .. code-block:: python
 
-   bs.ToggleGroup(["A", "B", "C"], orient="horizontal")  # default
-   bs.ToggleGroup(["A", "B", "C"], orient="vertical",    value="A")
+   bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="horizontal")           # default
+   bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="vertical", value="Middle")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/togglegroup-orientation-light.png"
+        alt="ToggleGroup vertical orientation — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/togglegroup-orientation-dark.png"
+        alt="ToggleGroup vertical orientation — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -88,6 +135,18 @@ Disabled
 .. code-block:: python
 
    bs.ToggleGroup(["A", "B", "C"], value="B", disabled=True)
+   bs.ToggleGroup(["X", "Y", "Z"], mode="multi", value={"X", "Z"}, disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/togglegroup-disabled-light.png"
+        alt="ToggleGroup disabled — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/togglegroup-disabled-dark.png"
+        alt="ToggleGroup disabled — dark theme"
+        style="max-width:100%;">
 
 Events
 ~~~~~~
@@ -108,11 +167,11 @@ Programmatic control
 
    group = bs.ToggleGroup(["A", "B", "C"], value="A")
 
-   group.value = "B"       # single mode — set by value
-   group.value = {"A", "C"}  # multi mode — set by set
-   group.disabled = True   # lock the group
+   group.value = "B"           # single mode — set by value
+   group.value = {"A", "C"}    # multi mode — set by set
+   group.disabled = True       # lock the group
 
-   group.add("D")          # add option at runtime
+   group.add("D")              # add option at runtime
 
 Widget sizing
 ~~~~~~~~~~~~~

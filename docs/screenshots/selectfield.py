@@ -5,32 +5,27 @@ COUNTRIES = [
     "Mexico", "Spain", "United Kingdom", "United States",
 ]
 
-with bs.App(title="Select", padding=20, gap=14) as app:
 
-    basic = bs.Select(
-        ["Option A", "Option B", "Option C"],
-        label="Choose an option",
-        message="Select the option that best applies.",
-        fill="x",
-    )
+def hero():
+    with bs.App(title="Select", size=(540, 300), padding=20) as app:
+        sel = bs.Select(COUNTRIES, label="Country", value="France", fill="x")
 
-    bs.Select(COUNTRIES, label="Country", value="France", fill="x")
+    app.tk.after(850, sel._internal._show_selection_options)
+    app.run()
 
-    required = bs.Select(
-        ["Red", "Green", "Blue"],
-        label="Required",
-        required=True,
-        fill="x",
-    )
 
-    with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
-        bs.Select(["A", "B", "C"], value="A", label="Normal")
-        bs.Select(["A", "B", "C"], value="A", label="Read only",  read_only=True)
-        bs.Select(["A", "B", "C"], value="A", label="Disabled",   disabled=True)
+def states():
+    with bs.App(title="Select — States", padding=20) as app:
+        with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+            normal = bs.Select(["A", "B", "C"], value="A", label="Normal")
+            bs.Select(["A", "B", "C"], value="A", label="Read only", read_only=True)
+            bs.Select(["A", "B", "C"], value="A", label="Disabled",  disabled=True)
 
-    # Focus required then blur to basic — triggers required validation.
-    app.tk.after(150, lambda: required._internal._entry.focus_set())
-    app.tk.after(450, lambda: basic._internal._entry.focus_set())
-    app.tk.after(500, lambda: required._internal._entry.validate(required._internal._entry.value, trigger="blur"))
+    app.tk.after(200, normal._internal._entry.focus_set)
+    app.run()
 
-app.run()
+
+SCENES = {
+    "hero":   hero,
+    "states": states,
+}

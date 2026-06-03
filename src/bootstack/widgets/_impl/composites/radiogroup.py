@@ -263,9 +263,9 @@ class RadioGroup(Frame):
         )
 
         if self._orientation == 'horizontal':
-            button.pack(side='left', padx=2)
+            button.pack(side='left', padx=6)
         else:  # vertical
-            button.pack(side='top', anchor='w', pady=2)
+            button.pack(side='top', anchor='w', pady=4)
 
         self._buttons[key] = button
         return button
@@ -406,9 +406,9 @@ class RadioGroup(Frame):
         for button in self._buttons.values():
             button.pack_forget()
             if self._orientation == 'horizontal':
-                button.pack(side='left', padx=2)
+                button.pack(side='left', padx=6)
             else:
-                button.pack(side='top', anchor='w', pady=2)
+                button.pack(side='top', anchor='w', pady=4)
 
     @configure_delegate('labelanchor')
     def _delegate_labelanchor(self, value=None):

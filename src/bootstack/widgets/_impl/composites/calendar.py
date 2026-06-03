@@ -628,10 +628,13 @@ class Calendar(ttk.Frame):
             for child in weekdays_frame.winfo_children():
                 child.destroy()
 
+        col_offset = 1 if self._show_week_numbers else 0
         if self._show_week_numbers:
-            ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5, surface="background[+1]").pack(
-                side=LEFT, fill=X, expand=YES)
-        for col in self._header_columns():
+            weekdays_frame.columnconfigure(0, weight=1, uniform="cal")
+            ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5, surface="background[+1]", font='caption[bold]').grid(
+                row=0, column=0, sticky=NSEW)
+        for i, col in enumerate(self._header_columns()):
+            weekdays_frame.columnconfigure(i + col_offset, weight=1, uniform="cal")
             ttk.Label(
                 master=weekdays_frame,
                 text=col,
@@ -639,7 +642,7 @@ class Calendar(ttk.Frame):
                 padding=5,
                 accent="muted",
                 font='caption[bold]',
-            ).pack(side=LEFT, fill=X, expand=YES)
+            ).grid(row=0, column=i + col_offset, sticky=NSEW)
 
         # Grid reused
         grid: ttk.Frame | None = view.get("grid")
@@ -650,16 +653,19 @@ class Calendar(ttk.Frame):
             cells: list[list[ttk.Checkbutton]] = []
             cell_vars: list[list[tkinter.BooleanVar]] = []
             week_labels: list[ttk.Label] = []
+            week_labels: list[ttk.Label] = []
+            if self._show_week_numbers:
+                grid.columnconfigure(0, weight=1, uniform="cal")
             for r in range(6):
                 if self._show_week_numbers:
-                    wl = ttk.Label(grid, anchor=CENTER, padding=5, surface="background[+1]")
+                    wl = ttk.Label(grid, anchor=CENTER, padding=5, surface="background[+1]", font='caption')
                     wl.grid(row=r, column=0, sticky=NSEW)
                     week_labels.append(wl)
                 row_cells: list[ttk.Checkbutton] = []
                 row_vars: list[tkinter.BooleanVar] = []
                 for c in range(7):
                     col_offset = 1 if self._show_week_numbers else 0
-                    grid.columnconfigure(c + col_offset, weight=1)
+                    grid.columnconfigure(c + col_offset, weight=1, uniform="cal")
                     var = tkinter.BooleanVar(value=False)
                     btn = ttk.CheckToggle(
                         grid,

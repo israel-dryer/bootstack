@@ -6,12 +6,12 @@ A single-selection dropdown field with optional search filtering.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/selectfield-light.png"
-        alt="Select demo — light theme"
+        src="/_static/examples/selectfield-hero-light.png"
+        alt="Select — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/selectfield-dark.png"
-        alt="Select demo — dark theme"
+        src="/_static/examples/selectfield-hero-dark.png"
+        alt="Select — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -70,6 +70,17 @@ States
    bs.Select(["A", "B", "C"], value="A", label="Normal")
    bs.Select(["A", "B", "C"], value="A", label="Read only",  read_only=True)
    bs.Select(["A", "B", "C"], value="A", label="Disabled",   disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/selectfield-states-light.png"
+        alt="Select states — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/selectfield-states-dark.png"
+        alt="Select states — dark theme"
+        style="max-width:100%;">
 
 Reactive binding
 ~~~~~~~~~~~~~~~~

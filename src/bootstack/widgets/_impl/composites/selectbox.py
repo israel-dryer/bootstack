@@ -190,6 +190,7 @@ class SelectBox(Field):
         toplevel = Toplevel(self)
         toplevel.withdraw()
         toplevel.overrideredirect(True)
+        toplevel.attributes('-topmost', True)
         toplevel.minsize(width, 0)
         toplevel.maxsize(width * 2, max_h)
         toplevel.geometry(f"{width}x{max_h}+{x}+{y}")

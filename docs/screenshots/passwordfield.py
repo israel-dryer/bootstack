@@ -2,7 +2,7 @@ import bootstack as bs
 
 
 def hero():
-    with bs.App(title="PasswordField", size=(680, 130), padding=20, gap=12) as app:
+    with bs.App(title="PasswordField", minsize=(720, 1), padding=20, gap=12) as app:
         with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
             field = bs.PasswordField(
                 label="Password",
@@ -19,7 +19,7 @@ def hero():
 
 
 def toggle():
-    with bs.App(title="PasswordField — Visibility Toggle", size=(680, 100), padding=20) as app:
+    with bs.App(title="PasswordField — Visibility Toggle", minsize=(720, 1), padding=20) as app:
         with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
             bs.PasswordField(label="With toggle", value="secret123")
             bs.PasswordField(label="No toggle",   value="secret123", show_visibility_toggle=False)
@@ -28,7 +28,7 @@ def toggle():
 
 
 def states():
-    with bs.App(title="PasswordField — States", size=(780, 100), padding=20) as app:
+    with bs.App(title="PasswordField — States", minsize=(720, 1), padding=20) as app:
         with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
             normal = bs.PasswordField(value="secret123", label="Normal")
             bs.PasswordField(value="secret123", label="Read only", read_only=True)
@@ -39,7 +39,7 @@ def states():
 
 
 def validation():
-    with bs.App(title="PasswordField — Validation", size=(680, 120), padding=20) as app:
+    with bs.App(title="PasswordField — Validation", minsize=(720, 1), padding=20) as app:
         field = bs.PasswordField(label="Password", value="short", fill="x")
         field.add_validation_rule(
             "stringLength",
