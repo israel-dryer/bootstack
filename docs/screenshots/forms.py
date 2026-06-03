@@ -2,7 +2,7 @@ import bootstack as bs
 
 
 def hero():
-    with bs.App(title="Form", size=(680, 360), padding=20) as app:
+    with bs.App(title="Form", minsize=(720, 1), padding=20) as app:
         bs.Form(
             data={
                 "name":   "Alice Smith",
@@ -17,7 +17,7 @@ def hero():
 
 
 def columns():
-    with bs.App(title="Form — Multiple Columns", size=(680, 220), padding=20) as app:
+    with bs.App(title="Form — Multiple Columns", minsize=(720, 1), padding=20) as app:
         bs.Form(
             data={
                 "street": "123 Main St",
@@ -33,7 +33,7 @@ def columns():
 
 
 def grouped():
-    with bs.App(title="Form — Grouped Fields", size=(680, 230), padding=20) as app:
+    with bs.App(title="Form — Grouped Fields", minsize=(720, 1), padding=20) as app:
         bs.Form(
             items=[
                 bs.GroupItem(
@@ -54,7 +54,7 @@ def grouped():
 
 
 def tabbed():
-    with bs.App(title="Form — Tabbed Layout", size=(680, 230), padding=20) as app:
+    with bs.App(title="Form — Tabbed Layout", minsize=(720, 1), padding=20) as app:
         bs.Form(
             items=[
                 bs.TabsItem(tabs=[
