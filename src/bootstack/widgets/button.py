@@ -120,6 +120,15 @@ class Button(PublicWidgetBase):
         self._internal.configure(text=value)
 
     @property
+    def icon(self) -> str | None:
+        """Bootstrap Icons name shown on the button, or ``None`` if no icon is set."""
+        return self._internal.configure_style_options("icon")
+
+    @icon.setter
+    def icon(self, value: str | None) -> None:
+        self._internal.configure(icon=value)
+
+    @property
     def disabled(self) -> bool:
         """Whether the button is non-interactive."""
         return str(self._internal.cget("state")) == "disabled"

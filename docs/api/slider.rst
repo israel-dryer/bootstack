@@ -138,6 +138,7 @@ API
 .. autoclass:: bootstack.widgets.slider.Slider
    :members:
    :undoc-members:
+   :inherited-members:
    :exclude-members: tk
 
 Full Example

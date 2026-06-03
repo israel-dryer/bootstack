@@ -256,6 +256,8 @@ API
 .. autoclass:: bootstack.widgets.button.Button
    :members:
    :undoc-members:
+   :inherited-members:
+   :exclude-members: tk
 
 Full Example
 ------------
