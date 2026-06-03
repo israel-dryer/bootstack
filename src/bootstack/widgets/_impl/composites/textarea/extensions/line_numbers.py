@@ -42,6 +42,7 @@ class LineNumbers(Sidebar):
         self._widget = tk.Text(
             core,
             width=self._current_width,
+            height=core.text.cget("height"),
             padx=_PADX,
             pady=_PADY,
             state=tk.DISABLED,

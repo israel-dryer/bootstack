@@ -14,5 +14,6 @@ Widgets for accepting user input.
    pathfield
    spinnerfield
    textarea
+   codeeditor
 
-.. note:: CodeEditor, DateField, and TimeField pages coming soon.
+.. note:: DateField and TimeField pages coming soon.

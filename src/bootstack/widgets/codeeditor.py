@@ -1,16 +1,19 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tkinter
 from contextlib import contextmanager
-from typing import overload, Any, Callable, Iterator
+from typing import overload, Any, Callable, Iterator, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as _InternalCodeEditor
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.subscription import Subscription
 from bootstack.widgets._core.stream import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import AccentToken, Event
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _CODEEDITOR_EVENTS: dict[str, str] = {
     "change":      "<<Change>>",
@@ -36,7 +39,7 @@ class CodeEditor(PublicWidgetBase):
 
     Args:
         value: Initial text content.
-        text_signal: Reactive `Signal[str]` bound to the editor content.
+        textsignal: Reactive `Signal[str]` bound to the editor content.
         language: Pygments lexer name for syntax highlighting (e.g. `'python'`,
             `'sql'`). `None` disables highlighting.
         theme: Pygments color scheme. `'auto'` (default) switches between
@@ -55,6 +58,7 @@ class CodeEditor(PublicWidgetBase):
         show_line_numbers: If True (default), shows a line-number gutter.
         show_indent_guides: If True, draws subtle vertical guide marks at
             each indent stop.
+        height: Visible row count. Default `20`.
         scrollbars: Scrollbar visibility — `'both'` (default), `'auto'`,
             `'vertical'`, or `'none'`.
         font: Font for the editor. Default `'TkFixedFont'`.
@@ -70,7 +74,7 @@ class CodeEditor(PublicWidgetBase):
         self,
         value: str = "",
         *,
-        text_signal: Any = None,
+        textsignal: "Signal[str] | None" = None,
         language: str | None = None,
         theme: str = "auto",
         light_theme: str = "default",
@@ -82,10 +86,11 @@ class CodeEditor(PublicWidgetBase):
         auto_indent: bool = True,
         show_line_numbers: bool = True,
         show_indent_guides: bool = False,
+        height: int = 20,
         scrollbars: str = "both",
         font: str = "TkFixedFont",
         show_border: bool = True,
-        accent: str = "primary",
+        accent: AccentToken | str = "primary",
         extensions: list[EditFilter] | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -108,13 +113,14 @@ class CodeEditor(PublicWidgetBase):
             "auto_indent": auto_indent,
             "show_line_numbers": show_line_numbers,
             "show_indent_guides": show_indent_guides,
+            "height": height,
             "scrollbars": scrollbars,
             "font": font,
             "show_border": show_border,
             "accent": accent,
         }
-        if text_signal is not None:
-            internal_kwargs["textsignal"] = text_signal
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
         if extensions is not None:
             internal_kwargs["extensions"] = extensions
 
@@ -137,19 +143,16 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
-        from bootstack.widgets._core.events import resolve_event
         sequence = resolve_event(self, str(event))
-        widget = self._text_widget() if sequence in _INNER_SEQUENCES else self._internal
-        _w = widget
+        target = self._text_widget() if sequence in _INNER_SEQUENCES else self._internal
         if handler is None:
-            from bootstack.widgets._core.stream import Stream as _Stream
             def _source(h):
-                widget = self._text_widget() if sequence in _INNER_SEQUENCES else self._internal
-                _bid = _w.bind(sequence, h, add="+")
-                return Subscription(_w, sequence, _bid)
-            return _Stream(self._internal, _source=_source)
-        bind_id = widget.bind(sequence, handler, add="+")
-        return Subscription(widget, sequence, bind_id)
+                t = self._text_widget() if sequence in _INNER_SEQUENCES else self._internal
+                bid = t.bind(sequence, h, add="+")
+                return Subscription(t, sequence, bid)
+            return Stream(self._internal, _source=_source)
+        bid = target.bind(sequence, handler, add="+")
+        return Subscription(target, sequence, bid)
 
     # ----- Properties -----
 
@@ -161,6 +164,11 @@ class CodeEditor(PublicWidgetBase):
     @value.setter
     def value(self, v: str) -> None:
         self._internal.value = v
+
+    @property
+    def signal(self) -> "Signal[str] | None":
+        """The reactive `Signal` bound to this editor, or `None`."""
+        return getattr(self._internal._core, "signal", None)
 
     @property
     def is_dirty(self) -> bool:
@@ -195,6 +203,7 @@ class CodeEditor(PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
+        """Whether the editor content is visible but not editable."""
         return self._internal._core._read_only
 
     @read_only.setter
@@ -204,14 +213,6 @@ class CodeEditor(PublicWidgetBase):
             state=tkinter.DISABLED if v else tkinter.NORMAL
         )
 
-    @property
-    def disabled(self) -> bool:
-        return self.read_only
-
-    @disabled.setter
-    def disabled(self, v: bool) -> None:
-        self.read_only = v
-
     # ----- Methods -----
 
     def clear(self) -> None:
@@ -219,7 +220,12 @@ class CodeEditor(PublicWidgetBase):
         self._internal.value = ""
 
     def insert(self, index: str, text: str) -> None:
-        """Insert `text` at `index` (Tk text index, e.g. `'end'` or `'1.0'`)."""
+        """Insert `text` at `index` (Tk text index, e.g. `'end'` or `'1.0'`).
+
+        Args:
+            index: Tk text index string.
+            text: Text to insert.
+        """
         self._internal._core.text.insert(index, text)
 
     def select_all(self) -> None:
@@ -308,7 +314,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired on every edit.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 
@@ -320,7 +326,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired on every keystroke.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("input", handler)
 
@@ -332,7 +338,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired when `is_dirty` changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("modified", handler)
 
@@ -344,7 +350,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired after an undo operation.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("undo", handler)
 
@@ -356,7 +362,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired after a redo operation.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("redo", handler)
 
@@ -368,7 +374,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired when the cursor position changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("cursor_move", handler)
 
@@ -380,7 +386,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired when the editor gains focus.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("focus", handler)
 
@@ -392,7 +398,7 @@ class CodeEditor(PublicWidgetBase):
         """Register a callback fired when the editor loses focus.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("blur", handler)
 
