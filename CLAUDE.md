@@ -33,8 +33,10 @@ every public widget wrapper — proper types, complete kwargs, thorough docstrin
 ### Status
 
 **Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
-Actions, Inputs, Data Display, Selection, Overlays, Layout, Navigation,
-Menus (Toolbar only), Dialogs (7 pages — `dialogs.rst` is now a toctree index).
+Actions, Inputs (TextField, PasswordField, NumberField, Slider, RangeSlider),
+Data Display, Selection, Overlays, Layout, Navigation,
+Menus (Toolbar only), Dialogs (7 pages — `dialogs.rst` is now a toctree index),
+Forms.
 
 Dialog pages: `message-dialogs.rst`, `input-dialogs.rst`, `color-dialog.rst`,
 `font-dialog.rst`, `filter-dialog.rst`, `dialog.rst`, `formdialog.rst`.
@@ -43,20 +45,18 @@ New public API added (dialogs pass): `bs.ask_color()`, `bs.ColorChooserDialog`,
 `bs.ColorChoice`, `bs.ask_font()`, `bs.FontDialog`, `bs.ask_filter()`,
 `bs.FilterDialog`.
 
-**Done (wrapper ✓ · doc page ✓ · example ✓ · screenshots pending):**
-Forms — `docs/api/forms.rst`, `docs/examples/forms.py`.
-
 New public API added (forms pass): `bs.FormItem`, `EditorType` renamed to match
 public widget names, `on_data_change()` event shorthand, `<<BsDataChange>>` event.
 
-**Pending:** Forms screenshots, MenuButton.
+**Pending:** MenuButton (Menus and Toolbars category).
 
 ### What's next
 
-1. **Forms screenshots** — take `forms-light.png` / `forms-dark.png` via
-   `python docs/scripts/take_screenshots.py forms`. No code changes needed.
-
-2. **MenuButton** — still pending (Menus and Toolbars category). After Forms screenshots.
+1. **MenuButton** — the last remaining widget in the Menus and Toolbars category.
+   Follow the standard widget documentation pattern. The public wrapper is
+   `src/bootstack/widgets/menubutton.py`; check for a matching internal impl
+   in `widgets/_impl/`. Doc page goes in `docs/api/menubutton.rst`; wire it
+   into `docs/api/menus.rst` toctree.
 
 Note: Tree and Table (Data Display) are deferred — too complex for this pass.
 
@@ -422,6 +422,25 @@ not layout-managed widgets).
   Fields: `rgb=(r,g,b)` 0–255, `hsl=(h,s,l)` 0–360/0–100/0–100, `hex` lowercase.
 - **`FontDialog.result` typed as `Any`** — intentional; avoids surfacing
   `tkinter.font.Font` in the public API.
+- **Slider/RangeSlider spacing between stacked items** — `VStack gap=` and
+  `App gap=` do NOT visually separate slider tracks. The slider widget's bounding
+  box absorbs the gap. Use `margin_y=10` on each slider widget instead, and ensure
+  the window height is large enough: H = sum(slider_heights) + sum(margins) +
+  2×padding + 4px_crop. Plain slider ≈ 24px; with ticks ≈ 45px; with value badge
+  + ticks ≈ 65px.
+- **Screenshot width for track-type widgets** — Slider and RangeSlider need
+  `size=(860, H)` or wider. At 680px the track looks cramped and proportions are off.
+- **Three-column field states scene** — PasswordField/NumberField states (normal,
+  read-only, disabled) in a 3-column HStack need `size=(780, H)` or wider to
+  prevent toggle/stepper buttons from being squished against the field border.
+- **`size=` not `minsize=` in screenshot files** — Legacy screenshot files used
+  `minsize=(W, H)` giving an unbounded window. Always use `size=(W, H)` in SCENES
+  for deterministic capture dimensions.
+- **Dark mode Note admonition color** — pydata-sphinx-theme uses `--pst-color-info`
+  and `--pst-color-info-bg` for `.admonition.note` title background. The theme's
+  dark-mode defaults don't match the Bootstrap palette. Override in
+  `docs/_static/custom.css` inside `html[data-theme="dark"]`:
+  `--pst-color-info: #6ea8fe; --pst-color-info-bg: #0d306e`.
 
 ---
 
