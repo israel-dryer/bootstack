@@ -8,4 +8,4 @@ Widgets that trigger operations or commands.
 
    button
 
-.. note:: ButtonGroup, MenuButton, DropdownButton, and ContextMenu pages coming soon.
+.. note:: ButtonGroup, DropdownButton, and ContextMenu pages coming soon.

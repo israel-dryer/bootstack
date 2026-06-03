@@ -40,13 +40,13 @@ with bs.App(title="Button Demo", padding=20, gap=16) as app:
         bs.Button("Top",    icon="arrow-up",    icon_position="top")
         bs.Button("Bottom", icon="arrow-down",  icon_position="bottom")
 
-    # Icon-only
+    # Icon-only (icon_only inferred when no text is provided)
     bs.Label("Icon Only", font="heading-sm")
     with bs.HStack(gap=4):
-        bs.Button(icon="plus-lg",  icon_only=True, accent="success")
-        bs.Button(icon="dash-lg",  icon_only=True, accent="danger")
-        bs.Button(icon="pencil",   icon_only=True, accent="secondary", variant="outline")
-        bs.Button(icon="trash",    icon_only=True, accent="danger",    variant="outline")
+        bs.Button(icon="plus-lg",  accent="success")
+        bs.Button(icon="dash-lg",  accent="danger")
+        bs.Button(icon="pencil",   accent="secondary", variant="outline")
+        bs.Button(icon="trash",    accent="danger",    variant="outline")
 
     # Uniform width
     bs.Label("Uniform Width", font="heading-sm")

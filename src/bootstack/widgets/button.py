@@ -34,7 +34,8 @@ class Button(PublicWidgetBase):
             (no border, transparent background). Defaults to ``'solid'``.
         icon: Bootstrap Icons name (e.g. ``'save'``, ``'trash'``). See the
             full catalog at https://icons.getbootstrap.com.
-        icon_only: If ``True``, show only the icon with no text. Set
+        icon_only: If ``True``, show only the icon with no text. Inferred
+            automatically when ``icon=`` is set and no text is provided. Set
             meaningful ``text`` anyway for accessibility.
         icon_position: Position of the icon relative to the text. One of
             ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
@@ -76,6 +77,9 @@ class Button(PublicWidgetBase):
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
+
+        if icon is not None and not text:
+            icon_only = True
 
         internal_kwargs: dict[str, Any] = {"text": text}
         if not icon_only:

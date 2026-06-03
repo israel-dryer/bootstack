@@ -7,13 +7,11 @@ argument.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/button-light.png"
-        alt="Button widget demo — light theme"
-        style="max-width:100%;">
+        src="/_static/examples/button-hero-light.png"
+        alt="Button — light theme" style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/button-dark.png"
-        alt="Button widget demo — dark theme"
-        style="max-width:100%;">
+        src="/_static/examples/button-hero-dark.png"
+        alt="Button — dark theme" style="max-width:100%;">
 
 Usage
 -----
@@ -26,14 +24,22 @@ themes without hard-coding any color.
 
 .. code-block:: python
 
-   with bs.HStack(gap=8):
-       bs.Button("Default")
-       bs.Button("Primary",   accent="primary")
-       bs.Button("Secondary", accent="secondary")
-       bs.Button("Info",      accent="info")
-       bs.Button("Success",   accent="success")
-       bs.Button("Warning",   accent="warning")
-       bs.Button("Danger",    accent="danger")
+   bs.Button("Default")
+   bs.Button("Primary",   accent="primary")
+   bs.Button("Secondary", accent="secondary")
+   bs.Button("Info",      accent="info")
+   bs.Button("Success",   accent="success")
+   bs.Button("Warning",   accent="warning")
+   bs.Button("Danger",    accent="danger")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-accents-light.png"
+        alt="Button accent colors — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-accents-dark.png"
+        alt="Button accent colors — dark theme" style="max-width:100%;">
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -43,10 +49,18 @@ actions from secondary ones.
 
 .. code-block:: python
 
-   with bs.HStack(gap=8):
-       bs.Button("Solid",   accent="primary", variant="solid")
-       bs.Button("Outline", accent="primary", variant="outline")
-       bs.Button("Ghost",   accent="primary", variant="ghost")
+   bs.Button("Solid",   accent="primary", variant="solid")
+   bs.Button("Outline", accent="primary", variant="outline")
+   bs.Button("Ghost",   accent="primary", variant="ghost")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-variants-light.png"
+        alt="Button style variants — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-variants-dark.png"
+        alt="Button style variants — dark theme" style="max-width:100%;">
 
 Icons
 ~~~~~
@@ -57,8 +71,17 @@ The icon appears to the left of the text by default.
 .. code-block:: python
 
    bs.Button("Save",   icon="save")
-   bs.Button("Delete", icon="trash", accent="danger")
+   bs.Button("Delete", icon="trash",    accent="danger")
    bs.Button("Export", icon="download", accent="secondary", variant="outline")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-icons-light.png"
+        alt="Button icons — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-icons-dark.png"
+        alt="Button icons — dark theme" style="max-width:100%;">
 
 Icon position
 ~~~~~~~~~~~~~
@@ -68,37 +91,46 @@ Defaults to ``'left'``.
 
 .. code-block:: python
 
-   bs.Button("Download", icon="download", icon_position="left")   # default
-   bs.Button("Next",     icon="arrow-right", icon_position="right")
-   bs.Button("Upload",   icon="upload", icon_position="top")
+   bs.Button("Left",   icon="arrow-left",  icon_position="left")
+   bs.Button("Right",  icon="arrow-right", icon_position="right")
+   bs.Button("Top",    icon="arrow-up",    icon_position="top")
+   bs.Button("Bottom", icon="arrow-down",  icon_position="bottom")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-icon-position-light.png"
+        alt="Button icon position — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-icon-position-dark.png"
+        alt="Button icon position — dark theme" style="max-width:100%;">
 
 Icon-only
 ~~~~~~~~~
 
-Set ``icon_only=True`` to show just the icon with no text. Use for
-compact toolbars and action rows.
+Omit the text to show only the icon — ``icon_only`` is inferred
+automatically. Pass ``icon_only=True`` explicitly when you want to be
+clear about intent.
 
 .. code-block:: python
 
-   with bs.HStack(gap=4):
-       bs.Button(icon="plus-lg",  icon_only=True, accent="success")
-       bs.Button(icon="dash-lg",  icon_only=True, accent="danger")
-       bs.Button(icon="pencil",   icon_only=True, accent="secondary", variant="outline")
+   # icon_only inferred — no text provided
+   bs.Button(icon="plus-lg",  accent="success")
+   bs.Button(icon="dash-lg",  accent="danger")
+   bs.Button(icon="pencil",   accent="secondary", variant="outline")
+   bs.Button(icon="trash",    accent="danger",    variant="outline")
 
-Custom image
-~~~~~~~~~~~~
+   # explicit form — equivalent, states intent clearly
+   bs.Button("Delete", icon="trash", icon_only=True, accent="danger")
 
-Pass a ``bs.Image`` object to ``image=`` when you need something other than a
-Bootstrap Icon. ``bs.Image`` handles loading, caching, and DPI scaling.
+.. raw:: html
 
-.. code-block:: python
-
-   img = bs.Image.open("logo.png")
-   bs.Button("Launch", image=img, icon_position="left")
-
-   # From bytes (e.g. an embedded resource)
-   img = bs.Image.from_bytes(raw_bytes)
-   bs.Button("Custom", image=img)
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-icon-only-light.png"
+        alt="Button icon-only — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-icon-only-dark.png"
+        alt="Button icon-only — dark theme" style="max-width:100%;">
 
 Uniform width
 ~~~~~~~~~~~~~
@@ -107,10 +139,56 @@ Use ``width=`` (in character units) to make a row of buttons the same width.
 
 .. code-block:: python
 
-   with bs.HStack(gap=8):
-       bs.Button("Save",   accent="primary", width=10)
-       bs.Button("Cancel", width=10)
-       bs.Button("Reset",  accent="danger",  width=10)
+   bs.Button("Save",   accent="primary", width=10)
+   bs.Button("Cancel",                   width=10)
+   bs.Button("Reset",  accent="danger",  width=10)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-width-light.png"
+        alt="Button uniform width — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-width-dark.png"
+        alt="Button uniform width — dark theme" style="max-width:100%;">
+
+Compact density
+~~~~~~~~~~~~~~~
+
+Use ``density='compact'`` to reduce padding — useful in toolbars where
+space is tight.
+
+.. code-block:: python
+
+   bs.Button("Cut",   icon="scissors",  density="compact")
+   bs.Button("Copy",  icon="copy",      density="compact")
+   bs.Button("Paste", icon="clipboard", density="compact")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-density-light.png"
+        alt="Button compact density — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-density-dark.png"
+        alt="Button compact density — dark theme" style="max-width:100%;">
+
+Disabled state
+~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   bs.Button("Disabled Solid",   accent="primary",                    disabled=True)
+   bs.Button("Disabled Outline", accent="primary", variant="outline", disabled=True)
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/button-disabled-light.png"
+        alt="Button disabled — light theme" style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/button-disabled-dark.png"
+        alt="Button disabled — dark theme" style="max-width:100%;">
 
 Reactive text
 ~~~~~~~~~~~~~
@@ -132,26 +210,20 @@ automatically.
    btn = bs.Button("Start", accent="primary")
    btn.text = "Stop"
 
-Compact density
-~~~~~~~~~~~~~~~
+Custom image
+~~~~~~~~~~~~
 
-Use ``density='compact'`` to reduce padding — useful in toolbars where
-space is tight.
-
-.. code-block:: python
-
-   with bs.HStack(gap=4):
-       bs.Button("Cut",   icon="scissors", density="compact")
-       bs.Button("Copy",  icon="copy",     density="compact")
-       bs.Button("Paste", icon="clipboard",density="compact")
-
-Disabled state
-~~~~~~~~~~~~~~
+Pass a ``bs.Image`` object to ``image=`` when you need something other than a
+Bootstrap Icon. ``bs.Image`` handles loading, caching, and DPI scaling.
 
 .. code-block:: python
 
-   bs.Button("Disabled Solid",   accent="primary",  disabled=True)
-   bs.Button("Disabled Outline", accent="primary",   variant="outline", disabled=True)
+   img = bs.Image.open("logo.png")
+   bs.Button("Launch", image=img, icon_position="left")
+
+   # From bytes (e.g. an embedded resource)
+   img = bs.Image.from_bytes(raw_bytes)
+   bs.Button("Custom", image=img)
 
 Handling clicks
 ~~~~~~~~~~~~~~~
