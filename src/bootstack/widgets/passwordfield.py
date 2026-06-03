@@ -175,10 +175,6 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
         """Restore character masking."""
         self._internal.hide()
 
-    def commit(self) -> None:
-        """Manually parse the display text, update the value, and run validation."""
-        self._internal._entry.commit()
-
     def validate(self, trigger: str = "manual") -> bool:
         """Run validation rules against the current value.
 
@@ -213,14 +209,6 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
             end: End index (exclusive).
         """
         self._entry_widget().selection_range(start, end)
-
-    def set_cursor(self, index: int) -> None:
-        """Move the insertion cursor to ``index``.
-
-        Args:
-            index: Character position to place the cursor.
-        """
-        self._entry_widget().icursor(index)
 
     def insert(self, index: int, text: str) -> None:
         """Insert ``text`` at ``index``.

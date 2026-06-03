@@ -208,10 +208,6 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         """
         self._internal.step(-steps)
 
-    def commit(self) -> None:
-        """Manually parse the display text, update the value, and run validation."""
-        self._internal._entry.commit()
-
     def validate(self, trigger: str = "manual") -> bool:
         """Run validation rules against the current value.
 
@@ -246,14 +242,6 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
             end: End index (exclusive).
         """
         self._entry_widget().selection_range(start, end)
-
-    def set_cursor(self, index: int) -> None:
-        """Move the insertion cursor to ``index``.
-
-        Args:
-            index: Character position to place the cursor.
-        """
-        self._entry_widget().icursor(index)
 
     # ----- Event shorthands -----
 
