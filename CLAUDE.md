@@ -31,7 +31,7 @@ Go from nothing to something fast. The user should never need to `import tkinter
 - Data Display: Label, Badge, ProgressBar, Gauge, ListView
 - Layout: Separator, Card, GroupBox, VStack, HStack, Grid, Accordion,
   ScrollView, SplitView
-- Menus and Toolbars: Toolbar, MenuButton
+- Menus and Toolbars: Toolbar, MenuButton, ContextMenu
 - Navigation: PageStack, Tabs, SideNav, AppShell
 - Overlays: Tooltip, Toast
 - Dialogs: 7 pages (message, input, color, font, filter, dialog, formdialog)
@@ -39,6 +39,7 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 **Pending:**
 - Data Display: Tree, Table (deferred — too complex for this pass)
+- Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
 
 ### Cross-cutting wrapper improvements (this + prior session)
 - `commit()` and `set_cursor()` removed from all field widgets (TextField,
