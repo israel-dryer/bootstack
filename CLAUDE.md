@@ -30,109 +30,20 @@ PRs go `feat/*` → `main`.
 every public widget wrapper — proper types, complete kwargs, thorough docstrings,
 `@overload` event shorthands, and runnable examples with screenshots.
 
-### What's done
+### Status
 
-**Actions category:**
+**Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
+Actions, Inputs, Data Display, Selection, Overlays, Layout, Navigation,
+Menus (Toolbar only), Dialogs (7 pages — `dialogs.rst` is now a toctree index).
 
-| Widget | Wrapper | Doc page | Example | Screenshots |
-|--------|---------|----------|---------|-------------|
-| Button | ✓ | `docs/api/button.rst` | `docs/examples/button.py` | ✓ |
+Dialog pages: `message-dialogs.rst`, `input-dialogs.rst`, `color-dialog.rst`,
+`font-dialog.rst`, `filter-dialog.rst`, `dialog.rst`, `formdialog.rst`.
 
-**Inputs category:**
+New public API added (dialogs pass): `bs.ask_color()`, `bs.ColorChooserDialog`,
+`bs.ColorChoice`, `bs.ask_font()`, `bs.FontDialog`, `bs.ask_filter()`,
+`bs.FilterDialog`.
 
-| Widget | Wrapper | Doc page | Example | Screenshots |
-|--------|---------|----------|---------|-------------|
-| TextField    | ✓ | `docs/api/textfield.rst`    | `docs/examples/textfield.py`    | ✓ |
-| PasswordField | ✓ | `docs/api/passwordfield.rst` | `docs/examples/passwordfield.py` | ✓ |
-| NumberField  | ✓ | `docs/api/numberfield.rst`  | `docs/examples/numberfield.py`  | ✓ |
-| Slider       | ✓ | `docs/api/slider.rst`       | `docs/examples/slider.py`       | ✓ |
-| RangeSlider  | ✓ | `docs/api/rangeslider.rst`  | `docs/examples/rangeslider.py`  | ✓ |
-
-**Data Display category:**
-
-| Widget | Wrapper | Doc page | Example | Screenshots |
-|--------|---------|----------|---------|-------------|
-| Label       | ✓ | `docs/api/label.rst`       | `docs/examples/label.py`       | ✓ |
-| Badge       | ✓ | `docs/api/badge.rst`       | `docs/examples/badge.py`       | ✓ |
-| ProgressBar | ✓ | `docs/api/progressbar.rst` | `docs/examples/progressbar.py` | ✓ |
-| Gauge       | ✓ | `docs/api/gauge.rst`       | `docs/examples/gauge.py`       | ✓ |
-| ListView    | ✓ | `docs/api/listview.rst`    | `docs/examples/listview.py`    | ✓ |
-
-**Selection category:**
-
-| Widget | Wrapper | Doc page | Example | Screenshots |
-|--------|---------|----------|---------|-------------|
-| Checkbox     | ✓ | `docs/api/checkbox.rst`     | `docs/examples/checkbox.py`     | ✓ |
-| Select       | ✓ | `docs/api/select.rst`       | `docs/examples/selectfield.py`  | ✓ |
-| Switch       | ✓ | `docs/api/switch.rst`       | `docs/examples/switch.py`       | ✓ |
-| ToggleButton | ✓ | `docs/api/togglebutton.rst` | `docs/examples/togglebutton.py` | ✓ |
-| RadioGroup   | ✓ | `docs/api/radiogroup.rst`   | `docs/examples/radiogroup.py`   | ✓ |
-| ToggleGroup  | ✓ | `docs/api/togglegroup.rst`  | `docs/examples/togglegroup.py`  | ✓ |
-| SelectButton | ✓ | `docs/api/selectbutton.rst` | `docs/examples/selectbutton.py` | ✓ |
-| Calendar     | ✓ | `docs/api/calendar.rst`     | `docs/examples/calendarwidget.py` | ✓ |
-
-**Overlays category:**
-
-| Widget  | Wrapper | Doc page | Example | Screenshots |
-|---------|---------|----------|---------|-------------|
-| Tooltip | ✓ | `docs/api/tooltip.rst` | `docs/examples/tooltip.py` | ✓ |
-| Toast   | ✓ | `docs/api/toast.rst`   | `docs/examples/toast.py`  | ✓ |
-
-**Layout category:**
-
-| Widget    | Wrapper | Doc page | Example | Screenshots |
-|-----------|---------|----------|---------|-------------|
-| Separator  | ✓ | `docs/api/separator.rst`  | `docs/examples/separator.py`  | ✓ |
-| Card       | ✓ | `docs/api/card.rst`       | `docs/examples/card.py`       | ✓ |
-| GroupBox   | ✓ | `docs/api/groupbox.rst`   | `docs/examples/groupbox.py`   | ✓ |
-| VStack     | ✓ | `docs/api/vstack.rst`     | `docs/examples/vstack.py`     | ✓ |
-| HStack     | ✓ | `docs/api/hstack.rst`     | `docs/examples/hstack.py`     | ✓ |
-| Grid       | ✓ | `docs/api/grid.rst`       | `docs/examples/grid.py`       | ✓ |
-| Accordion  | ✓ | `docs/api/accordion.rst`  | `docs/examples/accordion.py`  | ✓ |
-| ScrollView | ✓ | `docs/api/scrollview.rst` | `docs/examples/scrollview.py` | ✓ |
-| SplitView  | ✓ | `docs/api/splitview.rst`  | `docs/examples/splitview.py`  | ✓ |
-
-**Navigation category:**
-
-| Widget    | Wrapper | Doc page | Example | Screenshots |
-|-----------|---------|----------|---------|-------------|
-| PageStack | ✓ | `docs/api/pagestack.rst` | `docs/examples/pagestack.py` | ✓ |
-| Tabs      | ✓ | `docs/api/tabs.rst`      | `docs/examples/tabs.py`      | ✓ |
-| SideNav   | ✓ | `docs/api/sidenav.rst`   | `docs/examples/sidenav.py`   | ✓ |
-| AppShell  | ✓ | `docs/api/appshell.rst`  | `docs/examples/appshell.py`  | ✓ |
-
-**Menus and Toolbars category:**
-
-| Widget     | Wrapper | Doc page | Example | Screenshots |
-|------------|---------|----------|---------|-------------|
-| Toolbar    | ✓ | `docs/api/toolbar.rst`    | `docs/examples/toolbar.py`    | ✓ |
-| MenuButton | — | — (pending)               | —                             | — |
-
-**Dialogs category:**
-
-Dialogs public API fully audited, expanded, and split into 7 pages. Hero
-screenshots for each page show the actual dialog window (modal=False +
-lift_dialog() pattern). `docs/api/dialogs.rst` is now a category index (toctree).
-
-| Item | Doc page | Example | Hero screenshot |
-|------|----------|---------|-----------------|
-| Message Dialogs | `docs/api/message-dialogs.rst` | `docs/examples/message-dialogs.py` | `docs/screenshots/message-dialogs.py` |
-| Input Dialogs   | `docs/api/input-dialogs.rst`   | `docs/examples/input-dialogs.py`   | `docs/screenshots/input-dialogs.py`   |
-| Color Dialog    | `docs/api/color-dialog.rst`    | `docs/examples/color-dialog.py`    | `docs/screenshots/color-dialog.py`    |
-| Font Dialog     | `docs/api/font-dialog.rst`     | `docs/examples/font-dialog.py`     | `docs/screenshots/font-dialog.py`     |
-| Filter Dialog   | `docs/api/filter-dialog.rst`   | `docs/examples/filter-dialog.py`   | `docs/screenshots/filter-dialog.py`   |
-| Dialog          | `docs/api/dialog.rst`          | `docs/examples/dialog.py`          | `docs/screenshots/dialog.py`          |
-| FormDialog      | `docs/api/formdialog.rst`      | `docs/examples/formdialog.py`      | `docs/screenshots/formdialog.py`      |
-
-New public API additions this pass:
-- `bs.ask_color()`, `bs.ColorChooserDialog`, `bs.ColorChoice`
-- `bs.ask_font()`, `bs.FontDialog`
-- `bs.ask_filter()`, `bs.FilterDialog`
-
-Bugs fixed in internal dialog classes:
-- `colorchooser.py`, `fontdialog.py`, `filterdialog.py`: `master=` → `parent=` in `Dialog()` constructor calls
-- `fontdialog.py`: scrollbar `variant="round"` → `variant="default"` (round not a valid scrollbar variant)
-- `filterdialog.py`: `minsize=`/`maxsize=` → `min_size=`/`max_size=` in `Dialog()` call
+**Pending:** Forms, MenuButton.
 
 ### What's next
 
@@ -280,374 +191,187 @@ Widget sizing
 .. include:: ../shared/widget-sizing.rst
 ```
 
-The `docs/shared/widget-sizing.rst` fragment documents self-placement kwargs
-grouped by geometry manager (Stack, Grid). Path is file-relative from
-`docs/api/` — do NOT use a leading `/` (that would be an absolute filesystem
-path, not source-relative).
+Path is file-relative from `docs/api/` — do NOT use a leading `/`.
+Omit this section entirely from dialog doc pages (dialogs are Toplevel windows,
+not layout-managed widgets).
 
-### Gotchas discovered during the docs pass
+### Gotchas
 
-- **Self-placement via `**kwargs` on all wrappers** — `fill`, `expand`,
-  `anchor`, `row`, `column`, `sticky`, etc. are NOT explicit params on any
-  public wrapper. Every wrapper accepts them via `**kwargs` routed through
-  `self._split_layout_kwargs(kwargs)`. VStack, HStack, Grid, Card, GroupBox,
-  ScrollView, SplitView, PageStack all follow this pattern. When writing new
-  wrappers, do NOT add explicit placement params — use `**kwargs`.
-- **`**kwargs` not `**extra_kw`** — the catch-all for remaining kwargs must
-  be named `**kwargs` for consistency. `**extra_kw` was the old convention;
-  it has been renamed throughout.
-- **`margin_x=` / `margin_y=`** — new public kwargs for axis-specific external
-  spacing. `margin=` sets all sides (int, 2-tuple, or 4-tuple); `margin_x=`
-  overrides horizontal (int or (left, right) tuple); `margin_y=` overrides
-  vertical (int or (top, bottom) tuple). Defined in
-  `widgets/_core/container.py` `_expand_margin`. Do NOT use `padx=`/`pady=`
-  in user-facing code — those are internal ttk names.
-- **`docs/shared/widget-sizing.rst`** — shared include fragment for the Widget
-  sizing section. Added to all 29 existing doc pages. New pages must include
-  it via `.. include:: ../shared/widget-sizing.rst` (file-relative path from
-  `docs/api/`). Content is grouped by Stack and Grid geometry managers.
-- **`.. include::` path is file-relative** — docutils `.. include::` resolves
-  paths relative to the file, NOT the Sphinx source root. From `docs/api/`,
-  use `../shared/widget-sizing.rst`. A leading `/` would be an absolute
-  filesystem path, not a source-relative path.
-- **ScrollView `height=`/`width=` go to the canvas** — the internal Frame
-  uses `grid_propagate=True`, so passing `height=` to the Frame is silently
-  ignored. The fix routes these to the canvas constructor in
-  `_InternalScrollView.__init__` so the viewport is constrained directly.
-- **No scrollbar variants on ScrollView** — `scrollbar_variant` was removed
-  from the public API. All registered variants ('default', 'round', 'rounded')
-  use the same builder and are visually identical. 'square' is the only
-  distinct variant but is also not exposed.
-- **SplitView `sash_thickness=`** — routes through `style_options` to the
-  internal PanedWindow builder. Default is `b.scale(6)` (~6 px). No other
-  scrollbar variants exist.
-- **American English spelling scrub pending** — British spellings found
-  throughout docs and docstrings. Fixed in this session: "labelled" → "labeled"
-  (boolean_controls.py, groupbox.py), "behaviour" → "behavior" (togglegroup.py,
-  packframe.py, gridframe.py), "cancelled" → "canceled" (dialogs.py). A full
-  scrub pass across all files is still needed.
-- **`StackPage` docstring referenced internal `Expander`** — replaced with
-  accurate description. Watch for stale internal references in docstrings of
-  context-manager container classes (SplitPane, StackPage, AccordionSection).
-- **No `fill="x"` in RST doc snippets** — layout kwargs like `fill=`, `expand=`,
-  `fill_items=`, `expand_items=` belong only in `docs/examples/<widget>.py`, not
-  in the Usage code blocks in `.rst` files. Snippets should show the widget's own
-  API, not layout concerns.
+- **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column`,
+  `sticky`, etc. are NOT explicit params on any public wrapper. Every wrapper accepts
+  them via `**kwargs` routed through `self._split_layout_kwargs(kwargs)`. Never add
+  explicit placement params — use `**kwargs`.
+- **`**kwargs` not `**extra_kw`** — the catch-all must be named `**kwargs`.
+  `**extra_kw` was the old convention; it has been renamed throughout.
+- **`margin_x=` / `margin_y=`** — axis-specific external spacing. `margin=` sets
+  all sides; `margin_x=`/`margin_y=` override horizontal/vertical respectively.
+  Defined in `widgets/_core/container.py` `_expand_margin`. Never use `padx=`/
+  `pady=` in user-facing code — those are internal ttk names.
+- **`.. include::` path is file-relative** — docutils resolves paths relative to
+  the file, NOT the Sphinx source root. From `docs/api/`, use
+  `../shared/widget-sizing.rst`. A leading `/` is an absolute filesystem path.
+- **ScrollView `height=`/`width=` go to the canvas** — passing them to the Frame
+  is silently ignored. The fix routes these to the canvas constructor so the
+  viewport is constrained directly.
+- **No scrollbar variants on ScrollView** — `scrollbar_variant` was removed from
+  the public API. Do not re-expose it.
+- **SplitView `sash_thickness=`** — routes through `style_options` to the internal
+  PanedWindow builder. Default is `b.scale(6)` (~6 px).
+- **American English** — all docstrings, comments, and user-facing text must use
+  American English (color, dialog, center, analyze, etc.). A full spelling scrub
+  is still pending.
+- **No `fill="x"` in RST doc snippets** — layout kwargs belong only in
+  `docs/examples/<widget>.py`, not in Usage code blocks in `.rst` files.
 - **Example files show visual states only** — interactive sections (reactive
-  binding, event callbacks, on_submit, validation) appear blank in a static
-  screenshot. Put them in RST Usage snippets instead; keep the example file to
-  things that read well visually (variants, accents, states, label/message, etc.).
-- **`winfo_ismapped()` vs `winfo_manager()`** — `winfo_ismapped()` returns False
-  at init time even for packed widgets (window not yet shown). Use
-  `bool(winfo_manager())` when you need to know if a widget has been geometry-managed,
-  regardless of visibility. Fixed in `PasswordEntry._apply_visibility_toggle`.
-- **`text_signal` → `textsignal`** — the old wrappers used `text_signal` (with
-  underscore). It is now fixed in Button, Label, Badge, TextField. Watch for it
-  in remaining wrappers.
-- **Signals must be created INSIDE `with bs.App():`** — `bs.Signal()` wraps a
-  `tk.DoubleVar` which requires a root window. Module-level Signal creation
-  crashes with "no default root window".
-- **`icon_only` + `compound`** — when `icon_only=True`, do NOT set `compound=`
-  on the internal widget. It left-aligns the icon. Only set compound when there
-  is both text and an icon.
+  binding, event callbacks, validation) appear blank in a static screenshot. Put
+  them in RST Usage snippets; keep the example file to visually readable states.
 - **`ValidationRule` first arg is `rule_type`** — e.g.
-  `ValidationRule("stringLength", min=3, trigger="blur")`. There is no `test=`
-  kwarg; use `"custom"` with `func=` only when no built-in covers it.
-  Built-ins: `"required"`, `"email"`, `"pattern"`, `"stringLength"`, `"custom"`,
-  `"compare"`.
-- **`anchor_items="baseline"`** — not a valid Tkinter anchor. Use `"s"` instead.
-- **Screenshot runner** — removed `self.tk.update()` from the capture function
-  because it dispatches focus-clearing events. `update_idletasks()` is sufficient.
-- **`disabled` on Label** — not appropriate. Label is display-only; it has no
-  meaningful interactive state. Do not expose `disabled=` on Label.
-- **`color=` / `background_color=`** — removed from Label and TextField public
-  wrappers. They bypass semantic theming. Use `accent=` for text color and
-  `surface=` for background.
-- **Shibuya dark mode selector** — uses `html[data-color-mode="dark"]`, NOT
-  `prefers-color-scheme`. Both are covered in `custom.css`.
+  `ValidationRule("stringLength", min=3, trigger="blur")`. Built-ins:
+  `"required"`, `"email"`, `"pattern"`, `"stringLength"`, `"custom"`, `"compare"`.
+- **`anchor_items="baseline"`** — not a valid anchor. Use `"s"` instead.
+- **Screenshot runner** — use `update_idletasks()`, not `update()` (dispatches
+  focus-clearing events). Window geometry is set via `after(0)` inside `_run` so
+  it fires after `App.__exit__` shows the window. Focus is forced via `after(50)`.
+- **`disabled` on Label** — not appropriate. Label is display-only; do not expose
+  `disabled=` on it.
+- **`color=` / `background_color=`** — removed from public wrappers. Use `accent=`
+  for text color and `surface=` for background.
 - **Hero vs full example split** — `docs/screenshots/<widget>.py` is the lean
-  hero (visual states only, may use `app.tk.after()` for focus/blur scaffolding).
+  hero (may use `app.tk.after()` for focus/blur scaffolding).
   `docs/examples/<widget>.py` is the full interactive demo. The screenshot runner
   prefers `docs/screenshots/` and falls back to `docs/examples/`.
-- **Screenshot runner positioning** — window geometry is set via `after(0)` inside
-  `_run` so it fires after `App.__exit__` shows the window. Setting it before
-  `orig_run()` is overridden by the WM. Focus is forced via `after(50)` so the
-  window owns OS focus before hero widget `focus()` calls fire.
-- **`select.py` / `calendar.py` shadow stdlib** — naming an example file after a
-  stdlib module shadows it when `docs/examples/` is on `sys.path`. Use
-  `selectfield.py` and `calendarwidget.py` instead. Check before naming any new
+- **`select.py` / `calendar.py` shadow stdlib** — use `selectfield.py` and
+  `calendarwidget.py`. Check for stdlib name collisions before naming any new
   example file.
-- **`&` in `bs.Label` text** — Tkinter consumes `&` as a mnemonic underline
-  indicator and strips it from the displayed text (leaving two spaces). Use
-  ``"and"`` instead of ``"&"`` in example section labels.
-- **SelectBox disabled text fix** — `SelectBox.__init__` sets `entry.state(['readonly'])`
-  AFTER `Field.__init__` sets `['disabled', '!readonly']`, leaving entry in
-  `['disabled', 'readonly']`. Fixed in `field.py` by changing the foreground map
-  from `('disabled !readonly', ...)` to `('disabled', ...)` so muted text applies
-  regardless of the readonly flag.
-- **`GridFrame` auto-placed rows had no weight** — rows not pre-defined via `rows=`
-  were never `rowconfigure`d, so they defaulted to `weight=0` and couldn't share
-  vertical space even with `sticky='nsew'`. Fixed in `gridframe.py`: `_on_child_grid`
-  now calls `self.rowconfigure(row, weight=1)` for any row beyond `_row_defs`.
-- **`ListView` requires a height constraint to scroll** — virtual scrolling measures
-  the visible container height to calculate `_visible_rows`. Without a height
-  constraint (from a fixed `size=` App, `sticky='nsew'` Grid, or explicit `height=`),
-  the ListView expands to fit its row pool and `_clamp_indices` prevents scrolling.
-  The public wrapper sets `pack_propagate(False)` to prevent the row pool from
-  feeding back into the layout (which caused an infinite resize loop in Grid
-  layouts). Use `height=N` for a self-contained height, or place inside a
-  height-constrained layout with `fill='both', expand=True`.
-- **`ListView` selection state applied before field widgets exist** — `_update_selection`
-  was called before `_update_title`/`_update_text`, so newly-created Label widgets
-  missed the `_update_states()` call and rendered without selected styling until
-  hover. Fixed in `listitem.py`: selection is now applied after field widgets are
-  created in `update_data`.
-- **`ListView` pre-selection must happen after window shows** — calling
-  `data_source.select_record()` + `reload()` inside `with bs.App():` sets TTK
-  state before the window is mapped. Selected rows render incompletely until the
-  first hover/expose event. Pre-select after the `with` block (window is shown)
-  and before `app.run()`.
-- **`GridFrame` equal columns** — use `uniform=f"col_w{weight}"` in `columnconfigure`
-  so equal-weight columns are truly equal regardless of children's minimum sizes.
-  Without `uniform`, Tkinter distributes extra space equally but still respects
-  each column's minimum, so a field with stepper buttons inflates its column.
-- **`tristate=False` default** — boolean controls (Checkbox, Switch, ToggleButton)
-  now seed `unchecked_value` by default when no `value=`/`signal=` is given,
-  preventing the indeterminate dash from appearing unexpectedly. `tristate=True`
-  opts Checkbox into the three-state behaviour (None/True/False).
-- **`on_icon`/`off_icon` vs `icon=`** — for stateful widgets (Checkbox, Switch),
-  use `on_icon=`/`off_icon=` to show different icons per state. A static `icon=`
-  only color-shifts; it does not change shape. ToggleButton may legitimately use
-  just one of `on_icon=` or `off_icon=`.
-- **`info` color token** — restored as a first-class semantic accent across all
-  12 themes (cyan[600] light / cyan[400] dark; teal for forest, blue for ocean).
-  Add to `AccentToken`, `token_maps.py`, and `cli/add.py` when creating new themes.
+- **`&` in `bs.Label` text** — Tkinter strips `&` (mnemonic underline indicator).
+  Use `"and"` instead of `"&"` in example section labels.
+- **`ListView` requires a height constraint to scroll** — without one, it expands
+  to fit its row pool and scrolling is disabled. Use `height=N` for a
+  self-contained height, or place inside a height-constrained layout with
+  `fill='both', expand=True`. Pre-select after the `with bs.App():` block (before
+  `app.run()`) — pre-selecting inside the block renders incompletely.
+- **`GridFrame` equal columns** — use `uniform=f"col_w{weight}"` in
+  `columnconfigure` so equal-weight columns are truly equal regardless of
+  children's minimum sizes.
+- **`tristate=False` default** — boolean controls seed `unchecked_value` by
+  default when no `value=`/`signal=` is given. `tristate=True` opts Checkbox
+  into three-state behavior (None/True/False).
+- **`on_icon`/`off_icon` vs `icon=`** — for stateful widgets, use `on_icon=`/
+  `off_icon=` for state-specific icons. A static `icon=` only color-shifts.
+  ToggleButton may use just one of the two.
+- **`info` color token** — first-class semantic accent. Add to `AccentToken`,
+  `token_maps.py`, and `cli/add.py` when creating new themes.
 - **Run examples after editing** — always run `python docs/examples/<widget>.py`
-  after making changes to verify it launches without errors before committing.
-  Runtime bugs (e.g. unsupported kwargs like `wrap=True` on HStack) are invisible
-  to static analysis.
-- **pydata-sphinx-theme migration** — switched from Shibuya. Key config changes:
-  `napoleon_use_param = True` (merges Napoleon Args + typehints into one Parameters
-  block); `html_theme = "pydata_sphinx_theme"`; autoclass for boolean controls needs
-  `:inherited-members: PublicWidgetBase` to show methods from `_BooleanControlBase`.
+  after making changes before committing. Runtime bugs are invisible to static
+  analysis.
+- **pydata-sphinx-theme** — current theme (migrated from Shibuya). Key config:
+  `napoleon_use_param = True` (merges Napoleon Args + typehints into one
+  Parameters block); autoclass for boolean controls needs
+  `:inherited-members: PublicWidgetBase` to show methods from
+  `_BooleanControlBase`.
 - **Switch/ToggleButton unsupported features** — Switch does NOT support
   `on_icon`/`off_icon`/`icon_only`/`show_indicator`/`tristate`/`density`.
   ToggleButton does NOT support `tristate`/`show_indicator`. Only Checkbox
-  supports `tristate`. Give these widgets explicit `__init__` overrides so Sphinx
-  shows the correct signature (not the full `_BooleanControlBase` signature).
-- **`density=` on boolean controls** — Checkbox and Switch do NOT support `density=`
-  (removed from their public API). ToggleButton DOES support it via
-  `_capture_density_option()` in `CheckToggle`.
-- **`TTKWrapperBase.__init__wrapper` overwrites `self._accent`** — composite widgets
-  that pop `accent` from kwargs before calling `super().__init__()` will have
-  `self._accent` reset to `None` by the wrapper. Fix: store the accent in a local
-  variable, call super, then re-assign: `self._accent = accent_value`. Affects
-  `_InternalRadioGroup` (fixed) and `_InternalToggleGroup` (already handled).
-- **`_InternalRadioGroup` accent bug** — `RadioGroup.add()` uses `self._accent` to
-  style buttons, but `_BooleanControlBase.__init__wrapper` was overwriting it to
-  `None`. Fixed by storing accent before super() and restoring after in
-  `_impl/composites/radiogroup.py`.
-- **`ToggleGroup padding=` bug** — fixed. Added `if 'padding' not in kwargs: kwargs['padding'] = 1`
-  guard before `super().__init__()` in `_impl/composites/togglegroup.py`.
-- **`ToggleGroup state=` not extracted** — `state="disabled"` was leaking through
-  to the underlying ttk.Frame which rejects it. Fixed by popping `state` from kwargs
-  in `__init__` and applying it to buttons in `add()`.
-- **`OptionMenu.style_options` not passed to super** — `icon`, `icon_only`,
-  `show_dropdown_button`, `dropdown_button_icon` were being captured into
-  `style_options` but the dict was never passed to `super().__init__()`. Fixed in
-  `_impl/primitives/optionmenu.py`.
-- **`SelectButton`** — new public widget wrapping `OptionMenu` (internal). A
+  supports `tristate`. Give each subclass an explicit `__init__` so Sphinx shows
+  the correct signature.
+- **`density=` on boolean controls** — Checkbox and Switch do NOT support it.
+  ToggleButton DOES via `_capture_density_option()` in `CheckToggle`.
+- **`TTKWrapperBase.__init__wrapper` overwrites `self._accent`** — composite
+  widgets that pop `accent` before calling `super().__init__()` will have
+  `self._accent` reset to `None`. Fix: store accent in a local var, call super,
+  then re-assign: `self._accent = accent_value`.
+- **`SelectButton`** — public widget wrapping `OptionMenu` (internal). A
   button-styled, non-editable value picker. Fills the gap between `Select`
   (editable combobox) and `MenuButton` (action menu).
-- **Boolean control Sphinx signatures** — widgets that inherit `_BooleanControlBase`
-  without overriding `__init__` show ALL base class params in the Sphinx signature
-  (including unsupported ones). Give each subclass its own `__init__` that explicitly
-  lists only the params it supports.
-- **`autoclass` inherited-members for boolean controls** — use
-  `:inherited-members: PublicWidgetBase` so `toggle()`, `on_change()`, `on_check()`,
-  `on_uncheck()`, `value`, `checked`, `signal`, `disabled` appear in the API docs.
-- **ToggleButton variants** — supports `solid`, `outline`, `ghost` like Button.
-  Show variants with both inactive and active states side-by-side in the hero
-  example so the state transition is visible.
-- **RadioGroup `orient` parameter** — affects button layout inside the group.
-  Show horizontal and vertical side by side using `HStack`, not as separate sections.
-- **Tooltip `_position_anchored` bug (fixed)** — `winfo_width/height` on a freshly
-  created withdrawn Toplevel returns the 200×200 default placeholder, not content
-  size. Fixed to use `winfo_reqwidth/reqheight` only in `_impl/composites/tooltip.py`.
-- **Tooltip hero screenshot** — `docs/screenshots/tooltip.py` simulates hover via
-  `btn.tk.event_generate('<Enter>')` at t=600ms (tooltip fires after 250ms delay at
-  t=850ms), then sets `topmost=True` at t=900ms so the tooltip wins z-order over the
-  app window lifted at t=800ms. Grab at t=950ms captures the live tooltip popup.
+- **Boolean control Sphinx signatures** — widgets inheriting `_BooleanControlBase`
+  without overriding `__init__` show ALL base class params in Sphinx (including
+  unsupported ones). Give each subclass its own `__init__` listing only its
+  supported params. Use `:inherited-members: PublicWidgetBase` in `autoclass`.
+- **ToggleButton variants** — supports `solid`, `outline`, `ghost`. Show with
+  both inactive and active states side-by-side so the transition is visible.
+- **RadioGroup `orient`** — show horizontal and vertical side by side using
+  `HStack`, not as separate sections.
 - **Toast/Tooltip screenshot z-order** — the screenshot runner sets the app
-  `topmost=True` and lifts it at t=800ms. To capture a floating Toplevel (toast,
-  tooltip) in the screenshot, show it at t=850ms so it claims topmost AFTER the app.
-- **Toast hero** — force-show via `app.tk.after(850, lambda: bs.Toast(..., position='+X+Y').show())`.
-  Position must fall within the captured region: app client area is approximately
-  `(winfo_rootx, winfo_rooty)` to `(rootx+w, rooty+h)` where the runner places the
-  window at `+200+100` on screen.
-- **Screenshot runner 2 px inset** — `take_screenshots.py` now crops 2 px from each
-  edge of the captured region to remove the Windows window-border artifact.
-- **Screenshot blurriness from browser downscaling** — if the captured PNG is wider
-  than the docs content column, the browser scales it down and it appears blurry.
-  Use `size=(W, H)` (not `minsize=`) on the example App to fix the window to a known
-  width. Target ~680-720px to stay within the pydata-sphinx-theme content column.
-- **Screenshot blurriness from fractional pixel positions** — narrow content centered
-  in a wide window renders text at sub-pixel positions. Fix by using `Grid(fill="x")`
-  or `VStack(fill="x")` for all top-level demo sections so content fills the full
-  window width and stays at integer pixel boundaries.
+  `topmost=True` and lifts it at t=800ms. Show floating Toplevels at t=850ms so
+  they claim topmost after the app. Tooltip: simulate hover via
+  `btn.tk.event_generate('<Enter>')` at t=600ms (fires after 250ms delay). Toast:
+  `app.tk.after(850, lambda: bs.Toast(..., position='+X+Y').show())`.
+- **Screenshot sizing** — use `size=(W, H)` on the example App (not `minsize=`).
+  Target ~680-720px width to stay within the pydata-sphinx-theme content column.
+  Use `Grid(fill="x")` or `VStack(fill="x")` for all top-level demo sections to
+  keep content at integer pixel boundaries and avoid browser downscale blurriness.
+- **Screenshot runner 2px inset** — `take_screenshots.py` crops 2px from each
+  edge to remove the Windows window-border artifact.
 - **`**extra_kw` removed from layout wrappers** — `Card`, `GroupBox`, `VStack`,
-  `HStack`, `Grid` no longer accept `**extra_kw`. All supported kwargs are now
-  explicit. Do not re-add it.
-- **`variant=` removed from VStack/HStack** — use `bs.Card` for card-variant layout.
-  VStack and HStack are plain layout containers only.
-- **`TLabelframe` removed from `CONTAINER_CLASSES`** — it was incorrectly included,
-  causing `accent=` to bleed into the surface/background instead of only coloring the
-  border. Fixed in `src/bootstack/style/token_maps.py`. GroupBox/LabelFrame `accent=`
-  now correctly controls border color only.
-- **`height=` / `width=` on VStack/HStack** — setting either disables frame
-  propagation. Setting **both** fully constrains the frame with no extra kwargs needed.
-  Setting only one collapses the other axis to zero — add `fill=` and `expand=True`
-  to let the parent control the unconstrained axis. The underlying pack geometry
-  manager has no "minsize" for frames; a Grid-backed refactor is a future improvement.
-- **`show_border=True` needs padding** — the border is drawn inside the frame edge.
-  Without at least `padding=1`, children render flush against it. Always pair
-  `show_border=True` with `padding=` for visual clearance.
-- **Grid `columns=N` integer shorthand** — passing an integer creates N equal-weight
-  columns. `columns=3` ≡ `columns=[1, 1, 1]`. Same for `rows=N`.
-- **Grid `0` weight == `'auto'`** — both map to `(weight=0, minsize=0)` in
-  `_parse_size`. Prefer `'auto'` for clarity; `0` reads as a mistake.
-- **`bs.Event` type** — `tkinter.Event` is no longer used in public API signatures.
-  All `on_*()` callbacks receive a `bootstack.widgets.types.Event` object, which is
-  an enriched event with a `data: Any` attribute for application-level payloads.
-  The `Event` class is the public type; do not reference `tkinter.Event` in docs or
-  docstrings.
-- **No Tkinter references in public docs** — the framework goal is to abstract the
-  underlying toolkit away entirely. Do not mention "Tkinter", "ttk", or "tk." in
-  user-facing docstrings or RST pages. Replace with neutral phrasing:
-  "anchor position" not "Tkinter anchor string"; "cell alignment" not "sticky string".
-- **Cross-referencing layout widgets** — all layout doc pages should have a "See also"
-  section pointing to related containers. Card/GroupBox reference VStack/HStack/Grid;
-  VStack/HStack/Grid reference each other and Card/GroupBox. Grid.rst also notes that
-  Card and GroupBox support `layout='grid'`.
-- **`Expander` is internal** — `bs.Expander` was removed from the public API. It is
-  used internally by `Accordion` only. Do not re-export it. The public collapsible
-  container is `bs.Accordion`.
-- **`Accordion` defaults** — `show_border=True`, `show_separators=True`, and body
-  `padding=16` are the defaults. This is the Bootstrap-style bordered accordion.
-  Pass `show_border=False` / `show_separators=False` for a plain look.
-- **`Accordion` header selected state** — uses `b.subtle()` (light tint, not
-  `b.selected()` which darkens 18%). Defined in
-  `src/bootstack/style/builders/expander.py` ghost variant. The solid variant uses
-  `b.color(accent)` for a full-color selected header. `highlight=True` is set on all
-  accordion sections by default.
-- **`Accordion` fill default** — `layout_kw.setdefault('fill', 'x')` is set in the
-  public wrapper so accordion always fills container width. Without this, headers
-  shrink to their text width when content is hidden.
-- **One doc page per widget** — never document more than one widget on a single RST
-  page, even if they are closely related (e.g. Expander and Accordion are separate).
-- **`[bold]` is redundant on heading fonts** — `heading-md`, `heading-lg` etc. are
-  already bold. Do not write `font="heading-md[bold]"`.
-- **`font="heading-md"` not `font="heading-md[bold]"`** — same as above; use the
-  token name only.
+  `HStack`, `Grid` no longer accept it. Do not re-add.
+- **`variant=` removed from VStack/HStack** — use `bs.Card` for card-variant
+  layout. VStack and HStack are plain layout containers only.
+- **`height=`/`width=` on VStack/HStack** — setting either disables frame
+  propagation. Setting both fully constrains the frame. Setting only one collapses
+  the other axis to zero — add `fill=` + `expand=True` to let the parent control
+  the unconstrained axis.
+- **`show_border=True` needs padding** — border is drawn inside the frame edge.
+  Always pair `show_border=True` with `padding=` for visual clearance.
+- **Grid `columns=N` integer shorthand** — `columns=3` ≡ `columns=[1, 1, 1]`.
+  `0` weight == `'auto'`; prefer `'auto'` for clarity.
+- **`bs.Event` type** — all `on_*()` callbacks receive
+  `bootstack.widgets.types.Event` (not `tkinter.Event`). It has a `data: Any`
+  attribute for application-level payloads.
+- **No Tkinter references in public docs** — say "anchor position" not "Tkinter
+  anchor string"; "cell alignment" not "sticky string".
+- **Cross-referencing layout widgets** — Card/GroupBox reference VStack/HStack/Grid;
+  VStack/HStack/Grid reference each other and Card/GroupBox. Grid.rst also notes
+  that Card and GroupBox support `layout='grid'`.
+- **`Expander` is internal** — removed from public API. Use `bs.Accordion`.
+- **`Accordion` defaults** — `show_border=True`, `show_separators=True`, body
+  `padding=16`. Pass `show_border=False`/`show_separators=False` for a plain look.
+  `layout_kw.setdefault('fill', 'x')` ensures accordion fills container width.
+- **`Accordion` header selected state** — uses `b.subtle()` (light tint) for ghost
+  variant; `b.color(accent)` for solid. `highlight=True` is set on all sections.
+- **One doc page per widget** — never document more than one widget per RST page.
+- **`font="heading-md"` not `font="heading-md[bold]"`** — heading tokens are
+  already bold. The `[bold]` modifier is redundant.
 - **AppShell `toolbar`/`nav` expose internals** — `shell.toolbar` returns the
-  internal composite; use `command=` (not `on_click=`) on it. `shell.nav` returns
-  the internal SideNav, not the public wrapper. Do not document them as if they
-  were public wrappers.
-- **AppShell `nav_pane_width=` not wired** — the parameter isn't threaded through
-  to `_build_shell` → `SideNav`. Passing it currently raises `TypeError`. Deferred.
-- **API naming standardisation done (Navigation pass)** — renamed across SideNav,
-  Accordion, Tabs, AppShell: `on_change` (present tense), `current` property,
-  `add_footer_page()`, `item/items/item_keys` instead of `node/nodes/node_keys`,
-  `expanded=` instead of `is_expanded=`. Still pending: `on_pane_toggled`,
-  `on_display_mode_changed` (SideNav), `on_selection_changed` (ListView),
-  `on_date_selected` (Calendar).
-- **`Accordion.on_change` / `SideNav.on_change`** — renamed from
-  `on_accordion_changed` and `on_selection_changed` respectively. Internal
-  `_InternalAppShell` still calls `self._nav.on_selection_changed(...)` — this
-  works because it calls the internal SideNav method directly (not the public
-  wrapper), but watch for drift if the internal is ever updated.
-- **Dialog API conventions (dialogs pass):**
-  - `Dialog.__init__` is fully keyword-only; `master=` renamed to `parent=`;
-    `minsize=`/`maxsize=` renamed to `min_size=`/`max_size=`.
-  - `Dialog.show()` is fully keyword-only.
-  - Internal dialog callers (`MessageDialog`, `QueryDialog`, `DateDialog`,
-    `_ChromeDialog`, `_InternalFormDialog`) all updated to use `parent=`,
-    `min_size=`, `max_size=`.
-  - `on_data_changed` → `on_data_change` (present tense) across `Form`,
-    `FormDialog` (public + internal).
-  - `ButtonRole` simplified to 4 values: `"primary"`, `"secondary"`,
-    `"danger"`, `"cancel"`. `"default"` and `"help"` removed.
-  - `"link"` was an invalid variant on `"help"` role — replaced with `"ghost"`,
-    then role was removed entirely. Always verify variants against
-    `VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']`.
-  - `Dialog` `content_builder` receives an internal `_Frame` — public widgets
-    cannot be used directly inside it via `parent=frame`. Use internal
-    `_Label`/`_Frame` primitives from `widgets/_impl/primitives/`.
-  - `Frame.configure(surface=...)` does NOT work at runtime — `surface=` is
-    constructor-only. To change a frame's surface after creation, use
+  internal composite (use `command=`, not `on_click=`); `shell.nav` returns the
+  internal SideNav, not the public wrapper. Do not document them as public
+  wrappers. `nav_pane_width=` is not wired — passing it raises `TypeError`.
+  Deferred.
+- **API naming standard** — present-tense event names (`on_change`, `on_pane_toggle`,
+  etc.); `current` property; `item/items/item_keys` (not `node/nodes/node_keys`);
+  `expanded=` (not `is_expanded=`). Still pending on SideNav
+  (`on_pane_toggled`, `on_display_mode_changed`), ListView
+  (`on_selection_changed`), Calendar (`on_date_selected`).
+- **Dialog API conventions:**
+  - `Dialog.__init__` is fully keyword-only; use `parent=` (not `master=`);
+    `min_size=`/`max_size=` (not `minsize=`/`maxsize=`).
+  - `ButtonRole` values: `"primary"`, `"secondary"`, `"danger"`, `"cancel"`.
+  - `content_builder` receives an internal `_Frame` — use `_Label`/`_Frame`
+    primitives from `widgets/_impl/primitives/`, not public wrappers.
+  - `Frame.configure(surface=...)` does NOT work at runtime — use
     `frame.configure_style_options(surface=...)`.
-  - `get_theme_color(token)` in `bootstack.style.style` returns the current
-    theme's hex color for any accent token (e.g. `"danger"`, `"warning"`).
-    Use this instead of hardcoding severity colors.
-  - `ask_item()` now uses `SelectBox` (styled, searchable, no arbitrary input)
-    instead of raw `Combobox`. Validation in `_on_submit` still checks
-    `result not in self._items` as a safety net.
-  - Alert/confirm layout: use two empty `_Frame` spacers with `expand=True`
-    around the content frame to vertically center it (classic tkinter trick).
-  - `severity=` on `alert()`/`confirm()`: auto-rings bell for `"warning"` and
-    `"danger"`; auto-derives confirm button color (`"danger"` → danger role,
-    `"warning"` → secondary + accent="warning"). Icon color comes from
-    `get_theme_color(severity)`.
-  - `min_size=` is the public convention (not `minsize=`). `App` runtime still
-    uses `minsize` internally — a future cleanup pass should expose `min_size`
-    explicitly on `App` like `AppShell` already does.
-- **No Widget sizing section on dialog pages** — dialogs open as Toplevel windows,
-  not layout-managed widgets. The `fill=`/`expand=`/`row=`/`column=` placement kwargs
-  don't apply. Omit the `.. include:: ../shared/widget-sizing.rst` block from all
-  dialog doc pages.
-- **Dialog category has 7 doc pages** (split complete) — `dialogs.rst` is now
-  a toctree-only index. `ColorDropperDialog` is internal to `ColorChooserDialog`,
-  not a standalone public class.
-- **`ColorChooserDialog` internal cleanup pending** — `on_dialog_result()` /
-  `off_dialog_result()` on the internal class are unused by the public wrapper and
-  add noise. Candidate for removal in a future cleanup pass. The public wrapper uses
-  the blocking `show()` + `result` pattern; no `on_*` event needed.
-- **Dialog hero screenshot pattern** — open dialog non-modally at t=200ms
-  (`dialog.show(modal=False)`), then call `toplevel.attributes("-topmost", True)`
-  + `toplevel.lift()` at t=850ms. The dialog appears centered on the app window.
-  Screenshot at t=950ms captures the dialog on top. See `docs/screenshots/dialog.py`
-  as the reference. For oversized dialogs (FontDialog: 800x600), pass an explicit
-  `position=(200, 70)` and size the app to match: `position=(200, 70)` places
-  dialog title bar above the capture region so content starts at the screenshot top.
-- **`colorchooser.py` / `fontdialog.py` / `filterdialog.py` used `master=`** in
-  their internal `Dialog()` calls — already fixed to `parent=`. Check any new
-  dialog implementations for this.
-- **`fontdialog.py` scrollbar `variant="round"`** — round is not a valid scrollbar
-  variant (only `"default"`). Fixed. Do not use `variant="round"` on Scrollbar.
-- **`filterdialog.py` used `minsize=`/`maxsize=`** instead of `min_size=`/`max_size=`
-  in `Dialog()` — fixed. Always use `min_size=`/`max_size=` with `Dialog`.
-- **`ColorChoice` namedtuple** — `namedtuple('ColorChoice', 'rgb hsl hex')`. Exported
-  as `bs.ColorChoice`. Fields: `rgb=(r,g,b)` 0–255, `hsl=(h,s,l)` 0–360/0–100/0–100,
-  `hex` lowercase hex string.
-- **`ColorChooser` tabs removed** — the Advanced/Themed/Standard `TabView` was
-  removed; the chooser now shows the spectrum directly with no tab navigation. Also
-  removed: `STD_SHADES`, `STD_COLORS`, `create_swatches()`, `on_press_swatch()`.
-- **Dialog `show(position=, modal=)` on all wrappers** — `FormDialog`, `ColorChooserDialog`,
-  `FontDialog`, `FilterDialog` all expose `position: tuple[int,int] | None` and
-  `modal: bool | None` on their `show()` method. Pass through to the internal dialog.
-- **`app._capture_target` pattern for dialog screenshots** — set this attribute on
-  the `App` instance to a Toplevel; the screenshot runner captures that window instead
-  of the app window. Uses `winfo_rootx/y` for left/content-area alignment and
-  `geometry()` for the outer-frame y (includes title bar). Defined in
-  `docs/scripts/take_screenshots.py` `_RUNNER._grab`.
-- **`bs-dialog-screenshot` CSS class** — add to all dialog screenshot `<img>` tags
-  (in place of the inline `border-radius:6px`). Defined in `docs/_static/custom.css`.
-  Adds a 1px border + soft drop shadow appropriate for isolated dialog window captures.
-  Regular widget screenshots keep `bs-screenshot-light/dark` only.
+  - `get_theme_color(token)` in `bootstack.style.style` returns the hex color for
+    any accent token. Use it instead of hardcoding severity colors.
+  - `on_data_change` (present tense) on `Form` and `FormDialog`.
+  - `min_size=` is the public convention. `App` still uses `minsize` internally
+    (future cleanup needed).
+  - All dialog wrappers expose `show(position: tuple[int,int] | None, modal: bool | None)`.
+- **Dialog category has 7 doc pages** — `dialogs.rst` is a toctree-only index.
+  `ColorDropperDialog` is internal to `ColorChooserDialog`, not a standalone public
+  class. `ColorChooserDialog` internal cleanup pending (`on_dialog_result()` /
+  `off_dialog_result()` are unused).
+- **Dialog hero screenshot pattern** — open non-modally at t=200ms
+  (`dialog.show(modal=False)`), lift dialog at t=850ms, screenshot at t=950ms. See
+  `docs/screenshots/dialog.py` as reference. For oversized dialogs (FontDialog:
+  800×600), pass `position=(200, 70)` so the title bar is above the capture region.
+- **`app._capture_target`** — set to a Toplevel to capture that window instead of
+  the app window. Defined in `docs/scripts/take_screenshots.py` `_RUNNER._grab`.
+- **`bs-dialog-screenshot` CSS class** — use on dialog screenshot `<img>` tags
+  instead of inline `border-radius`. Adds 1px border + drop shadow. Regular widget
+  screenshots keep `bs-screenshot-light/dark` only.
+- **`ColorChoice` namedtuple** — `namedtuple('ColorChoice', 'rgb hsl hex')`.
+  Fields: `rgb=(r,g,b)` 0–255, `hsl=(h,s,l)` 0–360/0–100/0–100, `hex` lowercase.
 - **`FontDialog.result` typed as `Any`** — intentional; avoids surfacing
-  `tkinter.font.Font` in the public API. The actual return is a `font.Font` object;
-  the docstring explains it. Don't change to `font.Font | None` as that would require
-  importing tkinter in the public surface.
+  `tkinter.font.Font` in the public API.
 
 ---
 
@@ -712,7 +436,7 @@ sig.subscribe(lambda v: ...)    # imperative subscription
 
 `textsignal=` is the standard kwarg for all text-bearing widgets. `signal=` for
 non-text widgets (Slider, Checkbox, etc.). Never expose `textvariable=` or
-`variable=` in the public API.
+`variable=` in the public API. `bs.Signal()` must be created inside `with bs.App():`.
 
 ### Layout
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence, overload
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
 from bootstack.widgets._impl.composites.form import Form as _InternalForm
@@ -9,6 +9,8 @@ from bootstack.widgets._impl.composites.form import (
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.stream import Stream
+from bootstack.widgets._core.subscription import Subscription
 
 
 class Form(PublicWidgetBase):
@@ -21,8 +23,9 @@ class Form(PublicWidgetBase):
             instances or equivalent dicts.
         col_count: Number of top-level columns. Default `1`.
         min_col_width: Minimum column width in pixels.
-        on_data_change: Callback invoked with the updated data dict on
-            each field change.
+        on_data_change: Callback invoked with the updated data dict on each
+            field change. Equivalent to calling ``on_data_change()`` after
+            construction.
         width: Fixed form width in pixels.
         height: Fixed form height in pixels.
         accent: Accent token for the form container.
@@ -141,5 +144,27 @@ class Form(PublicWidgetBase):
         """Return the text Signal for the named field."""
         return self._internal.field_textsignal(key)
 
+    # ----- Events -----
 
-register_widget_events(Form, {})
+    @overload
+    def on_data_change(self) -> Stream: ...
+    @overload
+    def on_data_change(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_data_change(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired whenever any field value changes.
+
+        The handler receives the current form data as a dict. Called with no
+        handler, returns a composable ``Stream``.
+
+        Args:
+            handler: Called with the updated data dict on each field change.
+
+        Returns:
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
+        """
+        if handler is None:
+            return self.on("data_change")
+        return self.on("data_change", lambda _e: handler(self.value))
+
+
+register_widget_events(Form, {"data_change": "<<BsDataChange>>"})

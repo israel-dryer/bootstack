@@ -129,7 +129,7 @@ from bootstack.widgets.tooltip import Tooltip
 
 from bootstack.widgets.calendar import Calendar
 from bootstack.widgets.form import Form
-from bootstack.widgets.form import FieldItem, GroupItem, TabsItem, TabItem, EditorType
+from bootstack.widgets.form import FormItem, FieldItem, GroupItem, TabsItem, TabItem, EditorType
 
 from bootstack.widgets.sidenav import (
     SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
