@@ -11,7 +11,7 @@ from typing import Any, Callable, Literal
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets.types import WidgetDensity
 
-from bootstack._runtime.shortcuts import get_shortcuts
+from bootstack._runtime.shortcuts import get_shortcuts, format_shortcut
 from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
 from bootstack.widgets._impl.primitives import RadioToggle, CheckToggle, Frame, Label, Separator
 from bootstack.widgets._impl.primitives.button import Button
@@ -280,13 +280,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         Returns:
             Button: The created Button widget.
         """
-        # Resolve shortcut display text from the Shortcuts service
-        shortcut_display = None
-        if shortcut:
-            # Try to look up as a registered shortcut key first
-            shortcuts = get_shortcuts()
-            display = shortcuts.display(shortcut)
-            shortcut_display = display if display else shortcut
+        # Resolve shortcut display text.
+        # format_shortcut handles all three forms: registered key name,
+        # modifier pattern ("Mod+S" → "Ctrl+S"), and literal pass-through.
+        shortcut_display = format_shortcut(shortcut) if shortcut else None
 
         if shortcut_display:
             # Use CompositeFrame container for items with shortcuts
@@ -607,8 +604,10 @@ class _ToplevelContextMenu(CustomConfigMixin):
         if pos:
             self._toplevel.geometry(f"+{pos[0]}+{pos[1]}")
 
-        # Show the menu
+        # Show the menu. Setting topmost ensures the popup rises above any
+        # parent window that has -topmost True (e.g. a screenshot capture harness).
         self._toplevel.deiconify()
+        self._toplevel.attributes('-topmost', True)
         self._toplevel.lift()
         self._toplevel.focus_force()
 

@@ -7,3 +7,4 @@ Toolbar, MenuButton.
    :maxdepth: 1
 
    toolbar
+   menubutton

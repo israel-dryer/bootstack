@@ -88,6 +88,9 @@ class DropdownButton(MenuButton):
                 source=kwargs
             )
         )
+        # Infer icon_only when an icon is set but no text label is provided.
+        if 'icon_only' not in style_options and style_options.get('icon') and not text:
+            style_options['icon_only'] = True
         kwargs['style_options'] = style_options
         self._items = items if items else []
         self._command = command

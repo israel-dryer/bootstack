@@ -20,9 +20,18 @@ from bootstack.style.builders.utils import (
 )
 
 
-def _menubutton_layout(ttk_style: str, show_dropdown: bool = True) -> Element:
-    """Create the layout for a menubutton."""
-    children = [Element("Menubutton.label", sticky="nsew", side="left")]
+def _menubutton_layout(ttk_style: str, show_dropdown: bool = True, icon_only: bool = False) -> Element:
+    """Create the layout for a menubutton.
+
+    When icon_only=True and show_dropdown=False the label must not carry
+    side="left", otherwise ttk pack-layout only allocates as much width as
+    the icon needs and the anchor="center" has no room to centre it.
+    """
+    label_side = "left" if show_dropdown or not icon_only else None
+    label_kw = {"sticky": "nsew"}
+    if label_side:
+        label_kw["side"] = label_side
+    children = [Element("Menubutton.label", **label_kw)]
 
     if show_dropdown:
         children.extend(
@@ -159,7 +168,7 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
             ('active', active_img.image),
         ]))
 
-    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
+    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown, icon_only))
 
     b.configure_style(
         ttk_style,
@@ -245,7 +254,7 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
             ('active', active_img.image),
         ]))
 
-    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
+    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown, icon_only))
 
     b.configure_style(
         ttk_style,
@@ -328,7 +337,7 @@ def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
             ('active !disabled', active_img.image),
         ]))
 
-    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown))
+    b.create_style_layout(ttk_style, _menubutton_layout(ttk_style, show_dropdown, icon_only))
 
     b.configure_style(
         ttk_style,
