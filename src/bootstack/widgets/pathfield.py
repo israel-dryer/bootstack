@@ -116,7 +116,7 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["state"] = "disabled"
         elif read_only:
             internal_kwargs["state"] = "readonly"
-t        if width is not None:
+        if width is not None:
             internal_kwargs["width"] = width
         if accent is not None:
             internal_kwargs["accent"] = accent
