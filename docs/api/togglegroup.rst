@@ -3,16 +3,13 @@ ToggleGroup
 
 A group of toggle buttons — single-select or multi-select.
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-hero-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-hero-light.png"
-        alt="ToggleGroup — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-hero-dark.png"
-        alt="ToggleGroup — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ initial selection as a ``set``.
    bs.ToggleGroup(["Bold", "Italic", "Underline"],
                   mode="multi", value={"Bold", "Underline"})
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-multi-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup multi-select — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-multi-light.png"
-        alt="ToggleGroup multi-select — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-multi-dark.png"
-        alt="ToggleGroup multi-select — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-multi-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup multi-select — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -59,16 +53,13 @@ Use ``variant=`` to control visual weight.
    bs.ToggleGroup(["Off", "On"], accent="primary", variant="outline", value="On")
    bs.ToggleGroup(["Off", "On"], accent="primary", variant="ghost",   value="On")
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-variants-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup style variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-variants-light.png"
-        alt="ToggleGroup style variants — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-variants-dark.png"
-        alt="ToggleGroup style variants — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup style variants — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -82,16 +73,13 @@ Accent colors
    bs.ToggleGroup(["Off", "On"], accent="warning",   value="On")
    bs.ToggleGroup(["Off", "On"], accent="danger",    value="On")
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-accents-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-accents-light.png"
-        alt="ToggleGroup accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-accents-dark.png"
-        alt="ToggleGroup accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup accent colors — dark theme
 
 Orientation
 ~~~~~~~~~~~
@@ -101,16 +89,13 @@ Orientation
    bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="horizontal")           # default
    bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="vertical", value="Middle")
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-orientation-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup vertical orientation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-orientation-light.png"
-        alt="ToggleGroup vertical orientation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-orientation-dark.png"
-        alt="ToggleGroup vertical orientation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-orientation-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup vertical orientation — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -137,16 +122,13 @@ Disabled
    bs.ToggleGroup(["A", "B", "C"], value="B", disabled=True)
    bs.ToggleGroup(["X", "Y", "Z"], mode="multi", value={"X", "Z"}, disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglegroup-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglegroup-disabled-light.png"
-        alt="ToggleGroup disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglegroup-disabled-dark.png"
-        alt="ToggleGroup disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglegroup-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup disabled — dark theme
 
 Events
 ~~~~~~

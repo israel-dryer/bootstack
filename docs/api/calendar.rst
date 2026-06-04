@@ -3,16 +3,13 @@ Calendar
 
 An inline calendar for single-date or date-range selection.
 
-.. raw:: html
+.. image:: /_static/examples/calendarwidget-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Calendar — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/calendarwidget-hero-light.png"
-        alt="Calendar — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/calendarwidget-hero-dark.png"
-        alt="Calendar — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/calendarwidget-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Calendar — dark theme
 
 Usage
 -----
@@ -47,16 +44,13 @@ the second click sets the end date.
        end_date=date(2026, 6, 10),
    )
 
-.. raw:: html
+.. image:: /_static/examples/calendarwidget-range-light.png
+   :class: bs-screenshot-light
+   :alt: Calendar range selection — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/calendarwidget-range-light.png"
-        alt="Calendar range selection — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/calendarwidget-range-dark.png"
-        alt="Calendar range selection — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/calendarwidget-range-dark.png
+   :class: bs-screenshot-dark
+   :alt: Calendar range selection — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -100,16 +94,13 @@ Display ISO 8601 week numbers in the leftmost column.
 
    bs.Calendar(value=date(2026, 5, 15), show_week_numbers=True)
 
-.. raw:: html
+.. image:: /_static/examples/calendarwidget-week-numbers-light.png
+   :class: bs-screenshot-light
+   :alt: Calendar week numbers — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/calendarwidget-week-numbers-light.png"
-        alt="Calendar week numbers — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/calendarwidget-week-numbers-dark.png"
-        alt="Calendar week numbers — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/calendarwidget-week-numbers-dark.png
+   :class: bs-screenshot-dark
+   :alt: Calendar week numbers — dark theme
 
 First weekday
 ~~~~~~~~~~~~~

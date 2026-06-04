@@ -4,14 +4,13 @@ Button
 A clickable action trigger. Accepts the button text as the first positional
 argument.
 
-.. raw:: html
+.. image:: /_static/examples/button-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Button — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-hero-light.png"
-        alt="Button — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-hero-dark.png"
-        alt="Button — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button — dark theme
 
 Usage
 -----
@@ -32,14 +31,13 @@ themes without hard-coding any color.
    bs.Button("Warning",   accent="warning")
    bs.Button("Danger",    accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/button-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Button accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-accents-light.png"
-        alt="Button accent colors — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-accents-dark.png"
-        alt="Button accent colors — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button accent colors — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -53,14 +51,13 @@ actions from secondary ones.
    bs.Button("Outline", accent="primary", variant="outline")
    bs.Button("Ghost",   accent="primary", variant="ghost")
 
-.. raw:: html
+.. image:: /_static/examples/button-variants-light.png
+   :class: bs-screenshot-light
+   :alt: Button style variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-variants-light.png"
-        alt="Button style variants — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-variants-dark.png"
-        alt="Button style variants — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button style variants — dark theme
 
 Icons
 ~~~~~
@@ -74,14 +71,13 @@ The icon appears to the left of the text by default.
    bs.Button("Delete", icon="trash",    accent="danger")
    bs.Button("Export", icon="download", accent="secondary", variant="outline")
 
-.. raw:: html
+.. image:: /_static/examples/button-icons-light.png
+   :class: bs-screenshot-light
+   :alt: Button icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-icons-light.png"
-        alt="Button icons — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-icons-dark.png"
-        alt="Button icons — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button icons — dark theme
 
 Icon position
 ~~~~~~~~~~~~~
@@ -96,14 +92,13 @@ Defaults to ``'left'``.
    bs.Button("Top",    icon="arrow-up",    icon_position="top")
    bs.Button("Bottom", icon="arrow-down",  icon_position="bottom")
 
-.. raw:: html
+.. image:: /_static/examples/button-icon-position-light.png
+   :class: bs-screenshot-light
+   :alt: Button icon position — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-icon-position-light.png"
-        alt="Button icon position — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-icon-position-dark.png"
-        alt="Button icon position — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-icon-position-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button icon position — dark theme
 
 Icon-only
 ~~~~~~~~~
@@ -123,14 +118,13 @@ clear about intent.
    # explicit form — equivalent, states intent clearly
    bs.Button("Delete", icon="trash", icon_only=True, accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/button-icon-only-light.png
+   :class: bs-screenshot-light
+   :alt: Button icon-only — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-icon-only-light.png"
-        alt="Button icon-only — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-icon-only-dark.png"
-        alt="Button icon-only — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-icon-only-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button icon-only — dark theme
 
 Uniform width
 ~~~~~~~~~~~~~
@@ -143,14 +137,13 @@ Use ``width=`` (in character units) to make a row of buttons the same width.
    bs.Button("Cancel",                   width=10)
    bs.Button("Reset",  accent="danger",  width=10)
 
-.. raw:: html
+.. image:: /_static/examples/button-width-light.png
+   :class: bs-screenshot-light
+   :alt: Button uniform width — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-width-light.png"
-        alt="Button uniform width — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-width-dark.png"
-        alt="Button uniform width — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-width-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button uniform width — dark theme
 
 Compact density
 ~~~~~~~~~~~~~~~
@@ -164,14 +157,13 @@ space is tight.
    bs.Button("Copy",  icon="copy",      density="compact")
    bs.Button("Paste", icon="clipboard", density="compact")
 
-.. raw:: html
+.. image:: /_static/examples/button-density-light.png
+   :class: bs-screenshot-light
+   :alt: Button compact density — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-density-light.png"
-        alt="Button compact density — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-density-dark.png"
-        alt="Button compact density — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-density-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button compact density — dark theme
 
 Disabled state
 ~~~~~~~~~~~~~~
@@ -181,14 +173,13 @@ Disabled state
    bs.Button("Disabled Solid",   accent="primary",                    disabled=True)
    bs.Button("Disabled Outline", accent="primary", variant="outline", disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/button-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: Button disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/button-disabled-light.png"
-        alt="Button disabled — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/button-disabled-dark.png"
-        alt="Button disabled — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/button-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: Button disabled — dark theme
 
 Reactive text
 ~~~~~~~~~~~~~

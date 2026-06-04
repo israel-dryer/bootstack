@@ -4,16 +4,13 @@ ListView
 A virtual-scrolling list for efficiently displaying large datasets. Only
 visible rows are rendered, making it suitable for thousands of records.
 
-.. raw:: html
+.. image:: /_static/examples/listview-light.png
+   :class: bs-screenshot-light
+   :alt: ListView demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/listview-light.png"
-        alt="ListView demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/listview-dark.png"
-        alt="ListView demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/listview-dark.png
+   :class: bs-screenshot-dark
+   :alt: ListView demo — dark theme
 
 Usage
 -----

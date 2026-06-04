@@ -4,16 +4,13 @@ Color Dialog
 ``bs.ask_color()`` opens a modal color chooser and returns the selected color.
 ``bs.ColorChooserDialog`` gives the same chooser as a reusable object.
 
-.. raw:: html
+.. image:: /_static/examples/color-dialog-hero-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Color Dialog — light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/color-dialog-hero-light.png"
-        alt="Color Dialog — light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/color-dialog-hero-dark.png"
-        alt="Color Dialog — dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/color-dialog-hero-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Color Dialog — dark theme
 
 Usage
 -----

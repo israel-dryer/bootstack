@@ -4,16 +4,13 @@ Badge
 A compact styled chip for status indicators, counts, and tags. Inherits all
 ``Label`` kwargs but renders with a fixed pill or square shape.
 
-.. raw:: html
+.. image:: /_static/examples/badge-light.png
+   :class: bs-screenshot-light
+   :alt: Badge demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/badge-light.png"
-        alt="Badge demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/badge-dark.png"
-        alt="Badge demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/badge-dark.png
+   :class: bs-screenshot-dark
+   :alt: Badge demo — dark theme
 
 Usage
 -----

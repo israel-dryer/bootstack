@@ -4,14 +4,13 @@ TextArea
 A multi-line text input with optional label, placeholder, scrollbars, and
 undo/redo support.
 
-.. raw:: html
+.. image:: /_static/examples/textarea-hero-light.png
+   :class: bs-screenshot-light
+   :alt: TextArea — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textarea-hero-light.png"
-        alt="TextArea — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textarea-hero-dark.png"
-        alt="TextArea — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/textarea-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextArea — dark theme
 
 Usage
 -----
@@ -73,14 +72,13 @@ shows scrollbars only when content overflows.
    bs.TextArea(scrollbars="both")      # horizontal + vertical, always
    bs.TextArea(scrollbars="none")      # never shown
 
-.. raw:: html
+.. image:: /_static/examples/textarea-scrollbars-light.png
+   :class: bs-screenshot-light
+   :alt: TextArea scrollbars — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textarea-scrollbars-light.png"
-        alt="TextArea scrollbars — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textarea-scrollbars-dark.png"
-        alt="TextArea scrollbars — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/textarea-scrollbars-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextArea scrollbars — dark theme
 
 States
 ~~~~~~
@@ -90,14 +88,13 @@ States
    bs.TextArea(value="Editable content.",  label="Normal")
    bs.TextArea(value="Read-only content.", label="Read only", read_only=True)
 
-.. raw:: html
+.. image:: /_static/examples/textarea-states-light.png
+   :class: bs-screenshot-light
+   :alt: TextArea states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textarea-states-light.png"
-        alt="TextArea states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textarea-states-dark.png"
-        alt="TextArea states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/textarea-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextArea states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~

@@ -4,14 +4,13 @@ CodeEditor
 A full-featured code editor with syntax highlighting, line numbers, bracket
 matching, smart indent, and built-in search/replace.
 
-.. raw:: html
+.. image:: /_static/examples/codeeditor-hero-light.png
+   :class: bs-screenshot-light
+   :alt: CodeEditor — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/codeeditor-hero-light.png"
-        alt="CodeEditor — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/codeeditor-hero-dark.png"
-        alt="CodeEditor — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/codeeditor-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: CodeEditor — dark theme
 
 Usage
 -----
@@ -36,14 +35,13 @@ name is accepted.
    bs.CodeEditor(language="javascript")
    bs.CodeEditor(language="html")
 
-.. raw:: html
+.. image:: /_static/examples/codeeditor-languages-light.png
+   :class: bs-screenshot-light
+   :alt: CodeEditor languages — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/codeeditor-languages-light.png"
-        alt="CodeEditor languages — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/codeeditor-languages-dark.png"
-        alt="CodeEditor languages — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/codeeditor-languages-dark.png
+   :class: bs-screenshot-dark
+   :alt: CodeEditor languages — dark theme
 
 Color themes
 ~~~~~~~~~~~~
@@ -68,14 +66,13 @@ Read-only state
 
    bs.CodeEditor(value=code, language="python", read_only=True)
 
-.. raw:: html
+.. image:: /_static/examples/codeeditor-states-light.png
+   :class: bs-screenshot-light
+   :alt: CodeEditor states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/codeeditor-states-light.png"
-        alt="CodeEditor states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/codeeditor-states-dark.png"
-        alt="CodeEditor states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/codeeditor-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: CodeEditor states — dark theme
 
 Editor options
 ~~~~~~~~~~~~~~

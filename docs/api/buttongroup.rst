@@ -4,14 +4,13 @@ ButtonGroup
 A row (or column) of visually-connected buttons sharing a common accent and
 variant. Buttons are added one at a time via ``add()``.
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-hero-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-hero-light.png"
-        alt="ButtonGroup — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-hero-dark.png"
-        alt="ButtonGroup — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup — dark theme
 
 Usage
 -----
@@ -42,14 +41,13 @@ button inherits the group accent unless you override it individually via
    bg.add("Save")
    bg.add("Cancel")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-accents-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-accents-light.png"
-        alt="ButtonGroup accent colors — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-accents-dark.png"
-        alt="ButtonGroup accent colors — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup accent colors — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -62,14 +60,13 @@ Use ``variant=`` to control visual weight across the whole group.
    bs.ButtonGroup(accent="primary", variant="outline")
    bs.ButtonGroup(accent="primary", variant="ghost")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-variants-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup style variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-variants-light.png"
-        alt="ButtonGroup style variants — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-variants-dark.png"
-        alt="ButtonGroup style variants — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup style variants — dark theme
 
 Icons
 ~~~~~
@@ -83,14 +80,13 @@ Pass ``icon=`` to ``add()`` to show a Bootstrap Icon alongside the label.
    bg.add("Italic",    icon="type-italic")
    bg.add("Underline", icon="type-underline")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-icons-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-icons-light.png"
-        alt="ButtonGroup icons — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-icons-dark.png"
-        alt="ButtonGroup icons — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup icons — dark theme
 
 Icon-only
 ~~~~~~~~~
@@ -106,14 +102,13 @@ automatically, same as for :doc:`button`.
    bg.add(icon="type-underline")
    bg.add(icon="type-strikethrough")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-icon-only-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup icon-only — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-icon-only-light.png"
-        alt="ButtonGroup icon-only — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-icon-only-dark.png"
-        alt="ButtonGroup icon-only — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-icon-only-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup icon-only — dark theme
 
 Vertical orientation
 ~~~~~~~~~~~~~~~~~~~~
@@ -128,14 +123,13 @@ buttons top-to-bottom instead of left-to-right.
    bg.add("Copy",  icon="copy")
    bg.add("Paste", icon="clipboard")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-vertical-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup vertical — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-vertical-light.png"
-        alt="ButtonGroup vertical — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-vertical-dark.png"
-        alt="ButtonGroup vertical — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-vertical-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup vertical — dark theme
 
 Compact density
 ~~~~~~~~~~~~~~~
@@ -149,14 +143,13 @@ Use ``density='compact'`` to reduce button padding — useful inside toolbars.
    bg.add("Copy",  icon="copy")
    bg.add("Paste", icon="clipboard")
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-density-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup compact density — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-density-light.png"
-        alt="ButtonGroup compact density — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-density-dark.png"
-        alt="ButtonGroup compact density — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-density-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup compact density — dark theme
 
 Disabled state
 ~~~~~~~~~~~~~~
@@ -173,14 +166,13 @@ once. Toggle the ``disabled`` property at runtime to re-enable.
    # Toggle at runtime
    bg.disabled = False
 
-.. raw:: html
+.. image:: /_static/examples/buttongroup-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: ButtonGroup disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/buttongroup-disabled-light.png"
-        alt="ButtonGroup disabled — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/buttongroup-disabled-dark.png"
-        alt="ButtonGroup disabled — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/buttongroup-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: ButtonGroup disabled — dark theme
 
 Handling clicks
 ~~~~~~~~~~~~~~~

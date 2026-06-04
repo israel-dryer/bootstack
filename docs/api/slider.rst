@@ -3,16 +3,13 @@ Slider
 
 A single-handle track for selecting a numeric value within a range.
 
-.. raw:: html
+.. image:: /_static/examples/slider-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Slider demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/slider-hero-light.png"
-        alt="Slider demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/slider-hero-dark.png"
-        alt="Slider demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/slider-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider demo — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ Accent colors
    bs.Slider(50, accent="warning")
    bs.Slider(50, accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/slider-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Slider accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/slider-accents-light.png"
-        alt="Slider accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/slider-accents-dark.png"
-        alt="Slider accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/slider-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider accent colors — dark theme
 
 Value badge
 ~~~~~~~~~~~
@@ -81,16 +75,13 @@ subdivisions between them. ``tick_labels=False`` hides the numeric labels.
    bs.Slider(50, tick_step=25, minor_ticks=4)
    bs.Slider(0.5, min_value=0, max_value=1, tick_step=0.25, tick_format="{:.0%}", show_value=True)
 
-.. raw:: html
+.. image:: /_static/examples/slider-ticks-light.png
+   :class: bs-screenshot-light
+   :alt: Slider tick marks — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/slider-ticks-light.png"
-        alt="Slider tick marks — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/slider-ticks-dark.png"
-        alt="Slider tick marks — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/slider-ticks-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider tick marks — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -110,16 +101,13 @@ Disabled
 
    bs.Slider(60, disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/slider-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: Slider disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/slider-disabled-light.png"
-        alt="Slider disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/slider-disabled-dark.png"
-        alt="Slider disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/slider-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider disabled — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

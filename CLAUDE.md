@@ -115,20 +115,20 @@ Go from nothing to something fast. The user should never need to `import tkinter
 7. **Wire** into `docs/api/<category>.rst` toctree.
 8. **Commit** on `feat/docs-api-improvements`.
 
-### Screenshot HTML pattern
+### Screenshot image pattern
 
 ```rst
-.. raw:: html
+.. image:: /_static/examples/<widget>-<scene>-light.png
+   :class: bs-screenshot-light
+   :alt: <Widget> <scene> — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/<widget>-<scene>-light.png"
-        alt="<Widget> <scene> — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/<widget>-<scene>-dark.png"
-        alt="<Widget> <scene> — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/<widget>-<scene>-dark.png
+   :class: bs-screenshot-dark
+   :alt: <Widget> <scene> — dark theme
 ```
 
-Hero uses `-hero-light/dark.png`. Dialogs use class `bs-dialog-screenshot`.
+Hero uses `-hero-light/dark.png`. Dialogs add `bs-dialog-screenshot` to the class
+(e.g. `:class: bs-screenshot-light bs-dialog-screenshot`).
 Margin/radius owned by `docs/_static/custom.css` — no inline styles.
 
 ### Widget sizing section pattern

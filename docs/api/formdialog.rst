@@ -5,16 +5,13 @@ Form Dialog
 dialog. Pass ``data=`` to generate fields automatically from a dict, or
 ``items=`` for an explicit layout.
 
-.. raw:: html
+.. image:: /_static/examples/formdialog-hero-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: FormDialog — light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/formdialog-hero-light.png"
-        alt="FormDialog — light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/formdialog-hero-dark.png"
-        alt="FormDialog — dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/formdialog-hero-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: FormDialog — dark theme
 
 Usage
 -----

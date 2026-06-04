@@ -4,16 +4,13 @@ Toast
 A temporary notification that floats over the application and auto-dismisses
 after a configurable delay.
 
-.. raw:: html
+.. image:: /_static/examples/toast-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Toast — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toast-hero-light.png"
-        alt="Toast — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toast-hero-dark.png"
-        alt="Toast — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toast-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toast — dark theme
 
 Usage
 -----
@@ -54,16 +51,13 @@ Accent colors
    bs.Toast(message="Storage is low",  icon="exclamation-triangle-fill", accent="warning").show()
    bs.Toast(message="Upload failed",   icon="x-circle-fill",             accent="danger").show()
 
-.. raw:: html
+.. image:: /_static/examples/toast-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Toast accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toast-accents-light.png"
-        alt="Toast accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toast-accents-dark.png"
-        alt="Toast accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toast-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toast accent colors — dark theme
 
 Detail text
 ~~~~~~~~~~~
@@ -79,16 +73,13 @@ useful for timestamps or brief metadata.
        accent="success",
    ).show()
 
-.. raw:: html
+.. image:: /_static/examples/toast-detail-light.png
+   :class: bs-screenshot-light
+   :alt: Toast with detail text — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toast-detail-light.png"
-        alt="Toast with detail text — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toast-detail-dark.png"
-        alt="Toast with detail text — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toast-detail-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toast with detail text — dark theme
 
 Action buttons
 ~~~~~~~~~~~~~~
@@ -109,16 +100,13 @@ the toast and passes the dict to ``on_dismiss``.
        on_dismiss=lambda btn: print("clicked:", btn),
    ).show()
 
-.. raw:: html
+.. image:: /_static/examples/toast-actions-light.png
+   :class: bs-screenshot-light
+   :alt: Toast with action buttons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toast-actions-light.png"
-        alt="Toast with action buttons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toast-actions-dark.png"
-        alt="Toast with action buttons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toast-actions-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toast with action buttons — dark theme
 
 Dismiss callback
 ~~~~~~~~~~~~~~~~

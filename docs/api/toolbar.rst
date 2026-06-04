@@ -5,16 +5,13 @@ A horizontal strip of buttons, labels, separators, and other widgets.
 Items are added left-to-right via ``add_button()``, ``add_label()``,
 ``add_separator()``, ``add_spacer()``, and ``add_widget()``.
 
-.. raw:: html
+.. image:: /_static/examples/toolbar-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Toolbar demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-hero-light.png"
-        alt="Toolbar demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-hero-dark.png"
-        alt="Toolbar demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toolbar-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toolbar demo — dark theme
 
 Usage
 -----
@@ -41,16 +38,13 @@ intent to individual buttons.
    tb.add_button("Publish", icon="cloud-upload", accent="primary", on_click=publish)
    tb.add_button("Discard", icon="trash", accent="danger", on_click=discard)
 
-.. raw:: html
+.. image:: /_static/examples/toolbar-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Toolbar accent buttons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-accents-light.png"
-        alt="Toolbar accent buttons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-accents-dark.png"
-        alt="Toolbar accent buttons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toolbar-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toolbar accent buttons — dark theme
 
 Separators and spacers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,16 +62,13 @@ to the right side.
    tb.add_spacer()
    tb.add_button(icon="gear")          # pinned to the right
 
-.. raw:: html
+.. image:: /_static/examples/toolbar-separators-light.png
+   :class: bs-screenshot-light
+   :alt: Toolbar separators and spacers — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-separators-light.png"
-        alt="Toolbar separators and spacers — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-separators-dark.png"
-        alt="Toolbar separators and spacers — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toolbar-separators-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toolbar separators and spacers — dark theme
 
 Labels
 ~~~~~~
@@ -104,16 +95,13 @@ toolbars such as a rich-text formatting strip.
    tb.add_button(icon="type-italic")
    tb.add_button(icon="type-underline")
 
-.. raw:: html
+.. image:: /_static/examples/toolbar-density-light.png
+   :class: bs-screenshot-light
+   :alt: Toolbar compact density — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-density-light.png"
-        alt="Toolbar compact density — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-density-dark.png"
-        alt="Toolbar compact density — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toolbar-density-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toolbar compact density — dark theme
 
 Button variant
 ~~~~~~~~~~~~~~
@@ -141,16 +129,13 @@ the background token — ``'card'`` lifts it slightly from the page background.
    tb.add_button("Open", icon="folder2-open")
    tb.add_button("Save", icon="floppy")
 
-.. raw:: html
+.. image:: /_static/examples/toolbar-surface-light.png
+   :class: bs-screenshot-light
+   :alt: Toolbar with border and card surface — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/toolbar-surface-light.png"
-        alt="Toolbar with border and card surface — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/toolbar-surface-dark.png"
-        alt="Toolbar with border and card surface — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/toolbar-surface-dark.png
+   :class: bs-screenshot-dark
+   :alt: Toolbar with border and card surface — dark theme
 
 Custom widgets
 ~~~~~~~~~~~~~~

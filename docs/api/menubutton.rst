@@ -3,16 +3,13 @@ MenuButton
 
 A button that opens a dropdown menu when clicked.
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-hero-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-hero-light.png"
-        alt="MenuButton demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-hero-dark.png"
-        alt="MenuButton demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton demo — dark theme
 
 Usage
 -----
@@ -51,16 +48,13 @@ exclusive choice item. Both return the item key that can be used with
    mb2.add_radio_item("150%", value=150, selected=True)
    mb2.add_radio_item("200%", value=200)
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-check-radio-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton check and radio items — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-check-radio-light.png"
-        alt="MenuButton check and radio items — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-check-radio-dark.png"
-        alt="MenuButton check and radio items — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-check-radio-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton check and radio items — dark theme
 
 Global item callback
 ~~~~~~~~~~~~~~~~~~~~
@@ -103,16 +97,13 @@ Shortcuts are most useful when ``MenuButton`` is used in a menubar context:
    mb.add_separator()
    mb.add_item("Exit", icon="box-arrow-right", on_click=app.quit)
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-shortcuts-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton keyboard shortcuts — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-shortcuts-light.png"
-        alt="MenuButton keyboard shortcuts — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-shortcuts-dark.png"
-        alt="MenuButton keyboard shortcuts — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-shortcuts-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton keyboard shortcuts — dark theme
 
 Icon button
 ~~~~~~~~~~~
@@ -128,16 +119,13 @@ automatically when ``icon=`` is set and no label is provided. Set
    bs.MenuButton(icon="grid",                show_arrow=False)
    bs.MenuButton(icon="gear",                show_arrow=False)
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-icon-only-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton icon-only — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-icon-only-light.png"
-        alt="MenuButton icon-only — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-icon-only-dark.png"
-        alt="MenuButton icon-only — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-icon-only-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton icon-only — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -152,16 +140,13 @@ Use ``accent=`` to apply a color intent to the button face.
    bs.MenuButton("Warning",   accent="warning")
    bs.MenuButton("Danger",    accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-accents-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton accents — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-accents-light.png"
-        alt="MenuButton accents — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-accents-dark.png"
-        alt="MenuButton accents — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton accents — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -176,16 +161,13 @@ the accent color.
    bs.MenuButton("Outline", accent="primary", variant="outline")
    bs.MenuButton("Ghost",   accent="primary", variant="ghost")
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-variants-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-variants-light.png"
-        alt="MenuButton variants — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-variants-dark.png"
-        alt="MenuButton variants — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton variants — dark theme
 
 Disabled state
 ~~~~~~~~~~~~~~
@@ -202,16 +184,13 @@ also be toggled after construction.
 
    mb_b.disabled = False   # re-enable later
 
-.. raw:: html
+.. image:: /_static/examples/menubutton-states-light.png
+   :class: bs-screenshot-light
+   :alt: MenuButton states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/menubutton-states-light.png"
-        alt="MenuButton states — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/menubutton-states-dark.png"
-        alt="MenuButton states — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/menubutton-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: MenuButton states — dark theme
 
 Dynamic item management
 ~~~~~~~~~~~~~~~~~~~~~~~

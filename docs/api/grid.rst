@@ -6,16 +6,13 @@ auto-placed left-to-right, top-to-bottom by default. Column and row sizes
 are defined with ``columns=`` and ``rows=``; omitting them lets the grid
 size itself to fit its content.
 
-.. raw:: html
+.. image:: /_static/examples/grid-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Grid — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/grid-hero-light.png"
-        alt="Grid — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-hero-dark.png"
-        alt="Grid — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/grid-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Grid — dark theme
 
 Usage
 -----
@@ -47,16 +44,13 @@ Column definitions
    # Fixed sidebar, flexible content, fixed panel
    bs.Grid(columns=["120px", 1, "80px"])
 
-.. raw:: html
+.. image:: /_static/examples/grid-columns-light.png
+   :class: bs-screenshot-light
+   :alt: Grid column definitions — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/grid-columns-light.png"
-        alt="Grid column definitions — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-columns-dark.png"
-        alt="Grid column definitions — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/grid-columns-dark.png
+   :class: bs-screenshot-dark
+   :alt: Grid column definitions — dark theme
 
 Row definitions
 ~~~~~~~~~~~~~~~
@@ -89,16 +83,13 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
    bs.Grid(columns=[1, 1], gap=8)            # 8 px between all cells
    bs.Grid(columns=[1, 1], gap=(32, 8))      # 32 px between columns, 8 px between rows
 
-.. raw:: html
+.. image:: /_static/examples/grid-gap-light.png
+   :class: bs-screenshot-light
+   :alt: Grid gap — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/grid-gap-light.png"
-        alt="Grid gap — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-gap-dark.png"
-        alt="Grid gap — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/grid-gap-dark.png
+   :class: bs-screenshot-dark
+   :alt: Grid gap — dark theme
 
 Child alignment — sticky_items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,16 +117,13 @@ Individual children can override the default with their own ``sticky=``.
    with bs.Grid(columns=[1, 1], gap=8, sticky_items="nsew", height=80):
        bs.Button("A"); bs.Button("B")
 
-.. raw:: html
+.. image:: /_static/examples/grid-sticky-light.png
+   :class: bs-screenshot-light
+   :alt: Grid sticky — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/grid-sticky-light.png"
-        alt="Grid sticky — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-sticky-dark.png"
-        alt="Grid sticky — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/grid-sticky-dark.png
+   :class: bs-screenshot-dark
+   :alt: Grid sticky — dark theme
 
 Auto-flow
 ~~~~~~~~~
@@ -168,16 +156,13 @@ label column and a ``1``-weight field column:
        bs.Label("Role")
        bs.TextField()
 
-.. raw:: html
+.. image:: /_static/examples/grid-form-light.png
+   :class: bs-screenshot-light
+   :alt: Grid form layout — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/grid-form-light.png"
-        alt="Grid form layout — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-form-dark.png"
-        alt="Grid form layout — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/grid-form-dark.png
+   :class: bs-screenshot-dark
+   :alt: Grid form layout — dark theme
 
 Background
 ~~~~~~~~~~

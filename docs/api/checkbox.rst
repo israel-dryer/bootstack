@@ -3,16 +3,13 @@ Checkbox
 
 A labelled checkbox for binary on/off input.
 
-.. raw:: html
+.. image:: /_static/examples/checkbox-tristate-light.png
+   :class: bs-screenshot-light
+   :alt: Checkbox — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-tristate-light.png"
-        alt="Checkbox — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-tristate-dark.png"
-        alt="Checkbox — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/checkbox-tristate-dark.png
+   :class: bs-screenshot-dark
+   :alt: Checkbox — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ Accent colors
    bs.Checkbox("Warning",   accent="warning",   value=True)
    bs.Checkbox("Danger",    accent="danger",    value=True)
 
-.. raw:: html
+.. image:: /_static/examples/checkbox-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Checkbox accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-accents-light.png"
-        alt="Checkbox accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-accents-dark.png"
-        alt="Checkbox accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/checkbox-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Checkbox accent colors — dark theme
 
 Custom state icons
 ~~~~~~~~~~~~~~~~~~
@@ -64,16 +58,13 @@ entirely with the icon pair.
        on_icon="check-circle-fill", off_icon="circle",
        show_indicator=False, accent="success", value=False)
 
-.. raw:: html
+.. image:: /_static/examples/checkbox-custom-icons-light.png
+   :class: bs-screenshot-light
+   :alt: Checkbox custom state icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-custom-icons-light.png"
-        alt="Checkbox custom state icons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-custom-icons-dark.png"
-        alt="Checkbox custom state icons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/checkbox-custom-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: Checkbox custom state icons — dark theme
 
 Tristate
 ~~~~~~~~
@@ -93,16 +84,13 @@ returns ``None`` in that state.
    chk.checked = True
    print(chk.value)   # → True
 
-.. raw:: html
+.. image:: /_static/examples/checkbox-tristate-light.png
+   :class: bs-screenshot-light
+   :alt: Checkbox tristate — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-tristate-light.png"
-        alt="Checkbox tristate — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-tristate-dark.png"
-        alt="Checkbox tristate — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/checkbox-tristate-dark.png
+   :class: bs-screenshot-dark
+   :alt: Checkbox tristate — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -135,16 +123,13 @@ Disabled
    bs.Checkbox("Cannot change", disabled=True)
    bs.Checkbox("Locked on", value=True, disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/checkbox-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: Checkbox disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/checkbox-disabled-light.png"
-        alt="Checkbox disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/checkbox-disabled-dark.png"
-        alt="Checkbox disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/checkbox-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: Checkbox disabled — dark theme
 
 Events
 ~~~~~~

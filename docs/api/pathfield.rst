@@ -5,14 +5,13 @@ A text field with a browse button that opens a native file or directory
 picker dialog. When the user confirms a selection, the field value is
 updated and a ``change`` event fires.
 
-.. raw:: html
+.. image:: /_static/examples/pathfield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: PathField — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/pathfield-hero-light.png"
-        alt="PathField — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/pathfield-hero-dark.png"
-        alt="PathField — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/pathfield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: PathField — dark theme
 
 Usage
 -----
@@ -68,14 +67,13 @@ Set ``required=True`` to mark the field visually.
        required=True,
    )
 
-.. raw:: html
+.. image:: /_static/examples/pathfield-labels-light.png
+   :class: bs-screenshot-light
+   :alt: PathField label and message — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/pathfield-labels-light.png"
-        alt="PathField label and message — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/pathfield-labels-dark.png"
-        alt="PathField label and message — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/pathfield-labels-dark.png
+   :class: bs-screenshot-dark
+   :alt: PathField label and message — dark theme
 
 States
 ~~~~~~
@@ -86,14 +84,13 @@ States
    bs.PathField(value="/home/user/docs/report.pdf", label="Read only", read_only=True)
    bs.PathField(value="/home/user/docs/report.pdf", label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/pathfield-states-light.png
+   :class: bs-screenshot-light
+   :alt: PathField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/pathfield-states-light.png"
-        alt="PathField states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/pathfield-states-dark.png"
-        alt="PathField states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/pathfield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: PathField states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~

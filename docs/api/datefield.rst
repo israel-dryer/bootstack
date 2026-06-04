@@ -4,14 +4,13 @@ DateField
 A date input field with locale-aware display formatting and an optional
 calendar picker button. Supports single-date and date-range selection modes.
 
-.. raw:: html
+.. image:: /_static/examples/datefield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: DateField — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/datefield-hero-light.png"
-        alt="DateField — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/datefield-hero-dark.png"
-        alt="DateField — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/datefield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: DateField — dark theme
 
 Usage
 -----
@@ -38,14 +37,13 @@ Any `ICU date format`_ pattern or named preset is accepted.
 
 .. _ICU date format: https://unicode-org.github.io/icu/userguide/format_parse/datetime/
 
-.. raw:: html
+.. image:: /_static/examples/datefield-formats-light.png
+   :class: bs-screenshot-light
+   :alt: DateField formats — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/datefield-formats-light.png"
-        alt="DateField formats — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/datefield-formats-dark.png"
-        alt="DateField formats — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/datefield-formats-dark.png
+   :class: bs-screenshot-dark
+   :alt: DateField formats — dark theme
 
 Range mode
 ~~~~~~~~~~
@@ -64,14 +62,13 @@ The entry becomes read-only in this mode — dates must be chosen via the picker
    )
    start, end = df.value  # tuple[date, date]
 
-.. raw:: html
+.. image:: /_static/examples/datefield-range-light.png
+   :class: bs-screenshot-light
+   :alt: DateField range mode — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/datefield-range-light.png"
-        alt="DateField range mode — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/datefield-range-dark.png"
-        alt="DateField range mode — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/datefield-range-dark.png
+   :class: bs-screenshot-dark
+   :alt: DateField range mode — dark theme
 
 Date constraints
 ~~~~~~~~~~~~~~~~
@@ -123,14 +120,13 @@ States
    bs.DateField(value=today, label="Read only", read_only=True)
    bs.DateField(value=today, label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/datefield-states-light.png
+   :class: bs-screenshot-light
+   :alt: DateField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/datefield-states-light.png"
-        alt="DateField states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/datefield-states-dark.png"
-        alt="DateField states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/datefield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: DateField states — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

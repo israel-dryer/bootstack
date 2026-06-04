@@ -5,16 +5,13 @@ A circular arc gauge for displaying a value within a range. Supports full-circle
 and semicircle layouts, solid and segmented arc styles, optional center text with
 prefix/suffix formatting, and an interactive drag mode.
 
-.. raw:: html
+.. image:: /_static/examples/gauge-light.png
+   :class: bs-screenshot-light
+   :alt: Gauge demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/gauge-light.png"
-        alt="Gauge demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/gauge-dark.png"
-        alt="Gauge demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/gauge-dark.png
+   :class: bs-screenshot-dark
+   :alt: Gauge demo — dark theme
 
 Usage
 -----

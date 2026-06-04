@@ -3,16 +3,13 @@ RadioGroup
 
 A group of mutually exclusive radio buttons.
 
-.. raw:: html
+.. image:: /_static/examples/radiogroup-hero-light.png
+   :class: bs-screenshot-light
+   :alt: RadioGroup — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-hero-light.png"
-        alt="RadioGroup — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-hero-dark.png"
-        alt="RadioGroup — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/radiogroup-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: RadioGroup — dark theme
 
 Usage
 -----
@@ -41,16 +38,13 @@ Orientation
    bs.RadioGroup(["A", "B", "C"], orient="horizontal")  # default
    bs.RadioGroup(["A", "B", "C"], orient="vertical")
 
-.. raw:: html
+.. image:: /_static/examples/radiogroup-orientation-light.png
+   :class: bs-screenshot-light
+   :alt: RadioGroup orientation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-orientation-light.png"
-        alt="RadioGroup orientation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-orientation-dark.png"
-        alt="RadioGroup orientation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/radiogroup-orientation-dark.png
+   :class: bs-screenshot-dark
+   :alt: RadioGroup orientation — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -64,16 +58,13 @@ Accent colors
    bs.RadioGroup(["Warning"],   accent="warning",   value="Warning")
    bs.RadioGroup(["Danger"],    accent="danger",    value="Danger")
 
-.. raw:: html
+.. image:: /_static/examples/radiogroup-accents-light.png
+   :class: bs-screenshot-light
+   :alt: RadioGroup accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-accents-light.png"
-        alt="RadioGroup accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-accents-dark.png"
-        alt="RadioGroup accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/radiogroup-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: RadioGroup accent colors — dark theme
 
 Title
 ~~~~~
@@ -91,16 +82,13 @@ A ``title=`` adds a label rendered above the group.
        title="Theme", orient="vertical", value="auto",
    )
 
-.. raw:: html
+.. image:: /_static/examples/radiogroup-title-light.png
+   :class: bs-screenshot-light
+   :alt: RadioGroup title — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-title-light.png"
-        alt="RadioGroup title — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-title-dark.png"
-        alt="RadioGroup title — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/radiogroup-title-dark.png
+   :class: bs-screenshot-dark
+   :alt: RadioGroup title — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -136,16 +124,13 @@ Disabled
 
    bs.RadioGroup(["Alpha", "Beta", "Gamma"], value="Beta", disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/radiogroup-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: RadioGroup disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/radiogroup-disabled-light.png"
-        alt="RadioGroup disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/radiogroup-disabled-dark.png"
-        alt="RadioGroup disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/radiogroup-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: RadioGroup disabled — dark theme
 
 Events
 ~~~~~~

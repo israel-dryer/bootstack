@@ -5,16 +5,13 @@ A container that stacks children top-to-bottom using the pack geometry manager.
 Use ``gap=`` for even spacing, ``fill_items='x'`` to stretch children to the
 full width, and ``fill='both', expand=True`` to let the stack grow with the window.
 
-.. raw:: html
+.. image:: /_static/examples/vstack-hero-light.png
+   :class: bs-screenshot-light
+   :alt: VStack — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/vstack-hero-light.png"
-        alt="VStack — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/vstack-hero-dark.png"
-        alt="VStack — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/vstack-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: VStack — dark theme
 
 Usage
 -----
@@ -36,16 +33,13 @@ Gap
         for i in range(1, 5):
             bs.Button(f"Item {i}")
 
-.. raw:: html
+.. image:: /_static/examples/vstack-gap-light.png
+   :class: bs-screenshot-light
+   :alt: VStack gap — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/vstack-gap-light.png"
-        alt="VStack gap — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/vstack-gap-dark.png"
-        alt="VStack gap — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/vstack-gap-dark.png
+   :class: bs-screenshot-dark
+   :alt: VStack gap — dark theme
 
 Child fill
 ~~~~~~~~~~
@@ -59,16 +53,13 @@ children can override this with their own ``fill=``.
        bs.TextField()          # fills horizontally by default
        bs.Button("Submit", accent="primary")
 
-.. raw:: html
+.. image:: /_static/examples/vstack-fill-light.png
+   :class: bs-screenshot-light
+   :alt: VStack fill — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/vstack-fill-light.png"
-        alt="VStack fill — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/vstack-fill-dark.png"
-        alt="VStack fill — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/vstack-fill-dark.png
+   :class: bs-screenshot-dark
+   :alt: VStack fill — dark theme
 
 Child alignment
 ~~~~~~~~~~~~~~~
@@ -87,16 +78,13 @@ the full width. Use ``'w'`` (left), ``'center'``, or ``'e'`` (right).
    with bs.VStack(gap=8, anchor_items="e",      show_border=True, padding=8, width=180, height=120):
        bs.Button("A"); bs.Button("B")
 
-.. raw:: html
+.. image:: /_static/examples/vstack-alignment-light.png
+   :class: bs-screenshot-light
+   :alt: VStack alignment — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/vstack-alignment-light.png"
-        alt="VStack alignment — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/vstack-alignment-dark.png"
-        alt="VStack alignment — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/vstack-alignment-dark.png
+   :class: bs-screenshot-dark
+   :alt: VStack alignment — dark theme
 
 Fixed height
 ~~~~~~~~~~~~
@@ -154,16 +142,13 @@ to give the border visual clearance.
        bs.Label("Bordered section")
        bs.Button("Action")
 
-.. raw:: html
+.. image:: /_static/examples/vstack-border-light.png
+   :class: bs-screenshot-light
+   :alt: VStack border — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/vstack-border-light.png"
-        alt="VStack border — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/vstack-border-dark.png"
-        alt="VStack border — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/vstack-border-dark.png
+   :class: bs-screenshot-dark
+   :alt: VStack border — dark theme
 
 Self-placement
 ~~~~~~~~~~~~~~

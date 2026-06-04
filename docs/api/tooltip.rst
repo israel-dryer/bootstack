@@ -4,16 +4,13 @@ Tooltip
 A small popup that appears when the mouse hovers over a widget. Tooltips can
 follow the mouse or anchor to a specific edge of the target.
 
-.. raw:: html
+.. image:: /_static/examples/tooltip-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Tooltip — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tooltip-hero-light.png"
-        alt="Tooltip — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tooltip-hero-dark.png"
-        alt="Tooltip — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tooltip-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tooltip — dark theme
 
 Usage
 -----
@@ -61,16 +58,13 @@ Color-code tooltips by intent with ``accent=``.
    bs.Tooltip(btn, "Saved successfully", accent="success")
    bs.Tooltip(btn, "New in this release", accent="info")
 
-.. raw:: html
+.. image:: /_static/examples/tooltip-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Tooltip accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tooltip-accents-light.png"
-        alt="Tooltip accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tooltip-accents-dark.png"
-        alt="Tooltip accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tooltip-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tooltip accent colors — dark theme
 
 Text wrapping and alignment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

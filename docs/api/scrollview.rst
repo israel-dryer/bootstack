@@ -5,16 +5,13 @@ A canvas-backed scrollable container. Place child widgets inside the context
 block; they are stacked vertically inside the scrollable area by default.
 Mouse-wheel scrolling is automatically enabled for all descendants.
 
-.. raw:: html
+.. image:: /_static/examples/scrollview-hero-light.png
+   :class: bs-screenshot-light
+   :alt: ScrollView — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/scrollview-hero-light.png"
-        alt="ScrollView — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/scrollview-hero-dark.png"
-        alt="ScrollView — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/scrollview-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: ScrollView — dark theme
 
 Usage
 -----
@@ -64,16 +61,13 @@ for most use cases), ``'horizontal'``, or ``'both'``.
    with bs.ScrollView(scroll_direction="both", fill="both", expand=True):
        ...
 
-.. raw:: html
+.. image:: /_static/examples/scrollview-horizontal-light.png
+   :class: bs-screenshot-light
+   :alt: ScrollView horizontal — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/scrollview-horizontal-light.png"
-        alt="ScrollView horizontal — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/scrollview-horizontal-dark.png"
-        alt="ScrollView horizontal — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/scrollview-horizontal-dark.png
+   :class: bs-screenshot-dark
+   :alt: ScrollView horizontal — dark theme
 
 .. note::
 

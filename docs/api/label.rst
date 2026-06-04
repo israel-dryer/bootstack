@@ -4,16 +4,13 @@ Label
 Static text display with optional icon, semantic font tokens, and accent
 colors. The display text is the first positional argument.
 
-.. raw:: html
+.. image:: /_static/examples/label-light.png
+   :class: bs-screenshot-light
+   :alt: Label demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/label-light.png"
-        alt="Label demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/label-dark.png"
-        alt="Label demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/label-dark.png
+   :class: bs-screenshot-dark
+   :alt: Label demo — dark theme
 
 Usage
 -----

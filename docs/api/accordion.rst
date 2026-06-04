@@ -5,16 +5,13 @@ A list of collapsible sections, optionally limited to one open at a time.
 Each section is an :class:`Expander <bootstack.widgets.expander.Expander>`
 added via ``add()``.
 
-.. raw:: html
+.. image:: /_static/examples/accordion-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Accordion — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/accordion-hero-light.png"
-        alt="Accordion — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/accordion-hero-dark.png"
-        alt="Accordion — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/accordion-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Accordion — dark theme
 
 Usage
 -----
@@ -104,16 +101,13 @@ Valid values: ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
    with acc.add("Pricing"):
        bs.Label("Pricing details.")
 
-.. raw:: html
+.. image:: /_static/examples/accordion-accent-light.png
+   :class: bs-screenshot-light
+   :alt: Accordion accent — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/accordion-accent-light.png"
-        alt="Accordion accent — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/accordion-accent-dark.png"
-        alt="Accordion accent — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/accordion-accent-dark.png
+   :class: bs-screenshot-dark
+   :alt: Accordion accent — dark theme
 
 Icons
 ~~~~~
@@ -131,16 +125,13 @@ title.
    with acc.add("Music", icon="file-music"):
        bs.Label("Music here.")
 
-.. raw:: html
+.. image:: /_static/examples/accordion-icons-light.png
+   :class: bs-screenshot-light
+   :alt: Accordion icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/accordion-icons-light.png"
-        alt="Accordion icons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/accordion-icons-dark.png"
-        alt="Accordion icons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/accordion-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: Accordion icons — dark theme
 
 Section layout
 ~~~~~~~~~~~~~~

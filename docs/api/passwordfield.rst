@@ -3,16 +3,13 @@ PasswordField
 
 Masked text input for password entry with an optional visibility toggle.
 
-.. raw:: html
+.. image:: /_static/examples/passwordfield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: PasswordField demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/passwordfield-hero-light.png"
-        alt="PasswordField demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/passwordfield-hero-dark.png"
-        alt="PasswordField demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/passwordfield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: PasswordField demo — dark theme
 
 Usage
 -----
@@ -57,16 +54,13 @@ Disable it with ``show_visibility_toggle=False``.
    bs.PasswordField(label="With toggle", value="secret123")
    bs.PasswordField(label="No toggle",   value="secret123", show_visibility_toggle=False)
 
-.. raw:: html
+.. image:: /_static/examples/passwordfield-toggle-light.png
+   :class: bs-screenshot-light
+   :alt: PasswordField visibility toggle — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/passwordfield-toggle-light.png"
-        alt="PasswordField visibility toggle — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/passwordfield-toggle-dark.png"
-        alt="PasswordField visibility toggle — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/passwordfield-toggle-dark.png
+   :class: bs-screenshot-dark
+   :alt: PasswordField visibility toggle — dark theme
 
 Programmatic reveal / hide
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,16 +98,13 @@ States
    bs.PasswordField(value="secret123", label="Read only", read_only=True)
    bs.PasswordField(value="secret123", label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/passwordfield-states-light.png
+   :class: bs-screenshot-light
+   :alt: PasswordField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/passwordfield-states-light.png"
-        alt="PasswordField states — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/passwordfield-states-dark.png"
-        alt="PasswordField states — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/passwordfield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: PasswordField states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -155,16 +146,13 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
    # Explicit validation check
    is_valid = field.validate()
 
-.. raw:: html
+.. image:: /_static/examples/passwordfield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: PasswordField validation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/passwordfield-validation-light.png"
-        alt="PasswordField validation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/passwordfield-validation-dark.png"
-        alt="PasswordField validation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/passwordfield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: PasswordField validation — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

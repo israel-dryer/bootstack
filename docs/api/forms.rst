@@ -8,16 +8,13 @@ definitions. Fields are placed on a grid; :class:`GroupItem
 <bootstack.widgets.form.GroupItem>` creates labeled sections and
 :class:`TabsItem <bootstack.widgets.form.TabsItem>` creates a tabbed layout.
 
-.. raw:: html
+.. image:: /_static/examples/forms-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Form demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/forms-hero-light.png"
-        alt="Form demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/forms-hero-dark.png"
-        alt="Form demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/forms-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Form demo — dark theme
 
 Usage
 -----
@@ -59,16 +56,13 @@ Use ``col_count=`` to distribute fields across multiple columns:
        col_count=2,
    )
 
-.. raw:: html
+.. image:: /_static/examples/forms-columns-light.png
+   :class: bs-screenshot-light
+   :alt: Form multiple columns — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/forms-columns-light.png"
-        alt="Form multiple columns — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/forms-columns-dark.png"
-        alt="Form multiple columns — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/forms-columns-dark.png
+   :class: bs-screenshot-dark
+   :alt: Form multiple columns — dark theme
 
 Explicit fields
 ~~~~~~~~~~~~~~~
@@ -157,16 +151,13 @@ section with its own column layout:
        ],
    )
 
-.. raw:: html
+.. image:: /_static/examples/forms-grouped-light.png
+   :class: bs-screenshot-light
+   :alt: Form grouped fields — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/forms-grouped-light.png"
-        alt="Form grouped fields — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/forms-grouped-dark.png"
-        alt="Form grouped fields — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/forms-grouped-dark.png
+   :class: bs-screenshot-dark
+   :alt: Form grouped fields — dark theme
 
 Groups can be nested and placed in specific grid cells using ``column=``,
 ``row=``, and ``columnspan=``.
@@ -200,16 +191,13 @@ Use :class:`TabsItem <bootstack.widgets.form.TabsItem>` with
        ],
    )
 
-.. raw:: html
+.. image:: /_static/examples/forms-tabbed-light.png
+   :class: bs-screenshot-light
+   :alt: Form tabbed layout — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/forms-tabbed-light.png"
-        alt="Form tabbed layout — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/forms-tabbed-dark.png"
-        alt="Form tabbed layout — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/forms-tabbed-dark.png
+   :class: bs-screenshot-dark
+   :alt: Form tabbed layout — dark theme
 
 Validation
 ~~~~~~~~~~

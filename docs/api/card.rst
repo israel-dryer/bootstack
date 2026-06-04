@@ -6,16 +6,13 @@ Cards automatically step the background surface at each nesting level,
 alternating between ``card`` and ``card_raised`` to keep adjacent levels
 visually distinct without runaway drift.
 
-.. raw:: html
+.. image:: /_static/examples/card-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Card — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/card-hero-light.png"
-        alt="Card — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/card-hero-dark.png"
-        alt="Card — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/card-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Card — dark theme
 
 Usage
 -----
@@ -33,16 +30,13 @@ and the next surface step.
        bs.Label("Primary", accent="primary", font="heading-sm")
        bs.Label("Card content")
 
-.. raw:: html
+.. image:: /_static/examples/card-accent-light.png
+   :class: bs-screenshot-light
+   :alt: Card accent borders — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/card-accent-light.png"
-        alt="Card accent borders — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/card-accent-dark.png"
-        alt="Card accent borders — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/card-accent-dark.png
+   :class: bs-screenshot-dark
+   :alt: Card accent borders — dark theme
 
 Layout modes
 ~~~~~~~~~~~~
@@ -75,16 +69,13 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
         bs.Label("Item C")
         bs.Label("Item D")
 
-.. raw:: html
+.. image:: /_static/examples/card-layout-light.png
+   :class: bs-screenshot-light
+   :alt: Card layout modes — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/card-layout-light.png"
-        alt="Card layout modes — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/card-layout-dark.png"
-        alt="Card layout modes — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/card-layout-dark.png
+   :class: bs-screenshot-dark
+   :alt: Card layout modes — dark theme
 
 Child defaults
 ~~~~~~~~~~~~~~
@@ -117,16 +108,13 @@ stepping is not applied.
             with bs.Card(padding=50):
                 bs.Label("Nested Cards")
 
-.. raw:: html
+.. image:: /_static/examples/card-nested-light.png
+   :class: bs-screenshot-light
+   :alt: Card nested — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/card-nested-light.png"
-        alt="Card nested — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/card-nested-dark.png"
-        alt="Card nested — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/card-nested-dark.png
+   :class: bs-screenshot-dark
+   :alt: Card nested — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

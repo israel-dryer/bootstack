@@ -3,16 +3,13 @@ Switch
 
 A sliding track-and-thumb toggle for binary on/off input.
 
-.. raw:: html
+.. image:: /_static/examples/switch-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Switch — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/switch-hero-light.png"
-        alt="Switch — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/switch-hero-dark.png"
-        alt="Switch — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/switch-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Switch — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ Accent colors
    bs.Switch("Warning",   accent="warning",   value=True)
    bs.Switch("Danger",    accent="danger",    value=True)
 
-.. raw:: html
+.. image:: /_static/examples/switch-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Switch accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/switch-accents-light.png"
-        alt="Switch accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/switch-accents-dark.png"
-        alt="Switch accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/switch-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Switch accent colors — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -82,16 +76,13 @@ Disabled
    bs.Switch("Cannot change", disabled=True)
    bs.Switch("Locked on",     value=True, disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/switch-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: Switch disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/switch-disabled-light.png"
-        alt="Switch disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/switch-disabled-dark.png"
-        alt="Switch disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/switch-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: Switch disabled — dark theme
 
 Events
 ~~~~~~

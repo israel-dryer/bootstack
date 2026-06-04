@@ -6,16 +6,13 @@ sidebar navigation on the left, and a page stack for the content area. Add
 pages with `.add_page()` — each page is also wired into the sidebar
 automatically.
 
-.. raw:: html
+.. image:: /_static/examples/appshell-hero-light.png
+   :class: bs-screenshot-light
+   :alt: AppShell demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/appshell-hero-light.png"
-        alt="AppShell demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/appshell-hero-dark.png"
-        alt="AppShell demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/appshell-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: AppShell demo — dark theme
 
 Usage
 -----
@@ -114,16 +111,13 @@ be changed at runtime via ``shell.nav.set_display_mode()``.
 
    shell = bs.AppShell(nav_display_mode="compact")
 
-.. raw:: html
+.. image:: /_static/examples/appshell-compact-light.png
+   :class: bs-screenshot-light
+   :alt: AppShell compact sidebar — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/appshell-compact-light.png"
-        alt="AppShell compact sidebar — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/appshell-compact-dark.png"
-        alt="AppShell compact sidebar — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/appshell-compact-dark.png
+   :class: bs-screenshot-dark
+   :alt: AppShell compact sidebar — dark theme
 
 Navigation
 ~~~~~~~~~~

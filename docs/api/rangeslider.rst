@@ -3,16 +3,13 @@ RangeSlider
 
 A two-handle track for selecting a low/high value range.
 
-.. raw:: html
+.. image:: /_static/examples/rangeslider-hero-light.png
+   :class: bs-screenshot-light
+   :alt: RangeSlider demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/rangeslider-hero-light.png"
-        alt="RangeSlider demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/rangeslider-hero-dark.png"
-        alt="RangeSlider demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/rangeslider-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: RangeSlider demo — dark theme
 
 Usage
 -----
@@ -45,16 +42,13 @@ subdivisions between them.
    bs.RangeSlider(20, 80, tick_step=20)
    bs.RangeSlider(20, 80, tick_step=20, minor_ticks=4, show_value=True)
 
-.. raw:: html
+.. image:: /_static/examples/rangeslider-ticks-light.png
+   :class: bs-screenshot-light
+   :alt: RangeSlider tick marks — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/rangeslider-ticks-light.png"
-        alt="RangeSlider tick marks — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/rangeslider-ticks-dark.png"
-        alt="RangeSlider tick marks — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/rangeslider-ticks-dark.png
+   :class: bs-screenshot-dark
+   :alt: RangeSlider tick marks — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -68,16 +62,13 @@ Accent colors
    bs.RangeSlider(20, 80, accent="warning")
    bs.RangeSlider(20, 80, accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/rangeslider-accents-light.png
+   :class: bs-screenshot-light
+   :alt: RangeSlider accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/rangeslider-accents-light.png"
-        alt="RangeSlider accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/rangeslider-accents-dark.png"
-        alt="RangeSlider accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/rangeslider-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: RangeSlider accent colors — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -112,16 +103,13 @@ Disabled
 
    bs.RangeSlider(20, 80, disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/rangeslider-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: RangeSlider disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/rangeslider-disabled-light.png"
-        alt="RangeSlider disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/rangeslider-disabled-dark.png"
-        alt="RangeSlider disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/rangeslider-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: RangeSlider disabled — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

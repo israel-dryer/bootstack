@@ -4,16 +4,13 @@ Filter Dialog
 ``bs.ask_filter()`` opens a multi-select dialog and returns the chosen values.
 ``bs.FilterDialog`` gives the same dialog as a reusable object.
 
-.. raw:: html
+.. image:: /_static/examples/filter-dialog-hero-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Filter Dialog — light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/filter-dialog-hero-light.png"
-        alt="Filter Dialog — light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/filter-dialog-hero-dark.png"
-        alt="Filter Dialog — dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/filter-dialog-hero-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Filter Dialog — dark theme
 
 Usage
 -----

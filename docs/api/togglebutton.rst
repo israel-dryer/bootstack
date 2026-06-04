@@ -3,16 +3,13 @@ ToggleButton
 
 A button that stays pressed when active — toolbar-style toggle.
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-hero-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-hero-light.png"
-        alt="ToggleButton — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-hero-dark.png"
-        alt="ToggleButton — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ Accent colors
    bs.ToggleButton("Warning",   accent="warning",   value=True)
    bs.ToggleButton("Danger",    accent="danger",    value=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-accents-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-accents-light.png"
-        alt="ToggleButton accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-accents-dark.png"
-        alt="ToggleButton accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton accent colors — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -63,16 +57,13 @@ then active so the state change is visible.
    bs.ToggleButton("Ghost off",   accent="primary", variant="ghost",   value=False)
    bs.ToggleButton("Ghost on",    accent="primary", variant="ghost",   value=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-variants-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton style variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-variants-light.png"
-        alt="ToggleButton style variants — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-variants-dark.png"
-        alt="ToggleButton style variants — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton style variants — dark theme
 
 State icons
 ~~~~~~~~~~~
@@ -92,16 +83,13 @@ kt   bs.ToggleButton("Favorite", on_icon="star-fill", off_icon="star",
    bs.ToggleButton("Pin", on_icon="pin-fill", off_icon="pin",
                    accent="primary", value=False)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-state-icons-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton state icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-state-icons-light.png"
-        alt="ToggleButton state icons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-state-icons-dark.png"
-        alt="ToggleButton state icons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-state-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton state icons — dark theme
 
 Icon only
 ~~~~~~~~~
@@ -117,16 +105,13 @@ compact toolbars.
    bs.ToggleButton(on_icon="heart-fill", off_icon="heart", accent="danger",  value=True,  icon_only=True)
    bs.ToggleButton(on_icon="heart-fill", off_icon="heart", accent="danger",  value=False, icon_only=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-icon-only-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton icon only — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-icon-only-light.png"
-        alt="ToggleButton icon only — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-icon-only-dark.png"
-        alt="ToggleButton icon only — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-icon-only-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton icon only — dark theme
 
 Compact density
 ~~~~~~~~~~~~~~~
@@ -138,16 +123,13 @@ Compact density
    bs.ToggleButton(on_icon="star-fill", off_icon="star",
                    density="compact", accent="warning", value=True, icon_only=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-density-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton compact density — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-density-light.png"
-        alt="ToggleButton compact density — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-density-dark.png"
-        alt="ToggleButton compact density — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-density-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton compact density — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -170,16 +152,13 @@ Disabled
    bs.ToggleButton("Disabled inactive", disabled=True, value=False)
    bs.ToggleButton("Disabled active",   disabled=True, value=True)
 
-.. raw:: html
+.. image:: /_static/examples/togglebutton-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleButton disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/togglebutton-disabled-light.png"
-        alt="ToggleButton disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/togglebutton-disabled-dark.png"
-        alt="ToggleButton disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/togglebutton-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleButton disabled — dark theme
 
 Events
 ~~~~~~

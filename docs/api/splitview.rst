@@ -4,16 +4,13 @@ SplitView
 A resizable split container. Panes are separated by draggable sashes that
 can be moved at runtime to redistribute space.
 
-.. raw:: html
+.. image:: /_static/examples/splitview-hero-light.png
+   :class: bs-screenshot-light
+   :alt: SplitView — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/splitview-hero-light.png"
-        alt="SplitView — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/splitview-hero-dark.png"
-        alt="SplitView — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/splitview-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: SplitView — dark theme
 
 Usage
 -----
@@ -47,16 +44,13 @@ horizontal sash.
    # Stacked
    sv = bs.SplitView(orient="vertical", fill="both", expand=True)
 
-.. raw:: html
+.. image:: /_static/examples/splitview-vertical-light.png
+   :class: bs-screenshot-light
+   :alt: SplitView vertical — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/splitview-vertical-light.png"
-        alt="SplitView vertical — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/splitview-vertical-dark.png"
-        alt="SplitView vertical — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/splitview-vertical-dark.png
+   :class: bs-screenshot-dark
+   :alt: SplitView vertical — dark theme
 
 Pane weight
 ~~~~~~~~~~~

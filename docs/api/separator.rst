@@ -4,16 +4,13 @@ Separator
 A thin themed line used to visually divide sections of a layout. Renders
 horizontally by default and stretches to fill the available space.
 
-.. raw:: html
+.. image:: /_static/examples/separator-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Separator — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/separator-hero-light.png"
-        alt="Separator — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/separator-hero-dark.png"
-        alt="Separator — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/separator-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Separator — dark theme
 
 Usage
 -----
@@ -36,16 +33,13 @@ vertical divider; use ``length=`` to constrain its height.
        bs.Separator(orient="vertical", length=16)
        bs.Label("Contact")
 
-.. raw:: html
+.. image:: /_static/examples/separator-vertical-light.png
+   :class: bs-screenshot-light
+   :alt: Separator vertical — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/separator-vertical-light.png"
-        alt="Separator vertical — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/separator-vertical-dark.png"
-        alt="Separator vertical — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/separator-vertical-dark.png
+   :class: bs-screenshot-dark
+   :alt: Separator vertical — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -63,16 +57,13 @@ By default the line color is derived from the active surface. Pass an
    bs.Separator(accent="warning")
    bs.Separator(accent="danger")
 
-.. raw:: html
+.. image:: /_static/examples/separator-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Separator accents — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/separator-accents-light.png"
-        alt="Separator accents — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/separator-accents-dark.png"
-        alt="Separator accents — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/separator-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Separator accents — dark theme
 
 Thickness
 ~~~~~~~~~
@@ -86,16 +77,13 @@ heavier rule.
    bs.Separator(accent="primary", thickness=2)
    bs.Separator(accent="primary", thickness=4)
 
-.. raw:: html
+.. image:: /_static/examples/separator-thickness-light.png
+   :class: bs-screenshot-light
+   :alt: Separator thickness — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/separator-thickness-light.png"
-        alt="Separator thickness — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/separator-thickness-dark.png"
-        alt="Separator thickness — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/separator-thickness-dark.png
+   :class: bs-screenshot-dark
+   :alt: Separator thickness — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

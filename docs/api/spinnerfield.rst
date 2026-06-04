@@ -4,14 +4,13 @@ SpinnerField
 A text-entry field with up/down spin buttons for stepping through a fixed list
 of values or a numeric range.
 
-.. raw:: html
+.. image:: /_static/examples/spinnerfield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: SpinnerField — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/spinnerfield-hero-light.png"
-        alt="SpinnerField — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/spinnerfield-hero-dark.png"
-        alt="SpinnerField — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/spinnerfield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: SpinnerField — dark theme
 
 Usage
 -----
@@ -46,14 +45,13 @@ for a numeric range. Only one mode should be used at a time.
        step=1,
    )
 
-.. raw:: html
+.. image:: /_static/examples/spinnerfield-modes-light.png
+   :class: bs-screenshot-light
+   :alt: SpinnerField modes — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/spinnerfield-modes-light.png"
-        alt="SpinnerField modes — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/spinnerfield-modes-dark.png"
-        alt="SpinnerField modes — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/spinnerfield-modes-dark.png
+   :class: bs-screenshot-dark
+   :alt: SpinnerField modes — dark theme
 
 Wrap around
 ~~~~~~~~~~~
@@ -96,14 +94,13 @@ States
    bs.SpinnerField(value=5, min_value=1, max_value=10, label="Read only", read_only=True)
    bs.SpinnerField(value=5, min_value=1, max_value=10, label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/spinnerfield-states-light.png
+   :class: bs-screenshot-light
+   :alt: SpinnerField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/spinnerfield-states-light.png"
-        alt="SpinnerField states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/spinnerfield-states-dark.png"
-        alt="SpinnerField states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/spinnerfield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: SpinnerField states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~

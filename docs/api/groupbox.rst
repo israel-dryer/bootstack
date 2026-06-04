@@ -5,16 +5,13 @@ A labelled container that groups related content inside a bordered frame.
 The title is embedded in the top border line, giving the classic fieldset
 look familiar from HTML ``<fieldset>`` and desktop dialog panels.
 
-.. raw:: html
+.. image:: /_static/examples/groupbox-hero-light.png
+   :class: bs-screenshot-light
+   :alt: GroupBox — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/groupbox-hero-light.png"
-        alt="GroupBox — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/groupbox-hero-dark.png"
-        alt="GroupBox — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/groupbox-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: GroupBox — dark theme
 
 Usage
 -----
@@ -30,16 +27,13 @@ automatically inherits the accent color.
    with bs.GroupBox("Primary", accent="primary", padding=20, gap=16):
        bs.Label("Item one")
        bs.Label("Item two")
-.. raw:: html
+.. image:: /_static/examples/groupbox-accent-light.png
+   :class: bs-screenshot-light
+   :alt: GroupBox accent borders — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/groupbox-accent-light.png"
-        alt="GroupBox accent borders — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/groupbox-accent-dark.png"
-        alt="GroupBox accent borders — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/groupbox-accent-dark.png
+   :class: bs-screenshot-dark
+   :alt: GroupBox accent borders — dark theme
 
 Layout modes
 ~~~~~~~~~~~~
@@ -65,16 +59,13 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
        bs.Label("Name:")  ; bs.Label("Ada Lovelace")
        bs.Label("Role:")  ; bs.Label("Engineer")
 
-.. raw:: html
+.. image:: /_static/examples/groupbox-layout-light.png
+   :class: bs-screenshot-light
+   :alt: GroupBox layout modes — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/groupbox-layout-light.png"
-        alt="GroupBox layout modes — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/groupbox-layout-dark.png"
-        alt="GroupBox layout modes — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/groupbox-layout-dark.png
+   :class: bs-screenshot-dark
+   :alt: GroupBox layout modes — dark theme
 
 Child defaults
 ~~~~~~~~~~~~~~

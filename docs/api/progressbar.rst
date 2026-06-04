@@ -5,16 +5,13 @@ A horizontal or vertical progress indicator. Use the determinate mode to show
 a fixed fill proportional to a known value, or the indeterminate mode for
 operations whose duration is unknown.
 
-.. raw:: html
+.. image:: /_static/examples/progressbar-light.png
+   :class: bs-screenshot-light
+   :alt: ProgressBar demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/progressbar-light.png"
-        alt="ProgressBar demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/progressbar-dark.png"
-        alt="ProgressBar demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/progressbar-dark.png
+   :class: bs-screenshot-dark
+   :alt: ProgressBar demo — dark theme
 
 Usage
 -----

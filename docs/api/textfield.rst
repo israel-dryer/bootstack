@@ -4,16 +4,13 @@ TextField
 Single-line text input with optional label, helper text, placeholder,
 validation, and reactive signal binding.
 
-.. raw:: html
+.. image:: /_static/examples/textfield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: TextField demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-hero-light.png"
-        alt="TextField demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-hero-dark.png"
-        alt="TextField demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/textfield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextField demo — dark theme
 
 Usage
 -----
@@ -48,16 +45,13 @@ Set ``required=True`` to mark the field visually and prevent empty submission.
    bs.TextField(label="Username",     required=True, placeholder="Required field")
    bs.TextField(label="Email address", placeholder="Optional field")
 
-.. raw:: html
+.. image:: /_static/examples/textfield-required-light.png
+   :class: bs-screenshot-light
+   :alt: TextField required — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-required-light.png"
-        alt="TextField required — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-required-dark.png"
-        alt="TextField required — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/textfield-required-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextField required — dark theme
 
 Value formatting
 ~~~~~~~~~~~~~~~~
@@ -73,16 +67,13 @@ Requires localization to be enabled.
    bs.TextField(value_format="currency", label="Currency")
    bs.TextField(value_format="yyyy-MM-dd", label="Date")
 
-.. raw:: html
+.. image:: /_static/examples/textfield-value-format-light.png
+   :class: bs-screenshot-light
+   :alt: TextField value formatting — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-value-format-light.png"
-        alt="TextField value formatting — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-value-format-dark.png"
-        alt="TextField value formatting — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/textfield-value-format-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextField value formatting — dark theme
 
 States
 ~~~~~~
@@ -93,16 +84,13 @@ States
    bs.TextField(value="Read only", label="Read only", read_only=True)
    bs.TextField(value="Disabled",  label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/textfield-states-light.png
+   :class: bs-screenshot-light
+   :alt: TextField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-states-light.png"
-        alt="TextField states — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-states-dark.png"
-        alt="TextField states — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/textfield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextField states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -164,16 +152,13 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
    # Explicit validation check
    is_valid = field.validate()
 
-.. raw:: html
+.. image:: /_static/examples/textfield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: TextField validation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/textfield-validation-light.png"
-        alt="TextField validation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/textfield-validation-dark.png"
-        alt="TextField validation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/textfield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: TextField validation — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

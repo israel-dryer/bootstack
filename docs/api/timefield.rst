@@ -4,14 +4,13 @@ TimeField
 A time input field with a searchable dropdown list of time intervals. The user
 can type a custom time or select from the dropdown.
 
-.. raw:: html
+.. image:: /_static/examples/timefield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: TimeField — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/timefield-hero-light.png"
-        alt="TimeField — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/timefield-hero-dark.png"
-        alt="TimeField — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/timefield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: TimeField — dark theme
 
 Usage
 -----
@@ -39,14 +38,13 @@ Any `ICU time format`_ pattern or named preset is accepted.
 
 .. _ICU time format: https://unicode-org.github.io/icu/userguide/format_parse/datetime/
 
-.. raw:: html
+.. image:: /_static/examples/timefield-formats-light.png
+   :class: bs-screenshot-light
+   :alt: TimeField formats — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/timefield-formats-light.png"
-        alt="TimeField formats — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/timefield-formats-dark.png"
-        alt="TimeField formats — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/timefield-formats-dark.png
+   :class: bs-screenshot-dark
+   :alt: TimeField formats — dark theme
 
 Dropdown interval
 ~~~~~~~~~~~~~~~~~
@@ -59,14 +57,13 @@ The ``interval=`` parameter sets the spacing between entries in the dropdown.
    bs.TimeField(interval=30)   # every 30 minutes (default)
    bs.TimeField(interval=60)   # hourly
 
-.. raw:: html
+.. image:: /_static/examples/timefield-intervals-light.png
+   :class: bs-screenshot-light
+   :alt: TimeField intervals — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/timefield-intervals-light.png"
-        alt="TimeField intervals — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/timefield-intervals-dark.png"
-        alt="TimeField intervals — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/timefield-intervals-dark.png
+   :class: bs-screenshot-dark
+   :alt: TimeField intervals — dark theme
 
 Time range constraints
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -117,14 +114,13 @@ States
    bs.TimeField(value=now, label="Read only", read_only=True)
    bs.TimeField(value=now, label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/timefield-states-light.png
+   :class: bs-screenshot-light
+   :alt: TimeField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/timefield-states-light.png"
-        alt="TimeField states — light theme" style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/timefield-states-dark.png"
-        alt="TimeField states — dark theme" style="max-width:100%;">
+.. image:: /_static/examples/timefield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: TimeField states — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

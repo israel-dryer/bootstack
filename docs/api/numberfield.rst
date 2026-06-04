@@ -4,16 +4,13 @@ NumberField
 Numeric input with optional stepper buttons, bounds enforcement, and keyboard/
 mouse-wheel stepping.
 
-.. raw:: html
+.. image:: /_static/examples/numberfield-hero-light.png
+   :class: bs-screenshot-light
+   :alt: NumberField demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/numberfield-hero-light.png"
-        alt="NumberField demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/numberfield-hero-dark.png"
-        alt="NumberField demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/numberfield-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: NumberField demo — dark theme
 
 Usage
 -----
@@ -70,16 +67,13 @@ The +/− buttons are shown by default. Hide them with ``show_steppers=False``.
    bs.NumberField(label="With steppers", value=25)
    bs.NumberField(label="No steppers",   value=25, show_steppers=False)
 
-.. raw:: html
+.. image:: /_static/examples/numberfield-steppers-light.png
+   :class: bs-screenshot-light
+   :alt: NumberField stepper buttons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/numberfield-steppers-light.png"
-        alt="NumberField stepper buttons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/numberfield-steppers-dark.png"
-        alt="NumberField stepper buttons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/numberfield-steppers-dark.png
+   :class: bs-screenshot-dark
+   :alt: NumberField stepper buttons — dark theme
 
 Programmatic stepping
 ~~~~~~~~~~~~~~~~~~~~~
@@ -106,16 +100,13 @@ Requires localization to be enabled.
    bs.NumberField(0.75,    value_format="percent",  label="Percent",    show_steppers=False)
    bs.NumberField(9.99,    value_format="currency", label="Currency",   show_steppers=False)
 
-.. raw:: html
+.. image:: /_static/examples/numberfield-value-format-light.png
+   :class: bs-screenshot-light
+   :alt: NumberField value formatting — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/numberfield-value-format-light.png"
-        alt="NumberField value formatting — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/numberfield-value-format-dark.png"
-        alt="NumberField value formatting — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/numberfield-value-format-dark.png
+   :class: bs-screenshot-dark
+   :alt: NumberField value formatting — dark theme
 
 States
 ~~~~~~
@@ -126,16 +117,13 @@ States
    bs.NumberField(value=42, label="Read only", read_only=True)
    bs.NumberField(value=42, label="Disabled",  disabled=True)
 
-.. raw:: html
+.. image:: /_static/examples/numberfield-states-light.png
+   :class: bs-screenshot-light
+   :alt: NumberField states — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/numberfield-states-light.png"
-        alt="NumberField states — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/numberfield-states-dark.png"
-        alt="NumberField states — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/numberfield-states-dark.png
+   :class: bs-screenshot-dark
+   :alt: NumberField states — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -165,16 +153,13 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
        trigger="blur",
    )
 
-.. raw:: html
+.. image:: /_static/examples/numberfield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: NumberField validation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/numberfield-validation-light.png"
-        alt="NumberField validation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/numberfield-validation-dark.png"
-        alt="NumberField validation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/numberfield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: NumberField validation — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

@@ -5,16 +5,13 @@ A tabbed container that shows one page at a time. Add named tabs with `.add()`,
 place child widgets inside each page using the returned context manager, then
 switch between pages by clicking tabs or calling `select()`.
 
-.. raw:: html
+.. image:: /_static/examples/tabs-hero-light.png
+   :class: bs-screenshot-light
+   :alt: Tabs demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tabs-hero-light.png"
-        alt="Tabs demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tabs-hero-dark.png"
-        alt="Tabs demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tabs-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tabs demo — dark theme
 
 Usage
 -----
@@ -49,16 +46,13 @@ Pass ``icon=`` to show an icon alongside the tab label.
    with tabs.add("files", label="Files", icon="folder"):
        bs.Label("Files")
 
-.. raw:: html
+.. image:: /_static/examples/tabs-icons-light.png
+   :class: bs-screenshot-light
+   :alt: Tabs with icons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tabs-icons-light.png"
-        alt="Tabs with icons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tabs-icons-dark.png"
-        alt="Tabs with icons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tabs-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tabs with icons — dark theme
 
 Orientation
 ~~~~~~~~~~~
@@ -76,16 +70,13 @@ right. The default is ``'horizontal'`` (tabs above content).
    with tabs.add("preview", label="Preview"):
        bs.Label("Preview panel")
 
-.. raw:: html
+.. image:: /_static/examples/tabs-vertical-light.png
+   :class: bs-screenshot-light
+   :alt: Tabs vertical orientation — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tabs-vertical-light.png"
-        alt="Tabs vertical orientation — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tabs-vertical-dark.png"
-        alt="Tabs vertical orientation — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tabs-vertical-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tabs vertical orientation — dark theme
 
 Tab width
 ~~~~~~~~~
@@ -118,16 +109,13 @@ argument of `add()`.
    with tabs.add("doc", label="Document", closable=True):
        bs.Label("Close button always visible.")
 
-.. raw:: html
+.. image:: /_static/examples/tabs-closable-light.png
+   :class: bs-screenshot-light
+   :alt: Tabs with close buttons — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/tabs-closable-light.png"
-        alt="Tabs with close buttons — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/tabs-closable-dark.png"
-        alt="Tabs with close buttons — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/tabs-closable-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tabs with close buttons — dark theme
 
 Add-tab button
 ~~~~~~~~~~~~~~

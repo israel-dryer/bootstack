@@ -4,16 +4,13 @@ Input Dialogs
 Convenience functions for collecting a single value from the user. Each opens
 a modal dialog, waits for input, and returns the value (or ``None`` if canceled).
 
-.. raw:: html
+.. image:: /_static/examples/input-dialogs-hero-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Input Dialogs — text input dialog, light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-hero-light.png"
-        alt="Input Dialogs — text input dialog, light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-hero-dark.png"
-        alt="Input Dialogs — text input dialog, dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/input-dialogs-hero-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Input Dialogs — text input dialog, dark theme
 
 Usage
 -----
@@ -80,16 +77,13 @@ Restrict the selectable range with ``min_date=`` and ``max_date=``:
 
    deadline = bs.ask_date(title="Pick a deadline", min_date=date.today())
 
-.. raw:: html
+.. image:: /_static/examples/input-dialogs-date-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Input Dialogs — date picker dialog, light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-date-light.png"
-        alt="Input Dialogs — date picker dialog, light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-date-dark.png"
-        alt="Input Dialogs — date picker dialog, dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/input-dialogs-date-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Input Dialogs — date picker dialog, dark theme
 
 Ask for a date range
 ~~~~~~~~~~~~~~~~~~~~

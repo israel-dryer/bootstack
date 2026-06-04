@@ -5,16 +5,13 @@ Dialog
 ``content_builder=`` function to lay out any widgets, and a ``buttons=`` list
 to define the footer.
 
-.. raw:: html
+.. image:: /_static/examples/dialog-hero-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Dialog — light theme
 
-   <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/dialog-hero-light.png"
-        alt="Dialog — light theme"
-        style="max-width:100%; margin:1rem 0;">
-   <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/dialog-hero-dark.png"
-        alt="Dialog — dark theme"
-        style="max-width:100%; margin:1rem 0;">
+.. image:: /_static/examples/dialog-hero-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Dialog — dark theme
 
 Usage
 -----

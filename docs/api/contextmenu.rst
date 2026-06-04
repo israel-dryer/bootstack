@@ -4,16 +4,13 @@ ContextMenu
 A themed floating popup menu that attaches to any widget and opens on a
 right-click, left-click, or a programmatic `show()` call.
 
-.. raw:: html
+.. image:: /_static/examples/contextmenu-hero-light.png
+   :class: bs-screenshot-light
+   :alt: ContextMenu demo — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/contextmenu-hero-light.png"
-        alt="ContextMenu demo — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/contextmenu-hero-dark.png"
-        alt="ContextMenu demo — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/contextmenu-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: ContextMenu demo — dark theme
 
 Usage
 -----
@@ -53,16 +50,13 @@ radiobutton items, and separators.
    menu.add_radio_item("Medium",  value="med")
    menu.add_radio_item("High",    value="high")
 
-.. raw:: html
+.. image:: /_static/examples/contextmenu-item-types-light.png
+   :class: bs-screenshot-light
+   :alt: ContextMenu item types — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/contextmenu-item-types-light.png"
-        alt="ContextMenu item types — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/contextmenu-item-types-dark.png"
-        alt="ContextMenu item types — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/contextmenu-item-types-dark.png
+   :class: bs-screenshot-dark
+   :alt: ContextMenu item types — dark theme
 
 Global callback
 ~~~~~~~~~~~~~~~
@@ -119,16 +113,13 @@ Three forms are accepted:
    menu.add_item("Copy",  icon="copy",      shortcut="Mod+C")
    menu.add_item("Paste", icon="clipboard", shortcut="Mod+V")
 
-.. raw:: html
+.. image:: /_static/examples/contextmenu-shortcuts-light.png
+   :class: bs-screenshot-light
+   :alt: ContextMenu keyboard shortcuts — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/contextmenu-shortcuts-light.png"
-        alt="ContextMenu keyboard shortcuts — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/contextmenu-shortcuts-dark.png"
-        alt="ContextMenu keyboard shortcuts — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/contextmenu-shortcuts-dark.png
+   :class: bs-screenshot-dark
+   :alt: ContextMenu keyboard shortcuts — dark theme
 
 See also
 --------

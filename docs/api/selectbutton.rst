@@ -3,16 +3,13 @@ SelectButton
 
 A button that opens a dropdown value list and displays the current selection.
 
-.. raw:: html
+.. image:: /_static/examples/selectbutton-hero-light.png
+   :class: bs-screenshot-light
+   :alt: SelectButton — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-hero-light.png"
-        alt="SelectButton — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-hero-dark.png"
-        alt="SelectButton — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/selectbutton-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: SelectButton — dark theme
 
 Usage
 -----
@@ -38,16 +35,13 @@ Accent colors
    bs.SelectButton(["Warning"],   accent="warning",   value="Warning")
    bs.SelectButton(["Danger"],    accent="danger",    value="Danger")
 
-.. raw:: html
+.. image:: /_static/examples/selectbutton-accents-light.png
+   :class: bs-screenshot-light
+   :alt: SelectButton accent colors — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-accents-light.png"
-        alt="SelectButton accent colors — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-accents-dark.png"
-        alt="SelectButton accent colors — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/selectbutton-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: SelectButton accent colors — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~
@@ -58,16 +52,13 @@ Style variants
    bs.SelectButton(["Outline"], accent="primary", variant="outline")
    bs.SelectButton(["Ghost"],   accent="primary", variant="ghost")
 
-.. raw:: html
+.. image:: /_static/examples/selectbutton-variants-light.png
+   :class: bs-screenshot-light
+   :alt: SelectButton style variants — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-variants-light.png"
-        alt="SelectButton style variants — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-variants-dark.png"
-        alt="SelectButton style variants — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/selectbutton-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: SelectButton style variants — dark theme
 
 With icon
 ~~~~~~~~~
@@ -79,16 +70,13 @@ With icon
    bs.SelectButton(["Small", "Medium", "Large"],
                    value="Large", icon="fonts", accent="secondary")
 
-.. raw:: html
+.. image:: /_static/examples/selectbutton-icon-light.png
+   :class: bs-screenshot-light
+   :alt: SelectButton with icon — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-icon-light.png"
-        alt="SelectButton with icon — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-icon-dark.png"
-        alt="SelectButton with icon — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/selectbutton-icon-dark.png
+   :class: bs-screenshot-dark
+   :alt: SelectButton with icon — dark theme
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -112,16 +100,13 @@ Disabled
    bs.SelectButton(["A", "B", "C"], value="B", disabled=True,
                    accent="primary", variant="outline")
 
-.. raw:: html
+.. image:: /_static/examples/selectbutton-disabled-light.png
+   :class: bs-screenshot-light
+   :alt: SelectButton disabled — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/selectbutton-disabled-light.png"
-        alt="SelectButton disabled — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/selectbutton-disabled-dark.png"
-        alt="SelectButton disabled — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/selectbutton-disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: SelectButton disabled — dark theme
 
 Events
 ~~~~~~

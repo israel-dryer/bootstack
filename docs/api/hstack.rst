@@ -6,16 +6,13 @@ Use ``gap=`` for even spacing, ``anchor_items='center'`` to vertically center
 mixed-height widgets, and ``fill_items='y'`` to stretch children to the full
 row height.
 
-.. raw:: html
+.. image:: /_static/examples/hstack-hero-light.png
+   :class: bs-screenshot-light
+   :alt: HStack — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-hero-light.png"
-        alt="HStack — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-hero-dark.png"
-        alt="HStack — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/hstack-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: HStack — dark theme
 
 Usage
 -----
@@ -37,16 +34,13 @@ Gap
        for i in range(1, 4):
            bs.Button(f"Item {i}")
 
-.. raw:: html
+.. image:: /_static/examples/hstack-gap-light.png
+   :class: bs-screenshot-light
+   :alt: HStack gap — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-gap-light.png"
-        alt="HStack gap — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-gap-dark.png"
-        alt="HStack gap — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/hstack-gap-dark.png
+   :class: bs-screenshot-dark
+   :alt: HStack gap — dark theme
 
 Child alignment
 ~~~~~~~~~~~~~~~
@@ -66,16 +60,13 @@ field), ``'n'`` for top, or ``'s'`` for bottom.
    with bs.HStack(gap=8, anchor_items="s",      show_border=True, padding=8, height=80):
        bs.Button("A"); bs.Button("B")
 
-.. raw:: html
+.. image:: /_static/examples/hstack-alignment-light.png
+   :class: bs-screenshot-light
+   :alt: HStack alignment — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-alignment-light.png"
-        alt="HStack alignment — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-alignment-dark.png"
-        alt="HStack alignment — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/hstack-alignment-dark.png
+   :class: bs-screenshot-dark
+   :alt: HStack alignment — dark theme
 
 Child fill
 ~~~~~~~~~~
@@ -90,16 +81,13 @@ making buttons or panels match the height of the tallest sibling.
        bs.Button("B")
        bs.Button("C")
 
-.. raw:: html
+.. image:: /_static/examples/hstack-fill-light.png
+   :class: bs-screenshot-light
+   :alt: HStack fill — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-fill-light.png"
-        alt="HStack fill — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-fill-dark.png"
-        alt="HStack fill — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/hstack-fill-dark.png
+   :class: bs-screenshot-dark
+   :alt: HStack fill — dark theme
 
 Fixed height
 ~~~~~~~~~~~~
@@ -153,16 +141,13 @@ to give the border visual clearance.
        bs.Button("B")
        bs.Button("C")
 
-.. raw:: html
+.. image:: /_static/examples/hstack-border-light.png
+   :class: bs-screenshot-light
+   :alt: HStack border — light theme
 
-   <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-border-light.png"
-        alt="HStack border — light theme"
-        style="max-width:100%;">
-   <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-border-dark.png"
-        alt="HStack border — dark theme"
-        style="max-width:100%;">
+.. image:: /_static/examples/hstack-border-dark.png
+   :class: bs-screenshot-dark
+   :alt: HStack border — dark theme
 
 Self-placement
 ~~~~~~~~~~~~~~
