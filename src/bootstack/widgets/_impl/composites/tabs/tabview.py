@@ -108,6 +108,10 @@ class TabView(Frame):
         self._next_reason: ChangeReason = "user"
         self._next_via: ChangeMethod = "click"
 
+        # Forward tab strip events to self so callers can bind at the TabView level
+        self._tabs.bind('<<TabAdd>>', lambda e: self.event_generate('<<TabAdd>>', when='tail'), add='+')
+        self._tabs.bind('<<TabClose>>', lambda e: self.event_generate('<<TabClose>>', data=getattr(e, 'data', None), when='tail'), add='+')
+
         # Bind variable trace to navigate pages and fire typed events
         self._trace_id = self._tab_variable.trace_add('write', self._on_tab_selected)
 

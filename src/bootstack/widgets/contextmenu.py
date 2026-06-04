@@ -6,12 +6,13 @@ from bootstack.widgets._impl.composites.contextmenu import ContextMenu as _Inter
 from bootstack.widgets._impl.composites.contextmenu import ContextMenuItem
 
 _TRIGGER_MAP: dict[str | None, str | None] = {
-    "right_click": "right-click",
-    "left_click": "left-click",
+    "right_click":  "right-click",
+    "left_click":   "left-click",
     "double_click": "double-click",
-    None: None,
-    "manual": None,
+    "manual":       None,
+    None:           None,
 }
+_VALID_TRIGGERS = frozenset(_TRIGGER_MAP)
 
 
 def _resolve_tk(widget: Any) -> Any:
@@ -54,9 +55,13 @@ class ContextMenu:
         tk_target = _resolve_tk(target) if target is not None else None
         tk_master = _resolve_tk(parent) if parent is not None else tk_target
 
+        if trigger not in _VALID_TRIGGERS:
+            valid = ", ".join(repr(k) for k in _VALID_TRIGGERS if k is not None)
+            raise ValueError(f"Invalid trigger {trigger!r}. Valid values: {valid}")
+
         internal_kwargs: dict[str, Any] = {
             "minwidth": min_width,
-            "trigger": _TRIGGER_MAP.get(trigger, trigger),
+            "trigger": _TRIGGER_MAP[trigger],
             "density": density,
         }
         if on_select is not None:
@@ -185,7 +190,7 @@ class ContextMenu:
         self._internal.add_separator(**kw)
         return self._internal.keys()[-1]
 
-    def add_items(self, items: list[ContextMenuItem]) -> None:
+    def add_items(self, items: list[ContextMenuItem | dict[str, Any]]) -> None:
         """Add multiple items at once.
 
         Args:

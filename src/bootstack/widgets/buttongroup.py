@@ -224,11 +224,7 @@ class ButtonGroup(PublicWidgetBase):
         if handler is None:
             return self.on("click")
 
-        def _wrapped(e: Event) -> None:
-            e.data = getattr(e.widget, "_bs_emit_data", {})
-            handler(e)
-
-        return self.on("click", _wrapped)
+        return self.on("click", handler)
 
 
 register_widget_events(ButtonGroup, _BUTTONGROUP_EVENTS)

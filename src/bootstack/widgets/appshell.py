@@ -268,11 +268,11 @@ class AppShell:
         """
         if handler is None:
             def _source(h: Callable) -> Subscription:
-                bid = self._internal.bind("<<PageChanged>>", h, add="+")
-                return Subscription(self._internal, "<<PageChanged>>", bid)
+                bid = self._internal.bind("<<PageChange>>", h, add="+")
+                return Subscription(self._internal, "<<PageChange>>", bid)
             return Stream(self._internal, _source=_source)
-        bid = self._internal.bind("<<PageChanged>>", handler, add="+")
-        return Subscription(self._internal, "<<PageChanged>>", bid)
+        bid = self._internal.bind("<<PageChange>>", handler, add="+")
+        return Subscription(self._internal, "<<PageChange>>", bid)
 
     # ----- Lifecycle -----
 
@@ -280,8 +280,6 @@ class AppShell:
         """Show the window and start the event loop."""
         self._internal.deiconify()
         self._internal.mainloop()
-
-    mainloop = run
 
     # ----- Properties -----
 

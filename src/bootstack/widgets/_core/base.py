@@ -139,16 +139,7 @@ class PublicWidgetBase:
     def emit(self, event: str, *, data: dict | None = None) -> None:
         """Synthesize `event` on the underlying widget."""
         sequence = resolve_event(self, str(event))
-        if data is not None:
-            self._internal._bs_emit_data = data  # type: ignore[attr-defined]
-        try:
-            self._internal.event_generate(sequence)
-        finally:
-            if data is not None:
-                try:
-                    delattr(self._internal, "_bs_emit_data")
-                except AttributeError:
-                    pass
+        self._internal.event_generate(sequence, data=data)
 
     def __repr__(self) -> str:
         try:

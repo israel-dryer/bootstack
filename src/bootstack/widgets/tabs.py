@@ -184,21 +184,14 @@ class Tabs(PublicWidgetBase):
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
 
-        def _target():
-            if sequence in ("<<TabAdd>>", "<<TabClose>>"):
-                return self._internal._tabs
-            return self._internal
-
         if handler is None:
             def _source(h):
-                t = _target()
-                _bid = t.bind(sequence, h, add="+")
-                return Subscription(t, sequence, _bid)
+                bid = self._internal.bind(sequence, h, add="+")
+                return Subscription(self._internal, sequence, bid)
             return Stream(self._internal, _source=_source)
 
-        t = _target()
-        bind_id = t.bind(sequence, handler, add="+")
-        return Subscription(t, sequence, bind_id)
+        bind_id = self._internal.bind(sequence, handler, add="+")
+        return Subscription(self._internal, sequence, bind_id)
 
     # ----- Tab management -----
 
@@ -296,11 +289,11 @@ class Tabs(PublicWidgetBase):
         Args:
             key: Tab key assigned in `add()`.
         """
-        return self._internal.item(key)
+        return self._internal.tab(key)
 
-    def items(self) -> tuple:
+    def items(self) -> tuple[Any, ...]:
         """Return all tab header items in insertion order."""
-        return self._internal.items()
+        return self._internal.tabs()
 
     # ----- Event shorthands -----
 

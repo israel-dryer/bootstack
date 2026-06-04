@@ -262,7 +262,7 @@ class PageStack(PublicWidgetBase):
         """
         return self._internal.item(key)
 
-    def items(self) -> tuple:
+    def items(self) -> tuple[Any, ...]:
         """Return all page widgets in insertion order."""
         return self._internal.items()
 
