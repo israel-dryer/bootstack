@@ -2,14 +2,11 @@ import bootstack as bs
 
 
 def hero():
-    with bs.App(title="Toolbar", minsize=(740, 1), padding=0) as app:
+    with bs.App(title="Toolbar", size=(720, 50), padding=0) as app:
         tb = bs.Toolbar(fill="x")
         tb.add_button("New",  icon="file-earmark-plus")
         tb.add_button("Open", icon="folder2-open")
         tb.add_button("Save", icon="floppy")
-        tb.add_separator()
-        tb.add_button(icon="arrow-counterclockwise")
-        tb.add_button(icon="arrow-clockwise")
         tb.add_separator()
         tb.add_button(icon="type-bold")
         tb.add_button(icon="type-italic")
@@ -19,16 +16,13 @@ def hero():
         tb.add_button(icon="text-center")
         tb.add_button(icon="text-right")
         tb.add_spacer()
-        tb.add_button(icon="zoom-in")
-        tb.add_button(icon="zoom-out")
-        tb.add_separator()
         tb.add_button(icon="circle-half")
         tb.add_button(icon="gear")
     app.run()
 
 
 def separators():
-    with bs.App(title="Toolbar — Separators", minsize=(640, 1), padding=0) as app:
+    with bs.App(title="Toolbar — Separators", minsize=(720, 1), padding=0) as app:
         tb = bs.Toolbar(fill="x")
         tb.add_button("Bold",   icon="type-bold")
         tb.add_button("Italic", icon="type-italic")
@@ -42,7 +36,7 @@ def separators():
 
 
 def density():
-    with bs.App(title="Toolbar — Density", minsize=(640, 1), padding=0) as app:
+    with bs.App(title="Toolbar — Density", minsize=(720, 1), padding=0) as app:
         tb = bs.Toolbar(fill="x", density="compact")
         tb.add_button(icon="type-bold")
         tb.add_button(icon="type-italic")
@@ -61,7 +55,7 @@ def density():
 
 
 def accents():
-    with bs.App(title="Toolbar — Accents", minsize=(640, 1), padding=0) as app:
+    with bs.App(title="Toolbar — Accents", minsize=(720, 1), padding=0) as app:
         tb = bs.Toolbar(fill="x")
         tb.add_button("Publish", icon="cloud-upload", accent="primary")
         tb.add_button("Preview", icon="eye")
@@ -72,7 +66,7 @@ def accents():
 
 
 def surface():
-    with bs.App(title="Toolbar — Surface", minsize=(640, 1), padding=8) as app:
+    with bs.App(title="Toolbar — Surface", minsize=(720, 1), padding=8) as app:
         tb = bs.Toolbar(fill="x", show_border=True, surface="card")
         tb.add_button("New",  icon="file-earmark-plus")
         tb.add_button("Open", icon="folder2-open")

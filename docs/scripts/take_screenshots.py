@@ -86,8 +86,14 @@ def _patch(cls):
                 h = self.tk.winfo_height()
                 inset = 2  # trim window-border artifact from captured edges
             from pathlib import Path
+            from PIL import Image
             Path(output).parent.mkdir(parents=True, exist_ok=True)
-            ImageGrab.grab(bbox=(x + inset, y + inset, x + w - inset, y + h - inset)).save(output)
+            img = ImageGrab.grab(bbox=(x + inset, y + inset, x + w - inset, y + h - inset))
+            max_w = 720
+            if img.width > max_w:
+                ratio = max_w / img.width
+                img = img.resize((max_w, max(1, int(img.height * ratio))), Image.LANCZOS)
+            img.save(output)
             self.tk.destroy()
 
         def _capture():
