@@ -128,6 +128,30 @@ toolbar. Override per-button with the ``variant=`` argument on
    tb.add_button("Save", icon="floppy")        # outline
    tb.add_button("Run", variant="solid")       # override to solid
 
+Border and surface
+~~~~~~~~~~~~~~~~~~
+
+``show_border=True`` draws a border around the toolbar. ``surface=`` controls
+the background token — ``'card'`` lifts it slightly from the page background.
+
+.. code-block:: python
+
+   tb = bs.Toolbar(fill="x", show_border=True, surface="card")
+   tb.add_button("New",  icon="file-earmark-plus")
+   tb.add_button("Open", icon="folder2-open")
+   tb.add_button("Save", icon="floppy")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toolbar-surface-light.png"
+        alt="Toolbar with border and card surface — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toolbar-surface-dark.png"
+        alt="Toolbar with border and card surface — dark theme"
+        style="max-width:100%;">
+
 Custom widgets
 ~~~~~~~~~~~~~~
 

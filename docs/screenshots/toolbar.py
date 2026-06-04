@@ -71,9 +71,21 @@ def accents():
     app.run()
 
 
+def surface():
+    with bs.App(title="Toolbar — Surface", minsize=(640, 1), padding=8) as app:
+        tb = bs.Toolbar(fill="x", show_border=True, surface="card")
+        tb.add_button("New",  icon="file-earmark-plus")
+        tb.add_button("Open", icon="folder2-open")
+        tb.add_button("Save", icon="floppy")
+        tb.add_spacer()
+        tb.add_button(icon="gear")
+    app.run()
+
+
 SCENES = {
     "hero":       hero,
     "separators": separators,
     "density":    density,
     "accents":    accents,
+    "surface":    surface,
 }
