@@ -35,13 +35,11 @@ class Grid(PublicContainer):
         padding: Space in pixels between the grid border and its
             content. Accepts an integer (all sides) or a 2-tuple
             ``(x, y)``. Defaults to ``None`` (no padding).
-        accent: Color intent token applied to the grid background. One
-            of ``'primary'``, ``'secondary'``, ``'info'``,
-            ``'success'``, ``'warning'``, ``'danger'``, ``'muted'``,
-            ``'default'``. Defaults to ``None``.
-        surface: Background surface token. One of ``'content'``,
-            ``'card'``, ``'chrome'``, ``'overlay'``. Defaults to
-            ``None`` (inherits from parent).
+        surface: Background token. Accepts a surface token
+            (``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``),
+            an accent token (``'primary'``, ``'success'``, etc.), or
+            any token with modifiers (e.g. ``'primary[subtle]'``).
+            Defaults to ``None`` (inherits from parent surface).
         show_border: When ``True``, draws a 1 px border around the
             grid. Use at least ``padding=1`` to give the border visual
             clearance. Defaults to ``False``.
@@ -67,8 +65,7 @@ class Grid(PublicContainer):
         sticky_items: Sticky | str | None = None,
         auto_flow: Literal["row", "column", "row-dense", "column-dense", "none"] = "row",
         padding: Any = None,
-        accent: AccentToken | str | None = None,
-        surface: SurfaceToken | str | None = None,
+        surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
@@ -86,7 +83,6 @@ class Grid(PublicContainer):
         }
         for k, v in {
             "padding": padding,
-            "accent": accent,
             "surface": surface,
         }.items():
             if v is not None:

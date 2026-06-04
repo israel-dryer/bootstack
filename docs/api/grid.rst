@@ -9,12 +9,12 @@ size itself to fit its content.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/grid-light.png"
-        alt="Grid demo — light theme"
+        src="/_static/examples/grid-hero-light.png"
+        alt="Grid — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/grid-dark.png"
-        alt="Grid demo — dark theme"
+        src="/_static/examples/grid-hero-dark.png"
+        alt="Grid — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -45,7 +45,18 @@ Column definitions
    bs.Grid(columns=["auto", 1])
 
    # Fixed sidebar, flexible content, fixed panel
-   bs.Grid(columns=["200px", 1, "160px"])
+   bs.Grid(columns=["120px", 1, "80px"])
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/grid-columns-light.png"
+        alt="Grid column definitions — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/grid-columns-dark.png"
+        alt="Grid column definitions — dark theme"
+        style="max-width:100%;">
 
 Row definitions
 ~~~~~~~~~~~~~~~
@@ -76,7 +87,18 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
 .. code-block:: python
 
    bs.Grid(columns=[1, 1], gap=8)            # 8 px between all cells
-   bs.Grid(columns=[1, 1], gap=(24, 8))      # 24 px between columns, 8 px between rows
+   bs.Grid(columns=[1, 1], gap=(32, 8))      # 32 px between columns, 8 px between rows
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/grid-gap-light.png"
+        alt="Grid gap — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/grid-gap-dark.png"
+        alt="Grid gap — dark theme"
+        style="max-width:100%;">
 
 Child alignment — sticky_items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,15 +114,28 @@ Individual children can override the default with their own ``sticky=``.
 
 .. code-block:: python
 
-   # All children fill cell width
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew"):
-       bs.Button("A")
-       bs.Button("B")
+   # stretch horizontally — natural height
+   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew", height=80):
+       bs.Button("A"); bs.Button("B")
 
-   # Per-child override
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew"):
-       bs.Button("Normal")
-       bs.Button("Centered", sticky="")
+   # center in cell at natural size
+   with bs.Grid(columns=[1, 1], gap=8, sticky_items="", height=80):
+       bs.Button("A"); bs.Button("B")
+
+   # fill the entire cell
+   with bs.Grid(columns=[1, 1], gap=8, sticky_items="nsew", height=80):
+       bs.Button("A"); bs.Button("B")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/grid-sticky-light.png"
+        alt="Grid sticky — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/grid-sticky-dark.png"
+        alt="Grid sticky — dark theme"
+        style="max-width:100%;">
 
 Auto-flow
 ~~~~~~~~~
@@ -130,6 +165,34 @@ label column and a ``1``-weight field column:
        bs.TextField()
        bs.Label("Email")
        bs.TextField()
+       bs.Label("Role")
+       bs.TextField()
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/grid-form-light.png"
+        alt="Grid form layout — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/grid-form-dark.png"
+        alt="Grid form layout — dark theme"
+        style="max-width:100%;">
+
+Background
+~~~~~~~~~~
+
+``surface=`` sets the container background. It accepts a surface token
+(``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``) or any accent token
+(``'primary'``, ``'success'``, etc.) with optional modifiers:
+
+.. code-block:: python
+
+   with bs.Grid(columns=2, surface="card", padding=12, gap=8):
+       bs.Label("Sits on card surface")
+
+   with bs.Grid(columns=2, surface="primary[subtle]", padding=12, gap=8):
+       bs.Label("Accent-tinted background")
 
 Widget sizing
 ~~~~~~~~~~~~~

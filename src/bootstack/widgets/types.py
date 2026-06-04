@@ -100,7 +100,7 @@ AccentToken = Literal['default', 'primary', 'secondary', 'info', 'success', 'war
 VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
 """Widget style variant."""
 
-SurfaceToken = Literal['content', 'card', 'chrome', 'overlay']
+SurfaceToken = Literal['content', 'card', 'card_raised', 'chrome', 'overlay']
 """Background surface context token."""
 
 # ---------------------------------------------------------------------------

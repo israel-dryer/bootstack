@@ -9,12 +9,12 @@ row height.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/hstack-light.png"
-        alt="HStack demo — light theme"
+        src="/_static/examples/hstack-hero-light.png"
+        alt="HStack — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/hstack-dark.png"
-        alt="HStack demo — dark theme"
+        src="/_static/examples/hstack-hero-dark.png"
+        alt="HStack — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -27,9 +27,26 @@ Gap
 
 .. code-block:: python
 
-   with bs.HStack(gap=12):
-       bs.Button("Cancel")
-       bs.Button("OK", accent="primary")
+   # gap=4 — items close together
+   with bs.HStack(gap=4, show_border=True, padding=8, fill="x"):
+       for i in range(1, 4):
+           bs.Button(f"Item {i}")
+
+   # gap=24 — items spread apart
+   with bs.HStack(gap=24, show_border=True, padding=8, fill="x"):
+       for i in range(1, 4):
+           bs.Button(f"Item {i}")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/hstack-gap-light.png"
+        alt="HStack gap — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/hstack-gap-dark.png"
+        alt="HStack gap — dark theme"
+        style="max-width:100%;">
 
 Child alignment
 ~~~~~~~~~~~~~~~
@@ -40,9 +57,25 @@ field), ``'n'`` for top, or ``'s'`` for bottom.
 
 .. code-block:: python
 
-   with bs.HStack(gap=8, anchor_items="center"):
-       bs.Label("Label")      # shorter
-       bs.TextField()         # taller — both centered vertically
+   with bs.HStack(gap=8, anchor_items="n",      show_border=True, padding=8, height=80):
+       bs.Button("A"); bs.Button("B")
+
+   with bs.HStack(gap=8, anchor_items="center", show_border=True, padding=8, height=80):
+       bs.Button("A"); bs.Button("B")
+
+   with bs.HStack(gap=8, anchor_items="s",      show_border=True, padding=8, height=80):
+       bs.Button("A"); bs.Button("B")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/hstack-alignment-light.png"
+        alt="HStack alignment — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/hstack-alignment-dark.png"
+        alt="HStack alignment — dark theme"
+        style="max-width:100%;">
 
 Child fill
 ~~~~~~~~~~
@@ -55,6 +88,18 @@ making buttons or panels match the height of the tallest sibling.
    with bs.HStack(gap=8, fill_items="y", height=60):
        bs.Button("A")   # stretches to 60 px tall
        bs.Button("B")
+       bs.Button("C")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/hstack-fill-light.png"
+        alt="HStack fill — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/hstack-fill-dark.png"
+        alt="HStack fill — dark theme"
+        style="max-width:100%;">
 
 Fixed height
 ~~~~~~~~~~~~
@@ -79,6 +124,21 @@ Fixed height
       with bs.HStack(height=80, fill="x", expand=True, gap=8):
           bs.Button("Fixed height, flexible width")
 
+Background
+~~~~~~~~~~
+
+``surface=`` sets the container background. It accepts a surface token
+(``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``) or any accent token
+(``'primary'``, ``'success'``, etc.) with optional modifiers:
+
+.. code-block:: python
+
+   with bs.HStack(surface="card", padding=12, gap=8):
+       bs.Label("Sits on card surface")
+
+   with bs.HStack(surface="primary[subtle]", padding=12, gap=8):
+       bs.Label("Accent-tinted background")
+
 Border
 ~~~~~~
 
@@ -91,6 +151,18 @@ to give the border visual clearance.
    with bs.HStack(gap=8, show_border=True, padding=8):
        bs.Button("A")
        bs.Button("B")
+       bs.Button("C")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/hstack-border-light.png"
+        alt="HStack border — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/hstack-border-dark.png"
+        alt="HStack border — dark theme"
+        style="max-width:100%;">
 
 Self-placement
 ~~~~~~~~~~~~~~

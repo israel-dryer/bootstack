@@ -77,10 +77,14 @@ class Card(PublicContainer):
         tk_master = self._parent._child_master() if self._parent else None
 
         # Determine the surface children will sit on:
-        # - With accent: children sit on the subtle accent surface (accent[subtle])
-        # - Without accent: step up from the parent surface (background→card→overlay)
-        _SURFACE_STEPS = {"background": "card", "content": "card",
-                          "card": "overlay", "overlay": "overlay"}
+        # - With accent: always accent[subtle], fixed — accent is the identity, not an elevation marker
+        # - Without accent: alternate between card and card_raised at each nesting level
+        _SURFACE_STEPS = {
+            "background":  "card",
+            "content":     "card",
+            "card":        "card_raised",
+            "card_raised": "card",
+        }
         parent_surface = getattr(tk_master, '_surface', 'background') or 'background'
         effective_surface = f'{accent}[subtle]' if accent is not None else _SURFACE_STEPS.get(parent_surface, 'card')
 

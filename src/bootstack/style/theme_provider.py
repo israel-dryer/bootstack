@@ -340,11 +340,12 @@ class ThemeProvider:
         if is_dark:
             # Dark mode: lower lightness = darker/recessed
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 3, 3)),   # Darker than content
-                'content': bg,                                         # Theme background
-                'card': tinted_surface(min(bg_lightness + 4, 20)),    # Elevated cards
-                'overlay': tinted_surface(min(bg_lightness + 7, 25)), # Menus, dialogs
-                'input': tinted_surface(min(bg_lightness + 2, 16)),   # Form control backgrounds
+                'chrome': tinted_surface(max(bg_lightness - 3, 3)),    # Darker than content
+                'content': bg,                                          # Theme background
+                'card': tinted_surface(min(bg_lightness + 4, 20)),     # First card elevation
+                'card_raised': tinted_surface(min(bg_lightness + 8, 25)), # Second card elevation
+                'overlay': tinted_surface(min(bg_lightness + 7, 25)),  # Menus, dialogs
+                'input': tinted_surface(min(bg_lightness + 2, 16)),    # Form control backgrounds
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(min(bg_lightness + 12, 30))
@@ -352,11 +353,12 @@ class ThemeProvider:
         else:
             # Light mode: use subtle darkening for elevation (since bg is often near-white)
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 8, 88)),  # Noticeably darker
-                'content': bg,                                         # Theme background
-                'card': tinted_surface(max(bg_lightness - 4, 92)),    # Slightly darker for contrast
-                'overlay': tinted_surface(max(bg_lightness - 2, 96)), # Subtle for popups
-                'input': bg,                                           # Form control backgrounds (= content)
+                'chrome': tinted_surface(max(bg_lightness - 8, 88)),     # Noticeably darker
+                'content': bg,                                            # Theme background
+                'card': tinted_surface(max(bg_lightness - 4, 92)),       # First card elevation
+                'card_raised': tinted_surface(max(bg_lightness - 7, 88)),# Second card elevation
+                'overlay': tinted_surface(max(bg_lightness - 2, 96)),    # Subtle for popups
+                'input': bg,                                              # Form control backgrounds (= content)
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(max(bg_lightness - 20, 70))

@@ -2,25 +2,26 @@ Card
 ====
 
 A container that groups related content with an elevated background and border.
-Uses the ``card`` surface token so the background steps up automatically from
-the parent surface (``background`` → ``card`` → ``overlay``).
+Cards automatically step the background surface at each nesting level,
+alternating between ``card`` and ``card_raised`` to keep adjacent levels
+visually distinct without runaway drift.
 
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/card-light.png"
-        alt="Card demo — light theme"
+        src="/_static/examples/card-hero-light.png"
+        alt="Card — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/card-dark.png"
-        alt="Card demo — dark theme"
+        src="/_static/examples/card-hero-dark.png"
+        alt="Card — dark theme"
         style="max-width:100%;">
 
 Usage
 -----
 
-Accent borders
-~~~~~~~~~~~~~~
+Accents
+~~~~~~~
 
 Pass an ``accent=`` token to tint the card border and give the interior a
 subtle accent wash. Without ``accent=`` the card renders with a neutral border
@@ -28,14 +29,20 @@ and the next surface step.
 
 .. code-block:: python
 
-   with bs.Card(accent="primary", padding=12, gap=4):
-       bs.Label("Primary")
+   with bs.Card(accent="primary", padding=16, gap=8):
+       bs.Label("Primary", accent="primary", font="heading-sm")
+       bs.Label("Card content")
 
-   with bs.Card(accent="success", padding=12, gap=4):
-       bs.Label("Success")
+.. raw:: html
 
-   with bs.Card(accent="danger", padding=12, gap=4):
-       bs.Label("Danger")
+   <img class="bs-screenshot-light"
+        src="/_static/examples/card-accent-light.png"
+        alt="Card accent borders — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/card-accent-dark.png"
+        alt="Card accent borders — dark theme"
+        style="max-width:100%;">
 
 Layout modes
 ~~~~~~~~~~~~
@@ -45,20 +52,39 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
 
 .. code-block:: python
 
-   # Default vertical stack
-   with bs.Card(gap=8):
-       bs.Label("First")
-       bs.Label("Second")
+    # Default vertical stack
+    with bs.Card(padding=12, gap=8):
+        bs.Label("VStack (default)", font="heading-sm")
+        bs.Label("First item")
+        bs.Label("Second item")
+        bs.Label("Third item")
 
-   # Horizontal stack
-   with bs.Card(layout="hstack", gap=12, anchor_items="center"):
-       bs.Label("A")
-       bs.Label("B")
+    # Horizontal Stack
+    with bs.Card(layout="hstack", padding=12, gap=12, anchor_items="center"):
+        bs.Label("HStack", font="heading-sm")
+        bs.Label("A")
+        bs.Label("B")
+        bs.Label("C")
 
-   # Grid — two equal columns
-   with bs.Card(layout="grid", columns=[1, 1], gap=8, sticky_items="ew"):
-       bs.Label("Name:")    ; bs.Label("Ada Lovelace")
-       bs.Label("Role:")    ; bs.Label("Engineer")
+    # Grid - two equally weighted columns
+    with bs.Card(layout="grid", columns=2, padding=12, gap=8, sticky_items="ew"):
+        bs.Label("Grid", font="heading-sm")
+        bs.Label("2 cols")
+        bs.Label("Item A")
+        bs.Label("Item B")
+        bs.Label("Item C")
+        bs.Label("Item D")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/card-layout-light.png"
+        alt="Card layout modes — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/card-layout-dark.png"
+        alt="Card layout modes — dark theme"
+        style="max-width:100%;">
 
 Child defaults
 ~~~~~~~~~~~~~~
@@ -75,15 +101,32 @@ layout behavior for all children without repeating it on each widget.
 Nested cards
 ~~~~~~~~~~~~
 
-Placing a ``Card`` inside another ``Card`` automatically advances the surface
-token so each level has a visually distinct background.
+Neutral cards alternate between the ``card`` and ``card_raised`` surface tokens
+at each nesting level — the first card steps to ``card``, the next to
+``card_raised``, the next back to ``card``, and so on. Every level is visually
+distinct from its parent regardless of nesting depth.
+
+Accent cards behave differently: the ``accent[subtle]`` tint is fixed and does
+not change with depth. The accent color is the identity signal — elevation
+stepping is not applied.
 
 .. code-block:: python
 
-   with bs.Card(padding=12, gap=8):          # card surface
-       bs.Label("Outer")
-       with bs.Card(padding=8, gap=4):        # overlay surface
-           bs.Label("Inner")
+    with bs.Card(padding=50):
+        with bs.Card(padding=50):
+            with bs.Card(padding=50):
+                bs.Label("Nested Cards")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/card-nested-light.png"
+        alt="Card nested — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/card-nested-dark.png"
+        alt="Card nested — dark theme"
+        style="max-width:100%;">
 
 Widget sizing
 ~~~~~~~~~~~~~

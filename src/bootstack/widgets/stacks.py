@@ -21,8 +21,7 @@ class _StackBase(PublicContainer):
         expand_items: bool | None = None,
         anchor_items: Anchor | str | None = None,
         # Frame styling
-        accent: AccentToken | str | None = None,
-        surface: SurfaceToken | str | None = None,
+        surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
@@ -44,14 +43,11 @@ class _StackBase(PublicContainer):
             anchor_items: Default alignment anchor for children that do not
                 fill their slot. One of ``'n'``, ``'s'``, ``'e'``,
                 ``'w'``, ``'center'``, etc.
-            accent: Color intent token applied to the stack background. One
-                of ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-                ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``.
+            surface: Background token. Accepts a surface token
+                (``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``),
+                an accent token (``'primary'``, ``'success'``, etc.), or
+                any token with modifiers (e.g. ``'primary[subtle]'``).
                 Defaults to ``None`` (inherits from parent surface).
-            surface: Background surface token. One of ``'content'``,
-                ``'card'``, ``'chrome'``, ``'overlay'``. Overrides the
-                automatic surface inherited from the parent. Defaults to
-                ``None``.
             show_border: When ``True``, draws a 1 px border around the
                 stack frame. Defaults to ``False``.
             width: Fixed width of the stack in pixels. Disables frame
@@ -83,8 +79,6 @@ class _StackBase(PublicContainer):
         }
         if padding is not None:
             frame_kwargs["padding"] = padding
-        if accent is not None:
-            frame_kwargs["accent"] = accent
         if surface is not None:
             frame_kwargs["surface"] = surface
         if show_border:
