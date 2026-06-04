@@ -41,7 +41,7 @@ Go from nothing to something fast. The user should never need to `import tkinter
 - Data Display: Tree, Table (deferred — too complex for this pass)
 - Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
 
-### Cross-cutting wrapper improvements (this + prior session)
+### Cross-cutting wrapper improvements (this + prior sessions)
 - `commit()` and `set_cursor()` removed from all field widgets (TextField,
   PasswordField, NumberField, PathField, SpinnerField) — internal plumbing
 - `placeholder` property removed from TextField, PasswordField, PathField —
@@ -58,10 +58,32 @@ Go from nothing to something fast. The user should never need to `import tkinter
   cleaned up inline imports, added `signal` property
 - DateField calendar picker right-aligns to button side; `position_anchored`
   now uses actual rendered size (`winfo_width`) for widget anchors
+- **SideNav compact mode**: selection indicator bar now matches fill color
+  (invisible) instead of accent color. `SideNavItem.set_compact()` rebuilds
+  the frame style via `configure_style_options(icon_only=) + rebuild_style()`.
+- **`AppShell.on_page_change`** bug fixed: was binding `<<PageChanged>>`
+  (never fired) — corrected to `<<PageChange>>`.
+- **`Tabs.item()` / `items()`** bug fixed: were calling non-existent
+  `TabView.item/items` — corrected to `tab()` / `tabs()`.
+- **`TabView`** now forwards `<<TabAdd>>` and `<<TabClose>>` to itself so
+  the public wrapper needs no private `_tabs` access for event routing.
+- **`PublicWidgetBase.emit`** simplified: now wraps `event_generate(data=data)`
+  directly — `_bs_emit_data` side-channel removed.
+- **`ContextMenu`**: `ValueError` on unknown `trigger=`; `add_items()` type
+  hint broadened to `list[ContextMenuItem | dict[str, Any]]`.
+- **`AppShell.mainloop`** alias removed from public API.
+- **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
 
 ### Next session
 
-1. **AppShell deferred improvements** (dedicated follow-on pass):
+1. **Redo Tooltip and Toast screenshots** — switch to per-scene SCENES dict
+   pattern (same as Toolbar/Navigation redo). Both currently use single images.
+
+2. **Redo Dialog screenshots** — 7 dialog pages currently use single images.
+   Split into per-scene scripts with the dialog hero pattern
+   (`app._capture_target`, non-modal open at t=200ms, lift at t=850ms).
+
+3. **AppShell deferred improvements** (dedicated follow-on pass):
    - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
    - Nav item density/font hardcoded in SideNav style builder
    - `toolbar`/`nav` properties expose internals instead of public wrappers
@@ -153,6 +175,12 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 - **Screenshot runner 2px inset** — crops 2px from each edge to remove Windows border artifact.
 - **Dialog hero pattern** — open non-modally at t=200ms, lift dialog at t=850ms, screenshot
   at t=950ms. Use `app._capture_target = <toplevel>` to capture a dialog instead of the app.
+- **Full-app widget sizing** — PageStack, SideNav, AppShell use `fill="both", expand=True`
+  and need `size=(W, H)` (not `minsize=`) to give the canvas a defined size.
+- **Navigation window padding** — use `padding=8` on the App for full-app nav scenes to
+  give footer-pinned items breathing room at the bottom edge.
+- **Tabs vertical scene** — use `padding=16` and `size=(W, H)` since `fill="both"` needs
+  a canvas; `minsize=` is sufficient for horizontal tabs scenes.
 
 ### MenuButton specifics
 - **`icon_only` inferred** — `DropdownButton.__init__` auto-sets `icon_only=True` in
@@ -175,6 +203,14 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   `"⌘S"` (no registration required), literal string → pass-through.
 - **MenuButton hero pattern** — show a standalone "Actions" button (Edit/Duplicate/Archive/
   Delete), NOT a File/Edit/View menubar pattern. Shortcuts section uses the File menu example.
+
+### Style rebuild pattern
+- **`configure_style_options` alone doesn't rebuild** — it only updates the stored
+  `_style_options` dict. Call `rebuild_style()` immediately after to regenerate the TTK
+  style with the new options and apply it to the widget.
+- **`emit` wraps `event_generate`** — `PublicWidgetBase.emit(event, data=...)` calls
+  `self._internal.event_generate(sequence, data=data)` directly. For internal widgets
+  use `event_generate` with `data=` natively (the event system is patched to support it).
 
 ### Widgets and API
 - **`disabled` on Label** — not appropriate. Label is display-only.
