@@ -7,12 +7,12 @@ follow the mouse or anchor to a specific edge of the target.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/tooltip-light.png"
-        alt="Tooltip demo — light theme"
+        src="/_static/examples/tooltip-hero-light.png"
+        alt="Tooltip — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/tooltip-dark.png"
-        alt="Tooltip demo — dark theme"
+        src="/_static/examples/tooltip-hero-dark.png"
+        alt="Tooltip — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -60,6 +60,17 @@ Color-code tooltips by intent with ``accent=``.
    bs.Tooltip(btn, "Required field", accent="danger")
    bs.Tooltip(btn, "Saved successfully", accent="success")
    bs.Tooltip(btn, "New in this release", accent="info")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/tooltip-accents-light.png"
+        alt="Tooltip accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/tooltip-accents-dark.png"
+        alt="Tooltip accent colors — dark theme"
+        style="max-width:100%;">
 
 Text wrapping and alignment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
