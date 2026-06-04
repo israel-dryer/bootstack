@@ -20,6 +20,37 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 **Branch:** `feat/docs-api-improvements` (active)
 
+### Docs structure (RESOLVED 2026-06-04, committed b7625f36 + follow-ups)
+
+Top-level sections (pydata horizontal navbar — keep this set SMALL, ~5):
+**Getting Started · Tasks · Widgets · Reference · Production**.
+
+- **`docs/widgets/`** — every widget as a flat leaf page. Grouping is done with
+  **caption toctrees** in `widgets/index.rst` (one `.. toctree:: :caption: <Group>`
+  per group, listing widget pages directly). The 10 old category landing pages
+  (`actions.rst`, `inputs.rst`, …) were RETIRED — captions replace them. Curated
+  (common-first) order within groups, NOT alphabetical.
+- **`docs/reference/`** — framework primitives: theming, typography, signals,
+  events, validation, data-sources, shortcuts, scheduling. Flat (no captions).
+- **`docs/api/` and `docs/deeper/` are GONE.** typography moved into reference/.
+- `show_nav_level: 2` (conf.py) renders the caption groups as sidebar headers.
+- Sections are **flat by default**; add caption toctrees only when a section
+  needs internal organization (e.g. if Common Tasks grows).
+- Do NOT promote widget groups to top-level — ~14 navbar items overflow pydata.
+
+**Reference page pattern** (distinct from widgets — non-visual, NO screenshots):
+prose intro → task-ordered usage sections (code blocks) → See also → curated
+`autoclass` → Full Example `literalinclude`. Curate the documented surface with a
+denylist `:exclude-members:` mirroring the widget `.tk` exclusion, plus
+`:undoc-members:` so new public members auto-appear (lower-maintenance than an
+allowlist). **Exemplar: `docs/reference/signals.rst`** (+ `docs/examples/signals.py`,
+run-verified). The other 7 reference pages were MOVED but NOT yet reworked to this
+pattern — that is the main remaining work (see Next session).
+
+**No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
+strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
+`src/` is still pending; `signals/signal.py` is done.
+
 ### Status
 
 **Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
@@ -74,16 +105,39 @@ Go from nothing to something fast. The user should never need to `import tkinter
 - **`AppShell.mainloop`** alias removed from public API.
 - **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
 
-### Next session
+### Next session (docs + API audit initiative)
 
-1. **Redo Tooltip and Toast screenshots** — switch to per-scene SCENES dict
-   pattern (same as Toolbar/Navigation redo). Both currently use single images.
+**PRIORITY — finish the Reference section.** Apply the signals exemplar
+(`docs/reference/signals.rst`) to the other 7 reference pages: theming,
+typography, events, validation, data-sources, shortcuts, scheduling. For EACH
+page: (1) audit that class's public API — docs are the forcing function, so
+surface bugs / inconsistencies / code-smell and either fix or log them; (2)
+curate the documented surface via autoclass denylist exclusion; (3) write prose
++ a runnable `docs/examples/<topic>.py` and verify it runs; (4) wire into
+`reference/index.rst`. theming/typography may warrant a screenshot (visual).
+Follow the established audit-and-curate convention (curation = visibility
+discipline for plain/composition classes; twin public wrapper only when
+inheritance forces it, as with widgets).
 
-2. **Redo Dialog screenshots** — 7 dialog pages currently use single images.
-   Split into per-scene scripts with the dialog hero pattern
-   (`app._capture_target`, non-modal open at t=200ms, lift at t=850ms).
+**Signal API — DECIDED this session:** `signal()` is the single getter, `.set()`
+writes, `.get()` is deprecated (doc-excluded now, to be removed in the runtime
+pass). Possible future add: `.update(fn)`. Do NOT adopt a callable-setter
+`signal(x)` (analysis in memory).
 
-3. **AppShell deferred improvements** (dedicated follow-on pass):
+**Other pending:**
+1. **Improve index/landing pages before release** — root `index.rst`,
+   `widgets/index.rst`, `reference/index.rst`, and the section indexes are bare
+   (intro + toctree). Add real landing content / orientation / gallery.
+2. **Signal runtime-cleanup pass** — 6 audit findings (memory
+   `project_signal_api_audit_findings`). Notably: remove `.get()` AND the
+   `__getattr__` variable proxy together (the proxy keeps `.get()` reachable);
+   `set()` rejects numeric widening (`Signal(0.0).set(5)` raises); silent
+   exception swallow in `subscribe(immediate=)`. Behavioral — deliberate pass.
+3. **localization / windowing** — write as `tasks/` how-tos (were deleted as
+   empty `deeper/` stubs this session).
+4. **Screenshots still pending:** Tooltip/Toast (per-scene SCENES dict), 7 Dialog
+   pages (per-scene + dialog hero pattern).
+5. **AppShell deferred improvements** (dedicated follow-on pass):
    - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
    - Nav item density/font hardcoded in SideNav style builder
    - `toolbar`/`nav` properties expose internals instead of public wrappers
@@ -101,9 +155,10 @@ Go from nothing to something fast. The user should never need to `import tkinter
 2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);
    `@overload` event shorthands; no low-level color kwargs; layout via `**kwargs`
    + `_split_layout_kwargs`; catch-all must be `**kwargs` not `**extra_kw`.
-3. **`docs/api/<widget>.rst`** — intro sentence → hero screenshot → Usage sections
-   (code block then screenshot) → Widget sizing include → See also → API autoclass
-   → Full Example literalinclude. No intro code block above hero.
+3. **`docs/widgets/<widget>.rst`** (NOTE: was `docs/api/` — moved 2026-06-04) —
+   intro sentence → hero screenshot → Usage sections (code block then screenshot)
+   → Widget sizing include → See also → API autoclass → Full Example
+   literalinclude. No intro code block above hero.
 4. **`docs/examples/<widget>.py`** — runnable visual-states-only demo. No
    `app.tk.after()`, no screenshot scaffolding, no `fill="x"` in RST snippets.
 5. **`docs/screenshots/<widget>.py`** — SCENES dict. Each scene: own `bs.App`,
@@ -112,7 +167,8 @@ Go from nothing to something fast. The user should never need to `import tkinter
    state with menu/popdown open if applicable.
 6. **Screenshots:** `py -3.12 docs/scripts/take_screenshots.py <widget> [--scene X] [--light]`
    Outputs: `docs/_static/examples/<widget>-<scene>-light/dark.png`
-7. **Wire** into `docs/api/<category>.rst` toctree.
+7. **Wire** into the matching `:caption:` toctree in `docs/widgets/index.rst`
+   (category landing pages are retired — captions group the widgets now).
 8. **Commit** on `feat/docs-api-improvements`.
 
 ### Screenshot image pattern
