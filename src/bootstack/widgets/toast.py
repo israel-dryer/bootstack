@@ -19,7 +19,7 @@ class Toast:
             on the right side of the header row.
         icon: Bootstrap Icons name (e.g. ``'check-circle'``) or an icon spec
             dict with keys ``name`` (str), ``size`` (int), and ``color`` (str).
-            Defaults to ``'bell'`` when not specified.
+            Defaults to ``'bell-fill'`` when not specified.
         duration: Auto-dismiss delay in milliseconds. ``None`` keeps the toast
             visible until the user closes it manually. Defaults to ``None``.
         accent: Semantic color accent. One of ``'default'``, ``'primary'``,

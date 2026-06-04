@@ -49,10 +49,10 @@ Accent colors
 
 .. code-block:: python
 
-   bs.Toast(title="Success", message="Operation completed.", accent="success").show()
-   bs.Toast(title="Warning", message="Disk space low.",      accent="warning").show()
-   bs.Toast(title="Error",   message="Upload failed.",       accent="danger").show()
-   bs.Toast(title="Info",    message="Update available.",    accent="info").show()
+   bs.Toast(message="Update available", icon="info-circle-fill",          accent="info").show()
+   bs.Toast(message="Changes saved",   icon="check-circle-fill",         accent="success").show()
+   bs.Toast(message="Storage is low",  icon="exclamation-triangle-fill", accent="warning").show()
+   bs.Toast(message="Upload failed",   icon="x-circle-fill",             accent="danger").show()
 
 .. raw:: html
 
@@ -74,10 +74,21 @@ useful for timestamps or brief metadata.
 .. code-block:: python
 
    bs.Toast(
-       message="Backup completed.",
+       message="Backup complete",
        detail="just now",
        accent="success",
    ).show()
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toast-detail-light.png"
+        alt="Toast with detail text — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toast-detail-dark.png"
+        alt="Toast with detail text — dark theme"
+        style="max-width:100%;">
 
 Action buttons
 ~~~~~~~~~~~~~~
@@ -90,7 +101,6 @@ the toast and passes the dict to ``on_dismiss``.
    bs.Toast(
        title="Delete 3 files?",
        message="This action cannot be undone.",
-       accent="danger",
        show_close_button=False,
        actions=[
            {"text": "Cancel"},

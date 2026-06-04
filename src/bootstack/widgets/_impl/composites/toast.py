@@ -209,7 +209,7 @@ class Toast:
         resolved_title_font = "label" if has_title else "body"
         subtle_accent = f"{self._accent}[subtle]" if self._accent else None
         muted_foreground = "background[muted]" if self._accent is None else f"{self._accent}[muted]"
-        resolved_icon = self._icon if self._icon is not None else "bell"
+        resolved_icon = self._icon if self._icon is not None else "bell-fill"
         icon_spec = resolved_icon if isinstance(resolved_icon, dict) else {"name": resolved_icon, "size": 20}
 
         # ------ Toplevel setup ------
@@ -230,7 +230,8 @@ class Toast:
 
         # ------ Toast Layout ------
 
-        container = _Frame(top, padding=4, accent=subtle_accent, show_border=True)
+        container = _Frame(top, padding=4, accent=self._accent, show_border=True,
+                           surface=subtle_accent or 'overlay')
         container.pack(fill='both', expand=True)
 
         header = _Frame(container, padding=(8, 8, 0, 8))
@@ -267,7 +268,7 @@ class Toast:
                 header,
                 text=self._memo,
                 font="caption",
-                accent=muted_foreground,
+                accent=self._accent,
             ).pack(side='right', pady=8, padx=(0, 0 if self._show_close_button else 12))
 
         # message
@@ -292,7 +293,7 @@ class Toast:
                 return inner
 
             button_frame = _Frame(container)
-            button_frame.pack(side='top', anchor='e', padx=8, pady=(0, 4))
+            button_frame.pack(side='top', anchor='e', padx=4, pady=(0, 4))
 
             for i, button_options in enumerate(self._buttons):
                 func = button_options.get('command', None)

@@ -13,17 +13,31 @@ def hero():
     app.run()
 
 
+def detail():
+    with bs.App(title="Toast — Detail", size=(440, 80), padding=0) as app:
+        def show_toast():
+            bs.Toast(
+                message="Backup complete",
+                detail="just now",
+                accent="success",
+                duration=8000,
+                position="+212+141",
+            ).show()
+        app.tk.after(850, show_toast)
+    app.run()
+
+
 def accents():
     with bs.App(title="Toast — Accents", size=(440, 320), padding=0) as app:
         def show_toasts():
-            for i, (accent, title, icon) in enumerate([
-                ("info",    "Update available", "info-circle"),
-                ("success", "Changes saved",    "check-circle"),
-                ("warning", "Storage is low",   "exclamation-triangle"),
-                ("danger",  "Upload failed",    "x-circle"),
+            for i, (accent, message, icon) in enumerate([
+                ("info",    "Update available", "info-circle-fill"),
+                ("success", "Changes saved",    "check-circle-fill"),
+                ("warning", "Storage is low",   "exclamation-triangle-fill"),
+                ("danger",  "Upload failed",    "x-circle-fill"),
             ]):
                 bs.Toast(
-                    title=title,
+                    message=message,
                     accent=accent,
                     icon=icon,
                     duration=8000,
@@ -53,6 +67,7 @@ def actions():
 
 SCENES = {
     "hero":    hero,
+    "detail":  detail,
     "accents": accents,
     "actions": actions,
 }
