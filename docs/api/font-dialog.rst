@@ -4,21 +4,15 @@ Font Dialog
 ``bs.ask_font()`` opens a modal font selector and returns the selected font.
 ``bs.FontDialog`` gives the same selector as a reusable object.
 
-.. code-block:: python
-
-   font = bs.ask_font()
-   if font:
-       actual = font.actual()   # dict with family, size, weight, slant, ...
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/font-dialog-light.png"
-        alt="Font Dialog demo — light theme"
+        src="/_static/examples/font-dialog-hero-light.png"
+        alt="Font Dialog — light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/font-dialog-dark.png"
-        alt="Font Dialog demo — dark theme"
+        src="/_static/examples/font-dialog-hero-dark.png"
+        alt="Font Dialog — dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage

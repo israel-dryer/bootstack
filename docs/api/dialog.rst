@@ -5,35 +5,15 @@ Dialog
 ``content_builder=`` function to lay out any widgets, and a ``buttons=`` list
 to define the footer.
 
-.. code-block:: python
-
-   def build(frame):
-       with bs.VStack(padding=(24, 20), gap=8, parent=frame):
-           bs.Label("Delete 3 selected items?")
-           bs.Label("This action cannot be undone.", font="caption")
-
-   dlg = bs.Dialog(
-       title="Confirm deletion",
-       content_builder=build,
-       buttons=[
-           bs.DialogButton("Delete", role="danger", result="delete"),
-           bs.DialogButton("Cancel", role="cancel"),
-       ],
-   )
-   dlg.show()
-
-   if dlg.result == "delete":
-       delete_items()
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/dialog-light.png"
-        alt="Dialog demo — light theme"
+        src="/_static/examples/dialog-hero-light.png"
+        alt="Dialog — light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/dialog-dark.png"
-        alt="Dialog demo — dark theme"
+        src="/_static/examples/dialog-hero-dark.png"
+        alt="Dialog — dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage

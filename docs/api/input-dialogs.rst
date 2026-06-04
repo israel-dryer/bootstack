@@ -4,20 +4,15 @@ Input Dialogs
 Convenience functions for collecting a single value from the user. Each opens
 a modal dialog, waits for input, and returns the value (or ``None`` if canceled).
 
-.. code-block:: python
-
-   name = bs.ask_string("Enter your name:")
-   age  = bs.ask_integer("Enter age:", min_value=0, max_value=120)
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-light.png"
-        alt="Input Dialogs demo — light theme"
+        src="/_static/examples/input-dialogs-hero-light.png"
+        alt="Input Dialogs — text input dialog, light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/input-dialogs-dark.png"
-        alt="Input Dialogs demo — dark theme"
+        src="/_static/examples/input-dialogs-hero-dark.png"
+        alt="Input Dialogs — text input dialog, dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage
@@ -84,6 +79,17 @@ Restrict the selectable range with ``min_date=`` and ``max_date=``:
 .. code-block:: python
 
    deadline = bs.ask_date(title="Pick a deadline", min_date=date.today())
+
+.. raw:: html
+
+   <img class="bs-screenshot-light bs-dialog-screenshot"
+        src="/_static/examples/input-dialogs-date-light.png"
+        alt="Input Dialogs — date picker dialog, light theme"
+        style="max-width:100%; margin:1rem 0;">
+   <img class="bs-screenshot-dark bs-dialog-screenshot"
+        src="/_static/examples/input-dialogs-date-dark.png"
+        alt="Input Dialogs — date picker dialog, dark theme"
+        style="max-width:100%; margin:1rem 0;">
 
 Ask for a date range
 ~~~~~~~~~~~~~~~~~~~~

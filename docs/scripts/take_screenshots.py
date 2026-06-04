@@ -76,8 +76,9 @@ def _patch(cls):
                 ch = target.winfo_height()
                 gy = int(m.group(4)) if m else ry
                 title_h = ry - gy
-                x, y = rx, gy
-                w, h = cw, ch + title_h
+                pad = 10  # breathing room outside the dialog window
+                x, y = rx - pad, gy - pad
+                w, h = cw + pad * 2, ch + title_h + pad * 2
                 inset = 0
             else:
                 x = self.tk.winfo_rootx()

@@ -4,23 +4,15 @@ Color Dialog
 ``bs.ask_color()`` opens a modal color chooser and returns the selected color.
 ``bs.ColorChooserDialog`` gives the same chooser as a reusable object.
 
-.. code-block:: python
-
-   result = bs.ask_color(color="#0070C0")
-   if result:
-       print(result.hex)        # '#0070c0'
-       print(result.rgb)        # (0, 112, 192)
-       print(result.hsl)        # (205, 100, 37)
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/color-dialog-light.png"
-        alt="Color Dialog demo — light theme"
+        src="/_static/examples/color-dialog-hero-light.png"
+        alt="Color Dialog — light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/color-dialog-dark.png"
-        alt="Color Dialog demo — dark theme"
+        src="/_static/examples/color-dialog-hero-dark.png"
+        alt="Color Dialog — dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage

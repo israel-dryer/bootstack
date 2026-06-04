@@ -4,25 +4,15 @@ Filter Dialog
 ``bs.ask_filter()`` opens a multi-select dialog and returns the chosen values.
 ``bs.FilterDialog`` gives the same dialog as a reusable object.
 
-.. code-block:: python
-
-   selected = bs.ask_filter(
-       ["Canada", "UK", "USA", "Other"],
-       title="Filter Countries",
-       enable_search=True,
-   )
-   if selected is not None:
-       print(selected)   # ['Canada', 'USA']
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/filter-dialog-light.png"
-        alt="Filter Dialog demo — light theme"
+        src="/_static/examples/filter-dialog-hero-light.png"
+        alt="Filter Dialog — light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/filter-dialog-dark.png"
-        alt="Filter Dialog demo — dark theme"
+        src="/_static/examples/filter-dialog-hero-dark.png"
+        alt="Filter Dialog — dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage

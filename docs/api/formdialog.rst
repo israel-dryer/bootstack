@@ -5,26 +5,15 @@ Form Dialog
 dialog. Pass ``data=`` to generate fields automatically from a dict, or
 ``items=`` for an explicit layout.
 
-.. code-block:: python
-
-   dlg = bs.FormDialog(
-       title="New Contact",
-       data={"name": "", "email": "", "phone": ""},
-   )
-   dlg.show()
-
-   if dlg.result:
-       save_contact(dlg.result)   # {'name': '...', 'email': '...', ...}
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/formdialog-light.png"
-        alt="FormDialog demo — light theme"
+        src="/_static/examples/formdialog-hero-light.png"
+        alt="FormDialog — light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/formdialog-dark.png"
-        alt="FormDialog demo — dark theme"
+        src="/_static/examples/formdialog-hero-dark.png"
+        alt="FormDialog — dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage

@@ -4,22 +4,15 @@ Message Dialogs
 ``bs.alert()`` and ``bs.confirm()`` open modal windows for notifications and
 yes/no decisions. Both are one-liners — no setup required.
 
-.. code-block:: python
-
-   bs.alert("File saved.", severity="success")
-
-   if bs.confirm("Delete this item?", confirm_text="Delete", confirm_role="danger"):
-       delete_item()
-
 .. raw:: html
 
    <img class="bs-screenshot-light bs-dialog-screenshot"
-        src="/_static/examples/message-dialogs-light.png"
-        alt="Message Dialogs demo — light theme"
+        src="/_static/examples/message-dialogs-hero-light.png"
+        alt="Message Dialogs — confirm dialog, light theme"
         style="max-width:100%; margin:1rem 0;">
    <img class="bs-screenshot-dark bs-dialog-screenshot"
-        src="/_static/examples/message-dialogs-dark.png"
-        alt="Message Dialogs demo — dark theme"
+        src="/_static/examples/message-dialogs-hero-dark.png"
+        alt="Message Dialogs — confirm dialog, dark theme"
         style="max-width:100%; margin:1rem 0;">
 
 Usage
@@ -40,6 +33,17 @@ Customize the button label or add an icon:
 .. code-block:: python
 
    bs.alert("Session expired.", ok_text="Sign in again", icon="exclamation-circle")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light bs-dialog-screenshot"
+        src="/_static/examples/message-dialogs-alert-light.png"
+        alt="Message Dialogs — alert dialog, light theme"
+        style="max-width:100%; margin:1rem 0;">
+   <img class="bs-screenshot-dark bs-dialog-screenshot"
+        src="/_static/examples/message-dialogs-alert-dark.png"
+        alt="Message Dialogs — alert dialog, dark theme"
+        style="max-width:100%; margin:1rem 0;">
 
 Alert sound
 ^^^^^^^^^^^
