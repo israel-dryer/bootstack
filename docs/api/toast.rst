@@ -7,12 +7,12 @@ after a configurable delay.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/toast-light.png"
-        alt="Toast demo — light theme"
+        src="/_static/examples/toast-hero-light.png"
+        alt="Toast — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/toast-dark.png"
-        alt="Toast demo — dark theme"
+        src="/_static/examples/toast-hero-dark.png"
+        alt="Toast — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -54,6 +54,17 @@ Accent colors
    bs.Toast(title="Error",   message="Upload failed.",       accent="danger").show()
    bs.Toast(title="Info",    message="Update available.",    accent="info").show()
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toast-accents-light.png"
+        alt="Toast accent colors — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toast-accents-dark.png"
+        alt="Toast accent colors — dark theme"
+        style="max-width:100%;">
+
 Detail text
 ~~~~~~~~~~~
 
@@ -87,6 +98,17 @@ the toast and passes the dict to ``on_dismiss``.
        ],
        on_dismiss=lambda btn: print("clicked:", btn),
    ).show()
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/toast-actions-light.png"
+        alt="Toast with action buttons — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/toast-actions-dark.png"
+        alt="Toast with action buttons — dark theme"
+        style="max-width:100%;">
 
 Dismiss callback
 ~~~~~~~~~~~~~~~~

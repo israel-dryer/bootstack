@@ -17,7 +17,6 @@ class IconSpec(TypedDict, total=False):
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.button import Button as _Button
-from bootstack.widgets._impl.primitives.separator import Separator as _Separator
 
 class ToastConfig(TypedDict, total=False):
     """Configuration options for Toast widget."""
@@ -208,7 +207,10 @@ class Toast:
         has_title = self._title is not None
         has_title_and_message = has_title and self._message is not None
         resolved_title_font = "label" if has_title else "body"
+        subtle_accent = f"{self._accent}[subtle]" if self._accent else None
         muted_foreground = "background[muted]" if self._accent is None else f"{self._accent}[muted]"
+        resolved_icon = self._icon if self._icon is not None else "bell"
+        icon_spec = resolved_icon if isinstance(resolved_icon, dict) else {"name": resolved_icon, "size": 20}
 
         # ------ Toplevel setup ------
 
@@ -228,15 +230,15 @@ class Toast:
 
         # ------ Toast Layout ------
 
-        container = _Frame(top, padding=4, accent=self._accent)
+        container = _Frame(top, padding=4, accent=subtle_accent, show_border=True)
         container.pack(fill='both', expand=True)
 
-        header = _Frame(container, padding=(8, 0, 0, 0))
+        header = _Frame(container, padding=(8, 8, 0, 8))
         header.pack(side='top', fill='x')
 
         # icon
-        if self._icon:
-            _Label(header, icon=self._icon).pack(side='left', padx=(0, 8))
+        if icon_spec:
+            _Label(header, icon=icon_spec, accent=self._accent).pack(side='left', padx=(0, 8))
 
         # title
         _Label(
@@ -245,6 +247,7 @@ class Toast:
             font=resolved_title_font,
             wraplength=380,
             justify='left',
+            accent=self._accent,
         ).pack(side='left', fill='x')
 
         # close
@@ -252,7 +255,7 @@ class Toast:
             _Button(
                 header,
                 icon="x",
-                accent=muted_foreground,
+                accent=self._accent,
                 variant="ghost",
                 style_options={"icon_only": True},
                 command=self.hide
@@ -269,13 +272,13 @@ class Toast:
 
         # message
         if has_title_and_message:
-            _Separator(container).pack(side='top', fill='x')
             _Label(
                 container,
                 text=self._message,
                 wraplength=400,
-                justify='left'
-            ).pack(side='top', fill='x', pady=8, padx=8)
+                justify='left',
+                accent=self._accent,
+            ).pack(side='top', fill='x', pady=(0, 8), padx=8)
 
         # buttons
         if self._buttons:
@@ -288,9 +291,8 @@ class Toast:
 
                 return inner
 
-            _Separator(container).pack(side='top', fill='x', pady=4)
             button_frame = _Frame(container)
-            button_frame.pack(side='top', fill='x')
+            button_frame.pack(side='top', anchor='e', padx=8, pady=(0, 4))
 
             for i, button_options in enumerate(self._buttons):
                 func = button_options.get('command', None)
@@ -299,7 +301,7 @@ class Toast:
                     button_frame,
                     **button_opts,
                     command=execute_command(button_options, func)
-                ).grid(column=i, row=0, sticky="ew")
+                ).grid(column=i, row=0, padx=(4 if i > 0 else 0, 0))
 
         # ------ Positioning -------
 

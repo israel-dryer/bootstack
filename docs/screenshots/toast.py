@@ -1,24 +1,58 @@
-"""Toast screenshot hero."""
 import bootstack as bs
 
-with bs.App(title="Toast", size=(560, 280), padding=24, gap=8) as app:
-    bs.Label("Toast Notifications", font="heading-md[bold]")
-    bs.Label("Transient messages that auto-dismiss after a configurable delay.",
-             font="caption")
 
-    def show_toast():
-        # Bottom-right corner of the captured window region.
-        # App client area: ~(200, 131) to (760, 411) at runner position +200+100.
-        # Toast ~400×80 px → right-aligned with 12px margin from edges.
-        bs.Toast(
-            title="File saved",
-            message="report-2024.pdf was saved to your documents.",
-            accent="success",
-            icon="check-circle",
-            duration=8000,
-            position="+348+290",
-        ).show()
+def hero():
+    with bs.App(title="Toast", size=(440, 80), padding=0) as app:
+        def show_toast():
+            bs.Toast(
+                message="Your files have been saved.",
+                duration=8000,
+                position="+212+141",
+            ).show()
+        app.tk.after(850, show_toast)
+    app.run()
 
-    app.tk.after(850, show_toast)
 
-app.run()
+def accents():
+    with bs.App(title="Toast — Accents", size=(440, 320), padding=0) as app:
+        def show_toasts():
+            for i, (accent, title, icon) in enumerate([
+                ("info",    "Update available", "info-circle"),
+                ("success", "Changes saved",    "check-circle"),
+                ("warning", "Storage is low",   "exclamation-triangle"),
+                ("danger",  "Upload failed",    "x-circle"),
+            ]):
+                bs.Toast(
+                    title=title,
+                    accent=accent,
+                    icon=icon,
+                    duration=8000,
+                    position=f"+212+{141 + i * 78}",
+                ).show()
+        app.tk.after(850, show_toasts)
+    app.run()
+
+
+def actions():
+    with bs.App(title="Toast — Actions", size=(440, 180), padding=0) as app:
+        def show_toast():
+            bs.Toast(
+                title="Delete 3 files?",
+                message="This action cannot be undone.",
+                show_close_button=False,
+                actions=[
+                    {"text": "Cancel"},
+                    {"text": "Delete", "accent": "danger"},
+                ],
+                duration=8000,
+                position="+212+141",
+            ).show()
+        app.tk.after(850, show_toast)
+    app.run()
+
+
+SCENES = {
+    "hero":    hero,
+    "accents": accents,
+    "actions": actions,
+}
