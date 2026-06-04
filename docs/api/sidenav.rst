@@ -8,11 +8,11 @@ between expanded, compact, and minimal display modes at runtime.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/sidenav-light.png"
+        src="/_static/examples/sidenav-hero-light.png"
         alt="SideNav demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/sidenav-dark.png"
+        src="/_static/examples/sidenav-hero-dark.png"
         alt="SideNav demo — dark theme"
         style="max-width:100%;">
 
@@ -107,6 +107,17 @@ Display modes
 
    nav = bs.SideNav(display_mode="compact", fill="y")
    nav.set_display_mode("expanded")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/sidenav-compact-light.png"
+        alt="SideNav compact mode — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/sidenav-compact-dark.png"
+        alt="SideNav compact mode — dark theme"
+        style="max-width:100%;">
 
 Collapsible pane
 ~~~~~~~~~~~~~~~~

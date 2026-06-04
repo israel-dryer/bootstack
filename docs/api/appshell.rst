@@ -9,11 +9,11 @@ automatically.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/appshell-light.png"
+        src="/_static/examples/appshell-hero-light.png"
         alt="AppShell demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/appshell-dark.png"
+        src="/_static/examples/appshell-hero-dark.png"
         alt="AppShell demo — dark theme"
         style="max-width:100%;">
 
@@ -113,6 +113,17 @@ be changed at runtime via ``shell.nav.set_display_mode()``.
 .. code-block:: python
 
    shell = bs.AppShell(nav_display_mode="compact")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/appshell-compact-light.png"
+        alt="AppShell compact sidebar — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/appshell-compact-dark.png"
+        alt="AppShell compact sidebar — dark theme"
+        style="max-width:100%;">
 
 Navigation
 ~~~~~~~~~~

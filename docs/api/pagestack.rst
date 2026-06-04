@@ -9,11 +9,11 @@ navigation is tracked automatically.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/pagestack-light.png"
+        src="/_static/examples/pagestack-hero-light.png"
         alt="PageStack demo — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/pagestack-dark.png"
+        src="/_static/examples/pagestack-hero-dark.png"
         alt="PageStack demo — dark theme"
         style="max-width:100%;">
 
