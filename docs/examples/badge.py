@@ -11,7 +11,7 @@ import bootstack as bs
 with bs.App(title="Badge Demo", padding=20, gap=16) as app:
 
     # Variants
-    bs.Label("Variants", font="heading-sm[bold]")
+    bs.Label("Variants", font="heading-sm")
     with bs.HStack(gap=8):
         bs.Badge("Square",  accent="primary")
         bs.Badge("Pill",    accent="primary",  variant="pill")
@@ -20,19 +20,19 @@ with bs.App(title="Badge Demo", padding=20, gap=16) as app:
         bs.Badge("Beta",    accent="warning",  variant="pill")
 
     # Accent colors — square
-    bs.Label("Accent Colors — Square", font="heading-sm[bold]")
+    bs.Label("Accent Colors — Square", font="heading-sm")
     with bs.HStack(gap=8):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Badge(accent.title(), accent=accent)
 
     # Accent colors — pill
-    bs.Label("Accent Colors — Pill", font="heading-sm[bold]")
+    bs.Label("Accent Colors — Pill", font="heading-sm")
     with bs.HStack(gap=8):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Badge(accent.title(), accent=accent, variant="pill")
 
     # In context — heading with count
-    bs.Label("In Context", font="heading-sm[bold]")
+    bs.Label("In Context", font="heading-sm")
     with bs.VStack(gap=8):
         with bs.HStack(gap=8, anchor_items="center"):
             bs.Label("Inbox", font="heading-md")

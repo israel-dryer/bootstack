@@ -4,13 +4,13 @@ Badge
 A compact styled chip for status indicators, counts, and tags. Inherits all
 ``Label`` kwargs but renders with a fixed pill or square shape.
 
-.. image:: /_static/examples/badge-light.png
+.. image:: /_static/examples/badge-hero-light.png
    :class: bs-screenshot-light
-   :alt: Badge demo — light theme
+   :alt: Badge — light theme
 
-.. image:: /_static/examples/badge-dark.png
+.. image:: /_static/examples/badge-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: Badge demo — dark theme
+   :alt: Badge — dark theme
 
 Usage
 -----
@@ -39,6 +39,14 @@ Accent colors
    bs.Badge("Warning",   accent="warning")
    bs.Badge("Danger",    accent="danger")
 
+.. image:: /_static/examples/badge-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Badge accent colors — light theme
+
+.. image:: /_static/examples/badge-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Badge accent colors — dark theme
+
 In context
 ~~~~~~~~~~
 
@@ -57,6 +65,14 @@ in a table cell, or in a sidebar item.
        bs.Label("Run-A15")
        bs.Badge("Complete", accent="success", variant="pill")
        bs.Badge("2 warnings", accent="warning")
+
+.. image:: /_static/examples/badge-context-light.png
+   :class: bs-screenshot-light
+   :alt: Badge in context — light theme
+
+.. image:: /_static/examples/badge-context-dark.png
+   :class: bs-screenshot-dark
+   :alt: Badge in context — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~

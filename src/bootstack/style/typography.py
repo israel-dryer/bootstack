@@ -339,11 +339,12 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
     """
     Parse:
       "body[bold]"
-      "heading-lg+1[italic][underline]"
+      "heading-lg[+1][italic][underline]"
       "[16][bold]"  -> default token + size/mods
 
     Brackets can contain:
-      - size: 16, 16px
+      - size delta: +1, -2 (relative to token base size)
+      - absolute size: 16, 16px
       - modifiers: bold, normal, italic, roman, underline, overstrike
       - comma/space separated lists: [bold, italic]
     """
@@ -354,21 +355,10 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
     head = s.split("[", 1)[0].strip()
     mods = _BRACKET_RE.findall(s)
 
-    token = default_token
-    size_delta = 0
-
-    if head:
-        # allow token+delta like "body+1" or "body-2"
-        m = re.match(r"^\s*([^+\-]+?)\s*([+-])\s*(\d+)\s*$", head)
-        if m:
-            token = m.group(1).strip() or default_token
-            sign = m.group(2)
-            n = int(m.group(3))
-            size_delta = n if sign == "+" else -n
-        else:
-            token = head
+    token = head if head else default_token
 
     size: int | None = None
+    size_delta = 0
     weight: str | None = None
     slant: str | None = None
     underline: bool | None = None
@@ -381,7 +371,9 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
 
         bits = [b.strip().lower() for b in re.split(r"[,\s]+", part) if b.strip()]
         for b in bits:
-            if b.endswith("px") and b[:-2].isdigit():
+            if re.match(r"^[+-]\d+$", b):
+                size_delta = int(b)
+            elif b.endswith("px") and b[:-2].isdigit():
                 size = -int(b[:-2])
             elif b.isdigit():
                 size = int(b)
@@ -474,20 +466,18 @@ def resolve_modifier_font(spec: FontModifierSpec) -> TkFont:
 
 class Font:
     """
-    Public, reusable typography primitive.
+    Resolves a font token string to a live Tk font object.
 
-    Works with the same inline syntax you already allow on widgets:
+    Accepts the same token syntax as the ``font=`` argument on any widget:
       Font("body[bold]")
-      Font("heading-lg+1[italic]")
+      Font("heading-lg[+1][italic]")
       Font("[16][bold]")            # default token + size/mods
-      Font("Segoe UI[14][bold]")    # explicit family + mods
 
-    Can be passed directly to Tk widgets:
-      ttk.Label(..., font=Font("body[bold]"))
+    Use it for text measurement or to pass a resolved font to a raw Tk widget.
 
-    Measurement helpers:
-      Font(...).measure("text")
-      Font(...).metrics(...)
+    Args:
+        value: Font token string (e.g. ``'body[bold]'``, ``'heading-md[italic]'``).
+        default_token: Token to use when ``value`` has no token prefix. Defaults to ``'body'``.
     """
 
     __slots__ = ("spec", "_tkfont")

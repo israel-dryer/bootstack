@@ -12,11 +12,11 @@ import bootstack as bs
 with bs.App(title="TextField Demo", padding=20, gap=16) as app:
 
     # Basic
-    bs.Label("Basic", font="heading-sm[bold]")
+    bs.Label("Basic", font="heading-sm")
     basic = bs.TextField(value="Hello, bootstack!", fill="x")
 
     # Label and message
-    bs.Label("Label and Message", font="heading-sm[bold]")
+    bs.Label("Label and Message", font="heading-sm")
     bs.TextField(
         label="Email address",
         placeholder="you@example.com",
@@ -25,25 +25,25 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
     )
 
     # Required
-    bs.Label("Required", font="heading-sm[bold]")
+    bs.Label("Required", font="heading-sm")
     bs.TextField(label="Username", placeholder="Choose a username", required=True, fill="x")
 
     # States
-    bs.Label("States", font="heading-sm[bold]")
+    bs.Label("States", font="heading-sm")
     with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
         bs.TextField(value="Editable",  label="Normal")
         bs.TextField(value="Read only", label="Read only", read_only=True)
         bs.TextField(value="Disabled",  label="Disabled", disabled=True)
 
     # Reactive binding
-    bs.Label("Reactive Binding", font="heading-sm[bold]")
+    bs.Label("Reactive Binding", font="heading-sm")
     with bs.VStack(gap=6, fill="x"):
         name = bs.Signal("bootstack")
         bs.TextField(label="Name", textsignal=name, fill="x")
         bs.Label(textsignal=name, accent="secondary", font="caption")
 
     # Live character count via on_input
-    bs.Label("Live Character Count (on_input)", font="heading-sm[bold]")
+    bs.Label("Live Character Count (on_input)", font="heading-sm")
     with bs.VStack(gap=4, fill="x"):
         count_lbl = bs.Label("0 / 50", accent="secondary", font="caption")
         field = bs.TextField(placeholder="Type to count…", fill="x")
@@ -54,7 +54,7 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
         field.on_input(_update_count)
 
     # on_submit
-    bs.Label("Submit on Enter (on_submit)", font="heading-sm[bold]")
+    bs.Label("Submit on Enter (on_submit)", font="heading-sm")
     with bs.VStack(gap=4, fill="x"):
         result_lbl = bs.Label("", accent="success", font="caption")
         submit_field = bs.TextField(placeholder="Type and press Enter…", fill="x")
@@ -64,7 +64,7 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
         submit_field.on_submit(_on_submit)
 
     # Validation
-    bs.Label("Validation", font="heading-sm[bold]")
+    bs.Label("Validation", font="heading-sm")
     from bootstack.validation import ValidationRule
     vf = bs.TextField(label="Min 3 characters", placeholder="Enter text…", fill="x")
     vf.add_validation_rule(ValidationRule(

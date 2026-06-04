@@ -11,7 +11,7 @@ import bootstack as bs
 with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
 
     # Auto-generated fields from a data dict
-    bs.Label("Auto-Generated Fields", font="heading-sm[bold]")
+    bs.Label("Auto-Generated Fields", font="heading-sm")
     bs.Form(
         data={
             "name": "Alice Smith",
@@ -23,7 +23,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
     )
 
     # Multi-column layout
-    bs.Label("Multiple Columns", font="heading-sm[bold]")
+    bs.Label("Multiple Columns", font="heading-sm")
     bs.Form(
         data={
             "street": "123 Main St",
@@ -36,7 +36,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
     )
 
     # Grouped fields with GroupItem
-    bs.Label("Grouped Fields", font="heading-sm[bold]")
+    bs.Label("Grouped Fields", font="heading-sm")
     bs.Form(
         items=[
             bs.GroupItem(
@@ -54,7 +54,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
     )
 
     # Tabbed layout with TabsItem
-    bs.Label("Tabbed Layout", font="heading-sm[bold]")
+    bs.Label("Tabbed Layout", font="heading-sm")
     bs.Form(
         items=[
             bs.TabsItem(tabs=[

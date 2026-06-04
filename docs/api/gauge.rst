@@ -5,13 +5,13 @@ A circular arc gauge for displaying a value within a range. Supports full-circle
 and semicircle layouts, solid and segmented arc styles, optional center text with
 prefix/suffix formatting, and an interactive drag mode.
 
-.. image:: /_static/examples/gauge-light.png
+.. image:: /_static/examples/gauge-hero-light.png
    :class: bs-screenshot-light
-   :alt: Gauge demo — light theme
+   :alt: Gauge — light theme
 
-.. image:: /_static/examples/gauge-dark.png
+.. image:: /_static/examples/gauge-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: Gauge demo — dark theme
+   :alt: Gauge — dark theme
 
 Usage
 -----
@@ -77,6 +77,14 @@ Accent colors
    bs.Gauge(value=65, accent="warning")
    bs.Gauge(value=65, accent="danger")
 
+.. image:: /_static/examples/gauge-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Gauge accent colors — light theme
+
+.. image:: /_static/examples/gauge-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Gauge accent colors — dark theme
+
 Segmented arc
 ~~~~~~~~~~~~~
 
@@ -88,6 +96,14 @@ produce finer dashes:
    bs.Gauge(value=55, segment_width=8,  accent="primary")   # coarse segments
    bs.Gauge(value=55, segment_width=4,  accent="secondary") # fine segments
 
+.. image:: /_static/examples/gauge-segments-light.png
+   :class: bs-screenshot-light
+   :alt: Gauge segmented arc — light theme
+
+.. image:: /_static/examples/gauge-segments-dark.png
+   :class: bs-screenshot-dark
+   :alt: Gauge segmented arc — dark theme
+
 Arc thickness
 ~~~~~~~~~~~~~
 
@@ -98,6 +114,14 @@ Arc thickness
    bs.Gauge(value=70, thickness=6,  subtitle="Thin")
    bs.Gauge(value=70, thickness=14, subtitle="Default")
    bs.Gauge(value=70, thickness=24, subtitle="Thick")
+
+.. image:: /_static/examples/gauge-thickness-light.png
+   :class: bs-screenshot-light
+   :alt: Gauge arc thickness — light theme
+
+.. image:: /_static/examples/gauge-thickness-dark.png
+   :class: bs-screenshot-dark
+   :alt: Gauge arc thickness — dark theme
 
 Size
 ~~~~

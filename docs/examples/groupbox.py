@@ -11,7 +11,7 @@ import bootstack as bs
 with bs.App(title="GroupBox Demo", padding=20, gap=16) as app:
 
     # Accent borders
-    bs.Label("Accent Borders", font="heading-sm[bold]")
+    bs.Label("Accent Borders", font="heading-sm")
     with bs.HStack(gap=12, anchor_items="n"):
         for accent in ("default", "primary", "secondary", "success", "warning", "danger"):
             with bs.GroupBox(accent.title(), accent=accent, padding=10, gap=4):
@@ -19,7 +19,7 @@ with bs.App(title="GroupBox Demo", padding=20, gap=16) as app:
                 bs.Label("Item two")
 
     # Layout modes
-    bs.Label("Layout Modes", font="heading-sm[bold]")
+    bs.Label("Layout Modes", font="heading-sm")
     with bs.HStack(gap=12, anchor_items="n"):
 
         with bs.GroupBox("VStack (default)", padding=10, gap=8):
@@ -39,7 +39,7 @@ with bs.App(title="GroupBox Demo", padding=20, gap=16) as app:
             bs.Label("Engineer")
 
     # In context
-    bs.Label("In Context", font="heading-sm[bold]")
+    bs.Label("In Context", font="heading-sm")
     with bs.HStack(gap=12, anchor_items="n"):
 
         with bs.GroupBox("Connection", accent="primary", padding=12, gap=8):

@@ -13,7 +13,7 @@ import bootstack as bs
 with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Basic — right-click trigger
-    bs.Label("Basic (right-click the card)", font="heading-sm[bold]")
+    bs.Label("Basic (right-click the card)", font="heading-sm")
     with bs.Card(fill="x", padding=12) as card:
         bs.Label("Right-click anywhere in this card to open the menu.")
 
@@ -24,7 +24,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu.add_item("Delete",    icon="trash",   on_click=lambda: print("Delete"))
 
     # Global on_select callback
-    bs.Label("Global callback (right-click)", font="heading-sm[bold]")
+    bs.Label("Global callback (right-click)", font="heading-sm")
     with bs.Card(fill="x", padding=12) as card2:
         bs.Label("Right-click for a menu with a shared callback.")
 
@@ -37,7 +37,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu2.add_item("Delete")
 
     # Check and radio items
-    bs.Label("Check and radio items (right-click)", font="heading-sm[bold]")
+    bs.Label("Check and radio items (right-click)", font="heading-sm")
     with bs.Card(fill="x", padding=12) as card3:
         bs.Label("Right-click for a menu with toggleable and selectable items.")
 
@@ -50,7 +50,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu3.add_radio_item("Large",  value="lg", on_click=lambda: print("Large"))
 
     # Keyboard shortcuts
-    bs.Label("Keyboard shortcuts (right-click)", font="heading-sm[bold]")
+    bs.Label("Keyboard shortcuts (right-click)", font="heading-sm")
     with bs.Card(fill="x", padding=12) as card4:
         bs.Label("Shortcut labels are display-only — bind handlers separately.")
 
@@ -60,7 +60,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu4.add_item("Paste", icon="clipboard", shortcut="Mod+V")
 
     # Disabled items
-    bs.Label("Disabled items (right-click)", font="heading-sm[bold]")
+    bs.Label("Disabled items (right-click)", font="heading-sm")
     with bs.Card(fill="x", padding=12) as card5:
         bs.Label("Items can be disabled at construction.")
 
@@ -71,7 +71,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu5.add_item("Delete",  icon="trash",        disabled=True)
 
     # Dynamic item management
-    bs.Label("Dynamic management (manual show button)", font="heading-sm[bold]")
+    bs.Label("Dynamic management (manual show button)", font="heading-sm")
     with bs.HStack(gap=8, anchor_items="center"):
         menu6 = bs.ContextMenu(trigger=None)
         menu6.add_item("Option A", key="a")

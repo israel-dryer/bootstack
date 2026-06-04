@@ -4,13 +4,13 @@ Label
 Static text display with optional icon, semantic font tokens, and accent
 colors. The display text is the first positional argument.
 
-.. image:: /_static/examples/label-light.png
+.. image:: /_static/examples/label-hero-light.png
    :class: bs-screenshot-light
-   :alt: Label demo — light theme
+   :alt: Label — light theme
 
-.. image:: /_static/examples/label-dark.png
+.. image:: /_static/examples/label-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: Label demo — dark theme
+   :alt: Label — dark theme
 
 Usage
 -----
@@ -19,7 +19,8 @@ Font tokens
 ~~~~~~~~~~~
 
 Use the ``font=`` token string to apply semantic typography. Modifiers like
-``[bold]``, ``[italic]``, and ``[underline]`` can be chained.
+``[bold]``, ``[italic]``, and ``[underline]`` can be chained. For the full
+token list and modifier reference see :doc:`/deeper/typography`.
 
 .. code-block:: python
 
@@ -31,11 +32,11 @@ Use the ``font=`` token string to apply semantic typography. Modifiers like
 
    # Modifiers
    bs.Label("Bold",        font="body[bold]")
-   bs.Label("Bold Italic", font="heading-md[bold][italic]")
+   bs.Label("Bold Italic", font="heading-md[italic]")
 
    # Size adjustment relative to base
-   bs.Label("Larger",  font="body+2")
-   bs.Label("Smaller", font="body-1")
+   bs.Label("Larger",  font="body[+2]")
+   bs.Label("Smaller", font="body[-1]")
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -50,6 +51,14 @@ Use ``accent=`` to apply a semantic text color that adapts to the active theme.
    bs.Label("Success",   accent="success",   font="body[bold]")
    bs.Label("Warning",   accent="warning",   font="body[bold]")
    bs.Label("Danger",    accent="danger",    font="body[bold]")
+
+.. image:: /_static/examples/label-accents-light.png
+   :class: bs-screenshot-light
+   :alt: Label accent colors — light theme
+
+.. image:: /_static/examples/label-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: Label accent colors — dark theme
 
 Icons
 ~~~~~
@@ -66,6 +75,14 @@ present.
 
    # Icon-only — auto-detected when text is empty
    bs.Label(icon="heart-fill", accent="danger")
+
+.. image:: /_static/examples/label-icons-light.png
+   :class: bs-screenshot-light
+   :alt: Label icons — light theme
+
+.. image:: /_static/examples/label-icons-dark.png
+   :class: bs-screenshot-dark
+   :alt: Label icons — dark theme
 
 Text wrapping
 ~~~~~~~~~~~~~
@@ -92,7 +109,7 @@ Bind a ``Signal[str]`` to ``textsignal=`` so the label updates automatically.
    count_text = bs.Signal("Count: 0")
    count.subscribe(lambda v: count_text.set(f"Count: {v}"))
 
-   bs.Label(textsignal=count_text, font="heading-md[bold]", accent="primary")
+   bs.Label(textsignal=count_text, font="heading-md", accent="primary")
    bs.Button("+1", on_click=lambda: count.set(count.get() + 1))
 
 Widget sizing

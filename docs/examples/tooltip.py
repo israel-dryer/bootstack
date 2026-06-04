@@ -3,7 +3,7 @@ import bootstack as bs
 
 with bs.App(title="Tooltip", size=(660, 440), padding=20, gap=14) as app:
 
-    bs.Label("Basic", font="heading-md[bold]")
+    bs.Label("Basic", font="heading-md")
     with bs.HStack(gap=8):
         b1 = bs.Button("Hover me")
         bs.Tooltip(b1, "This is a helpful tooltip.")
@@ -14,7 +14,7 @@ with bs.App(title="Tooltip", size=(660, 440), padding=20, gap=14) as app:
         b3 = bs.Button("Slow (1 s)")
         bs.Tooltip(b3, "Appears after a 1-second delay.", delay=1000)
 
-    bs.Label("Accent colors", font="heading-md[bold]")
+    bs.Label("Accent colors", font="heading-md")
     with bs.HStack(gap=8):
         b4 = bs.Button("Default")
         bs.Tooltip(b4, "Default accent")
@@ -34,7 +34,7 @@ with bs.App(title="Tooltip", size=(660, 440), padding=20, gap=14) as app:
         b9 = bs.Button("Danger")
         bs.Tooltip(b9, "Danger accent", accent="danger")
 
-    bs.Label("Anchored positioning", font="heading-md[bold]")
+    bs.Label("Anchored positioning", font="heading-md")
     with bs.HStack(gap=8):
         b10 = bs.Button("Above")
         bs.Tooltip(b10, "Anchored above the button",
@@ -52,7 +52,7 @@ with bs.App(title="Tooltip", size=(660, 440), padding=20, gap=14) as app:
         bs.Tooltip(b13, "Anchored to the left",
                    anchor_point="w", window_point="e")
 
-    bs.Label("Text wrapping and alignment", font="heading-md[bold]")
+    bs.Label("Text wrapping and alignment", font="heading-md")
     with bs.HStack(gap=8):
         b14 = bs.Button("Wrapped text")
         bs.Tooltip(

@@ -5,13 +5,13 @@ A horizontal or vertical progress indicator. Use the determinate mode to show
 a fixed fill proportional to a known value, or the indeterminate mode for
 operations whose duration is unknown.
 
-.. image:: /_static/examples/progressbar-light.png
+.. image:: /_static/examples/progressbar-hero-light.png
    :class: bs-screenshot-light
-   :alt: ProgressBar demo — light theme
+   :alt: ProgressBar — light theme
 
-.. image:: /_static/examples/progressbar-dark.png
+.. image:: /_static/examples/progressbar-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: ProgressBar demo — dark theme
+   :alt: ProgressBar — dark theme
 
 Usage
 -----
@@ -79,6 +79,14 @@ Accent colors
    bs.ProgressBar(value=65, accent="warning")
    bs.ProgressBar(value=65, accent="danger")
 
+.. image:: /_static/examples/progressbar-accents-light.png
+   :class: bs-screenshot-light
+   :alt: ProgressBar accent colors — light theme
+
+.. image:: /_static/examples/progressbar-accents-dark.png
+   :class: bs-screenshot-dark
+   :alt: ProgressBar accent colors — dark theme
+
 Thin variant
 ~~~~~~~~~~~~
 
@@ -95,6 +103,14 @@ Vertical orientation
 .. code-block:: python
 
    bs.ProgressBar(value=60, orient="vertical")
+
+.. image:: /_static/examples/progressbar-variants-light.png
+   :class: bs-screenshot-light
+   :alt: ProgressBar thin and vertical variants — light theme
+
+.. image:: /_static/examples/progressbar-variants-dark.png
+   :class: bs-screenshot-dark
+   :alt: ProgressBar thin and vertical variants — dark theme
 
 Custom max value
 ~~~~~~~~~~~~~~~~

@@ -4,13 +4,13 @@ ListView
 A virtual-scrolling list for efficiently displaying large datasets. Only
 visible rows are rendered, making it suitable for thousands of records.
 
-.. image:: /_static/examples/listview-light.png
+.. image:: /_static/examples/listview-hero-light.png
    :class: bs-screenshot-light
-   :alt: ListView demo — light theme
+   :alt: ListView — light theme
 
-.. image:: /_static/examples/listview-dark.png
+.. image:: /_static/examples/listview-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: ListView demo — dark theme
+   :alt: ListView — dark theme
 
 Usage
 -----
@@ -104,6 +104,14 @@ Clear or fill the selection programmatically:
    lv.select_all()       # multi mode only
    lv.clear_selection()
 
+.. image:: /_static/examples/listview-selection-light.png
+   :class: bs-screenshot-light
+   :alt: ListView multi-select — light theme
+
+.. image:: /_static/examples/listview-selection-dark.png
+   :class: bs-screenshot-dark
+   :alt: ListView multi-select — dark theme
+
 Row features
 ~~~~~~~~~~~~
 
@@ -117,6 +125,14 @@ adds a drag handle so the user can reorder items by dragging:
    bs.ListView(items=records, show_chevron=True)
    bs.ListView(items=records, allow_reorder=True)
 
+.. image:: /_static/examples/listview-features-light.png
+   :class: bs-screenshot-light
+   :alt: ListView row features — light theme
+
+.. image:: /_static/examples/listview-features-dark.png
+   :class: bs-screenshot-dark
+   :alt: ListView row features — dark theme
+
 Striped rows and density
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -127,6 +143,14 @@ row height:
 
    bs.ListView(items=records, striped=True)
    bs.ListView(items=records, density="compact")
+
+.. image:: /_static/examples/listview-density-light.png
+   :class: bs-screenshot-light
+   :alt: ListView striped compact — light theme
+
+.. image:: /_static/examples/listview-density-dark.png
+   :class: bs-screenshot-dark
+   :alt: ListView striped compact — dark theme
 
 Scrollbar
 ~~~~~~~~~

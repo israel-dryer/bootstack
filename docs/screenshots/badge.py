@@ -1,27 +1,30 @@
 import bootstack as bs
 
-with bs.App(title="Badge", padding=20, gap=14) as app:
 
-    bs.Label("Variants", font="heading-sm[bold]")
-    with bs.HStack(gap=8):
-        bs.Badge("Square", accent="primary")
-        bs.Badge("Pill",   accent="primary", variant="pill")
-        bs.Badge("99+",    accent="danger",  variant="pill")
-        bs.Badge("New",    accent="success", variant="pill")
-        bs.Badge("Beta",   accent="warning", variant="pill")
+def hero():
+    with bs.App(title="Badge", minsize=(720, 1), padding=20, gap=8) as app:
+        with bs.HStack(gap=8):
+            bs.Badge("Square",  accent="primary")
+            bs.Badge("Pill",    accent="primary", variant="pill")
+            bs.Badge("99+",     accent="danger",  variant="pill")
+            bs.Badge("New",     accent="success", variant="pill")
+            bs.Badge("Beta",    accent="warning", variant="pill")
+    app.run()
 
-    bs.Label("Accent Colors — Square", font="heading-sm[bold]")
-    with bs.HStack(gap=8):
-        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
-            bs.Badge(accent.title(), accent=accent)
 
-    bs.Label("Accent Colors — Pill", font="heading-sm[bold]")
-    with bs.HStack(gap=8):
-        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
-            bs.Badge(accent.title(), accent=accent, variant="pill")
+def accents():
+    with bs.App(title="Badge — Accents", minsize=(720, 1), padding=20, gap=8) as app:
+        with bs.HStack(gap=8):
+            for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+                bs.Badge(accent.title(), accent=accent)
+        with bs.HStack(gap=8):
+            for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+                bs.Badge(accent.title(), accent=accent, variant="pill")
+    app.run()
 
-    bs.Label("In Context", font="heading-sm[bold]")
-    with bs.VStack(gap=8):
+
+def context():
+    with bs.App(title="Badge — In Context", minsize=(720, 1), padding=20, gap=8) as app:
         with bs.HStack(gap=8, anchor_items="center"):
             bs.Label("Inbox", font="heading-md")
             bs.Badge("12", accent="primary", variant="pill")
@@ -35,5 +38,11 @@ with bs.App(title="Badge", padding=20, gap=14) as app:
             bs.Label("Run-A14")
             bs.Badge("2 warnings", accent="warning")
             bs.Badge("Fail",       accent="danger",  variant="pill")
+    app.run()
 
-app.run()
+
+SCENES = {
+    "hero":    hero,
+    "accents": accents,
+    "context": context,
+}

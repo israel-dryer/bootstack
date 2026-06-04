@@ -39,12 +39,12 @@ with bs.App(title="ListView Demo", padding=20, gap=16, minsize=(800, 700)) as ap
 
         # Column 1: Item fields
         with bs.VStack(gap=6):
-            bs.Label("Item Fields", font="heading-sm[bold]")
+            bs.Label("Item Fields", font="heading-sm")
             bs.ListView(items=TEAM, fill="both", expand=True)
 
         # Column 2: Multi-selection with controls
         with bs.VStack(gap=6):
-            bs.Label("Multi Selection", font="heading-sm[bold]")
+            bs.Label("Multi Selection", font="heading-sm")
             sel_list = bs.ListView(
                 items=SIMPLE,
                 selection_mode="multi",
@@ -55,12 +55,12 @@ with bs.App(title="ListView Demo", padding=20, gap=16, minsize=(800, 700)) as ap
 
         # Column 3: Chevron + remove button
         with bs.VStack(gap=6):
-            bs.Label("Chevron + Remove", font="heading-sm[bold]")
+            bs.Label("Chevron + Remove", font="heading-sm")
             bs.ListView(items=ALERTS, show_chevron=True, allow_remove=True, fill="both", expand=True)
 
         # Column 4: Compact + striped
         with bs.VStack(gap=6):
-            bs.Label("Compact + Striped", font="heading-sm[bold]")
+            bs.Label("Compact + Striped", font="heading-sm")
             bs.ListView(items=SIMPLE, striped=True, density="compact", fill="both", expand=True)
 
 # Pre-select after window is shown so TTK renders the selected state correctly

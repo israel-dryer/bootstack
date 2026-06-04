@@ -60,25 +60,25 @@ def _persistent():
 
 with bs.App(title="Toast", minsize=(500, 500), padding=20, gap=12) as app:
 
-    bs.Label("Simple notification", font="heading-md[bold]")
+    bs.Label("Simple notification", font="heading-md")
     with bs.HStack(gap=8):
         bs.Button("Basic", on_click=_basic)
         bs.Button("With title and icon", on_click=_with_title)
 
-    bs.Label("Accent colors", font="heading-md[bold]")
+    bs.Label("Accent colors", font="heading-md")
     with bs.HStack(gap=8):
         bs.Button("Success", on_click=_success)
         bs.Button("Warning", on_click=_warning)
         bs.Button("Danger", on_click=_danger)
         bs.Button("Info", on_click=_info)
 
-    bs.Label("Detail text", font="heading-md[bold]")
+    bs.Label("Detail text", font="heading-md")
     bs.Button("With detail (timestamp)", on_click=_with_detail)
 
-    bs.Label("Action buttons", font="heading-md[bold]")
+    bs.Label("Action buttons", font="heading-md")
     bs.Button("Confirm delete", on_click=_with_actions)
 
-    bs.Label("Persistent (no auto-dismiss)", font="heading-md[bold]")
+    bs.Label("Persistent (no auto-dismiss)", font="heading-md")
     bs.Button("Show persistent", on_click=_persistent)
 
 app.run()
