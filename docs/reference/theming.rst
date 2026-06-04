@@ -4,7 +4,7 @@ Theming
 Classes and functions for controlling the active theme, resolving color tokens,
 and working with font tokens at runtime.
 
-See :doc:`/deeper/typography` for the full font token reference.
+See :doc:`/reference/typography` for the full font token reference.
 
 Font
 ----

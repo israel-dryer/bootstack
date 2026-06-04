@@ -1,4 +1,0 @@
-Icons
-=====
-
-.. note:: Coming soon.

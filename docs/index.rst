@@ -9,6 +9,6 @@ bootstack
 
    getting-started/index
    tasks/index
-   deeper/index
+   widgets/index
+   reference/index
    production/index
-   api/index

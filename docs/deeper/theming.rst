@@ -1,4 +1,0 @@
-Theming
-=======
-
-.. note:: Coming soon.

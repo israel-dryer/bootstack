@@ -20,7 +20,7 @@ Font tokens
 
 Use the ``font=`` token string to apply semantic typography. Modifiers like
 ``[bold]``, ``[italic]``, and ``[underline]`` can be chained. For the full
-token list and modifier reference see :doc:`/deeper/typography`.
+token list and modifier reference see :doc:`/reference/typography`.
 
 .. code-block:: python
 

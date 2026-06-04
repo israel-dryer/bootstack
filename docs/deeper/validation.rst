@@ -1,4 +1,0 @@
-Validation
-==========
-
-.. note:: Coming soon.

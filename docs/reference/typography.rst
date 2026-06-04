@@ -137,7 +137,7 @@ measurement:
 See also
 --------
 
-:doc:`/api/theming` — ``Font`` class API reference.
+:doc:`/reference/theming` — ``Font`` class API reference.
 
 :class:`Label <bootstack.widgets.label.Label>` — the primary widget for
 displaying text with font tokens.

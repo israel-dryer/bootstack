@@ -1,4 +1,0 @@
-Localization
-============
-
-.. note:: Coming soon.

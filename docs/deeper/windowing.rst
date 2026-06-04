@@ -1,4 +1,0 @@
-Windowing
-=========
-
-.. note:: Coming soon.

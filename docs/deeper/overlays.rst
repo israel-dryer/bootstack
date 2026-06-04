@@ -1,4 +1,0 @@
-Overlays
-========
-
-.. note:: Coming soon.
