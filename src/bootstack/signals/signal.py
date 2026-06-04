@@ -73,12 +73,14 @@ class _SignalTrace:
 
 class Signal(Generic[T]):
     """
-    A reactive signal backed by a tkinter Variable.
+    A reactive value that widgets can bind to.
 
-    Supports value access, transformation via `.map()`, and subscription
-    to change events via `.subscribe()`.
+    Holds a typed value and notifies subscribers when it changes. Read it by
+    calling the signal, update it with `set()`, derive new signals with
+    `map()`, and react to changes with `subscribe()`.
 
-    Can be passed to Tkinter widgets using `str(signal)` or `signal.name`.
+    Bind a signal to a widget by passing it as `textsignal=` for text-bearing
+    widgets, or `signal=` for boolean and numeric widgets.
     """
 
     _cnt = count(1)
@@ -126,8 +128,8 @@ class Signal(Generic[T]):
     def get(self) -> T:
         """Return the current value of the signal.
 
-        Alias for calling the instance directly (`signal()`). Mirrors
-        tkinter's `Variable.get` naming for consistency.
+        Alias for calling the signal directly (`signal()`), provided for
+        readability when an explicit method call reads better.
         """
         return self()
 
@@ -221,11 +223,15 @@ class Signal(Generic[T]):
         """
         Create a derived signal that transforms this signal's value.
 
+        The derived signal recomputes whenever this signal changes. It is held
+        weakly, so keep a reference to it — for example, by binding it to a
+        widget — or it will stop updating once garbage-collected.
+
         Args:
             transform: A function applied to the current and future values.
 
         Returns:
-            A new Signal[U] that stays updated with the transformed value.
+            A new read-only signal that stays updated with the transformed value.
         """
         derived = Signal(transform(self()))
 
@@ -247,10 +253,12 @@ class Signal(Generic[T]):
         Subscribe to value changes of this signal.
 
         Args:
-            callback: A function that receives the current value (T) when updated.
+            callback: A function called with the new value whenever it changes.
+            immediate: When True, also call `callback` once with the current
+                value at subscription time. Defaults to False.
 
         Returns:
-            A trace ID that can be used for removal.
+            A subscription id — pass it to `unsubscribe()` to stop listening.
         """
         fid = self._trace.add("write", callback, self)
         self._subscribers[fid] = callback
@@ -292,7 +300,7 @@ class Signal(Generic[T]):
     @property
     def name(self) -> str:
         """
-        Return the Tcl name of the variable (for use in widget `textvariable`).
+        The internal name of the signal, used when binding it to a widget.
         """
         return self._name
 
