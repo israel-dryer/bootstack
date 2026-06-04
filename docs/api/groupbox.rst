@@ -8,12 +8,12 @@ look familiar from HTML ``<fieldset>`` and desktop dialog panels.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/groupbox-light.png"
-        alt="GroupBox demo — light theme"
+        src="/_static/examples/groupbox-hero-light.png"
+        alt="GroupBox — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/groupbox-dark.png"
-        alt="GroupBox demo — dark theme"
+        src="/_static/examples/groupbox-hero-dark.png"
+        alt="GroupBox — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -27,11 +27,19 @@ automatically inherits the accent color.
 
 .. code-block:: python
 
-   with bs.GroupBox("Primary", accent="primary", padding=12, gap=4):
-       bs.Label("Content")
+   with bs.GroupBox("Primary", accent="primary", padding=20, gap=16):
+       bs.Label("Item one")
+       bs.Label("Item two")
+.. raw:: html
 
-   with bs.GroupBox("Warning", accent="warning", padding=12, gap=4):
-       bs.Label("Content")
+   <img class="bs-screenshot-light"
+        src="/_static/examples/groupbox-accent-light.png"
+        alt="GroupBox accent borders — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/groupbox-accent-dark.png"
+        alt="GroupBox accent borders — dark theme"
+        style="max-width:100%;">
 
 Layout modes
 ~~~~~~~~~~~~
@@ -56,6 +64,17 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
    with bs.GroupBox("Info", layout="grid", columns=[1, 1], gap=8, sticky_items="ew"):
        bs.Label("Name:")  ; bs.Label("Ada Lovelace")
        bs.Label("Role:")  ; bs.Label("Engineer")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/groupbox-layout-light.png"
+        alt="GroupBox layout modes — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/groupbox-layout-dark.png"
+        alt="GroupBox layout modes — dark theme"
+        style="max-width:100%;">
 
 Child defaults
 ~~~~~~~~~~~~~~

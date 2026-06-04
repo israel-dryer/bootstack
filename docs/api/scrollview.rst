@@ -8,12 +8,12 @@ Mouse-wheel scrolling is automatically enabled for all descendants.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/scrollview-light.png"
-        alt="ScrollView demo — light theme"
+        src="/_static/examples/scrollview-hero-light.png"
+        alt="ScrollView — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/scrollview-dark.png"
-        alt="ScrollView demo — dark theme"
+        src="/_static/examples/scrollview-hero-dark.png"
+        alt="ScrollView — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -63,6 +63,17 @@ for most use cases), ``'horizontal'``, or ``'both'``.
    # Both axes
    with bs.ScrollView(scroll_direction="both", fill="both", expand=True):
        ...
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/scrollview-horizontal-light.png"
+        alt="ScrollView horizontal — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/scrollview-horizontal-dark.png"
+        alt="ScrollView horizontal — dark theme"
+        style="max-width:100%;">
 
 .. note::
 

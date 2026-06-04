@@ -8,12 +8,12 @@ added via ``add()``.
 .. raw:: html
 
    <img class="bs-screenshot-light"
-        src="/_static/examples/accordion-light.png"
-        alt="Accordion demo — light theme"
+        src="/_static/examples/accordion-hero-light.png"
+        alt="Accordion — light theme"
         style="max-width:100%;">
    <img class="bs-screenshot-dark"
-        src="/_static/examples/accordion-dark.png"
-        alt="Accordion demo — dark theme"
+        src="/_static/examples/accordion-hero-dark.png"
+        alt="Accordion — dark theme"
         style="max-width:100%;">
 
 Usage
@@ -104,6 +104,17 @@ Valid values: ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
    with acc.add("Pricing"):
        bs.Label("Pricing details.")
 
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/accordion-accent-light.png"
+        alt="Accordion accent — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/accordion-accent-dark.png"
+        alt="Accordion accent — dark theme"
+        style="max-width:100%;">
+
 Icons
 ~~~~~
 
@@ -112,13 +123,24 @@ title.
 
 .. code-block:: python
 
-   acc = bs.Accordion(accent="info")
+   acc = bs.Accordion(accent="primary")
    with acc.add("Documents", icon="folder"):
        bs.Label("Files here.")
    with acc.add("Images", icon="image"):
        bs.Label("Images here.")
    with acc.add("Music", icon="file-music"):
        bs.Label("Music here.")
+
+.. raw:: html
+
+   <img class="bs-screenshot-light"
+        src="/_static/examples/accordion-icons-light.png"
+        alt="Accordion icons — light theme"
+        style="max-width:100%;">
+   <img class="bs-screenshot-dark"
+        src="/_static/examples/accordion-icons-dark.png"
+        alt="Accordion icons — dark theme"
+        style="max-width:100%;">
 
 Section layout
 ~~~~~~~~~~~~~~
