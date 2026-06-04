@@ -9,6 +9,7 @@ events, validation, data sources, and app-level utilities.
 
    theming
    typography
+   signals
    events
    validation
    data-sources
