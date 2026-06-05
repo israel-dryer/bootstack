@@ -65,7 +65,7 @@ with bs.App(title="ListView Demo", padding=20, gap=16, minsize=(800, 700)) as ap
 
 # Pre-select after window is shown so TTK renders the selected state correctly
 for item_id in (1, 3, 5):
-    sel_list.data_source.select_record(item_id)
+    sel_list.data_source.select(item_id)
 sel_list.reload()
 
 app.run()

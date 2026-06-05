@@ -151,7 +151,7 @@ class Table(PublicWidgetBase):
     # ----- Filter / sort / group -----
 
     def get_filters(self) -> str:
-        """Return the current filter expression string."""
+        """Return the current filter description (the active search term)."""
         return self._internal.get_filters()
 
     def clear_filters(self) -> None:

@@ -20,6 +20,7 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
+from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu
@@ -52,7 +53,6 @@ _TABLE_SEARCH_MODE_OPTIONS = [
     ("table.search_mode_contains", "CONTAINS"),
     ("table.search_mode_starts_with", "STARTS WITH"),
     ("table.search_mode_ends_with", "ENDS WITH"),
-    ("table.search_mode_sql", "SQL"),
 ]
 
 
@@ -200,9 +200,7 @@ class TableView(Frame):
             search_mode=search_mode,
             search_trigger=search_trigger,
         )
-        # User-facing filter description (e.g., "fin" or a SQL expression in
-        # advanced SQL mode). Falls back to the raw datasource WHERE clause
-        # when set externally.
+        # User-facing filter description shown in the status bar (the search term).
         self._filter_summary: str = ""
         self._row_alternation = _build_row_alternation_options(
             striped=striped,
@@ -250,16 +248,16 @@ class TableView(Frame):
             try:
                 if self._column_keys:
                     # Avoid per-row dict conversion when we already know the column order
-                    self._datasource.set_data(rows, column_keys=self._column_keys)
+                    self._datasource.load(rows, column_keys=self._column_keys)
                     seeded_records = None
                 else:
                     seeded_records = self._to_records(rows)
-                    self._datasource.set_data(seeded_records)
+                    self._datasource.load(seeded_records)
             except Exception:
                 # Last-resort fallback to dict conversion if direct load fails
                 seeded_records = self._to_records(rows)
                 try:
-                    self._datasource.set_data(seeded_records)
+                    self._datasource.load(seeded_records)
                 except Exception:
                     seeded_records = []
 
@@ -278,11 +276,11 @@ class TableView(Frame):
     def set_data(self, rows: list) -> None:
         """Replace data in the datasource and refresh the grid."""
         if self._column_keys:
-            self._datasource.set_data(rows, column_keys=self._column_keys)
+            self._datasource.load(rows, column_keys=self._column_keys)
             seeded_records = None
         else:
             seeded_records = self._to_records(rows)
-            self._datasource.set_data(seeded_records)
+            self._datasource.load(seeded_records)
         self._ensure_column_metadata(seeded_records)
         self._clear_cache()
         self._load_page(0)
@@ -470,7 +468,7 @@ class TableView(Frame):
         inserted: list[dict] = []
         for rec in recs:
             try:
-                new_id = self._datasource.create_record(dict(rec))
+                new_id = self._datasource.insert(dict(rec))
                 rec = dict(rec)
                 if new_id is not None:
                     rec[_ROW_ID] = new_id
@@ -491,7 +489,7 @@ class TableView(Frame):
                 continue
             updates = {k: v for k, v in rec.items() if k != _ROW_ID}
             try:
-                self._datasource.update_record(rec_id, updates)
+                self._datasource.update(rec_id, updates)
                 updated.append(rec)
             except Exception:
                 logger.exception("Failed to update record id=%s", rec_id)
@@ -514,7 +512,7 @@ class TableView(Frame):
             if rec_id is None:
                 continue
             try:
-                self._datasource.delete_record(rec_id)
+                self._datasource.delete(rec_id)
                 if not rec:
                     rec = {_ROW_ID: rec_id}
                 deleted.append(rec)
@@ -637,15 +635,12 @@ class TableView(Frame):
 
     # ------------------------------------------------------------------ Filter/Sort/Group API
     def get_filters(self) -> str:
-        """Return current SQL where clause string (if any)."""
-        try:
-            return getattr(self._datasource, "_where", "") or ""
-        except Exception:
-            return ""
+        """Return the current filter description (the active search term)."""
+        return self._filter_summary
 
-    def set_filters(self, where: str) -> None:
+    def set_filters(self, condition=None) -> None:
         try:
-            self._datasource.set_filter(where or "")
+            self._datasource.where(condition)
         except Exception:
             return
         self._clear_cache()
@@ -660,10 +655,8 @@ class TableView(Frame):
         return dict(self._sort_state)
 
     def set_sorting(self, key: str, ascending: bool = True) -> None:
-        quoted_key = self._quote_col(key)
-        order = "ASC" if ascending else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            self._datasource.order(key if ascending else f"-{key}")
         except Exception:
             return
         self._sort_state = {key: ascending}
@@ -687,8 +680,7 @@ class TableView(Frame):
         self._group_by_key = key
         self._group_parents.clear()
         try:
-            quoted_key = self._quote_col(key)
-            self._datasource.set_sort(f"{quoted_key} ASC")
+            self._datasource.order(key)
         except Exception:
             pass
         self._sort_state = {key: True}
@@ -997,17 +989,6 @@ class TableView(Frame):
     def _row_context_enabled(self) -> bool:
         return self._context_menus in ("all", "rows")
 
-    def _quote_col(self, key: str) -> str:
-        """Quote column identifiers for safe SQL usage (handles reserved names)."""
-        try:
-            quote_fn = getattr(self._datasource, "_quote_identifier", None)
-            if callable(quote_fn):
-                return quote_fn(key)
-        except Exception:
-            pass
-        text = str(key).replace('"', '""')
-        return f'"{text}"'
-
     def _determine_anchor(self, idx: int) -> str:
         """Pick an anchor for the given column index.
 
@@ -1061,7 +1042,7 @@ class TableView(Frame):
         if self._alignment_sample is not None:
             return self._alignment_sample
         try:
-            sample = self._datasource.get_page(0)
+            sample = self._datasource.page(0)
         except Exception:
             sample = []
         self._alignment_sample = sample or []
@@ -1137,7 +1118,7 @@ class TableView(Frame):
         try:
             # Use cached count to avoid expensive COUNT(*) queries on every navigation
             if self._cached_total_count is None:
-                self._cached_total_count = self._datasource.total_count()
+                self._cached_total_count = self._datasource.count
             total = self._cached_total_count
             size = getattr(self._datasource, "page_size", self._paging['page_size']) or 1
             return max(1, (total + size - 1) // size)
@@ -1150,7 +1131,7 @@ class TableView(Frame):
             records = self._page_cache[page]
         else:
             try:
-                records = self._datasource.get_page(page)
+                records = self._datasource.page(page)
             except Exception:
                 records = []
             if not append:
@@ -1230,32 +1211,23 @@ class TableView(Frame):
             mode = self._search_mode_map.get(display_mode, "CONTAINS")
         else:
             mode = "CONTAINS"
-        colnames = self._column_keys
-        quoted_cols = [self._quote_col(c) for c in colnames]
-        where = ""
         mode_upper = mode.upper().replace(" ", "_")
-        if text and quoted_cols:
-            crit = text.replace("'", "''")
-            if mode_upper == "CONTAINS":
-                where = " OR ".join([f"{c} LIKE '%{crit}%'" for c in quoted_cols])
-            elif mode_upper == "STARTS_WITH":
-                where = " OR ".join([f"{c} LIKE '{crit}%'" for c in quoted_cols])
+        condition = None
+        if text and self._column_keys:
+            if mode_upper == "STARTS_WITH":
+                make = lambda c: col(c).startswith(text)
             elif mode_upper == "ENDS_WITH":
-                where = " OR ".join([f"{c} LIKE '%{crit}'" for c in quoted_cols])
-            elif mode_upper == "SQL":
-                where = text
-            else:  # equals
-                where = " OR ".join([f"{c} = '{crit}'" for c in quoted_cols])
-        # In SQL mode the user typed the expression themselves, so showing it
-        # back is meaningful. For all other modes, show just the search term.
-        if mode_upper == "SQL":
-            self._filter_summary = text
-        else:
-            self._filter_summary = repr(text) if text else ""
+                make = lambda c: col(c).endswith(text)
+            elif mode_upper == "EQUALS":
+                make = lambda c: col(c) == text
+            else:  # CONTAINS (default)
+                make = lambda c: col(c).contains(text)
+            condition = any_of(*(make(c) for c in self._column_keys))
+        self._filter_summary = repr(text) if text else ""
         try:
-            self._datasource.set_filter(where)
+            self._datasource.where(condition)
         except Exception:
-            logger.exception("Failed to apply search filter: %s", where)
+            logger.exception("Failed to apply search filter: %r", text)
         self._clear_cache()
         self._load_page(0)
         self._update_status_labels()
@@ -1264,7 +1236,7 @@ class TableView(Frame):
         self._search_entry.delete(0, 'end')
         self._filter_summary = ""
         try:
-            self._datasource.set_filter("")
+            self._datasource.where(None)
         except Exception:
             pass
         self._clear_cache()
@@ -1275,13 +1247,11 @@ class TableView(Frame):
         if column_index >= len(self._column_keys):
             return
         key = self._column_keys[column_index]
-        quoted_key = self._quote_col(key)
         asc = not self._sort_state.get(key, True)
         # Clear other sort states to keep single-column sort
         self._sort_state = {key: asc}
-        order = "ASC" if asc else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            self._datasource.order(key if asc else f"-{key}")
         except Exception:
             pass
         self._clear_cache()
@@ -1290,14 +1260,10 @@ class TableView(Frame):
         self._update_status_labels()
 
     def _update_status_labels(self) -> None:
-        # Filter — prefer the user-friendly summary set by the search bar.
-        # Fall back to the raw WHERE clause only when an external caller set
-        # the filter (so we have no friendlier description).
+        # Filter — show the user-friendly summary set by the search bar.
         filter_txt = ""
         try:
             description = self._filter_summary
-            if not description:
-                description = getattr(self._datasource, "_where", "") or ""
             if description:
                 filter_txt = MessageCatalog.translate("table.filter_status", description)
         except Exception:
@@ -1426,7 +1392,7 @@ class TableView(Frame):
             buttons = ["Cancel", "Save"]
 
         dialog = FormDialog(
-            master=dialog_master,
+            parent=dialog_master,
             title="Edit Record" if record else "New Record",
             data=initial_data,
             items=form_items,
@@ -1446,7 +1412,7 @@ class TableView(Frame):
         # Handle delete action
         if result == "delete" and record and _ROW_ID in record:
             try:
-                self._datasource.delete_record(record[_ROW_ID])
+                self._datasource.delete(record[_ROW_ID])
                 self._clear_cache()
                 self._load_page(self._current_page)
             except Exception:
@@ -1461,15 +1427,15 @@ class TableView(Frame):
             updates.pop(_ROW_ID, None)
             try:
                 logger.debug("Updating record id=%s with %s", rec_id, updates)
-                self._datasource.update_record(rec_id, updates)
+                self._datasource.update(rec_id, updates)
             except Exception:
                 logger.exception("Failed to update record id=%s", rec_id)
                 return
         else:
             try:
                 logger.debug("Creating record %s", data)
-                new_id = self._datasource.create_record(dict(data))
-                logger.debug("Created record id=%s (total=%s)", new_id, self._datasource.total_count())
+                new_id = self._datasource.insert(dict(data))
+                logger.debug("Created record id=%s (total=%s)", new_id, self._datasource.count)
             except Exception:
                 logger.exception("Failed to create record from %s", data)
                 return
@@ -1521,15 +1487,12 @@ class TableView(Frame):
         iid = selection[0]
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
-        quoted_key = self._quote_col(key)
         values = self._tree.item(iid, "values")
         if col_idx >= len(values):
             return
         val = values[col_idx]
-        crit = str(val).replace("'", "''")
-        where = f"{quoted_key} = '{crit}'"
         try:
-            self._datasource.set_filter(where)
+            self._datasource.where(col(key) == val)
         except Exception:
             return
         self._clear_cache()
@@ -1542,11 +1505,9 @@ class TableView(Frame):
         iid = selection[0]
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
-        quoted_key = self._quote_col(key)
         self._sort_state = {key: ascending}
-        order = "ASC" if ascending else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            self._datasource.order(key if ascending else f"-{key}")
         except Exception:
             pass
         self._clear_cache()
@@ -1555,7 +1516,7 @@ class TableView(Frame):
 
     def _clear_filter_cmd(self) -> None:
         try:
-            self._datasource.set_filter("")
+            self._datasource.where(None)
         except Exception:
             pass
         self._clear_cache()
@@ -1633,7 +1594,7 @@ class TableView(Frame):
         rec_id = rec.get(_ROW_ID)
         if rec_id is not None:
             try:
-                self._datasource.delete_record(rec_id)
+                self._datasource.delete(rec_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
                 self.event_generate("<<RowDelete>>", data=RowsEvent(records=[rec]))
@@ -1651,7 +1612,7 @@ class TableView(Frame):
             rec_id = rec.get(_ROW_ID)
             if rec_id is not None:
                 try:
-                    self._datasource.delete_record(rec_id)
+                    self._datasource.delete(rec_id)
                     changed = True
                 except Exception:
                     pass
@@ -1734,7 +1695,7 @@ class TableView(Frame):
             total_pages = self._total_pages()
             for page_idx in range(total_pages):
                 try:
-                    rows = self._datasource.get_page(page_idx)
+                    rows = self._datasource.page(page_idx)
                 except Exception:
                     break
                 if any(str(rec.get(_ROW_ID)) == rid for rec in rows):
@@ -1885,7 +1846,7 @@ class TableView(Frame):
     # ------------------------------------------------------------------ Export helpers
     def _export_all(self) -> None:
         try:
-            rows = self._datasource.get_page_from_index(0, self._datasource.total_count())
+            rows = self._datasource.page_slice(0, self._datasource.count)
             self._tree.event_generate("<<TableViewExportAll>>", data=rows)
         except Exception:
             pass
@@ -1900,7 +1861,7 @@ class TableView(Frame):
     def _export_page(self) -> None:
         try:
             start_index = self._current_page * self._paging['page_size']
-            rows = self._datasource.get_page_from_index(start_index, self._paging['page_size'])
+            rows = self._datasource.page_slice(start_index, self._paging['page_size'])
             self._tree.event_generate("<<TableViewExportPage>>", data=rows)
         except Exception:
             pass
@@ -2005,35 +1966,26 @@ class TableView(Frame):
         self._rebuild_filter_where()
 
     def _rebuild_filter_where(self) -> None:
-        """Rebuild WHERE clause from all active column filters."""
+        """Rebuild the filter condition from all active column filters."""
         clauses = []
         for key, values in self._column_filters.items():
             if not values:
-                # No values selected = filter out everything
-                clauses.append("1=0")
-            else:
-                quoted_key = self._quote_col(key)
-                # Build IN clause
-                quoted_values = []
-                for v in values:
-                    if v is None:
-                        quoted_values.append("NULL")
-                    else:
-                        escaped = str(v).replace("'", "''")
-                        quoted_values.append(f"'{escaped}'")
-                # Handle NULL separately since IN doesn't work with NULL
-                null_check = ""
-                if None in values:
-                    quoted_values = [qv for qv in quoted_values if qv != "NULL"]
-                    null_check = f" OR {quoted_key} IS NULL"
-                if quoted_values:
-                    clauses.append(f"({quoted_key} IN ({','.join(quoted_values)}){null_check})")
-                elif null_check:
-                    clauses.append(f"({quoted_key} IS NULL)")
+                # No values selected = match nothing for this column
+                clauses.append(col(key).is_in([]))
+                continue
+            non_null = [v for v in values if v is not None]
+            parts = []
+            if non_null:
+                parts.append(col(key).is_in(non_null))
+            if None in values:
+                parts.append(col(key).is_null())
+            clause = any_of(*parts)
+            if clause is not None:
+                clauses.append(clause)
 
-        where = " AND ".join(clauses) if clauses else ""
+        condition = all_of(*clauses)
         try:
-            self._datasource.set_filter(where)
+            self._datasource.where(condition)
         except Exception:
             pass
         self._clear_cache()
@@ -2243,12 +2195,11 @@ class TableView(Frame):
         if col is None or col >= len(self._column_keys):
             return
         key = self._column_keys[col]
-        quoted_key = self._quote_col(key)
         self._group_by_key = key
         self._group_parents.clear()
         # Sort entire datasource by the grouping column so grouping reflects full dataset order
         try:
-            self._datasource.set_sort(f"{quoted_key} ASC")
+            self._datasource.order(key)
         except Exception:
             pass
         self._sort_state = {key: True}
@@ -2334,7 +2285,7 @@ class TableView(Frame):
 
     def _clear_sort(self) -> None:
         self._sort_state.clear()
-        self._datasource.set_sort("")
+        self._datasource.order()
         self._clear_cache()
         self._update_heading_icons()
         self._load_page(0)

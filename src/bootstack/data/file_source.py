@@ -36,7 +36,7 @@ Example:
 
         ds = FileDataSource("data.csv")
         ds.load()
-        page = ds.get_page(0)
+        first = ds.page(0)
 
 """
 
@@ -174,8 +174,8 @@ class FileDataSource(MemoryDataSource):
 
             ds = FileDataSource("data.csv")
             ds.load()
-            ds.set_filter("age > 25")
-            page = ds.get_page(0)
+            ds.where(col("age") > 25)
+            first = ds.page(0)
 
 
     Note:
@@ -401,7 +401,7 @@ class FileDataSource(MemoryDataSource):
                 self.config.progress_callback(i + 1, estimated_total)
 
         # Set data in parent MemoryDataSource
-        self.set_data(records)
+        super().load(records)
         self.is_loaded = True
         self._load_progress = (len(records), len(records))
 
@@ -422,12 +422,12 @@ class FileDataSource(MemoryDataSource):
             # Process chunk when it reaches chunk_size
             if len(chunk) >= self.config.chunk_size:
                 if not self.is_loaded:
-                    self.set_data(chunk)
+                    super().load(chunk)
                     self.is_loaded = True
                 else:
                     # Append to existing data
                     for rec in chunk:
-                        self.create_record(rec)
+                        self.insert(rec)
 
                 loaded_count += len(chunk)
                 self._load_progress = (loaded_count, estimated_total)
@@ -440,11 +440,11 @@ class FileDataSource(MemoryDataSource):
         # Process remaining records
         if chunk:
             if not self.is_loaded:
-                self.set_data(chunk)
+                super().load(chunk)
                 self.is_loaded = True
             else:
                 for rec in chunk:
-                    self.create_record(rec)
+                    self.insert(rec)
 
             loaded_count += len(chunk)
 
@@ -479,11 +479,13 @@ class FileDataSource(MemoryDataSource):
             else:
                 raise
 
-    def load(self, on_complete: Optional[Callable] = None) -> None:
-        """Load file with configured strategy.
+    def load(self, *, on_complete: Optional[Callable] = None) -> None:
+        """Load records from the configured file.
 
-        For threaded loading, returns immediately and calls on_complete when done.
-        For synchronous loading, blocks until complete.
+        Unlike other sources, a `FileDataSource` draws its records from the
+        file given at construction, so `load()` takes no records. For threaded
+        loading it returns immediately and calls `on_complete` when done; for
+        synchronous loading it blocks until complete.
 
         Args:
             on_complete: Optional callback when loading finishes (overrides config)

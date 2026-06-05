@@ -4,13 +4,13 @@ This module defines the core protocol that all datasource implementations must f
 enabling consistent data management across different backends (memory, SQLite, web, etc.).
 
 The DataSourceProtocol provides a unified interface for:
-    - Data loading and configuration (set_data, set_filter, set_sort)
-    - Pagination (get_page, next_page, prev_page, has_next_page)
-    - CRUD operations (create, read, update, delete)
+    - Data loading and configuration (load, where, order)
+    - Pagination (page, next_page, prev_page, has_next_page)
+    - CRUD operations (insert, get, update, delete)
     - Selection management (is_selected, select/deselect records)
     - Data export (CSV export)
-    - Index-based access (get_page_from_index)
-    - Lifecycle and reorder (reload, move_record)
+    - Index-based access (page_slice)
+    - Lifecycle and reorder (reload, move)
 
 All datasource implementations should conform to this protocol to ensure
 compatibility with datasource-aware widgets and utilities.
@@ -18,7 +18,13 @@ compatibility with datasource-aware widgets and utilities.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Protocol, Sequence, Mapping, runtime_checkable
+from typing import (
+    TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Sequence, Mapping,
+    runtime_checkable,
+)
+
+if TYPE_CHECKING:
+    from bootstack.data.query import Column, Condition, SortKey
 
 # Type aliases for clarity
 Primitive = Any  # Can be str, int, float, bool, None, etc.
@@ -35,8 +41,8 @@ class DataSourceProtocol(Protocol):
 
     All datasource implementations must support:
         - Pagination with configurable page size
-        - Filtering using SQL-like WHERE syntax
-        - Sorting using SQL-like ORDER BY syntax
+        - Filtering with `col`-based conditions (see `bootstack.data.query`)
+        - Sorting by one or more columns
         - Full CRUD operations on records
         - Selection tracking for multi-select scenarios
         - CSV export capabilities
@@ -47,7 +53,7 @@ class DataSourceProtocol(Protocol):
 
     Notes:
         - Records are represented as Dict[str, Any] with at least 'id' and 'selected' fields
-        - Filtering and sorting syntax follows SQL conventions for familiarity
+        - Filtering and sorting are expressed with the `col` expression API, not SQL
         - All methods preserve immutability - operations return new data or modify in-place
     """
 
@@ -55,7 +61,7 @@ class DataSourceProtocol(Protocol):
     page_size: int
 
     # ---------- data & view config ----------
-    def set_data(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> DataSourceProtocol:
+    def load(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> DataSourceProtocol:
         """Load data records into the datasource.
 
         Args:
@@ -66,24 +72,33 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def set_filter(self, where_sql: str = "") -> None:
-        """Apply SQL-like WHERE clause filter to data.
+    def where(self, condition: "Condition | None" = None) -> DataSourceProtocol:
+        """Filter rows by a condition built with `col`.
 
         Args:
-            where_sql: SQL WHERE condition (e.g., "age > 25 AND status = 'active'")
+            condition: A filter condition (e.g. `col("age") >= 25`), or `None`
+                / no argument to clear the filter.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
-    def set_sort(self, order_by_sql: str = "") -> None:
-        """Apply SQL-like ORDER BY clause to data.
+    def order(self, *keys: "str | Column | SortKey") -> DataSourceProtocol:
+        """Sort rows by one or more keys.
 
         Args:
-            order_by_sql: SQL ORDER BY clause (e.g., "name ASC, age DESC")
+            keys: Column names (`"name"`), descending names (`"-name"`), or
+                `col(...)` specs (`col("salary").desc()`). With no arguments,
+                clears sorting.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
     # ---------- pagination ----------
-    def get_page(self, page: Optional[int] = None) -> List[Record]:
+    def page(self, page: Optional[int] = None) -> List[Record]:
         """Get records for specified page (or current page if None).
 
         Args:
@@ -118,16 +133,13 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def total_count(self) -> int:
-        """Get total number of records matching current filter.
-
-        Returns:
-            Total record count (respects active filter)
-        """
+    @property
+    def count(self) -> int:
+        """Total number of records matching the current filter."""
         ...
 
     # ---------- CRUD ----------
-    def create_record(self, record: Dict[str, Any]) -> int:
+    def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID.
 
         Args:
@@ -138,7 +150,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def read_record(self, record_id: Any) -> Optional[Record]:
+    def get(self, record_id: Any) -> Optional[Record]:
         """Retrieve single record by ID.
 
         Args:
@@ -149,7 +161,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def update_record(self, record_id: Any, updates: Dict[str, Any]) -> bool:
+    def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID.
 
         Args:
@@ -161,7 +173,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def delete_record(self, record_id: Any) -> bool:
+    def delete(self, record_id: Any) -> bool:
         """Delete record by ID.
 
         Args:
@@ -184,7 +196,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def select_record(self, record_id: Any) -> bool:
+    def select(self, record_id: Any) -> bool:
         """Mark record as selected.
 
         Args:
@@ -195,7 +207,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def deselect_record(self, record_id: Any) -> bool:
+    def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected.
 
         Args:
@@ -228,7 +240,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def get_selected(self, page: Optional[int] = None) -> List[Record]:
+    def selected(self, page: Optional[int] = None) -> List[Record]:
         """Get selected records, optionally paginated.
 
         Args:
@@ -239,12 +251,9 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
+    @property
     def selected_count(self) -> int:
-        """Get total number of selected records.
-
-        Returns:
-            Count of selected records
-        """
+        """Number of selected records."""
         ...
 
     # ---------- lifecycle / reorder ----------
@@ -256,7 +265,7 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
-    def move_record(self, record_id: Any, target_index: int) -> bool:
+    def move(self, record_id: Any, target_index: int) -> bool:
         """Reorder a record to a new position.
 
         Args:
@@ -269,7 +278,7 @@ class DataSourceProtocol(Protocol):
         ...
 
     # ---------- export ----------
-    def export_to_csv(self, filepath: str, include_all: bool = True) -> None:
+    def export_csv(self, filepath: str, include_all: bool = True) -> None:
         """Export records to CSV file.
 
         Args:
@@ -279,7 +288,7 @@ class DataSourceProtocol(Protocol):
         ...
 
     # ---------- index-based paging ----------
-    def get_page_from_index(self, start_index: int, count: int) -> List[Record]:
+    def page_slice(self, start_index: int, count: int) -> List[Record]:
         """Get records by start index and count (respects filter/sort).
 
         Args:

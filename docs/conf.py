@@ -18,7 +18,6 @@ version = ".".join(release.split(".")[:2])
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
@@ -112,10 +111,18 @@ html_theme_options = {
 }
 
 html_static_path = ["_static"]
+templates_path   = ["_templates"]
 html_css_files   = ["custom.css"]
 html_favicon     = "_static/favicon.ico"
 html_title       = "bootstack"
 html_short_title = "bootstack"
+
+# Hide source exposure — the framework abstracts its internals, so we don't
+# surface the reST page source ("View page source") or per-page source copies.
+# (`viewcode` is also intentionally omitted from extensions, so there are no
+# `[source]` links into the private `_impl`/`_runtime` modules either.)
+html_show_sourcelink = False
+html_copy_source     = False
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

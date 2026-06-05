@@ -6,7 +6,7 @@ Provides a common foundation for all datasource implementations with:
     - Template methods for common operations
     - Hook methods for extensibility
 
-Subclasses must implement storage-specific operations (set_data, get_page, CRUD, etc.)
+Subclasses must implement storage-specific operations (load, page, CRUD, etc.)
 while inheriting common utilities and patterns.
 
 This base class makes it easier to:
@@ -19,9 +19,12 @@ This base class makes it easier to:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Sequence, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Mapping
 
 from bootstack.data.types import Primitive, Record
+
+if TYPE_CHECKING:
+    from bootstack.data.query import Column, Condition, SortKey
 
 
 class BaseDataSource(ABC):
@@ -45,10 +48,10 @@ class BaseDataSource(ABC):
                     super().__init__(page_size)
                     self.redis = redis_client
 
-                def set_data(self, records):
+                def load(self, records):
                     pass  # Redis-specific implementation
 
-                def get_page(self, page=None):
+                def page(self, page=None):
                     pass  # Redis-specific implementation
 
     """
@@ -66,7 +69,7 @@ class BaseDataSource(ABC):
 
     # Data & View Configuration
     @abstractmethod
-    def set_data(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> 'BaseDataSource':
+    def load(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> 'BaseDataSource':
         """Load data records into the datasource.
 
         Args:
@@ -78,26 +81,34 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def set_filter(self, where_sql: str = "") -> None:
-        """Apply SQL-like WHERE clause filter to data.
+    def where(self, condition: "Condition | None" = None) -> "BaseDataSource":
+        """Filter rows by a condition built with `col`.
 
         Args:
-            where_sql: SQL WHERE condition (e.g., "age > 25 AND status = 'active'")
+            condition: A filter condition (e.g. `col("age") >= 25`), or `None`
+                / no argument to clear the filter.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
     @abstractmethod
-    def set_sort(self, order_by_sql: str = "") -> None:
-        """Apply SQL-like ORDER BY clause to data.
+    def order(self, *keys: "str | Column | SortKey") -> "BaseDataSource":
+        """Sort rows by one or more keys.
 
         Args:
-            order_by_sql: SQL ORDER BY clause (e.g., "name ASC, age DESC")
+            keys: Column names (`"name"`), descending names (`"-name"`), or
+                `col(...)` specs. With no arguments, clears sorting.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
     # Pagination
     @abstractmethod
-    def get_page(self, page: Optional[int] = None) -> List[Record]:
+    def page(self, page: Optional[int] = None) -> List[Record]:
         """Get records for specified page (or current page if None).
 
         Args:
@@ -135,18 +146,15 @@ class BaseDataSource(ABC):
         """
         ...
 
+    @property
     @abstractmethod
-    def total_count(self) -> int:
-        """Get total number of records matching current filter.
-
-        Returns:
-            Total record count (respects active filter)
-        """
+    def count(self) -> int:
+        """Total number of records matching the current filter."""
         ...
 
     # CRUD Operations
     @abstractmethod
-    def create_record(self, record: Dict[str, Any]) -> int:
+    def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID.
 
         Args:
@@ -158,7 +166,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def read_record(self, record_id: Any) -> Optional[Record]:
+    def get(self, record_id: Any) -> Optional[Record]:
         """Retrieve single record by ID.
 
         Args:
@@ -170,7 +178,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def update_record(self, record_id: Any, updates: Dict[str, Any]) -> bool:
+    def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID.
 
         Args:
@@ -183,7 +191,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def delete_record(self, record_id: Any) -> bool:
+    def delete(self, record_id: Any) -> bool:
         """Delete record by ID.
 
         Args:
@@ -208,7 +216,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def select_record(self, record_id: Any) -> bool:
+    def select(self, record_id: Any) -> bool:
         """Mark record as selected.
 
         Args:
@@ -220,7 +228,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def deselect_record(self, record_id: Any) -> bool:
+    def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected.
 
         Args:
@@ -256,7 +264,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def get_selected(self, page: Optional[int] = None) -> List[Record]:
+    def selected(self, page: Optional[int] = None) -> List[Record]:
         """Get selected records, optionally paginated.
 
         Args:
@@ -267,18 +275,15 @@ class BaseDataSource(ABC):
         """
         ...
 
+    @property
     @abstractmethod
     def selected_count(self) -> int:
-        """Get total number of selected records.
-
-        Returns:
-            Count of selected records
-        """
+        """Number of selected records."""
         ...
 
     # Export
     @abstractmethod
-    def export_to_csv(self, filepath: str, include_all: bool = True) -> None:
+    def export_csv(self, filepath: str, include_all: bool = True) -> None:
         """Export records to CSV file.
 
         Args:
@@ -289,7 +294,7 @@ class BaseDataSource(ABC):
 
     # Index-based Access
     @abstractmethod
-    def get_page_from_index(self, start_index: int, count: int) -> List[Record]:
+    def page_slice(self, start_index: int, count: int) -> List[Record]:
         """Get records by start index and count (respects filter/sort).
 
         Args:
@@ -310,7 +315,7 @@ class BaseDataSource(ABC):
         """
         return None
 
-    def move_record(self, record_id: Any, target_index: int) -> bool:
+    def move(self, record_id: Any, target_index: int) -> bool:
         """Reorder a record to a new position.
 
         Default returns False (not supported). Subclasses that maintain

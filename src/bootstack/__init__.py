@@ -39,6 +39,7 @@ from bootstack.signals import Signal, TraceOperation
 from bootstack.data import (
     BaseDataSource, MemoryDataSource, SqliteDataSource,
     FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
+    col, any_of, all_of,
 )
 
 # ── Internationalization ──────────────────────────────────────────────────────
@@ -147,6 +148,7 @@ __all__ = [
     # Data sources
     "BaseDataSource", "MemoryDataSource", "SqliteDataSource", "FileDataSource",
     "FileSourceConfig", "DataSourceProtocol", "Record", "Primitive",
+    "col", "any_of", "all_of",
     # Internationalization
     "MessageCatalog", "L", "LV", "IntlFormatter",
     # Validation

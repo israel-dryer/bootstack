@@ -35,7 +35,7 @@ def selection():
             fill="both", expand=True,
         )
     for item_id in (1, 3, 5):
-        lv.data_source.select_record(item_id)
+        lv.data_source.select(item_id)
     lv.reload()
     app.run()
 

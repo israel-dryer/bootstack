@@ -115,9 +115,9 @@ class ListView(Frame):
         if datasource:
             self._datasource = datasource
         elif items:
-            self._datasource = MemoryDataSource(page_size=self._page_size).set_data(items)
+            self._datasource = MemoryDataSource(page_size=self._page_size).load(items)
         else:
-            self._datasource = MemoryDataSource(page_size=self._page_size).set_data([])
+            self._datasource = MemoryDataSource(page_size=self._page_size).load([])
 
         self._rows: list[ListItem] = []
         self._focused_record_id = None
@@ -306,7 +306,7 @@ class ListView(Frame):
 
     def _clamp_indices(self):
         """Ensure `self._start_index` is within valid range."""
-        total = self._datasource.total_count()
+        total = self._datasource.count
         max_start = max(0, total - self._visible_rows)
         self._start_index = max(0, min(self._start_index, max_start))
 
@@ -329,7 +329,7 @@ class ListView(Frame):
         self._prev_start_index = self._start_index
 
         # Update scrollbar
-        total = max(1, self._datasource.total_count())
+        total = max(1, self._datasource.count)
         first = self._start_index / total
         last = min(1.0, (self._start_index + self._visible_rows) / total)
         self._scrollbar.set(first, last)
@@ -385,7 +385,7 @@ class ListView(Frame):
 
     def _full_update_rows(self):
         """Perform a full update of all visible rows."""
-        page_data = self._datasource.get_page_from_index(self._start_index, self._page_size)
+        page_data = self._datasource.page_slice(self._start_index, self._page_size)
 
         for i, row in enumerate(self._rows):
             data_index = self._start_index + i
@@ -404,7 +404,7 @@ class ListView(Frame):
         """
         if record is None:
             # Fetch the record from datasource
-            page_data = self._datasource.get_page_from_index(data_index, 1)
+            page_data = self._datasource.page_slice(data_index, 1)
             if not page_data:
                 row.update_data(EMPTY)
                 # Bind mousewheel after update to ensure all child widgets exist
@@ -443,7 +443,7 @@ class ListView(Frame):
         """
         if args[0] == 'moveto':
             fraction = float(args[1])
-            total = self._datasource.total_count()
+            total = self._datasource.count
             max_start = max(0, total - self._visible_rows)
             self._start_index = int(round(fraction * max_start))
         elif args[0] == 'scroll':
@@ -588,12 +588,12 @@ class ListView(Frame):
         if record_id is not None and record_id != '__empty__':
             if self._selection_mode == 'single':
                 self._datasource.deselect_all()
-                self._datasource.select_record(record_id)
+                self._datasource.select(record_id)
             elif self._selection_mode == 'multi':
                 if self._datasource.is_selected(record_id):
-                    self._datasource.deselect_record(record_id)
+                    self._datasource.deselect(record_id)
                 else:
-                    self._datasource.select_record(record_id)
+                    self._datasource.select(record_id)
 
             self._update_rows()
             self.event_generate('<<SelectionChange>>')
@@ -607,7 +607,7 @@ class ListView(Frame):
         record_id = event.data.get('id')
         if record_id is not None and record_id != '__empty__':
             try:
-                self._datasource.delete_record(record_id)
+                self._datasource.delete(record_id)
                 self._update_rows()
                 self.event_generate('<<ItemDelete>>', data=event.data)
             except Exception as exc:
@@ -648,7 +648,7 @@ class ListView(Frame):
         Args:
             index: The data index of the item to focus.
         """
-        total = self._datasource.total_count()
+        total = self._datasource.count
         if total == 0 or index < 0 or index >= total:
             return
 
@@ -663,7 +663,7 @@ class ListView(Frame):
             self._update_rows()
 
         # Get the record at the index
-        page_data = self._datasource.get_page_from_index(index, 1)
+        page_data = self._datasource.page_slice(index, 1)
         if page_data:
             record_id = page_data[0].get('id')
             if record_id is not None:
@@ -684,7 +684,7 @@ class ListView(Frame):
         Returns:
             'break' to prevent default handling.
         """
-        total = self._datasource.total_count()
+        total = self._datasource.count
         if total == 0:
             return 'break'
 
@@ -708,7 +708,7 @@ class ListView(Frame):
         Returns:
             'break' to prevent default handling.
         """
-        total = self._datasource.total_count()
+        total = self._datasource.count
         if total == 0:
             return 'break'
 
@@ -734,7 +734,7 @@ class ListView(Frame):
         if record_id is not None and record_id != '__empty__':
             item_index = event.data.get('item_index')
             if item_index is not None:
-                page_data = self._datasource.get_page_from_index(item_index, 1)
+                page_data = self._datasource.page_slice(item_index, 1)
                 if page_data:
                     record = page_data[0].copy()
                     record['selected'] = self._datasource.is_selected(record_id)
@@ -854,7 +854,7 @@ class ListView(Frame):
         Returns:
             Zero-based index for the drop position.
         """
-        total = self._datasource.total_count()
+        total = self._datasource.count
         if total <= 0:
             return 0
 
@@ -916,14 +916,14 @@ class ListView(Frame):
         if record_id is None or target_index is None:
             return False
 
-        mover = getattr(self._datasource, 'move_record', None)
+        mover = getattr(self._datasource, 'move', None)
         if callable(mover):
             return bool(mover(record_id, target_index))
 
         # Fallback for simple in-memory lists
         try:
-            total = self._datasource.total_count()
-            all_records = self._datasource.get_page_from_index(0, total)
+            total = self._datasource.count
+            all_records = self._datasource.page_slice(0, total)
             source_index = None
             for i, record in enumerate(all_records):
                 if record.get('id') == record_id:
@@ -938,7 +938,7 @@ class ListView(Frame):
             if clamped_target > source_index:
                 clamped_target -= 1
             all_records.insert(clamped_target, record)
-            setter = getattr(self._datasource, 'set_data', None)
+            setter = getattr(self._datasource, 'load', None)
             if callable(setter):
                 setter(all_records)
                 return True
@@ -1007,7 +1007,7 @@ class ListView(Frame):
             >>> for record in selected:
             ...     print(record["id"], record.get("title"))
         """
-        return self._datasource.get_selected()
+        return self._datasource.selected()
 
     def select_all(self):
         """Select all items in the list.
@@ -1019,12 +1019,12 @@ class ListView(Frame):
             For large datasets, this may be slow as it loads all records.
         """
         if self._selection_mode == 'multi':
-            total = self._datasource.total_count()
-            all_records = self._datasource.get_page_from_index(0, total)
+            total = self._datasource.count
+            all_records = self._datasource.page_slice(0, total)
             for record in all_records:
                 record_id = record.get('id')
                 if record_id:
-                    self._datasource.select_record(record_id)
+                    self._datasource.select(record_id)
             self._update_rows()
             self.event_generate('<<SelectionChange>>')
 
@@ -1050,7 +1050,7 @@ class ListView(Frame):
 
         Instantly scrolls to show the last items in the list.
         """
-        total = self._datasource.total_count()
+        total = self._datasource.count
         self._start_index = max(0, total - self._visible_rows)
         self._update_rows()
 
@@ -1071,7 +1071,7 @@ class ListView(Frame):
             ...     'text': 'Description'
             ... })
         """
-        record_id = self._datasource.create_record(data)
+        record_id = self._datasource.insert(data)
         self._update_rows()
         record = dict(data)
         record.setdefault('id', record_id)
@@ -1092,7 +1092,7 @@ class ListView(Frame):
         Examples:
             >>> listview.update_item(42, {'title': 'Updated Title'})
         """
-        if self._datasource.update_record(record_id, data):
+        if self._datasource.update(record_id, data):
             self._update_rows()
             record = dict(data)
             record['id'] = record_id
@@ -1111,7 +1111,7 @@ class ListView(Frame):
         Examples:
             >>> listview.delete_item(42)
         """
-        self._datasource.delete_record(record_id)
+        self._datasource.delete(record_id)
         self._update_rows()
         self.event_generate('<<ItemDelete>>', data={'id': record_id})
 
@@ -1123,7 +1123,7 @@ class ListView(Frame):
 
         Examples:
             >>> ds = listview.get_datasource()
-            >>> count = ds.total_count()
+            >>> count = ds.count
         """
         return self._datasource
 

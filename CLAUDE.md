@@ -150,35 +150,38 @@ deliver to a MAPPED widget — show the window in tests.)
 
 ### Next session — Track 2 + queued refactors (all memory-tracked)
 
-**RECOMMENDED NEXT: the font track (item 1) — it finishes the theming/typography
-reference (typography.rst is the last parked reference page).** Then the
-DataSource rename (item 2). Both are DECIDED; pick one and do a focused pass.
+**RECOMMENDED NEXT: the DataSource change-events / "observable query" feature
+(item 0) — user-described "killer feature" for live-data audiences.** Font track
+and the DataSource verb rename + filtering DSL are now BOTH DONE (see below).
 
-1. **Track 2 — theming public API: DONE** (Phases 1–4, see the "Theming public
-   API — DONE" block above + memory `project_theming_public_api`). What REMAINS:
-   - **Font track (Phase 2-fonts)** — scope (DECIDED: framework font tokens ONLY,
-     no custom user-defined tokens):
-     - Promote internal `Typography` capabilities as free functions:
-       `set_font_family(family)` (whole-app family, keep code mono — FIX the
-       `use_fonts(fallback=True)` bug that forces the fallback family) and
-       `update_font_token(name, **kwargs)` (per-token size/weight).
-     - Installed-font DETECTION via `tkinter.font.families()` → graceful fallback
-       + warning (vs silent default); also feeds a future builder family picker.
-     - Tk-free `FontChoice` (mirror `ColorChoice`) so `ask_font`/`FontDialog.result`
-       stop returning `tkinter.font.Font`; map `default_font=` to font tokens
-       (`body`/`code`/`heading-*`) instead of Tk names. (NOTE(font-track) markers
-       in `widgets/dialogs.py`.)
-     - Hide the Tk leaks: `Typography` lifecycle internals, `Font.tkfont`, etc.
-     - Then write `typography.rst` (font-token reference) to the reference pattern.
-   - **Visual theme builder (Phase 5)** — deferred until near-ship; emits
-     `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
-2. **DataSource verb rename** (memory `project_datasource_api_naming`, DECIDED):
-   `set_data→load`, `get_page→page`, `*_record→insert/get/update/delete/move`,
-   `total_count→count` (property), `export_to_csv→export_csv`,
-   `get_page_from_index→page_slice`. Across `data/types.py` (protocol),
-   `data/base.py`, the 3 sources, callers in `tableview`/`listview` composites +
-   public `table.py`/`listview.py` + docs. Also redesign `set_filter`/`set_sort`
-   to drop the raw-SQL-string leak. Full test + docs build after.
+0. **DataSource change broadcasting / observable query (NEW — DECIDED to pursue,
+   memory `project_datasource_change_events`).** A DataSource emits change events
+   so bound widgets auto-refresh (no manual `reload()`) AND users can subscribe to
+   feed any widget (dashboard cards/badges/gauges via `bs.Signal`). Framed as an
+   "observable query" (RxJS/TanStack/Firebase pattern): subscribe to a
+   `where`/`order` → live result-set stream. `on_change()` returns a `Stream`
+   (composes with Signal/Stream, [[project_typed_events]]). KEY: thread-marshal
+   (web-feed worker thread → Tk main thread) + feedback-loop guards + coarse
+   invalidation impl. NEEDS A PLANNING PASS (change-events vs full observable
+   query is the central decision). Build on the now-committed datasource work.
+
+1. **Track 2 — theming public API + font track: DONE.** Theming Phases 1–4
+   (memory `project_theming_public_api`) and the **font track** (Phase 2-fonts —
+   `bs.set_font_family`/`update_font_token`/`get_font_families`, Tk-free
+   `FontChoice`, fixed the `use_fonts(fallback=True)` bug, `typography.rst`
+   written) both COMMITTED (font track commit `250b3d41`). REMAINS only the
+   **visual theme builder (Phase 5)** — deferred until near-ship; emits
+   `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
+2. **DataSource verb rename + filtering DSL: DONE** (UNCOMMITTED until this
+   session's commit; memory `project_datasource_api_naming`). Verbs:
+   `load`/`page`/`page_slice`/`insert`/`get`/`update`/`delete`/`move`/`select`/
+   `deselect`/`selected`, `count`/`selected_count` (properties), `export_csv`.
+   `set_filter`/`set_sort` → **`where(condition)`/`order(*keys)`** with a Tk/SQL-
+   free `col` expression DSL (`data/query.py`: `col`, `is_in`, `contains`/etc.,
+   `&`/`|`/`~`, `all_of`/`any_of`; parameterized SQL, injection-safe). Dropped the
+   Table "SQL" search mode; fixed `FormDialog(master=)`→`parent=`. Also docs-config
+   cleanup (removed `viewcode`, `html_show_sourcelink`/`copy_source` off,
+   `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
 3. **Persistent KV / prefs store** (proposed, memory `project_persistent_kv_store`):
    no public persistent K-V exists (`MemoryDataSource`=RAM, `SqliteDataSource`=
    record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
