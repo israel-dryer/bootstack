@@ -40,12 +40,20 @@ Top-level sections (pydata horizontal navbar — keep this set SMALL, ~5):
 
 **Reference page pattern** (distinct from widgets — non-visual, NO screenshots):
 prose intro → task-ordered usage sections (code blocks) → See also → curated
-`autoclass` → Full Example `literalinclude`. Curate the documented surface with a
-denylist `:exclude-members:` mirroring the widget `.tk` exclusion, plus
-`:undoc-members:` so new public members auto-appear (lower-maintenance than an
-allowlist). **Exemplar: `docs/reference/signals.rst`** (+ `docs/examples/signals.py`,
-run-verified). The other 7 reference pages were MOVED but NOT yet reworked to this
-pattern — that is the main remaining work (see Next session).
+`autoclass`. **Inline usage only — NO separate "Full Example" / `docs/examples/<topic>.py`
+for reference pages** (decided 2026-06-05; widget pages DO keep their Full Example).
+When dropping a Full Example, make sure the inline usage covers the same patterns
+(memory `feedback_reference_page_examples`). The **API reference section is FLAT** —
+no `~~~` sub-group headers (the sidebar is narrow); use a prose lead-in to group.
+Autoclass at the **PUBLIC home path** (`bootstack.signals.Signal`, NOT
+`signals.signal.Signal`); `:members:`, curating internal members with
+`:exclude-members:` where needed. Single backticks, Google style.
+**Exemplars: `docs/reference/signals.rst`, `docs/reference/events.rst`.**
+
+DONE to this pattern (2026-06-05): signals, events, streams, scheduling,
+shortcuts, validation, data-sources; errors already fine. **PARKED: theming,
+typography** (blocked on the Track-2 public-API design below). Docs build is
+warning-free (0).
 
 **No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
 strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
@@ -105,47 +113,77 @@ strictly necessary; don't feature escape-hatch interop. A full docstring scrub o
 - **`AppShell.mainloop`** alias removed from public API.
 - **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
 
-### Next session (docs + API audit initiative)
+### Event system redesign — DONE (2026-06-05, commits 40a4495d…56d09d59)
 
-**PRIORITY — finish the Reference section.** Apply the signals exemplar
-(`docs/reference/signals.rst`) to the other 7 reference pages: theming,
-typography, events, validation, data-sources, shortcuts, scheduling. For EACH
-page: (1) audit that class's public API — docs are the forcing function, so
-surface bugs / inconsistencies / code-smell and either fix or log them; (2)
-curate the documented surface via autoclass denylist exclusion; (3) write prose
-+ a runnable `docs/examples/<topic>.py` and verify it runs; (4) wire into
-`reference/index.rst`. theming/typography may warrant a screenshot (visual).
-Follow the established audit-and-curate convention (curation = visibility
-discipline for plain/composition classes; twin public wrapper only when
-inheritance forces it, as with widgets).
+Unpacked typed payloads + curated `Event`; `bootstack.events` is the catalog
+(memory `project_typed_events`). Data-carrying handlers get the payload dataclass
+DIRECTLY (`on_change(lambda e: e.value)`); native handlers get a curated, Tk-free
+`Event` (modifier bools `ctrl/shift/alt/meta`, clean `key/char`, no
+state/serial/keysym_num). The transform lives in `adapt_handler()` at the public
+`on()` boundary (`widgets/_core/base.py`) — `_runtime/events.py` was left
+UNTOUCHED (confirmed). Payloads are namespaced in `bs.events` ONLY (not
+top-level). ListView keeps dict record payloads (dynamic records). GUI tests:
+`tests/widgets/public/test_slider_events.py`. (Note: slider virtual events only
+deliver to a MAPPED widget — show the window in tests.)
 
-**Signal API — DECIDED this session:** `signal()` is the single getter, `.set()`
-writes, `.get()` is deprecated (doc-excluded now, to be removed in the runtime
-pass). Possible future add: `.update(fn)`. Do NOT adopt a callable-setter
-`signal(x)` (analysis in memory).
+### Next session — Track 2 + queued refactors (all memory-tracked)
 
-**Other pending:**
-1. **Improve index/landing pages before release** — root `index.rst`,
-   `widgets/index.rst`, `reference/index.rst`, and the section indexes are bare
-   (intro + toctree). Add real landing content / orientation / gallery.
-2. **Signal runtime-cleanup pass** — 6 audit findings (memory
-   `project_signal_api_audit_findings`). Notably: remove `.get()` AND the
-   `__getattr__` variable proxy together (the proxy keeps `.get()` reachable);
-   `set()` rejects numeric widening (`Signal(0.0).set(5)` raises); silent
-   exception swallow in `subscribe(immediate=)`. Behavioral — deliberate pass.
-3. **localization / windowing** — write as `tasks/` how-tos (were deleted as
-   empty `deeper/` stubs this session).
-4. **Screenshots still pending:** Tooltip/Toast (per-scene SCENES dict), 7 Dialog
-   pages (per-scene + dialog hero pattern).
-5. **AppShell deferred improvements** (dedicated follow-on pass):
-   - `nav_pane_width=` not wired through to `SideNav(pane_width=...)`
-   - Nav item density/font hardcoded in SideNav style builder
-   - `toolbar`/`nav` properties expose internals instead of public wrappers
-   - Group UX: active-child header highlight + child indentation missing
-   - `add_footer_area` / non-page widgets in nav footer (no API)
-   - Past-tense event names pending rename: `SideNav.on_pane_toggled`,
-     `SideNav.on_display_mode_changed`, `ListView.on_selection_changed`,
-     `Calendar.on_date_selected`
+1. **Track 2 — theming public API + theming/typography docs** (memory
+   `project_theming_public_api`). The docs are BLOCKED on API design:
+   - (a) ergonomic **custom-theme** path — currently `register_user_theme(name,
+     path)` is file-only with an empty docstring and a "v2 theme schema" naming
+     leak in `style/theme_provider.py`. Add an in-code spec option + document the
+     schema; drop "v2".
+   - (b) a NEW public **custom-font / token** abstraction — none exists today.
+   - Then **demote `Style`/`Typography`/`Font`** from `__all__` + docs (all
+     internal: `Style` subclasses `ttk.Style` = leak; `Typography` is the internal
+     registry redundant with the typography page; `Font` is NOT the `ask_font`
+     return — that returns `tkinter.font.Font`, itself a leak to flag). Write
+     `theming.rst` (theme control + custom-theming guide); keep `typography.rst`
+     as the font-token reference. **User has a shape in mind for declaring a
+     custom theme/font — ASK at the start.**
+2. **DataSource verb rename** (memory `project_datasource_api_naming`, DECIDED):
+   `set_data→load`, `get_page→page`, `*_record→insert/get/update/delete/move`,
+   `total_count→count` (property), `export_to_csv→export_csv`,
+   `get_page_from_index→page_slice`. Across `data/types.py` (protocol),
+   `data/base.py`, the 3 sources, callers in `tableview`/`listview` composites +
+   public `table.py`/`listview.py` + docs. Also redesign `set_filter`/`set_sort`
+   to drop the raw-SQL-string leak. Full test + docs build after.
+3. **Persistent KV / prefs store** (proposed, memory `project_persistent_kv_store`):
+   no public persistent K-V exists (`MemoryDataSource`=RAM, `SqliteDataSource`=
+   record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
+   `bs.Store` (dict-like, file-backed). Ties into theme persistence.
+
+**Signal API — DECIDED (prior session):** `signal()` is the single getter,
+`.set()` writes, `.get()` deprecated (doc-excluded). Do NOT adopt callable-setter
+`signal(x)`.
+
+**Carryover (lower priority):**
+1. **Index/landing pages** — root `index.rst`, `widgets/index.rst`,
+   `reference/index.rst`, section indexes are bare; add orientation/gallery.
+2. **Signal runtime-cleanup pass** — memory `project_signal_api_audit_findings`
+   (remove `.get()` + `__getattr__` proxy; `set()` numeric widening; silent
+   swallow in `subscribe(immediate=)`).
+3. **Tree/Table doc pages** (deferred — complex). DataSource rename should land first.
+4. **localization / windowing** `tasks/` how-tos.
+5. **Screenshots pending:** Tooltip/Toast, 7 Dialog pages.
+6. **AppShell deferred improvements:** `nav_pane_width=` not wired to
+   `SideNav(pane_width=)`; nav density/font hardcoded; `toolbar`/`nav` expose
+   internals; group active-child highlight + indentation; footer non-page widgets.
+
+### API/cleanup backlog from the 2026-06-05 audit (memory-tracked)
+- `project_toplevel_api_surface` — audit `bs.*` vs namespaced (events: DONE,
+  payloads live in `bs.events` only).
+- `project_capabilities_relevance` — `_core/capabilities` may be redundant now
+  the public layer abstracts Tk; still imported by data/i18n/mixins.
+- `project_legacy_naming_cleanup` — `TTKBootstrapError` (`_core/exceptions`,
+  overlaps `bootstack.errors`) + pervasive `bootstyle`/`Bootstyle` in `style/`.
+- `project_docstring_backticks` — ~77 files use RST double-backticks; convention
+  is Google + SINGLE backticks. (Markdown ```fences``` in docstrings render
+  broken via autodoc — fixed in `data/` + `_runtime/shortcuts.py`; others remain.)
+- Past-tense event names still pending rename: `SideNav.on_pane_toggled` /
+  `on_display_mode_changed`, `ListView.on_selection_changed`,
+  `Calendar.on_date_selected` (memory `project_event_naming_revisit`).
 
 ---
 
@@ -353,7 +391,7 @@ app.run()
 
 `__enter__` pushes container, `__exit__` pops. App hides on enter, shows on exit.
 
-### Events
+### Events  (redesigned 2026-06-05 — see memory `project_typed_events`)
 
 ```python
 sub = widget.on_change(handler)   # → Subscription (cancellable)
@@ -361,6 +399,23 @@ widget.on_change().debounce(300).listen(handler)  # → Stream (composable)
 ```
 
 All `on_*()` shorthands use `@overload`: no-arg → `Stream`, with handler → `Subscription`.
+
+**What the handler receives** (the redesign):
+- **Data events** (`change`, `input`, `select`, validation, …) → the typed
+  payload dataclass, **unpacked**: `on_change(lambda e: e.value)`. Payloads live
+  in `bootstack.events` (the catalog) — `bs.events.ChangeEvent`, `SliderEvent`,
+  etc. Namespaced there ONLY, not top-level. ListView item events are the
+  exception: a plain record `dict` (`e["field"]`).
+- **Native events** (`click`, `hover`, `focus`, `blur`, `resize`, key, scroll) →
+  a curated, Tk-free `Event`: `widget`, `x/y/x_root/y_root`, `width/height`,
+  `delta`, modifier bools `ctrl/shift/alt/meta`, clean `key/char`, `time`.
+- `Button`/`Label` `on_click()` METHOD now passes the `Event` (the no-arg
+  `on_click=` constructor command is unchanged).
+- The generic `on(name, handler)` is typed `Callable[[Any], Any]` (string-keyed,
+  can't infer the payload); the precise types are on the `on_<event>()` shorthands.
+- Transform happens in `adapt_handler()` (`widgets/_core/base.py`); emit sites
+  build the dataclass: `event_generate("<<Change>>", data=ChangeEvent(...))`.
+  `_runtime/events.py` (the data-cache transport) is untouched.
 
 ### Signals
 
