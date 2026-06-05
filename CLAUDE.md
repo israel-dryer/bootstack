@@ -150,20 +150,25 @@ deliver to a MAPPED widget — show the window in tests.)
 
 ### Next session — Track 2 + queued refactors (all memory-tracked)
 
-**RECOMMENDED NEXT: the DataSource change-events / "observable query" feature
-(item 0) — user-described "killer feature" for live-data audiences.** Font track
-and the DataSource verb rename + filtering DSL are now BOTH DONE (see below).
+**RECOMMENDED NEXT: pick from the queued refactors below — the DataSource
+observable query (item 0) is now DONE.** Font track and the DataSource verb
+rename + filtering DSL were already DONE.
 
-0. **DataSource change broadcasting / observable query (NEW — DECIDED to pursue,
-   memory `project_datasource_change_events`).** A DataSource emits change events
-   so bound widgets auto-refresh (no manual `reload()`) AND users can subscribe to
-   feed any widget (dashboard cards/badges/gauges via `bs.Signal`). Framed as an
-   "observable query" (RxJS/TanStack/Firebase pattern): subscribe to a
-   `where`/`order` → live result-set stream. `on_change()` returns a `Stream`
-   (composes with Signal/Stream, [[project_typed_events]]). KEY: thread-marshal
-   (web-feed worker thread → Tk main thread) + feedback-loop guards + coarse
-   invalidation impl. NEEDS A PLANNING PASS (change-events vs full observable
-   query is the central decision). Build on the now-committed datasource work.
+0. **DataSource change broadcasting / observable query — DONE (this branch,
+   memory `project_datasource_change_events`).** Both layers shipped: `_ChangeHub`
+   (`data/_observable.py`) + `bs.events.DataChangeEvent`; `ds.on_change(handler=None)`
+   → Subscription/`Stream`, `ds.observe(condition, *order)` → live result-set
+   `Stream`; read-only `_query()` per source; thread-marshal (worker → main via
+   `app.after`) + coalescing (`after_idle`, one flush/turn) + headless sync-degrade
+   + re-entrancy guards. `silence()` is THREAD-LOCAL. Table/ListView auto-refresh
+   (refetch visible window via `page`/`page_slice`, NOT observe) with ALL internal
+   source mutations silenced (TableView silences where/order too — revised policy).
+   ListView `_on_source_change` re-measures (resizes the virtual row pool +
+   scrollbar). Tests `tests/data/test_observable.py`; docs `data-sources.rst`
+   ("Observing changes"); example `docs/examples/observable_datasource.py`.
+   DEFERRED perf opts (relevance-skip, content-hash signature, count cache,
+   `observe_count`) noted in memory — gated by the observe-small/on_change-large
+   routing contract (now documented + enforced by the widgets).
 
 1. **Track 2 — theming public API + font track: DONE.** Theming Phases 1–4
    (memory `project_theming_public_api`) and the **font track** (Phase 2-fonts —
