@@ -9,15 +9,16 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import os
 from collections import OrderedDict
 from tkinter import font as tkfont
 
-from typing import Callable
+from typing import Any, Callable
 from typing_extensions import Literal, TypedDict, Unpack
 
 from bootstack.widgets.types import Master
 
-from bootstack.events import RowEvent, RowsEvent, SelectionEvent
+from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
@@ -25,6 +26,7 @@ from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu
+from bootstack.widgets._impl.composites.tooltip import ToolTip
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
 from bootstack.widgets._impl.primitives.entry import Entry
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
@@ -48,6 +50,27 @@ from .types import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Max characters of the filter summary shown in the status bar before it is
+# truncated (the full text is then revealed via a hover tooltip).
+_FILTER_STATUS_MAXLEN = 48
+
+# Read-batch size when streaming an export (a throughput knob, distinct from the
+# on-screen page size).
+_EXPORT_CHUNK_SIZE = 1000
+
+# Soft cap for the materializing accessors (to_rows/to_csv); above this they
+# raise and point the caller at the streaming API.
+_EXPORT_MAX_MATERIALIZE = 100_000
+
+
+def _has_xlsxwriter() -> bool:
+    """Whether the optional XlsxWriter dependency (bootstack[excel]) is installed."""
+    import importlib.util
+    try:
+        return importlib.util.find_spec("xlsxwriter") is not None
+    except Exception:
+        return False
 
 _TABLE_SEARCH_MODE_OPTIONS = [
     ("table.search_mode_equals", "EQUALS"),
@@ -201,8 +224,10 @@ class TableView(Frame):
             search_mode=search_mode,
             search_trigger=search_trigger,
         )
-        # User-facing filter description shown in the status bar (the search term).
-        self._filter_summary: str = ""
+        # The active free-text search term (composed with column filters into where()).
+        self._search_text: str = ""
+        # Tooltip showing the full filter summary when the status label is truncated.
+        self._filter_tooltip: ToolTip | None = None
         self._row_alternation = _build_row_alternation_options(
             striped=striped,
             striped_background=striped_background,
@@ -331,168 +356,31 @@ class TableView(Frame):
         self._clear_cache()
         self._load_page(0)
 
-    # ------------------------------------------------------------------ Public event API
-    def on_selection_changed(self, callback: Callable[[SelectionEvent], None]) -> str:
-        """Register a callback for `<<SelectionChange>>` events.
-
-        Args:
-            callback: Receives a `SelectionEvent` dict with keys `records`
-                and `iids`.
-
-        Returns:
-            Bind ID — pass to `off_selection_changed()` to unsubscribe.
-        """
-        return self.bind("<<SelectionChange>>", callback, add=True)
-
-    def off_selection_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<SelectionChange>>`.
-
-        Args:
-            bind_id: ID returned by `on_selection_changed()`. If None, removes all.
-        """
-        self.unbind("<<SelectionChange>>", bind_id)
-
-    def on_row_click(self, callback: Callable[[RowEvent], None]) -> str:
-        """Register a callback for `<<RowClick>>` events (fires on single click).
-
-        Args:
-            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
-
-        Returns:
-            Bind ID — pass to `off_row_click()` to unsubscribe.
-        """
-        return self.bind("<<RowClick>>", callback, add=True)
-
-    def off_row_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowClick>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_click()`. If None, removes all.
-        """
-        self.unbind("<<RowClick>>", bind_id)
-
-    def on_row_double_click(self, callback: Callable[[RowEvent], None]) -> str:
-        """Register a callback for `<<RowDoubleClick>>` events.
-
-        Args:
-            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
-
-        Returns:
-            Bind ID — pass to `off_row_double_click()` to unsubscribe.
-        """
-        return self.bind("<<RowDoubleClick>>", callback, add=True)
-
-    def off_row_double_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowDoubleClick>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_double_click()`. If None, removes all.
-        """
-        self.unbind("<<RowDoubleClick>>", bind_id)
-
-    def on_row_right_click(self, callback: Callable[[RowEvent], None]) -> str:
-        """Register a callback for `<<RowRightClick>>` events.
-
-        Args:
-            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
-
-        Returns:
-            Bind ID — pass to `off_row_right_click()` to unsubscribe.
-        """
-        return self.bind("<<RowRightClick>>", callback, add=True)
-
-    def off_row_right_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowRightClick>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_right_click()`. If None, removes all.
-        """
-        self.unbind("<<RowRightClick>>", bind_id)
-
-    def on_row_deleted(self, callback: Callable[[RowsEvent], None]) -> str:
-        """Register a callback for `<<RowDelete>>` events (fires when rows are removed).
-
-        Args:
-            callback: Receives a `RowsEvent` dict with key `records`.
-
-        Returns:
-            Bind ID — pass to `off_row_deleted()` to unsubscribe.
-        """
-        return self.bind("<<RowDelete>>", callback, add=True)
-
-    def off_row_deleted(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowDelete>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_deleted()`. If None, removes all.
-        """
-        self.unbind("<<RowDelete>>", bind_id)
-
-    def on_row_inserted(self, callback: Callable[[RowsEvent], None]) -> str:
-        """Register a callback for `<<RowInsert>>` events (fires when rows are added).
-
-        Args:
-            callback: Receives a `RowsEvent` dict with key `records`.
-
-        Returns:
-            Bind ID — pass to `off_row_inserted()` to unsubscribe.
-        """
-        return self.bind("<<RowInsert>>", callback, add=True)
-
-    def off_row_inserted(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowInsert>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_inserted()`. If None, removes all.
-        """
-        self.unbind("<<RowInsert>>", bind_id)
-
-    def on_row_updated(self, callback: Callable[[RowsEvent], None]) -> str:
-        """Register a callback for `<<RowUpdate>>` events (fires when rows are modified).
-
-        Args:
-            callback: Receives a `RowsEvent` dict with key `records`.
-
-        Returns:
-            Bind ID — pass to `off_row_updated()` to unsubscribe.
-        """
-        return self.bind("<<RowUpdate>>", callback, add=True)
-
-    def off_row_updated(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowUpdate>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_updated()`. If None, removes all.
-        """
-        self.unbind("<<RowUpdate>>", bind_id)
-
-    def on_row_moved(self, callback: Callable[[RowsEvent], None]) -> str:
-        """Register a callback for `<<RowMove>>` events (fires when rows are reordered).
-
-        Args:
-            callback: Receives a `RowsEvent` dict with key `records`.
-
-        Returns:
-            Bind ID — pass to `off_row_moved()` to unsubscribe.
-        """
-        return self.bind("<<RowMove>>", callback, add=True)
-
-    def off_row_moved(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowMove>>`.
-
-        Args:
-            bind_id: ID returned by `on_row_moved()`. If None, removes all.
-        """
-        self.unbind("<<RowMove>>", bind_id)
-
     # ------------------------------------------------------------------ Public data/selection API
+    def _public_record(self, rec: dict | None) -> dict:
+        """Return a user-facing copy of `rec` — internal columns stripped, `id` surfaced."""
+        if not rec:
+            return {}
+        out = {k: v for k, v in rec.items() if k not in (_ROW_ID, _ROW_SEL)}
+        rid = rec.get(_ROW_ID)
+        if rid is not None:
+            out["id"] = rid
+        return out
+
+    def _iid_for_id(self, rid: Any) -> str | None:
+        """Find the row handle of a currently-rendered row by its record `id`."""
+        for iid, rec in self._row_map.items():
+            if rec.get(_ROW_ID) == rid:
+                return iid
+        return None
+
     @property
     def selected_rows(self) -> list[dict]:
-        """List of record dicts for the current Treeview selection."""
+        """List of record dicts for the current selection."""
         rows: list[dict] = []
         for iid in self._tree.selection():
             if iid in self._row_map:
-                rows.append(self._row_map[iid])
+                rows.append(self._public_record(self._row_map[iid]))
         return rows
 
     @property
@@ -515,30 +403,32 @@ class TableView(Frame):
         with self._silence_source():
             for rec in recs:
                 try:
-                    new_id = self._datasource.insert(dict(rec))
-                    rec = dict(rec)
+                    # Strip any public 'id' — the datasource assigns the id.
+                    payload = {k: v for k, v in dict(rec).items() if k != "id"}
+                    new_id = self._datasource.insert(payload)
                     if new_id is not None:
-                        rec[_ROW_ID] = new_id
-                    inserted.append(rec)
+                        payload[_ROW_ID] = new_id
+                    inserted.append(payload)
                 except Exception:
                     logger.exception("Failed to insert record")
         if inserted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowInsert>>", data=RowsEvent(records=inserted))
+            records = [self._public_record(r) for r in inserted]
+            self.event_generate("<<RowInsert>>", data=RowsEvent(records=records))
 
     def update_rows(self, rows: list[dict]) -> None:
-        """Update rows by internal row id; each dict must include the internal row-id key."""
+        """Update rows by record `id`; each dict must include an `id` key."""
         updated: list[dict] = []
         with self._silence_source():
             for rec in rows:
-                rec_id = rec.get(_ROW_ID)
+                rec_id = rec.get("id")
                 if rec_id is None:
                     continue
-                updates = {k: v for k, v in rec.items() if k != _ROW_ID}
+                updates = {k: v for k, v in rec.items() if k not in ("id", _ROW_ID, _ROW_SEL)}
                 try:
                     self._datasource.update(rec_id, updates)
-                    updated.append(rec)
+                    updated.append(dict(rec))
                 except Exception:
                     logger.exception("Failed to update record id=%s", rec_id)
         if updated:
@@ -547,15 +437,15 @@ class TableView(Frame):
             self.event_generate("<<RowUpdate>>", data=RowsEvent(records=updated))
 
     def delete_rows(self, rows_or_ids: list) -> None:
-        """Delete rows by id or row dicts containing an id key."""
+        """Delete rows by record `id`, or by record dicts containing an `id` key."""
         deleted: list[dict] = []
         with self._silence_source():
             for item in rows_or_ids:
                 rec_id = None
                 rec = {}
                 if isinstance(item, dict):
-                    rec = item
-                    rec_id = item.get(_ROW_ID)
+                    rec = dict(item)
+                    rec_id = item.get("id")
                 else:
                     rec_id = item
                 if rec_id is None:
@@ -563,7 +453,7 @@ class TableView(Frame):
                 try:
                     self._datasource.delete(rec_id)
                     if not rec:
-                        rec = {_ROW_ID: rec_id}
+                        rec = {"id": rec_id}
                     deleted.append(rec)
                 except Exception:
                     logger.exception("Failed to delete record id=%s", rec_id)
@@ -592,7 +482,8 @@ class TableView(Frame):
         self._apply_row_alternation()
         moved_recs = [self._row_map.get(i) for i in iids if i in self._row_map]
         if moved_recs:
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=moved_recs))
+            records = [self._public_record(r) for r in moved_recs]
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=records))
 
     def move_columns(self, from_index: int, to_index: int) -> None:
         """Reorder a column from one index to another."""
@@ -648,19 +539,26 @@ class TableView(Frame):
             self._display_columns = sorted(self._display_columns)
             self._tree.configure(displaycolumns=self._display_columns)
 
-    def select_rows(self, iids: list[str]) -> None:
-        """Select the given row ids."""
-        self._tree.selection_set(iids)
+    def select_rows(self, ids: list) -> None:
+        """Select rows by record `id` (only those currently rendered)."""
+        iids = [iid for iid in (self._iid_for_id(rid) for rid in ids) if iid]
+        if iids:
+            self._tree.selection_set(iids)
 
-    def deselect_rows(self, iids: list[str] | None = None) -> None:
-        """Clear selection or remove specific iids from selection."""
-        if not iids:
+    def deselect_rows(self, ids: list | None = None) -> None:
+        """Clear the selection, or remove specific rows by record `id`."""
+        if not ids:
             self._tree.selection_remove(self._tree.selection())
-        else:
+            return
+        iids = [iid for iid in (self._iid_for_id(rid) for rid in ids) if iid]
+        if iids:
             self._tree.selection_remove(iids)
 
-    def scroll_to_row(self, iid: str) -> None:
-        """Ensure the given row is visible."""
+    def scroll_to_row(self, rid: Any) -> None:
+        """Ensure the row with the given record `id` is visible."""
+        iid = self._iid_for_id(rid)
+        if iid is None:
+            return
         try:
             self._tree.see(iid)
         except Exception:
@@ -683,22 +581,31 @@ class TableView(Frame):
         self._load_page(max(0, index))
 
     # ------------------------------------------------------------------ Filter/Sort/Group API
-    def get_filters(self) -> str:
-        """Return the current filter description (the active search term)."""
-        return self._filter_summary
-
-    def set_filters(self, condition=None) -> None:
-        try:
-            with self._silence_source():
-                self._datasource.where(condition)
-        except Exception:
-            return
-        self._clear_cache()
-        self._load_page(0)
-        self._update_status_labels()
+    def get_filters(self) -> dict[str, list]:
+        """Return the active column filters as `{column_key: allowed_values}`."""
+        return {k: list(v) for k, v in self._column_filters.items()}
 
     def clear_filters(self) -> None:
+        """Remove all active column filters (leaves the search term intact)."""
         self._clear_filter_cmd()
+
+    def get_search(self) -> str:
+        """Return the active free-text search term."""
+        return self._search_text
+
+    def set_search(self, text: str) -> None:
+        """Set the free-text search term and re-apply (leaves column filters intact)."""
+        text = text or ""
+        entry = getattr(self, "_search_entry", None)
+        if entry is not None:
+            entry.delete(0, "end")
+            entry.insert(0, text)
+        self._search_text = text
+        self._apply_where()
+
+    def clear_search(self) -> None:
+        """Clear the free-text search term (leaves column filters intact)."""
+        self._clear_search()
 
     def get_sorting(self) -> dict[str, bool]:
         """Return a copy of the current sort state {column_key: ascending}."""
@@ -884,15 +791,10 @@ class TableView(Frame):
             self._column_chooser_btn.pack(side="right", padx=(4, 0))
 
         if self._exporting['enabled']:
-            export_items = []
-            if self._exporting['export_scope'] == 'all':
-                export_items.append({"type": "command", "text": "table.export_all", "command": self._export_all})
-            if self._exporting["allow_export_selection"]:
-                export_items.append({"type": "command", "text": "table.export_selection", "command": self._export_selection})
-            if self._exporting['export_scope'] == "page":
-                export_items.append({"type": "command", "text": "table.export_page", "command": self._export_page})
-            if not export_items:
-                export_items.append({"type": "command", "text": "table.export_all", "command": self._export_all})
+            export_items = [
+                {"type": "command", "text": "Copy to clipboard", "command": self._copy_to_clipboard},
+                {"type": "command", "text": "Save to file…", "command": self._save_to_file},
+            ]
             DropdownButton(
                 bar,
                 icon="download",
@@ -1256,46 +1158,52 @@ class TableView(Frame):
             self._load_page(self._current_page + 1, append=True)
 
     # ------------------------------------------------------------------ Search & sort
-    def _run_search(self) -> None:
-        text = self._search_entry.get()
+    def _build_search_condition(self):
+        """Build the search condition from the active search term (or None)."""
+        text = self._search_text
+        if not text or not self._column_keys:
+            return None
         if hasattr(self, "_search_mode") and self._search_mode_map:
             display_mode = self._search_mode.get()
             mode = self._search_mode_map.get(display_mode, "CONTAINS")
         else:
             mode = "CONTAINS"
         mode_upper = mode.upper().replace(" ", "_")
-        condition = None
-        if text and self._column_keys:
-            if mode_upper == "STARTS_WITH":
-                make = lambda c: col(c).startswith(text)
-            elif mode_upper == "ENDS_WITH":
-                make = lambda c: col(c).endswith(text)
-            elif mode_upper == "EQUALS":
-                make = lambda c: col(c) == text
-            else:  # CONTAINS (default)
-                make = lambda c: col(c).contains(text)
-            condition = any_of(*(make(c) for c in self._column_keys))
-        self._filter_summary = repr(text) if text else ""
+        if mode_upper == "STARTS_WITH":
+            make = lambda c: col(c).startswith(text)
+        elif mode_upper == "ENDS_WITH":
+            make = lambda c: col(c).endswith(text)
+        elif mode_upper == "EQUALS":
+            make = lambda c: col(c) == text
+        else:  # CONTAINS (default)
+            make = lambda c: col(c).contains(text)
+        return any_of(*(make(c) for c in self._column_keys))
+
+    def _apply_where(self) -> None:
+        """Compose the search term and column filters into a single where() clause."""
+        condition = all_of(
+            self._build_search_condition(),
+            self._build_column_filter_condition(),
+        )
         try:
             with self._silence_source():
                 self._datasource.where(condition)
         except Exception:
-            logger.exception("Failed to apply search filter: %r", text)
+            logger.exception("Failed to apply filters")
         self._clear_cache()
         self._load_page(0)
         self._update_status_labels()
 
+    def _run_search(self) -> None:
+        self._search_text = self._search_entry.get()
+        self._apply_where()
+
     def _clear_search(self) -> None:
-        self._search_entry.delete(0, 'end')
-        self._filter_summary = ""
-        try:
-            with self._silence_source():
-                self._datasource.where(None)
-        except Exception:
-            pass
-        self._clear_cache()
-        self._load_page(0)
-        self._update_status_labels()
+        entry = getattr(self, "_search_entry", None)
+        if entry is not None:
+            entry.delete(0, 'end')
+        self._search_text = ""
+        self._apply_where()
 
     def _on_sort(self, column_index: int) -> None:
         if column_index >= len(self._column_keys):
@@ -1314,15 +1222,65 @@ class TableView(Frame):
         self._load_page(0)
         self._update_status_labels()
 
-    def _update_status_labels(self) -> None:
-        # Filter — show the user-friendly summary set by the search bar.
-        filter_txt = ""
+    def _column_heading(self, key: str) -> str:
+        """Display heading for a column key (falls back to the key)."""
         try:
-            description = self._filter_summary
+            idx = self._column_keys.index(key)
+            return self._heading_texts[idx] if idx < len(self._heading_texts) else key
+        except Exception:
+            return key
+
+    def _filter_description(self) -> str:
+        """Human-readable summary of the active search term and column filters.
+
+        The search term spans all columns (`'term' in any column`); each column
+        filter reads like `Heading='value'` (or `Heading in (...)` for several).
+        """
+        def fmt(v) -> str:
+            return "(blank)" if v is None else f"'{v}'"
+
+        parts = []
+        if self._search_text:
+            parts.append(f"{fmt(self._search_text)} in any column")
+        for key, values in self._column_filters.items():
+            heading = self._column_heading(key)
+            vals = list(values)
+            if len(vals) == 1:
+                parts.append(f"{heading}={fmt(vals[0])}")
+            else:
+                parts.append(f"{heading} in ({', '.join(fmt(v) for v in vals)})")
+        return ", ".join(parts)
+
+    def _update_filter_tooltip(self, text: str) -> None:
+        """Show a hover tooltip with the full filter text, or remove it."""
+        if not hasattr(self, "_filter_label"):
+            return
+        if text:
+            if self._filter_tooltip is None:
+                self._filter_tooltip = ToolTip(self._filter_label, text=text)
+            else:
+                self._filter_tooltip._text = text
+        elif self._filter_tooltip is not None:
+            self._filter_tooltip.destroy()
+            self._filter_tooltip = None
+
+    def _update_status_labels(self) -> None:
+        # Filter — summarize the active search term and any column filters,
+        # truncating the label and revealing the full text via tooltip on overflow.
+        filter_txt = ""
+        tooltip_txt = ""
+        try:
+            description = self._filter_description()
             if description:
-                filter_txt = MessageCatalog.translate("table.filter_status", description)
+                shown = description
+                if len(description) > _FILTER_STATUS_MAXLEN:
+                    shown = description[: _FILTER_STATUS_MAXLEN - 1].rstrip() + "…"
+                filter_txt = MessageCatalog.translate("table.filter_status", shown)
+                if shown != description:
+                    tooltip_txt = MessageCatalog.translate("table.filter_status", description)
         except Exception:
             pass
+        self._update_filter_tooltip(tooltip_txt)
         # Sort
         sort_txt = ""
         try:
@@ -1394,7 +1352,7 @@ class TableView(Frame):
             if iid not in self._tree.selection():
                 self._tree.selection_set(iid)
             rec = self._row_map.get(iid, {})
-            self.event_generate("<<RowRightClick>>", data=RowEvent(record=rec, iid=iid))
+            self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
         if not self._tree.selection():
             return
         self._row_menu_col = col_idx
@@ -1409,7 +1367,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=rec, iid=iid))
+        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
         if self._editing['updating']:
             self._open_form_dialog(rec)
 
@@ -1549,13 +1507,10 @@ class TableView(Frame):
         if col_idx >= len(values):
             return
         val = values[col_idx]
-        try:
-            with self._silence_source():
-                self._datasource.where(col(key) == val)
-        except Exception:
-            return
-        self._clear_cache()
-        self._load_page(0)
+        # Register as a column filter so it composes with search/other filters
+        # and shows in the status bar.
+        self._column_filters[key] = [val]
+        self._apply_where()
 
     def _sort_selection(self, ascending: bool) -> None:
         selection = self._tree.selection()
@@ -1575,14 +1530,8 @@ class TableView(Frame):
         self._load_page(0)
 
     def _clear_filter_cmd(self) -> None:
-        try:
-            with self._silence_source():
-                self._datasource.where(None)
-        except Exception:
-            pass
-        self._clear_cache()
-        self._load_page(0)
-        self._update_status_labels()
+        self._column_filters.clear()
+        self._apply_where()
 
     def _move_row_up(self) -> None:
         self._move_row_relative(-1)
@@ -1615,7 +1564,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _move_row_absolute(self, new_idx: int) -> None:
         sel = list(self._tree.selection())
@@ -1628,7 +1577,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _hide_selection(self) -> None:
         sel = list(self._tree.selection())
@@ -1659,7 +1608,7 @@ class TableView(Frame):
                     self._datasource.delete(rec_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
-                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[rec]))
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[self._public_record(rec)]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", rec_id)
 
@@ -1684,7 +1633,8 @@ class TableView(Frame):
             self._clear_cache()
             self._load_page(self._current_page)
             if deleted_records:
-                self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted_records))
+                records = [self._public_record(r) for r in deleted_records]
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=records))
 
     # ------------------------------------------------------------------ Cache helpers
     def _clear_cache(self) -> None:
@@ -1907,27 +1857,212 @@ class TableView(Frame):
         self._rebalance_grouped_widths()
 
     # ------------------------------------------------------------------ Export helpers
-    def _export_all(self) -> None:
-        try:
-            rows = self._datasource.page_slice(0, self._datasource.count)
-            self._tree.event_generate("<<TableViewExportAll>>", data=rows)
-        except Exception:
-            pass
+    # ------------------------------------------------------------------ Export — data access
+    def _export_columns(self) -> tuple[list[str], list[str]]:
+        """Return `(header_texts, keys)` for the displayed columns (no internal columns)."""
+        keys = [k for k in self._column_keys if k not in (_ROW_ID, _ROW_SEL)]
+        headers = [self._column_heading(k) for k in keys]
+        return headers, keys
 
-    def _export_selection(self) -> None:
-        try:
-            selected = [self._row_map[iid] for iid in self._tree.selection() if iid in self._row_map]
-            self._tree.event_generate("<<TableViewExportSelection>>", data=selected)
-        except Exception:
-            pass
+    def _scope_count(self, scope: str) -> int:
+        """Number of rows the given scope would export."""
+        if scope == "selection":
+            return len(self._tree.selection())
+        if scope == "page":
+            start = self._current_page * self._paging['page_size']
+            return len(self._datasource.page_slice(start, self._paging['page_size']))
+        return self._datasource.count
 
-    def _export_page(self) -> None:
+    def _iter_raw_chunks(self, scope: str, chunk_size: int):
+        """Yield lists of raw records for `scope`, paging through large 'all' scopes."""
+        if scope == "selection":
+            rows = [self._row_map[iid] for iid in self._tree.selection() if iid in self._row_map]
+            if rows:
+                yield rows
+            return
+        if scope == "page":
+            start = self._current_page * self._paging['page_size']
+            rows = self._datasource.page_slice(start, self._paging['page_size'])
+            if rows:
+                yield rows
+            return
+        # 'all' (the filtered/sorted set) — page through so memory stays flat.
+        total = self._datasource.count
+        offset = 0
+        while offset < total:
+            chunk = self._datasource.page_slice(offset, chunk_size)
+            if not chunk:
+                break
+            yield chunk
+            offset += len(chunk)
+
+    def _to_delimited(self, rows: list, delimiter: str) -> str:
+        """Serialize `rows` (raw records) as delimited text over the displayed columns."""
+        import csv
+        import io
+
+        headers, keys = self._export_columns()
+        buf = io.StringIO()
+        writer = csv.writer(buf, delimiter=delimiter)
+        writer.writerow(headers)
+        writer.writerows([[rec.get(k, "") for k in keys] for rec in rows])
+        return buf.getvalue()
+
+    def _guard_materialize(self, scope: str, max_rows: int | None) -> None:
+        if max_rows is None:
+            return
+        n = self._scope_count(scope)
+        if n > max_rows:
+            raise ValueError(
+                f"{n} rows exceeds max_rows={max_rows}; use iter_rows() or "
+                f"export_file() to stream large exports."
+            )
+
+    def to_rows(self, scope: str = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> list[dict]:
+        """Return the scope's records as a list of dicts (materialized — small data).
+
+        Raises if the row count exceeds `max_rows`; use `iter_rows()` for large data.
+        """
+        self._guard_materialize(scope, max_rows)
+        return [self._public_record(r) for chunk in self._iter_raw_chunks(scope, _EXPORT_CHUNK_SIZE) for r in chunk]
+
+    def to_csv(self, scope: str = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> str:
+        """Return the scope's data as a CSV string (materialized — small data).
+
+        Raises if the row count exceeds `max_rows`; use `export_file()` for large data.
+        """
+        self._guard_materialize(scope, max_rows)
+        rows = [r for chunk in self._iter_raw_chunks(scope, _EXPORT_CHUNK_SIZE) for r in chunk]
+        return self._to_delimited(rows, ",")
+
+    def iter_rows(self, scope: str = "all", chunk_size: int = _EXPORT_CHUNK_SIZE):
+        """Lazily yield the scope's records one at a time, paging the data source."""
+        for chunk in self._iter_raw_chunks(scope, chunk_size):
+            for rec in chunk:
+                yield self._public_record(rec)
+
+    # ------------------------------------------------------------------ Export — file/clipboard
+    def _resolve_format(self, path: str, fmt: str | None) -> str:
+        """Resolve the export format from an explicit `fmt` or the path extension."""
+        resolved = (fmt or os.path.splitext(path)[1]).lower().lstrip(".")
+        if resolved not in ("csv", "tsv", "xlsx"):
+            raise ValueError(
+                f"Unsupported export format {resolved!r}; expected csv, tsv, or xlsx."
+            )
+        if resolved == "xlsx" and not _has_xlsxwriter():
+            raise RuntimeError(
+                "Excel (.xlsx) export requires the optional dependency: "
+                "pip install bootstack[excel]."
+            )
+        return resolved
+
+    def export_file(
+        self,
+        path: str,
+        scope: str = "all",
+        *,
+        format: str | None = None,
+        chunk_size: int = _EXPORT_CHUNK_SIZE,
+        on_progress=None,
+    ) -> int:
+        """Stream the scope's data to `path`, paging so memory stays flat.
+
+        Format is inferred from the path extension unless `format` is given.
+        `on_progress(written, total)` is called after each chunk. Returns the
+        number of rows written.
+        """
+        fmt = self._resolve_format(path, format)
+        headers, keys = self._export_columns()
+        total = self._scope_count(scope)
+        written = 0
+
+        if fmt == "xlsx":
+            import xlsxwriter
+
+            workbook = xlsxwriter.Workbook(path, {"constant_memory": True})
+            try:
+                worksheet = workbook.add_worksheet()
+                bold = workbook.add_format({"bold": True})
+                for c, header in enumerate(headers):
+                    worksheet.write(0, c, header, bold)
+                row_idx = 1
+                for chunk in self._iter_raw_chunks(scope, chunk_size):
+                    for rec in chunk:
+                        for c, key in enumerate(keys):
+                            worksheet.write(row_idx, c, rec.get(key))
+                        row_idx += 1
+                    written += len(chunk)
+                    if on_progress is not None:
+                        on_progress(written, total)
+            finally:
+                workbook.close()
+        else:
+            import csv
+
+            delimiter = "\t" if fmt == "tsv" else ","
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f, delimiter=delimiter)
+                writer.writerow(headers)
+                for chunk in self._iter_raw_chunks(scope, chunk_size):
+                    writer.writerows([[rec.get(k, "") for k in keys] for rec in chunk])
+                    written += len(chunk)
+                    if on_progress is not None:
+                        on_progress(written, total)
+
+        self._emit_export(target="file", fmt=fmt, path=path, count=written)
+        return written
+
+    def _emit_export(self, *, target: str, fmt: str, path: str | None, count: int, records=None) -> None:
+        self.event_generate(
+            "<<Export>>",
+            data=ExportEvent(count=count, target=target, format=fmt, path=path, records=records or []),
+        )
+
+    def _default_scope(self) -> str:
+        """Scope for the built-in export actions: the selection if any, else all."""
+        if self._exporting.get('allow_export_selection', True) and self._tree.selection():
+            return "selection"
+        return "all"
+
+    def _copy_to_clipboard(self) -> None:
+        """Copy the default scope to the clipboard as tab-separated text."""
+        scope = self._default_scope()
+        rows = [r for chunk in self._iter_raw_chunks(scope, _EXPORT_CHUNK_SIZE) for r in chunk]
+        if not rows:
+            return
         try:
-            start_index = self._current_page * self._paging['page_size']
-            rows = self._datasource.page_slice(start_index, self._paging['page_size'])
-            self._tree.event_generate("<<TableViewExportPage>>", data=rows)
+            self.clipboard_clear()
+            self.clipboard_append(self._to_delimited(rows, "\t"))
         except Exception:
-            pass
+            logger.exception("Failed to copy table to clipboard")
+            return
+        self._emit_export(
+            target="clipboard", fmt="tsv", path=None, count=len(rows),
+            records=[self._public_record(r) for r in rows],
+        )
+
+    def _save_to_file(self) -> None:
+        """Prompt for a destination and stream the default scope to it."""
+        from tkinter import filedialog
+
+        filetypes = [("CSV file", "*.csv")]
+        if _has_xlsxwriter():
+            filetypes.append(("Excel file", "*.xlsx"))
+        filetypes.append(("All files", "*.*"))
+
+        path = filedialog.asksaveasfilename(
+            parent=self.winfo_toplevel(),
+            title=MessageCatalog.translate("table.export"),
+            defaultextension=".csv",
+            initialfile="table_export.csv",
+            filetypes=filetypes,
+        )
+        if not path:
+            return
+        try:
+            self.export_file(path, scope=self._default_scope())
+        except Exception:
+            logger.exception("Failed to export table to %s", path)
 
     # ------------------------------------------------------------------ Header click handling
     def _on_header_click(self, event) -> None:
@@ -2028,8 +2163,8 @@ class TableView(Frame):
         # Build combined WHERE clause from all column filters
         self._rebuild_filter_where()
 
-    def _rebuild_filter_where(self) -> None:
-        """Rebuild the filter condition from all active column filters."""
+    def _build_column_filter_condition(self):
+        """Build the combined condition from all active column filters (or None)."""
         clauses = []
         for key, values in self._column_filters.items():
             if not values:
@@ -2045,16 +2180,11 @@ class TableView(Frame):
             clause = any_of(*parts)
             if clause is not None:
                 clauses.append(clause)
+        return all_of(*clauses)
 
-        condition = all_of(*clauses)
-        try:
-            with self._silence_source():
-                self._datasource.where(condition)
-        except Exception:
-            pass
-        self._clear_cache()
-        self._load_page(0)
-        self._update_status_labels()
+    def _rebuild_filter_where(self) -> None:
+        """Re-apply the combined where() after a column filter change."""
+        self._apply_where()
 
     # ------------------------------------------------------------------ Context dispatch
     def _on_tree_context(self, event) -> None:
@@ -2073,7 +2203,8 @@ class TableView(Frame):
     def _on_selection_event(self, _event=None) -> None:
         """Forward selection changes to subscribers."""
         rows = self.selected_rows
-        self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, iids=list(self._tree.selection())))
+        ids = [r.get("id") for r in rows]
+        self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, ids=ids))
 
     def _on_row_click_event(self, event) -> None:
         region = self._tree.identify_region(event.x, event.y)
@@ -2083,7 +2214,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowClick>>", data=RowEvent(record=rec, iid=iid))
+        self.event_generate("<<RowClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
 
     # ------------------------------------------------------------------ Header context menu
     def _ensure_header_menu(self) -> None:

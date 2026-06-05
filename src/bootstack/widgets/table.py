@@ -1,12 +1,14 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
 )
-from bootstack.events import RowEvent, RowsEvent, SelectionEvent
+from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, Subscription
+from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.events import register_widget_events
 
 
 class Table(PublicWidgetBase):
@@ -32,7 +34,9 @@ class Table(PublicWidgetBase):
         allow_add: Allow adding rows via a form dialog. Default `False`.
         allow_edit: Allow editing rows via a form dialog. Default `False`.
         allow_delete: Allow deleting rows. Default `False`.
-        allow_export: Enable CSV/Excel export. Default `False`.
+        allow_export: Show an export menu (Copy to clipboard / Save to file).
+            Saves CSV; Excel (`.xlsx`) is also offered when the optional
+            `bootstack[excel]` dependency is installed. Default `False`.
         striped: Alternate row background colors. Default `False`.
         allow_group: Allow grouping rows by a column. Default `False`.
         show_status_bar: Show filter/sort/group status and pager. Default `True`.
@@ -107,27 +111,29 @@ class Table(PublicWidgetBase):
         """Update existing rows by merging the given dicts.
 
         Args:
-            rows: List of dicts, each with an `'id'` key and updated fields.
+            rows: List of dicts, each with an `id` key and the fields to update.
         """
         self._internal.update_rows(rows)
 
     def delete_rows(self, rows_or_ids: list) -> None:
-        """Delete rows by IID or by record dict.
+        """Delete rows by record `id` or by record dict.
 
         Args:
-            rows_or_ids: List of IID strings or record dicts with an `'id'` key.
+            rows_or_ids: List of record ids or record dicts with an `id` key.
         """
         self._internal.delete_rows(rows_or_ids)
 
     # ----- Selection -----
 
-    def select_rows(self, iids: list[str]) -> None:
-        """Programmatically select rows by IID.
+    def select_rows(self, record_ids: list) -> None:
+        """Select rows by record `id`.
+
+        Only rows on the current page can be selected.
 
         Args:
-            iids: List of Treeview internal IDs to select.
+            record_ids: Record ids of the rows to select.
         """
-        self._internal.select_rows(iids)
+        self._internal.select_rows(record_ids)
 
     def select_all(self) -> None:
         """Select all rows in the current view."""
@@ -140,22 +146,108 @@ class Table(PublicWidgetBase):
 
     # ----- Scroll -----
 
-    def scroll_to_row(self, iid: str) -> None:
-        """Scroll the table so the given row is visible.
+    def scroll_to_row(self, record_id: Any) -> None:
+        """Scroll the table so the row with the given `id` is visible.
 
         Args:
-            iid: Treeview internal ID of the row.
+            record_id: Record id of the row.
         """
-        self._internal.scroll_to_row(iid)
+        self._internal.scroll_to_row(record_id)
+
+    # ----- Export -----
+
+    def to_rows(self, scope: str = "all", *, max_rows: int | None = 100_000) -> list[dict]:
+        """Return the data as a list of record dicts (materialized — small data).
+
+        Loads every matching row into memory. For large datasets use
+        `iter_rows()` (streaming) or `export_file()` instead.
+
+        Args:
+            scope: Which rows — `'all'` (the filtered set), `'page'` (current
+                page), or `'selection'` (selected rows).
+            max_rows: Raise if the row count exceeds this. Pass `None` to lift
+                the cap (at your own memory risk).
+        """
+        return self._internal.to_rows(scope, max_rows=max_rows)
+
+    def to_csv(self, scope: str = "all", *, max_rows: int | None = 100_000) -> str:
+        """Return the data as a CSV string (materialized — small data).
+
+        For large datasets use `export_file()`, which streams to disk.
+
+        Args:
+            scope: `'all'`, `'page'`, or `'selection'`.
+            max_rows: Raise if the row count exceeds this. `None` lifts the cap.
+        """
+        return self._internal.to_csv(scope, max_rows=max_rows)
+
+    def iter_rows(self, scope: str = "all", chunk_size: int = 1000):
+        """Lazily yield record dicts one at a time, paging the data source.
+
+        Memory stays flat regardless of size — suitable for very large exports.
+
+        Args:
+            scope: `'all'`, `'page'`, or `'selection'`.
+            chunk_size: Rows read from the source per batch.
+        """
+        return self._internal.iter_rows(scope, chunk_size)
+
+    def export_file(
+        self,
+        path: str,
+        scope: str = "all",
+        *,
+        format: str | None = None,
+        chunk_size: int = 1000,
+        on_progress: Callable[[int, int], Any] | None = None,
+    ) -> int:
+        """Stream the data to `path`, paging so memory stays flat.
+
+        The format is inferred from the path extension (`.csv`, `.tsv`, `.xlsx`)
+        unless `format` is given. `.xlsx` requires `bootstack[excel]`.
+
+        Args:
+            path: Destination file path.
+            scope: `'all'`, `'page'`, or `'selection'`.
+            format: Override the format — `'csv'`, `'tsv'`, or `'xlsx'`.
+            chunk_size: Rows read/written per batch.
+            on_progress: Called as `on_progress(written, total)` after each batch.
+
+        Returns:
+            The number of rows written.
+        """
+        return self._internal.export_file(
+            path, scope, format=format, chunk_size=chunk_size, on_progress=on_progress
+        )
+
+    # ----- Search -----
+
+    def get_search(self) -> str:
+        """Return the active free-text search term."""
+        return self._internal.get_search()
+
+    def set_search(self, text: str) -> None:
+        """Set the free-text search term.
+
+        Searches across all columns. Leaves any active column filters intact.
+
+        Args:
+            text: The search term. Pass an empty string to clear the search.
+        """
+        self._internal.set_search(text)
+
+    def clear_search(self) -> None:
+        """Clear the free-text search term (leaves column filters intact)."""
+        self._internal.clear_search()
 
     # ----- Filter / sort / group -----
 
-    def get_filters(self) -> str:
-        """Return the current filter description (the active search term)."""
+    def get_filters(self) -> dict[str, list]:
+        """Return the active column filters as `{column_key: allowed_values}`."""
         return self._internal.get_filters()
 
     def clear_filters(self) -> None:
-        """Remove all active column filters."""
+        """Remove all active column filters (leaves the search term intact)."""
         self._internal.clear_filters()
 
     def get_sorting(self) -> dict[str, bool]:
@@ -174,136 +266,153 @@ class Table(PublicWidgetBase):
         """Remove the active grouping."""
         self._internal.clear_grouping()
 
+    # ----- Properties -----
+
+    @property
+    def data_source(self) -> Any:
+        """The underlying `SqliteDataSource` instance."""
+        return self._internal._datasource
+
     # ----- Events -----
 
-    def on_selection_changed(
-        self, callback: Callable[["SelectionEvent"], None]
-    ) -> str:
-        """Register a callback for `<<SelectionChange>>` events.
+    @overload
+    def on_selection_changed(self) -> Stream: ...
+    @overload
+    def on_selection_changed(self, handler: Callable[[SelectionEvent], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler=None):
+        """Fired when the set of selected rows changes.
 
-        Args:
-            callback: Receives `event.data` — a `SelectionEvent` payload
-                with `records` and `iids`.
-
-        Returns:
-            Bind ID — pass to `off_selection_changed()` to unsubscribe.
-        """
-        return self._internal.on_selection_changed(callback)
-
-    def off_selection_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<SelectionChange>>`.
-
-        Args:
-            bind_id: ID returned by `on_selection_changed()`. If `None`, removes all.
-        """
-        self._internal.off_selection_changed(bind_id)
-
-    def on_row_click(
-        self, callback: Callable[["RowEvent"], None]
-    ) -> str:
-        """Register a callback for `<<RowClick>>` events.
-
-        Args:
-            callback: Receives `event.data` — a `RowEvent` payload
-                with `record` and `iid`.
+        The handler receives a `SelectionEvent` with `records` and `ids`.
 
         Returns:
-            Bind ID — pass to `off_row_click()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self._internal.on_row_click(callback)
+        return self.on("selection_changed", handler)
 
-    def off_row_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowClick>>`.
+    @overload
+    def on_row_click(self) -> Stream: ...
+    @overload
+    def on_row_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
+    def on_row_click(self, handler=None):
+        """Fired when a row is clicked.
 
-        Args:
-            bind_id: ID returned by `on_row_click()`. If `None`, removes all.
-        """
-        self._internal.off_row_click(bind_id)
-
-    def on_row_double_click(
-        self, callback: Callable[["RowEvent"], None]
-    ) -> str:
-        """Register a callback for `<<RowDoubleClick>>` events.
-
-        Args:
-            callback: Receives `event.data` — a `RowEvent` payload
-                with `record` and `iid`.
+        The handler receives a `RowEvent` with `record` and `id`.
 
         Returns:
-            Bind ID — pass to `off_row_double_click()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self._internal.on_row_double_click(callback)
+        return self.on("row_click", handler)
 
-    def off_row_double_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowDoubleClick>>`.
+    @overload
+    def on_row_double_click(self) -> Stream: ...
+    @overload
+    def on_row_double_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
+    def on_row_double_click(self, handler=None):
+        """Fired when a row is double-clicked.
 
-        Args:
-            bind_id: ID returned by `on_row_double_click()`. If `None`, removes all.
-        """
-        self._internal.off_row_double_click(bind_id)
-
-    def on_row_right_click(
-        self, callback: Callable[["RowEvent"], None]
-    ) -> str:
-        """Register a callback for `<<RowRightClick>>` events.
-
-        Args:
-            callback: Receives `event.data` — a `RowEvent` payload
-                with `record` and `iid`.
+        The handler receives a `RowEvent` with `record` and `id`.
 
         Returns:
-            Bind ID — pass to `off_row_right_click()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self._internal.on_row_right_click(callback)
+        return self.on("row_double_click", handler)
 
-    def off_row_right_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowRightClick>>`.
+    @overload
+    def on_row_right_click(self) -> Stream: ...
+    @overload
+    def on_row_right_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
+    def on_row_right_click(self, handler=None):
+        """Fired when a row is right-clicked.
 
-        Args:
-            bind_id: ID returned by `on_row_right_click()`. If `None`, removes all.
-        """
-        self._internal.off_row_right_click(bind_id)
-
-    def on_row_deleted(
-        self, callback: Callable[["RowsEvent"], None]
-    ) -> str:
-        """Register a callback for `<<RowDelete>>` events.
-
-        Args:
-            callback: Receives `event.data` — a `RowsEvent` payload
-                with `records`.
+        The handler receives a `RowEvent` with `record` and `id`.
 
         Returns:
-            Bind ID — pass to `off_row_deleted()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self._internal.on_row_deleted(callback)
+        return self.on("row_right_click", handler)
 
-    def off_row_deleted(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowDelete>>`.
+    @overload
+    def on_row_insert(self) -> Stream: ...
+    @overload
+    def on_row_insert(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_row_insert(self, handler=None):
+        """Fired after rows are inserted.
 
-        Args:
-            bind_id: ID returned by `on_row_deleted()`. If `None`, removes all.
-        """
-        self._internal.off_row_deleted(bind_id)
-
-    def on_row_inserted(
-        self, callback: Callable[["RowsEvent"], None]
-    ) -> str:
-        """Register a callback for `<<RowInsert>>` events.
-
-        Args:
-            callback: Receives `event.data` — a `RowsEvent` payload
-                with `records`.
+        The handler receives a `RowsEvent` with the inserted `records`.
 
         Returns:
-            Bind ID — pass to `off_row_inserted()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self._internal.on_row_inserted(callback)
+        return self.on("row_insert", handler)
 
-    def off_row_inserted(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<RowInsert>>`.
+    @overload
+    def on_row_update(self) -> Stream: ...
+    @overload
+    def on_row_update(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_row_update(self, handler=None):
+        """Fired after rows are updated.
 
-        Args:
-            bind_id: ID returned by `on_row_inserted()`. If `None`, removes all.
+        The handler receives a `RowsEvent` with the updated `records`.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        self._internal.off_row_inserted(bind_id)
+        return self.on("row_update", handler)
+
+    @overload
+    def on_row_delete(self) -> Stream: ...
+    @overload
+    def on_row_delete(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_row_delete(self, handler=None):
+        """Fired after rows are deleted.
+
+        The handler receives a `RowsEvent` with the deleted `records`.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("row_delete", handler)
+
+    @overload
+    def on_row_move(self) -> Stream: ...
+    @overload
+    def on_row_move(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_row_move(self, handler=None):
+        """Fired after rows are reordered.
+
+        The handler receives a `RowsEvent` with the moved `records`.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("row_move", handler)
+
+    @overload
+    def on_export(self) -> Stream: ...
+    @overload
+    def on_export(self, handler: Callable[[ExportEvent], Any]) -> Subscription: ...
+    def on_export(self, handler=None):
+        """Fired after the data is exported (copied or saved).
+
+        The handler receives an `ExportEvent` with `count`, `target`
+        (`'clipboard'` or `'file'`), `format`, and `path`.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        return self.on("export", handler)
+
+
+_TABLE_EVENTS: dict[str, str] = {
+    "selection_changed": "<<SelectionChange>>",
+    "row_click":         "<<RowClick>>",
+    "row_double_click":  "<<RowDoubleClick>>",
+    "row_right_click":   "<<RowRightClick>>",
+    "row_insert":        "<<RowInsert>>",
+    "row_update":        "<<RowUpdate>>",
+    "row_delete":        "<<RowDelete>>",
+    "row_move":          "<<RowMove>>",
+    "export":            "<<Export>>",
+}
+
+register_widget_events(Table, _TABLE_EVENTS)

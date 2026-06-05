@@ -20,6 +20,7 @@ from bootstack.events._payloads import (
     DataChangeEvent,
     DateSelectEvent,
     DisplayModeEvent,
+    ExportEvent,
     InputEvent,
     NavEvent,
     PageChangeEvent,
@@ -76,6 +77,7 @@ __all__ = [
     "RowEvent",
     "RowsEvent",
     "SelectionEvent",
+    "ExportEvent",
     # Payloads — text area
     "TextModifiedEvent",
     # Payloads — button group

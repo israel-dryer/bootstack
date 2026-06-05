@@ -121,8 +121,8 @@ with App(title="Data Display", minsize=(900, 620), padding=0, gap=0) as app:
 
             lbl_tbl = Label("(click a row)")
 
-            def on_tbl_click(event):
-                rec = event.data.get("record", {})
+            def on_tbl_click(e):
+                rec = e.record
                 lbl_tbl.text = f"Clicked: {rec.get('name', '?')}"
 
             tbl.on_row_click(on_tbl_click)

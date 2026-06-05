@@ -60,6 +60,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Excel (.xlsx) export for Table. Write-only, zero-dependency, pure Python.
+excel = [
+    "XlsxWriter>=3",
+]
 docs = [
     "sphinx>=7.2",
     "sphinx-autodoc-typehints",
