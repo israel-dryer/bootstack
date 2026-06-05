@@ -90,11 +90,11 @@ AnySubscription = Subscription | Handle
 
 
 class Stream(Generic[T]):
-    """A composable push-stream for Tk events.
+    """A composable push-stream for widget events.
 
     Created by `widget.on(event)` (no handler). Chain operators to transform
     or filter events, then call `.listen(handler)` to attach a handler and
-    activate the upstream Tk binding.
+    activate the upstream event binding.
 
     Usage::
 
@@ -109,14 +109,14 @@ class Stream(Generic[T]):
             .listen(on_search)
         )
 
-        sub.cancel()   # detach handler and remove Tk binding
+        sub.cancel()   # detach handler and remove the event binding
 
     All operator methods return a new `Stream` — they do not consume the
     original. `.listen()` is the only terminal; it activates the binding and
     returns a cancellable handle.
 
     Args:
-        owner: Widget used for timer scheduling (after/after_cancel).
+        owner: Widget used for timer scheduling (debounce/throttle delays).
         _source: Internal — callable that, given a downstream handler,
             installs the upstream binding and returns a handle.
     """
@@ -302,11 +302,11 @@ class Stream(Generic[T]):
     # ----- terminal ----------------------------------------------------------
 
     def listen(self, handler: Callable[[T], Any]) -> AnySubscription:
-        """Attach `handler` and activate the upstream Tk binding.
+        """Attach `handler` and activate the upstream event binding.
 
         This is the only terminal operator. Returns a cancellable handle —
         call `.cancel()` to detach the handler and clean up all resources
-        (Tk binding, pending timers) in the operator chain.
+        (event binding, pending timers) in the operator chain.
 
         Args:
             handler: Callable invoked for each event value.
