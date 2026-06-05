@@ -395,7 +395,7 @@ class _MultilineCore(tk.Frame):
     def on_undo(self, callback: Callable) -> str:
         """Register a callback for `<<TextUndo>>` events.
 
-        Fires after an undo completes. `event.data["value"]` is the
+        Fires after an undo completes. `event.data.text` is the
         text content after the undo.
 
         Args:
@@ -417,7 +417,7 @@ class _MultilineCore(tk.Frame):
     def on_redo(self, callback: Callable) -> str:
         """Register a callback for `<<TextRedo>>` events.
 
-        Fires after a redo completes. `event.data["value"]` is the
+        Fires after a redo completes. `event.data.text` is the
         text content after the redo.
 
         Args:

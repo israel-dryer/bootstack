@@ -312,7 +312,7 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the selected item changes.
 
         Args:
-            handler: Receives `event.data = {'key': str}` — newly selected key.
+            handler: Receives a `NavEvent`; ``e.key`` is the newly selected key.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -339,7 +339,7 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the pane is opened or closed.
 
         Args:
-            handler: Receives `event.data = {'is_open': bool}`.
+            handler: Receives a `PaneToggleEvent`; ``e.is_open`` is the new state.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -354,7 +354,7 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the display mode changes.
 
         Args:
-            handler: Receives `event.data = {'mode': str}`.
+            handler: Receives a `DisplayModeEvent`; `e.mode` is the new mode.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).

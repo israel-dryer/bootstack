@@ -433,8 +433,8 @@ class Accordion(PublicWidgetBase):
     def on_change(self, handler: Callable[[AccordionChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any section expands or collapses.
 
-        ``event.data`` contains a list of the currently expanded internal
-        section objects under the key ``'expanded'``.
+        The handler receives an `AccordionChangeEvent`; ``e.expanded`` is the
+        tuple of currently expanded sections.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).

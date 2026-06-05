@@ -168,7 +168,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_click(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_click(self, handler=None):
-        """Fired when an item is clicked. ``event.data`` is the record dict.
+        """Fired when an item is clicked. The handler receives the record dict — read fields with ``e["field"]``.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -192,7 +192,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_delete(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_delete(self, handler=None):
-        """Fired after an item is removed. ``event.data`` is the deleted record.
+        """Fired after an item is removed. The handler receives the deleted record dict.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -204,7 +204,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_insert(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_insert(self, handler=None):
-        """Fired after an item is inserted. ``event.data`` is the new record.
+        """Fired after an item is inserted. The handler receives the new record dict.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -216,7 +216,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_update(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_update(self, handler=None):
-        """Fired after an item is updated. ``event.data`` is the updated record.
+        """Fired after an item is updated. The handler receives the updated record dict.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -228,7 +228,7 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_drag_start(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_drag_start(self, handler=None):
-        """Fired when a drag begins. ``event.data`` includes ``source_index``.
+        """Fired when a drag begins. The handler receives the record dict, including ``source_index``.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).
@@ -240,8 +240,8 @@ class ListView(PublicWidgetBase):
     @overload
     def on_item_drag_end(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
     def on_item_drag_end(self, handler=None):
-        """Fired when a drag ends. ``event.data`` includes ``source_index`` and
-        ``target_index``.
+        """Fired when a drag ends. The handler receives the record dict, including
+        ``source_index`` and ``target_index``.
 
         Returns:
             ``Subscription`` (with handler) or ``Stream`` (without handler).

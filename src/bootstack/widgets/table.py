@@ -182,7 +182,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<SelectionChange>>` events.
 
         Args:
-            callback: Receives `event.data` — a `SelectionEvent` dict
+            callback: Receives `event.data` — a `SelectionEvent` payload
                 with `records` and `iids`.
 
         Returns:
@@ -204,7 +204,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<RowClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `RowEvent` dict
+            callback: Receives `event.data` — a `RowEvent` payload
                 with `record` and `iid`.
 
         Returns:
@@ -226,7 +226,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<RowDoubleClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `RowEvent` dict
+            callback: Receives `event.data` — a `RowEvent` payload
                 with `record` and `iid`.
 
         Returns:
@@ -248,7 +248,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<RowRightClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `RowEvent` dict
+            callback: Receives `event.data` — a `RowEvent` payload
                 with `record` and `iid`.
 
         Returns:
@@ -270,7 +270,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<RowDelete>>` events.
 
         Args:
-            callback: Receives `event.data` — a `RowsEvent` dict
+            callback: Receives `event.data` — a `RowsEvent` payload
                 with `records`.
 
         Returns:
@@ -292,7 +292,7 @@ class Table(PublicWidgetBase):
         """Register a callback for `<<RowInsert>>` events.
 
         Args:
-            callback: Receives `event.data` — a `RowsEvent` dict
+            callback: Receives `event.data` — a `RowsEvent` payload
                 with `records`.
 
         Returns:

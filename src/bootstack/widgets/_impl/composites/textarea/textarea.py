@@ -371,7 +371,7 @@ class TextArea(GridFrame):
     def on_input(self, callback: Callable[[InputEvent], None]) -> str:
         """Register a callback for `<<Input>>` events.
 
-        Fires on every edit. `event.data["value"]` is the current text.
+        Fires on every edit. `event.data.text` is the current text.
 
         Args:
             callback: Receives the Tk event. `event.data` is
@@ -393,7 +393,7 @@ class TextArea(GridFrame):
     def on_changed(self, callback: Callable[[InputEvent], None]) -> str:
         """Register a callback for `<<Changed>>` events.
 
-        Fires when the widget loses focus. `event.data["value"]` is the
+        Fires when the widget loses focus. `event.data.value` is the
         current text.
 
         Args:
@@ -501,7 +501,7 @@ class TextArea(GridFrame):
     def on_modified(self, callback: Callable) -> str:
         """Register a callback for `<<TextModified>>` events.
 
-        Fires when the dirty state changes. `event.data["is_dirty"]` is the
+        Fires when the dirty state changes. `event.data.is_dirty` is the
         new state.
 
         Args:
@@ -523,7 +523,7 @@ class TextArea(GridFrame):
     def on_undo(self, callback: Callable) -> str:
         """Register a callback for `<<TextUndo>>` events.
 
-        Fires after an undo completes. `event.data["value"]` is the text
+        Fires after an undo completes. `event.data.text` is the text
         content after the undo.
 
         Args:
@@ -545,7 +545,7 @@ class TextArea(GridFrame):
     def on_redo(self, callback: Callable) -> str:
         """Register a callback for `<<TextRedo>>` events.
 
-        Fires after a redo completes. `event.data["value"]` is the text
+        Fires after a redo completes. `event.data.text` is the text
         content after the redo.
 
         Args:
