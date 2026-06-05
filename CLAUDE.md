@@ -68,7 +68,13 @@ builder (near-ship). See memory `project_theming_public_api`.
 
 **No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
 strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
-`src/` is still pending; `signals/signal.py` is done.
+`src/` is still pending. DONE so far: `signals/signal.py`, `streams/_stream.py`,
+and the public widget wrappers swept this session (`GroupBox`/`Tree` ttk names,
+`CodeEditor` now defaults `font='code'` not `'TkFixedFont'`). LEFT BY DESIGN:
+`.tk`/`.var` escape-hatch property docstrings, `signals/integration.py` (the Tk
+bridge). FONT-TRACK leaks still flagged: `ask_font`/`FontDialog` `default_font`
+accepts Tk font names + `ask_font` returns `tkinter.font.Font` (NOTE(font-track)
+in `widgets/dialogs.py`).
 
 ### Status
 
@@ -123,6 +129,11 @@ strictly necessary; don't feature escape-hatch interop. A full docstring scrub o
   hint broadened to `list[ContextMenuItem | dict[str, Any]]`.
 - **`AppShell.mainloop`** alias removed from public API.
 - **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
+- **`RangeSliderEvent` / `RangeSliderCommitEvent`** payload attrs renamed to
+  snake_case: `lovalue`/`hivalue`/`prev_lovalue`/`prev_hivalue` →
+  `low_value`/`high_value`/`prev_low_value`/`prev_high_value` (matches the
+  wrapper's `low_value`/`high_value` props). Internal RangeSlider widget still
+  uses `lovalue`/`hivalue` internally — separate cleanup.
 
 ### Event system redesign — DONE (2026-06-05, commits 40a4495d…56d09d59)
 
@@ -139,14 +150,26 @@ deliver to a MAPPED widget — show the window in tests.)
 
 ### Next session — Track 2 + queued refactors (all memory-tracked)
 
+**RECOMMENDED NEXT: the font track (item 1) — it finishes the theming/typography
+reference (typography.rst is the last parked reference page).** Then the
+DataSource rename (item 2). Both are DECIDED; pick one and do a focused pass.
+
 1. **Track 2 — theming public API: DONE** (Phases 1–4, see the "Theming public
    API — DONE" block above + memory `project_theming_public_api`). What REMAINS:
-   - **Font track (Phase 2-fonts)** — promote the internal `Typography`
-     capabilities as free functions (`set_font_family`, `update_font_token`),
-     installed-font fallback via `tkinter.font.families()`, and a Tk-free
-     `FontChoice` to fix the `ask_font`→`tkinter.font.Font` leak (flagged with
-     NOTE(font-track) in `widgets/dialogs.py`). DECIDED: framework font tokens
-     ONLY — no custom user-defined tokens. Then write `typography.rst`.
+   - **Font track (Phase 2-fonts)** — scope (DECIDED: framework font tokens ONLY,
+     no custom user-defined tokens):
+     - Promote internal `Typography` capabilities as free functions:
+       `set_font_family(family)` (whole-app family, keep code mono — FIX the
+       `use_fonts(fallback=True)` bug that forces the fallback family) and
+       `update_font_token(name, **kwargs)` (per-token size/weight).
+     - Installed-font DETECTION via `tkinter.font.families()` → graceful fallback
+       + warning (vs silent default); also feeds a future builder family picker.
+     - Tk-free `FontChoice` (mirror `ColorChoice`) so `ask_font`/`FontDialog.result`
+       stop returning `tkinter.font.Font`; map `default_font=` to font tokens
+       (`body`/`code`/`heading-*`) instead of Tk names. (NOTE(font-track) markers
+       in `widgets/dialogs.py`.)
+     - Hide the Tk leaks: `Typography` lifecycle internals, `Font.tkfont`, etc.
+     - Then write `typography.rst` (font-token reference) to the reference pattern.
    - **Visual theme builder (Phase 5)** — deferred until near-ship; emits
      `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
 2. **DataSource verb rename** (memory `project_datasource_api_naming`, DECIDED):
