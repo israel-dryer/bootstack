@@ -5,12 +5,12 @@ from dataclasses import dataclass
 from typing import Any
 
 # Platform detection for modifier decoding. Tk reports the modifier bitmask in
-# the event ``state`` field using the X11 ButtonState convention, but which bit
+# the event `state` field using the X11 ButtonState convention, but which bit
 # the Alt/Meta keys land on differs per platform (see the Tk bind(n) manual).
 _IS_MAC = sys.platform == "darwin"
 _IS_WIN = sys.platform == "win32"
 
-# X11 ButtonState bit masks (the values Tk reports in ``state``).
+# X11 ButtonState bit masks (the values Tk reports in `state`).
 _SHIFT = 0x0001
 _CONTROL = 0x0004
 _MOD1 = 0x0008  # X11: Alt;       macOS: Command
@@ -20,7 +20,7 @@ _ALT_WIN = 0x20000  # Windows reports the Alt key on this bit
 
 
 def _as_int(value: Any) -> int:
-    """Coerce a Tk substitution value to int, tolerating ``'??'`` and ``''``."""
+    """Coerce a Tk substitution value to int, tolerating `'??'` and `''`."""
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -33,13 +33,13 @@ class Event:
 
     Native events carry no application payload — pointer clicks, hover, focus,
     blur, resize, key presses, and scrolling. For those, the handler bound with
-    ``on_*()`` receives this curated ``Event``: where the pointer was, the size
+    `on_*()` receives this curated `Event`: where the pointer was, the size
     of the widget, which modifier keys were held, and (for keyboard events) which
-    key. Events that *do* carry data — ``change``, ``input``, ``select`` — hand
+    key. Events that *do* carry data — `change`, `input`, `select` — hand
     the handler a typed payload object instead (see the rest of this module).
 
     The fields are deliberately modern: modifier keys are plain booleans
-    (``ctrl``, ``shift``, ``alt``, ``meta``) and the key is a clean ``key``
+    (`ctrl`, `shift`, `alt`, `meta`) and the key is a clean `key`
     string, with none of the low-level bitmask or serial-number plumbing of the
     underlying toolkit.
     """
@@ -81,7 +81,7 @@ class Event:
     """Whether the Meta key was held (Command on macOS, Super on Linux)."""
 
     key: str = ""
-    """Symbolic name of the key, for keyboard events (e.g. ``"Return"``).
+    """Symbolic name of the key, for keyboard events (e.g. `"Return"`).
     Empty for non-keyboard events."""
 
     char: str = ""
@@ -93,10 +93,10 @@ class Event:
 
     @classmethod
     def _from_tk(cls, e: Any) -> "Event":
-        """Build a curated ``Event`` from a raw toolkit event object.
+        """Build a curated `Event` from a raw toolkit event object.
 
         Decodes the modifier bitmask into booleans (platform-aware) and cleans
-        up the key/char fields. Internal — called by the public ``on_*`` layer.
+        up the key/char fields. Internal — called by the public `on_*` layer.
         """
         state = _as_int(getattr(e, "state", 0))
         if _IS_MAC:

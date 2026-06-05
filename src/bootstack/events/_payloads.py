@@ -1,7 +1,7 @@
 """Typed event payloads — the catalog of every data-carrying framework event.
 
 When a widget event carries application data (a new value, the typed text, a
-validation result, a selected row), the handler bound with ``on_*()`` receives
+validation result, a selected row), the handler bound with `on_*()` receives
 one of the frozen dataclasses defined here, *unpacked* — the handler argument
 IS the payload::
 
@@ -9,9 +9,9 @@ IS the payload::
     field.on_input(lambda e: print(e.text))
 
 Events that carry no payload (click, hover, focus, resize, key, scroll) instead
-hand the handler a curated :class:`~bootstack.events.Event`.
+hand the handler a curated `Event`.
 
-Every payload is ``@dataclass(frozen=True, slots=True)`` so attributes are
+Every payload is `@dataclass(frozen=True, slots=True)` so attributes are
 discoverable by editors and immutable in handlers.
 """
 
@@ -31,7 +31,7 @@ class InputEvent:
     """Fires on every keystroke, before the value is committed.
 
     Use it for live feedback — character counts, as-you-type filtering. To react
-    only once editing settles, use ``on_change`` instead.
+    only once editing settles, use `on_change` instead.
     """
 
     text: str = ""
@@ -54,7 +54,7 @@ class ChangeEvent:
 
 @dataclass(frozen=True, slots=True)
 class ValidationEvent:
-    """Fires after validation runs — ``valid``, ``invalid``, and ``validate``."""
+    """Fires after validation runs — `valid`, `invalid`, and `validate`."""
 
     value: Any = None
     """The value that was validated."""
@@ -131,7 +131,7 @@ class DateSelectEvent:
     """The selected date."""
 
     range: "tuple[_date, _date] | None" = None
-    """The selected ``(start, end)`` range, or ``None`` in single-date mode."""
+    """The selected `(start, end)` range, or `None` in single-date mode."""
 
 
 # ---------------------------------------------------------------------------
@@ -168,13 +168,13 @@ class PageChangeEvent:
     """The key of the page now active."""
 
     prev_page: str | None = None
-    """The key of the previously active page, or ``None``."""
+    """The key of the previously active page, or `None`."""
 
     nav: Any = None
     """Navigation direction/context for this transition, if any."""
 
     data: dict[str, Any] = field(default_factory=dict)
-    """Arbitrary data passed to ``navigate(key, data=...)``."""
+    """Arbitrary data passed to `navigate(key, data=...)`."""
 
     prev_data: Any = None
     """The data the previous page was navigated with."""
@@ -243,7 +243,7 @@ class TabChangeEvent:
     """The tab now active."""
 
     previous: TabRef | None = None
-    """The tab that was active before, or ``None``."""
+    """The tab that was active before, or `None`."""
 
     reason: ChangeReason = "unknown"
     """Why the change happened."""

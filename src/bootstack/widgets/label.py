@@ -6,7 +6,7 @@ from bootstack.widgets._impl.primitives.label import Label as _InternalLabel
 from bootstack.widgets._impl.primitives.badge import Badge as _InternalBadge
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     AccentToken, VariantToken, SurfaceToken,
@@ -150,22 +150,21 @@ class Label(PublicWidgetBase):
     @overload
     def on_click(self) -> Stream: ...
     @overload
-    def on_click(self, handler: Callable[[], Any]) -> Subscription: ...
-    def on_click(self, handler: Callable[[], Any] | None = None) -> Stream | Subscription:
+    def on_click(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_click(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback for click events on this label.
 
-        Called with no handler, returns a composable ``Stream``. Called with
-        a handler, binds it immediately and returns a ``Subscription``.
+        Called with no handler, returns a composable `Stream`. Called with
+        a handler, binds it immediately and returns a `Subscription`. The
+        handler receives the curated `Event` (pointer position, modifier keys).
 
         Args:
-            handler: Called with no arguments when the label is clicked.
+            handler: Called with the click `Event` when the label is clicked.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        if handler is None:
-            return self.on("click")
-        return self.on("click", lambda e: handler())
+        return self.on("click", handler)
 
 
 register_widget_events(Label, {})
