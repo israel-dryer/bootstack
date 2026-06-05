@@ -62,7 +62,6 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "sphinx>=7.2",
-    "shibuya",
     "sphinx-autodoc-typehints",
     "sphinx-design",
     "sphinx-autobuild",
