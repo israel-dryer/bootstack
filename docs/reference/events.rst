@@ -186,11 +186,3 @@ The typed payloads handed to data-carrying handlers. Import them from
    :members:
 .. autoclass:: bootstack.events.ValidationEvent
    :members:
-
-Full Example
-------------
-
-.. literalinclude:: ../examples/events.py
-   :language: python
-   :linenos:
-   :start-after: import bootstack as bs

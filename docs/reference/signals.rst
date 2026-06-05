@@ -131,11 +131,3 @@ API reference
    :undoc-members:
    :special-members: __call__
    :exclude-members: tk, var, name, get, from_variable
-
-Full Example
-------------
-
-.. literalinclude:: ../examples/signals.py
-   :language: python
-   :linenos:
-   :start-after: import bootstack as bs

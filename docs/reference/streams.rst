@@ -105,11 +105,3 @@ API reference
    :members:
    :undoc-members:
    :exclude-members: __init__
-
-Full Example
-------------
-
-.. literalinclude:: ../examples/streams.py
-   :language: python
-   :linenos:
-   :start-after: import bootstack as bs
