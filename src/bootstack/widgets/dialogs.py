@@ -9,7 +9,7 @@ from bootstack.dialogs.query import QueryBox as _QueryBox
 from bootstack.dialogs.formdialog import FormDialog as _InternalFormDialog
 from bootstack.dialogs.datedialog import DateDialog as _DateDialog
 from bootstack.dialogs.colorchooser import ColorChooserDialog as _InternalColorChooserDialog, ColorChoice
-from bootstack.dialogs.fontdialog import FontDialog as _InternalFontDialog
+from bootstack.dialogs.fontdialog import FontDialog as _InternalFontDialog, FontChoice
 from bootstack.dialogs.filterdialog import FilterDialog as _InternalFilterDialog
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
@@ -584,9 +584,8 @@ class FontDialog:
 
     Args:
         title: Dialog window title. Defaults to the localized "Font" string.
-        default_font: Name of the initial font. Defaults to ``'TkDefaultFont'``.
-            Other built-in names: ``'TkFixedFont'``, ``'TkTextFont'``,
-            ``'TkHeadingFont'``.
+        default_font: Font token to show initially (e.g. ``'body'``, ``'code'``,
+            ``'heading-lg'``). Defaults to ``'body'``.
         parent: Parent widget. Defaults to the active root window.
     """
 
@@ -594,7 +593,7 @@ class FontDialog:
         self,
         *,
         title: str = "",
-        default_font: str = "TkDefaultFont",
+        default_font: str = "body",
         parent: Any = None,
     ) -> None:
         self._internal = _InternalFontDialog(
@@ -624,11 +623,18 @@ class FontDialog:
         return self
 
     @property
-    def result(self) -> Any:
-        """The selected font object, or ``None`` if canceled."""
-        # NOTE(font-track): this currently returns a raw `tkinter.font.Font` —
-        # a Tk leak. Replace with a Tk-free `FontChoice` (mirroring `ColorChoice`)
-        # when the public font API lands. See memory project_theming_public_api.
+    def result(self) -> FontChoice | None:
+        """The selected font, or ``None`` if canceled.
+
+        Returns a `FontChoice` namedtuple with six attributes:
+
+        - ``family`` — font family name (str).
+        - ``size`` — point size (int).
+        - ``weight`` — ``'normal'`` or ``'bold'``.
+        - ``slant`` — ``'roman'`` or ``'italic'``.
+        - ``underline`` — ``True`` if underlined.
+        - ``overstrike`` — ``True`` if struck through.
+        """
         return self._internal.result
 
 
@@ -735,23 +741,21 @@ def ask_color(
 def ask_font(
     *,
     title: str = "",
-    default_font: str = "TkDefaultFont",
+    default_font: str = "body",
     parent: Any = None,
-) -> Any:
+) -> FontChoice | None:
     """Show a font selector dialog.
 
     Args:
         title: Dialog window title.
-        default_font: Name of the initial font. Defaults to ``'TkDefaultFont'``.
-            Other built-in names: ``'TkFixedFont'``, ``'TkTextFont'``,
-            ``'TkHeadingFont'``.
+        default_font: Font token to show initially (e.g. ``'body'``, ``'code'``,
+            ``'heading-lg'``). Defaults to ``'body'``.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        The selected font object, or ``None`` if canceled.
+        A `FontChoice` with ``family``, ``size``, ``weight``, ``slant``,
+        ``underline``, and ``overstrike`` attributes, or ``None`` if canceled.
     """
-    # NOTE(font-track): returns a raw `tkinter.font.Font` (Tk leak) via
-    # `FontDialog.result` — to be replaced by a Tk-free `FontChoice`.
     dlg = FontDialog(title=title, default_font=default_font, parent=parent)
     dlg.show()
     return dlg.result

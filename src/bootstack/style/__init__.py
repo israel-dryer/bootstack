@@ -17,6 +17,11 @@ from bootstack.style.style import (
     toggle_theme,
 )
 from bootstack.style.theme import Theme
+from bootstack.style.fonts import (
+    get_font_families,
+    set_font_family,
+    update_font_token,
+)
 
 __all__ = [
     "Theme",
@@ -28,4 +33,7 @@ __all__ = [
     "get_themes",
     "set_theme",
     "toggle_theme",
+    "get_font_families",
+    "set_font_family",
+    "update_font_token",
 ]

@@ -53,7 +53,8 @@ _EXPORTS: dict[str, str] = {
     "ask_date_range": "dialogs", "ask_item": "dialogs", "ask_color": "dialogs",
     "ask_font": "dialogs", "ask_filter": "dialogs", "FormDialog": "dialogs",
     "Dialog": "dialogs", "DialogButton": "dialogs", "ColorChooserDialog": "dialogs",
-    "ColorChoice": "dialogs", "FontDialog": "dialogs", "FilterDialog": "dialogs",
+    "ColorChoice": "dialogs", "FontDialog": "dialogs", "FontChoice": "dialogs",
+    "FilterDialog": "dialogs",
 }
 
 __all__ = sorted(_EXPORTS)

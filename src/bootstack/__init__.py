@@ -29,6 +29,7 @@ from bootstack.style import (
     Theme,
     get_style, get_theme,
     set_theme, toggle_theme, get_theme_color, get_themes,
+    get_font_families, set_font_family, update_font_token,
 )
 
 # ── Signals ───────────────────────────────────────────────────────────────────
@@ -75,7 +76,7 @@ from bootstack.widgets.dialogs import (
     ask_color, ask_font, ask_filter,
     FormDialog, Dialog, DialogButton,
     ColorChooserDialog, ColorChoice,
-    FontDialog,
+    FontDialog, FontChoice,
     FilterDialog,
 )
 from bootstack.widgets.app import App
@@ -140,6 +141,7 @@ __all__ = [
     "Theme",
     "get_style", "get_theme", "set_theme", "toggle_theme",
     "get_theme_color", "get_themes",
+    "get_font_families", "set_font_family", "update_font_token",
     # Signals
     "Signal", "TraceOperation",
     # Data sources
@@ -165,7 +167,7 @@ __all__ = [
     "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
     "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog", "ColorChoice",
-    "FontDialog", "FilterDialog",
+    "FontDialog", "FontChoice", "FilterDialog",
     # Application & windows
     "App", "AppShell", "Window",
     # Layout

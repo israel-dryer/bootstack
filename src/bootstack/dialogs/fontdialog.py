@@ -1,6 +1,7 @@
 ﻿"""FontDialog implementation for selecting and previewing fonts."""
 
 import tkinter
+from collections import namedtuple
 from tkinter import Text, Variable, font
 from types import SimpleNamespace
 from typing import Any, Optional
@@ -38,23 +39,26 @@ ttk = SimpleNamespace(
 )
 
 
+FontChoice = namedtuple('FontChoice', 'family size weight slant underline overstrike')
+
+
 class FontDialog:
     """A dialog for selecting and previewing fonts.
 
     This dialog provides a comprehensive interface for selecting fonts,
     including family, size, weight, slant, and effects (underline, overstrike).
-    The selected font is returned as a `tkinter.font.Font` object when OK is
-    pressed, or None if canceled.
+    The selection is returned as a `FontChoice` when OK is pressed, or None if
+    canceled.
 
     Attributes:
-        result (font.Font | None): The selected font, or None if canceled.
+        result (FontChoice | None): The selected font, or None if canceled.
     """
 
     def __init__(
             self,
             title: str = "font.selector",  # Use semantic key as default
             master: Optional[tkinter.Misc] = None,
-            default_font: str = "TkDefaultFont"
+            default_font: str = "body"
     ):
         """Create a font selection dialog.
 
@@ -62,13 +66,12 @@ class FontDialog:
             title: The dialog window title. Will be localized automatically.
                 Defaults to semantic key 'font.selector'.
             master: Parent widget. The dialog will be modal and centered on this widget.
-            default_font: Name of the initial font to display. Can be any valid tkinter
-                font name (e.g., 'TkDefaultFont', 'TkFixedFont', 'TkTextFont',
-                'TkHeadingFont', etc.) or a custom font name.
+            default_font: Font token to show initially (e.g. 'body', 'code',
+                'heading-lg'). Defaults to 'body'.
         """
         # Title is now automatically localized by BaseWindow._setup_window
         self._style = ttk.use_style()
-        self._default = font.nametofont(default_font)
+        self._default = self._resolve_initial_font(default_font)
         self._actual = self._default.actual()
         self._size = ttk.Variable(value=self._actual["size"])
         self._family = ttk.Variable(value=self._actual["family"])
@@ -106,10 +109,24 @@ class FontDialog:
                     role="primary",
                     default=True,
                     command=lambda dlg: self._on_submit(),
-                    result=self._preview_font,
                 ),
             ],
         )
+
+    @staticmethod
+    def _resolve_initial_font(token: str) -> font.Font:
+        """Resolve a font token (or named Tk font) to a live font for the preview.
+
+        Font tokens are registered as named Tk fonts at startup, so they resolve
+        directly. Falls back to the `body` token, then `TkDefaultFont`, if the
+        name is unknown.
+        """
+        for candidate in (token, "body", "TkDefaultFont"):
+            try:
+                return font.nametofont(candidate)
+            except tkinter.TclError:
+                continue
+        return font.Font()
 
     def _create_content(self, master: tkinter.Widget) -> None:
         """Create the dialog body with font selection controls."""
@@ -301,8 +318,15 @@ class FontDialog:
         self._update_font_preview()
 
     def _on_submit(self) -> None:
-        """Handle OK button - update result with current font."""
-        self._dialog.result = self._preview_font
+        """Handle OK button - capture the selection as a Tk-free FontChoice."""
+        self._dialog.result = FontChoice(
+            family=self._family.get(),
+            size=int(self._size.get()),
+            weight=self._weight.get(),
+            slant=self._slant.get(),
+            underline=bool(int(self._underline.get())),
+            overstrike=bool(int(self._overstrike.get())),
+        )
 
     def _update_font_preview(self, *_: Any) -> None:
         """Update the preview font based on current selections."""
@@ -334,6 +358,6 @@ class FontDialog:
         self._dialog.show(**kwargs)
 
     @property
-    def result(self) -> Optional[font.Font]:
-        """The selected font, or None if canceled."""
+    def result(self) -> Optional[FontChoice]:
+        """The selected font as a `FontChoice`, or None if canceled."""
         return self._dialog.result

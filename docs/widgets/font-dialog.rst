@@ -18,34 +18,40 @@ Usage
 Convenience function
 ~~~~~~~~~~~~~~~~~~~~
 
-``bs.ask_font()`` is the one-liner shorthand. Pass ``default_font=`` to
-pre-select a starting font by name:
+``bs.ask_font()`` is the one-liner shorthand. Pass ``default_font=`` a font
+token to pre-select the starting font:
 
 .. code-block:: python
 
-   font = bs.ask_font(title="Body Font")
-   if font:
-       print(font.actual()["family"])   # e.g. 'Segoe UI'
-       print(font.actual()["size"])     # e.g. 11
+   choice = bs.ask_font(title="Body Font")
+   if choice:
+       print(choice.family)   # e.g. 'Segoe UI'
+       print(choice.size)     # e.g. 11
 
-Built-in font names accepted by ``default_font=``:
+The return value is a ``FontChoice`` with six attributes:
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 70
+   :widths: 20 80
 
-   * - Name
+   * - Attribute
      - Description
-   * - ``'TkDefaultFont'``
-     - System UI font (default).
-   * - ``'TkTextFont'``
-     - Font used in text editors.
-   * - ``'TkFixedFont'``
-     - Monospace font.
-   * - ``'TkHeadingFont'``
-     - Font used in list/tree column headings.
+   * - ``family``
+     - Font family name, e.g. ``'Segoe UI'``.
+   * - ``size``
+     - Point size (int).
+   * - ``weight``
+     - ``'normal'`` or ``'bold'``.
+   * - ``slant``
+     - ``'roman'`` or ``'italic'``.
+   * - ``underline``
+     - ``True`` if underlined.
+   * - ``overstrike``
+     - ``True`` if struck through.
 
-``None`` is returned if the user cancels.
+``default_font=`` accepts any font token (``'body'``, ``'code'``,
+``'heading-lg'``, …); it defaults to ``'body'``. See :doc:`/reference/typography`
+for the full token list. ``None`` is returned if the user cancels.
 
 Reusable dialog object
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -54,26 +60,24 @@ Use ``bs.FontDialog`` when you need to inspect the result after ``show()``:
 
 .. code-block:: python
 
-   dlg = bs.FontDialog(title="Code Font", default_font="TkFixedFont")
+   dlg = bs.FontDialog(title="Code Font", default_font="code")
    dlg.show()
 
    if dlg.result:
-       family = dlg.result.actual()["family"]
-       size   = dlg.result.actual()["size"]
+       family = dlg.result.family
+       size   = dlg.result.size
 
-Using the returned font
-~~~~~~~~~~~~~~~~~~~~~~~
+Using the result
+~~~~~~~~~~~~~~~~
 
-The returned object supports standard font introspection and can be passed
-directly to widgets that accept a font:
+``FontChoice`` is a plain namedtuple, so its fields read directly:
 
 .. code-block:: python
 
-   font = bs.ask_font()
-   if font:
-       info = font.actual()
-       print(f"{info['family']} {info['size']}pt "
-             f"{info['weight']} {info['slant']}")
+   choice = bs.ask_font()
+   if choice:
+       print(f"{choice.family} {choice.size}pt "
+             f"{choice.weight} {choice.slant}")
 
 See also
 --------

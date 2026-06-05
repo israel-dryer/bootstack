@@ -1,21 +1,21 @@
 import bootstack as bs
 
 def show_font():
-    font = bs.ask_font(title="Select Font")
-    if font:
-        print(f"Selected: {font.actual()}")
+    choice = bs.ask_font(title="Select Font")
+    if choice:
+        print(f"Selected: {choice.family} {choice.size}pt {choice.weight}")
 
-def show_fixed():
-    dlg = bs.FontDialog(title="Code Font", default_font="TkFixedFont")
+def show_code():
+    dlg = bs.FontDialog(title="Code Font", default_font="code")
     dlg.show()
     if dlg.result:
-        print(f"font={dlg.result.actual()}")
+        print(f"font={dlg.result.family} {dlg.result.size}pt {dlg.result.weight}")
 
 with bs.App(title="Font Dialog", size=(1000, 800), padding=20, gap=16) as app:
 
     bs.Label("Font Dialog", font="heading-sm")
     with bs.HStack(gap=8):
         bs.Button("ask_font()",  on_click=show_font)
-        bs.Button("FontDialog()", on_click=show_fixed)
+        bs.Button("FontDialog()", on_click=show_code)
 
 app.run()
