@@ -26,9 +26,9 @@ _install_focus()
 
 # ── Style & theming ───────────────────────────────────────────────────────────
 from bootstack.style import (
-    Font, Style, Typography,
+    Theme,
     get_style, get_theme,
-    set_theme, toggle_theme, get_theme_color, get_themes, register_user_theme,
+    set_theme, toggle_theme, get_theme_color, get_themes,
 )
 
 # ── Signals ───────────────────────────────────────────────────────────────────
@@ -137,9 +137,9 @@ from bootstack.widgets.sidenav import (
 __all__ = [
     "__version__",
     # Style & theming
-    "Font", "Style", "Typography",
+    "Theme",
     "get_style", "get_theme", "set_theme", "toggle_theme",
-    "get_theme_color", "get_themes", "register_user_theme",
+    "get_theme_color", "get_themes",
     # Signals
     "Signal", "TraceOperation",
     # Data sources

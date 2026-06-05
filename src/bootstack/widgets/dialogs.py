@@ -626,6 +626,9 @@ class FontDialog:
     @property
     def result(self) -> Any:
         """The selected font object, or ``None`` if canceled."""
+        # NOTE(font-track): this currently returns a raw `tkinter.font.Font` —
+        # a Tk leak. Replace with a Tk-free `FontChoice` (mirroring `ColorChoice`)
+        # when the public font API lands. See memory project_theming_public_api.
         return self._internal.result
 
 
@@ -747,6 +750,8 @@ def ask_font(
     Returns:
         The selected font object, or ``None`` if canceled.
     """
+    # NOTE(font-track): returns a raw `tkinter.font.Font` (Tk leak) via
+    # `FontDialog.result` — to be replaced by a Tk-free `FontChoice`.
     dlg = FontDialog(title=title, default_font=default_font, parent=parent)
     dlg.show()
     return dlg.result

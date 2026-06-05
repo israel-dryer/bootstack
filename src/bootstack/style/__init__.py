@@ -1,6 +1,12 @@
-"""Style engine, theming, and typography for bootstack."""
+"""Style engine, theming, and typography for bootstack.
+
+`Style`, `Typography`, and `Font` are internal engine classes — import them from
+their modules (`bootstack.style.style`, `bootstack.style.typography`) if you need
+them. They are deliberately not part of the public API: `Style` subclasses
+`ttk.Style` (a Tkinter leak), and `Typography`/`Font` are internal registries
+slated to be replaced by a public font-token API.
+"""
 from bootstack.style.style import (
-    Style,
     get_style,
     get_style_builder,
     get_theme,
@@ -10,20 +16,16 @@ from bootstack.style.style import (
     set_theme,
     toggle_theme,
 )
-from bootstack.style.theme_provider import register_user_theme
-from bootstack.style.typography import Font, Typography
+from bootstack.style.theme import Theme
 
 __all__ = [
-    "Font",
-    "Style",
-    "Typography",
+    "Theme",
     "get_style",
     "get_style_builder",
     "get_theme",
     "get_theme_color",
     "get_theme_provider",
     "get_themes",
-    "register_user_theme",
     "set_theme",
     "toggle_theme",
 ]

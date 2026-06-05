@@ -80,7 +80,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "bootstack" = [
-    "themes/*.json",
     "assets/*",
     "assets/icons/*",
     # ship compiled gettext catalogs within the package

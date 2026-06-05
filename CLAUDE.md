@@ -51,9 +51,20 @@ Autoclass at the **PUBLIC home path** (`bootstack.signals.Signal`, NOT
 **Exemplars: `docs/reference/signals.rst`, `docs/reference/events.rst`.**
 
 DONE to this pattern (2026-06-05): signals, events, streams, scheduling,
-shortcuts, validation, data-sources; errors already fine. **PARKED: theming,
-typography** (blocked on the Track-2 public-API design below). Docs build is
+shortcuts, validation, data-sources, **theming**; errors already fine. **PARKED:
+typography** (blocked on the font track — see Track 2). Docs build is
 warning-free (0).
+
+**Theming public API — DONE (2026-06-05, this branch, Phases 1–4).** New public
+`bs.Theme` (`style/theme.py`): keyword ctor, `base=` inheritance, `from_dict`/
+`to_dict`, `install(activate=)`. All 14 built-ins converted JSON → Python
+`Theme` instances in `style/themes/` (auto-installed; deleted `assets/themes/`
+JSON + `importlib` loading = the PyInstaller fix). Removed `register_user_theme`
++ CLI `add theme` + the whole `list` command. Demoted `Style`/`Typography`/`Font`
+from the public API (still importable from their modules). `theming.rst`
+rewritten; `ask_font`→`tkinter.font.Font` leak flagged for the font track.
+Deferred: font track (Phase 2-fonts) + `typography.rst`, and the visual theme
+builder (near-ship). See memory `project_theming_public_api`.
 
 **No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
 strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
@@ -128,20 +139,16 @@ deliver to a MAPPED widget — show the window in tests.)
 
 ### Next session — Track 2 + queued refactors (all memory-tracked)
 
-1. **Track 2 — theming public API + theming/typography docs** (memory
-   `project_theming_public_api`). The docs are BLOCKED on API design:
-   - (a) ergonomic **custom-theme** path — currently `register_user_theme(name,
-     path)` is file-only with an empty docstring and a "v2 theme schema" naming
-     leak in `style/theme_provider.py`. Add an in-code spec option + document the
-     schema; drop "v2".
-   - (b) a NEW public **custom-font / token** abstraction — none exists today.
-   - Then **demote `Style`/`Typography`/`Font`** from `__all__` + docs (all
-     internal: `Style` subclasses `ttk.Style` = leak; `Typography` is the internal
-     registry redundant with the typography page; `Font` is NOT the `ask_font`
-     return — that returns `tkinter.font.Font`, itself a leak to flag). Write
-     `theming.rst` (theme control + custom-theming guide); keep `typography.rst`
-     as the font-token reference. **User has a shape in mind for declaring a
-     custom theme/font — ASK at the start.**
+1. **Track 2 — theming public API: DONE** (Phases 1–4, see the "Theming public
+   API — DONE" block above + memory `project_theming_public_api`). What REMAINS:
+   - **Font track (Phase 2-fonts)** — promote the internal `Typography`
+     capabilities as free functions (`set_font_family`, `update_font_token`),
+     installed-font fallback via `tkinter.font.families()`, and a Tk-free
+     `FontChoice` to fix the `ask_font`→`tkinter.font.Font` leak (flagged with
+     NOTE(font-track) in `widgets/dialogs.py`). DECIDED: framework font tokens
+     ONLY — no custom user-defined tokens. Then write `typography.rst`.
+   - **Visual theme builder (Phase 5)** — deferred until near-ship; emits
+     `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
 2. **DataSource verb rename** (memory `project_datasource_api_naming`, DECIDED):
    `set_data→load`, `get_page→page`, `*_record→insert/get/update/delete/move`,
    `total_count→count` (property), `export_to_csv→export_csv`,
@@ -309,7 +316,9 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 ### Widgets and API
 - **`disabled` on Label** — not appropriate. Label is display-only.
 - **`color=` / `background_color=`** — removed. Use `accent=` / `surface=`.
-- **`bs.App` does not accept `theme=`** — use `settings={"theme": "..."}`.
+- **`bs.App` accepts `theme=`** directly (overrides the `"theme"` key in
+  `settings` if both given). `light_theme=`/`dark_theme=` are NOT direct params —
+  set those via `settings={"light_theme": ..., "dark_theme": ...}`.
 - **`bs.Signal()` crashes at module level** — must be inside `with bs.App():`.
 - **`textsignal=`** — standard kwarg for text-bearing widgets. `signal=` for non-text
   (Slider, Checkbox, etc.). Never expose `textvariable=` / `variable=` publicly.
@@ -443,11 +452,12 @@ bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x")
 src/bootstack/
 ├── _core/       infrastructure (capabilities, colorutils, mixins, publisher, images)
 ├── _runtime/    Tk patches (app, toplevel, menu, shortcuts, events)
-├── assets/      themes, locales, icons
+├── assets/      locales, icons (themes are now Python, see style/themes/)
 ├── data/        DataSource (Base, Memory, Sqlite, File)
 ├── dialogs/     dialog implementations
 ├── signals/     Signal, TraceOperation
-├── style/       Style, Theme, Typography, builders
+├── style/       Theme (public), themes/ (built-in Theme instances),
+│                Style/Typography/Font (internal engine), builders
 ├── validation/  ValidationRule, ValidationResult
 └── widgets/
     ├── _core/   public framework internals (base, container, context, events)
@@ -499,6 +509,27 @@ bs.ask_font()                  # → Font | None
 
 **Docstrings:** one-line summary + description + `Args:` (name: description, no types).
 Single backtick `` `X` `` — never double. No RST roles. Valid values + defaults per kwarg.
+
+**Dataclasses — document fields with ATTRIBUTE DOCSTRINGS, never `Args:`.** Put a
+one-line class summary (+ optional prose), then a short docstring string literal
+*directly under each field*. Do NOT also list the fields in an `Args:` block —
+that renders them twice (a synthesized "Parameters" block + the attribute list).
+autodoc `:members:` then renders each field once with its type + description.
+(Functions/methods keep using `Args:`.) The conf setting
+`autodoc_typehints_description_target = "documented"` suppresses the redundant
+synthesized Parameters block for dataclasses. Exemplars: `bootstack.events`
+payloads, `bootstack.style.theme.Theme`.
+
+```python
+@dataclass
+class ChangeEvent:
+    """Fires when a field's value is committed (on blur or Enter)."""
+
+    value: Any = None
+    """The committed, parsed value."""
+    prev_value: Any = None
+    """The value before this change."""
+```
 
 **`on_*()` shorthands:**
 ```python

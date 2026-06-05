@@ -33,6 +33,11 @@ extensions = [
 autodoc_member_order        = "bysource"
 autodoc_typehints           = "description"
 autodoc_typehints_format    = "short"
+# Only emit parameter type hints for params that have an explicit docstring
+# entry. Dataclasses documented with attribute docstrings then render each field
+# once (in the members list), instead of also getting a redundant, description-
+# less "Parameters" block synthesized from the generated __init__ signature.
+autodoc_typehints_description_target = "documented"
 autodoc_default_options     = {
     "members":          True,
     "undoc-members":    False,
