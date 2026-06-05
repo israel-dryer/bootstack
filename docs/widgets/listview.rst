@@ -61,13 +61,15 @@ For database or API-backed data, pass a ``DataSourceProtocol`` implementation:
    ds = bs.MemoryDataSource().load(records)
    bs.ListView(data_source=ds)
 
-Reload after external changes with ``reload()``:
+Mutate the source directly — even from a background thread — and the list
+refreshes itself, no manual reload needed:
 
 .. code-block:: python
 
    lv = bs.ListView(data_source=ds)
-   ds.insert({"title": "New item"})
-   lv.reload()
+   ds.insert({"title": "New item"})   # the list updates on its own
+
+See :ref:`observing-changes` for the data source's change broadcasting.
 
 Mutate records at runtime with the CRUD methods:
 
