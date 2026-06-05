@@ -3,10 +3,10 @@ Scheduling
 
 Deferred and repeating task scheduling tied to the widget lifecycle.
 
-.. autoclass:: bootstack.widgets._core.schedule.Schedule
+.. autoclass:: bootstack.scheduling.Schedule
    :members:
    :undoc-members:
 
-.. autoclass:: bootstack.widgets._core.schedule.Job
+.. autoclass:: bootstack.scheduling.Job
    :members:
    :undoc-members:

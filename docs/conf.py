@@ -69,6 +69,24 @@ intersphinx_mapping = {
 }
 
 # ---------------------------------------------------------------------------
+# Nitpicky cross-reference suppression
+# ---------------------------------------------------------------------------
+# `-n` flags every unresolved xref. Suppress targets that are intentionally
+# outside the cross-referenced public API so the nitpicky build stays focused
+# on real broken links: stdlib typing constructs, the deliberately-hidden
+# Tkinter layer, private framework internals (``_core``/``_impl`` and any
+# leading-underscore name), and bare ``TypeVar``s used in generics.
+nitpick_ignore_regex = [
+    (r"py:.*", r"typing\..*"),
+    (r"py:.*", r"tkinter\..*"),
+    (r"py:.*", r"tk\..*"),
+    (r"py:.*", r".*\._core\..*"),
+    (r"py:.*", r".*\._impl\..*"),
+    (r"py:.*", r"(?:.*\.)?_[A-Za-z]\w*$"),  # private leading-underscore names
+    (r"py:.*", r".*\.T$"),                   # bare TypeVars (generic Signal/Stream)
+]
+
+# ---------------------------------------------------------------------------
 # HTML / Shibuya theme
 # ---------------------------------------------------------------------------
 

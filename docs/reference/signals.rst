@@ -70,9 +70,9 @@ consistent.
    ``textsignal=`` is for widgets that carry text (:class:`TextField
    <bootstack.widgets.textfield.TextField>`, :class:`TextArea
    <bootstack.widgets.textarea.TextArea>`). ``signal=`` is for boolean and
-   numeric widgets (:class:`Checkbox <bootstack.widgets.checkbox.Checkbox>`,
+   numeric widgets (:class:`Checkbox <bootstack.widgets.boolean_controls.Checkbox>`,
    :class:`Slider <bootstack.widgets.slider.Slider>`,
-   :class:`Switch <bootstack.widgets.switch.Switch>`).
+   :class:`Switch <bootstack.widgets.boolean_controls.Switch>`).
 
 Reacting to changes
 -------------------

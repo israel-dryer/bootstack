@@ -11,7 +11,9 @@ events, validation, data sources, and app-level utilities.
    typography
    signals
    events
+   streams
    validation
    data-sources
    shortcuts
    scheduling
+   errors
