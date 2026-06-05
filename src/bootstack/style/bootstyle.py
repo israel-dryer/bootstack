@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack._runtime.app import get_app_settings
+from bootstack._runtime.app import get_app_settings, has_current_app
 from bootstack._core.exceptions import BootstyleParsingError
 from bootstack.style.token_maps import (COLOR_TOKENS, CONTAINER_CLASSES, ORIENT_CLASSES, WIDGET_CLASS_MAP)
 
@@ -343,7 +343,10 @@ class Bootstyle:
             # ===== Surface color inheritance =====
 
             if inherit_surface is None:
-                inherit_surface = get_app_settings().inherit_surface_color
+                inherit_surface = (
+                    get_app_settings().inherit_surface_color
+                    if has_current_app() else True
+                )
 
             if hasattr(self, 'master') and self.master is not None:
                 parent_surface_token = getattr(self.master, '_surface', 'content')
@@ -468,9 +471,17 @@ class Bootstyle:
                     auto_style = False
 
             inherit_surface = kwargs.pop('inherit_surface', None)
+            surface_token = kwargs.pop('surface', None)
+
+            # Outside an active App there is no theme/settings context — build
+            # the widget as plain Tk (no autostyle) instead of raising.
+            if not has_current_app():
+                func(self, *args, **kwargs)
+                setattr(self, '_surface', surface_token or 'content')
+                return
+
             if inherit_surface is None:
                 inherit_surface = get_app_settings().inherit_surface_color
-            surface_token = kwargs.pop('surface', None)
 
             func(self, *args, **kwargs)  # the actual constructor
 
