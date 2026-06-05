@@ -80,8 +80,7 @@ See also
 API reference
 -------------
 
-Concrete sources
-~~~~~~~~~~~~~~~~
+The concrete sources:
 
 .. autoclass:: bootstack.data.MemoryDataSource
    :members:
@@ -95,8 +94,7 @@ Concrete sources
 .. autoclass:: bootstack.data.FileSourceConfig
    :members:
 
-Extending
-~~~~~~~~~
+The interface and base class for writing your own:
 
 .. autoclass:: bootstack.data.DataSourceProtocol
    :members:
