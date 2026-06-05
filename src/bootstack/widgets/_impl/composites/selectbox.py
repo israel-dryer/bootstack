@@ -2,6 +2,7 @@ from tkinter import Toplevel
 
 from typing_extensions import Unpack
 
+from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.scrollview import ScrollView
@@ -570,11 +571,11 @@ class SelectBox(Field):
             if not getattr(self, "_suppress_changed_event", False):
                 self.entry_widget.event_generate(
                     '<<Change>>',
-                    data={
-                        'value': new_value,
-                        'prev_value': prev_value,
-                        'text': self.entry_widget.get()
-                    },
+                    data=ChangeEvent(
+                        value=new_value,
+                        prev_value=prev_value,
+                        text=self.entry_widget.get(),
+                    ),
                     when="tail"
                 )
 

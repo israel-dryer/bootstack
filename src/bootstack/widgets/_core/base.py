@@ -5,13 +5,30 @@ from typing import TYPE_CHECKING, Any, Callable, overload
 
 from bootstack.widgets._core.context import current_container
 from bootstack.widgets._core.events import resolve_event
-from bootstack.events import Subscription
+from bootstack.events import Event, Subscription
 from bootstack.errors import ParentResolutionError
-from bootstack.widgets.types import Event
 
 if TYPE_CHECKING:
     from bootstack.scheduling import Schedule
     from bootstack.streams import Stream
+
+
+def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    """Wrap a public handler so it receives a bootstack event, not a raw one.
+
+    Data-carrying events (emitted with ``data=<payload>``) deliver the payload
+    object directly — the handler argument *is* the payload. Native/context
+    events carry no payload, so the raw toolkit event is curated into a clean
+    :class:`~bootstack.events.Event` first.
+    """
+
+    def _wrapped(raw: Any) -> Any:
+        payload = getattr(raw, "data", None)
+        if payload is not None:
+            return handler(payload)
+        return handler(Event._from_tk(raw))
+
+    return _wrapped
 
 
 class PublicWidgetBase:
@@ -92,12 +109,12 @@ class PublicWidgetBase:
     @overload
     def on(self, event: str) -> "Stream": ...
     @overload
-    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Any], Any]) -> Subscription: ...
 
     def on(
         self,
         event: str,
-        handler: Callable[[Event], Any] | None = None,
+        handler: Callable[[Any], Any] | None = None,
     ) -> "Stream | Subscription":
         """Bind `handler` to `event`, or return a composable `Stream`.
 
@@ -122,7 +139,7 @@ class PublicWidgetBase:
         sequence = resolve_event(self, str(event))
 
         if handler is not None:
-            bind_id = self._internal.bind(sequence, handler, add="+")
+            bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
             return Subscription(self._internal, sequence, bind_id)
 
         # No handler — return a lazy Stream.
@@ -130,13 +147,13 @@ class PublicWidgetBase:
 
         widget = self._internal
 
-        def _source(downstream: Callable[[Event], Any]) -> Subscription:
-            bind_id = widget.bind(sequence, downstream, add="+")
+        def _source(downstream: Callable[[Any], Any]) -> Subscription:
+            bind_id = widget.bind(sequence, adapt_handler(downstream), add="+")
             return Subscription(widget, sequence, bind_id)
 
         return Stream(self._internal, _source=_source)
 
-    def emit(self, event: str, *, data: dict | None = None) -> None:
+    def emit(self, event: str, *, data: Any = None) -> None:
         """Synthesize `event` on the underlying widget."""
         sequence = resolve_event(self, str(event))
         self._internal.event_generate(sequence, data=data)

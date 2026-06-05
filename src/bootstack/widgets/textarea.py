@@ -4,7 +4,7 @@ import tkinter
 from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.textarea import TextArea as _InternalTextArea
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import Subscription
 from bootstack.streams import Stream
@@ -131,10 +131,10 @@ class TextArea(PublicWidgetBase):
         if handler is None:
             def _source(h):
                 t = self._text_widget() if sequence in _INNER_TEXT_SEQUENCES else self._internal
-                bid = t.bind(sequence, h, add="+")
+                bid = t.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(t, sequence, bid)
             return Stream(self._internal, _source=_source)
-        bid = target.bind(sequence, handler, add="+")
+        bid = target.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(target, sequence, bid)
 
     # ----- Properties -----

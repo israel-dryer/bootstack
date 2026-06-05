@@ -7,7 +7,7 @@ from bootstack.widgets._impl.composites.tabs.tabview import TabView as _Internal
 from bootstack.widgets._impl.composites.tabs.events import TabChangeEventData, TabRef
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
@@ -186,11 +186,11 @@ class Tabs(PublicWidgetBase):
 
         if handler is None:
             def _source(h):
-                bid = self._internal.bind(sequence, h, add="+")
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(self._internal, sequence, bid)
             return Stream(self._internal, _source=_source)
 
-        bind_id = self._internal.bind(sequence, handler, add="+")
+        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(self._internal, sequence, bind_id)
 
     # ----- Tab management -----

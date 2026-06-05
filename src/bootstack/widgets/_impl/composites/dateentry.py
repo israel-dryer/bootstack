@@ -10,6 +10,7 @@ from bootstack.i18n.intl_format import DateFormatSpec
 
 from typing_extensions import Unpack
 
+from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -190,9 +191,9 @@ class DateEntry(Field):
             self.variable.set("")
             if prev is not None:
                 try:
-                    self._entry.event_generate("<<Change>>", data={
-                        "value": None, "prev_value": prev, "text": "",
-                    })
+                    self._entry.event_generate("<<Change>>", data=ChangeEvent(
+                        value=None, prev_value=prev, text="",
+                    ))
                 except Exception:
                     pass
             return
@@ -213,11 +214,11 @@ class DateEntry(Field):
 
         if prev != self._range_value:
             try:
-                self._entry.event_generate("<<Change>>", data={
-                    "value": self._range_value,
-                    "prev_value": prev,
-                    "text": self.variable.get(),
-                })
+                self._entry.event_generate("<<Change>>", data=ChangeEvent(
+                    value=self._range_value,
+                    prev_value=prev,
+                    text=self.variable.get(),
+                ))
             except Exception:
                 pass
 

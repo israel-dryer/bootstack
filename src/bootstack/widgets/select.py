@@ -4,9 +4,9 @@ import tkinter
 from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.selectbox import SelectBox as _InternalSelectBox
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
@@ -118,10 +118,10 @@ class Select(PublicWidgetBase):
         if handler is None:
             def _source(h):
                 t = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-                bid = t.bind(sequence, h, add="+")
+                bid = t.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(t, sequence, bid)
             return Stream(self._internal, _source=_source)
-        bid = target.bind(sequence, handler, add="+")
+        bid = target.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(target, sequence, bid)
 
     # ----- Properties -----
@@ -176,8 +176,8 @@ class Select(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[ChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selection changes.
 
         Returns:

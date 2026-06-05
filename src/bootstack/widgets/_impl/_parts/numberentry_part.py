@@ -6,6 +6,7 @@ wheel support.
 """
 
 
+from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl._parts.textentry_part import TextEntryPart
 
@@ -234,11 +235,11 @@ class NumberEntryPart(TextEntryPart):
         if self._value != prev_value:
             self._prev_changed_value = self._value
             self.event_generate(
-                '<<Change>>', data={
-                    "value": self._value,
-                    "prev_value": prev_value,
-                    "text": self.textsignal.get()
-                })
+                '<<Change>>', data=ChangeEvent(
+                    value=self._value,
+                    prev_value=prev_value,
+                    text=self.textsignal.get(),
+                ))
 
         return self
 

@@ -4,10 +4,10 @@ import tkinter
 from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.spinnerentry import SpinnerEntry as _InternalSpinnerEntry
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
-from bootstack.events import Subscription
+from bootstack.events import ChangeEvent, InputEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, Justify, WidgetDensity
@@ -142,10 +142,10 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
         if handler is None:
             def _source(h):
                 t = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
-                bid = t.bind(sequence, h, add="+")
+                bid = t.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(t, sequence, bid)
             return Stream(self._internal, _source=_source)
-        bid = target.bind(sequence, handler, add="+")
+        bid = target.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(target, sequence, bid)
 
     # ----- Properties -----
@@ -229,8 +229,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_input(self) -> Stream: ...
     @overload
-    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_input(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
         Returns:
@@ -241,8 +241,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[ChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value changes.
 
         Returns:
@@ -289,8 +289,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_valid(self) -> Stream: ...
     @overload
-    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_valid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -301,8 +301,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_invalid(self) -> Stream: ...
     @overload
-    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:
@@ -313,8 +313,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on_validate(self) -> Stream: ...
     @overload
-    def on_validate(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_validate(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_validate(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
         Returns:

@@ -3,7 +3,7 @@
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.treeview import TreeView as _InternalTreeView
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
@@ -81,10 +81,10 @@ class Tree(PublicWidgetBase):
         sequence = resolve_event(self._internal, str(event))
         if handler is None:
             def _source(h):
-                _bid = self._internal.bind(sequence, h, add="+")
+                _bid = self._internal.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(self._internal, sequence, _bid)
             return Stream(self._internal, _source=_source)
-        bind_id = self._internal.bind(sequence, handler, add="+")
+        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(self._internal, sequence, bind_id)
 
     # ----- Item management -----

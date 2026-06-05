@@ -11,6 +11,7 @@ from tkinter import TclError
 from tkinter.ttk import Widget
 from typing import Any, Callable
 
+from bootstack.events import ValidationEvent
 from bootstack.validation import ValidationRule
 from bootstack.validation.types import RuleTriggerType, RuleType, ValidationOptions
 
@@ -96,7 +97,6 @@ class ValidationMixin(Widget):
             True if validation was performed (regardless of result)
         """
         ran_rule = False
-        payload: dict[str, Any] = {"value": value, "is_valid": True, "message": ""}
 
         for rule in self._rules:
             if trigger != "manual" and rule.trigger not in ("always", trigger):
@@ -104,16 +104,17 @@ class ValidationMixin(Widget):
 
             ran_rule = True
             result = rule.validate(value)
-            payload.update(is_valid=result.is_valid, message=result.message)
 
             if not result.is_valid:
                 # Emit invalid and validated events with data
+                payload = ValidationEvent(value=value, is_valid=False, message=result.message)
                 self.event_generate(self.EVENT_INVALID, data=payload)
                 self.event_generate(self.EVENT_VALIDATED, data=payload)
                 return False
 
         if ran_rule:
             # Emit valid and validated events with data
+            payload = ValidationEvent(value=value, is_valid=True, message="")
             self.event_generate(self.EVENT_VALID, data=payload)
             self.event_generate(self.EVENT_VALIDATED, data=payload)
 
@@ -121,7 +122,7 @@ class ValidationMixin(Widget):
 
     # Optional: ergonomic callback registration
     def on_invalid(self, func: Callable) -> None:
-        """Register callback for `<<Invalid>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
+        """Register callback for `<<Invalid>>`. Callback receives a `ValidationEvent` payload (value, is_valid, message)."""
         self._on_invalid_command = func
 
     def off_invalid(self, bind_id: str | None = None) -> None:
@@ -133,7 +134,7 @@ class ValidationMixin(Widget):
         self.unbind('<<Invalid>>', bind_id)
 
     def on_valid(self, func: Callable) -> None:
-        """Register callback for `<<Valid>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
+        """Register callback for `<<Valid>>`. Callback receives a `ValidationEvent` payload (value, is_valid, message)."""
         self._on_valid_command = func
 
     def off_valid(self, bind_id: str | None = None) -> None:
@@ -145,7 +146,7 @@ class ValidationMixin(Widget):
         self.unbind('<<Valid>>', bind_id)
 
     def on_validated(self, func: Callable) -> None:
-        """Register callback for `<<Validate>>`. Callback receives the event; `event.data` is a `ValidationEventData` dict."""
+        """Register callback for `<<Validate>>`. Callback receives a `ValidationEvent` payload (value, is_valid, message)."""
         self._on_validated_command = func
 
     def off_validated(self, bind_id: str | None = None) -> None:

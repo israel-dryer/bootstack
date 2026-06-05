@@ -6,7 +6,7 @@ from typing import overload, Any, Callable, Iterator, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as _InternalCodeEditor
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
@@ -148,10 +148,10 @@ class CodeEditor(PublicWidgetBase):
         if handler is None:
             def _source(h):
                 t = self._text_widget() if sequence in _INNER_SEQUENCES else self._internal
-                bid = t.bind(sequence, h, add="+")
+                bid = t.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(t, sequence, bid)
             return Stream(self._internal, _source=_source)
-        bid = target.bind(sequence, handler, add="+")
+        bid = target.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(target, sequence, bid)
 
     # ----- Properties -----

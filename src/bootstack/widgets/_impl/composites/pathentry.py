@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from typing_extensions import Unpack
 
+from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -158,11 +159,10 @@ class PathEntry(Field):
             self.value = display_text
             self.event_generate(
                 '<<Change>>',
-                data={
-                    'value': display_text,
-                    'prev_value': prev_value,
-                    'text': display_text,
-                    'dialog_result': self._dialog_result,
-                },
+                data=ChangeEvent(
+                    value=display_text,
+                    prev_value=prev_value,
+                    text=display_text,
+                ),
                 when="tail"
             )

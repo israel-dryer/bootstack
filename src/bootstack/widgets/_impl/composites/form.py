@@ -8,6 +8,7 @@ from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Text, Variable
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TYPE_CHECKING
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
+from bootstack.events import ValidationEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton
 from bootstack.widgets._impl.primitives.switch import Switch
@@ -242,15 +243,14 @@ class Form(Frame):
             if not rules:
                 return True
             value = widget.value
-            payload: dict[str, Any] = {"value": value, "is_valid": True, "message": ""}
             is_valid = True
             for rule in rules:
                 if rule.trigger not in ("always", "manual"):
                     continue
                 result = rule.validate(value)
-                payload.update(is_valid=result.is_valid, message=result.message)
                 if not result.is_valid:
                     is_valid = False
+                    payload = ValidationEvent(value=value, is_valid=False, message=result.message)
                     try:
                         entry.event_generate(ValidationMixin.EVENT_INVALID, data=payload)
                         entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
@@ -258,6 +258,7 @@ class Form(Frame):
                         pass
                     break
             if is_valid:
+                payload = ValidationEvent(value=value, is_valid=True, message="")
                 try:
                     entry.event_generate(ValidationMixin.EVENT_VALID, data=payload)
                     entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
