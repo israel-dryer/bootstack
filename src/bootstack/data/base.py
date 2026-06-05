@@ -19,7 +19,7 @@ This base class makes it easier to:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Mapping
 
 from bootstack.data.types import Primitive, Record
 
@@ -64,6 +64,11 @@ class BaseDataSource(ABC):
         """
         self.page_size = page_size
         self._page = 0
+        # Reactive change broadcasting (on_change / observe). Lazy import keeps
+        # the data layer free of a load-time dependency on the runtime layer.
+        from bootstack.data._observable import _ChangeHub
+
+        self._hub = _ChangeHub(self)
 
     # ========== ABSTRACT METHODS - MUST BE IMPLEMENTED ==========
 
@@ -306,6 +311,24 @@ class BaseDataSource(ABC):
         """
         ...
 
+    # Observable query — read-only filtered/sorted read
+    @abstractmethod
+    def _query(self, condition: "Condition | None", sort_keys: "List[SortKey]") -> List[Record]:
+        """Run a one-off filtered and sorted read, returning fresh records.
+
+        Unlike `page`, this does NOT use or modify the source's active
+        `where`/`order` view state — it answers an `observe()` query in
+        isolation so pagination is undisturbed.
+
+        Args:
+            condition: Filter condition (or `None` for all rows).
+            sort_keys: Ordering to apply (empty for source/natural order).
+
+        Returns:
+            List of matching record dictionaries.
+        """
+        ...
+
     # Lifecycle / reorder — concrete defaults; subclasses may override
     def reload(self) -> None:
         """Re-read data from the underlying source.
@@ -329,6 +352,124 @@ class BaseDataSource(ABC):
             True if the record was moved, False if not supported or not found
         """
         return False
+
+    # ========== CHANGE BROADCASTING (on_change / observe) ==========
+
+    def on_change(self, handler: "Callable[[Any], Any] | None" = None) -> Any:
+        """Subscribe to changes to this source.
+
+        Call with no argument to get a composable `Stream` of coarse change
+        events; chain `map`/`filter`/`debounce` and `listen` to drive any
+        widget (for example, a dashboard badge bound to the row count). Call
+        with a handler to subscribe directly and get back a cancellable
+        subscription.
+
+        The handler receives a `DataChangeEvent`. Rapid mutations are coalesced
+        into a single notification per event-loop turn, and mutations made from
+        a background thread are delivered on the main thread automatically — so
+        a bound widget can refresh from a worker-thread feed with no extra work.
+
+        Args:
+            handler: Change handler. Omit to receive a `Stream` instead.
+
+        Returns:
+            A `Stream` when `handler` is omitted, otherwise a cancellable
+            subscription handle.
+
+        Example:
+            .. code-block:: python
+
+                ds.on_change(lambda e: print("changed:", e.kind))
+
+                # Feed a dashboard badge with the live row count.
+                ds.on_change().map(lambda e: ds.count).listen(badge.set_value)
+        """
+        from bootstack.streams import Handle, Stream
+
+        hub = self._hub
+        if handler is not None:
+            return Handle(hub.add_listener(handler))
+
+        from bootstack._runtime.app import get_current_app, has_current_app
+
+        if not has_current_app():
+            raise RuntimeError(
+                "on_change() with no handler returns a Stream, which requires an "
+                "active App. Pass a handler — on_change(fn) — for headless use."
+            )
+        owner = get_current_app()
+
+        def _source(downstream):
+            return Handle(hub.add_listener(downstream))
+
+        return Stream(owner, _source=_source)
+
+    def observe(self, condition: "Condition | None" = None, *order: "str | Column | SortKey") -> Any:
+        """Observe a live result set for a `where`/`order` query.
+
+        Returns a `Stream` that emits the matching records immediately, then a
+        fresh result set whenever a relevant change occurs. Each subscriber
+        observes its own slice — declare the query once, react to its results
+        over time (the "observable query" pattern).
+
+        Selection toggles do not re-emit (selection is not a row-set change).
+        Unlike `where`/`order`, observing does not disturb the source's own
+        pagination view.
+
+        Performance: each relevant change re-runs the whole query and re-emits
+        the full result set. Use `observe` for *small* derived sets — dashboard
+        metrics, a short pinned list, a filtered side panel. For large or
+        virtualized views (`Table`, `ListView`) do NOT observe the full set;
+        bind those widgets to the source directly — they listen via `on_change`
+        and refetch only their visible window with `page`/`page_slice`.
+
+        Args:
+            condition: Filter condition built with `col` (or `None` for all rows).
+            order: Sort keys — column names, `"-name"` for descending, or
+                `col(...)` specs.
+
+        Returns:
+            A `Stream` of result sets (each a list of record dictionaries).
+
+        Example:
+            .. code-block:: python
+
+                ds.observe(col("status") == "active", "-created").listen(
+                    lambda rows: gauge.set_value(len(rows))
+                )
+        """
+        from bootstack.data._observable import _ObservedQuery
+        from bootstack.data.query import normalize_sort_keys
+        from bootstack.streams import Handle, Stream
+        from bootstack._runtime.app import get_current_app, has_current_app
+
+        if not has_current_app():
+            raise RuntimeError(
+                "observe() returns a Stream, which requires an active App."
+            )
+        owner = get_current_app()
+        sort_keys = normalize_sort_keys(order)
+        hub = self._hub
+        source = self
+
+        def _source(downstream):
+            query = _ObservedQuery(source, condition, sort_keys, downstream)
+            remove = hub.add_query(query)
+            try:
+                downstream(query.start())
+            except Exception:
+                pass
+            return Handle(remove)
+
+        return Stream(owner, _source=_source)
+
+    def _silence(self):
+        """Context manager that suppresses change emission within its block.
+
+        Used internally by widgets to mutate their own bound source without
+        broadcasting the change back to themselves.
+        """
+        return self._hub.silence()
 
     # ========== SHARED UTILITY METHODS ==========
 

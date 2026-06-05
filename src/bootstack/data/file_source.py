@@ -53,6 +53,7 @@ from typing import (
 
 from bootstack.data.memory_source import MemoryDataSource
 from bootstack.data.types import Record
+from bootstack.events import DataChangeEvent
 
 
 @dataclass
@@ -455,17 +456,22 @@ class FileDataSource(MemoryDataSource):
     def _load_impl(self) -> None:
         """Internal load implementation (runs in thread if use_threading=True)."""
         try:
-            strategy = self._determine_strategy()
+            # Suppress the per-chunk insert/load emits during the bulk read, then
+            # broadcast a single coalesced `load`. When this runs on a background
+            # thread the hub marshals that broadcast to the main thread.
+            with self._hub.silence():
+                strategy = self._determine_strategy()
 
-            if strategy == 'eager':
-                self._load_eager()
-            elif strategy == 'chunked':
-                self._load_chunked()
-            elif strategy in ('lazy', 'hybrid'):
-                # For now, fall back to eager (lazy/hybrid require more complex implementation)
-                self._load_eager()
+                if strategy == 'eager':
+                    self._load_eager()
+                elif strategy == 'chunked':
+                    self._load_chunked()
+                elif strategy in ('lazy', 'hybrid'):
+                    # For now, fall back to eager (lazy/hybrid require more complex implementation)
+                    self._load_eager()
 
             self._loading = False
+            self._hub.emit(DataChangeEvent(kind="load"))
 
             if self.config.on_complete:
                 self.config.on_complete()

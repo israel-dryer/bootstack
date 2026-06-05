@@ -40,6 +40,7 @@ from typing import Any, Dict, List, Optional, Union, Mapping, Iterable
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
+from bootstack.events import DataChangeEvent
 
 
 class MemoryDataSource(BaseDataSource):
@@ -124,21 +125,28 @@ class MemoryDataSource(BaseDataSource):
             used.add(max_id)
         self._rebuild_id_index()
 
+    @staticmethod
+    def _sort_rows(rows: List[Dict[str, Any]], sort_keys: List[SortKey]) -> List[Dict[str, Any]]:
+        """Stable multi-key sort in place — first key wins (applied right-to-left)."""
+        for key in reversed(sort_keys):
+            rows.sort(
+                key=lambda r, c=key.column: (r.get(c) is None, r.get(c)),
+                reverse=key.descending,
+            )
+        return rows
+
     def _apply_filter_and_sort(self, rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Apply the current filter and sort to a row collection."""
         if self._filter is not None:
             rows = [r for r in rows if self._filter.matches(r)]
         else:
             rows = list(rows)
+        return self._sort_rows(rows, self._sort)
 
-        # Stable multi-key sort: apply keys right-to-left so the first key wins.
-        for key in reversed(self._sort):
-            rows.sort(
-                key=lambda r, c=key.column: (r.get(c) is None, r.get(c)),
-                reverse=key.descending,
-            )
-
-        return rows
+    def _query(self, condition: Optional[Condition], sort_keys: List[SortKey]) -> List[Dict[str, Any]]:
+        """Run a one-off filtered/sorted read without touching view state."""
+        rows = [r for r in self._data if condition is None or condition.matches(r)]
+        return [dict(r) for r in self._sort_rows(rows, sort_keys)]
 
     def load(self, records: Union[Sequence[Primitive], Sequence[Dict[str, Any]]]) -> "MemoryDataSource":
         """Load records into datasource.
@@ -153,6 +161,7 @@ class MemoryDataSource(BaseDataSource):
             self._data = []
             self._columns = []
             self._rebuild_id_index()
+            self._hub.emit(DataChangeEvent(kind="load"))
             return self
 
         if records and not self._is_mapping(records[0]):
@@ -169,16 +178,19 @@ class MemoryDataSource(BaseDataSource):
         self._columns = list(self._data[0].keys())
         self._ensure_id()
         self._ensure_selected_column()
+        self._hub.emit(DataChangeEvent(kind="load"))
         return self
 
     def where(self, condition: Optional[Condition] = None) -> "MemoryDataSource":
         """Filter rows by a condition built with `col` (None clears the filter)."""
         self._filter = condition
+        self._hub.emit(DataChangeEvent(kind="filter"))
         return self
 
     def order(self, *keys) -> "MemoryDataSource":
         """Sort rows by one or more keys (no arguments clears sorting)."""
         self._sort = normalize_sort_keys(keys)
+        self._hub.emit(DataChangeEvent(kind="sort"))
         return self
 
     def _filtered_sorted_rows(self) -> List[Dict[str, Any]]:
@@ -230,6 +242,7 @@ class MemoryDataSource(BaseDataSource):
         self._data.append(r)
         self._columns = list(set(self._columns) | set(r.keys()))
         self._id_index[r["id"]] = len(self._data) - 1
+        self._hub.emit(DataChangeEvent(kind="insert", id=r["id"], record=dict(r)))
         return r["id"]
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
@@ -248,6 +261,7 @@ class MemoryDataSource(BaseDataSource):
             return False
         self._data[idx].update(updates)
         self._columns = list(set(self._columns) | set(updates.keys()))
+        self._hub.emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
         return True
 
     def delete(self, record_id: Any) -> bool:
@@ -257,6 +271,7 @@ class MemoryDataSource(BaseDataSource):
             return False
         self._data.pop(idx)
         self._rebuild_id_index()
+        self._hub.emit(DataChangeEvent(kind="delete", id=record_id))
         return True
 
     def is_selected(self, record_id: Any) -> bool:
@@ -268,11 +283,17 @@ class MemoryDataSource(BaseDataSource):
 
     def select(self, record_id: Any) -> bool:
         """Mark record as selected."""
-        return self._set_selected_flag(record_id, 1)
+        changed = self._set_selected_flag(record_id, 1)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
     def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected."""
-        return self._set_selected_flag(record_id, 0)
+        changed = self._set_selected_flag(record_id, 0)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
     def select_all(self, current_page_only: bool = False) -> int:
         """Select all records (optionally only current page)."""
@@ -285,14 +306,15 @@ class MemoryDataSource(BaseDataSource):
                 if r["id"] in idset and r.get("selected") != 1:
                     r["selected"] = 1
                     count += 1
-            return count
         else:
             count = 0
             for r in self._data:
                 if r.get("selected") != 1:
                     r["selected"] = 1
                     count += 1
-            return count
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
     def deselect_all(self, current_page_only: bool = False) -> int:
         """Deselect all records (optionally only current page)."""
@@ -305,14 +327,15 @@ class MemoryDataSource(BaseDataSource):
                 if r["id"] in idset and r.get("selected") != 0:
                     r["selected"] = 0
                     count += 1
-            return count
         else:
             count = 0
             for r in self._data:
                 if r.get("selected") != 0:
                     r["selected"] = 0
                     count += 1
-            return count
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
     def move(self, record_id: Any, target_index: int) -> bool:
         """Reorder a record within the in-memory list."""
@@ -336,6 +359,7 @@ class MemoryDataSource(BaseDataSource):
         end = max(source_index, clamped_target) + 1
         for i in range(start, end):
             self._id_index[self._data[i]["id"]] = i
+        self._hub.emit(DataChangeEvent(kind="move", id=record_id))
         return True
 
     def _set_selected_flag(self, record_id: Any, flag: int) -> bool:

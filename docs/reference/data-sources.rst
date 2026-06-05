@@ -115,8 +115,60 @@ Conditions never interpolate values into SQL — SQLite binds them as parameters
 
    The data widgets drive filtering and sorting through their own UI (column
    headers, the search bar, column filters). Call ``where()`` / ``order()``
-   yourself when you share a source between widgets or filter programmatically;
-   call ``widget.reload()`` afterward to refresh the view.
+   yourself when you share a source between widgets or filter programmatically —
+   bound widgets refresh automatically (see :ref:`observing-changes`).
+
+.. _observing-changes:
+
+Observing changes
+-----------------
+
+A source broadcasts its changes, so a widget bound to one stays in sync without
+a manual refresh. Mutate the source directly — even from a background thread —
+and any bound ``Table`` or ``ListView`` updates itself:
+
+.. code-block:: python
+
+   ds = bs.MemoryDataSource().load(initial_rows)
+   bs.ListView(data_source=ds)
+
+   # Later — from a poll loop, a websocket, any thread:
+   ds.insert(new_row)        # the list refreshes on its own
+
+The update is marshaled onto the UI thread for you, and a burst of mutations in
+one turn is coalesced into a single refresh.
+
+Use ``on_change`` to react yourself — for example, to drive a dashboard tile
+from the row count. With no argument it returns a :class:`Stream
+<bootstack.Stream>` you can ``map`` / ``debounce`` and ``listen`` to; with a
+handler it subscribes directly and returns a cancellable subscription. The
+handler receives a :class:`DataChangeEvent <bootstack.events.DataChangeEvent>`:
+
+.. code-block:: python
+
+   ds.on_change().map(lambda e: ds.count).listen(badge.set_value)
+
+   sub = ds.on_change(lambda e: print("changed:", e.kind))
+   sub.cancel()
+
+``observe`` goes a step further: declare a ``where`` / ``order`` query once and
+get a live result set — the matching rows now, and a fresh set whenever a
+relevant change lands. It is the "observable query" pattern, ideal for a small
+derived view or a metric:
+
+.. code-block:: python
+
+   ds.observe(col("status") == "active", "-created").listen(
+       lambda rows: gauge.set_value(len(rows))
+   )
+
+.. note::
+
+   ``observe`` re-runs the whole query and re-emits the full result set on every
+   relevant change, so keep it to *small* derived sets (metrics, a short list, a
+   side panel). Large or virtualized views — ``Table``, ``ListView`` — should
+   bind to the source directly instead; they already listen via ``on_change``
+   and refetch only their visible window.
 
 Writing your own source
 -----------------------

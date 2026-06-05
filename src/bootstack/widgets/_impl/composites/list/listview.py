@@ -1,5 +1,6 @@
 ﻿"""ListView widget for displaying large lists with virtual scrolling."""
 
+import contextlib
 from tkinter import TclError
 from typing import Any, Callable, Literal
 from typing_extensions import Unpack
@@ -161,8 +162,53 @@ class ListView(Frame):
         self._container.bind('<Down>', self._on_arrow_down, add='+')
         self._container.bind('<Up>', self._on_arrow_up, add='+')
 
+        # Auto-refresh when the data source changes from the outside (a shared
+        # source mutated directly, or a background-thread feed). The hub marshals
+        # the callback onto the main thread; mutations this widget makes itself
+        # are wrapped in `_silence_source()` so they do not loop back here.
+        self._change_sub = None
+        on_change = getattr(self._datasource, 'on_change', None)
+        if callable(on_change):
+            try:
+                self._change_sub = on_change(self._on_source_change)
+            except Exception:
+                self._change_sub = None
+        self.bind('<Destroy>', self._on_listview_destroy, add='+')
+
         # Initial update
         self.after(10, self._remeasure_and_relayout)
+
+    def _silence_source(self):
+        """Context manager suppressing source change broadcasts for our own writes."""
+        silence = getattr(self._datasource, '_silence', None)
+        if callable(silence):
+            return silence()
+        return contextlib.nullcontext()
+
+    def _on_source_change(self, event: Any = None) -> None:
+        """Refresh the visible rows after an external data-source change.
+
+        Re-measures and relays out (not just `_update_rows`) so the visible-row
+        count, the row-widget pool, and the scrollbar all track a changed row
+        count — the same path a window resize takes. This also self-corrects the
+        pool if the initial measurement ran before the geometry had settled.
+        """
+        try:
+            self._remeasure_and_relayout()
+        except Exception:
+            pass
+
+    def _on_listview_destroy(self, event: Any = None) -> None:
+        """Cancel the data-source subscription when the widget is destroyed."""
+        if event is not None and getattr(event, 'widget', None) is not self:
+            return
+        sub = self._change_sub
+        self._change_sub = None
+        if sub is not None:
+            try:
+                sub.cancel()
+            except Exception:
+                pass
 
     @configure_delegate('selection_mode')
     def _delegate_selection_mode(self, value=None):
@@ -586,14 +632,15 @@ class ListView(Frame):
         """
         record_id = event.data.get('id')
         if record_id is not None and record_id != '__empty__':
-            if self._selection_mode == 'single':
-                self._datasource.deselect_all()
-                self._datasource.select(record_id)
-            elif self._selection_mode == 'multi':
-                if self._datasource.is_selected(record_id):
-                    self._datasource.deselect(record_id)
-                else:
+            with self._silence_source():
+                if self._selection_mode == 'single':
+                    self._datasource.deselect_all()
                     self._datasource.select(record_id)
+                elif self._selection_mode == 'multi':
+                    if self._datasource.is_selected(record_id):
+                        self._datasource.deselect(record_id)
+                    else:
+                        self._datasource.select(record_id)
 
             self._update_rows()
             self.event_generate('<<SelectionChange>>')
@@ -607,7 +654,8 @@ class ListView(Frame):
         record_id = event.data.get('id')
         if record_id is not None and record_id != '__empty__':
             try:
-                self._datasource.delete(record_id)
+                with self._silence_source():
+                    self._datasource.delete(record_id)
                 self._update_rows()
                 self.event_generate('<<ItemDelete>>', data=event.data)
             except Exception as exc:
@@ -916,34 +964,35 @@ class ListView(Frame):
         if record_id is None or target_index is None:
             return False
 
-        mover = getattr(self._datasource, 'move', None)
-        if callable(mover):
-            return bool(mover(record_id, target_index))
+        with self._silence_source():
+            mover = getattr(self._datasource, 'move', None)
+            if callable(mover):
+                return bool(mover(record_id, target_index))
 
-        # Fallback for simple in-memory lists
-        try:
-            total = self._datasource.count
-            all_records = self._datasource.page_slice(0, total)
-            source_index = None
-            for i, record in enumerate(all_records):
-                if record.get('id') == record_id:
-                    source_index = i
-                    break
-            if source_index is None:
+            # Fallback for simple in-memory lists
+            try:
+                total = self._datasource.count
+                all_records = self._datasource.page_slice(0, total)
+                source_index = None
+                for i, record in enumerate(all_records):
+                    if record.get('id') == record_id:
+                        source_index = i
+                        break
+                if source_index is None:
+                    return False
+                clamped_target = max(0, min(target_index, len(all_records) - 1))
+                if source_index == clamped_target:
+                    return False
+                record = all_records.pop(source_index)
+                if clamped_target > source_index:
+                    clamped_target -= 1
+                all_records.insert(clamped_target, record)
+                setter = getattr(self._datasource, 'load', None)
+                if callable(setter):
+                    setter(all_records)
+                    return True
+            except Exception:
                 return False
-            clamped_target = max(0, min(target_index, len(all_records) - 1))
-            if source_index == clamped_target:
-                return False
-            record = all_records.pop(source_index)
-            if clamped_target > source_index:
-                clamped_target -= 1
-            all_records.insert(clamped_target, record)
-            setter = getattr(self._datasource, 'load', None)
-            if callable(setter):
-                setter(all_records)
-                return True
-        except Exception:
-            return False
 
         return False
 
@@ -1021,10 +1070,11 @@ class ListView(Frame):
         if self._selection_mode == 'multi':
             total = self._datasource.count
             all_records = self._datasource.page_slice(0, total)
-            for record in all_records:
-                record_id = record.get('id')
-                if record_id:
-                    self._datasource.select(record_id)
+            with self._silence_source():
+                for record in all_records:
+                    record_id = record.get('id')
+                    if record_id:
+                        self._datasource.select(record_id)
             self._update_rows()
             self.event_generate('<<SelectionChange>>')
 
@@ -1033,7 +1083,8 @@ class ListView(Frame):
 
         Deselects all items and generates a <<SelectionChange>> event.
         """
-        self._datasource.deselect_all()
+        with self._silence_source():
+            self._datasource.deselect_all()
         self._update_rows()
         self.event_generate('<<SelectionChange>>')
 
@@ -1071,7 +1122,8 @@ class ListView(Frame):
             ...     'text': 'Description'
             ... })
         """
-        record_id = self._datasource.insert(data)
+        with self._silence_source():
+            record_id = self._datasource.insert(data)
         self._update_rows()
         record = dict(data)
         record.setdefault('id', record_id)
@@ -1092,7 +1144,9 @@ class ListView(Frame):
         Examples:
             >>> listview.update_item(42, {'title': 'Updated Title'})
         """
-        if self._datasource.update(record_id, data):
+        with self._silence_source():
+            updated = self._datasource.update(record_id, data)
+        if updated:
             self._update_rows()
             record = dict(data)
             record['id'] = record_id
@@ -1111,7 +1165,8 @@ class ListView(Frame):
         Examples:
             >>> listview.delete_item(42)
         """
-        self._datasource.delete(record_id)
+        with self._silence_source():
+            self._datasource.delete(record_id)
         self._update_rows()
         self.event_generate('<<ItemDelete>>', data={'id': record_id})
 

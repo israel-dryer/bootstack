@@ -14,8 +14,10 @@ from bootstack.events._payloads import (
     AccordionChangeEvent,
     ButtonGroupClickEvent,
     ChangeEvent,
+    ChangeKind,
     ChangeMethod,
     ChangeReason,
+    DataChangeEvent,
     DateSelectEvent,
     DisplayModeEvent,
     InputEvent,
@@ -78,4 +80,7 @@ __all__ = [
     "TextModifiedEvent",
     # Payloads — button group
     "ButtonGroupClickEvent",
+    # Payloads — data source
+    "DataChangeEvent",
+    "ChangeKind",
 ]

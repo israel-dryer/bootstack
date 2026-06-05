@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Union, Sequence
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
+from bootstack.events import DataChangeEvent
 
 # Internal column names — reserved by SqliteDataSource, never exposed to user data.
 _ROW_ID = "_bs_row_id"
@@ -113,6 +114,26 @@ class SqliteDataSource(BaseDataSource):
         """Safely quote an identifier (column/table) for SQLite."""
         text = str(name).replace('"', '""')
         return f'"{text}"'
+
+    def _query(self, condition: Optional[Condition], sort_keys: List[SortKey]) -> List[Dict[str, Any]]:
+        """Run a one-off filtered/sorted read without touching view state."""
+        where, params = "", []
+        if condition is not None:
+            clause, params = condition.to_sql()
+            where = f" WHERE {clause}"
+        order = ""
+        if sort_keys:
+            terms = [
+                f"{self._quote_identifier(k.column)} {'DESC' if k.descending else 'ASC'}"
+                for k in sort_keys
+            ]
+            order = " ORDER BY " + ", ".join(terms)
+        try:
+            cursor = self.conn.execute(f"SELECT * FROM {self._table}{where}{order}", params)
+            return [dict(row) for row in cursor.fetchall()]
+        except sqlite3.OperationalError:
+            # Table does not exist yet (no data loaded).
+            return []
 
     def load(
         self,
@@ -208,6 +229,7 @@ class SqliteDataSource(BaseDataSource):
                 self.conn.executemany(f"INSERT INTO {self._table} VALUES ({placeholders})", rows_to_insert)
         finally:
             self.conn.row_factory = original_row_factory
+        self._hub.emit(DataChangeEvent(kind="load"))
         return self
 
     def where(self, condition: Optional[Condition] = None) -> "SqliteDataSource":
@@ -217,11 +239,13 @@ class SqliteDataSource(BaseDataSource):
         bound, never interpolated — so user input cannot inject SQL.
         """
         self._filter = condition
+        self._hub.emit(DataChangeEvent(kind="filter"))
         return self
 
     def order(self, *keys) -> "SqliteDataSource":
         """Sort rows by one or more keys (no arguments clears sorting)."""
         self._sort = normalize_sort_keys(keys)
+        self._hub.emit(DataChangeEvent(kind="sort"))
         return self
 
     def page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -279,6 +303,7 @@ class SqliteDataSource(BaseDataSource):
 
         with self.conn:
             self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
+        self._hub.emit(DataChangeEvent(kind="insert", id=record[_ROW_ID], record=dict(record)))
         return record[_ROW_ID]
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
@@ -295,13 +320,19 @@ class SqliteDataSource(BaseDataSource):
         values = tuple(updates.values()) + (record_id,)
         with self.conn:
             cur = self.conn.execute(f"UPDATE {self._table} SET {set_clause} WHERE {_ROW_ID} = ?", values)
-            return cur.rowcount > 0
+            changed = cur.rowcount > 0
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
+        return changed
 
     def delete(self, record_id: Any) -> bool:
         """Delete record by ID."""
         with self.conn:
             cur = self.conn.execute(f"DELETE FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
-            return cur.rowcount > 0
+            changed = cur.rowcount > 0
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="delete", id=record_id))
+        return changed
 
     def _generate_new_id(self) -> int:
         """Generate next available integer ID."""
@@ -361,11 +392,17 @@ class SqliteDataSource(BaseDataSource):
 
     def select(self, record_id: Any) -> bool:
         """Mark record as selected."""
-        return self._set_selected_flag(record_id, 1)
+        changed = self._set_selected_flag(record_id, 1)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
     def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected."""
-        return self._set_selected_flag(record_id, 0)
+        changed = self._set_selected_flag(record_id, 0)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
     def select_all(self, current_page_only: bool = False) -> int:
         """Select all records (optionally only current page)."""
@@ -378,11 +415,14 @@ class SqliteDataSource(BaseDataSource):
             query = f"UPDATE {self._table} SET {_ROW_SEL} = 1 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
-                return cur.rowcount
+                count = cur.rowcount
         else:
             with self.conn:
                 cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 1")
-                return cur.rowcount
+                count = cur.rowcount
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
     def deselect_all(self, current_page_only: bool = False) -> int:
         """Deselect all records (optionally only current page)."""
@@ -395,11 +435,14 @@ class SqliteDataSource(BaseDataSource):
             query = f"UPDATE {self._table} SET {_ROW_SEL} = 0 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
-                return cur.rowcount
+                count = cur.rowcount
         else:
             with self.conn:
                 cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 0")
-                return cur.rowcount
+                count = cur.rowcount
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
     def selected(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get selected records, optionally paginated."""

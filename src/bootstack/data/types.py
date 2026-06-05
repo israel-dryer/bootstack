@@ -299,3 +299,20 @@ class DataSourceProtocol(Protocol):
             List of record dictionaries
         """
         ...
+
+    # ---------- change broadcasting ----------
+    def on_change(self, handler: Any = None) -> Any:
+        """Subscribe to changes. Returns a `Stream` (no handler) or a
+        cancellable subscription (with handler). The handler receives a
+        `DataChangeEvent`."""
+        ...
+
+    def observe(self, condition: "Condition | None" = None, *order: Any) -> Any:
+        """Observe a live result set for a `where`/`order` query. Returns a
+        `Stream` of result sets that re-emits on relevant changes."""
+        ...
+
+    def _query(self, condition: "Condition | None", sort_keys: List[Any]) -> List[Record]:
+        """Run a one-off filtered/sorted read without disturbing the source's
+        active `where`/`order` view state. Backs `observe()`."""
+        ...

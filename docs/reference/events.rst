@@ -144,6 +144,8 @@ The typed payloads handed to data-carrying handlers. Import them from
    :members:
 .. autoclass:: bootstack.events.ChangeEvent
    :members:
+.. autoclass:: bootstack.events.DataChangeEvent
+   :members:
 .. autoclass:: bootstack.events.DateSelectEvent
    :members:
 .. autoclass:: bootstack.events.DisplayModeEvent

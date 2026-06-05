@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date as _date
-from typing import Any, Literal
+from typing import Any, Literal, Mapping
 
 # ---------------------------------------------------------------------------
 # Field / input family
@@ -347,3 +347,52 @@ class ButtonGroupClickEvent:
 
     icon: Any = None
     """The clicked button's icon, if any."""
+
+
+# ---------------------------------------------------------------------------
+# Data source — change broadcasting
+# ---------------------------------------------------------------------------
+
+
+ChangeKind = Literal[
+    "load",
+    "insert",
+    "update",
+    "delete",
+    "move",
+    "filter",
+    "sort",
+    "reload",
+    "select",
+]
+"""What kind of change a `DataChangeEvent` describes.
+
+A row mutation (`insert`/`update`/`delete`/`move`), a view change
+(`filter`/`sort`), a bulk replace (`load`/`reload`), or a selection toggle
+(`select`).
+"""
+
+
+@dataclass(frozen=True, slots=True)
+class DataChangeEvent:
+    """Broadcast by a data source when its data or view changes.
+
+    Delivered to handlers registered with `DataSource.on_change`. Because the
+    source coalesces rapid mutations into one notification per event-loop turn,
+    a single event may stand in for several underlying changes; in that case
+    `kind` is `reload` and the per-row fields are empty. Treat it as a coarse
+    "something changed" signal and re-read the source for current data.
+    """
+
+    kind: ChangeKind = "reload"
+    """What changed."""
+
+    id: Any = None
+    """Affected record id for single-row kinds; `None` otherwise."""
+
+    ids: tuple[Any, ...] = ()
+    """Affected record ids for bulk kinds (e.g. `select_all`); empty otherwise."""
+
+    record: Mapping[str, Any] | None = None
+    """The affected record (or the applied updates) where cheaply available on
+    `insert`/`update`; `None` otherwise."""
