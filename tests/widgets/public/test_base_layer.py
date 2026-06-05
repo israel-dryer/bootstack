@@ -7,8 +7,8 @@ import pytest
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.context import push_container, pop_container, current_container, _stack
 from bootstack.widgets._core.events import resolve_event, register_widget_events, GLOBAL_EVENT_MAP
-from bootstack.widgets._core.exceptions import UnknownEventError
-from bootstack.widgets._core.subscription import Subscription
+from bootstack.errors import UnknownEventError
+from bootstack.events import Subscription
 
 
 # ---------------------------------------------------------------------------
@@ -156,10 +156,10 @@ def test_resolve_event_class_map_takes_precedence():
 
 
 def test_event_enum_values_are_strings():
-    from bootstack.widgets._core.events import Event
-    assert Event.Widget.CLICK == "click"
-    assert Event.Input.CHANGE == "change"
-    assert Event.App.THEME_CHANGE == "theme_change"
+    from bootstack.widgets._core.events import EventName
+    assert EventName.Widget.CLICK == "click"
+    assert EventName.Input.CHANGE == "change"
+    assert EventName.App.THEME_CHANGE == "theme_change"
 
 
 # ---------------------------------------------------------------------------
