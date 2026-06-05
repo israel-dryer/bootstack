@@ -61,7 +61,7 @@ class CodeEditor(PublicWidgetBase):
         height: Visible row count. Default `20`.
         scrollbars: Scrollbar visibility — `'both'` (default), `'auto'`,
             `'vertical'`, or `'none'`.
-        font: Font for the editor. Defaults to the monospace font.
+        font: Font for the editor. Default `'code'` (the monospace font token).
         show_border: If True (default), styles the editor frame as a themed
             border with a focus ring.
         accent: Accent token for the focus border. Default `'primary'`.
@@ -88,7 +88,7 @@ class CodeEditor(PublicWidgetBase):
         show_indent_guides: bool = False,
         height: int = 20,
         scrollbars: str = "both",
-        font: str = "TkFixedFont",
+        font: str = "code",
         show_border: bool = True,
         accent: AccentToken | str = "primary",
         extensions: list[EditFilter] | None = None,
