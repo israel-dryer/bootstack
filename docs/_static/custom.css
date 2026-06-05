@@ -41,8 +41,11 @@ html[data-theme="dark"] {
     overflow-x: auto;
 }
 
-/* Screenshot light/dark switching — driven entirely by pydata-sphinx-theme's
-   data-bs-theme attribute; no media-query fallback to avoid conflicts. */
+/* Screenshot light/dark switching.
+   Two-layer approach: (1) prefers-color-scheme as a CSS-only fallback that
+   applies instantly on navigation before JS sets data-theme; (2) explicit
+   data-theme overrides for when the user has toggled the theme switcher. */
+
 .bs-screenshot-dark,
 .bs-screenshot-light {
     border-radius: 6px;
@@ -50,15 +53,25 @@ html[data-theme="dark"] {
     margin: 0.75rem 0 !important;
 }
 
-.bs-screenshot-dark { display: none !important; }
+/* Default: show light, hide dark. */
+.bs-screenshot-dark  { display: none  !important; }
 .bs-screenshot-light { display: block !important; }
 
-[data-theme="dark"] .bs-screenshot-dark { display: block !important; }
-[data-theme="dark"] .bs-screenshot-light { display: none !important; }
+/* System dark preference — CSS-only, fires before JS runs. */
+@media (prefers-color-scheme: dark) {
+    .bs-screenshot-dark  { display: block !important; }
+    .bs-screenshot-light { display: none  !important; }
+}
+
+/* Explicit theme selection overrides the system preference. */
+html[data-theme="light"] .bs-screenshot-dark  { display: none  !important; }
+html[data-theme="light"] .bs-screenshot-light { display: block !important; }
+html[data-theme="dark"]  .bs-screenshot-dark  { display: block !important; }
+html[data-theme="dark"]  .bs-screenshot-light { display: none  !important; }
 
 /* Prevent pydata's dark-mode brightness filter from altering screenshots. */
-[data-theme="dark"] .bs-screenshot-dark,
-[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
+html[data-theme="dark"] .bs-screenshot-dark,
+html[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
 
 /* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
 .bs-dialog-screenshot {}
