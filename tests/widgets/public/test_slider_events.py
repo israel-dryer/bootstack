@@ -111,8 +111,8 @@ def test_rangeslider_on_change_delivers_range_event(shown_app):
     assert received, "on_change did not fire"
     e = received[-1]
     assert isinstance(e, RangeSliderEvent)
-    assert e.lovalue == 20.0
-    assert e.hivalue == 90.0
+    assert e.low_value == 20.0
+    assert e.high_value == 90.0
 
 
 @pytest.mark.gui
@@ -123,12 +123,12 @@ def test_rangeslider_on_commit_delivers_range_commit_event(shown_app):
     _pump(shown_app)
 
     rs._internal.event_generate(
-        "<<Commit>>", data=RangeSliderCommitEvent(lovalue=10.0, hivalue=90.0)
+        "<<Commit>>", data=RangeSliderCommitEvent(low_value=10.0, high_value=90.0)
     )
     _pump(shown_app)
 
     assert len(received) == 1
     e = received[0]
     assert isinstance(e, RangeSliderCommitEvent)
-    assert e.lovalue == 10.0
-    assert e.hivalue == 90.0
+    assert e.low_value == 10.0
+    assert e.high_value == 90.0

@@ -564,8 +564,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             return
         self._dragging = None
         self.event_generate("<<Commit>>", data=RangeSliderCommitEvent(
-            lovalue=self._lo_var.get(),
-            hivalue=self._hi_var.get(),
+            low_value=self._lo_var.get(),
+            high_value=self._hi_var.get(),
         ))
 
     def _move(self, pos: int) -> None:
@@ -582,8 +582,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             (self._lo_var.get() if self._focus_handle == "lo" else self._hi_var.get()) + amount
         )
         self.event_generate("<<Commit>>", data=RangeSliderCommitEvent(
-            lovalue=self._lo_var.get(),
-            hivalue=self._hi_var.get(),
+            low_value=self._lo_var.get(),
+            high_value=self._hi_var.get(),
         ))
 
     def _set_focused(self, value: float) -> None:
@@ -602,10 +602,10 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         lo = self._lo_var.get()
         hi = self._hi_var.get()
         self.event_generate("<<Change>>", data=RangeSliderEvent(
-            lovalue=lo,
-            hivalue=hi,
-            prev_lovalue=self._prev_lovalue,
-            prev_hivalue=self._prev_hivalue,
+            low_value=lo,
+            high_value=hi,
+            prev_low_value=self._prev_lovalue,
+            prev_high_value=self._prev_hivalue,
         ))
         self._prev_lovalue = lo
         self._prev_hivalue = hi
@@ -615,10 +615,10 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         lo = self._lo_var.get()
         hi = self._hi_var.get()
         self.event_generate("<<Change>>", data=RangeSliderEvent(
-            lovalue=lo,
-            hivalue=hi,
-            prev_lovalue=self._prev_lovalue,
-            prev_hivalue=self._prev_hivalue,
+            low_value=lo,
+            high_value=hi,
+            prev_low_value=self._prev_lovalue,
+            prev_high_value=self._prev_hivalue,
         ))
         self._prev_lovalue = lo
         self._prev_hivalue = hi
@@ -712,9 +712,9 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         """Register a callback for ``<<Change>>`` events.
 
         Args:
-            callback: Called with a Tkinter event; ``event.lovalue``
-                and ``event.hivalue`` are the current handle values;
-                ``event.prev_lovalue`` and ``event.prev_hivalue``
+            callback: Called with a Tkinter event; ``event.low_value``
+                and ``event.high_value`` are the current handle values;
+                ``event.prev_low_value`` and ``event.prev_high_value``
                 are the values before the change.
 
         Returns:
@@ -737,8 +737,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         downstream operations.
 
         Args:
-            callback: Called with a Tkinter event; ``event.lovalue``
-                and ``event.hivalue`` are the committed values.
+            callback: Called with a Tkinter event; ``event.low_value``
+                and ``event.high_value`` are the committed values.
 
         Returns:
             Bind ID — pass to `off_commit()` to unsubscribe.

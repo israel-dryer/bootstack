@@ -94,16 +94,16 @@ class SliderCommitEvent:
 class RangeSliderEvent:
     """Fires while either handle of a range slider moves."""
 
-    lovalue: float = 0.0
+    low_value: float = 0.0
     """The new lower-bound value."""
 
-    hivalue: float = 0.0
+    high_value: float = 0.0
     """The new upper-bound value."""
 
-    prev_lovalue: float = 0.0
+    prev_low_value: float = 0.0
     """The lower-bound value before this move."""
 
-    prev_hivalue: float = 0.0
+    prev_high_value: float = 0.0
     """The upper-bound value before this move."""
 
 
@@ -111,10 +111,10 @@ class RangeSliderEvent:
 class RangeSliderCommitEvent:
     """Fires when a range slider's values are committed."""
 
-    lovalue: float = 0.0
+    low_value: float = 0.0
     """The committed lower-bound value."""
 
-    hivalue: float = 0.0
+    high_value: float = 0.0
     """The committed upper-bound value."""
 
 
