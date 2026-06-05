@@ -120,6 +120,10 @@ See also
 API reference
 -------------
 
+Everything in the ``bootstack.events`` catalog: the curated :class:`Event` for
+native events, the :class:`Subscription` handle returned by every binding, and
+the typed payload classes handed to data-carrying handlers.
+
 The curated event handed to native/context handlers:
 
 .. autoclass:: bootstack.events.Event
@@ -130,9 +134,6 @@ The cancellable handle returned by every binding:
 .. autoclass:: bootstack.events.Subscription
    :members:
    :exclude-members: __init__
-
-Payload catalog
----------------
 
 The typed payloads handed to data-carrying handlers. Import them from
 ``bootstack.events`` (e.g. ``from bootstack.events import ChangeEvent``).
