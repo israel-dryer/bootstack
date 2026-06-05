@@ -58,7 +58,7 @@ For database or API-backed data, pass a ``DataSourceProtocol`` implementation:
 
 .. code-block:: python
 
-   ds = bs.MemoryDataSource(records)
+   ds = bs.MemoryDataSource().set_data(records)
    bs.ListView(data_source=ds)
 
 Reload after external changes with ``reload()``:

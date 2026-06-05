@@ -38,18 +38,19 @@ class BaseDataSource(ABC):
         page_size: Current page size setting
 
     Example:
-        ```python
-        class RedisDataSource(BaseDataSource):
-            def __init__(self, redis_client, page_size=10):
-                super().__init__(page_size)
-                self.redis = redis_client
+        .. code-block:: python
 
-            def set_data(self, records):
-                pass  # Redis-specific implementation
+            class RedisDataSource(BaseDataSource):
+                def __init__(self, redis_client, page_size=10):
+                    super().__init__(page_size)
+                    self.redis = redis_client
 
-            def get_page(self, page=None):
-                pass  # Redis-specific implementation
-        ```
+                def set_data(self, records):
+                    pass  # Redis-specific implementation
+
+                def get_page(self, page=None):
+                    pass  # Redis-specific implementation
+
     """
 
     def __init__(self, page_size: int = 10):

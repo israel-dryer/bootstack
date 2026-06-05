@@ -32,11 +32,12 @@ Large File Optimization:
     - Automatic strategy selection based on file size
 
 Example:
-    ```python
-    ds = FileDataSource("data.csv")
-    ds.load()
-    page = ds.get_page(0)
-    ```
+    .. code-block:: python
+
+        ds = FileDataSource("data.csv")
+        ds.load()
+        page = ds.get_page(0)
+
 """
 
 from __future__ import annotations
@@ -87,12 +88,13 @@ class FileSourceConfig:
         on_error: Function(exception) called if loading fails.
 
     Example:
-        ```python
-        config = FileSourceConfig(
-            column_renames={'emp_id': 'id'},
-            column_types={'age': int},
-        )
-        ```
+        .. code-block:: python
+
+            config = FileSourceConfig(
+                column_renames={'emp_id': 'id'},
+                column_types={'age': int},
+            )
+
     """
 
     file_format: Literal['auto', 'csv', 'tsv', 'json', 'jsonl'] = 'auto'
@@ -168,12 +170,13 @@ class FileDataSource(MemoryDataSource):
             - > 500k: Hybrid
 
     Example:
-        ```python
-        ds = FileDataSource("data.csv")
-        ds.load()
-        ds.set_filter("age > 25")
-        page = ds.get_page(0)
-        ```
+        .. code-block:: python
+
+            ds = FileDataSource("data.csv")
+            ds.load()
+            ds.set_filter("age > 25")
+            page = ds.get_page(0)
+
 
     Note:
         - File is re-parsed on reload()

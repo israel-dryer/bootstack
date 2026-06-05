@@ -17,12 +17,13 @@ The SqliteDataSource is ideal for:
 For in-memory, lightweight scenarios, consider MemoryDataSource instead.
 
 Example:
-    ```python
-    ds = SqliteDataSource("mydata.db", page_size=50)
-    ds.set_data([{"name": "Alice", "age": 30}])
-    ds.set_filter("age >= 25")
-    page = ds.get_page(0)
-    ```
+    .. code-block:: python
+
+        ds = SqliteDataSource("mydata.db", page_size=50)
+        ds.set_data([{"name": "Alice", "age": 30}])
+        ds.set_filter("age >= 25")
+        page = ds.get_page(0)
+
 """
 
 from __future__ import annotations
@@ -54,12 +55,13 @@ class SqliteDataSource(BaseDataSource):
         page_size: Current page size setting
 
     Example:
-        ```python
-        ds = SqliteDataSource("data.db", page_size=20)
-        ds.set_data([{"name": "Alice", "age": 30}])
-        ds.set_filter("age > 25")
-        page = ds.get_page(0)
-        ```
+        .. code-block:: python
+
+            ds = SqliteDataSource("data.db", page_size=20)
+            ds.set_data([{"name": "Alice", "age": 30}])
+            ds.set_filter("age > 25")
+            page = ds.get_page(0)
+
 
     Note:
         - The database connection persists for the lifetime of the object

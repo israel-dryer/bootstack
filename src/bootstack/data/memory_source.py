@@ -23,10 +23,11 @@ Filtering Syntax:
         - Literals: 'string', "string", 123, 3.14, true, false, null
 
     Example:
-        ```python
-        set_filter("status = 'active' AND age >= 18")
-        set_filter("name LIKE 'John%'")
-        ```
+        .. code-block:: python
+
+            set_filter("status = 'active' AND age >= 18")
+            set_filter("name LIKE 'John%'")
+
 
 Sorting Syntax:
     Multi-column sorting with ASC/DESC:
@@ -67,15 +68,16 @@ class MemoryDataSource(BaseDataSource):
         page_size: Current page size setting
 
     Example:
-        ```python
-        ds = MemoryDataSource(page_size=20)
-        ds.set_data([
-            {"name": "Alice", "age": 30},
-            {"name": "Bob", "age": 25},
-        ])
-        ds.set_filter("age >= 30")
-        page = ds.get_page(0)
-        ```
+        .. code-block:: python
+
+            ds = MemoryDataSource(page_size=20)
+            ds.set_data([
+                {"name": "Alice", "age": 30},
+                {"name": "Bob", "age": 25},
+            ])
+            ds.set_filter("age >= 30")
+            page = ds.get_page(0)
+
     """
 
     def __init__(self, page_size: int = 10):

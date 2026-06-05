@@ -126,7 +126,7 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.signals.signal.Signal
+.. autoclass:: bootstack.signals.Signal
    :members:
    :undoc-members:
    :special-members: __call__

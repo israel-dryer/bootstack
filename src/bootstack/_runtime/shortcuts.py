@@ -4,23 +4,24 @@ This module provides a service for managing keyboard shortcuts with
 automatic platform detection and modifier key translation.
 
 Examples:
-    ```python
-    import bootstack as bs
+    .. code-block:: python
 
-    app = bs.App()
-    shortcuts = bs.get_shortcuts()
+        import bootstack as bs
 
-    # Register shortcuts
-    shortcuts.register("save", "Mod+S", save_file)
-    shortcuts.register("open", "Mod+O", open_file)
-    shortcuts.register("quit", "Mod+Q", app.quit)
+        app = bs.App()
+        shortcuts = bs.get_shortcuts()
 
-    # Bind to app window
-    shortcuts.bind_to(app)
+        # Register shortcuts
+        shortcuts.register("save", "Mod+S", save_file)
+        shortcuts.register("open", "Mod+O", open_file)
+        shortcuts.register("quit", "Mod+Q", app.quit)
 
-    # Menu displays shortcut text automatically
-    menu.add_command(text="Save", shortcut="save", command=save_file)
-    ```
+        # Bind to app window
+        shortcuts.bind_to(app)
+
+        # Menu displays shortcut text automatically
+        menu.add_command(text="Save", shortcut="save", command=save_file)
+
 """
 from __future__ import annotations
 
@@ -146,20 +147,21 @@ class Shortcuts:
     - `Shift` works the same on all platforms
 
     Examples:
-        ```python
-        shortcuts = get_shortcuts()
+        .. code-block:: python
 
-        # Register shortcuts
-        shortcuts.register("save", "Mod+S", save_file)
-        shortcuts.register("undo", "Mod+Z", undo)
-        shortcuts.register("find", "Mod+F", find)
+            shortcuts = get_shortcuts()
 
-        # Bind all to window
-        shortcuts.bind_to(app)
+            # Register shortcuts
+            shortcuts.register("save", "Mod+S", save_file)
+            shortcuts.register("undo", "Mod+Z", undo)
+            shortcuts.register("find", "Mod+F", find)
 
-        # Get display string for menu
-        shortcuts.display("save")  # "Ctrl+S" on Windows, "⌘S" on Mac
-        ```
+            # Bind all to window
+            shortcuts.bind_to(app)
+
+            # Get display string for menu
+            shortcuts.display("save")  # "Ctrl+S" on Windows, "⌘S" on Mac
+
     """
 
     _instance: 'Shortcuts | None' = None
@@ -191,11 +193,12 @@ class Shortcuts:
             ValueError: If key is already registered.
 
         Examples:
-            ```python
-            shortcuts.register("save", "Mod+S", save_file)
-            shortcuts.register("quit", "Mod+Q", app.quit)
-            shortcuts.register("refresh", "F5", refresh)
-            ```
+            .. code-block:: python
+
+                shortcuts.register("save", "Mod+S", save_file)
+                shortcuts.register("quit", "Mod+Q", app.quit)
+                shortcuts.register("refresh", "F5", refresh)
+
         """
         if key in self._shortcuts:
             raise ValueError(f"Shortcut key '{key}' is already registered")
@@ -355,13 +358,14 @@ def get_shortcuts() -> Shortcuts:
         The singleton Shortcuts instance.
 
     Examples:
-        ```python
-        import bootstack as bs
+        .. code-block:: python
 
-        shortcuts = bs.get_shortcuts()
-        shortcuts.register("save", "Mod+S", save_file)
-        shortcuts.bind_to(app)
-        ```
+            import bootstack as bs
+
+            shortcuts = bs.get_shortcuts()
+            shortcuts.register("save", "Mod+S", save_file)
+            shortcuts.bind_to(app)
+
     """
     return Shortcuts()
 
@@ -389,13 +393,14 @@ def format_shortcut(spec: str | None) -> str:
         is empty/None.
 
     Examples:
-        ```python
-        format_shortcut("save")       # "⌘S" on Mac, "Ctrl+S" on Win/Linux
-                                      # (assumes 'save' is registered)
-        format_shortcut("Mod+Shift+N") # "⇧⌘N" on Mac, "Ctrl+Shift+N" on Win
-        format_shortcut("F5")         # "F5" everywhere
-        format_shortcut("⌘S")         # "⌘S" — passes through unchanged
-        ```
+        .. code-block:: python
+
+            format_shortcut("save")       # "⌘S" on Mac, "Ctrl+S" on Win/Linux
+                                          # (assumes 'save' is registered)
+            format_shortcut("Mod+Shift+N") # "⇧⌘N" on Mac, "Ctrl+Shift+N" on Win
+            format_shortcut("F5")         # "F5" everywhere
+            format_shortcut("⌘S")         # "⌘S" — passes through unchanged
+
     """
     if not spec:
         return ''
