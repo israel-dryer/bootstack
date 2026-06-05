@@ -49,7 +49,7 @@ from bootstack.validation import ValidationRule, ValidationResult
 # ── Utilities ─────────────────────────────────────────────────────────────────
 from bootstack._core.images import Image
 from bootstack._runtime.app import AppSettings, get_app_settings, get_current_app
-from bootstack._runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
+from bootstack.shortcuts import Shortcuts, Shortcut, get_shortcuts
 
 # ── Widget type aliases ───────────────────────────────────────────────────────
 from bootstack.widgets.types import (
