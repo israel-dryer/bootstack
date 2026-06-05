@@ -132,7 +132,7 @@ The cancellable handle returned by every binding:
    :exclude-members: __init__
 
 Payload catalog
-~~~~~~~~~~~~~~~
+---------------
 
 The typed payloads handed to data-carrying handlers. Import them from
 ``bootstack.events`` (e.g. ``from bootstack.events import ChangeEvent``).
