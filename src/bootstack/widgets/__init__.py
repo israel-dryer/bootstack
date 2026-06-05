@@ -37,11 +37,9 @@ _EXPORTS: dict[str, str] = {
     # Data display
     "Label": "label", "Badge": "label", "ProgressBar": "progressbar",
     "Gauge": "gauge", "ListView": "listview", "Table": "table", "Tree": "tree",
-    "SelectionEvent": "table", "RowEvent": "table",
-    "RowsEvent": "table",
     # Navigation
     "PageStack": "pagestack", "StackPage": "pagestack",
-    "Tabs": "tabs", "TabPage": "tabs", "TabRef": "tabs", "TabChangeEvent": "tabs",
+    "Tabs": "tabs", "TabPage": "tabs",
     "SideNav": "sidenav", "SideNavItem": "sidenav", "SideNavGroup": "sidenav",
     "SideNavHeader": "sidenav", "SideNavSeparator": "sidenav",
     # Overlays

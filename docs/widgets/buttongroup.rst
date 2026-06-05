@@ -178,8 +178,9 @@ Handling clicks
 ~~~~~~~~~~~~~~~
 
 Use ``on_click()`` on the group to handle any button press in one place.
-The handler receives an event with ``event.data`` containing ``'key'``,
-``'text'``, and ``'icon'`` for the clicked button.
+The handler receives a :class:`ButtonGroupClickEvent
+<bootstack.events.ButtonGroupClickEvent>` with ``key``, ``text``, and ``icon``
+for the clicked button.
 
 .. code-block:: python
 
@@ -189,7 +190,7 @@ The handler receives an event with ``event.data`` containing ``'key'``,
    bg.add("Delete", icon="trash", key="delete")
 
    def handle_click(e):
-       print(e.data["key"], e.data["text"], e.data["icon"])
+       print(e.key, e.text, e.icon)
 
    bg.on_click(handle_click)
 

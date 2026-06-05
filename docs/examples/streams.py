@@ -27,8 +27,8 @@ with bs.App(title="Streams", padding=16, gap=8, minsize=(380, 1)) as app:
     # Build the pipeline once. Each operator returns a new Stream; `.listen()`
     # is the terminal that activates the upstream Tk binding.
     (
-        query.on_input()                       # Stream of keystroke events
-        .map(lambda e: e.data["text"])         # event  -> current text
+        query.on_input()                       # Stream of InputEvent payloads
+        .map(lambda e: e.text)                 # event  -> current text
         .map(str.strip)                        # trim whitespace
         .filter(lambda text: len(text) >= 3)   # ignore very short queries
         .debounce(300)                         # wait for a 300 ms pause

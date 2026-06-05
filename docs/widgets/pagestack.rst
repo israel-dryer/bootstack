@@ -109,20 +109,22 @@ Events
 ~~~~~~
 
 ``on_page_change`` fires after every navigation. ``on_page_mount`` fires when
-a page becomes visible. Both receive an ``event.data`` dict with context about
-the transition.
+a page becomes visible. Both receive a :class:`PageChangeEvent
+<bootstack.events.PageChangeEvent>` with context about the transition — the
+``page`` and ``prev_page`` keys, the ``nav`` direction, and any ``data`` passed
+to ``navigate()``.
 
 .. code-block:: python
 
    def on_change(event):
-       page = event.data["page"]        # current page key
-       prev = event.data["prev_page"]   # previous page key (or None)
-       nav  = event.data["nav"]         # 'push', 'back', or 'forward'
+       page = event.page        # current page key
+       prev = event.prev_page   # previous page key (or None)
+       nav  = event.nav         # 'push', 'back', or 'forward'
 
    ps.on_page_change(on_change)
 
    # Stream form — compose with operators
-   ps.on_page_change().listen(lambda e: print(e.data["page"]))
+   ps.on_page_change().listen(lambda e: print(e.page))
 
 Introspection
 ~~~~~~~~~~~~~

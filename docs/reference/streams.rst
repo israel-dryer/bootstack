@@ -33,7 +33,7 @@ without changing the value:
 
    (
        field.on_input()
-       .map(lambda e: e.data["text"])     # event -> text
+       .map(lambda e: e.text)     # event -> text
        .filter(lambda text: len(text) >= 3)
        .tap(lambda text: log(text))       # peek, value passes through unchanged
        .listen(search)
@@ -65,7 +65,7 @@ for a stream in the first place:
 
 .. code-block:: python
 
-   field.on_input().map(lambda e: e.data["text"]).debounce(300).listen(search)
+   field.on_input().map(lambda e: e.text).debounce(300).listen(search)
 
 Activating and cancelling
 -------------------------

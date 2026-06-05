@@ -146,19 +146,19 @@ newly selected key.
 .. code-block:: python
 
    def on_select(event):
-       key = event.data["key"]   # e.g. 'home'
+       key = event.key   # e.g. 'home'
 
    nav.on_change(on_select)
 
    # Stream form
-   nav.on_change().listen(lambda e: print(e.data["key"]))
+   nav.on_change().listen(lambda e: print(e.key))
 
 Other events:
 
 .. code-block:: python
 
-   nav.on_pane_toggled(lambda e: print("open:", e.data["is_open"]))
-   nav.on_display_mode_changed(lambda e: print("mode:", e.data["mode"]))
+   nav.on_pane_toggled(lambda e: print("open:", e.is_open))
+   nav.on_display_mode_changed(lambda e: print("mode:", e.mode))
    nav.on_back_requested(lambda e: ...)   # show_back_button=True only
 
 Reactive signal

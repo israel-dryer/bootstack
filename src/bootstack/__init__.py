@@ -58,12 +58,13 @@ from bootstack.widgets.types import (
     Fill, Justify, Orient, Relief, Side, Sticky,
     WidgetState, WidgetDensity,
     AccentToken, VariantToken, SurfaceToken,
-    Event,
 )
 
 # ── Public widget layer ───────────────────────────────────────────────────────
 from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError
-from bootstack.events import Subscription
+# The typed event payloads (ChangeEvent, SliderEvent, …) live in the
+# `bootstack.events` catalog — import them from there, not the top level.
+from bootstack.events import Event, Subscription
 from bootstack.scheduling import Schedule, Job
 from bootstack.streams import Stream, Handle
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -111,8 +112,8 @@ from bootstack.widgets.separator import Separator
 from bootstack.widgets.splitview import SplitView, SplitPane
 from bootstack.widgets.slider import RangeSlider, Slider
 from bootstack.widgets.spinnerfield import SpinnerField
-from bootstack.widgets.table import Table, SelectionEvent, RowEvent, RowsEvent
-from bootstack.widgets.tabs import TabChangeEvent, TabPage, TabRef, Tabs
+from bootstack.widgets.table import Table
+from bootstack.widgets.tabs import TabPage, Tabs
 from bootstack.widgets.textarea import TextArea
 from bootstack.widgets.timefield import TimeField
 from bootstack.widgets.tree import Tree
@@ -182,9 +183,8 @@ __all__ = [
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # Data display
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "Table", "Tree",
-    "SelectionEvent", "RowEvent", "RowsEvent",
     # Navigation
-    "PageStack", "StackPage", "Tabs", "TabPage", "TabRef", "TabChangeEvent",
+    "PageStack", "StackPage", "Tabs", "TabPage",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
     # Overlays
     "Tooltip", "Toast", "toast",

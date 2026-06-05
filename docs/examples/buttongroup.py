@@ -86,7 +86,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
     bg.add("Cancel", icon="x-lg", key="cancel")
     bg.add("Delete", icon="trash", key="delete")
     last = bs.Signal("(none)")
-    bg.on_click(lambda e: last.set(e.data["key"]))
+    bg.on_click(lambda e: last.set(e.key))
     bs.Label(textsignal=last, accent="secondary")
 
 app.run()

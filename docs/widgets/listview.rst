@@ -165,6 +165,10 @@ The scrollbar is shown by default. Pass ``show_scrollbar=False`` to hide it
 Events
 ~~~~~~
 
+Item events hand the handler the **record dict** for the affected row directly,
+so you read its fields with ``e["field"]`` (plus drag/move metadata such as
+``e["id"]`` and ``e["target_index"]``).
+
 All ``on_*`` methods return a ``Subscription`` when called with a handler, or
 a ``Stream`` when called without one. Call ``.cancel()`` on the subscription
 to unsubscribe:
@@ -173,9 +177,9 @@ to unsubscribe:
 
    lv = bs.ListView(items=records, selection_mode="single")
 
-   sub = lv.on_item_click(lambda e: print("clicked:", e.data["title"]))
+   sub = lv.on_item_click(lambda e: print("clicked:", e["title"]))
    lv.on_selection_changed(lambda e: print("selected:", lv.get_selected()))
-   lv.on_item_delete(lambda e: print("deleted:", e.data["id"]))
+   lv.on_item_delete(lambda e: print("deleted:", e["id"]))
 
    sub.cancel()   # unsubscribe
 
@@ -184,7 +188,7 @@ For reorderable lists, listen for drag completion:
 .. code-block:: python
 
    lv = bs.ListView(items=records, allow_reorder=True)
-   lv.on_item_drag_end(lambda e: print("moved to:", e.data["target_index"]))
+   lv.on_item_drag_end(lambda e: print("moved to:", e["target_index"]))
 
 Scrolling
 ~~~~~~~~~
