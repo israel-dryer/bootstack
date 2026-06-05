@@ -138,79 +138,53 @@ The cancellable handle returned by every binding:
 The typed payloads handed to data-carrying handlers. Import them from
 ``bootstack.events`` (e.g. ``from bootstack.events import ChangeEvent``).
 
-**Fields and input**
-
-.. autoclass:: bootstack.events.ChangeEvent
-   :members:
-.. autoclass:: bootstack.events.InputEvent
-   :members:
-.. autoclass:: bootstack.events.ValidationEvent
-   :members:
-
-**Sliders and meters**
-
-.. autoclass:: bootstack.events.SliderEvent
-   :members:
-.. autoclass:: bootstack.events.SliderCommitEvent
-   :members:
-.. autoclass:: bootstack.events.RangeSliderEvent
-   :members:
-.. autoclass:: bootstack.events.RangeSliderCommitEvent
-   :members:
-
-**Calendar**
-
-.. autoclass:: bootstack.events.DateSelectEvent
-   :members:
-
-**Expander and accordion**
-
-.. autoclass:: bootstack.events.ToggleEvent
-   :members:
 .. autoclass:: bootstack.events.AccordionChangeEvent
    :members:
-
-**Navigation**
-
-.. autoclass:: bootstack.events.PageChangeEvent
+.. autoclass:: bootstack.events.ButtonGroupClickEvent
    :members:
-.. autoclass:: bootstack.events.NavEvent
+.. autoclass:: bootstack.events.ChangeEvent
    :members:
-.. autoclass:: bootstack.events.PaneToggleEvent
+.. autoclass:: bootstack.events.DateSelectEvent
    :members:
 .. autoclass:: bootstack.events.DisplayModeEvent
    :members:
-
-**Tabs**
-
-.. autoclass:: bootstack.events.TabRef
+.. autoclass:: bootstack.events.InputEvent
    :members:
-.. autoclass:: bootstack.events.TabChangeEvent
+.. autoclass:: bootstack.events.NavEvent
    :members:
-.. autoclass:: bootstack.events.TabActivateEvent
+.. autoclass:: bootstack.events.PageChangeEvent
    :members:
-.. autoclass:: bootstack.events.TabDeactivateEvent
+.. autoclass:: bootstack.events.PaneToggleEvent
    :members:
-.. autoclass:: bootstack.events.TabCloseEvent
+.. autoclass:: bootstack.events.RangeSliderCommitEvent
    :members:
-
-**Table**
-
+.. autoclass:: bootstack.events.RangeSliderEvent
+   :members:
 .. autoclass:: bootstack.events.RowEvent
    :members:
 .. autoclass:: bootstack.events.RowsEvent
    :members:
 .. autoclass:: bootstack.events.SelectionEvent
    :members:
-
-**Text area**
-
+.. autoclass:: bootstack.events.SliderCommitEvent
+   :members:
+.. autoclass:: bootstack.events.SliderEvent
+   :members:
+.. autoclass:: bootstack.events.TabActivateEvent
+   :members:
+.. autoclass:: bootstack.events.TabChangeEvent
+   :members:
+.. autoclass:: bootstack.events.TabCloseEvent
+   :members:
+.. autoclass:: bootstack.events.TabDeactivateEvent
+   :members:
+.. autoclass:: bootstack.events.TabRef
+   :members:
 .. autoclass:: bootstack.events.TextModifiedEvent
    :members:
-
-**Button group**
-
-.. autoclass:: bootstack.events.ButtonGroupClickEvent
+.. autoclass:: bootstack.events.ToggleEvent
+   :members:
+.. autoclass:: bootstack.events.ValidationEvent
    :members:
 
 Full Example
