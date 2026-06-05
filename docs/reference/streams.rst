@@ -33,10 +33,10 @@ without changing the value:
 
    (
        field.on_input()
-       .map(lambda e: e.text)     # event -> text
-       .filter(lambda text: len(text) >= 3)
-       .tap(lambda text: log(text))       # peek, value passes through unchanged
-       .listen(search)
+           .map(lambda e: e.text)               # event -> text
+           .filter(lambda text: len(text) >= 3)
+           .tap(lambda text: log(text))         # peek, value passes through unchanged
+           .listen(search)
    )
 
 Operators never mutate the source stream — building a second chain from the
