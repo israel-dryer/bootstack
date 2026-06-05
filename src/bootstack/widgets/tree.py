@@ -19,7 +19,7 @@ register_widget_events(_InternalTreeView, _TREE_EVENTS)
 
 
 class Tree(PublicWidgetBase):
-    """A hierarchical tree/table widget backed by `ttk.Treeview`.
+    """A hierarchical tree/table widget for displaying data in a tree structure.
 
     Displays data in a tree structure (with optional columns). Rows are
     called *items*; each item has a unique IID, optional text, optional

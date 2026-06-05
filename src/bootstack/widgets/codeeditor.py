@@ -61,7 +61,7 @@ class CodeEditor(PublicWidgetBase):
         height: Visible row count. Default `20`.
         scrollbars: Scrollbar visibility — `'both'` (default), `'auto'`,
             `'vertical'`, or `'none'`.
-        font: Font for the editor. Default `'TkFixedFont'`.
+        font: Font for the editor. Defaults to the monospace font.
         show_border: If True (default), styles the editor frame as a themed
             border with a focus ring.
         accent: Accent token for the focus border. Default `'primary'`.

@@ -15,9 +15,8 @@ from bootstack.widgets.types import AccentToken
 class GroupBox(PublicContainer):
     """A labeled container that groups related content inside a bordered frame.
 
-    Renders as a ``ttk.LabelFrame`` — the title is embedded in the top border
-    line, giving the classic fieldset look. Children are laid out according
-    to ``layout``.
+    The title is embedded in the top border line, giving the classic fieldset
+    look. Children are laid out according to ``layout``.
 
     Args:
         title: Text label embedded in the top border line. Defaults to an
