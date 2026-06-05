@@ -5,7 +5,7 @@ from typing import Literal, overload, Any, Callable
 from bootstack.widgets._impl.composites.meter import Meter as _InternalMeter
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import SliderEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event
 
@@ -117,8 +117,8 @@ class Gauge(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[SliderEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[SliderEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the gauge value changes.
 
         Returns:

@@ -2,11 +2,11 @@
 
 from .tabs import Tabs
 from .tabview import TabView
-from .events import (
+from bootstack.events import (
     TabRef,
-    TabChangeEventData,
-    TabActivateEventData,
-    TabDeactivateEventData,
+    TabChangeEvent,
+    TabActivateEvent,
+    TabDeactivateEvent,
     ChangeReason,
     ChangeMethod,
 )
@@ -15,9 +15,9 @@ __all__ = [
     "Tabs",
     "TabView",
     "TabRef",
-    "TabChangeEventData",
-    "TabActivateEventData",
-    "TabDeactivateEventData",
+    "TabChangeEvent",
+    "TabActivateEvent",
+    "TabDeactivateEvent",
     "ChangeReason",
     "ChangeMethod",
 ]

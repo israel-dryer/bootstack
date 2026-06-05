@@ -1,7 +1,5 @@
-"""Shared constants, TypedDicts, and PIL helpers for Slider and RangeSlider."""
+"""Shared constants and PIL helpers for Slider and RangeSlider."""
 from __future__ import annotations
-
-from typing import TypedDict
 
 from PIL import Image, ImageDraw
 from PIL.ImageTk import PhotoImage
@@ -28,27 +26,6 @@ LABEL_FONT_SIZE = 9
 # Keyboard step sizes
 STEP = 1
 STEP_LARGE = 10
-
-
-class SliderEventData(TypedDict):
-    value: float
-    prev_value: float
-
-
-class SliderCommitEventData(TypedDict):
-    value: float
-
-
-class RangeSliderEventData(TypedDict):
-    lovalue: float
-    hivalue: float
-    prev_lovalue: float
-    prev_hivalue: float
-
-
-class RangeSliderCommitEventData(TypedDict):
-    lovalue: float
-    hivalue: float
 
 
 def _make_badge(width: int, height: int, bg_color: str) -> PhotoImage:

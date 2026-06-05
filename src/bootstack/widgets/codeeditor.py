@@ -8,7 +8,7 @@ from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event
 
@@ -312,8 +312,8 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[ChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every edit.
 
         Returns:
@@ -324,8 +324,8 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_input(self) -> Stream: ...
     @overload
-    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_input(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
         Returns:
@@ -336,8 +336,8 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_modified(self) -> Stream: ...
     @overload
-    def on_modified(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_modified(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_modified(self, handler: Callable[[TextModifiedEvent], Any]) -> Subscription: ...
+    def on_modified(self, handler: Callable[[TextModifiedEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when `is_dirty` changes.
 
         Returns:
@@ -348,8 +348,8 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_undo(self) -> Stream: ...
     @overload
-    def on_undo(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_undo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_undo(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_undo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after an undo operation.
 
         Returns:
@@ -360,8 +360,8 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_redo(self) -> Stream: ...
     @overload
-    def on_redo(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_redo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_redo(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_redo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after a redo operation.
 
         Returns:

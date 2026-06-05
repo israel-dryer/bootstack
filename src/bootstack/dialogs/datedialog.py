@@ -290,9 +290,7 @@ class DateDialog:
         payload = getattr(event, "data", None)
 
         if self._selection_mode == "range":
-            range_data = None
-            if isinstance(payload, dict):
-                range_data = payload.get("range")
+            range_data = getattr(payload, "range", None)
             if range_data is None:
                 range_data = self._picker.get_range()
             start, end = range_data if range_data else (None, None)
@@ -301,9 +299,7 @@ class DateDialog:
                 return
             result: date | Tuple[date, date] = (start, end)
         else:
-            selected = None
-            if isinstance(payload, dict):
-                selected = payload.get("date") or payload.get("result")
+            selected = getattr(payload, "date", None)
             selected = selected or self._picker.get()
             if selected is None:
                 return

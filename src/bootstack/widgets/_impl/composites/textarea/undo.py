@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from bootstack.events import InputEvent
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 
 if TYPE_CHECKING:
@@ -180,7 +181,7 @@ class UndoManager(EditFilter):
         finally:
             self._undoing = False
         self._core.text.event_generate(
-            '<<TextUndo>>', data={'value': self._core.value}, when='tail'
+            '<<TextUndo>>', data=InputEvent(text=self._core.value), when='tail'
         )
 
     def redo(self) -> None:
@@ -196,7 +197,7 @@ class UndoManager(EditFilter):
         finally:
             self._undoing = False
         self._core.text.event_generate(
-            '<<TextRedo>>', data={'value': self._core.value}, when='tail'
+            '<<TextRedo>>', data=InputEvent(text=self._core.value), when='tail'
         )
 
     def reset_undo(self) -> None:

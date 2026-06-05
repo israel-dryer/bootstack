@@ -16,6 +16,7 @@ from typing_extensions import Literal, TypedDict, Unpack
 
 from bootstack.widgets.types import Master
 
+from bootstack.events import RowEvent, RowsEvent, SelectionEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
@@ -55,26 +56,13 @@ _TABLE_SEARCH_MODE_OPTIONS = [
 ]
 
 
-class TableSelectionEventData(TypedDict):
-    """Payload for `<<SelectionChange>>` events."""
-    records: list[dict]
-    """The currently selected record dicts."""
-    iids: list[str]
-    """The Treeview internal IDs of the selected rows."""
 
 
-class TableRowEventData(TypedDict):
-    """Payload for `<<RowClick>>`, `<<RowDoubleClick>>`, and `<<RowRightClick>>` events."""
-    record: dict
-    """The record dict for the interacted row."""
-    iid: str
-    """The Treeview internal ID of the interacted row."""
 
 
-class TableRowsEventData(TypedDict):
-    """Payload for `<<RowDelete>>`, `<<RowInsert>>`, `<<RowUpdate>>`, and `<<RowMove>>` events."""
-    records: list[dict]
-    """The affected record dicts."""
+
+
+
 
 
 class TableView(Frame):
@@ -300,11 +288,11 @@ class TableView(Frame):
         self._load_page(0)
 
     # ------------------------------------------------------------------ Public event API
-    def on_selection_changed(self, callback: Callable[[TableSelectionEventData], None]) -> str:
+    def on_selection_changed(self, callback: Callable[[SelectionEvent], None]) -> str:
         """Register a callback for `<<SelectionChange>>` events.
 
         Args:
-            callback: Receives a `TableSelectionEventData` dict with keys `records`
+            callback: Receives a `SelectionEvent` dict with keys `records`
                 and `iids`.
 
         Returns:
@@ -320,11 +308,11 @@ class TableView(Frame):
         """
         self.unbind("<<SelectionChange>>", bind_id)
 
-    def on_row_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowClick>>` events (fires on single click).
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_click()` to unsubscribe.
@@ -339,11 +327,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowClick>>", bind_id)
 
-    def on_row_double_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_double_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowDoubleClick>>` events.
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_double_click()` to unsubscribe.
@@ -358,11 +346,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowDoubleClick>>", bind_id)
 
-    def on_row_right_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_right_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowRightClick>>` events.
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_right_click()` to unsubscribe.
@@ -377,11 +365,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowRightClick>>", bind_id)
 
-    def on_row_deleted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_deleted(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowDelete>>` events (fires when rows are removed).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_deleted()` to unsubscribe.
@@ -396,11 +384,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowDelete>>", bind_id)
 
-    def on_row_inserted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_inserted(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowInsert>>` events (fires when rows are added).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_inserted()` to unsubscribe.
@@ -415,11 +403,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowInsert>>", bind_id)
 
-    def on_row_updated(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_updated(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowUpdate>>` events (fires when rows are modified).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_updated()` to unsubscribe.
@@ -434,11 +422,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowUpdate>>", bind_id)
 
-    def on_row_moved(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_moved(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowMove>>` events (fires when rows are reordered).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_moved()` to unsubscribe.
@@ -492,7 +480,7 @@ class TableView(Frame):
         if inserted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowInsert>>", data={"records": inserted})
+            self.event_generate("<<RowInsert>>", data=RowsEvent(records=inserted))
 
     def update_rows(self, rows: list[dict]) -> None:
         """Update rows by internal row id; each dict must include the internal row-id key."""
@@ -510,7 +498,7 @@ class TableView(Frame):
         if updated:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowUpdate>>", data={"records": updated})
+            self.event_generate("<<RowUpdate>>", data=RowsEvent(records=updated))
 
     def delete_rows(self, rows_or_ids: list) -> None:
         """Delete rows by id or row dicts containing an id key."""
@@ -535,7 +523,7 @@ class TableView(Frame):
         if deleted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowDelete>>", data={"records": deleted})
+            self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted))
 
     def insert_columns(self, *_args, **_kwargs) -> None:
         """Not currently supported; columns are defined at construction time."""
@@ -557,7 +545,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         moved_recs = [self._row_map.get(i) for i in iids if i in self._row_map]
         if moved_recs:
-            self.event_generate("<<RowMove>>", data={"records": moved_recs})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=moved_recs))
 
     def move_columns(self, from_index: int, to_index: int) -> None:
         """Reorder a column from one index to another."""
@@ -1385,7 +1373,7 @@ class TableView(Frame):
             if iid not in self._tree.selection():
                 self._tree.selection_set(iid)
             rec = self._row_map.get(iid, {})
-            self.event_generate("<<RowRightClick>>", data={"record": rec, "iid": iid})
+            self.event_generate("<<RowRightClick>>", data=RowEvent(record=rec, iid=iid))
         if not self._tree.selection():
             return
         self._row_menu_col = col_idx
@@ -1400,7 +1388,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowDoubleClick>>", data={"record": rec, "iid": iid})
+        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=rec, iid=iid))
         if self._editing['updating']:
             self._open_form_dialog(rec)
 
@@ -1605,7 +1593,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data={"records": [rec]})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
 
     def _move_row_absolute(self, new_idx: int) -> None:
         sel = list(self._tree.selection())
@@ -1618,7 +1606,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data={"records": [rec]})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
 
     def _hide_selection(self) -> None:
         sel = list(self._tree.selection())
@@ -1648,7 +1636,7 @@ class TableView(Frame):
                 self._datasource.delete_record(rec_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
-                self.event_generate("<<RowDelete>>", data={"records": [rec]})
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[rec]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", rec_id)
 
@@ -1672,7 +1660,7 @@ class TableView(Frame):
             self._clear_cache()
             self._load_page(self._current_page)
             if deleted_records:
-                self.event_generate("<<RowDelete>>", data={"records": deleted_records})
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted_records))
 
     # ------------------------------------------------------------------ Cache helpers
     def _clear_cache(self) -> None:
@@ -2069,7 +2057,7 @@ class TableView(Frame):
     def _on_selection_event(self, _event=None) -> None:
         """Forward selection changes to subscribers."""
         rows = self.selected_rows
-        self.event_generate("<<SelectionChange>>", data={"records": rows, "iids": list(self._tree.selection())})
+        self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, iids=list(self._tree.selection())))
 
     def _on_row_click_event(self, event) -> None:
         region = self._tree.identify_region(event.x, event.y)
@@ -2079,7 +2067,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowClick>>", data={"record": rec, "iid": iid})
+        self.event_generate("<<RowClick>>", data=RowEvent(record=rec, iid=iid))
 
     # ------------------------------------------------------------------ Header context menu
     def _ensure_header_menu(self) -> None:

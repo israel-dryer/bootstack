@@ -705,7 +705,7 @@ def run_demo():
         _build_page("home")
 
         def _on_page_changed(event) -> None:
-            key = event.data.get("page") if hasattr(event, "data") else None
+            key = getattr(event.data, "page", None) if hasattr(event, "data") else None
             if key:
                 _build_page(key)
 

@@ -7,6 +7,7 @@ from PIL import Image, ImageDraw, ImageTk
 from PIL.Image import Resampling
 
 from bootstack._core.exceptions import ConfigurationWarning
+from bootstack.events import SliderEvent
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
@@ -428,7 +429,7 @@ class Meter(Frame):
         if value != self._last_changed_value:
             prev_value = self._last_changed_value
             self._last_changed_value = value
-            self.event_generate('<<Change>>', data={"value": value, "prev_value": prev_value})
+            self.event_generate('<<Change>>', data=SliderEvent(value=value, prev_value=prev_value))
 
     def _resolve_meter_styles(self):
         """Resolve theme colors for meter indicator, trough, and text."""
@@ -831,8 +832,8 @@ class Meter(Frame):
         """Register a callback for meter value changes.
 
         Args:
-            callback: Called with a Tkinter event; `event.data["value"]` is the
-                new value, `event.data["prev_value"]` is the previous value.
+            callback: Called with a `SliderEvent`; `event.value` is the
+                new value, `event.prev_value` is the previous value.
 
         Returns:
             Bind ID — pass to `off_changed()` to unregister.

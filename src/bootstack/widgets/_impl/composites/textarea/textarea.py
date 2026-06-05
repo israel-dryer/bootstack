@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import tkinter as tk
-from typing import Callable, TypedDict
+from typing import Callable
 
+from bootstack.events import ChangeEvent, InputEvent, ValidationEvent
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._impl.primitives.label import Label
@@ -14,18 +15,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from bootstack.signals import Signal
     from bootstack.validation.validation_rules import ValidationRule
-
-
-class TextAreaInputEventData(TypedDict):
-    """Payload for `<<Input>>` events — fires on each edit."""
-    value: str
-
-
-class TextAreaValidationEventData(TypedDict):
-    """Payload for `<<Valid>>`, `<<Invalid>>`, and `<<Validate>>` events."""
-    value: str
-    is_valid: bool
-    message: str
 
 
 class TextArea(GridFrame):
@@ -97,17 +86,17 @@ class TextArea(GridFrame):
             show_border: If True (default), wraps the text area in a themed
                 border that gains a focus ring on interaction.
             on_input: Callback invoked on every edit. Receives `event.data`
-                of type `TextAreaInputEventData`.
+                of type `InputEvent`.
             on_changed: Callback invoked when the widget loses focus. Receives
-                `event.data` of type `TextAreaInputEventData`.
+                `event.data` of type `InputEvent`.
             on_blur: Callback invoked when the widget loses focus (alias for
                 `on_changed` — use either, not both).
             on_valid: Callback invoked after successful validation. Receives
-                `event.data` of type `TextAreaValidationEventData`.
+                `event.data` of type `ValidationEvent`.
             on_invalid: Callback invoked after failed validation. Receives
-                `event.data` of type `TextAreaValidationEventData`.
+                `event.data` of type `ValidationEvent`.
             on_validated: Callback invoked after any validation, pass or fail.
-                Receives `event.data` of type `TextAreaValidationEventData`.
+                Receives `event.data` of type `ValidationEvent`.
         """
         # GridFrame rows: auto (label) | 1 (field, expands) | auto (message)
         super().__init__(master, rows=["auto", 1, "auto"], columns=[1],
@@ -294,14 +283,14 @@ class TextArea(GridFrame):
             result = rule.validate(value)
             if not result.is_valid:
                 self._show_error(result.message)
-                data: TextAreaValidationEventData = {
-                    "value": value, "is_valid": False, "message": result.message,
-                }
+                data = ValidationEvent(
+                    value=value, is_valid=False, message=result.message,
+                )
                 self.event_generate("<<Invalid>>", data=data, when="tail")
                 self.event_generate("<<Validate>>", data=data, when="tail")
                 return False
         self._clear_error()
-        data = {"value": value, "is_valid": True, "message": ""}
+        data = ValidationEvent(value=value, is_valid=True, message="")
         self.event_generate("<<Valid>>", data=data, when="tail")
         self.event_generate("<<Validate>>", data=data, when="tail")
         return True
@@ -312,7 +301,7 @@ class TextArea(GridFrame):
         if not self._showing_placeholder:
             self.event_generate(
                 "<<Input>>",
-                data={"value": self.value},
+                data=InputEvent(text=self.value),
                 when="tail",
             )
 
@@ -322,7 +311,7 @@ class TextArea(GridFrame):
         if not self._showing_placeholder:
             self.event_generate(
                 "<<Changed>>",
-                data={"value": self.value},
+                data=ChangeEvent(value=self.value, text=self.value),
                 when="tail",
             )
         if self._rules:
@@ -379,14 +368,14 @@ class TextArea(GridFrame):
 
     # ── event subscriptions ───────────────────────────────────────────────
 
-    def on_input(self, callback: Callable[[TextAreaInputEventData], None]) -> str:
+    def on_input(self, callback: Callable[[InputEvent], None]) -> str:
         """Register a callback for `<<Input>>` events.
 
         Fires on every edit. `event.data["value"]` is the current text.
 
         Args:
             callback: Receives the Tk event. `event.data` is
-                `TextAreaInputEventData`.
+                `InputEvent`.
 
         Returns:
             Bind ID — pass to `off_input()` to unsubscribe.
@@ -401,7 +390,7 @@ class TextArea(GridFrame):
         """
         self.unbind("<<Input>>", bind_id)
 
-    def on_changed(self, callback: Callable[[TextAreaInputEventData], None]) -> str:
+    def on_changed(self, callback: Callable[[InputEvent], None]) -> str:
         """Register a callback for `<<Changed>>` events.
 
         Fires when the widget loses focus. `event.data["value"]` is the
@@ -409,7 +398,7 @@ class TextArea(GridFrame):
 
         Args:
             callback: Receives the Tk event. `event.data` is
-                `TextAreaInputEventData`.
+                `InputEvent`.
 
         Returns:
             Bind ID — pass to `off_changed()` to unsubscribe.
@@ -450,7 +439,7 @@ class TextArea(GridFrame):
 
         Args:
             callback: Receives the Tk event. `event.data` is
-                `TextAreaValidationEventData`.
+                `ValidationEvent`.
 
         Returns:
             Bind ID — pass to `off_valid()` to unsubscribe.
@@ -472,7 +461,7 @@ class TextArea(GridFrame):
 
         Args:
             callback: Receives the Tk event. `event.data` is
-                `TextAreaValidationEventData`.
+                `ValidationEvent`.
 
         Returns:
             Bind ID — pass to `off_invalid()` to unsubscribe.
@@ -494,7 +483,7 @@ class TextArea(GridFrame):
 
         Args:
             callback: Receives the Tk event. `event.data` is
-                `TextAreaValidationEventData`.
+                `ValidationEvent`.
 
         Returns:
             Bind ID — pass to `off_validated()` to unsubscribe.

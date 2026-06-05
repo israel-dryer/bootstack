@@ -10,7 +10,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event
 
@@ -271,8 +271,8 @@ class PageStack(PublicWidgetBase):
     @overload
     def on_page_change(self) -> Stream: ...
     @overload
-    def on_page_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_page_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after every navigation.
 
         Returns:
@@ -283,8 +283,8 @@ class PageStack(PublicWidgetBase):
     @overload
     def on_page_mount(self) -> Stream: ...
     @overload
-    def on_page_mount(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_page_mount(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_page_mount(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_mount(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a page is mounted.
 
         Returns:

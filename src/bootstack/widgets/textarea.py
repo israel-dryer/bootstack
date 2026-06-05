@@ -6,7 +6,7 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.textarea.textarea import TextArea as _InternalTextArea
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.events import Subscription
+from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent, ValidationEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event
 
@@ -231,8 +231,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_input(self) -> Stream: ...
     @overload
-    def on_input(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_input(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_input(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every edit.
 
         Returns:
@@ -243,8 +243,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[ChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value is committed (on blur).
 
         Returns:
@@ -279,8 +279,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_valid(self) -> Stream: ...
     @overload
-    def on_valid(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_valid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_valid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
         Returns:
@@ -291,8 +291,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_invalid(self) -> Stream: ...
     @overload
-    def on_invalid(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_invalid(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
         Returns:
@@ -303,8 +303,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_validate(self) -> Stream: ...
     @overload
-    def on_validate(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_validate(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_validate(self, handler: Callable[[ValidationEvent], Any]) -> Subscription: ...
+    def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
         Returns:
@@ -315,8 +315,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_modified(self) -> Stream: ...
     @overload
-    def on_modified(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_modified(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_modified(self, handler: Callable[[TextModifiedEvent], Any]) -> Subscription: ...
+    def on_modified(self, handler: Callable[[TextModifiedEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the dirty state changes.
 
         Returns:
@@ -327,8 +327,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_undo(self) -> Stream: ...
     @overload
-    def on_undo(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_undo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_undo(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_undo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after an undo operation.
 
         Returns:
@@ -339,8 +339,8 @@ class TextArea(PublicWidgetBase):
     @overload
     def on_redo(self) -> Stream: ...
     @overload
-    def on_redo(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_redo(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_redo(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
+    def on_redo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after a redo operation.
 
         Returns:

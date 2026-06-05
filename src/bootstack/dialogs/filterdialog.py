@@ -150,7 +150,7 @@ class FilterDialogContent(ttk.Frame):
 
     def _on_search_input(self, event):
         """Filter visible checkboxes based on search text."""
-        self._filter = (event.data['text'] or '').lower()
+        self._filter = (event.data.text or '').lower()
 
         for key, cb in self._check_buttons.items():
             if self._filter in key.lower():

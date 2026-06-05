@@ -13,7 +13,7 @@ from bootstack.widgets._core.container import (
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import AccordionChangeEvent, Subscription, ToggleEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     Event, AccentToken, VariantToken, Fill, Anchor, Sticky,
@@ -208,8 +208,8 @@ class Expander(PublicContainer):
     @overload
     def on_toggle(self) -> Stream: ...
     @overload
-    def on_toggle(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_toggle(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_toggle(self, handler: Callable[[ToggleEvent], Any]) -> Subscription: ...
+    def on_toggle(self, handler: Callable[[ToggleEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the expander is expanded or collapsed.
 
         Returns:
@@ -429,8 +429,8 @@ class Accordion(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[AccordionChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[AccordionChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any section expands or collapses.
 
         ``event.data`` contains a list of the currently expanded internal

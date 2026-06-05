@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, Literal, TypedDict
 
 from babel import dates
 from babel.core import Locale
+from bootstack.events import DateSelectEvent
 from bootstack.widgets._impl.primitives import Button, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.types import Master
 from bootstack.constants import BOTH, CENTER, LEFT, NSEW, X, Y, YES
@@ -81,14 +82,6 @@ def _longest_month_title_length() -> int:
         if len(title) > max_length:
             max_length = len(title)
     return max_length
-
-
-class DateSelectEventData(TypedDict):
-    """Payload for `<<DateSelect>>` events."""
-    date: date
-    """Selected date in single mode (the most recently clicked date)."""
-    range: tuple[date, 'date | None']
-    """Selected range as (start, end). end is None if only start is set."""
 
 
 class Calendar(ttk.Frame):
@@ -319,7 +312,7 @@ class Calendar(ttk.Frame):
         Args:
             callback: Called when a date is selected or a range is updated.
                 Receives a Tk event object; `event.data` is a
-                `DateSelectEventData` dict with keys:
+                `DateSelectEvent` payload with attributes:
                 - `date`: the most recently clicked date.
                 - `range`: `(start, end)` tuple; `end` is None if only the
                   start of a range has been set.
@@ -806,7 +799,7 @@ class Calendar(ttk.Frame):
         self._range_end = None
         self._refresh_calendar()
         self.event_generate(
-            "<<DateSelect>>", data={"date": self._selected_date, "range": (self._range_start, self._range_end)})
+            "<<DateSelect>>", data=DateSelectEvent(date=self._selected_date, range=(self._range_start, self._range_end)))
 
     def _on_date_selected_by_date(self, target: date) -> None:
         if self._is_disabled(target):
@@ -827,7 +820,7 @@ class Calendar(ttk.Frame):
 
         self._draw_calendar()
         self.event_generate(
-            "<<DateSelect>>", data={"date": self._selected_date, "range": (self._range_start, self._range_end)})
+            "<<DateSelect>>", data=DateSelectEvent(date=self._selected_date, range=(self._range_start, self._range_end)))
 
     # --- helpers ------------------------------------------------------
     def _lock_size(self) -> None:

@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING
 from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.events import NavEvent
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.composites.compositeframe import CompositeFrame
@@ -314,7 +315,7 @@ class SideNavGroup(Frame):
             if self._variable:
                 self._variable.set(key)
             # Fire item invoked event
-            self._items[key].event_generate('<<ItemInvoked>>', data={'key': key})
+            self._items[key].event_generate('<<ItemInvoked>>', data=NavEvent(key=key))
 
     def _hide_popup(self):
         """Hide and destroy the popup."""
@@ -361,7 +362,7 @@ class SideNavGroup(Frame):
         self._is_expanded = True
         self._content_frame.pack(fill='both', expand=True)
         self._chevron_label.configure(icon=self._get_chevron_icon())
-        self.event_generate('<<GroupExpanding>>', data={'key': self._key})
+        self.event_generate('<<GroupExpanding>>', data=NavEvent(key=self._key))
 
     def collapse(self) -> None:
         """Collapse to hide items (expanded mode only)."""
@@ -371,7 +372,7 @@ class SideNavGroup(Frame):
         self._is_expanded = False
         self._content_frame.pack_forget()
         self._chevron_label.configure(icon=self._get_chevron_icon())
-        self.event_generate('<<GroupCollapsed>>', data={'key': self._key})
+        self.event_generate('<<GroupCollapsed>>', data=NavEvent(key=self._key))
 
     def toggle(self) -> None:
         """Toggle expansion state (expanded mode only)."""

@@ -111,8 +111,8 @@ from bootstack.widgets.separator import Separator
 from bootstack.widgets.splitview import SplitView, SplitPane
 from bootstack.widgets.slider import RangeSlider, Slider
 from bootstack.widgets.spinnerfield import SpinnerField
-from bootstack.widgets.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
-from bootstack.widgets.tabs import TabChangeEventData, TabPage, TabRef, Tabs
+from bootstack.widgets.table import Table, SelectionEvent, RowEvent, RowsEvent
+from bootstack.widgets.tabs import TabChangeEvent, TabPage, TabRef, Tabs
 from bootstack.widgets.textarea import TextArea
 from bootstack.widgets.timefield import TimeField
 from bootstack.widgets.tree import Tree
@@ -182,9 +182,9 @@ __all__ = [
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # Data display
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "Table", "Tree",
-    "TableSelectionEventData", "TableRowEventData", "TableRowsEventData",
+    "SelectionEvent", "RowEvent", "RowsEvent",
     # Navigation
-    "PageStack", "StackPage", "Tabs", "TabPage", "TabRef", "TabChangeEventData",
+    "PageStack", "StackPage", "Tabs", "TabPage", "TabRef", "TabChangeEvent",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
     # Overlays
     "Tooltip", "Toast", "toast",

@@ -3,9 +3,10 @@
 from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
+from bootstack.widgets._core.base import adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
-from bootstack.events import Subscription
+from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken, WidgetDensity
 
@@ -259,8 +260,8 @@ class AppShell:
     @overload
     def on_page_change(self) -> Stream: ...
     @overload
-    def on_page_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_page_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the active page changes.
 
         Returns:
@@ -268,10 +269,10 @@ class AppShell:
         """
         if handler is None:
             def _source(h: Callable) -> Subscription:
-                bid = self._internal.bind("<<PageChange>>", h, add="+")
+                bid = self._internal.bind("<<PageChange>>", adapt_handler(h), add="+")
                 return Subscription(self._internal, "<<PageChange>>", bid)
             return Stream(self._internal, _source=_source)
-        bid = self._internal.bind("<<PageChange>>", handler, add="+")
+        bid = self._internal.bind("<<PageChange>>", adapt_handler(handler), add="+")
         return Subscription(self._internal, "<<PageChange>>", bid)
 
     # ----- Lifecycle -----

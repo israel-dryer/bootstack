@@ -105,7 +105,7 @@ class Stream(Generic[T]):
         sub = (
             widget.on("change")
             .debounce(300)
-            .filter(lambda e: len(e.data.get("value", "")) > 1)
+            .filter(lambda e: len(e.value or "") > 1)
             .listen(on_search)
         )
 

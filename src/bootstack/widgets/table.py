@@ -4,10 +4,8 @@ from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
-    TableSelectionEventData,
-    TableRowEventData,
-    TableRowsEventData,
 )
+from bootstack.events import RowEvent, RowsEvent, SelectionEvent
 from bootstack.widgets._core.base import PublicWidgetBase
 
 
@@ -179,12 +177,12 @@ class Table(PublicWidgetBase):
     # ----- Events -----
 
     def on_selection_changed(
-        self, callback: Callable[["TableSelectionEventData"], None]
+        self, callback: Callable[["SelectionEvent"], None]
     ) -> str:
         """Register a callback for `<<SelectionChange>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableSelectionEventData` dict
+            callback: Receives `event.data` — a `SelectionEvent` dict
                 with `records` and `iids`.
 
         Returns:
@@ -201,12 +199,12 @@ class Table(PublicWidgetBase):
         self._internal.off_selection_changed(bind_id)
 
     def on_row_click(
-        self, callback: Callable[["TableRowEventData"], None]
+        self, callback: Callable[["RowEvent"], None]
     ) -> str:
         """Register a callback for `<<RowClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableRowEventData` dict
+            callback: Receives `event.data` — a `RowEvent` dict
                 with `record` and `iid`.
 
         Returns:
@@ -223,12 +221,12 @@ class Table(PublicWidgetBase):
         self._internal.off_row_click(bind_id)
 
     def on_row_double_click(
-        self, callback: Callable[["TableRowEventData"], None]
+        self, callback: Callable[["RowEvent"], None]
     ) -> str:
         """Register a callback for `<<RowDoubleClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableRowEventData` dict
+            callback: Receives `event.data` — a `RowEvent` dict
                 with `record` and `iid`.
 
         Returns:
@@ -245,12 +243,12 @@ class Table(PublicWidgetBase):
         self._internal.off_row_double_click(bind_id)
 
     def on_row_right_click(
-        self, callback: Callable[["TableRowEventData"], None]
+        self, callback: Callable[["RowEvent"], None]
     ) -> str:
         """Register a callback for `<<RowRightClick>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableRowEventData` dict
+            callback: Receives `event.data` — a `RowEvent` dict
                 with `record` and `iid`.
 
         Returns:
@@ -267,12 +265,12 @@ class Table(PublicWidgetBase):
         self._internal.off_row_right_click(bind_id)
 
     def on_row_deleted(
-        self, callback: Callable[["TableRowsEventData"], None]
+        self, callback: Callable[["RowsEvent"], None]
     ) -> str:
         """Register a callback for `<<RowDelete>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableRowsEventData` dict
+            callback: Receives `event.data` — a `RowsEvent` dict
                 with `records`.
 
         Returns:
@@ -289,12 +287,12 @@ class Table(PublicWidgetBase):
         self._internal.off_row_deleted(bind_id)
 
     def on_row_inserted(
-        self, callback: Callable[["TableRowsEventData"], None]
+        self, callback: Callable[["RowsEvent"], None]
     ) -> str:
         """Register a callback for `<<RowInsert>>` events.
 
         Args:
-            callback: Receives `event.data` — a `TableRowsEventData` dict
+            callback: Receives `event.data` — a `RowsEvent` dict
                 with `records`.
 
         Returns:

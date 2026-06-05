@@ -3,6 +3,7 @@ from typing import Any, Callable
 
 from typing_extensions import TypedDict, Unpack
 
+from bootstack.events import PageChangeEvent
 from bootstack.widgets._impl.primitives import Frame
 from bootstack.widgets.types import Master, AccentToken, SurfaceToken, VariantToken
 from bootstack._core import NavigationError
@@ -159,18 +160,16 @@ class PageStack(Frame):
             self._pages[self._current].pack_forget()
 
         # Normalized payload (self-contained snapshot)
-        payload = dict(data)
-        payload.update(
-            {
-                "page": key,
-                "prev_page": prev_key,
-                "prev_data": prev_data,
-                "nav": _nav,
-                "index": self._index,
-                "length": len(self._history),
-                "can_back": self._index > 0,
-                "can_forward": self._index < len(self._history) - 1,
-            }
+        payload = PageChangeEvent(
+            page=key,
+            prev_page=prev_key,
+            nav=_nav,
+            data=dict(data),
+            prev_data=prev_data,
+            index=self._index,
+            length=len(self._history),
+            can_back=self._index > 0,
+            can_forward=self._index < len(self._history) - 1,
         )
 
         # Mount and notify

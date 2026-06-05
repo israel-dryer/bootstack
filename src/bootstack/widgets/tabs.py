@@ -4,7 +4,7 @@ import tkinter
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tabs.tabview import TabView as _InternalTabView
-from bootstack.widgets._impl.composites.tabs.events import TabChangeEventData, TabRef
+from bootstack.events import TabChangeEvent, TabCloseEvent, TabRef
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
@@ -300,8 +300,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[TabChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[TabChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected tab changes.
 
         Returns:
@@ -312,8 +312,8 @@ class Tabs(PublicWidgetBase):
     @overload
     def on_tab_close(self) -> Stream: ...
     @overload
-    def on_tab_close(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_tab_close(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_tab_close(self, handler: Callable[[TabCloseEvent], Any]) -> Subscription: ...
+    def on_tab_close(self, handler: Callable[[TabCloseEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
@@ -336,4 +336,4 @@ class Tabs(PublicWidgetBase):
 
 register_widget_events(Tabs, _TABS_EVENTS)
 
-__all__ = ["Tabs", "TabPage", "TabChangeEventData", "TabRef"]
+__all__ = ["Tabs", "TabPage", "TabChangeEvent", "TabRef"]

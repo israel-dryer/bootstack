@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from typing_extensions import Unpack
-from typing import Any, Callable, TYPE_CHECKING, TypedDict
+from typing import Any, Callable, TYPE_CHECKING
 
+from bootstack.events import AccordionChangeEvent
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets._impl.composites.expander import Expander
@@ -12,12 +13,6 @@ from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
     pass
-
-
-class AccordionChangeEventData(TypedDict):
-    """Payload for `<<AccordionChange>>` events."""
-    expanded: list[Expander]
-    """Expanders that are currently open after the change."""
 
 
 class Accordion(Frame):
@@ -205,9 +200,9 @@ class Accordion(Frame):
         # Fire change event
         if self._expanders:
             expander_list = [self._expanders[k] for k in self._expander_order]
-            self.event_generate('<<AccordionChange>>', data={
-                'expanded': [exp for exp in expander_list if exp['expanded']]
-            })
+            self.event_generate('<<AccordionChange>>', data=AccordionChangeEvent(
+                expanded=tuple(exp for exp in expander_list if exp['expanded'])
+            ))
 
     def _on_expander_toggle(self, expander: Expander, event):
         """Handle expander toggle events."""
@@ -216,7 +211,7 @@ class Accordion(Frame):
 
         self._updating = True
         try:
-            is_expanded = event.data.get('expanded', False)
+            is_expanded = event.data.expanded
             expander_list = [self._expanders[k] for k in self._expander_order]
 
             if is_expanded:
@@ -237,9 +232,9 @@ class Accordion(Frame):
                         return
 
             # Fire change event
-            self.event_generate('<<AccordionChange>>', data={
-                'expanded': [exp for exp in expander_list if exp['expanded']]
-            })
+            self.event_generate('<<AccordionChange>>', data=AccordionChangeEvent(
+                expanded=tuple(exp for exp in expander_list if exp['expanded'])
+            ))
         finally:
             self._updating = False
 
@@ -365,11 +360,11 @@ class Accordion(Frame):
         self._show_separators = value
         return None
 
-    def on_accordion_changed(self, callback: Callable[[AccordionChangeEventData], None]) -> str:
+    def on_accordion_changed(self, callback: Callable[[AccordionChangeEvent], None]) -> str:
         """Register a callback for `<<AccordionChange>>` events.
 
         Args:
-            callback: Receives an `AccordionChangeEventData` dict with key
+            callback: Receives an `AccordionChangeEvent` payload with attribute
                 `expanded` (list of currently open Expanders).
 
         Returns:

@@ -9,7 +9,7 @@ from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.events import Subscription
+from bootstack.events import DisplayModeEvent, NavEvent, PaneToggleEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken
 from bootstack.signals import Signal
@@ -307,8 +307,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[NavEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[NavEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected item changes.
 
         Args:
@@ -334,8 +334,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_pane_toggled(self) -> Stream: ...
     @overload
-    def on_pane_toggled(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_pane_toggled(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_pane_toggled(self, handler: Callable[[PaneToggleEvent], Any]) -> Subscription: ...
+    def on_pane_toggled(self, handler: Callable[[PaneToggleEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the pane is opened or closed.
 
         Args:
@@ -349,8 +349,8 @@ class SideNav(PublicWidgetBase):
     @overload
     def on_display_mode_changed(self) -> Stream: ...
     @overload
-    def on_display_mode_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_display_mode_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_display_mode_changed(self, handler: Callable[[DisplayModeEvent], Any]) -> Subscription: ...
+    def on_display_mode_changed(self, handler: Callable[[DisplayModeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the display mode changes.
 
         Args:

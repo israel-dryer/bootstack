@@ -5,7 +5,7 @@ from typing import Any, Callable, Literal, overload
 from bootstack.widgets._impl.composites.buttongroup import ButtonGroup as _InternalButtonGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import ButtonGroupClickEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
 
@@ -110,11 +110,11 @@ class ButtonGroup(PublicWidgetBase):
 
         def _command() -> None:
             btn = _group._internal.item(_key)
-            _group.emit("click", data={
-                "key":  _key,
-                "text": str(btn.cget("text") or ""),
-                "icon": btn.configure_style_options("icon"),
-            })
+            _group.emit("click", data=ButtonGroupClickEvent(
+                key=_key,
+                text=str(btn.cget("text") or ""),
+                icon=btn.configure_style_options("icon"),
+            ))
 
         self._internal.add(label or None, key=key, command=_command, **btn_kwargs)
         return key
@@ -204,19 +204,19 @@ class ButtonGroup(PublicWidgetBase):
     @overload
     def on_click(self) -> Stream: ...
     @overload
-    def on_click(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_click(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_click(self, handler: Callable[[ButtonGroupClickEvent], Any]) -> Subscription: ...
+    def on_click(self, handler: Callable[[ButtonGroupClickEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any button in the group is clicked.
 
         Called with no handler, returns a composable `Stream`. Called with a
         handler, binds it immediately and returns a `Subscription`.
 
-        The handler receives a standard event object. ``event.data`` is a dict
-        with ``'key'``, ``'text'``, and ``'icon'`` for the clicked button.
+        The handler receives a `ButtonGroupClickEvent` with ``key``, ``text``,
+        and ``icon`` for the clicked button.
 
         Args:
-            handler: Called with the click event. Access ``event.data['key']``,
-                ``event.data['text']``, and ``event.data['icon']``.
+            handler: Called with the click event. Access ``event.key``,
+                ``event.text``, and ``event.icon``.
 
         Returns:
             `Subscription` (with handler) or `Stream` (without handler).

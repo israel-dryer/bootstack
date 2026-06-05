@@ -10,9 +10,9 @@ from typing import Any, Callable, Literal
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.composites.tabs.tabs import Tabs
 from bootstack.widgets._impl.composites.tabs.tabitem import TabItem
-from bootstack.widgets._impl.composites.tabs.events import (
+from bootstack.events import (
     ChangeMethod, ChangeReason,
-    TabActivateEventData, TabChangeEventData, TabDeactivateEventData, TabRef,
+    TabActivateEvent, TabChangeEvent, TabDeactivateEvent, TabRef,
 )
 from bootstack.widgets._impl.composites.pagestack import PageStack
 from bootstack.widgets.types import Master
@@ -167,27 +167,27 @@ class TabView(Frame):
         current_ref = _tab_ref(key)
         previous_ref = _tab_ref(prev_key) if prev_key else None
 
-        payload: TabChangeEventData = {
-            "current": current_ref,
-            "previous": previous_ref,
-            "reason": reason,
-            "via": via,
-        }
+        payload = TabChangeEvent(
+            current=current_ref,
+            previous=previous_ref,
+            reason=reason,
+            via=via,
+        )
 
         self.event_generate('<<TabChanged>>', data=payload, when='tail')
 
         # Per-tab lifecycle events
         if prev_key and prev_key in self._tab_map:
-            deactivate: TabDeactivateEventData = {
-                "key": prev_key,
-                "text": self._tab_locale_tokens.get(prev_key, prev_key),
-            }
+            deactivate = TabDeactivateEvent(
+                key=prev_key,
+                text=self._tab_locale_tokens.get(prev_key, prev_key),
+            )
             self.event_generate('<<TabDeactivate>>', data=deactivate, when='tail')
 
-        activate: TabActivateEventData = {
-            "key": key,
-            "text": self._tab_locale_tokens.get(key, key),
-        }
+        activate = TabActivateEvent(
+            key=key,
+            text=self._tab_locale_tokens.get(key, key),
+        )
         self.event_generate('<<TabActivate>>', data=activate, when='tail')
 
         self._prev_key = key
@@ -545,11 +545,11 @@ class TabView(Frame):
         """
         self._tabs.off_tab_added(bind_id)
 
-    def on_tab_changed(self, callback: Callable[[TabChangeEventData], None]) -> str:
+    def on_tab_changed(self, callback: Callable[[TabChangeEvent], None]) -> str:
         """Register a callback for `<<TabChanged>>` events.
 
         Args:
-            callback: Receives a `TabChangeEventData` dict with keys
+            callback: Receives a `TabChangeEvent` payload with attributes
                 ``current`` (`TabRef`), ``previous`` (`TabRef | None`),
                 ``reason`` (`ChangeReason`), and ``via`` (`ChangeMethod`).
 
@@ -566,13 +566,13 @@ class TabView(Frame):
         """
         self.unbind('<<TabChanged>>', bind_id)
 
-    def on_tab_activated(self, callback: Callable[[TabActivateEventData], None]) -> str:
+    def on_tab_activated(self, callback: Callable[[TabActivateEvent], None]) -> str:
         """Register a callback for `<<TabActivate>>` events.
 
         Fires when a tab becomes the selected (active) tab.
 
         Args:
-            callback: Receives a `TabActivateEventData` dict with keys
+            callback: Receives a `TabActivateEvent` payload with attributes
                 ``key`` and ``text``.
 
         Returns:
@@ -588,13 +588,13 @@ class TabView(Frame):
         """
         self.unbind('<<TabActivate>>', bind_id)
 
-    def on_tab_deactivated(self, callback: Callable[[TabDeactivateEventData], None]) -> str:
+    def on_tab_deactivated(self, callback: Callable[[TabDeactivateEvent], None]) -> str:
         """Register a callback for `<<TabDeactivate>>` events.
 
         Fires when a tab stops being the selected (active) tab.
 
         Args:
-            callback: Receives a `TabDeactivateEventData` dict with keys
+            callback: Receives a `TabDeactivateEvent` payload with attributes
                 ``key`` and ``text``.
 
         Returns:
