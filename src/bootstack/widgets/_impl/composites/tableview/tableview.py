@@ -7,6 +7,7 @@ context menus.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from collections import OrderedDict
 from tkinter import font as tkfont
@@ -16,9 +17,11 @@ from typing_extensions import Literal, TypedDict, Unpack
 
 from bootstack.widgets.types import Master
 
+from bootstack.events import RowEvent, RowsEvent, SelectionEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
+from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack._runtime.utility import bind_right_click
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu
@@ -51,30 +54,16 @@ _TABLE_SEARCH_MODE_OPTIONS = [
     ("table.search_mode_contains", "CONTAINS"),
     ("table.search_mode_starts_with", "STARTS WITH"),
     ("table.search_mode_ends_with", "ENDS WITH"),
-    ("table.search_mode_sql", "SQL"),
 ]
 
 
-class TableSelectionEventData(TypedDict):
-    """Payload for `<<SelectionChange>>` events."""
-    records: list[dict]
-    """The currently selected record dicts."""
-    iids: list[str]
-    """The Treeview internal IDs of the selected rows."""
 
 
-class TableRowEventData(TypedDict):
-    """Payload for `<<RowClick>>`, `<<RowDoubleClick>>`, and `<<RowRightClick>>` events."""
-    record: dict
-    """The record dict for the interacted row."""
-    iid: str
-    """The Treeview internal ID of the interacted row."""
 
 
-class TableRowsEventData(TypedDict):
-    """Payload for `<<RowDelete>>`, `<<RowInsert>>`, `<<RowUpdate>>`, and `<<RowMove>>` events."""
-    records: list[dict]
-    """The affected record dicts."""
+
+
+
 
 
 class TableView(Frame):
@@ -212,9 +201,7 @@ class TableView(Frame):
             search_mode=search_mode,
             search_trigger=search_trigger,
         )
-        # User-facing filter description (e.g., "fin" or a SQL expression in
-        # advanced SQL mode). Falls back to the raw datasource WHERE clause
-        # when set externally.
+        # User-facing filter description shown in the status bar (the search term).
         self._filter_summary: str = ""
         self._row_alternation = _build_row_alternation_options(
             striped=striped,
@@ -259,21 +246,24 @@ class TableView(Frame):
 
         seeded_records: list[dict] | None = None
         if rows:
-            try:
-                if self._column_keys:
-                    # Avoid per-row dict conversion when we already know the column order
-                    self._datasource.set_data(rows, column_keys=self._column_keys)
-                    seeded_records = None
-                else:
-                    seeded_records = self._to_records(rows)
-                    self._datasource.set_data(seeded_records)
-            except Exception:
-                # Last-resort fallback to dict conversion if direct load fails
-                seeded_records = self._to_records(rows)
+            # Seed the source silently — the table renders this data itself below,
+            # and the change subscription is not yet attached.
+            with self._silence_source():
                 try:
-                    self._datasource.set_data(seeded_records)
+                    if self._column_keys:
+                        # Avoid per-row dict conversion when we already know the column order
+                        self._datasource.load(rows, column_keys=self._column_keys)
+                        seeded_records = None
+                    else:
+                        seeded_records = self._to_records(rows)
+                        self._datasource.load(seeded_records)
                 except Exception:
-                    seeded_records = []
+                    # Last-resort fallback to dict conversion if direct load fails
+                    seeded_records = self._to_records(rows)
+                    try:
+                        self._datasource.load(seeded_records)
+                    except Exception:
+                        seeded_records = []
 
         self._ensure_column_metadata(seeded_records)
 
@@ -286,25 +276,67 @@ class TableView(Frame):
         # Initial load
         self._load_page(0)
 
+        # Auto-refresh when the data source changes from the outside (a shared
+        # source mutated directly, or a background-thread feed). Every mutation
+        # this table makes itself is wrapped in `_silence_source()`, so this
+        # handler only fires for genuinely external changes. The hub marshals
+        # the callback onto the main thread.
+        self._change_sub = None
+        on_change = getattr(self._datasource, 'on_change', None)
+        if callable(on_change):
+            try:
+                self._change_sub = on_change(self._on_source_change)
+            except Exception:
+                self._change_sub = None
+        self.bind('<Destroy>', self._on_table_destroy, add='+')
+
+    def _silence_source(self):
+        """Context manager suppressing source change broadcasts for our own writes."""
+        silence = getattr(self._datasource, '_silence', None)
+        if callable(silence):
+            return silence()
+        return contextlib.nullcontext()
+
+    def _on_source_change(self, event=None) -> None:
+        """Reload the current page after an external data-source change."""
+        try:
+            self._clear_cache()
+            self._load_page(self._current_page)
+        except Exception:
+            pass
+
+    def _on_table_destroy(self, event=None) -> None:
+        """Cancel the data-source subscription when the widget is destroyed."""
+        if event is not None and getattr(event, 'widget', None) is not self:
+            return
+        sub = self._change_sub
+        self._change_sub = None
+        if sub is not None:
+            try:
+                sub.cancel()
+            except Exception:
+                pass
+
     # ------------------------------------------------------------------ Public API
     def set_data(self, rows: list) -> None:
         """Replace data in the datasource and refresh the grid."""
-        if self._column_keys:
-            self._datasource.set_data(rows, column_keys=self._column_keys)
-            seeded_records = None
-        else:
-            seeded_records = self._to_records(rows)
-            self._datasource.set_data(seeded_records)
+        with self._silence_source():
+            if self._column_keys:
+                self._datasource.load(rows, column_keys=self._column_keys)
+                seeded_records = None
+            else:
+                seeded_records = self._to_records(rows)
+                self._datasource.load(seeded_records)
         self._ensure_column_metadata(seeded_records)
         self._clear_cache()
         self._load_page(0)
 
     # ------------------------------------------------------------------ Public event API
-    def on_selection_changed(self, callback: Callable[[TableSelectionEventData], None]) -> str:
+    def on_selection_changed(self, callback: Callable[[SelectionEvent], None]) -> str:
         """Register a callback for `<<SelectionChange>>` events.
 
         Args:
-            callback: Receives a `TableSelectionEventData` dict with keys `records`
+            callback: Receives a `SelectionEvent` dict with keys `records`
                 and `iids`.
 
         Returns:
@@ -320,11 +352,11 @@ class TableView(Frame):
         """
         self.unbind("<<SelectionChange>>", bind_id)
 
-    def on_row_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowClick>>` events (fires on single click).
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_click()` to unsubscribe.
@@ -339,11 +371,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowClick>>", bind_id)
 
-    def on_row_double_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_double_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowDoubleClick>>` events.
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_double_click()` to unsubscribe.
@@ -358,11 +390,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowDoubleClick>>", bind_id)
 
-    def on_row_right_click(self, callback: Callable[[TableRowEventData], None]) -> str:
+    def on_row_right_click(self, callback: Callable[[RowEvent], None]) -> str:
         """Register a callback for `<<RowRightClick>>` events.
 
         Args:
-            callback: Receives a `TableRowEventData` dict with keys `record` and `iid`.
+            callback: Receives a `RowEvent` dict with keys `record` and `iid`.
 
         Returns:
             Bind ID — pass to `off_row_right_click()` to unsubscribe.
@@ -377,11 +409,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowRightClick>>", bind_id)
 
-    def on_row_deleted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_deleted(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowDelete>>` events (fires when rows are removed).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_deleted()` to unsubscribe.
@@ -396,11 +428,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowDelete>>", bind_id)
 
-    def on_row_inserted(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_inserted(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowInsert>>` events (fires when rows are added).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_inserted()` to unsubscribe.
@@ -415,11 +447,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowInsert>>", bind_id)
 
-    def on_row_updated(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_updated(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowUpdate>>` events (fires when rows are modified).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_updated()` to unsubscribe.
@@ -434,11 +466,11 @@ class TableView(Frame):
         """
         self.unbind("<<RowUpdate>>", bind_id)
 
-    def on_row_moved(self, callback: Callable[[TableRowsEventData], None]) -> str:
+    def on_row_moved(self, callback: Callable[[RowsEvent], None]) -> str:
         """Register a callback for `<<RowMove>>` events (fires when rows are reordered).
 
         Args:
-            callback: Receives a `TableRowsEventData` dict with key `records`.
+            callback: Receives a `RowsEvent` dict with key `records`.
 
         Returns:
             Bind ID — pass to `off_row_moved()` to unsubscribe.
@@ -480,62 +512,65 @@ class TableView(Frame):
         """Insert new rows via the datasource and refresh."""
         recs = self._to_records(rows)
         inserted: list[dict] = []
-        for rec in recs:
-            try:
-                new_id = self._datasource.create_record(dict(rec))
-                rec = dict(rec)
-                if new_id is not None:
-                    rec[_ROW_ID] = new_id
-                inserted.append(rec)
-            except Exception:
-                logger.exception("Failed to insert record")
+        with self._silence_source():
+            for rec in recs:
+                try:
+                    new_id = self._datasource.insert(dict(rec))
+                    rec = dict(rec)
+                    if new_id is not None:
+                        rec[_ROW_ID] = new_id
+                    inserted.append(rec)
+                except Exception:
+                    logger.exception("Failed to insert record")
         if inserted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowInsert>>", data={"records": inserted})
+            self.event_generate("<<RowInsert>>", data=RowsEvent(records=inserted))
 
     def update_rows(self, rows: list[dict]) -> None:
         """Update rows by internal row id; each dict must include the internal row-id key."""
         updated: list[dict] = []
-        for rec in rows:
-            rec_id = rec.get(_ROW_ID)
-            if rec_id is None:
-                continue
-            updates = {k: v for k, v in rec.items() if k != _ROW_ID}
-            try:
-                self._datasource.update_record(rec_id, updates)
-                updated.append(rec)
-            except Exception:
-                logger.exception("Failed to update record id=%s", rec_id)
+        with self._silence_source():
+            for rec in rows:
+                rec_id = rec.get(_ROW_ID)
+                if rec_id is None:
+                    continue
+                updates = {k: v for k, v in rec.items() if k != _ROW_ID}
+                try:
+                    self._datasource.update(rec_id, updates)
+                    updated.append(rec)
+                except Exception:
+                    logger.exception("Failed to update record id=%s", rec_id)
         if updated:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowUpdate>>", data={"records": updated})
+            self.event_generate("<<RowUpdate>>", data=RowsEvent(records=updated))
 
     def delete_rows(self, rows_or_ids: list) -> None:
         """Delete rows by id or row dicts containing an id key."""
         deleted: list[dict] = []
-        for item in rows_or_ids:
-            rec_id = None
-            rec = {}
-            if isinstance(item, dict):
-                rec = item
-                rec_id = item.get(_ROW_ID)
-            else:
-                rec_id = item
-            if rec_id is None:
-                continue
-            try:
-                self._datasource.delete_record(rec_id)
-                if not rec:
-                    rec = {_ROW_ID: rec_id}
-                deleted.append(rec)
-            except Exception:
-                logger.exception("Failed to delete record id=%s", rec_id)
+        with self._silence_source():
+            for item in rows_or_ids:
+                rec_id = None
+                rec = {}
+                if isinstance(item, dict):
+                    rec = item
+                    rec_id = item.get(_ROW_ID)
+                else:
+                    rec_id = item
+                if rec_id is None:
+                    continue
+                try:
+                    self._datasource.delete(rec_id)
+                    if not rec:
+                        rec = {_ROW_ID: rec_id}
+                    deleted.append(rec)
+                except Exception:
+                    logger.exception("Failed to delete record id=%s", rec_id)
         if deleted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowDelete>>", data={"records": deleted})
+            self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted))
 
     def insert_columns(self, *_args, **_kwargs) -> None:
         """Not currently supported; columns are defined at construction time."""
@@ -557,7 +592,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         moved_recs = [self._row_map.get(i) for i in iids if i in self._row_map]
         if moved_recs:
-            self.event_generate("<<RowMove>>", data={"records": moved_recs})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=moved_recs))
 
     def move_columns(self, from_index: int, to_index: int) -> None:
         """Reorder a column from one index to another."""
@@ -649,15 +684,13 @@ class TableView(Frame):
 
     # ------------------------------------------------------------------ Filter/Sort/Group API
     def get_filters(self) -> str:
-        """Return current SQL where clause string (if any)."""
-        try:
-            return getattr(self._datasource, "_where", "") or ""
-        except Exception:
-            return ""
+        """Return the current filter description (the active search term)."""
+        return self._filter_summary
 
-    def set_filters(self, where: str) -> None:
+    def set_filters(self, condition=None) -> None:
         try:
-            self._datasource.set_filter(where or "")
+            with self._silence_source():
+                self._datasource.where(condition)
         except Exception:
             return
         self._clear_cache()
@@ -672,10 +705,9 @@ class TableView(Frame):
         return dict(self._sort_state)
 
     def set_sorting(self, key: str, ascending: bool = True) -> None:
-        quoted_key = self._quote_col(key)
-        order = "ASC" if ascending else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            with self._silence_source():
+                self._datasource.order(key if ascending else f"-{key}")
         except Exception:
             return
         self._sort_state = {key: ascending}
@@ -699,8 +731,8 @@ class TableView(Frame):
         self._group_by_key = key
         self._group_parents.clear()
         try:
-            quoted_key = self._quote_col(key)
-            self._datasource.set_sort(f"{quoted_key} ASC")
+            with self._silence_source():
+                self._datasource.order(key)
         except Exception:
             pass
         self._sort_state = {key: True}
@@ -1009,17 +1041,6 @@ class TableView(Frame):
     def _row_context_enabled(self) -> bool:
         return self._context_menus in ("all", "rows")
 
-    def _quote_col(self, key: str) -> str:
-        """Quote column identifiers for safe SQL usage (handles reserved names)."""
-        try:
-            quote_fn = getattr(self._datasource, "_quote_identifier", None)
-            if callable(quote_fn):
-                return quote_fn(key)
-        except Exception:
-            pass
-        text = str(key).replace('"', '""')
-        return f'"{text}"'
-
     def _determine_anchor(self, idx: int) -> str:
         """Pick an anchor for the given column index.
 
@@ -1073,7 +1094,7 @@ class TableView(Frame):
         if self._alignment_sample is not None:
             return self._alignment_sample
         try:
-            sample = self._datasource.get_page(0)
+            sample = self._datasource.page(0)
         except Exception:
             sample = []
         self._alignment_sample = sample or []
@@ -1149,7 +1170,7 @@ class TableView(Frame):
         try:
             # Use cached count to avoid expensive COUNT(*) queries on every navigation
             if self._cached_total_count is None:
-                self._cached_total_count = self._datasource.total_count()
+                self._cached_total_count = self._datasource.count
             total = self._cached_total_count
             size = getattr(self._datasource, "page_size", self._paging['page_size']) or 1
             return max(1, (total + size - 1) // size)
@@ -1162,7 +1183,7 @@ class TableView(Frame):
             records = self._page_cache[page]
         else:
             try:
-                records = self._datasource.get_page(page)
+                records = self._datasource.page(page)
             except Exception:
                 records = []
             if not append:
@@ -1242,32 +1263,24 @@ class TableView(Frame):
             mode = self._search_mode_map.get(display_mode, "CONTAINS")
         else:
             mode = "CONTAINS"
-        colnames = self._column_keys
-        quoted_cols = [self._quote_col(c) for c in colnames]
-        where = ""
         mode_upper = mode.upper().replace(" ", "_")
-        if text and quoted_cols:
-            crit = text.replace("'", "''")
-            if mode_upper == "CONTAINS":
-                where = " OR ".join([f"{c} LIKE '%{crit}%'" for c in quoted_cols])
-            elif mode_upper == "STARTS_WITH":
-                where = " OR ".join([f"{c} LIKE '{crit}%'" for c in quoted_cols])
+        condition = None
+        if text and self._column_keys:
+            if mode_upper == "STARTS_WITH":
+                make = lambda c: col(c).startswith(text)
             elif mode_upper == "ENDS_WITH":
-                where = " OR ".join([f"{c} LIKE '%{crit}'" for c in quoted_cols])
-            elif mode_upper == "SQL":
-                where = text
-            else:  # equals
-                where = " OR ".join([f"{c} = '{crit}'" for c in quoted_cols])
-        # In SQL mode the user typed the expression themselves, so showing it
-        # back is meaningful. For all other modes, show just the search term.
-        if mode_upper == "SQL":
-            self._filter_summary = text
-        else:
-            self._filter_summary = repr(text) if text else ""
+                make = lambda c: col(c).endswith(text)
+            elif mode_upper == "EQUALS":
+                make = lambda c: col(c) == text
+            else:  # CONTAINS (default)
+                make = lambda c: col(c).contains(text)
+            condition = any_of(*(make(c) for c in self._column_keys))
+        self._filter_summary = repr(text) if text else ""
         try:
-            self._datasource.set_filter(where)
+            with self._silence_source():
+                self._datasource.where(condition)
         except Exception:
-            logger.exception("Failed to apply search filter: %s", where)
+            logger.exception("Failed to apply search filter: %r", text)
         self._clear_cache()
         self._load_page(0)
         self._update_status_labels()
@@ -1276,7 +1289,8 @@ class TableView(Frame):
         self._search_entry.delete(0, 'end')
         self._filter_summary = ""
         try:
-            self._datasource.set_filter("")
+            with self._silence_source():
+                self._datasource.where(None)
         except Exception:
             pass
         self._clear_cache()
@@ -1287,13 +1301,12 @@ class TableView(Frame):
         if column_index >= len(self._column_keys):
             return
         key = self._column_keys[column_index]
-        quoted_key = self._quote_col(key)
         asc = not self._sort_state.get(key, True)
         # Clear other sort states to keep single-column sort
         self._sort_state = {key: asc}
-        order = "ASC" if asc else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            with self._silence_source():
+                self._datasource.order(key if asc else f"-{key}")
         except Exception:
             pass
         self._clear_cache()
@@ -1302,14 +1315,10 @@ class TableView(Frame):
         self._update_status_labels()
 
     def _update_status_labels(self) -> None:
-        # Filter — prefer the user-friendly summary set by the search bar.
-        # Fall back to the raw WHERE clause only when an external caller set
-        # the filter (so we have no friendlier description).
+        # Filter — show the user-friendly summary set by the search bar.
         filter_txt = ""
         try:
             description = self._filter_summary
-            if not description:
-                description = getattr(self._datasource, "_where", "") or ""
             if description:
                 filter_txt = MessageCatalog.translate("table.filter_status", description)
         except Exception:
@@ -1385,7 +1394,7 @@ class TableView(Frame):
             if iid not in self._tree.selection():
                 self._tree.selection_set(iid)
             rec = self._row_map.get(iid, {})
-            self.event_generate("<<RowRightClick>>", data={"record": rec, "iid": iid})
+            self.event_generate("<<RowRightClick>>", data=RowEvent(record=rec, iid=iid))
         if not self._tree.selection():
             return
         self._row_menu_col = col_idx
@@ -1400,7 +1409,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowDoubleClick>>", data={"record": rec, "iid": iid})
+        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=rec, iid=iid))
         if self._editing['updating']:
             self._open_form_dialog(rec)
 
@@ -1438,7 +1447,7 @@ class TableView(Frame):
             buttons = ["Cancel", "Save"]
 
         dialog = FormDialog(
-            master=dialog_master,
+            parent=dialog_master,
             title="Edit Record" if record else "New Record",
             data=initial_data,
             items=form_items,
@@ -1458,7 +1467,8 @@ class TableView(Frame):
         # Handle delete action
         if result == "delete" and record and _ROW_ID in record:
             try:
-                self._datasource.delete_record(record[_ROW_ID])
+                with self._silence_source():
+                    self._datasource.delete(record[_ROW_ID])
                 self._clear_cache()
                 self._load_page(self._current_page)
             except Exception:
@@ -1473,15 +1483,17 @@ class TableView(Frame):
             updates.pop(_ROW_ID, None)
             try:
                 logger.debug("Updating record id=%s with %s", rec_id, updates)
-                self._datasource.update_record(rec_id, updates)
+                with self._silence_source():
+                    self._datasource.update(rec_id, updates)
             except Exception:
                 logger.exception("Failed to update record id=%s", rec_id)
                 return
         else:
             try:
                 logger.debug("Creating record %s", data)
-                new_id = self._datasource.create_record(dict(data))
-                logger.debug("Created record id=%s (total=%s)", new_id, self._datasource.total_count())
+                with self._silence_source():
+                    new_id = self._datasource.insert(dict(data))
+                logger.debug("Created record id=%s (total=%s)", new_id, self._datasource.count)
             except Exception:
                 logger.exception("Failed to create record from %s", data)
                 return
@@ -1533,15 +1545,13 @@ class TableView(Frame):
         iid = selection[0]
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
-        quoted_key = self._quote_col(key)
         values = self._tree.item(iid, "values")
         if col_idx >= len(values):
             return
         val = values[col_idx]
-        crit = str(val).replace("'", "''")
-        where = f"{quoted_key} = '{crit}'"
         try:
-            self._datasource.set_filter(where)
+            with self._silence_source():
+                self._datasource.where(col(key) == val)
         except Exception:
             return
         self._clear_cache()
@@ -1554,11 +1564,10 @@ class TableView(Frame):
         iid = selection[0]
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
-        quoted_key = self._quote_col(key)
         self._sort_state = {key: ascending}
-        order = "ASC" if ascending else "DESC"
         try:
-            self._datasource.set_sort(f"{quoted_key} {order}")
+            with self._silence_source():
+                self._datasource.order(key if ascending else f"-{key}")
         except Exception:
             pass
         self._clear_cache()
@@ -1567,7 +1576,8 @@ class TableView(Frame):
 
     def _clear_filter_cmd(self) -> None:
         try:
-            self._datasource.set_filter("")
+            with self._silence_source():
+                self._datasource.where(None)
         except Exception:
             pass
         self._clear_cache()
@@ -1605,7 +1615,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data={"records": [rec]})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
 
     def _move_row_absolute(self, new_idx: int) -> None:
         sel = list(self._tree.selection())
@@ -1618,7 +1628,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data={"records": [rec]})
+            self.event_generate("<<RowMove>>", data=RowsEvent(records=[rec]))
 
     def _hide_selection(self) -> None:
         sel = list(self._tree.selection())
@@ -1645,10 +1655,11 @@ class TableView(Frame):
         rec_id = rec.get(_ROW_ID)
         if rec_id is not None:
             try:
-                self._datasource.delete_record(rec_id)
+                with self._silence_source():
+                    self._datasource.delete(rec_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
-                self.event_generate("<<RowDelete>>", data={"records": [rec]})
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[rec]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", rec_id)
 
@@ -1656,23 +1667,24 @@ class TableView(Frame):
         sel = list(self._tree.selection())
         deleted_records: list[dict] = []
         changed = False
-        for iid in sel:
-            rec = dict(self._row_map.get(iid) or {})
-            if rec:
-                deleted_records.append(rec)
-            rec_id = rec.get(_ROW_ID)
-            if rec_id is not None:
-                try:
-                    self._datasource.delete_record(rec_id)
-                    changed = True
-                except Exception:
-                    pass
-            self._row_map.pop(iid, None)
+        with self._silence_source():
+            for iid in sel:
+                rec = dict(self._row_map.get(iid) or {})
+                if rec:
+                    deleted_records.append(rec)
+                rec_id = rec.get(_ROW_ID)
+                if rec_id is not None:
+                    try:
+                        self._datasource.delete(rec_id)
+                        changed = True
+                    except Exception:
+                        pass
+                self._row_map.pop(iid, None)
         if changed:
             self._clear_cache()
             self._load_page(self._current_page)
             if deleted_records:
-                self.event_generate("<<RowDelete>>", data={"records": deleted_records})
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted_records))
 
     # ------------------------------------------------------------------ Cache helpers
     def _clear_cache(self) -> None:
@@ -1746,7 +1758,7 @@ class TableView(Frame):
             total_pages = self._total_pages()
             for page_idx in range(total_pages):
                 try:
-                    rows = self._datasource.get_page(page_idx)
+                    rows = self._datasource.page(page_idx)
                 except Exception:
                     break
                 if any(str(rec.get(_ROW_ID)) == rid for rec in rows):
@@ -1897,7 +1909,7 @@ class TableView(Frame):
     # ------------------------------------------------------------------ Export helpers
     def _export_all(self) -> None:
         try:
-            rows = self._datasource.get_page_from_index(0, self._datasource.total_count())
+            rows = self._datasource.page_slice(0, self._datasource.count)
             self._tree.event_generate("<<TableViewExportAll>>", data=rows)
         except Exception:
             pass
@@ -1912,7 +1924,7 @@ class TableView(Frame):
     def _export_page(self) -> None:
         try:
             start_index = self._current_page * self._paging['page_size']
-            rows = self._datasource.get_page_from_index(start_index, self._paging['page_size'])
+            rows = self._datasource.page_slice(start_index, self._paging['page_size'])
             self._tree.event_generate("<<TableViewExportPage>>", data=rows)
         except Exception:
             pass
@@ -2017,35 +2029,27 @@ class TableView(Frame):
         self._rebuild_filter_where()
 
     def _rebuild_filter_where(self) -> None:
-        """Rebuild WHERE clause from all active column filters."""
+        """Rebuild the filter condition from all active column filters."""
         clauses = []
         for key, values in self._column_filters.items():
             if not values:
-                # No values selected = filter out everything
-                clauses.append("1=0")
-            else:
-                quoted_key = self._quote_col(key)
-                # Build IN clause
-                quoted_values = []
-                for v in values:
-                    if v is None:
-                        quoted_values.append("NULL")
-                    else:
-                        escaped = str(v).replace("'", "''")
-                        quoted_values.append(f"'{escaped}'")
-                # Handle NULL separately since IN doesn't work with NULL
-                null_check = ""
-                if None in values:
-                    quoted_values = [qv for qv in quoted_values if qv != "NULL"]
-                    null_check = f" OR {quoted_key} IS NULL"
-                if quoted_values:
-                    clauses.append(f"({quoted_key} IN ({','.join(quoted_values)}){null_check})")
-                elif null_check:
-                    clauses.append(f"({quoted_key} IS NULL)")
+                # No values selected = match nothing for this column
+                clauses.append(col(key).is_in([]))
+                continue
+            non_null = [v for v in values if v is not None]
+            parts = []
+            if non_null:
+                parts.append(col(key).is_in(non_null))
+            if None in values:
+                parts.append(col(key).is_null())
+            clause = any_of(*parts)
+            if clause is not None:
+                clauses.append(clause)
 
-        where = " AND ".join(clauses) if clauses else ""
+        condition = all_of(*clauses)
         try:
-            self._datasource.set_filter(where)
+            with self._silence_source():
+                self._datasource.where(condition)
         except Exception:
             pass
         self._clear_cache()
@@ -2069,7 +2073,7 @@ class TableView(Frame):
     def _on_selection_event(self, _event=None) -> None:
         """Forward selection changes to subscribers."""
         rows = self.selected_rows
-        self.event_generate("<<SelectionChange>>", data={"records": rows, "iids": list(self._tree.selection())})
+        self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, iids=list(self._tree.selection())))
 
     def _on_row_click_event(self, event) -> None:
         region = self._tree.identify_region(event.x, event.y)
@@ -2079,7 +2083,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowClick>>", data={"record": rec, "iid": iid})
+        self.event_generate("<<RowClick>>", data=RowEvent(record=rec, iid=iid))
 
     # ------------------------------------------------------------------ Header context menu
     def _ensure_header_menu(self) -> None:
@@ -2255,12 +2259,12 @@ class TableView(Frame):
         if col is None or col >= len(self._column_keys):
             return
         key = self._column_keys[col]
-        quoted_key = self._quote_col(key)
         self._group_by_key = key
         self._group_parents.clear()
         # Sort entire datasource by the grouping column so grouping reflects full dataset order
         try:
-            self._datasource.set_sort(f"{quoted_key} ASC")
+            with self._silence_source():
+                self._datasource.order(key)
         except Exception:
             pass
         self._sort_state = {key: True}
@@ -2346,7 +2350,8 @@ class TableView(Frame):
 
     def _clear_sort(self) -> None:
         self._sort_state.clear()
-        self._datasource.set_sort("")
+        with self._silence_source():
+            self._datasource.order()
         self._clear_cache()
         self._update_heading_icons()
         self._load_page(0)

@@ -3,35 +3,40 @@
 from typing import Any, Callable, Sequence
 
 from bootstack.widgets._impl.composites.toast import Toast as _InternalToast
+from bootstack.widgets.types import AccentToken
 
 
 class Toast:
     """A temporary notification that appears in a corner of the screen.
 
-    Create a toast, then call `.show()` to display it. Auto-dismisses after
-    `duration` milliseconds if set; otherwise stays until closed by the user.
-
-    Usage::
-
-        t = bs.Toast(message="File saved.", accent="success", duration=3000)
-        t.show()
+    Create a toast, then call ``show()`` to display it. Auto-dismisses after
+    ``duration`` milliseconds if set; otherwise stays until the user closes it.
 
     Args:
-        title: Header text. Shown larger when there is no message.
-        message: Main body text. Shown below the title when both are provided.
-        detail: Small muted metadata string (e.g. `"just now"`).
-        icon: Icon name string, or an `IconSpec` dict with `name`, `size`, `color`.
-        duration: Auto-dismiss delay in milliseconds. `None` = no auto-dismiss.
-        accent: Accent token for the container (e.g. `'success'`, `'danger'`).
-        show_close_button: Show the × close button. Default `True`.
+        title: Header text. Shown at a larger weight when there is no message.
+        message: Main body text shown below the title.
+        detail: Small muted metadata string (e.g. ``'just now'``). Displayed
+            on the right side of the header row.
+        icon: Bootstrap Icons name (e.g. ``'check-circle'``) or an icon spec
+            dict with keys ``name`` (str), ``size`` (int), and ``color`` (str).
+            Defaults to ``'bell-fill'`` when not specified.
+        duration: Auto-dismiss delay in milliseconds. ``None`` keeps the toast
+            visible until the user closes it manually. Defaults to ``None``.
+        accent: Semantic color accent. One of ``'default'``, ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``, ``'muted'``. Defaults to the theme's default surface.
+        show_close_button: Show the × close button. Defaults to ``True``.
         actions: Sequence of button kwargs dicts. Each dict is passed to an
-            internal Button. Clicking a button dismisses the toast and passes
-            the button's dict to `on_dismiss`.
-        position: Tkinter geometry offset string (e.g. `'-25-75'`). `None` uses
-            platform defaults (bottom-right on Windows/macOS, top-right on Linux).
-        play_sound: Play a system bell when shown.
-        on_dismiss: Callback invoked on dismiss. Receives the button dict when
-            dismissed via a button, or `None` otherwise.
+            internal Button; clicking a button dismisses the toast and passes
+            the dict to ``on_dismiss``.
+        position: Screen-offset string (e.g. ``'-25-75'`` = 25 px from the right
+            edge and 75 px from the bottom; positive numbers offset from the top
+            and left). ``None`` uses platform defaults (bottom-right on
+            Windows/macOS, top-right on Linux).
+        play_sound: Play a system bell when the toast appears. Defaults to
+            ``False``.
+        on_dismiss: Callback fired on dismiss. Receives the button dict when
+            dismissed via an action button, or ``None`` otherwise.
     """
 
     def __init__(
@@ -42,7 +47,7 @@ class Toast:
         detail: str | None = None,
         icon: str | dict | None = None,
         duration: int | None = None,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         show_close_button: bool = True,
         actions: Sequence[dict[str, Any]] | None = None,
         position: str | None = None,
@@ -81,7 +86,7 @@ def toast(
     *,
     title: str | None = None,
     duration: int = 3000,
-    accent: str | None = None,
+    accent: AccentToken | None = None,
     icon: str | dict | None = None,
     on_dismiss: Callable[[Any], None] | None = None,
 ) -> None:
@@ -90,9 +95,12 @@ def toast(
     Args:
         message: Body text of the notification.
         title: Optional header text.
-        duration: Auto-dismiss delay in milliseconds. Default `3000`.
-        accent: Accent token (e.g. `'success'`, `'danger'`).
-        icon: Icon name or `IconSpec` dict.
+        duration: Auto-dismiss delay in milliseconds. Defaults to ``3000``.
+        accent: Semantic color accent. One of ``'default'``, ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``, ``'muted'``.
+        icon: Bootstrap Icons name or icon spec dict with ``name``, ``size``,
+            and ``color`` keys.
         on_dismiss: Called when the toast is dismissed.
     """
     t = Toast(

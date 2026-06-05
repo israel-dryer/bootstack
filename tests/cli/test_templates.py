@@ -1,9 +1,8 @@
 """Tests for the bootstack CLI templating mechanism.
 
 These tests exercise create_project / create_view / create_page /
-create_dialog plus the theme JSON templates. Each generated file is
-parsed (Python via ast, TOML via tomllib, JSON via json.loads) so that
-broken format strings or schema drift fail loudly.
+create_dialog. Each generated file is parsed (Python via ast, TOML via
+tomllib) so that broken format strings or schema drift fail loudly.
 
 Tests do NOT execute the generated apps — that would require Tk and is
 covered (manually) by the editable-install workflow in
@@ -13,7 +12,6 @@ covered (manually) by the editable-install workflow in
 from __future__ import annotations
 
 import ast
-import json
 import sys
 from pathlib import Path
 
@@ -24,10 +22,6 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib  # type: ignore
 
-from bootstack.cli.add import (
-    _get_dark_theme_template,
-    _get_light_theme_template,
-)
 from bootstack.cli.config import TtkbConfig
 from bootstack.cli.pyinstaller import SPEC_TEMPLATE, generate_spec
 from bootstack.cli.templates import (
@@ -36,7 +30,6 @@ from bootstack.cli.templates import (
     create_project,
     create_view,
 )
-from bootstack.style.theme_provider import load_user_defined_theme
 
 
 # ---------------------------------------------------------------------------
@@ -198,42 +191,6 @@ def test_create_page_camel_to_snake(tmp_path: Path) -> None:
     # Page title strips trailing 'Page' for the heading
     src = out.read_text(encoding="utf-8")
     assert '"Dashboard"' in src
-
-
-# ---------------------------------------------------------------------------
-# Theme JSON templates
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "renderer,expected_mode,expected_step",
-    [
-        (_get_light_theme_template, "light", "600"),
-        (_get_dark_theme_template, "dark", "400"),
-    ],
-)
-def test_theme_template_matches_v2_schema(
-    tmp_path: Path, renderer, expected_mode: str, expected_step: str
-) -> None:
-    rendered = renderer("acme")
-    data = json.loads(rendered)
-
-    # Required v2 schema keys
-    for key in ("name", "display_name", "mode", "foreground", "background", "shades", "semantic"):
-        assert key in data, f"missing top-level key: {key}"
-
-    assert data["name"] == "acme"
-    assert data["mode"] == expected_mode
-    assert isinstance(data["shades"], dict) and "blue" in data["shades"]
-    assert isinstance(data["semantic"], dict)
-    # Semantic accents reference shade tokens with the mode-appropriate step
-    assert data["semantic"]["primary"].endswith(f"[{expected_step}]")
-
-    # Round-trip through the user-theme loader
-    path = tmp_path / "acme.json"
-    path.write_text(rendered, encoding="utf-8")
-    loaded = load_user_defined_theme(path)
-    assert loaded == data
 
 
 # ---------------------------------------------------------------------------

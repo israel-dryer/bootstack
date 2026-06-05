@@ -2,15 +2,16 @@
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PublicContainer
 from bootstack.widgets._core.context import push_container, pop_container, current_container
-from bootstack.widgets._core.events import Event, register_widget_events, resolve_event
-from bootstack.widgets._core.exceptions import BootstackV2Error, UnknownEventError, ParentResolutionError
+from bootstack.widgets._core.events import register_widget_events, resolve_event
+from bootstack.widgets.types import Event
+from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
-from bootstack.widgets._core.schedule import Schedule, Job
-from bootstack.widgets._core.stream import Stream, Handle
-from bootstack.widgets._core.subscription import Subscription
+from bootstack.scheduling import Schedule, Job
+from bootstack.streams import Stream, Handle
+from bootstack.events import Subscription
 
 __all__ = [
-    "BootstackV2Error",
+    "BootstackError",
     "Event",
     "FieldAddonMixin",
     "Handle",

@@ -15,7 +15,7 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, T
 from bootstack.widgets._impl.primitives.button import Button as _Button
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.separator import Separator as _Separator
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, AccentToken, VariantToken
 from bootstack._runtime.toplevel import Toplevel
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 
@@ -24,7 +24,7 @@ from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 ContentBuilder = Callable[[Widget], None]
 FooterBuilder = Callable[[Widget], None]
 
-ButtonRole = Literal["primary", "secondary", "danger", "cancel", "help"]
+ButtonRole = Literal["primary", "secondary", "danger", "cancel"]
 DialogMode = Literal["modal", "popover", "sheet"]
 
 
@@ -35,11 +35,10 @@ class DialogButton:
     Attributes:
         text (str): Button label text displayed to the user.
         role (ButtonRole): Button role determining styling and behavior.
-            - `"primary"`: Main action (blue, triggered by Enter)
-            - `"secondary"`: Standard action (gray)
-            - `"danger"`: Destructive action (red)
-            - `"cancel"`: Cancel action (outline, triggered by Escape)
-            - `"help"`: Help/info action (link style)
+            - `"primary"`: Main action (blue solid); triggered by Enter when ``default=True``.
+            - `"secondary"`: Neutral action (gray solid); no keyboard shortcut.
+            - `"danger"`: Destructive action (red solid); not focused by default.
+            - `"cancel"`: Cancel action (gray outline); triggered by Escape.
         result (Any | None): Value assigned to dialog.result when clicked.
         closes (bool): Whether button closes the dialog when clicked.
         default (bool): Whether this is the default button (focused, triggered by Enter).
@@ -54,8 +53,8 @@ class DialogButton:
     closes: bool = True  # close dialog after click
     default: bool = False  # default button (Enter)
     command: Callable[[Dialog], None] | None = None
-    accent: str | None = None  # accent token (e.g., 'primary', 'danger')
-    variant: str | None = None  # style variant (e.g., 'outline', 'ghost')
+    accent: AccentToken | str | None = None
+    variant: VariantToken | str | None = None
     icon: str | dict[str, Any] | None = None  # passed straight to _Button(icon=...)
 
 
@@ -102,74 +101,70 @@ class Dialog:
             Defaults to None.
 
     Args:
-        master: Parent widget for the dialog. If None, uses the default root window.
-        title: Dialog window title displayed in the title bar.
-            Defaults to "bootstack".
-        content_builder: Optional callback function to build dialog content.
-            Receives a Frame widget as parameter. Should pack/grid widgets into it.
-            If None, dialog will have no content area. Defaults to None.
-        footer_builder: Optional callback function to build custom footer.
-            Receives a Frame widget as parameter. If provided, replaces the
-            standard button footer. Defaults to None.
-        buttons: Optional list of DialogButton or dict specifications for footer buttons.
-            Ignored if footer_builder is provided. Button order in list determines
-            right-to-left display order (first button appears rightmost).
-            Defaults to None (no footer).
-        minsize: Optional (width, height) minimum window size in pixels.
-            Defaults to None (no minimum).
-        maxsize: Optional (width, height) maximum window size in pixels.
-            Defaults to None (no maximum).
-        resizable: Optional (width, height) tuple of booleans controlling window resize.
-            (True, True) allows full resizing, (False, False) prevents all resizing.
-            Defaults to (False, False).
-        alert: If True, plays system alert sound when dialog is shown.
-            Defaults to False.
-        mode: Dialog interaction mode.
-            - "modal": Blocks parent window interaction, requires user response
-            - "popover": Closes automatically when focus leaves dialog
-            - "sheet": Like "modal" but on macOS applies the Cocoa sheet
-              window class for a chromeless, sheet-styled dialog tied to
-              its parent (via `transient`). Falls back to plain modal
-              behavior on Windows/Linux where there's no equivalent.
-            Defaults to "modal".
-        undecorated: If True, removes window decorations (title bar, borders) and adds
-            a solid border frame around the dialog content. Useful for dropdown-style
-            menus or popover UIs. Defaults to False.
-        window_style: Windows-only pywinstyles effect. Options include
-            'mica', 'acrylic', 'aero', 'transparent', 'win7', etc.
-            If None (default), uses AppSettings.window_style.
+        title: Dialog window title. Defaults to ``'bootstack'``.
+        content_builder: Callback to build the dialog body. Receives an internal
+            frame — place widgets into it using raw internal constructors or by
+            calling ``widget._internal`` directly. If ``None``, the dialog has
+            no body area.
+        footer_builder: Callback to build a fully custom footer. Replaces the
+            standard button row when provided.
+        buttons: List of `DialogButton` (or equivalent dicts) for the footer.
+            Ignored when `footer_builder` is given. Buttons are displayed
+            right-to-left — the first entry appears rightmost.
+        min_size: Minimum window size as ``(width, height)`` in pixels.
+        max_size: Maximum window size as ``(width, height)`` in pixels.
+        resizable: ``(width, height)`` booleans controlling resize. Default
+            ``(False, False)``.
+        alert: Play the system alert sound when the dialog is shown. Default
+            ``False``.
+        mode: Interaction mode. ``'modal'`` (default) blocks the parent;
+            ``'popover'`` closes on focus loss; ``'sheet'`` renders as a Cocoa
+            sheet on macOS and falls back to modal elsewhere.
+        undecorated: Remove OS window decorations. Useful for popover-style
+            dialogs. Default ``False``.
+        window_style: Windows-only pywinstyles effect (``'mica'``, ``'acrylic'``,
+            ``'aero'``, etc.). Defaults to the app's window style setting.
+        on_close: Callback fired when the dialog is closed by any means (button
+            click, X button, Escape, or focus loss in popover mode). Receives
+            no arguments. Useful for non-modal dialogs where ``show()`` does
+            not block.
+        parent: Parent window. Defaults to the active root window.
     """
 
     def __init__(
             self,
-            master: Master = None,
+            *,
             title: str = "bootstack",
             content_builder: Optional[ContentBuilder] = None,
             footer_builder: Optional[FooterBuilder] = None,
-            *,
             buttons: Iterable[ButtonSpec] | None = None,
-            minsize: tuple[int, int] | None = None,
-            maxsize: tuple[int, int] | None = None,
+            min_size: tuple[int, int] | None = None,
+            max_size: tuple[int, int] | None = None,
             resizable: tuple[bool, bool] | None = (False, False),
             alert: bool = False,
             mode: DialogMode = "modal",
             undecorated: bool = False,
             window_style: str | None = None,
+            on_close: Callable[[], Any] | None = None,
+            surface: str | None = None,
+            parent: Master = None,
     ):
         import tkinter
-        self._master = master if master else tkinter._default_root
+        self._master = parent if parent else tkinter._default_root
         self._title = title
         self._content_builder = content_builder
         self._footer_builder = footer_builder
         self._buttons: list[DialogButton] = self._normalize_buttons(buttons)
 
-        self._minsize = minsize
-        self._maxsize = maxsize
+        self._minsize = min_size
+        self._maxsize = max_size
         self._resizable = resizable
         self._alert = alert
         self._mode = mode
         self._undecorated = undecorated
         self._window_style = window_style
+        self._on_close = on_close
+        self._surface = surface
 
         self._toplevel: Toplevel | None = None
         self._content: _Frame | None = None
@@ -182,9 +177,9 @@ class Dialog:
 
     def show(
             self,
+            *,
             position: Optional[Tuple[int, int]] = None,
             modal: Optional[bool] = None,
-            *,
             anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]] = None,
             anchor_point: AnchorPoint = 'center',
             window_point: AnchorPoint = 'center',
@@ -291,6 +286,8 @@ class Dialog:
         )
         self._toplevel.title(self._title)
         self._toplevel.protocol("WM_DELETE_WINDOW", self._on_close_request)
+        if self._on_close:
+            self._toplevel.bind("<Destroy>", self._on_toplevel_destroy)
 
         try:
             self._toplevel.withdraw()
@@ -326,7 +323,10 @@ class Dialog:
     def _build_content(self):
         parent = self._border_frame if self._undecorated else self._toplevel
         padding = 2 if self._undecorated else 0
-        self._content = _Frame(parent, padding=padding)
+        kw = {"padding": padding}
+        if self._surface:
+            kw["surface"] = self._surface
+        self._content = _Frame(parent, **kw)
 
         if self._undecorated:
             self._content.pack(fill="both", side="top", expand=False)
@@ -340,8 +340,12 @@ class Dialog:
         parent = self._border_frame if self._undecorated else self._toplevel
         footer_padding = 6 if self._undecorated else 4
 
+        footer_kw = {"padding": footer_padding}
+        if self._surface:
+            footer_kw["surface"] = self._surface
+
         if self._footer_builder:
-            self._footer = _Frame(parent, padding=footer_padding)
+            self._footer = _Frame(parent, **footer_kw)
             self._footer.pack(side="bottom", fill="x")
             _Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
             self._footer_builder(self._footer)
@@ -350,7 +354,7 @@ class Dialog:
         if not self._buttons:
             return
 
-        self._footer = _Frame(parent, padding=footer_padding)
+        self._footer = _Frame(parent, **footer_kw)
         self._footer.pack(side="bottom", fill="x")
         _Separator(parent, orient="horizontal").pack(side="bottom", fill="x")
 
@@ -481,6 +485,10 @@ class Dialog:
 
     # --------------------------------------------------------------- Event Handlers
 
+    def _on_toplevel_destroy(self, event) -> None:
+        if event.widget is self._toplevel and self._on_close:
+            self._on_close()
+
     def _on_focus_out(self, _event):
         """For popover mode: close when focus leaves the dialog."""
         if self._mode != "popover" or not self._toplevel:
@@ -511,6 +519,4 @@ class Dialog:
             return ("danger", None)
         if role == "cancel":
             return ("default", "outline")
-        if role == "help":
-            return ("primary", "link")
         return ("default", None)

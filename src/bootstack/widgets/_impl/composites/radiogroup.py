@@ -73,7 +73,7 @@ class RadioGroup(Frame):
         """
         # Extract RadioGroup-specific options before super().__init__
         self._orientation = kwargs.pop('orient', 'horizontal')
-        self._accent = kwargs.pop('accent', None) or 'primary'
+        accent_value    = kwargs.pop('accent', None) or 'primary'
         self._labeltext = kwargs.pop('text', None)
         self._labelanchor = kwargs.pop('labelanchor', 'n')
         self._state = kwargs.pop('state', 'normal')
@@ -98,6 +98,11 @@ class RadioGroup(Frame):
 
         # Call super().__init__() - just Frame now
         super().__init__(master, style_options=style_options, **kwargs)
+
+        # TTKWrapperBase.__init__wrapper overwrites self._accent (it pops accent
+        # from kwargs, but accent was already popped above, so it sees None).
+        # Restore the correct value after super().__init__ completes.
+        self._accent = accent_value
 
         # Handle variable/signal setup manually
         if signal_value is not None:
@@ -258,9 +263,9 @@ class RadioGroup(Frame):
         )
 
         if self._orientation == 'horizontal':
-            button.pack(side='left', padx=2)
+            button.pack(side='left', padx=6)
         else:  # vertical
-            button.pack(side='top', anchor='w', pady=2)
+            button.pack(side='top', anchor='w', pady=4)
 
         self._buttons[key] = button
         return button
@@ -401,9 +406,9 @@ class RadioGroup(Frame):
         for button in self._buttons.values():
             button.pack_forget()
             if self._orientation == 'horizontal':
-                button.pack(side='left', padx=2)
+                button.pack(side='left', padx=6)
             else:
-                button.pack(side='top', anchor='w', pady=2)
+                button.pack(side='top', anchor='w', pady=4)
 
     @configure_delegate('labelanchor')
     def _delegate_labelanchor(self, value=None):

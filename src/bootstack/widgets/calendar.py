@@ -1,33 +1,50 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Callable, Iterable, Literal
+from typing import overload, Any, Callable, Iterable, Literal
 
 from bootstack.widgets._impl.composites.calendar import Calendar as _InternalCalendar
-from bootstack.widgets._impl.composites.calendar import DateSelectEventData
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.events import DateSelectEvent, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import AccentToken, Event
 
 
 class Calendar(PublicWidgetBase):
-    """Inline calendar for single or range date selection.
+    """An inline calendar for single-date or date-range selection.
+
+    Always visible — not a popup. Displays one month in ``'single'`` mode and
+    two months side-by-side in ``'range'`` mode.
+
+    Dates can be passed as :class:`datetime.date` objects, :class:`datetime.datetime`
+    objects, or ISO strings (``"2026-05-31"``).
 
     Args:
-        value: Initial selected date (single mode).
-        start_date: Range start date.
-        end_date: Range end date. Only used when `selection_mode='range'`.
-        disabled_dates: Dates that cannot be selected.
-        selection_mode: `'single'` (default) or `'range'`.
-        max_date: Maximum selectable date.
-        min_date: Minimum selectable date.
-        show_outside_days: Show days from adjacent months. Defaults to True
-            for single mode, False for range mode.
-        show_week_numbers: Display ISO week numbers in the leftmost column.
-        first_weekday: First day of the week (0=Monday, 6=Sunday). Defaults
-            to locale setting.
-        accent: Accent token for selected dates and highlights.
+        value: Initially selected date (single mode only).
+        start_date: Initially selected range start date (range mode).
+        end_date: Initially selected range end date (range mode).
+        disabled_dates: Dates that cannot be selected. Displayed with a
+            strikethrough style.
+        selection_mode: ``'single'`` (default) for one date; ``'range'``
+            for a start–end span.
+        min_date: Earliest selectable date. Earlier dates are disabled
+            and month navigation is blocked before this point.
+        max_date: Latest selectable date. Later dates are disabled
+            and month navigation is blocked past this point.
+        show_outside_days: Show days from adjacent months in the grid.
+            Defaults to ``True`` in single mode and ``False`` in range mode.
+        show_week_numbers: Display ISO 8601 week numbers in the leftmost
+            column. Defaults to ``False``.
+        first_weekday: First day of the week as an integer (0=Monday,
+            6=Sunday). If omitted, the locale default is used.
+        accent: Accent token applied to selected dates and highlights.
+            One of ``'primary'``, ``'secondary'``, ``'info'``,
+            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
+            Defaults to ``'primary'``.
         padding: Padding around the widget.
-        parent: Override the context-stack parent.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
 
     def __init__(
@@ -43,7 +60,7 @@ class Calendar(PublicWidgetBase):
         show_outside_days: bool | None = None,
         show_week_numbers: bool = False,
         first_weekday: int | None = None,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         padding: Any = None,
         parent: Any = None,
         **kwargs: Any,
@@ -121,14 +138,20 @@ class Calendar(PublicWidgetBase):
 
     # ----- Events -----
 
-    def on_date_selected(self, handler: Callable) -> Any:
-        """Register a callback for `<<DateSelect>>` events.
+    @overload
+    def on_date_selected(self) -> Stream: ...
+    @overload
+    def on_date_selected(self, handler: Callable[[DateSelectEvent], Any]) -> Subscription: ...
+    def on_date_selected(self, handler: Callable[[DateSelectEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when a date or range is selected.
 
-        Args:
-            handler: Called when a date is selected or a range is updated.
+        In single mode the handler fires on every date click. In range mode
+        it fires after each click — check ``calendar.range`` to see whether
+        a complete range has been set (``end`` is ``None`` while the second
+        date is still pending).
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("<<DateSelect>>", handler)
 

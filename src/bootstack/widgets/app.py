@@ -12,6 +12,14 @@ class App(PublicContainer):
     perspective: accepts `padding`, `gap`, `fill_items`, `expand_items`, and
     `anchor_items` and applies them to its internal content frame.
 
+    Args:
+        title: Window title bar text.
+        size: Initial window size as ``(width, height)``.
+        theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
+            Overrides the ``'theme'`` key in ``settings`` if both are given.
+        settings: ``AppSettings`` dict or instance for theme, locale, etc.
+        localize: Locale or ``MessageCatalog`` for internationalisation.
+
     `app.tk` returns the underlying `tk.Tk` root window.
     """
 
@@ -22,6 +30,7 @@ class App(PublicContainer):
         *,
         title: str | None = None,
         size: tuple[int, int] | None = None,
+        theme: str | None = None,
         settings: Any = None,
         localize: Any = None,
         # Child-guidance (applied to the internal content frame)
@@ -41,6 +50,8 @@ class App(PublicContainer):
             init_kwargs["title"] = title
         if size is not None:
             init_kwargs["size"] = size
+        if theme is not None:
+            init_kwargs["theme"] = theme
         if settings is not None:
             init_kwargs["settings"] = settings
         if localize is not None:

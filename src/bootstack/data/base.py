@@ -6,7 +6,7 @@ Provides a common foundation for all datasource implementations with:
     - Template methods for common operations
     - Hook methods for extensibility
 
-Subclasses must implement storage-specific operations (set_data, get_page, CRUD, etc.)
+Subclasses must implement storage-specific operations (load, page, CRUD, etc.)
 while inheriting common utilities and patterns.
 
 This base class makes it easier to:
@@ -19,9 +19,12 @@ This base class makes it easier to:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Sequence, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Mapping
 
 from bootstack.data.types import Primitive, Record
+
+if TYPE_CHECKING:
+    from bootstack.data.query import Column, Condition, SortKey
 
 
 class BaseDataSource(ABC):
@@ -38,18 +41,19 @@ class BaseDataSource(ABC):
         page_size: Current page size setting
 
     Example:
-        ```python
-        class RedisDataSource(BaseDataSource):
-            def __init__(self, redis_client, page_size=10):
-                super().__init__(page_size)
-                self.redis = redis_client
+        .. code-block:: python
 
-            def set_data(self, records):
-                pass  # Redis-specific implementation
+            class RedisDataSource(BaseDataSource):
+                def __init__(self, redis_client, page_size=10):
+                    super().__init__(page_size)
+                    self.redis = redis_client
 
-            def get_page(self, page=None):
-                pass  # Redis-specific implementation
-        ```
+                def load(self, records):
+                    pass  # Redis-specific implementation
+
+                def page(self, page=None):
+                    pass  # Redis-specific implementation
+
     """
 
     def __init__(self, page_size: int = 10):
@@ -60,12 +64,17 @@ class BaseDataSource(ABC):
         """
         self.page_size = page_size
         self._page = 0
+        # Reactive change broadcasting (on_change / observe). Lazy import keeps
+        # the data layer free of a load-time dependency on the runtime layer.
+        from bootstack.data._observable import _ChangeHub
+
+        self._hub = _ChangeHub(self)
 
     # ========== ABSTRACT METHODS - MUST BE IMPLEMENTED ==========
 
     # Data & View Configuration
     @abstractmethod
-    def set_data(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> 'BaseDataSource':
+    def load(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> 'BaseDataSource':
         """Load data records into the datasource.
 
         Args:
@@ -77,26 +86,34 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def set_filter(self, where_sql: str = "") -> None:
-        """Apply SQL-like WHERE clause filter to data.
+    def where(self, condition: "Condition | None" = None) -> "BaseDataSource":
+        """Filter rows by a condition built with `col`.
 
         Args:
-            where_sql: SQL WHERE condition (e.g., "age > 25 AND status = 'active'")
+            condition: A filter condition (e.g. `col("age") >= 25`), or `None`
+                / no argument to clear the filter.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
     @abstractmethod
-    def set_sort(self, order_by_sql: str = "") -> None:
-        """Apply SQL-like ORDER BY clause to data.
+    def order(self, *keys: "str | Column | SortKey") -> "BaseDataSource":
+        """Sort rows by one or more keys.
 
         Args:
-            order_by_sql: SQL ORDER BY clause (e.g., "name ASC, age DESC")
+            keys: Column names (`"name"`), descending names (`"-name"`), or
+                `col(...)` specs. With no arguments, clears sorting.
+
+        Returns:
+            Self for method chaining
         """
         ...
 
     # Pagination
     @abstractmethod
-    def get_page(self, page: Optional[int] = None) -> List[Record]:
+    def page(self, page: Optional[int] = None) -> List[Record]:
         """Get records for specified page (or current page if None).
 
         Args:
@@ -134,18 +151,15 @@ class BaseDataSource(ABC):
         """
         ...
 
+    @property
     @abstractmethod
-    def total_count(self) -> int:
-        """Get total number of records matching current filter.
-
-        Returns:
-            Total record count (respects active filter)
-        """
+    def count(self) -> int:
+        """Total number of records matching the current filter."""
         ...
 
     # CRUD Operations
     @abstractmethod
-    def create_record(self, record: Dict[str, Any]) -> int:
+    def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID.
 
         Args:
@@ -157,7 +171,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def read_record(self, record_id: Any) -> Optional[Record]:
+    def get(self, record_id: Any) -> Optional[Record]:
         """Retrieve single record by ID.
 
         Args:
@@ -169,7 +183,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def update_record(self, record_id: Any, updates: Dict[str, Any]) -> bool:
+    def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID.
 
         Args:
@@ -182,7 +196,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def delete_record(self, record_id: Any) -> bool:
+    def delete(self, record_id: Any) -> bool:
         """Delete record by ID.
 
         Args:
@@ -207,7 +221,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def select_record(self, record_id: Any) -> bool:
+    def select(self, record_id: Any) -> bool:
         """Mark record as selected.
 
         Args:
@@ -219,7 +233,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def deselect_record(self, record_id: Any) -> bool:
+    def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected.
 
         Args:
@@ -255,7 +269,7 @@ class BaseDataSource(ABC):
         ...
 
     @abstractmethod
-    def get_selected(self, page: Optional[int] = None) -> List[Record]:
+    def selected(self, page: Optional[int] = None) -> List[Record]:
         """Get selected records, optionally paginated.
 
         Args:
@@ -266,18 +280,15 @@ class BaseDataSource(ABC):
         """
         ...
 
+    @property
     @abstractmethod
     def selected_count(self) -> int:
-        """Get total number of selected records.
-
-        Returns:
-            Count of selected records
-        """
+        """Number of selected records."""
         ...
 
     # Export
     @abstractmethod
-    def export_to_csv(self, filepath: str, include_all: bool = True) -> None:
+    def export_csv(self, filepath: str, include_all: bool = True) -> None:
         """Export records to CSV file.
 
         Args:
@@ -288,7 +299,7 @@ class BaseDataSource(ABC):
 
     # Index-based Access
     @abstractmethod
-    def get_page_from_index(self, start_index: int, count: int) -> List[Record]:
+    def page_slice(self, start_index: int, count: int) -> List[Record]:
         """Get records by start index and count (respects filter/sort).
 
         Args:
@@ -297,6 +308,24 @@ class BaseDataSource(ABC):
 
         Returns:
             List of record dictionaries
+        """
+        ...
+
+    # Observable query — read-only filtered/sorted read
+    @abstractmethod
+    def _query(self, condition: "Condition | None", sort_keys: "List[SortKey]") -> List[Record]:
+        """Run a one-off filtered and sorted read, returning fresh records.
+
+        Unlike `page`, this does NOT use or modify the source's active
+        `where`/`order` view state — it answers an `observe()` query in
+        isolation so pagination is undisturbed.
+
+        Args:
+            condition: Filter condition (or `None` for all rows).
+            sort_keys: Ordering to apply (empty for source/natural order).
+
+        Returns:
+            List of matching record dictionaries.
         """
         ...
 
@@ -309,7 +338,7 @@ class BaseDataSource(ABC):
         """
         return None
 
-    def move_record(self, record_id: Any, target_index: int) -> bool:
+    def move(self, record_id: Any, target_index: int) -> bool:
         """Reorder a record to a new position.
 
         Default returns False (not supported). Subclasses that maintain
@@ -323,6 +352,124 @@ class BaseDataSource(ABC):
             True if the record was moved, False if not supported or not found
         """
         return False
+
+    # ========== CHANGE BROADCASTING (on_change / observe) ==========
+
+    def on_change(self, handler: "Callable[[Any], Any] | None" = None) -> Any:
+        """Subscribe to changes to this source.
+
+        Call with no argument to get a composable `Stream` of coarse change
+        events; chain `map`/`filter`/`debounce` and `listen` to drive any
+        widget (for example, a dashboard badge bound to the row count). Call
+        with a handler to subscribe directly and get back a cancellable
+        subscription.
+
+        The handler receives a `DataChangeEvent`. Rapid mutations are coalesced
+        into a single notification per event-loop turn, and mutations made from
+        a background thread are delivered on the main thread automatically — so
+        a bound widget can refresh from a worker-thread feed with no extra work.
+
+        Args:
+            handler: Change handler. Omit to receive a `Stream` instead.
+
+        Returns:
+            A `Stream` when `handler` is omitted, otherwise a cancellable
+            subscription handle.
+
+        Example:
+            .. code-block:: python
+
+                ds.on_change(lambda e: print("changed:", e.kind))
+
+                # Feed a dashboard badge with the live row count.
+                ds.on_change().map(lambda e: ds.count).listen(badge.set_value)
+        """
+        from bootstack.streams import Handle, Stream
+
+        hub = self._hub
+        if handler is not None:
+            return Handle(hub.add_listener(handler))
+
+        from bootstack._runtime.app import get_current_app, has_current_app
+
+        if not has_current_app():
+            raise RuntimeError(
+                "on_change() with no handler returns a Stream, which requires an "
+                "active App. Pass a handler — on_change(fn) — for headless use."
+            )
+        owner = get_current_app()
+
+        def _source(downstream):
+            return Handle(hub.add_listener(downstream))
+
+        return Stream(owner, _source=_source)
+
+    def observe(self, condition: "Condition | None" = None, *order: "str | Column | SortKey") -> Any:
+        """Observe a live result set for a `where`/`order` query.
+
+        Returns a `Stream` that emits the matching records immediately, then a
+        fresh result set whenever a relevant change occurs. Each subscriber
+        observes its own slice — declare the query once, react to its results
+        over time (the "observable query" pattern).
+
+        Selection toggles do not re-emit (selection is not a row-set change).
+        Unlike `where`/`order`, observing does not disturb the source's own
+        pagination view.
+
+        Performance: each relevant change re-runs the whole query and re-emits
+        the full result set. Use `observe` for *small* derived sets — dashboard
+        metrics, a short pinned list, a filtered side panel. For large or
+        virtualized views (`Table`, `ListView`) do NOT observe the full set;
+        bind those widgets to the source directly — they listen via `on_change`
+        and refetch only their visible window with `page`/`page_slice`.
+
+        Args:
+            condition: Filter condition built with `col` (or `None` for all rows).
+            order: Sort keys — column names, `"-name"` for descending, or
+                `col(...)` specs.
+
+        Returns:
+            A `Stream` of result sets (each a list of record dictionaries).
+
+        Example:
+            .. code-block:: python
+
+                ds.observe(col("status") == "active", "-created").listen(
+                    lambda rows: gauge.set_value(len(rows))
+                )
+        """
+        from bootstack.data._observable import _ObservedQuery
+        from bootstack.data.query import normalize_sort_keys
+        from bootstack.streams import Handle, Stream
+        from bootstack._runtime.app import get_current_app, has_current_app
+
+        if not has_current_app():
+            raise RuntimeError(
+                "observe() returns a Stream, which requires an active App."
+            )
+        owner = get_current_app()
+        sort_keys = normalize_sort_keys(order)
+        hub = self._hub
+        source = self
+
+        def _source(downstream):
+            query = _ObservedQuery(source, condition, sort_keys, downstream)
+            remove = hub.add_query(query)
+            try:
+                downstream(query.start())
+            except Exception:
+                pass
+            return Handle(remove)
+
+        return Stream(owner, _source=_source)
+
+    def _silence(self):
+        """Context manager that suppresses change emission within its block.
+
+        Used internally by widgets to mutate their own bound source without
+        broadcasting the change back to themselves.
+        """
+        return self._hub.silence()
 
     # ========== SHARED UTILITY METHODS ==========
 

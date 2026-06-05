@@ -8,6 +8,7 @@ both text and numeric values.
 from tkinter import Event, TclError
 from typing import Any, Callable
 
+from bootstack.events import ChangeEvent, InputEvent
 from bootstack.i18n import MessageCatalog, IntlFormatter
 from bootstack.widgets._impl.primitives.spinbox import Spinbox
 from bootstack.widgets._impl.mixins import ValidationMixin
@@ -156,17 +157,17 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             return
 
         self._prev_change_text = text
-        self.event_generate('<<Input>>', data={"text": text})
+        self.event_generate('<<Input>>', data=InputEvent(text=text))
 
     def _check_if_changed(self):
         """Emit <<Change>> event if parsed value changed since focus-in."""
         if self._value != self._prev_changed_value:
-            data = {
-                "value": self._value,
-                "prev_value": self._prev_changed_value,
-                "text": self.textsignal.get()
-            }
-            self.event_generate('<<Change>>', data={"value": self._value})
+            data = ChangeEvent(
+                value=self._value,
+                prev_value=self._prev_changed_value,
+                text=self.textsignal.get(),
+            )
+            self.event_generate('<<Change>>', data=data)
             self._prev_changed_value = self._value
 
     def _parse_or_none(self, s: str):

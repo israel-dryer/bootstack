@@ -23,8 +23,8 @@ from typing import Protocol
 
 class DataSourceProtocol(Protocol):
     page_size: int
-    def set_data(self, records): ...
-    def get_page(self, page=None): ...
+    def load(self, records): ...
+    def page(self, page=None): ...
     # ... other methods
 ```
 
@@ -52,21 +52,22 @@ Best for small to medium datasets that fit comfortably in memory.
 
 ```python
 from bootstack.data import MemoryDataSource
+from bootstack import col
 
 ds = MemoryDataSource(page_size=20)
-ds.set_data([
+ds.load([
     {"name": "Alice", "age": 30, "city": "NYC"},
     {"name": "Bob", "age": 25, "city": "LA"},
 ])
 
-ds.set_filter("age >= 25")
-ds.set_sort("name ASC")
-page = ds.get_page(0)
+ds.where(col("age") >= 25)
+ds.order("name")
+page = ds.page(0)
 ```
 
 **Features:**
-- SQL-like filtering (WHERE syntax)
-- Multi-column sorting (ORDER BY syntax)
+- Expressive filtering with the `col` expression API
+- Multi-column sorting
 - O(1) ID lookups via internal index
 - Automatic ID generation
 
@@ -79,7 +80,7 @@ from bootstack.data import SqliteDataSource
 
 # Persistent database
 ds = SqliteDataSource("mydata.db", page_size=50)
-ds.set_data([...])
+ds.load([...])
 
 # In-memory database
 ds = SqliteDataSource(":memory:", page_size=50)
@@ -136,7 +137,7 @@ class RedisDataSource(BaseDataSource):
         self.redis = redis_client
         self._key_prefix = "myapp:records:"
 
-    def set_data(self, records):
+    def load(self, records):
         """Store records in Redis."""
         for record in records:
             record_id = record.get('id', self._generate_id())
@@ -144,7 +145,7 @@ class RedisDataSource(BaseDataSource):
             self.redis.set(key, json.dumps(record))
         return self
 
-    def get_page(self, page=None):
+    def page(self, page=None):
         """Retrieve a page of records."""
         if page is not None:
             self._page = page
@@ -161,7 +162,7 @@ class RedisDataSource(BaseDataSource):
 
         return records
 
-    def create_record(self, record):
+    def insert(self, record):
         """Create new record in Redis."""
         record_id = record.get('id', self._generate_id())
         record['id'] = record_id
@@ -177,15 +178,15 @@ class RedisDataSource(BaseDataSource):
 
         return record_id
 
-    def read_record(self, record_id):
+    def get(self, record_id):
         """Read single record from Redis."""
         key = f"{self._key_prefix}{record_id}"
         data = self.redis.get(key)
         return json.loads(data) if data else None
 
-    def update_record(self, record_id, updates):
+    def update(self, record_id, updates):
         """Update record in Redis."""
-        record = self.read_record(record_id)
+        record = self.get(record_id)
         if not record:
             return False
 
@@ -198,7 +199,7 @@ class RedisDataSource(BaseDataSource):
         self._after_update(record_id, updates, True)
         return True
 
-    def delete_record(self, record_id):
+    def delete(self, record_id):
         """Delete record from Redis."""
         self._before_delete(record_id)
         key = f"{self._key_prefix}{record_id}"
@@ -207,8 +208,8 @@ class RedisDataSource(BaseDataSource):
         return result
 
     # Implement remaining abstract methods...
-    # (set_filter, set_sort, next_page, prev_page, has_next_page,
-    #  total_count, selection methods, export_to_csv, etc.)
+    # (where, order, next_page, prev_page, has_next_page,
+    #  count, selection methods, export_csv, etc.)
 ```
 
 ### Method 2: Implement the Protocol (Advanced)
@@ -228,12 +229,12 @@ class APIDataSource:
         self._page = 0
         self._cache = []
 
-    def set_data(self, records):
+    def load(self, records):
         """Cache data locally."""
         self._cache = list(records)
         return self
 
-    def get_page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
+    def page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Fetch page from API or cache."""
         if page is not None:
             self._page = page
@@ -315,41 +316,41 @@ class AuditedDataSource(BaseDataSource):
 ### Required Methods (All Implementations)
 
 #### Data & View Configuration
-- `set_data(records)` - Load data into the datasource
-- `set_filter(where_sql)` - Apply SQL-like WHERE filter
-- `set_sort(order_by_sql)` - Apply SQL-like ORDER BY sorting
+- `load(records)` - Load data into the datasource
+- `where(condition)` - Filter rows by a `col` condition (None clears)
+- `order(*keys)` - Sort by column names ("name", "-age") or `col` specs
 
 #### Pagination
-- `get_page(page=None)` - Get records for specified page
+- `page(page=None)` - Get records for specified page
 - `next_page()` - Move to next page
 - `prev_page()` - Move to previous page
 - `has_next_page()` - Check if next page exists
-- `total_count()` - Get total record count
+- `count` - Get total record count
 
 #### CRUD Operations
-- `create_record(record)` - Create new record, returns ID
-- `read_record(record_id)` - Read single record by ID
-- `update_record(record_id, updates)` - Update record fields
-- `delete_record(record_id)` - Delete record by ID
+- `insert(record)` - Create new record, returns ID
+- `get(record_id)` - Read single record by ID
+- `update(record_id, updates)` - Update record fields
+- `delete(record_id)` - Delete record by ID
 
 #### Selection Management
 - `is_selected(record_id)` - Check whether a record is selected
-- `select_record(record_id)` - Mark record as selected
-- `deselect_record(record_id)` - Unmark record
+- `select(record_id)` - Mark record as selected
+- `deselect(record_id)` - Unmark record
 - `select_all(current_page_only=False)` - Select all/page records
 - `deselect_all(current_page_only=False)` - Deselect all/page records
-- `get_selected(page=None)` - Get selected records
-- `selected_count()` - Count selected records
+- `selected(page=None)` - Get selected records
+- `selected_count` - Count selected records
 
 #### Lifecycle / reorder
 - `reload()` - Re-read from source (no-op for in-memory)
-- `move_record(record_id, target_index)` - Reorder a record
+- `move(record_id, target_index)` - Reorder a record
 
 #### Export
-- `export_to_csv(filepath, include_all=True)` - Export to CSV
+- `export_csv(filepath, include_all=True)` - Export to CSV
 
 #### Index-based Access
-- `get_page_from_index(start_index, count)` - Get records by index range
+- `page_slice(start_index, count)` - Get records by index range
 
 ### Utility Methods (Inherited from BaseDataSource)
 
@@ -386,30 +387,31 @@ class MongoDataSource(BaseDataSource):
         self._filter = {}
         self._sort = []
 
-    def set_data(self, records):
+    def load(self, records):
         """Insert records into MongoDB."""
         if records:
             self.collection.insert_many(list(records))
         return self
 
-    def set_filter(self, where_sql=""):
-        """Convert SQL-like filter to MongoDB query."""
-        # Simple implementation - in production, use a proper parser
-        if "age >= 30" in where_sql:
-            self._filter = {"age": {"$gte": 30}}
-        else:
-            self._filter = {}
+    def where(self, condition=None):
+        """Store the active filter condition (a `col` expression, or None).
 
-    def set_sort(self, order_by_sql=""):
-        """Convert SQL ORDER BY to MongoDB sort."""
-        if "name ASC" in order_by_sql:
-            self._sort = [("name", 1)]
-        elif "age DESC" in order_by_sql:
-            self._sort = [("age", -1)]
-        else:
-            self._sort = []
+        For a query backend you translate the condition tree (Compare/Match/
+        And/Or/... nodes) into a native query. As a simple fallback you can
+        evaluate `condition.matches(row)` in Python over fetched rows.
+        """
+        self._filter = condition
+        return self
 
-    def get_page(self, page=None):
+    def order(self, *keys):
+        """Store the active sort keys (column names; "-name" for descending)."""
+        self._sort = [
+            (k[1:], -1) if k.startswith("-") else (k, 1)
+            for k in keys
+        ]
+        return self
+
+    def page(self, page=None):
         if page is not None:
             self._page = page
 
@@ -417,18 +419,18 @@ class MongoDataSource(BaseDataSource):
         cursor = self.collection.find(self._filter).sort(self._sort).skip(skip).limit(self.page_size)
         return list(cursor)
 
-    def create_record(self, record):
+    def insert(self, record):
         result = self.collection.insert_one(record)
         return result.inserted_id
 
-    def read_record(self, record_id):
+    def get(self, record_id):
         return self.collection.find_one({"_id": record_id})
 
-    def update_record(self, record_id, updates):
+    def update(self, record_id, updates):
         result = self.collection.update_one({"_id": record_id}, {"$set": updates})
         return result.modified_count > 0
 
-    def delete_record(self, record_id):
+    def delete(self, record_id):
         result = self.collection.delete_one({"_id": record_id})
         return result.deleted_count > 0
 
@@ -458,7 +460,7 @@ class CachedAPIDataSource(BaseDataSource):
         age = datetime.now() - self._cache_time[key]
         return age < timedelta(seconds=self.cache_ttl)
 
-    def get_page(self, page=None):
+    def page(self, page=None):
         if page is not None:
             self._page = page
 
@@ -481,7 +483,7 @@ class CachedAPIDataSource(BaseDataSource):
 
         return data
 
-    def create_record(self, record):
+    def insert(self, record):
         # Invalidate cache on write
         self._cache.clear()
         self._cache_time.clear()
@@ -505,7 +507,7 @@ class MultiSourceDataSource(BaseDataSource):
         self.sources = sources  # List of datasources
         self._aggregated_data = []
 
-    def set_data(self, records):
+    def load(self, records):
         """Not applicable for multi-source."""
         raise NotImplementedError("Use add_source() instead")
 
@@ -517,11 +519,11 @@ class MultiSourceDataSource(BaseDataSource):
         """Combine data from all sources."""
         all_records = []
         for source in self.sources:
-            source_records = source.get_page_from_index(0, source.total_count())
+            source_records = source.page_slice(0, source.count)
             all_records.extend(source_records)
         return all_records
 
-    def get_page(self, page=None):
+    def page(self, page=None):
         if page is not None:
             self._page = page
 
@@ -550,20 +552,21 @@ def test_custom_datasource():
     ds = MyCustomDataSource()
 
     # Test basic operations
-    ds.set_data([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
-    assert ds.total_count() == 2
+    ds.load([{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}])
+    assert ds.count == 2
 
     # Test CRUD
-    new_id = ds.create_record({"name": "Charlie"})
-    assert ds.read_record(new_id) is not None
+    new_id = ds.insert({"name": "Charlie"})
+    assert ds.get(new_id) is not None
 
     # Test pagination
-    page = ds.get_page(0)
+    page = ds.page(0)
     assert isinstance(page, list)
 
     # Test filtering
-    ds.set_filter("name = 'Alice'")
-    filtered = ds.get_page(0)
+    from bootstack import col
+    ds.where(col("name") == "Alice")
+    filtered = ds.page(0)
     assert len(filtered) == 1
 
     # Test it's an instance of BaseDataSource

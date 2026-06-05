@@ -8,11 +8,12 @@ from typing import Any, Callable
 from bootstack.widgets._impl.mixins.configure_mixin import ConfigureDelegationMixin, configure_delegate
 from bootstack.widgets.types import Master, Orient, AccentToken, SurfaceToken, WidgetState
 from bootstack.signals import Signal
+from bootstack.events import SliderEvent, SliderCommitEvent
 from ._shared import (
     HL, HANDLE_SIZE, TRACK_H,
     BADGE_H, BADGE_PAD_X, BADGE_GAP, BADGE_FONT_SIZE,
     TICK_GAP, MAJOR_TICK_H, MINOR_TICK_H, LABEL_GAP, LABEL_FONT_SIZE,
-    STEP, STEP_LARGE, SliderEventData, SliderCommitEventData,
+    STEP, STEP_LARGE,
     _make_badge, _make_handle, _make_track, resolve_colors, get_widget_bg,
 )
 
@@ -512,7 +513,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
     def _on_var_write(self, *_: Any) -> None:
         self._sync()
         val = self._var.get()
-        self.event_generate("<<Change>>", data={"value": val, "prev_value": self._prev_value})
+        self.event_generate("<<Change>>", data=SliderEvent(value=val, prev_value=self._prev_value))
         self._prev_value = val
 
     def _mouse_focus_set(self, _event: tk.Event) -> None:
@@ -544,14 +545,14 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         if self._state == "disabled":
             return
         val = self._var.get()
-        self.event_generate("<<Commit>>", data={"value": val})
+        self.event_generate("<<Commit>>", data=SliderCommitEvent(value=val))
 
     def _step(self, amount: float) -> None:
         if self._state == "disabled":
             return
         new = max(self._minvalue, min(self._maxvalue, self._var.get() + amount))
         self._var.set(new)
-        self.event_generate("<<Commit>>", data={"value": new})
+        self.event_generate("<<Commit>>", data=SliderCommitEvent(value=new))
 
     def _on_map(self) -> None:
         if getattr(self, '_theme_update_pending', False):
@@ -604,12 +605,12 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         """
         self._var.set(max(self._minvalue, min(self._maxvalue, float(value))))
 
-    def on_changed(self, callback: Callable[[SliderEventData], None]) -> str:
+    def on_changed(self, callback: Callable[[SliderEvent], None]) -> str:
         """Register a callback for ``<<Change>>`` events.
 
         Args:
-            callback: Called with a Tkinter event; ``event.data["value"]`` is
-                the current value and ``event.data["prev_value"]`` is the
+            callback: Called with a Tkinter event; ``event.value`` is
+                the current value and ``event.prev_value`` is the
                 value before the change.
 
         Returns:
@@ -625,14 +626,14 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         """
         self.unbind("<<Change>>", bind_id)
 
-    def on_commit(self, callback: Callable[[SliderCommitEventData], None]) -> str:
+    def on_commit(self, callback: Callable[[SliderCommitEvent], None]) -> str:
         """Register a callback for ``<<Commit>>`` events.
 
         Fires on mouse release and keyboard commit, not continuously during drag.
         Use for expensive downstream operations.
 
         Args:
-            callback: Called with a Tkinter event; ``event.data["value"]`` is
+            callback: Called with a Tkinter event; ``event.value`` is
                 the committed value.
 
         Returns:

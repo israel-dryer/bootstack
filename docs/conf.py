@@ -18,11 +18,11 @@ version = ".".join(release.split(".")[:2])
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
     "sphinx_autodoc_typehints",
     "sphinx_design",
+    "sphinx_copybutton",
 ]
 
 # ---------------------------------------------------------------------------
@@ -32,6 +32,11 @@ extensions = [
 autodoc_member_order        = "bysource"
 autodoc_typehints           = "description"
 autodoc_typehints_format    = "short"
+# Only emit parameter type hints for params that have an explicit docstring
+# entry. Dataclasses documented with attribute docstrings then render each field
+# once (in the members list), instead of also getting a redundant, description-
+# less "Parameters" block synthesized from the generated __init__ signature.
+autodoc_typehints_description_target = "documented"
 autodoc_default_options     = {
     "members":          True,
     "undoc-members":    False,
@@ -47,7 +52,7 @@ autosummary_generate = True
 napoleon_google_docstring       = True
 napoleon_numpy_docstring        = False
 napoleon_include_init_with_doc  = False
-napoleon_use_param              = False
+napoleon_use_param              = True
 napoleon_use_rtype              = False
 napoleon_attr_annotations       = True
 
@@ -68,87 +73,56 @@ intersphinx_mapping = {
 }
 
 # ---------------------------------------------------------------------------
+# Nitpicky cross-reference suppression
+# ---------------------------------------------------------------------------
+# `-n` flags every unresolved xref. Suppress targets that are intentionally
+# outside the cross-referenced public API so the nitpicky build stays focused
+# on real broken links: stdlib typing constructs, the deliberately-hidden
+# Tkinter layer, private framework internals (``_core``/``_impl`` and any
+# leading-underscore name), and bare ``TypeVar``s used in generics.
+nitpick_ignore_regex = [
+    (r"py:.*", r"typing\..*"),
+    (r"py:.*", r"tkinter\..*"),
+    (r"py:.*", r"tk\..*"),
+    (r"py:.*", r".*\._core\..*"),
+    (r"py:.*", r".*\._impl\..*"),
+    (r"py:.*", r"(?:.*\.)?_[A-Za-z]\w*$"),  # private leading-underscore names
+    (r"py:.*", r".*\.T$"),                   # bare TypeVars (generic Signal/Stream)
+]
+
+# ---------------------------------------------------------------------------
 # HTML / Shibuya theme
 # ---------------------------------------------------------------------------
 
-html_theme = "shibuya"
+html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "github_url":  "https://github.com/israel-dryer/bootstack",
-    "light_logo":  "_static/bootstack-logo-light.svg",
-    "dark_logo":   "_static/bootstack-logo-dark.svg",
-    "nav_links": [
-        {
-            "title": "Getting Started",
-            "url": "getting-started/index",
-            "children": [
-                {"title": "Installation",     "url": "getting-started/installation",   "summary": "Install bootstack and its dependencies"},
-                {"title": "Quick Start",      "url": "getting-started/quickstart",     "summary": "Build your first app in minutes"},
-                {"title": "App Structures",   "url": "getting-started/app-structures", "summary": "Choose between App, AppShell, and Window"},
-            ],
-        },
-        {
-            "title": "Common Tasks",
-            "url": "tasks/index",
-            "children": [
-                {"title": "Displaying Data",   "url": "tasks/displaying-data",   "summary": "Labels, badges, tables, trees, and gauges"},
-                {"title": "Getting Input",     "url": "tasks/getting-input",     "summary": "Text fields, selects, sliders, and date pickers"},
-                {"title": "Handling Actions",  "url": "tasks/handling-actions",  "summary": "Buttons, menus, and toolbars"},
-                {"title": "Building Forms",    "url": "tasks/building-forms",    "summary": "Spec-driven forms with validation"},
-                {"title": "Dialogs & Alerts",  "url": "tasks/dialogs",           "summary": "Modal dialogs, alerts, and quick prompts"},
-                {"title": "Navigation & Pages","url": "tasks/navigation",        "summary": "Tabs, sidebars, and page stacks"},
-                {"title": "Layout & Spacing",  "url": "tasks/layout",            "summary": "Stacks, grids, cards, and containers"},
-            ],
-        },
-        {
-            "title": "Going Deeper",
-            "url": "deeper/index",
-            "children": [
-                {"title": "Signals",        "url": "deeper/signals",       "summary": "Reactive state and two-way binding"},
-                {"title": "Events",         "url": "deeper/events",        "summary": "Binding, emitting, streams, and scheduling"},
-                {"title": "Theming",        "url": "deeper/theming",       "summary": "Colors, variants, and custom themes"},
-                {"title": "Typography",     "url": "deeper/typography",    "summary": "Font tokens and text styling"},
-                {"title": "Icons",          "url": "deeper/icons",         "summary": "Built-in Bootstrap Icons catalog"},
-                {"title": "Localization",   "url": "deeper/localization",  "summary": "Language catalogs and locale-aware formatting"},
-                {"title": "Data Sources",   "url": "deeper/data-sources",  "summary": "SQLite, memory, and file backends"},
-                {"title": "Validation",     "url": "deeper/validation",    "summary": "Field-level validators and error messages"},
-                {"title": "Windowing",      "url": "deeper/windowing",     "summary": "Multi-window, modal, and custom chrome"},
-                {"title": "Overlays",       "url": "deeper/overlays",      "summary": "Toast notifications and tooltips"},
-            ],
-        },
-        {
-            "title": "Production",
-            "url": "production/index",
-            "children": [
-                {"title": "CLI & Tooling",  "url": "production/cli",          "summary": "Scaffold, run, and manage your project"},
-                {"title": "Distribution",   "url": "production/distribution",  "summary": "Package with PyInstaller via bootstack build"},
-                {"title": "Debugging",      "url": "production/debugging",     "summary": "Diagnose and fix common issues"},
-                {"title": "App Settings",   "url": "production/app-settings",  "summary": "Configure themes, locale, and startup behavior"},
-            ],
-        },
-        {
-            "title": "API",
-            "url": "api/index",
-            "children": [
-                {"title": "Actions",      "url": "api/actions",      "summary": "Button, ButtonGroup, MenuButton, ContextMenu"},
-                {"title": "Inputs",       "url": "api/inputs",       "summary": "TextField, Slider, DateField, CodeEditor, and more"},
-                {"title": "Selection",    "url": "api/selection",    "summary": "Checkbox, RadioGroup, ToggleGroup, Select, Calendar"},
-                {"title": "Data Display", "url": "api/data-display", "summary": "Label, Badge, Tree, Table, ListView, Gauge"},
-                {"title": "Layout",       "url": "api/layout",       "summary": "VStack, HStack, Grid, Card, Accordion, SplitView"},
-                {"title": "Navigation",   "url": "api/navigation",   "summary": "AppShell, Tabs, SideNav, PageStack, Toolbar"},
-                {"title": "Overlays",     "url": "api/overlays",     "summary": "Toast, Tooltip"},
-                {"title": "Dialogs",      "url": "api/dialogs",      "summary": "All dialog types and module-level functions"},
-                {"title": "Forms",        "url": "api/forms",        "summary": "Form, FormDialog, and Field"},
-            ],
-        },
-    ],
+    "github_url": "https://github.com/israel-dryer/bootstack",
+    "logo": {
+        "image_light": "_static/bootstack-logo-light.svg",
+        "image_dark":  "_static/bootstack-logo-dark.svg",
+    },
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_end": ["navbar-icon-links", "theme-switcher"],
+    "secondary_sidebar_items": ["page-toc"],
+    "navigation_with_keys": True,
+    "show_nav_level": 2,
 }
 
 html_static_path = ["_static"]
+templates_path   = ["_templates"]
 html_css_files   = ["custom.css"]
 html_favicon     = "_static/favicon.ico"
 html_title       = "bootstack"
 html_short_title = "bootstack"
+
+# Hide source exposure — the framework abstracts its internals, so we don't
+# surface the reST page source ("View page source") or per-page source copies.
+# (`viewcode` is also intentionally omitted from extensions, so there are no
+# `[source]` links into the private `_impl`/`_runtime` modules either.)
+html_show_sourcelink = False
+html_copy_source     = False
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

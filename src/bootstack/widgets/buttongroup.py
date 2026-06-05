@@ -1,20 +1,32 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.buttongroup import ButtonGroup as _InternalButtonGroup
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.events import register_widget_events
+from bootstack.events import ButtonGroupClickEvent, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
+
+_BUTTONGROUP_EVENTS: dict[str, str] = {
+    "click": "<<BsButtonGroupClick>>",
+}
 
 
 class ButtonGroup(PublicWidgetBase):
     """A row (or column) of visually-connected buttons sharing accent and variant.
 
-    Buttons are added via `add()`. The group propagates `accent`, `variant`,
-    and `density` to every member automatically.
+    Buttons are added via `add()` or `add_all()`. The group propagates
+    `accent`, `variant`, and `density` to every member automatically.
+    Listen for any button press with `on_click()`, which receives the key
+    of the clicked button.
 
     Args:
         orient: `'horizontal'` (default) or `'vertical'`.
-        accent: Accent token applied to all buttons.
+        accent: Accent token applied to all buttons. One of `'primary'`,
+            `'secondary'`, `'info'`, `'success'`, `'warning'`, `'danger'`,
+            `'default'`.
         variant: Style variant — `'solid'` (default), `'outline'`, `'ghost'`.
         density: Widget density — `'default'` or `'compact'`.
         disabled: If True, all buttons are non-interactive.
@@ -23,11 +35,11 @@ class ButtonGroup(PublicWidgetBase):
 
     def __init__(
         self,
-        orient: str = "horizontal",
+        orient: Literal["horizontal", "vertical"] = "horizontal",
         *,
-        accent: str | None = None,
-        variant: str = "solid",
-        density: str = "default",
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str = "solid",
+        density: WidgetDensity | str = "default",
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -45,9 +57,9 @@ class ButtonGroup(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if disabled:
             internal_kwargs["state"] = "disabled"
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalButtonGroup(tk_master, **internal_kwargs)
+        self._key_counter = 0
         self._attach_to_parent(layout_kw)
 
     # ----- Item management -----
@@ -57,8 +69,8 @@ class ButtonGroup(PublicWidgetBase):
         label: str = "",
         *,
         key: str | None = None,
-        on_click: Callable[[], Any] | None = None,
         icon: str | None = None,
+        icon_position: Literal["left", "right", "top", "bottom"] = "left",
         disabled: bool = False,
         **kwargs: Any,
     ) -> str:
@@ -67,24 +79,60 @@ class ButtonGroup(PublicWidgetBase):
         Args:
             label: Button label text.
             key: Unique string key. Auto-generated if omitted.
-            on_click: Callback fired when the button is clicked.
-            icon: Icon name shown on the button.
+            icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`).
+            icon_position: Position of the icon relative to the label. One of
+                `'left'` (default), `'right'`, `'top'`, `'bottom'`. Ignored
+                when `icon_only` is inferred or explicitly set.
             disabled: If True, this button starts disabled.
 
         Returns:
             The key assigned to this button.
         """
+        if key is None:
+            key = f"widget_{self._key_counter}"
+            self._key_counter += 1
+
+        icon_only = icon is not None and not label
+
         btn_kwargs: dict[str, Any] = {}
         if icon is not None:
             btn_kwargs["icon"] = icon
+        if icon_only:
+            btn_kwargs["icon_only"] = True
+        elif icon is not None:
+            btn_kwargs["compound"] = icon_position
         if disabled:
             btn_kwargs["state"] = "disabled"
         btn_kwargs.update(kwargs)
 
-        self._internal.add(label or None, key=key, command=on_click, **btn_kwargs)
-        if key is None:
-            key = f"widget_{self._internal._counter - 1}"
+        _key = key
+        _group = self
+
+        def _command() -> None:
+            btn = _group._internal.item(_key)
+            _group.emit("click", data=ButtonGroupClickEvent(
+                key=_key,
+                text=str(btn.cget("text") or ""),
+                icon=btn.configure_style_options("icon"),
+            ))
+
+        self._internal.add(label or None, key=key, command=_command, **btn_kwargs)
         return key
+
+    def add_all(self, items: list) -> list[str]:
+        """Add multiple buttons at once.
+
+        Each item is either a label string or a dict of keyword arguments
+        accepted by `add()`.
+
+        Args:
+            items: List of labels or dicts. A plain string is treated as
+                the button label with no other options.
+
+        Returns:
+            List of keys assigned to each button, in insertion order.
+        """
+        return [self.add(**item) if isinstance(item, dict) else self.add(item) for item in items]
 
     def remove(self, key: str) -> None:
         """Remove the button identified by `key`.
@@ -103,7 +151,16 @@ class ButtonGroup(PublicWidgetBase):
         """
         self._internal.configure_item(key, **kwargs)
 
-    # ----- Properties -----
+    def query_item(self, key: str, option: str) -> Any:
+        """Return the current value of a configuration option for a button.
+
+        Args:
+            key: Key returned by `add()`.
+            option: Option name to query (e.g. ``'text'``, ``'state'``).
+        """
+        return self._internal.configure_item(key, option)
+
+    # ----- Queries -----
 
     def item(self, key: str) -> Any:
         """Return the button item object for `key`.
@@ -123,26 +180,51 @@ class ButtonGroup(PublicWidgetBase):
         """Keys of all buttons in insertion order."""
         return self._internal.keys()
 
+    def __len__(self) -> int:
+        """Number of buttons in the group."""
+        return len(self._internal)
+
+    def __contains__(self, key: object) -> bool:
+        """True if a button with the given key exists in the group."""
+        return key in self._internal
+
+    # ----- Properties -----
+
     @property
     def disabled(self) -> bool:
+        """Whether all buttons are non-interactive."""
         return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter
-    def disabled(self, v: bool) -> None:
-        self._internal.configure(state="disabled" if v else "normal")
+    def disabled(self, value: bool) -> None:
+        self._internal.configure(state="disabled" if value else "normal")
 
-    @property
-    def accent(self) -> str | None:
-        return self._internal._accent
+    # ----- Events -----
 
-    @accent.setter
-    def accent(self, v: str | None) -> None:
-        self._internal.configure(accent=v)
+    @overload
+    def on_click(self) -> Stream: ...
+    @overload
+    def on_click(self, handler: Callable[[ButtonGroupClickEvent], Any]) -> Subscription: ...
+    def on_click(self, handler: Callable[[ButtonGroupClickEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when any button in the group is clicked.
 
-    @property
-    def variant(self) -> str:
-        return self._internal._variant
+        Called with no handler, returns a composable `Stream`. Called with a
+        handler, binds it immediately and returns a `Subscription`.
 
-    @variant.setter
-    def variant(self, v: str) -> None:
-        self._internal.configure(variant=v)
+        The handler receives a `ButtonGroupClickEvent` with ``key``, ``text``,
+        and ``icon`` for the clicked button.
+
+        Args:
+            handler: Called with the click event. Access ``event.key``,
+                ``event.text``, and ``event.icon``.
+
+        Returns:
+            `Subscription` (with handler) or `Stream` (without handler).
+        """
+        if handler is None:
+            return self.on("click")
+
+        return self.on("click", handler)
+
+
+register_widget_events(ButtonGroup, _BUTTONGROUP_EVENTS)

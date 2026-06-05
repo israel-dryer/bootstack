@@ -17,12 +17,13 @@ The SqliteDataSource is ideal for:
 For in-memory, lightweight scenarios, consider MemoryDataSource instead.
 
 Example:
-    ```python
-    ds = SqliteDataSource("mydata.db", page_size=50)
-    ds.set_data([{"name": "Alice", "age": 30}])
-    ds.set_filter("age >= 25")
-    page = ds.get_page(0)
-    ```
+    .. code-block:: python
+
+        ds = SqliteDataSource("mydata.db", page_size=50)
+        ds.load([{"name": "Alice", "age": 30}])
+        ds.where(col("age") >= 25)
+        first = ds.page(0)
+
 """
 
 from __future__ import annotations
@@ -32,7 +33,9 @@ import sqlite3
 from typing import Any, Dict, List, Optional, Union, Sequence
 
 from bootstack.data.base import BaseDataSource
+from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
+from bootstack.events import DataChangeEvent
 
 # Internal column names — reserved by SqliteDataSource, never exposed to user data.
 _ROW_ID = "_bs_row_id"
@@ -42,8 +45,9 @@ _ROW_SEL = "_bs_selected"
 class SqliteDataSource(BaseDataSource):
     """SQLite-backed data manager with pagination, filtering, sorting, and CRUD operations.
 
-    Provides persistent storage using SQLite database with automatic schema inference
-    and SQL-native filtering/sorting. Supports all operations defined in DataSourceProtocol.
+    Provides persistent storage using SQLite database with automatic schema inference.
+    Filtering and sorting use the `col` expression API (rendered to parameterized
+    SQL internally). Supports all operations defined in DataSourceProtocol.
 
     Args:
         name: Database file path or ":memory:" for in-memory database (default: ":memory:")
@@ -54,12 +58,13 @@ class SqliteDataSource(BaseDataSource):
         page_size: Current page size setting
 
     Example:
-        ```python
-        ds = SqliteDataSource("data.db", page_size=20)
-        ds.set_data([{"name": "Alice", "age": 30}])
-        ds.set_filter("age > 25")
-        page = ds.get_page(0)
-        ```
+        .. code-block:: python
+
+            ds = SqliteDataSource("data.db", page_size=20)
+            ds.load([{"name": "Alice", "age": 30}])
+            ds.where(col("age") > 25)
+            first = ds.page(0)
+
 
     Note:
         - The database connection persists for the lifetime of the object
@@ -81,9 +86,28 @@ class SqliteDataSource(BaseDataSource):
         self.conn = sqlite3.connect(name)
         self.conn.row_factory = sqlite3.Row
         self._table = "records"
-        self._where = ""
-        self._order_by = ""
+        self._filter: Optional[Condition] = None
+        self._sort: List[SortKey] = []
         self._columns = []
+
+    # ---- internal query-fragment builders -------------------------------
+
+    def _where_clause(self) -> tuple[str, list]:
+        """Return `(" WHERE ...", params)` for the active filter, or `("", [])`."""
+        if self._filter is None:
+            return "", []
+        clause, params = self._filter.to_sql()
+        return f" WHERE {clause}", params
+
+    def _order_clause(self) -> str:
+        """Return `" ORDER BY ..."` for the active sort, or `""`."""
+        if not self._sort:
+            return ""
+        terms = [
+            f"{self._quote_identifier(k.column)} {'DESC' if k.descending else 'ASC'}"
+            for k in self._sort
+        ]
+        return " ORDER BY " + ", ".join(terms)
 
     @staticmethod
     def _quote_identifier(name: str) -> str:
@@ -91,7 +115,27 @@ class SqliteDataSource(BaseDataSource):
         text = str(name).replace('"', '""')
         return f'"{text}"'
 
-    def set_data(
+    def _query(self, condition: Optional[Condition], sort_keys: List[SortKey]) -> List[Dict[str, Any]]:
+        """Run a one-off filtered/sorted read without touching view state."""
+        where, params = "", []
+        if condition is not None:
+            clause, params = condition.to_sql()
+            where = f" WHERE {clause}"
+        order = ""
+        if sort_keys:
+            terms = [
+                f"{self._quote_identifier(k.column)} {'DESC' if k.descending else 'ASC'}"
+                for k in sort_keys
+            ]
+            order = " ORDER BY " + ", ".join(terms)
+        try:
+            cursor = self.conn.execute(f"SELECT * FROM {self._table}{where}{order}", params)
+            return [dict(row) for row in cursor.fetchall()]
+        except sqlite3.OperationalError:
+            # Table does not exist yet (no data loaded).
+            return []
+
+    def load(
         self,
         records: Union[Sequence[Primitive], Sequence[dict[str, Any]], Sequence[Sequence[Any]]],
         column_keys: Optional[Sequence[str]] = None,
@@ -185,66 +229,63 @@ class SqliteDataSource(BaseDataSource):
                 self.conn.executemany(f"INSERT INTO {self._table} VALUES ({placeholders})", rows_to_insert)
         finally:
             self.conn.row_factory = original_row_factory
+        self._hub.emit(DataChangeEvent(kind="load"))
         return self
 
-    def set_filter(self, where_sql: str = ""):
-        """Apply SQL WHERE clause filter.
+    def where(self, condition: Optional[Condition] = None) -> "SqliteDataSource":
+        """Filter rows by a condition built with `col` (None clears the filter).
 
-        The fragment is interpolated into the query unmodified, so the caller
-        is responsible for ensuring it is trusted/author-controlled. Do not
-        pass strings built from end-user input — use parameterized queries
-        directly via `self.conn` instead.
+        The condition is rendered to a parameterized query — values are always
+        bound, never interpolated — so user input cannot inject SQL.
         """
-        self._where = where_sql
+        self._filter = condition
+        self._hub.emit(DataChangeEvent(kind="filter"))
+        return self
 
-    def set_sort(self, order_by_sql: str = ""):
-        """Apply SQL ORDER BY clause for sorting.
+    def order(self, *keys) -> "SqliteDataSource":
+        """Sort rows by one or more keys (no arguments clears sorting)."""
+        self._sort = normalize_sort_keys(keys)
+        self._hub.emit(DataChangeEvent(kind="sort"))
+        return self
 
-        Same trust contract as `set_filter`: the fragment is interpolated
-        verbatim, so it must be author-controlled, not user input.
-        """
-        self._order_by = order_by_sql
-
-    def get_page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
+    def page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get records for specified page."""
         if page is not None:
             self._page = page
         offset = self._page * self.page_size
 
-        query = f"SELECT * FROM {self._table}"
-        if self._where:
-            query += f" WHERE {self._where}"
-        if self._order_by:
-            query += f" ORDER BY {self._order_by}"
-        query += f" LIMIT {self.page_size} OFFSET {offset}"
-
-        cursor = self.conn.execute(query)
+        where, params = self._where_clause()
+        query = (
+            f"SELECT * FROM {self._table}{where}{self._order_clause()}"
+            f" LIMIT {self.page_size} OFFSET {offset}"
+        )
+        cursor = self.conn.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
 
     def next_page(self) -> List[Dict[str, Any]]:
         """Advance to next page and return its records."""
         self._page += 1
-        return self.get_page()
+        return self.page()
 
     def prev_page(self) -> List[Dict[str, Any]]:
         """Move to previous page and return its records."""
         self._page = max(0, self._page - 1)
-        return self.get_page()
+        return self.page()
 
     def has_next_page(self) -> bool:
         """Check if more pages exist after current page."""
-        return (self._page + 1) * self.page_size < self.total_count()
+        return (self._page + 1) * self.page_size < self.count
 
-    def total_count(self) -> int:
-        """Get total number of records matching current filter."""
-        query = f"SELECT COUNT(*) FROM {self._table}"
-        if self._where:
-            query += f" WHERE {self._where}"
-        return self.conn.execute(query).fetchone()[0]
+    @property
+    def count(self) -> int:
+        """Total number of records matching the current filter."""
+        where, params = self._where_clause()
+        query = f"SELECT COUNT(*) FROM {self._table}{where}"
+        return self.conn.execute(query, params).fetchone()[0]
 
     # === CRUD OPERATIONS ===
 
-    def create_record(self, record: Dict[str, Any]) -> int:
+    def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID."""
         if _ROW_ID not in record:
             record[_ROW_ID] = self._generate_new_id()
@@ -262,15 +303,16 @@ class SqliteDataSource(BaseDataSource):
 
         with self.conn:
             self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
+        self._hub.emit(DataChangeEvent(kind="insert", id=record[_ROW_ID], record=dict(record)))
         return record[_ROW_ID]
 
-    def read_record(self, record_id: Any) -> Optional[Dict[str, Any]]:
+    def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
         """Retrieve single record by ID."""
         cursor = self.conn.execute(f"SELECT * FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def update_record(self, record_id: Any, updates: Dict[str, Any]) -> bool:
+    def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID."""
         if not updates:
             return False
@@ -278,13 +320,19 @@ class SqliteDataSource(BaseDataSource):
         values = tuple(updates.values()) + (record_id,)
         with self.conn:
             cur = self.conn.execute(f"UPDATE {self._table} SET {set_clause} WHERE {_ROW_ID} = ?", values)
-            return cur.rowcount > 0
+            changed = cur.rowcount > 0
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
+        return changed
 
-    def delete_record(self, record_id: Any) -> bool:
+    def delete(self, record_id: Any) -> bool:
         """Delete record by ID."""
         with self.conn:
             cur = self.conn.execute(f"DELETE FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
-            return cur.rowcount > 0
+            changed = cur.rowcount > 0
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="delete", id=record_id))
+        return changed
 
     def _generate_new_id(self) -> int:
         """Generate next available integer ID."""
@@ -342,49 +390,61 @@ class SqliteDataSource(BaseDataSource):
             return False
         return bool(row[0])
 
-    def select_record(self, record_id: Any) -> bool:
+    def select(self, record_id: Any) -> bool:
         """Mark record as selected."""
-        return self._set_selected_flag(record_id, 1)
+        changed = self._set_selected_flag(record_id, 1)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
-    def deselect_record(self, record_id: Any) -> bool:
+    def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected."""
-        return self._set_selected_flag(record_id, 0)
+        changed = self._set_selected_flag(record_id, 0)
+        if changed:
+            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+        return changed
 
     def select_all(self, current_page_only: bool = False) -> int:
         """Select all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [row[_ROW_ID] for row in self.get_page()]
+            ids = [row[_ROW_ID] for row in self.page()]
             if not ids:
                 return 0
             placeholders = ", ".join("?" for _ in ids)
             query = f"UPDATE {self._table} SET {_ROW_SEL} = 1 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
-                return cur.rowcount
+                count = cur.rowcount
         else:
             with self.conn:
                 cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 1")
-                return cur.rowcount
+                count = cur.rowcount
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
     def deselect_all(self, current_page_only: bool = False) -> int:
         """Deselect all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [row[_ROW_ID] for row in self.get_page()]
+            ids = [row[_ROW_ID] for row in self.page()]
             if not ids:
                 return 0
             placeholders = ", ".join("?" for _ in ids)
             query = f"UPDATE {self._table} SET {_ROW_SEL} = 0 WHERE {_ROW_ID} IN ({placeholders})"
             with self.conn:
                 cur = self.conn.execute(query, ids)
-                return cur.rowcount
+                count = cur.rowcount
         else:
             with self.conn:
                 cur = self.conn.execute(f"UPDATE {self._table} SET {_ROW_SEL} = 0")
-                return cur.rowcount
+                count = cur.rowcount
+        if count:
+            self._hub.emit(DataChangeEvent(kind="select"))
+        return count
 
-    def get_selected(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
+    def selected(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get selected records, optionally paginated."""
         self._ensure_selected_column()
         query = f"SELECT * FROM {self._table} WHERE {_ROW_SEL} = 1"
@@ -403,8 +463,9 @@ class SqliteDataSource(BaseDataSource):
                 self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN {_ROW_SEL} INTEGER DEFAULT 0")
             self._columns.append(_ROW_SEL)
 
+    @property
     def selected_count(self) -> int:
-        """Get total number of selected records."""
+        """Number of selected records."""
         self._ensure_selected_column()
         query = f"SELECT COUNT(*) FROM {self._table} WHERE {_ROW_SEL} = 1"
         return self.conn.execute(query).fetchone()[0]
@@ -425,7 +486,7 @@ class SqliteDataSource(BaseDataSource):
 
     # === DATA EXPORT ===
 
-    def export_to_csv(self, filepath: str, include_all: bool = True):
+    def export_csv(self, filepath: str, include_all: bool = True):
         """Export records to CSV file."""
         self._ensure_selected_column()
         query = f"SELECT * FROM {self._table}"
@@ -444,15 +505,14 @@ class SqliteDataSource(BaseDataSource):
             for row in rows:
                 writer.writerow(dict(row))
 
-    def get_page_from_index(self, start_index: int, count: int) -> List[Dict[str, Any]]:
+    def page_slice(self, start_index: int, count: int) -> List[Dict[str, Any]]:
         """Get records by start index and count (respects filter/sort)."""
-        query = f"SELECT * FROM {self._table}"
-        if self._where:
-            query += f" WHERE {self._where}"
-        if self._order_by:
-            query += f" ORDER BY {self._order_by}"
-        query += f" LIMIT {count} OFFSET {start_index}"
-        cursor = self.conn.execute(query)
+        where, params = self._where_clause()
+        query = (
+            f"SELECT * FROM {self._table}{where}{self._order_clause()}"
+            f" LIMIT {count} OFFSET {start_index}"
+        )
+        cursor = self.conn.execute(query, params)
         return [dict(row) for row in cursor.fetchall()]
 
     def get_distinct_values(self, column: str, limit: int = 1000) -> List[Any]:

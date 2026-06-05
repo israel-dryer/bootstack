@@ -159,7 +159,6 @@ class Typography:
 
     _root: Misc | None = None
     _fonts: FontTokens = DEFAULT_FONT_TOKENS
-    _use_fallback: bool = False
     _named_fonts: dict[str, TkFont] = {}
 
     @classmethod
@@ -170,31 +169,26 @@ class Typography:
         cls._override_tk_fonts()
 
     @classmethod
-    def use_fonts(cls, fonts: FontTokens, *, fallback: bool = False) -> None:
+    def use_fonts(cls, fonts: FontTokens) -> None:
         cls._fonts = fonts
-        cls._use_fallback = bool(fallback)
         cls._ensure_named_token_fonts()
         cls._override_tk_fonts()
 
     @classmethod
-    def set_global_family(cls, family: str) -> None:
+    def set_global_family(cls, family: str, *, mono_family: str | None = None) -> None:
         """
-        Update all font tokens to use a single family (except monospace).
+        Update all font tokens to use a single family.
+
+        The monospace `code` token keeps its own family unless `mono_family`
+        is given.
         """
         updated = {}
         for name, spec in cls._fonts._asdict().items():
             if name == "code":
-                updated[name] = spec
+                updated[name] = spec._replace(font=mono_family) if mono_family else spec
             else:
-                updated[name] = FontSpec(
-                    family,
-                    spec.size,
-                    spec.weight,
-                    spec.underline,
-                    spec.slant,
-                    spec.overstrike,
-                )
-        cls.use_fonts(FontTokens(**updated), fallback=True)
+                updated[name] = spec._replace(font=family)
+        cls.use_fonts(FontTokens(**updated))
 
     @classmethod
     def get_token(cls, name: str) -> FontSpec:
@@ -239,7 +233,7 @@ class Typography:
         # rebuild the FontTokens instance
         data = cls._fonts._asdict()
         data[field] = new
-        cls.use_fonts(FontTokens(**data), fallback=cls._use_fallback)
+        cls.use_fonts(FontTokens(**data))
 
     @classmethod
     def _ensure_named_token_fonts(cls) -> None:
@@ -247,9 +241,7 @@ class Typography:
         Create/update named Tk fonts for every token.
         """
         for token_name, spec in cls._iter_tokens():
-            fallback = FALLBACK_MONO if token_name == FontTokenNames.code else FALLBACK_FONT
-
-            family = spec.font if not cls._use_fallback else fallback
+            family = spec.font
 
             if token_name in tkfont.names():
                 f = tkfont.nametofont(token_name)
@@ -280,8 +272,7 @@ class Typography:
         """
         for tk_name, token_name in TK_FONT_OVERRIDES.items():
             spec = cls.get_token(token_name)
-            fallback = FALLBACK_MONO if token_name == FontTokenNames.code else FALLBACK_FONT
-            family = spec.font if not cls._use_fallback else fallback
+            family = spec.font
 
             if tk_name in tkfont.names():
                 tkfont.nametofont(tk_name).configure(
@@ -339,11 +330,12 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
     """
     Parse:
       "body[bold]"
-      "heading-lg+1[italic][underline]"
+      "heading-lg[+1][italic][underline]"
       "[16][bold]"  -> default token + size/mods
 
     Brackets can contain:
-      - size: 16, 16px
+      - size delta: +1, -2 (relative to token base size)
+      - absolute size: 16, 16px
       - modifiers: bold, normal, italic, roman, underline, overstrike
       - comma/space separated lists: [bold, italic]
     """
@@ -354,21 +346,10 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
     head = s.split("[", 1)[0].strip()
     mods = _BRACKET_RE.findall(s)
 
-    token = default_token
-    size_delta = 0
-
-    if head:
-        # allow token+delta like "body+1" or "body-2"
-        m = re.match(r"^\s*([^+\-]+?)\s*([+-])\s*(\d+)\s*$", head)
-        if m:
-            token = m.group(1).strip() or default_token
-            sign = m.group(2)
-            n = int(m.group(3))
-            size_delta = n if sign == "+" else -n
-        else:
-            token = head
+    token = head if head else default_token
 
     size: int | None = None
+    size_delta = 0
     weight: str | None = None
     slant: str | None = None
     underline: bool | None = None
@@ -381,7 +362,9 @@ def parse_font(value: str, *, default_token: str = FontTokenNames.body) -> FontM
 
         bits = [b.strip().lower() for b in re.split(r"[,\s]+", part) if b.strip()]
         for b in bits:
-            if b.endswith("px") and b[:-2].isdigit():
+            if re.match(r"^[+-]\d+$", b):
+                size_delta = int(b)
+            elif b.endswith("px") and b[:-2].isdigit():
                 size = -int(b[:-2])
             elif b.isdigit():
                 size = int(b)
@@ -474,20 +457,18 @@ def resolve_modifier_font(spec: FontModifierSpec) -> TkFont:
 
 class Font:
     """
-    Public, reusable typography primitive.
+    Resolves a font token string to a live Tk font object.
 
-    Works with the same inline syntax you already allow on widgets:
+    Accepts the same token syntax as the ``font=`` argument on any widget:
       Font("body[bold]")
-      Font("heading-lg+1[italic]")
+      Font("heading-lg[+1][italic]")
       Font("[16][bold]")            # default token + size/mods
-      Font("Segoe UI[14][bold]")    # explicit family + mods
 
-    Can be passed directly to Tk widgets:
-      ttk.Label(..., font=Font("body[bold]"))
+    Use it for text measurement or to pass a resolved font to a raw Tk widget.
 
-    Measurement helpers:
-      Font(...).measure("text")
-      Font(...).metrics(...)
+    Args:
+        value: Font token string (e.g. ``'body[bold]'``, ``'heading-md[italic]'``).
+        default_token: Token to use when ``value`` has no token prefix. Defaults to ``'body'``.
     """
 
     __slots__ = ("spec", "_tkfont")

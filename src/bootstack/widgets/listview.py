@@ -1,38 +1,53 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.list.listview import ListView as _InternalListView
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.events import register_widget_events
+from bootstack.events import Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
 
 class ListView(PublicWidgetBase):
     """A virtual-scrolling list for efficiently displaying large datasets.
 
     Renders only visible rows, making it suitable for thousands of records.
-    Populate via `items=` (a plain list of dicts) or `datasource=` (a
-    `DataSourceProtocol` for database-backed or API-backed data).
+    Populate via ``items=`` (a plain list of dicts) or ``data_source=`` (a
+    ``DataSourceProtocol`` for database-backed or API-backed data).
 
-    Each record dict should have an `'id'` key; one is auto-generated if absent.
-
-    Note: `ListItem` renders only the `'title'`, `'text'`, `'caption'`, `'icon'`,
-    and `'badge'` keys. Other keys are stored and returned by `get_selected()` /
-    events but are not displayed. Map your data to these keys, or supply a custom
-    `row_factory` via `.tk` for fully custom row rendering.
+    Each record dict should have an ``'id'`` key; one is auto-generated if absent.
+    Displayed fields are ``'title'``, ``'text'``, ``'icon'``, and ``'badge'``.
+    Other keys are stored and returned by ``get_selected()`` and events but
+    are not rendered.
 
     Args:
         items: Initial list of record dicts.
-        data_source: `DataSourceProtocol` implementation for data access.
-        selection_mode: `'none'` (default), `'single'`, or `'multi'`.
-        show_selection_controls: Show checkboxes/radio buttons alongside items.
-        show_chevron: Show a chevron indicator on each item.
-        allow_remove: Show a remove button on each item.
-        allow_reorder: Show a drag handle and allow row reordering.
-        striped: Alternate row background colors.
-        show_separators: Show a separator line between items.
-        scrollbar_visibility: `'always'` (default) or `'never'`.
-        density: Item density — `'default'` or `'compact'`.
-        accent: Accent token for selection and drag indicator.
+        data_source: ``DataSourceProtocol`` implementation for database-backed
+            or API-backed data.
+        selection_mode: ``'none'`` (default) — no selection; ``'single'`` —
+            one item at a time; ``'multi'`` — multiple items.
+        show_selection_controls: If ``True``, show checkboxes (multi) or radio
+            buttons (single) alongside each item.
+        show_chevron: If ``True``, show a right-pointing chevron on each item.
+        allow_remove: If ``True``, show a remove button on each item.
+        allow_reorder: If ``True``, show a drag handle and allow reordering
+            by dragging.
+        striped: If ``True``, alternate the row background color.
+        show_separators: If ``True`` (default), draw a separator line between
+            items.
+        show_scrollbar: If ``True`` (default), show the vertical scrollbar.
+            Mousewheel scrolling works regardless.
+        height: Fixed height in pixels. When set, the list maintains this
+            height regardless of its children, making it self-contained for
+            scrolling without requiring the parent layout to provide a
+            vertical constraint. The widget can still grow beyond this height
+            if placed with ``expand=True`` in a constrained parent.
+        density: Row height. ``'default'`` (default) or ``'compact'``.
+        accent: Color intent token for the selection highlight and drag
+            indicator. One of ``'primary'``, ``'secondary'``, ``'info'``,
+            ``'success'``, ``'warning'``, ``'danger'``.
         parent: Override the context-stack parent.
     """
 
@@ -48,9 +63,10 @@ class ListView(PublicWidgetBase):
         allow_reorder: bool = False,
         striped: bool = False,
         show_separators: bool = True,
-        scrollbar_visibility: Literal["always", "never"] = "always",
-        density: str = "default",
-        accent: str | None = None,
+        show_scrollbar: bool = True,
+        height: int | None = None,
+        density: WidgetDensity = "default",
+        accent: AccentToken | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -66,7 +82,7 @@ class ListView(PublicWidgetBase):
             "enable_dragging": allow_reorder,
             "striped": striped,
             "show_separator": show_separators,
-            "scrollbar_visibility": scrollbar_visibility,
+            "scrollbar_visibility": "always" if show_scrollbar else "never",
             "density": density,
         }
         if items is not None:
@@ -77,8 +93,18 @@ class ListView(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         internal_kwargs.update(kwargs)
 
+        if height is not None and "fill" not in layout_kw:
+            layout_kw["fill"] = "x"
+
         self._internal = _InternalListView(tk_master, **internal_kwargs)
+        # Prevent the row pool from feeding back into the layout: without this,
+        # adding rows causes the ListView to grow, which gives the Grid more
+        # space, which causes more rows to be added — an infinite resize loop.
+        self._internal.pack_propagate(False)
         self._attach_to_parent(layout_kw)
+
+        if height is not None:
+            self._internal.configure(height=height)
 
     # ----- Data -----
 
@@ -137,179 +163,90 @@ class ListView(PublicWidgetBase):
 
     # ----- Events -----
 
-    def on_item_click(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemClick>>` events.
-
-        Args:
-            callback: Receives `event.data` — the record dict with `selected`,
-                `focused`, and `item_index` injected.
-
-        Returns:
-            Bind ID — pass to `off_item_click()` to unsubscribe.
-        """
-        return self._internal.on_item_click(callback)
-
-    def off_item_click(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemClick>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_click()`. If `None`, removes all.
-        """
-        self._internal.off_item_click(bind_id)
-
-    def on_selection_changed(self, callback: Callable) -> str:
-        """Register a callback for `<<SelectionChange>>` events.
-
-        Args:
-            callback: Called when selection changes. Use `get_selected()` to
-                read the current selection.
+    @overload
+    def on_item_click(self) -> Stream: ...
+    @overload
+    def on_item_click(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_click(self, handler=None):
+        """Fired when an item is clicked. The handler receives the record dict — read fields with ``e["field"]``.
 
         Returns:
-            Bind ID — pass to `off_selection_changed()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_selection_changed(callback)
+        return self.on("item_click", handler)
 
-    def off_selection_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<SelectionChange>>`.
-
-        Args:
-            bind_id: ID returned by `on_selection_changed()`. If `None`, removes all.
-        """
-        self._internal.off_selection_changed(bind_id)
-
-    def on_item_delete(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemDelete>>` events.
-
-        Args:
-            callback: Receives `event.data` — the deleted record dict.
+    @overload
+    def on_selection_changed(self) -> Stream: ...
+    @overload
+    def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler=None):
+        """Fired when the selection changes. Call ``get_selected()`` to read it.
 
         Returns:
-            Bind ID — pass to `off_item_delete()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_delete(callback)
+        return self.on("selection_changed", handler)
 
-    def off_item_delete(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemDelete>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_delete()`. If `None`, removes all.
-        """
-        self._internal.off_item_delete(bind_id)
-
-    def on_item_insert(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemInsert>>` events.
-
-        Args:
-            callback: Receives `event.data` — the inserted record dict.
+    @overload
+    def on_item_delete(self) -> Stream: ...
+    @overload
+    def on_item_delete(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_delete(self, handler=None):
+        """Fired after an item is removed. The handler receives the deleted record dict.
 
         Returns:
-            Bind ID — pass to `off_item_insert()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_insert(callback)
+        return self.on("item_delete", handler)
 
-    def off_item_insert(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemInsert>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_insert()`. If `None`, removes all.
-        """
-        self._internal.off_item_insert(bind_id)
-
-    def on_item_update(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemUpdate>>` events.
-
-        Args:
-            callback: Receives `event.data` — the updated record dict.
+    @overload
+    def on_item_insert(self) -> Stream: ...
+    @overload
+    def on_item_insert(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_insert(self, handler=None):
+        """Fired after an item is inserted. The handler receives the new record dict.
 
         Returns:
-            Bind ID — pass to `off_item_update()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_update(callback)
+        return self.on("item_insert", handler)
 
-    def off_item_update(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemUpdate>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_update()`. If `None`, removes all.
-        """
-        self._internal.off_item_update(bind_id)
-
-    def on_item_delete_fail(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemDeleteFail>>` events.
-
-        Args:
-            callback: Receives `event.data` — the record dict that failed deletion.
+    @overload
+    def on_item_update(self) -> Stream: ...
+    @overload
+    def on_item_update(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_update(self, handler=None):
+        """Fired after an item is updated. The handler receives the updated record dict.
 
         Returns:
-            Bind ID — pass to `off_item_delete_fail()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_delete_fail(callback)
+        return self.on("item_update", handler)
 
-    def off_item_delete_fail(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemDeleteFail>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_delete_fail()`. If `None`, removes all.
-        """
-        self._internal.off_item_delete_fail(bind_id)
-
-    def on_item_drag_start(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemDragStart>>` events.
-
-        Args:
-            callback: Receives `event.data` — the dragged record dict plus `source_index`.
+    @overload
+    def on_item_drag_start(self) -> Stream: ...
+    @overload
+    def on_item_drag_start(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_drag_start(self, handler=None):
+        """Fired when a drag begins. The handler receives the record dict, including ``source_index``.
 
         Returns:
-            Bind ID — pass to `off_item_drag_start()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_drag_start(callback)
+        return self.on("item_drag_start", handler)
 
-    def off_item_drag_start(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemDragStart>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_drag_start()`. If `None`, removes all.
-        """
-        self._internal.off_item_drag_start(bind_id)
-
-    def on_item_drag(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemDrag>>` events (fired continuously during drag).
-
-        Args:
-            callback: Receives `event.data` — record dict plus `source_index` and `y`.
+    @overload
+    def on_item_drag_end(self) -> Stream: ...
+    @overload
+    def on_item_drag_end(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_item_drag_end(self, handler=None):
+        """Fired when a drag ends. The handler receives the record dict, including
+        ``source_index`` and ``target_index``.
 
         Returns:
-            Bind ID — pass to `off_item_drag()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_item_drag(callback)
-
-    def off_item_drag(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemDrag>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_drag()`. If `None`, removes all.
-        """
-        self._internal.off_item_drag(bind_id)
-
-    def on_item_drag_end(self, callback: Callable) -> str:
-        """Register a callback for `<<ItemDragEnd>>` events.
-
-        Args:
-            callback: Receives `event.data` — record dict plus `source_index`,
-                `target_index`, `moved`, `y_start`, and `y_end`.
-
-        Returns:
-            Bind ID — pass to `off_item_drag_end()` to unsubscribe.
-        """
-        return self._internal.on_item_drag_end(callback)
-
-    def off_item_drag_end(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<ItemDragEnd>>`.
-
-        Args:
-            bind_id: ID returned by `on_item_drag_end()`. If `None`, removes all.
-        """
-        self._internal.off_item_drag_end(bind_id)
+        return self.on("item_drag_end", handler)
 
     # ----- Properties -----
 
@@ -317,3 +254,16 @@ class ListView(PublicWidgetBase):
     def data_source(self) -> Any:
         """The underlying `DataSourceProtocol` instance."""
         return self._internal.get_datasource()
+
+
+_LISTVIEW_EVENTS: dict[str, str] = {
+    "item_click":        "<<ItemClick>>",
+    "selection_changed": "<<SelectionChange>>",
+    "item_delete":       "<<ItemDelete>>",
+    "item_insert":       "<<ItemInsert>>",
+    "item_update":       "<<ItemUpdate>>",
+    "item_drag_start":   "<<ItemDragStart>>",
+    "item_drag_end":     "<<ItemDragEnd>>",
+}
+
+register_widget_events(ListView, _LISTVIEW_EVENTS)

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tkinter
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.sidenav.view import SideNav as _InternalSideNav, DisplayMode
@@ -8,15 +7,16 @@ from bootstack.widgets._impl.composites.sidenav.item import SideNavItem
 from bootstack.widgets._impl.composites.sidenav.group import SideNavGroup
 from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import DisplayModeEvent, NavEvent, PaneToggleEvent, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import Event, AccentToken
 from bootstack.signals import Signal
 
 
 _SIDENAV_EVENTS: dict[str, str] = {
-    "selection_changed":    "<<SelectionChanged>>",
+    "change":               "<<SelectionChanged>>",
     "back_requested":       "<<BackRequested>>",
     "pane_toggled":         "<<PaneToggled>>",
     "display_mode_changed": "<<DisplayModeChanged>>",
@@ -54,7 +54,7 @@ class SideNav(PublicWidgetBase):
         is_pane_open: bool = True,
         pane_width: int | None = None,
         signal: "Signal[str] | None" = None,
-        accent: str = "primary",
+        accent: AccentToken = "primary",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -84,16 +84,16 @@ class SideNav(PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
         if handler is None:
             def _source(h):
-                bid = self._internal.bind(sequence, h, add="+")
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(self._internal, sequence, bid)
             return Stream(self._internal, _source=_source)
-        bid = self._internal.bind(sequence, handler, add="+")
+        bid = self._internal.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(self._internal, sequence, bid)
 
     # ----- Item management -----
@@ -125,7 +125,7 @@ class SideNav(PublicWidgetBase):
         text: str = "",
         *,
         icon: str | dict | None = None,
-        is_expanded: bool = False,
+        expanded: bool = False,
     ) -> SideNavGroup:
         """Add a collapsible navigation group.
 
@@ -133,12 +133,12 @@ class SideNav(PublicWidgetBase):
             key: Unique identifier for the group.
             text: Display text.
             icon: Icon name or configuration dict.
-            is_expanded: Start expanded. Default `False`.
+            expanded: Start expanded. Default `False`.
 
         Returns:
             The created `SideNavGroup`.
         """
-        return self._internal.add_group(key, text, icon=icon, is_expanded=is_expanded)
+        return self._internal.add_group(key, text, icon=icon, is_expanded=expanded)
 
     def add_header(self, text: str) -> SideNavHeader:
         """Add a non-selectable section header label.
@@ -180,7 +180,7 @@ class SideNav(PublicWidgetBase):
 
     # ----- Item access -----
 
-    def node(self, key: str) -> SideNavItem:
+    def item(self, key: str) -> SideNavItem:
         """Return the item with the given key.
 
         Args:
@@ -191,19 +191,19 @@ class SideNav(PublicWidgetBase):
         """
         return self._internal.node(key)
 
-    def nodes(self) -> tuple[SideNavItem, ...]:
+    def items(self) -> tuple[SideNavItem, ...]:
         """Return all main-area items in insertion order."""
         return self._internal.nodes()
 
-    def node_keys(self) -> tuple[str, ...]:
+    def item_keys(self) -> tuple[str, ...]:
         """Return all main-area item keys in insertion order."""
         return self._internal.node_keys()
 
-    def footer_nodes(self) -> tuple[SideNavItem, ...]:
+    def footer_items(self) -> tuple[SideNavItem, ...]:
         """Return all footer items in insertion order."""
         return self._internal.footer_nodes()
 
-    def footer_node_keys(self) -> tuple[str, ...]:
+    def footer_item_keys(self) -> tuple[str, ...]:
         """Return all footer item keys in insertion order."""
         return self._internal.footer_node_keys()
 
@@ -222,7 +222,7 @@ class SideNav(PublicWidgetBase):
         """Return all groups in insertion order."""
         return self._internal.groups()
 
-    def configure_node(self, key: str, option: str | None = None, **kwargs: Any) -> Any:
+    def configure_item(self, key: str, option: str | None = None, **kwargs: Any) -> Any:
         """Get or set options on a specific item.
 
         Args:
@@ -283,7 +283,7 @@ class SideNav(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def selected_key(self) -> str | None:
+    def current(self) -> str | None:
         """The currently selected item key, or `None`."""
         return self._internal.selected_key
 
@@ -305,59 +305,59 @@ class SideNav(PublicWidgetBase):
     # ----- Event shorthands -----
 
     @overload
-    def on_selection_changed(self) -> Stream: ...
+    def on_change(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[NavEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[NavEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected item changes.
 
         Args:
-            handler: Receives `event.data = {'key': str}` — newly selected key.
+            handler: Receives a `NavEvent`; ``e.key`` is the newly selected key.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self.on("selection_changed", handler)
+        return self.on("change", handler)
 
     @overload
     def on_back_requested(self) -> Stream: ...
     @overload
-    def on_back_requested(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_back_requested(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_back_requested(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_back_requested(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the back button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("back_requested", handler)
 
     @overload
     def on_pane_toggled(self) -> Stream: ...
     @overload
-    def on_pane_toggled(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_pane_toggled(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_pane_toggled(self, handler: Callable[[PaneToggleEvent], Any]) -> Subscription: ...
+    def on_pane_toggled(self, handler: Callable[[PaneToggleEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the pane is opened or closed.
 
         Args:
-            handler: Receives `event.data = {'is_open': bool}`.
+            handler: Receives a `PaneToggleEvent`; ``e.is_open`` is the new state.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("pane_toggled", handler)
 
     @overload
     def on_display_mode_changed(self) -> Stream: ...
     @overload
-    def on_display_mode_changed(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_display_mode_changed(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_display_mode_changed(self, handler: Callable[[DisplayModeEvent], Any]) -> Subscription: ...
+    def on_display_mode_changed(self, handler: Callable[[DisplayModeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the display mode changes.
 
         Args:
-            handler: Receives `event.data = {'mode': str}`.
+            handler: Receives a `DisplayModeEvent`; `e.mode` is the new mode.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("display_mode_changed", handler)
 

@@ -24,7 +24,7 @@ with App(title="TextField — visual test", minsize=(480, 100), padding=24, gap=
     TextField("Ada Lovelace", placeholder="e.g. Jane Smith", label="Placeholder + value")
 
     # Password field
-    TextField(mask_char="*", label="Password")
+    TextField(mask="*", label="Password")
 
     # Read-only
     TextField("cannot edit this", label="Read-only", read_only=True)

@@ -68,7 +68,7 @@ When the same value needs to drive multiple widgets, use a ``Signal``:
    with bs.App(title="Signals", padding=20, gap=12) as app:
        name = bs.Signal("World")
        bs.Label("Live preview:", font="caption", accent="secondary")
-       bs.Label(textsignal=name, font="heading-md[bold]", accent="primary")
+       bs.Label(textsignal=name, font="heading-md", accent="primary")
        bs.TextField(placeholder="Type a name…", textsignal=name)
 
    app.run()

@@ -32,11 +32,12 @@ Large File Optimization:
     - Automatic strategy selection based on file size
 
 Example:
-    ```python
-    ds = FileDataSource("data.csv")
-    ds.load()
-    page = ds.get_page(0)
-    ```
+    .. code-block:: python
+
+        ds = FileDataSource("data.csv")
+        ds.load()
+        first = ds.page(0)
+
 """
 
 from __future__ import annotations
@@ -52,6 +53,7 @@ from typing import (
 
 from bootstack.data.memory_source import MemoryDataSource
 from bootstack.data.types import Record
+from bootstack.events import DataChangeEvent
 
 
 @dataclass
@@ -87,12 +89,13 @@ class FileSourceConfig:
         on_error: Function(exception) called if loading fails.
 
     Example:
-        ```python
-        config = FileSourceConfig(
-            column_renames={'emp_id': 'id'},
-            column_types={'age': int},
-        )
-        ```
+        .. code-block:: python
+
+            config = FileSourceConfig(
+                column_renames={'emp_id': 'id'},
+                column_types={'age': int},
+            )
+
     """
 
     file_format: Literal['auto', 'csv', 'tsv', 'json', 'jsonl'] = 'auto'
@@ -168,12 +171,13 @@ class FileDataSource(MemoryDataSource):
             - > 500k: Hybrid
 
     Example:
-        ```python
-        ds = FileDataSource("data.csv")
-        ds.load()
-        ds.set_filter("age > 25")
-        page = ds.get_page(0)
-        ```
+        .. code-block:: python
+
+            ds = FileDataSource("data.csv")
+            ds.load()
+            ds.where(col("age") > 25)
+            first = ds.page(0)
+
 
     Note:
         - File is re-parsed on reload()
@@ -398,7 +402,7 @@ class FileDataSource(MemoryDataSource):
                 self.config.progress_callback(i + 1, estimated_total)
 
         # Set data in parent MemoryDataSource
-        self.set_data(records)
+        super().load(records)
         self.is_loaded = True
         self._load_progress = (len(records), len(records))
 
@@ -419,12 +423,12 @@ class FileDataSource(MemoryDataSource):
             # Process chunk when it reaches chunk_size
             if len(chunk) >= self.config.chunk_size:
                 if not self.is_loaded:
-                    self.set_data(chunk)
+                    super().load(chunk)
                     self.is_loaded = True
                 else:
                     # Append to existing data
                     for rec in chunk:
-                        self.create_record(rec)
+                        self.insert(rec)
 
                 loaded_count += len(chunk)
                 self._load_progress = (loaded_count, estimated_total)
@@ -437,11 +441,11 @@ class FileDataSource(MemoryDataSource):
         # Process remaining records
         if chunk:
             if not self.is_loaded:
-                self.set_data(chunk)
+                super().load(chunk)
                 self.is_loaded = True
             else:
                 for rec in chunk:
-                    self.create_record(rec)
+                    self.insert(rec)
 
             loaded_count += len(chunk)
 
@@ -452,17 +456,22 @@ class FileDataSource(MemoryDataSource):
     def _load_impl(self) -> None:
         """Internal load implementation (runs in thread if use_threading=True)."""
         try:
-            strategy = self._determine_strategy()
+            # Suppress the per-chunk insert/load emits during the bulk read, then
+            # broadcast a single coalesced `load`. When this runs on a background
+            # thread the hub marshals that broadcast to the main thread.
+            with self._hub.silence():
+                strategy = self._determine_strategy()
 
-            if strategy == 'eager':
-                self._load_eager()
-            elif strategy == 'chunked':
-                self._load_chunked()
-            elif strategy in ('lazy', 'hybrid'):
-                # For now, fall back to eager (lazy/hybrid require more complex implementation)
-                self._load_eager()
+                if strategy == 'eager':
+                    self._load_eager()
+                elif strategy == 'chunked':
+                    self._load_chunked()
+                elif strategy in ('lazy', 'hybrid'):
+                    # For now, fall back to eager (lazy/hybrid require more complex implementation)
+                    self._load_eager()
 
             self._loading = False
+            self._hub.emit(DataChangeEvent(kind="load"))
 
             if self.config.on_complete:
                 self.config.on_complete()
@@ -476,11 +485,13 @@ class FileDataSource(MemoryDataSource):
             else:
                 raise
 
-    def load(self, on_complete: Optional[Callable] = None) -> None:
-        """Load file with configured strategy.
+    def load(self, *, on_complete: Optional[Callable] = None) -> None:
+        """Load records from the configured file.
 
-        For threaded loading, returns immediately and calls on_complete when done.
-        For synchronous loading, blocks until complete.
+        Unlike other sources, a `FileDataSource` draws its records from the
+        file given at construction, so `load()` takes no records. For threaded
+        loading it returns immediately and calls `on_complete` when done; for
+        synchronous loading it blocks until complete.
 
         Args:
             on_complete: Optional callback when loading finishes (overrides config)

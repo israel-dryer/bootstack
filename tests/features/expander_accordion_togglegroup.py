@@ -13,7 +13,7 @@ with App(title="Expander + Accordion + ToggleGroup", minsize=(500, 100), padding
     # Expander
     Label("Expander")
     with Expander("Settings", fill="x", expand=True):
-        TextField(label="API key", mask_char="*")
+        TextField(label="API key", mask="*")
         with HStack(gap=8):
             Button("Save", accent="primary", variant="outline")
             Button("Cancel", variant="outline")

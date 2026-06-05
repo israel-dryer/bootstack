@@ -10,8 +10,9 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import PageChangeEvent, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import Event
 
 _PAGESTACK_EVENTS: dict[str, str] = {
     "page_change": "<<PageChange>>",
@@ -22,9 +23,21 @@ _PAGESTACK_EVENTS: dict[str, str] = {
 class StackPage:
     """Context-manager container returned by `PageStack.add()`.
 
-    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
-    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
-    `sticky_items=`, `auto_flow=`.
+    Place child widgets inside the ``with`` block to add them to the page.
+
+    Args:
+        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
+            or ``'grid'``.
+        padding: Space inside the page frame.
+        gap: Space between children in pixels.
+        fill_items: Default fill direction applied to each child.
+        expand_items: Whether children expand to fill available space.
+        anchor_items: Default anchor applied to each child.
+        columns: Column definitions for ``'grid'`` layout.
+        rows: Row definitions for ``'grid'`` layout.
+        sticky_items: Default sticky value for grid children.
+        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
+            ``'column'``.
     """
 
     def __init__(
@@ -123,9 +136,10 @@ class PageStack(PublicWidgetBase):
         padding: Space around the page area.
         width: Requested width in pixels.
         height: Requested height in pixels.
-        fill: Self-placement fill direction in parent.
-        expand: Self-placement expand flag.
         parent: Override the context-stack parent.
+        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
+            ``row=``, ``column=``, etc.) forwarded to the parent
+            geometry manager.
     """
 
     def __init__(
@@ -134,23 +148,11 @@ class PageStack(PublicWidgetBase):
         padding: Any = None,
         width: int | None = None,
         height: int | None = None,
-        # Self-placement
-        fill: str | None = None,
-        expand: bool | None = None,
-        anchor: str | None = None,
         parent: Any = None,
-        **extra_kw: Any,
+        **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
-
-        layout_kw: dict[str, Any] = {}
-        if fill is not None:
-            layout_kw["fill"] = normalize_fill(fill)
-        if expand is not None:
-            layout_kw["expand"] = expand
-        if anchor is not None:
-            layout_kw["anchor"] = anchor
-        layout_kw.update(self._split_layout_kwargs(extra_kw))
+        layout_kw = self._split_layout_kwargs(kwargs)
 
         ps_kwargs: dict[str, Any] = {}
         if padding is not None:
@@ -159,7 +161,6 @@ class PageStack(PublicWidgetBase):
             ps_kwargs["width"] = width
         if height is not None:
             ps_kwargs["height"] = height
-        ps_kwargs.update(extra_kw)
 
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = _InternalPageStack(tk_master, **ps_kwargs)
@@ -261,7 +262,7 @@ class PageStack(PublicWidgetBase):
         """
         return self._internal.item(key)
 
-    def items(self) -> tuple:
+    def items(self) -> tuple[Any, ...]:
         """Return all page widgets in insertion order."""
         return self._internal.items()
 
@@ -270,24 +271,24 @@ class PageStack(PublicWidgetBase):
     @overload
     def on_page_change(self) -> Stream: ...
     @overload
-    def on_page_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_page_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after every navigation.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("page_change", handler)
 
     @overload
     def on_page_mount(self) -> Stream: ...
     @overload
-    def on_page_mount(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_page_mount(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_page_mount(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_mount(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a page is mounted.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("page_mount", handler)
 

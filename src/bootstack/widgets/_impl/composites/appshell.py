@@ -237,7 +237,7 @@ class AppShell(App):
 
     def _on_nav_selection_changed(self, event):
         """Handle SideNav selection changes."""
-        key = event.data.get('key', '')
+        key = getattr(event.data, 'key', '')
         if not key or key not in self._page_keys:
             return  # Not a page item (e.g. action-only item)
 

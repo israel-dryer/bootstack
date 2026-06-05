@@ -47,12 +47,14 @@ class _App(_EventCategory):
     PAGE_CHANGE     = "page_change"
 
 
-class Event:
-    """Namespace of v2 event constants.
+class EventName:
+    """Namespace of canonical event-name constants.
 
-    Members compare equal to their string values, so
-    `widget.on("click", h)` and `widget.on(Event.Widget.CLICK, h)` are
-    interchangeable.
+    Internal reference for the string names accepted by `widget.on(...)`.
+    Members compare equal to their string values, so `widget.on("click", h)`
+    and `widget.on(EventName.Widget.CLICK, h)` are interchangeable. Public code
+    uses the plain string names; the handler argument type is
+    `bootstack.widgets.types.Event`.
     """
     Widget    = _Widget
     Input     = _Input
@@ -84,14 +86,14 @@ _CLASS_EVENT_MAPS: dict[type, dict[str, str]] = {}
 def register_widget_events(cls: type, mapping: dict[str, str]) -> None:
     """Attach a class-specific event map to a public widget class.
 
-    Entries map the v2 name (e.g. "select") to the Tk sequence
+    Entries map the public name (e.g. "select") to the Tk sequence
     (e.g. "<<TreeviewSelect>>"). Class maps take precedence over the global map.
     """
     _CLASS_EVENT_MAPS[cls] = mapping
 
 
 def resolve_event(public_widget: object, name: str) -> str:
-    """Resolve a v2 event name to a Tk sequence.
+    """Resolve a public event name to a Tk sequence.
 
     Lookup order:
         1. Walk the public widget's MRO; first class-specific match wins.
@@ -99,7 +101,7 @@ def resolve_event(public_widget: object, name: str) -> str:
         3. Pass-through literal `<...>` or `<<...>>` strings unchanged.
         4. Raise `UnknownEventError`.
     """
-    from bootstack.widgets._core.exceptions import UnknownEventError
+    from bootstack.errors import UnknownEventError
 
     if name.startswith("<") and name.endswith(">"):
         return name

@@ -8,444 +8,494 @@ so that Tkinter's warts, naming conventions, and legacy API are invisible to the
 user. Widget names, arguments, methods, and events are designed for modern Python
 and ease of use, not compatibility with the raw tk/ttk surface.
 
-**Design philosophy:**
-- Opinionated and configurable within a reasonable range — not infinitely
-  customizable at the cost of simplicity
-- Go from nothing to something fast — layouts, theming, signals, and navigation
-  should all have sensible defaults
-- The user should never need to `import tkinter` — everything is `bs.*`
+**Design philosophy:** Opinionated and configurable within a reasonable range.
+Go from nothing to something fast. The user should never need to `import tkinter`.
 
 **Working directory:** `D:\Development\bootstack`
-
-**Branch strategy:** `feat/*` branches off `main` for widget/API work. PRs go
-`feat/*` → `main`.
+**Branch strategy:** `feat/*` branches off `main`. PRs go `feat/*` → `main`.
 
 ---
 
-## Strategic direction (as of Session 26)
+## Current initiative — Sphinx docs + public API audit
 
-The focus is API redesign — a clean public layer over the existing internal
-widgets, abstracting Tkinter away entirely. bootstack is pre-release; there
-is no v1 in the wild, so there is no backward-compat pressure. Rename, remove,
-and restructure freely. Key decisions are settled below. Performance is resolved
-(PR #53). Docs will be redone from scratch after the API is stable.
+**Branch:** `feat/docs-api-improvements` (active)
+
+### Docs structure (RESOLVED 2026-06-04, committed b7625f36 + follow-ups)
+
+Top-level sections (pydata horizontal navbar — keep this set SMALL, ~5):
+**Getting Started · Tasks · Widgets · Reference · Production**.
+
+- **`docs/widgets/`** — every widget as a flat leaf page. Grouping is done with
+  **caption toctrees** in `widgets/index.rst` (one `.. toctree:: :caption: <Group>`
+  per group, listing widget pages directly). The 10 old category landing pages
+  (`actions.rst`, `inputs.rst`, …) were RETIRED — captions replace them. Curated
+  (common-first) order within groups, NOT alphabetical.
+- **`docs/reference/`** — framework primitives: theming, typography, signals,
+  events, validation, data-sources, shortcuts, scheduling. Flat (no captions).
+- **`docs/api/` and `docs/deeper/` are GONE.** typography moved into reference/.
+- `show_nav_level: 2` (conf.py) renders the caption groups as sidebar headers.
+- Sections are **flat by default**; add caption toctrees only when a section
+  needs internal organization (e.g. if Common Tasks grows).
+- Do NOT promote widget groups to top-level — ~14 navbar items overflow pydata.
+
+**Reference page pattern** (distinct from widgets — non-visual, NO screenshots):
+prose intro → task-ordered usage sections (code blocks) → See also → curated
+`autoclass`. **Inline usage only — NO separate "Full Example" / `docs/examples/<topic>.py`
+for reference pages** (decided 2026-06-05; widget pages DO keep their Full Example).
+When dropping a Full Example, make sure the inline usage covers the same patterns
+(memory `feedback_reference_page_examples`). The **API reference section is FLAT** —
+no `~~~` sub-group headers (the sidebar is narrow); use a prose lead-in to group.
+Autoclass at the **PUBLIC home path** (`bootstack.signals.Signal`, NOT
+`signals.signal.Signal`); `:members:`, curating internal members with
+`:exclude-members:` where needed. Single backticks, Google style.
+**Exemplars: `docs/reference/signals.rst`, `docs/reference/events.rst`.**
+
+DONE to this pattern (2026-06-05): signals, events, streams, scheduling,
+shortcuts, validation, data-sources, **theming**; errors already fine. **PARKED:
+typography** (blocked on the font track — see Track 2). Docs build is
+warning-free (0).
+
+**Theming public API — DONE (2026-06-05, this branch, Phases 1–4).** New public
+`bs.Theme` (`style/theme.py`): keyword ctor, `base=` inheritance, `from_dict`/
+`to_dict`, `install(activate=)`. All 14 built-ins converted JSON → Python
+`Theme` instances in `style/themes/` (auto-installed; deleted `assets/themes/`
+JSON + `importlib` loading = the PyInstaller fix). Removed `register_user_theme`
++ CLI `add theme` + the whole `list` command. Demoted `Style`/`Typography`/`Font`
+from the public API (still importable from their modules). `theming.rst`
+rewritten; `ask_font`→`tkinter.font.Font` leak flagged for the font track.
+Deferred: font track (Phase 2-fonts) + `typography.rst`, and the visual theme
+builder (near-ship). See memory `project_theming_public_api`.
+
+**No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
+strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
+`src/` is still pending. DONE so far: `signals/signal.py`, `streams/_stream.py`,
+and the public widget wrappers swept this session (`GroupBox`/`Tree` ttk names,
+`CodeEditor` now defaults `font='code'` not `'TkFixedFont'`). LEFT BY DESIGN:
+`.tk`/`.var` escape-hatch property docstrings, `signals/integration.py` (the Tk
+bridge). FONT-TRACK leaks still flagged: `ask_font`/`FontDialog` `default_font`
+accepts Tk font names + `ask_font` returns `tkinter.font.Font` (NOTE(font-track)
+in `widgets/dialogs.py`).
+
+### Status
+
+**Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
+- Actions: Button, ButtonGroup
+- Inputs: TextField, PasswordField, NumberField, Slider, RangeSlider,
+  PathField, SpinnerField, TextArea, CodeEditor, DateField, TimeField
+- Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
+  SelectButton, Calendar
+- Data Display: Label, Badge, ProgressBar, Gauge, ListView
+- Layout: Separator, Card, GroupBox, VStack, HStack, Grid, Accordion,
+  ScrollView, SplitView
+- Menus and Toolbars: Toolbar, MenuButton, ContextMenu
+- Navigation: PageStack, Tabs, SideNav, AppShell
+- Overlays: Tooltip, Toast
+- Dialogs: 7 pages (message, input, color, font, filter, dialog, formdialog)
+- Forms
+
+**Pending:**
+- Data Display: Tree, Table (deferred — too complex for this pass)
+- Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
+
+### Cross-cutting wrapper improvements (this + prior sessions)
+- `commit()` and `set_cursor()` removed from all field widgets (TextField,
+  PasswordField, NumberField, PathField, SpinnerField) — internal plumbing
+- `placeholder` property removed from TextField, PasswordField, PathField —
+  constructor-only concern
+- `trigger=` param removed from `validate()` on all 8 field wrappers —
+  internal routing concern, callers are always doing a manual check
+- All field wrappers now have full event parity: 8 shorthands, typed tokens
+- `TextArea.width=` added (was missing; internal hardcoded default)
+- `CodeEditor.height=` added (was hardcoded to 20; now configurable)
+- `LineNumbers` sidebar height bug fixed — no longer overrides `height=`
+- `TextArea` critical bugs fixed: `<<Change>>` vs `<<Changed>>` event name,
+  undefined `inner_sequences` in `on()` (crash), `text_signal` → `textsignal`
+- `CodeEditor`: `text_signal` → `textsignal`, removed `disabled` alias,
+  cleaned up inline imports, added `signal` property
+- DateField calendar picker right-aligns to button side; `position_anchored`
+  now uses actual rendered size (`winfo_width`) for widget anchors
+- **SideNav compact mode**: selection indicator bar now matches fill color
+  (invisible) instead of accent color. `SideNavItem.set_compact()` rebuilds
+  the frame style via `configure_style_options(icon_only=) + rebuild_style()`.
+- **`AppShell.on_page_change`** bug fixed: was binding `<<PageChanged>>`
+  (never fired) — corrected to `<<PageChange>>`.
+- **`Tabs.item()` / `items()`** bug fixed: were calling non-existent
+  `TabView.item/items` — corrected to `tab()` / `tabs()`.
+- **`TabView`** now forwards `<<TabAdd>>` and `<<TabClose>>` to itself so
+  the public wrapper needs no private `_tabs` access for event routing.
+- **`PublicWidgetBase.emit`** simplified: now wraps `event_generate(data=data)`
+  directly — `_bs_emit_data` side-channel removed.
+- **`ContextMenu`**: `ValueError` on unknown `trigger=`; `add_items()` type
+  hint broadened to `list[ContextMenuItem | dict[str, Any]]`.
+- **`AppShell.mainloop`** alias removed from public API.
+- **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
+- **`RangeSliderEvent` / `RangeSliderCommitEvent`** payload attrs renamed to
+  snake_case: `lovalue`/`hivalue`/`prev_lovalue`/`prev_hivalue` →
+  `low_value`/`high_value`/`prev_low_value`/`prev_high_value` (matches the
+  wrapper's `low_value`/`high_value` props). Internal RangeSlider widget still
+  uses `lovalue`/`hivalue` internally — separate cleanup.
+
+### Event system redesign — DONE (2026-06-05, commits 40a4495d…56d09d59)
+
+Unpacked typed payloads + curated `Event`; `bootstack.events` is the catalog
+(memory `project_typed_events`). Data-carrying handlers get the payload dataclass
+DIRECTLY (`on_change(lambda e: e.value)`); native handlers get a curated, Tk-free
+`Event` (modifier bools `ctrl/shift/alt/meta`, clean `key/char`, no
+state/serial/keysym_num). The transform lives in `adapt_handler()` at the public
+`on()` boundary (`widgets/_core/base.py`) — `_runtime/events.py` was left
+UNTOUCHED (confirmed). Payloads are namespaced in `bs.events` ONLY (not
+top-level). ListView keeps dict record payloads (dynamic records). GUI tests:
+`tests/widgets/public/test_slider_events.py`. (Note: slider virtual events only
+deliver to a MAPPED widget — show the window in tests.)
+
+### Next session — Track 2 + queued refactors (all memory-tracked)
+
+**RECOMMENDED NEXT: pick from the queued refactors below — the DataSource
+observable query (item 0) is now DONE.** Font track and the DataSource verb
+rename + filtering DSL were already DONE.
+
+0. **DataSource change broadcasting / observable query — DONE (this branch,
+   memory `project_datasource_change_events`).** Both layers shipped: `_ChangeHub`
+   (`data/_observable.py`) + `bs.events.DataChangeEvent`; `ds.on_change(handler=None)`
+   → Subscription/`Stream`, `ds.observe(condition, *order)` → live result-set
+   `Stream`; read-only `_query()` per source; thread-marshal (worker → main via
+   `app.after`) + coalescing (`after_idle`, one flush/turn) + headless sync-degrade
+   + re-entrancy guards. `silence()` is THREAD-LOCAL. Table/ListView auto-refresh
+   (refetch visible window via `page`/`page_slice`, NOT observe) with ALL internal
+   source mutations silenced (TableView silences where/order too — revised policy).
+   ListView `_on_source_change` re-measures (resizes the virtual row pool +
+   scrollbar). Tests `tests/data/test_observable.py`; docs `data-sources.rst`
+   ("Observing changes"); example `docs/examples/observable_datasource.py`.
+   DEFERRED perf opts (relevance-skip, content-hash signature, count cache,
+   `observe_count`) noted in memory — gated by the observe-small/on_change-large
+   routing contract (now documented + enforced by the widgets).
+
+1. **Track 2 — theming public API + font track: DONE.** Theming Phases 1–4
+   (memory `project_theming_public_api`) and the **font track** (Phase 2-fonts —
+   `bs.set_font_family`/`update_font_token`/`get_font_families`, Tk-free
+   `FontChoice`, fixed the `use_fonts(fallback=True)` bug, `typography.rst`
+   written) both COMMITTED (font track commit `250b3d41`). REMAINS only the
+   **visual theme builder (Phase 5)** — deferred until near-ship; emits
+   `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
+2. **DataSource verb rename + filtering DSL: DONE** (UNCOMMITTED until this
+   session's commit; memory `project_datasource_api_naming`). Verbs:
+   `load`/`page`/`page_slice`/`insert`/`get`/`update`/`delete`/`move`/`select`/
+   `deselect`/`selected`, `count`/`selected_count` (properties), `export_csv`.
+   `set_filter`/`set_sort` → **`where(condition)`/`order(*keys)`** with a Tk/SQL-
+   free `col` expression DSL (`data/query.py`: `col`, `is_in`, `contains`/etc.,
+   `&`/`|`/`~`, `all_of`/`any_of`; parameterized SQL, injection-safe). Dropped the
+   Table "SQL" search mode; fixed `FormDialog(master=)`→`parent=`. Also docs-config
+   cleanup (removed `viewcode`, `html_show_sourcelink`/`copy_source` off,
+   `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
+3. **Persistent KV / prefs store** (proposed, memory `project_persistent_kv_store`):
+   no public persistent K-V exists (`MemoryDataSource`=RAM, `SqliteDataSource`=
+   record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
+   `bs.Store` (dict-like, file-backed). Ties into theme persistence.
+
+**Signal API — DECIDED (prior session):** `signal()` is the single getter,
+`.set()` writes, `.get()` deprecated (doc-excluded). Do NOT adopt callable-setter
+`signal(x)`.
+
+**Carryover (lower priority):**
+1. **Index/landing pages** — root `index.rst`, `widgets/index.rst`,
+   `reference/index.rst`, section indexes are bare; add orientation/gallery.
+2. **Signal runtime-cleanup pass** — memory `project_signal_api_audit_findings`
+   (remove `.get()` + `__getattr__` proxy; `set()` numeric widening; silent
+   swallow in `subscribe(immediate=)`).
+3. **Tree/Table doc pages** (deferred — complex). DataSource rename should land first.
+4. **localization / windowing** `tasks/` how-tos.
+5. **Screenshots pending:** Tooltip/Toast, 7 Dialog pages.
+6. **AppShell deferred improvements:** `nav_pane_width=` not wired to
+   `SideNav(pane_width=)`; nav density/font hardcoded; `toolbar`/`nav` expose
+   internals; group active-child highlight + indentation; footer non-page widgets.
+
+### API/cleanup backlog from the 2026-06-05 audit (memory-tracked)
+- `project_toplevel_api_surface` — audit `bs.*` vs namespaced (events: DONE,
+  payloads live in `bs.events` only).
+- `project_capabilities_relevance` — `_core/capabilities` may be redundant now
+  the public layer abstracts Tk; still imported by data/i18n/mixins.
+- `project_legacy_naming_cleanup` — `TTKBootstrapError` (`_core/exceptions`,
+  overlaps `bootstack.errors`) + pervasive `bootstyle`/`Bootstyle` in `style/`.
+- `project_docstring_backticks` — ~77 files use RST double-backticks; convention
+  is Google + SINGLE backticks. (Markdown ```fences``` in docstrings render
+  broken via autodoc — fixed in `data/` + `_runtime/shortcuts.py`; others remain.)
+- Past-tense event names still pending rename: `SideNav.on_pane_toggled` /
+  `on_display_mode_changed`, `ListView.on_selection_changed`,
+  `Calendar.on_date_selected` (memory `project_event_naming_revisit`).
 
 ---
 
-## Target API design decisions (settled — Session 26)
+## Widget documentation pattern (established — follow exactly)
 
-These were arrived at by reviewing `ttkbootstrap-next` (a prior reference
-implementation) and an Opus architectural review.
+1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
+2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);
+   `@overload` event shorthands; no low-level color kwargs; layout via `**kwargs`
+   + `_split_layout_kwargs`; catch-all must be `**kwargs` not `**extra_kw`.
+3. **`docs/widgets/<widget>.rst`** (NOTE: was `docs/api/` — moved 2026-06-04) —
+   intro sentence → hero screenshot → Usage sections (code block then screenshot)
+   → Widget sizing include → See also → API autoclass → Full Example
+   literalinclude. No intro code block above hero.
+4. **`docs/examples/<widget>.py`** — runnable visual-states-only demo. No
+   `app.tk.after()`, no screenshot scaffolding, no `fill="x"` in RST snippets.
+5. **`docs/screenshots/<widget>.py`** — SCENES dict. Each scene: own `bs.App`,
+   tight `size=(W,H)`, `HStack(fill="x")` for button rows to avoid centering
+   offset, `app.run()`. Hero for button/action widgets: single representative
+   state with menu/popdown open if applicable.
+6. **Screenshots:** `py -3.12 docs/scripts/take_screenshots.py <widget> [--scene X] [--light]`
+   Outputs: `docs/_static/examples/<widget>-<scene>-light/dark.png`
+7. **Wire** into the matching `:caption:` toctree in `docs/widgets/index.rst`
+   (category landing pages are retired — captions group the widgets now).
+8. **Commit** on `feat/docs-api-improvements`.
 
-### Widget layer
+### Screenshot image pattern
 
-The public API is a **wrapper layer** over the existing internal widgets.
-Internal widgets keep their current implementation; the public layer owns
-naming, kwargs, Signal integration, layout, and context parenting. Users never
-touch `tk.*` or `ttk.*`.
+```rst
+.. image:: /_static/examples/<widget>-<scene>-light.png
+   :class: bs-screenshot-light
+   :alt: <Widget> <scene> — light theme
 
-- Per-widget complexity varies: simple primitives may be the internal widget
-  with a modernized interface; composites wrap the internal widget as a delegate.
-- **Escape hatch:** every public widget exposes `.tk` (read-only property) that
-  returns the underlying `tk.Widget` / `ttk.Widget`. Same convention for
-  Signals: `signal.tk` returns the underlying `tk.Variable`. Named `.tk` not
-  `.native` (which implies platform-native Win32/Cocoa) or `.internal`.
-  Documented as unsupported — anything done through `.tk` is on the user.
-
-### App window layout
-
-`App` behaves as a `VStack` from the user's perspective — it accepts the same
-child-guidance kwargs (`padding`, `gap`, `fill_items`, `expand_items`,
-`anchor_items`). App-level kwargs (`title`, `size`, `settings`) are cleanly
-separate with no naming collisions.
-
-Internally, `App` wraps a content frame that fills the root window. Children
-are placed into the content frame, not the `tk.Tk` root directly:
-
-```
-tk.Tk  (root window — title, size, theme, chrome)
-  └── content frame  (internal VStack — padding, gap, fill_items)
-        ├── child 1
-        ├── child 2
-        └── child 3
+.. image:: /_static/examples/<widget>-<scene>-dark.png
+   :class: bs-screenshot-dark
+   :alt: <Widget> <scene> — dark theme
 ```
 
-The content frame is an implementation detail — users never interact with it.
-`app.tk` returns the `tk.Tk` root. `App.guide_layout()` delegates to the
-content frame's pack guidance. Layout kwargs on `App` configure the guidance
-it provides to children, not its own placement (App has no parent).
+Hero uses `-hero-light/dark.png`. Dialogs add `bs-dialog-screenshot` to the class
+(e.g. `:class: bs-screenshot-light bs-dialog-screenshot`).
+Margin/radius owned by `docs/_static/custom.css` — no inline styles.
 
-```python
-with bs.App(title="My App", size=(800, 600), padding=16, gap=8) as app:
-    bs.Label("Header")
-    bs.Button("OK")
+### Widget sizing section pattern
+
+```rst
+Widget sizing
+~~~~~~~~~~~~~
+
+.. include:: ../shared/widget-sizing.rst
 ```
+
+Path is file-relative from `docs/api/`. Omit from dialog pages.
+
+---
+
+## Gotchas
+
+### Layout and wrappers
+- **Self-placement via `**kwargs`** — `fill`, `expand`, `anchor`, `row`, `column` etc.
+  are NOT explicit params. Route through `self._split_layout_kwargs(kwargs)`.
+- **`**kwargs` not `**extra_kw`** — catch-all must be named `**kwargs` throughout.
+- **`**kwargs` override protection** — when merging user kwargs into `internal_kwargs`,
+  filter out reserved keys so explicit constructor params can't be silently overridden.
+  Pattern: `_RESERVED_INTERNAL_KEYS = frozenset({...})` then skip collisions.
+- **`margin_x=` / `margin_y=`** — axis-specific external spacing. Never `padx=`/`pady=`.
+- **`.. include::` path is file-relative** — from `docs/api/`, use `../shared/widget-sizing.rst`.
+
+### Screenshots
+- **HStack centering** — App's VStack centers children. For button-row scenes, wrap in
+  `HStack(fill="x")` so buttons are left-aligned, not centered with dead space on the left.
+- **No `size=` by default** — omit `size=` from `bs.App` in screenshot scenes unless there
+  is a specific reason (popdown/dropdown needs room to render inside the capture bbox). Let
+  the window auto-fit its content. For input/field/slider rows use `minsize=(720, 1)` to
+  enforce a minimum width without locking height. Never add `size=` just to "feel right".
+- **Popdown menus in screenshots** — runner sets app `topmost=True` at t=800ms, grabs at
+  t=950ms. Call `mb.show_menu()` at t=850ms (after topmost set, before grab). Size the
+  app window tall enough to contain the menu within its capture bbox — the menu Toplevel
+  is captured via `ImageGrab.grab(bbox=app_region)` which is a screen grab, not a window
+  grab.
+- **`_ToplevelContextMenu` topmost** — `show()` now sets `-topmost True` on the
+  overrideredirect Toplevel so it appears above a parent with `-topmost True`.
+- **SelectBox popup topmost** — `_create_popup_toplevel` sets `-topmost True` so the
+  popup appears above the screenshot runner's topmost window.
+- **Screenshot runner 2px inset** — crops 2px from each edge to remove Windows border artifact.
+- **Dialog hero pattern** — open non-modally at t=200ms, lift dialog at t=850ms, screenshot
+  at t=950ms. Use `app._capture_target = <toplevel>` to capture a dialog instead of the app.
+- **Full-app widget sizing** — PageStack, SideNav, AppShell use `fill="both", expand=True`
+  and need `size=(W, H)` (not `minsize=`) to give the canvas a defined size.
+- **Navigation window padding** — use `padding=8` on the App for full-app nav scenes to
+  give footer-pinned items breathing room at the bottom edge.
+- **Tabs vertical scene** — use `padding=16` and `size=(W, H)` since `fill="both"` needs
+  a canvas; `minsize=` is sufficient for horizontal tabs scenes.
+
+### MenuButton specifics
+- **`icon_only` inferred** — `DropdownButton.__init__` auto-sets `icon_only=True` in
+  `style_options` when `icon` is in style_options and `text` is None/empty. The public
+  wrapper doesn't need to infer it.
+- **Menubutton layout centering** — `Menubutton.label` has `side="left"` in the ttk
+  layout. When `icon_only=True` and no dropdown, drop `side="left"` so the label fills
+  the full content area and `anchor="center"` can take effect.
+- **Item type names** — public API uses `'command'`, `'check'`, `'radio'`, `'separator'`.
+  Internal ContextMenu uses `'checkbutton'` / `'radiobutton'`. Translate at the wrapper
+  boundary via `_ITEM_TYPE_MAP`. Legacy names accepted for backwards compat.
+- **Radio group variable** — `add_radio_item()` auto-creates a shared `StringVar` on the
+  internal widget. Values are stored as strings internally. Use `selected=True` to
+  pre-select. Multiple `add_radio_item()` calls share one group variable per MenuButton.
+- **`show_menu()` respects disabled state** — guard with
+  `self._internal.instate(("!disabled", "!readonly"))` before delegating.
+- **`disabled` property** — use `instate(("disabled",))`, not string comparison on `cget`.
+- **`shortcut=` in `add_item()`** — display-only label. Passes through `format_shortcut()`
+  which handles: registered key name → platform display, `"Mod+S"` pattern → `"Ctrl+S"` /
+  `"⌘S"` (no registration required), literal string → pass-through.
+- **MenuButton hero pattern** — show a standalone "Actions" button (Edit/Duplicate/Archive/
+  Delete), NOT a File/Edit/View menubar pattern. Shortcuts section uses the File menu example.
+
+### Style rebuild pattern
+- **`configure_style_options` alone doesn't rebuild** — it only updates the stored
+  `_style_options` dict. Call `rebuild_style()` immediately after to regenerate the TTK
+  style with the new options and apply it to the widget.
+- **`emit` wraps `event_generate`** — `PublicWidgetBase.emit(event, data=...)` calls
+  `self._internal.event_generate(sequence, data=data)` directly. For internal widgets
+  use `event_generate` with `data=` natively (the event system is patched to support it).
+
+### Widgets and API
+- **`disabled` on Label** — not appropriate. Label is display-only.
+- **`color=` / `background_color=`** — removed. Use `accent=` / `surface=`.
+- **`bs.App` accepts `theme=`** directly (overrides the `"theme"` key in
+  `settings` if both given). `light_theme=`/`dark_theme=` are NOT direct params —
+  set those via `settings={"light_theme": ..., "dark_theme": ...}`.
+- **`bs.Signal()` crashes at module level** — must be inside `with bs.App():`.
+- **`textsignal=`** — standard kwarg for text-bearing widgets. `signal=` for non-text
+  (Slider, Checkbox, etc.). Never expose `textvariable=` / `variable=` publicly.
+- **`TTKWrapperBase.__init__` overwrites `self._accent`** — store accent before `super().__init__()`,
+  re-assign after.
+- **`<<BsThemeChanged>>`** fires after full rebuild (use this). `<<ThemeChanged>>` fires before.
+- **`bs.SelectButton`** — button-styled non-editable picker. Distinct from `bs.MenuButton`
+  (action menu) and `bs.Select` (editable combobox).
+- **`bs.Table` only accepts `SqliteDataSource`**.
+- **`RadioGroup.set()` validates against keys**, not values.
+- **`bs.Form` uses `col_count=`**, not `columns=`.
+- **`ToggleGroup(padding=N)`** — bug fixed; safe to pass.
+- **`value=` ignored when `signal=` also passed** on boolean widgets — seed the Signal directly.
+
+### Boolean controls
+- **Switch/ToggleButton unsupported features** — Switch: no `on_icon`/`off_icon`/`icon_only`/
+  `show_indicator`/`tristate`/`density`. ToggleButton: no `tristate`/`show_indicator`.
+  Checkbox: only widget supporting `tristate`.
+- **Density** — Checkbox and Switch do NOT support `density=`. ToggleButton DOES.
+- **Sphinx signatures** — give each subclass its own `__init__` to avoid inheriting
+  unsupported params. Use `:inherited-members: PublicWidgetBase` in autoclass.
+
+### Layout widgets
+- **`height=`/`width=` on VStack/HStack** — setting one collapses the other axis.
+  Add `fill=` + `expand=True` for the unconstrained axis.
+- **`show_border=True` needs padding** — border is inside the frame edge.
+- **`Grid columns=N` shorthand** — `columns=3` ≡ `[1,1,1]`. `0` == `'auto'`.
+- **`**extra_kw` removed from layout wrappers** — `Card`, `GroupBox`, `VStack`,
+  `HStack`, `Grid` only accept `**kwargs`.
+- **`variant=` removed from VStack/HStack** — use `bs.Card` for card-variant layout.
+
+### Dialogs
+- **7 doc pages** — `dialogs.rst` is toctree-only. `ColorDropperDialog` is internal.
+- **`content_builder`** receives an internal `_Frame` — use `_Label`/`_Frame` primitives.
+- **`Frame.configure(surface=...)`** does NOT work at runtime — use `configure_style_options(surface=...)`.
+- **`Dialog.__init__`** is fully keyword-only; `parent=` not `master=`; `min_size=`/`max_size=`.
+- **`ButtonRole`** values: `"primary"`, `"secondary"`, `"danger"`, `"cancel"`.
+- **`bs-dialog-screenshot` CSS class** — dialog screenshots only; adds border + drop shadow.
+
+### Sliders / fields
+- **Slider/RangeSlider spacing** — `VStack gap=` does not visually separate tracks.
+  Use `margin_y=10` on each widget. Track heights: plain ≈ 24px, ticks ≈ 45px, badge+ticks ≈ 65px.
+- **Screenshot widths** — use `minsize=(720, 1)` for all input/field/slider scenes.
+- **`anchor_items="baseline"`** — invalid. Use `"s"`.
+- **`select.py` / `calendar.py` shadow stdlib** — use `selectfield.py` and `calendarwidget.py`.
+
+### Misc
+- **American English** — all docstrings and user-facing text. Spelling scrub still pending.
+- **`font="heading-md"`** not `"heading-md[bold]"` — headings already bold.
+- **`&` in `bs.Label` text** — Tkinter strips `&`. Use `"and"`.
+- **`Expander` is internal** — use `bs.Accordion`.
+- **Run examples after editing** — always `python docs/examples/<widget>.py` before committing.
+- **Dark mode Note admonition** — override in `custom.css` inside `html[data-theme="dark"]`:
+  `--pst-color-info: #6ea8fe; --pst-color-info-bg: #0d306e`.
+- **`Shortcuts` service** — `register(key, "Mod+S", fn)` + `bind_to(app)` wires the keyboard
+  handler. `format_shortcut(spec)` resolves display text only (no binding side effect).
+
+---
+
+## Architecture (settled)
+
+**Public API** is a composition layer over internal widgets. Public widgets are plain Python
+objects (NOT `tk.Widget` subclasses) holding `self._internal`.
+
+Constructor order: resolve parent → split layout kwargs → construct internal → attach to parent.
+`_split_layout_kwargs` strips pack/grid/place keys before internal widget construction.
+
+`.tk` property returns the underlying ttk widget — escape hatch, user's responsibility.
 
 ### Context-manager parenting
 
-Thread-local context stack (same pattern as ttkbootstrap-next). `parent=`
-is optional — omitting it uses the current context; passing it explicitly
-overrides the stack. This covers dynamic widget creation outside `with` blocks.
-
 ```python
-# Context-managed (common case)
-with bs.App(title="Demo") as app:
-    with bs.HStack(padding=8, gap=4):
+with bs.App(title="Demo", padding=16, gap=8) as app:
+    with bs.HStack(gap=4):
         bs.Label("Hello")
         bs.Button("OK", on_click=lambda: ...)
 app.run()
-
-# Explicit parent (dynamic / programmatic case)
-btn = bs.Button("Add", parent=toolbar, on_click=handler)
 ```
 
-- `__enter__` pushes the container onto the stack; `__exit__` pops it.
-- Child widgets resolve parent as: explicit `parent=` kwarg → context stack →
-  root window.
-- App hides the root window on enter, shows it on exit (eliminates flash of
-  unstyled content). Only `App.__exit__` calls `update_idletasks()`.
+`__enter__` pushes container, `__exit__` pops. App hides on enter, shows on exit.
 
-### Layout — inline kwargs, no `.attach()`
-
-Layout options live in the widget constructor, not a separate method call.
-The container knows its layout manager; it strips layout kwargs before they
-reach the widget:
+### Events  (redesigned 2026-06-05 — see memory `project_typed_events`)
 
 ```python
-with bs.Row():
-    bs.Label("Name:", width=80)
-    bs.Entry(textsignal=name, fill="x", expand=True)
-
-with bs.Grid(columns=[120, 1]):
-    bs.Label("Name:")          # auto row/col
-    bs.Entry(textsignal=name)
-    bs.Label("Email:")
-    bs.Entry(textsignal=email)
+sub = widget.on_change(handler)   # → Subscription (cancellable)
+widget.on_change().debounce(300).listen(handler)  # → Stream (composable)
 ```
 
-- `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS` are module-level frozen sets.
-  Base widget `__init__` splits kwargs before constructing the internal widget.
-- Container `guide_layout(child, method, options)` merges container defaults
-  (gap, fill_items, expand_items) with per-child overrides — same guidance
-  pattern as ttkbootstrap-next, but child placement is automatic (no
-  `.attach()` call required).
-- Presence of `x`/`y`/`relx`/`rely` in kwargs signals absolute positioning —
-  the container uses `place()` instead of `pack()`/`grid()`. No separate
-  method needed. `PLACE_KEYS` will need care to avoid colliding with widget-level
-  options (`width`, `height`, `anchor` appear in both); aliasing/renaming
-  deferred until public property names are settled per-widget.
-- Public containers: `HStack`, `VStack`, `Grid`, `Card` (with `layout="pack"|"grid"`).
-  No public `Frame` — plain containers are always one of these four.
-  `place()` is internal only; absolute positioning exposed via inline kwargs.
-- One free function `bs.attach(widget, **layout_kw)` as escape hatch for
-  widgets built outside a `with` block.
+All `on_*()` shorthands use `@overload`: no-arg → `Stream`, with handler → `Subscription`.
 
-### Positional arguments for primary content
+**What the handler receives** (the redesign):
+- **Data events** (`change`, `input`, `select`, validation, …) → the typed
+  payload dataclass, **unpacked**: `on_change(lambda e: e.value)`. Payloads live
+  in `bootstack.events` (the catalog) — `bs.events.ChangeEvent`, `SliderEvent`,
+  etc. Namespaced there ONLY, not top-level. ListView item events are the
+  exception: a plain record `dict` (`e["field"]`).
+- **Native events** (`click`, `hover`, `focus`, `blur`, `resize`, key, scroll) →
+  a curated, Tk-free `Event`: `widget`, `x/y/x_root/y_root`, `width/height`,
+  `delta`, modifier bools `ctrl/shift/alt/meta`, clean `key/char`, `time`.
+- `Button`/`Label` `on_click()` METHOD now passes the `Event` (the no-arg
+  `on_click=` constructor command is unchanged).
+- The generic `on(name, handler)` is typed `Callable[[Any], Any]` (string-keyed,
+  can't infer the payload); the precise types are on the `on_<event>()` shorthands.
+- Transform happens in `adapt_handler()` (`widgets/_core/base.py`); emit sites
+  build the dataclass: `event_generate("<<Change>>", data=ChangeEvent(...))`.
+  `_runtime/events.py` (the data-cache transport) is untouched.
 
-Common widgets accept their primary content as the first positional argument.
-The "primary content" is the most commonly passed, unambiguous value:
+### Signals
 
 ```python
-bs.Button("Save")                  # label
-bs.Label("Hello world")            # text
-bs.Badge("21+")                    # text
-bs.CheckButton("Enable feature")   # label
-bs.RadioButton("Option A")         # label
-bs.Entry("placeholder")            # placeholder text (optional, less clear — TBD)
+sig = bs.Signal(value)
+bs.TextField(textsignal=sig)   # two-way binding
+sig.subscribe(lambda v: ...)
 ```
 
-Not all widgets get a positional — only those where the first argument is
-unambiguous. Composites and containers with multiple required config values
-use kwargs only. The positional is always optional; kwargs are always accepted
-as the alternative.
-
-### Events — `on`, `emit`, `Subscription`
-
-`bind` / `unbind` / `event_generate` are internal only. The public API uses:
+### Layout
 
 ```python
-# Subscribe
-sub = widget.on(Event.Input.CHANGE, handler)
-sub = widget.on_change(handler)          # typed shorthand, same return type
-
-# Unsubscribe — no off_* methods, subscription is self-contained
-sub.cancel()
-
-# Fire
-widget.emit(Event.Input.CHANGE, data={"value": 42})
-
-# Scoped lifetime
-with widget.on(Event.Widget.CLICK, handler):
-    do_something()   # handler active only within block
-
-# Escape hatch
-widget.tk.bind("<<SomeObscureEvent>>", handler)
+bs.VStack(padding=20, gap=12, fill="both", expand=True)
+bs.HStack(gap=8, anchor_items="center", fill="x")
+bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x")
 ```
 
-**`Subscription` class** — returned by all `on`/`on_*` calls:
-- `.cancel()` — unbinds the handler
-- Context manager support — cancels on `__exit__`
-- Internally wraps the Tk bind ID; users never see it
-
-**Event name resolution — two-level lookup:**
-1. Widget-specific map checked first (e.g. `TreeView` `"select"` →
-   `<<TreeviewSelect>>`)
-2. Global map fallback (e.g. `"click"` → `<Button-1>`)
-3. Unknown name → `UnknownEventError` with helpful message
-
-Both `<...>` (built-in Tk) and `<<...>>` (virtual) events are mapped.
-String literals always work as fallback; the enum is preferred.
-
-**`Event` namespace** — categorized, discoverable, type-safe:
-
-```python
-class Event:
-    class Widget:
-        CLICK        = "click"
-        DOUBLE_CLICK = "double_click"
-        RIGHT_CLICK  = "right_click"
-        HOVER        = "hover"
-        LEAVE        = "leave"
-        FOCUS        = "focus"
-        BLUR         = "blur"
-        RESIZE       = "resize"
-
-    class Input:
-        CHANGE       = "change"
-        SUBMIT       = "submit"
-        VALIDATE     = "validate"
-
-    class Selection:
-        SELECT       = "select"
-        DESELECT     = "deselect"
-
-    class App:
-        THEME_CHANGE = "theme_change"
-        PAGE_MOUNT   = "page_mount"
-        PAGE_UNMOUNT = "page_unmount"
-```
-
-Enum values are plain strings — `on("change", ...)` and
-`on(Event.Input.CHANGE, ...)` are equivalent. The enum adds discoverability
-and IDE autocomplete, not a separate type system.
-
-`emit` uses the same two-level lookup as `on` — clean names always resolve
-to the same Tk sequence for both directions.
-
-### Signals only — no tk.Variable in the public API
-
-`variable=` and `textvariable=` are removed from the public API entirely.
-Signal is the only reactive primitive.
-
-- Signal continues to wrap `tk.Variable` internally — the Tcl variable is
-  the two-way broadcast bus and is not bypassed.
-- Widgets accept `signal=` / `textsignal=` only. Raw values auto-wrap:
-  `bs.Entry(textsignal="hello")` creates a `Signal("hello")` internally;
-  `.textsignal` returns it.
-- `signal.tk` exposes the underlying `tk.Variable` for interop.
-
-### Sizing contract for canvas-based widgets
-
-No deferred construction — Tk's geometry pass is already lazy, and
-`after_idle` deferral produces unreadable tracebacks.
-
-- Canvas/size-sensitive widgets inherit a `SizedWidget` mixin.
-- `_on_size(width, height)` fires once real dimensions are known (first
-  `<Configure>` where both dims > 1), coalesced via `after_idle`.
-- `winfo_*` size reads are forbidden in `__init__`.
-- `widget.when_sized(callback)` — one-shot helper that fires once the widget
-  has real dimensions. Cleaner than wiring `<Configure>` for the common case.
-- Slider/RangeSlider already follow this pattern correctly.
-
-### Configuration and properties
-
-The existing `configure_delegate` pattern already makes virtually everything
-runtime-settable — no explicit construction-only restrictions exist in the
-current codebase. The v2 property layer is largely surfacing this as Python
-properties rather than routing through `configure()`.
-
-**Three downstream patterns cover the whole codebase:**
-- TTK widgets: `configure_style_options()` + `rebuild_style()` — re-runs
-  the style builder, generates a new hashed TTK style name
-- Canvas widgets (Slider, Meter): calls `_draw()` directly, bypasses the
-  style builder
-- Pure state (value, variable, font): direct delegation, no rebuild
-
-**Property vs configure in v2:**
-- Properties are the primary interface — `widget.accent = "success"` not
-  `widget.configure(accent="success")`
-- `configure(**kwargs)` is kept for the dynamic/programmatic case, but
-  accepts public API names only (not Tk names) and dispatches to property
-  setters internally
-- `cget()` is removed from the public API — use properties directly
-- `on_*` / `off_*` replaced by `on()` returning `Subscription` (see Events)
-
-**Structural variation → separate classes**, not constructor flags. The "same
-widget, different structure" problem (e.g. horizontal vs vertical) is best
-solved by separate classes where the variation is significant, following Qt's
-`QLineEdit` vs `QTextEdit` precedent. bootstack already does this well
-(`Slider` vs `RangeSlider`, `Entry` vs `TextArea`).
-
-### Width — character vs pixel units
-
-For TTK text-bearing widgets (`Label`, `Button`, etc.), `width` is in
-character units. Negative values do NOT mean pixels on ttk widgets (tested:
-`width=-10` produces the same result as `width=10`).
-
-For pixel-based sizing in v2:
-- Use `min_width` / `min_height` (maps to geometry manager `minsize`)
-- Use layout column/row weights for proportional sizing
-- `ttk.Frame`-based containers (`HStack`, `VStack`, `Grid`) already accept
-  pixel dimensions directly since Frame `width`/`height` are always pixels
-
-### Layout kwargs — self-placement vs child guidance
-
-Every layout container needs **two** sets of kwargs:
-
-```python
-HStack(
-    # Self-placement (consumed by parent's guide_layout when THIS widget
-    # is a child of another container):
-    fill="both", expand=True,
-
-    # Child guidance (how THIS widget lays out its own children):
-    gap=8, fill_items="x", expand_items=True, padding=16
-)
-```
-
-Parent strips the self-placement set; the widget uses the child-guidance set.
-No name collision: `fill` vs `fill_items`, `expand` vs `expand_items`, etc.
-
-### Spacing — margin vs padding
-
-CSS conventions apply throughout v2:
-- `margin` — space **outside** the widget, between it and siblings/container
-  (was `padx`/`pady` in Tk)
-- `padding` — space **inside** the widget, between its border and content
-  (was `ipadx`/`ipady` in Tk)
-
-Both accept: `int` (uniform), `(x, y)` tuple, or `(left, top, right, bottom)` (ttk convention).
-
-### Dialogs and one-shot functions
-
-**Two patterns only — no static-method-class pattern in the public API:**
-
-**Module-level functions** for simple one-shot interactions:
-```python
-bs.alert("Operation complete.")              # message, no return
-bs.confirm("Delete this record?")           # → bool
-bs.ask_string("Enter your name:")           # → str | None
-bs.ask_integer("Enter age:", min_value=0)   # → int | None
-bs.ask_float("Enter value:")                # → float | None
-bs.ask_date("Select start date:")           # → date | None
-bs.ask_item("Choose one:", options=[...])   # → str | None
-```
-
-**Classes for complex dialogs** where you configure, show, and inspect:
-```python
-dlg = bs.FormDialog(title="Settings", items=[...])
-dlg.show()
-if dlg.result:
-    process(dlg.result)
-```
-
-`MessageBox` and `QueryBox` classes are removed from the public API —
-their methods become module-level `bs.*` functions. Internal singletons
-(`Style`, `Typography`, `Publisher`) remain internal; user-facing helpers
-(`bs.set_theme()`, `bs.get_theme()`) are the API.
-
-### Widget consolidation decisions
-
-- **`FloodGauge` → removed.** A v2 `ProgressBar` absorbs what was useful
-  (canvas rendering, text overlay, flood-fill visual) into one well-designed
-  widget. `FloodGauge` was a ttkbootstrap artifact.
-- **`Meter` → `Gauge`, kept and modernized.** Circular gauges are genuinely
-  useful for engineering/scientific dashboards. API cleanup needed (deprecated
-  params still in source). Renamed to `Gauge` to drop ttkbootstrap association.
-- **`Combobox` → removed.** Replaced by `Select` (was `SelectBox`). Covers
-  the use case with a better API and popup list.
-- **`Spinbox` → kept.** Distinct form factor from `NumberField` — cycles
-  through a fixed list of text or numeric values; different visual and use case.
-
-### Pre-work before implementation starts
-
-1. ~~`Style._tk_widgets` WeakSet + visibility guard~~ — done (PR #53)
-2. ~~`autostyle` container-level opt-out~~ — done (Session 27, `_bs_autostyle = False`
-   class attribute; checks class and parent before registering a tk widget)
+`fill_items=`, `expand_items=`, `anchor_items=` — container defaults, per-child kwargs override.
 
 ---
 
-## Code standards (settled — do not relitigate)
-
-### Docstring conventions
-
-Class docstrings hold:
-1. One-line summary
-2. One-paragraph description
-3. `Args:` on `__init__` (param name only — no type, the signature has it)
-4. `Attributes:` **only** for runtime-assigned names invisible to griffe
-   (e.g. `self.x = ...` in `__init__` that has no corresponding `@property`)
-
-Class docstrings do **not** hold: `!!! note "Events"` admonitions, `Example:`
-blocks, behavioral prose, "See also" lists.
-
-Param line format: `name: description` — never `name (type): description`.
-Type is already in the signature. Never RST roles (`:class:\`X\``). Use single
-backtick only: `` `X` ``, never ` ``X`` `.
-
-### `on_*/off_*` event handler standard
-
-- Opener: `"Register a callback for \`<<EventName>>\` events."`
-- Callback type: `Callable[[XEventData], None]` when TypedDict exists; `Callable` otherwise
-- Returns: `"Bind ID — pass to \`off_*()\` to unsubscribe."`
-- `off_*` opener: `"Unsubscribe from \`<<EventName>>\`."`
-- `off_*` arg: `bind_id: str | None = None` — `"ID returned by \`on_*()\`. If None, removes all."`
-- TypedDict required for payloads with 2+ keys or complex types
-- Signal-based widgets (RadioGroup, ToggleGroup, Tabs): same pattern; `bind_id: Any`
-
-### No `!!! warning` for type errors
-
-Reserve warnings for runtime gotchas the type system can't catch (deprecation,
-version-specific behavior, ordering hazards, mutation traps). Do not warn about
-invalid types when the type signature already restricts callers.
-
----
-
-## Source package structure
+## Source structure
 
 ```
 src/bootstack/
-├── _core/          internal infrastructure (capabilities, colorutils, mixins, publisher, images, variables)
-├── _runtime/       Tk patches & startup hooks (app, toplevel, menu, shortcuts, events)
-├── assets/         themes, locales, icons
-├── cli/            CLI commands
-├── data/           DataSource classes (BaseDataSource, MemoryDataSource, SqliteDataSource, FileDataSource)
-├── dialogs/        dialog implementations
-├── i18n/           MessageCatalog, L, LV, IntlFormatter
-├── signals/        Signal, TraceOperation
-├── style/          Style, Theme, Typography, builders
-├── validation/     ValidationRule, ValidationResult
+├── _core/       infrastructure (capabilities, colorutils, mixins, publisher, images)
+├── _runtime/    Tk patches (app, toplevel, menu, shortcuts, events)
+├── assets/      locales, icons (themes are now Python, see style/themes/)
+├── data/        DataSource (Base, Memory, Sqlite, File)
+├── dialogs/     dialog implementations
+├── signals/     Signal, TraceOperation
+├── style/       Theme (public), themes/ (built-in Theme instances),
+│                Style/Typography/Font (internal engine), builders
+├── validation/  ValidationRule, ValidationResult
 └── widgets/
-    ├── _core/      public framework internals (base, container, context, events, exceptions, subscription)
-    ├── _impl/      all internal widget implementation (never import directly)
-    │   ├── primitives/   TTK widget subclasses
-    │   ├── composites/   complex internal widgets
-    │   ├── mixins/       shared mixins
-    │   ├── _internal/    TTKWrapperBase
-    │   └── _parts/       entry sub-components
-    ├── app.py, stacks.py, button.py, ...  (flat public widget surface, ~40 files)
-    └── types.py    Shared type aliases and base TypedDicts
+    ├── _core/   public framework internals (base, container, context, events)
+    ├── _impl/   internal implementation (primitives, composites, mixins)
+    ├── app.py, button.py, ...  (~40 public wrapper files)
+    └── types.py AccentToken, VariantToken, WidgetDensity, SurfaceToken, etc.
 ```
-
-All public names accessible via `bs.*`. Internal paths with `_` prefix are not
-for direct import.
-
-**`widgets/types.py` public types:**
-- Primitive aliases: `Master`, `EventCallback`, `CommandCallback`
-- Geometry: `Anchor`, `Orient`, `Justify`, `Relief`, `CompoundMode`, `Fill`, `Sticky`, `Side`, `BorderMode`, `Direction`
-- State/density: `WidgetState`, `WidgetDensity`
-- Styling tokens: `AccentToken`, `VariantToken`, `SurfaceToken`
-- Base TypedDicts: `BaseWidgetKwargs`, `StyledKwargs` (all primitive `*Kwargs` inherit from `StyledKwargs`)
 
 ---
 
@@ -454,830 +504,78 @@ for direct import.
 ```python
 import bootstack as bs
 
-# App
-app = bs.App(title="...", size=(w, h))
-app.mainloop()
+with bs.App(title="My App", size=(800,600), padding=16, gap=8) as app:
+    sig = bs.Signal("World")
+    bs.Label("Hello!", font="heading-lg")
+    bs.Button("OK", accent="primary", on_click=lambda: ...)
+app.run()
 
 # AppShell
-shell = bs.AppShell(title="...", size=(w, h))
-page = shell.add_page("key", text="Label", icon="icon-name")
-shell.toolbar.add_button(icon="...", command=...)
+with bs.AppShell(title="My App", settings={"theme": "bootstrap-light"}) as shell:
+    shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
+    with shell.add_page("home", text="Home", icon="house"):
+        bs.Label("Welcome!")
+    shell.navigate("home")
+shell.run()
 
-# Layout
-bs.PackFrame(parent, direction="vertical|horizontal|row|column|row-reverse|column-reverse",
-             gap=N, padding=N, fill_items="x|y|both|none",
-             expand_items=True, anchor_items="n|ne|e|se|s|sw|w|nw|center")
-bs.GridFrame(parent, rows=N|[...], columns=N|[...], gap=N|(col_gap, row_gap),
-             sticky_items="ew|nsew|...", auto_flow="row|column|row-dense|column-dense|none")
-bs.Card(padding=16)                    # card surface, stepped nested surfaces
-bs.Card(accent='primary', gap=8)       # subtle primary background, primary border
-bs.GroupBox(title="Section", layout='vstack', padding=16)  # bordered section with title
+# Tokens
+accent  = "primary|secondary|info|success|warning|danger|default"
+variant = "solid|outline|ghost|toggle"
+surface = "content|card|chrome|overlay"
+font    = "body|heading-lg|heading-md|caption|code|body+2[italic]"
 
-# Signals
-sig = bs.Signal(value)  # widgets accept signal=sig or textsignal=sig
-
-# Icons — Bootstrap Icons catalog
-bs.Button(parent, icon="house")   # https://icons.getbootstrap.com/
-
-# Color tokens
-accent="primary|secondary|success|warning|danger|info|light|dark"
-variant="solid|outline|ghost|link|toggle"
-surface="content|card|chrome|overlay|input"
-# Modifiers: "primary[+1]", "primary[500]", "primary[subtle]", "primary[100][muted]"
-
-# Font tokens
-font="body"  |  font="heading-lg[bold]"  |  font="body+2[italic]"
+# Dialogs
+bs.alert("Done.")
+bs.confirm("Delete?")          # → bool
+bs.ask_string("Name:")         # → str | None
+bs.ask_integer("Age:", min_value=0)  # → int | None
+bs.ask_date("Pick date:")      # → date | None
+bs.ask_color()                 # → ColorChoice | None
+bs.ask_font()                  # → Font | None
 ```
-
-### API gotchas
-
-- **`bs.App` does not accept `theme=`, `locale=`, `light_theme=`, `dark_theme=`
-  as direct kwargs.** Use `settings={"theme": "..."}` or `AppSettings`. Exception: `localize=` IS a direct kwarg.
-- **`bs.Form` uses `col_count=`, not `columns=`.**
-- **`Form.validate()` only fires rules with trigger `always` or `manual`.** `blur`/`key` rules are skipped.
-- **`Dialog.show()` / `FormDialog.show()` return `None`** — set `self.result`. Use `dlg.show(); if dlg.result: ...`
-- **`bs.Table` only accepts `SqliteDataSource`**, not `MemoryDataSource` or `FileDataSource`.
-- **`bs.Select` (internal `SelectBox`) emits `<<Change>>`**, not `<<SelectionChange>>`.
-- **All Field-based widgets emit `<<Change>>`** (not `<<Changed>>`) and `<<Validate>>`** (not `<<Validated>>`).
-- **`on_changed`/`on_input` callbacks receive a Tkinter event object** (`event.data["value"]`).
-  **`on_valid`/`on_invalid`/`on_validated` callbacks receive a plain dict** (`data["value"]`).
-- **`text=Signal(...)` does NOT work for reactive labels.** Use `textsignal=signal` instead.
-- **`bs.Label` uses `.text` not `.value`** to get/set the display string. This is intentional — `.text` is semantically correct for a display-only widget; `.value` is reserved for data-bearing widgets (Entry, Checkbox, Slider, etc.).
-- **`value=` is ignored when `signal=` or `variable=` is also passed** on CheckButton,
-  CheckToggle, Switch, RadioButton, RadioToggle. Seed the Signal directly: `bs.Signal(True)`.
-- **`ToggleGroup(padding=N)` raises `TypeError`** — source bug, do not pass `padding=`.
-- **`insert_addon` with `bs.CheckButton` raises `TclError`** — `density=` leaks to ttk. Use `bs.CheckToggle`.
-- **`Field.variable` / `Field.signal` are `@property`.** Read-only.
-- **`bs.L(key, *fmtargs)` uses positional `%s`/`%d` format args**, not `{name}` kwargs.
-- **`bs.Form` button command lambda receives the form as first arg:** `lambda f: print(f.value)`.
-- **`RadioGroup.set()` validates against keys, not values.**
-- **`Accordion.items(expanded=True/False)` filters by expansion state.**
 
 ---
 
-## Open source bugs
+## Code standards
 
-See memory `project_api_gaps.md` for full list. Key items:
-- `ToggleGroup` `padding=` kwarg causes `TypeError`
-- ~~`insert_addon` passes `density=` to `CheckButton` causing `TclError`~~ — fixed (Session 41); `CheckButton` excluded at type level, `CheckToggle` is correct
-- ~~`Meter` deprecated param names~~ — removed (Session 41)
+**Docstrings:** one-line summary + description + `Args:` (name: description, no types).
+Single backtick `` `X` `` — never double. No RST roles. Valid values + defaults per kwarg.
+
+**Dataclasses — document fields with ATTRIBUTE DOCSTRINGS, never `Args:`.** Put a
+one-line class summary (+ optional prose), then a short docstring string literal
+*directly under each field*. Do NOT also list the fields in an `Args:` block —
+that renders them twice (a synthesized "Parameters" block + the attribute list).
+autodoc `:members:` then renders each field once with its type + description.
+(Functions/methods keep using `Args:`.) The conf setting
+`autodoc_typehints_description_target = "documented"` suppresses the redundant
+synthesized Parameters block for dataclasses. Exemplars: `bootstack.events`
+payloads, `bootstack.style.theme.Theme`.
+
+```python
+@dataclass
+class ChangeEvent:
+    """Fires when a field's value is committed (on blur or Enter)."""
+
+    value: Any = None
+    """The committed, parsed value."""
+    prev_value: Any = None
+    """The value before this change."""
+```
+
+**`on_*()` shorthands:**
+```python
+@overload
+def on_change(self) -> Stream: ...
+@overload
+def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+def on_change(self, handler=None):
+    return self.on("change", handler)
+```
+
+---
+
+## Open bugs
+
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
-- `ToggleGroup` solid (default) variant has poor contrast — selected button text is hard to read against the filled background; user handling `src/bootstack/style/builders/toolbutton.py`
-- `Style._tk_widgets` grows forever — destroyed widgets never removed; causes theme-change slowdown *(partially resolved in Session 26 — WeakSet + visibility guard; remaining issue is pages are never destroyed)*
-- ~~`TextField` `placeholder=` not supported~~ — fixed (Session 39)
-- ~~`TabView` pill variant~~ — removed (Session 39)
-- `Label`/`Badge` use `.text` (not `.value`) — this is settled and intentional; `.value` is for data-bearing widgets only
-
----
-
-## Handoff log
-
-### Session 28 — public layer plan (2026-05-28)
-
-- **`development/v2_base_layer_plan.md`** — full implementation plan for the
-  public API base layer. 7 phases (A foundations → B `PublicWidgetBase`
-  → C container protocol → D `HStack`/`VStack`/`Grid` → E `App` →
-  F reference `Button` → G smoke tests). Dependencies and acceptance
-  criteria are explicit; per-widget migration is deferred.
-- **Key architectural decisions:**
-  - **Composition, not inheritance.** Public widgets are plain Python
-    objects holding an internal `tk.Widget` as `self._internal`, reachable
-    via the `.tk` property. They are NOT `tk.Widget` subclasses. Reasons:
-    avoids shadowing `tk.Widget.tk` (the Tcl interp handle), and makes
-    `.pack()`/`.bind()` physically inaccessible on public widgets so the
-    escape hatch (`widget.tk.pack(...)`) is the only path to raw Tk.
-  - **File location:** `src/bootstack/widgets/public/` during development. No
-    edits to existing `widgets/primitives/*` or `_runtime/*` except a
-    one-line `Signal.tk` property alias.
-  - **`App` owns an internal `PackFrame` content frame.** `app.tk` returns
-    the `tk.Tk` root; children are parented to and placed in the content
-    frame via `App._child_master()` returning `self._content_frame`. The
-    settled "App behaves as a VStack" design.
-  - **Layout-key splitting** lives in
-    `PublicWidgetBase._split_layout_kwargs`, called before the internal
-    widget is constructed so pack/grid kwargs never leak into the ttk
-    ctor. `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS`, `PLACE_TRIGGER_KEYS` are
-    module-level frozensets in `public/container.py`. PLACE collisions on
-    `width`/`height`/`anchor` are left as widget options (deferred per
-    earlier CLAUDE.md decision).
-  - **Event resolution is two-level:** widget-class map (walked via MRO)
-    → `GLOBAL_EVENT_MAP` → literal `<...>` pass-through → `UnknownEventError`.
-    `Event.Widget.CLICK` etc. are `str`-valued enum members so they
-    compare equal to plain strings. The global map holds only true
-    cross-widget events; widget-specific virtuals like `<<TreeviewSelect>>`
-    register per-class via `register_widget_events(cls, mapping)`.
-  - **`Subscription`** wraps `(internal_widget, sequence, bind_id)`. Holds
-    a reference to the internal widget so `.cancel()` can call
-    `unbind(sequence, bind_id)`. Idempotent; context-manager support.
-  - **Constructor order** for every public widget: resolve parent → split
-    layout kwargs → construct internal → attach to parent. Subclasses
-    don't call `super().__init__()` (there is no Python super to call);
-    base provides static helpers.
-- **Next step:** Sonnet executes the plan on branch `feat/public-api-base`.
-
-### Session 27 — API design + autostyle pre-work (2026-05-28)
-
-- **Extensive API design session.** All target API decisions settled and
-  documented in the "Target API design decisions" section above.
-- **`development/v2_api_proposal.md`** — full per-widget API mapping (40+
-  classes, every kwarg/method/property/event) from current to target API,
-  generated by Opus and corrected against session decisions.
-- **autostyle pre-work complete:** `_bs_autostyle = False` class attribute on
-  `Slider` and `RangeSlider` replaces 8 per-call `autostyle=False` kwargs.
-  The `override_tk_widget_constructor` wrapper now checks:
-  1. `type(self)._bs_autostyle` — widget's class opts out
-  2. `master._bs_autostyle` — parent opts out children
-  Future canvas-based composites just set `_bs_autostyle = False` on the class.
-- **Ready for implementation.** All pre-work done. Next step: Opus plans the
-  base layer implementation (see briefing below); Sonnet executes.
-
----
-
-## v2 base layer — implementation status
-
-**Plan written:** `development/v2_base_layer_plan.md` (Session 28). Covers
-the base layer only: context stack, `PublicWidgetBase`, `Subscription`,
-`Event` enum + two-level resolution, container `guide_layout` protocol,
-`HStack`/`VStack`/`Grid`, `App`, and `Button` as a reference primitive.
-Structured in 7 phases (A–G) with explicit dependencies and acceptance
-criteria. Per-widget migration of the remaining ~40 widgets is out of scope
-for the first PR and follows after the base layer lands.
-
-**Branch:** `feat/public-api-base` off `main`. New code lives at
-`src/bootstack/widgets/public/`; no edits to existing `widgets/primitives/*` or
-`_runtime/*` except the `Signal.tk` property alias (Phase A6).
-
-**Status: COMPLETE (Session 29).** All 7 phases implemented and passing.
-All acceptance criteria met. Next step: open PR `feat/public-api-base` → `main`,
-then begin per-widget migration.
-
-### Session 29 — public layer implementation (2026-05-28)
-
-- **All 7 phases implemented** on `feat/public-api-base`.
-- **Files created under `src/bootstack/widgets/public/`:**
-  - `exceptions.py` — `BootstackV2Error`, `UnknownEventError`, `ParentResolutionError`
-  - `events.py` — `Event` namespace (`_Widget`, `_Input`, `_Selection`, `_App`);
-    `GLOBAL_EVENT_MAP`; `register_widget_events`; `resolve_event` (two-level lookup)
-  - `subscription.py` — `Subscription` (idempotent cancel, context-manager support)
-  - `context.py` — thread-local container stack (`push_container`, `pop_container`,
-    `current_container`)
-  - `container.py` — `PACK_KEYS`, `GRID_KEYS`, `PLACE_KEYS`, `PLACE_TRIGGER_KEYS`
-    constants + `PublicContainer` class with `guide_layout`, `__enter__`/`__exit__`
-  - `base.py` — `PublicWidgetBase` with `_resolve_parent`, `_split_layout_kwargs`,
-    `_attach_to_parent`, `.tk` property, `.on()`, `.emit()`
-  - `stacks.py` — `HStack`, `VStack` (wrap `PackFrame`)
-  - `grid.py` — `Grid` (wraps `GridFrame`)
-  - `app.py` — `App` (wraps `_runtime.app.App` + internal `PackFrame` content frame)
-  - `primitives/button.py` — reference `Button` implementation
-  - `__init__.py` — re-exports all public symbols
-- **`Signal.tk` property** added to `src/bootstack/signals/signal.py` (aliases `var`).
-- **Circular import** between `base.py` and `container.py` resolved by lazy import
-  of layout key constants inside `_split_layout_kwargs` static method.
-- **Tests:** `tests/widgets/public/test_base_layer.py` — 11 non-GUI tests (context
-  stack, kwarg splitting, event resolution, subscription, Event enum), 6 GUI-gated
-  integration tests. All 11 non-GUI tests pass; `pytest.mark.gui` registered in
-  `pyproject.toml`.
-- **Acceptance criteria verified:** imports, `btn.tk` returns `ttk.Button`,
-  `Subscription.cancel()` works, `UnknownEventError` raised for unknown events,
-  no regressions in existing test suite.
-
-### Session 30 — Per-widget migration (2026-05-28)
-
-Continued migrating internal widgets to the public layer. All widgets live in
-`src/bootstack/widgets/public/primitives/`. Each PR followed the same pattern:
-wrap the highest-level internal, rename Tk-isms, add a visual test under
-`tests/features/`, open PR.
-
-**Widgets completed this session (all merged to `main`):**
-- **PR #55** — `Label`, `Badge` (`_internal_class` pattern for Badge subclass)
-- **PR #56** — `TextField` (wraps `composites/TextEntry`; overrides `on()` to
-  route `<<Change>>` etc. to inner `_entry`)
-- **PR #57** — `Checkbox`, `Switch`, `ToggleButton` (shared `_BooleanControlBase`;
-  `command=` wired to generate `<<Change>>`/`<<ToggleOn>>`/`<<ToggleOff>>`)
-- **PR #58** — `RadioGroup` (fixes `options=` gap; signal trace → `<<Change>>`)
-- **PR #59** — `Select` (wraps `SelectBox`), `NumberField` (wraps `NumericEntry`;
-  `min_value=`/`max_value=`/`step=` replace `minvalue=`/`maxvalue=`/`increment=`)
-- **PR #60** — `Slider`, `RangeSlider` (canvas-based; events fire on widget directly;
-  value setters coerce to float; `RangeSlider.value` → `(lo, hi)` tuple)
-- **PR #61** — `ProgressBar`, `Gauge` (wraps `Meter`; **fixes Progressbar setter
-  infinite recursion** — `get()`/`set()` now call `ttk.Progressbar` directly);
-  `meter_type=` replaces internal `meter_type=` (public name settled as `meter_type=`)
-- **PR #62** — `Spinbox`, `Separator`; **fill= aliases** (`"horizontal"`→`"x"`,
-  `"vertical"`→`"y"`, `"all"`→`"both"`) in `container.py`/`stacks.py`/`app.py`
-- **PR #63** — `PasswordField` (`mask_char=`, `show_visibility_toggle=`, `reveal()`/`hide()`),
-  `TextArea` (`_core.text` event routing; `placeholder=` supported; `select_all()`
-  fix: `focus_set()` + `end-1c`)
-- **PR #64** — `Expander` (`PublicContainer`; children → `_content_frame`),
-  `Accordion` (`add()` → `_AccordionSection` context manager), `ToggleGroup`
-  (fixes `options=` gap; `mode='single'|'multi'`)
-
-**Key patterns established:**
-- Field-composite wrappers (TextField, Select, NumberField, PasswordField) override
-  `on()` to route input events to `self._internal._entry`
-- TextArea routes events to `self._internal._core.text`
-- Canvas/frame widgets (Slider, ProgressBar, Expander) bind directly on `self._internal`
-- `_BooleanControlBase` / `_internal_class` for shared-constructor widget families
-- Signal trace → `event_generate("<<Change>>")` for composites whose change
-  notification doesn't go through Tk's bind system (RadioGroup, ToggleGroup)
-
-**Bugs fixed in internals:**
-- `Progressbar.get()`/`set()` infinite recursion — bypasses delegate with
-  `ttk.Progressbar.configure(self, ...)` directly
-- `TextArea.select_all()` — needs `focus_set()` and `"end-1c"` not `"end"`
-
-**Known issues logged (see Open source bugs above):**
-- `TextArea` border: raw Tk Text border instead of Field-style themed border
-- `ToggleGroup` solid variant: poor contrast on selected buttons
-- Field composite default width grows with addon slots (gap #13)
-
-**Next steps after Session 30:** `Tabs`, `Toast`, `Tooltip`, `Card`, `ListView`,
-`TreeView`, `TableView`, `AppShell`, `Window` — all completed in subsequent sessions
-(see PRs #65–75). API drift cleanup and misc-widgets batch followed (Session 31).
-
-### Session 31 — API drift cleanup + SelectBox bug fixes (2026-05-28)
-
-Full audit of all public wrappers against `development/v2_api_proposal.md` revealed
-widespread drift in class names and kwarg names. All drift fixed in `fix/public-api-drift`
-branch (commit a857ef2) before continuing misc-widgets work.
-
-**Class renames (file renames + rewrites):**
-- `NumericEntry` → `NumberField` (`numericentry.py` → `numberfield.py`)
-- `PasswordEntry` → `PasswordField` (`passwordentry.py` → `passwordfield.py`);
-  `show_toggle=` → `show_visibility_toggle=`
-- `TreeView` → `Tree` (`treeview.py` → `tree.py`)
-- `TableView` → `Table` (`tableview.py` → `table.py`)
-
-**Kwarg renames across 10 widgets:**
-- `Gauge`: `style=` → `meter_type=`, `step_size=` → `step=`
-- `ProgressBar`: `maximum=` → `max_value=`
-- `Slider`: `tick_interval=` → `tick_step=`
-- `RangeSlider`: `lo_value/hi_value` → `low_value/high_value`; `lo_signal/hi_signal` →
-  `low_signal/high_signal`; `.lo`/`.hi` properties → `.low_value`/`.high_value`
-- `RadioGroup`: `label=` → `title=` (group border label; still maps to internal `text=`)
-- `Select`: `allow_custom=` → `allow_custom_values=`
-- `Tabs`: `enable_closing=` → `allow_close=`, `enable_adding=` → `allow_add=`,
-  `add()` `text=` → `label=`
-- `ListView`: `datasource=` → `data_source=`, `enable_removing=` → `allow_remove=`,
-  `enable_dragging=` → `allow_reorder=`, `show_separator=` → `show_separators=`,
-  `.datasource` property → `.data_source`
-- `Toast`: `memo=` → `detail=`, `buttons=` → `actions=`, `alert=` → `play_sound=`,
-  `on_dismissed=` → `on_dismiss=`
-- `Tooltip`: `wraplength=` → `wrap_width=`
-
-**SelectBox internal bug fixes** (in `widgets/composites/selectbox.py`):
-- Disabled `Select` no longer opens popup on field click — `_show_selection_options`
-  now checks `entry_widget.instate(['disabled'])` and returns early.
-- Readonly entry (non-searchable, non-custom mode) now shows `hand2` pointer cursor
-  set in `_bind_readonly_selection_on_click`.
-
-**Naming convention confirmed:** "Field" suffix is correct for all text-input widgets
-(matches MUI, Radix, SwiftUI, Compose). `DateField` could arguably be `DatePicker`
-(more universal) but not urgent. `TimeEntry`/`SpinnerEntry` pending migration as
-`TimeField`/`SpinnerField` in misc-widgets batch.
-
-**Settled:** `Label`/`Badge` keep `.text` as the canonical property. `.value` is for
-data-bearing widgets only; a display-only label has no "value" in the semantic sense.
-
-**PR #76** (`fix/public-api-drift` → `main`) — merged.
-
-### Session 32 — Misc-widgets batch (2026-05-28)
-
-Added `ScrollView`, `SpinnerField`, `TimeField`, and `MenuBar` to the public layer
-on `feat/public-misc-widgets` (PR #77).
-
-**Files created under `src/bootstack/widgets/public/primitives/`:**
-- `scrollview.py` — `ScrollView` (`PublicContainer`; children → `_internal.add()` content
-  frame; exposes `scroll_to_top/bottom/left/right`, `yview/xview_moveto`,
-  `enable/disable_scrolling`, `refresh_bindings`)
-- `spinnerfield.py` — `SpinnerField` (two modes: fixed `options=` list or numeric range
-  via `min_value=`/`max_value=`/`step=`; `wrap=`; maps to internal `SpinnerEntry`)
-- `timefield.py` — `TimeField` (time-input with searchable interval dropdown;
-  `value_format=`, `interval=`, `min_time=`/`max_time=`; maps to internal `TimeEntry`)
-- `menubar.py` — `MenuBar` (three-region bar: `before`/`center`/`after`;
-  `add_button`, `add_label`, `add_menu`)
-
-Both `SpinnerField` and `TimeField` override `on()` to route `<<Change>>`/`<Return>`
-events to `self._internal._entry` (same pattern as `TextField`, `Select`, `NumberField`).
-
-**Visual test:** `tests/features/misc_widgets.py`
-
-**Next steps:** Merge PR #77, then determine remaining widgets to migrate.
-Notable gaps: `DateField` needs review against v2 proposal; open bugs from the known-issues list.
-
-### Session 35 — Namespace migration + Card layout + widget structure plan (2026-05-29)
-
-**PR #81** (`feat/namespace-migration` → `main`) — 2 commits, pending merge:
-
-**Namespace migration:**
-- `bootstack/__init__.py` replaced lazy-import system with direct imports from
-  the public layer. All widgets now exported under public names (`TextField`,
-  `Checkbox`, `Select`, `NumberField`, `Tree`, `Table`, `Gauge`, etc.).
-  `Form`, `SideNav`, `Calendar` kept from internals (no public equivalent yet).
-  Non-widget utilities unchanged (style, data, i18n, signals, AppSettings, etc.).
-- `pyproject.toml`: added `testpaths` — pytest now scopes to `tests/cli` and
-  `tests/widgets/public` only; old `tests/widgets/` scripts are manual visual
-  demos.
-- `ContextMenuItem` added to public namespace.
-- CLI templates rewritten to use context-manager layout (Grid, VStack) and
-  public API naming. Views are plain classes, not subclasses of internal widgets.
-- CLI test assertions updated to match new template output.
-
-**Card layout:**
-- `Card` now accepts `layout=` kwarg: `'vstack'` (default), `'hstack'`, `'grid'`.
-  Backed by an internal `PackFrame`/`GridFrame` inside the card surface.
-- Child-guidance kwargs added: `gap`, `fill_items`, `expand_items`,
-  `anchor_items`, `columns`, `rows`, `sticky_items`, `auto_flow`.
-- `_child_master()` returns the layout frame; children are managed by the layout
-  engine rather than placed directly on the card surface.
-
-**`*_items` defaults fix (VStack, HStack, Card, Grid):**
-- `_merge_layout_options` now applies `fill_items`/`expand_items`/`anchor_items`
-  as defaults when not set per-child. Fixes canvas-based widgets (Slider,
-  RangeSlider, Gauge) that bypass PackFrame's `_on_child_pack` hook.
-- Grid/Card(grid): `sticky_items` applied as default in `_merge_layout_options`.
-
-**form_demo.py** rewritten using the public API; 118 → 72 lines.
-
-**Widget directory structure — settled, deferred to next PR:**
-
-Final target structure:
-```
-widgets/
-  _core/           # public framework internals (base, container, context,
-                   # events, exceptions, subscription) — extend here, don't
-                   # import directly from user code
-  _impl/           # all internal widget implementation (never import directly)
-    primitives/    # TTK widget subclasses (was widgets/primitives/)
-    composites/    # complex internal widgets (was widgets/composites/)
-    mixins/        # shared mixins (was widgets/mixins/)
-    _internal/     # TTK wrapper base (unchanged)
-    _parts/        # entry sub-components (unchanged)
-  # Everything below is the public widget surface — flat
-  types.py
-  app.py
-  appshell.py
-  window.py
-  stacks.py
-  grid.py
-  dialogs.py
-  button.py
-  label.py
-  textfield.py
-  card.py
-  ... (~40 widget files, all flat)
-```
-Deferred because: ~540 import changes across ~150 files; purely internal
-reorganization with no public API effect; cleaner as its own focused PR.
-Branch: `refactor/widget-structure` off `main` after #81 merges.
-
-**Remaining work (after Session 35):**
-- ~~Merge PR #81~~ — done
-- ~~`refactor/widget-structure`~~ — done (Session 36, PR #82)
-- ~~Gallery/examples rebuild using public API~~ — CLI gallery done (Session 37); `examples/` legacy demos separate effort
-- ToggleGroup solid variant contrast — user handling
-  `src/bootstack/style/builders/toolbutton.py`
-
-### Session 36 — Widget directory restructure (2026-05-29)
-
-**PR:** `refactor/widget-structure` → `main` (branch, pending merge)
-
-**What changed:** Migrated `widgets/` to the settled target layout from Session 35.
-All 204 files changed (~540 import updates across ~150 source files + 25 test files).
-No public API effect — `bs.*` names unchanged.
-
-**New structure:**
-- `widgets/_core/` — public framework internals (base, container, context, events,
-  exceptions, subscription); re-exported via `widgets/_core/__init__.py`
-- `widgets/_impl/` — all internal implementation (composites, mixins, primitives,
-  _internal, _parts); never import directly
-- `widgets/*.py` — flat public widget surface (~40 files, formerly `widgets/public/primitives/`)
-- `widgets/__init__.py` — lean (TYPE_CHECKING + TTK_WIDGETS/TK_WIDGETS); public API
-  lives in `bootstack/__init__.py` which imports from flat module paths directly
-
-**Key design note — circular import:** `widgets/__init__` cannot eagerly import widgets
-because `constants.py` → `widgets.types` triggers `widgets/__init__` before `style.style`
-is initialized. `bootstack/__init__` now imports directly from flat module paths (e.g.
-`from bootstack.widgets.button import Button`) instead of `from bootstack.widgets import (...)`.
-
-**Tests:** 28 non-GUI tests pass. Pre-existing CLI spec template failure unchanged
-(`test_spec_template_bundles_icon_package_assets` — `ttkbootstrap_icons` not in
-rewritten spec template from Session 35, unrelated to this PR).
-
-**Remaining work:**
-- ~~Merge `refactor/widget-structure` PR~~ — done (PR #82)
-- ~~Gallery/examples rebuild using public API~~ — CLI gallery done (Session 37); `examples/` legacy demos are a separate effort
-- ToggleGroup solid variant contrast — user handling
-  `src/bootstack/style/builders/toolbutton.py`
-
-### Session 37 — Gallery rewrite + API gap fixes (2026-05-29)
-
-All work committed directly to `main`.
-
-**CLI gallery (`cli/demo.py`) fully rewritten for public API:**
-- `fill="horizontal"/"vertical"` throughout
-- Lazy page builds via `on_page_changed` hook; home page built eagerly
-- `Calendar`/`Form` use `current_container()._child_master()` for explicit parent
-- `Toast` uses `message=`; `FormDialog` uses `data=` with inferred editors
-- Theme selector uses `sel.on_change` + `after(0)` to defer outside the event
-
-**Bug fixes:**
-- `SelectBox` popup: set `takefocus=False` on items so `<FocusOut>` no longer
-  fires on the popup `Toplevel` before `<ButtonRelease-1>`, which was closing
-  the dropdown before `on_change` could fire — broke all `Select` widgets
-  after the enhanced-events migration
-- `SelectBox` value setter: lifts readonly state before updating so
-  `textsignal` propagates visually to the readonly entry, then restores it
-- `GroupBox`: mirrors `Card`'s `layout=` kwarg (`'vstack'` default, `'hstack'`,
-  `'grid'`); `fill_items=None` default; `padding=8`
-- `PackFrame._build_options`: normalizes `fill` aliases (`horizontal→x`,
-  `vertical→y`) via `normalize_fill` so internal and public callers both work
-- `AppShell`: `add_nav_separator` → `add_separator`
-- `ButtonGroup.add()`: fixed auto-key counter never advancing
-- `Toast`, `dialog.py`, `icons.py`: replaced `bs.X` widget calls with `_impl`
-  imports (prevents circular import during init)
-- `tests/features`: fixed 23 demo files to import from `bootstack` not
-  `bootstack.widgets`; removed stale `ttkbootstrap_icons` CLI test
-
-**Tests:** 28 non-GUI tests pass. Gallery starts immediately; all pages build on
-first navigation; `Select` dropdown, dialogs, and toasts all work correctly.
-
-### Session 38 — Remove Card + GroupBox composite + card surface elevation (2026-05-29)
-
-**PR #84** (`refactor/remove-card` → `main`) — merged:
-- `Card` removed — no unique value over `VStack/HStack/Grid(variant='card')`
-- Migration: `Card(layout='vstack')` → `VStack(variant='card')`,
-  `Card(layout='hstack')` → `HStack(variant='card')`,
-  `Card(layout='grid')` → `Grid(variant='card')`,
-  `Card()` → `VStack(variant='card')` (default was `vstack`)
-- `card.py` deleted; `Card` removed from `bootstack.__init__` and `widgets/__init__`
-- `cli/demo.py` and `tests/features/form_demo.py` updated
-
-**GroupBox composite + card surface elevation** (follow-on commit to `main`):
-
-*GroupBox:*
-- Replaced `ttk.LabelFrame` with a custom composite to eliminate background bleed:
-  outer `PackFrame` (transparent) → muted title `Label` → card-variant `Frame`
-  → layout engine (`PackFrame` or `GridFrame` per `layout=`)
-- Content frame uses `variant='card'`, `surface='card'` so `_surface` token
-  propagates to all descendants via `_refresh_descendant_surfaces`
-- `padding=16` default; title uses `font='label'`, `accent='secondary'`
-
-*Card variant frame builder (`style/builders/frame.py`):*
-- `stroke` token for borders — semantic, theme-aware contrast
-- `show_border=True` default for `variant='card'`
-- `surface` defaults to `'card'` token; `accent=` overrides the surface token
-- Removed hardcoded `padding=8` (padding is a widget-level concern, not style)
-
-*VStack/HStack surface stepping (`widgets/stacks.py`):*
-- `variant='card'` detects parent surface via `_child_master()._surface`
-- Steps up one level: `background`/`content` → `card`, `card` → `overlay`
-- Ensures nested cards render visually distinct from their parent surface
-
-*Label (`widgets/label.py`):*
-- `icon_position=` kwarg added (maps to `compound=`)
-- Auto-detects `icon_only` when `text` is empty and `icon` is provided
-- Default `compound='left'` when both text and icon are present
-
-**Tests:** 28 non-GUI tests pass.
-
-**Remaining work:**
-- ToggleGroup solid variant contrast — user handling
-  `src/bootstack/style/builders/toolbutton.py`
-- ~~`TextField` `placeholder=` not supported~~ — done (Session 39)
-- ~~`TabView` pill variant crash~~ — removed (variant never existed; Session 39)
-- `Meter`/`Gauge` deprecated param names still in source
-- `ListView` hover blends with striped rows
-- `examples/` legacy demos — separate effort
-
-### Session 39 — Bug fixes, API cleanup, layout improvements (2026-05-29/30)
-
-All work committed directly to `main`.
-
-**`TextField` placeholder support:**
-- `placeholder=` added to `TextEntryPart`, `FieldOptions`, and `TextField`
-- Uses textvariable detach/reattach so the Signal is never set to placeholder text
-- `_handle_change` hides placeholder when Signal is set externally to a non-empty value
-- `commit()` guards against placeholder text being parsed as user input
-
-**`TabView` pill variant removed:**
-- `Literal['pill', 'bar']` → `Literal['bar']` in `tabs.py` and `tabitem.py` type hints
-  and docstrings; variant was never implemented
-
-**`GroupBox` reverted to `ttk.LabelFrame`:**
-- Custom composite (PackFrame + Label + card Frame) replaced with a simple wrapper
-  around the internal `LabelFrame` primitive
-- Card-surface approach abandoned: title-above-border is just a Label + bordered VStack,
-  not a true GroupBox; `ttk.LabelFrame` gives the classic embedded-title fieldset look
-- Layout engine (PackFrame/GridFrame) still lives inside the LabelFrame
-- `surface=` kwarg removed (not meaningful for LabelFrame)
-
-**`PathField` redesign:**
-- `dialog=` renamed to `mode=` with clean values: `'open'`, `'open_multiple'`,
-  `'save'`, `'directory'`
-- `dialog_options=` dict replaced with explicit typed kwargs:
-  `dialog_title=`, `start_dir=`, `file_filters=`, `default_extension=`,
-  `default_filename=` — each maps to the native `filedialog` kwarg internally
-- Browse button uses `folder` icon for all modes
-- Internal `_show_file_chooser` uses `_build_dialog_kwargs()` dict builder
-
-**Field frame minimum width:**
-- `width=200` set on `_field` frame (the `TField`-styled container) so addon
-  buttons (steppers, browse icon) live inside the minimum rather than adding to
-  it — prevents `NumberField` from pushing grid columns wider than plain `TextField`
-- Reverted short-lived `kwargs.setdefault('width', 1)` approach which collapsed
-  fields to unusable size when not in a fill layout
-
-**`margin=` layout kwarg:**
-- Added `'margin'` to `PACK_KEYS` and `GRID_KEYS` so it is stripped from widget
-  kwargs and converted to `padx=`/`pady=` in `guide_layout` via `_expand_margin()`
-- Convention: ttk order `(left, top, right, bottom)` for 4-value shorthand;
-  `(x, y)` for 2-value; `int` for uniform
-
-**Meter theme fix:**
-- `_handle_theme_changed` deferred via `after_idle` → `_apply_theme_update` so
-  `b.color()` reads the new theme's colors after `_rebuild_all_styles()` completes;
-  fixes gauge canvas staying at the previous theme's background on theme switch
-
-**Visual tests updated:** `tests/features/textfield.py` — placeholder test cases added.
-
-**Remaining work:**
-- ToggleGroup solid variant contrast — user handling
-  `src/bootstack/style/builders/toolbutton.py`
-- `Meter`/`Gauge` deprecated param names still in source
-- `ListView` hover blends with striped rows
-- `examples/` legacy demos — separate effort
-
-### Session 40 — Container pane layout engine + Card reinstatement (2026-05-30)
-
-**PR #85** (`feat/container-pane-layout` → `main`) — merged.
-
-**Core change:** Every container widget's `add()` method now returns a proper public
-type backed by a `PackFrame`/`GridFrame` layout engine. Previously all pane wrappers
-were private `_*` classes that hardcoded `pack()` with no guidance. Now they accept
-the same layout kwargs as `VStack`/`HStack`/`Grid`/`GroupBox`.
-
-**New public types** (replacing private `_` prefixed wrappers):
-- `AccordionSection` (was `_AccordionSection`) — returned by `Accordion.add()`
-- `SplitPane` (was `_SplitPane`) — returned by `SplitView.add()`
-- `StackPage` (was `_StackPage`) — returned by `PageStack.add()`
-- `TabPage` (was `_TabPage`) — returned by `Tabs.add()`
-
-All exported from `bs.*`.
-
-**Layout kwargs available on all pane types and `Expander`:**
-`layout=` (`'vstack'`/`'hstack'`/`'grid'`), `padding=`, `gap=`,
-`fill_items=`, `expand_items=`, `anchor_items=`,
-`columns=`, `rows=`, `sticky_items=`, `auto_flow=`
-
-**`Expander` additions:**
-- `show_border=`, `variant=` (`'default'`/`'solid'`), `icon_position=`,
-  `highlight=` now explicit kwargs (were buried in `**kwargs`)
-
-**`Accordion` additions:**
-- `show_separators=`, `show_border=`, `variant=`, `padding=` now explicit kwargs
-
-**`Expander` style builder fix** (`style/builders/expander.py`):
-- `b.elevate(surface_token, 1)` → `b.elevate(b.color(surface_token), 1)` —
-  `b.elevate()` expects a resolved color, not a token name
-- Removed stray `print()` debug statement
-
-**`Card` widget reinstated** (`widgets/card.py`):
-- `PublicContainer` backed by `PackFrame`/`GridFrame` with `variant='card'`,
-  `show_border=True`, `padding=16` default
-- Surface stepping: `background`/`content` → `card`, `card` → `overlay`
-- `accent=` support: background = `accent[subtle]` token (light tinted wash),
-  border = `b.color(accent)` (full accent), children inherit `accent[subtle]` surface
-- All existing `VStack(variant='card')` usages in `cli/demo.py` and `form_demo.py`
-  replaced with `Card()`
-
-**Card frame builder** (`style/builders/frame.py`):
-- `surface = b.color(surface_token)` — `accent[subtle]` resolves directly
-- `stroke = b.color(accent)` when accent, else `b.color('stroke')`
-
-**`Frame.__init__`** (`widgets/_impl/primitives/frame.py`):
-- Merges caller-supplied `style_options` with captured ones rather than replacing,
-  preserving extra style data passed to the frame
-
-### Session 41 — API audit + Stream/Schedule + theme event + CodeEditor (2026-05-30)
-
-All work on `feat/stream-schedule` (PR #86, open). Earlier fixes committed to `main`.
-
-**Public wrapper audit + gap fixes (committed to `main`):**
-- Two-pass audit of all ~40 public wrappers vs internals — first pass via agent
-  (missed `insert_addon`), second pass by hand
-- `FieldAddonMixin` added to `_core/` — exposes `insert_addon('button'|'label'|'toggle', ...)`
-  and `addons` on all field wrappers (TextField, NumberField, DateField, PasswordField,
-  PathField, SpinnerField, TimeField); string type selector avoids exposing internal types
-- `add_validation_rule()` added to `FieldAddonMixin` — available on all field wrappers
-- Missing properties filled: `TextField.placeholder`, `NumberField.read_only`,
-  `Slider.min_value`/`max_value`/`disabled`, `ProgressBar.max_value`, `Select.selected_index`
-- Missing event shorthands: `on_valid`/`on_invalid` on TextField, NumberField, DateField;
-  `on_submit` on Spinbox; `on_change` on Gauge; `on_blur`/`on_valid`/`on_invalid`/
-  `on_modified`/`on_undo`/`on_redo` on TextArea; `is_dirty`, `mark_saved()`, `undo()`,
-  `redo()` on TextArea
-- Accordion: `remove()`, `item()`, `items()`, `keys()`, `expand()`, `collapse()`,
-  `expand_all()`, `collapse_all()`, `on_accordion_changed()`
-- Tabs: `item()`, `items()`; PageStack: `item()`, `items()`
-- ListView: `on_item_update`, `on_item_delete_fail`, `on_item_drag_start`, `on_item_drag`
-- `Field._delegate_state` added — `configure(state='readonly'/'disabled'/'normal')` now
-  properly sets entry state, syncs addons (including NumericEntry spin buttons), fires
-  `<<StateChanged>>`; was silently falling through to `ttk.Frame` before
-- `Spinbox` mousewheel containment — binds `<MouseWheel>` at instance level,
-  generates `<Up>`/`<Down>` explicitly, returns `"break"` to stop scroll leaking to ScrollView
-- Meter deprecated param compatibility shim (`_coerce_legacy_params`) removed
-- `insert_addon` implicit `icon_only` — when called with `icon=` and no `text=`,
-  defaults `icon_only=True` automatically
-
-**`<<BsThemeChanged>>` framework event (committed to `main`):**
-- `style.py` fires `<<BsThemeChanged>>` on the root after `_rebuild_all_styles()` and
-  `_rebuild_all_tk_widgets()` complete; carries `data={"theme": name, "mode": mode}`
-- `Publisher.publish_message` updated to accept `**kwargs`; `combobox._apply_popdown_style`
-  accepts `**kwargs` for compat
-- Rationale: `<<ThemeChanged>>` fires before rebuild (TTK internal); `<<BsThemeChanged>>`
-  fires after (correct timing for reading new theme colors)
-- Convention to revisit: standardize `<<Bs...>>` prefix for all framework-generated events;
-  evaluate retiring the legacy Publisher — see memory `project_event_naming_revisit.md`
-
-**CodeEditor auto theme switching (committed to `main`):**
-- `pygments_style` replaced by `theme="auto"`, `light_theme="default"`, `dark_theme="monokai"`
-  on both internal and public `CodeEditor`
-- `PygmentsHighlighter` subscribes to `<<BsThemeChanged>>` (not `<<ThemeChanged>>`);
-  in auto mode resolves light/dark Pygments style from `event.data["mode"]` and reloads
-- `Sidebar` base class now binds `<<BsThemeChanged>>` on `winfo_toplevel()` and calls
-  `update_colors()` — fixes `LineNumbers` background not updating on theme change
-- Gallery: Code Editor page added last under Inputs section
-
-**Stream + Schedule (PR #86 — `feat/stream-schedule`):**
-
-*`Schedule`* — `widget.schedule` lazy property on every public widget; also `bs.Schedule(widget)`:
-- `delay(ms, fn)`, `idle(fn)`, `at(dt, fn)`, `every(ms, fn)`
-- Returns `Job` handle with `.cancel()` and bool truthiness
-- Auto-cancels all jobs on `<Destroy>`; `every()` stops on callback exception
-- Direct `job.cancel()` removes job from internal set immediately via `_discard`
-- Accepts `PublicWidgetBase` or `tk.Misc`
-
-*`Stream`* — `widget.on(event)` (no handler) returns a composable `Stream`:
-- Operators: `map`, `filter`, `tap`, `debounce`, `throttle`, `delay`
-- `.listen(handler)` is the only terminal — activates lazy Tk binding
-- Returns `Handle` — public cancellable type (not `Subscription`)
-- `_Scheduler` tracks all pending tokens, cancels on `<Destroy>`
-- `delay` operator cleans up fired tokens immediately
-
-*`on()` overload* — all 22 public wrappers + all `on_*()` shorthands:
-- `widget.on(event, handler)` → `Subscription` (unchanged)
-- `widget.on(event)` → `Stream` (new, lazy)
-- `widget.on_change()` → `Stream`; `widget.on_change(handler)` → `Subscription`
-
-**Open items:**
-- ToggleGroup solid variant contrast — user handling `src/bootstack/style/builders/toolbutton.py`
-- Boolean widgets: `value=` silently ignored when `signal=` also passed
-- `<<Bs...>>` event naming convention + Publisher retirement — deferred (see memory)
-- PR #86 needs merge after review
-
-### Session 34 — Bug fixes, public API gaps, secondary token (2026-05-29)
-
-**PRs #79 and #80 opened** (pending merge at session end).
-
-**PR #79** (`fix/public-api-gaps` → `main`) — 6 commits:
-- Public API gaps filled: `DateField.picker_button`, `Spinbox.value_format`,
-  `SplitView.sash_positions`/`min_size`, `MenuButton.add_radio_item`/`item`/`items`/`menu_options`,
-  `ButtonGroup.item`/`items`
-- `TextArea`/`CodeEditor` border: replaced raw `highlightthickness` with `Frame(ttk_class="TField",
-  padding=5)`; both now have consistent focus ring; `show_border=True` default; label gets
-  `padx=(4,0)` matching Field
-- Validation callback shape: `on_valid`/`on_invalid`/`on_validated` now pass Tkinter Event
-  (not unwrapped dict), matching `on_input`/`on_changed`
-- `secondary` color token restored across all 12 theme JSONs, `COLOR_TOKENS`, `AccentToken`;
-  field addon style builder now uses accent color for button background when `accent is not None`
-- `PathField` browse button: replaced text button with `folder2-open` icon-only (position=after),
-  matching DateField calendar picker pattern; removed `button_label`/`button_accent` params
-- `Field`/`TextArea` message label: `accent="secondary"` replaces `"muted"`/`"default"` —
-  fixes gray background on `required=True` fields
-- `ListView` hover: `active = b.elevate(b.color(base_token), 2)` gives consistent hover
-  across striped and unstriped rows; base extracted by stripping modifier from surface token
-- TabView pill variant bug removed (never existed)
-
-**PR #80** (`fix/issue-40-window-controls` → `main`) — fixes GitHub issue #40:
-- `Toolbar._sync_maximize_state`: hides maximize button when `resizable=(False, False)`
-- `Toolbar._on_minimize`: temporarily lifts `overrideredirect`, iconifies, restores on `<Map>`
-- Repro script: `tests/features/issue_40_repro.py`
-
-**`secondary` token decisions:**
-- Buttons: keep `accent="default"` everywhere it was changed in the removal commit
-- PathField browse button: now icon-only, no accent needed
-- Field/TextArea message labels: restored to `accent="secondary"` (this was the root fix)
-
-**Remaining work (next session):**
-- **Migrate `bs.*` namespace** — wire public widgets as canonical exports in
-  `bootstack/__init__.py`, replacing old internal widgets (`Entry`→`TextField`,
-  `DateEntry`→`DateField`, `CheckButton`→`Checkbox`, etc.)
-- ToggleGroup solid variant contrast — user handling `src/bootstack/style/builders/toolbutton.py`
-
-### Session 33 — Style asset recoloring + branch cleanup (2026-05-29)
-
-**PRs #77 and #78 merged** at session start. All misc widgets and style fixes landed.
-
-**Asset color channel convention settled** (saved to memory `feedback_asset_color_channels.md`):
-- White → fill, Black → border, Magenta → focus ring, Transparent → surface behind widget
-- Ghost/no-border style: pass fill color for both `white_color` and `black_color`
-- Always pass `transparent_color` for button-family assets — never leave as `None`
-
-**Style fixes shipped in PR #78** (`fix/style-asset-recoloring`):
-- `style/builders/menubar.py` — added `transparent_color=surface` to all three
-  `recolor_element_image` calls; was `None`, leaving raw transparent corners
-- `style/builders/field.py` — `build_field_addon_style`: magenta channel changed from
-  `None` → `input_background` for all non-focused states (was leaking raw pink)
-- `style/builders/scrollbar.py` — removed ALL arrow infrastructure from all four builder
-  functions; scrollbars are now fully arrow-free (`arrowsize=0`); removed unused imports
-- `widgets/composites/selectbox.py` — `on_canvas_configure` subtracts 2px from canvas
-  width so list content doesn't touch the scrollbar
-- Scrollbar assets (user): updated to 8px rendered thickness (16px at 2× source)
-
-**ToggleGroup solid variant contrast** — investigated Bootstrap toggle pattern (normal =
-full accent, selected = clearly darker). Attempted fixes reverted; user will handle
-`src/bootstack/style/builders/toolbutton.py` directly.
-
-**Stale branches deleted:** `fix/style-asset-recoloring` and `feat/public-radio` (both
-fully superseded by merged PRs; style-asset branch had pre-Session-31 CLAUDE.md content).
-
-**Remaining work (next session):**
-- `DateField` — review against `development/v2_api_proposal.md`
-- `TextArea` border — adopt Field-style focus-ring/border instead of raw Tk Text border
-- Spinbox, GroupBox, PathField, MenuButton, ButtonGroup, SplitView, PageStack —
-  confirm public wrappers exist and are correct
-
-### Session 26 — Performance fixes (2026-05-28)
-
-- **PR #53** (`perf/theme-change-accumulation` → `main`).
-- **Root cause found and fixed:** `Slider`, `RangeSlider`, and `FloodGauge` used
-  `root.bind("<<ThemeChanged>>", handler, add="+")` in their constructors.
-  `<<ThemeChanged>>` is fired by Tcl/Tk (not bootstack) on every `theme_use()`.
-  With `add="+"` and pages never destroyed, one new root callback accumulated per
-  widget per page visit — O(total-widgets-ever-created) work on every theme change.
-- **Fix:** track bind ID → unbind on `<Destroy>`; `winfo_viewable()` guard in
-  handler (skip hidden, set `_theme_update_pending`); `<Map>` binding to apply
-  deferred update when page is shown again.
-- **`create_style()` fast path:** Python-side `_style_registry` set check before
-  the Tcl `self.configure(style)` round-trip on every widget creation.
-- **`BootstyleBuilderBuilderTk` cached** as singleton on `Style` (`_get_tk_builder()`);
-  was being instantiated fresh per widget creation.
-- **`_rebuild_all_tk_widgets`** now skips `winfo_viewable() == 0` widgets; defers
-  to `<Map>` handler via `_theme_version` integer counter.
-- **`register_tk_widget`** uses `tkinter.BaseWidget.bind` to bypass subclass
-  `bind()` overrides (e.g. `_MultilineCore` delegates `bind()` to `self.text`
-  which doesn't exist yet during `__init__`).
-- Note: `<<ThemeChanged>>` is Tcl-native — it fires from `super().theme_use()`
-  BEFORE `_rebuild_all_styles()` runs. Canvas/tk widgets (Slider, FloodGauge)
-  must use `root.bind` since `tk.Frame`/`Canvas` don't receive `<<ThemeChanged>>`
-  directly. TTK widgets can use `self.bind`.
-
-### Session 25 — Slider PR + strategic direction (2026-05-28)
-
-- Opened PR #52 (`feat/slider` → `main`) for Slider/RangeSlider work.
-- Added `autostyle=False` to Slider/RangeSlider `tk.Frame` and `tk.Canvas`
-  constructors to opt out of autostyle registration (manages own theming).
-- Identified performance root cause: `Style._tk_widgets` accumulates forever;
-  `_rebuild_all_tk_widgets` iterates the full set on every theme change.
-- Strategic direction agreed: standalone framework identity, context-manager
-  layout API, modern naming, performance investigation. Docs to be redone from
-  scratch in a future session.
-
-### Session 24 — Slider/RangeSlider redesign + Scale removal (2026-05-28)
-
-- **`bs.Slider`** — full custom canvas widget. Horizontal/vertical, `show_value`
-  badge, tick marks (major/minor), `show_minmax` end labels, disabled state,
-  Signal-first binding, `<<Change>>` + `<<Commit>>` events.
-- **`bs.RangeSlider`** — two-handle variant. Lo/hi signals. Vertical fill:
-  `fill_start = end - lo_pos`, `fill_end = end - hi_pos` (PIL CCW rotation).
-- **`bs.Scale` removed** — `primitives/scale.py` deleted. `form.py` keeps
-  `'scale'` as deprecated alias → `'slider'` is canonical.
-- **`bs.LabeledScale` removed** — use `bs.Slider(show_value=True)`.
-- TypedDicts: `SliderEventData`, `SliderCommitEventData`, `RangeSliderEventData`,
-  `RangeSliderCommitEventData` exported from `bs.*`.
-- Visual test: `tests/features/slider_v2.py`
-- Key architecture: PIL `rotate(90)` is CCW. Vertical badge_zone uses
-  `tkfont.Font.measure()`. `style/builders/scale.py` retained for `ttk.Scale`.
-
-### Session 23 — TextArea + CodeEditor complete (2026-05-18)
-
-- **`bs.TextArea`** — multiline text widget replacing ScrolledText. `FilterChain`
-  via `idlelib.redirector.WidgetRedirector`. `UndoManager` with word-level grouping.
-- **`bs.CodeEditor`** — full editor with `LineNumbers`, `BracketMatcher`,
-  `SmartIndent`, `PygmentsHighlighter` (150ms debounce, 49 styles), `IndentGuides`,
-  `SearchOverlay` (Ctrl+F, z-order show/hide via `lift()`).
-- Branch: `feat/textarea-codeeditor` — PRed.
-
-### Session 21 — Toplevel polish + TabView parity (2026-05-17)
-
-- **Toplevel** (PR #45): multi-handler close chain, `modal=`, `center_on_parent=`,
-  `block_until_closed()`, `result` property.
-- **TabView** (PR #46): `tv["key"]` access, locale-aware labels, typed events
-  (`TabChangeEventData` etc.), `hide_tab`/`show_tab`/`forget_tab`.
-
-### Sessions 16–20 — Source foundations (2026-05-14 to 2026-05-16)
-
-- Package reorganized: `_runtime/`, `_core/`, `data/`, `signals/`, `i18n/`, `validation/` (PR #44).
-- Type system in `widgets/types.py`: Literal aliases, `BaseWidgetKwargs`, `StyledKwargs`.
-- Docstring sweep complete across all 44+ widget files.
-- `on_*/off_*` standard applied to full widget tree.
-- `bootstyle=` legacy support removed.
+- `ToggleGroup` solid variant poor contrast (`src/bootstack/style/builders/toolbutton.py`)
+- `Style._tk_widgets` grows forever — partially resolved; pages are never destroyed

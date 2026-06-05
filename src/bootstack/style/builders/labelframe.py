@@ -14,11 +14,12 @@ from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 
 @BootstyleBuilderTTk.register_builder('default', 'TLabelframe')
 def build_labelframe_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+    accent_token = b.default(accent)
     surface_token = options.get('surface') or 'background'
     show_border = options.get('show_border', True)
     surface = b.color(surface_token)
 
-    border = b.border(surface)
+    border = b.border(surface if accent_token is None else b.color(accent_token))
     foreground = b.on_color(surface)
 
     b.configure_style(f'{ttk_style}.Label', background=surface, foreground=foreground, font="label")

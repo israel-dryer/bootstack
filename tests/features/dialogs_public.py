@@ -40,7 +40,7 @@ with App(title="Public Dialogs", minsize=(540, 560), padding=20, gap=14) as app:
 
     with HStack(gap=8, fill="x"):
         Button("ask_date()", on_click=lambda: show(
-            ask_date("Select a date", title="Ask Date")
+            ask_date(title="Ask Date")
         ))
         Button("ask_item()", on_click=lambda: show(
             ask_item("Choose a language:", ["Python", "Rust", "Go", "TypeScript"],

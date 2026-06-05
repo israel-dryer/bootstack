@@ -5,6 +5,7 @@ from tkinter import Widget, Variable
 from typing_extensions import Unpack
 from typing import Any, Callable, Literal, TYPE_CHECKING, TypedDict
 
+from bootstack.events import ToggleEvent
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.composites.compositeframe import CompositeFrame
@@ -14,12 +15,6 @@ from bootstack._core.capabilities.signals import normalize_signal
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
-
-
-class ToggleEventData(TypedDict):
-    """Payload for `<<Toggle>>` events."""
-    expanded: bool
-    """Whether the expander is now open."""
 
 
 class SelectedEventData(TypedDict):
@@ -273,7 +268,7 @@ class Expander(Frame):
         self._toggle_button.configure(icon=self._current_chevron_icon)
         if self._highlight:
             self._header_frame.set_selected(True)
-        self.event_generate('<<Toggle>>', data={'expanded': True})
+        self.event_generate('<<Toggle>>', data=ToggleEvent(expanded=True))
 
     def collapse(self):
         """Collapse the content area."""
@@ -285,7 +280,7 @@ class Expander(Frame):
         self._toggle_button.configure(icon=self._current_chevron_icon)
         if self._highlight:
             self._header_frame.set_selected(False)
-        self.event_generate('<<Toggle>>', data={'expanded': False})
+        self.event_generate('<<Toggle>>', data=ToggleEvent(expanded=False))
 
     def select(self):
         """Select this expander (set variable to this expander's value)."""
@@ -330,11 +325,11 @@ class Expander(Frame):
             return self._variable.get() == self._value
         return False
 
-    def on_toggled(self, callback: Callable[[ToggleEventData], None]) -> str:
+    def on_toggled(self, callback: Callable[[ToggleEvent], None]) -> str:
         """Register a callback for `<<Toggle>>` events.
 
         Args:
-            callback: Receives a `ToggleEventData` dict with key
+            callback: Receives a `ToggleEvent` payload with attribute
                 `expanded` (bool — True if now open, False if now closed).
 
         Returns:

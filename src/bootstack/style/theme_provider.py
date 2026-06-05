@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import json
-# import tomllib
-from importlib import resources
-
 from bootstack._runtime.app import get_app_settings
 from bootstack._core.exceptions import ThemeError
 from bootstack.style.utility import (
@@ -40,8 +36,14 @@ SHADE_WEIGHTS = {
 }
 
 
-def register_user_theme(name, path):
-    data = load_user_defined_theme(path)
+def register_theme(name, data):
+    """Register a resolved theme schema dict under `name`.
+
+    Args:
+        name: Canonical theme name used by `set_theme`.
+        data: Resolved theme dict (name, display_name, mode, foreground,
+            background, white, black, shades, semantic).
+    """
     _registered_themes[name] = data
 
 
@@ -82,58 +84,30 @@ def get_theme(name):
 
 
 def load_system_themes():
-    """Load system themes from the package.
+    """Register the built-in themes and the `light`/`dark` aliases.
 
-    Loads all v2 themes from `bootstack.assets.themes`. Themes matching
-    app settings dark_theme or light_theme are also registered with
-    'dark' and 'light' aliases for convenience.
+    Built-in themes are plain `Theme` instances (no JSON assets). The themes
+    matching the app's configured `light_theme`/`dark_theme` are also registered
+    under the `'light'` and `'dark'` aliases. Themes may be registered before an
+    App exists (e.g. installing a custom theme with `base=` at module level), so
+    this falls back to the default light/dark theme names when there is no app.
     """
-    from importlib import resources
+    from bootstack.style.themes import install_builtin_themes
 
-    global _registered_themes
-
-    base_package = 'bootstack.assets.themes'
-
-    # Get configured theme names for dark/light aliases
-    app_settings = get_app_settings()
-    dark_theme_name = app_settings.dark_theme
-    light_theme_name = app_settings.light_theme
+    install_builtin_themes()
 
     try:
-        base_dir = resources.files(base_package)
-    except ModuleNotFoundError:
-        base_dir = None
-    if base_dir is not None:
-        for theme_file in base_dir.iterdir():
-            if not theme_file.name.endswith(".json"):
-                continue
-            data = load_package_theme(theme_file.name, base_package)
-            name = data.get("name")
-            if not name:
-                continue
-            _registered_themes[name] = data
+        app_settings = get_app_settings()
+        dark_theme_name = app_settings.dark_theme
+        light_theme_name = app_settings.light_theme
+    except Exception:
+        dark_theme_name = "bootstrap-dark"
+        light_theme_name = "bootstrap-light"
 
-            # Register aliases for dark/light themes
-            if name == dark_theme_name:
-                _registered_themes['dark'] = data
-            elif name == light_theme_name:
-                _registered_themes['light'] = data
-
-
-def load_user_defined_theme(path):
-    """Load a user-defined theme from a JSON file on disk.
-
-    The file must follow the v2 theme schema (top-level `name`,
-    `display_name`, `mode`, `foreground`, `background`, plus
-    `shades` and `semantic` mappings).
-    """
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def load_package_theme(filename: str, package="bootstack.assets.themes"):
-    with resources.files(package).joinpath(filename).open("r", encoding="utf-8") as f:
-        return json.load(f)
+    if dark_theme_name in _registered_themes:
+        _registered_themes['dark'] = _registered_themes[dark_theme_name]
+    if light_theme_name in _registered_themes:
+        _registered_themes['light'] = _registered_themes[light_theme_name]
 
 
 def color_spectrum(token, value):
@@ -340,11 +314,12 @@ class ThemeProvider:
         if is_dark:
             # Dark mode: lower lightness = darker/recessed
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 3, 3)),   # Darker than content
-                'content': bg,                                         # Theme background
-                'card': tinted_surface(min(bg_lightness + 4, 20)),    # Elevated cards
-                'overlay': tinted_surface(min(bg_lightness + 7, 25)), # Menus, dialogs
-                'input': tinted_surface(min(bg_lightness + 2, 16)),   # Form control backgrounds
+                'chrome': tinted_surface(max(bg_lightness - 3, 3)),    # Darker than content
+                'content': bg,                                          # Theme background
+                'card': tinted_surface(min(bg_lightness + 4, 20)),     # First card elevation
+                'card_raised': tinted_surface(min(bg_lightness + 8, 25)), # Second card elevation
+                'overlay': tinted_surface(min(bg_lightness + 7, 25)),  # Menus, dialogs
+                'input': tinted_surface(min(bg_lightness + 2, 16)),    # Form control backgrounds
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(min(bg_lightness + 12, 30))
@@ -352,11 +327,12 @@ class ThemeProvider:
         else:
             # Light mode: use subtle darkening for elevation (since bg is often near-white)
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 8, 88)),  # Noticeably darker
-                'content': bg,                                         # Theme background
-                'card': tinted_surface(max(bg_lightness - 4, 92)),    # Slightly darker for contrast
-                'overlay': tinted_surface(max(bg_lightness - 2, 96)), # Subtle for popups
-                'input': bg,                                           # Form control backgrounds (= content)
+                'chrome': tinted_surface(max(bg_lightness - 8, 88)),     # Noticeably darker
+                'content': bg,                                            # Theme background
+                'card': tinted_surface(max(bg_lightness - 4, 92)),       # First card elevation
+                'card_raised': tinted_surface(max(bg_lightness - 7, 88)),# Second card elevation
+                'overlay': tinted_surface(max(bg_lightness - 2, 96)),    # Subtle for popups
+                'input': bg,                                              # Form control backgrounds (= content)
             }
             # Stroke colors for borders
             colors['stroke'] = tinted_surface(max(bg_lightness - 20, 70))

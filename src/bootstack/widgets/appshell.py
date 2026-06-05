@@ -1,10 +1,14 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
+from bootstack.widgets._core.base import adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
+from bootstack.events import PageChangeEvent, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import Event, AccentToken, WidgetDensity
 
 
 class _PageFrame:
@@ -48,6 +52,9 @@ class AppShell:
     Args:
         title: Window title and (in undecorated mode) toolbar label.
         size: Initial window size as `(width, height)`.
+        theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
+        settings: ``AppSettings`` dict or instance for theme, locale, etc.
+        localize: Locale or ``MessageCatalog`` for internationalisation.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -71,6 +78,9 @@ class AppShell:
         *,
         title: str = "",
         size: tuple[int, int] | None = None,
+        theme: str | None = None,
+        settings: Any = None,
+        localize: Any = None,
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
@@ -79,11 +89,10 @@ class AppShell:
         show_toolbar: bool = True,
         show_window_controls: bool = False,
         draggable: bool = False,
-        toolbar_density: str = "default",
+        toolbar_density: WidgetDensity = "default",
         show_nav: bool = True,
-        nav_display_mode: str = "expanded",
-        nav_accent: str = "primary",
-        settings: Any = None,
+        nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
+        nav_accent: AccentToken = "primary",
         **kwargs: Any,
     ) -> None:
         init_kwargs: dict[str, Any] = {
@@ -99,6 +108,8 @@ class AppShell:
         }
         if size is not None:
             init_kwargs["size"] = size
+        if theme is not None:
+            init_kwargs["theme"] = theme
         if position is not None:
             init_kwargs["position"] = position
         if min_size is not None:
@@ -109,6 +120,8 @@ class AppShell:
             init_kwargs["resizable"] = resizable
         if settings is not None:
             init_kwargs["settings"] = settings
+        if localize is not None:
+            init_kwargs["localize"] = localize
         init_kwargs.update(kwargs)
 
         self._internal = _InternalAppShell(**init_kwargs)
@@ -131,7 +144,6 @@ class AppShell:
         text: str = "",
         icon: str | dict | None = None,
         group: str | None = None,
-        is_footer: bool = False,
         scrollable: bool = False,
         **nav_kwargs: Any,
     ) -> _PageFrame:
@@ -142,7 +154,6 @@ class AppShell:
             text: Display label in the sidebar.
             icon: Icon name or icon configuration dict.
             group: Key of the nav group to add this item to.
-            is_footer: If `True`, add the item to the footer section.
             scrollable: If `True`, wrap the page in a vertical `ScrollView`.
             **nav_kwargs: Extra kwargs forwarded to the internal nav item.
 
@@ -155,8 +166,35 @@ class AppShell:
             kw["icon"] = icon
         if group is not None:
             kw["group"] = group
-        if is_footer:
-            kw["is_footer"] = True
+        kw.update(nav_kwargs)
+        tk_frame = self._internal.add_page(key, **kw)
+        return _PageFrame(tk_frame)
+
+    def add_footer_page(
+        self,
+        key: str,
+        *,
+        text: str = "",
+        icon: str | dict | None = None,
+        scrollable: bool = False,
+        **nav_kwargs: Any,
+    ) -> _PageFrame:
+        """Add a nav item pinned to the sidebar footer and its page.
+
+        Args:
+            key: Unique identifier for the nav item and page.
+            text: Display label in the sidebar footer.
+            icon: Icon name or icon configuration dict.
+            scrollable: If `True`, wrap the page in a vertical `ScrollView`.
+            **nav_kwargs: Extra kwargs forwarded to the internal nav item.
+
+        Returns:
+            A `_PageFrame` context manager. Use with ``with`` to parent
+            child widgets into the page automatically.
+        """
+        kw: dict[str, Any] = {"text": text, "scrollable": scrollable, "is_footer": True}
+        if icon is not None:
+            kw["icon"] = icon
         kw.update(nav_kwargs)
         tk_frame = self._internal.add_page(key, **kw)
         return _PageFrame(tk_frame)
@@ -217,35 +255,25 @@ class AppShell:
         """
         self._internal.navigate(key, data=data)
 
-    def select(self, key: str, data: dict | None = None) -> None:
-        """Alias for `navigate()`.
-
-        Args:
-            key: Page key to navigate to.
-            data: Optional data dict passed to the page.
-        """
-        self._internal.navigate(key, data=data)
-
     # ----- Events -----
 
-    def on_page_changed(self, callback: Callable) -> str:
-        """Register a callback for `<<PageChanged>>` events.
-
-        Args:
-            callback: Called when the active page changes.
+    @overload
+    def on_page_change(self) -> Stream: ...
+    @overload
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
+    def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired when the active page changes.
 
         Returns:
-            Bind ID — pass to `off_page_changed()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.on_page_changed(callback)
-
-    def off_page_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<PageChanged>>`.
-
-        Args:
-            bind_id: ID returned by `on_page_changed()`. If `None`, removes all.
-        """
-        self._internal.off_page_changed(bind_id)
+        if handler is None:
+            def _source(h: Callable) -> Subscription:
+                bid = self._internal.bind("<<PageChange>>", adapt_handler(h), add="+")
+                return Subscription(self._internal, "<<PageChange>>", bid)
+            return Stream(self._internal, _source=_source)
+        bid = self._internal.bind("<<PageChange>>", adapt_handler(handler), add="+")
+        return Subscription(self._internal, "<<PageChange>>", bid)
 
     # ----- Lifecycle -----
 
@@ -253,8 +281,6 @@ class AppShell:
         """Show the window and start the event loop."""
         self._internal.deiconify()
         self._internal.mainloop()
-
-    mainloop = run
 
     # ----- Properties -----
 
@@ -265,16 +291,20 @@ class AppShell:
 
     @property
     def toolbar(self) -> Any:
-        """The internal `Toolbar`, or `None` if `show_toolbar=False`.
+        """The internal toolbar composite, or `None` if ``show_toolbar=False``.
 
-        Note: This is the internal composite — use `command=` (not `on_click=`)
-        when calling `add_button()` on it.
+        Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on
+        this object — it exposes the internal API, not the public `Toolbar`
+        wrapper.
         """
         return self._internal.toolbar
 
     @property
     def nav(self) -> Any:
-        """The internal `SideNav`, or `None` if `show_nav=False`."""
+        """The internal sidebar navigation, or `None` if ``show_nav=False``.
+
+        Exposes the internal composite — not the public `SideNav` wrapper.
+        """
         return self._internal.nav
 
     @property
@@ -283,6 +313,6 @@ class AppShell:
         return self._internal.pages
 
     @property
-    def current_page(self) -> str | None:
+    def current(self) -> str | None:
         """Key of the currently displayed page, or `None`."""
         return self._internal.current_page

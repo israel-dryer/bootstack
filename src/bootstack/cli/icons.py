@@ -298,7 +298,7 @@ def run_icons() -> None:
     # ── Search (debounced 120 ms) ─────────────────────────────────────────────
 
     def _on_search(event: Any) -> None:
-        query = (event.data.get("value") or "") if hasattr(event, "data") else ""
+        query = (getattr(event.data, "value", "") or "") if hasattr(event, "data") else ""
         if _search_after[0] is not None:
             app.after_cancel(_search_after[0])
         _search_after[0] = app.after(120, lambda: rebuild(query))

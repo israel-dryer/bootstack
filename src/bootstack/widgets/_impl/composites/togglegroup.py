@@ -72,6 +72,7 @@ class ToggleGroup(Frame):
         self._orientation = kwargs.pop('orient', 'horizontal')
         accent = kwargs.pop('accent', None) or 'primary'
         variant = kwargs.pop('variant', None)  # None (default), 'outline', or 'ghost'
+        self._state = kwargs.pop('state', 'normal')
 
         # Handle signal/variable/value similar to CheckToggle pattern
         initial_value = kwargs.pop('value', None)
@@ -86,7 +87,9 @@ class ToggleGroup(Frame):
         variable_value = kwargs.pop('variable', None)
 
         # Call super().__init__() - just Frame now
-        super().__init__(master, style_options=style_options, padding=1, **kwargs)
+        if 'padding' not in kwargs:
+            kwargs['padding'] = 1
+        super().__init__(master, style_options=style_options, **kwargs)
 
         # Restore accent/variant (super().__init__ overwrites them with None)
         self._accent = accent
@@ -165,6 +168,8 @@ class ToggleGroup(Frame):
         custom_accent = btn_kwargs.pop('accent', None) or self._accent
         btn_kwargs['accent'] = custom_accent
         btn_kwargs['ttk_class'] = 'ButtonGroup'
+        if 'state' not in btn_kwargs:
+            btn_kwargs['state'] = self._state
         # variant can be None (default), 'outline', or 'ghost' - use group's variant if not specified
         if 'variant' not in btn_kwargs:
             btn_kwargs['variant'] = self._variant

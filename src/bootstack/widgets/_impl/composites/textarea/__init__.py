@@ -1,6 +1,6 @@
 """TextArea and CodeEditor composite widgets."""
 
-from .textarea import TextArea, TextAreaInputEventData, TextAreaValidationEventData
+from .textarea import TextArea
 from .codeeditor import CodeEditor
 from .filter import EditFilter
 from .core import _MultilineCore
@@ -12,8 +12,6 @@ from .extensions.smart_indent import SmartIndent
 
 __all__ = [
     "TextArea",
-    "TextAreaInputEventData",
-    "TextAreaValidationEventData",
     "CodeEditor",
     "EditFilter",
     "_MultilineCore",

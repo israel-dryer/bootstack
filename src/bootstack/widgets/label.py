@@ -1,41 +1,68 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.label import Label as _InternalLabel
 from bootstack.widgets._impl.primitives.badge import Badge as _InternalBadge
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.events import Event, Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import (
+    AccentToken, VariantToken, SurfaceToken,
+    Anchor, Justify, Relief, CompoundMode,
+)
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 
 class Label(PublicWidgetBase):
-    """Static text or formatted value display.
+    """Static text display with optional icon, semantic styling, and font tokens.
+
+    The display text is the first positional argument. All options are
+    keyword-only.
 
     Args:
         text: Text to display.
-        text_signal: Reactive `Signal` linked to the label text.
-        icon: Bootstrap Icons name.
-        icon_only: If True, show only the icon. Auto-detected when `text` is
-            empty and `icon` is provided.
-        icon_position: Where to place the icon relative to text — `'left'`
-            (default), `'right'`, `'top'`, `'bottom'`. Only relevant when
-            both `text` and `icon` are provided.
-        anchor: Content alignment within the label area.
-        justify: Multi-line text justification.
-        padding: Inner spacing.
-        width: Width in character cells.
-        wrap_width: Maximum pixel width before text wraps.
-        font: Font token string.
-        color: Text color.
-        background_color: Background color.
-        relief: Border style.
-        disabled: If True, widget is non-interactive.
-        localize: Localization mode.
-        value_format: Format spec applied to the signal value.
-        accent: Accent token, e.g. `'primary'`.
-        variant: Style variant.
-        surface: Surface token.
-        parent: Override the context-stack parent.
+        textsignal: Reactive ``Signal`` bound to the display text. Updates
+            automatically when the signal changes. Combine with
+            ``value_format=`` to format numeric or date values.
+        value_format: ICU format pattern applied to the ``textsignal`` value
+            before display. Common values: ``'decimal'``, ``'currency'``,
+            ``'percent'``, ``'date_short'``. Requires ``textsignal=`` to be
+            set and localization to be enabled.
+        image: A ``bs.Image`` object to display. Load one with
+            ``bs.Image.open()``, ``bs.Image.from_bytes()``, or
+            ``bs.Image.from_pil()``. Use ``icon_position=`` to control
+            placement relative to text.
+        icon: Bootstrap Icons name (e.g. ``'house'``, ``'gear'``). See the
+            full catalog at https://icons.getbootstrap.com.
+        icon_only: If ``True``, show only the icon. Auto-detected when
+            ``text`` is empty and ``icon`` is provided.
+        icon_position: Position of the icon relative to text. One of
+            ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
+            Only relevant when both ``text`` and ``icon`` are provided.
+        anchor: Content alignment within the label area. One of ``'n'``,
+            ``'ne'``, ``'e'``, ``'se'``, ``'s'``, ``'sw'``, ``'w'``,
+            ``'nw'``, ``'center'`` (default).
+        justify: Multi-line text alignment. One of ``'left'``, ``'center'``,
+            ``'right'``.
+        padding: Inner spacing around the text content.
+        width: Width in character units.
+        wrap_width: Maximum pixel width before text wraps. Set to enable
+            multi-line wrapping.
+        font: Semantic font token. Examples: ``'body'``, ``'heading-lg'``,
+            ``'heading-md[bold]'``, ``'caption'``, ``'code'``,
+            ``'body+2[italic]'``.
+        accent: Accent token for semantic text color. One of ``'primary'``,
+            ``'secondary'``, ``'success'``, ``'warning'``, ``'danger'``,
+            ``'default'``.
+        variant: Style variant token.
+        surface: Surface context token. One of ``'content'``, ``'card'``,
+            ``'chrome'``, ``'overlay'``.
+        parent: Explicit parent widget. If omitted, the current context-stack
+            container is used.
     """
 
     _internal_class = _InternalLabel
@@ -44,47 +71,44 @@ class Label(PublicWidgetBase):
         self,
         text: str = "",
         *,
-        text_signal: Any = None,
+        textsignal: "Signal | None" = None,
+        value_format: str | None = None,
+        image: Any = None,
         icon: str | None = None,
         icon_only: bool = False,
-        icon_position: str = "left",
-        anchor: str | None = None,
-        justify: str | None = None,
+        icon_position: Literal["left", "right", "top", "bottom"] = "left",
+        anchor: Anchor | None = None,
+        justify: Justify | None = None,
         padding: Any = None,
         width: int | None = None,
         wrap_width: int | None = None,
-        font: Any = None,
-        color: str | None = None,
-        background_color: str | None = None,
-        relief: str | None = None,
-        disabled: bool = False,
-        localize: Any = None,
-        value_format: Any = None,
-        accent: str | None = None,
-        variant: str | None = None,
-        surface: str | None = None,
+        font: str | None = None,
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
+        surface: SurfaceToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
-
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {}
         if text:
             internal_kwargs["text"] = text
-        if text_signal is not None:
-            internal_kwargs["textsignal"] = text_signal
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
+        if value_format is not None:
+            internal_kwargs["value_format"] = value_format
+        if image is not None:
+            internal_kwargs["image"] = image
         if icon is not None:
             internal_kwargs["icon"] = icon
-            has_text = bool(text) or text_signal is not None
+            has_text = bool(text) or textsignal is not None
             if not has_text or icon_only:
-                # No text — show icon only; compound="image" hides text slot
                 internal_kwargs["icon_only"] = True
                 internal_kwargs["compound"] = "image"
             else:
-                # Text + icon — position icon relative to text
                 internal_kwargs["compound"] = icon_position
         elif icon_only:
             internal_kwargs["icon_only"] = True
@@ -100,25 +124,12 @@ class Label(PublicWidgetBase):
             internal_kwargs["wraplength"] = wrap_width
         if font is not None:
             internal_kwargs["font"] = font
-        if color is not None:
-            internal_kwargs["foreground"] = color
-        if background_color is not None:
-            internal_kwargs["background"] = background_color
-        if relief is not None:
-            internal_kwargs["relief"] = relief
-        if disabled:
-            internal_kwargs["state"] = "disabled"
-        if localize is not None:
-            internal_kwargs["localize"] = localize
-        if value_format is not None:
-            internal_kwargs["value_format"] = value_format
         if accent is not None:
             internal_kwargs["accent"] = accent
         if variant is not None:
             internal_kwargs["variant"] = variant
         if surface is not None:
             internal_kwargs["surface"] = surface
-        internal_kwargs.update(kwargs)
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -127,53 +138,54 @@ class Label(PublicWidgetBase):
 
     @property
     def text(self) -> str:
+        """The displayed text."""
         return str(self._internal.cget("text"))
 
     @text.setter
     def text(self, value: str) -> None:
         self._internal.configure(text=value)
 
-    @property
-    def color(self) -> str:
-        return str(self._internal.cget("foreground"))
+    # ----- Events -----
 
-    @color.setter
-    def color(self, value: str) -> None:
-        self._internal.configure(foreground=value)
+    @overload
+    def on_click(self) -> Stream: ...
+    @overload
+    def on_click(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_click(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for click events on this label.
 
-    @property
-    def disabled(self) -> bool:
-        return str(self._internal.cget("state")) == "disabled"
+        Called with no handler, returns a composable `Stream`. Called with
+        a handler, binds it immediately and returns a `Subscription`. The
+        handler receives the curated `Event` (pointer position, modifier keys).
 
-    @disabled.setter
-    def disabled(self, value: bool) -> None:
-        self._internal.configure(state="disabled" if value else "normal")
-
-    # ----- Event shorthands -----
-
-    def on_click(self, handler: Callable[[], Any]):
-        """Register a click handler.
+        Args:
+            handler: Called with the click `Event` when the label is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self.on("click", lambda e: handler())
+        return self.on("click", handler)
 
 
 register_widget_events(Label, {})
 
 
 class Badge(Label):
-    """Compact styled pill or square for status, counts, and tags.
+    """Compact styled chip for status indicators, counts, and tags.
 
-    Inherits all `Label` kwargs. Icon and image kwargs are accepted but
-    ignored at render time — the badge style layout omits the image element.
+    A ``Badge`` is a styled ``Label`` with a fixed visual shape. It accepts
+    the same kwargs as ``Label`` but the icon and image elements are not
+    rendered.
 
     Args:
-        text: Text to display.
-        accent: Accent token, e.g. `'primary'`, `'success'`, `'danger'`.
-        variant: `'square'` (default) or `'pill'`.
-        parent: Override the context-stack parent.
+        text: Text to display inside the badge.
+        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
+            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
+            Defaults to ``'primary'``.
+        variant: Shape variant. ``'square'`` (default, rounded rectangle) or
+            ``'pill'`` (fully rounded).
+        parent: Explicit parent widget. If omitted, the current context-stack
+            container is used.
     """
 
     _internal_class = _InternalBadge
@@ -182,8 +194,8 @@ class Badge(Label):
         self,
         text: str = "",
         *,
-        accent: str = "primary",
-        variant: str = "square",
+        accent: AccentToken | str = "primary",
+        variant: Literal["square", "pill"] = "square",
         **kwargs: Any,
     ) -> None:
         super().__init__(text, accent=accent, variant=variant, **kwargs)

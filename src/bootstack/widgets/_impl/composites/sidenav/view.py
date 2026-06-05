@@ -8,6 +8,7 @@ from typing import Any, Callable, Literal
 from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.events import DisplayModeEvent, NavEvent, PaneToggleEvent
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.label import Label
@@ -369,7 +370,7 @@ class SideNav(Frame):
         self._prev_selection = new_key
 
         # Fire selection changed event
-        self.event_generate('<<SelectionChanged>>', data={'key': new_key})
+        self.event_generate('<<SelectionChanged>>', data=NavEvent(key=new_key))
 
     def _on_back_clicked(self):
         """Handle back button click."""
@@ -734,7 +735,7 @@ class SideNav(Frame):
             # In minimal mode, toggle visibility
             self._is_pane_open = not self._is_pane_open
             self._apply_display_mode()
-            self.event_generate('<<PaneToggled>>', data={'is_open': self._is_pane_open})
+            self.event_generate('<<PaneToggled>>', data=PaneToggleEvent(is_open=self._is_pane_open))
         else:
             # Toggle between expanded and compact
             new_mode = 'compact' if self._display_mode == 'expanded' else 'expanded'
@@ -745,14 +746,14 @@ class SideNav(Frame):
         if not self._is_pane_open:
             self._is_pane_open = True
             self._apply_display_mode()
-            self.event_generate('<<PaneToggled>>', data={'is_open': True})
+            self.event_generate('<<PaneToggled>>', data=PaneToggleEvent(is_open=True))
 
     def close_pane(self) -> None:
         """Close the pane."""
         if self._is_pane_open:
             self._is_pane_open = False
             self._apply_display_mode()
-            self.event_generate('<<PaneToggled>>', data={'is_open': False})
+            self.event_generate('<<PaneToggled>>', data=PaneToggleEvent(is_open=False))
 
     def set_display_mode(self, mode: DisplayMode) -> None:
         """Set the display mode.
@@ -763,7 +764,7 @@ class SideNav(Frame):
         if mode != self._display_mode:
             self._display_mode = mode
             self._apply_display_mode()
-            self.event_generate('<<DisplayModeChanged>>', data={'mode': mode})
+            self.event_generate('<<DisplayModeChanged>>', data=DisplayModeEvent(mode=mode))
 
     # --- Properties ---
 

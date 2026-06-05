@@ -1,6 +1,77 @@
-.nav-brand img {
-    height: 28px;
-    width: auto;
-    image-rendering: crisp-edges;
-    image-rendering: -webkit-optimize-contrast;
+/* ── Bootstrap palette — override pydata-sphinx-theme color variables ───── */
+
+html,
+html[data-theme="light"] {
+    --pst-color-primary:       #0d6efd;
+    --pst-color-primary-bg:    #cfe2ff;
+    --pst-color-secondary:     #6c757d;
+    --pst-color-secondary-bg:  #e2e3e5;
+    --pst-color-background:    #ffffff;
+    --pst-color-on-background: #ffffff;
+    --pst-color-surface:       #f8f9fa;
+    --pst-color-on-surface:    #212529;
+    --pst-color-text-base:     #212529;
+    --pst-color-text-muted:    #6c757d;
+    --pst-color-border:        #dee2e6;
+    --pst-color-border-muted:  #e9ecef;
+    --pst-color-inline-code:   #d63384;
 }
+
+html[data-theme="dark"] {
+    --pst-color-primary:       #6ea8fe;
+    --pst-color-primary-bg:    #031633;
+    --pst-color-secondary:     #adb5bd;
+    --pst-color-secondary-bg:  #343a40;
+    --pst-color-background:    #212529;
+    --pst-color-on-background: #212529;
+    --pst-color-surface:       #343a40;
+    --pst-color-on-surface:    #dee2e6;
+    --pst-color-text-base:     #dee2e6;
+    --pst-color-text-muted:    #adb5bd;
+    --pst-color-border:        #495057;
+    --pst-color-border-muted:  #373b3e;
+    --pst-color-inline-code:   #e685b5;
+    /* Admonition note/info — align with primary palette */
+    --pst-color-info:          #6ea8fe;
+    --pst-color-info-bg:       #0d306e;
+}
+
+/* Ensure all code blocks scroll horizontally rather than overflowing. */
+.highlight pre {
+    overflow-x: auto;
+}
+
+/* Screenshot light/dark switching.
+   Two-layer approach: (1) prefers-color-scheme as a CSS-only fallback that
+   applies instantly on navigation before JS sets data-theme; (2) explicit
+   data-theme overrides for when the user has toggled the theme switcher. */
+
+.bs-screenshot-dark,
+.bs-screenshot-light {
+    border-radius: 6px;
+    display: block;
+    margin: 0.75rem 0 !important;
+}
+
+/* Default: show light, hide dark. */
+.bs-screenshot-dark  { display: none  !important; }
+.bs-screenshot-light { display: block !important; }
+
+/* System dark preference — CSS-only, fires before JS runs. */
+@media (prefers-color-scheme: dark) {
+    .bs-screenshot-dark  { display: block !important; }
+    .bs-screenshot-light { display: none  !important; }
+}
+
+/* Explicit theme selection overrides the system preference. */
+html[data-theme="light"] .bs-screenshot-dark  { display: none  !important; }
+html[data-theme="light"] .bs-screenshot-light { display: block !important; }
+html[data-theme="dark"]  .bs-screenshot-dark  { display: block !important; }
+html[data-theme="dark"]  .bs-screenshot-light { display: none  !important; }
+
+/* Prevent pydata's dark-mode brightness filter from altering screenshots. */
+html[data-theme="dark"] .bs-screenshot-dark,
+html[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
+
+/* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
+.bs-dialog-screenshot {}

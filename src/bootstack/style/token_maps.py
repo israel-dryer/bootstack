@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 COLOR_TOKENS = {
-    'primary', 'secondary', 'success', 'warning', 'danger',
+    'primary', 'secondary', 'info', 'success', 'warning', 'danger',
     'foreground', 'background', 'white', 'black',
     'muted',
     'blue', 'indigo', 'purple', 'red', 'orange',
@@ -36,6 +36,6 @@ WIDGET_CLASS_MAP = {
 }
 
 WIDGET_NAME_MAP = {v: k for k, v in WIDGET_CLASS_MAP.items()}
-CONTAINER_CLASSES = {'TFrame', 'TLabelframe'}
+CONTAINER_CLASSES = {'TFrame'}
 ORIENT_CLASSES = {'TProgressbar', 'TScale', 'TScrollbar', 'TPanedwindow', 'TSeparator'}
 ICON_CLASSES = {'TLabel', 'TButton', 'TCheckbutton', 'TRadiobutton', 'TMenubutton'}

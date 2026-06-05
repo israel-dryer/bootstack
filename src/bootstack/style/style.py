@@ -509,7 +509,7 @@ def get_theme() -> str:
 
     Examples:
         >>> theme = get_theme()
-        >>> print(theme)  # "darkly"
+        >>> print(theme)  # "bootstrap-dark"
     """
     style = get_style()
     return style.theme_use()

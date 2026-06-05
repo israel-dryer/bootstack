@@ -6,8 +6,9 @@ from typing import overload, Any, Callable
 from bootstack.widgets._impl.composites.radiogroup import RadioGroup as _InternalRadioGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import AccentToken, Event, Orient
 
 _RADIOGROUP_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -17,19 +18,28 @@ _RADIOGROUP_EVENTS: dict[str, str] = {
 class RadioGroup(PublicWidgetBase):
     """A group of mutually exclusive radio buttons.
 
-    Options are passed at construction via `options=`. Each option is either
-    a plain string (label and value are the same) or a `(label, value)` tuple.
+    Exactly one option can be selected at a time. Options are supplied at
+    construction via ``options=`` and can be added or removed at runtime
+    using ``add()`` and ``remove()``.
 
     Args:
-        options: Choices for the group, e.g. `["A", "B"]` or
-            `[("Label A", "a"), ("Label B", "b")]`.
-        signal: Reactive `Signal` that holds the selected value.
-        value: Initially selected value.
-        orient: `'horizontal'` (default) or `'vertical'`.
-        title: Group label displayed above (or beside) the buttons.
-        accent: Accent token applied to all buttons, e.g. `'primary'`.
-        disabled: If True, all buttons are non-interactive.
-        parent: Override the context-stack parent.
+        options: Choices for the group. Each item is either a plain string
+            (label and value are the same) or a ``(label, value)`` tuple,
+            e.g. ``["S", "M", "L"]`` or
+            ``[("Small", "s"), ("Medium", "m"), ("Large", "l")]``.
+        signal: Reactive ``Signal`` holding the selected value. When
+            provided, ``value=`` is ignored — seed the Signal directly.
+        value: Initially selected value. Ignored when ``signal=`` is passed.
+        orient: Layout direction. ``'horizontal'`` (default) or
+            ``'vertical'``.
+        title: Optional label rendered above the button group.
+        accent: Accent token applied to all buttons. One of ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``, ``'default'``.
+        disabled: If ``True``, all buttons are non-interactive and dimmed.
+            Defaults to ``False``.
+        parent: Explicit parent widget. If omitted, the current
+            context-stack container is used.
     """
 
     def __init__(
@@ -38,9 +48,9 @@ class RadioGroup(PublicWidgetBase):
         *,
         signal: Any = None,
         value: Any = None,
-        orient: str = "horizontal",
+        orient: Orient = "horizontal",
         title: str | None = None,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -89,6 +99,7 @@ class RadioGroup(PublicWidgetBase):
 
     @property
     def value(self) -> Any:
+        """The currently selected value, or ``None`` if nothing is selected."""
         return self._internal.value
 
     @value.setter
@@ -97,6 +108,7 @@ class RadioGroup(PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"
 
     @disabled.setter
@@ -123,14 +135,14 @@ class RadioGroup(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selection changes.
 
-        The current value is available via `group.value` inside the handler.
+        The current value is available via ``group.value`` inside the handler.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 

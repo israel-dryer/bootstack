@@ -1,4 +1,0 @@
-Signals
-=======
-
-.. note:: Coming soon.

@@ -8,6 +8,7 @@ from typing import Any, Callable, TYPE_CHECKING
 from typing_extensions import TypedDict, Unpack
 
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.events import NavEvent
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.composites.compositeframe import CompositeFrame
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -156,6 +157,7 @@ class SideNavItem(Frame):
             self,
             ttk_class='NavigationButton.TFrame',
             accent=self._accent,
+            style_options={'icon_only': self._compact},
             padding=(left_padding, self._padding_y, self._padding_x, self._padding_y),
             takefocus=True,
         )
@@ -273,7 +275,7 @@ class SideNavItem(Frame):
             self._variable.set(self._key)
 
         # Fire invoked event
-        self.event_generate('<<ItemInvoked>>', data={'key': self._key})
+        self.event_generate('<<ItemInvoked>>', data=NavEvent(key=self._key))
 
         # Call command if set
         if self._command:
@@ -305,6 +307,8 @@ class SideNavItem(Frame):
             return
 
         self._compact = compact
+        self._container.configure_style_options(icon_only=compact)
+        self._container.rebuild_style()
         self._apply_layout()
         self._update_selection_state()
 

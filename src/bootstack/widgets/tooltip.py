@@ -4,25 +4,41 @@ from typing import Any, Literal
 
 from bootstack.widgets._impl.composites.tooltip import ToolTip as _InternalToolTip
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets.types import AccentToken, Anchor, Justify
 
 
 class Tooltip:
     """A hover tooltip attached to a target widget.
 
-    The tooltip appears after `delay` milliseconds when the mouse enters the target
-    and disappears on mouse leave or click. Positioning follows the mouse by default;
-    pass `anchor_point` and `window_point` to anchor it to the widget instead.
+    The tooltip appears after ``delay`` milliseconds when the mouse enters the
+    target and disappears when the mouse leaves or clicks. Positioning follows
+    the mouse cursor by default; pass ``anchor_point`` and ``window_point`` to
+    pin the tooltip to a specific edge of the widget instead.
 
     Args:
-        target: The widget to attach the tooltip to.
-        text: Tooltip text content.
-        delay: Milliseconds before the tooltip appears. Default `250`.
-        accent: Accent token for tooltip styling.
-        wrap_width: Maximum line width in pixels before text wraps. Default `None` (no wrap).
-        justify: Text alignment — `'left'` (default), `'center'`, or `'right'`.
-        anchor_point: Widget anchor for tooltip positioning (e.g. `'n'`, `'se'`).
-        window_point: Tooltip anchor matched to `anchor_point`.
-        auto_flip: Flip the tooltip to stay on screen. Default `True`.
+        target: Widget to attach the tooltip to. Accepts any bootstack widget.
+        text: Tooltip text content. Defaults to ``''``.
+        delay: Milliseconds before the tooltip appears on mouse enter. Defaults
+            to ``250``.
+        accent: Semantic color accent. One of ``'default'``, ``'primary'``,
+            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
+            ``'danger'``, ``'muted'``. Defaults to the theme's elevated
+            background color.
+        wrap_width: Maximum text width in pixels before wrapping. Defaults to
+            ``None`` (auto-scaled to approximately 300 px).
+        justify: Text alignment inside the tooltip. One of ``'left'``
+            (default), ``'center'``, ``'right'``.
+        anchor_point: Anchor on the *target widget* the tooltip attaches to.
+            One of ``'n'``, ``'ne'``, ``'e'``, ``'se'``, ``'s'``, ``'sw'``,
+            ``'w'``, ``'nw'``, ``'center'``. Defaults to ``None`` (tooltip
+            follows the mouse).
+        window_point: Anchor on the *tooltip window* aligned to
+            ``anchor_point``. Defaults to the opposite of ``anchor_point``
+            when ``anchor_point`` is set.
+        auto_flip: Keep the tooltip fully on screen. ``True`` flips both
+            axes, ``False`` disables flipping, ``'vertical'`` or
+            ``'horizontal'`` restricts flipping to one axis. Defaults to
+            ``True``.
     """
 
     def __init__(
@@ -31,11 +47,11 @@ class Tooltip:
         text: str = "",
         *,
         delay: int = 250,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         wrap_width: int | None = None,
-        justify: Literal["left", "center", "right"] = "left",
-        anchor_point: str | None = None,
-        window_point: str | None = None,
+        justify: Justify = "left",
+        anchor_point: Anchor | None = None,
+        window_point: Anchor | None = None,
         auto_flip: bool | Literal["vertical", "horizontal"] = True,
     ) -> None:
         tk_widget = target.tk if isinstance(target, PublicWidgetBase) else target

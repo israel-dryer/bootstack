@@ -7,7 +7,22 @@ provided as explicit subclasses in the bootstack.widgets package.
 
 from __future__ import annotations
 
+import tkinter as tk
+
 from bootstack.style.bootstyle import Bootstyle
+
+# Native Tk widget classes whose constructors get the autostyle wrapper.
+# Limited to the raw Tk widgets the framework actually instantiates or
+# subclasses (everything else is built on ttk). Implementation detail of this
+# patch — intentionally not exported anywhere.
+_TK_WIDGETS = (
+    tk.Tk,        # application root window
+    tk.Toplevel,  # secondary windows, dialogs, popups
+    tk.Frame,     # Slider/RangeSlider/multiline-text container subclasses
+    tk.Text,      # TextArea / CodeEditor cores
+    tk.Canvas,    # sliders, scroll view, gauge drawing
+    tk.Menu,      # context menus and menu bars
+)
 
 
 def install_tk_autostyle() -> None:
@@ -20,10 +35,7 @@ def install_tk_autostyle() -> None:
     # Ensure Tk builders are registered
     import bootstack.style.builders_tk  # noqa: F401
 
-    # Import Tk widget classes list
-    from bootstack.widgets import TK_WIDGETS
-
-    for widget in TK_WIDGETS:
+    for widget in _TK_WIDGETS:
         _init = Bootstyle.override_tk_widget_constructor(widget.__init__)
         widget.__init__ = _init
 

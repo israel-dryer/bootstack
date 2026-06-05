@@ -37,40 +37,6 @@ Determines which entry part widget to use:
 """
 
 
-class InputEventData(TypedDict):
-    """Payload for `<<Input>>` events — fires on each keystroke."""
-    text: str
-    """Current raw text in the entry field."""
-
-
-class ChangeEventData(TypedDict):
-    """Payload for `<<Change>>` events — fires on commit (blur or Enter)."""
-    value: Any
-    """Committed (parsed) value."""
-    prev_value: Any
-    """Previous committed value."""
-    text: str
-    """Raw display string."""
-
-
-class EnterEventData(TypedDict):
-    """Payload for `<Return>` key events."""
-    value: Any
-    """Committed (parsed) value."""
-    text: str
-    """Raw display string."""
-
-
-class ValidationEventData(TypedDict):
-    """Payload for `<<Valid>>`, `<<Invalid>>`, and `<<Validate>>` events."""
-    value: Any
-    """Committed (parsed) value."""
-    is_valid: bool
-    """Whether validation passed."""
-    message: str
-    """Validation error text, or empty string on pass."""
-
-
 class FieldOptions(TypedDict, total=False):
     """Type hints for Field widget configuration options.
 
@@ -235,11 +201,8 @@ class Field(EntryMixin, Frame):
         )
         self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="secondary")
 
-        # field container — fixed minimum pixel width so addon buttons (steppers,
-        # picker icons, etc.) live inside the minimum rather than adding to it.
-        # Prevents fields with addons from pushing grid columns wider than plain fields.
         field_padding = 5
-        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density}, width=200)
+        self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density})
 
         if kind == "numeric":
             self._entry = NumberEntryPart(self._field, value=value, density=self._density, **kwargs)
@@ -362,7 +325,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter `Event` object whose `event.data` is an
-                `InputEventData` dict with key `text` (current raw text).
+                `InputEvent` payload with `text` (current raw text).
 
         Returns:
             Bind ID — pass to `off_input()` to unsubscribe.
@@ -382,7 +345,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter `Event` object whose `event.data` is a
-                `ChangeEventData` dict with keys `value` (committed value),
+                `ChangeEvent` payload with `value` (committed value),
                 `prev_value` (previous value), and `text` (raw display string).
 
         Returns:
@@ -403,8 +366,7 @@ class Field(EntryMixin, Frame):
 
         Args:
             callback: Receives a Tkinter `Event` object whose `event.data` is an
-                `EnterEventData` dict with keys `value` (committed value)
-                and `text` (raw display string).
+                the curated `Event` for the Return key press.
 
         Returns:
             Bind ID — pass to `off_enter()` to unsubscribe.
@@ -423,8 +385,8 @@ class Field(EntryMixin, Frame):
         """Register a callback for `<<Valid>>` events (fires when validation passes).
 
         Args:
-            callback: Receives the event; `event.data` is a `ValidationEventData`
-                dict with keys `value`, `is_valid` (`True`), and `message`.
+            callback: Receives the event; `event.data` is a `ValidationEvent`
+                payload with `value`, `is_valid` (`True`), and `message`.
         """
         self._entry.on_valid(callback)
 
@@ -441,8 +403,8 @@ class Field(EntryMixin, Frame):
         """Register a callback for `<<Invalid>>` events (fires when validation fails).
 
         Args:
-            callback: Receives the event; `event.data` is a `ValidationEventData`
-                dict with keys `value`, `is_valid` (`False`), and `message`.
+            callback: Receives the event; `event.data` is a `ValidationEvent`
+                payload with `value`, `is_valid` (`False`), and `message`.
         """
         self._entry.on_invalid(callback)
 
@@ -459,8 +421,8 @@ class Field(EntryMixin, Frame):
         """Register a callback for `<<Validate>>` events (fires after any validation).
 
         Args:
-            callback: Receives the event; `event.data` is a `ValidationEventData`
-                dict with keys `value`, `is_valid` (bool), and `message`.
+            callback: Receives the event; `event.data` is a `ValidationEvent`
+                payload with `value`, `is_valid` (bool), and `message`.
         """
         self._entry.on_validated(callback)
 
@@ -484,7 +446,7 @@ class Field(EntryMixin, Frame):
 
         Rules are evaluated on blur and on Enter. When a rule fails the field
         emits `<<Invalid>>`; when all rules pass it emits `<<Valid>>`. Both
-        carry a `ValidationEventData` payload.
+        carry a `ValidationEvent` payload.
 
         Args:
             rule_type: Rule type. One of:
@@ -635,7 +597,7 @@ class Field(EntryMixin, Frame):
 
     def _show_error(self, event: Any) -> None:
         """Display a validation error message below the input field."""
-        self._message_lbl['text'] = event.data['message']
+        self._message_lbl['text'] = event.data.message
         self._message_lbl['accent'] = "danger"
         self._message_lbl.pack(side='top', after=self._field, padx=4)
 

@@ -1,14 +1,14 @@
 ﻿from __future__ import annotations
 
-import tkinter
 from typing import overload, Any, Callable
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import Event
 
 _RADIO_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -47,6 +47,9 @@ class _RadioBase(PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         _ctor_callback = on_change
+
+        if icon is not None and not label:
+            icon_only = True
 
         internal_kwargs: dict[str, Any] = {}
         if label:
@@ -114,8 +117,8 @@ class _RadioBase(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
         Returns:
@@ -126,8 +129,8 @@ class _RadioBase(PublicWidgetBase):
     @overload
     def on_select(self) -> Stream: ...
     @overload
-    def on_select(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_select(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_select(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
         Returns:
@@ -158,6 +161,7 @@ class Radio(_RadioBase):
         selected_icon: Icon shown when this radio is selected.
         unselected_icon: Icon shown when this radio is not selected.
         icon_only: If True, removes extra padding reserved for the label.
+            Inferred automatically when `icon=` is set and no label is provided.
         show_indicator: If False, hides the circular indicator.
         compound: Image placement relative to text.
         disabled: If True, widget is non-interactive.
@@ -183,7 +187,8 @@ class RadioToggleButton(_RadioBase):
         icon: Icon shown for all states.
         selected_icon: Icon shown when selected.
         unselected_icon: Icon shown when not selected.
-        icon_only: If True, removes extra label padding.
+        icon_only: If True, removes extra label padding. Inferred
+            automatically when `icon=` is set and no label is provided.
         disabled: If True, widget is non-interactive.
         accent: Accent token, e.g. `'primary'`, `'success'`.
         density: Widget density — `'default'` or `'compact'`.

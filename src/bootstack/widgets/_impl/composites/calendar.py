@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, Literal, TypedDict
 
 from babel import dates
 from babel.core import Locale
+from bootstack.events import DateSelectEvent
 from bootstack.widgets._impl.primitives import Button, CheckToggle, Frame, Label, Separator
 from bootstack.widgets.types import Master
 from bootstack.constants import BOTH, CENTER, LEFT, NSEW, X, Y, YES
@@ -81,14 +82,6 @@ def _longest_month_title_length() -> int:
         if len(title) > max_length:
             max_length = len(title)
     return max_length
-
-
-class DateSelectEventData(TypedDict):
-    """Payload for `<<DateSelect>>` events."""
-    date: date
-    """Selected date in single mode (the most recently clicked date)."""
-    range: tuple[date, 'date | None']
-    """Selected range as (start, end). end is None if only start is set."""
 
 
 class Calendar(ttk.Frame):
@@ -319,7 +312,7 @@ class Calendar(ttk.Frame):
         Args:
             callback: Called when a date is selected or a range is updated.
                 Receives a Tk event object; `event.data` is a
-                `DateSelectEventData` dict with keys:
+                `DateSelectEvent` payload with attributes:
                 - `date`: the most recently clicked date.
                 - `range`: `(start, end)` tuple; `end` is None if only the
                   start of a range has been set.
@@ -628,10 +621,13 @@ class Calendar(ttk.Frame):
             for child in weekdays_frame.winfo_children():
                 child.destroy()
 
+        col_offset = 1 if self._show_week_numbers else 0
         if self._show_week_numbers:
-            ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5, surface="background[+1]").pack(
-                side=LEFT, fill=X, expand=YES)
-        for col in self._header_columns():
+            weekdays_frame.columnconfigure(0, weight=1, uniform="cal")
+            ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5, surface="background[+1]", font='caption[bold]').grid(
+                row=0, column=0, sticky=NSEW)
+        for i, col in enumerate(self._header_columns()):
+            weekdays_frame.columnconfigure(i + col_offset, weight=1, uniform="cal")
             ttk.Label(
                 master=weekdays_frame,
                 text=col,
@@ -639,7 +635,7 @@ class Calendar(ttk.Frame):
                 padding=5,
                 accent="muted",
                 font='caption[bold]',
-            ).pack(side=LEFT, fill=X, expand=YES)
+            ).grid(row=0, column=i + col_offset, sticky=NSEW)
 
         # Grid reused
         grid: ttk.Frame | None = view.get("grid")
@@ -650,16 +646,19 @@ class Calendar(ttk.Frame):
             cells: list[list[ttk.Checkbutton]] = []
             cell_vars: list[list[tkinter.BooleanVar]] = []
             week_labels: list[ttk.Label] = []
+            week_labels: list[ttk.Label] = []
+            if self._show_week_numbers:
+                grid.columnconfigure(0, weight=1, uniform="cal")
             for r in range(6):
                 if self._show_week_numbers:
-                    wl = ttk.Label(grid, anchor=CENTER, padding=5, surface="background[+1]")
+                    wl = ttk.Label(grid, anchor=CENTER, padding=5, surface="background[+1]", font='caption')
                     wl.grid(row=r, column=0, sticky=NSEW)
                     week_labels.append(wl)
                 row_cells: list[ttk.Checkbutton] = []
                 row_vars: list[tkinter.BooleanVar] = []
                 for c in range(7):
                     col_offset = 1 if self._show_week_numbers else 0
-                    grid.columnconfigure(c + col_offset, weight=1)
+                    grid.columnconfigure(c + col_offset, weight=1, uniform="cal")
                     var = tkinter.BooleanVar(value=False)
                     btn = ttk.CheckToggle(
                         grid,
@@ -800,7 +799,7 @@ class Calendar(ttk.Frame):
         self._range_end = None
         self._refresh_calendar()
         self.event_generate(
-            "<<DateSelect>>", data={"date": self._selected_date, "range": (self._range_start, self._range_end)})
+            "<<DateSelect>>", data=DateSelectEvent(date=self._selected_date, range=(self._range_start, self._range_end)))
 
     def _on_date_selected_by_date(self, target: date) -> None:
         if self._is_disabled(target):
@@ -821,7 +820,7 @@ class Calendar(ttk.Frame):
 
         self._draw_calendar()
         self.event_generate(
-            "<<DateSelect>>", data={"date": self._selected_date, "range": (self._range_start, self._range_end)})
+            "<<DateSelect>>", data=DateSelectEvent(date=self._selected_date, range=(self._range_start, self._range_end)))
 
     # --- helpers ------------------------------------------------------
     def _lock_size(self) -> None:

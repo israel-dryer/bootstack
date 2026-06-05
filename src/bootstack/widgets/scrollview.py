@@ -22,7 +22,15 @@ class ScrollView(PublicContainer):
             (auto-hides after `autohide_delay` ms of inactivity).
         autohide_delay: Milliseconds before scrollbars hide in `'scroll'` mode.
             Default `1000`.
-        scrollbar_variant: Scrollbar variant token (e.g. `'round'`).
+        height: Fixed height of the viewport in pixels. When set, the
+            canvas is pinned to this height regardless of content size.
+            Required for vertical scrolling unless the parent already
+            constrains the height.
+        width: Fixed width of the viewport in pixels. Pins the canvas
+            width, similar to `height=`.
+        show_border: Draw a 1 px border around the ScrollView frame.
+            Defaults to ``False``.
+        padding: Space in pixels between the border and the canvas.
         parent: Override the context-stack parent.
     """
 
@@ -32,7 +40,6 @@ class ScrollView(PublicContainer):
         scroll_direction: Literal["vertical", "horizontal", "both"] = "both",
         scrollbar_visibility: Literal["always", "never", "hover", "scroll"] = "always",
         autohide_delay: int = 1000,
-        scrollbar_variant: str = "default",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -44,7 +51,6 @@ class ScrollView(PublicContainer):
             "scroll_direction": scroll_direction,
             "scrollbar_visibility": scrollbar_visibility,
             "autohide_delay": autohide_delay,
-            "scrollbar_variant": scrollbar_variant,
         }
         internal_kwargs.update(kwargs)
 

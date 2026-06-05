@@ -62,7 +62,6 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "sphinx>=7.2",
-    "shibuya",
     "sphinx-autodoc-typehints",
     "sphinx-design",
     "sphinx-autobuild",
@@ -80,7 +79,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "bootstack" = [
-    "themes/*.json",
     "assets/*",
     "assets/icons/*",
     # ship compiled gettext catalogs within the package

@@ -4,15 +4,16 @@ import tkinter
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tabs.tabview import TabView as _InternalTabView
-from bootstack.widgets._impl.composites.tabs.events import TabChangeEventData, TabRef
+from bootstack.events import TabChangeEvent, TabCloseEvent, TabRef
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
+from bootstack.widgets.types import Event, AccentToken
 
 _TABS_EVENTS: dict[str, str] = {
     "change":    "<<TabChanged>>",
@@ -24,9 +25,21 @@ _TABS_EVENTS: dict[str, str] = {
 class TabPage:
     """Context-manager container returned by `Tabs.add()`.
 
-    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
-    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
-    `sticky_items=`, `auto_flow=`.
+    Place child widgets inside the ``with`` block to add them to the tab's page.
+
+    Args:
+        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
+            or ``'grid'``.
+        padding: Space inside the page frame.
+        gap: Space between children in pixels.
+        fill_items: Default fill direction applied to each child.
+        expand_items: Whether children expand to fill available space.
+        anchor_items: Default anchor applied to each child.
+        columns: Column definitions for ``'grid'`` layout.
+        rows: Row definitions for ``'grid'`` layout.
+        sticky_items: Default sticky value for grid children.
+        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
+            ``'column'``.
     """
 
     def __init__(
@@ -111,9 +124,9 @@ class Tabs(PublicWidgetBase):
     Usage::
 
         tabs = bs.Tabs()
-        with tabs.add("home", text="Home"):
+        with tabs.add("home", label="Home"):
             bs.Label("Welcome")
-        with tabs.add("settings", text="Settings"):
+        with tabs.add("settings", label="Settings"):
             bs.Label("Settings here")
 
     Args:
@@ -136,7 +149,7 @@ class Tabs(PublicWidgetBase):
         tab_width: int | Literal["stretch"] | None = None,
         allow_close: bool | Literal["hover"] = False,
         allow_add: bool = False,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -166,26 +179,19 @@ class Tabs(PublicWidgetBase):
     @overload
     def on(self, event: str) -> Stream: ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Bind `handler` to `event` and return a `Subscription`."""
         sequence = resolve_event(self, str(event))
 
-        def _target():
-            if sequence in ("<<TabAdd>>", "<<TabClose>>"):
-                return self._internal._tabs
-            return self._internal
-
         if handler is None:
             def _source(h):
-                t = _target()
-                _bid = t.bind(sequence, h, add="+")
-                return Subscription(t, sequence, _bid)
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
+                return Subscription(self._internal, sequence, bid)
             return Stream(self._internal, _source=_source)
 
-        t = _target()
-        bind_id = t.bind(sequence, handler, add="+")
-        return Subscription(t, sequence, bind_id)
+        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
+        return Subscription(self._internal, sequence, bind_id)
 
     # ----- Tab management -----
 
@@ -283,51 +289,51 @@ class Tabs(PublicWidgetBase):
         Args:
             key: Tab key assigned in `add()`.
         """
-        return self._internal.item(key)
+        return self._internal.tab(key)
 
-    def items(self) -> tuple:
+    def items(self) -> tuple[Any, ...]:
         """Return all tab header items in insertion order."""
-        return self._internal.items()
+        return self._internal.tabs()
 
     # ----- Event shorthands -----
 
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[TabChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[TabChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected tab changes.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("change", handler)
 
     @overload
     def on_tab_close(self) -> Stream: ...
     @overload
-    def on_tab_close(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_tab_close(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_tab_close(self, handler: Callable[[TabCloseEvent], Any]) -> Subscription: ...
+    def on_tab_close(self, handler: Callable[[TabCloseEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("tab_close", handler)
 
     @overload
     def on_tab_add(self) -> Stream: ...
     @overload
-    def on_tab_add(self, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
-    def on_tab_add(self, handler: Callable[[tkinter.Event], Any] | None = None) -> Stream | Subscription:
+    def on_tab_add(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_tab_add(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the add-tab button is clicked.
 
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("tab_add", handler)
 
 
 register_widget_events(Tabs, _TABS_EVENTS)
 
-__all__ = ["Tabs", "TabPage", "TabChangeEventData", "TabRef"]
+__all__ = ["Tabs", "TabPage", "TabChangeEvent", "TabRef"]

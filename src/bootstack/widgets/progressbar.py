@@ -1,24 +1,30 @@
 ﻿from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from bootstack.widgets._impl.primitives.progressbar import Progressbar as _InternalProgressbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets.types import AccentToken, Orient
 
 
 class ProgressBar(PublicWidgetBase):
     """A progress indicator bar.
 
+    Displays determinate progress (a fixed percentage fill) or indeterminate
+    progress (a looping animation) for operations whose duration is unknown.
+
     Args:
-        value: Initial progress value.
-        max_value: Value that represents 100% progress. Default `100`.
-        mode: `'determinate'` (default) shows a fixed percentage;
-            `'indeterminate'` animates continuously.
-        orient: `'horizontal'` (default) or `'vertical'`.
-        signal: Reactive `Signal` linked to the value.
-        accent: Accent token, e.g. `'primary'`, `'success'`.
-        variant: Style variant, e.g. `'thin'`.
+        value: Initial progress value. Defaults to ``0``.
+        max_value: Value that represents 100% progress. Defaults to ``100``.
+        mode: ``'determinate'`` (default) shows a fixed fill proportional to
+            ``value / max_value``; ``'indeterminate'`` runs a looping animation.
+        orient: ``'horizontal'`` (default) or ``'vertical'``.
+        signal: Reactive ``Signal`` two-way bound to ``value``.
+        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
+            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``.
+            Defaults to the theme's default color.
+        variant: Style variant. ``'thin'`` reduces the bar height.
         parent: Override the context-stack parent.
     """
 
@@ -27,11 +33,11 @@ class ProgressBar(PublicWidgetBase):
         value: float = 0,
         *,
         max_value: float = 100,
-        mode: str = "determinate",
-        orient: str = "horizontal",
+        mode: Literal["determinate", "indeterminate"] = "determinate",
+        orient: Orient = "horizontal",
         signal: Any = None,
-        accent: str | None = None,
-        variant: str | None = None,
+        accent: AccentToken | None = None,
+        variant: Literal["thin"] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:

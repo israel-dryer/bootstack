@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any, Callable
 
@@ -6,12 +6,13 @@ from bootstack.widgets._impl.composites.contextmenu import ContextMenu as _Inter
 from bootstack.widgets._impl.composites.contextmenu import ContextMenuItem
 
 _TRIGGER_MAP: dict[str | None, str | None] = {
-    "right_click": "right-click",
-    "left_click": "left-click",
+    "right_click":  "right-click",
+    "left_click":   "left-click",
     "double_click": "double-click",
-    None: None,
-    "manual": None,
+    "manual":       None,
+    None:           None,
 }
+_VALID_TRIGGERS = frozenset(_TRIGGER_MAP)
 
 
 def _resolve_tk(widget: Any) -> Any:
@@ -20,21 +21,24 @@ def _resolve_tk(widget: Any) -> Any:
 
 
 class ContextMenu:
-    """A popup menu that attaches to a target widget.
+    """A popup menu that attaches to a target widget and opens on a gesture or manual call.
 
-    Items fire an `on_select` callback receiving a dict with `type`, `text`,
-    and `value` keys.
+    The menu renders as a themed floating popup on Windows and Linux, and as a
+    native system menu on macOS. The public API is identical across platforms.
 
     Args:
-        target: Widget the menu attaches to. Accepts public widgets or raw Tk
-            widgets. Defaults to the root window.
+        target: Widget the menu attaches to for positioning and auto-trigger
+            binding. Accepts any bootstack widget. If omitted, call
+            `show(position=(x, y))` manually.
         min_width: Minimum menu width in pixels. Default `150`.
-        trigger: Gesture that opens the menu — `'right_click'` (default),
-            `'left_click'`, `'double_click'`, or `None` (manual only).
-        on_select: Callback fired when any item is activated.
-        items: Initial list of `ContextMenuItem` dicts to add at construction.
+        trigger: Gesture that auto-shows the menu on `target` — `'right_click'`
+            (default), `'left_click'`, `'double_click'`, or `None` (manual only,
+            call `show()` yourself).
+        on_select: Callback fired whenever any item is activated. Receives a dict
+            with `'type'` (str), `'text'` (str), and `'value'` (Any) keys.
+        items: Initial list of `ContextMenuItem` objects to add at construction.
         density: Item density — `'default'` or `'compact'`.
-        parent: Parent widget for Tk hierarchy. Defaults to `target`.
+        parent: Parent widget for the Tk hierarchy. Defaults to `target`.
     """
 
     def __init__(
@@ -51,9 +55,13 @@ class ContextMenu:
         tk_target = _resolve_tk(target) if target is not None else None
         tk_master = _resolve_tk(parent) if parent is not None else tk_target
 
+        if trigger not in _VALID_TRIGGERS:
+            valid = ", ".join(repr(k) for k in _VALID_TRIGGERS if k is not None)
+            raise ValueError(f"Invalid trigger {trigger!r}. Valid values: {valid}")
+
         internal_kwargs: dict[str, Any] = {
             "minwidth": min_width,
-            "trigger": _TRIGGER_MAP.get(trigger, trigger),
+            "trigger": _TRIGGER_MAP[trigger],
             "density": density,
         }
         if on_select is not None:
@@ -64,6 +72,7 @@ class ContextMenu:
             internal_kwargs["target"] = tk_target
 
         self._internal = _InternalContextMenu(tk_master, **internal_kwargs)
+        self._radio_var: Any = None  # shared StringVar for all radio items
 
     # ----- Item management -----
 
@@ -83,9 +92,11 @@ class ContextMenu:
             label: Item label text.
             on_click: Callback fired when the item is clicked.
             icon: Icon name shown beside the label.
-            shortcut: Keyboard shortcut hint displayed on the right.
-            disabled: If True, item is shown but non-interactive.
-            key: Unique string key. Auto-generated if omitted.
+            shortcut: Keyboard shortcut hint displayed on the right. Accepts a
+                modifier pattern (`'Mod+S'` → `'Ctrl+S'` / `'⌘S'`), a key
+                registered with the Shortcuts service, or a literal string.
+            disabled: If `True`, item is visible but non-interactive.
+            key: Unique string identifier. Auto-generated if omitted.
 
         Returns:
             The key assigned to this item.
@@ -99,8 +110,8 @@ class ContextMenu:
             kw["shortcut"] = shortcut
         if key is not None:
             kw["key"] = key
-        result = self._internal.add_command(**kw)
-        return result.key if hasattr(result, "key") else key or label
+        self._internal.add_command(**kw)
+        return self._internal.keys()[-1]
 
     def add_check_item(
         self,
@@ -114,9 +125,9 @@ class ContextMenu:
 
         Args:
             label: Item label text.
-            value: Initial checked state.
-            on_click: Callback fired on toggle.
-            key: Unique string key. Auto-generated if omitted.
+            value: Initial checked state. Default `False`.
+            on_click: Callback fired when the item is toggled.
+            key: Unique string identifier. Auto-generated if omitted.
 
         Returns:
             The key assigned to this item.
@@ -126,61 +137,68 @@ class ContextMenu:
             kw["command"] = on_click
         if key is not None:
             kw["key"] = key
-        result = self._internal.add_checkbutton(**kw)
-        return result.key if hasattr(result, "key") else key or label
+        self._internal.add_checkbutton(**kw)
+        return self._internal.keys()[-1]
 
     def add_radio_item(
         self,
         label: str,
         *,
         value: Any = None,
-        variable: Any = None,
         on_click: Callable[[], Any] | None = None,
         key: str | None = None,
     ) -> str:
         """Add a radiobutton item.
 
+        All radio items in a menu share one group — selecting one deselects
+        the others. Use check items if you need independent toggles.
+
         Args:
             label: Item label text.
-            value: Value assigned when this item is selected.
-            variable: Shared Tk variable for the radio group.
-            on_click: Callback fired when selected.
-            key: Unique string key. Auto-generated if omitted.
+            value: Value passed to `on_select` when this item is selected.
+            on_click: Callback fired when the item is selected.
+            key: Unique string identifier. Auto-generated if omitted.
 
         Returns:
             The key assigned to this item.
         """
-        kw: dict[str, Any] = {"text": label}
+        import tkinter
+        if self._radio_var is None:
+            self._radio_var = tkinter.StringVar()
+        kw: dict[str, Any] = {"text": label, "variable": self._radio_var}
         if value is not None:
             kw["value"] = value
-        if variable is not None:
-            kw["variable"] = variable
         if on_click is not None:
             kw["command"] = on_click
         if key is not None:
             kw["key"] = key
-        result = self._internal.add_radiobutton(**kw)
-        return result.key if hasattr(result, "key") else key or label
+        self._internal.add_radiobutton(**kw)
+        return self._internal.keys()[-1]
 
-    def add_separator(self, *, key: str | None = None) -> None:
+    def add_separator(self, *, key: str | None = None) -> str:
         """Add a horizontal separator.
 
         Args:
-            key: Unique string key. Auto-generated if omitted.
+            key: Unique string identifier. Auto-generated if omitted.
+
+        Returns:
+            The key assigned to this separator.
         """
         kw: dict[str, Any] = {}
         if key is not None:
             kw["key"] = key
         self._internal.add_separator(**kw)
+        return self._internal.keys()[-1]
 
-    def update_item(self, key: str, **kwargs: Any) -> None:
-        """Reconfigure an item after creation.
+    def add_items(self, items: list[ContextMenuItem | dict[str, Any]]) -> None:
+        """Add multiple items at once.
 
         Args:
-            key: Key returned by `add_item()` / `add_check_item()` etc.
-            **kwargs: Options forwarded to the item's configure method.
+            items: List of `ContextMenuItem` objects or dicts with a `type` key
+                and item kwargs. Valid types: `'command'`, `'checkbutton'`,
+                `'radiobutton'`, `'separator'`.
         """
-        self._internal.configure_item(key, **kwargs)
+        self._internal.add_items(items)
 
     def remove_item(self, key: str) -> None:
         """Remove an item by key.
@@ -197,17 +215,25 @@ class ContextMenu:
         """Keys of all items in insertion order."""
         return self._internal.keys()
 
-    # ----- Display -----
+    # ----- Display / lifecycle -----
 
     def show(self, position: tuple[int, int] | None = None) -> "ContextMenu":
-        """Show the menu, optionally at a screen `(x, y)` position.
+        """Show the menu, optionally at an explicit screen position.
+
+        Args:
+            position: Screen `(x, y)` coordinates. If omitted, the menu is
+                positioned relative to its `target` widget.
 
         Returns:
-            `self` — allows chaining: `ContextMenu(target).add_item(...).show()`.
+            `self` — allows chaining: `menu.add_item("Edit").show()`.
         """
         self._internal.show(position)
         return self
 
     def hide(self) -> None:
-        """Hide the menu."""
+        """Hide the menu without destroying it."""
         self._internal.hide()
+
+    def destroy(self) -> None:
+        """Destroy the menu and release all resources."""
+        self._internal.destroy()

@@ -7,36 +7,38 @@ Provides unified interface for data management with multiple backend implementat
 
 All datasources support:
     - Pagination with configurable page size
-    - SQL-like filtering and sorting
-    - Full CRUD operations (create, read, update, delete)
+    - Filtering and sorting with the `col` expression API
+    - Full CRUD operations (insert, get, update, delete)
     - Record selection tracking
     - CSV export
 
 Usage:
     from bootstack.data import MemoryDataSource, SqliteDataSource, FileDataSource
+    from bootstack import col
 
     # In-memory datasource
     ds = MemoryDataSource(page_size=20)
-    ds.set_data([{"name": "Alice", "age": 30}, ...])
+    ds.load([{"name": "Alice", "age": 30}, ...])
 
     # SQLite datasource (persistent)
     db = SqliteDataSource("mydata.db", page_size=50)
-    db.set_data([{"name": "Bob", "age": 25}, ...])
+    db.load([{"name": "Bob", "age": 25}, ...])
 
     # File datasource (CSV, JSON, etc.)
     file_ds = FileDataSource("data.csv", page_size=25)
     file_ds.load()
 
     # Common operations (work with all)
-    ds.set_filter("age >= 25")
-    ds.set_sort("name ASC")
-    page1 = ds.get_page(0)
+    ds.where(col("age") >= 25)
+    ds.order("name")
+    first = ds.page(0)
 """
 
 from bootstack.data.base import BaseDataSource
 from bootstack.data.memory_source import MemoryDataSource
 from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.file_source import FileDataSource, FileSourceConfig
+from bootstack.data.query import col, Column, Condition, SortKey, any_of, all_of
 from bootstack.data.types import DataSourceProtocol, Record, Primitive
 
 __all__ = [
@@ -48,4 +50,10 @@ __all__ = [
     'DataSourceProtocol',
     'Record',
     'Primitive',
+    'col',
+    'Column',
+    'Condition',
+    'SortKey',
+    'any_of',
+    'all_of',
 ]

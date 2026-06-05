@@ -5,16 +5,34 @@ from typing import TYPE_CHECKING, Any, Callable, overload
 
 from bootstack.widgets._core.context import current_container
 from bootstack.widgets._core.events import resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.exceptions import ParentResolutionError
+from bootstack.events import Event, Subscription
+from bootstack.errors import ParentResolutionError
 
 if TYPE_CHECKING:
-    from bootstack.widgets._core.schedule import Schedule
-    from bootstack.widgets._core.stream import Stream
+    from bootstack.scheduling import Schedule
+    from bootstack.streams import Stream
+
+
+def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    """Wrap a public handler so it receives a bootstack event, not a raw one.
+
+    Data-carrying events (emitted with ``data=<payload>``) deliver the payload
+    object directly — the handler argument *is* the payload. Native/context
+    events carry no payload, so the raw toolkit event is curated into a clean
+    :class:`~bootstack.events.Event` first.
+    """
+
+    def _wrapped(raw: Any) -> Any:
+        payload = getattr(raw, "data", None)
+        if payload is not None:
+            return handler(payload)
+        return handler(Event._from_tk(raw))
+
+    return _wrapped
 
 
 class PublicWidgetBase:
-    """Base class for every public v2 widget.
+    """Base class for every public widget.
 
     Subclasses must set `self._internal` before calling `_attach_to_parent`,
     and should use `_split_layout_kwargs` to strip layout kwargs before
@@ -82,7 +100,7 @@ class PublicWidgetBase:
             job.cancel()
         """
         if not hasattr(self, "_schedule"):
-            from bootstack.widgets._core.schedule import Schedule
+            from bootstack.scheduling import Schedule
             self._schedule = Schedule(self._internal)
         return self._schedule
 
@@ -91,12 +109,12 @@ class PublicWidgetBase:
     @overload
     def on(self, event: str) -> "Stream": ...
     @overload
-    def on(self, event: str, handler: Callable[[tkinter.Event], Any]) -> Subscription: ...
+    def on(self, event: str, handler: Callable[[Any], Any]) -> Subscription: ...
 
     def on(
         self,
         event: str,
-        handler: Callable[[tkinter.Event], Any] | None = None,
+        handler: Callable[[Any], Any] | None = None,
     ) -> "Stream | Subscription":
         """Bind `handler` to `event`, or return a composable `Stream`.
 
@@ -112,8 +130,7 @@ class PublicWidgetBase:
             sub.cancel()
 
         Args:
-            event: Event name (e.g. `"change"`, `"click"`) or raw Tk
-                sequence (e.g. `"<Return>"`, `"<<Change>>"`).
+            event: Event name (e.g. `"change"`, `"click"`).
             handler: Optional callback. If omitted, a `Stream` is returned.
 
         Returns:
@@ -122,33 +139,24 @@ class PublicWidgetBase:
         sequence = resolve_event(self, str(event))
 
         if handler is not None:
-            bind_id = self._internal.bind(sequence, handler, add="+")
+            bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
             return Subscription(self._internal, sequence, bind_id)
 
         # No handler — return a lazy Stream.
-        from bootstack.widgets._core.stream import Stream
+        from bootstack.streams import Stream
 
         widget = self._internal
 
-        def _source(downstream: Callable[[tkinter.Event], Any]) -> Subscription:
-            bind_id = widget.bind(sequence, downstream, add="+")
+        def _source(downstream: Callable[[Any], Any]) -> Subscription:
+            bind_id = widget.bind(sequence, adapt_handler(downstream), add="+")
             return Subscription(widget, sequence, bind_id)
 
         return Stream(self._internal, _source=_source)
 
-    def emit(self, event: str, *, data: dict | None = None) -> None:
+    def emit(self, event: str, *, data: Any = None) -> None:
         """Synthesize `event` on the underlying widget."""
         sequence = resolve_event(self, str(event))
-        if data is not None:
-            self._internal._bs_emit_data = data  # type: ignore[attr-defined]
-        try:
-            self._internal.event_generate(sequence)
-        finally:
-            if data is not None:
-                try:
-                    delattr(self._internal, "_bs_emit_data")
-                except AttributeError:
-                    pass
+        self._internal.event_generate(sequence, data=data)
 
     def __repr__(self) -> str:
         try:

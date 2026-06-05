@@ -1,4 +1,4 @@
-"""bootstack add command - Add views, dialogs, themes, and i18n to a project."""
+"""bootstack add command - Add views, dialogs, and i18n to a project."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     parser = subparsers.add_parser(
         "add",
         help="Add components to the project",
-        description="Add views, pages, dialogs, themes, or i18n support to the project.",
+        description="Add views, pages, dialogs, or i18n support to the project.",
     )
     add_subparsers = parser.add_subparsers(dest="component")
 
@@ -79,23 +79,6 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         help="Target directory (default: src/<app>/dialogs/)",
     )
     dialog_parser.set_defaults(func=run_add_dialog)
-
-    # bootstack add theme <name>
-    theme_parser = add_subparsers.add_parser(
-        "theme",
-        help="Add a custom theme",
-    )
-    theme_parser.add_argument(
-        "name",
-        help="Theme name (e.g., 'mytheme')",
-    )
-    theme_parser.add_argument(
-        "--mode",
-        choices=["light", "dark"],
-        default="light",
-        help="Theme mode (default: light)",
-    )
-    theme_parser.set_defaults(func=run_add_theme)
 
     # bootstack add i18n
     i18n_parser = add_subparsers.add_parser(
@@ -268,46 +251,6 @@ def run_add_dialog(args: argparse.Namespace) -> None:
     print(f"Created dialog: {file_path.relative_to(project_root)}")
 
 
-def run_add_theme(args: argparse.Namespace) -> None:
-    """Add a custom theme to the project."""
-    theme_name = args.name.lower()
-    mode = args.mode
-
-    # Find project configuration
-    config_path = find_config()
-    if config_path is None:
-        print("Error: No bootstack.toml found. Are you in a bootstack project?")
-        return
-
-    project_root = config_path.parent
-
-    # Create themes directory
-    themes_dir = project_root / "themes"
-    themes_dir.mkdir(exist_ok=True)
-
-    # Create theme file
-    theme_file = themes_dir / f"{theme_name}.json"
-    if theme_file.exists():
-        print(f"Error: Theme '{theme_name}' already exists.")
-        return
-
-    # Theme template based on mode
-    if mode == "light":
-        theme_content = _get_light_theme_template(theme_name)
-    else:
-        theme_content = _get_dark_theme_template(theme_name)
-
-    theme_file.write_text(theme_content, encoding="utf-8")
-
-    print(f"Created theme: {theme_file.relative_to(project_root)}")
-    print()
-    print("To use this theme, register the JSON file before creating your App:")
-    print()
-    print("  from bootstack.style.theme_provider import register_user_theme")
-    print(f'  register_user_theme("{theme_name}", "themes/{theme_name}.json")')
-    print(f'  app = bs.App(theme="{theme_name}")')
-
-
 def run_add_i18n(args: argparse.Namespace) -> None:
     """Add internationalization support to the project."""
     languages = args.languages
@@ -341,69 +284,6 @@ def run_add_i18n(args: argparse.Namespace) -> None:
     print("  1. Add translatable strings to your .po files")
     print("  2. Compile with: msgfmt locales/<lang>/LC_MESSAGES/messages.po -o locales/<lang>/LC_MESSAGES/messages.mo")
     print("  3. Use translations in code: bs.L('Hello')")
-
-
-_BASE_SHADES = {
-    "blue": "#0d6efd",
-    "indigo": "#6610f2",
-    "purple": "#6f42c1",
-    "red": "#dc3545",
-    "orange": "#fd7e14",
-    "yellow": "#ffc107",
-    "green": "#198754",
-    "teal": "#20c997",
-    "cyan": "#0dcaf0",
-    "gray": "#adb5bd",
-    "pink": "#d63384",
-}
-
-
-def _theme_display_name(name: str) -> str:
-    return " ".join(part.capitalize() for part in name.replace("_", "-").split("-") if part)
-
-
-def _render_theme(name: str, mode: str) -> str:
-    """Render a v2 theme JSON template.
-
-    Light themes use the [600] step for semantic accents (so text on white
-    has good contrast); dark themes use [400] (lighter accents on a dark
-    background). Both schemas match the format consumed by
-    `bootstack.style.theme_provider`.
-    """
-    if mode == "light":
-        foreground, background, step = "#212529", "#ffffff", "600"
-    else:
-        foreground, background, step = "#f8f9fa", "#212529", "400"
-
-    payload = {
-        "name": name,
-        "display_name": _theme_display_name(name),
-        "mode": mode,
-        "foreground": foreground,
-        "background": background,
-        "white": "#ffffff",
-        "black": "#000000",
-        "shades": _BASE_SHADES,
-        "semantic": {
-            "primary": f"blue[{step}]",
-            "secondary": f"gray[{step}]",
-            "success": f"green[{step}]",
-            "warning": f"yellow[{step}]",
-            "danger": f"red[{step}]",
-        },
-    }
-    import json as _json
-    return _json.dumps(payload, indent=2) + "\n"
-
-
-def _get_light_theme_template(name: str) -> str:
-    """Get a v2 light-mode theme template."""
-    return _render_theme(name, "light")
-
-
-def _get_dark_theme_template(name: str) -> str:
-    """Get a v2 dark-mode theme template."""
-    return _render_theme(name, "dark")
 
 
 def _get_po_template(lang: str) -> str:

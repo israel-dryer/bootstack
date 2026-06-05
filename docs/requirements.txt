@@ -1,5 +1,6 @@
 sphinx>=7.2
-shibuya
+pydata-sphinx-theme
 sphinx-autodoc-typehints
 sphinx-design
 sphinx-autobuild
+sphinx-copybutton

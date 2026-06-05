@@ -7,21 +7,25 @@ from typing import Any, Callable, Literal, TypedDict
 # Primitive aliases
 # ---------------------------------------------------------------------------
 
+# Internal: parent-widget type. Not part of the public API.
 Master = tkinter.Misc | None
-"""Parent widget. Pass any tkinter widget or `None` to use the default root window."""
 
-EventCallback = Callable[[tkinter.Event], None]
-"""Callback that receives a Tkinter `Event` object."""
+# `Event` lives in the public `bootstack.events` package; re-imported here so the
+# many widget modules that pull it alongside the layout aliases keep working.
+from bootstack.events import Event  # noqa: E402
+
+EventCallback = Callable[["Event"], None]
+"""Callback that receives an `Event` object."""
 
 CommandCallback = Callable[[], Any]
 """Callback invoked with no arguments, e.g. a button `command=`."""
 
 # ---------------------------------------------------------------------------
-# Tkinter geometry / layout literals
+# Layout literals
 # ---------------------------------------------------------------------------
 
 Anchor = Literal['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw', 'center']
-"""Standard Tkinter anchor positions."""
+"""Alignment anchor position."""
 
 Orient = Literal['horizontal', 'vertical']
 """Widget orientation."""
@@ -49,13 +53,13 @@ WidgetDensity = Literal['default', 'compact']
 # bootstack styling tokens
 # ---------------------------------------------------------------------------
 
-AccentToken = Literal['default', 'primary', 'secondary', 'success', 'warning', 'danger', 'muted']
+AccentToken = Literal['default', 'primary', 'secondary', 'info', 'success', 'warning', 'danger', 'muted']
 """Semantic color accent token. Accepts modifiers: `'primary[+1]'`, `'primary[500]'`, `'primary[subtle]'`."""
 
 VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
 """Widget style variant."""
 
-SurfaceToken = Literal['content', 'card', 'chrome', 'overlay']
+SurfaceToken = Literal['content', 'card', 'card_raised', 'chrome', 'overlay']
 """Background surface context token."""
 
 # ---------------------------------------------------------------------------
@@ -63,16 +67,16 @@ SurfaceToken = Literal['content', 'card', 'chrome', 'overlay']
 # ---------------------------------------------------------------------------
 
 Fill = Literal['none', 'x', 'y', 'both']
-"""Fill axis for the pack geometry manager."""
+"""Fill axis for stack layout."""
 
 Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw', 'nse', 'nsw', 'new', 'sew', '']
-"""Sticky directions for the grid geometry manager."""
+"""Cell alignment for Grid layout. Any combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``."""
 
 Side = Literal['left', 'top', 'right', 'bottom']
-"""Side placement for the pack geometry manager."""
+"""Side placement for stack layout."""
 
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
-"""Layout direction for PackFrame and GridFrame."""
+"""Layout direction."""
 
 BorderMode = Literal['inside', 'outside']
 """Border mode for the place geometry manager."""
@@ -82,7 +86,7 @@ BorderMode = Literal['inside', 'outside']
 # ---------------------------------------------------------------------------
 
 class BaseWidgetKwargs(TypedDict, total=False):
-    """Tkinter-level options shared by all bootstack widget wrappers."""
+    """Low-level options shared by all bootstack widget wrappers."""
     style: str
     class_: str
     cursor: str

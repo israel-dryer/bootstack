@@ -114,7 +114,7 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
         bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
+        foreground=[('disabled', disabled_fg), ('', foreground)],
     )
 
 
@@ -207,7 +207,7 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
         bordercolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         darkcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
         lightcolor=[('disabled', disabled_bg), ('readonly', disabled_bg)],
-        foreground=[('disabled !readonly', disabled_fg), ('', foreground)],
+        foreground=[('disabled', disabled_fg), ('', foreground)],
     )
 
 

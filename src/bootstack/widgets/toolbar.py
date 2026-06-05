@@ -1,32 +1,53 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any, Callable
 
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity, SurfaceToken
 
 
 class Toolbar(PublicWidgetBase):
-    """A horizontal strip of buttons and other widgets.
+    """A horizontal strip of buttons, labels, and other widgets.
 
     Items are added left-to-right via `add_button()`, `add_label()`,
-    `add_separator()`, and `add_spacer()`. Call `add_spacer()` to push
-    subsequent items to the right side.
+    `add_separator()`, `add_spacer()`, and `add_widget()`. Call
+    `add_spacer()` to push subsequent items to the right side.
+
+    Toolbars appear automatically inside `AppShell` — use this widget
+    directly to build a standalone toolbar or a custom titlebar.
 
     Args:
-        button_variant: Default variant for toolbar buttons. Default `'ghost'`.
-        density: Button density — `'default'` or `'compact'`.
-        show_window_controls: If True, adds minimize/maximize/close buttons
-            on the right side.
-        draggable: If True, clicking and dragging the toolbar moves the window.
+        button_variant: Default variant applied to every button added via
+            `add_button()`. One of ``'solid'``, ``'outline'``, ``'ghost'``.
+            Defaults to ``'ghost'``.
+        density: Size of toolbar items. ``'compact'`` for tighter padding and
+            smaller buttons, ``'default'`` for standard size.
+            Defaults to ``'default'``.
+        surface: Background surface token. One of ``'content'``, ``'card'``,
+            ``'chrome'``, ``'overlay'``. Defaults to the theme's ``'chrome'``
+            surface.
+        padding: Inner padding in pixels. Accepts an int (all sides), or a
+            ``(horizontal, vertical)`` tuple. Defaults to ``3`` for default
+            density and ``(3, 1)`` for compact.
+        show_border: If ``True``, draws a border around the toolbar frame.
+            Defaults to ``False``.
+        show_window_controls: If ``True``, adds minimize, maximize, and close
+            buttons to the right side. Defaults to ``False``.
+        draggable: If ``True``, clicking and dragging the toolbar repositions
+            the window. Automatically enabled when ``show_window_controls=True``.
+            Defaults to ``False``.
         parent: Override the context-stack parent.
     """
 
     def __init__(
         self,
         *,
-        button_variant: str = "ghost",
-        density: str = "default",
+        button_variant: VariantToken | str = "ghost",
+        density: WidgetDensity = "default",
+        surface: SurfaceToken | str | None = None,
+        padding: int | tuple[int, int] | None = None,
+        show_border: bool = False,
         show_window_controls: bool = False,
         draggable: bool = False,
         parent: Any = None,
@@ -41,11 +62,28 @@ class Toolbar(PublicWidgetBase):
             "density": density,
             "show_window_controls": show_window_controls,
             "draggable": draggable,
+            "show_border": show_border,
         }
+        if surface is not None:
+            internal_kwargs["surface"] = surface
+        if padding is not None:
+            internal_kwargs["padding"] = padding
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalToolbar(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
+
+    # ----- Properties -----
+
+    @property
+    def density(self) -> WidgetDensity:
+        """Current density setting for toolbar items."""
+        return self._internal.density
+
+    @property
+    def button_variant(self) -> str:
+        """Default variant applied to buttons added via `add_button()`."""
+        return self._internal._button_variant
 
     # ----- Content -----
 
@@ -55,18 +93,24 @@ class Toolbar(PublicWidgetBase):
         *,
         icon: str | None = None,
         on_click: Callable[[], Any] | None = None,
-        accent: str | None = None,
-        variant: str | None = None,
+        accent: AccentToken | str | None = None,
+        variant: VariantToken | str | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a button to the toolbar.
 
+        When both `label` and `icon` are given, the button shows text and icon
+        side by side. When only `icon` is given, the button is icon-only.
+
         Args:
             label: Button label text.
-            icon: Icon name.
-            on_click: Callback fired when clicked.
-            accent: Accent token override.
-            variant: Variant override.
+            icon: Icon name. When provided without `label`, renders icon-only.
+            on_click: Callback fired when the button is clicked.
+            accent: Color intent override. One of ``'primary'``, ``'secondary'``,
+                ``'success'``, ``'warning'``, ``'danger'``, ``'info'``,
+                ``'default'``.
+            variant: Variant override. Falls back to the toolbar's
+                ``button_variant`` when not specified.
         """
         kw: dict[str, Any] = {}
         if label is not None:
@@ -87,15 +131,15 @@ class Toolbar(PublicWidgetBase):
         text: str | None = None,
         *,
         icon: str | None = None,
-        font: Any = None,
+        font: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """Add a label to the toolbar.
+        """Add a non-interactive label to the toolbar.
 
         Args:
             text: Label text.
-            icon: Icon name.
-            font: Font token.
+            icon: Icon name displayed alongside the text.
+            font: Font token, e.g. ``'heading-md'`` or ``'caption'``.
         """
         kw: dict[str, Any] = {}
         if text is not None:
@@ -111,7 +155,7 @@ class Toolbar(PublicWidgetBase):
         """Add a vertical separator.
 
         Args:
-            length: Separator height in pixels.
+            length: Separator height in pixels. Defaults to ``16``.
         """
         self._internal.add_separator(length=length)
 
@@ -122,8 +166,11 @@ class Toolbar(PublicWidgetBase):
     def add_widget(self, widget: Any, **pack_kwargs: Any) -> None:
         """Add an arbitrary widget to the toolbar.
 
+        The widget must have been created with the toolbar as its parent, or
+        pass a raw internal widget here.
+
         Args:
-            widget: A public widget or raw Tk widget.
+            widget: A public widget instance or raw internal widget.
             **pack_kwargs: Pack options forwarded to the widget's placement.
         """
         tk_widget = getattr(widget, "_internal", widget)

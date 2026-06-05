@@ -5,6 +5,7 @@ from typing import Any, Callable, TypedDict, TYPE_CHECKING
 
 from typing_extensions import Unpack
 
+from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets._impl.primitives._menubutton import MenuButton
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -12,12 +13,6 @@ from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetSt
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
-
-
-class OptionMenuChangeEventData(TypedDict):
-    """Payload for `<<Change>>` events fired when a menu item is selected."""
-    value: Any
-    """The newly selected value (coerced to string)."""
 
 
 class OptionMenuKwargs(StyledKwargs, total=False):
@@ -98,7 +93,7 @@ class OptionMenu(MenuButton):
         if self._textvariable is None:
             self._textvariable = StringVar(value=str(value) if value is not None else "")
 
-        super().__init__(master, text=value, **kwargs)
+        super().__init__(master, text=value, style_options=style_options, **kwargs)
 
         # Configure the menubutton to use the textvariable
         self.configure(textvariable=self._textvariable)
@@ -118,7 +113,7 @@ class OptionMenu(MenuButton):
         """(Re)bind textsignal to emit <<Change>> Tk events."""
         if self._bind_id is not None:
             self.textsignal.unsubscribe(self._bind_id)
-        return self.textsignal.subscribe(lambda v: self.event_generate('<<Change>>', data={"value": v}))
+        return self.textsignal.subscribe(lambda v: self.event_generate('<<Change>>', data=ChangeEvent(value=v)))
 
     def _build_context_menu(self):
         # Affordance baked into the button image (focus ring + border line in
@@ -183,8 +178,8 @@ class OptionMenu(MenuButton):
 
         Args:
             callback: Called when a menu item is selected. Receives a Tk event
-                object; `event.data` is an `OptionMenuChangeEventData` dict with
-                the key `value` (the newly selected value, coerced to string).
+                object; `event.data` is a `ChangeEvent` with the attribute
+                `value` (the newly selected value, coerced to string).
 
         Returns:
             Bind ID — pass to `off_changed()` to unsubscribe.

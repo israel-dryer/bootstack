@@ -44,9 +44,9 @@ class _ChromeDialog(Dialog):
 
     def show(
             self,
+            *,
             position: Optional[Tuple[int, int]] = None,
             modal: Optional[bool] = None,
-            *,
             anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]] = None,
             anchor_point: AnchorPoint = 'center',
             window_point: AnchorPoint = 'center',
@@ -248,13 +248,13 @@ class DateDialog:
         self._picker: Optional[_DialogCalendar] = None
 
         self._dialog = _ChromeDialog(
-            master=master,
             title=title,
             content_builder=self._create_content,
             buttons=[],
             footer_builder=None,
             hide_window_chrome=self._hide_window_chrome,
             mode="popover" if self._close_on_click_outside else "modal",
+            parent=master,
         )
 
     def _create_content(self, master: tkinter.Widget) -> None:
@@ -290,9 +290,7 @@ class DateDialog:
         payload = getattr(event, "data", None)
 
         if self._selection_mode == "range":
-            range_data = None
-            if isinstance(payload, dict):
-                range_data = payload.get("range")
+            range_data = getattr(payload, "range", None)
             if range_data is None:
                 range_data = self._picker.get_range()
             start, end = range_data if range_data else (None, None)
@@ -301,9 +299,7 @@ class DateDialog:
                 return
             result: date | Tuple[date, date] = (start, end)
         else:
-            selected = None
-            if isinstance(payload, dict):
-                selected = payload.get("date") or payload.get("result")
+            selected = getattr(payload, "date", None)
             selected = selected or self._picker.get()
             if selected is None:
                 return
@@ -321,9 +317,9 @@ class DateDialog:
 
     def show(
             self,
+            *,
             position: Optional[Tuple[int, int]] = None,
             modal: Optional[bool] = None,
-            *,
             anchor_to: Optional[Union[Widget, Literal["screen", "cursor", "parent"]]] = None,
             anchor_point: AnchorPoint = 'center',
             window_point: AnchorPoint = 'center',

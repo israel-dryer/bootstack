@@ -8,6 +8,7 @@ from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Text, Variable
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TYPE_CHECKING
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
+from bootstack.events import ValidationEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton
 from bootstack.widgets._impl.primitives.switch import Switch
@@ -34,19 +35,16 @@ if TYPE_CHECKING:
 DType = Literal['int', 'float', 'bool', 'date', 'datetime', 'password', 'str'] | type | None
 
 EditorType = Literal[
-    'selectbox',
-    'combobox',
-    'spinbox',
-    'text',
-    'textentry',
-    'numericentry',
-    'dateentry',
-    'passwordentry',
-    'toggle',
+    'textfield',
+    'numberfield',
+    'passwordfield',
+    'datefield',
+    'textarea',
+    'select',
+    'spinnerfield',
     'switch',
-    'checkbutton',
+    'checkbox',
     'slider',
-    'scale',  # deprecated alias for 'slider'
 ]
 
 
@@ -144,7 +142,7 @@ class Form(Frame):
             instances directly.
         col_count: Number of columns at the top level.
         min_col_width: Minimum width for each column in pixels.
-        on_data_changed: Optional callback invoked with the updated data dict
+        on_data_change: Optional callback invoked with the updated data dict
             whenever a field value changes.
         width: Requested width for the form container.
         height: Requested height for the form container.
@@ -162,7 +160,7 @@ class Form(Frame):
             items: Sequence[FormItem | Mapping[str, Any]] | None = None,
             col_count: int = 1,
             min_col_width: int = DEFAULT_MIN_COL_WIDTH,
-            on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+            on_data_change: Callable[[dict[str, Any]], Any] | None = None,
             width: int | None = None,
             height: int | None = None,
             accent: str | None = None,
@@ -177,7 +175,7 @@ class Form(Frame):
             items: Explicit form layout (FieldItem/GroupItem/TabsItem or mappings).
             col_count: Number of columns at the top level.
             min_col_width: Minimum width per column in pixels.
-            on_data_changed: Callback invoked with updated data when a field changes.
+            on_data_change: Callback invoked with updated data when a field changes.
             width: Requested form width; if None, size naturally.
             height: Requested form height; if None, size naturally.
             accent: Accent token for the form container.
@@ -188,7 +186,7 @@ class Form(Frame):
 
         self._data: dict[str, Any] = dict(data) if data else {}
         self.result: Any = None
-        self._on_data_changed = on_data_changed
+        self._on_data_change = on_data_change
         self._col_count = col_count
         self._min_col_width = min_col_width
         self._widgets: dict[str, Any] = {}
@@ -245,15 +243,14 @@ class Form(Frame):
             if not rules:
                 return True
             value = widget.value
-            payload: dict[str, Any] = {"value": value, "is_valid": True, "message": ""}
             is_valid = True
             for rule in rules:
                 if rule.trigger not in ("always", "manual"):
                     continue
                 result = rule.validate(value)
-                payload.update(is_valid=result.is_valid, message=result.message)
                 if not result.is_valid:
                     is_valid = False
+                    payload = ValidationEvent(value=value, is_valid=False, message=result.message)
                     try:
                         entry.event_generate(ValidationMixin.EVENT_INVALID, data=payload)
                         entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
@@ -261,6 +258,7 @@ class Form(Frame):
                         pass
                     break
             if is_valid:
+                payload = ValidationEvent(value=value, is_valid=True, message="")
                 try:
                     entry.event_generate(ValidationMixin.EVENT_VALID, data=payload)
                     entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
@@ -541,31 +539,31 @@ class Form(Frame):
         validation_options = {'show_message', 'required', 'validator'}
 
         field_widget: Any
-        if editor == 'textentry':
+        if editor == 'textfield':
             field_widget = TextEntry(
                 container, value=initial_value or "", label=label_text, textvariable=variable, **options)
-        elif editor == 'numericentry':
+        elif editor == 'numberfield':
             numeric_value = initial_value if initial_value is not None else 0
             field_widget = NumericEntry(
                 container, value=numeric_value, label=label_text, **options)
             self._bind_numeric_variable(item.key, field_widget, variable)
-        elif editor == 'passwordentry':
+        elif editor == 'passwordfield':
             field_widget = PasswordEntry(
                 container, value=initial_value or "", label=label_text, textvariable=variable, **options)
-        elif editor == 'dateentry':
+        elif editor == 'datefield':
             field_widget = DateEntry(container, value=initial_value, label=label_text, textvariable=variable, **options)
         else:
             # Filter out validation options for widgets that don't support ValidationMixin
             filtered_options = {k: v for k, v in options.items() if k not in validation_options}
 
-            # Use inline label for checkbutton/toggle/switch, otherwise show a Label widget.
-            if editor in ("checkbutton", "toggle", "switch"):
+            # Checkbox and switch use an inline label; select handles its own label.
+            if editor in ('checkbox', 'switch'):
                 if not filtered_options.get("text"):
                     filtered_options["text"] = label_text
-            elif label_text != "" and editor not in ('selectbox', 'combobox'):
+            elif label_text != "" and editor != 'select':
                 Label(container, text=label_text).pack(anchor='w', pady=(0, 2))
 
-            if editor in ('selectbox', 'combobox'):
+            if editor == 'select':
                 items = options.pop('items', options.pop('values', None)) or []
                 items = [str(i) for i in items]
                 field_widget = SelectBox(
@@ -578,19 +576,19 @@ class Form(Frame):
                 )
                 if initial_value is not None and variable is not None:
                     variable.set(initial_value)
-            elif editor == 'spinbox':
+            elif editor == 'spinnerfield':
                 field_widget = Spinbox(container, textvariable=variable, **filtered_options)
                 if initial_value is not None:
                     variable.set(initial_value)
-            elif editor == 'text':
+            elif editor == 'textarea':
                 field_widget = Text(container, **filtered_options)
                 if initial_value:
                     field_widget.insert('1.0', str(initial_value))
-            elif editor in ('toggle', 'switch'):
+            elif editor == 'switch':
                 field_widget = Switch(container, variable=variable, **filtered_options)
-            elif editor == 'checkbutton':
+            elif editor == 'checkbox':
                 field_widget = CheckButton(container, variable=variable, **filtered_options)
-            elif editor in ('slider', 'scale'):
+            elif editor == 'slider':
                 slider_opts = dict(filtered_options)
                 if 'from_' in slider_opts:
                     slider_opts['minvalue'] = slider_opts.pop('from_')
@@ -601,7 +599,7 @@ class Form(Frame):
                 field_widget = TextEntry(
                     container, value=initial_value or "", label=label_text, textvariable=variable, **options)
 
-            if editor != 'text':
+            if editor != 'textarea':
                 field_widget.pack(fill='x', expand=True)
             else:
                 field_widget.pack(fill='both', expand=True)
@@ -800,14 +798,15 @@ class Form(Frame):
             return
         new_value = self._read_value_from_widget(key)
         self._data[key] = new_value
-        if self._on_data_changed:
-            self._on_data_changed(dict(self._data))
+        if self._on_data_change:
+            self._on_data_change(dict(self._data))
+        self.event_generate("<<BsDataChange>>")
 
     def _variable_for_item(self, item: FieldItem, initial: Any, editor: EditorType | None) -> Variable | None:
         dtype = item.dtype
-        if editor in ('checkbutton', 'toggle'):
+        if editor in ('checkbox', 'switch'):
             return BooleanVar(value=bool(initial) if initial is not None else False)
-        if editor in ('numericentry', 'spinbox', 'slider', 'scale') or dtype in ('int', int, 'float', float):
+        if editor in ('numberfield', 'spinnerfield', 'slider') or dtype in ('int', int, 'float', float):
             if dtype in ('float', float):
                 return DoubleVar(value=float(initial) if initial is not None else 0.0)
             return IntVar(value=int(initial) if initial is not None else 0)
@@ -815,21 +814,21 @@ class Form(Frame):
 
     def _default_editor_for_dtype(self, dtype: Any, value: Any) -> EditorType:
         if dtype in ('int', int, 'float', float):
-            return 'numericentry'
+            return 'numberfield'
         if dtype in ('bool', bool):
-            return 'checkbutton'
+            return 'checkbox'
         if dtype in ('date', 'datetime', date, datetime):
-            return 'dateentry'
+            return 'datefield'
         if dtype in ('password',):
-            return 'passwordentry'
+            return 'passwordfield'
         if value is not None:
             if isinstance(value, (int, float)):
-                return 'numericentry'
+                return 'numberfield'
             if isinstance(value, (bool,)):
-                return 'checkbutton'
+                return 'checkbox'
             if isinstance(value, (date, datetime)):
-                return 'dateentry'
-        return 'textentry'
+                return 'datefield'
+        return 'textfield'
 
     def _coerce_value(self, dtype: Any, value: Any) -> Any:
         if dtype in ('int', int):

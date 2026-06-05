@@ -7,6 +7,7 @@ from tkinter import TclError, Variable
 from typing import Any, Callable, Literal, TYPE_CHECKING
 from typing_extensions import Unpack
 
+from bootstack.events import TabCloseEvent
 from bootstack.widgets._impl.composites.compositeframe import CompositeFrame, CompositeFrameKwargs
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.label import Label
@@ -274,7 +275,7 @@ class TabItem(CompositeFrame):
         value = self._value
 
         # Generate virtual event BEFORE close_command (which may destroy the widget)
-        self.event_generate('<<TabClose>>', data={'value': value})
+        self.event_generate('<<TabClose>>', data=TabCloseEvent(value=value))
 
         # Invoke close command if provided (this may destroy the widget)
         if self._close_command is not None:

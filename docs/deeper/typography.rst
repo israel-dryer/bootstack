@@ -1,4 +1,0 @@
-Typography
-==========
-
-.. note:: Coming soon.

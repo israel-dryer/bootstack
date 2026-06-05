@@ -106,11 +106,17 @@ class GridFrame(Frame):
         elif isinstance(columns, list):
             self._col_defs = [_parse_size(c) for c in columns]
 
-        # Apply initial row/column configuration
+        # Apply initial row/column configuration.
+        # Weighted columns use a uniform group keyed by weight so that all
+        # equal-weight columns are exactly the same width regardless of their
+        # children's minimum sizes. Auto/fixed-px columns are not grouped.
         for i, (weight, minsize) in enumerate(self._row_defs):
             self.rowconfigure(i, weight=weight, minsize=minsize)
         for i, (weight, minsize) in enumerate(self._col_defs):
-            self.columnconfigure(i, weight=weight, minsize=minsize)
+            kw: dict[str, Any] = {"weight": weight, "minsize": minsize}
+            if weight > 0:
+                kw["uniform"] = f"col_w{weight}"
+            self.columnconfigure(i, **kw)
 
         if propagate is not None:
             self.grid_propagate(propagate)
@@ -397,6 +403,10 @@ class GridFrame(Frame):
                 row, col = self._find_next_position(rowspan, colspan)
 
             self._occupy_area(row, col, rowspan, colspan)
+            # Auto-configure rows that weren't pre-defined via rows= with weight=1,
+            # matching the behaviour of explicitly specified rows.
+            if row >= len(self._row_defs):
+                self.rowconfigure(row, weight=1)
             grid_options = self._build_options(row, col, rowspan, colspan, options)
             tk.Grid.configure(widget, **grid_options)
             self._managed.append((widget, options, (row, col, rowspan, colspan)))

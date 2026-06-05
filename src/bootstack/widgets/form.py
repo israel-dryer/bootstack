@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence, overload
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
 from bootstack.widgets._impl.composites.form import Form as _InternalForm
@@ -9,6 +9,8 @@ from bootstack.widgets._impl.composites.form import (
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.streams import Stream
+from bootstack.events import Subscription
 
 
 class Form(PublicWidgetBase):
@@ -21,8 +23,9 @@ class Form(PublicWidgetBase):
             instances or equivalent dicts.
         col_count: Number of top-level columns. Default `1`.
         min_col_width: Minimum column width in pixels.
-        on_data_changed: Callback invoked with the updated data dict on
-            each field change.
+        on_data_change: Callback invoked with the updated data dict on each
+            field change. Equivalent to calling ``on_data_change()`` after
+            construction.
         width: Fixed form width in pixels.
         height: Fixed form height in pixels.
         accent: Accent token for the form container.
@@ -40,7 +43,7 @@ class Form(PublicWidgetBase):
         items: Sequence[FormItem | Mapping[str, Any]] | None = None,
         col_count: int = 1,
         min_col_width: int = DEFAULT_MIN_COL_WIDTH,
-        on_data_changed: Callable[[dict[str, Any]], Any] | None = None,
+        on_data_change: Callable[[dict[str, Any]], Any] | None = None,
         width: int | None = None,
         height: int | None = None,
         accent: str | None = None,
@@ -57,8 +60,8 @@ class Form(PublicWidgetBase):
             kw["data"] = data
         if items is not None:
             kw["items"] = items
-        if on_data_changed is not None:
-            kw["on_data_changed"] = on_data_changed
+        if on_data_change is not None:
+            kw["on_data_change"] = on_data_change
         if width is not None:
             kw["width"] = width
         if height is not None:
@@ -141,5 +144,27 @@ class Form(PublicWidgetBase):
         """Return the text Signal for the named field."""
         return self._internal.field_textsignal(key)
 
+    # ----- Events -----
 
-register_widget_events(Form, {})
+    @overload
+    def on_data_change(self) -> Stream: ...
+    @overload
+    def on_data_change(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_data_change(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Register a callback fired whenever any field value changes.
+
+        The handler receives the current form data as a dict. Called with no
+        handler, returns a composable ``Stream``.
+
+        Args:
+            handler: Called with the updated data dict on each field change.
+
+        Returns:
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
+        """
+        if handler is None:
+            return self.on("data_change")
+        return self.on("data_change", lambda _e: handler(self.value))
+
+
+register_widget_events(Form, {"data_change": "<<BsDataChange>>"})

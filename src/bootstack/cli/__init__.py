@@ -5,7 +5,6 @@ The bootstack CLI provides commands for:
 - Running applications (run)
 - Building for distribution (build)
 - Adding components (add)
-- Listing resources (list)
 
 Usage:
     bootstack start <appname>        Create a new project
@@ -15,9 +14,7 @@ Usage:
     bootstack add page <ClassName>   Add a new page (AppShell)
     bootstack add view <ClassName>   Add a new view
     bootstack add dialog <ClassName> Add a new dialog
-    bootstack add theme <name>       Add a custom theme
     bootstack add i18n               Add i18n support
-    bootstack list themes            List available themes
     bootstack doctor                 Diagnose project and environment health
     bootstack gallery                 Launch the widget gallery
     bootstack icons                   Browse Bootstrap Icons
@@ -29,7 +26,7 @@ import argparse
 import sys
 from typing import Sequence
 
-from bootstack.cli import add, build, doctor, icons, list_cmd, promote, run, start
+from bootstack.cli import add, build, doctor, icons, promote, run, start
 from bootstack.cli.demo import run_demo
 
 
@@ -48,7 +45,6 @@ Examples:
   bootstack promote --pyinstaller    Enable PyInstaller support
   bootstack build                    Build for distribution
   bootstack add view SettingsView    Add a new view
-  bootstack list themes              List available themes
   bootstack doctor                   Diagnose project and environment health
   bootstack gallery                  Launch the widget gallery
   bootstack icons                    Browse Bootstrap Icons
@@ -82,7 +78,6 @@ For more information on a command:
     promote.add_parser(subparsers)
     build.add_parser(subparsers)
     add.add_parser(subparsers)
-    list_cmd.add_parser(subparsers)
     doctor.add_parser(subparsers)
     icons.add_parser(subparsers)
 

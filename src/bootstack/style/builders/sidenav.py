@@ -142,10 +142,15 @@ def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     hover_img = recolor_element_image(image_key, surface_hover, surface_hover, surface_hover, surface)
     pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, surface_pressed, surface)
 
-    # Selected states: indicator visible (accent color)
-    selected_img = recolor_element_image(image_key, active, active, accent_color, surface)
-    selected_hover_img = recolor_element_image(image_key, active, active, accent_color, surface)
-    selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_color, surface)
+    # Selected states: in compact/icon-only mode the indicator matches the fill so it's invisible
+    if icon_only:
+        selected_img         = recolor_element_image(image_key, active,         active,         active,         surface)
+        selected_hover_img   = recolor_element_image(image_key, active,         active,         active,         surface)
+        selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_pressed, surface)
+    else:
+        selected_img         = recolor_element_image(image_key, active,         active,         accent_color,   surface)
+        selected_hover_img   = recolor_element_image(image_key, active,         active,         accent_color,   surface)
+        selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_color,   surface)
 
     disabled_img = recolor_element_image(image_key, disabled, disabled, disabled, surface)
 
@@ -220,10 +225,15 @@ def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, a
     hover_img = recolor_element_image(image_key, surface_hover, surface_hover, surface_hover, surface)
     pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, surface_pressed, surface)
 
-    # Selected states: indicator visible (accent color)
-    selected_img = recolor_element_image(image_key, active, active, accent_color, surface)
-    selected_hover_img = recolor_element_image(image_key, active, active, accent_color, surface)
-    selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_color, surface)
+    # Selected states: in compact/icon-only mode the indicator matches the fill so it's invisible
+    if icon_only:
+        selected_img         = recolor_element_image(image_key, active,         active,         active,         surface)
+        selected_hover_img   = recolor_element_image(image_key, active,         active,         active,         surface)
+        selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_pressed, surface)
+    else:
+        selected_img         = recolor_element_image(image_key, active,         active,         accent_color,   surface)
+        selected_hover_img   = recolor_element_image(image_key, active,         active,         accent_color,   surface)
+        selected_pressed_img = recolor_element_image(image_key, accent_pressed, accent_pressed, accent_color,   surface)
 
     disabled_img = recolor_element_image(image_key, disabled, disabled, disabled, surface)
 

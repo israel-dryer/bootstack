@@ -8,6 +8,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Callable, Literal
 
+from bootstack.events import TextModifiedEvent
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter, FilterChain
 from bootstack.widgets._impl.composites.textarea.change import ChangeNotifier
@@ -343,7 +344,7 @@ class _MultilineCore(tk.Frame):
     def _on_tk_modified(self, _event=None) -> None:
         self.text.event_generate(
             "<<TextModified>>",
-            data={"is_dirty": self.is_dirty},
+            data=TextModifiedEvent(is_dirty=self.is_dirty),
             when="tail",
         )
 
@@ -372,7 +373,7 @@ class _MultilineCore(tk.Frame):
     def on_modified(self, callback: Callable) -> str:
         """Register a callback for `<<TextModified>>` events.
 
-        Fires when the dirty state changes. `event.data["is_dirty"]`
+        Fires when the dirty state changes. `event.is_dirty`
         reflects the new state.
 
         Args:
@@ -394,7 +395,7 @@ class _MultilineCore(tk.Frame):
     def on_undo(self, callback: Callable) -> str:
         """Register a callback for `<<TextUndo>>` events.
 
-        Fires after an undo completes. `event.data["value"]` is the
+        Fires after an undo completes. `event.data.text` is the
         text content after the undo.
 
         Args:
@@ -416,7 +417,7 @@ class _MultilineCore(tk.Frame):
     def on_redo(self, callback: Callable) -> str:
         """Register a callback for `<<TextRedo>>` events.
 
-        Fires after a redo completes. `event.data["value"]` is the
+        Fires after a redo completes. `event.data.text` is the
         text content after the redo.
 
         Args:

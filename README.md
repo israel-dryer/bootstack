@@ -195,9 +195,7 @@ bootstack run                               # Run the app defined in the project
 bootstack add page Dashboard                # Add a new page (appshell)
 bootstack add view Settings                 # Add a new view (basic)
 bootstack add dialog Preferences            # Add a new dialog
-bootstack add theme my-brand                # Scaffold a custom theme
 bootstack add i18n --languages en es fr     # Add i18n support
-bootstack list themes                       # List available themes
 bootstack doctor                            # Diagnose project & environment
 bootstack build                             # Package for distribution
 ```

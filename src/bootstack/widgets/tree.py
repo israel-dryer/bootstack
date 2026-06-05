@@ -3,10 +3,10 @@
 from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.treeview import TreeView as _InternalTreeView
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 
 
 _TREE_EVENTS: dict[str, str] = {
@@ -19,7 +19,7 @@ register_widget_events(_InternalTreeView, _TREE_EVENTS)
 
 
 class Tree(PublicWidgetBase):
-    """A hierarchical tree/table widget backed by `ttk.Treeview`.
+    """A hierarchical tree/table widget for displaying data in a tree structure.
 
     Displays data in a tree structure (with optional columns). Rows are
     called *items*; each item has a unique IID, optional text, optional
@@ -81,10 +81,10 @@ class Tree(PublicWidgetBase):
         sequence = resolve_event(self._internal, str(event))
         if handler is None:
             def _source(h):
-                _bid = self._internal.bind(sequence, h, add="+")
+                _bid = self._internal.bind(sequence, adapt_handler(h), add="+")
                 return Subscription(self._internal, sequence, _bid)
             return Stream(self._internal, _source=_source)
-        bind_id = self._internal.bind(sequence, handler, add="+")
+        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
         return Subscription(self._internal, sequence, bind_id)
 
     # ----- Item management -----

@@ -464,20 +464,14 @@ def _build_layout_page():
                     bs.Label(title, accent=color, font="body[bold]")
                     bs.Label(body, font="heading-lg")
 
-        with bs.GroupBox("Expander", fill="horizontal"):
-            with bs.Expander("Click to expand", expanded=False, fill="horizontal", padding=10):
-                bs.Label("This content is revealed when the expander is opened.")
-            with bs.Expander("Already expanded", expanded=True, fill="horizontal", padding=10):
-                bs.Label("Expanders can start open or closed.")
-
         with bs.GroupBox("Accordion", fill="horizontal"):
-            acc = bs.Accordion(fill="horizontal", show_border=True, show_separators=True)
-            with acc.add("Section 1"):
-                bs.Label("Content for section one.", padding=10)
+            acc = bs.Accordion(fill="horizontal", accent="primary")
+            with acc.add("Section 1", expanded=True):
+                bs.Label("Content for section one.")
             with acc.add("Section 2"):
-                bs.Label("Content for section two.", padding=10)
+                bs.Label("Content for section two.")
             with acc.add("Section 3"):
-                bs.Label("Content for section three.", padding=10)
+                bs.Label("Content for section three.")
 
         with bs.GroupBox("SplitView", fill="both", expand=True):
             sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
@@ -583,7 +577,7 @@ def _build_dialogs_page():
                 bs.Button("ask_integer()",
                           on_click=lambda: _ask(bs.ask_integer, "Enter age:", min_value=0, max_value=120))
                 bs.Button("ask_date()",
-                          on_click=lambda: _ask(bs.ask_date, "Pick a date:"))
+                          on_click=lambda: _ask(bs.ask_date, title="Pick a date"))
 
         with bs.GroupBox("FormDialog", fill="horizontal"):
             def _show_form():
@@ -711,7 +705,7 @@ def run_demo():
         _build_page("home")
 
         def _on_page_changed(event) -> None:
-            key = event.data.get("page") if hasattr(event, "data") else None
+            key = getattr(event.data, "page", None) if hasattr(event, "data") else None
             if key:
                 _build_page(key)
 
