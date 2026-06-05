@@ -16,8 +16,7 @@ class Tooltip:
     pin the tooltip to a specific edge of the widget instead.
 
     Args:
-        target: Widget to attach the tooltip to. Accepts any bootstack widget
-            or raw Tkinter widget.
+        target: Widget to attach the tooltip to. Accepts any bootstack widget.
         text: Tooltip text content. Defaults to ``''``.
         delay: Milliseconds before the tooltip appears on mouse enter. Defaults
             to ``250``.

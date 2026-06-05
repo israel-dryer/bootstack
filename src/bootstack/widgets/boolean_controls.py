@@ -7,8 +7,8 @@ from bootstack.widgets._impl.primitives.switch import Switch as _InternalSwitch
 from bootstack.widgets._impl.primitives.checktoggle import CheckToggle as _InternalCheckToggle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
 
 if TYPE_CHECKING:

@@ -7,53 +7,12 @@ from typing import Any, Callable, Literal, TypedDict
 # Primitive aliases
 # ---------------------------------------------------------------------------
 
+# Internal: parent-widget type. Not part of the public API.
 Master = tkinter.Misc | None
-"""Parent widget."""
 
-
-class Event:
-    """Event object passed to callbacks registered via ``on_*()`` methods.
-
-    Carries the context of the event that fired, including the originating
-    widget, pointer position, and any application-level data attached when
-    the event was emitted.
-
-    Attributes:
-        widget: The widget that received the event.
-        data: Application-level payload attached when the event was emitted
-            via ``emit(data=...)``. ``None`` if no data was provided.
-        x: Pointer x position relative to the widget.
-        y: Pointer y position relative to the widget.
-        x_root: Pointer x position relative to the screen.
-        y_root: Pointer y position relative to the screen.
-        type: Event type identifier.
-        char: Character string for keyboard events.
-        keysym: Symbolic key name for keyboard events.
-        state: Modifier key / button state bitmask.
-        delta: Mouse wheel delta (positive = scroll up).
-        width: Widget width at the time of the event.
-        height: Widget height at the time of the event.
-    """
-
-    widget: Any
-    data: Any
-    x: int
-    y: int
-    x_root: int
-    y_root: int
-    type: Any
-    char: str
-    keysym: str
-    keysym_num: int
-    state: int
-    delta: int
-    width: int
-    height: int
-    num: int
-    serial: int
-    time: int
-    send_event: bool
-
+# `Event` lives in the public `bootstack.events` package; re-imported here so the
+# many widget modules that pull it alongside the layout aliases keep working.
+from bootstack.events import Event  # noqa: E402
 
 EventCallback = Callable[["Event"], None]
 """Callback that receives an `Event` object."""
@@ -127,7 +86,7 @@ BorderMode = Literal['inside', 'outside']
 # ---------------------------------------------------------------------------
 
 class BaseWidgetKwargs(TypedDict, total=False):
-    """Tkinter-level options shared by all bootstack widget wrappers."""
+    """Low-level options shared by all bootstack widget wrappers."""
     style: str
     class_: str
     cursor: str

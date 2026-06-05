@@ -28,8 +28,8 @@ class ContextMenu:
 
     Args:
         target: Widget the menu attaches to for positioning and auto-trigger
-            binding. Accepts public bootstack widgets or raw Tk widgets.
-            If omitted, call `show(position=(x, y))` manually.
+            binding. Accepts any bootstack widget. If omitted, call
+            `show(position=(x, y))` manually.
         min_width: Minimum menu width in pixels. Default `150`.
         trigger: Gesture that auto-shows the menu on `target` — `'right_click'`
             (default), `'left_click'`, `'double_click'`, or `None` (manual only,

@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING, Any, Callable, overload
 
 from bootstack.widgets._core.context import current_container
 from bootstack.widgets._core.events import resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.exceptions import ParentResolutionError
+from bootstack.events import Subscription
+from bootstack.errors import ParentResolutionError
 from bootstack.widgets.types import Event
 
 if TYPE_CHECKING:
-    from bootstack.widgets._core.schedule import Schedule
-    from bootstack.widgets._core.stream import Stream
+    from bootstack.scheduling import Schedule
+    from bootstack.streams import Stream
 
 
 class PublicWidgetBase:
-    """Base class for every public v2 widget.
+    """Base class for every public widget.
 
     Subclasses must set `self._internal` before calling `_attach_to_parent`,
     and should use `_split_layout_kwargs` to strip layout kwargs before
@@ -83,7 +83,7 @@ class PublicWidgetBase:
             job.cancel()
         """
         if not hasattr(self, "_schedule"):
-            from bootstack.widgets._core.schedule import Schedule
+            from bootstack.scheduling import Schedule
             self._schedule = Schedule(self._internal)
         return self._schedule
 
@@ -126,7 +126,7 @@ class PublicWidgetBase:
             return Subscription(self._internal, sequence, bind_id)
 
         # No handler — return a lazy Stream.
-        from bootstack.widgets._core.stream import Stream
+        from bootstack.streams import Stream
 
         widget = self._internal
 

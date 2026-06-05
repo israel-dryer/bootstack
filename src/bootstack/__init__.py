@@ -27,7 +27,7 @@ _install_focus()
 # ── Style & theming ───────────────────────────────────────────────────────────
 from bootstack.style import (
     Font, Style, Typography,
-    get_style, get_style_builder, get_theme, get_theme_provider,
+    get_style, get_theme,
     set_theme, toggle_theme, get_theme_color, get_themes, register_user_theme,
 )
 
@@ -48,10 +48,8 @@ from bootstack.validation import ValidationRule, ValidationResult
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 from bootstack._core.images import Image
-from bootstack._core.variables import SetVar
 from bootstack._runtime.app import AppSettings, get_app_settings, get_current_app
 from bootstack._runtime.shortcuts import Shortcuts, Shortcut, get_shortcuts
-from bootstack._runtime.menu import MenuManager, create_menu, create_menu_items
 
 # ── Widget type aliases ───────────────────────────────────────────────────────
 from bootstack.widgets.types import (
@@ -60,14 +58,14 @@ from bootstack.widgets.types import (
     Fill, Justify, Orient, Relief, Side, Sticky,
     WidgetState, WidgetDensity,
     AccentToken, VariantToken, SurfaceToken,
+    Event,
 )
 
 # ── Public widget layer ───────────────────────────────────────────────────────
-from bootstack.widgets._core.events import Event
-from bootstack.widgets._core.exceptions import BootstackV2Error, UnknownEventError, ParentResolutionError
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.schedule import Schedule, Job
-from bootstack.widgets._core.stream import Stream, Handle
+from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError
+from bootstack.events import Subscription
+from bootstack.scheduling import Schedule, Job
+from bootstack.streams import Stream, Handle
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PublicContainer
 from bootstack.widgets.dialogs import (
@@ -106,15 +104,12 @@ from bootstack.widgets.passwordfield import PasswordField
 from bootstack.widgets.progressbar import ProgressBar
 from bootstack.widgets.radio_variants import Radio, RadioToggleButton
 from bootstack.widgets.radiogroup import RadioGroup
-from bootstack.widgets.scrollbar import Scrollbar
 from bootstack.widgets.scrollview import ScrollView
 from bootstack.widgets.select import Select
 from bootstack.widgets.selectbutton import SelectButton
 from bootstack.widgets.separator import Separator
-from bootstack.widgets.sizegrip import SizeGrip
 from bootstack.widgets.splitview import SplitView, SplitPane
 from bootstack.widgets.slider import RangeSlider, Slider
-from bootstack.widgets.spinbox import Spinbox
 from bootstack.widgets.spinnerfield import SpinnerField
 from bootstack.widgets.table import Table, TableSelectionEventData, TableRowEventData, TableRowsEventData
 from bootstack.widgets.tabs import TabChangeEventData, TabPage, TabRef, Tabs
@@ -134,3 +129,66 @@ from bootstack.widgets.form import FormItem, FieldItem, GroupItem, TabsItem, Tab
 from bootstack.widgets.sidenav import (
     SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
 )
+
+
+# ── Public API surface ────────────────────────────────────────────────────────
+# The curated set of names that make up the public `bootstack` namespace.
+__all__ = [
+    "__version__",
+    # Style & theming
+    "Font", "Style", "Typography",
+    "get_style", "get_theme", "set_theme", "toggle_theme",
+    "get_theme_color", "get_themes", "register_user_theme",
+    # Signals
+    "Signal", "TraceOperation",
+    # Data sources
+    "BaseDataSource", "MemoryDataSource", "SqliteDataSource", "FileDataSource",
+    "FileSourceConfig", "DataSourceProtocol", "Record", "Primitive",
+    # Internationalization
+    "MessageCatalog", "L", "LV", "IntlFormatter",
+    # Validation
+    "ValidationRule", "ValidationResult",
+    # Events, streams, scheduling, errors
+    "Event", "Subscription", "Stream", "Handle", "Schedule", "Job",
+    "BootstackError", "UnknownEventError", "ParentResolutionError",
+    # App, shortcuts, images
+    "AppSettings", "get_app_settings", "get_current_app",
+    "Shortcuts", "Shortcut", "get_shortcuts", "Image",
+    # Type aliases
+    "BaseWidgetKwargs", "StyledKwargs", "Anchor", "BorderMode", "CompoundMode",
+    "Direction", "Fill", "Justify", "Orient", "Relief", "Side", "Sticky",
+    "WidgetState", "WidgetDensity", "AccentToken", "VariantToken", "SurfaceToken",
+    # Extension base classes
+    "PublicWidgetBase", "PublicContainer",
+    # Dialogs
+    "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
+    "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
+    "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog", "ColorChoice",
+    "FontDialog", "FilterDialog",
+    # Application & windows
+    "App", "AppShell", "Window",
+    # Layout
+    "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
+    "SplitView", "SplitPane", "Accordion", "AccordionSection",
+    # Actions
+    "Button", "ButtonGroup", "MenuButton", "MenuBar", "Toolbar",
+    "ContextMenu", "ContextMenuItem",
+    # Inputs
+    "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",
+    "TextArea", "CodeEditor", "DateField", "TimeField", "Slider", "RangeSlider",
+    "EditFilter",
+    # Selection
+    "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
+    "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
+    # Data display
+    "Label", "Badge", "ProgressBar", "Gauge", "ListView", "Table", "Tree",
+    "TableSelectionEventData", "TableRowEventData", "TableRowsEventData",
+    # Navigation
+    "PageStack", "StackPage", "Tabs", "TabPage", "TabRef", "TabChangeEventData",
+    "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
+    # Overlays
+    "Tooltip", "Toast", "toast",
+    # Forms
+    "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
+    "EditorType",
+]

@@ -5,8 +5,8 @@ from typing import Any, Callable, Literal, TYPE_CHECKING, overload
 from bootstack.widgets._impl.primitives.button import Button as _InternalButton
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
 
 if TYPE_CHECKING:

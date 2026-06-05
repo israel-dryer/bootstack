@@ -9,8 +9,8 @@ from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken
 from bootstack.signals import Signal
 

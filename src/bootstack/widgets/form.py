@@ -9,8 +9,8 @@ from bootstack.widgets._impl.composites.form import (
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.stream import Stream
-from bootstack.widgets._core.subscription import Subscription
+from bootstack.streams import Stream
+from bootstack.events import Subscription
 
 
 class Form(PublicWidgetBase):

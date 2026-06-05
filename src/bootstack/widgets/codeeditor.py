@@ -8,8 +8,8 @@ from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event
 
 if TYPE_CHECKING:
@@ -220,10 +220,13 @@ class CodeEditor(PublicWidgetBase):
         self._internal.value = ""
 
     def insert(self, index: str, text: str) -> None:
-        """Insert `text` at `index` (Tk text index, e.g. `'end'` or `'1.0'`).
+        """Insert `text` at `index`.
+
+        `index` is a text position: `'end'` for the end of the content, or a
+        `'line.column'` string such as `'1.0'` (line 1, column 0).
 
         Args:
-            index: Tk text index string.
+            index: Target text position, e.g. `'end'` or `'1.0'`.
             text: Text to insert.
         """
         self._internal._core.text.insert(index, text)

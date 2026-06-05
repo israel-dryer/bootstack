@@ -8,8 +8,8 @@ from bootstack.widgets._impl.composites.dateentry import DateEntry as _InternalD
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
@@ -147,7 +147,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
-            from bootstack.widgets._core.stream import Stream as _Stream
+            from bootstack.streams import Stream as _Stream
             def _source(h):
                 _w = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
                 _bid = _w.bind(sequence, h, add="+")

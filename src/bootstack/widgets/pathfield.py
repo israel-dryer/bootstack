@@ -7,8 +7,8 @@ from bootstack.widgets._impl.composites.pathentry import PathEntry as _InternalP
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 

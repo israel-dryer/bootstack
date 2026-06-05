@@ -211,9 +211,9 @@ class MenuButton(PublicWidgetBase):
         pre-selected on first open.
 
         Note:
-            Values are stored as strings internally (via a ``StringVar``).
-            Pass string values (e.g. ``value="100%"``) for predictable
-            comparisons when reading the group variable via ``menu``.
+            Values are stored as strings internally. Pass string values
+            (e.g. ``value="100%"``) for predictable comparisons when reading
+            the group selection via ``menu``.
 
         Args:
             label: Item label text.

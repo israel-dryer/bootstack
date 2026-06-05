@@ -29,9 +29,10 @@ class Toast:
         actions: Sequence of button kwargs dicts. Each dict is passed to an
             internal Button; clicking a button dismisses the toast and passes
             the dict to ``on_dismiss``.
-        position: Tkinter geometry string (e.g. ``'-25-75'`` for 25 px from
-            the right edge and 75 px from the bottom). ``None`` uses platform
-            defaults (bottom-right on Windows/macOS, top-right on Linux).
+        position: Screen-offset string (e.g. ``'-25-75'`` = 25 px from the right
+            edge and 75 px from the bottom; positive numbers offset from the top
+            and left). ``None`` uses platform defaults (bottom-right on
+            Windows/macOS, top-right on Linux).
         play_sound: Play a system bell when the toast appears. Defaults to
             ``False``.
         on_dismiss: Callback fired on dismiss. Receives the button dict when

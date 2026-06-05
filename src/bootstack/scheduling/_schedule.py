@@ -46,8 +46,9 @@ class Job:
 class Schedule:
     """Timed task scheduler tied to a widget's lifetime.
 
-    Wraps Tk's `after`/`after_idle` with a clean API and automatic cleanup:
-    all pending jobs are cancelled when the owner widget is destroyed.
+    Runs callbacks after a delay, at idle, at an absolute time, or on a repeat,
+    with automatic cleanup: all pending jobs are cancelled when the owner widget
+    is destroyed.
 
     Usage::
 
@@ -55,7 +56,7 @@ class Schedule:
         sched = bs.Schedule(widget)      # or construct directly
 
         job = sched.delay(500, callback)   # one-shot after delay
-        sched.idle(callback)               # one-shot at next Tk idle
+        sched.idle(callback)               # one-shot at next idle
         sched.at(datetime(...), callback)  # one-shot at absolute time
         job = sched.every(1000, tick)      # repeating every 1 second
 
@@ -65,14 +66,14 @@ class Schedule:
     All jobs are automatically cancelled when `owner` is destroyed.
 
     Args:
-        owner: Widget that owns this scheduler — a `PublicWidgetBase` or
-            raw `tk.Misc`. Its lifetime bounds all created jobs.
+        owner: Widget that owns this scheduler. Its lifetime bounds all created
+            jobs.
     """
 
     __slots__ = ("_owner", "_jobs")
 
     def __init__(self, owner: Any) -> None:
-        # Accept both public wrapper widgets and raw Tk widgets.
+        # Accept both public wrapper widgets and the underlying widget object.
         if hasattr(owner, "_internal"):
             owner = owner._internal
         self._owner: tk.Misc = owner
@@ -111,7 +112,7 @@ class Schedule:
         return job
 
     def idle(self, fn: Callable, *args: Any, **kwargs: Any) -> Job:
-        """Schedule `fn` to run once when Tk is next idle.
+        """Schedule `fn` to run once when the event loop is next idle.
 
         Args:
             fn: Callable to invoke.
@@ -156,7 +157,7 @@ class Schedule:
 
         Compensates for callback execution time to reduce drift. If the
         callback raises an exception the interval is stopped and the exception
-        is re-raised into Tk's error handler.
+        is re-raised into the application's error handler.
 
         Args:
             ms: Period in milliseconds (minimum 1).

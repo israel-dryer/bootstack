@@ -3,7 +3,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Any, Callable, Generic, Optional, TypeVar
 
-from bootstack.widgets._core.subscription import Subscription
+from bootstack.events import Subscription
 
 T = TypeVar("T")
 U = TypeVar("U")

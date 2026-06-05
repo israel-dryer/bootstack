@@ -5,8 +5,8 @@ from typing import Any, Callable, Literal, overload
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken, WidgetDensity
 
 

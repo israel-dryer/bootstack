@@ -11,8 +11,8 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken
 
 _TABS_EVENTS: dict[str, str] = {

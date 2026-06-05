@@ -5,8 +5,8 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.subscription import Subscription
-from bootstack.widgets._core.stream import Stream
+from bootstack.events import Subscription
+from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
 
 if TYPE_CHECKING:
