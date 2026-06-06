@@ -13,8 +13,16 @@ class ParentResolutionError(BootstackError):
     """Raised when a widget cannot resolve its parent."""
 
 
+class DuplicateIdError(BootstackError):
+    """Raised when a data source receives a record whose id already exists.
+
+    Record ids must be unique — they identify rows for selection and events.
+    """
+
+
 __all__ = [
     "BootstackError",
+    "DuplicateIdError",
     "ParentResolutionError",
     "UnknownEventError",
 ]

@@ -71,8 +71,8 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
         expand=True,
     )
 
-    def show_selection(event):
-        records = event.data.records
+    def show_selection(e):
+        records = e.records
         if records:
             names = ", ".join(r["name"] for r in records[:3])
             extra = f" +{len(records) - 3} more" if len(records) > 3 else ""
@@ -81,5 +81,11 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
             selection.text = "No rows selected"
 
     table.on_selection_changed(show_selection)
+
+    def show_export(e):
+        where = e.path if e.target == "file" else "the clipboard"
+        selection.text = f"Exported {e.count} rows ({e.format}) to {where}"
+
+    table.on_export(show_export)
 
 app.run()

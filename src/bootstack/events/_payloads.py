@@ -294,8 +294,8 @@ class RowEvent:
     record: dict[str, Any] = field(default_factory=dict)
     """The row's record."""
 
-    iid: str = ""
-    """The row's internal id."""
+    id: Any = None
+    """The row's id."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -313,8 +313,29 @@ class SelectionEvent:
     records: list[dict[str, Any]] = field(default_factory=list)
     """The selected records."""
 
-    iids: list[str] = field(default_factory=list)
-    """The selected rows' internal ids."""
+    ids: list[Any] = field(default_factory=list)
+    """The selected rows' ids."""
+
+
+@dataclass(frozen=True, slots=True)
+class ExportEvent:
+    """Fires after the table's data is exported (copied or saved)."""
+
+    count: int = 0
+    """The number of rows exported."""
+
+    target: str = ""
+    """Where the data went — `'clipboard'` or `'file'`."""
+
+    format: str = ""
+    """The format written — `'csv'`, `'tsv'`, or `'xlsx'`."""
+
+    path: str | None = None
+    """The destination file path when `target` is `'file'`, else `None`."""
+
+    records: list[dict[str, Any]] = field(default_factory=list)
+    """The exported records. Populated for in-memory targets (clipboard);
+    empty for streamed file exports, which never materialize all rows."""
 
 
 # ---------------------------------------------------------------------------

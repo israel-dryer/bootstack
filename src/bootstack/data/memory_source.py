@@ -40,6 +40,7 @@ from typing import Any, Dict, List, Optional, Union, Mapping, Iterable
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
+from bootstack.errors import DuplicateIdError
 from bootstack.events import DataChangeEvent
 
 
@@ -72,14 +73,17 @@ class MemoryDataSource(BaseDataSource):
 
     """
 
-    def __init__(self, page_size: int = 10):
+    def __init__(self, page_size: int = 10, id_field: str = "id"):
         """Initialize the in-memory datasource with defaults.
 
         Args:
             page_size: Number of records returned per page when paginating.
+            id_field: Record field used as the stable row identity. A record's own
+                value for this field is kept as its id; otherwise one is assigned.
         """
         super().__init__(page_size)
         self._table = "records"
+        self._id_field = id_field
         self._columns: List[str] = []
         self._data: List[Dict[str, Any]] = []
         self._id_index: Dict[Any, int] = {}
@@ -90,7 +94,7 @@ class MemoryDataSource(BaseDataSource):
         """Rebuild the ID-to-position index for fast lookups."""
         self._id_index.clear()
         for i, rec in enumerate(self._data):
-            self._id_index[rec.get("id")] = i
+            self._id_index[rec.get(self._id_field)] = i
 
     def _ensure_selected_column(self) -> None:
         """Ensure all records have a 'selected' field."""
@@ -110,7 +114,7 @@ class MemoryDataSource(BaseDataSource):
         needs_id: list[Dict[str, Any]] = []
         max_id = 0
         for r in self._data:
-            rid = r.get("id")
+            rid = r.get(self._id_field)
             if isinstance(rid, int) and rid not in used:
                 used.add(rid)
                 if rid > max_id:
@@ -121,7 +125,7 @@ class MemoryDataSource(BaseDataSource):
             max_id += 1
             while max_id in used:
                 max_id += 1
-            r["id"] = max_id
+            r[self._id_field] = max_id
             used.add(max_id)
         self._rebuild_id_index()
 
@@ -168,9 +172,17 @@ class MemoryDataSource(BaseDataSource):
             records = [dict(text=str(x)) for x in records]
 
         data: List[Dict[str, Any]] = []
+        seen_ids: set = set()
         for i, rec in enumerate(records):
             r = dict(rec)
-            r.setdefault("id", i)
+            r.setdefault(self._id_field, i)
+            rid = r[self._id_field]
+            if rid in seen_ids:
+                raise DuplicateIdError(
+                    f"Duplicate value {rid!r} in id field {self._id_field!r} — record "
+                    f"ids must be unique."
+                )
+            seen_ids.add(rid)
             r.setdefault("selected", 0)
             data.append(r)
 
@@ -230,20 +242,32 @@ class MemoryDataSource(BaseDataSource):
         """Generate next available integer ID."""
         if not self._data:
             return 1
-        return max(int(r.get("id", 0)) for r in self._data) + 1
+        try:
+            return max(int(r.get(self._id_field, 0)) for r in self._data) + 1
+        except (TypeError, ValueError):
+            raise DuplicateIdError(
+                f"Cannot auto-assign an id: existing ids in field {self._id_field!r} are "
+                f"non-integer. Provide an explicit {self._id_field!r} on every inserted "
+                f"record when using custom ids."
+            )
 
     def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID."""
         r = dict(record)
-        if "id" not in r:
-            r["id"] = self._generate_new_id()
+        if self._id_field not in r:
+            r[self._id_field] = self._generate_new_id()
+        elif r[self._id_field] in self._id_index:
+            raise DuplicateIdError(
+                f"A record with id {r[self._id_field]!r} already exists — record ids "
+                f"must be unique."
+            )
         if "selected" not in r:
             r["selected"] = 0
         self._data.append(r)
         self._columns = list(set(self._columns) | set(r.keys()))
-        self._id_index[r["id"]] = len(self._data) - 1
-        self._hub.emit(DataChangeEvent(kind="insert", id=r["id"], record=dict(r)))
-        return r["id"]
+        self._id_index[r[self._id_field]] = len(self._data) - 1
+        self._hub.emit(DataChangeEvent(kind="insert", id=r[self._id_field], record=dict(r)))
+        return r[self._id_field]
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
         """Retrieve single record by ID."""
@@ -299,11 +323,11 @@ class MemoryDataSource(BaseDataSource):
         """Select all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [r["id"] for r in self.page()]
+            ids = [r[self._id_field] for r in self.page()]
             count = 0
             idset = set(ids)
             for r in self._data:
-                if r["id"] in idset and r.get("selected") != 1:
+                if r[self._id_field] in idset and r.get("selected") != 1:
                     r["selected"] = 1
                     count += 1
         else:
@@ -320,11 +344,11 @@ class MemoryDataSource(BaseDataSource):
         """Deselect all records (optionally only current page)."""
         self._ensure_selected_column()
         if current_page_only:
-            ids = [r["id"] for r in self.page()]
+            ids = [r[self._id_field] for r in self.page()]
             count = 0
             idset = set(ids)
             for r in self._data:
-                if r["id"] in idset and r.get("selected") != 0:
+                if r[self._id_field] in idset and r.get("selected") != 0:
                     r["selected"] = 0
                     count += 1
         else:
@@ -358,7 +382,7 @@ class MemoryDataSource(BaseDataSource):
         start = min(source_index, clamped_target)
         end = max(source_index, clamped_target) + 1
         for i in range(start, end):
-            self._id_index[self._data[i]["id"]] = i
+            self._id_index[self._data[i][self._id_field]] = i
         self._hub.emit(DataChangeEvent(kind="move", id=record_id))
         return True
 

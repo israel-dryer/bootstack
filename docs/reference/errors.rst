@@ -28,3 +28,7 @@ API reference
 .. autoclass:: bootstack.errors.ParentResolutionError
    :members:
    :undoc-members:
+
+.. autoclass:: bootstack.errors.DuplicateIdError
+   :members:
+   :undoc-members:
