@@ -82,4 +82,10 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
 
     table.on_selection_changed(show_selection)
 
+    def show_export(e):
+        where = e.path if e.target == "file" else "the clipboard"
+        selection.text = f"Exported {e.count} rows ({e.format}) to {where}"
+
+    table.on_export(show_export)
+
 app.run()
