@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, overload
+from typing import Any, Callable, Literal, Protocol, overload
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
@@ -9,6 +9,14 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, S
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+
+
+class ExportJob(Protocol):
+    """Handle for an in-progress async export (returned by `export_file_async`)."""
+
+    def cancel(self) -> None:
+        """Stop the export. The partial file is removed."""
+        ...
 
 
 class Table(PublicWidgetBase):
@@ -43,6 +51,8 @@ class Table(PublicWidgetBase):
         striped: Alternate row background colors. Default `False`.
         allow_group: Allow grouping rows by a column. Default `False`.
         show_status_bar: Show filter/sort/group status and pager. Default `True`.
+        show_column_chooser: Show a button to toggle column visibility.
+            Default `False`.
         parent: Override the context-stack parent.
     """
 
@@ -175,7 +185,7 @@ class Table(PublicWidgetBase):
 
     # ----- Export -----
 
-    def to_rows(self, scope: str = "all", *, max_rows: int | None = 100_000) -> list[dict]:
+    def to_rows(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = 100_000) -> list[dict]:
         """Return the data as a list of record dicts (materialized — small data).
 
         Loads every matching row into memory. For large datasets use
@@ -189,7 +199,7 @@ class Table(PublicWidgetBase):
         """
         return self._internal.to_rows(scope, max_rows=max_rows)
 
-    def to_csv(self, scope: str = "all", *, max_rows: int | None = 100_000) -> str:
+    def to_csv(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = 100_000) -> str:
         """Return the data as a CSV string (materialized — small data).
 
         For large datasets use `export_file()`, which streams to disk.
@@ -200,7 +210,7 @@ class Table(PublicWidgetBase):
         """
         return self._internal.to_csv(scope, max_rows=max_rows)
 
-    def iter_rows(self, scope: str = "all", chunk_size: int = 1000):
+    def iter_rows(self, scope: Literal["all", "page", "selection"] = "all", chunk_size: int = 1000):
         """Lazily yield record dicts one at a time, paging the data source.
 
         Memory stays flat regardless of size — suitable for very large exports.
@@ -214,9 +224,9 @@ class Table(PublicWidgetBase):
     def export_file(
         self,
         path: str,
-        scope: str = "all",
+        scope: Literal["all", "page", "selection"] = "all",
         *,
-        format: str | None = None,
+        format: Literal["csv", "tsv", "xlsx"] | None = None,
         chunk_size: int = 1000,
         on_progress: Callable[[int, int], Any] | None = None,
     ) -> int:
@@ -242,13 +252,13 @@ class Table(PublicWidgetBase):
     def export_file_async(
         self,
         path: str,
-        scope: str = "all",
+        scope: Literal["all", "page", "selection"] = "all",
         *,
-        format: str | None = None,
+        format: Literal["csv", "tsv", "xlsx"] | None = None,
         chunk_size: int = 1000,
         on_progress: Callable[[int, int], Any] | None = None,
         on_done: Callable[[str, int, Any], Any] | None = None,
-    ) -> Any:
+    ) -> ExportJob:
         """Stream the data to `path` without blocking the UI; return a job.
 
         Writes one chunk per event-loop idle tick, so the UI stays responsive

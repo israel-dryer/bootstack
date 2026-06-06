@@ -87,6 +87,7 @@ class _ExportJob:
         self._on_complete = on_complete  # (status, written, error)
         self._written = 0
         self._cancelled = False
+        self._done = False
         self._after_id = None
 
     def start(self) -> "_ExportJob":
@@ -96,6 +97,22 @@ class _ExportJob:
     def cancel(self) -> None:
         """Request cancellation; takes effect before the next chunk."""
         self._cancelled = True
+
+    def abort(self) -> None:
+        """Cancel and close the writer NOW (used on widget teardown).
+
+        Unlike `cancel()`, this doesn't wait for the next idle tick — the
+        scheduled step won't run after destroy — so it closes the writer and
+        finalizes synchronously.
+        """
+        if self._after_id is not None:
+            try:
+                self._widget.after_cancel(self._after_id)
+            except Exception:
+                pass
+            self._after_id = None
+        self._cancelled = True
+        self._finish("cancelled", None)
 
     def _step(self) -> None:
         self._after_id = None
@@ -124,6 +141,9 @@ class _ExportJob:
         self._after_id = self._widget.after_idle(self._step)
 
     def _finish(self, status: str, error) -> None:
+        if self._done:  # guard against double-finish (e.g. abort after natural end)
+            return
+        self._done = True
         try:
             self._close()
         except Exception:
@@ -296,6 +316,8 @@ class TableView(Frame):
         self._search_text: str = ""
         # Tooltip showing the full filter summary when the status label is truncated.
         self._filter_tooltip: ToolTip | None = None
+        # In-flight async export jobs, aborted on widget teardown.
+        self._export_jobs: set = set()
         self._row_alternation = _build_row_alternation_options(
             striped=striped,
             striped_background=striped_background,
@@ -330,6 +352,7 @@ class TableView(Frame):
         self._display_columns: list[int] = []
         self._header_menu: ContextMenu | None = None
         self._header_menu_col: int | None = None
+        self._row_menu_col: int | None = None
         self._cached_total_count: int | None = None
         self._group_by_key: str | None = None
         self._group_parents: dict[str | None, str] = {}
@@ -396,10 +419,10 @@ class TableView(Frame):
             self._clear_cache()
             self._load_page(self._current_page)
         except Exception:
-            pass
+            logger.exception("Failed to reload table after data-source change")
 
     def _on_table_destroy(self, event=None) -> None:
-        """Cancel the data-source subscription when the widget is destroyed."""
+        """Release subscriptions, in-flight exports, and the tooltip on destroy."""
         if event is not None and getattr(event, 'widget', None) is not self:
             return
         sub = self._change_sub
@@ -407,6 +430,22 @@ class TableView(Frame):
         if sub is not None:
             try:
                 sub.cancel()
+            except Exception:
+                pass
+        # Abort any in-flight async export: its idle step won't run post-destroy,
+        # so close the writer + remove the partial file synchronously now.
+        for job in list(self._export_jobs):
+            try:
+                job.abort()
+            except Exception:
+                logger.exception("Failed to abort export job on destroy")
+        self._export_jobs.clear()
+        # Tear down the filter tooltip (unbinds its handlers, cancels its timer).
+        tooltip = self._filter_tooltip
+        self._filter_tooltip = None
+        if tooltip is not None:
+            try:
+                tooltip.destroy()
             except Exception:
                 pass
 
@@ -422,6 +461,7 @@ class TableView(Frame):
                 self._datasource.load(seeded_records)
         self._ensure_column_metadata(seeded_records)
         self._clear_cache()
+        self._alignment_sample = None  # re-sample for column alignment on new data
         self._load_page(0)
 
     # ------------------------------------------------------------------ Public data/selection API
@@ -449,18 +489,6 @@ class TableView(Frame):
         for iid in self._tree.selection():
             if iid in self._row_map:
                 rows.append(self._public_record(self._row_map[iid]))
-        return rows
-
-    @property
-    def visible_rows(self) -> list[dict]:
-        """List of record dicts for rows currently rendered (flat traversal)."""
-        rows: list[dict] = []
-        queue = list(self._tree.get_children(""))
-        while queue:
-            iid = queue.pop(0)
-            if iid in self._row_map:
-                rows.append(self._row_map[iid])
-            queue.extend(list(self._tree.get_children(iid)))
         return rows
 
     # ------------------------------------------------------------------ Public row/column manipulation
@@ -860,8 +888,8 @@ class TableView(Frame):
 
         if self._exporting['enabled']:
             export_items = [
-                {"type": "command", "text": "Copy to clipboard", "command": self._copy_to_clipboard},
-                {"type": "command", "text": "Save to file", "command": self._save_to_file},
+                {"type": "command", "key": "export_copy", "text": "Copy to clipboard", "command": self._copy_to_clipboard},
+                {"type": "command", "key": "export_save", "text": "Save to file", "command": self._save_to_file},
             ]
             self._export_btn = DropdownButton(
                 bar,
@@ -1577,13 +1605,12 @@ class TableView(Frame):
         iid = selection[0]
         col_idx = max(0, min(self._row_menu_col or 0, len(self._column_keys) - 1))
         key = self._column_keys[col_idx]
-        values = self._tree.item(iid, "values")
-        if col_idx >= len(values):
+        rec = self._row_map.get(iid)
+        if rec is None:
             return
-        val = values[col_idx]
-        # Register as a column filter so it composes with search/other filters
-        # and shows in the status bar.
-        self._column_filters[key] = [val]
+        # Use the stored record value (real type, handles None) rather than the
+        # Tk display string, so the filter and status read correctly.
+        self._column_filters[key] = [rec.get(key)]
         self._apply_where()
 
     def _sort_selection(self, ascending: bool) -> None:
@@ -1938,13 +1965,18 @@ class TableView(Frame):
         headers = [self._column_heading(k) for k in keys]
         return headers, keys
 
+    def _ds_page_size(self) -> int:
+        """Page size used by the data source (matches what `_load_page` renders)."""
+        return getattr(self._datasource, "page_size", self._paging['page_size'])
+
     def _scope_count(self, scope: str) -> int:
         """Number of rows the given scope would export."""
         if scope == "selection":
             return len(self._tree.selection())
         if scope == "page":
-            start = self._current_page * self._paging['page_size']
-            return len(self._datasource.page_slice(start, self._paging['page_size']))
+            psize = self._ds_page_size()
+            start = self._current_page * psize
+            return len(self._datasource.page_slice(start, psize))
         return self._datasource.count
 
     def _iter_raw_chunks(self, scope: str, chunk_size: int):
@@ -1955,8 +1987,9 @@ class TableView(Frame):
                 yield rows
             return
         if scope == "page":
-            start = self._current_page * self._paging['page_size']
-            rows = self._datasource.page_slice(start, self._paging['page_size'])
+            psize = self._ds_page_size()
+            start = self._current_page * psize
+            rows = self._datasource.page_slice(start, psize)
             if rows:
                 yield rows
             return
@@ -1992,7 +2025,7 @@ class TableView(Frame):
                 f"export_file() to stream large exports."
             )
 
-    def to_rows(self, scope: str = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> list[dict]:
+    def to_rows(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> list[dict]:
         """Return the scope's records as a list of dicts (materialized — small data).
 
         Raises if the row count exceeds `max_rows`; use `iter_rows()` for large data.
@@ -2000,7 +2033,7 @@ class TableView(Frame):
         self._guard_materialize(scope, max_rows)
         return [self._public_record(r) for chunk in self._iter_raw_chunks(scope, _EXPORT_CHUNK_SIZE) for r in chunk]
 
-    def to_csv(self, scope: str = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> str:
+    def to_csv(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = _EXPORT_MAX_MATERIALIZE) -> str:
         """Return the scope's data as a CSV string (materialized — small data).
 
         Raises if the row count exceeds `max_rows`; use `export_file()` for large data.
@@ -2009,7 +2042,7 @@ class TableView(Frame):
         rows = [r for chunk in self._iter_raw_chunks(scope, _EXPORT_CHUNK_SIZE) for r in chunk]
         return self._to_delimited(rows, ",")
 
-    def iter_rows(self, scope: str = "all", chunk_size: int = _EXPORT_CHUNK_SIZE):
+    def iter_rows(self, scope: Literal["all", "page", "selection"] = "all", chunk_size: int = _EXPORT_CHUNK_SIZE):
         """Lazily yield the scope's records one at a time, paging the data source."""
         for chunk in self._iter_raw_chunks(scope, chunk_size):
             for rec in chunk:
@@ -2071,9 +2104,9 @@ class TableView(Frame):
     def export_file(
         self,
         path: str,
-        scope: str = "all",
+        scope: Literal["all", "page", "selection"] = "all",
         *,
-        format: str | None = None,
+        format: Literal["csv", "tsv", "xlsx"] | None = None,
         chunk_size: int = _EXPORT_CHUNK_SIZE,
         on_progress=None,
     ) -> int:
@@ -2102,9 +2135,9 @@ class TableView(Frame):
     def export_file_async(
         self,
         path: str,
-        scope: str = "all",
+        scope: Literal["all", "page", "selection"] = "all",
         *,
-        format: str | None = None,
+        format: Literal["csv", "tsv", "xlsx"] | None = None,
         chunk_size: int = _EXPORT_CHUNK_SIZE,
         on_progress=None,
         on_done=None,
@@ -2123,6 +2156,7 @@ class TableView(Frame):
         chunks = self._iter_raw_chunks(scope, chunk_size)
 
         def _complete(status, written, error):
+            self._export_jobs.discard(job)
             if status == "completed":
                 self._emit_export(target="file", fmt=fmt, path=path, count=written)
             else:
@@ -2135,10 +2169,12 @@ class TableView(Frame):
             if on_done is not None:
                 on_done(status, written, error)
 
-        return _ExportJob(
+        job = _ExportJob(
             self, chunks, write_chunk, close, total,
             on_progress=on_progress, on_complete=_complete,
-        ).start()
+        )
+        self._export_jobs.add(job)
+        return job.start()
 
     def _emit_export(self, *, target: str, fmt: str, path: str | None, count: int, records=None) -> None:
         self.event_generate(
@@ -2166,10 +2202,10 @@ class TableView(Frame):
             copy_text = "Copy to clipboard"
             save_text = "Save to file"
         try:
-            btn.configure_item(0, text=copy_text)
-            btn.configure_item(1, text=save_text)
+            btn.configure_item("export_copy", text=copy_text)
+            btn.configure_item("export_save", text=save_text)
         except Exception:
-            pass
+            logger.exception("Failed to update export menu labels")
 
     def _copy_to_clipboard(self) -> None:
         """Copy the default scope to the clipboard as tab-separated text."""
