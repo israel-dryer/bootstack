@@ -40,20 +40,20 @@ def build_solid_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     anchor = options.get('anchor', 'center')
     surface_token = options.get('surface', 'content')
     density = options.get('density', 'default')
+    surface = b.color(surface_token)
+    accent_color = b.elevate(surface, 1) if accent is None else b.color(accent)
     icon_only = options.get('icon_only', False)
     image_key = f'button_{normalize_button_density(density)}'
 
-    surface = b.color(surface_token)
-    accent_color = b.elevate(surface, 1) if accent is None else b.color(accent)
+    bg_normal = b.elevate(surface, 1)
 
     # background colors
-    bg_normal = accent_color
     bg_active = b.active(accent_color)
-    bg_selected = b.selected(accent_color)
+    bg_selected = accent_color if accent is not None else b.elevate(surface, 2)
     bg_disabled = b.disabled()
 
     # foreground colors
-    fg_normal = b.on_color(bg_normal)
+    fg_normal = b.muted_foreground(bg_normal)
     fg_selected = b.on_color(bg_selected)
     fg_disabled = b.disabled('text', bg_disabled)
 
@@ -81,7 +81,6 @@ def build_solid_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         ).state_specs([
             ('disabled', disabled_img.image),
             ('background pressed focus selected', selected_focus_img.image),
-            ('pressed', selected_img.image),
             ('background focus selected', selected_focus_img.image),
             ('selected', selected_img.image),
             ('background focus !selected', normal_focus_img.image),
@@ -221,13 +220,11 @@ def build_ghost_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
     # background colors
     bg_normal = surface
-    bg_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.elevate(surface, 1)
     bg_selected = b.elevate(surface, 2) if accent is None else b.subtle(accent, surface)
-    bg_pressed = b.active(bg_selected)
     bg_disabled = b.disabled()
 
     # foreground colors
-    fg_normal = b.on_color(bg_normal)
+    fg_normal = b.muted_foreground(bg_normal)
     fg_selected = b.on_color(bg_selected) if accent is None else b.color(accent)
     fg_disabled = b.disabled('text', bg_disabled)
 
@@ -237,9 +234,7 @@ def build_ghost_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
     normal_img = recolor_element_image(image_key, bg_normal, bg_normal, surface, surface)
     normal_focus_img = recolor_element_image(image_key, bg_normal, accent_color, focus_ring, surface)
-    hover_img = recolor_element_image(image_key, bg_hover, bg_hover, surface, surface)
     selected_img = recolor_element_image(image_key, bg_selected, bg_selected, surface, surface)
-    selected_pressed_img = recolor_element_image(image_key, bg_pressed, bg_pressed, surface, surface)
     selected_focus_img = recolor_element_image(image_key, bg_selected, accent_focus, focus_ring, surface)
     disabled_img = recolor_element_image(image_key, bg_disabled, bg_disabled, surface, surface)
 
@@ -250,12 +245,9 @@ def build_ghost_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         ).state_specs([
             ('disabled', disabled_img.image),
             ('background pressed selected focus', selected_focus_img.image),
-            ('pressed', selected_img.image),
             ('background selected focus', selected_focus_img.image),
-            ('selected pressed', selected_pressed_img.image),
             ('selected', selected_img.image),
             ('background focus !selected', normal_focus_img.image),
-            ('hover !selected', hover_img.image),
             ('', normal_img.image)
         ]))
 
@@ -276,7 +268,6 @@ def build_ghost_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         foreground=[
             ('disabled', fg_disabled),
             ('selected', fg_selected),
-            ('pressed', fg_selected),
             ('', fg_normal)
         ]
     )

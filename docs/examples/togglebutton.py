@@ -20,7 +20,7 @@ with bs.App(title="ToggleButton Demo", padding=20, gap=16) as app:
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
     with bs.HStack(gap=8):
-        for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+        for accent in ("default", "primary", "secondary", "info", "success", "warning", "danger"):
             bs.ToggleButton(accent.title(), accent=accent, value=True)
 
     # Style variants
