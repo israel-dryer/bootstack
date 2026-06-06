@@ -29,6 +29,11 @@ class ColumnSpec(TypedDict, total=False):
     """Minimum column width in pixels."""
     anchor: str
     """Cell alignment — `'w'`, `'center'`, or `'e'`."""
+    format: "str | Callable[[Any], str]"
+    """Display formatter for the cell — a format-spec string applied as
+    `spec.format(value)` (e.g. `'${:,.0f}'` → `$70,000`) or a callable
+    `(value) -> str`. Display only: sorting, filtering, editing, and export use
+    the raw value."""
     dtype: str
     """Value type hint (e.g. `'int'`, `'text'`); drives alignment and the editor."""
     editor: str
@@ -100,6 +105,17 @@ class Table(PublicWidgetBase):
             collapses when there's nothing to show. Default `True`.
         show_column_chooser: Show a button to toggle column visibility.
             Default `False`.
+        show_selection_controls: Show a per-row checkbox in the leading icon slot
+            while in `'multi'` selection mode — filled with the accent when
+            selected, a muted outline otherwise. With the checkboxes visible, a
+            plain click toggles the row (no Ctrl/Shift needed). Has no effect in
+            `'single'` mode (the row highlight is enough) or while grouped, where
+            the slot holds the group's expand/collapse control. Default `False`.
+        id_field: Record field used as the stable row identity. When your rows
+            carry this field (default `'id'`), its value becomes the row id used
+            by `select_rows`, events, and `update_rows`/`delete_rows`, so your own
+            ids round-trip; otherwise an id is auto-assigned. Ignored when you pass
+            your own `data_source` (set it on the source instead). Default `'id'`.
         form: Layout options for the built-in add/edit dialog — a `FormOptions`
             dict (`col_count`, `min_col_width`, `scrollable`, `resizable`).
         parent: Override the context-stack parent.
@@ -125,6 +141,8 @@ class Table(PublicWidgetBase):
         allow_group: bool = False,
         show_status_bar: bool = True,
         show_column_chooser: bool = False,
+        show_selection_controls: bool = False,
+        id_field: str = "id",
         form: FormOptions | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -148,6 +166,8 @@ class Table(PublicWidgetBase):
             "allow_grouping": allow_group,
             "show_table_status": show_status_bar,
             "show_column_chooser": show_column_chooser,
+            "show_selection_controls": show_selection_controls,
+            "id_field": id_field,
         }
         if columns is not None:
             internal_kwargs["columns"] = columns
@@ -200,7 +220,7 @@ class Table(PublicWidgetBase):
         """Open the built-in *New Record* dialog and insert on save.
 
         Honors each column's editor configuration (`editor`, `dtype`,
-        `readonly`, `required`). On save the row is inserted and an `row_insert`
+        `readonly`, `required`). On save the row is inserted and an `rows_insert`
         event fires; the saved record is also returned here.
 
         Args:
@@ -214,8 +234,8 @@ class Table(PublicWidgetBase):
     def edit_row(self, record_id: Any) -> dict | None:
         """Open the built-in *Edit Record* dialog for a row and save on submit.
 
-        On save the row is updated and a `row_update` event fires (or
-        `row_delete` if the user deletes it); the saved record is also returned.
+        On save the row is updated and a `rows_update` event fires (or
+        `rows_delete` if the user deletes it); the saved record is also returned.
 
         Args:
             record_id: Record id of the row to edit.
@@ -547,10 +567,10 @@ class Table(PublicWidgetBase):
         return self.on("row_right_click", handler)
 
     @overload
-    def on_row_insert(self) -> Stream: ...
+    def on_rows_insert(self) -> Stream: ...
     @overload
-    def on_row_insert(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_row_insert(self, handler=None):
+    def on_rows_insert(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_rows_insert(self, handler=None):
         """Fired after rows are inserted.
 
         The handler receives a `RowsEvent` with the inserted `records`.
@@ -558,13 +578,13 @@ class Table(PublicWidgetBase):
         Returns:
             `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self.on("row_insert", handler)
+        return self.on("rows_insert", handler)
 
     @overload
-    def on_row_update(self) -> Stream: ...
+    def on_rows_update(self) -> Stream: ...
     @overload
-    def on_row_update(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_row_update(self, handler=None):
+    def on_rows_update(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_rows_update(self, handler=None):
         """Fired after rows are updated.
 
         The handler receives a `RowsEvent` with the updated `records`.
@@ -572,13 +592,13 @@ class Table(PublicWidgetBase):
         Returns:
             `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self.on("row_update", handler)
+        return self.on("rows_update", handler)
 
     @overload
-    def on_row_delete(self) -> Stream: ...
+    def on_rows_delete(self) -> Stream: ...
     @overload
-    def on_row_delete(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_row_delete(self, handler=None):
+    def on_rows_delete(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_rows_delete(self, handler=None):
         """Fired after rows are deleted.
 
         The handler receives a `RowsEvent` with the deleted `records`.
@@ -586,13 +606,13 @@ class Table(PublicWidgetBase):
         Returns:
             `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self.on("row_delete", handler)
+        return self.on("rows_delete", handler)
 
     @overload
-    def on_row_move(self) -> Stream: ...
+    def on_rows_move(self) -> Stream: ...
     @overload
-    def on_row_move(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_row_move(self, handler=None):
+    def on_rows_move(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
+    def on_rows_move(self, handler=None):
         """Fired after rows are reordered.
 
         The handler receives a `RowsEvent` with the moved `records`.
@@ -600,7 +620,7 @@ class Table(PublicWidgetBase):
         Returns:
             `Subscription` (with handler) or `Stream` (without handler).
         """
-        return self.on("row_move", handler)
+        return self.on("rows_move", handler)
 
     @overload
     def on_export(self) -> Stream: ...
@@ -623,10 +643,10 @@ _TABLE_EVENTS: dict[str, str] = {
     "row_click":         "<<RowClick>>",
     "row_double_click":  "<<RowDoubleClick>>",
     "row_right_click":   "<<RowRightClick>>",
-    "row_insert":        "<<RowInsert>>",
-    "row_update":        "<<RowUpdate>>",
-    "row_delete":        "<<RowDelete>>",
-    "row_move":          "<<RowMove>>",
+    "rows_insert":        "<<RowsInsert>>",
+    "rows_update":        "<<RowsUpdate>>",
+    "rows_delete":        "<<RowsDelete>>",
+    "rows_move":          "<<RowsMove>>",
     "export":            "<<Export>>",
 }
 

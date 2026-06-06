@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Union, Sequence
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
+from bootstack.errors import DuplicateIdError
 from bootstack.events import DataChangeEvent
 
 # Internal column names — reserved by SqliteDataSource, never exposed to user data.
@@ -75,17 +76,21 @@ class SqliteDataSource(BaseDataSource):
         - These internal columns are filtered out of the display column list automatically
     """
 
-    def __init__(self, name: str = ":memory:", page_size: int = 10):
+    def __init__(self, name: str = ":memory:", page_size: int = 10, id_field: str = "id"):
         """Create SQLite datasource and set initial pagination state.
 
         Args:
             name: Database file path or ':memory:' for an in-memory database.
             page_size: Number of records returned per page during pagination.
+            id_field: Record field used as the stable row identity. When a record
+                carries this field, its value becomes the row id (so selection and
+                events round-trip your own ids); otherwise an id is auto-assigned.
         """
         super().__init__(page_size)
         self.conn = sqlite3.connect(name)
         self.conn.row_factory = sqlite3.Row
         self._table = "records"
+        self._id_field = id_field
         self._filter: Optional[Condition] = None
         self._sort: List[SortKey] = []
         self._columns = []
@@ -170,10 +175,11 @@ class SqliteDataSource(BaseDataSource):
             using_dicts = True
 
         if using_dicts:
-            # Ensure internal helper columns
+            # Ensure internal helper columns. Adopt the record's own id field as the
+            # row identity when present, so callers' ids survive into selection/events.
             for i, record in enumerate(records):
                 if _ROW_ID not in record:
-                    record[_ROW_ID] = i
+                    record[_ROW_ID] = record[self._id_field] if self._id_field in record else i
                 if _ROW_SEL not in record:
                     record[_ROW_SEL] = 0
 
@@ -193,10 +199,14 @@ class SqliteDataSource(BaseDataSource):
                 keys.append(_ROW_SEL)
             self._columns = keys
 
+            # Adopt the caller's id field (a data column) as the row identity if present.
+            user_id_idx = keys.index(self._id_field) if self._id_field in keys else None
+
             # Infer types from first row (pad to keys length)
             padded_first = list(first) + [None] * (len(keys) - len(first))
             if need_id and _ROW_ID in keys:
-                padded_first[keys.index(_ROW_ID)] = 0
+                # Type the identity from the adopted id value (e.g. TEXT for UUIDs), else int.
+                padded_first[keys.index(_ROW_ID)] = padded_first[user_id_idx] if user_id_idx is not None else 0
             if need_sel and _ROW_SEL in keys:
                 padded_first[keys.index(_ROW_SEL)] = 0
             col_types = {col: self._infer_type(padded_first[idx]) for idx, col in enumerate(keys)}
@@ -208,7 +218,7 @@ class SqliteDataSource(BaseDataSource):
             for i, row in enumerate(records):
                 base_values = list(row[: value_len]) + [""] * (value_len - len(row))
                 if id_idx is not None:
-                    base_values[id_idx] = i
+                    base_values[id_idx] = base_values[user_id_idx] if user_id_idx is not None else i
                 if sel_idx is not None:
                     base_values[sel_idx] = 0
                 rows_to_insert.append(tuple(base_values))
@@ -227,6 +237,11 @@ class SqliteDataSource(BaseDataSource):
                 self.conn.execute(f"DROP TABLE IF EXISTS {self._table}")
                 self.conn.execute(f"CREATE TABLE {self._table} ({col_definitions})")
                 self.conn.executemany(f"INSERT INTO {self._table} VALUES ({placeholders})", rows_to_insert)
+        except sqlite3.IntegrityError as exc:
+            raise DuplicateIdError(
+                f"Duplicate value in id field {self._id_field!r} — record ids must be "
+                f"unique. ({exc})"
+            ) from exc
         finally:
             self.conn.row_factory = original_row_factory
         self._hub.emit(DataChangeEvent(kind="load"))
@@ -288,7 +303,8 @@ class SqliteDataSource(BaseDataSource):
     def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID."""
         if _ROW_ID not in record:
-            record[_ROW_ID] = self._generate_new_id()
+            # Adopt the caller's id field as the identity, else auto-assign.
+            record[_ROW_ID] = record[self._id_field] if self._id_field in record else self._generate_new_id()
 
         if _ROW_SEL not in record:
             record[_ROW_SEL] = 0
@@ -301,8 +317,14 @@ class SqliteDataSource(BaseDataSource):
         placeholders = ", ".join("?" for _ in keys)
         values = tuple(record[col] for col in keys)
 
-        with self.conn:
-            self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
+        try:
+            with self.conn:
+                self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
+        except sqlite3.IntegrityError as exc:
+            raise DuplicateIdError(
+                f"A record with id {record[_ROW_ID]!r} already exists — record ids "
+                f"must be unique. ({exc})"
+            ) from exc
         self._hub.emit(DataChangeEvent(kind="insert", id=record[_ROW_ID], record=dict(record)))
         return record[_ROW_ID]
 
@@ -341,7 +363,15 @@ class SqliteDataSource(BaseDataSource):
             max_id = cursor.fetchone()[0]
         except Exception:
             max_id = 0
-        return (max_id or 0) + 1
+        if max_id is None:
+            return 1
+        if not isinstance(max_id, int):
+            raise DuplicateIdError(
+                f"Cannot auto-assign an id: existing ids in field {self._id_field!r} are "
+                f"non-integer (e.g. {max_id!r}). Provide an explicit {self._id_field!r} "
+                f"on every inserted record when using custom ids."
+            )
+        return max_id + 1
 
     # ------------------------------------------------------------------ helpers
     def _ensure_table_for_record(self, record: Dict[str, Any]) -> None:

@@ -150,6 +150,8 @@ The typed payloads handed to data-carrying handlers. Import them from
    :members:
 .. autoclass:: bootstack.events.DisplayModeEvent
    :members:
+.. autoclass:: bootstack.events.ExportEvent
+   :members:
 .. autoclass:: bootstack.events.InputEvent
    :members:
 .. autoclass:: bootstack.events.NavEvent

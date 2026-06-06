@@ -84,7 +84,7 @@ in `widgets/dialogs.py`).
   PathField, SpinnerField, TextArea, CodeEditor, DateField, TimeField
 - Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
   SelectButton, Calendar
-- Data Display: Label, Badge, ProgressBar, Gauge, ListView
+- Data Display: Label, Badge, ProgressBar, Gauge, ListView, **Table**
 - Layout: Separator, Card, GroupBox, VStack, HStack, Grid, Accordion,
   ScrollView, SplitView
 - Menus and Toolbars: Toolbar, MenuButton, ContextMenu
@@ -94,8 +94,46 @@ in `widgets/dialogs.py`).
 - Forms
 
 **Pending:**
-- Data Display: Tree, Table (deferred — too complex for this pass)
+- Data Display: Tree (deferred — complex; will reuse the Table's custom-chevron
+  mechanism, see Table notes below)
 - Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
+
+### Table — DONE (branch `feat/public-table`, this initiative)
+
+Full public Table: sorting, search, column filters, grouping, paging, inline
+editing (form dialogs), two-tier export (materialized + streaming/async), live
+data binding. Highlights from this branch:
+- **Selection checkboxes** — `show_selection_controls=True` shows a per-row
+  checkbox in `#0` (multi only); accent-filled checked / muted-outline unchecked
+  (icons baked at `_MARKER_ICON_SIZE=20`, unscaled for crispness). Visible
+  checkboxes flip selection to **click-to-toggle** (checklist UX, no Ctrl/Shift).
+  Single-select shows no marker (the row wash suffices).
+- **Grouping restructure** — the native tree indicator was **removed from the
+  shared `{style}.Item` layout** (`style/builders/treeview.py`, now `[image,
+  iconspacer, text]`); group expand/collapse uses a **custom chevron image** on
+  group-header rows (swap on click + `<<TreeviewOpen/Close>>`; toggle target =
+  any row with children). Grouped view promotes the **first non-group column into
+  `#0`** so children nest under the header (leaf rows get a transparent
+  placeholder to preserve the depth indent); the group-by column drops out of the
+  value columns; `#0` has no heading. (NOTE: this regressed `bs.Tree`'s native
+  indicator — Tree will adopt the same custom-chevron mechanism later.)
+- **Cell `format`** — `ColumnSpec` gains `format` (a format-spec string or a
+  callable), display-only (sort/filter/edit/export use the raw value).
+- **Stable row identity** — `id_field` (default `"id"`): a record's own `id`
+  becomes the row identity (sources adopt it; `bs.DuplicateIdError` on dup /
+  non-int auto-insert). Both Sqlite + Memory sources aligned.
+- **Events** — batch CRUD/move events renamed **plural present tense**:
+  `on_rows_insert`/`on_rows_update`/`on_rows_delete`/`on_rows_move` (carry a
+  `RowsEvent`, fire **once per call** — `insert_rows(6000)` = 1 event).
+  Single-row stays singular (`on_row_click`/`_double_click`/`_right_click`).
+  Double-click a row opens the editor when `allow_edit`.
+- **Docs** — comprehensive `widgets/table.rst` (full `ColumnSpec` reference,
+  `format`, `id_field`, event cross-refs, all features); `ExportEvent` +
+  `DuplicateIdError` added to the reference pages.
+- **KNOWN ISSUE / next initiative** — Table is tightly coupled to
+  `SqliteDataSource` (`_bs_row_id`/`_bs_selected`), so non-Sqlite protocol
+  sources render but `select_rows` silently fails. Decouple via a protocol-level
+  id accessor — memory `project_table_datasource_coupling`.
 
 ### Cross-cutting wrapper improvements (this + prior sessions)
 - `commit()` and `set_cursor()` removed from all field widgets (TextField,

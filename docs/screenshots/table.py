@@ -5,7 +5,8 @@ COLUMNS = [
     {"text": "Role",     "key": "role",     "width": 150},
     {"text": "Dept",     "key": "dept",     "width": 110},
     {"text": "Location", "key": "location", "width": 100},
-    {"text": "Salary",   "key": "salary",   "width": 90},
+    {"text": "Salary",   "key": "salary",   "width": 100,
+     "anchor": "e", "format": "${:,.0f}"},
 ]
 
 _PEOPLE = [
@@ -21,6 +22,24 @@ _PEOPLE = [
     ("Henry Ford",        "Support Specialist", "Support",     "Berlin"),
     ("Iris Chen",         "Content Strategist", "Marketing",   "Tokyo"),
     ("Jack Brown",        "Account Executive",  "Sales",       "New York"),
+    ("Karen Davis",       "Software Engineer",  "Engineering", "Berlin"),
+    ("Leo Nakamura",      "QA Engineer",        "Engineering", "Tokyo"),
+    ("Mia Rossi",         "UX Researcher",      "Design",      "Milan"),
+    ("Noah Schmidt",      "Visual Designer",    "Design",      "Berlin"),
+    ("Olivia Park",       "Account Executive",  "Sales",       "Seoul"),
+    ("Paul Andersson",    "Sales Engineer",     "Sales",       "Stockholm"),
+    ("Quinn Murphy",      "Support Lead",       "Support",     "Dublin"),
+    ("Rosa Gomez",        "Support Specialist", "Support",     "Madrid"),
+    ("Sam Okafor",        "Growth Marketer",    "Marketing",   "Lagos"),
+    ("Tara Singh",        "Content Strategist", "Marketing",   "Mumbai"),
+    ("Umar Farouk",       "Platform Engineer",  "Engineering", "Cairo"),
+    ("Vera Novak",        "Data Engineer",      "Engineering", "Prague"),
+    ("Will Carter",       "Product Designer",   "Design",      "Austin"),
+    ("Xenia Petrova",     "Brand Designer",     "Design",      "Lisbon"),
+    ("Yara Haddad",       "Account Manager",    "Sales",       "Dubai"),
+    ("Zane Mitchell",     "Sales Manager",      "Sales",       "Sydney"),
+    ("Amara Diallo",      "Support Specialist", "Support",     "Paris"),
+    ("Bruno Costa",       "SEO Specialist",     "Marketing",   "São Paulo"),
 ]
 
 ROWS = [
@@ -50,7 +69,7 @@ def hero():
 
 def selection():
     with bs.App(title="Table — Selection", size=SIZE, padding=12) as app:
-        t = _table(selection_mode="multi")
+        t = _table(selection_mode="multi", show_selection_controls=True)
     t.select_rows([1, 2, 4])
     app.run()
 

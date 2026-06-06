@@ -21,6 +21,11 @@ from bootstack.widgets.types import Master
 from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
+# NOTE(datasource-coupling): the table reads these Sqlite-internal identity/
+# selection columns directly, so it only works with a SqliteDataSource — a
+# non-Sqlite protocol source renders but select_rows silently fails. Decoupling
+# (route identity through the source's protocol-level id) is a separate
+# initiative; see memory project_table_datasource_coupling.
 from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
 from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
@@ -67,6 +72,20 @@ _EXPORT_MAX_MATERIALIZE = 100_000
 # Above this row count the built-in "Save to file" runs asynchronously with a
 # progress dialog; below it, a synchronous (instant) write.
 _EXPORT_ASYNC_THRESHOLD = 5000
+
+# Stripe strength: fraction of the elevated stripe color blended over the table
+# surface (lower = fainter stripe). Tuned so the stripe stays a faint neutral
+# that contrasts with the subtle accent selection.
+_STRIPE_STRENGTH = 0.5
+
+# Fixed pixel size for per-row selection marker icons (checkbox/dot). Rendered
+# 1:1 into the row's icon slot — kept even and unscaled for crisp edges.
+_MARKER_ICON_SIZE = 20
+
+# Group expand/collapse chevrons shown in the leading slot of group-header rows
+# (the native tree indicator was removed from the item layout).
+_GROUP_OPEN_ICON = 'chevron-down'    # expanded
+_GROUP_CLOSED_ICON = 'chevron-right'  # collapsed
 
 
 class _ExportJob:
@@ -226,6 +245,8 @@ class TableView(Frame):
             allow_grouping: bool = False,
             show_table_status: bool = True,
             show_column_chooser: bool = False,
+            show_selection_controls: bool = False,
+            id_field: str = "id",
             context_menus: Literal['none', 'headers', 'rows', 'all'] = 'all',
             column_min_width: int = 40,
             column_auto_width: bool = False,
@@ -268,6 +289,12 @@ class TableView(Frame):
             allow_grouping: Allow grouping rows via header context menu. Defaults to False.
             show_table_status: Show filter/sort/group status labels and pager. Defaults to True.
             show_column_chooser: Show column chooser button. Defaults to False.
+            show_selection_controls: Show per-row checkboxes in 'multi' selection
+                mode (a plain click then toggles rows). No effect in 'single'
+                mode or while grouped. Defaults to False.
+            id_field: Record field used as the stable row identity for the
+                auto-created data source. Ignored when `datasource` is provided.
+                Defaults to 'id'.
             context_menus: Context menu visibility ('none', 'headers', 'rows', 'all').
                 Defaults to 'all'.
             column_min_width: Global minimum width for columns. Defaults to 40.
@@ -325,6 +352,10 @@ class TableView(Frame):
             striped=striped,
             striped_background=striped_background,
         )
+        # Per-row selection markers (checkbox/dot) in the leading icon slot.
+        self._selection_indicators = bool(show_selection_controls)
+        # Cache of rendered marker icons keyed by (name, size, color).
+        self._marker_icons: dict = {}
 
         self._search_mode_map: dict[str, str] = {}
         self._sorting = sorting_mode
@@ -334,7 +365,9 @@ class TableView(Frame):
         self._context_menus = (context_menus or 'all').lower()
         self._column_min_width = max(0, column_min_width)
         self._column_auto_width = column_auto_width
-        self._datasource = datasource or SqliteDataSource(':memory:', page_size=self._paging['page_size'])
+        self._datasource = datasource or SqliteDataSource(
+            ':memory:', page_size=self._paging['page_size'], id_field=id_field
+        )
 
         self._page_cache: OrderedDict[int, list[dict]] = OrderedDict()
         self._column_defs = columns or []
@@ -347,6 +380,7 @@ class TableView(Frame):
         self._icon_sort_up = None
         self._icon_sort_down = None
         self._column_anchors: list[str] = []
+        self._column_formats: dict[int, Any] = {}  # idx -> resolved display formatter (or None)
         self._column_filters: dict[str, list] = {}  # key -> list of allowed values
         self._column_types: dict[str, str] = {}
         self._alignment_sample: list[dict] | None = None
@@ -514,7 +548,7 @@ class TableView(Frame):
             self._clear_cache()
             self._load_page(self._current_page)
             records = [self._public_record(r) for r in inserted]
-            self.event_generate("<<RowInsert>>", data=RowsEvent(records=records))
+            self.event_generate("<<RowsInsert>>", data=RowsEvent(records=records))
 
     def update_rows(self, rows: list[dict]) -> None:
         """Update rows by record `id`; each dict must include an `id` key."""
@@ -533,7 +567,7 @@ class TableView(Frame):
         if updated:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowUpdate>>", data=RowsEvent(records=updated))
+            self.event_generate("<<RowsUpdate>>", data=RowsEvent(records=updated))
 
     def delete_rows(self, rows_or_ids: list) -> None:
         """Delete rows by record `id`, or by record dicts containing an `id` key."""
@@ -559,7 +593,7 @@ class TableView(Frame):
         if deleted:
             self._clear_cache()
             self._load_page(self._current_page)
-            self.event_generate("<<RowDelete>>", data=RowsEvent(records=deleted))
+            self.event_generate("<<RowsDelete>>", data=RowsEvent(records=deleted))
 
     def insert_columns(self, *_args, **_kwargs) -> None:
         """Not currently supported; columns are defined at construction time."""
@@ -582,7 +616,7 @@ class TableView(Frame):
         moved_recs = [self._row_map.get(i) for i in iids if i in self._row_map]
         if moved_recs:
             records = [self._public_record(r) for r in moved_recs]
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=records))
+            self.event_generate("<<RowsMove>>", data=RowsEvent(records=records))
 
     def move_columns(self, from_index: int, to_index: int) -> None:
         """Reorder a column from one index to another."""
@@ -810,18 +844,25 @@ class TableView(Frame):
     # ------------------------------------------------------------------ UI
 
     def _resolve_alternating_row_color(self):
+        from bootstack.style.utility import mix_colors
+
         style = get_style()
+        builder = style.style_builder
         color_token = self._row_alternation.get('accent', 'background[+1]')
 
         try:
-            background = style.style_builder.color(color_token)
+            stripe = builder.color(color_token)
+            surface = builder.color('content')
+            # Soften the stripe toward the table surface so it stays a faint
+            # neutral that contrasts with the subtle accent selection.
+            background = mix_colors(stripe, surface, _STRIPE_STRENGTH)
         except Exception:
-            background = style.style_builder.color('background')
+            background = builder.color('background')
 
         try:
-            foreground = style.style_builder.on_color(background)
+            foreground = builder.on_color(background)
         except Exception:
-            foreground = style.style_builder.color('foreground')
+            foreground = builder.color('foreground')
         return background, foreground
 
     def _resolve_column_keys(self) -> None:
@@ -1001,6 +1042,9 @@ class TableView(Frame):
         self._update_heading_icons()
         self._tree.bind("<Button-1>", self._on_header_click)
         self._tree.bind("<<TreeviewSelect>>", self._on_selection_event)
+        # Keep group-header chevrons in sync with their open/closed state.
+        self._tree.bind("<<TreeviewOpen>>", self._refresh_group_chevrons, add="+")
+        self._tree.bind("<<TreeviewClose>>", self._refresh_group_chevrons, add="+")
         self._tree.bind("<ButtonRelease-1>", self._on_row_click_event)
         # Escape clears the selection (also reachable in single-select mode, where
         # clicking can't return to an empty selection). Bound on the tree widget
@@ -1203,6 +1247,7 @@ class TableView(Frame):
         else:
             self._render_flat(records)
         self._apply_row_alternation()
+        self._update_selection_markers()
 
     def _append_tree(self, records: list[dict]) -> None:
         # Grouped mode rebuilds the view instead of appending to keep hierarchy consistent
@@ -1212,11 +1257,12 @@ class TableView(Frame):
         stripe = self._row_alternation.get('enabled', False) and not self._group_by_key
         start_idx = len(self._tree.get_children(""))
         for offset, rec in enumerate(records):
-            values = [rec.get(k, "") for k in self._column_keys]
+            values = self._display_values(rec)
             tags = ("altrow",) if stripe and (start_idx + offset) % 2 == 1 else ()
             iid = self._tree.insert("", "end", values=values, tags=tags)
             self._row_map[iid] = rec
         self._apply_row_alternation()
+        self._update_selection_markers()
 
     def _total_pages(self) -> int:
         try:
@@ -1596,7 +1642,7 @@ class TableView(Frame):
                     self._datasource.delete(record[_ROW_ID])
                 self._clear_cache()
                 self._load_page(self._current_page)
-                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[deleted]))
+                self.event_generate("<<RowsDelete>>", data=RowsEvent(records=[deleted]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", record[_ROW_ID])
             return None
@@ -1613,7 +1659,7 @@ class TableView(Frame):
             except Exception:
                 logger.exception("Failed to update record id=%s", rec_id)
                 return None
-            saved_id, change_event = rec_id, "<<RowUpdate>>"
+            saved_id, change_event = rec_id, "<<RowsUpdate>>"
         else:
             try:
                 with self._silence_source():
@@ -1621,7 +1667,7 @@ class TableView(Frame):
             except Exception:
                 logger.exception("Failed to create record from %s", data)
                 return None
-            saved_id, change_event = new_id, "<<RowInsert>>"
+            saved_id, change_event = new_id, "<<RowsInsert>>"
         self._clear_cache()
         target_page = self._current_page
         if not record:
@@ -1738,7 +1784,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=[self._public_record(rec)]))
+            self.event_generate("<<RowsMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _move_row_absolute(self, new_idx: int) -> None:
         sel = list(self._tree.selection())
@@ -1751,7 +1797,7 @@ class TableView(Frame):
         self._apply_row_alternation()
         rec = self._row_map.get(target_iid)
         if rec:
-            self.event_generate("<<RowMove>>", data=RowsEvent(records=[self._public_record(rec)]))
+            self.event_generate("<<RowsMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _hide_selection(self) -> None:
         sel = list(self._tree.selection())
@@ -1782,7 +1828,7 @@ class TableView(Frame):
                     self._datasource.delete(rec_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
-                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[self._public_record(rec)]))
+                self.event_generate("<<RowsDelete>>", data=RowsEvent(records=[self._public_record(rec)]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", rec_id)
 
@@ -1808,7 +1854,7 @@ class TableView(Frame):
             self._load_page(self._current_page)
             if deleted_records:
                 records = [self._public_record(r) for r in deleted_records]
-                self.event_generate("<<RowDelete>>", data=RowsEvent(records=records))
+                self.event_generate("<<RowsDelete>>", data=RowsEvent(records=records))
 
     # ------------------------------------------------------------------ Cache helpers
     def _clear_cache(self) -> None:
@@ -1994,6 +2040,140 @@ class TableView(Frame):
                 pass
             queue.extend(list(self._tree.get_children(iid)))
             idx += 1
+
+    # ------------------------------------------------------------------ Selection markers
+    def _selection_markers_active(self) -> bool:
+        """Whether per-row selection checkboxes should be shown right now.
+
+        Multi-select only — single-select relies on the row highlight alone, and
+        grouped mode reserves the leading slot for the expand/collapse control.
+        """
+        return (
+            self._selection_indicators
+            and not self._group_by_key
+            and self._selection.get('mode', 'single') == 'multi'
+        )
+
+    def _marker_icon_specs(self) -> tuple[int, str]:
+        """Resolve (size, color) for marker icons from the active theme.
+
+        Rendered at a fixed even pixel size: the glyph is blitted 1:1 into the
+        row, so a clean target size keeps it crisp and avoids the resampling
+        softness that DPI-scaling a small icon introduces.
+        """
+        builder = get_style().style_builder
+        try:
+            color = builder.on_color(builder.color('content'))
+        except Exception:
+            color = '#000000'
+        return _MARKER_ICON_SIZE, color
+
+    def _marker_column_width(self) -> int:
+        """Width for the tree column (#0) when it hosts a selection marker.
+
+        Accounts for the icon plus the indicator/spacer/padding the shared item
+        layout reserves ahead of the image slot.
+        """
+        size, _ = self._marker_icon_specs()
+        try:
+            pad = get_style().style_builder.scale(24)
+        except Exception:
+            pad = 24
+        return int(size + pad)
+
+    def _marker_accent_color(self) -> str:
+        """Solid accent color used to fill the checked/selected marker glyph."""
+        builder = get_style().style_builder
+        token = self._selection.get('accent', 'primary')
+        try:
+            return builder.color(token)
+        except Exception:
+            try:
+                return builder.color('primary')
+            except Exception:
+                return self._marker_icon_specs()[1]
+
+    def _marker_unchecked_color(self) -> str:
+        """Color for the empty (unchecked) box outline — a muted neutral."""
+        builder = get_style().style_builder
+        try:
+            return builder.color('muted')
+        except Exception:
+            return self._marker_icon_specs()[1]
+
+    def _marker_icon(self, name: str | None, color: str | None = None):
+        """Return a cached marker icon for the current theme.
+
+        `color` overrides the default neutral foreground (used to fill the
+        checked/selected glyph with the accent). A `name` of None yields a
+        transparent placeholder so unmarked rows keep their text alignment.
+        """
+        size, default_color = self._marker_icon_specs()
+        use_color = color or default_color
+        key = (name, size, use_color)
+        cached = self._marker_icons.get(key)
+        if cached is not None:
+            return cached
+        try:
+            if name is None:
+                from bootstack.style.utility import create_transparent_image
+                img = create_transparent_image(size, size)
+            else:
+                img = _ImageService.get_icon(name, size, use_color)
+        except Exception:
+            return None
+        self._marker_icons[key] = img
+        return img
+
+    def _update_selection_markers(self) -> None:
+        """Mirror the current selection as a per-row checkbox (multi-select).
+
+        Visual only — selection is still driven by clicks/keyboard. The checked
+        box is filled with the accent; the unchecked box is a muted outline.
+        """
+        if not self._selection_markers_active():
+            return
+        selected = set(self._tree.selection())
+        on_icon = self._marker_icon('check-square-fill', self._marker_accent_color())
+        off_icon = self._marker_icon('square', self._marker_unchecked_color())
+        for iid in self._tree.get_children(""):
+            img = on_icon if iid in selected else off_icon
+            try:
+                self._tree.item(iid, image=img if img is not None else "")
+            except Exception:
+                pass
+
+    # ------------------------------------------------------------------ Group chevrons
+    def _chevron_icon(self, opened: bool):
+        """Cached expand/collapse chevron for a group-header row, neutral-toned."""
+        name = _GROUP_OPEN_ICON if opened else _GROUP_CLOSED_ICON
+        return self._marker_icon(name)
+
+    def _toggle_group_open(self, iid) -> None:
+        """Flip a group header's open state and swap its chevron to match.
+
+        Setting `open` programmatically does not fire `<<TreeviewOpen/Close>>`,
+        so the chevron is updated here directly (the event bindings still cover
+        keyboard-driven expand/collapse).
+        """
+        try:
+            new_state = not bool(int(self._tree.item(iid, "open") or 0))
+            self._tree.item(iid, open=new_state, image=self._chevron_icon(new_state))
+        except Exception:
+            pass
+
+    def _refresh_group_chevrons(self, _event=None) -> None:
+        """Sync every group header's chevron to its current open/closed state."""
+        if not self._group_by_key:
+            return
+        for iid in self._group_parents.values():
+            try:
+                opened = bool(int(self._tree.item(iid, "open") or 0))
+                img = self._chevron_icon(opened)
+                if img is not None:
+                    self._tree.item(iid, image=img)
+            except Exception:
+                pass
 
     def _rebalance_grouped_widths(self) -> None:
         """Distribute available width across data columns when grouped so the left tree column is included."""
@@ -2392,26 +2572,52 @@ class TableView(Frame):
         state["job"] = self.export_file_async(path, scope, on_progress=on_progress, on_done=on_done)
 
     # ------------------------------------------------------------------ Header click handling
-    def _on_header_click(self, event) -> None:
-        """Handle left-click on headers for sorting."""
+    def _toggle_select_active(self) -> bool:
+        """Whether a plain click should toggle a row (checklist behavior).
+
+        Active whenever the multi-select checkboxes are visible, where users
+        expect a click to add/remove a row without holding Ctrl/Shift.
+        """
+        return self._selection_markers_active()
+
+    def _on_header_click(self, event):
+        """Handle left-click: header sorting, or toggle-select with checkboxes."""
         region = self._tree.identify_region(event.x, event.y)
-        if region != "heading":
-            return
+        if region == "heading":
+            if self._sorting == 'none':
+                return None
+            col_id = self._tree.identify_column(event.x)  # e.g. "#1"
+            try:
+                display_idx = int(col_id.strip("#")) - 1
+            except Exception:
+                return None
+            if display_idx < 0 or display_idx >= len(self._display_columns):
+                return None
+            column_idx = self._display_columns[display_idx]
+            self._on_sort(column_idx)
+            return None
 
-        if self._sorting == 'none':
-            return
+        # A row with children is expandable — clicking anywhere on it toggles
+        # open/closed (the native indicator that used to own this click was
+        # removed from the item layout). Leaf rows have no children, so they
+        # fall through to normal selection below.
+        iid = self._tree.identify_row(event.y)
+        if iid and self._tree.get_children(iid):
+            self._toggle_group_open(iid)
+            return "break"
 
-        col_id = self._tree.identify_column(event.x)  # e.g. "#1"
-        try:
-            display_idx = int(col_id.strip("#")) - 1
-        except Exception:
-            return
-
-        if display_idx < 0 or display_idx >= len(self._display_columns):
-            return
-
-        column_idx = self._display_columns[display_idx]
-        self._on_sort(column_idx)
+        # Body click with checkboxes showing: treat the list like a checklist —
+        # a plain click toggles the row in/out of the selection (no modifier),
+        # and "break" suppresses ttk's default replace-the-selection behavior.
+        if self._toggle_select_active():
+            iid = self._tree.identify_row(event.y)
+            if iid:
+                if iid in self._tree.selection():
+                    self._tree.selection_remove(iid)
+                else:
+                    self._tree.selection_add(iid)
+            return "break"
+        return None
 
     def _filter_header_column(self) -> None:
         """Show filter dialog for the currently selected header column."""
@@ -2532,6 +2738,7 @@ class TableView(Frame):
         rows = self.selected_rows
         ids = [r.get("id") for r in rows]
         self._update_export_labels()
+        self._update_selection_markers()
         self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, ids=ids))
 
     def _on_row_click_event(self, event) -> None:
@@ -2539,8 +2746,8 @@ class TableView(Frame):
         if region == "heading":
             return
         iid = self._tree.identify_row(event.y)
-        if not iid:
-            return
+        if not iid or iid not in self._row_map:
+            return  # empty space or a group-header row (no record)
         rec = self._row_map.get(iid, {})
         self.event_generate("<<RowClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
 
@@ -2747,68 +2954,163 @@ class TableView(Frame):
         self._load_page(self._current_page)
         self._update_status_labels()
 
+    def _grouping_primary_index(self) -> int | None:
+        """Display column promoted into the tree column (#0) while grouped.
+
+        The first visible column that isn't the group-by column: its values move
+        into #0 (indented under the group headers), so #0 becomes a real data
+        column rather than a reserved group-only column.
+        """
+        if not self._group_by_key or self._group_by_key not in self._column_keys:
+            return None
+        group_idx = self._column_keys.index(self._group_by_key)
+        for c in self._display_columns:
+            if c != group_idx:
+                return c
+        return None
+
     def _apply_group_show_state(self, grouped: bool) -> None:
         """Toggle tree column visibility when grouping."""
         if grouped:
             self._tree.configure(show="tree headings")
-            heading = "Group"
+            group_idx = self._column_keys.index(self._group_by_key)
+            primary = self._grouping_primary_index()
+            # #0 becomes the first non-group column: take its heading + width, and
+            # drop both it and the group column out of the value columns (the group
+            # appears as the header rows; the primary appears in #0).
+            if primary is not None:
+                heading_text = self._heading_texts[primary] if primary < len(self._heading_texts) else ""
+                try:
+                    width = int(self._tree.column(primary, option="width")) or 200
+                except Exception:
+                    width = 200
+                self._tree.heading("#0", text=heading_text, anchor="w")
+                self._tree.column("#0", width=max(width, 160), minwidth=120, anchor="w", stretch=False)
+            else:
+                self._tree.heading("#0", text="", anchor="w")
+                self._tree.column("#0", width=200, minwidth=120, anchor="w", stretch=False)
             try:
-                if self._group_by_key and self._group_by_key in self._column_keys:
-                    col_idx = self._column_keys.index(self._group_by_key)
-                    heading = self._heading_texts[col_idx] if col_idx < len(self._heading_texts) else heading
+                hidden = {group_idx, primary}
+                visible = [c for c in self._display_columns if c not in hidden]
+                self._tree.configure(displaycolumns=visible or self._display_columns)
             except Exception:
                 pass
-            self._tree.heading("#0", text=heading, anchor="w")
-            # Fix the group column width so it stays visible even when space is tight
-            self._tree.column("#0", width=200, minwidth=120, anchor="w", stretch=False)
             try:
                 # Reset horizontal view so the group column is not scrolled out
                 self._tree.xview_moveto(0)
             except Exception:
                 pass
             self._rebalance_grouped_widths()
+        elif self._selection_markers_active():
+            # Reveal a narrow tree column to host the per-row selection marker.
+            self._tree.configure(show="tree headings")
+            self._tree.heading("#0", text="")
+            marker_w = self._marker_column_width()
+            self._tree.column("#0", width=marker_w, minwidth=marker_w, anchor="center", stretch=False)
+            self._restore_data_columns()
         else:
             self._tree.configure(show="headings")
             # Keep the tree column narrow/inert when unused
             self._tree.heading("#0", text="")
             self._tree.column("#0", width=0, minwidth=0, stretch=False)
-            # Restore stretch behavior for data columns based on scroll mode
-            try:
-                stretch_cols = not self._paging['xscroll']
-                for idx in range(len(self._heading_texts)):
-                    self._tree.column(idx, stretch=stretch_cols)
-            except Exception:
-                pass
+            self._restore_data_columns()
+
+    def _restore_data_columns(self) -> None:
+        """Show the full set of data columns (used when not grouped)."""
+        try:
+            self._tree.configure(displaycolumns=self._display_columns)
+        except Exception:
+            pass
+        try:
+            stretch_cols = not self._paging['xscroll']
+            for idx in range(len(self._heading_texts)):
+                self._tree.column(idx, stretch=stretch_cols)
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------ Cell formatting
+    def _column_formatter(self, idx: int):
+        """Resolve (and cache) a column's display formatter callable, or None.
+
+        A column's `format` may be a format-spec string (applied as
+        `spec.format(value)`) or a callable `(value) -> str`.
+        """
+        if idx in self._column_formats:
+            return self._column_formats[idx]
+        formatter = None
+        if 0 <= idx < len(self._column_defs):
+            coldef = self._column_defs[idx]
+            if isinstance(coldef, dict):
+                spec = coldef.get("format")
+                if callable(spec):
+                    formatter = spec
+                elif isinstance(spec, str) and spec:
+                    formatter = (lambda s: (lambda v: s.format(v)))(spec)
+        self._column_formats[idx] = formatter
+        return formatter
+
+    def _format_cell(self, idx: int, value):
+        """Apply a column's display formatter to a value (raw value on failure)."""
+        if value is None or value == "":
+            return value
+        formatter = self._column_formatter(idx)
+        if formatter is None:
+            return value
+        try:
+            return formatter(value)
+        except Exception:
+            return value
+
+    def _display_values(self, rec: dict) -> list:
+        """Build the formatted value row for display (record stays raw in _row_map)."""
+        return [self._format_cell(i, rec.get(k, "")) for i, k in enumerate(self._column_keys)]
 
     def _render_flat(self, records: list[dict]) -> None:
         """Insert records as flat rows."""
         stripe = self._row_alternation.get('enabled', False) and not self._group_by_key
         for idx, rec in enumerate(records):
-            values = [rec.get(k, "") for k in self._column_keys]
+            values = self._display_values(rec)
             tags = ("altrow",) if stripe and idx % 2 == 1 else ()
             iid = self._tree.insert("", "end", values=values, tags=tags)
             self._row_map[iid] = rec
 
     def _render_grouped(self, records: list[dict]) -> None:
-        """Insert records under parent nodes for the active group."""
+        """Insert records under group-header nodes.
+
+        Group headers are root-level nodes whose label sits in the tree column
+        (#0). Each child carries its primary field (the first non-group column)
+        as #0 text — indented under its group — with the full record kept in the
+        value columns (the primary + group columns are hidden from those).
+        """
         key = self._group_by_key
         if not key or key not in self._column_keys:
             self._render_flat(records)
             return
-        col_idx = self._column_keys.index(key)
-        heading_text = self._heading_texts[col_idx] if col_idx < len(self._heading_texts) else key
+        primary_idx = self._grouping_primary_index()
+        primary_key = self._column_keys[primary_idx] if primary_idx is not None else None
         groups: OrderedDict[str | None, list[dict]] = OrderedDict()
         for rec in records:
             groups.setdefault(rec.get(key), []).append(rec)
         self._group_parents.clear()
         for val, items in groups.items():
             label_val = "(None)" if val is None else str(val)
-            label = f"{heading_text}: {label_val} ({len(items)})"
-            parent_iid = self._tree.insert("", "end", text=label, open=True)
+            label = f"{label_val} ({len(items)})"
+            parent_iid = self._tree.insert(
+                "", "end", text=label, open=True, image=self._chevron_icon(True)
+            )
             self._group_parents[val] = parent_iid
+            # Transparent stand-in the same size as the chevron, so a child's
+            # depth-indent isn't cancelled out by the parent's chevron width
+            # (keeps the child names visibly nested under their group).
+            leaf_image = self._marker_icon(None)
             for rec in items:
-                values = [rec.get(k, "") for k in self._column_keys]
-                iid = self._tree.insert(parent_iid, "end", values=values)
+                values = self._display_values(rec)
+                primary_text = "" if primary_idx is None else str(
+                    self._format_cell(primary_idx, rec.get(primary_key, ""))
+                )
+                iid = self._tree.insert(
+                    parent_iid, "end", text=primary_text, values=values, image=leaf_image
+                )
                 self._row_map[iid] = rec
 
     def _clear_sort(self) -> None:

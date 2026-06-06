@@ -76,20 +76,23 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
         * header_background
         * density ('default' or 'compact')
     """
-    surface_token = options.get('surface', 'content')
+    surface_token: str = options.get('surface', 'content')
+    border_token: str = options.get('border_color', surface_token)
+    header_bg_token: str | None = options.get('header_background')
+    show_border = options.get('show_border', True)
     density = normalize_button_density(options.get('density', 'default'))
     surface = b.color(surface_token)
 
-    if options.get('show_border', True):
-        if options.get('border_color'):
-            border_color = b.color(options.get('border_color'))
+    if show_border:
+        if border_token is not None:
+            border_color = b.color(border_token)
         else:
             border_color = b.border(surface)
     else:
         border_color = surface
 
-    if options.get('header_background'):
-        heading_color = b.color(options.get('header_background'))
+    if header_bg_token is not None:
+        heading_color = b.color(header_bg_token)
         heading_hover = b.active(heading_color)
     else:
         heading_color = b.elevate(surface, 3)
@@ -101,14 +104,14 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
     hover = b.active(surface)
 
     select_background_token = options.get('select_background', 'primary')
-    select_background = b.color(select_background_token)
+    # Subtle accent wash so striping shows through and text/icons keep one color.
+    select_background = b.subtle(select_background_token)
     select_hover = b.active(select_background)
-    on_select = b.on_color(select_background)
+    on_select = on_surface  # selected rows keep normal text on the soft wash
 
     # Density-based sizing
     body_font = _treeview_font(density)
     row_multiplier = _treeview_row_height(density)
-    indicator_size = _treeview_indicator_size(density)
     item_padding = _treeview_item_padding(density)
     heading_padding = _treeview_heading_padding(density)
     cell_padding = _treeview_cell_padding(density)
@@ -118,85 +121,26 @@ def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
     f = font.nametofont(metrics_font)
     row_height = int(f.metrics()['linespace'] * row_multiplier)
 
-    # Tk 8.6.13+ has a regression where user1/user2 states don't work with
-    # custom image elements for treeview indicators. Use native indicator on
-    # newer Tk versions until TIP #719 lands with proper open/leaf states.
-    # See: https://core.tcl-lang.org/tk/timeline?r=rfe-d632d28ba4
-    use_native_indicator = _tk_version_at_least(8, 6, 13)
+    # Transparent gap between the leading icon (checkbox / group chevron) and the
+    # text, so a group label doesn't butt up against its chevron. Harmless for
+    # rows whose icon slot has no adjacent text (e.g. checkbox-only cells).
+    gap_width = 8 if density == 'compact' else 10
+    gap = create_transparent_image(b.scale(gap_width), 1)
+    b.create_style_element_image(
+        ElementImage(f'{ttk_style}.iconspacer', gap, sticky='', width=b.scale(gap_width))
+    )
 
-    if use_native_indicator:
-        # Use native Treeitem.indicator with custom foreground colors
-        # The native indicator uses triangles that rotate based on open/closed state
-        # Create a spacer element to add space between indicator and text
-        spacer_width = 8 if density == 'compact' else 8
-        spacer = create_transparent_image(b.scale(spacer_width), 1)
-        b.create_style_element_image(
-            ElementImage(f'{ttk_style}.spacer', spacer, sticky='', width=b.scale(spacer_width))
-        )
+    b.create_style_layout(
+        f'{ttk_style}.Item',
+        Element('Treeitem.padding').children(
+            [
+                Element('Treeitem.image', side='left', sticky=''),
+                Element(f'{ttk_style}.iconspacer', side='left', sticky=''),
+                Element('Treeitem.text', side='left', sticky='w')
+            ])
+    )
 
-        b.create_style_layout(
-            f'{ttk_style}.Item',
-            Element('Treeitem.padding').children(
-                [
-                    Element('Treeitem.indicator', side='left', sticky=''),
-                    Element(f'{ttk_style}.spacer', side='left', sticky=''),
-                    Element('Treeitem.image', side='left', sticky=''),
-                    Element('Treeitem.text', side='left', sticky='w')
-                ])
-        )
-
-        indicator_margins = (0, 0, 0, 2) if density == 'compact' else (0, 0, 0, 2)
-        b.configure_style(
-            f'{ttk_style}.Item',
-            padding=b.scale(item_padding),
-            foreground=on_surface,
-            indicatorsize=b.scale(indicator_size),
-            indicatormargins=b.scale(indicator_margins)
-        )
-        b.map_style(
-            f'{ttk_style}.Item',
-            foreground=[
-                ('selected', on_select),
-                ('', on_surface)
-            ]
-        )
-    else:
-        # Use custom image indicator with user1/user2 states (works on Tk < 8.6.13)
-        open_icon = options.get('open_icon', 'chevron-right')
-        closed_icon = options.get('close_icon', 'chevron-down')
-        icon_size = _snap_even(b.scale(_treeview_icon_size(density)))
-
-        expand_icon_normal = _ImageService.get_icon(open_icon, icon_size, on_surface)
-        expand_icon_selected = _ImageService.get_icon(open_icon, icon_size, on_select)
-        collapse_icon_normal = _ImageService.get_icon(closed_icon, icon_size, on_surface)
-        collapse_icon_selected = _ImageService.get_icon(closed_icon, icon_size, on_select)
-        leaf = create_transparent_image(icon_size, icon_size)
-
-        indicator_height = _snap_even(b.scale(12 if density == 'compact' else 14))
-        indicator_width = _snap_even(icon_size + b.scale(10))
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.indicator', expand_icon_normal,
-                sticky='w', height=indicator_height, width=indicator_width).state_specs(
-                [
-                    ('user2', leaf),
-                    ('user1 selected', collapse_icon_selected),
-                    ('user1', collapse_icon_normal),
-                    ('!user1 selected', expand_icon_selected),
-                ])
-        )
-
-        b.create_style_layout(
-            f'{ttk_style}.Item',
-            Element('Treeitem.padding').children(
-                [
-                    Element(f'{ttk_style}.indicator', side='left', sticky=''),
-                    Element('Treeitem.image', side='left', sticky=''),
-                    Element('Treeitem.text', side='left', sticky='w')
-                ])
-        )
-
-        b.configure_style(f'{ttk_style}.Item', padding=b.scale(item_padding))
+    b.configure_style(f'{ttk_style}.Item', padding=b.scale(item_padding))
 
     # configure header
     heading_font = 'caption' if density == 'compact' else 'label'
