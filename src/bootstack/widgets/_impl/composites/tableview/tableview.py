@@ -32,6 +32,7 @@ from bootstack.widgets._impl.primitives.entry import Entry
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
+from bootstack.widgets._impl.primitives.progressbar import Progressbar
 from bootstack.widgets._impl.composites.selectbox import SelectBox
 from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets._impl.composites.textentry import TextEntry
@@ -62,6 +63,73 @@ _EXPORT_CHUNK_SIZE = 1000
 # Soft cap for the materializing accessors (to_rows/to_csv); above this they
 # raise and point the caller at the streaming API.
 _EXPORT_MAX_MATERIALIZE = 100_000
+
+# Above this row count the built-in "Save to file" runs asynchronously with a
+# progress dialog; below it, a synchronous (instant) write.
+_EXPORT_ASYNC_THRESHOLD = 5000
+
+
+class _ExportJob:
+    """Drives a streamed export across the Tk event loop (cooperative chunking).
+
+    Each idle tick writes one chunk and reschedules, so the UI stays responsive
+    and the export can be cancelled between chunks. No worker threads — the
+    data source's SQLite connection is thread-affine.
+    """
+
+    def __init__(self, widget, chunks, write_chunk, close, total, *, on_progress, on_complete):
+        self._widget = widget            # provides after_idle / after_cancel
+        self._chunks = chunks            # iterator of raw-record chunks
+        self._write_chunk = write_chunk
+        self._close = close
+        self._total = total
+        self._on_progress = on_progress
+        self._on_complete = on_complete  # (status, written, error)
+        self._written = 0
+        self._cancelled = False
+        self._after_id = None
+
+    def start(self) -> "_ExportJob":
+        self._after_id = self._widget.after_idle(self._step)
+        return self
+
+    def cancel(self) -> None:
+        """Request cancellation; takes effect before the next chunk."""
+        self._cancelled = True
+
+    def _step(self) -> None:
+        self._after_id = None
+        if self._cancelled:
+            self._finish("cancelled", None)
+            return
+        try:
+            chunk = next(self._chunks, None)
+        except Exception as exc:  # data-source read failed
+            self._finish("error", exc)
+            return
+        if chunk is None:
+            self._finish("completed", None)
+            return
+        try:
+            self._write_chunk(chunk)
+        except Exception as exc:
+            self._finish("error", exc)
+            return
+        self._written += len(chunk)
+        if self._on_progress is not None:
+            try:
+                self._on_progress(self._written, self._total)
+            except Exception:
+                logger.exception("Export progress callback failed")
+        self._after_id = self._widget.after_idle(self._step)
+
+    def _finish(self, status: str, error) -> None:
+        try:
+            self._close()
+        except Exception:
+            logger.exception("Failed to close export writer")
+        if self._on_complete is not None:
+            self._on_complete(status, self._written, error)
 
 
 def _has_xlsxwriter() -> bool:
@@ -793,9 +861,9 @@ class TableView(Frame):
         if self._exporting['enabled']:
             export_items = [
                 {"type": "command", "text": "Copy to clipboard", "command": self._copy_to_clipboard},
-                {"type": "command", "text": "Save to file…", "command": self._save_to_file},
+                {"type": "command", "text": "Save to file", "command": self._save_to_file},
             ]
-            DropdownButton(
+            self._export_btn = DropdownButton(
                 bar,
                 icon="download",
                 icon_only=True,
@@ -804,7 +872,8 @@ class TableView(Frame):
                 compound="image",
                 items=export_items,
                 show_dropdown_button=False,
-            ).pack(side="right")
+            )
+            self._export_btn.pack(side="right")
 
         if self._editing['adding']:
             Button(
@@ -884,6 +953,11 @@ class TableView(Frame):
         self._tree.bind("<Button-1>", self._on_header_click)
         self._tree.bind("<<TreeviewSelect>>", self._on_selection_event)
         self._tree.bind("<ButtonRelease-1>", self._on_row_click_event)
+        # Escape clears the selection (also reachable in single-select mode, where
+        # clicking can't return to an empty selection). Bound on the tree widget
+        # only (add='+'), so it fires solely when the tree has focus and never
+        # clobbers dialog/menu/search Escape handling, which own their own focus.
+        self._tree.bind("<Escape>", lambda _e: self.deselect_all(), add="+")
         if self._context_menus != "none":
             bind_right_click(self._tree, self._on_tree_context)
         if self._editing['updating']:
@@ -1956,6 +2030,44 @@ class TableView(Frame):
             )
         return resolved
 
+    def _make_writer(self, path: str, fmt: str, headers: list[str], keys: list[str]):
+        """Open a streaming writer for `fmt`; return `(write_chunk, close)`.
+
+        Both writers append incrementally (csv row-by-row, xlsx in
+        constant-memory mode), so the full dataset is never materialized.
+        """
+        if fmt == "xlsx":
+            import xlsxwriter
+
+            workbook = xlsxwriter.Workbook(path, {"constant_memory": True})
+            worksheet = workbook.add_worksheet()
+            bold = workbook.add_format({"bold": True})
+            for c, header in enumerate(headers):
+                worksheet.write(0, c, header, bold)
+            state = {"row": 1}
+
+            def write_chunk(chunk):
+                row_idx = state["row"]
+                for rec in chunk:
+                    for c, key in enumerate(keys):
+                        worksheet.write(row_idx, c, rec.get(key))
+                    row_idx += 1
+                state["row"] = row_idx
+
+            return write_chunk, workbook.close
+
+        import csv
+
+        delimiter = "\t" if fmt == "tsv" else ","
+        handle = open(path, "w", newline="", encoding="utf-8")
+        writer = csv.writer(handle, delimiter=delimiter)
+        writer.writerow(headers)
+
+        def write_chunk(chunk):
+            writer.writerows([[rec.get(k, "") for k in keys] for rec in chunk])
+
+        return write_chunk, handle.close
+
     def export_file(
         self,
         path: str,
@@ -1967,50 +2079,66 @@ class TableView(Frame):
     ) -> int:
         """Stream the scope's data to `path`, paging so memory stays flat.
 
-        Format is inferred from the path extension unless `format` is given.
-        `on_progress(written, total)` is called after each chunk. Returns the
-        number of rows written.
+        Synchronous. Format is inferred from the path extension unless `format`
+        is given. `on_progress(written, total)` is called after each chunk.
+        Returns the number of rows written.
         """
         fmt = self._resolve_format(path, format)
         headers, keys = self._export_columns()
         total = self._scope_count(scope)
+        write_chunk, close = self._make_writer(path, fmt, headers, keys)
         written = 0
-
-        if fmt == "xlsx":
-            import xlsxwriter
-
-            workbook = xlsxwriter.Workbook(path, {"constant_memory": True})
-            try:
-                worksheet = workbook.add_worksheet()
-                bold = workbook.add_format({"bold": True})
-                for c, header in enumerate(headers):
-                    worksheet.write(0, c, header, bold)
-                row_idx = 1
-                for chunk in self._iter_raw_chunks(scope, chunk_size):
-                    for rec in chunk:
-                        for c, key in enumerate(keys):
-                            worksheet.write(row_idx, c, rec.get(key))
-                        row_idx += 1
-                    written += len(chunk)
-                    if on_progress is not None:
-                        on_progress(written, total)
-            finally:
-                workbook.close()
-        else:
-            import csv
-
-            delimiter = "\t" if fmt == "tsv" else ","
-            with open(path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f, delimiter=delimiter)
-                writer.writerow(headers)
-                for chunk in self._iter_raw_chunks(scope, chunk_size):
-                    writer.writerows([[rec.get(k, "") for k in keys] for rec in chunk])
-                    written += len(chunk)
-                    if on_progress is not None:
-                        on_progress(written, total)
-
+        try:
+            for chunk in self._iter_raw_chunks(scope, chunk_size):
+                write_chunk(chunk)
+                written += len(chunk)
+                if on_progress is not None:
+                    on_progress(written, total)
+        finally:
+            close()
         self._emit_export(target="file", fmt=fmt, path=path, count=written)
         return written
+
+    def export_file_async(
+        self,
+        path: str,
+        scope: str = "all",
+        *,
+        format: str | None = None,
+        chunk_size: int = _EXPORT_CHUNK_SIZE,
+        on_progress=None,
+        on_done=None,
+    ) -> _ExportJob:
+        """Stream to `path` without blocking the UI; return a cancelable job.
+
+        Writes one chunk per idle tick. `on_progress(written, total)` fires per
+        chunk; `on_done(status, written, error)` fires once at the end with
+        `status` in `'completed'` / `'cancelled'` / `'error'`. Cancel or error
+        removes the partial file. Call `job.cancel()` to stop.
+        """
+        fmt = self._resolve_format(path, format)
+        headers, keys = self._export_columns()
+        total = self._scope_count(scope)
+        write_chunk, close = self._make_writer(path, fmt, headers, keys)
+        chunks = self._iter_raw_chunks(scope, chunk_size)
+
+        def _complete(status, written, error):
+            if status == "completed":
+                self._emit_export(target="file", fmt=fmt, path=path, count=written)
+            else:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+                if status == "error":
+                    logger.error("Async export to %s failed", path, exc_info=error)
+            if on_done is not None:
+                on_done(status, written, error)
+
+        return _ExportJob(
+            self, chunks, write_chunk, close, total,
+            on_progress=on_progress, on_complete=_complete,
+        ).start()
 
     def _emit_export(self, *, target: str, fmt: str, path: str | None, count: int, records=None) -> None:
         self.event_generate(
@@ -2023,6 +2151,25 @@ class TableView(Frame):
         if self._exporting.get('allow_export_selection', True) and self._tree.selection():
             return "selection"
         return "all"
+
+    def _update_export_labels(self) -> None:
+        """Reflect the implicit export scope (selection vs all) in the menu labels."""
+        btn = getattr(self, "_export_btn", None)
+        tree = getattr(self, "_tree", None)
+        if btn is None or tree is None:
+            return
+        count = len(tree.selection())
+        if self._exporting.get('allow_export_selection', True) and count > 0:
+            copy_text = f"Copy selection ({count:,})"
+            save_text = f"Save selection ({count:,})"
+        else:
+            copy_text = "Copy to clipboard"
+            save_text = "Save to file"
+        try:
+            btn.configure_item(0, text=copy_text)
+            btn.configure_item(1, text=save_text)
+        except Exception:
+            pass
 
     def _copy_to_clipboard(self) -> None:
         """Copy the default scope to the clipboard as tab-separated text."""
@@ -2042,7 +2189,11 @@ class TableView(Frame):
         )
 
     def _save_to_file(self) -> None:
-        """Prompt for a destination and stream the default scope to it."""
+        """Prompt for a destination and stream the default scope to it.
+
+        Small exports run synchronously (instant); large ones run on the event
+        loop with a progress dialog so the UI stays responsive and cancelable.
+        """
         from tkinter import filedialog
 
         filetypes = [("CSV file", "*.csv")]
@@ -2050,6 +2201,7 @@ class TableView(Frame):
             filetypes.append(("Excel file", "*.xlsx"))
         filetypes.append(("All files", "*.*"))
 
+        scope = self._default_scope()
         path = filedialog.asksaveasfilename(
             parent=self.winfo_toplevel(),
             title=MessageCatalog.translate("table.export"),
@@ -2059,10 +2211,76 @@ class TableView(Frame):
         )
         if not path:
             return
-        try:
-            self.export_file(path, scope=self._default_scope())
-        except Exception:
-            logger.exception("Failed to export table to %s", path)
+
+        if self._scope_count(scope) <= _EXPORT_ASYNC_THRESHOLD:
+            try:
+                self.export_file(path, scope=scope)
+            except Exception:
+                logger.exception("Failed to export table to %s", path)
+            return
+        self._save_to_file_with_progress(path, scope)
+
+    def _save_to_file_with_progress(self, path: str, scope: str) -> None:
+        """Run a large export on the event loop behind a non-blocking progress window.
+
+        The window does not block (no nested loop), so the export's chunk steps
+        run on the live main loop and the bar updates as it goes.
+        """
+        from bootstack._runtime.toplevel import Toplevel
+
+        total = self._scope_count(scope)
+        parent = self.winfo_toplevel()
+        state: dict = {"job": None, "destroyed": False}
+
+        top = Toplevel(
+            title=MessageCatalog.translate("table.export"),
+            master=parent,
+            transient=parent,
+            minsize=(440, 120),
+            resizable=(False, False),
+            center_on_parent=True,
+        )
+        frame = Frame(top, padding=14)
+        frame.pack(fill="both", expand=True)
+        label = Label(frame, text=f"Exporting 0 of {total:,}…")
+        label.pack(anchor="w", pady=(0, 8))
+        bar = Progressbar(frame, mode="determinate", maximum=max(total, 1), value=0)
+        bar.pack(fill="x", pady=(0, 8))
+        Label(frame, text="Close this window to cancel.", accent="muted").pack(anchor="w")
+
+        def cancel_export():
+            """Cancel the running job (its partial file is removed on cancel)."""
+            if state["job"] is not None:
+                state["job"].cancel()
+
+        def destroy_window():
+            if state["destroyed"]:
+                return
+            state["destroyed"] = True
+            try:
+                top.destroy()
+            except Exception:
+                pass
+
+        def on_progress(written, count):
+            if not state["destroyed"]:
+                bar.set(written)
+                label.configure(text=f"Exporting {written:,} of {count:,}…")
+
+        def on_done(status, written, error):
+            destroy_window()
+            if status == "error":
+                logger.error("Export to %s failed", path, exc_info=error)
+
+        def request_close():
+            # Closing the window cancels the export and removes the partial file.
+            state["destroyed"] = True
+            cancel_export()
+            return None
+
+        top.add_close_handler(request_close)
+        top.show()  # Toplevel starts withdrawn; reveal it before the export runs.
+        state["job"] = self.export_file_async(path, scope, on_progress=on_progress, on_done=on_done)
 
     # ------------------------------------------------------------------ Header click handling
     def _on_header_click(self, event) -> None:
@@ -2204,6 +2422,7 @@ class TableView(Frame):
         """Forward selection changes to subscribers."""
         rows = self.selected_rows
         ids = [r.get("id") for r in rows]
+        self._update_export_labels()
         self.event_generate("<<SelectionChange>>", data=SelectionEvent(records=rows, ids=ids))
 
     def _on_row_click_event(self, event) -> None:

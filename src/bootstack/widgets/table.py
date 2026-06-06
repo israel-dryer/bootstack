@@ -35,8 +35,11 @@ class Table(PublicWidgetBase):
         allow_edit: Allow editing rows via a form dialog. Default `False`.
         allow_delete: Allow deleting rows. Default `False`.
         allow_export: Show an export menu (Copy to clipboard / Save to file).
-            Saves CSV; Excel (`.xlsx`) is also offered when the optional
-            `bootstack[excel]` dependency is installed. Default `False`.
+            The actions export the selected rows if any are selected, otherwise
+            all rows in the current filter/sort. Saves CSV; Excel (`.xlsx`) is
+            also offered when the optional `bootstack[excel]` dependency is
+            installed. For explicit control use `export_file()` / `to_csv()`
+            with `scope=`. Default `False`.
         striped: Alternate row background colors. Default `False`.
         allow_group: Allow grouping rows by a column. Default `False`.
         show_status_bar: Show filter/sort/group status and pager. Default `True`.
@@ -139,6 +142,22 @@ class Table(PublicWidgetBase):
         """Select all rows in the current view."""
         self._internal.select_all()
 
+    def deselect_rows(self, record_ids: list) -> None:
+        """Remove the given rows from the selection by record `id`.
+
+        Args:
+            record_ids: Record ids to deselect.
+        """
+        self._internal.deselect_rows(record_ids)
+
+    def clear_selection(self) -> None:
+        """Clear the selection.
+
+        Users can also press `Escape` over the table to clear it — useful in
+        single-select mode, where clicking cannot return to an empty selection.
+        """
+        self._internal.deselect_all()
+
     @property
     def selected_rows(self) -> list[dict]:
         """Currently selected record dicts."""
@@ -218,6 +237,39 @@ class Table(PublicWidgetBase):
         """
         return self._internal.export_file(
             path, scope, format=format, chunk_size=chunk_size, on_progress=on_progress
+        )
+
+    def export_file_async(
+        self,
+        path: str,
+        scope: str = "all",
+        *,
+        format: str | None = None,
+        chunk_size: int = 1000,
+        on_progress: Callable[[int, int], Any] | None = None,
+        on_done: Callable[[str, int, Any], Any] | None = None,
+    ) -> Any:
+        """Stream the data to `path` without blocking the UI; return a job.
+
+        Writes one chunk per event-loop idle tick, so the UI stays responsive
+        and the export can be cancelled mid-run via the returned job's
+        `cancel()`. A cancelled or failed export removes the partial file.
+
+        Args:
+            path: Destination file path.
+            scope: `'all'`, `'page'`, or `'selection'`.
+            format: Override the format — `'csv'`, `'tsv'`, or `'xlsx'`.
+            chunk_size: Rows read/written per idle tick.
+            on_progress: Called as `on_progress(written, total)` after each chunk.
+            on_done: Called as `on_done(status, written, error)` at the end, with
+                `status` one of `'completed'`, `'cancelled'`, or `'error'`.
+
+        Returns:
+            A job handle with a `cancel()` method.
+        """
+        return self._internal.export_file_async(
+            path, scope, format=format, chunk_size=chunk_size,
+            on_progress=on_progress, on_done=on_done,
         )
 
     # ----- Search -----
