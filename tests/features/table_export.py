@@ -24,7 +24,7 @@ with bs.App(title="Table Export", size=(820, 560), padding=12, gap=8) as app:
     bs.Label("1,000,000 rows — try the export menu (top-right).", font="heading-sm")
     status = bs.Label("Ready.", font="caption")
 
-    table = bs.Table(
+    table = bs.DataTable(
         columns=[
             {"text": "ID", "key": "id_no", "width": 80},
             {"text": "Name", "key": "name", "width": 160},

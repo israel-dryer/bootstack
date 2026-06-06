@@ -2,9 +2,9 @@ Data Sources
 ============
 
 A data source is the bridge between your records and the data-bound widgets —
-:class:`ListView <bootstack.widgets.listview.ListView>` and :class:`Table
-<bootstack.widgets.table.Table>`. It owns the rows and serves them a page at a
-time, so the same widget works whether the data lives in a Python list, a
+:class:`ListView <bootstack.widgets.listview.ListView>` and :class:`DataTable
+<bootstack.widgets.datatable.DataTable>`. It owns the rows and serves them a page
+at a time, so the same widget works whether the data lives in a Python list, a
 SQLite database, or a file on disk.
 
 For small lists you often don't touch a data source at all — pass ``items=`` /
@@ -32,14 +32,15 @@ SQLite-backed data
 ------------------
 
 ``SqliteDataSource`` keeps rows in an SQLite database (in-memory by default, or
-a file path). :class:`Table <bootstack.widgets.table.Table>` requires this
-source — pass ``rows=`` to let the table create one, or supply your own:
+a file path). It is the default source a :class:`DataTable
+<bootstack.widgets.datatable.DataTable>` builds when you pass ``rows=`` — or
+supply your own to back the table with a database file:
 
 .. code-block:: python
 
    ds = bs.SqliteDataSource("app.db")
    ds.load(records)
-   bs.Table(data_source=ds)
+   bs.DataTable(data_source=ds)
 
 File-backed data
 ----------------
@@ -51,7 +52,7 @@ with a ``FileSourceConfig``:
 
    config = bs.FileSourceConfig(file_format="csv", has_header=True)
    ds = bs.FileDataSource("people.csv", config=config)
-   bs.Table(data_source=ds)
+   bs.DataTable(data_source=ds)
 
 Filtering and sorting
 ---------------------
@@ -194,7 +195,7 @@ See also
 --------
 
 - :doc:`/widgets/listview` — list widget that accepts ``data_source=``.
-- :doc:`/widgets/table` — table widget (requires ``SqliteDataSource``).
+- :doc:`/widgets/datatable` — data table that accepts any ``data_source=``.
 
 API reference
 -------------

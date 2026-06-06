@@ -353,6 +353,64 @@ class BaseDataSource(ABC):
         """
         return False
 
+    # ========== ROW IDENTITY (for datasource-aware widgets) ==========
+
+    @property
+    def id_field(self) -> str:
+        """Name of the record field that holds the stable row identity."""
+        return getattr(self, "_id_field", "id")
+
+    def _internal_fields(self) -> "frozenset[str]":
+        """Raw-record keys that are implementation-internal and hidden from users.
+
+        Datasource-aware widgets (for example `Table`) strip these from displayed
+        columns, exports, and the records they hand back. The default is none;
+        sources that carry bookkeeping columns override this.
+
+        Returns:
+            A set of record keys to treat as private.
+        """
+        return frozenset()
+
+    def _record_id(self, record: "Mapping[str, Any] | None") -> Any:
+        """Return the stable identity of a raw record.
+
+        The returned value is what `get`/`update`/`delete`/`select` accept and
+        what is surfaced publicly as the record's `id`. The default reads the
+        configured `id_field`; sources with a separate identity column override.
+
+        Args:
+            record: A raw record as returned by `page`/`page_slice`.
+
+        Returns:
+            The record's identity, or `None` when it cannot be determined.
+        """
+        if not record:
+            return None
+        return record.get(self.id_field)
+
+    def _public_record(self, record: "Mapping[str, Any] | None") -> Record:
+        """Return a user-facing copy of a raw record.
+
+        Internal bookkeeping fields are stripped and the stable identity is
+        surfaced as `id`, so widgets and callers see a clean record regardless
+        of how the source stores it.
+
+        Args:
+            record: A raw record as returned by `page`/`page_slice`.
+
+        Returns:
+            A new dict with internal fields removed and `id` populated.
+        """
+        if not record:
+            return {}
+        internal = self._internal_fields()
+        out = {k: v for k, v in record.items() if k not in internal}
+        rid = self._record_id(record)
+        if rid is not None:
+            out["id"] = rid
+        return out
+
     # ========== CHANGE BROADCASTING (on_change / observe) ==========
 
     def on_change(self, handler: "Callable[[Any], Any] | None" = None) -> Any:

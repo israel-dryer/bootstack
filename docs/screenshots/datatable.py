@@ -53,17 +53,19 @@ SIZE = (820, 440)
 def _table(**kwargs):
     opts = dict(columns=COLUMNS, rows=ROWS, striped=True, fill="both", expand=True)
     opts.update(kwargs)
-    return bs.Table(**opts)
+    return bs.DataTable(**opts)
 
 
 def hero():
     with bs.App(title="Table", size=SIZE, padding=12) as app:
         t = _table(
             selection_mode="multi",
+            show_selection_controls=True,
             allow_add=True, allow_edit=True, allow_delete=True,
             allow_export=True, allow_group=True,
         )
     t._internal.set_sorting("name", True)   # show a sorted column in the hero
+    t.select_rows([4, 5])                    # two checked rows to show the controls
     app.run()
 
 
@@ -223,6 +225,14 @@ def column_chooser():
     app.run()
 
 
+def density():
+    # Compact density fits more rows in the same height — render at the standard
+    # size so the difference from the default scenes is apparent.
+    with bs.App(title="Table — Compact", size=SIZE, padding=12) as app:
+        _table(density="compact")
+    app.run()
+
+
 SCENES = {
     "hero":      hero,
     "selection": selection,
@@ -231,6 +241,7 @@ SCENES = {
     "sort":      sort,
     "group":     group,
     "export":    export,
+    "density":        density,
     "row-menu":       row_menu,
     "header-menu":    header_menu,
     "edit":           edit_record,

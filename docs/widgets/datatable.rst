@@ -1,17 +1,17 @@
-Table
-=====
+DataTable
+=========
 
 A feature-rich data table with sorting, search, column filters, grouping, paging,
-inline editing, and data export. Backed by an in-memory ``SqliteDataSource`` —
-supply ``rows=`` to pre-load data, or pass a shared ``data_source=``.
+inline editing, and data export. Backed by an in-memory ``SqliteDataSource`` by
+default — supply ``rows=`` to pre-load data, or pass any shared ``data_source=``.
 
-.. image:: /_static/examples/table-hero-light.png
+.. image:: /_static/examples/datatable-hero-light.png
    :class: bs-screenshot-light
-   :alt: Table — light theme
+   :alt: DataTable — light theme
 
-.. image:: /_static/examples/table-hero-dark.png
+.. image:: /_static/examples/datatable-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: Table — dark theme
+   :alt: DataTable — dark theme
 
 Usage
 -----
@@ -26,10 +26,10 @@ pre-loads the data as a list of dicts:
 .. code-block:: python
 
    # Simple: column keys are used as headers
-   bs.Table(columns=["name", "role", "dept"], rows=people)
+   bs.DataTable(columns=["name", "role", "dept"], rows=people)
 
    # Dicts give a display header and a width
-   bs.Table(
+   bs.DataTable(
        columns=[
            {"text": "Name",   "key": "name",   "width": 160},
            {"text": "Role",   "key": "role",   "width": 150},
@@ -46,7 +46,7 @@ currency-formatted ``salary`` column still sorts numerically:
 
 .. code-block:: python
 
-   bs.Table(
+   bs.DataTable(
        columns=[
            {"text": "Name",   "key": "name"},
            {"text": "Salary", "key": "salary", "anchor": "e", "format": "${:,.0f}"},
@@ -61,7 +61,7 @@ built-in add/edit dialog — the ``editor`` and its ``editor_options``, the valu
 
 .. code-block:: python
 
-   bs.Table(
+   bs.DataTable(
        columns=[
            {"key": "name", "required": True},
            {"key": "dept", "editor": "select",
@@ -101,6 +101,25 @@ get an id assigned automatically. Point at a different field with
 ``id_field="employee_id"``, and replace the whole dataset later with
 ``table.set_rows(rows)``.
 
+Column visibility
+~~~~~~~~~~~~~~~~~
+
+Show or hide columns at runtime. ``show_column_chooser=True`` adds a toolbar
+button that opens a dialog for toggling which columns are visible; individual
+columns can also be hidden from the column-header right-click menu:
+
+.. code-block:: python
+
+   bs.DataTable(columns=cols, rows=people, show_column_chooser=True)
+
+.. image:: /_static/examples/datatable-column-chooser-light.png
+   :class: bs-screenshot-light
+   :alt: DataTable column chooser — light theme
+
+.. image:: /_static/examples/datatable-column-chooser-dark.png
+   :class: bs-screenshot-dark
+   :alt: DataTable column chooser — dark theme
+
 Selection
 ~~~~~~~~~
 
@@ -111,7 +130,7 @@ selected ``records`` and their ``ids``:
 
 .. code-block:: python
 
-   table = bs.Table(columns=cols, rows=people, selection_mode="multi")
+   table = bs.DataTable(columns=cols, rows=people, selection_mode="multi")
    table.on_selection_changed(lambda e: print(e.records, e.ids))
    print(table.selected_rows)
 
@@ -133,16 +152,16 @@ click toggles a row in or out of the selection, no ``Ctrl`` / ``Shift`` needed:
 
 .. code-block:: python
 
-   bs.Table(columns=cols, rows=people, selection_mode="multi",
+   bs.DataTable(columns=cols, rows=people, selection_mode="multi",
             show_selection_controls=True)
 
-.. image:: /_static/examples/table-selection-light.png
+.. image:: /_static/examples/datatable-selection-light.png
    :class: bs-screenshot-light
-   :alt: Table multi-select — light theme
+   :alt: DataTable multi-select — light theme
 
-.. image:: /_static/examples/table-selection-dark.png
+.. image:: /_static/examples/datatable-selection-dark.png
    :class: bs-screenshot-dark
-   :alt: Table multi-select — dark theme
+   :alt: DataTable multi-select — dark theme
 
 Searching
 ~~~~~~~~~
@@ -152,18 +171,18 @@ columns. Drive it programmatically too:
 
 .. code-block:: python
 
-   table = bs.Table(columns=cols, rows=people, searchable=True)
+   table = bs.DataTable(columns=cols, rows=people, searchable=True)
    table.set_search("engineer")
    print(table.get_search())     # "engineer"
    table.clear_search()
 
-.. image:: /_static/examples/table-search-light.png
+.. image:: /_static/examples/datatable-search-light.png
    :class: bs-screenshot-light
-   :alt: Table search — light theme
+   :alt: DataTable search — light theme
 
-.. image:: /_static/examples/table-search-dark.png
+.. image:: /_static/examples/datatable-search-dark.png
    :class: bs-screenshot-dark
-   :alt: Table search — dark theme
+   :alt: DataTable search — dark theme
 
 Column filters
 ~~~~~~~~~~~~~~
@@ -173,17 +192,17 @@ right-click menu adds *filter by cell's value* alongside sort, hide, and delete
 actions. Search and column filters compose (both must match) and the status bar
 summarizes what's active:
 
-.. image:: /_static/examples/table-row-menu-light.png
+.. image:: /_static/examples/datatable-row-menu-light.png
    :class: bs-screenshot-light
-   :alt: Table row context menu — light theme
+   :alt: DataTable row context menu — light theme
 
-.. image:: /_static/examples/table-row-menu-dark.png
+.. image:: /_static/examples/datatable-row-menu-dark.png
    :class: bs-screenshot-dark
-   :alt: Table row context menu — dark theme
+   :alt: DataTable row context menu — dark theme
 
 .. code-block:: python
 
-   table = bs.Table(columns=cols, rows=people, allow_filter=True)
+   table = bs.DataTable(columns=cols, rows=people, allow_filter=True)
 
    table.set_filter("dept", ["Engineering"])   # set one programmatically
    print(table.get_filters())                  # {"dept": ["Engineering"]}
@@ -192,13 +211,13 @@ summarizes what's active:
 The filters are built on the data source's query API — see
 :doc:`../reference/data-sources` for the ``col()`` expression DSL behind them.
 
-.. image:: /_static/examples/table-filter-light.png
+.. image:: /_static/examples/datatable-filter-light.png
    :class: bs-screenshot-light
-   :alt: Table column filter — light theme
+   :alt: DataTable column filter — light theme
 
-.. image:: /_static/examples/table-filter-dark.png
+.. image:: /_static/examples/datatable-filter-dark.png
    :class: bs-screenshot-dark
-   :alt: Table column filter — dark theme
+   :alt: DataTable column filter — dark theme
 
 Sorting
 ~~~~~~~
@@ -208,19 +227,19 @@ disables it:
 
 .. code-block:: python
 
-   table = bs.Table(columns=cols, rows=people, sorting_mode="single")
+   table = bs.DataTable(columns=cols, rows=people, sorting_mode="single")
 
    table.sort_by("salary", ascending=False)
    print(table.get_sorting())    # {"salary": False}  (descending)
    table.clear_sorting()
 
-.. image:: /_static/examples/table-sort-light.png
+.. image:: /_static/examples/datatable-sort-light.png
    :class: bs-screenshot-light
-   :alt: Table sorted column — light theme
+   :alt: DataTable sorted column — light theme
 
-.. image:: /_static/examples/table-sort-dark.png
+.. image:: /_static/examples/datatable-sort-dark.png
    :class: bs-screenshot-dark
-   :alt: Table sorted column — dark theme
+   :alt: DataTable sorted column — dark theme
 
 Grouping
 ~~~~~~~~
@@ -229,30 +248,30 @@ Right-click a column header for its context menu — align, reorder, hide/show
 columns, clear the sort, and (with ``allow_group=True``) group rows by that
 column:
 
-.. image:: /_static/examples/table-header-menu-light.png
+.. image:: /_static/examples/datatable-header-menu-light.png
    :class: bs-screenshot-light
-   :alt: Table column header menu — light theme
+   :alt: DataTable column header menu — light theme
 
-.. image:: /_static/examples/table-header-menu-dark.png
+.. image:: /_static/examples/datatable-header-menu-dark.png
    :class: bs-screenshot-dark
-   :alt: Table column header menu — dark theme
+   :alt: DataTable column header menu — dark theme
 
 .. code-block:: python
 
-   table = bs.Table(columns=cols, rows=people, allow_group=True)
+   table = bs.DataTable(columns=cols, rows=people, allow_group=True)
 
    table.group_by("dept")
    table.expand_all()            # or collapse_all()
    print(table.get_grouping())   # "dept"
    table.clear_grouping()
 
-.. image:: /_static/examples/table-group-light.png
+.. image:: /_static/examples/datatable-group-light.png
    :class: bs-screenshot-light
-   :alt: Table grouped rows — light theme
+   :alt: DataTable grouped rows — light theme
 
-.. image:: /_static/examples/table-group-dark.png
+.. image:: /_static/examples/datatable-group-dark.png
    :class: bs-screenshot-dark
-   :alt: Table grouped rows — dark theme
+   :alt: DataTable grouped rows — dark theme
 
 Paging
 ~~~~~~
@@ -263,8 +282,8 @@ more as you scroll:
 
 .. code-block:: python
 
-   bs.Table(columns=cols, rows=people, page_size=50)
-   bs.Table(columns=cols, rows=people, paging_mode="virtual")
+   bs.DataTable(columns=cols, rows=people, page_size=50)
+   bs.DataTable(columns=cols, rows=people, paging_mode="virtual")
 
 Navigate pages programmatically:
 
@@ -291,18 +310,18 @@ source:
 
 .. code-block:: python
 
-   table = bs.Table(
+   table = bs.DataTable(
        columns=cols, rows=people,
        allow_add=True, allow_edit=True, allow_delete=True,
    )
 
-.. image:: /_static/examples/table-edit-light.png
+.. image:: /_static/examples/datatable-edit-light.png
    :class: bs-screenshot-light
-   :alt: Table edit record dialog — light theme
+   :alt: DataTable edit record dialog — light theme
 
-.. image:: /_static/examples/table-edit-dark.png
+.. image:: /_static/examples/datatable-edit-dark.png
    :class: bs-screenshot-dark
-   :alt: Table edit record dialog — dark theme
+   :alt: DataTable edit record dialog — dark theme
 
 Mutate programmatically with ``insert_rows`` / ``update_rows`` / ``delete_rows``,
 and react with the row events — each fires **once per call** with a
@@ -367,13 +386,13 @@ file** (CSV, plus Excel when the optional ``bootstack[excel]`` extra is installe
 The actions export the selected rows if any are selected, otherwise the whole
 filtered set.
 
-.. image:: /_static/examples/table-export-light.png
+.. image:: /_static/examples/datatable-export-light.png
    :class: bs-screenshot-light
-   :alt: Table export menu — light theme
+   :alt: DataTable export menu — light theme
 
-.. image:: /_static/examples/table-export-dark.png
+.. image:: /_static/examples/datatable-export-dark.png
    :class: bs-screenshot-dark
-   :alt: Table export menu — dark theme
+   :alt: DataTable export menu — dark theme
 
 For programmatic export, two tiers cover small and large data. *Materialized*
 helpers load everything into memory — convenient for small result sets:
@@ -419,44 +438,65 @@ Data binding
 ~~~~~~~~~~~~
 
 By default the table builds its own in-memory ``SqliteDataSource``. To back it
-with a database file — or to share one source across views — pass a
-``SqliteDataSource`` via ``data_source=``. Mutate that source (even from a
-background thread) and the table refreshes itself:
+with a database file — or to share one source across views — pass a source via
+``data_source=``. Mutate that source (even from a background thread) and the
+table refreshes itself:
 
 .. code-block:: python
 
    ds = bs.SqliteDataSource("people.db")
    ds.load(people)
 
-   table = bs.Table(columns=cols, data_source=ds)
+   table = bs.DataTable(columns=cols, data_source=ds)
    ds.insert({"name": "Streamed in"})   # the table updates on its own
 
-The table is backed specifically by a ``SqliteDataSource`` (it relies on that
-source's row identity), so ``data_source`` must be one. See
+Any source that implements the data-source protocol works — ``SqliteDataSource``,
+``MemoryDataSource``, ``FileDataSource``, or your own — so row identity,
+selection, and editing round-trip regardless of the backend. See
 :doc:`../reference/data-sources` for the source's filtering and sorting
 (``where()`` / ``order()``) and change broadcasting (``on_change`` / ``observe``).
 
-Appearance
-~~~~~~~~~~
+Density and striping
+~~~~~~~~~~~~~~~~~~~~~
 
-Rows are striped by default (``striped=False`` to disable). ``show_status_bar``
-governs the footer — the filter/sort/group summary and the pager, which hides on
-a single page and collapses when there's nothing to show. ``show_column_chooser``
-adds a button that opens a dialog to toggle column visibility. ``context_menus``
-controls the right-click menus — ``'all'`` (default), ``'rows'``, ``'headers'``,
-or ``'none'``:
+Rows are striped by default — pass ``striped=False`` to turn the alternating
+background off. ``density='compact'`` tightens the row height, body font, and
+cell padding to fit more rows in the same space:
 
 .. code-block:: python
 
-   bs.Table(columns=cols, rows=people, show_column_chooser=True)
+   bs.DataTable(columns=cols, rows=people, density="compact")
 
-.. image:: /_static/examples/table-column-chooser-light.png
+.. image:: /_static/examples/datatable-density-light.png
    :class: bs-screenshot-light
-   :alt: Table column chooser — light theme
+   :alt: DataTable compact density — light theme
 
-.. image:: /_static/examples/table-column-chooser-dark.png
+.. image:: /_static/examples/datatable-density-dark.png
    :class: bs-screenshot-dark
-   :alt: Table column chooser — dark theme
+   :alt: DataTable compact density — dark theme
+
+The table draws no border of its own. Wrap it in a :doc:`card` or a ``Frame``
+when you want a bordered, contained look.
+
+Status bar and context menus
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The footer status bar carries the active filter/sort/group summary and the pager.
+It is self-managing: the pager hides on a single page and the whole bar collapses
+when there is nothing to show. Pass ``show_status_bar=False`` to hide it outright:
+
+.. code-block:: python
+
+   bs.DataTable(columns=cols, rows=people, show_status_bar=False)
+
+``context_menus`` controls the right-click menus shown earlier — the column-header
+menu (sort, align, reorder, hide, group) and the row menu (filter by value, edit,
+delete). Choose ``'all'`` (default), ``'headers'``, ``'rows'``, or ``'none'`` to
+disable them:
+
+.. code-block:: python
+
+   bs.DataTable(columns=cols, rows=people, context_menus="headers")
 
 Widget sizing
 ~~~~~~~~~~~~~
@@ -476,26 +516,26 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.table.Table
+.. autoclass:: bootstack.widgets.datatable.Table
    :members:
    :undoc-members:
 
 The column and form configuration dicts, and the handle returned by
 ``export_file_async``:
 
-.. autoclass:: bootstack.widgets.table.ColumnSpec
+.. autoclass:: bootstack.widgets.datatable.ColumnSpec
    :members:
 
-.. autoclass:: bootstack.widgets.table.FormOptions
+.. autoclass:: bootstack.widgets.datatable.FormOptions
    :members:
 
-.. autoclass:: bootstack.widgets.table.ExportJob
+.. autoclass:: bootstack.widgets.datatable.ExportJob
    :members:
 
 Full Example
 ------------
 
-.. literalinclude:: ../../docs/examples/table.py
+.. literalinclude:: ../../docs/examples/datatable.py
    :language: python
    :linenos:
    :start-after: import bootstack as bs
