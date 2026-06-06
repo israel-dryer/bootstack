@@ -318,6 +318,9 @@ class TableView(Frame):
         self._filter_tooltip: ToolTip | None = None
         # In-flight async export jobs, aborted on widget teardown.
         self._export_jobs: set = set()
+        # The live add/edit form dialog while it is open (for capture/automation).
+        self._active_form_dialog = None
+        self._active_chooser_dialog = None
         self._row_alternation = _build_row_alternation_options(
             striped=striped,
             striped_background=striped_background,
@@ -676,6 +679,16 @@ class TableView(Frame):
     def go_to_page(self, index: int) -> None:
         self._load_page(max(0, index))
 
+    @property
+    def current_page(self) -> int:
+        """Zero-based index of the page currently shown."""
+        return self._current_page
+
+    @property
+    def page_count(self) -> int:
+        """Total number of pages for the current filter/search."""
+        return self._total_pages()
+
     # ------------------------------------------------------------------ Filter/Sort/Group API
     def get_filters(self) -> dict[str, list]:
         """Return the active column filters as `{column_key: allowed_values}`."""
@@ -684,6 +697,14 @@ class TableView(Frame):
     def clear_filters(self) -> None:
         """Remove all active column filters (leaves the search term intact)."""
         self._clear_filter_cmd()
+
+    def set_filter(self, column: str, values=None) -> None:
+        """Set a column filter (or clear it when `values` is None); composes with search."""
+        if values is None:
+            self._column_filters.pop(column, None)
+        else:
+            self._column_filters[column] = list(values)
+        self._apply_where()
 
     def get_search(self) -> str:
         """Return the active free-text search term."""
@@ -878,7 +899,7 @@ class TableView(Frame):
         if self._show_column_chooser:
             self._column_chooser_btn = Button(
                 bar,
-                icon="table-columns",
+                icon="layout-three-columns",
                 icon_only=True,
                 accent="foreground",
                 variant="ghost",
@@ -998,6 +1019,8 @@ class TableView(Frame):
         # Same column 0 as the toolbar so the footer aligns with the table
         # content and stops at the vsb edge.
         bar.grid(row=3, column=0, sticky="ew", pady=(4, 0))
+        self._footer_bar = bar
+
         status_frame = Frame(bar)
         status_frame.pack(side="left", fill="x", expand=True)
         self._filter_label = Label(status_frame, text="", anchor="w", accent="muted")
@@ -1005,10 +1028,11 @@ class TableView(Frame):
         self._sort_label = Label(status_frame, text="", anchor="w", accent="muted")
         self._sort_label.pack(side="left", padx=(8, 4))
 
-        if not self._show_table_status:
-            status_frame.pack_forget()
-        Frame(bar).pack(side='left', fill='x', expand=True)  # spacer
-        info_frame = Frame(bar)
+        # The pager (page entry + nav) is hidden when there is only one page.
+        pager = Frame(bar)
+        pager.pack(side="right")
+        self._pager_frame = pager
+        info_frame = Frame(pager)
         info_frame.pack(side='left')
         Label(info_frame, text="table.page").pack(side='left')
         self._page_entry = Entry(info_frame, width=6, justify="center")
@@ -1017,11 +1041,10 @@ class TableView(Frame):
         self._page_label = Label(info_frame, text="")
         self._page_label.pack(side="left", padx=(0, 8))
 
-        sep = Separator(bar, orient="vertical")
-        sep.pack(side="left", fill="y", padx=8)
+        Separator(pager, orient="vertical").pack(side="left", fill="y", padx=8)
 
-        btn_frame = Frame(bar)
-        btn_frame.pack(side="right")
+        btn_frame = Frame(pager)
+        btn_frame.pack(side="left")
         Button(btn_frame, icon="chevron-double-left", accent="foreground", variant="ghost", icon_only=True, command=self._first_page).pack(
             side="left")
         Button(btn_frame, icon="chevron-left", icon_only=True, accent="foreground", variant="ghost", command=self._prev_page).pack(
@@ -1030,6 +1053,31 @@ class TableView(Frame):
             side="left")
         Button(btn_frame, icon="chevron-double-right", icon_only=True, accent="foreground", variant="ghost", command=self._last_page).pack(
             side="left")
+
+        self._update_footer_visibility()
+
+    def _update_footer_visibility(self) -> None:
+        """Hide the pager on a single page and collapse the footer when empty.
+
+        `show_status_bar=False` hides the whole footer.
+        """
+        bar = getattr(self, "_footer_bar", None)
+        if bar is None:
+            return
+        if not self._show_table_status:
+            bar.grid_remove()
+            return
+        multipage = self._total_pages() > 1
+        has_status = bool(self._filter_label.cget("text")) or bool(self._sort_label.cget("text"))
+        if multipage:
+            if not self._pager_frame.winfo_manager():
+                self._pager_frame.pack(side="right")
+        else:
+            self._pager_frame.pack_forget()
+        if multipage or has_status:
+            bar.grid()
+        else:
+            bar.grid_remove()
 
     # ------------------------------------------------------------------ Helpers
     def _col_text(self, col) -> str:
@@ -1406,6 +1454,7 @@ class TableView(Frame):
         if hasattr(self, "_sort_label"):
             joined = " | ".join([t for t in (sort_txt, group_txt) if t])
             self._sort_label.configure(text=joined)
+        self._update_footer_visibility()
 
     # ------------------------------------------------------------------ Row context menu
     def _ensure_row_menu(self) -> None:
@@ -1478,7 +1527,18 @@ class TableView(Frame):
             return
         self._open_form_dialog(None)
 
-    def _open_form_dialog(self, record: dict | None) -> None:
+    def new_row(self, defaults: dict | None = None) -> dict | None:
+        """Open the built-in New Record dialog; return the new record or None."""
+        return self._open_form_dialog(None, defaults=defaults)
+
+    def edit_row(self, record_id) -> dict | None:
+        """Open the built-in Edit Record dialog for `record_id`; return it or None."""
+        record = self._datasource.get(record_id)
+        if record is None:
+            return None
+        return self._open_form_dialog(record)
+
+    def _open_form_dialog(self, record: dict | None, *, defaults: dict | None = None) -> dict | None:
         from bootstack.dialogs.formdialog import FormDialog
 
         try:
@@ -1489,7 +1549,7 @@ class TableView(Frame):
         dialog_master = self.winfo_toplevel() if hasattr(self, "winfo_toplevel") else self
 
         form_items = self._build_form_items()
-        initial_data = dict(record) if record else {}
+        initial_data = dict(record) if record else dict(defaults or {})
 
         form_options = dict(self._editing['form'])
         form_options.setdefault('col_count', 2)
@@ -1518,22 +1578,28 @@ class TableView(Frame):
             resizable=(True, True) if form_options.get('resizable', True) else (False, False),
         )
 
-        dialog.show(anchor_to="screen")
+        self._active_form_dialog = dialog
+        try:
+            dialog.show()   # centers over the parent window (the table)
+        finally:
+            self._active_form_dialog = None
         result = dialog.result
 
         if result is None:
-            return
+            return None
 
         # Handle delete action
         if result == "delete" and record and _ROW_ID in record:
+            deleted = self._public_record(record)
             try:
                 with self._silence_source():
                     self._datasource.delete(record[_ROW_ID])
                 self._clear_cache()
                 self._load_page(self._current_page)
+                self.event_generate("<<RowDelete>>", data=RowsEvent(records=[deleted]))
             except Exception:
                 logger.exception("Failed to delete record id=%s", record[_ROW_ID])
-            return
+            return None
 
         data = result
         new_id = None
@@ -1542,21 +1608,20 @@ class TableView(Frame):
             updates = dict(data)
             updates.pop(_ROW_ID, None)
             try:
-                logger.debug("Updating record id=%s with %s", rec_id, updates)
                 with self._silence_source():
                     self._datasource.update(rec_id, updates)
             except Exception:
                 logger.exception("Failed to update record id=%s", rec_id)
-                return
+                return None
+            saved_id, change_event = rec_id, "<<RowUpdate>>"
         else:
             try:
-                logger.debug("Creating record %s", data)
                 with self._silence_source():
                     new_id = self._datasource.insert(dict(data))
-                logger.debug("Created record id=%s (total=%s)", new_id, self._datasource.count)
             except Exception:
                 logger.exception("Failed to create record from %s", data)
-                return
+                return None
+            saved_id, change_event = new_id, "<<RowInsert>>"
         self._clear_cache()
         target_page = self._current_page
         if not record:
@@ -1566,6 +1631,14 @@ class TableView(Frame):
         self._load_page(target_page)
         if new_id is not None:
             self._focus_record(new_id)
+        saved = None
+        if saved_id is not None:
+            fresh = self._datasource.get(saved_id)
+            if fresh is not None:
+                saved = self._public_record(fresh)
+        if saved is not None:
+            self.event_generate(change_event, data=RowsEvent(records=[saved]))
+        return saved
 
     def _build_form_items(self) -> list[dict]:
         items: list[dict] = []
@@ -2396,8 +2469,8 @@ class TableView(Frame):
             master=self.winfo_toplevel(),
             title=MessageCatalog.translate("table.filter_column", heading_text),
             items=items,
-            allow_search=True,
-            allow_select_all=True,
+            enable_search=True,
+            enable_select_all=True,
             undecorated=True
         )
 
@@ -2617,12 +2690,16 @@ class TableView(Frame):
             master=self.winfo_toplevel(),
             title="Columns",
             items=items,
-            allow_search=False,
-            allow_select_all=True,
+            enable_search=False,
+            enable_select_all=True,
             undecorated=True
         )
 
-        result = dialog.show(position=(pos_x, pos_y))
+        self._active_chooser_dialog = dialog
+        try:
+            result = dialog.show(position=(pos_x, pos_y))
+        finally:
+            self._active_chooser_dialog = None
 
         if result is not None:
             # Update display columns based on selection

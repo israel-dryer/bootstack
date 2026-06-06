@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, Protocol, overload
+from typing import Any, Callable, Literal, Protocol, TypedDict, overload
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
@@ -9,6 +9,49 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, S
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+
+
+class ColumnSpec(TypedDict, total=False):
+    """A column definition for `Table(columns=...)`.
+
+    Columns may be plain key strings or these dicts. Only `key` is required; the
+    editor keys (`editor`, `editor_options`, `dtype`, `readonly`, `required`)
+    shape how the column appears in the built-in add/edit dialog.
+    """
+
+    key: str
+    """Record field this column reads and writes."""
+    text: str
+    """Header label. Defaults to `key`."""
+    width: int
+    """Column width in pixels."""
+    minwidth: int
+    """Minimum column width in pixels."""
+    anchor: str
+    """Cell alignment — `'w'`, `'center'`, or `'e'`."""
+    dtype: str
+    """Value type hint (e.g. `'int'`, `'text'`); drives alignment and the editor."""
+    editor: str
+    """Field type used in the add/edit dialog (e.g. `'text'`, `'number'`, `'select'`)."""
+    editor_options: dict
+    """Keyword options passed to the editor field."""
+    readonly: bool
+    """Show the column but make it non-editable in the dialog."""
+    required: bool
+    """Require a value in the add/edit dialog."""
+
+
+class FormOptions(TypedDict, total=False):
+    """Layout options for the built-in add/edit dialog (`Table(form=...)`)."""
+
+    col_count: int
+    """Number of columns the form fields are laid out in. Default `2`."""
+    min_col_width: int
+    """Minimum width in pixels of each form column. Default `260`."""
+    scrollable: bool
+    """Scroll the form when it is taller than the dialog. Default `True`."""
+    resizable: bool
+    """Allow the dialog to be resized. Default `True`."""
 
 
 class ExportJob(Protocol):
@@ -29,8 +72,10 @@ class Table(PublicWidgetBase):
     `FileDataSource` are not accepted.
 
     Args:
-        columns: Column definitions — list of column-ID strings or dicts with
-            keys `'text'`, `'key'`, `'width'`, and `'minwidth'`.
+        columns: Column definitions — a list of field-key strings, or
+            `ColumnSpec` dicts (`'key'`, `'text'`, `'width'`, `'minwidth'`,
+            `'anchor'`, and the editor keys `'editor'`, `'editor_options'`,
+            `'dtype'`, `'readonly'`, `'required'` that shape the add/edit dialog).
         rows: Initial data rows (list of dicts or sequences).
         data_source: Existing `SqliteDataSource` to use instead of creating one.
         selection_mode: `'none'`, `'single'` (default), or `'multi'`.
@@ -48,18 +93,22 @@ class Table(PublicWidgetBase):
             also offered when the optional `bootstack[excel]` dependency is
             installed. For explicit control use `export_file()` / `to_csv()`
             with `scope=`. Default `False`.
-        striped: Alternate row background colors. Default `False`.
+        striped: Alternate row background colors. Default `True`.
         allow_group: Allow grouping rows by a column. Default `False`.
-        show_status_bar: Show filter/sort/group status and pager. Default `True`.
+        show_status_bar: Show the footer — the filter/sort/group status and the
+            pager. The pager auto-hides on a single page, and the whole footer
+            collapses when there's nothing to show. Default `True`.
         show_column_chooser: Show a button to toggle column visibility.
             Default `False`.
+        form: Layout options for the built-in add/edit dialog — a `FormOptions`
+            dict (`col_count`, `min_col_width`, `scrollable`, `resizable`).
         parent: Override the context-stack parent.
     """
 
     def __init__(
         self,
         *,
-        columns: list[str | dict] | None = None,
+        columns: list[str | ColumnSpec] | None = None,
         rows: list | None = None,
         data_source: Any = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
@@ -72,10 +121,11 @@ class Table(PublicWidgetBase):
         allow_edit: bool = False,
         allow_delete: bool = False,
         allow_export: bool = False,
-        striped: bool = False,
+        striped: bool = True,
         allow_group: bool = False,
         show_status_bar: bool = True,
         show_column_chooser: bool = False,
+        form: FormOptions | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -105,12 +155,22 @@ class Table(PublicWidgetBase):
             internal_kwargs["rows"] = rows
         if data_source is not None:
             internal_kwargs["datasource"] = data_source
+        if form is not None:
+            internal_kwargs["form_options"] = form
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalTableView(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
     # ----- Data -----
+
+    def set_rows(self, rows: list) -> None:
+        """Replace the entire dataset with `rows`.
+
+        Args:
+            rows: List of dicts (or sequences) to load.
+        """
+        self._internal.set_data(rows)
 
     def insert_rows(self, rows: list) -> None:
         """Insert new rows.
@@ -135,6 +195,35 @@ class Table(PublicWidgetBase):
             rows_or_ids: List of record ids or record dicts with an `id` key.
         """
         self._internal.delete_rows(rows_or_ids)
+
+    def new_row(self, defaults: dict | None = None) -> dict | None:
+        """Open the built-in *New Record* dialog and insert on save.
+
+        Honors each column's editor configuration (`editor`, `dtype`,
+        `readonly`, `required`). On save the row is inserted and an `row_insert`
+        event fires; the saved record is also returned here.
+
+        Args:
+            defaults: Field values to pre-fill the form with.
+
+        Returns:
+            The new record, or `None` if the dialog was cancelled.
+        """
+        return self._internal.new_row(defaults)
+
+    def edit_row(self, record_id: Any) -> dict | None:
+        """Open the built-in *Edit Record* dialog for a row and save on submit.
+
+        On save the row is updated and a `row_update` event fires (or
+        `row_delete` if the user deletes it); the saved record is also returned.
+
+        Args:
+            record_id: Record id of the row to edit.
+
+        Returns:
+            The updated record, or `None` if cancelled or deleted.
+        """
+        return self._internal.edit_row(record_id)
 
     # ----- Selection -----
 
@@ -182,6 +271,34 @@ class Table(PublicWidgetBase):
             record_id: Record id of the row.
         """
         self._internal.scroll_to_row(record_id)
+
+    # ----- Paging -----
+
+    def go_to_page(self, index: int) -> None:
+        """Show the page at the given zero-based index.
+
+        Args:
+            index: Zero-based page index.
+        """
+        self._internal.go_to_page(index)
+
+    def next_page(self) -> None:
+        """Advance to the next page (no-op on the last page)."""
+        self._internal.next_page()
+
+    def prev_page(self) -> None:
+        """Go to the previous page (no-op on the first page)."""
+        self._internal.previous_page()
+
+    @property
+    def current_page(self) -> int:
+        """Zero-based index of the page currently shown."""
+        return self._internal.current_page
+
+    @property
+    def page_count(self) -> int:
+        """Total number of pages for the current filter/search."""
+        return self._internal.page_count
 
     # ----- Export -----
 
@@ -312,6 +429,17 @@ class Table(PublicWidgetBase):
         """Remove all active column filters (leaves the search term intact)."""
         self._internal.clear_filters()
 
+    def set_filter(self, column: str, values: list | None = None) -> None:
+        """Filter a column to the given values, or clear it when `values` is None.
+
+        Composes with the search term and other column filters.
+
+        Args:
+            column: Column key to filter.
+            values: Allowed values; `None` clears this column's filter.
+        """
+        self._internal.set_filter(column, values)
+
     def get_sorting(self) -> dict[str, bool]:
         """Return the current sort state as `{column_key: ascending}` dict."""
         return self._internal.get_sorting()
@@ -320,6 +448,15 @@ class Table(PublicWidgetBase):
         """Remove all active sort orders."""
         self._internal.clear_sorting()
 
+    def sort_by(self, column: str, ascending: bool = True) -> None:
+        """Sort the table by a column.
+
+        Args:
+            column: Column key to sort by.
+            ascending: Sort ascending (default) or descending.
+        """
+        self._internal.set_sorting(column, ascending)
+
     def get_grouping(self) -> str | None:
         """Return the currently grouped column key, or `None`."""
         return self._internal.get_grouping()
@@ -327,6 +464,22 @@ class Table(PublicWidgetBase):
     def clear_grouping(self) -> None:
         """Remove the active grouping."""
         self._internal.clear_grouping()
+
+    def group_by(self, column: str) -> None:
+        """Group rows by a column (collapsible group headers).
+
+        Args:
+            column: Column key to group by.
+        """
+        self._internal.set_grouping(column)
+
+    def expand_all(self) -> None:
+        """Expand all groups."""
+        self._internal.expand_all()
+
+    def collapse_all(self) -> None:
+        """Collapse all groups."""
+        self._internal.collapse_all()
 
     # ----- Properties -----
 
