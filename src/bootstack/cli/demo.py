@@ -379,7 +379,7 @@ def _build_forms_page():
 def _build_data_page():
     with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
         bs.Label("Data Display", font="heading-xl")
-        bs.Label("Labels, badges, trees, and tables for presenting data.", accent="secondary")
+        bs.Label("Labels, badges, and a full-featured data table for presenting data.", accent="secondary")
 
         with bs.GroupBox("Labels", fill="horizontal", layout="hstack", gap=4):
             for color in ("primary", "secondary", "success", "warning", "danger"):
@@ -393,24 +393,38 @@ def _build_data_page():
             bs.Badge("99+",   accent="danger",  variant="pill")
             bs.Badge("New",   accent="success")
 
-        with bs.GroupBox("Tree", fill="both", expand=True):
-            columns = ("name", "status", "progress")
-            tree = bs.Tree(columns=columns, show="headings", height=5, fill="both", expand=True)
-            tree.heading("name",     text="Task Name")
-            tree.heading("status",   text="Status")
-            tree.heading("progress", text="Progress")
-            tree.column("name",     width=200)
-            tree.column("status",   width=100, anchor="center")
-            tree.column("progress", width=100, anchor="center")
-            for item in [
-                ("Database Migration", "Complete",    "100%"),
-                ("API Integration",    "In Progress", "65%"),
-                ("UI Redesign",        "In Progress", "40%"),
-                ("Testing Suite",      "Pending",     "0%"),
-                ("Documentation",      "In Progress", "80%"),
-            ]:
-                tree.insert("", "end", values=item)
-            tree.selection_set(tree.get_children()[0])
+        with bs.GroupBox("DataTable", fill="both", expand=True):
+            employees = [
+                {"name": "Ada Lovelace",      "role": "Staff Engineer",     "dept": "Engineering", "salary": 185000},
+                {"name": "Alan Turing",       "role": "Software Engineer",  "dept": "Engineering", "salary": 162000},
+                {"name": "Grace Hopper",      "role": "Engineering Lead",   "dept": "Engineering", "salary": 198000},
+                {"name": "Katherine Johnson", "role": "Data Scientist",     "dept": "Engineering", "salary": 171000},
+                {"name": "Carol Williams",    "role": "Product Designer",   "dept": "Design",      "salary": 142000},
+                {"name": "David Kim",         "role": "Product Designer",   "dept": "Design",      "salary": 138000},
+                {"name": "Eva Martinez",      "role": "Account Executive",  "dept": "Sales",       "salary": 129000},
+                {"name": "Frank Wong",        "role": "Sales Manager",      "dept": "Sales",       "salary": 156000},
+                {"name": "Grace Lee",         "role": "Support Specialist", "dept": "Support",     "salary": 98000},
+                {"name": "Henry Ford",        "role": "Support Specialist", "dept": "Support",     "salary": 96000},
+                {"name": "Iris Chen",         "role": "Content Strategist", "dept": "Marketing",   "salary": 112000},
+                {"name": "Jack Brown",        "role": "Growth Marketer",    "dept": "Marketing",   "salary": 118000},
+            ]
+            bs.DataTable(
+                columns=[
+                    {"text": "Name",       "key": "name",   "width": 200},
+                    {"text": "Role",       "key": "role",   "width": 180},
+                    {"text": "Department", "key": "dept",   "width": 140},
+                    {"text": "Salary",     "key": "salary", "width": 120, "anchor": "e", "format": "${:,.0f}"},
+                ],
+                rows=employees,
+                selection_mode="multi",
+                show_selection_controls=True,
+                allow_filter=True,
+                allow_group=True,
+                allow_export=True,
+                page_size=8,
+                fill="both",
+                expand=True,
+            )
 
 
 # -- Progress & Meters --------------------------------------------------------
@@ -704,12 +718,14 @@ def run_demo():
         # Build home page immediately; all others on first navigation
         _build_page("home")
 
-        def _on_page_changed(event) -> None:
-            key = getattr(event.data, "page", None) if hasattr(event, "data") else None
+        def _on_page_change(event) -> None:
+            # on_page_change delivers a PageChangeEvent (unpacked); .page is the
+            # key of the now-active page.
+            key = getattr(event, "page", None)
             if key:
                 _build_page(key)
 
-        shell.on_page_changed(_on_page_changed)
+        shell.on_page_change(_on_page_change)
         shell.navigate("home")
 
     shell.run()
