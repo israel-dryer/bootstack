@@ -1,4 +1,4 @@
-﻿"""TableView widget backed by an in-memory SQLite datasource.
+"""TableView widget backed by an in-memory SQLite datasource.
 
 The datasource performs filtering, sorting, and pagination while the widget
 renders the current page in a Treeview with optional grouping, striping, and
@@ -16,17 +16,17 @@ from tkinter import font as tkfont
 from typing import Any, Callable
 from typing_extensions import Literal, TypedDict, Unpack
 
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, WidgetDensity
 
 from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_style
-# NOTE(datasource-coupling): the table reads these Sqlite-internal identity/
-# selection columns directly, so it only works with a SqliteDataSource — a
-# non-Sqlite protocol source renders but select_rows silently fails. Decoupling
-# (route identity through the source's protocol-level id) is a separate
-# initiative; see memory project_table_datasource_coupling.
-from bootstack.data.sqlite_source import SqliteDataSource, _ROW_ID, _ROW_SEL
+# Row identity and the set of hidden internal columns are read through the
+# datasource's protocol-level helpers (`_record_id`, `_public_record`,
+# `_internal_fields`) so the table works with any `DataSourceProtocol` source,
+# not just SqliteDataSource. SqliteDataSource is imported only to create the
+# default in-memory source when no `datasource=` is supplied.
+from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.query import col, any_of, all_of
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack._runtime.utility import bind_right_click
@@ -242,6 +242,7 @@ class TableView(Frame):
             # Appearance & extras
             striped: bool = False,
             striped_background: str = 'background[+1]',
+            density: WidgetDensity = 'default',
             allow_grouping: bool = False,
             show_table_status: bool = True,
             show_column_chooser: bool = False,
@@ -286,6 +287,7 @@ class TableView(Frame):
             export_formats: Tuple of export formats (e.g., ('csv', 'xlsx')).
             striped: Show alternating row colors. Defaults to False.
             striped_background: Background color for striped rows. Defaults to 'background[+1]'.
+            density: Row compactness ('default' or 'compact'). Defaults to 'default'.
             allow_grouping: Allow grouping rows via header context menu. Defaults to False.
             show_table_status: Show filter/sort/group status labels and pager. Defaults to True.
             show_column_chooser: Show column chooser button. Defaults to False.
@@ -352,6 +354,8 @@ class TableView(Frame):
             striped=striped,
             striped_background=striped_background,
         )
+        # Treeview row density, forwarded to the TreeView style options.
+        self._density: WidgetDensity = density
         # Per-row selection markers (checkbox/dot) in the leading icon slot.
         self._selection_indicators = bool(show_selection_controls)
         # Cache of rendered marker icons keyed by (name, size, color).
@@ -504,18 +508,20 @@ class TableView(Frame):
     # ------------------------------------------------------------------ Public data/selection API
     def _public_record(self, rec: dict | None) -> dict:
         """Return a user-facing copy of `rec` — internal columns stripped, `id` surfaced."""
-        if not rec:
-            return {}
-        out = {k: v for k, v in rec.items() if k not in (_ROW_ID, _ROW_SEL)}
-        rid = rec.get(_ROW_ID)
-        if rid is not None:
-            out["id"] = rid
-        return out
+        return self._datasource._public_record(rec)
+
+    def _record_id(self, rec: dict | None) -> Any:
+        """Stable identity of a raw record, via the datasource's id accessor."""
+        return self._datasource._record_id(rec) if rec else None
+
+    def _internal_fields(self) -> "frozenset[str]":
+        """Raw-record keys the datasource treats as internal (hidden from users)."""
+        return self._datasource._internal_fields()
 
     def _iid_for_id(self, rid: Any) -> str | None:
         """Find the row handle of a currently-rendered row by its record `id`."""
         for iid, rec in self._row_map.items():
-            if rec.get(_ROW_ID) == rid:
+            if self._record_id(rec) == rid:
                 return iid
         return None
 
@@ -539,16 +545,16 @@ class TableView(Frame):
                     # Strip any public 'id' — the datasource assigns the id.
                     payload = {k: v for k, v in dict(rec).items() if k != "id"}
                     new_id = self._datasource.insert(payload)
+                    record = self._public_record(payload)
                     if new_id is not None:
-                        payload[_ROW_ID] = new_id
-                    inserted.append(payload)
+                        record["id"] = new_id
+                    inserted.append(record)
                 except Exception:
                     logger.exception("Failed to insert record")
         if inserted:
             self._clear_cache()
             self._load_page(self._current_page)
-            records = [self._public_record(r) for r in inserted]
-            self.event_generate("<<RowsInsert>>", data=RowsEvent(records=records))
+            self.event_generate("<<RowsInsert>>", data=RowsEvent(records=inserted))
 
     def update_rows(self, rows: list[dict]) -> None:
         """Update rows by record `id`; each dict must include an `id` key."""
@@ -558,7 +564,8 @@ class TableView(Frame):
                 rec_id = rec.get("id")
                 if rec_id is None:
                     continue
-                updates = {k: v for k, v in rec.items() if k not in ("id", _ROW_ID, _ROW_SEL)}
+                _hidden = self._internal_fields()
+                updates = {k: v for k, v in rec.items() if k != "id" and k not in _hidden}
                 try:
                     self._datasource.update(rec_id, updates)
                     updated.append(dict(rec))
@@ -889,7 +896,8 @@ class TableView(Frame):
         if not inferred:
             inferred = getattr(self._datasource, "_columns", []) or []
 
-        inferred = [c for c in inferred if c not in (_ROW_ID, _ROW_SEL)]
+        _hidden = self._internal_fields()
+        inferred = [c for c in inferred if c not in _hidden]
         if not inferred:
             inferred = ["value"]
 
@@ -991,7 +999,8 @@ class TableView(Frame):
             self,
             columns=list(range(len(cols))),
             selectmode=_parse_selection_mode(self._selection['mode']),
-            show="headings"
+            show="headings",
+            density=self._density,
         )
         # Inset the tree by the focus-ring affordance baked into sibling
         # entry images so the tree's content edge lines up with the visible
@@ -1062,8 +1071,13 @@ class TableView(Frame):
         bar = Frame(self)
         # Same column 0 as the toolbar so the footer aligns with the table
         # content and stops at the vsb edge.
-        bar.grid(row=3, column=0, sticky="ew", pady=(4, 0))
+        bar.grid(row=3, column=0, sticky="ew", pady=(6, 0))
         self._footer_bar = bar
+
+        # A divider separating the footer from the table body. It lives inside
+        # the footer bar, so it shows and hides together with the footer.
+        self._footer_sep = Separator(bar, orient="horizontal")
+        self._footer_sep.pack(side="top", fill="x", pady=(0, 6))
 
         status_frame = Frame(bar)
         status_frame.pack(side="left", fill="x", expand=True)
@@ -1549,7 +1563,7 @@ class TableView(Frame):
             if iid not in self._tree.selection():
                 self._tree.selection_set(iid)
             rec = self._row_map.get(iid, {})
-            self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
+            self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         if not self._tree.selection():
             return
         self._row_menu_col = col_idx
@@ -1564,7 +1578,7 @@ class TableView(Frame):
         if not iid:
             return
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
+        self.event_generate("<<RowDoubleClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         if self._editing['updating']:
             self._open_form_dialog(rec)
 
@@ -1604,7 +1618,8 @@ class TableView(Frame):
         form_options.setdefault('resizable', True)
 
         # Build buttons: Cancel, Delete (only for existing records), Save
-        if record and _ROW_ID in record:
+        record_id = self._record_id(record)
+        if record and record_id is not None:
             buttons: list[str | dict] = ['Cancel']
             if self._editing['deleting']:
                 buttons.append({"text": "Delete", "role": "secondary", "result": "delete"})
@@ -1635,24 +1650,25 @@ class TableView(Frame):
             return None
 
         # Handle delete action
-        if result == "delete" and record and _ROW_ID in record:
+        if result == "delete" and record and record_id is not None:
             deleted = self._public_record(record)
             try:
                 with self._silence_source():
-                    self._datasource.delete(record[_ROW_ID])
+                    self._datasource.delete(record_id)
                 self._clear_cache()
                 self._load_page(self._current_page)
                 self.event_generate("<<RowsDelete>>", data=RowsEvent(records=[deleted]))
             except Exception:
-                logger.exception("Failed to delete record id=%s", record[_ROW_ID])
+                logger.exception("Failed to delete record id=%s", record_id)
             return None
 
         data = result
         new_id = None
-        if record and _ROW_ID in record:
-            rec_id = record[_ROW_ID]
+        if record and record_id is not None:
+            rec_id = record_id
             updates = dict(data)
-            updates.pop(_ROW_ID, None)
+            for _f in self._internal_fields():
+                updates.pop(_f, None)
             try:
                 with self._silence_source():
                     self._datasource.update(rec_id, updates)
@@ -1821,7 +1837,7 @@ class TableView(Frame):
             return
         iid = sel[0]
         rec = self._row_map.get(iid, {})
-        rec_id = rec.get(_ROW_ID)
+        rec_id = self._record_id(rec)
         if rec_id is not None:
             try:
                 with self._silence_source():
@@ -1841,7 +1857,7 @@ class TableView(Frame):
                 rec = dict(self._row_map.get(iid) or {})
                 if rec:
                     deleted_records.append(rec)
-                rec_id = rec.get(_ROW_ID)
+                rec_id = self._record_id(rec)
                 if rec_id is not None:
                     try:
                         self._datasource.delete(rec_id)
@@ -1914,7 +1930,7 @@ class TableView(Frame):
         try:
             rid = str(record_id)
             for iid, rec in self._row_map.items():
-                if str(rec.get(_ROW_ID)) == rid:
+                if str(self._record_id(rec)) == rid:
                     self._tree.selection_set(iid)
                     self._tree.see(iid)
                     break
@@ -1931,7 +1947,7 @@ class TableView(Frame):
                     rows = self._datasource.page(page_idx)
                 except Exception:
                     break
-                if any(str(rec.get(_ROW_ID)) == rid for rec in rows):
+                if any(str(self._record_id(rec)) == rid for rec in rows):
                     return page_idx
         except Exception:
             pass
@@ -2214,7 +2230,8 @@ class TableView(Frame):
     # ------------------------------------------------------------------ Export — data access
     def _export_columns(self) -> tuple[list[str], list[str]]:
         """Return `(header_texts, keys)` for the displayed columns (no internal columns)."""
-        keys = [k for k in self._column_keys if k not in (_ROW_ID, _ROW_SEL)]
+        _hidden = self._internal_fields()
+        keys = [k for k in self._column_keys if k not in _hidden]
         headers = [self._column_heading(k) for k in keys]
         return headers, keys
 
@@ -2749,7 +2766,7 @@ class TableView(Frame):
         if not iid or iid not in self._row_map:
             return  # empty space or a group-header row (no record)
         rec = self._row_map.get(iid, {})
-        self.event_generate("<<RowClick>>", data=RowEvent(record=self._public_record(rec), id=rec.get(_ROW_ID)))
+        self.event_generate("<<RowClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
 
     # ------------------------------------------------------------------ Header context menu
     def _ensure_header_menu(self) -> None:

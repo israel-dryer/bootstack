@@ -334,6 +334,17 @@ class SqliteDataSource(BaseDataSource):
         row = cursor.fetchone()
         return dict(row) if row else None
 
+    # ---------- row identity ----------
+    def _internal_fields(self) -> "frozenset[str]":
+        """Hide the internal identity and selection columns from users."""
+        return frozenset({_ROW_ID, _ROW_SEL})
+
+    def _record_id(self, record: Any) -> Any:
+        """Identity is the internal `_bs_row_id` column."""
+        if not record:
+            return None
+        return record.get(_ROW_ID)
+
     def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID."""
         if not updates:

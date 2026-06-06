@@ -1,7 +1,7 @@
-"""Visual test for public ListView, Tree, and Table."""
+"""Visual test for public ListView, Tree, and DataTable."""
 from bootstack import (
     App, VStack, HStack, Label, Button, Separator, Tabs,
-    ListView, Tree, Table,
+    ListView, Tree, DataTable,
 )
 
 
@@ -103,12 +103,12 @@ with App(title="Data Display", minsize=(900, 620), padding=0, gap=0) as app:
                        on_click=lambda: [tv.collapse(i)
                                          for i in tv.get_children()])
 
-    # --- Table tab ---
-    with tabs.add("table", label="Table"):
+    # --- DataTable tab ---
+    with tabs.add("table", label="DataTable"):
         with VStack(padding=16, gap=10, fill="both", expand=True):
             Label("Sortable / filterable table:", font="heading-sm")
 
-            tbl = Table(
+            tbl = DataTable(
                 columns=["name", "role", "dept"],
                 rows=PEOPLE,
                 selection_mode="multi",

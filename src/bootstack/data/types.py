@@ -300,6 +300,27 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
+    # ---------- row identity ----------
+    @property
+    def id_field(self) -> str:
+        """Name of the record field that holds the stable row identity."""
+        ...
+
+    def _internal_fields(self) -> "frozenset[str]":
+        """Raw-record keys that are implementation-internal and hidden from
+        users. Datasource-aware widgets strip these from columns and exports."""
+        ...
+
+    def _record_id(self, record: Any) -> Any:
+        """Stable identity of a raw record — what `get`/`update`/`delete`/
+        `select` accept and what is surfaced publicly as `id`."""
+        ...
+
+    def _public_record(self, record: Any) -> Record:
+        """User-facing copy of a raw record: internal fields stripped, `id`
+        surfaced."""
+        ...
+
     # ---------- change broadcasting ----------
     def on_change(self, handler: Any = None) -> Any:
         """Subscribe to changes. Returns a `Stream` (no handler) or a

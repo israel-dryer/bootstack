@@ -48,7 +48,7 @@ Every widget bootstack provides, grouped by purpose.
    progressbar
    gauge
    listview
-   table
+   datatable
 
 .. toctree::
    :caption: Layout

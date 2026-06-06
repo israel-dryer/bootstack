@@ -53,7 +53,7 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
 
     selection = bs.Label("No rows selected", font="caption")
 
-    table = bs.Table(
+    table = bs.DataTable(
         columns=COLUMNS,
         rows=ROWS,
         selection_mode="multi",

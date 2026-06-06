@@ -298,6 +298,10 @@ class MemoryDataSource(BaseDataSource):
         self._hub.emit(DataChangeEvent(kind="delete", id=record_id))
         return True
 
+    def _internal_fields(self) -> "frozenset[str]":
+        """Hide the per-record selection flag from users."""
+        return frozenset({"selected"})
+
     def is_selected(self, record_id: Any) -> bool:
         """Check whether a record is currently selected."""
         idx = self._id_index.get(record_id)

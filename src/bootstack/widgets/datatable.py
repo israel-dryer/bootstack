@@ -5,14 +5,16 @@ from typing import Any, Callable, Literal, Protocol, TypedDict, overload
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
 )
+from bootstack.data.types import DataSourceProtocol
 from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets.types import WidgetDensity
 
 
 class ColumnSpec(TypedDict, total=False):
-    """A column definition for `Table(columns=...)`.
+    """A column definition for `DataTable(columns=...)`.
 
     Columns may be plain key strings or these dicts. Only `key` is required; the
     editor keys (`editor`, `editor_options`, `dtype`, `readonly`, `required`)
@@ -47,7 +49,7 @@ class ColumnSpec(TypedDict, total=False):
 
 
 class FormOptions(TypedDict, total=False):
-    """Layout options for the built-in add/edit dialog (`Table(form=...)`)."""
+    """Layout options for the built-in add/edit dialog (`DataTable(form=...)`)."""
 
     col_count: int
     """Number of columns the form fields are laid out in. Default `2`."""
@@ -67,14 +69,13 @@ class ExportJob(Protocol):
         ...
 
 
-class Table(PublicWidgetBase):
+class DataTable(PublicWidgetBase):
     """A feature-rich data table with sorting, filtering, search, and grouping.
 
-    Backed by an in-memory `SqliteDataSource`. Supply `rows=` to pre-load
-    data, or pass an existing `data_source=` for a shared data source.
-
-    Note: `data_source` must be a `SqliteDataSource`. `MemoryDataSource` and
-    `FileDataSource` are not accepted.
+    Backed by an in-memory `SqliteDataSource` by default. Supply `rows=` to
+    pre-load data, or pass an existing `data_source=` to share any data source
+    that implements the data-source protocol (`SqliteDataSource`,
+    `MemoryDataSource`, `FileDataSource`, or your own).
 
     Args:
         columns: Column definitions — a list of field-key strings, or
@@ -82,7 +83,10 @@ class Table(PublicWidgetBase):
             `'anchor'`, and the editor keys `'editor'`, `'editor_options'`,
             `'dtype'`, `'readonly'`, `'required'` that shape the add/edit dialog).
         rows: Initial data rows (list of dicts or sequences).
-        data_source: Existing `SqliteDataSource` to use instead of creating one.
+        data_source: Existing data source to use instead of creating one. Any
+            object implementing the data-source protocol is accepted
+            (`SqliteDataSource`, `MemoryDataSource`, `FileDataSource`, or a
+            custom source).
         selection_mode: `'none'`, `'single'` (default), or `'multi'`.
         sorting_mode: `'single'` (default) or `'none'`.
         searchable: Show the search bar. Default `True`.
@@ -99,6 +103,8 @@ class Table(PublicWidgetBase):
             installed. For explicit control use `export_file()` / `to_csv()`
             with `scope=`. Default `False`.
         striped: Alternate row background colors. Default `True`.
+        density: Row compactness — `'default'` or `'compact'` (tighter row
+            height, smaller body font and padding). Default `'default'`.
         allow_group: Allow grouping rows by a column. Default `False`.
         show_status_bar: Show the footer — the filter/sort/group status and the
             pager. The pager auto-hides on a single page, and the whole footer
@@ -126,7 +132,7 @@ class Table(PublicWidgetBase):
         *,
         columns: list[str | ColumnSpec] | None = None,
         rows: list | None = None,
-        data_source: Any = None,
+        data_source: DataSourceProtocol | None = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
         sorting_mode: Literal["single", "none"] = "single",
         searchable: bool = True,
@@ -138,6 +144,7 @@ class Table(PublicWidgetBase):
         allow_delete: bool = False,
         allow_export: bool = False,
         striped: bool = True,
+        density: WidgetDensity = "default",
         allow_group: bool = False,
         show_status_bar: bool = True,
         show_column_chooser: bool = False,
@@ -163,6 +170,7 @@ class Table(PublicWidgetBase):
             "enable_deleting": allow_delete,
             "enable_exporting": allow_export,
             "striped": striped,
+            "density": density,
             "allow_grouping": allow_group,
             "show_table_status": show_status_bar,
             "show_column_chooser": show_column_chooser,
@@ -504,8 +512,8 @@ class Table(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def data_source(self) -> Any:
-        """The underlying `SqliteDataSource` instance."""
+    def data_source(self) -> DataSourceProtocol:
+        """The underlying data source instance."""
         return self._internal._datasource
 
     # ----- Events -----
@@ -638,7 +646,7 @@ class Table(PublicWidgetBase):
         return self.on("export", handler)
 
 
-_TABLE_EVENTS: dict[str, str] = {
+_DATATABLE_EVENTS: dict[str, str] = {
     "selection_changed": "<<SelectionChange>>",
     "row_click":         "<<RowClick>>",
     "row_double_click":  "<<RowDoubleClick>>",
@@ -650,4 +658,4 @@ _TABLE_EVENTS: dict[str, str] = {
     "export":            "<<Export>>",
 }
 
-register_widget_events(Table, _TABLE_EVENTS)
+register_widget_events(DataTable, _DATATABLE_EVENTS)

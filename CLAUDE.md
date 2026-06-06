@@ -130,10 +130,13 @@ data binding. Highlights from this branch:
 - **Docs** — comprehensive `widgets/table.rst` (full `ColumnSpec` reference,
   `format`, `id_field`, event cross-refs, all features); `ExportEvent` +
   `DuplicateIdError` added to the reference pages.
-- **KNOWN ISSUE / next initiative** — Table is tightly coupled to
-  `SqliteDataSource` (`_bs_row_id`/`_bs_selected`), so non-Sqlite protocol
-  sources render but `select_rows` silently fails. Decouple via a protocol-level
-  id accessor — memory `project_table_datasource_coupling`.
+- **DataSource coupling — RESOLVED** (branch `feat/table-datasource-decouple`):
+  the table no longer reads Sqlite-internal columns. Identity/selection route
+  through protocol-level `_record_id`/`_public_record`/`_internal_fields`
+  (defaults on `BaseDataSource`, overrides on `SqliteDataSource` +
+  `MemoryDataSource`), so any `DataSourceProtocol` source works and `select_rows`
+  round-trips. Same branch: `Table`→`DataTable` rename, `density=` exposed,
+  built-in `show_border` removed (wrap in a `Card`/`Frame`), footer separator.
 
 ### Cross-cutting wrapper improvements (this + prior sessions)
 - `commit()` and `set_cursor()` removed from all field widgets (TextField,
@@ -396,7 +399,11 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 - **`<<BsThemeChanged>>`** fires after full rebuild (use this). `<<ThemeChanged>>` fires before.
 - **`bs.SelectButton`** — button-styled non-editable picker. Distinct from `bs.MenuButton`
   (action menu) and `bs.Select` (editable combobox).
-- **`bs.Table` only accepts `SqliteDataSource`**.
+- **`bs.DataTable`** (renamed from `bs.Table`) — works with any
+  `DataSourceProtocol` source (decoupled from `SqliteDataSource`); identity reads
+  route through `_record_id`/`_public_record`/`_internal_fields`. Defaults to an
+  in-memory `SqliteDataSource` when given `rows=`. No built-in border (wrap in a
+  `Card`/`Frame`); `density=` and a footer separator are supported.
 - **`RadioGroup.set()` validates against keys**, not values.
 - **`bs.Form` uses `col_count=`**, not `columns=`.
 - **`ToggleGroup(padding=N)`** — bug fixed; safe to pass.
