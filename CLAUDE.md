@@ -320,6 +320,52 @@ chevron is just an icon button.
 
 ---
 
+## Next initiative — Large-file streaming + pluggable formats (PLANNED 2026-06-07)
+
+Design settled, not started. Full rationale + checkpoints in memory
+`project_file_source_streaming`. Builds on the data bag (`feat/data-bag`,
+unpushed-merge pending) and the change hub (`project_datasource_change_events`).
+
+**Problem:** data scientists open CSV/JSON files with 100k–millions of rows.
+`FileDataSource` currently **extends `MemoryDataSource`** and loads the WHOLE file
+into a Python list of dicts → huge RAM + slow first-paint. Its `loading_strategy=
+'lazy'|'hybrid'` both **silently fall back to eager** (dishonest API).
+
+**Core decision:** stream-ingest the file into a **SQLite working store** (stdlib,
+zero dep) instead of a RAM list; `FileDataSource` becomes a thin streaming
+importer over `SqliteDataSource`, not a `MemoryDataSource` subclass. (Rejected:
+re-scan-per-page and in-memory offset index — both reinvent a DB to support
+sort/filter.)
+
+**Persistence model (settled w/ user):** original source file = **read-only
+input**, never silently written back (CSV isn't transactional; editing row N
+rewrites the whole file). Live CRUD is already uniform (protocol-level); what
+differs is **durability of the working store**, chosen by the store:
+`FileDataSource(path)` = temp on-disk SQLite, auto-cleaned, edits volatile;
+`FileDataSource(path, cache="x.db")` = named/persistent, edits survive, re-open
+skips re-ingest via mtime; `:memory:` = compact but RAM-bound. Saving edits =
+**explicit `export`** to a NEW file. Progressive paint: chunked ingest on a
+background thread, first chunk shows immediately, grid fills via the change hub.
+
+**Pluggable streaming format readers/writers** (extension-keyed registry; each is
+a streaming `iter_chunks(...)` feeding the chunked ingest; data bag handles
+non-scalar cells): stdlib **csv/tsv/jsonl/json/xml** always; optional
+**parquet/feather** (`bootstack[parquet]`→pyarrow), **hdf5**
+(`bootstack[hdf5]`→tables/h5py). `bootstack[excel]` already exists for export. Add
+`save(path)` inferring format from extension.
+
+**Checkpoints:** (1) streaming chunked `load()` on SqliteDataSource (accept an
+Iterable, `executemany` per chunk — today it needs a materialized Sequence); (2)
+pluggable streaming reader registry; (3) rebuild FileDataSource on a SQLite store
+(temp/cache/:memory:, bg-thread ingest, mtime cache, collapse the 5-strategy
+config — clean break); (4) streaming export (`SqliteDataSource.export_csv` still
+`fetchall()`s — make it chunked) + writer registry + DataTable export-menu format
+list; (5) docs/tests/examples + pyproject extras. **Deferred perf:** keyset
+pagination for deep scroll (OFFSET scans+discards); auto-index sorted/filtered
+columns.
+
+---
+
 ## Prior initiative — Sphinx docs + public API audit (MERGED)
 
 **Branch:** `feat/docs-api-improvements` (merged to `main`)

@@ -32,3 +32,7 @@ API reference
 .. autoclass:: bootstack.errors.DuplicateIdError
    :members:
    :undoc-members:
+
+.. autoclass:: bootstack.errors.SerializationError
+   :members:
+   :undoc-members:

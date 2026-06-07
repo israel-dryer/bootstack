@@ -83,10 +83,14 @@ node, depth-first), or ``find(predicate)``:
 
 .. _tree-data:
 
-Whatever you don't spend on a display key rides along on the node's ``data``
-dict — passed as ``data=``, as extra keyword arguments to ``add()``, or as extra
-keys in a ``nodes=`` spec. Nothing is stripped, so a handler always gets your
-own domain object back:
+Carrying extra data
+~~~~~~~~~~~~~~~~~~~~
+
+The display keys (``label``, ``icon`` …) are a *view* over the node, not the node
+itself. Whatever you don't spend on a display key rides along on the node's
+``data`` dict — passed as ``data=``, as extra keyword arguments to ``add()``, or
+as extra keys in a ``nodes=`` spec. Nothing is stripped, so a handler always gets
+your own domain object back:
 
 .. code-block:: python
 
@@ -94,6 +98,10 @@ own domain object back:
    node.data["record_id"]   # 42
 
    tree.on_activate(lambda n: open_record(n.data["record_id"]))
+
+A tree is always in-memory, so ``data`` can hold any Python object — the same
+principle :doc:`datatable` and :doc:`listview` records follow
+(see :ref:`carrying-extra-data`).
 
 Expanding and lazy loading
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

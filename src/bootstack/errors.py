@@ -20,9 +20,19 @@ class DuplicateIdError(BootstackError):
     """
 
 
+class SerializationError(BootstackError):
+    """Raised when a persistent data source receives a value it cannot store.
+
+    File- and database-backed sources carry non-scalar record fields as JSON,
+    so those values must be JSON-serializable (scalars, lists, dicts). Store
+    arbitrary Python objects in an in-memory source instead.
+    """
+
+
 __all__ = [
     "BootstackError",
     "DuplicateIdError",
     "ParentResolutionError",
+    "SerializationError",
     "UnknownEventError",
 ]
