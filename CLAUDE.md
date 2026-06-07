@@ -143,7 +143,9 @@ below is superseded where they differ):**
   `select/deselect/select_all/clear_selection`, `selected_nodes` property.
   **Multi = tri-state cascade** (parent↔descendants, parent shows mixed dash;
   lazy parents defer cascade — children inherit on load; `_mixed` set tracks
-  partials). When controls are shown the **row wash is auto-suppressed**.
+  partials). A selected row shows **both** the control AND the wash (consistent
+  with DataTable; the earlier "wash auto-suppressed when controls shown" rule was
+  reverted 2026-06-07).
 - Events: `on_selection_changed`→`bs.events.TreeSelectionEvent(.nodes)`;
   `on_activate`(dbl-click/Enter), `on_expand`, `on_collapse` pass the `TreeNode`;
   `on_right_click` passes `{node,x_root,y_root}`.
@@ -155,9 +157,10 @@ below is superseded where they differ):**
 **Cross-widget changes (shared `ListView.*` builders → affect ListView too):**
 - `CompositeFrame.unregister_composite` (avoid TclError on destroyed recycled
   children).
-- Shared row builders gained a `wash` style-option: when
-  `show_selection_controls` is on, the selected row wash is suppressed (the
-  control is the indicator) across Tree AND ListView.
+- Shared row builders have a `wash` style-option (the selected-row highlight).
+  As of 2026-06-07 it is **always on** for Tree AND ListView — a selected row
+  shows the wash even when a selection control is present (was previously
+  suppressed when controls were shown; reverted for DataTable consistency).
 - **Keyboard-only focus**: focus visual now rides the `'background focus'`
   (visual-focus) state, not plain `'focus'` — mouse click shows nothing; keyboard
   nav (`focus_set(visual_focus=True)`) shows a foreground bar painted into the

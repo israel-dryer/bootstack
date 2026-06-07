@@ -39,7 +39,7 @@ class TreeView(Frame):
         select_on_click: bool = True,
         indent: int = 16,
         striped: bool = False,
-        striped_background: str = "card",
+        striped_background: str = "background[+0.85]",
         show_separator: bool = False,
         scrollbar_visibility: Literal["always", "never"] = "always",
         enable_hover: bool = True,

@@ -58,9 +58,9 @@ class TreeItem(CompositeFrame):
         self._show_separator = show_separator
         self._density = density
         self._accent = accent or "primary"
-        # When the selection control is visible it IS the selection indicator,
-        # so the row wash is suppressed (VS Code / installer style).
-        self._wash = not show_selection_controls
+        # Selected rows always show the wash, even alongside a selection control
+        # (checkbox/radio): wash + control, consistent with DataTable.
+        self._wash = True
 
         item_padding = (6, 3) if density == "compact" else (8, 4)
 

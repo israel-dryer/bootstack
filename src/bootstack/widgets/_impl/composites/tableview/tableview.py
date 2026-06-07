@@ -245,7 +245,7 @@ class TableView(Frame):
             export_formats: tuple[str, ...] | None = None,
             # Appearance & extras
             striped: bool = False,
-            striped_background: str = 'background[+1]',
+            striped_background: str = 'background[+0.85]',
             density: WidgetDensity = 'default',
             allow_grouping: bool = False,
             show_table_status: bool = True,
@@ -290,7 +290,7 @@ class TableView(Frame):
             export_scope: Export scope ('page' or 'all'). Defaults to 'page'.
             export_formats: Tuple of export formats (e.g., ('csv', 'xlsx')).
             striped: Show alternating row colors. Defaults to False.
-            striped_background: Background color for striped rows. Defaults to 'background[+1]'.
+            striped_background: Background color for striped rows. Defaults to 'background[+0.85]'.
             density: Row compactness ('default' or 'compact'). Defaults to 'default'.
             allow_grouping: Allow grouping rows via header context menu. Defaults to False.
             show_table_status: Show filter/sort/group status labels and pager. Defaults to True.

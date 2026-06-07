@@ -95,9 +95,9 @@ class ListItem(CompositeFrame):
 
         self._get_selection_icon()
 
-        # When selection controls are shown, they ARE the selection indicator, so
-        # the row highlight wash is suppressed (consistent with Tree/DataTable).
-        self._wash = not self._show_selection_controls
+        # Selected rows always show the wash, even alongside a selection control:
+        # wash + control, consistent with DataTable.
+        self._wash = True
 
         # Adjust padding based on density
         item_padding = (6, 3) if self._density == 'compact' else (8, 4)

@@ -38,8 +38,7 @@ class Tree(PublicWidgetBase):
         show_selection_controls: If ``True``, show a per-node selection control
             (a checkbox in ``multi`` mode, a radio in ``single`` mode) as the
             visible affordance for selection — mirroring ListView and DataTable.
-            While shown, the row highlight wash is suppressed (the control is the
-            indicator).
+            A selected row shows both the control and the highlight wash.
         select_on_click: If ``True`` (default), clicking a row selects it. Set
             ``False`` with ``show_selection_controls=True`` so that only the
             control selects and a row click just focuses (e.g. to drive
