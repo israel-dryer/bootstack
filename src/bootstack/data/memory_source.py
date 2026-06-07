@@ -152,15 +152,22 @@ class MemoryDataSource(BaseDataSource):
         rows = [r for r in self._data if condition is None or condition.matches(r)]
         return [dict(r) for r in self._sort_rows(rows, sort_keys)]
 
-    def load(self, records: Union[Sequence[Primitive], Sequence[Dict[str, Any]]]) -> "MemoryDataSource":
+    def load(
+        self, records: "Iterable[Primitive] | Iterable[Dict[str, Any]]"
+    ) -> "MemoryDataSource":
         """Load records into datasource.
 
         Args:
-            records: Sequence of dicts or primitives (auto-wrapped as {"text": str(x)})
+            records: An iterable of dicts or primitives (auto-wrapped as
+                {"text": str(x)}) — a list, a generator, or any other iterable.
 
         Returns:
             Self for method chaining
         """
+        # Materialize any iterable (e.g. a streaming reader generator) — an
+        # in-memory source holds the whole set anyway, and this keeps load()
+        # accepting the same inputs as SqliteDataSource.load().
+        records = list(records)
         if not records:
             self._data = []
             self._columns = []
@@ -168,7 +175,7 @@ class MemoryDataSource(BaseDataSource):
             self._hub.emit(DataChangeEvent(kind="load"))
             return self
 
-        if records and not self._is_mapping(records[0]):
+        if not self._is_mapping(records[0]):
             records = [dict(text=str(x)) for x in records]
 
         data: List[Dict[str, Any]] = []

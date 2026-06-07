@@ -31,7 +31,7 @@ from __future__ import annotations
 import csv
 import json
 import sqlite3
-from typing import Any, Dict, List, Optional, Tuple, Union, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, Sequence
 
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
@@ -82,6 +82,7 @@ class SqliteDataSource(BaseDataSource):
         - Schema is inferred from first record's data types
         - An internal row-identity column (_bs_row_id) is added automatically as PRIMARY KEY
         - An internal selection column (_bs_selected) is added automatically for selection tracking
+        - An internal JSON column (_bs_data) carries non-scalar record fields (the data bag)
         - These internal columns are filtered out of the display column list automatically
     """
 
@@ -228,20 +229,37 @@ class SqliteDataSource(BaseDataSource):
 
     def load(
         self,
-        records: Union[Sequence[Primitive], Sequence[dict[str, Any]], Sequence[Sequence[Any]]],
+        records: "Iterable[Primitive] | Iterable[dict[str, Any]] | Iterable[Sequence[Any]]",
         column_keys: Optional[Sequence[str]] = None,
+        *,
+        chunk_size: int = 10_000,
+        on_progress: Optional[Callable[[int], None]] = None,
     ) -> "SqliteDataSource":
-        """Load records into database, creating table with inferred schema.
+        """Load records into the database, creating the table with an inferred schema.
+
+        Records are consumed as a stream and inserted in chunks within a single
+        transaction, so a lazy iterator of millions of rows loads with bounded
+        memory — only `chunk_size` rows are held at a time. The whole load is
+        atomic: if any row fails (for example a duplicate id), the table is rolled
+        back to its prior state.
 
         Args:
-            records: Sequence of dicts, primitives, or row sequences.
-            column_keys: Optional column names when supplying row sequences (lists/tuples).
+            records: An iterable of dicts, primitives, or row sequences — a list,
+                a generator, or any other iterable.
+            column_keys: Optional column names when supplying row sequences
+                (lists/tuples).
+            chunk_size: Number of rows buffered per `executemany` batch.
+            on_progress: Optional callback invoked after each chunk with the
+                running count of rows inserted so far.
 
         Returns:
             Self for method chaining
         """
-        if not records:
-            return self
+        it = iter(records)
+        try:
+            first = next(it)
+        except StopIteration:
+            return self  # empty input — leave any existing data untouched
 
         # Apply fast, in-memory friendly pragmas when using ":memory:" to speed up bulk loads
         try:
@@ -252,26 +270,27 @@ class SqliteDataSource(BaseDataSource):
         except Exception:
             pass
 
-        # Normalize every input shape into a list of dicts (copies — we never
-        # mutate the caller's records).
-        first = records[0]
+        # Build a per-item normalizer to a dict from the first item's shape (the
+        # input is assumed homogeneous). We never mutate the caller's records.
         if isinstance(first, dict):
-            dict_records = [dict(r) for r in records]
+            def to_dict(item: Any) -> Dict[str, Any]:
+                return dict(item)
         elif isinstance(first, (list, tuple)):
             keys = list(column_keys or [str(i) for i in range(len(first))])
-            dict_records = []
-            for row in records:
-                values = list(row)
+
+            def to_dict(item: Any) -> Dict[str, Any]:
+                values = list(item)
                 if len(values) < len(keys):
                     values += [None] * (len(keys) - len(values))
-                dict_records.append(dict(zip(keys, values)))
+                return dict(zip(keys, values))
         else:
-            dict_records = [dict(text=str(x)) for x in records]
+            def to_dict(item: Any) -> Dict[str, Any]:
+                return {"text": str(item)}
 
         # Real (scalar) columns come from the first record; every other field —
         # non-scalar values, and keys absent from the first record — rides the
         # hidden JSON data column instead.
-        first_rec = dict_records[0]
+        first_rec = to_dict(first)
         column_fields = [
             k for k, v in first_rec.items()
             if k not in _INTERNAL_COLUMNS and self._is_scalar(v)
@@ -287,38 +306,77 @@ class SqliteDataSource(BaseDataSource):
         col_types[_ROW_SEL] = "INTEGER"
         col_types[_ROW_DATA] = "TEXT"
 
-        rows_to_insert = []
-        for i, record in enumerate(dict_records):
-            col_vals, bag, row_id = self._split_for_write(record, column_fields, default_id=i)
-            values = [col_vals.get(col) for col in column_fields]
-            values.append(row_id)
-            values.append(0)
-            values.append(self._dumps_bag(bag))
-            rows_to_insert.append(tuple(values))
-
         col_definitions = ", ".join(
             f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == _ROW_ID else "")
             for col in self._columns
         )
         placeholders = ", ".join("?" for _ in self._columns)
+        insert_sql = f"INSERT INTO {self._table} VALUES ({placeholders})"
 
-        # Recreate table and bulk insert in a single transaction for speed
+        def row_for(record: Dict[str, Any], index: int) -> tuple:
+            col_vals, bag, row_id = self._split_for_write(record, column_fields, default_id=index)
+            values = [col_vals.get(col) for col in column_fields]
+            values.append(row_id)
+            values.append(0)
+            values.append(self._dumps_bag(bag))
+            return tuple(values)
+
+        # Recreate the table and stream-insert in chunks within one transaction:
+        # bounded Python memory (one chunk at a time) and atomic (rolls back on
+        # any error). SQLite buffers the pending rows itself, not Python. We drive
+        # the transaction explicitly (autocommit off) so the DROP/CREATE are part
+        # of it too — Python's sqlite3 otherwise auto-commits DDL, which would
+        # leave the table dropped if a later row failed.
         original_row_factory = self.conn.row_factory
+        original_isolation = self.conn.isolation_level
+        inserted = 0
         try:
             self.conn.row_factory = None  # avoid row wrapping overhead during inserts
-            with self.conn:
-                self.conn.execute(f"DROP TABLE IF EXISTS {self._table}")
-                self.conn.execute(f"CREATE TABLE {self._table} ({col_definitions})")
-                self.conn.executemany(f"INSERT INTO {self._table} VALUES ({placeholders})", rows_to_insert)
+            self.conn.isolation_level = None  # manual transaction control
+            self.conn.execute("BEGIN")
+            self.conn.execute(f"DROP TABLE IF EXISTS {self._table}")
+            self.conn.execute(f"CREATE TABLE {self._table} ({col_definitions})")
+
+            buffer = [row_for(first_rec, 0)]
+            index = 1
+            for raw in it:
+                buffer.append(row_for(to_dict(raw), index))
+                index += 1
+                if len(buffer) >= chunk_size:
+                    self.conn.executemany(insert_sql, buffer)
+                    inserted += len(buffer)
+                    buffer = []
+                    if on_progress is not None:
+                        on_progress(inserted)
+            if buffer:
+                self.conn.executemany(insert_sql, buffer)
+                inserted += len(buffer)
+                if on_progress is not None:
+                    on_progress(inserted)
+            self.conn.execute("COMMIT")
         except sqlite3.IntegrityError as exc:
+            self._safe_rollback()
             raise DuplicateIdError(
                 f"Duplicate value in id field {self._id_field!r} — record ids must be "
                 f"unique. ({exc})"
             ) from exc
+        except BaseException:
+            # Any other failure (serialization error, a raising progress callback,
+            # cancellation) must roll the whole load back too.
+            self._safe_rollback()
+            raise
         finally:
             self.conn.row_factory = original_row_factory
+            self.conn.isolation_level = original_isolation
         self._hub.emit(DataChangeEvent(kind="load"))
         return self
+
+    def _safe_rollback(self) -> None:
+        """Roll back the active transaction, swallowing any rollback error."""
+        try:
+            self.conn.execute("ROLLBACK")
+        except sqlite3.Error:
+            pass
 
     def where(self, condition: Optional[Condition] = None) -> "SqliteDataSource":
         """Filter rows by a condition built with `col` (None clears the filter).

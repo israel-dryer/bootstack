@@ -354,15 +354,46 @@ non-scalar cells): stdlib **csv/tsv/jsonl/json/xml** always; optional
 (`bootstack[hdf5]`→tables/h5py). `bootstack[excel]` already exists for export. Add
 `save(path)` inferring format from extension.
 
-**Checkpoints:** (1) streaming chunked `load()` on SqliteDataSource (accept an
-Iterable, `executemany` per chunk — today it needs a materialized Sequence); (2)
-pluggable streaming reader registry; (3) rebuild FileDataSource on a SQLite store
-(temp/cache/:memory:, bg-thread ingest, mtime cache, collapse the 5-strategy
-config — clean break); (4) streaming export (`SqliteDataSource.export_csv` still
-`fetchall()`s — make it chunked) + writer registry + DataTable export-menu format
-list; (5) docs/tests/examples + pyproject extras. **Deferred perf:** keyset
-pagination for deep scroll (OFFSET scans+discards); auto-index sorted/filtered
-columns.
+**Checkpoints:** (1) DONE — streaming chunked `load()` on SqliteDataSource
+(commit 2e1d4447; accepts an Iterable, `executemany` per chunk, atomic via explicit
+BEGIN). (2) DONE — pluggable streaming reader registry `data/readers.py`
+(bde6776c; csv/tsv/json/jsonl/xml stdlib + parquet/feather/hdf5 gated;
+register_reader/read_records/get_reader/supported_extensions). (3) rebuild
+FileDataSource on a SQLite store (temp/cache/:memory:, bg-thread ingest, mtime
+cache, collapse the 5-strategy config — clean break). (4) streaming export
+(`SqliteDataSource.export_csv` still `fetchall()`s — make it chunked) + writer
+registry + DataTable export-menu format list; (5) docs/tests/examples + pyproject
+extras (`[parquet]`/`[hdf5]` already added in cp2).
+
+**Data-layer review findings folded into CP3 (2026-06-07; full list in memory
+`project_file_source_streaming`):** add `SqliteDataSource.close()` (+ ctx-mgr) for
+temp-DB cleanup — none exists, blocker for temp files; `readers.read_json` ignores
+`config.json_orient` (decide: implement orient or drop it as a pandas-ism); widen
+`FileSourceConfig.file_format` Literal to include xml/parquet/feather/hdf5; align
+empty `load()` (Memory clears+emits, Sqlite no-ops). Already fixed in review
+(3dd1016d): `MemoryDataSource.load` accepts any iterable; `_bs_data` documented.
+Noted/non-blocking: change-hub subscriptions are strong refs (leak vector if a
+widget never cancels `on_change`/`observe` on destroy).
+
+**Deferred perf:** keyset pagination for deep scroll (OFFSET scans+discards);
+auto-index sorted/filtered columns.
+
+### Related follow-up — Tree data-source backing (PLANNED, parked behind this)
+
+Full design in memory `project_tree_datasource_backing`. The hierarchical sibling
+of file streaming ("fetch on demand"). **Decision:** hierarchy is a *projection*
+over a FLAT adjacency-list source (every row has `parent_id`), NOT a storage mode
+or a runtime flag — a bare `structure='tree'` flag adds no methods to the flat
+protocol. Reuse Tree's existing per-node `loader` seam: `Tree(data_source=src,
+parent_field="parent_id")` issues `src.where(col(parent_field)==node.id).page(...)`
+per expand, so a million-node tree loads branch-by-branch (only expanded nodes are
+queried). No flat-protocol change; any `DataSourceProtocol` can back a tree;
+consistent with the columns/data-bag "view over records" philosophy and the
+DataTable↔Tree litmus. Optional later: a native `TreeDataSourceProtocol`
+(`roots`/`children`/`has_children`) for genuinely tree-shaped stores (filesystem,
+graph DB) — the honest "capability" version of the flag; the flat adapter is built
+on top of it. Defaults: adjacency list (not materialized path); filtering-a-tree
+scoped out of v1. Do AFTER the file-streaming checkpoints.
 
 ---
 

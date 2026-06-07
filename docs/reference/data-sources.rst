@@ -2,15 +2,15 @@ Data Sources
 ============
 
 A data source is the bridge between your records and the data-bound widgets —
-:class:`ListView <bootstack.widgets.listview.ListView>` and :class:`DataTable
-<bootstack.widgets.datatable.DataTable>`. It owns the rows and serves them a page
-at a time, so the same widget works whether the data lives in a Python list, a
-SQLite database, or a file on disk.
+:doc:`/widgets/listview` and :doc:`/widgets/datatable`. It owns the records and
+serves them a page at a time, so the same widget works whether your data lives in
+memory, a SQLite database, or a file on disk. (:doc:`/widgets/tree` isn't
+data-source-backed — it holds its own nodes in memory — but shares the same
+record and :ref:`data bag <carrying-extra-data>` model.)
 
-For small lists you often don't touch a data source at all — pass ``items=`` /
-``rows=`` and the widget builds one for you. Reach for an explicit source when
-you want to share data between widgets, back it with a database, or load it from
-a file.
+You often don't touch a data source at all — pass ``items=`` / ``rows=`` and the
+widget builds one for you. Reach for an explicit source when you want to share
+data between widgets, back it with a database, or load it from a file.
 
 In-memory data
 --------------
@@ -45,7 +45,7 @@ supply your own to back the table with a database file:
 File-backed data
 ----------------
 
-``FileDataSource`` loads records from CSV, JSON, or other formats, configured
+``FileDataSource`` loads records from CSV, TSV, JSON, and JSONL files, configured
 with a ``FileSourceConfig``. It reads the file into memory and treats the original
 as **read-only input** — edits live in memory only and are not written back, and
 ``reload()`` re-reads the file. To save changes, export them to a new file
@@ -58,6 +58,13 @@ as **read-only input** — edits live in memory only and are not written back, a
    config = bs.FileSourceConfig(file_format="csv", has_header=True)
    ds = bs.FileDataSource("people.csv", config=config)
    bs.DataTable(data_source=ds)
+
+.. note::
+
+   **Planned:** support for columnar and scientific formats — Parquet, Feather,
+   and HDF5 (plus XML) — via optional extras (``pip install bootstack[parquet]``,
+   ``bootstack[hdf5]``). Each will be a streaming reader that ingests large files
+   in chunks with bounded memory, rather than loading the whole file at once.
 
 .. _carrying-extra-data:
 
@@ -231,6 +238,27 @@ Records are plain dicts — :data:`Record <bootstack.data.Record>` is
 ``dict[str, Primitive]``, and :data:`Primitive <bootstack.data.Primitive>` is
 the set of values a cell may hold (``str``, ``int``, ``float``, ``bool``,
 ``None``).
+
+Honoring the data bag
+~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`data bag <carrying-extra-data>` is a *contract*, not a mechanism, so
+participating takes almost nothing:
+
+- Return **complete records** from ``page`` / ``page_slice`` / ``get`` —
+  including fields the widget doesn't display. Don't strip anything.
+- Declare any bookkeeping keys you add (an internal id, a selection flag) by
+  overriding ``_internal_fields()``. The inherited ``_public_record`` /
+  ``_record_id`` then hide them and surface ``id`` for you.
+
+That's the whole contract. *How* a field survives is your backend's concern:
+an in-memory or document store (e.g. MongoDB's BSON) holds nested values and live
+objects natively, so it honors the contract for free. A store with scalar-only
+columns has to serialize non-scalar fields itself — that is exactly what
+``SqliteDataSource`` does with a hidden JSON column, and why it raises
+:class:`SerializationError <bootstack.errors.SerializationError>` for values it
+can't serialize. None of that machinery is required of a custom source; only
+sources that genuinely serialize need it.
 
 See also
 --------
