@@ -265,7 +265,7 @@ class ListItem(CompositeFrame):
             self._selection_widget = Label(
                 self._left_frame,
                 icon=self._selection_icon,
-                variant='icon',
+                variant='selection',
                 ttk_class='ListView.TLabel',
                 icon_only=True,
                 accent=self._accent,

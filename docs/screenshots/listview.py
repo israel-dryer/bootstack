@@ -58,3 +58,6 @@ SCENES = {
     "features":  features,
     "density":   density,
 }
+
+if __name__ == '__main__':
+    hero()

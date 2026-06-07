@@ -130,14 +130,18 @@ class ListView(Frame):
         # Row factory
         self._row_factory = _row_factory or self._default_row_factory
 
-        # Create container frame for list items
-        self._container = Frame(self, variant='container', ttk_class='ListView.TFrame')
-        self._container.pack(side='left', fill='both', expand=True)
-
-        # Create scrollbar
+        # Create the scrollbar first and pack it on the right (with a small left
+        # pad so it sits in its own gutter, not flush against the rows); the
+        # container then fills the space to its left.
+        from bootstack.style.style import get_style
+        self._scrollbar_gutter = get_style().style_builder.scale(6)
         self._scrollbar = Scrollbar(self, orient='vertical', command=self._on_scroll)
         if self._scrollbar_visibility == 'always':
-            self._scrollbar.pack(side='right', fill='y')
+            self._scrollbar.pack(side='right', fill='y', padx=(self._scrollbar_gutter, 0))
+
+        # Create container frame for list items (fills the area left of the gutter)
+        self._container = Frame(self, variant='container', ttk_class='ListView.TFrame')
+        self._container.pack(side='left', fill='both', expand=True)
 
         # Create row pool
         self._ensure_row_pool(self._page_size)
@@ -248,7 +252,10 @@ class ListView(Frame):
             self._scrollbar_visibility = value
             if old_value != self._scrollbar_visibility:
                 if self._scrollbar_visibility == 'always':
-                    self._scrollbar.pack(side='right', fill='y')
+                    # before=container keeps the scrollbar in its right gutter
+                    # rather than overlaying the already-packed rows.
+                    self._scrollbar.pack(side='right', fill='y',
+                                         padx=(self._scrollbar_gutter, 0), before=self._container)
                 else:
                     self._scrollbar.pack_forget()
         return None

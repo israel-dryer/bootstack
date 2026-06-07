@@ -69,7 +69,6 @@ def build_list_item_style(
     accent_token = accent or 'primary'
 
     background = b.color(surface_token)
-    indicator = b.color(accent_token)
     active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent_token, background)
@@ -81,7 +80,10 @@ def build_list_item_style(
 
     normal_img = recolor_element_image(image_key, background, border_normal, background, None, border_normal)
     active_img = recolor_element_image(image_key, active, border_normal, active, None, border_normal)
-    selected_img = recolor_element_image(image_key, selected, border_normal, indicator, None, indicator)
+    # No left selection bar: the indicator channels match the selected fill so it
+    # stays invisible (selection reads via the row wash + accent checkbox, aligned
+    # with DataTable).
+    selected_img = recolor_element_image(image_key, selected, border_normal, selected, None, selected)
 
     focus_img = recolor_element_image(image_key, active, border_normal, active)
     focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, pressed)
@@ -233,6 +235,66 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
     )
 
     # Apply icon mapping if icon is provided - use density-aware icon size
+    icon_size = _list_icon_size(b, density)
+    state_spec = apply_icon_mapping(b, options, state_spec, icon_size)
+    b.map_style(ttk_style, **state_spec)
+
+
+@BootstyleBuilderTTk.register_builder('selection', 'ListView.TLabel')
+def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+    """Selection checkbox/radio icon for list rows.
+
+    Mirrors the DataTable selection markers: the glyph is a muted outline when
+    unchecked and accent-filled when checked, so selection reads the same across
+    both data-bound widgets (unlike a generic row icon, which stays foreground).
+    """
+    hoverable = options.get('hoverable', True)
+    surface_token = options.get('surface', 'content')
+    base_token = surface_token.split('[')[0]
+    density = normalize_button_density(options.get('density', 'default'))
+
+    background = b.color(surface_token)
+    active = b.elevate(b.color(base_token), 2)
+    pressed = b.pressed(background)
+    selected = b.subtle(accent or 'primary', background)
+    accent_color = b.color(accent or 'primary')
+    muted = b.color('muted')
+    on_disabled = b.disabled('text', background)
+
+    b.create_style_layout(
+        ttk_style,
+        Element('Label.border', sticky='nsew').children([
+            Element('Label.padding', sticky='nsew').children([
+                Element('Label.label', sticky='nsew')
+            ])
+        ])
+    )
+
+    b.configure_style(
+        ttk_style,
+        background=background,
+        foreground=muted,
+        padding=0,
+        relief='flat',
+        stipple='gray12',
+        font=button_font(density),
+    )
+
+    foreground_state_spec = [
+        ('disabled', on_disabled),
+        ('selected', accent_color),  # accent-filled when checked
+        ('', muted),                 # muted outline when unchecked
+    ]
+    background_state_spec = [
+        ('selected', selected),
+        ('focus pressed', pressed),
+        ('hover', active) if hoverable else None,
+        ('focus', active),
+    ]
+    state_spec = dict(
+        foreground=[x for x in foreground_state_spec if x is not None],
+        background=[x for x in background_state_spec if x is not None],
+    )
     icon_size = _list_icon_size(b, density)
     state_spec = apply_icon_mapping(b, options, state_spec, icon_size)
     b.map_style(ttk_style, **state_spec)
