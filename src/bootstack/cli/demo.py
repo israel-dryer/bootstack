@@ -426,6 +426,43 @@ def _build_data_page():
                 expand=True,
             )
 
+        with bs.GroupBox("Tree", fill="horizontal"):
+            bs.Tree(
+                nodes=[
+                    {
+                        "label": "Engineering",
+                        "open_icon": "folder2-open", "closed_icon": "folder-fill",
+                        "expanded": True,
+                        "children": [
+                            {"label": "Ada Lovelace",  "icon": "person-fill"},
+                            {"label": "Alan Turing",    "icon": "person-fill"},
+                            {"label": "Grace Hopper",   "icon": "person-fill"},
+                        ],
+                    },
+                    {
+                        "label": "Design",
+                        "open_icon": "folder2-open", "closed_icon": "folder-fill",
+                        "expanded": True,
+                        "children": [
+                            {"label": "Carol Williams", "icon": "person-fill"},
+                            {"label": "David Kim",      "icon": "person-fill"},
+                        ],
+                    },
+                    {
+                        "label": "Sales",
+                        "open_icon": "folder2-open", "closed_icon": "folder-fill",
+                        "children": [
+                            {"label": "Eva Martinez", "icon": "person-fill"},
+                            {"label": "Frank Wong",   "icon": "person-fill"},
+                        ],
+                    },
+                ],
+                selection_mode="multi",
+                show_selection_controls=True,
+                height=320,
+                fill="horizontal",
+            )
+
 
 # -- Progress & Meters --------------------------------------------------------
 

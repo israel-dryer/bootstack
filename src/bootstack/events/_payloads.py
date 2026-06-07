@@ -339,6 +339,19 @@ class ExportEvent:
 
 
 # ---------------------------------------------------------------------------
+# Tree — node-oriented
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class TreeSelectionEvent:
+    """Fires when a tree's set of selected nodes changes."""
+
+    nodes: list[Any] = field(default_factory=list)
+    """The selected `TreeNode` handles, in tree order."""
+
+
+# ---------------------------------------------------------------------------
 # TextArea / CodeEditor
 # ---------------------------------------------------------------------------
 

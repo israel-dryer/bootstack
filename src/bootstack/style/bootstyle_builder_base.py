@@ -102,8 +102,10 @@ class BootstyleBuilderBase:
 
                 if part.isdigit():
                     modifiers.append(("shade", int(part)))
-                elif re.fullmatch(r'[+-]\s*\d+', part):
-                    rel = int(part.replace(" ", ""))
+                elif re.fullmatch(r'[+-]\s*\d+(?:\.\d+)?', part):
+                    # Fractional steps allowed (e.g. "+0.85") for fine surface
+                    # tints; elevate() blends continuously, so floats are exact.
+                    rel = float(part.replace(" ", ""))
                     modifiers.append(("elevation", rel))
                 elif part == "subtle":
                     modifiers.append(("subtle", None))

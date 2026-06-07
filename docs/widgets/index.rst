@@ -49,6 +49,7 @@ Every widget bootstack provides, grouped by purpose.
    gauge
    listview
    datatable
+   tree
 
 .. toctree::
    :caption: Layout

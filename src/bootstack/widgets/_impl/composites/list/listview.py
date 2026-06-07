@@ -42,7 +42,7 @@ class ListView(Frame):
             enable_removing: bool = False,
             enable_dragging: bool = False,
             striped: bool = False,
-            striped_background: str = 'background[+1]',
+            striped_background: str = 'background[+0.85]',
             show_separator: bool = True,
             scrollbar_visibility: Literal['always', 'never'] = 'always',
             enable_focus: bool = True,
@@ -333,6 +333,12 @@ class ListView(Frame):
                 accent=self._accent,
                 density=self._density
             )
+
+            # When striped AND separated, draw the row divider in the stripe
+            # color so the two read as one subtle tone instead of a darker grid
+            # of lines competing with the bands.
+            if self._striped and self._show_separator:
+                row_kwargs['separator_color'] = self._striped_background
 
             # Only pass select_on_click if explicitly set
             if self._select_on_click is not None:
@@ -725,10 +731,10 @@ class ListView(Frame):
                 self._focused_record_id = record_id
                 self._update_rows()
 
-                # Focus the visible row widget
+                # Focus the visible row widget (keyboard nav -> show focus ring)
                 visual_index = index - self._start_index
                 if 0 <= visual_index < len(self._rows):
-                    self._rows[visual_index].focus_set()
+                    self._rows[visual_index].focus_set(visual_focus=True)
 
     def _on_arrow_down(self, event) -> str:
         """Handle arrow down key for keyboard navigation.
@@ -1080,7 +1086,7 @@ class ListView(Frame):
             with self._silence_source():
                 for record in all_records:
                     record_id = record.get('id')
-                    if record_id:
+                    if record_id is not None:  # id 0 is valid, don't skip it
                         self._datasource.select(record_id)
             self._update_rows()
             self.event_generate('<<SelectionChange>>')

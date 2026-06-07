@@ -86,6 +86,9 @@ class ListItem(CompositeFrame):
         self._selection_mode = kwargs.pop('selection_mode', 'none')
         self._show_selection_controls = kwargs.pop('show_selection_controls', False)
         self._density = kwargs.pop('density', 'default')
+        # Divider color for a separated row (set to the stripe color when striped
+        # so the divider matches the band instead of a darker line).
+        self._separator_color = kwargs.pop('separator_color', None)
 
         # Determine if clicking should trigger selection
         # If selection mode is active (single/multi), enable click selection
@@ -94,6 +97,10 @@ class ListItem(CompositeFrame):
         self._select_on_click = select_on_click
 
         self._get_selection_icon()
+
+        # Selected rows always show the wash, even alongside a selection control:
+        # wash + control, consistent with DataTable.
+        self._wash = True
 
         # Adjust padding based on density
         item_padding = (6, 3) if self._density == 'compact' else (8, 4)
@@ -107,10 +114,7 @@ class ListItem(CompositeFrame):
             ttk_class='ListView.TFrame',
             padding=item_padding,
             accent=self._accent,
-            style_options=dict(
-                hoverable=self._hoverable,
-                density=self._density
-            )
+            style_options=self._li_style_opts(),
         )
 
         # composite container widgets
@@ -120,7 +124,7 @@ class ListItem(CompositeFrame):
             ttk_class='ListView.TFrame',
             takefocus=False,
             accent=self._accent,
-            style_options=dict(hoverable=self._hoverable, density=self._density)
+            style_options=self._li_style_opts()
         )
         self._left_frame.pack(side='left')
 
@@ -130,7 +134,7 @@ class ListItem(CompositeFrame):
             ttk_class='ListView.TFrame',
             takefocus=False,
             accent=self._accent,
-            style_options=dict(hoverable=self._hoverable, density=self._density)
+            style_options=self._li_style_opts()
         )
         self._center_frame.pack(side='left', fill='x', expand=True)
 
@@ -140,7 +144,7 @@ class ListItem(CompositeFrame):
             ttk_class='ListView.TFrame',
             takefocus=False,
             accent=self._accent,
-            style_options=dict(hoverable=self._hoverable, density=self._density)
+            style_options=self._li_style_opts()
         )
         self._right_frame.pack(side='left')
 
@@ -181,6 +185,13 @@ class ListItem(CompositeFrame):
     def data(self):
         """dict: The data record associated with this list item."""
         return self._data
+
+    def _li_style_opts(self) -> dict:
+        """Common style options for child widgets (carries the wash flag)."""
+        opts = dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
+        if self._separator_color:
+            opts['separator'] = self._separator_color
+        return opts
 
     def _get_selection_icon(self):
         """Determine the selection icon based on selection mode."""
@@ -269,7 +280,7 @@ class ListItem(CompositeFrame):
                 ttk_class='ListView.TLabel',
                 icon_only=True,
                 accent=self._accent,
-                style_options=dict(hoverable=self._hoverable, density=self._density),
+                style_options=self._li_style_opts(),
                 takefocus=False,
             )
             if self._show_selection_controls:
@@ -301,7 +312,7 @@ class ListItem(CompositeFrame):
                     takefocus=False,
                     icon_only=True,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._icon_widget.pack(side='left', padx=5)
                 self.register_composite(self._icon_widget)
@@ -330,7 +341,7 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TLabel',
                     takefocus=False,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._title_widget.pack(side='top', fill='x', anchor='w', padx=(0, 3))
                 self.register_composite(self._title_widget)
@@ -360,7 +371,7 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TLabel',
                     takefocus=False,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._text_widget.pack(side='top', fill='x', padx=(0, 3))
                 self.register_composite(self._text_widget)
@@ -386,7 +397,7 @@ class ListItem(CompositeFrame):
                     variant='list',
                     ttk_class='ListView.TLabel',
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._badge_widget.pack(side='right', padx=6)
                 self.register_composite(self._badge_widget)
@@ -414,7 +425,7 @@ class ListItem(CompositeFrame):
                     ttk_class='ListView.TButton',
                     takefocus=False,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._chevron_widget.pack(side='right', padx=6)
                 self.register_composite(self._chevron_widget)
@@ -441,7 +452,7 @@ class ListItem(CompositeFrame):
                     takefocus=False,
                     command=self.remove,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._remove_widget.pack(side='right', padx=6)
                 self.register_composite(self._remove_widget)
@@ -468,7 +479,7 @@ class ListItem(CompositeFrame):
                     cursor='fleur',
                     takefocus=False,
                     accent=self._accent,
-                    style_options=dict(hoverable=self._hoverable, density=self._density),
+                    style_options=self._li_style_opts(),
                 )
                 self._drag_widget.pack(side='right', padx=6)
 
@@ -648,12 +659,18 @@ class ListItem(CompositeFrame):
                 except TclError:
                     pass
             else:
-                # This record lost focus - clear tkinter focus if we have it
+                # This record lost focus - clear tkinter focus if we have it,
+                # and drop the keyboard-focus ring state so a recycled/relocated
+                # row doesn't keep a stale ring.
                 try:
                     if self.focus_get() == self:
                         # Move focus to parent container
                         self.master.focus_set()
                 except (TclError, AttributeError):
+                    pass
+                try:
+                    self.state(['!background'])
+                except TclError:
                     pass
                 self._data['focused'] = False
             self._state['focused'] = focused

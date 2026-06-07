@@ -31,13 +31,16 @@ def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str =
     active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent_token, background)
+    if not options.get('wash', True):
+        selected = background  # selection shown via the control, not a row wash
     b.configure_style(ttk_style, background=background, relief='flat')
 
+    # No hover wash and no 'focus' wash: rows show selection only (keyboard focus
+    # rides the row image's bar). Row hover was removed — it competed with the
+    # stripe and selection washes (several subtle colors at once) and is gone in
+    # DataTable too, so this keeps the data widgets consistent.
     background_state_map = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active),
         ('', background)
     ]
 
@@ -72,27 +75,50 @@ def build_list_item_style(
     active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
     selected = b.subtle(accent_token, background)
+    if not options.get('wash', True):
+        selected = background  # selection shown via the control, not a row wash
 
     # Use separated image for separated variant, otherwise use standard list_item
     is_separated = 'separated' in variant
     image_key = 'listrow_default'
-    border_normal = b.border(background) if is_separated else background
+    # An explicit `separator` color overrides the derived border — used to draw
+    # the divider in the stripe color so striped+separated rows read as one tone.
+    separator = options.get('separator')
+    if is_separated:
+        border_normal = b.color(separator) if separator else b.border(background)
+    else:
+        border_normal = background
 
-    normal_img = recolor_element_image(image_key, background, border_normal, background, None, border_normal)
-    active_img = recolor_element_image(image_key, active, border_normal, active, None, border_normal)
+    def _bd(fill):
+        # Separated rows draw a real bottom separator (border_normal); otherwise
+        # the border tracks the fill so it stays invisible in every state. Without
+        # this, hover/selected rows showed a stray 1px frame (the border channel
+        # kept the base background while the fill changed).
+        return border_normal if is_separated else fill
+
+    # The magenta channel of the row image is the focus ring; paint it the
+    # foreground color but ONLY on the 'background focus' state (keyboard focus
+    # via visual_focus — see _runtime/visual_focus.py). Mouse focus has 'focus'
+    # but not 'background', so it shows no ring. Other (non-focus) images paint
+    # the ring channel = fill so it stays invisible.
+    focus_ring = b.color('foreground')
+
+    normal_img = recolor_element_image(image_key, background, _bd(background), background, None, border_normal)
     # No left selection bar: the indicator channels match the selected fill so it
     # stays invisible (selection reads via the row wash + accent checkbox, aligned
     # with DataTable).
-    selected_img = recolor_element_image(image_key, selected, border_normal, selected, None, selected)
+    selected_img = recolor_element_image(image_key, selected, _bd(selected), selected, None, selected)
 
-    focus_img = recolor_element_image(image_key, active, border_normal, active)
-    focus_pressed_img = recolor_element_image(image_key, pressed, border_normal, pressed)
+    # Keyboard-focus bar images (bar on the current fill). Row hover was removed
+    # (it competed with stripe/selection washes), so there is no hover variant —
+    # the bar only needs a normal and a selected fill.
+    focus_ring_img = recolor_element_image(image_key, background, _bd(background), focus_ring, None, border_normal)
+    selected_focus_img = recolor_element_image(image_key, selected, _bd(selected), focus_ring, None, selected)
 
     image_state_specs = [
+        ('selected background focus', selected_focus_img.image),
         ('selected', selected_img.image),
-        ('focus pressed', focus_pressed_img.image),
-        ('hover', active_img.image) if hoverable else None,
-        ('focus', focus_img.image),
+        ('background focus', focus_ring_img.image),
         ('', normal_img.image),
     ]
 
@@ -134,11 +160,13 @@ def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         ])
     )
 
+    # Selection + momentary press only — NO hover and NO plain-'focus' highlight.
+    # 'selected' keeps the button fill matching a selected row; 'pressed' gives a
+    # brief click feedback on the chevron. Row hover was removed (it competed with
+    # the stripe/selection washes and never cleared cleanly across recycling).
     background_state_spec = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active)
+        ('pressed', pressed),
     ]
 
     b.configure_style(ttk_style, background=background, padding=0, relief='flat', stipple='gray12', font=button_font(density))
@@ -192,6 +220,9 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
     on_background = b.on_color(background)
     on_selected = b.on_color(selected)
     on_disabled = b.disabled('text', background)
+    if not options.get('wash', True):
+        selected = background      # icon/chevron don't wash when row wash is off
+        on_selected = on_background
 
     # Create layout (remove focus border)
     b.create_style_layout(
@@ -221,11 +252,11 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
         ('', on_background)
     ]
 
+    # Selection only — no hover, no 'focus' wash. Row hover was removed (it
+    # competed with the stripe/selection washes); the icon/chevron fill just
+    # tracks the row's selected state so it stays consistent.
     background_state_spec = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active)
     ]
 
     # Prepare state spec
@@ -260,6 +291,10 @@ def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     accent_color = b.color(accent or 'primary')
     muted = b.color('muted')
     on_disabled = b.disabled('text', background)
+    if not options.get('wash', True):
+        # Row wash is off: the control keeps its accent GLYPH fill (foreground)
+        # but drops its own selected BACKGROUND box so it matches the row.
+        selected = background
 
     b.create_style_layout(
         ttk_style,
@@ -282,21 +317,21 @@ def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: st
 
     foreground_state_spec = [
         ('disabled', on_disabled),
-        ('selected', accent_color),  # accent-filled when checked
-        ('', muted),                 # muted outline when unchecked
+        ('selected', accent_color),   # accent-filled when checked
+        ('alternate', accent_color),  # partially-selected parent (mixed) -> accent dash
+        ('', muted),                  # muted outline when unchecked
     ]
+    # Selection only — no hover, no 'focus' wash (row hover was removed).
     background_state_spec = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active),
     ]
     state_spec = dict(
         foreground=[x for x in foreground_state_spec if x is not None],
         background=[x for x in background_state_spec if x is not None],
     )
-    icon_size = _list_icon_size(b, density)
-    state_spec = apply_icon_mapping(b, options, state_spec, icon_size)
+    # Fixed crisp size across densities so the control doesn't shrink/pixelate
+    # in compact mode (used by both ListView and Tree selection markers).
+    state_spec = apply_icon_mapping(b, options, state_spec, 18)
     b.map_style(ttk_style, **state_spec)
 
 
@@ -319,12 +354,16 @@ def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
     selected = b.subtle(accent or 'primary', background)
     on_selected = b.on_color(selected)
     on_background = b.color(foreground_token) if foreground_token else b.on_color(background)
+    if not options.get('wash', True):
+        # No row wash: text keeps its normal background and color (selection is
+        # shown by the control instead).
+        selected = background
+        on_selected = on_background
 
+    # Selection only — no hover wash, no 'focus' wash (keyboard focus = row bar).
+    # Row hover was removed (competed with stripe/selection washes).
     background_state_spec = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active)
     ]
 
     b.configure_style(ttk_style, background=background, foreground=on_background)

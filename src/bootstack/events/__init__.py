@@ -37,6 +37,7 @@ from bootstack.events._payloads import (
     TabCloseEvent,
     TabDeactivateEvent,
     TabRef,
+    TreeSelectionEvent,
     TextModifiedEvent,
     ToggleEvent,
     ValidationEvent,
@@ -78,6 +79,8 @@ __all__ = [
     "RowsEvent",
     "SelectionEvent",
     "ExportEvent",
+    # Payloads — tree
+    "TreeSelectionEvent",
     # Payloads — text area
     "TextModifiedEvent",
     # Payloads — button group
