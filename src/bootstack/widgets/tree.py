@@ -1,52 +1,69 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
-from typing import overload, Any, Callable, Literal
+from typing import Any, Callable, Literal, overload
 
-from bootstack.widgets._impl.primitives.treeview import TreeView as _InternalTreeView
-from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._impl.composites.tree.treeview import TreeView as _InternalTreeView
+from bootstack.widgets._impl.composites.tree.treenode import TreeNode
+from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
+from bootstack.widgets.types import AccentToken, WidgetDensity
 
-
-_TREE_EVENTS: dict[str, str] = {
-    "select":   "<<TreeviewSelect>>",
-    "open":     "<<TreeviewOpen>>",
-    "close":    "<<TreeviewClose>>",
-}
-
-register_widget_events(_InternalTreeView, _TREE_EVENTS)
+__all__ = ["Tree", "TreeNode"]
 
 
 class Tree(PublicWidgetBase):
-    """A hierarchical tree/table widget for displaying data in a tree structure.
+    """A hierarchical tree for navigation and selection.
 
-    Displays data in a tree structure (with optional columns). Rows are
-    called *items*; each item has a unique IID, optional text, optional
-    icon, optional column values, and optional child items.
+    Tree displays nested data as expandable rows. It is a *hierarchy-first*
+    widget — reach for it when the structure is the point (file trees, outlines,
+    settings navigation, grouped pickers). For flat records with columns,
+    sorting, filtering, and paging, use `DataTable` instead.
+
+    Nodes are object handles: `add()` returns a `TreeNode` that you hold and
+    pass back to `expand()`, `select()`, `remove()`, and so on — there are no
+    string ids. Each node carries a `label`, optional `icon`, `description`
+    (dimmed, secondary text), and `badge`, plus an open-ended `data` bag for
+    your own attributes.
 
     Args:
-        columns: Sequence of column IDs to define. Omit for tree-only mode.
-        show: Which parts to render — `'tree headings'` (default), `'tree'`,
-            or `'headings'`.
-        height: Number of visible rows.
-        selection_mode: `'extended'` (default, multi-select), `'browse'`
-            (single), or `'none'`.
-        show_border: Draw a border around the widget.
-        density: Visual density — `'default'` or `'compact'`.
+        nodes: Declarative initial tree — a list of node specs, where each spec
+            is a label string or a dict like
+            ``{"label": "src", "icon": "folder", "children": [...]}``. Anything
+            not a recognized display key becomes that node's `data`.
+        selection_mode: ``'single'`` (default) — one highlighted node;
+            ``'multi'`` — click-to-toggle a set; ``'none'`` — no highlight
+            selection (navigation/display only).
+        show_selection_controls: If ``True``, show a per-node selection control
+            (a checkbox in ``multi`` mode, a radio in ``single`` mode) as the
+            visible affordance for selection — mirroring ListView and DataTable.
+        indent: Horizontal indent per depth level, in pixels. Defaults to 16.
+        striped: If ``True``, alternate the row background color.
+        show_scrollbar: If ``True`` (default), show the vertical scrollbar.
+            Mousewheel scrolling works regardless.
+        height: Fixed height in pixels. When set, the tree maintains this
+            height regardless of its content (so it can scroll without the
+            parent layout providing a vertical constraint).
+        density: Row height — ``'default'`` (default) or ``'compact'``.
+        accent: Color intent token for the selection highlight. One of
+            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
+            ``'warning'``, ``'danger'``.
         parent: Override the context-stack parent.
     """
 
     def __init__(
         self,
         *,
-        columns: list[str] | None = None,
-        show: str = "tree headings",
+        nodes: list | None = None,
+        selection_mode: Literal["none", "single", "multi"] = "single",
+        show_selection_controls: bool = False,
+        indent: int = 16,
+        striped: bool = False,
+        show_scrollbar: bool = True,
         height: int | None = None,
-        selection_mode: Literal["extended", "browse", "none"] = "extended",
-        show_border: bool = False,
-        density: str | None = None,
-        accent: str | None = None,
+        density: WidgetDensity = "default",
+        accent: AccentToken | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -55,302 +72,224 @@ class Tree(PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
-            "show": show,
-            "selectmode": selection_mode,
-            "show_border": show_border,
+            "selection_mode": selection_mode,
+            "show_selection_controls": show_selection_controls,
+            "indent": indent,
+            "striped": striped,
+            "scrollbar_visibility": "always" if show_scrollbar else "never",
+            "density": density,
         }
-        if columns is not None:
-            internal_kwargs["columns"] = columns
-        if height is not None:
-            internal_kwargs["height"] = height
-        if density is not None:
-            internal_kwargs["density"] = density
         if accent is not None:
             internal_kwargs["accent"] = accent
         internal_kwargs.update(kwargs)
 
+        if height is not None and "fill" not in layout_kw:
+            layout_kw["fill"] = "x"
+
         self._internal = _InternalTreeView(tk_master, **internal_kwargs)
+        # Stop the row pool from feeding back into the layout (see ListView).
+        self._internal.pack_propagate(False)
         self._attach_to_parent(layout_kw)
 
-    @overload
-    def on(self, event: str) -> Stream: ...
-    @overload
-    def on(self, event: str, handler: Callable) -> Subscription: ...
-    def on(self, event: str, handler: Callable | None = None) -> Stream | Subscription:
-        from bootstack.widgets._core.events import resolve_event
-        sequence = resolve_event(self._internal, str(event))
-        if handler is None:
-            def _source(h):
-                _bid = self._internal.bind(sequence, adapt_handler(h), add="+")
-                return Subscription(self._internal, sequence, _bid)
-            return Stream(self._internal, _source=_source)
-        bind_id = self._internal.bind(sequence, adapt_handler(handler), add="+")
-        return Subscription(self._internal, sequence, bind_id)
+        if height is not None:
+            self._internal.configure(height=height)
+        if nodes:
+            self._internal.load(nodes)
 
-    # ----- Item management -----
+    # ----- building -----
 
-    def insert(
+    def add(
         self,
-        parent: str = "",
-        index: str | int = "end",
+        label: str = "",
         *,
-        iid: str | None = None,
-        text: str = "",
-        values: tuple | list | None = None,
-        open: bool = False,
-        image: Any = None,
-        tags: str | tuple | None = None,
-    ) -> str:
-        """Insert a new item into the tree.
+        parent: TreeNode | None = None,
+        icon: str | None = None,
+        open_icon: str | None = None,
+        closed_icon: str | None = None,
+        description: str | None = None,
+        badge: str | None = None,
+        expanded: bool = False,
+        children: list | None = None,
+        loader: Callable[[TreeNode], Any] | None = None,
+        data: dict | None = None,
+        **extra: Any,
+    ) -> TreeNode:
+        """Add a node and return its `TreeNode` handle.
 
         Args:
-            parent: IID of the parent item, or `''` for a root item.
-            index: Position among siblings — `'end'` (default) or an integer.
-            iid: Explicit IID. Auto-generated if omitted.
-            text: Label text shown in the tree column.
-            values: Sequence of column values (in column-definition order).
-            open: Whether the item is expanded initially.
-            image: Icon image.
-            tags: Tag or tuple of tags.
-
-        Returns:
-            The IID assigned to the new item.
+            label: The node's display label.
+            parent: Parent node, or ``None`` for a root node.
+            icon: Bootstrap icon name shown before the label.
+            open_icon: Icon used when the node is expanded (overrides `icon`).
+            closed_icon: Icon used when the node is collapsed (overrides `icon`).
+            description: Dimmed secondary text shown after the label.
+            badge: Short label shown at the right edge of the row.
+            expanded: Whether the node starts expanded.
+            children: Optional child specs (same format as `nodes=`).
+            loader: Callable invoked on first expand to fetch children lazily.
+                Receives the node; returns an iterable of child specs.
+            data: Initial data bag for the node.
+            **extra: Extra keywords folded into the node's `data`.
         """
-        kw: dict[str, Any] = {"text": text, "open": open}
-        if iid is not None:
-            kw["iid"] = iid
-        if values is not None:
-            kw["values"] = values
-        if image is not None:
-            kw["image"] = image
-        if tags is not None:
-            kw["tags"] = tags
-        return self._internal.insert(parent, index, **kw)
+        return self._internal.add(
+            label, parent=parent, icon=icon, open_icon=open_icon,
+            closed_icon=closed_icon, description=description, badge=badge,
+            expanded=expanded, children=children, loader=loader, data=data,
+            **extra,
+        )
 
-    def delete(self, *items: str) -> None:
-        """Delete one or more items (and their descendants) by IID.
+    def insert(self, index: int, label: str = "", *, parent: TreeNode | None = None,
+               **kwargs: Any) -> TreeNode:
+        """Add a node at a specific position among its siblings.
 
         Args:
-            *items: IIDs to delete.
+            index: Zero-based position among siblings.
+            label: The node's display label.
+            parent: Parent node, or ``None`` for a root node.
+            **kwargs: Same as `add()`.
         """
-        self._internal.delete(*items)
+        return self._internal.add(label, parent=parent, index=index, **kwargs)
 
-    def detach(self, *items: str) -> None:
-        """Remove items from the display without deleting them.
-
-        They can be re-attached via `move()`.
+    def remove(self, node: TreeNode) -> None:
+        """Remove a node (and its descendants).
 
         Args:
-            *items: IIDs to detach.
+            node: The node to remove.
         """
-        self._internal.detach(*items)
+        self._internal.remove(node)
 
-    def move(self, item: str, parent: str, index: str | int) -> None:
-        """Move an item to a new parent/position.
+    def move(self, node: TreeNode, parent: TreeNode | None = None,
+             index: int | str = "end") -> None:
+        """Move a node to a new parent and/or position.
 
         Args:
-            item: IID of the item to move.
-            parent: IID of the new parent, or `''` for root level.
-            index: Position among siblings.
+            node: The node to move.
+            parent: New parent, or ``None`` for the root level.
+            index: Position among the new siblings — ``'end'`` or an integer.
         """
-        self._internal.move(item, parent, index)
+        self._internal.move(node, parent, index)
 
     def clear(self) -> None:
-        """Delete all items."""
-        self._internal.delete(*self._internal.get_children())
+        """Remove all nodes."""
+        self._internal.clear()
 
-    # ----- Item access -----
+    # ----- expansion -----
 
-    def item(self, item: str, **options: Any) -> Any:
-        """Get or set options on an item.
+    def expand(self, node: TreeNode) -> None:
+        """Expand a node to reveal its children."""
+        self._internal.expand(node)
 
-        Called with no extra kwargs, returns a dict of the item's current options.
+    def collapse(self, node: TreeNode) -> None:
+        """Collapse a node to hide its children."""
+        self._internal.collapse(node)
 
-        Args:
-            item: IID.
-            **options: Options to set (`text`, `values`, `open`, `image`, `tags`).
-        """
-        return self._internal.item(item, **options)
+    def expand_all(self) -> None:
+        """Expand every node (loading lazy children as needed)."""
+        self._internal.expand_all()
 
-    def set(self, item: str, column: str | None = None, value: Any = None) -> Any:
-        """Get or set a column value for an item.
+    def collapse_all(self) -> None:
+        """Collapse every node."""
+        self._internal.collapse_all()
 
-        Args:
-            item: IID.
-            column: Column ID. If omitted, returns all column values as a dict.
-            value: New value to set. If omitted, returns the current value.
-        """
-        if column is None:
-            return self._internal.set(item)
-        if value is None:
-            return self._internal.set(item, column)
-        return self._internal.set(item, column, value)
+    def reveal(self, node: TreeNode) -> None:
+        """Expand ancestors and scroll so `node` is visible."""
+        self._internal.reveal(node)
 
-    def get_children(self, item: str = "") -> tuple[str, ...]:
-        """Return the IIDs of an item's direct children.
+    # ----- selection -----
 
-        Args:
-            item: IID of the parent, or `''` for root items.
-        """
-        return self._internal.get_children(item)
+    @property
+    def selected_nodes(self) -> list[TreeNode]:
+        """The currently selected nodes, in tree order."""
+        return self._internal.get_selected()
 
-    def exists(self, item: str) -> bool:
-        """Return `True` if an item with the given IID exists.
+    def select(self, node: TreeNode) -> None:
+        """Select a node (replaces in single mode, adds in multi)."""
+        self._internal.select(node)
 
-        Args:
-            item: IID to check.
-        """
-        return self._internal.exists(item)
+    def deselect(self, node: TreeNode) -> None:
+        """Remove a node from the selection."""
+        self._internal.deselect(node)
 
-    def see(self, item: str) -> None:
-        """Scroll the tree so `item` is visible.
+    def select_all(self) -> None:
+        """Select every node. Only effective when `selection_mode='multi'`."""
+        self._internal.select_all()
 
-        Args:
-            item: IID to scroll to.
-        """
-        self._internal.see(item)
+    def clear_selection(self) -> None:
+        """Clear the selection."""
+        self._internal.clear_selection()
 
-    def focus(self, item: str | None = None) -> str:
-        """Get or set the focused item.
+    # ----- events -----
 
-        Args:
-            item: IID to focus. Omit to return the currently focused IID.
+    @overload
+    def on_selection_changed(self) -> Stream: ...
+    @overload
+    def on_selection_changed(self, handler: Callable[[Any], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler=None):
+        """Fired when the set of selected nodes changes. The handler receives a
+        `TreeSelectionEvent` with `nodes` (the full selection, in tree order).
 
         Returns:
-            Currently focused IID when called without an argument.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        if item is None:
-            return self._internal.focus()
-        return self._internal.focus(item)
+        return self.on("selection_changed", handler)
 
-    # ----- Column / heading config -----
-
-    def column(self, column: str, **options: Any) -> Any:
-        """Configure a column.
-
-        Args:
-            column: Column ID.
-            **options: Column options — `width`, `minwidth`, `anchor`,
-                `stretch`, `id`.
-        """
-        return self._internal.column(column, **options)
-
-    def heading(self, column: str, **options: Any) -> Any:
-        """Configure a column heading.
-
-        Args:
-            column: Column ID.
-            **options: Heading options — `text`, `anchor`, `image`, `command`.
-        """
-        return self._internal.heading(column, **options)
-
-    # ----- Selection -----
-
-    def selection(self) -> tuple[str, ...]:
-        """Return the IIDs of all selected items."""
-        return self._internal.selection()
-
-    def selection_set(self, *items: str) -> None:
-        """Set the selection to exactly these items.
-
-        Args:
-            *items: IIDs to select (replaces any existing selection).
-        """
-        self._internal.selection_set(*items)
-
-    def selection_add(self, *items: str) -> None:
-        """Add items to the current selection.
-
-        Args:
-            *items: IIDs to add.
-        """
-        self._internal.selection_add(*items)
-
-    def selection_remove(self, *items: str) -> None:
-        """Remove items from the current selection.
-
-        Args:
-            *items: IIDs to remove.
-        """
-        self._internal.selection_remove(*items)
-
-    def selection_clear(self) -> None:
-        """Deselect all items."""
-        self._internal.selection_set()
-
-    # ----- Expand / collapse -----
-
-    def expand(self, item: str) -> None:
-        """Expand an item to show its children.
-
-        Args:
-            item: IID to expand.
-        """
-        self._internal.item(item, open=True)
-
-    def collapse(self, item: str) -> None:
-        """Collapse an item to hide its children.
-
-        Args:
-            item: IID to collapse.
-        """
-        self._internal.item(item, open=False)
-
-    # ----- Events -----
-
-    def on_select(self, callback: Callable) -> str:
-        """Register a callback for `<<TreeviewSelect>>` events.
-
-        Args:
-            callback: Called when the selection changes.
+    @overload
+    def on_activate(self) -> Stream: ...
+    @overload
+    def on_activate(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
+    def on_activate(self, handler=None):
+        """Fired when a node is activated (double-click or Enter). The handler
+        receives the `TreeNode`.
 
         Returns:
-            Bind ID — pass to `off_select()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.bind("<<TreeviewSelect>>", callback, add="+")
+        return self.on("activate", handler)
 
-    def off_select(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<TreeviewSelect>>`.
-
-        Args:
-            bind_id: ID returned by `on_select()`. If `None`, removes all.
-        """
-        self._internal.unbind("<<TreeviewSelect>>", bind_id)
-
-    def on_open(self, callback: Callable) -> str:
-        """Register a callback for `<<TreeviewOpen>>` events (item expanded).
-
-        Args:
-            callback: Called when an item is opened/expanded.
+    @overload
+    def on_expand(self) -> Stream: ...
+    @overload
+    def on_expand(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
+    def on_expand(self, handler=None):
+        """Fired when a node is expanded. The handler receives the `TreeNode`.
 
         Returns:
-            Bind ID — pass to `off_open()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.bind("<<TreeviewOpen>>", callback, add="+")
+        return self.on("expand", handler)
 
-    def off_open(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<TreeviewOpen>>`.
-
-        Args:
-            bind_id: ID returned by `on_open()`. If `None`, removes all.
-        """
-        self._internal.unbind("<<TreeviewOpen>>", bind_id)
-
-    def on_close(self, callback: Callable) -> str:
-        """Register a callback for `<<TreeviewClose>>` events (item collapsed).
-
-        Args:
-            callback: Called when an item is closed/collapsed.
+    @overload
+    def on_collapse(self) -> Stream: ...
+    @overload
+    def on_collapse(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
+    def on_collapse(self, handler=None):
+        """Fired when a node is collapsed. The handler receives the `TreeNode`.
 
         Returns:
-            Bind ID — pass to `off_close()` to unsubscribe.
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        return self._internal.bind("<<TreeviewClose>>", callback, add="+")
+        return self.on("collapse", handler)
 
-    def off_close(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from `<<TreeviewClose>>`.
+    @overload
+    def on_right_click(self) -> Stream: ...
+    @overload
+    def on_right_click(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
+    def on_right_click(self, handler=None):
+        """Fired on a right-click. The handler receives a dict with ``node``,
+        ``x_root``, and ``y_root`` — enough to position a context menu.
 
-        Args:
-            bind_id: ID returned by `on_close()`. If `None`, removes all.
+        Returns:
+            ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
-        self._internal.unbind("<<TreeviewClose>>", bind_id)
+        return self.on("right_click", handler)
+
+
+_TREE_EVENTS: dict[str, str] = {
+    "selection_changed": "<<TreeSelectionChange>>",
+    "activate":          "<<TreeActivate>>",
+    "expand":            "<<TreeExpand>>",
+    "collapse":          "<<TreeCollapse>>",
+    "right_click":       "<<TreeRightClick>>",
+}
+
+register_widget_events(Tree, _TREE_EVENTS)

@@ -94,6 +94,18 @@ class Composite:
         widget.bind('<FocusIn>', self._on_focus_in, add='+')
         widget.bind('<FocusOut>', self._on_focus_out, add='+')
 
+    def unregister_composite(self, widget: ttk.Widget):
+        """Remove a widget from state synchronization.
+
+        Call this before destroying a registered child so that later state
+        updates do not touch a dead widget (which raises ``TclError: invalid
+        command name``).
+
+        Args:
+            widget: A previously registered widget.
+        """
+        self._composites.discard(widget)
+
     def set_selected(self, selected: bool):
         """Set the selected state and propagate to all registered widgets.
 
@@ -233,6 +245,17 @@ class CompositeFrame(Frame):
             Composite.register_composite for more details.
         """
         return self._composite.register_composite(widget)
+
+    def unregister_composite(self, widget):
+        """Remove a widget from state synchronization (call before destroying it).
+
+        Args:
+            widget: A previously registered widget.
+
+        See Also:
+            Composite.unregister_composite for more details.
+        """
+        return self._composite.unregister_composite(widget)
 
     def set_selected(self, selected: bool):
         """Set the selected state.

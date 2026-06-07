@@ -82,6 +82,158 @@ paints an arbitrary color on a built-in `Frame`/`Label`.
 
 ---
 
+## Current initiative — Tree public-API modernization (building, 2026-06-07)
+
+**Checkpoint 1 (core recycle-view Tree) — DONE & user-approved** (branch
+`feat/tree-public-api`). Built: `widgets/_impl/composites/tree/` (`treenode.py`
+`TreeNode` handle, `treeitem.py` recycled row, `treeview.py` recycle engine over
+a flattened visible-node list) + rewritten public `widgets/tree.py`. Works:
+`nodes=` declarative build, `add/insert/remove/move/clear`, expand/collapse/
+`expand_all`/`collapse_all`/`reveal`, selection, events, keyboard nav + type-ahead,
+`.data` bag, density, striped. `bs.TreeNode` exported.
+
+**KEY API REVERSAL (user-directed, supersedes the `checkable` design below):**
+checkboxes are NOT a separate orthogonal concept. Tree uses the **same pattern as
+ListView/DataTable: `selection_mode` (`none`/`single`/`multi`) +
+`show_selection_controls`** (checkbox in multi, radio in single — the visible
+affordance *for selection*). No `checkable`/`get_checked`/`on_check`. Selection
+API: `select(node)`/`deselect(node)`/`select_all()`/`clear_selection()`,
+`selected_nodes` property, `on_selection_changed` → new `bs.events.TreeSelectionEvent`
+(`.nodes`). Other node events (`on_activate`/`on_expand`/`on_collapse`) pass the
+`TreeNode` directly; `on_right_click` passes `{node,x_root,y_root}`.
+
+**Cross-widget fixes made during cp1:** (a) `CompositeFrame.unregister_composite`
+added — destroying a recycled child without it left dead widgets in the state
+coordinator (TclError on hover); (b) shared list-item nine-patch border now
+matches the fill in every state for NON-separated rows (was a stray hover/selected
+1px line; fixed in `style/builders/listview.py` `build_list_item_style` via the
+`_bd()` helper — also benefits borderless ListView); (c) new `check` Label variant
+in `builders/listview.py` (crisp 18px, accent fill on `selected`, dash on
+`alternate`/mixed) for the tree selection control.
+
+**Gotchas learned (cp1):** a ttk Frame won't shrink its `-width` back down once
+set (width-resized indent spacer goes STALE on recycle) → indent is applied as
+`pack_configure(padx=...)` on the chevron slot instead. Chevron lives in a
+fixed-width slot with the button `place()`d inside (constant gutter → leaf/parent
+alignment). The selection control is a registered-composite Label (its fill
+follows the row's `selected` state automatically); the `mixed` marker uses the
+`alternate` state (set explicitly, coordinator never touches it) and is plumbed
+(`_mixed` set) for cp3.
+
+**Remaining checkpoints:** 2 = lazy loading (`loader=` on first expand; hooks
+already present), 3 = multi-select **tri-state cascade** (parent→descendants,
+recompute ancestors' mixed; defer cascade until lazy children load), 4 = per-node
+context menu polish, 5 = docs/example/screenshots/tests/gallery.
+
+The rest of this section is the ORIGINAL design (kept for rationale); where it
+says `checkable`/`value`/`on_check`, the cp1 reversal above wins.
+
+---
+
+Tree is the last unmodernized public widget. The OLD `bs.Tree` is a near-raw
+`ttk.Treeview` passthrough (IID strings, `show='tree headings'`, `selectmode`,
+`image=Any`, stale `on_select/off_select` bind-id events). **DECISION: do NOT
+wrap `ttk.Treeview` — rebuild Tree as a virtualized recycle-view canvas widget,
+the same architecture as `ListView`** (see "Rendering architecture" below).
+**Node-object handles** chosen as the identity model (`add()` returns a `TreeNode`
+you hold + pass back; no tk IIDs). Hierarchy-first **navigation &
+hierarchical-selection** widget — NOT a data grid. Litmus vs DataTable: *is the
+hierarchy the point, or is it tabular data that happens to be grouped?*
+Hierarchy → Tree; flat records w/ columns/sort/filter/page/1-level grouping →
+DataTable.
+
+### Feature scope — DECIDED (2026-06-07)
+
+**Core identity (v1):** node-object handles; per node `label`, `icon` (+ optional
+open/closed icon variant), opaque `value`, `children`; expand/collapse (composite
+chevron), `expand_all`/`collapse_all`/`reveal`; selection modes `single`/`multi`/
+`none`; events `on_select`/`on_expand`/`on_collapse`/`on_activate` (dbl-click or
+Enter)/`on_right_click`; mutation add/insert/remove/move/clear; keyboard nav +
+type-ahead.
+
+**Expected features (ALL in v1):** (1) **lazy loading** — children fetched on
+first expand via a loader callback; (2) **checkbox mode + tri-state** parent
+cascade; (3) **per-node context menu**; (4) **`description`** (dimmed trailing
+text) + **`badge`** per node.
+
+**Explicitly OUT (→ DataTable):** multi-column data grid, column sort/filter,
+paging, multi-column tree-table. Secondary info is shown via `description`+`badge`
+on a single content column, NOT user-defined columns (keeps Tree/DataTable
+cleanly separated; the VS Code label+description pattern).
+
+**Open design interactions to resolve at API time:** (a) checkbox vs selection
+semantics — checked-set and highlighted-row are distinct (VS Code keeps them
+independent); decide `selection_mode='checkbox'` vs orthogonal `checkable=True`.
+(b) lazy + tri-state collide — a parent's tri-state needs its children, not loaded
+until expand; need a rule (defer cascade until loaded, or load-on-check).
+(Note: per-cell dimming is NO LONGER a constraint — recycle-view rows are real
+composed widgets, so `description`/`badge` are independently-styled child widgets.)
+
+### Cross-widget: the data bag (Tree + DataTable + ListView) — DECIDED (2026-06-07)
+
+A unified `.data` accessor on every record/node/item. **Rule: `.data` = every
+user attribute NOT consumed by a recognized display parameter; nothing is ever
+stripped or lost** (display config is a non-destructive view). So a handler gets
+the user's domain data back, not a stringly-typed shadow.
+- **Tree:** named display params (`label`/`icon`/`description`/`badge`/`children`/
+  `expanded`) are consumed; explicit `data=` + overflow kwargs → `node.data`. This
+  **retires the separate `value` slot** (one concept).
+- **DataTable / ListView:** the record stays a complete dict; columns / item
+  template are a view; `.data` exposes the whole record (displayed fields are not
+  removed from it).
+
+**Fidelity is tiered by where records live** (stated in the contract, no magic):
+- **In-memory** (Tree nodes, ListView dict records, `MemoryDataSource` — stores
+  `dict(rec)`, shallow copy): bag holds ANYTHING incl. live objects, by reference.
+- **Persistent** (`SqliteDataSource`/`FileSource`): bag round-trips via a hidden
+  **`_data` JSON column** on the row — ONE source of truth, rides the normal fetch
+  path, atomic with the row (no separate side-store, no re-join on observable
+  refetch). **JSON only → scalars/lists/dicts, no live objects persisted.**
+  Opt-in — default stays scalar-columns-only so we never silently serialize.
+  (Rejected: separate shelve/`bs.Store` side-map — two sources of truth, sync +
+  re-join cost. A decoupled `bs.Store`-backed bag stays possible later for the
+  shared-across-widgets case, built on `project_persistent_kv_store`.)
+
+### Rendering architecture — DECIDED (2026-06-07): recycle-view canvas, NOT ttk
+
+Tree is built like **`ListView`**: a virtualized recycle view (row-widget pool,
+`_update_rows` recycling, `_start_index`/`_visible_rows`, custom `Scrollbar`) over
+a **flattened visible-node list** — the sequence of rows currently visible given
+which branches are expanded. Expand/collapse/lazy-load splice that list; the
+recycle view renders a window over it. `ListItem` already composes icon + title +
+secondary text + badge + chevron + checkbox + drag handle, so a `TreeItem` row is
+that plus an **indent spacer (`depth × indent`)** and an **expander chevron as a
+`Button(icon='chevron-…')`** (just swap the icon — no ttk-state archaeology).
+Every decided feature becomes a real child widget: dimmed description = a styled
+label; badge = a `Badge`; checkbox = a real checkbox + our tri-state logic; inline
+hover-actions = buttons; per-state folder icon = set the icon.
+
+**Shared base with ListView: DECIDE DURING BUILD** — start Tree, extract a common
+recycle-view/`VirtualScrollView` base only if the overlap earns it (don't refactor
+shipped ListView preemptively).
+
+**Costs accepted:** reimplement keyboard nav (arrows/Enter/Home/End) + type-ahead
++ focus ring + selection model (scrolling/recycling already solved in ListView,
+extend not restart); **no native screen-reader tree a11y** (a canvas/frame recycle
+view isn't exposed as a tree — but ListView already made this tradeoff, so Tree is
+consistent).
+
+**Why NOT `ttk.Treeview` at all** (the investigation that drove this — see memory
+`reference_treeview_perrow_indicator_state`): ttk.Treeview colors **whole rows
+only** (tags), never individual cells, so dimmed-description-next-to-label, badges,
+inline actions, and clean chevrons are all impossible/hacks. Proven live on Tk
+8.6.15: (1) no per-row open-state auto-push to a custom indicator element
+(8.6.13+ regression); (2) `widget.state([...])` is widget-GLOBAL, no per-item
+`state` API; (3) item TAGS named after states (Tk ticket 509cafafae) activate a
+state but only `user2` (`user1` reserved) and ONLY at insert time — runtime
+`item(tags=...)` doesn't re-resolve and re-prepare nudges don't fix it;
+(4) `open`/`close`/`leaf` aren't valid ttk state names (`TclError`). The
+composite-`[chevron][icon]`-in-the-image-slot hack (former "approach A") worked
+but was us fighting the tool; **SUPERSEDED** by the recycle view, where the
+chevron is just an icon button.
+
+---
+
 ## Prior initiative — Sphinx docs + public API audit (MERGED)
 
 **Branch:** `feat/docs-api-improvements` (merged to `main`)
@@ -161,8 +313,9 @@ in `widgets/dialogs.py`).
 - Forms
 
 **Pending:**
-- Data Display: Tree (deferred — complex; will reuse the Table's custom-chevron
-  mechanism, see Table notes below)
+- Data Display: Tree (IN DESIGN 2026-06-07 — see "Next initiative — Tree
+  public-API modernization" near the top; chevron mechanism DECIDED: composite
+  `[chevron][icon]` in the single item image slot, NOT the indicator-element slot)
 - Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
 
 ### Table — DONE (branch `feat/public-table`, this initiative)
@@ -183,7 +336,9 @@ data binding. Highlights from this branch:
   `#0`** so children nest under the header (leaf rows get a transparent
   placeholder to preserve the depth indent); the group-by column drops out of the
   value columns; `#0` has no heading. (NOTE: this regressed `bs.Tree`'s native
-  indicator — Tree will adopt the same custom-chevron mechanism later.)
+  indicator. Tree will NOT use a custom indicator-element — that state path is
+  broken on Tk 8.6.15; it composites `[chevron][icon]` into the item image slot
+  instead. See "Next initiative — Tree public-API modernization".)
 - **Cell `format`** — `ColumnSpec` gains `format` (a format-spec string or a
   callable), display-only (sort/filter/edit/export use the raw value).
 - **Stable row identity** — `id_field` (default `"id"`): a record's own `id`

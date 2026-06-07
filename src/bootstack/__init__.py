@@ -118,7 +118,7 @@ from bootstack.widgets.datatable import DataTable
 from bootstack.widgets.tabs import TabPage, Tabs
 from bootstack.widgets.textarea import TextArea
 from bootstack.widgets.timefield import TimeField
-from bootstack.widgets.tree import Tree
+from bootstack.widgets.tree import Tree, TreeNode
 from bootstack.widgets.textfield import TextField
 from bootstack.widgets.toast import Toast, toast
 from bootstack.widgets.togglegroup import ToggleGroup
@@ -186,7 +186,7 @@ __all__ = [
     "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # Data display
-    "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable", "Tree",
+    "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable", "Tree", "TreeNode",
     # Navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
