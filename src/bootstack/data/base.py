@@ -353,6 +353,29 @@ class BaseDataSource(ABC):
         """
         return False
 
+    # ========== RESOURCE LIFECYCLE (close / context manager) ==========
+
+    def close(self) -> None:
+        """Release any resources held by this data source.
+
+        The default is a no-op — in-memory sources hold none. Sources backed by
+        a database connection or file handle override this to release it. Safe to
+        call more than once.
+        """
+        return None
+
+    def __enter__(self) -> "BaseDataSource":
+        """Enter a `with` block, returning the data source itself."""
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        """Exit a `with` block, releasing resources via `close()`.
+
+        Returns False so any exception raised inside the block propagates.
+        """
+        self.close()
+        return False
+
     # ========== ROW IDENTITY (for datasource-aware widgets) ==========
 
     @property

@@ -105,6 +105,19 @@ class SqliteDataSource(BaseDataSource):
         self._sort: List[SortKey] = []
         self._columns = []
 
+    def close(self) -> None:
+        """Close the underlying SQLite connection. Idempotent.
+
+        Use a `with` block to close automatically::
+
+            with bs.SqliteDataSource("app.db") as ds:
+                ds.load(rows)
+        """
+        try:
+            self.conn.close()
+        except sqlite3.Error:
+            pass
+
     # ---- internal query-fragment builders -------------------------------
 
     def _where_clause(self) -> tuple[str, list]:
@@ -259,7 +272,14 @@ class SqliteDataSource(BaseDataSource):
         try:
             first = next(it)
         except StopIteration:
-            return self  # empty input — leave any existing data untouched
+            # Empty input clears to an empty source (consistent with MemoryDataSource).
+            try:
+                self.conn.execute(f"DROP TABLE IF EXISTS {self._table}")
+            except sqlite3.Error:
+                pass
+            self._columns = []
+            self._hub.emit(DataChangeEvent(kind="load"))
+            return self
 
         # Apply fast, in-memory friendly pragmas when using ":memory:" to speed up bulk loads
         try:
@@ -378,6 +398,14 @@ class SqliteDataSource(BaseDataSource):
         except sqlite3.Error:
             pass
 
+    def _table_exists(self) -> bool:
+        """Whether the records table exists yet (False before any data is loaded)."""
+        try:
+            self.conn.execute(f"SELECT 1 FROM {self._table} LIMIT 1")
+            return True
+        except sqlite3.OperationalError:
+            return False
+
     def where(self, condition: Optional[Condition] = None) -> "SqliteDataSource":
         """Filter rows by a condition built with `col` (None clears the filter).
 
@@ -398,6 +426,8 @@ class SqliteDataSource(BaseDataSource):
         """Get records for specified page."""
         if page is not None:
             self._page = page
+        if not self._table_exists():
+            return []
         offset = self._page * self.page_size
 
         where, params = self._where_clause()
@@ -425,6 +455,8 @@ class SqliteDataSource(BaseDataSource):
     @property
     def count(self) -> int:
         """Total number of records matching the current filter."""
+        if not self._table_exists():
+            return 0
         where, params = self._where_clause()
         query = f"SELECT COUNT(*) FROM {self._table}{where}"
         return self.conn.execute(query, params).fetchone()[0]
@@ -470,6 +502,8 @@ class SqliteDataSource(BaseDataSource):
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
         """Retrieve single record by ID."""
+        if not self._table_exists():
+            return None
         cursor = self.conn.execute(f"SELECT * FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
         row = cursor.fetchone()
         return self._row_to_record(row) if row else None
@@ -492,7 +526,7 @@ class SqliteDataSource(BaseDataSource):
 
     def update(self, record_id: Any, updates: Dict[str, Any]) -> bool:
         """Update record fields by ID."""
-        if not updates:
+        if not updates or not self._table_exists():
             return False
 
         col_set = set(self._user_column_fields)
@@ -547,6 +581,8 @@ class SqliteDataSource(BaseDataSource):
 
     def delete(self, record_id: Any) -> bool:
         """Delete record by ID."""
+        if not self._table_exists():
+            return False
         with self.conn:
             cur = self.conn.execute(f"DELETE FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
             changed = cur.rowcount > 0
@@ -626,7 +662,7 @@ class SqliteDataSource(BaseDataSource):
 
     def is_selected(self, record_id: Any) -> bool:
         """Check whether a record is currently selected."""
-        if _ROW_SEL not in self._columns:
+        if not self._table_exists() or _ROW_SEL not in self._columns:
             return False
         row = self.conn.execute(
             f"SELECT {_ROW_SEL} FROM {self._table} WHERE {_ROW_ID} = ?",
@@ -652,6 +688,8 @@ class SqliteDataSource(BaseDataSource):
 
     def select_all(self, current_page_only: bool = False) -> int:
         """Select all records (optionally only current page)."""
+        if not self._table_exists():
+            return 0
         self._ensure_selected_column()
         if current_page_only:
             ids = [row[_ROW_ID] for row in self.page()]
@@ -672,6 +710,8 @@ class SqliteDataSource(BaseDataSource):
 
     def deselect_all(self, current_page_only: bool = False) -> int:
         """Deselect all records (optionally only current page)."""
+        if not self._table_exists():
+            return 0
         self._ensure_selected_column()
         if current_page_only:
             ids = [row[_ROW_ID] for row in self.page()]
@@ -692,6 +732,8 @@ class SqliteDataSource(BaseDataSource):
 
     def selected(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get selected records, optionally paginated."""
+        if not self._table_exists():
+            return []
         self._ensure_selected_column()
         query = f"SELECT * FROM {self._table} WHERE {_ROW_SEL} = 1"
 
@@ -712,12 +754,16 @@ class SqliteDataSource(BaseDataSource):
     @property
     def selected_count(self) -> int:
         """Number of selected records."""
+        if not self._table_exists():
+            return 0
         self._ensure_selected_column()
         query = f"SELECT COUNT(*) FROM {self._table} WHERE {_ROW_SEL} = 1"
         return self.conn.execute(query).fetchone()[0]
 
     def _set_selected_flag(self, record_id: Any, flag: int) -> bool:
         """Set selection flag for record by ID."""
+        if not self._table_exists():
+            return False
         if _ROW_SEL not in self._columns:
             with self.conn:
                 self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN {_ROW_SEL} INTEGER DEFAULT 0")
@@ -734,6 +780,8 @@ class SqliteDataSource(BaseDataSource):
 
     def export_csv(self, filepath: str, include_all: bool = True):
         """Export records to CSV file."""
+        if not self._table_exists():
+            return
         self._ensure_selected_column()
         query = f"SELECT * FROM {self._table}"
         if not include_all:
@@ -764,6 +812,8 @@ class SqliteDataSource(BaseDataSource):
 
     def page_slice(self, start_index: int, count: int) -> List[Dict[str, Any]]:
         """Get records by start index and count (respects filter/sort)."""
+        if not self._table_exists():
+            return []
         where, params = self._where_clause()
         query = (
             f"SELECT * FROM {self._table}{where}{self._order_clause()}"
@@ -782,6 +832,8 @@ class SqliteDataSource(BaseDataSource):
         Returns:
             List of distinct values sorted alphabetically.
         """
+        if not self._table_exists():
+            return []
         quoted_col = self._quote_identifier(column)
         query = f"SELECT DISTINCT {quoted_col} FROM {self._table}"
         query += f" ORDER BY {quoted_col} LIMIT {limit}"

@@ -265,6 +265,14 @@ class DataSourceProtocol(Protocol):
         """
         ...
 
+    def close(self) -> None:
+        """Release any resources held by the source (a connection, file handle).
+
+        A no-op for in-memory sources. Sources are also context managers, so a
+        `with` block closes automatically. Safe to call more than once.
+        """
+        ...
+
     def move(self, record_id: Any, target_index: int) -> bool:
         """Reorder a record to a new position.
 
