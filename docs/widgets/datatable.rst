@@ -101,6 +101,23 @@ get an id assigned automatically. Point at a different field with
 ``id_field="employee_id"``, and replace the whole dataset later with
 ``table.set_rows(rows)``.
 
+Carrying extra data
+~~~~~~~~~~~~~~~~~~~~
+
+Columns are a *view* over the record, not the record itself. Fields you don't
+put in ``columns=`` are still carried through and handed back — a row event's
+``record`` is the full domain record, including the undisplayed fields:
+
+.. code-block:: python
+
+   rows = [{"id": 1, "name": "Ada", "tags": ["math"], "profile": {"era": 1840}}]
+   table = bs.DataTable(rows=rows, columns=["name"])      # tags/profile hidden
+   table.on_row_click(lambda e: print(e.record["tags"]))  # → ['math']
+
+On the default ``SqliteDataSource``, non-scalar fields (lists, dicts) are carried
+automatically and read back flat; on an in-memory source a field can hold any
+object. See :ref:`carrying-extra-data` for the storage-tiered details.
+
 Column visibility
 ~~~~~~~~~~~~~~~~~
 

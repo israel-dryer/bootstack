@@ -127,6 +127,32 @@ def test_sqlite_source_default_still_works(shown_app):
         assert "_bs_row_id" not in r and "_bs_selected" not in r
 
 
+# --------------------------------------------------------------------------- data bag
+
+
+@pytest.mark.gui
+def test_nonscalar_fields_survive_default_source(shown_app):
+    """Undisplayed, non-scalar fields ride the data bag and come back intact,
+    even on the default (Sqlite) source where columns are scalar-only."""
+    table = bs.DataTable(
+        rows=[
+            {"id": 1, "name": "Ada", "tags": ["math", "eng"], "meta": {"era": 1840}},
+            {"id": 2, "name": "Boole", "tags": ["logic"], "meta": {"era": 1850}},
+        ],
+        columns=["name"],  # tags/meta are not displayed
+        page_size=10,
+    )
+    _pump(shown_app)
+
+    rows = {r["id"]: r for r in table.to_rows("all")}
+    assert rows[1]["tags"] == ["math", "eng"]
+    assert rows[1]["meta"] == {"era": 1840}
+    assert rows[2]["tags"] == ["logic"]
+    # No bookkeeping columns leak.
+    for r in table.to_rows("all"):
+        assert "_bs_data" not in r and "_bs_row_id" not in r
+
+
 # --------------------------------------------------------------------------- appearance
 
 

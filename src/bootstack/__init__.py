@@ -63,7 +63,7 @@ from bootstack.widgets.types import (
 )
 
 # ── Public widget layer ───────────────────────────────────────────────────────
-from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError, DuplicateIdError
+from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError, DuplicateIdError, SerializationError
 # The typed event payloads (ChangeEvent, SliderEvent, …) live in the
 # `bootstack.events` catalog — import them from there, not the top level.
 from bootstack.events import Event, Subscription
@@ -156,6 +156,7 @@ __all__ = [
     # Events, streams, scheduling, errors
     "Event", "Subscription", "Stream", "Handle", "Schedule", "Job",
     "BootstackError", "UnknownEventError", "ParentResolutionError", "DuplicateIdError",
+    "SerializationError",
     # App, shortcuts, images
     "AppSettings", "get_app_settings", "get_current_app",
     "Shortcuts", "Shortcut", "get_shortcuts", "Image",

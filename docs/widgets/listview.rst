@@ -37,9 +37,6 @@ Each record is a plain ``dict``. The displayed fields are:
    * - ``'badge'``
      - Short label displayed on the right.
 
-Extra keys are stored and returned by ``get_selected()`` and events but
-are not rendered.
-
 .. code-block:: python
 
    bs.ListView(items=[
@@ -50,6 +47,24 @@ are not rendered.
            "icon":  "person-fill",
        },
    ])
+
+Carrying extra data
+~~~~~~~~~~~~~~~~~~~~
+
+The keys above are a *view* over the record, not the record itself. Extra keys
+are still carried through and handed back — ``get_selected()`` and the item
+events return the full record dict, including the undisplayed fields:
+
+.. code-block:: python
+
+   lv = bs.ListView(items=[
+       {"id": 1, "title": "Alice", "icon": "person-fill", "tags": ["vip"]},
+   ], selection_mode="multi")
+   lv.on_item_click(lambda e: print(e["tags"]))   # → ['vip']
+
+The default source is in-memory, so a field can hold any Python object; back the
+list with a persistent source and the same storage tiers apply. See
+:ref:`carrying-extra-data` for the details.
 
 Data source
 ~~~~~~~~~~~

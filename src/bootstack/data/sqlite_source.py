@@ -29,18 +29,27 @@ Example:
 from __future__ import annotations
 
 import csv
+import json
 import sqlite3
-from typing import Any, Dict, List, Optional, Union, Sequence
+from typing import Any, Dict, List, Optional, Tuple, Union, Sequence
 
 from bootstack.data.base import BaseDataSource
 from bootstack.data.query import Condition, SortKey, normalize_sort_keys
 from bootstack.data.types import Primitive
-from bootstack.errors import DuplicateIdError
+from bootstack.errors import DuplicateIdError, SerializationError
 from bootstack.events import DataChangeEvent
 
 # Internal column names — reserved by SqliteDataSource, never exposed to user data.
 _ROW_ID = "_bs_row_id"
 _ROW_SEL = "_bs_selected"
+# Hidden JSON column carrying every non-scalar record field (the data bag). SQL
+# columns are scalar-only, so lists/dicts/etc. ride here and are merged back into
+# the record transparently on read. See `_split_for_write` / `_row_to_record`.
+_ROW_DATA = "_bs_data"
+_INTERNAL_COLUMNS = (_ROW_ID, _ROW_SEL, _ROW_DATA)
+
+# Values storable directly in a SQL column. Everything else is bagged as JSON.
+_SCALAR_TYPES = (str, bytes, bytearray, bool, int, float, type(None))
 
 
 class SqliteDataSource(BaseDataSource):
@@ -120,6 +129,83 @@ class SqliteDataSource(BaseDataSource):
         text = str(name).replace('"', '""')
         return f'"{text}"'
 
+    # ---- data bag (hidden JSON column) ----------------------------------
+
+    @staticmethod
+    def _is_scalar(value: Any) -> bool:
+        """Whether a value can live directly in a SQL column (vs. the JSON bag)."""
+        return isinstance(value, _SCALAR_TYPES)
+
+    @staticmethod
+    def _dumps_bag(bag: Dict[str, Any]) -> Optional[str]:
+        """Serialize the non-scalar field bag to JSON (or None when empty)."""
+        if not bag:
+            return None
+        try:
+            return json.dumps(bag)
+        except (TypeError, ValueError) as exc:
+            raise SerializationError(
+                f"A record field could not be stored in this SQLite-backed source: "
+                f"{exc}. Persistent sources carry non-scalar fields as JSON, so values "
+                f"must be JSON-serializable (scalars, lists, dicts). To carry arbitrary "
+                f"Python objects, use an in-memory source instead."
+            ) from exc
+
+    def _split_for_write(
+        self, record: Dict[str, Any], column_fields: Sequence[str], default_id: Any = None
+    ) -> Tuple[Dict[str, Any], Dict[str, Any], Any]:
+        """Split a record into (scalar column values, JSON bag, row id).
+
+        Scalar values for known column fields stay as real columns; every other
+        field — non-scalar values, or keys without a column — rides the JSON bag.
+
+        Args:
+            record: The user record to write.
+            column_fields: Field names backed by real (scalar) columns.
+            default_id: Row id to use when the record carries none.
+
+        Returns:
+            A `(column_values, bag, row_id)` tuple.
+        """
+        col_set = set(column_fields)
+        col_vals: Dict[str, Any] = {}
+        bag: Dict[str, Any] = {}
+        for key, value in record.items():
+            if key in _INTERNAL_COLUMNS:
+                continue
+            if key in col_set and self._is_scalar(value):
+                col_vals[key] = value
+            else:
+                bag[key] = value
+
+        if record.get(_ROW_ID) is not None:
+            row_id = record[_ROW_ID]
+        elif self._id_field in record and self._is_scalar(record[self._id_field]):
+            row_id = record[self._id_field]
+        else:
+            row_id = default_id
+        return col_vals, bag, row_id
+
+    def _row_to_record(self, row: Any) -> Dict[str, Any]:
+        """Convert a raw SQL row to a record, merging the JSON bag back in.
+
+        Keeps the internal identity/selection columns (widgets read them); only
+        the JSON bag column is consumed — its keys are merged in where the row
+        has no scalar value, so the record reads back flat and complete.
+        """
+        rec = dict(row)
+        blob = rec.pop(_ROW_DATA, None)
+        if blob:
+            try:
+                extra = json.loads(blob)
+            except (TypeError, ValueError):
+                extra = None
+            if isinstance(extra, dict):
+                for key, value in extra.items():
+                    if rec.get(key) is None:
+                        rec[key] = value
+        return rec
+
     def _query(self, condition: Optional[Condition], sort_keys: List[SortKey]) -> List[Dict[str, Any]]:
         """Run a one-off filtered/sorted read without touching view state."""
         where, params = "", []
@@ -135,7 +221,7 @@ class SqliteDataSource(BaseDataSource):
             order = " ORDER BY " + ", ".join(terms)
         try:
             cursor = self.conn.execute(f"SELECT * FROM {self._table}{where}{order}", params)
-            return [dict(row) for row in cursor.fetchall()]
+            return [self._row_to_record(row) for row in cursor.fetchall()]
         except sqlite3.OperationalError:
             # Table does not exist yet (no data loaded).
             return []
@@ -166,62 +252,49 @@ class SqliteDataSource(BaseDataSource):
         except Exception:
             pass
 
-        # Normalize into a common structure: either dicts or row tuples with provided keys
+        # Normalize every input shape into a list of dicts (copies — we never
+        # mutate the caller's records).
         first = records[0]
-        using_dicts = isinstance(first, dict)
-        # Turn primitives into dicts
-        if not using_dicts and not isinstance(first, (list, tuple)):
-            records = [dict(text=str(x)) for x in records]
-            using_dicts = True
-
-        if using_dicts:
-            # Ensure internal helper columns. Adopt the record's own id field as the
-            # row identity when present, so callers' ids survive into selection/events.
-            for i, record in enumerate(records):
-                if _ROW_ID not in record:
-                    record[_ROW_ID] = record[self._id_field] if self._id_field in record else i
-                if _ROW_SEL not in record:
-                    record[_ROW_SEL] = 0
-
-            self._columns = list(records[0].keys())
-            col_types = {col: self._infer_type(records[0][col]) for col in self._columns}
-            rows_to_insert = [tuple(row.get(col) for col in self._columns) for row in records]
+        if isinstance(first, dict):
+            dict_records = [dict(r) for r in records]
+        elif isinstance(first, (list, tuple)):
+            keys = list(column_keys or [str(i) for i in range(len(first))])
+            dict_records = []
+            for row in records:
+                values = list(row)
+                if len(values) < len(keys):
+                    values += [None] * (len(keys) - len(values))
+                dict_records.append(dict(zip(keys, values)))
         else:
-            # Sequence rows with provided column keys
-            keys = list(column_keys or [])
-            if not keys:
-                keys = [str(i) for i in range(len(first))]
-            need_id = _ROW_ID not in keys
-            need_sel = _ROW_SEL not in keys
-            if need_id:
-                keys.append(_ROW_ID)
-            if need_sel:
-                keys.append(_ROW_SEL)
-            self._columns = keys
+            dict_records = [dict(text=str(x)) for x in records]
 
-            # Adopt the caller's id field (a data column) as the row identity if present.
-            user_id_idx = keys.index(self._id_field) if self._id_field in keys else None
+        # Real (scalar) columns come from the first record; every other field —
+        # non-scalar values, and keys absent from the first record — rides the
+        # hidden JSON data column instead.
+        first_rec = dict_records[0]
+        column_fields = [
+            k for k, v in first_rec.items()
+            if k not in _INTERNAL_COLUMNS and self._is_scalar(v)
+        ]
+        self._columns = column_fields + list(_INTERNAL_COLUMNS)
 
-            # Infer types from first row (pad to keys length)
-            padded_first = list(first) + [None] * (len(keys) - len(first))
-            if need_id and _ROW_ID in keys:
-                # Type the identity from the adopted id value (e.g. TEXT for UUIDs), else int.
-                padded_first[keys.index(_ROW_ID)] = padded_first[user_id_idx] if user_id_idx is not None else 0
-            if need_sel and _ROW_SEL in keys:
-                padded_first[keys.index(_ROW_SEL)] = 0
-            col_types = {col: self._infer_type(padded_first[idx]) for idx, col in enumerate(keys)}
+        col_types = {col: self._infer_type(first_rec.get(col)) for col in column_fields}
+        if self._id_field in column_fields:
+            # Type the identity from the adopted id value (e.g. TEXT for UUIDs).
+            col_types[_ROW_ID] = self._infer_type(first_rec.get(self._id_field))
+        else:
+            col_types[_ROW_ID] = "INTEGER"
+        col_types[_ROW_SEL] = "INTEGER"
+        col_types[_ROW_DATA] = "TEXT"
 
-            rows_to_insert = []
-            id_idx = keys.index(_ROW_ID) if _ROW_ID in keys else None
-            sel_idx = keys.index(_ROW_SEL) if _ROW_SEL in keys else None
-            value_len = len(keys)
-            for i, row in enumerate(records):
-                base_values = list(row[: value_len]) + [""] * (value_len - len(row))
-                if id_idx is not None:
-                    base_values[id_idx] = base_values[user_id_idx] if user_id_idx is not None else i
-                if sel_idx is not None:
-                    base_values[sel_idx] = 0
-                rows_to_insert.append(tuple(base_values))
+        rows_to_insert = []
+        for i, record in enumerate(dict_records):
+            col_vals, bag, row_id = self._split_for_write(record, column_fields, default_id=i)
+            values = [col_vals.get(col) for col in column_fields]
+            values.append(row_id)
+            values.append(0)
+            values.append(self._dumps_bag(bag))
+            rows_to_insert.append(tuple(values))
 
         col_definitions = ", ".join(
             f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == _ROW_ID else "")
@@ -275,7 +348,7 @@ class SqliteDataSource(BaseDataSource):
             f" LIMIT {self.page_size} OFFSET {offset}"
         )
         cursor = self.conn.execute(query, params)
-        return [dict(row) for row in cursor.fetchall()]
+        return [self._row_to_record(row) for row in cursor.fetchall()]
 
     def next_page(self) -> List[Dict[str, Any]]:
         """Advance to next page and return its records."""
@@ -302,42 +375,56 @@ class SqliteDataSource(BaseDataSource):
 
     def insert(self, record: Dict[str, Any]) -> int:
         """Create new record and return its ID."""
-        if _ROW_ID not in record:
-            # Adopt the caller's id field as the identity, else auto-assign.
-            record[_ROW_ID] = record[self._id_field] if self._id_field in record else self._generate_new_id()
+        # Field names backed by real columns: the established schema, or — for a
+        # still-empty source — this record's own scalar fields.
+        if self._user_column_fields:
+            column_fields = self._user_column_fields
+        else:
+            column_fields = [
+                k for k, v in record.items()
+                if k not in _INTERNAL_COLUMNS and self._is_scalar(v)
+            ]
 
-        if _ROW_SEL not in record:
-            record[_ROW_SEL] = 0
+        col_vals, bag, row_id = self._split_for_write(record, column_fields)
+        if row_id is None:
+            row_id = self._generate_new_id()
 
         # Ensure table exists (handles empty datasources)
-        self._ensure_table_for_record(record)
+        self._ensure_table(column_fields, sample=record)
 
-        keys = list(record.keys())
+        keys = list(col_vals.keys()) + list(_INTERNAL_COLUMNS)
+        values = [col_vals[k] for k in col_vals] + [row_id, 0, self._dumps_bag(bag)]
         cols = ", ".join(self._quote_identifier(k) for k in keys)
         placeholders = ", ".join("?" for _ in keys)
-        values = tuple(record[col] for col in keys)
 
         try:
             with self.conn:
-                self.conn.execute(f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", values)
+                self.conn.execute(
+                    f"INSERT INTO {self._table} ({cols}) VALUES ({placeholders})", tuple(values)
+                )
         except sqlite3.IntegrityError as exc:
             raise DuplicateIdError(
-                f"A record with id {record[_ROW_ID]!r} already exists — record ids "
+                f"A record with id {row_id!r} already exists — record ids "
                 f"must be unique. ({exc})"
             ) from exc
-        self._hub.emit(DataChangeEvent(kind="insert", id=record[_ROW_ID], record=dict(record)))
-        return record[_ROW_ID]
+        self._hub.emit(DataChangeEvent(kind="insert", id=row_id, record=dict(record)))
+        return row_id
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
         """Retrieve single record by ID."""
         cursor = self.conn.execute(f"SELECT * FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,))
         row = cursor.fetchone()
-        return dict(row) if row else None
+        return self._row_to_record(row) if row else None
+
+    @property
+    def _user_column_fields(self) -> List[str]:
+        """The real (scalar) column field names, excluding internal columns."""
+        return [c for c in self._columns if c not in _INTERNAL_COLUMNS]
 
     # ---------- row identity ----------
     def _internal_fields(self) -> "frozenset[str]":
-        """Hide the internal identity and selection columns from users."""
-        return frozenset({_ROW_ID, _ROW_SEL})
+        """Hide the internal identity, selection, and data-bag columns from users."""
+        return frozenset(_INTERNAL_COLUMNS)
 
     def _record_id(self, record: Any) -> Any:
         """Identity is the internal `_bs_row_id` column."""
@@ -349,10 +436,52 @@ class SqliteDataSource(BaseDataSource):
         """Update record fields by ID."""
         if not updates:
             return False
-        set_clause = ", ".join(f"{self._quote_identifier(k)} = ?" for k in updates)
-        values = tuple(updates.values()) + (record_id,)
+
+        col_set = set(self._user_column_fields)
+        set_parts: List[str] = []
+        params: List[Any] = []
+        bag_updates: Dict[str, Any] = {}
+        for key, value in updates.items():
+            if key in _INTERNAL_COLUMNS:
+                continue
+            if key in col_set and self._is_scalar(value):
+                set_parts.append(f"{self._quote_identifier(key)} = ?")
+                params.append(value)
+            else:
+                # A non-scalar value (or a field without a column) rides the bag.
+                # If the field also has a real column, null it so the bag wins on read.
+                if key in col_set:
+                    set_parts.append(f"{self._quote_identifier(key)} = NULL")
+                bag_updates[key] = value
+
+        if bag_updates:
+            self._ensure_data_column()
+            row = self.conn.execute(
+                f"SELECT {_ROW_DATA} FROM {self._table} WHERE {_ROW_ID} = ?", (record_id,)
+            ).fetchone()
+            if row is None:
+                return False
+            existing: Dict[str, Any] = {}
+            blob = row[0]
+            if blob:
+                try:
+                    parsed = json.loads(blob)
+                    if isinstance(parsed, dict):
+                        existing = parsed
+                except (TypeError, ValueError):
+                    pass
+            existing.update(bag_updates)
+            set_parts.append(f"{self._quote_identifier(_ROW_DATA)} = ?")
+            params.append(self._dumps_bag(existing))
+
+        if not set_parts:
+            return False
+
+        params.append(record_id)
         with self.conn:
-            cur = self.conn.execute(f"UPDATE {self._table} SET {set_clause} WHERE {_ROW_ID} = ?", values)
+            cur = self.conn.execute(
+                f"UPDATE {self._table} SET {', '.join(set_parts)} WHERE {_ROW_ID} = ?", params
+            )
             changed = cur.rowcount > 0
         if changed:
             self._hub.emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
@@ -385,8 +514,13 @@ class SqliteDataSource(BaseDataSource):
         return max_id + 1
 
     # ------------------------------------------------------------------ helpers
-    def _ensure_table_for_record(self, record: Dict[str, Any]) -> None:
-        """Create the table if it does not yet exist, inferring columns from record."""
+    def _ensure_table(self, column_fields: Sequence[str], sample: Dict[str, Any]) -> None:
+        """Create the table if it does not yet exist, inferring scalar columns.
+
+        Args:
+            column_fields: Scalar field names that become real columns.
+            sample: A representative record used for column-type inference.
+        """
         try:
             # Quick existence check
             self.conn.execute(f"SELECT 1 FROM {self._table} LIMIT 1")
@@ -394,21 +528,22 @@ class SqliteDataSource(BaseDataSource):
         except Exception:
             pass
 
-        cols = list(self._columns) if self._columns else list(record.keys())
-        if _ROW_ID not in cols:
-            cols.append(_ROW_ID)
-        if _ROW_SEL not in cols:
-            cols.append(_ROW_SEL)
+        cols = list(column_fields) + list(_INTERNAL_COLUMNS)
         self._columns = cols
 
-        col_types = {}
+        col_types: Dict[str, str] = {}
         for c in cols:
-            if c == _ROW_ID:
+            if c == _ROW_SEL:
                 col_types[c] = "INTEGER"
-            elif c == _ROW_SEL:
-                col_types[c] = "INTEGER"
+            elif c == _ROW_DATA:
+                col_types[c] = "TEXT"
+            elif c == _ROW_ID:
+                if self._id_field in sample and self._is_scalar(sample[self._id_field]):
+                    col_types[c] = self._infer_type(sample[self._id_field])
+                else:
+                    col_types[c] = "INTEGER"
             else:
-                col_types[c] = self._infer_type(record.get(c))
+                col_types[c] = self._infer_type(sample.get(c))
 
         col_definitions = ", ".join(
             f"{self._quote_identifier(col)} {col_types[col]}" + (" PRIMARY KEY" if col == _ROW_ID else "")
@@ -416,6 +551,18 @@ class SqliteDataSource(BaseDataSource):
         )
         with self.conn:
             self.conn.execute(f"CREATE TABLE IF NOT EXISTS {self._table} ({col_definitions})")
+
+    def _ensure_data_column(self) -> None:
+        """Add the hidden JSON data column if it is missing (legacy tables)."""
+        if _ROW_DATA in self._columns:
+            return
+        try:
+            with self.conn:
+                self.conn.execute(f"ALTER TABLE {self._table} ADD COLUMN {_ROW_DATA} TEXT")
+        except sqlite3.OperationalError:
+            pass  # no table yet, or column already present
+        if _ROW_DATA not in self._columns:
+            self._columns.append(_ROW_DATA)
 
     # === SELECTION ====
 
@@ -495,7 +642,7 @@ class SqliteDataSource(BaseDataSource):
             query += f" LIMIT {self.page_size} OFFSET {offset}"
 
         cursor = self.conn.execute(query)
-        return [dict(row) for row in cursor.fetchall()]
+        return [self._row_to_record(row) for row in cursor.fetchall()]
 
     def _ensure_selected_column(self):
         """Add selection column to table if it doesn't exist."""
@@ -540,11 +687,22 @@ class SqliteDataSource(BaseDataSource):
         if not rows:
             return
 
+        # Emit public records — internal columns stripped, the JSON bag merged
+        # back into flat fields — over the union of all keys.
+        records = [self._public_record(self._row_to_record(row)) for row in rows]
+        fieldnames: List[str] = []
+        seen: set = set()
+        for rec in records:
+            for key in rec.keys():
+                if key not in seen:
+                    seen.add(key)
+                    fieldnames.append(key)
+
         with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=rows[0].keys())
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            for row in rows:
-                writer.writerow(dict(row))
+            for rec in records:
+                writer.writerow({k: rec.get(k) for k in fieldnames})
 
     def page_slice(self, start_index: int, count: int) -> List[Dict[str, Any]]:
         """Get records by start index and count (respects filter/sort)."""
@@ -554,7 +712,7 @@ class SqliteDataSource(BaseDataSource):
             f" LIMIT {count} OFFSET {start_index}"
         )
         cursor = self.conn.execute(query, params)
-        return [dict(row) for row in cursor.fetchall()]
+        return [self._row_to_record(row) for row in cursor.fetchall()]
 
     def get_distinct_values(self, column: str, limit: int = 1000) -> List[Any]:
         """Get distinct values for a column.

@@ -54,6 +54,42 @@ with a ``FileSourceConfig``:
    ds = bs.FileDataSource("people.csv", config=config)
    bs.DataTable(data_source=ds)
 
+.. _carrying-extra-data:
+
+Carrying extra data
+-------------------
+
+A record can hold more than the widget shows. The columns of a ``DataTable`` or
+the template of a ``ListView`` are a *view* over the record — fields you don't
+display are still carried through, and event handlers get the whole record back,
+not a stripped-down shadow:
+
+.. code-block:: python
+
+   rows = [
+       {"id": 1, "name": "Ada", "role": "Engineer",
+        "tags": ["math", "logic"], "profile": {"era": 1840}},
+   ]
+   table = bs.DataTable(rows=rows, columns=["name", "role"])  # tags/profile hidden
+
+   table.on_row_click(lambda e: print(e.record["tags"]))      # → ['math', 'logic']
+
+This works the same on every source, but *what* a field may hold depends on
+where the records live:
+
+- **In-memory** (``MemoryDataSource``, ``FileDataSource``, and the default
+  ``ListView`` source) holds **anything**, including live Python objects, by
+  reference. The field you put in is the object you get back.
+- **SQLite** (``SqliteDataSource``) is persistent. Scalar fields (text, numbers,
+  booleans) become real columns you can filter and sort on. Non-scalar fields
+  (lists, dicts) are carried as JSON automatically and merged back transparently
+  on read — so records still read flat and complete. Because they ride a JSON
+  blob, **bagged fields are preserved but not queryable** via ``where`` / ``order``
+  (keep anything you need to filter on as a scalar field). Values must be
+  JSON-serializable; handing a live object to a SQLite-backed source raises
+  :class:`SerializationError <bootstack.errors.SerializationError>` — use an in-memory
+  source for those.
+
 Filtering and sorting
 ---------------------
 
