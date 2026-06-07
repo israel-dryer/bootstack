@@ -232,6 +232,27 @@ Records are plain dicts — :data:`Record <bootstack.data.Record>` is
 the set of values a cell may hold (``str``, ``int``, ``float``, ``bool``,
 ``None``).
 
+Honoring the data bag
+~~~~~~~~~~~~~~~~~~~~~~
+
+The :ref:`data bag <carrying-extra-data>` is a *contract*, not a mechanism, so
+participating takes almost nothing:
+
+- Return **complete records** from ``page`` / ``page_slice`` / ``get`` —
+  including fields the widget doesn't display. Don't strip anything.
+- Declare any bookkeeping keys you add (an internal id, a selection flag) by
+  overriding ``_internal_fields()``. The inherited ``_public_record`` /
+  ``_record_id`` then hide them and surface ``id`` for you.
+
+That's the whole contract. *How* a field survives is your backend's concern:
+an in-memory or document store (e.g. MongoDB's BSON) holds nested values and live
+objects natively, so it honors the contract for free. A store with scalar-only
+columns has to serialize non-scalar fields itself — that is exactly what
+``SqliteDataSource`` does with a hidden JSON column, and why it raises
+:class:`SerializationError <bootstack.errors.SerializationError>` for values it
+can't serialize. None of that machinery is required of a custom source; only
+sources that genuinely serialize need it.
+
 See also
 --------
 
