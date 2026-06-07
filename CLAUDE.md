@@ -82,51 +82,110 @@ paints an arbitrary color on a built-in `Frame`/`Label`.
 
 ---
 
-## Current initiative — Tree public-API modernization (building, 2026-06-07)
+## Current initiative — Tree public-API modernization (2026-06-07)
 
-**Checkpoint 1 (core recycle-view Tree) — DONE & user-approved** (branch
-`feat/tree-public-api`). Built: `widgets/_impl/composites/tree/` (`treenode.py`
-`TreeNode` handle, `treeitem.py` recycled row, `treeview.py` recycle engine over
-a flattened visible-node list) + rewritten public `widgets/tree.py`. Works:
-`nodes=` declarative build, `add/insert/remove/move/clear`, expand/collapse/
-`expand_all`/`collapse_all`/`reveal`, selection, events, keyboard nav + type-ahead,
-`.data` bag, density, striped. `bs.TreeNode` exported.
+**FUNCTIONALLY COMPLETE — checkpoints 1–4 DONE & user-approved** on branch
+`feat/tree-public-api` (NOT pushed). Commits: cp1 `7b6adb43`, cp2 `7f4da54f`,
+cp3 `e3aa29cd`, cp4 `b3da0bd7`. **Remaining: checkpoint 5 = docs/example/
+screenshots/tests/gallery** (the established widget-doc pattern below). The OLD
+ttk `bs.Tree` is fully replaced; the ttk `TreeView` *primitive* is untouched
+(still used by DataTable + the font dialog).
 
-**KEY API REVERSAL (user-directed, supersedes the `checkable` design below):**
-checkboxes are NOT a separate orthogonal concept. Tree uses the **same pattern as
-ListView/DataTable: `selection_mode` (`none`/`single`/`multi`) +
-`show_selection_controls`** (checkbox in multi, radio in single — the visible
-affordance *for selection*). No `checkable`/`get_checked`/`on_check`. Selection
-API: `select(node)`/`deselect(node)`/`select_all()`/`clear_selection()`,
-`selected_nodes` property, `on_selection_changed` → new `bs.events.TreeSelectionEvent`
-(`.nodes`). Other node events (`on_activate`/`on_expand`/`on_collapse`) pass the
-`TreeNode` directly; `on_right_click` passes `{node,x_root,y_root}`.
+**Architecture:** recycle-view canvas mirroring `ListView`, in
+`widgets/_impl/composites/tree/` — `treenode.py` (`TreeNode` handle),
+`treeitem.py` (recycled row), `treeview.py` (engine over a flattened
+visible-node list; expand/collapse/mutation re-flatten + relayout). Public
+`widgets/tree.py` rewrap. `bs.Tree` + `bs.TreeNode` exported.
 
-**Cross-widget fixes made during cp1:** (a) `CompositeFrame.unregister_composite`
-added — destroying a recycled child without it left dead widgets in the state
-coordinator (TclError on hover); (b) shared list-item nine-patch border now
-matches the fill in every state for NON-separated rows (was a stray hover/selected
-1px line; fixed in `style/builders/listview.py` `build_list_item_style` via the
-`_bd()` helper — also benefits borderless ListView); (c) new `check` Label variant
-in `builders/listview.py` (crisp 18px, accent fill on `selected`, dash on
-`alternate`/mixed) for the tree selection control.
+**Final public API (this is the source of truth — the original design block
+below is superseded where they differ):**
+- Construct: `Tree(nodes=, selection_mode='none'|'single'|'multi'='single',
+  show_selection_controls=False, select_on_click=True, indent=16, striped=,
+  show_scrollbar=, height=, density=, accent=)`. `nodes=` is a declarative nested
+  list of label-strings/dicts (`{'label','icon','description','badge','expanded',
+  'children','loader','data', **overflow→data}`).
+- Build: `add(label, *, parent=, icon/open_icon/closed_icon, description, badge,
+  expanded, children, loader, data, **extra)→TreeNode`, `insert`, `remove`,
+  `move`, `clear`. Node convenience: `node.add/remove/expand/collapse/
+  reload_children`, `node.data` (bag), `node.children/parent/depth/ancestors()/
+  descendants()/is_leaf/expandable`.
+- Expansion: `expand/collapse/expand_all/collapse_all/reveal`.
+- Lazy: `loader=fn` fetched on first expand (sync; cached); deep lazy (child
+  specs carry their own `loader`); `reload_children(node)` re-fetches.
+- **Selection = ListView/DataTable pattern** (NOT a separate `checkable`):
+  `show_selection_controls` shows a checkbox (multi) / radio (single) as the
+  selection affordance; `select_on_click` (default True) toggles whether a row
+  click selects (False ⇒ only the control selects, row click just focuses).
+  `select/deselect/select_all/clear_selection`, `selected_nodes` property.
+  **Multi = tri-state cascade** (parent↔descendants, parent shows mixed dash;
+  lazy parents defer cascade — children inherit on load; `_mixed` set tracks
+  partials). When controls are shown the **row wash is auto-suppressed**.
+- Events: `on_selection_changed`→`bs.events.TreeSelectionEvent(.nodes)`;
+  `on_activate`(dbl-click/Enter), `on_expand`, `on_collapse` pass the `TreeNode`;
+  `on_right_click` passes `{node,x_root,y_root}`.
+- Context menu: `set_context_menu(builder, *, min_width=150, density='default')`
+  — `builder(node, menu)` populates a fresh/cleared `bs.ContextMenu` per
+  right-click; shown at the cursor (rebuilt per-click so items can vary by node).
+- Keyboard: arrows/Home/End/Enter/Space, ←collapse/→expand, type-ahead.
 
-**Gotchas learned (cp1):** a ttk Frame won't shrink its `-width` back down once
-set (width-resized indent spacer goes STALE on recycle) → indent is applied as
-`pack_configure(padx=...)` on the chevron slot instead. Chevron lives in a
-fixed-width slot with the button `place()`d inside (constant gutter → leaf/parent
-alignment). The selection control is a registered-composite Label (its fill
-follows the row's `selected` state automatically); the `mixed` marker uses the
-`alternate` state (set explicitly, coordinator never touches it) and is plumbed
-(`_mixed` set) for cp3.
+**Cross-widget changes (shared `ListView.*` builders → affect ListView too):**
+- `CompositeFrame.unregister_composite` (avoid TclError on destroyed recycled
+  children).
+- Shared row builders gained a `wash` style-option: when
+  `show_selection_controls` is on, the selected row wash is suppressed (the
+  control is the indicator) across Tree AND ListView.
+- **Keyboard-only focus**: focus visual now rides the `'background focus'`
+  (visual-focus) state, not plain `'focus'` — mouse click shows nothing; keyboard
+  nav (`focus_set(visual_focus=True)`) shows a foreground bar painted into the
+  listrow image's focus (left-strip) channel. Applies to ListView too.
+- list-item nine-patch border matches the fill in every state for non-separated
+  rows (kills a stray hover/selected line; `_bd()` helper).
+- ListView `select_all` no longer skips an auto-assigned id of `0` (falsy check
+  → `is not None`).
+- `bs.events.TreeSelectionEvent` added.
 
-**Remaining checkpoints:** 2 = lazy loading (`loader=` on first expand; hooks
-already present), 3 = multi-select **tri-state cascade** (parent→descendants,
-recompute ancestors' mixed; defer cascade until lazy children load), 4 = per-node
-context menu polish, 5 = docs/example/screenshots/tests/gallery.
+**Gotchas learned:**
+- A ttk Frame WON'T shrink its `-width` back down once set → a width-resized
+  indent spacer goes STALE on recycle. Indent is applied as
+  `pack_configure(padx=depth*indent)` on the chevron slot instead. Chevron lives
+  in a fixed-width slot with the button `place()`d inside (constant gutter →
+  leaf/parent alignment).
+- Focus-visible: the `'background'` ttk state = keyboard-focus marker (see
+  `_runtime/visual_focus.py`; set on Tab and via `focus_set(visual_focus=True)`,
+  cleared on FocusOut). Style maps use `('background focus', ...)` for the ring.
+- The `listrow` asset's magenta (focus) channel is only a **left strip**, not a
+  perimeter ring — so the keyboard focus cursor is a left BAR for now. A true
+  ring needs NEW `listrow` assets with a perimeter focus channel (USER will
+  author; the `'background focus'` wiring is already in place to flip to a ring).
+- Selection control is a registered-composite Label using the shared `selection`
+  variant (extended with `alternate`→accent dash for mixed, crisp fixed 18px).
+
+**History wart:** the `show_selection_controls`/`TreeSelectionEvent` rename got
+swept into the cp2 ("lazy loading") commit by a greedy `git add -A`, so cp2 is a
+half-refactored intermediate. Branch is NOT pushed — fine to tidy history before
+pushing if desired.
+
+**Future enhancements (deferred):** dedicated crisp tree-badge pill style (badge
+is a plain caption label for now); perimeter focus-ring `listrow` assets (above).
+
+### Checkpoint 5 plan (NEXT SESSION) — docs/example/screenshots/tests/gallery
+Follow the "Widget documentation pattern" section further down. Specifically:
+- `docs/widgets/tree.rst` — intro → hero screenshot → Usage sections (nodes/add,
+  expand/collapse, selection + controls + cascade, lazy `loader`, context menu,
+  events, `.data`) → Widget sizing include → See also (DataTable, ListView) →
+  API autoclass (`bootstack.Tree`, `bootstack.TreeNode`) → Full Example.
+- `docs/examples/tree.py` — runnable visual-states demo (run it before commit).
+- `docs/screenshots/tree.py` — SCENES dict; then
+  `py -3.12 docs/scripts/take_screenshots.py tree`.
+- `tests/widgets/public/test_tree.py` — node handles, build/mutate, expand/lazy,
+  selection + cascade, events, context menu. (GUI tests: one `bs.App` per
+  process — the suite crashes with multiple Apps; mark `@pytest.mark.gui`.)
+- Wire `tree` into the Data Display `:caption:` toctree in `docs/widgets/index.rst`.
+- Swap the gallery (`cli/demo.py`) "Data Tables"/tree page to the new `bs.Tree`.
+- Add `Tree`/`TreeNode`/`TreeSelectionEvent` to the reference/API docs as needed.
 
 The rest of this section is the ORIGINAL design (kept for rationale); where it
-says `checkable`/`value`/`on_check`, the cp1 reversal above wins.
+says `checkable`/`value`/`on_check`, the final API above wins.
 
 ---
 
