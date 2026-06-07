@@ -82,6 +82,10 @@ _STRIPE_STRENGTH = 0.5
 # 1:1 into the row's icon slot — kept even and unscaled for crisp edges.
 _MARKER_ICON_SIZE = 20
 
+# The toolbar and footer are utility chrome around the data, so their widgets are
+# always compact regardless of the table's row density.
+_CHROME_DENSITY: WidgetDensity = 'compact'
+
 # Group expand/collapse chevrons shown in the leading slot of group-header rows
 # (the native tree indicator was removed from the item layout).
 _GROUP_OPEN_ICON = 'chevron-down'    # expanded
@@ -912,7 +916,7 @@ class TableView(Frame):
         bar.grid(row=0, column=0, sticky="ew", pady=(0, 4))
 
         if self._searchbar['enabled']:
-            self._search_entry = TextEntry(bar)
+            self._search_entry = TextEntry(bar, density=_CHROME_DENSITY)
             self._search_entry.insert_addon(Label, 'before', icon="search", icon_only=True)
             self._search_entry.insert_addon(Button, 'after', icon="x-lg", icon_only=True, command=self._clear_search)
             # Only reserve a 6 px right gap when the advanced-mode SelectBox
@@ -942,6 +946,7 @@ class TableView(Frame):
                     width=14,
                     allow_custom_values=False,
                     enable_search=False,
+                    density=_CHROME_DENSITY,
                 )
                 self._search_mode.pack(side="left", padx=(0, 6))
 
@@ -952,6 +957,7 @@ class TableView(Frame):
                 icon_only=True,
                 accent="foreground",
                 variant="ghost",
+                density=_CHROME_DENSITY,
                 command=self._show_column_chooser_dialog,
             )
             self._column_chooser_btn.pack(side="right", padx=(4, 0))
@@ -968,6 +974,7 @@ class TableView(Frame):
                 accent="foreground",
                 variant="ghost",
                 compound="image",
+                density=_CHROME_DENSITY,
                 items=export_items,
                 show_dropdown_button=False,
             )
@@ -980,6 +987,7 @@ class TableView(Frame):
                 text="table.add_record",
                 accent="foreground",
                 variant="ghost",
+                density=_CHROME_DENSITY,
                 command=self._open_new_record,
             ).pack(side="right", padx=(0, 4))
 
@@ -1081,9 +1089,9 @@ class TableView(Frame):
 
         status_frame = Frame(bar)
         status_frame.pack(side="left", fill="x", expand=True)
-        self._filter_label = Label(status_frame, text="", anchor="w", accent="muted")
+        self._filter_label = Label(status_frame, text="", anchor="w", accent="muted", font="caption")
         self._filter_label.pack(side="left", padx=(0, 4))
-        self._sort_label = Label(status_frame, text="", anchor="w", accent="muted")
+        self._sort_label = Label(status_frame, text="", anchor="w", accent="muted", font="caption")
         self._sort_label.pack(side="left", padx=(8, 4))
 
         # The pager (page entry + nav) is hidden when there is only one page.
@@ -1092,24 +1100,24 @@ class TableView(Frame):
         self._pager_frame = pager
         info_frame = Frame(pager)
         info_frame.pack(side='left')
-        Label(info_frame, text="table.page").pack(side='left')
-        self._page_entry = Entry(info_frame, width=6, justify="center")
+        Label(info_frame, text="table.page", font="caption").pack(side='left')
+        self._page_entry = Entry(info_frame, width=6, justify="center", density=_CHROME_DENSITY)
         self._page_entry.bind("<Return>", self._jump_page)
         self._page_entry.pack(side="left", padx=8)
-        self._page_label = Label(info_frame, text="")
+        self._page_label = Label(info_frame, text="", font="caption")
         self._page_label.pack(side="left", padx=(0, 8))
 
         Separator(pager, orient="vertical").pack(side="left", fill="y", padx=8)
 
         btn_frame = Frame(pager)
         btn_frame.pack(side="left")
-        Button(btn_frame, icon="chevron-double-left", accent="foreground", variant="ghost", icon_only=True, command=self._first_page).pack(
+        Button(btn_frame, icon="chevron-double-left", accent="foreground", variant="ghost", icon_only=True, density=_CHROME_DENSITY, command=self._first_page).pack(
             side="left")
-        Button(btn_frame, icon="chevron-left", icon_only=True, accent="foreground", variant="ghost", command=self._prev_page).pack(
+        Button(btn_frame, icon="chevron-left", icon_only=True, accent="foreground", variant="ghost", density=_CHROME_DENSITY, command=self._prev_page).pack(
             side="left")
-        Button(btn_frame, icon="chevron-right", icon_only=True, accent="foreground", variant="ghost", command=self._next_page).pack(
+        Button(btn_frame, icon="chevron-right", icon_only=True, accent="foreground", variant="ghost", density=_CHROME_DENSITY, command=self._next_page).pack(
             side="left")
-        Button(btn_frame, icon="chevron-double-right", icon_only=True, accent="foreground", variant="ghost", command=self._last_page).pack(
+        Button(btn_frame, icon="chevron-double-right", icon_only=True, accent="foreground", variant="ghost", density=_CHROME_DENSITY, command=self._last_page).pack(
             side="left")
 
         self._update_footer_visibility()
