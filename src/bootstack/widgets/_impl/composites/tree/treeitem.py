@@ -26,7 +26,7 @@ EMPTY = {"__empty__": True}
 
 
 class TreeItem(CompositeFrame):
-    """A recycled tree row: indent, chevron, icon, label, description, badge."""
+    """A recycled tree row: indent, chevron, selection control, icon, label."""
 
     def __init__(
         self,
@@ -90,12 +90,6 @@ class TreeItem(CompositeFrame):
         )
         self._center_frame.pack(side="left", fill="x", expand=True)
 
-        self._right_frame = Frame(
-            self, variant="list", ttk_class="ListView.TFrame",
-            takefocus=False, accent=self._accent, style_options=style_opts,
-        )
-        self._right_frame.pack(side="left")
-
         # Fixed-width chevron slot. The chevron button is PLACED inside it (place
         # children don't influence the slot's requested width), so the gutter is
         # exactly `chevron_width` whether or not a chevron is shown — leaf and
@@ -117,12 +111,10 @@ class TreeItem(CompositeFrame):
         self._select_ctrl: Optional[Label] = None
         self._icon_widget: Optional[Label] = None
         self._label_widget: Optional[Label] = None
-        self._desc_widget: Optional[Label] = None
-        self._badge_widget: Optional[Label] = None
 
         self._separator = Separator(self)
 
-        for w in (self._left_frame, self._center_frame, self._right_frame):
+        for w in (self._left_frame, self._center_frame):
             self.register_composite(w)
 
         # Selection control (checkbox for multi, radio for single) — the visible
@@ -155,7 +147,7 @@ class TreeItem(CompositeFrame):
         if self._focusable:
             self.on_invoked(self._on_invoke)
             self.bind("<FocusIn>", self._on_focus_in, add="+")
-        for w in (self, self._left_frame, self._center_frame, self._right_frame,
+        for w in (self, self._left_frame, self._center_frame,
                   self._chevron_slot):
             self._bind_row_mouse(w)
 
@@ -285,41 +277,6 @@ class TreeItem(CompositeFrame):
         elif self._label_widget is not None:
             self._destroy_widget("_label_widget")
 
-    def _update_description(self, text: Optional[str]) -> None:
-        if text:
-            if self._desc_widget is None:
-                self._desc_widget = Label(
-                    self._center_frame, text=text, font="caption", variant="list",
-                    ttk_class="ListView.TLabel", takefocus=False,
-                    accent=self._accent, style_options=self._style_opts(),
-                )
-                self._desc_widget.pack(side="left", anchor="w", padx=(6, 0))
-                self.register_composite(self._desc_widget)
-                self._bind_row_mouse(self._desc_widget)
-            else:
-                self._desc_widget.configure(text=text)
-        elif self._desc_widget is not None:
-            self._destroy_widget("_desc_widget")
-
-    def _update_badge(self, text: Optional[str]) -> None:
-        if text:
-            if self._badge_widget is None:
-                # Trailing metadata as a small caption that follows the row wash
-                # (registered composite). A dedicated crisp tree-badge style
-                # (pill with proper hover) is a future enhancement.
-                self._badge_widget = Label(
-                    self._right_frame, text=text, font="caption", variant="list",
-                    ttk_class="ListView.TLabel", accent=self._accent,
-                    takefocus=False, style_options=self._style_opts(),
-                )
-                self._badge_widget.pack(side="right", padx=6)
-                self.register_composite(self._badge_widget)
-                self._bind_row_mouse(self._badge_widget)
-            else:
-                self._badge_widget.configure(text=text)
-        elif self._badge_widget is not None:
-            self._destroy_widget("_badge_widget")
-
     def _destroy_widget(self, attr: str) -> None:
         w = getattr(self, attr, None)
         if w is not None:
@@ -339,13 +296,18 @@ class TreeItem(CompositeFrame):
     # ----- surface (striping) -----
 
     def set_surface(self, surface: str) -> None:
-        """Set the row + container surface color (used for striped rows)."""
-        previous = getattr(self, "_surface", "background")
+        """Set the row + container surface color (used for striped rows).
+
+        Idempotent: a no-op when the surface is unchanged, so it is safe (and
+        cheap) to call on every recycle — that is what keeps striping correct as
+        rows are repointed at different data indices.
+        """
+        if getattr(self, "_applied_surface", None) == surface:
+            return
+        self._applied_surface = surface
         self.configure_style_options(surface=surface)
-        if previous != surface:
-            self.rebuild_style()
-        targets = [self._left_frame, self._center_frame, self._right_frame,
-                   self._chevron_slot]
+        self.rebuild_style()
+        targets = [self._left_frame, self._center_frame, self._chevron_slot]
         if self._select_ctrl is not None:
             targets.append(self._select_ctrl)
         for frame in targets:
@@ -405,8 +367,6 @@ class TreeItem(CompositeFrame):
         for field, updater in (
             ("icon", self._update_icon),
             ("label", self._update_label),
-            ("description", self._update_description),
-            ("badge", self._update_badge),
         ):
             value = record.get(field)
             if self._state.get(field) != value:

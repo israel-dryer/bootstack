@@ -39,7 +39,7 @@ class TreeView(Frame):
         select_on_click: bool = True,
         indent: int = 16,
         striped: bool = False,
-        striped_background: str = "background[+1]",
+        striped_background: str = "card",
         show_separator: bool = False,
         scrollbar_visibility: Literal["always", "never"] = "always",
         enable_hover: bool = True,
@@ -78,6 +78,10 @@ class TreeView(Frame):
         self._typeahead = ""
         self._typeahead_after: Optional[str] = None
 
+        # Pending relayout `after` id (coalesced; cancelled on destroy so a
+        # queued callback never fires on a torn-down widget).
+        self._relayout_after: Optional[str] = None
+
         # Virtual scrolling state.
         self._start_index = 0
         self._prev_start_index = 0
@@ -112,7 +116,7 @@ class TreeView(Frame):
         self._bind_keys(self)
         self._bind_keys(self._container)
 
-        self.after(10, self._remeasure_and_relayout)
+        self._relayout_after = self.after(10, self._remeasure_and_relayout)
 
     # ================= hierarchy / flatten =================
 
@@ -126,7 +130,6 @@ class TreeView(Frame):
             icon = node.icon
         return dict(
             node=node, depth=depth, label=node.label, icon=icon,
-            description=node.description, badge=node.badge,
             expandable=node.expandable, expanded=expanded,
         )
 
@@ -189,6 +192,13 @@ class TreeView(Frame):
             self._apply_widget_surface(row, len(self._rows) - 1)
         while len(self._rows) > needed:
             row = self._rows.pop()
+            # Drop this row's (and its descendants') mousewheel-bound ids so the
+            # set doesn't grow without bound and a reused Tk path can't be
+            # mistaken for already-bound.
+            prefix = str(row)
+            self._mousewheel_bound = {
+                w for w in self._mousewheel_bound if not w.startswith(prefix)
+            }
             row.pack_forget()
             try:
                 row.destroy()
@@ -253,6 +263,10 @@ class TreeView(Frame):
 
     def _update_single_row(self, row: TreeItem, data_index: int) -> None:
         row.update_data(self._render_record(data_index))
+        # Re-apply the stripe surface by DATA index (idempotent): a recycled row
+        # showing a different index must take that index's color, else striping
+        # parity drifts under scrolling.
+        self._apply_widget_surface(row, data_index)
         self._bind_mousewheel_recursive(row)
 
     def _apply_widget_surface(self, row: TreeItem, widget_index: int) -> None:
@@ -321,10 +335,16 @@ class TreeView(Frame):
 
     def _on_resize(self, event) -> None:
         if event.widget == self:
-            self.after_idle(self._remeasure_and_relayout)
+            if self._relayout_after is not None:
+                try:
+                    self.after_cancel(self._relayout_after)
+                except Exception:
+                    pass
+            self._relayout_after = self.after_idle(self._remeasure_and_relayout)
 
     def _remeasure_and_relayout(self) -> None:
-        if not self._rows:
+        self._relayout_after = None
+        if not self._rows or not self.winfo_exists():
             return
         rh = self._rows[0].winfo_height()
         if rh <= 1:
@@ -409,14 +429,19 @@ class TreeView(Frame):
         self._on_structure_changed()
         return node
 
+    def _attach_subtree(self, node: TreeNode) -> None:
+        """Point `node` and every descendant at this tree (so node convenience
+        methods work for a pre-built subtree passed as a spec)."""
+        node._tree = self
+        for d in node.descendants():
+            d._tree = self
+
     def _add_from_spec(self, spec: Any, parent: TreeNode) -> TreeNode:
         """Add a node from a dict spec (declarative `nodes=`) or a TreeNode."""
         if isinstance(spec, TreeNode):
-            spec._tree = self
             spec.parent = parent
             parent.children.append(spec)
-            for child in list(spec.children):
-                child._tree = self
+            self._attach_subtree(spec)
             return spec
         if isinstance(spec, str):
             spec = {"label": spec}
@@ -435,6 +460,7 @@ class TreeView(Frame):
         """Replace the whole tree from a declarative list of specs."""
         self._roots = []
         self._selected.clear()
+        self._mixed.clear()
         self._focused_node = None
         for spec in specs or []:
             self._add_root_from_spec(spec)
@@ -442,9 +468,9 @@ class TreeView(Frame):
 
     def _add_root_from_spec(self, spec: Any) -> TreeNode:
         if isinstance(spec, TreeNode):
-            spec._tree = self
             spec.parent = None
             self._roots.append(spec)
+            self._attach_subtree(spec)
             return spec
         if isinstance(spec, str):
             spec = {"label": spec}
@@ -468,6 +494,10 @@ class TreeView(Frame):
         self._on_structure_changed()
 
     def move(self, node: TreeNode, new_parent: Optional[TreeNode], index: Any = "end") -> None:
+        # Guard against cycles: a node cannot be moved into itself or one of its
+        # own descendants (that would make _flatten recurse forever).
+        if new_parent is node or (new_parent is not None and node in new_parent.ancestors()):
+            raise ValueError("cannot move a node into itself or one of its descendants")
         siblings = node.parent.children if node.parent is not None else self._roots
         try:
             siblings.remove(node)
@@ -484,6 +514,7 @@ class TreeView(Frame):
     def clear(self) -> None:
         self._roots = []
         self._selected.clear()
+        self._mixed.clear()
         self._focused_node = None
         self._on_structure_changed()
 
@@ -544,11 +575,21 @@ class TreeView(Frame):
         self._on_structure_changed()
 
     def expand_all(self) -> None:
-        for node in list(self._iter_all_nodes()):
-            if node.loader is not None and not node._loaded:
-                self._load_children(node)
-            if node.expandable:
-                node.expanded = True
+        # Repeat passes until nothing new appears: lazily-loaded children only
+        # exist after their parent's loader runs, so a single pass would miss
+        # deeper lazy levels. Each lazy node loads at most once (`_loaded`), so
+        # this terminates for any finite tree.
+        while True:
+            changed = False
+            for node in list(self._iter_all_nodes()):
+                if node.loader is not None and not node._loaded:
+                    self._load_children(node)
+                    changed = True
+                if node.expandable and not node.expanded:
+                    node.expanded = True
+                    changed = True
+            if not changed:
+                break
         self._on_structure_changed()
 
     def collapse_all(self) -> None:
@@ -613,6 +654,7 @@ class TreeView(Frame):
     def select(self, node: TreeNode) -> None:
         if self._selection_mode == "none":
             return
+        before = (frozenset(self._selected), frozenset(self._mixed))
         if self._selection_mode == "single":
             self._selected = {node}
             self._mixed.clear()
@@ -623,7 +665,10 @@ class TreeView(Frame):
             self._recompute_ancestors(node)
         self._focused_node = node
         self._update_rows()
-        self._emit_selection_changed()
+        # Only announce a change if the selection set actually moved (re-clicking
+        # an already-selected single node shouldn't re-fire the event).
+        if before != (frozenset(self._selected), frozenset(self._mixed)):
+            self._emit_selection_changed()
 
     def deselect(self, node: TreeNode) -> None:
         if node in self._selected or node in self._mixed:
@@ -774,3 +819,15 @@ class TreeView(Frame):
     @property
     def roots(self) -> list[TreeNode]:
         return self._roots
+
+    def destroy(self) -> None:
+        """Cancel pending `after` callbacks before tearing down."""
+        for attr in ("_relayout_after", "_typeahead_after"):
+            after_id = getattr(self, attr, None)
+            if after_id is not None:
+                try:
+                    self.after_cancel(after_id)
+                except Exception:
+                    pass
+                setattr(self, attr, None)
+        super().destroy()

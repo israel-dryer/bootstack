@@ -42,7 +42,7 @@ class ListView(Frame):
             enable_removing: bool = False,
             enable_dragging: bool = False,
             striped: bool = False,
-            striped_background: str = 'background[+1]',
+            striped_background: str = 'card',
             show_separator: bool = True,
             scrollbar_visibility: Literal['always', 'never'] = 'always',
             enable_focus: bool = True,

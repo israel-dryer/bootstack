@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, overload
+from typing import Any, Callable, Iterator, Literal, overload
 
 from bootstack.widgets._impl.composites.tree.treeview import TreeView as _InternalTreeView
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
@@ -23,9 +23,9 @@ class Tree(PublicWidgetBase):
 
     Nodes are object handles: `add()` returns a `TreeNode` that you hold and
     pass back to `expand()`, `select()`, `remove()`, and so on — there are no
-    string ids. Each node carries a `label`, optional `icon`, `description`
-    (dimmed, secondary text), and `badge`, plus an open-ended `data` bag for
-    your own attributes.
+    string ids. Each node carries a `label` and an optional `icon` (with
+    optional open/closed variants), plus an open-ended `data` bag for your own
+    attributes.
 
     Args:
         nodes: Declarative initial tree — a list of node specs, where each spec
@@ -119,8 +119,6 @@ class Tree(PublicWidgetBase):
         icon: str | None = None,
         open_icon: str | None = None,
         closed_icon: str | None = None,
-        description: str | None = None,
-        badge: str | None = None,
         expanded: bool = False,
         children: list | None = None,
         loader: Callable[[TreeNode], Any] | None = None,
@@ -135,8 +133,6 @@ class Tree(PublicWidgetBase):
             icon: Bootstrap icon name shown before the label.
             open_icon: Icon used when the node is expanded (overrides `icon`).
             closed_icon: Icon used when the node is collapsed (overrides `icon`).
-            description: Dimmed secondary text shown after the label.
-            badge: Short label shown at the right edge of the row.
             expanded: Whether the node starts expanded.
             children: Optional child specs (same format as `nodes=`).
             loader: Callable invoked on first expand to fetch children lazily.
@@ -146,9 +142,8 @@ class Tree(PublicWidgetBase):
         """
         return self._internal.add(
             label, parent=parent, icon=icon, open_icon=open_icon,
-            closed_icon=closed_icon, description=description, badge=badge,
-            expanded=expanded, children=children, loader=loader, data=data,
-            **extra,
+            closed_icon=closed_icon, expanded=expanded, children=children,
+            loader=loader, data=data, **extra,
         )
 
     def insert(self, index: int, label: str = "", *, parent: TreeNode | None = None,
@@ -186,6 +181,32 @@ class Tree(PublicWidgetBase):
         """Remove all nodes."""
         self._internal.clear()
 
+    # ----- navigation / lookup -----
+
+    @property
+    def roots(self) -> list[TreeNode]:
+        """The top-level nodes, in order.
+
+        Useful for reaching handles after declarative construction
+        (`Tree(nodes=...)`), which otherwise returns no `TreeNode`s.
+        """
+        return list(self._internal.roots)
+
+    def walk(self) -> Iterator[TreeNode]:
+        """Yield every node depth-first, including collapsed ones."""
+        return self._internal._iter_all_nodes()
+
+    def find(self, predicate: Callable[[TreeNode], bool]) -> TreeNode | None:
+        """Return the first node for which `predicate` is true, or `None`.
+
+        Args:
+            predicate: Callable taking a `TreeNode` and returning a bool.
+        """
+        for node in self._internal._iter_all_nodes():
+            if predicate(node):
+                return node
+        return None
+
     # ----- expansion -----
 
     def expand(self, node: TreeNode) -> None:
@@ -195,6 +216,10 @@ class Tree(PublicWidgetBase):
     def collapse(self, node: TreeNode) -> None:
         """Collapse a node to hide its children."""
         self._internal.collapse(node)
+
+    def toggle(self, node: TreeNode) -> None:
+        """Expand the node if collapsed, or collapse it if expanded."""
+        self._internal.toggle(node)
 
     def expand_all(self) -> None:
         """Expand every node (loading lazy children as needed)."""
@@ -372,6 +397,22 @@ class Tree(PublicWidgetBase):
         self._ctx_builder(node, menu)
         if menu.keys:  # only show if the builder added something
             menu.show((data.get("x_root", 0), data.get("y_root", 0)))
+
+    # ----- lifecycle -----
+
+    def destroy(self) -> None:
+        """Detach the context menu and destroy the widget (cancels pending
+        relayout/type-ahead callbacks on the internal view)."""
+        if self._ctx_sub is not None:
+            self._ctx_sub.cancel()
+            self._ctx_sub = None
+        if self._ctx_menu is not None:
+            try:
+                self._ctx_menu.destroy()
+            except Exception:
+                pass
+            self._ctx_menu = None
+        self._internal.destroy()
 
 
 _TREE_EVENTS: dict[str, str] = {

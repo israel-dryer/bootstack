@@ -12,8 +12,7 @@ from typing import Any, Callable, Iterator, Optional
 
 # Sentinel separating recognized display parameters from the user data bag.
 _DISPLAY_PARAMS = frozenset(
-    {"label", "icon", "open_icon", "closed_icon", "description", "badge",
-     "expanded", "children", "loader"}
+    {"label", "icon", "open_icon", "closed_icon", "expanded", "children", "loader"}
 )
 
 
@@ -24,14 +23,14 @@ class TreeNode:
     and pass it back to `expand()`, `select()`, `remove()`, and friends. Two
     nodes are never equal unless they are the same object.
 
-    Display attributes (`label`, `icon`, `description`, `badge`, ...) are a
+    Display attributes (`label`, `icon`, `open_icon`, `closed_icon`, ...) are a
     non-destructive view over the node. Any keyword not recognized as a display
     parameter is folded into `data`, so a handler always gets the user's domain
     data back.
     """
 
     __slots__ = (
-        "label", "icon", "open_icon", "closed_icon", "description", "badge",
+        "label", "icon", "open_icon", "closed_icon",
         "expanded", "children", "parent", "data", "loader",
         "_tree", "_loaded",
     )
@@ -43,8 +42,6 @@ class TreeNode:
         icon: Optional[str] = None,
         open_icon: Optional[str] = None,
         closed_icon: Optional[str] = None,
-        description: Optional[str] = None,
-        badge: Optional[str] = None,
         expanded: bool = False,
         loader: Optional[Callable[["TreeNode"], Any]] = None,
         data: Optional[dict] = None,
@@ -54,8 +51,6 @@ class TreeNode:
         self.icon = icon
         self.open_icon = open_icon
         self.closed_icon = closed_icon
-        self.description = description
-        self.badge = badge
         self.expanded = expanded
         self.loader = loader
 
@@ -115,7 +110,7 @@ class TreeNode:
 
         Args:
             label: The child's display label.
-            **kwargs: Forwarded to `Tree.add` (icon, description, badge,
+            **kwargs: Forwarded to `Tree.add` (icon, open_icon, closed_icon,
                 expanded, children, loader, data, and overflow data kwargs).
         """
         if self._tree is None:

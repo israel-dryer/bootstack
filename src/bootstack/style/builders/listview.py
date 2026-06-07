@@ -35,11 +35,12 @@ def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str =
         selected = background  # selection shown via the control, not a row wash
     b.configure_style(ttk_style, background=background, relief='flat')
 
-    # No 'focus' wash: keyboard focus is shown by the row's left bar only, and
-    # mouse focus shows nothing (focus-visible behavior).
+    # No hover wash and no 'focus' wash: rows show selection only (keyboard focus
+    # rides the row image's bar). Row hover was removed — it competed with the
+    # stripe and selection washes (several subtle colors at once) and is gone in
+    # DataTable too, so this keeps the data widgets consistent.
     background_state_map = [
         ('selected', selected),
-        ('hover', active) if hoverable else None,
         ('', background)
     ]
 
@@ -97,25 +98,21 @@ def build_list_item_style(
     focus_ring = b.color('foreground')
 
     normal_img = recolor_element_image(image_key, background, _bd(background), background, None, border_normal)
-    active_img = recolor_element_image(image_key, active, _bd(active), active, None, border_normal)
     # No left selection bar: the indicator channels match the selected fill so it
     # stays invisible (selection reads via the row wash + accent checkbox, aligned
     # with DataTable).
     selected_img = recolor_element_image(image_key, selected, _bd(selected), selected, None, selected)
 
-    # Keyboard-focus bar images (bar on the current fill). The bar must combine
-    # with hover and selected, so each fill has a bar variant; ordering puts the
-    # more-specific compound states first (first match wins in ttk).
+    # Keyboard-focus bar images (bar on the current fill). Row hover was removed
+    # (it competed with stripe/selection washes), so there is no hover variant —
+    # the bar only needs a normal and a selected fill.
     focus_ring_img = recolor_element_image(image_key, background, _bd(background), focus_ring, None, border_normal)
-    focus_hover_img = recolor_element_image(image_key, active, _bd(active), focus_ring, None, border_normal)
     selected_focus_img = recolor_element_image(image_key, selected, _bd(selected), focus_ring, None, selected)
 
     image_state_specs = [
         ('selected background focus', selected_focus_img.image),
         ('selected', selected_img.image),
-        ('background focus hover', focus_hover_img.image) if hoverable else None,
         ('background focus', focus_ring_img.image),
-        ('hover', active_img.image) if hoverable else None,
         ('', normal_img.image),
     ]
 
@@ -157,11 +154,13 @@ def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
         ])
     )
 
+    # Selection + momentary press only — NO hover and NO plain-'focus' highlight.
+    # 'selected' keeps the button fill matching a selected row; 'pressed' gives a
+    # brief click feedback on the chevron. Row hover was removed (it competed with
+    # the stripe/selection washes and never cleared cleanly across recycling).
     background_state_spec = [
         ('selected', selected),
-        ('focus pressed', pressed),
-        ('hover', active) if hoverable else None,
-        ('focus', active)
+        ('pressed', pressed),
     ]
 
     b.configure_style(ttk_style, background=background, padding=0, relief='flat', stipple='gray12', font=button_font(density))
@@ -247,10 +246,11 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
         ('', on_background)
     ]
 
-    # No 'focus' wash (keyboard focus = row left bar only; mouse focus = none).
+    # Selection only — no hover, no 'focus' wash. Row hover was removed (it
+    # competed with the stripe/selection washes); the icon/chevron fill just
+    # tracks the row's selected state so it stays consistent.
     background_state_spec = [
         ('selected', selected),
-        ('hover', active) if hoverable else None,
     ]
 
     # Prepare state spec
@@ -315,10 +315,9 @@ def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: st
         ('alternate', accent_color),  # partially-selected parent (mixed) -> accent dash
         ('', muted),                  # muted outline when unchecked
     ]
-    # No 'focus' wash (keyboard focus = row left bar only; mouse focus = none).
+    # Selection only — no hover, no 'focus' wash (row hover was removed).
     background_state_spec = [
         ('selected', selected),
-        ('hover', active) if hoverable else None,
     ]
     state_spec = dict(
         foreground=[x for x in foreground_state_spec if x is not None],
@@ -355,10 +354,10 @@ def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
         selected = background
         on_selected = on_background
 
-    # No 'focus' wash (keyboard focus = row left bar only; mouse focus = none).
+    # Selection only — no hover wash, no 'focus' wash (keyboard focus = row bar).
+    # Row hover was removed (competed with stripe/selection washes).
     background_state_spec = [
         ('selected', selected),
-        ('hover', active) if hoverable else None,
     ]
 
     b.configure_style(ttk_style, background=background, foreground=on_background)
