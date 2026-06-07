@@ -164,10 +164,10 @@ class ToggleGroup(Frame):
             raise ValueError(f"A button with the key '{key}' already exists.")
 
         btn_kwargs = kwargs.copy()
-        # Set the ButtonGroup ttk_class - position will be updated by _update_button_positions
+        # Set the ToggleGroup ttk_class - position will be updated by _update_button_positions
         custom_accent = btn_kwargs.pop('accent', None) or self._accent
         btn_kwargs['accent'] = custom_accent
-        btn_kwargs['ttk_class'] = 'ButtonGroup'
+        btn_kwargs['ttk_class'] = 'ToggleGroup'
         if 'state' not in btn_kwargs:
             btn_kwargs['state'] = self._state
         # variant can be None (default), 'outline', or 'ghost' - use group's variant if not specified

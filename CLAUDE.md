@@ -622,5 +622,11 @@ def on_change(self, handler=None):
 ## Open bugs
 
 - `value=` silently ignored when `signal=`/`variable=` also passed (all boolean widgets)
-- `ToggleGroup` solid variant poor contrast (`src/bootstack/style/builders/toolbutton.py`)
 - `Style._tk_widgets` grows forever — partially resolved; pages are never destroyed
+
+ButtonGroup/ToggleGroup now have **separate** style builders: `ButtonGroup`
+(action widgets) uses `style/builders/buttongroup.py`; `ToggleGroup` (selection
+widgets) uses `style/builders/togglegroup.py` (registered for the `ToggleGroup`
+ttk class; composite sets `ttk_class='ToggleGroup'`). They share the baked
+`button_group_*` nine-patch shapes but have independent colors/normal states. The
+old ToggleGroup solid-variant contrast issue is fixed.

@@ -23,7 +23,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
     bs.Label("Style Variants", font="heading-sm")
     with bs.HStack(gap=8):
         for variant in ("solid", "outline", "ghost"):
-            bg = bs.ButtonGroup(accent="primary", variant=variant)
+            bg = bs.ButtonGroup(variant=variant)
             bg.add("Save")
             bg.add("Cancel")
 

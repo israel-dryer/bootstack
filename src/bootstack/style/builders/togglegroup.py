@@ -1,4 +1,10 @@
-"""ButtonGroup widget style builders."""
+"""ToggleGroup widget style builders.
+
+Duplicated from the ButtonGroup builder so selection widgets (ToggleGroup) can
+diverge from action widgets (ButtonGroup) — they need different normal states.
+The baked nine-patch shapes are shared (the `button_group_*` image keys); only
+the colors/state mappings differ.
+"""
 
 from __future__ import annotations
 
@@ -20,11 +26,11 @@ def _toolbutton_layout(ttk_style: str) -> Element:
         ])
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'ButtonGroup')
-@BootstyleBuilderTTk.register_builder('default', 'ButtonGroup')
-def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@BootstyleBuilderTTk.register_builder('solid', 'ToggleGroup')
+@BootstyleBuilderTTk.register_builder('default', 'ToggleGroup')
+def build_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
-    Configure the button style.
+    Configure the toggle group style.
 
     Style options include:
         * icon_only
@@ -43,27 +49,25 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     image_key = f'button_group_{orient}_{position}_{density}'
 
     surface = b.color(surface_token)
-    accent_color = b.elevate(surface, 1) if accent is None else b.color(accent)
+    accent_color = b.elevate(surface, 2) if accent is None else b.color(accent)
 
     # background colors
-    bg_normal = accent_color
-    bg_active = b.active(accent_color)
-    bg_pressed = b.pressed(accent_color)
+    bg_normal = b.elevate(surface, 1)
+    bg_selected = accent_color
     bg_disabled = b.disabled()
 
     # foreground colors
-    fg_normal = b.on_color(bg_normal)
+    fg_normal = b.muted_foreground(bg_normal)
+    fg_selected = b.on_color(bg_selected)
     fg_disabled = b.disabled('text', bg_disabled)
 
     # border colors
     bd_normal = b.border(bg_normal)
-    bd_active = b.border(bg_active)
-    bd_pressed = b.border(bg_pressed)
+    bd_selected = b.border(bg_selected)
     bd_disabled = b.border(bg_disabled)
 
     normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
-    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
-    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    selected_img = recolor_element_image(image_key, bg_selected, bd_selected, surface, surface)
     disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, bg_disabled)
 
     if active_state:
@@ -72,8 +76,7 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
                 f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
                 [
                     ('disabled', disabled_img.image),
-                    ('pressed', pressed_img.image),
-                    ('active', active_img.image),
+                    ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
     else:
@@ -82,7 +85,7 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
                 f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
                 [
                     ('disabled', disabled_img.image),
-                    ('pressed', pressed_img.image),
+                    ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
 
@@ -105,7 +108,7 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     state_spec = dict(
         foreground=[
             ('disabled', fg_disabled),
-            ('pressed', fg_normal),
+            ('selected', fg_selected),
             ('', fg_normal)],
     )
 
@@ -113,10 +116,10 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'ButtonGroup')
-def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@BootstyleBuilderTTk.register_builder('outline', 'ToggleGroup')
+def build_outline_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
-    Configure the outline button group style.
+    Configure the outline toggle group style.
 
     Style options include:
         * icon_only
@@ -139,27 +142,23 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
 
     # background colors
     bg_normal = surface
+    bg_selected = accent_color
     bg_disabled = b.disabled()
-    bg_active = accent_color
-    bg_pressed = b.active(accent_color)
 
     # foreground colors
-    fg_normal = b.on_color(bg_normal) if accent is None else accent_color
-    fg_active = b.on_color(bg_active)
-    fg_pressed = b.on_color(bg_pressed)
+    fg_normal = b.muted_foreground(bg_normal) if accent is None else accent_color
+    fg_selected = b.on_color(bg_selected)
     fg_disabled = b.disabled('text', bg_disabled)
 
 
     # border colors
     bd_normal = b.border(bg_normal) if accent is None else accent_color
-    bd_active = b.border(bg_active)
-    bd_pressed = b.pressed(bg_pressed)
+    bd_selected = b.border(bg_selected)
     bd_disabled = b.border(bg_disabled)
 
 
     normal_img = recolor_element_image(image_key, surface, bd_normal, surface, surface)
-    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
-    pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
+    selected_img = recolor_element_image(image_key, bg_selected, bd_selected, surface, surface)
     disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, surface)
 
     if active_state:
@@ -168,8 +167,7 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
                 f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
                 [
                     ('disabled', disabled_img.image),
-                    ('pressed', pressed_img.image),
-                    ('active', active_img.image),
+                    ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
     else:
@@ -178,6 +176,7 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
                 f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
                 [
                     ('disabled', disabled_img.image),
+                    ('selected', selected_img.image),
                     ('', normal_img.image)
                 ]))
 
@@ -201,15 +200,14 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
         state_spec = dict(
             foreground=[
                 ('disabled', fg_disabled),
-                ('pressed', fg_pressed),
-                ('active', fg_active),
+                ('selected', fg_selected),
                 ('', fg_normal)],
         )
     else:
         state_spec = dict(
             foreground=[
                 ('disabled', fg_disabled),
-                ('pressed', fg_normal),
+                ('selected', fg_selected),
                 ('', fg_normal)],
         )
 
@@ -217,10 +215,10 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'ButtonGroup')
-def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@BootstyleBuilderTTk.register_builder('ghost', 'ToggleGroup')
+def build_ghost_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
     """
-    Configure the ghost button group style.
+    Configure the ghost toggle group style.
 
     Style options include:
         * icon_only
@@ -235,7 +233,6 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     position = options.get('position', 'before')
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', False)
-    active_state = options.get('active_state', False)
     image_key = f'button_group_{orient}_{position}_{density}'
 
     surface = b.color(surface_token)
@@ -243,46 +240,31 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
 
     # background colors
     bg_normal = surface
-    bg_active = b.elevate(surface, 1) if accent is None else b.subtle(accent, surface)
-    bg_pressed = b.active(bg_active)
+    bg_selected = b.elevate(surface, 2) if accent is None else b.subtle(accent, surface)
     bg_disabled = b.disabled()
 
     # foreground colors
-    fg_normal = b.on_color(bg_normal) if accent is None else accent_color
+    fg_normal = b.muted_foreground(bg_normal)
+    fg_selected = b.on_color(bg_selected) if accent is None else accent_color
     fg_disabled = b.disabled('text', bg_disabled)
 
     # border colors
-    bd_normal = b.border(bg_active)
-    bd_active = b.border(bg_pressed)
+    bd_normal = b.border(surface)
+    bd_selected = b.border(bg_selected)
 
     # button images
     normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
-    active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
-    pressed_img = recolor_element_image(image_key, bg_pressed, bd_active, surface, surface)
-
+    selected_img = recolor_element_image(image_key, bg_selected, bd_selected, surface, surface)
     disabled_img = recolor_element_image(image_key, surface, bg_normal, surface, surface)
 
-    if active_state:
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
-                [
-                    ('disabled', disabled_img.image),
-                    ('pressed !selected', pressed_img.image),
-                    ('active', active_img.image),
-                    ('selected', active_img.image),
-                    ('', normal_img.image)
-                ]))
-    else:
-        b.create_style_element_image(
-            ElementImage(
-                f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
-                [
-                    ('disabled', disabled_img.image),
-                    ('pressed !selected', pressed_img.image),
-                    ('selected', active_img.image),
-                    ('', normal_img.image)
-                ]))
+    b.create_style_element_image(
+        ElementImage(
+            f'{ttk_style}.border', normal_img.image, sticky="nsew", border=normal_img.meta.border).state_specs(
+            [
+                ('disabled', disabled_img.image),
+                ('selected', selected_img.image),
+                ('', normal_img.image)
+            ]))
 
     b.create_style_layout(
         ttk_style,
@@ -303,6 +285,7 @@ def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     state_spec = dict(
         foreground=[
             ('disabled', fg_disabled),
+            ('selected !disabled', fg_selected),
             ('', fg_normal)
         ]
     )
