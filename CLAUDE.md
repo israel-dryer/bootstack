@@ -84,12 +84,36 @@ paints an arbitrary color on a built-in `Frame`/`Label`.
 
 ## Current initiative — Tree public-API modernization (2026-06-07)
 
-**FUNCTIONALLY COMPLETE — checkpoints 1–4 DONE & user-approved** on branch
-`feat/tree-public-api` (NOT pushed). Commits: cp1 `7b6adb43`, cp2 `7f4da54f`,
-cp3 `e3aa29cd`, cp4 `b3da0bd7`. **Remaining: checkpoint 5 = docs/example/
-screenshots/tests/gallery** (the established widget-doc pattern below). The OLD
-ttk `bs.Tree` is fully replaced; the ttk `TreeView` *primitive* is untouched
-(still used by DataTable + the font dialog).
+**COMPLETE — checkpoints 1–5 DONE & user-approved** on branch
+`feat/tree-public-api` (NOT pushed). Earlier commits: cp1 `7b6adb43`, cp2
+`7f4da54f`, cp3 `e3aa29cd`, cp4 `b3da0bd7`. Checkpoint 5 + a post-cp4 review pass
+committed this session. **Remaining: `git push`.** The OLD ttk `bs.Tree` is fully
+replaced; the ttk `TreeView` *primitive* is untouched (still used by DataTable +
+the font dialog).
+
+**Decisions/changes after cp4 (this session):**
+- **Row model trimmed to icon + label** (ttk.Treeview parity). `description` and
+  `badge` were **fully removed** as display params (clean break) — they fold into
+  `node.data` now; richer per-row content is deferred to a future **custom node
+  renderer** (design in memory `project_tree_row_model`). Kept: open/closed icon
+  variants, selection + cascade, lazy `loader`, context menu, keyboard, `.data`.
+- **Row hover/active REMOVED** from Tree AND ListView (shared
+  `style/builders/listview.py`), matching DataTable (which never had it). Hover
+  competed with the stripe + selection washes and went stale across recycling.
+  Rows now show selection + keyboard-focus only. (memory
+  `reference_listrow_button_focus_stick`.) `hoverable`/`enable_hover` params are
+  now no-op no-ops — future cleanup.
+- **Default stripe softened** `background[+1]` → `card` (theme-aware) for Tree +
+  ListView.
+- **API hardening:** `move()` cycle guard; public `roots`/`walk()`/`find()`/
+  `toggle()`/`destroy()`; pending-`after` teardown (+`winfo_exists` guard);
+  no-op `select()` emit guard; `expand_all()` loops for deep-lazy; striping
+  re-applied by data-index (idempotent `set_surface`); `_mousewheel_bound`
+  pruned on row destroy; pre-built `TreeNode` subtree attaches recursively.
+- **Public API:** `Tree.roots` (list), `walk()` (iterator), `find(predicate)`,
+  `toggle(node)`, `destroy()` added. `tests/widgets/public/test_tree.py` (22
+  GUI tests, one `bs.App`/process). Docs `widgets/tree.rst` restructured into a
+  build→reveal→select→react→style narrative (not a flat feature list).
 
 **Architecture:** recycle-view canvas mirroring `ListView`, in
 `widgets/_impl/composites/tree/` — `treenode.py` (`TreeNode` handle),
@@ -362,7 +386,7 @@ in `widgets/dialogs.py`).
 - Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
   SelectButton, Calendar
 - Data Display: Label, Badge, ProgressBar, Gauge, ListView, **DataTable**
-  (renamed from `Table`)
+  (renamed from `Table`), **Tree** (rebuilt as a recycle-view; icon+label rows)
 - Layout: Separator, Card, GroupBox, VStack, HStack, Grid, Accordion,
   ScrollView, SplitView
 - Menus and Toolbars: Toolbar, MenuButton, ContextMenu
@@ -372,9 +396,8 @@ in `widgets/dialogs.py`).
 - Forms
 
 **Pending:**
-- Data Display: Tree (IN DESIGN 2026-06-07 — see "Next initiative — Tree
-  public-API modernization" near the top; chevron mechanism DECIDED: composite
-  `[chevron][icon]` in the single item image slot, NOT the indicator-element slot)
+- (none) — Tree is DONE (see "Current initiative — Tree public-API
+  modernization"); `git push` the branch.
 - Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
 
 ### Table — DONE (branch `feat/public-table`, this initiative)
