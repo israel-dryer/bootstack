@@ -57,6 +57,7 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
         columns=COLUMNS,
         rows=ROWS,
         selection_mode="multi",
+        show_selection_controls=True,
         searchable=True,
         allow_filter=True,
         allow_group=True,
