@@ -178,25 +178,38 @@ def read_jsonl(path: "str | Path", config: "FileSourceConfig") -> Iterator[Recor
 def read_json(path: "str | Path", config: "FileSourceConfig") -> Iterator[Record]:
     """Read records from a JSON file.
 
-    A JSON *array* is parsed in full (the stdlib parser cannot stream an array —
-    prefer JSONL for very large data). An object with a `"records"` key yields
-    that list; any other object is treated as a single record.
+    Supported shapes:
+
+    - a top-level **array of objects** → one record per element;
+    - a top-level **object** with its records under `config.json_records_key`
+      (e.g. an API response like `{"data": [...]}`) → that list;
+    - any other top-level **object** → a single record.
+
+    A JSON array is parsed in full — the stdlib parser cannot stream an array, so
+    prefer JSONL / `.ndjson` (or set `config.json_lines`) for very large data.
     """
     if getattr(config, "json_lines", False):
         yield from read_jsonl(path, config)
         return
     with open(path, "r", encoding=config.encoding) as f:
         data = json.load(f)
+
+    key = getattr(config, "json_records_key", None)
+    if key is not None:
+        items = data.get(key) if isinstance(data, dict) else None
+        if not isinstance(items, list):
+            raise ValueError(
+                f"json_records_key={key!r} did not resolve to a list of records in {path}."
+            )
+        for item in items:
+            yield item if isinstance(item, dict) else {"value": item}
+        return
+
     if isinstance(data, list):
         for item in data:
             yield item if isinstance(item, dict) else {"value": item}
     elif isinstance(data, dict):
-        if isinstance(data.get("records"), list):
-            for item in data["records"]:
-                if isinstance(item, dict):
-                    yield item
-        else:
-            yield data
+        yield data
 
 
 @register_reader(".xml")

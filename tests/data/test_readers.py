@@ -98,15 +98,32 @@ def test_json_array(tmp_path):
 
 
 def test_json_records_key(tmp_path):
+    # Records nested under a key (e.g. an API response) — opt in explicitly.
     p = tmp_path / "p.json"
-    p.write_text(json.dumps({"records": [{"id": 9}]}), encoding="utf-8")
-    assert list(read_records(p)) == [{"id": 9}]
+    p.write_text(json.dumps({"data": [{"id": 9}, {"id": 10}]}), encoding="utf-8")
+    rows = list(read_records(p, FileSourceConfig(json_records_key="data")))
+    assert rows == [{"id": 9}, {"id": 10}]
+
+
+def test_json_records_key_must_resolve_to_a_list(tmp_path):
+    p = tmp_path / "p.json"
+    p.write_text(json.dumps({"data": "oops"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="json_records_key"):
+        list(read_records(p, FileSourceConfig(json_records_key="data")))
 
 
 def test_json_single_object(tmp_path):
     p = tmp_path / "p.json"
     p.write_text(json.dumps({"id": 1, "name": "solo"}), encoding="utf-8")
     assert list(read_records(p)) == [{"id": 1, "name": "solo"}]
+
+
+def test_json_no_magic_records_key(tmp_path):
+    # Without json_records_key, an object is one record — no implicit "records"
+    # sniffing (explicit beats magic).
+    p = tmp_path / "p.json"
+    p.write_text(json.dumps({"records": [{"id": 9}]}), encoding="utf-8")
+    assert list(read_records(p)) == [{"records": [{"id": 9}]}]
 
 
 # --------------------------------------------------------------------------- xml

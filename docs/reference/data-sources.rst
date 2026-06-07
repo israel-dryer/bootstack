@@ -59,6 +59,17 @@ as **read-only input** — edits live in memory only and are not written back, a
    ds = bs.FileDataSource("people.csv", config=config)
    bs.DataTable(data_source=ds)
 
+JSON comes in two shapes: a top-level **array of objects** (``.json``), or
+**JSONL/NDJSON** — one object per line (``.jsonl`` / ``.ndjson``), which streams a
+record at a time and is the right choice for large data. When the records are
+nested under a key (an API response like ``{"data": [...]}``), point at it with
+``json_records_key="data"``.
+
+.. code-block:: python
+
+   bs.FileDataSource("export.ndjson")                                  # streamed
+   bs.FileDataSource("api.json", bs.FileSourceConfig(json_records_key="data"))
+
 .. note::
 
    **Planned:** support for columnar and scientific formats — Parquet, Feather,

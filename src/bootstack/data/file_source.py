@@ -43,7 +43,6 @@ Example:
 from __future__ import annotations
 
 import csv
-import json
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -72,7 +71,9 @@ class FileSourceConfig:
         header_row: Row index containing column names (None = no header).
         has_header: Whether the first row contains column names.
         json_lines: True for line-delimited JSON (JSONL/NDJSON format).
-        json_orient: Pandas-like orientation for JSON arrays.
+        json_records_key: Key whose value is the records list in a JSON object
+            (e.g. "data" for {"data": [...]}); None = a top-level array, or the
+            object itself as one record.
         xml_record_tag: Element tag that marks one record (None = direct children of the root).
         hdf5_key: Dataset/table key to read from an HDF5 file (None = the first key).
         column_renames: Map {old_name: new_name} for renaming columns.
@@ -108,7 +109,7 @@ class FileSourceConfig:
     header_row: Optional[int] = 0
     has_header: bool = True
     json_lines: bool = False
-    json_orient: Literal['records', 'index', 'columns', 'values'] = 'records'
+    json_records_key: Optional[str] = None
     xml_record_tag: Optional[str] = None
     hdf5_key: Optional[str] = None
     column_renames: Optional[Dict[str, str]] = None
@@ -299,35 +300,17 @@ class FileDataSource(MemoryDataSource):
                 yield dict(row)
 
     def _parse_json_records(self) -> Iterator[Record]:
-        """Parse JSON file and yield records."""
-        with open(self.filepath, 'r', encoding=self.config.encoding) as f:
-            if self.config.json_lines:
-                # JSONL format - one JSON object per line
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        yield json.loads(line)
-            else:
-                # Standard JSON
-                data = json.load(f)
+        """Parse JSON file and yield records.
 
-                # Handle different JSON structures
-                if isinstance(data, list):
-                    for item in data:
-                        if isinstance(item, dict):
-                            yield item
-                        else:
-                            yield {'value': item}
-                elif isinstance(data, dict):
-                    # Could be records, columns, etc.
-                    if self.config.json_orient == 'records':
-                        # Assume it's a dict of lists
-                        for item in data.get('records', data.values()):
-                            if isinstance(item, dict):
-                                yield item
-                    else:
-                        # Single record
-                        yield data
+        Delegates to the shared streaming reader so JSON parsing has a single
+        source of truth (see `bootstack.data.readers.read_json`).
+        """
+        from bootstack.data.readers import read_json, read_jsonl
+
+        if self._detected_format == 'jsonl':
+            yield from read_jsonl(self.filepath, self.config)
+        else:
+            yield from read_json(self.filepath, self.config)
 
     def _parse_records(self) -> Iterator[Record]:
         """Parse file and yield records based on format."""
