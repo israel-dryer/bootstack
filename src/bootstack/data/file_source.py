@@ -1,76 +1,61 @@
-"""File-based datasource with support for CSV, JSON, and lazy loading strategies.
+"""File-backed data source — streams a file into a SQLite working store.
 
-Provides file-backed data storage with multiple loading strategies optimized for
-different file sizes. Supports extensive transformation pipelines for data cleaning
-and preprocessing.
+`FileDataSource` reads CSV / TSV / JSON / JSONL (and, with the optional extras,
+Parquet / Feather / HDF5) and ingests it — a chunk at a time, with bounded
+memory — into a SQLite working store. After loading it *is* a
+`SqliteDataSource`, so paging, filtering, sorting, and CRUD are all fast SQL at
+flat memory, no matter how large the file.
 
-Supported Formats (Built-in):
-    - CSV: Comma-separated values
-    - TSV: Tab-separated values
-    - JSON: Standard JSON arrays or objects
-    - JSONL/NDJSON: Line-delimited JSON (one record per line)
+The original file is treated as **read-only input**: edits live in the working
+store, never written back. Save changes by exporting to a new file.
 
-Loading Strategies:
-    - Eager: Load all data into memory at once (fast access, high memory)
-    - Lazy: Load data on-demand per page (slow access, low memory)
-    - Chunked: Load in configurable batches (balanced approach)
-    - Hybrid: Index in memory, lazy-load records (optimized balance)
-    - Auto: Automatically select strategy based on file size
+Working store (where the ingested data lives):
+    - default: a temporary on-disk SQLite file, removed on `close()` — bounded
+      memory even for millions of rows.
+    - ``cache="path.db"``: a named, persistent store. Edits survive restarts, and
+      re-opening skips re-ingest while the cache is newer than the source file.
+    - ``cache=":memory:"``: an in-memory store — compact, but RAM-bound.
 
-Transformation Pipeline:
-    - Column renaming
-    - Type conversions
-    - Custom transformation functions per column
-    - Row-level filtering during load
-    - Row-level transformations
-    - Default values for missing data
-
-Large File Optimization:
-    - Streaming parsing for minimal memory usage
-    - Threading for non-blocking loads
-    - Progress callbacks for UI updates
-    - Automatic strategy selection based on file size
+Transformation pipeline (applied per record during ingest):
+    column selection / renames / default values / type conversions / per-column
+    transforms / row filter / row transform.
 
 Example:
     .. code-block:: python
 
         ds = FileDataSource("data.csv")
         ds.load()
+        ds.where(col("age") > 25)
         first = ds.page(0)
-
+        ds.close()          # or use `with FileDataSource(...) as ds:`
 """
 
 from __future__ import annotations
 
-import csv
-import threading
+import os
+import sqlite3
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import (
-    Any, Callable, Dict, Iterator, List, Literal, Optional
-)
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional
 
-from bootstack.data.memory_source import MemoryDataSource
+from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.types import Record
-from bootstack.events import DataChangeEvent
 
 
 @dataclass
 class FileSourceConfig:
-    """Configuration for file datasource loading and transformations.
-
-    Controls how files are parsed, loaded, and transformed. Provides extensive
-    customization for handling various data formats and scenarios.
+    """Configuration for file parsing and the per-record transformation pipeline.
 
     Attributes:
-        file_format: Format type - auto-detected from extension if 'auto'.
+        file_format: Format override; auto-detected from the extension if 'auto'.
         encoding: Character encoding for reading the file.
-        delimiter: Field separator (None = auto-detect: ',' for CSV, tab for TSV).
+        delimiter: Field separator (None = auto: ',' for CSV, tab for TSV).
         quotechar: Quote character for fields containing the delimiter.
-        skip_rows: Number of header rows to skip.
+        skip_rows: Number of leading rows to skip before the header (CSV/TSV).
         header_row: Row index containing column names (None = no header).
         has_header: Whether the first row contains column names.
-        json_lines: True for line-delimited JSON (JSONL/NDJSON format).
+        json_lines: True for line-delimited JSON (JSONL/NDJSON).
         json_records_key: Key whose value is the records list in a JSON object
             (e.g. "data" for {"data": [...]}); None = a top-level array, or the
             object itself as one record.
@@ -79,17 +64,13 @@ class FileSourceConfig:
         column_renames: Map {old_name: new_name} for renaming columns.
         column_types: Map {column: type} for type conversions.
         column_transforms: Map {column: func} for custom transformations.
-        columns_to_load: List of columns to load (None = all columns).
+        columns_to_load: List of columns to keep (None = all columns).
         default_values: Map {column: value} for missing/null values.
         row_filter: Function(row_dict) -> bool to filter rows during load.
         row_transform: Function(row_dict) -> row_dict for row-level transforms.
-        loading_strategy: How to load file ('eager', 'lazy', 'chunked', 'hybrid', 'auto').
-        chunk_size: Rows per chunk for chunked/lazy loading.
-        max_memory_rows: Threshold for auto-switching loading strategies.
-        use_threading: Load file in background thread (non-blocking).
-        progress_callback: Function(current, total) called during load.
-        on_complete: Function() called when loading completes.
-        on_error: Function(exception) called if loading fails.
+        chunk_size: Rows ingested per batch (bounds memory during load).
+        progress_callback: Function(count) called after each ingested chunk with
+            the running total of rows loaded so far.
 
     Example:
         .. code-block:: python
@@ -101,7 +82,9 @@ class FileSourceConfig:
 
     """
 
-    file_format: Literal['auto', 'csv', 'tsv', 'json', 'jsonl'] = 'auto'
+    file_format: Literal[
+        'auto', 'csv', 'tsv', 'json', 'jsonl', 'ndjson', 'xml', 'parquet', 'feather', 'hdf5'
+    ] = 'auto'
     encoding: str = 'utf-8'
     delimiter: Optional[str] = None
     quotechar: str = '"'
@@ -119,247 +102,209 @@ class FileSourceConfig:
     default_values: Optional[Dict[str, Any]] = None
     row_filter: Optional[Callable[[Dict[str, Any]], bool]] = None
     row_transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
-    loading_strategy: Literal['eager', 'lazy', 'chunked', 'hybrid', 'auto'] = 'auto'
-    chunk_size: int = 10000
-    max_memory_rows: int = 100000
-    use_threading: bool = False
-    progress_callback: Optional[Callable[[int, int], None]] = None
-    on_complete: Optional[Callable[[], None]] = None
-    on_error: Optional[Callable[[Exception], None]] = None
+    chunk_size: int = 10_000
+    progress_callback: Optional[Callable[[int], None]] = None
 
 
-class FileDataSource(MemoryDataSource):
-    """File-based datasource with MemoryDataSource API and advanced loading strategies.
+class FileDataSource(SqliteDataSource):
+    """A `SqliteDataSource` whose data is streamed in from a file.
 
-    Extends MemoryDataSource to load data from files (CSV, JSON, JSONL) with support
-    for large files via multiple loading strategies. Provides extensive transformation
-    pipeline for data preprocessing.
+    Reads a CSV / TSV / JSON / JSONL file (or an optional Parquet / Feather /
+    HDF5 file) and ingests it chunk-by-chunk into a SQLite working store, so even
+    a multi-million-row file loads with bounded memory. Once loaded it behaves
+    exactly like a `SqliteDataSource` — fast SQL paging, filtering, sorting, CRUD.
 
-    The datasource automatically selects optimal loading strategy based on file size
-    and configuration. Supports background loading with progress callbacks for UI
-    integration.
+    The original file is read-only input; edits live in the working store and are
+    never written back. Export to save changes.
 
     Args:
-        filepath: Path to data file
-        config: FileSourceConfig object (uses defaults if None)
-        page_size: Records per page for pagination (default: 10)
+        filepath: Path to the data file.
+        config: Optional `FileSourceConfig` for parsing and transforms.
+        page_size: Number of records returned per page.
+        cache: Working store location. None (default) uses a temporary on-disk
+            file removed on `close()`. A path names a persistent store whose data
+            survives restarts (and is reused without re-ingest while it is newer
+            than the source). ``":memory:"`` keeps the store in memory.
+        id_field: Record field used as the stable row identity.
 
     Attributes:
-        filepath: Path object for the data file
-        config: Active configuration
-        is_loaded: Whether file has been loaded
-
-    Loading Strategies:
-        Eager: Load entire file into memory
-            - Fastest access after initial load
-            - High memory usage
-            - Best for: Small files (< 100k rows)
-
-        Lazy: Load data on-demand per page
-            - Slowest access (re-parses on each request)
-            - Minimal memory usage
-            - Best for: Very large files (> 1M rows)
-
-        Chunked: Load file in batches
-            - Balanced performance and memory
-            - Shows progress during load
-            - Best for: Medium files (100k-500k rows)
-
-        Hybrid: Index in memory, lazy-load records
-            - Fast filtering/sorting
-            - Moderate memory usage
-            - Best for: Large files (500k-1M rows)
-
-        Auto: Automatically select based on file size
-            - < 100k rows: Eager
-            - 100k-500k: Chunked
-            - > 500k: Hybrid
+        filepath: Path to the data file.
+        config: Active configuration.
+        is_loaded: Whether the file has been ingested (or a fresh cache adopted).
 
     Example:
         .. code-block:: python
 
-            ds = FileDataSource("data.csv")
-            ds.load()
-            ds.where(col("age") > 25)
-            first = ds.page(0)
-
+            with FileDataSource("people.csv") as ds:
+                ds.load()
+                ds.where(col("age") > 25)
+                first = ds.page(0)
 
     Note:
-        - File is re-parsed on reload()
-        - Threading uses daemon threads (auto-cleanup)
-        - All MemoryDataSource methods available after load
-        - Lazy strategy re-parses file on filter/sort changes
+        - `reload()` re-ingests from the file.
+        - Background-thread ingest and progressive display are a planned follow-up;
+          `load()` is currently synchronous (but streamed, so memory stays bounded).
     """
 
     def __init__(
         self,
         filepath: str | Path,
         config: Optional[FileSourceConfig] = None,
-        page_size: int = 10
+        page_size: int = 10,
+        *,
+        cache: Optional[str] = None,
+        id_field: str = "id",
     ):
-        """Configure a file-backed datasource and detect file format.
-
-        Args:
-            filepath: Location of the data file to be read.
-            config: Optional overrides for parsing, transforms, and threading.
-            page_size: Number of records returned per page after loading.
+        """Configure a file-backed source and open its SQLite working store.
 
         Raises:
             FileNotFoundError: If the supplied file path cannot be found.
         """
-        super().__init__(page_size=page_size)
-
         self.filepath = Path(filepath)
         self.config = config or FileSourceConfig()
-
-        # Loading state
-        self.is_loaded = False
-        self._loading = False
-        self._load_progress = (0, 0)
-        self._load_thread = None
-
-        # Detect file format
-        self._detected_format = self._detect_format()
-
-        # Validate file exists
         if not self.filepath.exists():
             raise FileNotFoundError(f"File not found: {self.filepath}")
 
-    def _detect_format(self) -> str:
-        """Detect file format from extension or config."""
-        if self.config.file_format != 'auto':
-            return self.config.file_format
-
-        ext = self.filepath.suffix.lower()
-        format_map = {
-            '.csv': 'csv',
-            '.tsv': 'tsv',
-            '.txt': 'csv',  # Assume CSV for .txt
-            '.json': 'json',
-            '.jsonl': 'jsonl',
-            '.ndjson': 'jsonl',
-        }
-
-        return format_map.get(ext, 'csv')  # Default to CSV
-
-    def _estimate_row_count(self) -> int:
-        """Estimate total row count for progress tracking."""
-        file_size = self.filepath.stat().st_size
-
-        # Estimate based on file format
-        if self._detected_format in ('csv', 'tsv'):
-            # Sample first few lines to estimate average row size
-            with open(self.filepath, 'r', encoding=self.config.encoding) as f:
-                sample_lines = []
-                for i, line in enumerate(f):
-                    if i >= 100:  # Sample first 100 lines
-                        break
-                    sample_lines.append(len(line.encode('utf-8')))
-
-                if sample_lines:
-                    avg_line_size = sum(sample_lines) / len(sample_lines)
-                    estimated = int(file_size / avg_line_size)
-                    return max(estimated - self.config.skip_rows - 1, 0)
-
-        # For JSON, harder to estimate - use file size as proxy
-        return file_size // 100  # Very rough estimate
-
-    def _determine_strategy(self) -> str:
-        """Determine optimal loading strategy."""
-        if self.config.loading_strategy != 'auto':
-            return self.config.loading_strategy
-
-        # Auto-select based on estimated row count
-        estimated_rows = self._estimate_row_count()
-
-        if estimated_rows < self.config.max_memory_rows:
-            return 'eager'
-        elif estimated_rows < self.config.max_memory_rows * 5:
-            return 'chunked'
+        # Choose the working store.
+        self._is_temp = False
+        self._cache_path: Optional[Path] = None
+        if cache is None:
+            fd, tmp = tempfile.mkstemp(suffix=".bsdb")
+            os.close(fd)
+            store_name = tmp
+            self._is_temp = True
+        elif cache == ":memory:":
+            store_name = ":memory:"
         else:
-            return 'hybrid'
+            store_name = str(cache)
+            self._cache_path = Path(cache)
+        self._store_name = store_name
 
-    def _parse_csv_records(self) -> Iterator[Record]:
-        """Parse CSV/TSV file and yield records."""
-        delimiter = self.config.delimiter
-        if delimiter is None:
-            delimiter = '\t' if self._detected_format == 'tsv' else ','
+        super().__init__(name=store_name, page_size=page_size, id_field=id_field)
 
-        with open(self.filepath, 'r', encoding=self.config.encoding, newline='') as f:
-            # Skip initial rows if configured
-            for _ in range(self.config.skip_rows):
-                next(f, None)
+        # Reuse a fresh persistent cache without re-ingesting.
+        self.is_loaded = False
+        if self._cache_is_fresh():
+            self._adopt_existing_schema()
+            self.is_loaded = True
 
-            reader = csv.DictReader(
-                f,
-                delimiter=delimiter,
-                quotechar=self.config.quotechar
-            )
+    # ------------------------------------------------------------------ loading
 
-            for row in reader:
-                yield dict(row)
+    def load(self, *, force: bool = False) -> "FileDataSource":
+        """Ingest the file into the working store (streamed, in chunks).
 
-    def _parse_json_records(self) -> Iterator[Record]:
-        """Parse JSON file and yield records.
+        Unlike other sources, a `FileDataSource` draws its records from the file
+        given at construction, so `load()` takes no records. It is a no-op when a
+        fresh persistent cache was adopted, unless `force=True`.
 
-        Delegates to the shared streaming reader so JSON parsing has a single
-        source of truth (see `bootstack.data.readers.read_json`).
-        """
-        from bootstack.data.readers import read_json, read_jsonl
-
-        if self._detected_format == 'jsonl':
-            yield from read_jsonl(self.filepath, self.config)
-        else:
-            yield from read_json(self.filepath, self.config)
-
-    def _parse_records(self) -> Iterator[Record]:
-        """Parse file and yield records based on format."""
-        if self._detected_format in ('csv', 'tsv'):
-            yield from self._parse_csv_records()
-        elif self._detected_format in ('json', 'jsonl'):
-            yield from self._parse_json_records()
-        else:
-            raise ValueError(f"Unsupported format: {self._detected_format}")
-
-    def _apply_transformations(self, record: Record) -> Optional[Record]:
-        """Apply transformation pipeline to a single record.
+        Args:
+            force: Re-ingest even if data is already present (used by `reload`).
 
         Returns:
-            Transformed record or None if filtered out
+            Self for method chaining.
         """
-        # Apply row filter first
+        if self.is_loaded and not force:
+            return self
+        super().load(
+            self._iter_records(),
+            chunk_size=self.config.chunk_size,
+            on_progress=self._on_progress,
+        )
+        self.is_loaded = True
+        return self
+
+    def reload(self) -> None:
+        """Re-ingest the file from disk, replacing the working store's contents."""
+        self.load(force=True)
+
+    def _iter_records(self) -> Iterator[Record]:
+        """Stream parsed, transformed records from the file."""
+        from bootstack.data.readers import read_records
+
+        for raw in read_records(self.filepath, self.config):
+            record = self._apply_transformations(raw)
+            if record is not None:
+                yield record
+
+    def _on_progress(self, count: int) -> None:
+        if self.config.progress_callback:
+            self.config.progress_callback(count)
+
+    # ------------------------------------------------------------------ cache
+
+    def _cache_is_fresh(self) -> bool:
+        """Whether a named cache already holds up-to-date data for the source."""
+        if self._cache_path is None:
+            return False
+        try:
+            if not self._cache_path.exists() or self._cache_path.stat().st_size == 0:
+                return False
+            if self._cache_path.stat().st_mtime < self.filepath.stat().st_mtime:
+                return False
+            count = self.conn.execute(f"SELECT COUNT(*) FROM {self._table}").fetchone()[0]
+            return count > 0
+        except sqlite3.Error:
+            return False
+        except OSError:
+            return False
+
+    def _adopt_existing_schema(self) -> None:
+        """Populate the column list from an existing cache table (no re-ingest)."""
+        try:
+            cur = self.conn.execute(f"PRAGMA table_info({self._table})")
+            self._columns = [row["name"] for row in cur.fetchall()]
+        except sqlite3.Error:
+            self._columns = []
+
+    # ------------------------------------------------------------------ lifecycle
+
+    def close(self) -> None:
+        """Close the working store, removing the temporary file if one was used."""
+        super().close()
+        if self._is_temp:
+            try:
+                os.remove(self._store_name)
+            except OSError:
+                pass
+
+    # ------------------------------------------------------------------ transforms
+
+    def _apply_transformations(self, record: Record) -> Optional[Record]:
+        """Apply the configured transformation pipeline to a single record.
+
+        Returns:
+            The transformed record, or None if filtered out.
+        """
+        # Apply row filter first.
         if self.config.row_filter and not self.config.row_filter(record):
             return None
 
-        # Apply column selection
+        # Column selection.
         if self.config.columns_to_load:
             record = {k: v for k, v in record.items() if k in self.config.columns_to_load}
 
-        # Apply column renames
+        # Column renames.
         if self.config.column_renames:
             for old_name, new_name in self.config.column_renames.items():
                 if old_name in record:
                     record[new_name] = record.pop(old_name)
 
-        # Apply default values
+        # Default values.
         if self.config.default_values:
             for col, default in self.config.default_values.items():
                 if col not in record or record[col] is None:
                     record[col] = default
 
-        # Apply type conversions
+        # Type conversions.
         if self.config.column_types:
             for col, col_type in self.config.column_types.items():
                 if col in record and record[col] is not None:
                     try:
-                        if callable(col_type):
-                            record[col] = col_type(record[col])
-                        else:
-                            record[col] = col_type(record[col])
+                        record[col] = col_type(record[col])
                     except (ValueError, TypeError):
                         pass  # Keep original value if conversion fails
 
-        # Apply column transformations
+        # Per-column transforms.
         if self.config.column_transforms:
             for col, transform_func in self.config.column_transforms.items():
                 if col in record:
@@ -368,171 +313,8 @@ class FileDataSource(MemoryDataSource):
                     except Exception:
                         pass  # Keep original value if transform fails
 
-        # Apply row-level transformation
+        # Row-level transform.
         if self.config.row_transform:
             record = self.config.row_transform(record)
 
         return record
-
-    def _load_eager(self) -> None:
-        """Load all records into memory at once."""
-        records = []
-        estimated_total = self._estimate_row_count()
-
-        for i, raw_record in enumerate(self._parse_records()):
-            record = self._apply_transformations(raw_record)
-            if record is not None:
-                records.append(record)
-
-            if self.config.progress_callback and (i + 1) % 1000 == 0:
-                self._load_progress = (i + 1, estimated_total)
-                self.config.progress_callback(i + 1, estimated_total)
-
-        # Set data in parent MemoryDataSource
-        super().load(records)
-        self.is_loaded = True
-        self._load_progress = (len(records), len(records))
-
-        if self.config.progress_callback:
-            self.config.progress_callback(len(records), len(records))
-
-    def _load_chunked(self) -> None:
-        """Load file in chunks."""
-        chunk = []
-        estimated_total = self._estimate_row_count()
-        loaded_count = 0
-
-        for i, raw_record in enumerate(self._parse_records()):
-            record = self._apply_transformations(raw_record)
-            if record is not None:
-                chunk.append(record)
-
-            # Process chunk when it reaches chunk_size
-            if len(chunk) >= self.config.chunk_size:
-                if not self.is_loaded:
-                    super().load(chunk)
-                    self.is_loaded = True
-                else:
-                    # Append to existing data
-                    for rec in chunk:
-                        self.insert(rec)
-
-                loaded_count += len(chunk)
-                self._load_progress = (loaded_count, estimated_total)
-
-                if self.config.progress_callback:
-                    self.config.progress_callback(loaded_count, estimated_total)
-
-                chunk = []
-
-        # Process remaining records
-        if chunk:
-            if not self.is_loaded:
-                super().load(chunk)
-                self.is_loaded = True
-            else:
-                for rec in chunk:
-                    self.insert(rec)
-
-            loaded_count += len(chunk)
-
-        self._load_progress = (loaded_count, loaded_count)
-        if self.config.progress_callback:
-            self.config.progress_callback(loaded_count, loaded_count)
-
-    def _load_impl(self) -> None:
-        """Internal load implementation (runs in thread if use_threading=True)."""
-        try:
-            # Suppress the per-chunk insert/load emits during the bulk read, then
-            # broadcast a single coalesced `load`. When this runs on a background
-            # thread the hub marshals that broadcast to the main thread.
-            with self._hub.silence():
-                strategy = self._determine_strategy()
-
-                if strategy == 'eager':
-                    self._load_eager()
-                elif strategy == 'chunked':
-                    self._load_chunked()
-                elif strategy in ('lazy', 'hybrid'):
-                    # For now, fall back to eager (lazy/hybrid require more complex implementation)
-                    self._load_eager()
-
-            self._loading = False
-            self._hub.emit(DataChangeEvent(kind="load"))
-
-            if self.config.on_complete:
-                self.config.on_complete()
-
-        except Exception as e:
-            self._loading = False
-            self.is_loaded = False
-
-            if self.config.on_error:
-                self.config.on_error(e)
-            else:
-                raise
-
-    def load(self, *, on_complete: Optional[Callable] = None) -> None:
-        """Load records from the configured file.
-
-        Unlike other sources, a `FileDataSource` draws its records from the
-        file given at construction, so `load()` takes no records. For threaded
-        loading it returns immediately and calls `on_complete` when done; for
-        synchronous loading it blocks until complete.
-
-        Args:
-            on_complete: Optional callback when loading finishes (overrides config)
-        """
-        if self._loading:
-            return  # Already loading
-
-        self._loading = True
-        self.is_loaded = False
-        self._load_progress = (0, 0)
-
-        # Override on_complete if provided
-        if on_complete:
-            original_callback = self.config.on_complete
-            self.config.on_complete = on_complete
-
-        if self.config.use_threading:
-            # Load in background thread
-            self._load_thread = threading.Thread(target=self._load_impl, daemon=True)
-            self._load_thread.start()
-        else:
-            # Load synchronously
-            self._load_impl()
-
-        # Restore original callback if overridden
-        if on_complete:
-            self.config.on_complete = original_callback
-
-    def reload(self) -> None:
-        """Reload from file, clearing current data."""
-        self.is_loaded = False
-        self._data.clear()
-        self._columns.clear()
-        self._id_index.clear()
-        self.load()
-
-    def is_loading(self) -> bool:
-        """Check if file is currently loading."""
-        return self._loading
-
-    def get_load_progress(self) -> tuple[int, int]:
-        """Get loading progress as (current, total) rows."""
-        return self._load_progress
-
-    def wait_for_load(self, timeout: Optional[float] = None) -> bool:
-        """Wait for loading to complete (if threaded).
-
-        Args:
-            timeout: Max seconds to wait (None = wait forever)
-
-        Returns:
-            True if load completed, False if timed out
-        """
-        if self._load_thread and self._load_thread.is_alive():
-            self._load_thread.join(timeout=timeout)
-            return not self._load_thread.is_alive()
-        return True

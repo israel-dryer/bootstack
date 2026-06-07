@@ -45,19 +45,44 @@ supply your own to back the table with a database file:
 File-backed data
 ----------------
 
-``FileDataSource`` loads records from CSV, TSV, JSON, and JSONL files, configured
-with a ``FileSourceConfig``. It reads the file into memory and treats the original
-as **read-only input** — edits live in memory only and are not written back, and
-``reload()`` re-reads the file. To save changes, export them to a new file
-(:meth:`export_csv <bootstack.data.SqliteDataSource.export_csv>` or the
-:class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu). Only
-``SqliteDataSource`` (file-backed) persists changes in place:
+``FileDataSource`` reads a file and **streams it — a chunk at a time — into a
+SQLite working store**, so even a multi-million-row file loads with bounded
+memory. After ``load()`` it *is* a ``SqliteDataSource``: paging, filtering,
+sorting, and CRUD are all fast SQL. Configure parsing and transforms with a
+``FileSourceConfig``:
 
 .. code-block:: python
 
-   config = bs.FileSourceConfig(file_format="csv", has_header=True)
-   ds = bs.FileDataSource("people.csv", config=config)
+   ds = bs.FileDataSource("people.csv")
+   ds.load()
    bs.DataTable(data_source=ds)
+
+The original file is **read-only input** — edits live in the working store and
+are never written back. To save changes, export to a new file
+(:meth:`export_csv <bootstack.data.SqliteDataSource.export_csv>` or the
+:class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu);
+``reload()`` re-ingests from the file.
+
+The working store is, by choice:
+
+- **temporary on disk** (default) — bounded memory, removed on ``close()``.
+- ``cache="people.db"`` — a **persistent** store: edits survive restarts, and
+  re-opening skips re-ingest while the cache is newer than the source file.
+- ``cache=":memory:"`` — in-memory: compact, but RAM-bound.
+
+Close the store when done — explicitly or with a ``with`` block:
+
+.. code-block:: python
+
+   with bs.FileDataSource("people.csv", cache="people.db") as ds:
+       ds.load()
+       first = ds.page(0)
+
+**Formats.** CSV, TSV, JSON, JSONL/NDJSON, and XML are built in. Columnar and
+scientific formats are available through optional extras — Parquet and Feather
+(``pip install bootstack[parquet]``) and HDF5 (``pip install bootstack[hdf5]``);
+each is a streaming reader, and a clear error tells you to install the extra if
+it is missing.
 
 JSON comes in two shapes: a top-level **array of objects** (``.json``), or
 **JSONL/NDJSON** — one object per line (``.jsonl`` / ``.ndjson``), which streams a
@@ -69,13 +94,6 @@ nested under a key (an API response like ``{"data": [...]}``), point at it with
 
    bs.FileDataSource("export.ndjson")                                  # streamed
    bs.FileDataSource("api.json", bs.FileSourceConfig(json_records_key="data"))
-
-.. note::
-
-   **Planned:** support for columnar and scientific formats — Parquet, Feather,
-   and HDF5 (plus XML) — via optional extras (``pip install bootstack[parquet]``,
-   ``bootstack[hdf5]``). Each will be a streaming reader that ingests large files
-   in chunks with bounded memory, rather than loading the whole file at once.
 
 .. _carrying-extra-data:
 
@@ -100,18 +118,19 @@ not a stripped-down shadow:
 This works the same on every source, but *what* a field may hold depends on
 where the records live:
 
-- **In-memory** (``MemoryDataSource``, ``FileDataSource``, and the default
-  ``ListView`` source) holds **anything**, including live Python objects, by
-  reference. The field you put in is the object you get back.
-- **SQLite** (``SqliteDataSource``) is persistent. Scalar fields (text, numbers,
-  booleans) become real columns you can filter and sort on. Non-scalar fields
-  (lists, dicts) are carried as JSON automatically and merged back transparently
-  on read — so records still read flat and complete. Because they ride a JSON
-  blob, **bagged fields are preserved but not queryable** via ``where`` / ``order``
-  (keep anything you need to filter on as a scalar field). Values must be
-  JSON-serializable; handing a live object to a SQLite-backed source raises
-  :class:`SerializationError <bootstack.errors.SerializationError>` — use an in-memory
-  source for those.
+- **In-memory** (``MemoryDataSource`` and the default ``ListView`` source) holds
+  **anything**, including live Python objects, by reference. The field you put in
+  is the object you get back.
+- **SQLite-backed** (``SqliteDataSource``, and ``FileDataSource`` — which ingests
+  the file into a SQLite store). Scalar fields (text, numbers, booleans) become
+  real columns you can filter and sort on. Non-scalar fields (lists, dicts) are
+  carried as JSON automatically and merged back transparently on read — so records
+  still read flat and complete. Because they ride a JSON blob, **bagged fields are
+  preserved but not queryable** via ``where`` / ``order`` (keep anything you need
+  to filter on as a scalar field). Values must be JSON-serializable; handing a
+  live object to a SQLite-backed source raises
+  :class:`SerializationError <bootstack.errors.SerializationError>` — use an
+  in-memory source for those.
 
 Filtering and sorting
 ---------------------

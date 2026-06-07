@@ -3,11 +3,12 @@
 A record should never lose user data: fields the widget does not display are
 still carried through and handed back. Fidelity is tiered by storage:
 
-- In-memory sources (``MemoryDataSource``, ``FileDataSource``) hold *anything*,
-  including live Python objects, by reference.
-- ``SqliteDataSource`` is persistent: SQL columns are scalar-only, so non-scalar
-  fields (lists/dicts) ride a hidden JSON column and round-trip transparently.
-  Values must be JSON-serializable; live objects raise ``SerializationError``.
+- In-memory sources (``MemoryDataSource``) hold *anything*, including live Python
+  objects, by reference.
+- SQLite-backed sources (``SqliteDataSource``, and ``FileDataSource`` which
+  ingests into SQLite) store non-scalar fields (lists/dicts) in a hidden JSON
+  column that round-trips transparently. Values must be JSON-serializable; live
+  objects raise ``SerializationError``.
 
 These are headless (no App) — the data layer is App-independent.
 """
