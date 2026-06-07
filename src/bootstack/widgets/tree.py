@@ -104,6 +104,11 @@ class Tree(PublicWidgetBase):
         if nodes:
             self._internal.load(nodes)
 
+        # Per-node context menu (set via set_context_menu).
+        self._ctx_builder: Callable[[TreeNode, Any], Any] | None = None
+        self._ctx_menu: Any = None
+        self._ctx_sub: Subscription | None = None
+
     # ----- building -----
 
     def add(
@@ -300,6 +305,73 @@ class Tree(PublicWidgetBase):
             ``Subscription`` (with handler) or ``Stream`` (without handler).
         """
         return self.on("right_click", handler)
+
+    # ----- context menu -----
+
+    def set_context_menu(
+        self,
+        builder: Callable[[TreeNode, Any], Any] | None,
+        *,
+        min_width: int = 150,
+        density: WidgetDensity = "default",
+    ) -> None:
+        """Attach a per-node context menu.
+
+        On right-click, `builder(node, menu)` is called with the right-clicked
+        `TreeNode` and a fresh (emptied) `ContextMenu`; populate it with
+        `menu.add_item(...)` / `add_check_item(...)` / `add_separator()` etc.
+        (capture `node` in your callbacks). The menu is then shown at the cursor.
+        Because it is rebuilt on every right-click, the items can depend on the
+        node. If the builder adds no items, nothing is shown. Pass `None` to
+        remove the menu.
+
+        Example::
+
+            def build(node, menu):
+                menu.add_item("Rename", on_click=lambda: rename(node))
+                menu.add_item("Delete", icon="trash", on_click=lambda: tree.remove(node))
+            tree.set_context_menu(build)
+
+        Args:
+            builder: Callable taking `(node, menu)` and populating `menu`, or
+                `None` to detach.
+            min_width: Minimum menu width in pixels.
+            density: Menu item density — `'default'` or `'compact'`.
+        """
+        self._ctx_builder = builder
+        if builder is None:
+            if self._ctx_sub is not None:
+                self._ctx_sub.cancel()
+                self._ctx_sub = None
+            return
+        # Menu-level options changed? Drop the cached menu so it's rebuilt.
+        opts = (min_width, density)
+        if getattr(self, "_ctx_opts", None) != opts:
+            self._ctx_opts = opts
+            if self._ctx_menu is not None:
+                self._ctx_menu.destroy()
+                self._ctx_menu = None
+        if self._ctx_sub is None:
+            self._ctx_sub = self.on_right_click(self._show_context_menu)
+
+    def _show_context_menu(self, data: dict[str, Any]) -> None:
+        node = data.get("node")
+        if node is None or self._ctx_builder is None:
+            return
+        from bootstack.widgets.contextmenu import ContextMenu
+        # Reuse one menu, cleared each time, so repeated right-clicks don't
+        # accumulate popups.
+        if self._ctx_menu is None:
+            min_width, density = getattr(self, "_ctx_opts", (150, "default"))
+            self._ctx_menu = ContextMenu(
+                parent=self, trigger=None, min_width=min_width, density=density
+            )
+        menu = self._ctx_menu
+        for key in list(menu.keys):
+            menu.remove_item(key)
+        self._ctx_builder(node, menu)
+        if menu.keys:  # only show if the builder added something
+            menu.show((data.get("x_root", 0), data.get("y_root", 0)))
 
 
 _TREE_EVENTS: dict[str, str] = {
