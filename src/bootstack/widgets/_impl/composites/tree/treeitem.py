@@ -38,6 +38,7 @@ class TreeItem(CompositeFrame):
         hoverable: bool = True,
         selection_mode: str = "single",
         show_selection_controls: bool = False,
+        select_on_click: bool = True,
         show_separator: bool = False,
         density: str = "default",
         accent: Optional[str] = None,
@@ -53,9 +54,13 @@ class TreeItem(CompositeFrame):
         self._hoverable = hoverable
         self._selection_mode = selection_mode
         self._show_selection_controls = show_selection_controls
+        self._select_on_click = select_on_click
         self._show_separator = show_separator
         self._density = density
         self._accent = accent or "primary"
+        # When the selection control is visible it IS the selection indicator,
+        # so the row wash is suppressed (VS Code / installer style).
+        self._wash = not show_selection_controls
 
         item_padding = (6, 3) if density == "compact" else (8, 4)
 
@@ -67,10 +72,10 @@ class TreeItem(CompositeFrame):
             ttk_class="ListView.TFrame",
             padding=item_padding,
             accent=self._accent,
-            style_options=dict(hoverable=hoverable, density=density),
+            style_options=dict(hoverable=hoverable, density=density, wash=self._wash),
         )
 
-        style_opts = dict(hoverable=hoverable, density=density)
+        style_opts = dict(hoverable=hoverable, density=density, wash=self._wash)
 
         # Left region: [<indent padx> chevron-slot][checkbox?][icon]
         self._left_frame = Frame(
@@ -121,9 +126,9 @@ class TreeItem(CompositeFrame):
             self.register_composite(w)
 
         # Selection control (checkbox for multi, radio for single) — the visible
-        # affordance for selection, mirroring ListView/DataTable. Its fill is
-        # driven by the row's 'selected' state via the coordinator (so clicking
-        # the control selects the row exactly like clicking the row).
+        # affordance for selection, the same 'selection' variant ListView uses.
+        # Its fill is driven by the row's 'selected' state via the coordinator;
+        # the 'alternate' state shows a partially-selected (mixed) parent.
         if self._show_selection_controls and self._selection_mode != "none":
             if self._selection_mode == "multi":
                 glyph = dict(name="square", state=[
@@ -133,12 +138,16 @@ class TreeItem(CompositeFrame):
             else:
                 glyph = dict(name="circle", state=[("selected", "check-circle-fill")])
             self._select_ctrl = Label(
-                self._left_frame, icon=glyph, variant="check",
+                self._left_frame, icon=glyph, variant="selection",
                 ttk_class="ListView.TLabel", icon_only=True, accent=self._accent,
-                takefocus=False, style_options=style_opts,
+                takefocus=False, style_options=self._style_opts(),
             )
             self._select_ctrl.pack(side="left", after=self._chevron_slot, padx=(0, 4))
             self.register_composite(self._select_ctrl)
+            # When the row itself doesn't select on click, the control still must
+            # — give it its own click path (the row's invoke is gated below).
+            if not self._select_on_click:
+                self._select_ctrl.bind("<Button-1>", self._on_ctrl_click, add="+")
 
         # Row interactions. Double-/right-click must be bound on the leaf widgets
         # too — a click lands on the label/icon, not the row frame, and Tk does
@@ -153,7 +162,7 @@ class TreeItem(CompositeFrame):
     # ----- helpers -----
 
     def _style_opts(self) -> dict:
-        return dict(hoverable=self._hoverable, density=self._density)
+        return dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
 
     def _bind_row_mouse(self, widget) -> None:
         """Bind double-click (activate) and right-click on a row-level widget."""
@@ -179,7 +188,18 @@ class TreeItem(CompositeFrame):
             return
         if self._focusable:
             self.focus()
-        self._emit("<<TreeItemSelect>>", self._node)
+        # When select_on_click is off, a row click only focuses (the selection
+        # control is the sole way to select). The control routes through
+        # _on_ctrl_click in that case.
+        if self._select_on_click:
+            self._emit("<<TreeItemSelect>>", self._node)
+
+    def _on_ctrl_click(self, event=None) -> str:
+        if self._node is not None:
+            if self._focusable:
+                self.focus()
+            self._emit("<<TreeItemSelect>>", self._node)
+        return "break"
 
     def _on_focus_in(self, event) -> None:
         if self._node is not None:
@@ -357,12 +377,20 @@ class TreeItem(CompositeFrame):
             self._chevron_slot.pack_configure(padx=(max(0, depth * self._indent), 0))
             self._state["depth"] = depth
 
-        # Focus.
+        # Focus. (The keyboard-focus ring rides the 'background' state, set by
+        # the keyboard nav via focus_set(visual_focus=True). When a row stops
+        # being the focused node, drop that state so a recycled/relocated row
+        # doesn't keep a stale ring.)
         focused = bool(record.get("focused", False))
         if self._state.get("focused") != focused:
             if focused and self._focusable:
                 try:
                     self.focus_set()
+                except TclError:
+                    pass
+            elif not focused:
+                try:
+                    self.state(["!background"])
                 except TclError:
                     pass
             self._state["focused"] = focused

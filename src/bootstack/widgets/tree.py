@@ -38,6 +38,12 @@ class Tree(PublicWidgetBase):
         show_selection_controls: If ``True``, show a per-node selection control
             (a checkbox in ``multi`` mode, a radio in ``single`` mode) as the
             visible affordance for selection — mirroring ListView and DataTable.
+            While shown, the row highlight wash is suppressed (the control is the
+            indicator).
+        select_on_click: If ``True`` (default), clicking a row selects it. Set
+            ``False`` with ``show_selection_controls=True`` so that only the
+            control selects and a row click just focuses (e.g. to drive
+            ``on_activate`` for opening, VS Code style).
         indent: Horizontal indent per depth level, in pixels. Defaults to 16.
         striped: If ``True``, alternate the row background color.
         show_scrollbar: If ``True`` (default), show the vertical scrollbar.
@@ -58,6 +64,7 @@ class Tree(PublicWidgetBase):
         nodes: list | None = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
         show_selection_controls: bool = False,
+        select_on_click: bool = True,
         indent: int = 16,
         striped: bool = False,
         show_scrollbar: bool = True,
@@ -74,6 +81,7 @@ class Tree(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {
             "selection_mode": selection_mode,
             "show_selection_controls": show_selection_controls,
+            "select_on_click": select_on_click,
             "indent": indent,
             "striped": striped,
             "scrollbar_visibility": "always" if show_scrollbar else "never",

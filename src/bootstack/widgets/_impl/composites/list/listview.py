@@ -725,10 +725,10 @@ class ListView(Frame):
                 self._focused_record_id = record_id
                 self._update_rows()
 
-                # Focus the visible row widget
+                # Focus the visible row widget (keyboard nav -> show focus ring)
                 visual_index = index - self._start_index
                 if 0 <= visual_index < len(self._rows):
-                    self._rows[visual_index].focus_set()
+                    self._rows[visual_index].focus_set(visual_focus=True)
 
     def _on_arrow_down(self, event) -> str:
         """Handle arrow down key for keyboard navigation.
@@ -1080,7 +1080,7 @@ class ListView(Frame):
             with self._silence_source():
                 for record in all_records:
                     record_id = record.get('id')
-                    if record_id:
+                    if record_id is not None:  # id 0 is valid, don't skip it
                         self._datasource.select(record_id)
             self._update_rows()
             self.event_generate('<<SelectionChange>>')

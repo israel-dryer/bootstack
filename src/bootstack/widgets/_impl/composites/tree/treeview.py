@@ -36,6 +36,7 @@ class TreeView(Frame):
         *,
         selection_mode: Literal["none", "single", "multi"] = "single",
         show_selection_controls: bool = False,
+        select_on_click: bool = True,
         indent: int = 16,
         striped: bool = False,
         striped_background: str = "background[+1]",
@@ -53,6 +54,7 @@ class TreeView(Frame):
 
         self._selection_mode = selection_mode
         self._show_selection_controls = show_selection_controls
+        self._select_on_click = select_on_click
         self._indent = indent
         self._striped = striped
         self._striped_background = striped_background
@@ -164,6 +166,7 @@ class TreeView(Frame):
         # Drop selection/focus for nodes no longer in the tree.
         live = set(self._iter_all_nodes())
         self._selected &= live
+        self._mixed &= live
         if self._focused_node is not None and self._focused_node not in live:
             self._focused_node = None
         self._remeasure_and_relayout()
@@ -176,6 +179,7 @@ class TreeView(Frame):
                 self._container, indent=self._indent, focusable=True,
                 hoverable=self._enable_hover, selection_mode=self._selection_mode,
                 show_selection_controls=self._show_selection_controls,
+                select_on_click=self._select_on_click,
                 show_separator=self._show_separator, density=self._density,
                 accent=self._accent,
             )
@@ -518,6 +522,11 @@ class TreeView(Frame):
             result = None
         for spec in (result or []):
             self._add_from_spec(spec, parent=node)
+        # Deferred cascade: if this parent was selected while its lazy children
+        # were still unloaded, the freshly loaded children inherit that state.
+        if node in self._selected:
+            for child in node.children:
+                self._set_subtree_selected(child, True)
 
     def reload_children(self, node: TreeNode) -> None:
         """Refresh a lazy node: drop its loaded children and fetch them again.
@@ -565,24 +574,61 @@ class TreeView(Frame):
         from bootstack.events import TreeSelectionEvent
         self._emit("<<TreeSelectionChange>>", TreeSelectionEvent(nodes=self.get_selected()))
 
+    def _set_subtree_selected(self, node: TreeNode, selected: bool) -> None:
+        """Select/deselect a node and cascade to its LOADED descendants.
+
+        A node with unloaded lazy children is set on its own (deferred cascade);
+        its children inherit the state when they load (see `_load_children`).
+        """
+        if node.loader is not None and not node._loaded:
+            targets = [node]            # defer cascade until children load
+        else:
+            targets = [node, *node.descendants()]
+        for n in targets:
+            if selected:
+                self._selected.add(n)
+                self._mixed.discard(n)
+            else:
+                self._selected.discard(n)
+                self._mixed.discard(n)
+
+    def _recompute_ancestors(self, node: TreeNode) -> None:
+        """Recompute each ancestor's tri-state from its children."""
+        for anc in node.ancestors():
+            kids = anc.children
+            if not kids:
+                continue
+            n_selected = sum(1 for c in kids if c in self._selected)
+            any_mixed = any(c in self._mixed for c in kids)
+            if not any_mixed and n_selected == len(kids):
+                self._selected.add(anc)
+                self._mixed.discard(anc)
+            elif not any_mixed and n_selected == 0:
+                self._selected.discard(anc)
+                self._mixed.discard(anc)
+            else:
+                self._selected.discard(anc)
+                self._mixed.add(anc)
+
     def select(self, node: TreeNode) -> None:
         if self._selection_mode == "none":
             return
         if self._selection_mode == "single":
             self._selected = {node}
+            self._mixed.clear()
         else:
-            # multi toggles, so a row click reads as a checklist toggle
-            if node in self._selected:
-                self._selected.discard(node)
-            else:
-                self._selected.add(node)
+            # Tri-state cascade: toggle the node's whole subtree, then refresh
+            # ancestors. A mixed (partial) parent toggles ON (selects all).
+            self._set_subtree_selected(node, node not in self._selected)
+            self._recompute_ancestors(node)
         self._focused_node = node
         self._update_rows()
         self._emit_selection_changed()
 
     def deselect(self, node: TreeNode) -> None:
-        if node in self._selected:
-            self._selected.discard(node)
+        if node in self._selected or node in self._mixed:
+            self._set_subtree_selected(node, False)
+            self._recompute_ancestors(node)
             self._update_rows()
             self._emit_selection_changed()
 
@@ -590,12 +636,14 @@ class TreeView(Frame):
         if self._selection_mode != "multi":
             return
         self._selected = set(self._iter_all_nodes())
+        self._mixed.clear()
         self._update_rows()
         self._emit_selection_changed()
 
     def clear_selection(self) -> None:
-        if self._selected:
+        if self._selected or self._mixed:
             self._selected.clear()
+            self._mixed.clear()
             self._update_rows()
             self._emit_selection_changed()
 
@@ -633,7 +681,8 @@ class TreeView(Frame):
         visual = index - self._start_index
         if 0 <= visual < len(self._rows):
             try:
-                self._rows[visual].focus_set()
+                # Keyboard navigation -> show the focus ring (visual_focus).
+                self._rows[visual].focus_set(visual_focus=True)
             except TclError:
                 pass
         return "break"
