@@ -287,15 +287,57 @@ class BaseDataSource(ABC):
         ...
 
     # Export
-    @abstractmethod
+    def save(
+        self,
+        path: str,
+        *,
+        selected_only: bool = False,
+        format: Optional[str] = None,
+        config: Any = None,
+    ) -> None:
+        """Export records to a file, choosing the format by extension.
+
+        Records are streamed into the writer, so a large export does not
+        materialize the whole dataset. The active `where`/`order` view is
+        respected — what you export is what the source currently shows.
+
+        Args:
+            path: Destination file path; its extension selects the format (CSV,
+                TSV, JSON, JSONL, XML, and — with the extras — Parquet, Feather,
+                HDF5).
+            selected_only: Export only selected records instead of all.
+            format: Explicit format name overriding the path extension.
+            config: Optional `FileSourceConfig` controlling encoding/delimiter/etc.
+        """
+        from bootstack.data.writers import write_records
+
+        write_records(
+            path, self._export_records(selected_only=selected_only), config, format=format
+        )
+
     def export_csv(self, filepath: str, include_all: bool = True) -> None:
-        """Export records to CSV file.
+        """Export records to a CSV file (streamed).
 
         Args:
             filepath: Path to output CSV file
             include_all: If True, export all records; if False, export only selected
         """
-        ...
+        self.save(filepath, selected_only=not include_all, format="csv")
+
+    def _export_records(self, *, selected_only: bool = False, chunk_size: int = 1000):
+        """Yield user-facing records for export, paging in chunks (bounded memory)."""
+        if selected_only:
+            for record in self.selected():
+                yield self._public_record(record)
+            return
+        offset = 0
+        while True:
+            chunk = self.page_slice(offset, chunk_size)
+            if not chunk:
+                break
+            for record in chunk:
+                yield self._public_record(record)
+            offset += len(chunk)
 
     # Index-based Access
     @abstractmethod

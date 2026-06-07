@@ -33,7 +33,6 @@ Data Format:
 
 from __future__ import annotations
 
-import csv
 from collections.abc import Sequence
 from typing import Any, Dict, List, Optional, Union, Mapping, Iterable
 
@@ -422,18 +421,6 @@ class MemoryDataSource(BaseDataSource):
         """Number of selected records."""
         self._ensure_selected_column()
         return sum(1 for r in self._data if r.get("selected") == 1)
-
-    def export_csv(self, filepath: str, include_all: bool = True) -> None:
-        """Export records to CSV file."""
-        rows = self._data if include_all else [r for r in self._data if r.get("selected") == 1]
-        if not rows:
-            return
-        fieldnames = list(self._columns) if self._columns else list(rows[0].keys())
-        with open(filepath, mode="w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            for r in rows:
-                writer.writerow({k: r.get(k) for k in fieldnames})
 
     def page_slice(self, start_index: int, count: int) -> List[Dict[str, Any]]:
         """Get records by start index and count (respects filter/sort)."""
