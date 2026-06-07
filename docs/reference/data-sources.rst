@@ -46,7 +46,12 @@ File-backed data
 ----------------
 
 ``FileDataSource`` loads records from CSV, JSON, or other formats, configured
-with a ``FileSourceConfig``:
+with a ``FileSourceConfig``. It reads the file into memory and treats the original
+as **read-only input** — edits live in memory only and are not written back, and
+``reload()`` re-reads the file. To save changes, export them to a new file
+(:meth:`export_csv <bootstack.data.SqliteDataSource.export_csv>` or the
+:class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu). Only
+``SqliteDataSource`` (file-backed) persists changes in place:
 
 .. code-block:: python
 
