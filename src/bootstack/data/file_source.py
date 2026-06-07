@@ -73,6 +73,8 @@ class FileSourceConfig:
         has_header: Whether the first row contains column names.
         json_lines: True for line-delimited JSON (JSONL/NDJSON format).
         json_orient: Pandas-like orientation for JSON arrays.
+        xml_record_tag: Element tag that marks one record (None = direct children of the root).
+        hdf5_key: Dataset/table key to read from an HDF5 file (None = the first key).
         column_renames: Map {old_name: new_name} for renaming columns.
         column_types: Map {column: type} for type conversions.
         column_transforms: Map {column: func} for custom transformations.
@@ -107,6 +109,8 @@ class FileSourceConfig:
     has_header: bool = True
     json_lines: bool = False
     json_orient: Literal['records', 'index', 'columns', 'values'] = 'records'
+    xml_record_tag: Optional[str] = None
+    hdf5_key: Optional[str] = None
     column_renames: Optional[Dict[str, str]] = None
     column_types: Optional[Dict[str, type]] = None
     column_transforms: Optional[Dict[str, Callable[[Any], Any]]] = None

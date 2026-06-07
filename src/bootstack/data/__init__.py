@@ -40,6 +40,12 @@ from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.file_source import FileDataSource, FileSourceConfig
 from bootstack.data.query import col, Column, Condition, SortKey, any_of, all_of
 from bootstack.data.types import DataSourceProtocol, Record, Primitive
+from bootstack.data.readers import (
+    register_reader,
+    read_records,
+    get_reader,
+    supported_extensions,
+)
 
 __all__ = [
     'BaseDataSource',
@@ -56,4 +62,8 @@ __all__ = [
     'SortKey',
     'any_of',
     'all_of',
+    'register_reader',
+    'read_records',
+    'get_reader',
+    'supported_extensions',
 ]
