@@ -1886,8 +1886,8 @@ class TableView(Frame):
             if fg == self._heading_fg and self._icon_sort_up:
                 return
             self._heading_fg = fg
-            self._icon_sort_up = _ImageService.get_icon("sort-up", 20, fg)
-            self._icon_sort_down = _ImageService.get_icon("sort-down", 20, fg)
+            self._icon_sort_up = _ImageService.get_icon("sort-up", 16, fg)
+            self._icon_sort_down = _ImageService.get_icon("sort-down", 16, fg)
         except Exception:
             self._icon_sort_up = None
             self._icon_sort_down = None

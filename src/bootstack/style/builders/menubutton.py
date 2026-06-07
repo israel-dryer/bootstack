@@ -48,7 +48,7 @@ def _menubutton_layout(ttk_style: str, show_dropdown: bool = True, icon_only: bo
 
 def _chevron_size(density: str) -> int:
     """Get chevron icon size based on density."""
-    return 14 if density == 'compact' else 18
+    return 13 if density == 'compact' else 16
 
 
 def _create_chevron_images(

@@ -8,7 +8,11 @@ from __future__ import annotations
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image, recolor_element_image
-from bootstack.style.builders.utils import icon_size, resolve_icon_spec
+from bootstack.style.builders.utils import resolve_icon_spec
+
+# Label-area custom state icons act as the state indicator, so they read a touch
+# larger than a text accent icon.
+_STATE_ICON_SIZE = 22
 
 
 @BootstyleBuilderTTk.register_builder('default', 'TCheckbutton')
@@ -22,7 +26,7 @@ def build_checkbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     foreground_disabled = b.disabled('text', background)
 
     normal = b.color(accent_token)
-    border = b.border(background)
+    border = b.muted_foreground(background)
     focus = b.focus(normal)
     focus_ring = b.color('foreground')
     disabled = b.disabled()
@@ -73,11 +77,11 @@ def build_checkbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     icon_images = []
     icon_spec_raw = resolve_icon_spec(options)
     if icon_spec_raw is not None:
-        icon_spec = b.normalize_icon_spec(icon_spec_raw, icon_size(False, 'default'))
+        icon_spec = b.normalize_icon_spec(icon_spec_raw, _STATE_ICON_SIZE)
         fg_spec = [
             ('disabled', foreground_disabled),
             ('selected !disabled', normal),
-            ('', foreground),
+            ('', border),
         ]
         icon_images = b.map_stateful_icons(icon_spec, fg_spec)
 
