@@ -322,9 +322,14 @@ chevron is just an icon button.
 
 ## Next initiative — Large-file streaming + pluggable formats (PLANNED 2026-06-07)
 
-Design settled, not started. Full rationale + checkpoints in memory
-`project_file_source_streaming`. Builds on the data bag (`feat/data-bag`,
-unpushed-merge pending) and the change hub (`project_datasource_change_events`).
+**STATUS: COMPLETE (cp1–cp5).** Merged: cp1+cp2 (PR #93), cp3 (#94), cp4 (#95);
+cp5 on `feat/file-streaming-cp5` (PR pending). Full rationale + checkpoints in
+memory `project_file_source_streaming`. Built on the data bag and the change hub
+(`project_datasource_change_events`). The follow-up Tree data-source backing
+(below) remains parked. **Deferred within this initiative:** background/
+progressive ingest (`load()` is synchronous but streamed — SQLite cross-thread
+constraints make threaded ingest a separate effort); keyset pagination; auto-index
+on sorted/filtered columns.
 
 **Problem:** data scientists open CSV/JSON files with 100k–millions of rows.
 `FileDataSource` currently **extends `MemoryDataSource`** and loads the WHOLE file
