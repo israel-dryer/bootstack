@@ -137,5 +137,10 @@ class TreeNode:
         if self._tree is not None:
             self._tree.collapse(self)
 
+    def reload_children(self) -> None:
+        """Refresh a lazy node's children (drop and re-fetch via its loader)."""
+        if self._tree is not None:
+            self._tree.reload_children(self)
+
     def __repr__(self) -> str:  # pragma: no cover - debug aid
         return f"TreeNode(label={self.label!r}, children={len(self.children)})"

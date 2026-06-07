@@ -195,6 +195,16 @@ class Tree(PublicWidgetBase):
         """Expand ancestors and scroll so `node` is visible."""
         self._internal.reveal(node)
 
+    def reload_children(self, node: TreeNode) -> None:
+        """Refresh a lazy node's children — drop them and re-fetch via its
+        `loader`. If `node` is expanded the children reload immediately;
+        otherwise they reload on the next expand. A no-op for non-lazy nodes.
+
+        Args:
+            node: The lazy node (created with `loader=`) to refresh.
+        """
+        self._internal.reload_children(node)
+
     # ----- selection -----
 
     @property

@@ -508,6 +508,9 @@ class TreeView(Frame):
             self.expand(node)
 
     def _load_children(self, node: TreeNode) -> None:
+        # Mark loaded up front so a re-entrant expand during the loader call
+        # can't trigger a second load. Loaders should handle their own errors;
+        # a raising loader yields an empty (leaf) node.
         node._loaded = True
         try:
             result = node.loader(node) if node.loader else None
@@ -515,6 +518,21 @@ class TreeView(Frame):
             result = None
         for spec in (result or []):
             self._add_from_spec(spec, parent=node)
+
+    def reload_children(self, node: TreeNode) -> None:
+        """Refresh a lazy node: drop its loaded children and fetch them again.
+
+        Only meaningful for nodes created with a `loader`. If the node is
+        expanded the children reload immediately; otherwise they reload on the
+        next expand. A no-op for non-lazy nodes.
+        """
+        if node.loader is None:
+            return
+        node.children = []
+        node._loaded = False
+        if node.expanded:
+            self._load_children(node)
+        self._on_structure_changed()
 
     def expand_all(self) -> None:
         for node in list(self._iter_all_nodes()):
