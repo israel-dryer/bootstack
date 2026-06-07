@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from bootstack.data import SqliteDataSource
+from bootstack.data import MemoryDataSource, SqliteDataSource
 from bootstack.errors import DuplicateIdError, SerializationError
 
 
@@ -92,6 +92,15 @@ def test_serialization_error_mid_stream_rolls_back():
 
     assert ds.count == 1
     assert ds.get(100)["name"] == "keep"
+
+
+def test_memory_load_accepts_a_generator():
+    # Consistency with SqliteDataSource: both load() methods accept any iterable,
+    # so a streaming reader generator works with either source.
+    ds = MemoryDataSource().load(_gen(50))
+    assert ds.count == 50
+    assert ds.get(7)["name"] == "p7"
+    assert ds.get(7)["tags"] == [7]
 
 
 def test_connection_usable_after_rolled_back_load():

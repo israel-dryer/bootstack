@@ -82,6 +82,7 @@ class SqliteDataSource(BaseDataSource):
         - Schema is inferred from first record's data types
         - An internal row-identity column (_bs_row_id) is added automatically as PRIMARY KEY
         - An internal selection column (_bs_selected) is added automatically for selection tracking
+        - An internal JSON column (_bs_data) carries non-scalar record fields (the data bag)
         - These internal columns are filtered out of the display column list automatically
     """
 
