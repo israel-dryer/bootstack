@@ -364,6 +364,23 @@ list; (5) docs/tests/examples + pyproject extras. **Deferred perf:** keyset
 pagination for deep scroll (OFFSET scans+discards); auto-index sorted/filtered
 columns.
 
+### Related follow-up — Tree data-source backing (PLANNED, parked behind this)
+
+Full design in memory `project_tree_datasource_backing`. The hierarchical sibling
+of file streaming ("fetch on demand"). **Decision:** hierarchy is a *projection*
+over a FLAT adjacency-list source (every row has `parent_id`), NOT a storage mode
+or a runtime flag — a bare `structure='tree'` flag adds no methods to the flat
+protocol. Reuse Tree's existing per-node `loader` seam: `Tree(data_source=src,
+parent_field="parent_id")` issues `src.where(col(parent_field)==node.id).page(...)`
+per expand, so a million-node tree loads branch-by-branch (only expanded nodes are
+queried). No flat-protocol change; any `DataSourceProtocol` can back a tree;
+consistent with the columns/data-bag "view over records" philosophy and the
+DataTable↔Tree litmus. Optional later: a native `TreeDataSourceProtocol`
+(`roots`/`children`/`has_children`) for genuinely tree-shaped stores (filesystem,
+graph DB) — the honest "capability" version of the flag; the flat adapter is built
+on top of it. Defaults: adjacency list (not materialized path); filtering-a-tree
+scoped out of v1. Do AFTER the file-streaming checkpoints.
+
 ---
 
 ## Prior initiative — Sphinx docs + public API audit (MERGED)
