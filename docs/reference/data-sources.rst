@@ -65,7 +65,8 @@ are never written back. To save changes, export to a new file
 
 The working store is, by choice:
 
-- **temporary on disk** (default) — bounded memory, removed on ``close()``.
+- **temporary on disk** (default) — bounded memory, removed on ``close()`` (and
+  automatically, as a safety net, when the source is dropped or at exit).
 - ``cache="people.db"`` — a **persistent** store: edits survive restarts, and
   re-opening skips re-ingest while the cache is newer than the source file.
 - ``cache=":memory:"`` — in-memory: compact, but RAM-bound.

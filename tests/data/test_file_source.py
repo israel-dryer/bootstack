@@ -49,6 +49,29 @@ def test_context_manager_cleans_up(tmp_path):
     assert not os.path.exists(store)
 
 
+def test_temp_store_cleaned_on_gc_without_close(tmp_path):
+    # Safety net: a forgotten FileDataSource (never closed) still removes its temp
+    # file when garbage collected — no orphaned files.
+    import gc
+
+    ds = FileDataSource(_csv(tmp_path))
+    ds.load()
+    store = ds._store_name
+    assert os.path.exists(store)
+    del ds
+    gc.collect()
+    assert not os.path.exists(store)
+
+
+def test_close_is_idempotent_for_temp(tmp_path):
+    ds = FileDataSource(_csv(tmp_path))
+    ds.load()
+    store = ds._store_name
+    ds.close()
+    ds.close()  # no error on a second close
+    assert not os.path.exists(store)
+
+
 def test_transform_pipeline(tmp_path):
     cfg = FileSourceConfig(column_renames={"name": "full_name"}, column_types={"age": int})
     ds = FileDataSource(_csv(tmp_path), cfg)

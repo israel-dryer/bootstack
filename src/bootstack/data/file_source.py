@@ -35,12 +35,32 @@ from __future__ import annotations
 import os
 import sqlite3
 import tempfile
+import weakref
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Literal, Optional
 
 from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.types import Record
+
+
+def _cleanup_temp_store(conn: "sqlite3.Connection", path: str) -> None:
+    """Close the connection and remove a temporary working-store file.
+
+    Registered as a `weakref.finalize` callback so a `FileDataSource` whose
+    `close()` was never called still cleans up its temp file when garbage
+    collected or at interpreter exit — no orphaned files left behind. Takes the
+    connection and path directly (never the source) so it holds no strong
+    reference that would keep the source alive.
+    """
+    try:
+        conn.close()
+    except Exception:
+        pass
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 @dataclass
@@ -182,6 +202,15 @@ class FileDataSource(SqliteDataSource):
 
         super().__init__(name=store_name, page_size=page_size, id_field=id_field)
 
+        # Safety net: a temp store is removed even if close() is never called —
+        # the finalizer runs on garbage collection and at interpreter exit, so no
+        # orphaned temp files accumulate.
+        self._finalizer: Optional[weakref.finalize] = None
+        if self._is_temp:
+            self._finalizer = weakref.finalize(
+                self, _cleanup_temp_store, self.conn, store_name
+            )
+
         # Reuse a fresh persistent cache without re-ingesting.
         self.is_loaded = False
         if self._cache_is_fresh():
@@ -259,13 +288,15 @@ class FileDataSource(SqliteDataSource):
     # ------------------------------------------------------------------ lifecycle
 
     def close(self) -> None:
-        """Close the working store, removing the temporary file if one was used."""
-        super().close()
-        if self._is_temp:
-            try:
-                os.remove(self._store_name)
-            except OSError:
-                pass
+        """Close the working store, removing the temporary file if one was used.
+
+        Idempotent. A temporary store is also cleaned automatically if this is
+        never called (see the finalizer registered in `__init__`).
+        """
+        if self._finalizer is not None:
+            self._finalizer()  # closes the connection and removes the temp file (once)
+        else:
+            super().close()
 
     # ------------------------------------------------------------------ transforms
 
