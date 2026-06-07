@@ -19,8 +19,9 @@ Go from nothing to something fast. The user should never need to `import tkinter
 ## Current initiative — Icon rendering + DataTable polish (2026-06-06)
 
 Worked directly on `main` this session (user-directed). Everything below is
-committed; `main` is pushed through the compact-chrome commit, and **one local
-commit (the 277-file screenshot regen) is unpushed**.
+committed; `origin/main` is pushed through `4f841c0a` (compact-chrome), and
+**the later commits are local/unpushed** (screenshot regen, CLAUDE.md handoff,
+tab border fix, listview selection alignment).
 
 **DONE this session:**
 - **`Table` → `DataTable` rename** (clean break, no shim): class, module
@@ -56,9 +57,19 @@ commit (the 277-file screenshot regen) is unpushed**.
   options (ttk.Label is the rare ttk widget that honors them directly).
 - **Gallery (`cli/demo.py`):** fixed `on_page_changed`→`on_page_change`; the
   "Data Tables" page now showcases `DataTable` instead of a raw `Tree`.
+- **ListView selection aligned with DataTable:** selection checkbox is now
+  accent-filled / muted-outline (new `selection` `ListView.TLabel` variant in
+  `builders/listview.py`, used via `listitem.py variant='selection'`); the left
+  accent bar was removed (indicator channels recolored to the selected fill =
+  invisible); the scrollbar sits in a right **gutter** with a DPI-scaled ~6px
+  left pad (packed *before* the expanding container — pack order matters, else it
+  overlays the rows).
+- **Tabs nine-patch border** bumped 6→8 in `assets/elements/manifest.toml`
+  (`tab_horizontal`/`tab_vertical`) to fix a resize artifact.
+- **All screenshots regenerated** (icon changes are framework-wide).
 
 **PENDING:**
-- Push the screenshot-regen commit (`git push`).
+- Push the local commits (`git push`).
 - **README gallery images** (`assets/readme/gallery-{light,dark}.png`) NOT
   regenerated — they're manual captures, not produced by `take_screenshots.py`.
 
