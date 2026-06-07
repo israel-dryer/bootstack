@@ -235,14 +235,14 @@ padding = 0
 file = "tab-h.png"
 width = 60
 height = 60
-border = 6
+border = 8
 padding = 0
 
 [images.tab_vertical]
 file = "tab-v.png"
 width = 60
 height = 60
-border = 6
+border = 8
 padding = 0
 
 

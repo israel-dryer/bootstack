@@ -67,3 +67,6 @@ SCENES = {
     "vertical": vertical,
     "closable": closable,
 }
+
+if __name__ == '__main__':
+    vertical()
