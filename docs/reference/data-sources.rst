@@ -250,6 +250,42 @@ derived view or a metric:
    bind to the source directly instead; they already listen via ``on_change``
    and refetch only their visible window.
 
+Exporting
+---------
+
+Write a source's records to a file with ``save()`` — the format is chosen by the
+path extension, and records stream out so a large export stays at flat memory.
+The active ``where`` / ``order`` view is respected, so you export what the source
+currently shows:
+
+.. code-block:: python
+
+   ds.save("people.csv")                      # CSV
+   ds.save("people.jsonl")                    # JSON Lines — a record per line
+   ds.save("active.json", selected_only=True) # only the selected rows
+
+Built-in formats are CSV, TSV, JSON, JSONL, and XML; Parquet, Feather, and HDF5
+come with the optional extras (``pip install bootstack[parquet]`` /
+``bootstack[hdf5]``). JSON and JSONL preserve nested structure (lists, dicts);
+the flat text formats stringify non-scalar fields.
+
+Reading and writing go through symmetric registries, so ``read_records`` and
+``save`` round-trip, and you can teach both a new format:
+
+.. code-block:: python
+
+   from bootstack.data import read_records, register_writer
+
+   ds.save("dump.jsonl")
+   rows = list(read_records("dump.jsonl"))    # same records back
+
+   @register_writer(".ndjson.gz")             # add your own format
+   def write_gzipped_jsonl(path, records, config=None):
+       ...
+
+The :class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu is
+built on these same writers — see its ``export_formats`` option.
+
 Writing your own source
 -----------------------
 
@@ -321,3 +357,18 @@ The interface and base class for writing your own:
 
 .. autoclass:: bootstack.data.BaseDataSource
    :members:
+
+Reading and writing files directly (the format registries behind
+``FileDataSource`` and ``save()``):
+
+.. autofunction:: bootstack.data.read_records
+
+.. autofunction:: bootstack.data.write_records
+
+.. autofunction:: bootstack.data.register_reader
+
+.. autofunction:: bootstack.data.register_writer
+
+.. autofunction:: bootstack.data.supported_extensions
+
+.. autofunction:: bootstack.data.supported_write_extensions
