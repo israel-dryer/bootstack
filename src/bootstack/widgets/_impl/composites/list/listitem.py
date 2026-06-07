@@ -86,6 +86,9 @@ class ListItem(CompositeFrame):
         self._selection_mode = kwargs.pop('selection_mode', 'none')
         self._show_selection_controls = kwargs.pop('show_selection_controls', False)
         self._density = kwargs.pop('density', 'default')
+        # Divider color for a separated row (set to the stripe color when striped
+        # so the divider matches the band instead of a darker line).
+        self._separator_color = kwargs.pop('separator_color', None)
 
         # Determine if clicking should trigger selection
         # If selection mode is active (single/multi), enable click selection
@@ -185,7 +188,10 @@ class ListItem(CompositeFrame):
 
     def _li_style_opts(self) -> dict:
         """Common style options for child widgets (carries the wash flag)."""
-        return dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
+        opts = dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
+        if self._separator_color:
+            opts['separator'] = self._separator_color
+        return opts
 
     def _get_selection_icon(self):
         """Determine the selection icon based on selection mode."""

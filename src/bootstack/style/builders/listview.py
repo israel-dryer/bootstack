@@ -81,7 +81,13 @@ def build_list_item_style(
     # Use separated image for separated variant, otherwise use standard list_item
     is_separated = 'separated' in variant
     image_key = 'listrow_default'
-    border_normal = b.border(background) if is_separated else background
+    # An explicit `separator` color overrides the derived border — used to draw
+    # the divider in the stripe color so striped+separated rows read as one tone.
+    separator = options.get('separator')
+    if is_separated:
+        border_normal = b.color(separator) if separator else b.border(background)
+    else:
+        border_normal = background
 
     def _bd(fill):
         # Separated rows draw a real bottom separator (border_normal); otherwise

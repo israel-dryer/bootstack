@@ -334,6 +334,12 @@ class ListView(Frame):
                 density=self._density
             )
 
+            # When striped AND separated, draw the row divider in the stripe
+            # color so the two read as one subtle tone instead of a darker grid
+            # of lines competing with the bands.
+            if self._striped and self._show_separator:
+                row_kwargs['separator_color'] = self._striped_background
+
             # Only pass select_on_click if explicitly set
             if self._select_on_click is not None:
                 row_kwargs['select_on_click'] = self._select_on_click
