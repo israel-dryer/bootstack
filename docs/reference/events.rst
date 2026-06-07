@@ -186,6 +186,8 @@ The typed payloads handed to data-carrying handlers. Import them from
    :members:
 .. autoclass:: bootstack.events.TextModifiedEvent
    :members:
+.. autoclass:: bootstack.events.TreeSelectionEvent
+   :members:
 .. autoclass:: bootstack.events.ToggleEvent
    :members:
 .. autoclass:: bootstack.events.ValidationEvent
