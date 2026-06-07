@@ -105,6 +105,19 @@ class SqliteDataSource(BaseDataSource):
         self._sort: List[SortKey] = []
         self._columns = []
 
+    def close(self) -> None:
+        """Close the underlying SQLite connection. Idempotent.
+
+        Use a `with` block to close automatically::
+
+            with bs.SqliteDataSource("app.db") as ds:
+                ds.load(rows)
+        """
+        try:
+            self.conn.close()
+        except sqlite3.Error:
+            pass
+
     # ---- internal query-fragment builders -------------------------------
 
     def _where_clause(self) -> tuple[str, list]:
