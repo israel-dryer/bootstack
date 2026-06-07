@@ -153,6 +153,51 @@ def test_nonscalar_fields_survive_default_source(shown_app):
         assert "_bs_data" not in r and "_bs_row_id" not in r
 
 
+# --------------------------------------------------------------------------- export formats
+
+
+@pytest.mark.gui
+def test_export_formats_drive_available_and_resolution(shown_app):
+    table = bs.DataTable(
+        rows=[dict(r) for r in ROWS], columns=["name", "role"],
+        allow_export=True, export_formats=["csv", "json", "jsonl"],
+    )
+    _pump(shown_app)
+    internal = table._internal
+
+    assert internal._available_export_formats() == ["csv", "json", "jsonl"]
+    # A format not in export_formats is rejected.
+    import pytest as _pytest
+    with _pytest.raises(ValueError):
+        internal._resolve_format("out.xlsx", None)
+
+
+@pytest.mark.gui
+def test_export_file_writes_registry_formats(shown_app, tmp_path):
+    from bootstack.data import read_records, FileSourceConfig
+
+    table = bs.DataTable(
+        rows=[dict(r) for r in ROWS], columns=["name", "role"],
+        allow_export=True, export_formats=["csv", "json", "jsonl"],
+    )
+    _pump(shown_app)
+    internal = table._internal
+
+    # JSON (registry) export — projected to the displayed columns.
+    p = tmp_path / "out.json"
+    n = internal.export_file(str(p), scope="all")
+    assert n == 3
+    back = list(read_records(p))
+    assert [r["name"] for r in back] == ["Ada", "Boole", "Church"]
+    assert set(back[0].keys()) == {"name", "role"}  # only displayed columns
+
+    # CSV (cooperative) still works.
+    c = tmp_path / "out.csv"
+    internal.export_file(str(c), scope="all")
+    rows = list(read_records(c, FileSourceConfig(file_format="csv")))
+    assert [r["name"] for r in rows] == ["Ada", "Boole", "Church"]
+
+
 # --------------------------------------------------------------------------- appearance
 
 

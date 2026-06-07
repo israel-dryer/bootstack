@@ -46,6 +46,12 @@ from bootstack.data.readers import (
     get_reader,
     supported_extensions,
 )
+from bootstack.data.writers import (
+    register_writer,
+    write_records,
+    get_writer,
+    supported_write_extensions,
+)
 
 __all__ = [
     'BaseDataSource',
@@ -66,4 +72,8 @@ __all__ = [
     'read_records',
     'get_reader',
     'supported_extensions',
+    'register_writer',
+    'write_records',
+    'get_writer',
+    'supported_write_extensions',
 ]

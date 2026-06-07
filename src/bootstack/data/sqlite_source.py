@@ -28,7 +28,6 @@ Example:
 
 from __future__ import annotations
 
-import csv
 import json
 import sqlite3
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, Sequence
@@ -775,40 +774,6 @@ class SqliteDataSource(BaseDataSource):
                 (flag, record_id),
             )
             return cur.rowcount > 0
-
-    # === DATA EXPORT ===
-
-    def export_csv(self, filepath: str, include_all: bool = True):
-        """Export records to CSV file."""
-        if not self._table_exists():
-            return
-        self._ensure_selected_column()
-        query = f"SELECT * FROM {self._table}"
-        if not include_all:
-            query += f" WHERE {_ROW_SEL} = 1"
-
-        cursor = self.conn.execute(query)
-        rows = cursor.fetchall()
-
-        if not rows:
-            return
-
-        # Emit public records — internal columns stripped, the JSON bag merged
-        # back into flat fields — over the union of all keys.
-        records = [self._public_record(self._row_to_record(row)) for row in rows]
-        fieldnames: List[str] = []
-        seen: set = set()
-        for rec in records:
-            for key in rec.keys():
-                if key not in seen:
-                    seen.add(key)
-                    fieldnames.append(key)
-
-        with open(filepath, mode='w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            for rec in records:
-                writer.writerow({k: rec.get(k) for k in fieldnames})
 
     def page_slice(self, start_index: int, count: int) -> List[Dict[str, Any]]:
         """Get records by start index and count (respects filter/sort)."""

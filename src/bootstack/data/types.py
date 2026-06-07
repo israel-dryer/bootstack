@@ -286,6 +286,15 @@ class DataSourceProtocol(Protocol):
         ...
 
     # ---------- export ----------
+    def save(self, path: str, *, selected_only: bool = False, format: Optional[str] = None, config: Any = None) -> None:
+        """Export records to a file, format chosen by the path extension (or `format`).
+
+        Records are streamed into the writer; the active `where`/`order` view is
+        respected. Built-in formats: CSV, TSV, JSON, JSONL, XML — plus Parquet,
+        Feather, and HDF5 with the matching extra installed.
+        """
+        ...
+
     def export_csv(self, filepath: str, include_all: bool = True) -> None:
         """Export records to CSV file.
 

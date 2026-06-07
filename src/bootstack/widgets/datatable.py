@@ -102,6 +102,13 @@ class DataTable(PublicWidgetBase):
             also offered when the optional `bootstack[excel]` dependency is
             installed. For explicit control use `export_file()` / `to_csv()`
             with `scope=`. Default `False`.
+        export_formats: Which formats the export menu offers. Choose from
+            `'csv'`, `'tsv'`, `'xlsx'`, `'json'`, `'jsonl'`, `'xml'`, `'parquet'`,
+            `'feather'`, `'hdf5'`. Default `('csv',)`. Formats needing an optional
+            dependency (`xlsx`→`bootstack[excel]`, `parquet`/`feather`→
+            `bootstack[parquet]`, `hdf5`→`bootstack[hdf5]`) appear only when it is
+            installed. Registry formats export the displayed columns; for the full
+            record set use `data_source.save(path)`.
         striped: Alternate row background colors. Default `True`.
         density: Row compactness — `'default'` or `'compact'` (tighter row
             height, smaller body font and padding). Default `'default'`.
@@ -143,6 +150,7 @@ class DataTable(PublicWidgetBase):
         allow_edit: bool = False,
         allow_delete: bool = False,
         allow_export: bool = False,
+        export_formats: list[str] | None = None,
         striped: bool = True,
         density: WidgetDensity = "default",
         allow_group: bool = False,
@@ -185,6 +193,8 @@ class DataTable(PublicWidgetBase):
             internal_kwargs["datasource"] = data_source
         if form is not None:
             internal_kwargs["form_options"] = form
+        if export_formats is not None:
+            internal_kwargs["export_formats"] = tuple(export_formats)
         internal_kwargs.update(kwargs)
 
         self._internal = _InternalTableView(tk_master, **internal_kwargs)

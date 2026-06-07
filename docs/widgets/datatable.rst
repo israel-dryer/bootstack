@@ -399,9 +399,22 @@ Exporting
 ~~~~~~~~~
 
 ``allow_export=True`` adds an export menu with **Copy to clipboard** and **Save to
-file** (CSV, plus Excel when the optional ``bootstack[excel]`` extra is installed).
-The actions export the selected rows if any are selected, otherwise the whole
-filtered set.
+file**. The actions export the selected rows if any are selected, otherwise the
+whole filtered set.
+
+``export_formats=`` chooses which formats the menu offers (default ``('csv',)``):
+
+.. code-block:: python
+
+   bs.DataTable(rows=rows, allow_export=True,
+                export_formats=["csv", "xlsx", "json", "parquet"])
+
+Choose from ``csv``, ``tsv``, ``xlsx``, ``json``, ``jsonl``, ``xml``, ``parquet``,
+``feather``, ``hdf5``. Formats needing an optional dependency
+(``xlsx``→``bootstack[excel]``, ``parquet``/``feather``→``bootstack[parquet]``,
+``hdf5``→``bootstack[hdf5]``) appear in the menu only once it is installed. The
+export carries the **displayed columns**; for the full record set (every field,
+including undisplayed ones) use ``table.data_source.save(path)``.
 
 .. image:: /_static/examples/datatable-export-light.png
    :class: bs-screenshot-light

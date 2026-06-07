@@ -177,11 +177,43 @@ class _ExportJob:
 
 def _has_xlsxwriter() -> bool:
     """Whether the optional XlsxWriter dependency (bootstack[excel]) is installed."""
+    return _module_available("xlsxwriter")
+
+
+def _module_available(module: str) -> bool:
+    """Whether an optional dependency can be imported."""
     import importlib.util
     try:
-        return importlib.util.find_spec("xlsxwriter") is not None
+        return importlib.util.find_spec(module) is not None
     except Exception:
         return False
+
+
+# Export formats the DataTable can offer. `kind` picks the engine: 'cooperative'
+# uses the column-aware, cancelable, chunk-by-chunk exporter (good for huge CSVs);
+# 'registry' streams through bootstack.data.writers (synchronous). `extra` names
+# the pip extra to install when `available` is False.
+_EXPORT_FORMATS: dict = {
+    "csv":     {"ext": ".csv",     "label": "CSV file",        "kind": "cooperative", "extra": None,      "available": lambda: True},
+    "tsv":     {"ext": ".tsv",     "label": "TSV file",        "kind": "cooperative", "extra": None,      "available": lambda: True},
+    "xlsx":    {"ext": ".xlsx",    "label": "Excel file",      "kind": "cooperative", "extra": "excel",   "available": _has_xlsxwriter},
+    "json":    {"ext": ".json",    "label": "JSON file",       "kind": "registry",    "extra": None,      "available": lambda: True},
+    "jsonl":   {"ext": ".jsonl",   "label": "JSON Lines file", "kind": "registry",    "extra": None,      "available": lambda: True},
+    "xml":     {"ext": ".xml",     "label": "XML file",        "kind": "registry",    "extra": None,      "available": lambda: True},
+    "parquet": {"ext": ".parquet", "label": "Parquet file",    "kind": "registry",    "extra": "parquet", "available": lambda: _module_available("pyarrow")},
+    "feather": {"ext": ".feather", "label": "Feather file",    "kind": "registry",    "extra": "parquet", "available": lambda: _module_available("pyarrow")},
+    "hdf5":    {"ext": ".h5",      "label": "HDF5 file",       "kind": "registry",    "extra": "hdf5",    "available": lambda: _module_available("tables")},
+}
+
+# Map a file extension to a canonical export format name (including aliases).
+_EXT_TO_EXPORT_FORMAT: dict = {spec["ext"]: name for name, spec in _EXPORT_FORMATS.items()}
+_EXT_TO_EXPORT_FORMAT.update({
+    ".ndjson": "jsonl",
+    ".hdf5": "hdf5",
+    ".hdf": "hdf5",
+    ".arrow": "feather",
+    ".txt": "csv",
+})
 
 _TABLE_SEARCH_MODE_OPTIONS = [
     ("table.search_mode_equals", "EQUALS"),
@@ -331,6 +363,7 @@ class TableView(Frame):
             export_scope=export_scope,
             export_formats=export_formats,
         )
+        self._warn_unavailable_export_formats()
         self._filtering = _build_filtering_options(
             enable_filtering=enable_filtering,
             enable_header_filtering=enable_header_filtering,
@@ -2327,19 +2360,50 @@ class TableView(Frame):
                 yield self._public_record(rec)
 
     # ------------------------------------------------------------------ Export — file/clipboard
+    def _configured_export_formats(self) -> list[str]:
+        """The export formats this table offers (the `export_formats` config)."""
+        configured = self._exporting.get('formats') or ('csv',)
+        return [f for f in configured if f in _EXPORT_FORMATS]
+
+    def _available_export_formats(self) -> list[str]:
+        """Configured formats whose optional dependency (if any) is installed."""
+        return [f for f in self._configured_export_formats() if _EXPORT_FORMATS[f]["available"]()]
+
+    def _warn_unavailable_export_formats(self) -> None:
+        """Warn (developer-facing) about configured formats missing their dependency."""
+        for fmt in self._configured_export_formats():
+            spec = _EXPORT_FORMATS[fmt]
+            if not spec["available"]():
+                logger.warning(
+                    "DataTable export_formats includes %r, but its dependency is not "
+                    "installed (pip install bootstack[%s]); it is hidden from the export "
+                    "menu until then.", fmt, spec["extra"],
+                )
+
     def _resolve_format(self, path: str, fmt: str | None) -> str:
-        """Resolve the export format from an explicit `fmt` or the path extension."""
-        resolved = (fmt or os.path.splitext(path)[1]).lower().lstrip(".")
-        if resolved not in ("csv", "tsv", "xlsx"):
+        """Resolve the export format from an explicit `fmt` or the path extension.
+
+        Validates against the configured `export_formats` and that the format's
+        optional dependency (if any) is installed.
+        """
+        if fmt:
+            name = fmt.lower()
+        else:
+            ext = os.path.splitext(path)[1].lower()
+            name = _EXT_TO_EXPORT_FORMAT.get(ext)
+        configured = self._configured_export_formats()
+        if name not in _EXPORT_FORMATS or name not in configured:
             raise ValueError(
-                f"Unsupported export format {resolved!r}; expected csv, tsv, or xlsx."
+                f"Export format {name!r} is not enabled. Configured formats: "
+                f"{', '.join(configured)}. Add it via export_formats=."
             )
-        if resolved == "xlsx" and not _has_xlsxwriter():
+        spec = _EXPORT_FORMATS[name]
+        if not spec["available"]():
             raise RuntimeError(
-                "Excel (.xlsx) export requires the optional dependency: "
-                "pip install bootstack[excel]."
+                f"{name} export requires an optional dependency: "
+                f"pip install bootstack[{spec['extra']}]."
             )
-        return resolved
+        return name
 
     def _make_writer(self, path: str, fmt: str, headers: list[str], keys: list[str]):
         """Open a streaming writer for `fmt`; return `(write_chunk, close)`.
@@ -2384,7 +2448,7 @@ class TableView(Frame):
         path: str,
         scope: Literal["all", "page", "selection"] = "all",
         *,
-        format: Literal["csv", "tsv", "xlsx"] | None = None,
+        format: str | None = None,
         chunk_size: int = _EXPORT_CHUNK_SIZE,
         on_progress=None,
     ) -> int:
@@ -2395,6 +2459,8 @@ class TableView(Frame):
         Returns the number of rows written.
         """
         fmt = self._resolve_format(path, format)
+        if _EXPORT_FORMATS[fmt]["kind"] == "registry":
+            return self._export_file_registry(path, scope, fmt, chunk_size, on_progress)
         headers, keys = self._export_columns()
         total = self._scope_count(scope)
         write_chunk, close = self._make_writer(path, fmt, headers, keys)
@@ -2409,6 +2475,33 @@ class TableView(Frame):
             close()
         self._emit_export(target="file", fmt=fmt, path=path, count=written)
         return written
+
+    def _export_file_registry(self, path, scope, fmt, chunk_size, on_progress) -> int:
+        """Synchronously stream a registry-format export over the displayed columns.
+
+        Records are projected to the exported columns (what the table shows) and
+        streamed through `bootstack.data.writers`, so the export carries the same
+        columns as CSV/XLSX. (For the full record set, use
+        ``table.data_source.save(path)``.)
+        """
+        from bootstack.data.writers import write_records
+
+        _headers, keys = self._export_columns()
+        total = self._scope_count(scope)
+        counter = {"n": 0}
+
+        def _records():
+            for chunk in self._iter_raw_chunks(scope, chunk_size):
+                for raw in chunk:
+                    pub = self._public_record(raw)
+                    yield {k: pub.get(k) for k in keys}
+                counter["n"] += len(chunk)
+                if on_progress is not None:
+                    on_progress(counter["n"], total)
+
+        write_records(path, _records(), format=fmt)
+        self._emit_export(target="file", fmt=fmt, path=path, count=counter["n"])
+        return counter["n"]
 
     def export_file_async(
         self,
@@ -2428,6 +2521,11 @@ class TableView(Frame):
         removes the partial file. Call `job.cancel()` to stop.
         """
         fmt = self._resolve_format(path, format)
+        if _EXPORT_FORMATS[fmt]["kind"] == "registry":
+            raise ValueError(
+                f"Async export supports csv/tsv/xlsx; {fmt!r} writes synchronously — "
+                f"use export_file()."
+            )
         headers, keys = self._export_columns()
         total = self._scope_count(scope)
         write_chunk, close = self._make_writer(path, fmt, headers, keys)
@@ -2510,23 +2608,32 @@ class TableView(Frame):
         """
         from tkinter import filedialog
 
-        filetypes = [("CSV file", "*.csv")]
-        if _has_xlsxwriter():
-            filetypes.append(("Excel file", "*.xlsx"))
+        available = self._available_export_formats() or ["csv"]
+        filetypes = [(_EXPORT_FORMATS[f]["label"], "*" + _EXPORT_FORMATS[f]["ext"]) for f in available]
         filetypes.append(("All files", "*.*"))
+        default_fmt = available[0]
+        default_ext = _EXPORT_FORMATS[default_fmt]["ext"]
 
         scope = self._default_scope()
         path = filedialog.asksaveasfilename(
             parent=self.winfo_toplevel(),
             title=MessageCatalog.translate("table.export"),
-            defaultextension=".csv",
-            initialfile="table_export.csv",
+            defaultextension=default_ext,
+            initialfile="table_export" + default_ext,
             filetypes=filetypes,
         )
         if not path:
             return
 
-        if self._scope_count(scope) <= _EXPORT_ASYNC_THRESHOLD:
+        # Registry formats write synchronously; only the cooperative formats
+        # (csv/tsv/xlsx) use the async progress path for very large exports.
+        try:
+            fmt = self._resolve_format(path, None)
+        except Exception:
+            logger.exception("Failed to resolve export format for %s", path)
+            return
+        cooperative = _EXPORT_FORMATS[fmt]["kind"] == "cooperative"
+        if not cooperative or self._scope_count(scope) <= _EXPORT_ASYNC_THRESHOLD:
             try:
                 self.export_file(path, scope=scope)
             except Exception:
