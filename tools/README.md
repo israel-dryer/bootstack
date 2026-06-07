@@ -1,4 +1,18 @@
-# Localization tools
+# bootstack tools
+
+## Icon metrics
+
+`tools/generate_icon_metrics.py` measures each bundled icon glyph's true inked
+bounding box (Pillow's `font.getbbox()` under-reports it) and writes normalized
+fractions to `src/bootstack/assets/icons/icon_metrics.json`. The icon renderer
+reads this to size and center every icon consistently. Re-run it whenever the
+icon font (`bootstrap.ttf` / `glyphmap.json`) is updated:
+
+```
+python tools/generate_icon_metrics.py
+```
+
+## Localization tools
 
 This folder houses the helper that drives the gettext workflow for bootstack.
 `tools/make_i18n.py` now only wraps `pybabel compile`, so you can refresh the shipped

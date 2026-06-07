@@ -326,8 +326,9 @@ def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opti
 
     if icon is not None:
         icon = b.normalize_icon_spec(icon)
-        # Use density-aware icon size for addon icons
-        addon_icon_size = b.scale(18) if density == 'compact' else b.scale(20)
+        # Use density-aware icon size for addon icons (kept a touch smaller than
+        # a standalone icon-only button, since addons sit inside the field).
+        addon_icon_size = b.scale(16) if density == 'compact' else b.scale(18)
         icon['size'] = addon_icon_size
         state_spec['image'] = b.map_stateful_icons(icon, state_spec['foreground'])
 

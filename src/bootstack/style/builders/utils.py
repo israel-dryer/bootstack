@@ -209,7 +209,7 @@ def icon_size(icon_only: bool, density: str) -> int:
     from tkinter import font
 
     if icon_only:
-        return 23 if density != 'compact' else 18
+        return 20 if density != 'compact' else 17
 
     # Get icon size from font ascent for proper alignment with text
     # Different buffers compensate for y_bias effect per density
