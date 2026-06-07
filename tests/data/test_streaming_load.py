@@ -59,12 +59,6 @@ def test_sequence_rows_stream_with_column_keys():
     assert ds.get(3)["name"] == "p3"
 
 
-def test_empty_iterator_is_a_noop():
-    ds = SqliteDataSource().load([{"id": 1, "name": "A"}])
-    ds.load(iter([]))
-    assert ds.count == 1  # existing data untouched
-
-
 def test_duplicate_id_mid_stream_rolls_back():
     ds = SqliteDataSource().load([{"id": 100, "name": "keep"}])
 
@@ -101,6 +95,39 @@ def test_memory_load_accepts_a_generator():
     assert ds.count == 50
     assert ds.get(7)["name"] == "p7"
     assert ds.get(7)["tags"] == [7]
+
+
+def test_fresh_source_reads_empty_not_raise():
+    # A fresh SqliteDataSource (no table yet) reads as empty, like MemoryDataSource —
+    # it must not raise "no such table".
+    ds = SqliteDataSource()
+    assert ds.count == 0
+    assert ds.page(0) == []
+    assert ds.page_slice(0, 10) == []
+    assert ds.selected() == []
+    assert ds.selected_count == 0
+    assert ds.has_next_page() is False
+    assert ds.get(1) is None
+    assert ds.update(1, {"x": 1}) is False
+    assert ds.delete(1) is False
+    assert ds.is_selected(1) is False
+    assert ds.select_all() == 0
+
+
+@pytest.mark.parametrize("cls", [MemoryDataSource, SqliteDataSource])
+def test_empty_load_clears_and_reads_empty(cls):
+    ds = cls().load([{"id": 1, "name": "A"}, {"id": 2, "name": "B"}])
+    assert ds.count == 2
+    ds.load([])  # empty load clears — same contract on both sources
+    assert ds.count == 0
+    assert ds.page(0) == []
+
+
+def test_insert_works_after_empty_load():
+    ds = SqliteDataSource().load([{"id": 1, "name": "A"}])
+    ds.load([])
+    rid = ds.insert({"id": 5, "name": "fresh"})
+    assert ds.count == 1 and ds.get(rid)["name"] == "fresh"
 
 
 def test_connection_usable_after_rolled_back_load():
