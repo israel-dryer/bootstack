@@ -7,7 +7,6 @@ hex input, and screen color picker (color dropper).
 import tkinter
 from collections import namedtuple
 from tkinter import Canvas, IntVar, StringVar
-from tkinter import Frame as tkFrame, Label as tkLabel
 from types import SimpleNamespace
 from typing import Any, Callable, List, Optional, Tuple
 
@@ -139,54 +138,35 @@ class ColorChooser(ttk.Frame):
 
     # widget builder methods
     def create_preview(self, master: tkinter.Misc) -> ttk.Frame:
-        """Create the preview frame for original and new colors"""
-        border_color = self.style.lookup('TFrame', 'bordercolor') or "#000000"
+        """Create the preview swatches for the original and new colors."""
         container = ttk.Frame(master)
+        constrast_fg = colorutils.contrast_color(color=self.initial_color, model='hex')
 
-        # the frame and label for the original color (current)
-        old = tkFrame(
-            master=container,
-            relief=FLAT,
-            bd=2,
-            highlightthickness=1,
-            highlightbackground=border_color,
-            bg=self.initial_color,
-            autostyle=False
-        )
-        old.pack(side=LEFT, fill=BOTH, expand=YES, padx=(0, 2))
-        constrast_fg = colorutils.contrast_color(
-            color=self.initial_color,
-            model='hex',
-        )
-        tkLabel(
-            master=old,
+        # Each swatch is a single ttk.Label: unlike most ttk widgets, Label
+        # honors the background/foreground instance options directly, so the label
+        # itself is the color fill with its caption on top — no native tk widget
+        # and no autostyle coupling, and live updates stay an O(1) configure().
+        old = ttk.Label(
+            container,
             text=MessageCatalog.translate("color.current"),
             background=self.initial_color,
             foreground=constrast_fg,
-            autostyle=False,
-            width=7
-        ).pack(anchor=NW)
-
-        # the frame and label for the new color
-        self.preview = tkFrame(
-            master=container,
-            relief=FLAT,
-            bd=2,
-            highlightthickness=1,
-            highlightbackground=border_color,
-            bg=self.initial_color,
-            autostyle=False
+            anchor=NW,
+            width=7,
+            padding=6,
         )
-        self.preview.pack(side=LEFT, fill=BOTH, expand=YES, padx=(2, 0))
-        self.preview_lbl = tkLabel(
-            master=self.preview,
+        old.pack(side=LEFT, fill=BOTH, expand=YES, padx=(0, 2))
+
+        self.preview = ttk.Label(
+            container,
             text=MessageCatalog.translate("color.new"),
             background=self.initial_color,
             foreground=constrast_fg,
-            autostyle=False,
-            width=7
+            anchor=NW,
+            width=7,
+            padding=6,
         )
-        self.preview_lbl.pack(anchor=NW)
+        self.preview.pack(side=LEFT, fill=BOTH, expand=YES, padx=(2, 0))
 
         return container
 
@@ -332,8 +312,7 @@ class ColorChooser(ttk.Frame):
         """Update the color in the preview frame"""
         hx = self.hex.get()
         fg = colorutils.contrast_color(color=hx, model='hex')
-        self.preview.configure(bg=hx)
-        self.preview_lbl.configure(bg=hx, fg=fg)
+        self.preview.configure(background=hx, foreground=fg)
 
     def update_luminance_scale(self) -> None:
         """Update the luminance scale with the change in hue and saturation"""
