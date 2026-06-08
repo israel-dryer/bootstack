@@ -50,6 +50,10 @@ _INTERNAL_COLUMNS = (_ROW_ID, _ROW_SEL, _ROW_DATA)
 # Values storable directly in a SQL column. Everything else is bagged as JSON.
 _SCALAR_TYPES = (str, bytes, bytearray, bool, int, float, type(None))
 
+# Leading rows scanned by `load()` to infer a column's type. Scanning past a
+# leading NULL keeps an otherwise-numeric column from being typed TEXT.
+_SCHEMA_SAMPLE_SIZE = 1000
+
 
 class SqliteDataSource(BaseDataSource):
     """SQLite-backed data manager with pagination, filtering, sorting, and CRUD operations.
@@ -148,6 +152,38 @@ class SqliteDataSource(BaseDataSource):
     def _is_scalar(value: Any) -> bool:
         """Whether a value can live directly in a SQL column (vs. the JSON bag)."""
         return isinstance(value, _SCALAR_TYPES)
+
+    @classmethod
+    def _resolve_column_type(cls, values: Iterable[Any]) -> str:
+        """Infer a column's SQL type from a sample of its values.
+
+        Unlike inferring from a single value, this scans the sample and ignores
+        `None`, so a leading NULL no longer forces TEXT affinity on an otherwise-
+        numeric column. Mixed integer and real values resolve to REAL (numeric
+        promotion); any other mix of kinds falls back to TEXT.
+
+        Args:
+            values: An iterable of a column's sampled values.
+
+        Returns:
+            One of `'INTEGER'`, `'REAL'`, `'BLOB'`, or `'TEXT'`.
+        """
+        types: set[str] = set()
+        for value in values:
+            if value is None:
+                continue
+            types.add(cls._infer_type(value))
+            # A mix that is not purely numeric can only be stored faithfully as
+            # TEXT — stop early once we know that.
+            if len(types) > 1 and not types <= {"INTEGER", "REAL"}:
+                return "TEXT"
+        if not types:
+            return "TEXT"
+        if types == {"INTEGER"}:
+            return "INTEGER"
+        if types <= {"INTEGER", "REAL"}:
+            return "REAL"
+        return next(iter(types))
 
     @staticmethod
     def _dumps_bag(bag: Dict[str, Any]) -> Optional[str]:
@@ -316,10 +352,26 @@ class SqliteDataSource(BaseDataSource):
         ]
         self._columns = column_fields + list(_INTERNAL_COLUMNS)
 
-        col_types = {col: self._infer_type(first_rec.get(col)) for col in column_fields}
+        # Sample the leading rows to infer column types. Scanning past a leading
+        # NULL keeps an otherwise-numeric column from being typed TEXT (which
+        # would store its ints as strings). The sampled rows are buffered so they
+        # are still inserted below; memory stays bounded by the sample size.
+        sample: List[Dict[str, Any]] = [first_rec]
+        sample_cap = max(1, min(int(chunk_size), _SCHEMA_SAMPLE_SIZE))
+        for raw in it:
+            sample.append(to_dict(raw))
+            if len(sample) >= sample_cap:
+                break
+
+        col_types = {
+            col: self._resolve_column_type(rec.get(col) for rec in sample)
+            for col in column_fields
+        }
         if self._id_field in column_fields:
-            # Type the identity from the adopted id value (e.g. TEXT for UUIDs).
-            col_types[_ROW_ID] = self._infer_type(first_rec.get(self._id_field))
+            # Type the identity from the adopted id values (e.g. TEXT for UUIDs).
+            col_types[_ROW_ID] = self._resolve_column_type(
+                rec.get(self._id_field) for rec in sample
+            )
         else:
             col_types[_ROW_ID] = "INTEGER"
         col_types[_ROW_SEL] = "INTEGER"
@@ -356,22 +408,33 @@ class SqliteDataSource(BaseDataSource):
             self.conn.execute(f"DROP TABLE IF EXISTS {self._table}")
             self.conn.execute(f"CREATE TABLE {self._table} ({col_definitions})")
 
-            buffer = [row_for(first_rec, 0)]
-            index = 1
+            buffer: List[tuple] = []
+
+            def flush() -> None:
+                nonlocal inserted, buffer
+                if not buffer:
+                    return
+                self.conn.executemany(insert_sql, buffer)
+                inserted += len(buffer)
+                buffer = []
+                if on_progress is not None:
+                    on_progress(inserted)
+
+            # Insert the buffered sample first, then the rest of the stream. A
+            # single running index gives rows without an explicit id their
+            # default 0, 1, 2, ... identity.
+            index = 0
+            for rec in sample:
+                buffer.append(row_for(rec, index))
+                index += 1
+                if len(buffer) >= chunk_size:
+                    flush()
             for raw in it:
                 buffer.append(row_for(to_dict(raw), index))
                 index += 1
                 if len(buffer) >= chunk_size:
-                    self.conn.executemany(insert_sql, buffer)
-                    inserted += len(buffer)
-                    buffer = []
-                    if on_progress is not None:
-                        on_progress(inserted)
-            if buffer:
-                self.conn.executemany(insert_sql, buffer)
-                inserted += len(buffer)
-                if on_progress is not None:
-                    on_progress(inserted)
+                    flush()
+            flush()
             self.conn.execute("COMMIT")
         except sqlite3.IntegrityError as exc:
             self._safe_rollback()

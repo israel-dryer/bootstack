@@ -25,10 +25,10 @@ def _key(value: Any) -> Any:
     """Normalize an identifier for cross-column comparison.
 
     A record's id and another record's `parent_field` may be stored with
-    different types — for example SQLite gives an all-integer column TEXT
-    affinity if its first value is NULL, so parent ids come back as `'1'` while
-    ids come back as `1`. They are the same logical key, so compare them as
-    strings (NULL stays distinct).
+    different types depending on the source — for instance a column whose sampled
+    values are all NULL gets TEXT affinity, so its ids can come back as `'1'`
+    while a sibling id column returns `1`. They are the same logical key, so
+    compare them as strings (NULL stays distinct).
     """
     return None if value is None else str(value)
 
