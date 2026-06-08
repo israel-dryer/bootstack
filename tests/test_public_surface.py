@@ -84,7 +84,7 @@ MOVED = {
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
     ],
     "bootstack.widgets": ["PublicWidgetBase", "PublicContainer"],
-    "bootstack.widgets.dialogs": [
+    "bootstack.dialogs": [
         "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog",
         "ColorChoice", "FontDialog", "FontChoice", "FilterDialog",
     ],

@@ -24,7 +24,7 @@ bootstack layout or widget:
 
 .. code-block:: python
 
-   from bootstack.widgets.dialogs import Dialog
+   from bootstack.dialogs import Dialog
 
    def build(frame):
        with bs.VStack(padding=24, gap=12, parent=frame):
@@ -123,11 +123,11 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.dialogs.dialog.Dialog
+.. autoclass:: bootstack.dialogs.Dialog
    :members:
    :undoc-members:
 
-.. autoclass:: bootstack.dialogs.dialog.DialogButton
+.. autoclass:: bootstack.dialogs.DialogButton
    :members:
 
 Full Example

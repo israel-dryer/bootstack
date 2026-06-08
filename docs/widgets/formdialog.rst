@@ -24,7 +24,7 @@ field contents:
 
 .. code-block:: python
 
-   from bootstack.widgets.dialogs import FormDialog
+   from bootstack.dialogs import FormDialog
 
    dlg = FormDialog(
        title="Edit Profile",
@@ -95,7 +95,7 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.dialogs.FormDialog
+.. autoclass:: bootstack.dialogs.FormDialog
    :members:
 
 Full Example

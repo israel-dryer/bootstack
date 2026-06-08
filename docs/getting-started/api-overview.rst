@@ -62,5 +62,5 @@ Submodules
      - The exceptions the framework raises — :doc:`/reference/errors`
    * - ``bootstack.types``
      - Token and keyword types for annotating your own code
-   * - ``bootstack.widgets.dialogs``
+   * - ``bootstack.dialogs``
      - Reusable dialog classes, when a one-shot verb isn't enough

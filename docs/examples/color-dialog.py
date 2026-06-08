@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import ColorChooserDialog
+from bootstack.dialogs import ColorChooserDialog
 def show_chooser():
     result = bs.ask_color(title="Choose Color", color="#0070C0")
     if result:

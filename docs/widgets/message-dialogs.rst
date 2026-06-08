@@ -97,9 +97,9 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.alert
+.. autofunction:: bootstack.dialogs.alert
 
-.. autofunction:: bootstack.widgets.dialogs.confirm
+.. autofunction:: bootstack.dialogs.confirm
 
 Full Example
 ------------

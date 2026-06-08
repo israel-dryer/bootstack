@@ -12,7 +12,7 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Sequence
 if TYPE_CHECKING:
     from bootstack.widgets._impl.composites.form import FormItem
 
-from bootstack.dialogs.dialog import Dialog, DialogButton, ButtonSpec
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton, ButtonSpec
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets.types import Master
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH as FORM_MIN_COL_WIDTH

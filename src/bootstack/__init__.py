@@ -45,8 +45,8 @@ from bootstack.signals import Signal
 # ── Theme switching (full theming API lives in `bootstack.style`) ─────────────
 from bootstack.style import set_theme, toggle_theme
 
-# ── Dialog verbs (dialog classes live in `bootstack.widgets.dialogs`) ─────────
-from bootstack.widgets.dialogs import (
+# ── Dialog verbs (dialog classes live in `bootstack.dialogs`) ─────────────────
+from bootstack.dialogs import (
     alert, confirm, ask_string, ask_integer, ask_float,
     ask_date, ask_date_range, ask_item,
     ask_color, ask_font, ask_filter,

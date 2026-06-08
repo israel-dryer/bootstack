@@ -200,4 +200,4 @@ Functions for setting fonts at runtime, plus the ``FontChoice`` result type.
 .. autofunction:: bootstack.style.update_font_token
 .. autofunction:: bootstack.style.get_font_families
 
-.. autoclass:: bootstack.widgets.dialogs.FontChoice
+.. autoclass:: bootstack.dialogs.FontChoice

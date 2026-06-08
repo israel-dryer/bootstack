@@ -1,5 +1,5 @@
 import bootstack as bs
-from bootstack.widgets.dialogs import Dialog, DialogButton
+from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 

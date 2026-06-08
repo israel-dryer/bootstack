@@ -15,7 +15,7 @@ from PIL import ImageColor
 from bootstack.constants import *
 from bootstack._core import colorutils
 from bootstack._core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
-from bootstack.dialogs.dialog import Dialog
+from bootstack.dialogs._impl.dialog import Dialog
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style

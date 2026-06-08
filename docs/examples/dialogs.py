@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import Dialog, DialogButton, FormDialog
+from bootstack.dialogs import Dialog, DialogButton, FormDialog
 def show_custom():
     def build(frame):
         with bs.VStack(padding=20, gap=8, parent=frame):

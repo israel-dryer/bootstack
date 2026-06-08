@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import FontDialog
+from bootstack.dialogs import FontDialog
 def show_font():
     choice = bs.ask_font(title="Select Font")
     if choice:

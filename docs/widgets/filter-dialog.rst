@@ -78,7 +78,7 @@ Use ``FilterDialog`` to inspect the result after ``show()``:
 
 .. code-block:: python
 
-   from bootstack.widgets.dialogs import FilterDialog
+   from bootstack.dialogs import FilterDialog
 
    dlg = FilterDialog(
        title="Status Filter",
@@ -100,9 +100,9 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.ask_filter
+.. autofunction:: bootstack.dialogs.ask_filter
 
-.. autoclass:: bootstack.widgets.dialogs.FilterDialog
+.. autoclass:: bootstack.dialogs.FilterDialog
    :members:
 
 Full Example

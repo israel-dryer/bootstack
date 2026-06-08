@@ -10,7 +10,7 @@ from typing_extensions import Unpack
 
 from bootstack.constants import *
 from bootstack.i18n import MessageCatalog
-from bootstack.dialogs.dialog import Dialog, DialogButton, ShowOptions
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton, ShowOptions
 from bootstack._runtime.app import Window
 from bootstack._runtime.utility import scale_size
 from bootstack.style.style import get_style

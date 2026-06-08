@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import FilterDialog
+from bootstack.dialogs import FilterDialog
 COUNTRIES = ["Australia", "Canada", "France", "Germany", "India",
              "Japan", "Mexico", "Spain", "UK", "USA"]
 

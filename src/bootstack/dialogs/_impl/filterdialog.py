@@ -13,7 +13,7 @@ from bootstack.widgets._impl.primitives import CheckButton, Frame, Label, Separa
 from bootstack.widgets.types import Master
 from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack._runtime.app import Window
-from bootstack.dialogs import Dialog, DialogButton
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton
 from bootstack.widgets._impl.composites.scrollview import ScrollView
 from bootstack._runtime.window_utilities import AnchorPoint
 

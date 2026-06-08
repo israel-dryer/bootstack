@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import Dialog, DialogButton
+from bootstack.dialogs import Dialog, DialogButton
 def show_simple():
     dlg = Dialog(
         title="Confirm deletion",

@@ -1,6 +1,6 @@
 import bootstack as bs
 
-from bootstack.widgets.dialogs import FormDialog
+from bootstack.dialogs import FormDialog
 def show_simple():
     dlg = FormDialog(
         title="New Contact",

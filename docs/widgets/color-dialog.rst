@@ -52,7 +52,7 @@ or show the same dialog multiple times:
 
 .. code-block:: python
 
-   from bootstack.widgets.dialogs import ColorChooserDialog
+   from bootstack.dialogs import ColorChooserDialog
 
    dlg = ColorChooserDialog(title="Pick a color", color="#ff0000")
    dlg.show()
@@ -78,9 +78,9 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.ask_color
+.. autofunction:: bootstack.dialogs.ask_color
 
-.. autoclass:: bootstack.widgets.dialogs.ColorChooserDialog
+.. autoclass:: bootstack.dialogs.ColorChooserDialog
    :members:
 
 Full Example

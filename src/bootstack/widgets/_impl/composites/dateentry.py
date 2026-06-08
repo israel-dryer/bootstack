@@ -279,7 +279,7 @@ class DateEntry(Field):
         the entry when a date is picked, and leaves the field unchanged on
         cancel.
         """
-        from bootstack.dialogs.datedialog import DateDialog
+        from bootstack.dialogs._impl.datedialog import DateDialog
 
         # Prevent multiple dialogs: reuse existing if still open
         existing = getattr(self, "_active_date_dialog", None)

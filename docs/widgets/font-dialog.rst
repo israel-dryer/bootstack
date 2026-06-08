@@ -60,7 +60,7 @@ Use ``FontDialog`` when you need to inspect the result after ``show()``:
 
 .. code-block:: python
 
-   from bootstack.widgets.dialogs import FontDialog
+   from bootstack.dialogs import FontDialog
 
    dlg = FontDialog(title="Code Font", default_font="code")
    dlg.show()
@@ -91,9 +91,9 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.ask_font
+.. autofunction:: bootstack.dialogs.ask_font
 
-.. autoclass:: bootstack.widgets.dialogs.FontDialog
+.. autoclass:: bootstack.dialogs.FontDialog
    :members:
 
 Full Example
