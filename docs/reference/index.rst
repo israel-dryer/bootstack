@@ -14,6 +14,7 @@ events, validation, data sources, and app-level utilities.
    streams
    validation
    data-sources
+   store
    shortcuts
    scheduling
    errors

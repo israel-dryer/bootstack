@@ -74,10 +74,25 @@ memories (see them for rationale and gotchas).
   typed on `hasattr(obj,'get')`; removing `.get()` made it reject real signals so
   widgets created fresh empty ones — now checks `var`/`subscribe`/`set`/callable.
   Tests: `tests/signals/test_signal.py`.
+- **Preferences store `bs.Store`** (branch `feat/store`) — public, dict-like,
+  JSON file-backed key-value store for app prefs (`store.py`). `get`/`set`/
+  `delete`/`setdefault`/`update`/`clear`/`keys`/`values`/`items`/`as_dict`/
+  `reload`/`save` + full mapping protocol; write-through `autosave=True` default
+  with atomic writes (temp + `os.replace`); JSON-only values (`SerializationError`
+  otherwise), string keys; corrupt/missing file starts empty; no App required.
+  Lives at `<config>/<app>/<name>.json` via new shared helper
+  `_core/paths.py` (`user_config_dir`/`app_config_dir`/`app_config_file`), which
+  also now backs `App._state_file_path` (window-state) — single config-dir
+  convention. Tests `tests/test_store.py`; docs `reference/store.rst` (with a
+  remember-the-theme recipe). **Decided standalone-first** (pre-release): the
+  `App(remember_theme=True)` sugar is a queued fast-follow, NOT built yet; did
+  NOT refactor window-state to route through Store (only shared the path helper).
 
 ## Next up — candidates (pick one)
 
-- **Persistent KV / prefs store** (`bs.Store`) — memory `project_persistent_kv_store`.
+- **`App(remember_theme=True)`** — promote the store.rst theme-persistence recipe
+  into a built-in flag, mirroring `remember_window_state` (the queued Store
+  fast-follow).
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 
@@ -298,10 +313,10 @@ rename + filtering DSL were already DONE.
    Table "SQL" search mode; fixed `FormDialog(master=)`→`parent=`. Also docs-config
    cleanup (removed `viewcode`, `html_show_sourcelink`/`copy_source` off,
    `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
-3. **Persistent KV / prefs store** (proposed, memory `project_persistent_kv_store`):
-   no public persistent K-V exists (`MemoryDataSource`=RAM, `SqliteDataSource`=
-   record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
-   `bs.Store` (dict-like, file-backed). Ties into theme persistence.
+3. **Persistent KV / prefs store — DONE** (branch `feat/store`, memory
+   `project_persistent_kv_store`): shipped `bs.Store` (dict-like, JSON file-
+   backed). `AppSettings` is still window-geometry-only (not folded into Store —
+   that was deliberately scoped out).
 
 **Signal API — DONE (branch `feat/signal-cleanup`):** `signal()` is the single
 getter; `.get()` and the `__getattr__` proxy are REMOVED; `.set()` writes (with
