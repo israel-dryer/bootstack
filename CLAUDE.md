@@ -42,19 +42,33 @@ memories (see them for rationale and gotchas).
 - **Docs + public API audit, typed events, theming/font tracks, DataSource
   observable query + verb rename** — see "Prior initiative" below and the
   `project_*` memories.
+- **Tree data-source backing** (branch `feat/tree-datasource`, awaiting merge) —
+  `Tree(
+  data_source=src, parent_field="parent_id", root_value=None, label_field=,
+  icon_field=, node_builder=, order=)` projects a FLAT adjacency-list source as a
+  lazy hierarchy: auto-generated per-node `loader`s issue
+  `src._query(col(parent_field)==id, ...)` on expand (uses `_query`, not
+  `where()`, so view state is undisturbed). Record→node = fields + optional
+  `node_builder`; chevrons via a batched has-children `IN(...)` query per expand;
+  `data_source` property + `refresh()`. Impl in
+  `widgets/_impl/composites/tree/source_binding.py`. Mutually exclusive with
+  `nodes=`. Memory `project_tree_datasource_backing`. **Deferred:** per-node child
+  pagination, tree filtering, auto-refresh on `on_change`, native
+  `TreeDataSourceProtocol`, Tree widget doc page. **Found (not fixed):** latent
+  `SqliteDataSource` TEXT-affinity bug — a column whose FIRST row value is NULL
+  gets TEXT affinity, so int values store as strings (worked around in the binding
+  by string-normalizing the has-children key comparison).
 
-## Next up — Tree data-source backing (designed, not started)
+## Next up — candidates (pick one)
 
-Full design in memory `project_tree_datasource_backing`. The hierarchical sibling
-of the file-streaming work ("fetch on demand") — lets a huge hierarchical dataset
-load branch-by-branch. **Decision:** hierarchy is a *projection* over a FLAT
-adjacency-list source (every row has `parent_id`), NOT a storage mode or runtime
-flag. Reuse Tree's existing per-node `loader` seam: `Tree(data_source=src,
-parent_field="parent_id")` issues `src.where(col(parent_field)==node.id).page(...)`
-per expand. No flat-protocol change; any `DataSourceProtocol` can back a tree.
-Optional later: a native `TreeDataSourceProtocol` (`roots`/`children`/
-`has_children`) for genuinely tree-shaped stores; the flat adapter builds on it.
-Defaults: adjacency list (not materialized path); filtering-a-tree scoped out of v1.
+- **SqliteDataSource schema inference** — fix the TEXT-affinity-from-leading-NULL
+  bug surfaced by Tree backing (infer a column's type by scanning more than the
+  first row, or accept explicit dtypes). General correctness win for the
+  data-science/engineering audience; see `project_tree_datasource_backing`.
+- **Persistent KV / prefs store** (`bs.Store`) — memory `project_persistent_kv_store`.
+- **Deferred file-streaming items** — background/progressive ingest, keyset
+  pagination, auto-index (memory `project_file_source_streaming`).
+- **Signal runtime-cleanup pass** — memory `project_signal_api_audit_findings`.
 
 ---
 
