@@ -155,21 +155,36 @@ memories (see them for rationale and gotchas).
   `update_font_token` (correctly a partial-update verb), dual `set_theme`/`app.theme`
   (by design). Verdict: the accessor pattern is healthy — app-scoped globals via
   `get_*()` (`get_shortcuts()`), no bare singleton instances exported.
+- **API Reference restructure — Stage 1** (PR #107, branch deleted) — first slice
+  of the docs split into narrative (Widgets + Guides) + a unified, complete,
+  by-module **API Reference** (autosummary tree mirroring each submodule's
+  `__all__`). Prototyped on `bootstack.data`: new `docs/api-reference/` section
+  (index + `data.rst` with grouped autosummary tables → 22 auto-generated
+  per-object stubs under gitignored `generated/`); `docs/_templates/autosummary/
+  class.rst` (`:members: :inherited-members: :show-inheritance:` — complete pages,
+  Protocol stays noise-free); `reference/data-sources.rst` re-pointed as a Guide
+  (curated `autoclass` removed = the single autodoc home now lives in the
+  reference; replaced with a cross-link + a table-only `autosummary` summary).
+  Navbar temporarily 6 (Stage 5 re-cut returns it to 5). Clean-build warning-free.
+  **Full brief + all review-stage decisions in `docs/_dev/api-reference-restructure.md`**;
+  memory `project_api_reference_restructure`. **NEXT: Stage 2** (lock the
+  templates/recipe into this file, replacing the curated-autoclass page pattern).
 
 ## Next up — candidates (pick one)
 
-- **★ API Reference restructure (docs)** — LEAD CANDIDATE, planned + spec'd. Split
-  the docs into a narrative layer (Widgets + Guides) and a **unified, complete,
-  by-module API Reference** that mirrors each submodule's `__all__` (pandas/Django
-  model), because the current per-page curated `autoclass` gives no browsable API
-  tree — worst for the non-widget subsystems. **Move the autodoc HOME into the new
-  API Reference** (single home per object — re-introducing a second home brings
-  back the PR #106 duplicate-description warnings); narrative pages cross-link in
-  (`:class:`/`:func:`) + an optional `autosummary` summary table. **Full brief +
-  staged PR plan in `docs/_dev/api-reference-restructure.md`** (excluded from the
-  Sphinx build). **Do stage 1 first:** a `bootstack.data` prototype slice, built
-  warning-free, for maintainer review BEFORE the ~50-page sweep. Best done in a
-  fresh session. Memory `project_api_reference_restructure`.
+- **★ API Reference restructure — Stage 2+ (docs)** — LEAD CANDIDATE, IN PROGRESS
+  (Stage 1 merged, PR #107). Continue the staged sweep from the brief:
+  **Stage 2** lock the autosummary template + the new "API Reference page" / "Guide
+  page" recipes into this CLAUDE.md (replacing the curated-autoclass recipe);
+  **Stage 3** sweep subsystems (move each `reference/*` autodoc home into API
+  Reference, convert prose → Guides, dissolve `reference/`); **Stage 4** sweep
+  widgets (single category-grouped `bootstack` page; `AppShell`→Application; widget
+  clusters as flat sibling stubs; doubles as an `__all__`-hygiene audit —
+  `ColumnSpec`/`EditFilter`/`EditorType`); **Stage 5** nav re-cut (back to 5).
+  Then the post-migration follow-on: flesh out the widget Guides with far more
+  examples (**API Reference is a last resort; Guides carry the teaching**). **Full
+  brief + decisions in `docs/_dev/api-reference-restructure.md`**; memory
+  `project_api_reference_restructure`.
 - **Image / Icon public handle** — design a Tk-free public image/icon handle and
   re-promote (both currently internal). Memory `project_public_intent_backlog`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
