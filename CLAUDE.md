@@ -158,6 +158,18 @@ memories (see them for rationale and gotchas).
 
 ## Next up — candidates (pick one)
 
+- **★ API Reference restructure (docs)** — LEAD CANDIDATE, planned + spec'd. Split
+  the docs into a narrative layer (Widgets + Guides) and a **unified, complete,
+  by-module API Reference** that mirrors each submodule's `__all__` (pandas/Django
+  model), because the current per-page curated `autoclass` gives no browsable API
+  tree — worst for the non-widget subsystems. **Move the autodoc HOME into the new
+  API Reference** (single home per object — re-introducing a second home brings
+  back the PR #106 duplicate-description warnings); narrative pages cross-link in
+  (`:class:`/`:func:`) + an optional `autosummary` summary table. **Full brief +
+  staged PR plan in `docs/_dev/api-reference-restructure.md`** (excluded from the
+  Sphinx build). **Do stage 1 first:** a `bootstack.data` prototype slice, built
+  warning-free, for maintainer review BEFORE the ~50-page sweep. Best done in a
+  fresh session. Memory `project_api_reference_restructure`.
 - **Image / Icon public handle** — design a Tk-free public image/icon handle and
   re-promote (both currently internal). Memory `project_public_intent_backlog`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset

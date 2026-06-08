@@ -124,7 +124,7 @@ html_short_title = "bootstack"
 html_show_sourcelink = False
 html_copy_source     = False
 
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "_dev", "Thumbs.db", ".DS_Store"]
 
 # ---------------------------------------------------------------------------
 # Autodoc mock imports (unavailable on Linux CI runners)

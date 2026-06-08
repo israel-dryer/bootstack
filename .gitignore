@@ -8,6 +8,8 @@ site
 *_build
 *_static
 !docs/_static
+# autosummary-generated API reference stubs (regenerated at build time)
+docs/api-reference/generated/
 .vscode
 __pycache__
 testing_notes.txt

@@ -340,39 +340,22 @@ See also
 API reference
 -------------
 
-The concrete sources:
+The complete reference — every method, the ``col`` expression API, and the
+reader/writer registries — lives in :doc:`/api-reference/data`. At a glance:
 
-.. autoclass:: bootstack.data.MemoryDataSource
-   :members:
+.. currentmodule:: bootstack.data
 
-.. autoclass:: bootstack.data.SqliteDataSource
-   :members:
+.. autosummary::
+   :nosignatures:
 
-.. autoclass:: bootstack.data.FileDataSource
-   :members:
-
-.. autoclass:: bootstack.data.FileSourceConfig
-   :members:
-
-The interface and base class for writing your own:
-
-.. autoclass:: bootstack.data.DataSourceProtocol
-   :members:
-
-.. autoclass:: bootstack.data.BaseDataSource
-   :members:
-
-Reading and writing files directly (the format registries behind
-``FileDataSource`` and ``save()``):
-
-.. autofunction:: bootstack.data.read_records
-
-.. autofunction:: bootstack.data.write_records
-
-.. autofunction:: bootstack.data.register_reader
-
-.. autofunction:: bootstack.data.register_writer
-
-.. autofunction:: bootstack.data.supported_read_extensions
-
-.. autofunction:: bootstack.data.supported_write_extensions
+   MemoryDataSource
+   SqliteDataSource
+   FileDataSource
+   FileSourceConfig
+   DataSourceProtocol
+   BaseDataSource
+   col
+   any_of
+   all_of
+   read_records
+   write_records
