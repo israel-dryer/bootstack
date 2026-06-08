@@ -88,24 +88,27 @@ memories (see them for rationale and gotchas).
   persistence integration is deferred to the settings-flattening work below (do
   NOT add a one-off `remember_theme`/`app.store`). Did NOT refactor window-state
   to route through Store (only shared the path helper).
+- **AppSettings flattening** (PR #101, branch `feat/app-settings-flatten`) — all
+  former `AppSettings` fields are now flat `App(...)`/`AppShell(...)` kwargs (the
+  single config path); public `settings=`/`AppSettings`/`get_app_settings`/
+  `app.settings` are GONE (clean break — `settings=` raises `TypeError`).
+  `AppSettings` survives only as an internal resolved-config holder;
+  `get_app_settings()` is internal-only. Config reads/writes as symmetric `app.*`
+  properties via `AppConfigMixin` (+ `APP_CONFIG_KWARGS`) in
+  `widgets/_core/app_config.py` — LOCALE SURFACE IS FLAT (not a namespace):
+  `app.theme`/`app.locale`/`app.title`/`app.localize_mode` set live, derived
+  read-only `app.locale_date_format`/`_time_format`/`_decimal`/`_thousands`/
+  `_language`. Derived format fields dropped as *inputs* (dead — `IntlFormatter`
+  re-derives from `locale`). `app.on_theme_change`/`on_locale_change` events;
+  `App.from_store(store)`/`AppShell.from_store` (version-skew tolerant) +
+  `Store.update(**kwargs)`. `remember_theme` DEFERRED (store-splat covers it;
+  `remember_window_state` stays the only built-in remember flag). Docs:
+  `production/app-settings.rst` (was a stub → App configuration reference),
+  `widgets/appshell.rst` config section, `reference/store.rst` persistence.
+  Memory `project_app_settings_flattening`.
 
 ## Next up — candidates (pick one)
 
-- **Flatten `AppSettings` into the `App` constructor** — DONE (branch
-  `feat/app-settings-flatten`, awaiting test/merge; memory
-  `project_app_settings_flattening`). All former `AppSettings` fields are now flat
-  `App(...)`/`AppShell(...)` kwargs (the single config path); public
-  `settings=`/`AppSettings`/`get_app_settings`/`app.settings` are GONE (clean
-  break — `settings=` raises `TypeError`). Config reads/writes as symmetric
-  `app.*` properties (LOCALE SURFACE IS FLAT, not a namespace — decided this
-  session: `app.locale`/`app.localize_mode` set live, derived read-only
-  `app.locale_date_format`/`_time_format`/`_decimal`/`_thousands`/`_language`).
-  The derived format fields were dropped as *inputs* (they were dead — nothing
-  reads them; `IntlFormatter` re-derives from `locale`). `AppConfigMixin` +
-  `APP_CONFIG_KWARGS` in `widgets/_core/app_config.py`; `app.on_theme_change`/
-  `on_locale_change` events; `App.from_store(store)` (version-skew tolerant) +
-  `Store.update(**kwargs)`. `remember_theme` was DEFERRED (store-splat covers it;
-  `remember_window_state` stays the only built-in remember flag).
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 - **Reference docs example pass** — enrich `docs/reference/*` (esp. `store.rst`
@@ -341,8 +344,9 @@ rename + filtering DSL were already DONE.
    `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
 3. **Persistent KV / prefs store — DONE** (branch `feat/store`, memory
    `project_persistent_kv_store`): shipped `bs.Store` (dict-like, JSON file-
-   backed). `AppSettings` is still window-geometry-only (not folded into Store —
-   that was deliberately scoped out).
+   backed). App-side persistence later landed via the settings flattening
+   (PR #101): `App.from_store` + `Store.update(**kwargs)` write-back; window
+   geometry stays a built-in `remember_window_state` flag.
 
 **Signal API — DONE (branch `feat/signal-cleanup`):** `signal()` is the single
 getter; `.get()` and the `__getattr__` proxy are REMOVED; `.set()` writes (with
