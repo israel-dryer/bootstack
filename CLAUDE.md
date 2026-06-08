@@ -167,15 +167,22 @@ memories (see them for rationale and gotchas).
   reference; replaced with a cross-link + a table-only `autosummary` summary).
   Navbar temporarily 6 (Stage 5 re-cut returns it to 5). Clean-build warning-free.
   **Full brief + all review-stage decisions in `docs/_dev/api-reference-restructure.md`**;
-  memory `project_api_reference_restructure`. **NEXT: Stage 2** (lock the
-  templates/recipe into this file, replacing the curated-autoclass page pattern).
+  memory `project_api_reference_restructure`.
+- **API Reference restructure — Stage 2** (branch `feat/api-reference-stage2`) —
+  recipe-locking, CLAUDE.md only (no docs/code change). Added the canonical
+  **"## API Reference & Guide page pattern (established — follow exactly)"** section
+  (the locked `class.rst` autosummary template + facts; the API-Reference-page recipe
+  = autodoc home, grouped `autosummary` with `:toctree: generated` + `:nosignatures:`;
+  the Guide-page recipe = table-only summary, no bottom `autoclass`, cross-links;
+  shallowest-path-wins re-export rule; clean-build verify). Marked the old
+  "Reference page pattern" SUPERSEDED and flagged the Widget pattern for its Stage 4
+  autoclass-drop. **NEXT: Stage 3** (sweep subsystems).
 
 ## Next up — candidates (pick one)
 
-- **★ API Reference restructure — Stage 2+ (docs)** — LEAD CANDIDATE, IN PROGRESS
-  (Stage 1 merged, PR #107). Continue the staged sweep from the brief:
-  **Stage 2** lock the autosummary template + the new "API Reference page" / "Guide
-  page" recipes into this CLAUDE.md (replacing the curated-autoclass recipe);
+- **★ API Reference restructure — Stage 3+ (docs)** — LEAD CANDIDATE, IN PROGRESS
+  (Stage 1 merged PR #107; Stage 2 recipe-lock done on `feat/api-reference-stage2`).
+  Continue the staged sweep from the brief:
   **Stage 3** sweep subsystems (move each `reference/*` autodoc home into API
   Reference, convert prose → Guides, dissolve `reference/`); **Stage 4** sweep
   widgets (single category-grouped `bootstack` page; `AppShell`→Application; widget
@@ -229,17 +236,18 @@ Top-level sections (pydata horizontal navbar — keep this set SMALL, ~5):
   needs internal organization (e.g. if Common Tasks grows).
 - Do NOT promote widget groups to top-level — ~14 navbar items overflow pydata.
 
-**Reference page pattern** (distinct from widgets — non-visual, NO screenshots):
-prose intro → task-ordered usage sections (code blocks) → See also → curated
-`autoclass`. **Inline usage only — NO separate "Full Example" / `docs/examples/<topic>.py`
-for reference pages** (decided 2026-06-05; widget pages DO keep their Full Example).
-When dropping a Full Example, make sure the inline usage covers the same patterns
-(memory `feedback_reference_page_examples`). The **API reference section is FLAT** —
-no `~~~` sub-group headers (the sidebar is narrow); use a prose lead-in to group.
-Autoclass at the **PUBLIC home path** (`bootstack.signals.Signal`, NOT
-`signals.signal.Signal`); `:members:`, curating internal members with
-`:exclude-members:` where needed. Single backticks, Google style.
-**Exemplars: `docs/reference/signals.rst`, `docs/reference/events.rst`.**
+**Reference page pattern** — ⚠ **SUPERSEDED by the API Reference restructure**
+(PR #107 + the staged sweep; see "## API Reference & Guide page pattern" below for
+the canonical recipe). The historical pattern was: prose intro → task-ordered
+usage → See also → a hand-**curated** `autoclass` at the bottom (`:members:` at the
+PUBLIC home path, `:exclude-members:` to hide internals). The curated autoclass is
+being REMOVED page by page — the single autodoc home now lives in the **API
+Reference** (autosummary-generated), and these pages become **Guides** that
+cross-link in. Until Stage 3 sweeps a given `reference/*` page, it may still carry
+the old curated `autoclass`; do NOT add new ones. Still in force from the old
+pattern: non-visual (NO screenshots), inline usage only (NO separate Full Example),
+single backticks, Google style. **Exemplars (NEW model): `docs/reference/data-sources.rst`
+(Guide) + `docs/api-reference/data.rst` (API Reference).**
 
 DONE to this pattern (2026-06-05): signals, events, streams, scheduling,
 shortcuts, validation, data-sources, **theming**; errors already fine. **PARKED:
@@ -459,7 +467,111 @@ adopt callable-setter `signal(x)`.
 
 ---
 
+## API Reference & Guide page pattern (established — follow exactly)
+
+The docs are a **Diátaxis-style split** (PR #107): a narrative layer (**Widgets** +
+**Guides**) plus a **unified, complete API Reference** that mirrors each submodule's
+`__all__`. **Load-bearing rule: every object has exactly ONE autodoc home, and it
+lives in the API Reference.** Narrative pages cross-link in (`:class:` / `:func:` /
+`:meth:`) and may carry a *table-only* `autosummary` summary; they never re-document.
+A second autodoc home reintroduces the "duplicate object description" warnings PR #106
+removed. Full brief + all staged-sweep decisions: `docs/_dev/api-reference-restructure.md`.
+Memory `project_api_reference_restructure`.
+
+### The autosummary templates (locked, PR #107 + Stage 2)
+
+THREE custom templates under `docs/_templates/autosummary/`, one per documenter
+kind autosummary uses for the data surface — `class.rst`, `function.rst`,
+`data.rst`. **All THREE must title the stub page with the bare `{{ objname }}`**
+(not `{{ fullname }}`). This is load-bearing: autosummary picks the template by
+object kind, and the **stub's title is what the sidebar shows**. The built-in
+fallback templates title with the full dotted path (`bootstack.data.col`), so
+relying on the fallback for functions/data produces a sidebar where classes read
+bare (`MemoryDataSource`) but functions/aliases read fully-qualified
+(`bootstack.data.col`) — the exact inconsistency Stage 2 fixed. Keep the bare-title
+line identical across all three.
+
+`class.rst` (also serves dataclasses + Protocols):
+
+```rst
+{{ objname | escape | underline }}
+
+.. currentmodule:: {{ module }}
+
+.. autoclass:: {{ objname }}
+   :members:
+   :inherited-members:
+   :show-inheritance:
+```
+
+`function.rst` → `.. autofunction:: {{ objname }}`; `data.rst` →
+`.. autodata:: {{ objname }}` — each with the same bare-title + `currentmodule`
+header.
+
+- `:inherited-members:` (class template) is what makes a concrete-source stub
+  **complete** (e.g. `SqliteDataSource` shows inherited
+  `save`/`on_change`/`observe`/`export_csv`).
+- The Protocol page stays noise-free because `undoc-members` is off and there is no
+  `:special-members:` — `_private`/dunder/Generic members are filtered out.
+- Some type aliases classify as class-like and pick up `class.rst` (e.g.
+  `Primitive`), others as data and pick up `data.rst` (e.g. `Record`) — both now
+  title bare, so it no longer matters which. A new documenter kind a future module
+  needs (e.g. `exception.rst`) must get the SAME bare-title treatment.
+
+### API Reference page recipe (the autodoc home — one per submodule)
+
+A page like `docs/api-reference/data.rst`. Text-only, **NO screenshots, NO hero**.
+
+1. Title = the dotted module path (`bootstack.data`), then `.. currentmodule::` it.
+2. One prose paragraph orienting the module + a `:doc:` link to its Guide.
+3. **Group the surface into labeled sections** (`---` headings), each: a one-sentence
+   prose lead-in, then an `.. autosummary::` table with `:toctree: generated` and
+   `:nosignatures:`. The table renders as a two-column **name | first-line-summary**
+   table (pandas/SciPy style) and toctrees each name into an auto-generated per-object
+   stub under `docs/api-reference/generated/` (gitignored — regenerates at build).
+4. List **exactly** the module's `__all__` across the grouped tables (the reference
+   IS `__all__`). Good first-line docstrings matter — that line is the summary cell.
+5. Wire the page into `docs/api-reference/index.rst`'s toctree.
+
+Re-exported names (shallowest path wins): a name exported at two public paths gets
+ONE stub, on the **shallowest** page (`Signal` → top-level `bootstack` page). Deeper
+module pages list it in a **table-only** summary (no `:toctree:`, links up to the
+stub) and own only their module-local names.
+
+### Guide page recipe (the former `reference/*` prose pages)
+
+A page like `docs/reference/data-sources.rst`. This is the teaching layer.
+**Guiding principle: the API Reference is a LAST RESORT — the Guide carries the
+practical teaching load** (generous worked examples, common compositions, recipes,
+do/don't). A user should build real things from the Guide alone.
+
+1. Prose intro → task-ordered usage sections (code blocks) → See also.
+2. **No bottom `autoclass`** — instead end with an **"API reference"** section: a
+   one-line pointer (`:doc:` link to the API Reference page) + an at-a-glance
+   `.. autosummary::` table **WITHOUT `:toctree:`** (a table is NOT an object
+   description, so it's not a second autodoc home; its links resolve to the stubs).
+3. Cross-link types inline with roles (`:class:` / `:func:` / `:meth:` / `:data:`)
+   at the **public home path** (`bootstack.data.SqliteDataSource`, not the impl path).
+4. Inline usage only — NO separate Full Example file. Non-visual: NO screenshots.
+
+### Verify (every stage)
+
+Clean-build, always — incremental builds MASK warnings:
+`rm -rf docs/_build && sphinx-build -b html docs docs/_build/html -W --keep-going`.
+Build is warning-free; keep it there. Attribute-docstring rules (PR #106) still
+apply (no `Attributes:`/`Args:` for dataclass fields; no colon on the first line of
+an attribute docstring). A `-n` nitpicky build surfaces dangling cross-refs once a
+home moves — fix the link or add a `nitpick_ignore_regex`.
+
+---
+
 ## Widget documentation pattern (established — follow exactly)
+
+> ⚠ Stage 4 of the API Reference restructure will modify this pattern: the bottom
+> `autoclass` gets DROPPED (the autodoc home moves to the single top-level
+> `bootstack` API Reference page) and replaced with a table-only `autosummary`
+> summary + cross-links, per the Guide-page recipe above. Until then, in-flight
+> widget pages keep the autoclass.
 
 1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
 2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);

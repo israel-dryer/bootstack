@@ -1,8 +1,10 @@
 # Initiative — API Reference restructure (docs)
 
-**Status:** Stage 1 (the `bootstack.data` prototype slice) BUILT and under
-maintainer review on branch `feat/api-reference-data-prototype` (2026-06-08).
-Stages 2–5 not started. Decided 2026-06-08 with the maintainer.
+**Status:** Stage 1 (the `bootstack.data` prototype slice) MERGED (PR #107).
+Stage 2 (recipe-lock) done on `feat/api-reference-stage2` — the templates + the
+API-Reference-page / Guide-page recipes are now locked into `CLAUDE.md` under
+"## API Reference & Guide page pattern". Stages 3–5 not started. Decided 2026-06-08
+with the maintainer.
 
 > `docs/_dev/` is excluded from the Sphinx build (`conf.py` `exclude_patterns`).
 > This is a dev note, not a published page.
@@ -163,12 +165,18 @@ Built on `feat/api-reference-data-prototype`, clean-build warning-free
   Stage 5 re-cut returns it to 5 by dissolving `reference/` into Guides + API
   Reference.
 
-Templates/recipe to LOCK in Stage 2 from this: the single `class.rst` template
-above works unchanged for plain classes, dataclasses (`FileSourceConfig`), and
-Protocols; functions/data aliases fall back to autosummary's built-in
-`function.rst`/`base.rst` (no custom template needed). Per-object-kind templates
-are selectable with `:template:` on the autosummary directive if a future module
-needs it, but `data` didn't.
+Templates/recipe LOCKED in Stage 2: the `class.rst` template above works unchanged
+for plain classes, dataclasses (`FileSourceConfig`), and Protocols. **Stage 2 also
+added `function.rst` + `data.rst`** — NOT for completeness (the built-in fallbacks
+documented the objects fine) but to fix a **sidebar-title inconsistency**: the
+sidebar shows each stub's page title, and the built-in `function.rst`/`base.rst`
+fallbacks title with the full dotted path (`bootstack.data.col`) while our custom
+`class.rst` titles bare (`MemoryDataSource`) — so functions/aliases rendered
+fully-qualified next to bare classes. All three custom templates now title with the
+bare `{{ objname }}`. Type aliases split across templates by how autosummary
+classifies them (`Primitive` → class-like → `class.rst`; `Record` → data →
+`data.rst`), so both must title bare. Any future documenter kind (`exception.rst`,
+`method.rst`, …) needs the same bare-title treatment.
 
 ## Stage 4 detail — the widget page shape
 
