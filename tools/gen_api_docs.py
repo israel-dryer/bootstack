@@ -20,9 +20,7 @@ API_MODULES = {
             "App": "bootstack.runtime.app.App",
             "Window": "bootstack.runtime.app.App",  # Alias
             "Toplevel": "bootstack.runtime.toplevel.Toplevel",
-            "AppSettings": "bootstack.runtime.app.AppSettings",
             "get_current_app": "bootstack.runtime.app.get_current_app",
-            "get_app_settings": "bootstack.runtime.app.get_app_settings",
             "MenuManager": "bootstack.runtime.menu.MenuManager",
             "create_menu": "bootstack.runtime.menu.create_menu",
         },

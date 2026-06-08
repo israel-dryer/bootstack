@@ -91,23 +91,25 @@ memories (see them for rationale and gotchas).
 
 ## Next up — candidates (pick one)
 
-- **Flatten `AppSettings` into the `App` constructor** (DESIGN DECIDED 2026-06-07,
-  not started; full design in memory `project_app_settings_flattening`) — config
-  is split-brain today (`title`/`size`/`theme` top-level but `locale`/`window_style`/
-  `remember_*` only via `settings={...}`). Promote settings fields to direct
-  `App(...)` kwargs as the single config path. **No public `AppSettings`, no
-  `app.settings`** — config is read/written as **app properties** (`app.theme`,
-  `app.title`, `app.locale`; derived ones like `app.date_format` read-only;
-  cohesive clusters may get a sub-namespace, likely just `app.localization.*`).
-  `AppSettings` survives only as an internal resolved-config holder. Drop public
-  `settings=` (pre-release, no shims — touch `AppShell` + examples). Persistence
-  falls out for free and retires `remember_*`: `bs.App(**store.as_dict())` restore
-  + explicit write-back; keep ONE built-in `remember_window_state` flag for the
-  fiddly geometry string; consider a tolerant `App.from_store()` (version-skew
-  filtering). `bs.Store` stays the separate persistence layer. Riskiest change
-  (central constructor) → its own focused PR.
+- **Flatten `AppSettings` into the `App` constructor** — DONE (branch
+  `feat/app-settings-flatten`, awaiting test/merge; memory
+  `project_app_settings_flattening`). All former `AppSettings` fields are now flat
+  `App(...)`/`AppShell(...)` kwargs (the single config path); public
+  `settings=`/`AppSettings`/`get_app_settings`/`app.settings` are GONE (clean
+  break — `settings=` raises `TypeError`). Config reads/writes as symmetric
+  `app.*` properties (LOCALE SURFACE IS FLAT, not a namespace — decided this
+  session: `app.locale`/`app.localize_mode` set live, derived read-only
+  `app.locale_date_format`/`_time_format`/`_decimal`/`_thousands`/`_language`).
+  The derived format fields were dropped as *inputs* (they were dead — nothing
+  reads them; `IntlFormatter` re-derives from `locale`). `AppConfigMixin` +
+  `APP_CONFIG_KWARGS` in `widgets/_core/app_config.py`; `app.on_theme_change`/
+  `on_locale_change` events; `App.from_store(store)` (version-skew tolerant) +
+  `Store.update(**kwargs)`. `remember_theme` was DEFERRED (store-splat covers it;
+  `remember_window_state` stays the only built-in remember flag).
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
+- **Reference docs example pass** — enrich `docs/reference/*` (esp. `store.rst`
+  persistence patterns now that `from_store`/`update(**kwargs)` exist).
 
 ## Carryover (deferred)
 
@@ -495,9 +497,23 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 ### Widgets and API
 - **`disabled` on Label** — not appropriate. Label is display-only.
 - **`color=` / `background_color=`** — removed. Use `accent=` / `surface=`.
-- **`bs.App` accepts `theme=`** directly (overrides the `"theme"` key in
-  `settings` if both given). `light_theme=`/`dark_theme=` are NOT direct params —
-  set those via `settings={"light_theme": ..., "dark_theme": ...}`.
+- **`bs.App` / `bs.AppShell` config is FLAT kwargs** (settings-flattening, branch
+  `feat/app-settings-flatten`). All former `AppSettings` fields are direct
+  constructor kwargs — `theme`, `light_theme`, `dark_theme`,
+  `follow_system_appearance`, `available_themes`, `inherit_surface_color`,
+  `locale`, `localize_mode`, `window_style`, `macos_quit_behavior`,
+  `remember_window_state`, `state_path`, `app_author`, `app_version`. There is
+  **NO public `settings=` / `AppSettings` / `app.settings`** (clean break, no
+  shim — passing `settings=` raises `TypeError`). `AppSettings` survives only as
+  an internal resolved-config holder; `get_app_settings()` is internal-only.
+  Read/write config as symmetric `app.*` properties: `app.theme`/`app.locale`/
+  `app.title` set live; locale-derived values are flat read-only props
+  (`app.locale_date_format`, `app.locale_time_format`, `app.locale_decimal`,
+  `app.locale_thousands`, `app.locale_language`). Config-change events:
+  `app.on_theme_change(fn)` (→ theme name) and `app.on_locale_change(fn)`
+  (→ locale code). Persistence: `bs.App.from_store(store)` (tolerant of version
+  skew — filters to known kwargs) + `store.update(theme=...)` write-back. Shared
+  impl in `widgets/_core/app_config.py` (`AppConfigMixin`, `APP_CONFIG_KWARGS`).
 - **`bs.Signal()` crashes at module level** — must be inside `with bs.App():`.
 - **`textsignal=`** — standard kwarg for text-bearing widgets. `signal=` for non-text
   (Slider, Checkbox, etc.). Never expose `textvariable=` / `variable=` publicly.
@@ -663,7 +679,7 @@ with bs.App(title="My App", size=(800,600), padding=16, gap=8) as app:
 app.run()
 
 # AppShell
-with bs.AppShell(title="My App", settings={"theme": "bootstrap-light"}) as shell:
+with bs.AppShell(title="My App", theme="bootstrap-light") as shell:
     shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
     with shell.add_page("home", text="Home", icon="house"):
         bs.Label("Welcome!")

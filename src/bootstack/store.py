@@ -210,14 +210,24 @@ class Store:
                 self._autosaved()
             return self._data[key]
 
-    def update(self, values: "dict[str, Any]") -> None:
-        """Merge a mapping of values in, persisting once at the end."""
-        for key, value in values.items():
+    def update(self, values: "dict[str, Any] | None" = None, **kwargs: Any) -> None:
+        """Merge values in, persisting once at the end.
+
+        Accepts a mapping, keyword arguments, or both (mirroring `dict.update`),
+        so `store.update(theme="dark")` and `store.update({"theme": "dark"})`
+        are equivalent.
+        """
+        merged: dict[str, Any] = {}
+        if values:
+            merged.update(values)
+        if kwargs:
+            merged.update(kwargs)
+        for key, value in merged.items():
             self._check_key(key)
             self._check_value(key, value)
         with self._lock:
-            if values:
-                self._data.update(values)
+            if merged:
+                self._data.update(merged)
                 self._autosaved()
 
     def clear(self) -> None:

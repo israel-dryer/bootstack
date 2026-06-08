@@ -689,7 +689,7 @@ def run_demo():
     """Run the bootstack widget gallery as an AppShell application."""
     with bs.AppShell(
         title="Widget Gallery",
-        settings={"theme": "bootstrap-light"},
+        theme="bootstrap-light",
         size=(1100, 750),
     ) as shell:
 

@@ -30,11 +30,11 @@ Choose the starting theme through the app settings, then switch at runtime with
 
 .. note::
 
-   ``bs.App`` accepts ``theme=`` directly; it overrides the ``"theme"`` key in
-   ``settings`` if both are given. The pair that ``toggle_theme`` switches between
-   comes from the ``light_theme`` and ``dark_theme`` settings (default
-   ``"bootstrap-light"`` and ``"bootstrap-dark"``), which are set through
-   ``settings=``.
+   ``bs.App`` accepts ``theme=`` directly to set the startup theme, and the
+   active theme can be read or changed at runtime through ``app.theme``. The
+   pair that ``toggle_theme`` switches between comes from the ``light_theme``
+   and ``dark_theme`` options (default ``"bootstrap-light"`` and
+   ``"bootstrap-dark"``), passed as ``bs.App`` kwargs.
 
 Listing the available themes
 ----------------------------
@@ -135,7 +135,7 @@ once.
 
    Custom themes work best in pairs. Providing a light **and** a dark variant lets
    users switch appearance with ``toggle_theme()``. Point the ``light_theme`` and
-   ``dark_theme`` settings at your two themes to make them the toggle pair — it is
+   ``dark_theme`` options at your two themes to make them the toggle pair — it is
    not required, but recommended:
 
    .. code-block:: python
@@ -147,7 +147,8 @@ once.
 
       with bs.App(
           theme="amber-light",
-          settings={"light_theme": "amber-light", "dark_theme": "amber-dark"},
+          light_theme="amber-light",
+          dark_theme="amber-dark",
       ) as app:
           bs.Button("Toggle", on_click=bs.toggle_theme)
       app.run()

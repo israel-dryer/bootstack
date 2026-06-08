@@ -57,9 +57,8 @@ def _patch(cls):
     orig_run  = cls.run
 
     def _init(self, *args, **kwargs):
-        settings = dict(kwargs.pop("settings", None) or {})
-        settings["theme"] = theme
-        orig_init(self, *args, settings=settings, **kwargs)
+        kwargs.pop("theme", None)
+        orig_init(self, *args, theme=theme, **kwargs)
 
     def _run(self):
         def _grab():
