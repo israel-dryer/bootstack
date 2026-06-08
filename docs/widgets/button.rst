@@ -195,7 +195,7 @@ automatically.
    running.subscribe(lambda v: btn_text.set("Stop" if v else "Start"))
 
    bs.Button(textsignal=btn_text, accent="primary",
-             on_click=lambda: running.set(not running.get()))
+             on_click=lambda: running.set(not running()))
 
    # Or set directly via the .text property
    btn = bs.Button("Start", accent="primary")

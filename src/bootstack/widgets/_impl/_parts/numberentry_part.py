@@ -238,7 +238,7 @@ class NumberEntryPart(TextEntryPart):
                 '<<Change>>', data=ChangeEvent(
                     value=self._value,
                     prev_value=prev_value,
-                    text=self.textsignal.get(),
+                    text=self.textsignal(),
                 ))
 
         return self
@@ -249,7 +249,7 @@ class NumberEntryPart(TextEntryPart):
         new_text = self._format_value(self._value)
 
         # Only update if text changed
-        if new_text != self.textsignal.get():
+        if new_text != self.textsignal():
             # Temporarily unsubscribe from input signal to avoid spurious events
             fid = getattr(self, '_on_input_fid', None)
             if fid:

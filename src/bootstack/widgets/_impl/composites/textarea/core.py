@@ -253,7 +253,7 @@ class _MultilineCore(tk.Frame):
         self._signal = signal
         self._signal_trace_id = signal.subscribe(self._on_signal_change)
         # Set initial value from signal
-        v = signal.get()
+        v = signal()
         if v is not None:
             self.value = str(v)
 

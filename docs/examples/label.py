@@ -57,6 +57,6 @@ with bs.App(title="Label Demo", padding=20, gap=16) as app:
         count.subscribe(lambda v: count_text.set(f"Count: {v}"))
         bs.Label(textsignal=count_text, font="heading-md", accent="primary")
         bs.Button("+1", accent="primary",
-                  on_click=lambda: count.set(count.get() + 1))
+                  on_click=lambda: count.set(count() + 1))
 
 app.run()

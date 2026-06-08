@@ -10,11 +10,11 @@ with App(title="Label + Badge — visual test", minsize=(480, 200), padding=24, 
     counter_label_signal = Signal("0")
 
     def increment():
-        counter.set(counter.get() + 1)
-        counter_label_signal.set(str(counter.get()))
+        counter.set(counter() + 1)
+        counter_label_signal.set(str(counter()))
 
     def toggle_status():
-        status.set("running" if status.get() == "idle" else "idle")
+        status.set("running" if status() == "idle" else "idle")
 
     # Plain text labels
     with VStack(gap=6):

@@ -125,14 +125,6 @@ class Signal(Generic[T]):
             # Return last known value when underlying var is destroyed/unset
             return self._last
 
-    def get(self) -> T:
-        """Return the current value of the signal.
-
-        Alias for calling the signal directly (`signal()`), provided for
-        readability when an explicit method call reads better.
-        """
-        return self()
-
     @classmethod
     def from_variable(
             cls,
@@ -200,14 +192,23 @@ class Signal(Generic[T]):
         Set the signal to a new value and notify subscribers.
 
         Args:
-            value: The new value. Must match the original type.
+            value: The new value. Must match the signal's type, except that an
+                `int` may be set on a `float`-typed signal (it is widened).
 
         Raises:
-            TypeError: If the value type does not match the original.
+            TypeError: If the value type does not match the signal's type (and is
+                not an `int` widened to a `float`).
         """
-        # Enforce exact type to avoid bool being accepted for int, etc.
+        # Enforce the type to avoid surprises (e.g. a bool accepted for an int),
+        # but widen an int into a float-typed signal — a Slider seeded at 0 and
+        # later set to 0.5 is the common case. `type(value) is int` excludes bool.
         if type(value) is not self._type:
-            raise TypeError(f"Expected {self._type.__name__}, got {type(value).__name__}")
+            if self._type is float and type(value) is int:
+                value = float(value)  # type: ignore[assignment]
+            else:
+                raise TypeError(
+                    f"Expected {self._type.__name__}, got {type(value).__name__}"
+                )
         # Reduce redundant updates if value unchanged
         try:
             current = self._var.get()
@@ -264,11 +265,9 @@ class Signal(Generic[T]):
         self._subscribers[fid] = callback
         self._callback_index.setdefault(callback, set()).add(fid)
         if immediate:
-            try:
-                callback(self())
-            except Exception:
-                # Do not fail subscription due to callback error
-                pass
+            # Call synchronously at subscription time; let any error surface to
+            # the caller rather than swallowing a real bug in the callback.
+            callback(self())
         return fid
 
     def unsubscribe(self, funcid: str) -> None:
@@ -290,12 +289,6 @@ class Signal(Generic[T]):
             self._trace.remove(fid)
         self._subscribers.clear()
         self._callback_index.clear()
-
-    def __getattr__(self, name: str) -> Any:
-        """
-        Proxy access to the underlying tk.Variable instance.
-        """
-        return getattr(self._var, name)
 
     @property
     def name(self) -> str:

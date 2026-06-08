@@ -64,7 +64,7 @@ with bs.App(title="Button Demo", padding=20, gap=16) as app:
         bs.Button(
             textsignal=btn_text,
             accent="success",
-            on_click=lambda: running.set(not running.get()),
+            on_click=lambda: running.set(not running()),
         )
         bs.Label(textsignal=btn_text, accent="secondary")
 

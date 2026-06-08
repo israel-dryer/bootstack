@@ -33,7 +33,7 @@ with App(title="Radio + RadioToggleButton", minsize=(520, 540), padding=20, gap=
             cb_lbl = Label("selected: one")
 
             def _update(e):
-                cb_lbl.value = f"selected: {sig_c.get()}"
+                cb_lbl.value = f"selected: {sig_c()}"
 
             r1 = Radio("One", "one", signal=sig_c)
             r2 = Radio("Two", "two", signal=sig_c)

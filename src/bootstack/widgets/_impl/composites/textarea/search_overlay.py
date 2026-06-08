@@ -236,10 +236,10 @@ class SearchOverlay(PackFrame):
     def _expand_replacement(self, matched_text: str) -> str:
         """Return the replacement string, expanding regex back-references."""
         replacement = self._replace_entry.value or ""
-        if self._regex_sig.get():
+        if self._regex_sig():
             try:
                 query = self._find_entry.value or ""
-                flags = 0 if self._case_sig.get() else re.IGNORECASE
+                flags = 0 if self._case_sig() else re.IGNORECASE
                 m = re.fullmatch(query, matched_text, flags)
                 if m:
                     return m.expand(replacement)
@@ -261,11 +261,11 @@ class SearchOverlay(PackFrame):
             return
 
         text = self._core.value
-        flags = 0 if self._case_sig.get() else re.IGNORECASE
+        flags = 0 if self._case_sig() else re.IGNORECASE
 
         try:
             pattern = re.compile(
-                query if self._regex_sig.get() else re.escape(query),
+                query if self._regex_sig() else re.escape(query),
                 flags,
             )
         except re.error:

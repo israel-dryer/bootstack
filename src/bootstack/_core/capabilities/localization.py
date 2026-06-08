@@ -203,7 +203,7 @@ def create_formatted_signal(
         >>> from bootstack.signals import Signal
         >>> price = Signal(1234.56)
         >>> formatted, formatter = create_formatted_signal(price, "currency")
-        >>> # formatted.get() returns locale-formatted currency string
+        >>> # formatted() returns locale-formatted currency string
     """
     from bootstack.signals import Signal
 
