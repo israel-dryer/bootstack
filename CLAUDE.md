@@ -84,15 +84,25 @@ memories (see them for rationale and gotchas).
   `_core/paths.py` (`user_config_dir`/`app_config_dir`/`app_config_file`), which
   also now backs `App._state_file_path` (window-state) — single config-dir
   convention. Tests `tests/test_store.py`; docs `reference/store.rst` (with a
-  remember-the-theme recipe). **Decided standalone-first** (pre-release): the
-  `App(remember_theme=True)` sugar is a queued fast-follow, NOT built yet; did
-  NOT refactor window-state to route through Store (only shared the path helper).
+  remember-the-theme recipe). `bs.Store` ships standalone; the App-side
+  persistence integration is deferred to the settings-flattening work below (do
+  NOT add a one-off `remember_theme`/`app.store`). Did NOT refactor window-state
+  to route through Store (only shared the path helper).
 
 ## Next up — candidates (pick one)
 
-- **`App(remember_theme=True)`** — promote the store.rst theme-persistence recipe
-  into a built-in flag, mirroring `remember_window_state` (the queued Store
-  fast-follow).
+- **Flatten `AppSettings` into the `App` constructor** (DESIGN DECIDED 2026-06-07,
+  not started; memory `project_app_settings_flattening`) — config is split-brain
+  today (`title`/`size`/`theme` are top-level kwargs but `locale`/`window_style`/
+  `remember_*` only via `settings={...}`). Promote settings fields to direct
+  `App(...)` keyword args as the single config path; keep `AppSettings` as an
+  INTERNAL resolved-config holder (runs the locale derivation) + a read accessor
+  `app.settings`; drop the public `settings=` input (pre-release, no shims — touch
+  `AppShell` + examples). `remember_window_state` and a NEW `remember_theme`
+  become plain flat kwargs here (this is the agreed home for `remember_theme` —
+  NOT a standalone PR). `bs.Store` stays the separate persistence layer. Riskiest
+  change (central constructor) → its own focused PR. Open choices: promote all
+  fields vs common-first; keep `app.settings` read accessor (lean yes).
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 
