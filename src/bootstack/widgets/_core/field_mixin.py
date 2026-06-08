@@ -64,8 +64,9 @@ class FieldAddonMixin:
             **kwargs: Rule-specific options:
 
                 - ``message`` *(all rules)* — override the default error message.
-                - ``trigger`` *(all rules)* — when to run: ``'blur'`` (default),
-                  ``'key'``, or ``'manual'``.
+                - ``trigger`` *(all rules)* — when to run: ``'always'`` (key and
+                  blur), ``'key'``, ``'blur'``, or ``'manual'``. Each rule type
+                  has its own sensible default (see the Validation reference).
                 - ``min``, ``max`` *(stringLength)* — minimum/maximum character count.
                 - ``pattern`` *(pattern)* — regex string the value must match.
                 - ``other_field`` *(compare)* — field whose value must match.

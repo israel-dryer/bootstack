@@ -546,7 +546,7 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.datatable.Table
+.. autoclass:: bootstack.widgets.datatable.DataTable
    :members:
    :undoc-members:
 

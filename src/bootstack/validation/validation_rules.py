@@ -9,16 +9,17 @@ class ValidationRule:
     """A single validation rule that can be applied to a string value.
 
     Supports the built-in rule types `'required'`, `'email'`,
-    `'stringLength'`, `'pattern'`, and `'custom'`, and carries a trigger
-    policy that controls when the rule is evaluated.
+    `'stringLength'`, `'pattern'`, `'compare'`, and `'custom'`, and carries a
+    trigger policy that controls when the rule is evaluated.
 
     Attributes:
         type (RuleType): The validation rule type.
         message (str): Custom error message; if empty a default is generated.
-        trigger (RuleTriggerType): When the rule fires — `'always'`, `'blur'`, or `'manual'`.
+        trigger (RuleTriggerType): When the rule fires — `'always'`, `'key'`,
+            `'blur'`, or `'manual'`.
         params (dict): Additional parameters specific to the rule type
             (e.g., `min`/`max` for `'stringLength'`, `pattern` for `'pattern'`,
-            `func` for `'custom'`).
+            `other_field` for `'compare'`, `func` for `'custom'`).
     """
 
     def __init__(
@@ -74,12 +75,36 @@ class ValidationRule:
             pattern = self.params.get("pattern", "")
             if not re.match(pattern, value):
                 return ValidationResult(False, msg)
+        elif self.type == "compare":
+            if value != self._read_other(self.params.get("other_field")):
+                return ValidationResult(False, msg)
         elif self.type == "custom":
             func: Callable[[str], bool] = self.params.get("func")
             if func and not func(value):
                 return ValidationResult(False, msg)
 
         return ValidationResult(True)
+
+    @staticmethod
+    def _read_other(other: object) -> object:
+        """Resolve the current value of a `'compare'` rule's `other_field`.
+
+        Accepts a `Signal` or any zero-argument callable (called to read), a
+        field wrapper exposing a `value` property, or a plain literal value.
+
+        Args:
+            other: The `other_field` parameter passed to the rule.
+
+        Returns:
+            The other field's current value, or `None` if `other` is `None`.
+        """
+        if other is None:
+            return None
+        if callable(other):
+            return other()
+        if hasattr(other, "value"):
+            return other.value
+        return other
 
     def _default_message(self) -> str:
         """Return a sensible default error message for this rule type."""
@@ -95,6 +120,8 @@ class ValidationRule:
             return f"Enter between {min_len} and {max_len} characters."
         elif self.type == "pattern":
             return "Value does not match the required pattern."
+        elif self.type == "compare":
+            return "Values do not match."
         elif self.type == "custom":
             return "Invalid value."
         return "Invalid input."
@@ -103,7 +130,7 @@ class ValidationRule:
         """Return the default trigger policy for this rule type."""
         if self.type == "required":
             return "always"
-        elif self.type in {"stringLength"}:
+        elif self.type in {"stringLength", "compare"}:
             return "blur"
         elif self.type in {"email", "pattern"}:
             return "always"
