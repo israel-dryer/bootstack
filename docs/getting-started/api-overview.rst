@@ -1,27 +1,37 @@
 API Overview
 ============
 
-Where to find things in the public API. Widgets and the pieces you build a UI
-from are at the top level (``import bootstack as bs``); the framework primitives
-live in submodules you import directly.
+This page maps the public API — where each piece lives.
+
+The widgets and other building blocks of a UI are available at the top level.
+Import the package once as ``import bootstack as bs`` and use them as
+``bs.Button`` or ``bs.App``. The framework primitives — data sources, themes,
+validation, and the like — live in dedicated submodules.
 
 Top level
 ---------
 
-Available as ``bs.<name>`` after ``import bootstack as bs``:
+.. list-table::
+   :header-rows: 1
+   :widths: 34 66
 
-- **Widgets** — the whole set: buttons, inputs, tables, trees, layout,
-  navigation, overlays, and forms (see :doc:`/widgets/index`).
-- **Application** — ``App``, ``AppShell``, ``Window``.
-- **State** — ``Signal``, the reactive value behind two-way binding.
-- **Dialogs** — the one-shot helpers ``alert``, ``confirm``, the ``ask_*``
-  family, and ``toast``.
-- **Theme switching** — ``set_theme`` and ``toggle_theme``.
+   * - Group
+     - Includes
+   * - Widgets
+     - Every widget — buttons, inputs, tables, trees, layout, navigation,
+       overlays, and forms (see :doc:`/widgets/index`)
+   * - Application
+     - ``App``, ``AppShell``, ``Window``
+   * - State
+     - ``Signal``, the reactive value behind two-way binding
+   * - Dialogs
+     - The one-shot helpers ``alert``, ``confirm``, the ``ask_*`` family, and
+       ``toast``
+   * - Theme switching
+     - ``set_theme`` and ``toggle_theme``
 
 Submodules
 ----------
-
-Import these directly, e.g. ``from bootstack.data import SqliteDataSource``:
 
 .. list-table::
    :header-rows: 1
