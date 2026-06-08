@@ -1,18 +1,17 @@
 Validation
 ==========
 
-Input fields can validate what the user types against a set of rules. A rule has
-a type (``'required'``, ``'email'``, …), an optional message, and a trigger that
-decides when it runs. Rules report a :class:`ValidationResult
-<bootstack.validation.ValidationResult>`, and the field emits ``valid`` /
-``invalid`` events you can listen to.
+Input fields can check what the user types against a set of rules. A rule has a
+type (``'required'``, ``'email'``, …), an optional custom message, and a
+*trigger* that decides when it runs. Rules run in the order you add them and stop
+at the first failure, and the field emits ``valid`` / ``invalid`` events you can
+listen to. The same rule engine also works standalone, with no widget attached.
 
 Adding rules to a field
 -----------------------
 
-Call ``add_validation_rule()`` on a field with a rule type and its options.
-Rules run on blur (or as you type, depending on the rule) and stop at the first
-failure:
+Call ``add_validation_rule()`` on a field with a rule type and its options. Add
+as many as you like — they are checked in order, and the first failure wins:
 
 .. code-block:: python
 
@@ -23,52 +22,183 @@ failure:
    name = bs.TextField(label="Name")
    name.add_validation_rule("stringLength", min=2, max=50)
 
-Built-in rule types and their options:
+Built-in rule types
+-------------------
 
-- ``'required'`` — value must not be empty.
-- ``'email'`` — value must look like an email address.
-- ``'stringLength'`` — ``min`` / ``max`` character count.
-- ``'pattern'`` — ``pattern`` regex the value must match.
-- ``'compare'`` — ``other_field`` whose value must match (e.g. confirm-password).
-- ``'custom'`` — ``func`` callable ``(value: str) -> bool``.
+.. list-table::
+   :header-rows: 1
+   :widths: 18 42 40
 
-All rules accept ``message`` (override the default text) and ``trigger``
-(``'blur'`` default, ``'key'``, or ``'manual'``).
+   * - Type
+     - Options
+     - Checks that the value…
+   * - ``'required'``
+     - —
+     - is not empty or whitespace.
+   * - ``'email'``
+     - —
+     - looks like an email address.
+   * - ``'stringLength'``
+     - ``min``, ``max``
+     - has a length within the given bounds.
+   * - ``'pattern'``
+     - ``pattern`` (regex)
+     - matches the regular expression.
+   * - ``'compare'``
+     - ``other_field``
+     - equals another field's value (confirm-password, etc.).
+   * - ``'custom'``
+     - ``func`` — ``(value) -> bool``
+     - satisfies your own predicate.
+
+Every rule also accepts ``message`` (override the default text) and ``trigger``
+(see below).
+
+Custom rules
+~~~~~~~~~~~~
+
+A ``'custom'`` rule runs any predicate that takes the value and returns a bool.
+Pair it with a ``message`` so the user knows what went wrong:
+
+.. code-block:: python
+
+   code = bs.TextField(label="Invite code")
+   code.add_validation_rule(
+       "custom",
+       func=lambda v: v.isdigit() and len(v) == 6,
+       message="The code is 6 digits.",
+   )
+
+Confirming a second field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A ``'compare'`` rule passes only when the value matches ``other_field``. The
+other field can be **another field widget**, a ``Signal``, or any zero-argument
+callable — its value is read fresh each time the rule runs, so it always
+compares against the current text:
+
+.. code-block:: python
+
+   password = bs.PasswordField(label="Password")
+   password.add_validation_rule("stringLength", min=8)
+
+   confirm = bs.PasswordField(label="Confirm password")
+   confirm.add_validation_rule(
+       "compare",
+       other_field=password,                 # a field widget…
+       message="Passwords don't match.",
+   )
+
+.. code-block:: python
+
+   # …or compare against a Signal / callable instead of a widget
+   pin = bs.Signal("")
+   confirm.add_validation_rule("compare", other_field=pin)
+   confirm.add_validation_rule("compare", other_field=lambda: expected_value())
+
+When does a rule run?
+---------------------
+
+The ``trigger`` controls *when* a rule fires during normal typing. Each rule type
+has a sensible default, which you can override per rule:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 82
+
+   * - Trigger
+     - Runs…
+   * - ``'always'``
+     - as the user types **and** when the field loses focus. Default for
+       ``'required'``, ``'email'``, ``'pattern'``.
+   * - ``'key'``
+     - only as the user types.
+   * - ``'blur'``
+     - only when the field loses focus. Default for ``'stringLength'`` and
+       ``'compare'`` — they read better once the user has finished a field.
+   * - ``'manual'``
+     - never automatically — only when you call ``validate()`` yourself.
+       Default for ``'custom'``.
+
+Auto-validation is debounced, so a fast typist doesn't trigger a check on every
+keystroke. Override the trigger when the default doesn't fit — for example, to
+check a length rule live:
+
+.. code-block:: python
+
+   name.add_validation_rule("stringLength", min=2, max=50, trigger="always")
 
 Reacting to validation
 ----------------------
 
-Run all rules on demand with ``validate()`` (returns ``True`` if every rule
-passes). Listen for outcomes with ``on_valid`` / ``on_invalid`` — both receive a
-:class:`ValidationEvent <bootstack.events.ValidationEvent>` carrying the
-``value``, ``is_valid``, and ``message``:
+Run every rule on demand with ``validate()`` (regardless of trigger); it returns
+``True`` when they all pass. Listen for outcomes with ``on_valid`` /
+``on_invalid`` — both receive a :class:`ValidationEvent
+<bootstack.events.ValidationEvent>` carrying ``value``, ``is_valid``, and
+``message``:
 
 .. code-block:: python
 
-   email.on_invalid(lambda e: print("nope:", e.message))
-   email.on_valid(lambda e: print("ok:", e.value))
+   status = bs.Label("", accent="danger")
 
-   if email.validate():
+   def show(e):
+       status.text = e.message      # "" when valid
+
+   email.on_invalid(show)
+   email.on_valid(show)
+
+   if email.validate():             # runs every rule, returns True if all pass
        submit()
+
+Validating a whole form before submit
+-------------------------------------
+
+A common pattern is to gate a submit button on every field passing. ``validate()``
+runs all rules and surfaces the messages through the fields' own events, so the
+guard itself stays short:
+
+.. code-block:: python
+
+   fields = [email, password, confirm]
+
+   def on_submit():
+       if all(f.validate() for f in fields):   # each shows its own error
+           save(email.value, password.value)
+
+   bs.Button("Create account", on_click=on_submit)
+
+Because ``all()`` short-circuits, call ``validate()`` on each field in a list
+comprehension first if you want *every* field to display its error at once:
+
+.. code-block:: python
+
+   results = [f.validate() for f in fields]   # validate them all
+   if all(results):
+       save(...)
 
 Standalone rules
 ----------------
 
-For validation outside a field, construct a :class:`ValidationRule
-<bootstack.validation.ValidationRule>` and call ``validate()`` directly:
+The rule engine doesn't need a widget. Construct a :class:`ValidationRule
+<bootstack.validation.ValidationRule>` and call ``validate()`` directly — useful
+for checking values from config, a CLI, or a background job:
 
 .. code-block:: python
 
    rule = bs.ValidationRule("stringLength", min=3, max=8)
    result = rule.validate("hi")
    result.is_valid     # False
-   result.message      # the failure text
+   result.message      # "Enter between 3 and 8 characters."
+
+   bs.ValidationRule("email").validate("a@b.co").is_valid       # True
+   bs.ValidationRule("compare", other_field="yes").validate("no").is_valid  # False
 
 See also
 --------
 
 - :doc:`/reference/events` — the ``ValidationEvent`` payload and the ``on_*`` model.
 - :doc:`/widgets/textfield` — the field widget these rules attach to.
+- :doc:`/widgets/formdialog` — collects and validates a set of fields at once.
 
 API reference
 -------------
