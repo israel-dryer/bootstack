@@ -23,17 +23,23 @@ The declarable color theme. Build one in code and install it.
 Theme control
 -------------
 
-Switch and query the active theme, and resolve a color token to a hex value.
+Query the active theme and resolve a color token to a hex value. The two runtime
+switch verbs, ``set_theme`` and ``toggle_theme``, are part of the top-level
+compose surface — see the :doc:`bootstack <bootstack>` page.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
-   set_theme
-   toggle_theme
    get_theme
    get_themes
    get_theme_color
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.set_theme
+   ~bootstack.toggle_theme
 
 Fonts
 -----

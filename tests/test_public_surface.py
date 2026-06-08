@@ -40,7 +40,6 @@ EXPECTED_TOPLEVEL = {
     # inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",
     "TextArea", "CodeEditor", "DateField", "TimeField", "Slider", "RangeSlider",
-    "EditFilter",
     # selection
     "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
@@ -83,7 +82,9 @@ MOVED = {
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
     ],
-    "bootstack.widgets": ["PublicWidgetBase", "PublicContainer"],
+    # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
+    # stays importable here for power users. See project_editfilter_public_api.
+    "bootstack.widgets": ["PublicWidgetBase", "PublicContainer", "EditFilter"],
     "bootstack.dialogs": [
         "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog",
         "ColorChoice", "FontDialog", "FontChoice", "FilterDialog",

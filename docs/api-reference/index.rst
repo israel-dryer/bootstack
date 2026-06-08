@@ -19,6 +19,7 @@ guides, which cross-link into the pages here. The
 .. toctree::
    :maxdepth: 1
 
+   bootstack
    data
    style
    events

@@ -480,6 +480,12 @@ adopt callable-setter `signal(x)`.
   to unify to a cancelable handle (memory `project_signal_subscribe_subscription`).
   Gotcha: `events.Subscription` is Tk-binding-specific, so this needs a shared
   cancelable-handle abstraction, not a direct reuse. Own branch, not the docs sweep.
+- `EditFilter` (CodeEditor/TextArea edit-interception hook) was DEMOTED from
+  top-level `__all__` in Stage 4 — it is Tk-coupled (raw Tk text indices/tags),
+  undocumented, and all real subclasses are internal. Flagged to investigate a
+  real, de-Tkinter-ed CodeEditor extension/plugin API before any re-promotion
+  (memory `project_editfilter_public_api`; `NOTE(editfilter-public-api)` in
+  `widgets/_impl/composites/textarea/filter.py`).
 
 ---
 

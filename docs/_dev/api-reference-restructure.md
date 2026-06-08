@@ -302,10 +302,29 @@ Recommendation: promote the compose-surface config types (`ColumnSpec` and any
 siblings the audit turns up). Settle each case in Stage 4, not before. Keep
 `tests/test_public_surface.py` in lockstep with whatever is promoted.
 
-Also-flagged, same bucket: **`EditFilter`** and **`EditorType`** are both in the
-top-level `__all__` but have no natural widget category (both are
-DataTable/filter companions). The audit must decide whether they are genuine
-compose-surface (place them, likely near DataTable) or should be demoted.
+Also-flagged, same bucket: **`EditFilter`** and **`EditorType`** were both in the
+top-level `__all__`.
+
+**RESOLVED (2026-06-08, with the maintainer) — investigation showed they are NOT a
+coherent group:**
+- **`EditorType`** (`Literal[...]` of editor names, defined in
+  `_impl/composites/form.py`) is a genuine Form/DataTable **config** type →
+  **MOVE to `bootstack.types`** (off top-level), alongside the promoted
+  **`ColumnSpec`**. Both are lightweight (a `TypedDict` / a `Literal`) so their
+  DEFINITIONS move to `bootstack/widgets/types.py` (the low-level home `types.py`
+  already re-exports from — importing the heavy `datatable`/`form` modules into
+  `types.py` would risk a circular import); `datatable.py` / `form.py` then import
+  them from there, and `bootstack.types` re-exports both in its `__all__`.
+  **DONE WITH THE DATA-DISPLAY widget batch** (coupled to the datatable guide
+  conversion + the top-level Data Display category).
+- **`EditFilter`** is NOT DataTable — it is a Tk-coupled **CodeEditor/TextArea
+  edit-interception hook** (IDLE Delegator/Percolator base class; subclasses work
+  in raw Tk text indices/tags; all real subclasses internal; no narrative docs).
+  **DEMOTED from top-level `__all__`** (DONE — kept importable from
+  `bootstack.widgets`; not in the curated reference). Flagged for a future
+  de-Tkinter-ed CodeEditor plugin API — memory `project_editfilter_public_api`,
+  `NOTE(editfilter-public-api)` in the source. `tests/test_public_surface.py`
+  updated (EditFilter → `MOVED["bootstack.widgets"]`).
 
 ### Re-exports: shallowest path wins (the "one home" rule for duplicated names)
 
