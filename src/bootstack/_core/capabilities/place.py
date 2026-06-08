@@ -29,7 +29,7 @@ class PlaceKwargs(TypedDict, total=False):
     anchor: str
     """Which point of the widget is placed at (x, y)/(relx, rely) (e.g., `'nw'`, `'center'`, `'se'`). Defaults to `'nw'`."""
     bordermode: str
-    """How x/y are interpreted relative to container borders: `'inside'`, `'outside'`, or `'ignore'`."""
+    """How x/y are interpreted relative to container borders — `'inside'`, `'outside'`, or `'ignore'`."""
     in_: Any
     """Parent widget to place into (rarely needed — defaults to the widget's own master)."""
 

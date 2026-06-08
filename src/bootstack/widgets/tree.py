@@ -255,7 +255,7 @@ class Tree(PublicWidgetBase):
         """The top-level nodes, in order.
 
         Useful for reaching handles after declarative construction
-        (`Tree(nodes=...)`), which otherwise returns no `TreeNode`s.
+        (`Tree(nodes=...)`), which otherwise returns no `TreeNode` handles.
         """
         return list(self._internal.roots)
 

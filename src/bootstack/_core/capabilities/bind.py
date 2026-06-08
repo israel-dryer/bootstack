@@ -32,7 +32,7 @@ class EventGenerateKwargs(TypedDict, total=False):
     keysym: str
     """Key symbol name for keyboard events (e.g., `'Return'`, `'Escape'`, `'a'`)."""
     button: int
-    """Mouse button number: 1=left, 2=middle, 3=right."""
+    """Mouse button number — 1=left, 2=middle, 3=right."""
     delta: int
     """Scroll wheel delta (positive = up, negative = down)."""
     width: int
@@ -40,7 +40,7 @@ class EventGenerateKwargs(TypedDict, total=False):
     height: int
     """Height value for Configure events."""
     when: str
-    """When to deliver the event: `'now'`, `'tail'`, `'mark'`, or `'head'`. Defaults to `'tail'`."""
+    """When to deliver the event — `'now'`, `'tail'`, `'mark'`, or `'head'`. Defaults to `'tail'`."""
 
 
 class BindingsMixin:

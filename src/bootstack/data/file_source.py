@@ -38,7 +38,7 @@ import tempfile
 import weakref
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator, List, Literal, Optional
+from typing import Any, Callable, Dict, Iterator, List, Literal, Optional, Type
 
 from bootstack.data.sqlite_source import SqliteDataSource
 from bootstack.data.types import Record
@@ -67,31 +67,6 @@ def _cleanup_temp_store(conn: "sqlite3.Connection", path: str) -> None:
 class FileSourceConfig:
     """Configuration for file parsing and the per-record transformation pipeline.
 
-    Attributes:
-        file_format: Format override; auto-detected from the extension if 'auto'.
-        encoding: Character encoding for reading the file.
-        delimiter: Field separator (None = auto: ',' for CSV, tab for TSV).
-        quotechar: Quote character for fields containing the delimiter.
-        skip_rows: Number of leading rows to skip before the header (CSV/TSV).
-        header_row: Row index containing column names (None = no header).
-        has_header: Whether the first row contains column names.
-        json_lines: True for line-delimited JSON (JSONL/NDJSON).
-        json_records_key: Key whose value is the records list in a JSON object
-            (e.g. "data" for {"data": [...]}); None = a top-level array, or the
-            object itself as one record.
-        xml_record_tag: Element tag that marks one record (None = direct children of the root).
-        hdf5_key: Dataset/table key to read from an HDF5 file (None = the first key).
-        column_renames: Map {old_name: new_name} for renaming columns.
-        column_types: Map {column: type} for type conversions.
-        column_transforms: Map {column: func} for custom transformations.
-        columns_to_load: List of columns to keep (None = all columns).
-        default_values: Map {column: value} for missing/null values.
-        row_filter: Function(row_dict) -> bool to filter rows during load.
-        row_transform: Function(row_dict) -> row_dict for row-level transforms.
-        chunk_size: Rows ingested per batch (bounds memory during load).
-        progress_callback: Function(count) called after each ingested chunk with
-            the running total of rows loaded so far.
-
     Example:
         .. code-block:: python
 
@@ -99,31 +74,72 @@ class FileSourceConfig:
                 column_renames={'emp_id': 'id'},
                 column_types={'age': int},
             )
-
     """
 
     file_format: Literal[
         'auto', 'csv', 'tsv', 'json', 'jsonl', 'ndjson', 'xml', 'parquet', 'feather', 'hdf5'
     ] = 'auto'
+    """Format override; auto-detected from the extension when `'auto'`."""
+
     encoding: str = 'utf-8'
+    """Character encoding for reading the file."""
+
     delimiter: Optional[str] = None
+    """Field separator. `None` auto-selects `','` for CSV and a tab for TSV."""
+
     quotechar: str = '"'
+    """Quote character for fields containing the delimiter."""
+
     skip_rows: int = 0
+    """Number of leading rows to skip before the header (CSV/TSV)."""
+
     header_row: Optional[int] = 0
+    """Row index containing column names (`None` = no header)."""
+
     has_header: bool = True
+    """Whether the first row contains column names."""
+
     json_lines: bool = False
+    """`True` for line-delimited JSON (JSONL/NDJSON)."""
+
     json_records_key: Optional[str] = None
+    """Key whose value is the records list in a JSON object (e.g. `'data'` for
+    `{'data': [...]}`); `None` = a top-level array, or the object itself as one
+    record."""
+
     xml_record_tag: Optional[str] = None
+    """Element tag that marks one record (`None` = direct children of the root)."""
+
     hdf5_key: Optional[str] = None
+    """Dataset/table key to read from an HDF5 file (`None` = the first key)."""
+
     column_renames: Optional[Dict[str, str]] = None
-    column_types: Optional[Dict[str, type]] = None
+    """Mapping from each existing column name to its replacement."""
+
+    column_types: Optional[Dict[str, Type]] = None
+    """Mapping from a column name to the target type to convert its values to."""
+
     column_transforms: Optional[Dict[str, Callable[[Any], Any]]] = None
+    """Mapping from a column name to a transform applied to its values."""
+
     columns_to_load: Optional[List[str]] = None
+    """List of columns to keep (`None` = all columns)."""
+
     default_values: Optional[Dict[str, Any]] = None
+    """Mapping from a column name to a fill value for missing or null entries."""
+
     row_filter: Optional[Callable[[Dict[str, Any]], bool]] = None
+    """Function `(row_dict) -> bool` to filter rows during load."""
+
     row_transform: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+    """Function `(row_dict) -> row_dict` for row-level transforms."""
+
     chunk_size: int = 10_000
+    """Rows ingested per batch (bounds memory during load)."""
+
     progress_callback: Optional[Callable[[int], None]] = None
+    """Function `(count)` called after each ingested chunk with the running total
+    of rows loaded so far."""
 
 
 class FileDataSource(SqliteDataSource):

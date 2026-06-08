@@ -76,7 +76,7 @@ MOVED = {
         "DuplicateIdError", "SerializationError",
     ],
     "bootstack.style": [
-        "Theme", "get_style", "get_theme", "get_theme_color", "get_themes",
+        "Theme", "get_theme", "get_theme_color", "get_themes",
         "get_font_families", "set_font_family", "update_font_token",
     ],
     "bootstack.types": [
@@ -125,3 +125,10 @@ def test_demoted_helpers_not_public():
     for name in ("Image", "get_current_app", "IntlFormatter", "MessageCatalog"):
         assert name not in bs.__all__
         assert not hasattr(bs, name)
+
+
+def test_internal_style_accessors_not_public():
+    """The Tk-leaking engine accessors stay out of the public style surface."""
+    import bootstack.style as style
+    for name in ("get_style", "get_style_builder", "get_theme_provider"):
+        assert name not in style.__all__, f"{name} should not be public in bootstack.style"

@@ -48,9 +48,6 @@ class DataSourceProtocol(Protocol):
         - CSV export capabilities
         - Direct index-based data access
 
-    Attributes:
-        page_size: Number of records per page
-
     Notes:
         - Records are represented as Dict[str, Any] with at least 'id' and 'selected' fields
         - Filtering and sorting are expressed with the `col` expression API, not SQL
@@ -59,6 +56,7 @@ class DataSourceProtocol(Protocol):
 
     # public attrs
     page_size: int
+    """Number of records per page."""
 
     # ---------- data & view config ----------
     def load(self, records: Sequence[Primitive] | Sequence[Mapping[str, Any]]) -> DataSourceProtocol:

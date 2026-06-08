@@ -43,7 +43,7 @@ from bootstack.data.readers import (
     register_reader,
     read_records,
     get_reader,
-    supported_extensions,
+    supported_read_extensions,
 )
 from bootstack.data.writers import (
     register_writer,
@@ -70,7 +70,7 @@ __all__ = [
     'register_reader',
     'read_records',
     'get_reader',
-    'supported_extensions',
+    'supported_read_extensions',
     'register_writer',
     'write_records',
     'get_writer',

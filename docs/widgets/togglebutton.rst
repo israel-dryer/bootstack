@@ -74,7 +74,7 @@ activation without needing a separate inactive icon.
 
 .. code-block:: python
 
-kt   bs.ToggleButton("Favorite", on_icon="star-fill", off_icon="star",
+   bs.ToggleButton("Favorite", on_icon="star-fill", off_icon="star",
                    accent="warning", value=True)
    bs.ToggleButton("Favorite", on_icon="star-fill", off_icon="star",
                    accent="warning", value=False)

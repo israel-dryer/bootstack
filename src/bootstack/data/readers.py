@@ -81,8 +81,8 @@ def register_reader(*extensions: str, reader: Optional[Reader] = None):
     return _apply(reader) if reader is not None else _apply
 
 
-def supported_extensions() -> List[str]:
-    """Return the sorted list of registered file extensions."""
+def supported_read_extensions() -> List[str]:
+    """Return the sorted list of registered readable file extensions."""
     return sorted(_READERS)
 
 
@@ -105,7 +105,7 @@ def get_reader(path_or_ext: "str | Path") -> Reader:
     except KeyError:
         raise ValueError(
             f"No reader registered for {ext!r}. Supported formats: "
-            f"{', '.join(supported_extensions())}."
+            f"{', '.join(supported_read_extensions())}."
         ) from None
 
 
