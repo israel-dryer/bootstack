@@ -280,8 +280,12 @@ class IntlFormatter:
             # Build a currency pattern with required precision; symbol first is a sane default
             p = max(0, int(prec))
             frac = "" if p == 0 else ("." + "0" * p)
-            currency_pattern = f"\\u00A4#,##0{frac}"
-            return format_currency(x, curr, format=currency_pattern, locale=self.locale)
+            currency_pattern = f"¤#,##0{frac}"   # ¤ is the CLDR currency placeholder
+            # currency_digits=False so the explicit precision wins over the
+            # currency's standard digit count (Babel forces the latter otherwise).
+            return format_currency(
+                x, curr, format=currency_pattern, locale=self.locale, currency_digits=False
+            )
 
         if opt["type"] == "exponential":
             return format_scientific(x, locale=self.locale)
@@ -408,22 +412,22 @@ class IntlFormatter:
         opt = self._normalize_date_spec(spec)
         t = opt["type"]
         if t == "custom": return format_date(d, format=opt["pattern"], locale=self.locale)
-        if t == "longDate": return format_date(d, "long", self.locale)
-        if t == "shortDate": return format_date(d, "short", self.locale)
-        if t == "monthAndDay": return format_date(d, "MMMM d", self.locale)
-        if t == "monthAndYear": return format_date(d, "MMMM y", self.locale)
-        if t == "quarterAndYear": return format_date(d, "QQQ y", self.locale)
-        if t == "day": return format_date(d, "d", self.locale)
-        if t == "dayOfWeek": return format_date(d, "EEEE", self.locale)
-        if t == "month": return format_date(d, "MMMM", self.locale)
-        if t == "quarter": return format_date(d, "QQQ", self.locale)
-        if t == "year": return format_date(d, "y", self.locale)
+        if t == "longDate": return format_date(d, "long", locale=self.locale)
+        if t == "shortDate": return format_date(d, "short", locale=self.locale)
+        if t == "monthAndDay": return format_date(d, "MMMM d", locale=self.locale)
+        if t == "monthAndYear": return format_date(d, "MMMM y", locale=self.locale)
+        if t == "quarterAndYear": return format_date(d, "QQQ y", locale=self.locale)
+        if t == "day": return format_date(d, "d", locale=self.locale)
+        if t == "dayOfWeek": return format_date(d, "EEEE", locale=self.locale)
+        if t == "month": return format_date(d, "MMMM", locale=self.locale)
+        if t == "quarter": return format_date(d, "QQQ", locale=self.locale)
+        if t == "year": return format_date(d, "y", locale=self.locale)
         if t in ("longTime", "shortTime"):
-            return format_time(time(0, 0), "long" if t == "longTime" else "short", self.locale)
+            return format_time(time(0, 0), "long" if t == "longTime" else "short", locale=self.locale)
         if t in ("longDateLongTime", "shortDateShortTime"):
             return format_datetime(
-                datetime.combine(d, time(0, 0)), "long" if t == "longDateLongTime" else "short", self.locale)
-        return format_date(d, "short", self.locale)
+                datetime.combine(d, time(0, 0)), "long" if t == "longDateLongTime" else "short", locale=self.locale)
+        return format_date(d, "short", locale=self.locale)
 
     def _format_time(self, t: time, spec: LooseSpec) -> str:
         opt = self._normalize_date_spec(spec)
@@ -431,41 +435,41 @@ class IntlFormatter:
         if typ == "custom": return format_time(t, format=opt["pattern"], locale=self.locale)
         if typ == "longTime": return format_time(t, "long", locale=self.locale)
         if typ == "shortTime": return format_time(t, "short", locale=self.locale)
-        if typ == "hour": return format_time(t, "H", self.locale)
-        if typ == "minute": return format_time(t, "m", self.locale)
-        if typ == "second": return format_time(t, "s", self.locale)
-        if typ == "millisecond": return format_datetime(datetime.combine(date.today(), t), "S", self.locale)
+        if typ == "hour": return format_time(t, "H", locale=self.locale)
+        if typ == "minute": return format_time(t, "m", locale=self.locale)
+        if typ == "second": return format_time(t, "s", locale=self.locale)
+        if typ == "millisecond": return format_datetime(datetime.combine(date.today(), t), "S", locale=self.locale)
         if typ in ("longDate", "shortDate", "monthAndDay", "monthAndYear", "quarterAndYear", "day", "dayOfWeek",
                    "month", "quarter", "year"):
-            return format_time(t, "short", self.locale)
+            return format_time(t, "short", locale=self.locale)
         if typ in ("longDateLongTime", "shortDateShortTime"):
             return format_datetime(
-                datetime.combine(date.today(), t), "long" if typ == "longDateLongTime" else "short", self.locale)
-        return format_time(t, "short", self.locale)
+                datetime.combine(date.today(), t), "long" if typ == "longDateLongTime" else "short", locale=self.locale)
+        return format_time(t, "short", locale=self.locale)
 
     def _format_datetime(self, dt: datetime, spec: LooseSpec) -> str:
         opt = self._normalize_date_spec(spec)
         typ = opt["type"]
         if typ == "custom": return format_datetime(dt, format=opt["pattern"], locale=self.locale)
-        if typ == "longDateLongTime": return format_datetime(dt, "long", self.locale)
-        if typ == "shortDateShortTime": return format_datetime(dt, "short", self.locale)
-        if typ == "longDate": return format_date(dt.date(), "long", self.locale)
-        if typ == "shortDate": return format_date(dt.date(), "short", self.locale)
+        if typ == "longDateLongTime": return format_datetime(dt, "long", locale=self.locale)
+        if typ == "shortDateShortTime": return format_datetime(dt, "short", locale=self.locale)
+        if typ == "longDate": return format_date(dt.date(), "long", locale=self.locale)
+        if typ == "shortDate": return format_date(dt.date(), "short", locale=self.locale)
         if typ == "longTime": return format_time(dt.time(), "long", locale=self.locale)
         if typ == "shortTime": return format_time(dt.time(), "short", locale=self.locale)
-        if typ == "monthAndDay": return format_date(dt.date(), "MMMM d", self.locale)
-        if typ == "monthAndYear": return format_date(dt.date(), "MMMM y", self.locale)
-        if typ == "quarterAndYear": return format_date(dt.date(), "QQQ y", self.locale)
-        if typ == "millisecond": return format_datetime(dt, "SSS", self.locale)
-        if typ == "second": return format_time(dt.time(), "s", self.locale)
-        if typ == "minute": return format_time(dt.time(), "m", self.locale)
-        if typ == "hour": return format_time(dt.time(), "H", self.locale)
-        if typ == "day": return format_date(dt.date(), "d", self.locale)
-        if typ == "dayOfWeek": return format_date(dt.date(), "EEEE", self.locale)
-        if typ == "month": return format_date(dt.date(), "MMMM", self.locale)
-        if typ == "quarter": return format_date(dt.date(), "QQQ", self.locale)
-        if typ == "year": return format_date(dt.date(), "y", self.locale)
-        return format_datetime(dt, "short", self.locale)
+        if typ == "monthAndDay": return format_date(dt.date(), "MMMM d", locale=self.locale)
+        if typ == "monthAndYear": return format_date(dt.date(), "MMMM y", locale=self.locale)
+        if typ == "quarterAndYear": return format_date(dt.date(), "QQQ y", locale=self.locale)
+        if typ == "millisecond": return format_datetime(dt, "SSS", locale=self.locale)
+        if typ == "second": return format_time(dt.time(), "s", locale=self.locale)
+        if typ == "minute": return format_time(dt.time(), "m", locale=self.locale)
+        if typ == "hour": return format_time(dt.time(), "H", locale=self.locale)
+        if typ == "day": return format_date(dt.date(), "d", locale=self.locale)
+        if typ == "dayOfWeek": return format_date(dt.date(), "EEEE", locale=self.locale)
+        if typ == "month": return format_date(dt.date(), "MMMM", locale=self.locale)
+        if typ == "quarter": return format_date(dt.date(), "QQQ", locale=self.locale)
+        if typ == "year": return format_date(dt.date(), "y", locale=self.locale)
+        return format_datetime(dt, "short", locale=self.locale)
 
     # ---------- Temporal parsing ----------
     def _parse_temporal(self, s: str, spec: LooseSpec) -> Any:
