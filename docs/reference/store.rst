@@ -1,4 +1,4 @@
-Preferences store
+Preferences Store
 =================
 
 ``Store`` is a small, file-backed key-value store for the bits of state an app

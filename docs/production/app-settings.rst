@@ -1,4 +1,4 @@
-App configuration
+App Configuration
 =================
 
 An app is configured entirely through flat constructor keyword arguments, and
