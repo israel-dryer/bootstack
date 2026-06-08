@@ -19,7 +19,7 @@ Filtering and sorting:
 
     .. code-block:: python
 
-        from bootstack import col
+        from bootstack.data import col
 
         ds.where((col("status") == "active") & (col("age") >= 18))
         ds.where(col("name").startswith("John"))

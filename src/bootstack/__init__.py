@@ -10,6 +10,21 @@ Example:
         bs.Label("Hello, world!")
     app.run()
     ```
+
+The top-level ``bootstack`` namespace holds what you *compose a UI* with: every
+widget, ``App``/``AppShell``/``Window``, ``Signal``, the dialog verbs
+(``alert``/``confirm``/``ask_*``/``toast``), and ``set_theme``/``toggle_theme``.
+Framework primitives you reference *by type to configure behavior* live in
+submodules — for example::
+
+    from bootstack.data import SqliteDataSource, col
+    from bootstack.i18n import L, LV
+    from bootstack.validation import ValidationRule
+    from bootstack.style import Theme, get_theme_color
+    from bootstack.events import Event, Subscription
+    from bootstack.types import AccentToken
+
+See the "API overview" in the documentation for the full map.
 """
 from importlib.metadata import version as _pkg_version
 
@@ -24,68 +39,25 @@ _install_autostyle()
 _install_events()
 _install_focus()
 
-# ── Style & theming ───────────────────────────────────────────────────────────
-from bootstack.style import (
-    Theme,
-    get_style, get_theme,
-    set_theme, toggle_theme, get_theme_color, get_themes,
-    get_font_families, set_font_family, update_font_token,
-)
+# ── Reactive state ────────────────────────────────────────────────────────────
+from bootstack.signals import Signal
 
-# ── Signals ───────────────────────────────────────────────────────────────────
-from bootstack.signals import Signal, TraceOperation
+# ── Theme switching (full theming API lives in `bootstack.style`) ─────────────
+from bootstack.style import set_theme, toggle_theme
 
-# ── Preferences store ───────────────────────────────────────────────────────────
-from bootstack.store import Store
-
-# ── Data sources ──────────────────────────────────────────────────────────────
-from bootstack.data import (
-    BaseDataSource, MemoryDataSource, SqliteDataSource,
-    FileDataSource, FileSourceConfig, DataSourceProtocol, Record, Primitive,
-    col, any_of, all_of,
-)
-
-# ── Internationalization ──────────────────────────────────────────────────────
-from bootstack.i18n import MessageCatalog, L, LV, IntlFormatter
-
-# ── Validation ────────────────────────────────────────────────────────────────
-from bootstack.validation import ValidationRule, ValidationResult
-
-# ── Utilities ─────────────────────────────────────────────────────────────────
-from bootstack._core.images import Image
-from bootstack._runtime.app import get_current_app
-from bootstack.shortcuts import Shortcuts, Shortcut, get_shortcuts
-
-# ── Widget type aliases ───────────────────────────────────────────────────────
-from bootstack.widgets.types import (
-    BaseWidgetKwargs, StyledKwargs,
-    Anchor, BorderMode, CompoundMode, Direction,
-    Fill, Justify, Orient, Relief, Side, Sticky,
-    WidgetState, WidgetDensity,
-    AccentToken, VariantToken, SurfaceToken,
-)
-
-# ── Public widget layer ───────────────────────────────────────────────────────
-from bootstack.errors import BootstackError, UnknownEventError, ParentResolutionError, DuplicateIdError, SerializationError
-# The typed event payloads (ChangeEvent, SliderEvent, …) live in the
-# `bootstack.events` catalog — import them from there, not the top level.
-from bootstack.events import Event, Subscription
-from bootstack.scheduling import Schedule, Job
-from bootstack.streams import Stream, Handle
-from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.container import PublicContainer
+# ── Dialog verbs (dialog classes live in `bootstack.widgets.dialogs`) ─────────
 from bootstack.widgets.dialogs import (
     alert, confirm, ask_string, ask_integer, ask_float,
     ask_date, ask_date_range, ask_item,
     ask_color, ask_font, ask_filter,
-    FormDialog, Dialog, DialogButton,
-    ColorChooserDialog, ColorChoice,
-    FontDialog, FontChoice,
-    FilterDialog,
 )
+
+# ── Application & windows ─────────────────────────────────────────────────────
 from bootstack.widgets.app import App
 from bootstack.widgets.appshell import AppShell
 from bootstack.widgets.window import Window
+
+# ── Public widget layer ───────────────────────────────────────────────────────
 from bootstack.widgets.stacks import HStack, VStack
 from bootstack.widgets.grid import Grid
 from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
@@ -138,44 +110,19 @@ from bootstack.widgets.sidenav import (
 
 
 # ── Public API surface ────────────────────────────────────────────────────────
-# The curated set of names that make up the public `bootstack` namespace.
+# The curated top-level namespace: things you compose a UI with. Framework
+# primitives (data, i18n, validation, events, streams, scheduling, shortcuts,
+# style, errors, store, types) live in their own submodules — see the docs'
+# "API overview". This list is kept in sync with tests/test_public_surface.py.
 __all__ = [
     "__version__",
-    # Style & theming
-    "Theme",
-    "get_style", "get_theme", "set_theme", "toggle_theme",
-    "get_theme_color", "get_themes",
-    "get_font_families", "set_font_family", "update_font_token",
-    # Signals
-    "Signal", "TraceOperation",
-    # Preferences store
-    "Store",
-    # Data sources
-    "BaseDataSource", "MemoryDataSource", "SqliteDataSource", "FileDataSource",
-    "FileSourceConfig", "DataSourceProtocol", "Record", "Primitive",
-    "col", "any_of", "all_of",
-    # Internationalization
-    "MessageCatalog", "L", "LV", "IntlFormatter",
-    # Validation
-    "ValidationRule", "ValidationResult",
-    # Events, streams, scheduling, errors
-    "Event", "Subscription", "Stream", "Handle", "Schedule", "Job",
-    "BootstackError", "UnknownEventError", "ParentResolutionError", "DuplicateIdError",
-    "SerializationError",
-    # App, shortcuts, images
-    "get_current_app",
-    "Shortcuts", "Shortcut", "get_shortcuts", "Image",
-    # Type aliases
-    "BaseWidgetKwargs", "StyledKwargs", "Anchor", "BorderMode", "CompoundMode",
-    "Direction", "Fill", "Justify", "Orient", "Relief", "Side", "Sticky",
-    "WidgetState", "WidgetDensity", "AccentToken", "VariantToken", "SurfaceToken",
-    # Extension base classes
-    "PublicWidgetBase", "PublicContainer",
-    # Dialogs
+    # Reactive state
+    "Signal",
+    # Theme switching
+    "set_theme", "toggle_theme",
+    # Dialog verbs
     "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
-    "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog", "ColorChoice",
-    "FontDialog", "FontChoice", "FilterDialog",
     # Application & windows
     "App", "AppShell", "Window",
     # Layout

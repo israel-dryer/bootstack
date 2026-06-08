@@ -11,10 +11,11 @@ import pytest
 
 import bootstack as bs
 from bootstack.errors import SerializationError
+from bootstack.store import Store
 
 
 def _store(tmp_path, **kw):
-    return bs.Store(path=tmp_path / "settings.json", **kw)
+    return Store(path=tmp_path / "settings.json", **kw)
 
 
 def test_set_get_roundtrip_and_persists(tmp_path):
@@ -108,30 +109,30 @@ def test_non_string_key_raises(tmp_path):
 
 
 def test_missing_file_starts_empty(tmp_path):
-    s = bs.Store(path=tmp_path / "does_not_exist.json")
+    s = Store(path=tmp_path / "does_not_exist.json")
     assert s.as_dict() == {}
 
 
 def test_corrupt_file_starts_empty(tmp_path):
     p = tmp_path / "settings.json"
     p.write_text("{not valid json", encoding="utf-8")
-    s = bs.Store(path=p)
+    s = Store(path=p)
     assert s.as_dict() == {}
 
 
 def test_autosave_false_defers_until_save(tmp_path):
     p = tmp_path / "settings.json"
-    s = bs.Store(path=p, autosave=False)
+    s = Store(path=p, autosave=False)
     s.set("theme", "dark")
     assert not p.exists()                 # nothing written yet
-    assert bs.Store(path=p).as_dict() == {}
+    assert Store(path=p).as_dict() == {}
     s.save()
-    assert bs.Store(path=p).get("theme") == "dark"
+    assert Store(path=p).get("theme") == "dark"
 
 
 def test_reload_picks_up_external_change(tmp_path):
     p = tmp_path / "settings.json"
-    s = bs.Store(path=p)
+    s = Store(path=p)
     s.set("a", 1)
     # Simulate another writer.
     p.write_text(json.dumps({"a": 2}), encoding="utf-8")
@@ -142,7 +143,7 @@ def test_reload_picks_up_external_change(tmp_path):
 
 def test_atomic_write_uses_real_filename(tmp_path):
     p = tmp_path / "settings.json"
-    s = bs.Store(path=p)
+    s = Store(path=p)
     s.set("k", "v")
     assert p.exists()
     assert not (tmp_path / "settings.json.tmp").exists()  # temp cleaned up
@@ -153,7 +154,7 @@ def test_named_store_lands_in_config_dir(tmp_path, monkeypatch):
     import bootstack._core.paths as paths
 
     monkeypatch.setattr(paths, "user_config_dir", lambda: tmp_path)
-    s = bs.Store("prefs", app_name="MyApp")
+    s = Store("prefs", app_name="MyApp")
     s.set("x", 1)
     expected = tmp_path / "MyApp" / "prefs.json"
     assert expected.exists()
@@ -164,5 +165,5 @@ def test_name_without_app_uses_bootstack(tmp_path, monkeypatch):
     import bootstack._core.paths as paths
 
     monkeypatch.setattr(paths, "user_config_dir", lambda: tmp_path)
-    s = bs.Store("prefs")
+    s = Store("prefs")
     assert s.path == tmp_path / "bootstack" / "prefs.json"

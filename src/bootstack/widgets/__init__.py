@@ -47,6 +47,8 @@ _EXPORTS: dict[str, str] = {
     # Forms
     "Form": "form", "FormItem": "form", "FieldItem": "form", "GroupItem": "form",
     "TabsItem": "form", "TabItem": "form", "EditorType": "form",
+    # Extension base classes (for building custom public widgets)
+    "PublicWidgetBase": "_core.base", "PublicContainer": "_core.container",
     # Dialogs
     "alert": "dialogs", "confirm": "dialogs", "ask_string": "dialogs",
     "ask_integer": "dialogs", "ask_float": "dialogs", "ask_date": "dialogs",

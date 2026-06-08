@@ -13,8 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from bootstack import col
-from bootstack.data import FileDataSource, FileSourceConfig
+from bootstack.data import col, FileDataSource, FileSourceConfig
 
 
 def _csv(tmp_path, text="id,name,age\n1,Ada,40\n2,Bob,25\n3,Cy,33\n"):

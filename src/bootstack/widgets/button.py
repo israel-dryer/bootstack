@@ -39,11 +39,10 @@ class Button(PublicWidgetBase):
             meaningful ``text`` anyway for accessibility.
         icon_position: Position of the icon relative to the text. One of
             ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
-        image: A ``bs.Image`` object to display on the button. Load one with
-            ``bs.Image.open()``, ``bs.Image.from_bytes()``, or
-            ``bs.Image.from_pil()``. Use when you need a custom image rather
-            than a Bootstrap Icon. Combine with ``icon_position=`` to control
-            placement relative to the text.
+        image: An image handle to display on the button, for custom artwork
+            rather than a Bootstrap Icon name. Combine with ``icon_position=``
+            to control placement relative to the text. (The public image-handle
+            API is being finalized for an upcoming release.)
         width: Button width in character units. Useful for making a row of
             buttons uniform width (e.g. ``width=10``).
         textsignal: Reactive ``Signal[str]`` bound to the button text.

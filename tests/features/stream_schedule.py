@@ -1,5 +1,6 @@
 """Visual test for Stream and Schedule APIs."""
 import bootstack as bs
+from bootstack.scheduling import Schedule
 from bootstack.signals import Signal
 
 
@@ -18,7 +19,7 @@ with bs.App(title="Stream + Schedule — visual test", minsize=(600, 500), paddi
             with bs.GroupBox("after / idle / interval", fill="x", gap=6):
                 counter = Signal(0)
                 job_ref: list = [None]
-                sched = bs.Schedule(app.tk)
+                sched = Schedule(app.tk)
 
                 def _tick():
                     counter.set(counter() + 1)

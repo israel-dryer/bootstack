@@ -13,8 +13,7 @@ All datasources support:
     - CSV export
 
 Usage:
-    from bootstack.data import MemoryDataSource, SqliteDataSource, FileDataSource
-    from bootstack import col
+    from bootstack.data import MemoryDataSource, SqliteDataSource, FileDataSource, col
 
     # In-memory datasource
     ds = MemoryDataSource(page_size=20)

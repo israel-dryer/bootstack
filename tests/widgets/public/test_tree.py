@@ -12,6 +12,7 @@ from __future__ import annotations
 import pytest
 
 import bootstack as bs
+from bootstack.data import MemoryDataSource, SqliteDataSource
 from bootstack.widgets.tree import TreeNode
 
 
@@ -478,7 +479,7 @@ FLAT_ROWS = [
 
 def _counting_source(rows):
     """A MemoryDataSource that records how many times _query is called."""
-    src = bs.MemoryDataSource()
+    src = MemoryDataSource()
     src.load([dict(r) for r in rows])
     calls = {"n": 0}
     real_query = src._query
@@ -564,7 +565,7 @@ def test_datasource_icon_field_and_node_builder(shown_app):
 
 @pytest.mark.gui
 def test_datasource_missing_label_field_raises(shown_app):
-    src = bs.MemoryDataSource()
+    src = MemoryDataSource()
     src.load([{"id": 1, "parent_id": None, "title": "x"}])
     with pytest.raises(KeyError):
         bs.Tree(data_source=src, parent_field="parent_id")  # default label_field="name"
@@ -592,7 +593,7 @@ def test_datasource_refresh_requeries(shown_app):
 
 @pytest.mark.gui
 def test_datasource_sqlite_backing(shown_app):
-    src = bs.SqliteDataSource()
+    src = SqliteDataSource()
     src.load([dict(r) for r in FLAT_ROWS])
     tree = bs.Tree(data_source=src, parent_field="parent_id", order="name")
     _pump(shown_app)
