@@ -26,9 +26,6 @@ from bootstack._runtime.utility import enable_high_dpi_awareness
 
 _current_app: App | None = None
 
-# Sentinel for "use settings default"
-_USE_SETTINGS = object()
-
 
 def set_current_app(app: App) -> None:
     """Set the process-wide current App instance.
@@ -215,11 +212,14 @@ LocalizeMode = Union[bool, Literal['auto']]
 
 @dataclass
 class AppSettings:
-    """Application-wide settings for bootstack applications.
+    """Internal resolved-configuration holder for an `App`.
 
-    This dataclass holds configuration for theming, localization, and
-    application metadata. It is automatically populated with sensible
-    defaults based on the system locale.
+    This is an INTERNAL detail — it is not part of the public API. Users
+    configure an app through flat `App(...)` constructor kwargs and read or
+    write configuration through `app.*` properties; `App.__init__` assembles
+    those kwargs into one of these instances. It holds configuration for
+    theming, localization, and application metadata, and is automatically
+    populated with sensible locale-based defaults in `__post_init__`.
 
     Attributes:
         app_name: The application name displayed in the title bar.
@@ -270,24 +270,6 @@ class AppSettings:
             directory (Library/Application Support on macOS, %APPDATA% on
             Windows, $XDG_CONFIG_HOME on Linux). The leaf filename includes
             `app_name` so multiple bootstack apps don't collide.
-
-    Examples:
-        ```python
-        # Create app with default settings
-        app = App()
-
-        # Create app with custom settings
-        settings = AppSettings(
-            app_name="My App",
-            theme="dark",
-            locale="de_DE"
-        )
-        app = App(settings=settings)
-
-        # Access settings
-        print(app.settings.locale)  # 'de_DE'
-        print(app.settings.date_format)  # 'd.M.yy'
-        ```
     """
     # information
     app_name: str | None = None
@@ -324,36 +306,6 @@ class AppSettings:
     def __post_init__(self):
         """Populate localization defaults when not explicitly configured."""
         _apply_localization_defaults(self)
-
-
-class AppSettingsKwargs(TypedDict, total=False):
-    app_name: str
-    app_author: str
-    app_version: str
-
-    # theme
-    theme: str
-    light_theme: str
-    dark_theme: str
-    follow_system_appearance: bool
-    available_themes: Sequence[str]
-    inherit_surface_color: bool
-
-    # localization
-    locale: str
-    language: str
-    date_format: str
-    time_format: str
-    number_decimal: str
-    number_thousands: str
-
-    # platform-specific
-    window_style: str | None
-    macos_quit_behavior: str
-
-    # window state persistence
-    remember_window_state: bool
-    state_path: str | None
 
 
 DEFAULT_LOCALE = "en_US"
@@ -446,11 +398,32 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
     def __init__(
             self,
             title: str | None = None,
+            *,
             theme: str | None = None,
             icon: tkinter.PhotoImage | None = None,
 
-            settings: AppSettings | AppSettingsKwargs | None = None,
-            localize: LocalizeMode | None = None,
+            # application identity
+            app_author: str | None = None,
+            app_version: str | None = None,
+
+            # theme
+            light_theme: str = "bootstrap-light",
+            dark_theme: str = "bootstrap-dark",
+            follow_system_appearance: bool = False,
+            available_themes: Sequence[str] = (),
+            inherit_surface_color: bool = True,
+
+            # localization
+            locale: str | None = None,
+            localize_mode: LocalizeMode = "auto",
+
+            # platform
+            window_style: str | None = "mica",
+            macos_quit_behavior: str = "native",
+
+            # window-state persistence
+            remember_window_state: bool = False,
+            state_path: str | None = None,
 
             # window settings
             size: tuple[int, int] | None = None,
@@ -463,7 +436,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             alpha: float = 1.0,
             transient: object | None = None,
             override_redirect: bool = False,
-            window_style: str | None | object = _USE_SETTINGS,
             center_on_screen: bool = True,
             on_close: Callable | None = None,
             **kwargs: Unpack[TkKwargs],
@@ -471,18 +443,39 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         """Initializes the application window.
 
         Args:
-            title: The text to display in the window's title bar. This
-                overrides the `app_name` in `settings` if provided.
-            theme: The name of the theme to use. This overrides the `theme`
-                in `settings` if provided.
+            title: The text to display in the window's title bar, and the
+                application name used for config-directory and taskbar
+                identity. Defaults to `'bootstack'`.
+            theme: The name of the theme to use on startup (e.g.
+                `'bootstrap-dark'`). Defaults to the built-in light theme.
             icon: A PhotoImage or file path used for the window's icon.
                 If None, the default bootstack.png icon is used.
-            settings: A dictionary or `AppSettings` object containing
-                application-wide settings. If not provided, default settings
-                are used.
-            localize: The localization mode for the application. Can be
-                'auto', `True`, or `False`. This overrides the `localize_mode`
-                in `settings`.
+            app_author: Application author. Reserved for config-path use.
+            app_version: Application version string.
+            light_theme: Theme used when following system appearance and the
+                OS is in light mode, and as the light end of `toggle_theme`.
+            dark_theme: Theme used when following system appearance and the
+                OS is in dark mode, and as the dark end of `toggle_theme`.
+            follow_system_appearance: If True, switch between `light_theme`
+                and `dark_theme` to match the OS and track changes at runtime
+                (currently effective on macOS).
+            available_themes: Sequence of theme names to expose to theme
+                pickers. Empty means all registered themes.
+            inherit_surface_color: If True, child widgets inherit the
+                parent's surface color for consistent backgrounds.
+            locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
+                Auto-detected from the system when not given.
+            localize_mode: Controls localization behavior. `'auto'` enables
+                localization based on locale, `True` always enables, `False`
+                disables.
+            window_style: Windows-only effect for all windows (`'mica'`,
+                `'acrylic'`, `'aero'`, `'transparent'`, `'win7'`). Defaults
+                to `'mica'`; set to None to disable.
+            macos_quit_behavior: How close/Cmd+Q behave on macOS, `'native'`
+                (default) or `'classic'`. No-op on Win/Linux.
+            remember_window_state: If True, the window geometry is saved on
+                close and restored on next launch.
+            state_path: Optional override for where window state is stored.
             size: A tuple specifying the window's initial width and height.
             position: A tuple specifying the window's initial x and y
                 coordinates on the screen.
@@ -508,25 +501,30 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
                 underlying `tkinter.Tk` constructor.
         """
         # --- Settings ---------------------------------------------------
-        if settings is None:
-            self.settings = AppSettings()
-        elif isinstance(settings, AppSettings):
-            self.settings = settings
-        else:
-            self.settings = AppSettings(**settings)
+        # Flat constructor kwargs are the single configuration path; they are
+        # assembled into an internal AppSettings holder (which derives locale
+        # formats in __post_init__). There is no public AppSettings / settings=.
+        self.settings = AppSettings(
+            app_name=title,
+            app_author=app_author,
+            app_version=app_version,
+            theme=theme if theme is not None else "light",
+            light_theme=light_theme,
+            dark_theme=dark_theme,
+            follow_system_appearance=follow_system_appearance,
+            available_themes=available_themes,
+            inherit_surface_color=inherit_surface_color,
+            locale=locale,
+            localize_mode=localize_mode,
+            window_style=window_style,
+            macos_quit_behavior=macos_quit_behavior,
+            remember_window_state=remember_window_state,
+            state_path=state_path,
+        )
 
-        # App-level overrides from ctor
-        if theme is not None:
-            self.settings.theme = theme
-        if title is not None:
-            self.settings.app_name = title
-
-        # If app_name is still None, give it a sensible default
+        # If no title/app_name was given, fall back to a sensible default.
         if self.settings.app_name is None:
             self.settings.app_name = "bootstack"
-
-        if localize is not None:
-            self.settings.localize_mode = localize
 
         # --- Window options ---------------------------------------------
         self._size = size
@@ -627,8 +625,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             saved_geometry = self._read_saved_geometry()
 
         # Setup window using BaseWindow
-        # Use window_style from parameter if explicitly provided, otherwise use settings
-        _window_style = self.settings.window_style if window_style is _USE_SETTINGS else window_style
         self._setup_window(
             title=self.settings.app_name,
             size=self._size,
@@ -639,7 +635,7 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             transient=self._transient,
             overrideredirect=self._override_redirect,
             alpha=self._alpha,
-            window_style=_window_style,
+            window_style=self.settings.window_style,
         )
 
         if saved_geometry is not None:

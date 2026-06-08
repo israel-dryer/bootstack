@@ -66,6 +66,18 @@ def test_update_setdefault_clear(tmp_path):
     assert _store(tmp_path).as_dict() == {}  # cleared state persisted
 
 
+def test_update_accepts_kwargs(tmp_path):
+    s = _store(tmp_path)
+    s.update(theme="dark", locale="de_DE")
+    assert s.as_dict() == {"theme": "dark", "locale": "de_DE"}
+    # mapping and kwargs together; kwargs win on conflict
+    s.update({"theme": "light", "extra": 1}, theme="ocean")
+    assert s.get("theme") == "ocean"
+    assert s.get("extra") == 1
+    # persisted
+    assert _store(tmp_path).get("theme") == "ocean"
+
+
 def test_keys_values_items_are_snapshots(tmp_path):
     s = _store(tmp_path)
     s.update({"a": 1, "b": 2})

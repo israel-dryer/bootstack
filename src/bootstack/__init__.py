@@ -53,7 +53,7 @@ from bootstack.validation import ValidationRule, ValidationResult
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 from bootstack._core.images import Image
-from bootstack._runtime.app import AppSettings, get_app_settings, get_current_app
+from bootstack._runtime.app import get_current_app
 from bootstack.shortcuts import Shortcuts, Shortcut, get_shortcuts
 
 # ── Widget type aliases ───────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ __all__ = [
     "BootstackError", "UnknownEventError", "ParentResolutionError", "DuplicateIdError",
     "SerializationError",
     # App, shortcuts, images
-    "AppSettings", "get_app_settings", "get_current_app",
+    "get_current_app",
     "Shortcuts", "Shortcut", "get_shortcuts", "Image",
     # Type aliases
     "BaseWidgetKwargs", "StyledKwargs", "Anchor", "BorderMode", "CompoundMode",

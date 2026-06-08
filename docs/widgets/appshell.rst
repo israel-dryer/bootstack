@@ -145,6 +145,41 @@ Events
    # Stream form
    shell.on_page_change().listen(lambda e: print(shell.current))
 
+Theme, locale, and configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Like :class:`App <bootstack.widgets.app.App>`, an ``AppShell`` is configured
+through flat constructor keyword arguments, and the same options are read and
+changed at runtime through ``shell.*`` properties. Assigning ``shell.theme`` or
+``shell.locale`` takes effect live.
+
+.. code-block:: python
+
+   shell = bs.AppShell(
+       title="My App",
+       theme="bootstrap-dark",
+       light_theme="ocean-light",
+       dark_theme="ocean-dark",
+       locale="de_DE",
+   )
+
+   shell.theme = "bootstrap-light"     # switch the theme now
+   shell.toolbar.add_button(icon="sun-moon", command=bs.toggle_theme)
+
+React to changes and persist them across launches with a :class:`Store
+<bootstack.store.Store>` — ``from_store()`` restores configuration and tolerates
+version skew, and the change events write each value back:
+
+.. code-block:: python
+
+   store = bs.Store("settings")
+   shell = bs.AppShell.from_store(store, title="My App")
+   shell.on_theme_change(lambda theme: store.update(theme=theme))
+
+See :doc:`/production/app-settings` for the full configuration reference —
+every option, the locale-derived read-only properties, and window-state
+persistence.
+
 Window options
 ~~~~~~~~~~~~~~
 

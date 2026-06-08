@@ -1,8 +1,10 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, overload
+from typing import Any, Callable, Literal, Sequence, overload
 
+from bootstack._runtime.app import LocalizeMode
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
+from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.base import adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
@@ -38,7 +40,7 @@ class _PageFrame:
         pop_container(self)
 
 
-class AppShell:
+class AppShell(AppConfigMixin):
     """Application window with built-in toolbar, sidebar navigation, and page stack.
 
     Wraps the internal AppShell to provide the standard desktop app scaffold:
@@ -49,12 +51,32 @@ class AppShell:
     Pages support context-manager syntax so widgets inside the ``with`` block
     are automatically parented to that page.
 
+    Like `App`, configuration is a single flat path: pass options as
+    constructor kwargs and read or change them through matching `app.*`
+    properties (e.g. `shell.theme`, `shell.locale`).
+
     Args:
         title: Window title and (in undecorated mode) toolbar label.
         size: Initial window size as `(width, height)`.
         theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
-        settings: ``AppSettings`` dict or instance for theme, locale, etc.
-        localize: Locale or ``MessageCatalog`` for internationalisation.
+        app_author: Application author. Reserved for config-path use.
+        app_version: Application version string.
+        light_theme: Theme used for the light end of system-appearance
+            tracking and `toggle_theme`.
+        dark_theme: Theme used for the dark end of system-appearance
+            tracking and `toggle_theme`.
+        follow_system_appearance: If True, switch between `light_theme` and
+            `dark_theme` to match the OS (currently effective on macOS).
+        available_themes: Theme names to expose to theme pickers.
+        inherit_surface_color: If True, child widgets inherit the parent's
+            surface color.
+        locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
+        localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
+        window_style: Windows-only window effect or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior — `'native'` or
+            `'classic'`.
+        remember_window_state: If True, window geometry is saved and restored.
+        state_path: Optional override for the persisted window-state file.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -70,7 +92,6 @@ class AppShell:
         nav_display_mode: Initial sidebar mode — `'expanded'`, `'compact'`,
             or `'minimal'`.
         nav_accent: Accent color for the active nav item. Default `'primary'`.
-        settings: `AppSettings` dict or instance for theme, locale, etc.
     """
 
     def __init__(
@@ -79,12 +100,29 @@ class AppShell:
         title: str = "",
         size: tuple[int, int] | None = None,
         theme: str | None = None,
-        settings: Any = None,
-        localize: Any = None,
+        # application identity
+        app_author: str | None = None,
+        app_version: str | None = None,
+        # theme
+        light_theme: str = "bootstrap-light",
+        dark_theme: str = "bootstrap-dark",
+        follow_system_appearance: bool = False,
+        available_themes: Sequence[str] = (),
+        inherit_surface_color: bool = True,
+        # localization
+        locale: str | None = None,
+        localize_mode: LocalizeMode = "auto",
+        # platform / window-state persistence
+        window_style: str | None = "mica",
+        macos_quit_behavior: str = "native",
+        remember_window_state: bool = False,
+        state_path: str | None = None,
+        # window placement
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
+        # scaffold
         undecorated: bool = False,
         show_toolbar: bool = True,
         show_window_controls: bool = False,
@@ -97,6 +135,19 @@ class AppShell:
     ) -> None:
         init_kwargs: dict[str, Any] = {
             "title": title,
+            "app_author": app_author,
+            "app_version": app_version,
+            "light_theme": light_theme,
+            "dark_theme": dark_theme,
+            "follow_system_appearance": follow_system_appearance,
+            "available_themes": available_themes,
+            "inherit_surface_color": inherit_surface_color,
+            "locale": locale,
+            "localize_mode": localize_mode,
+            "window_style": window_style,
+            "macos_quit_behavior": macos_quit_behavior,
+            "remember_window_state": remember_window_state,
+            "state_path": state_path,
             "show_toolbar": show_toolbar,
             "show_window_controls": show_window_controls,
             "draggable": draggable,
@@ -118,13 +169,25 @@ class AppShell:
             init_kwargs["maxsize"] = max_size
         if resizable is not None:
             init_kwargs["resizable"] = resizable
-        if settings is not None:
-            init_kwargs["settings"] = settings
-        if localize is not None:
-            init_kwargs["localize"] = localize
         init_kwargs.update(kwargs)
 
         self._internal = _InternalAppShell(**init_kwargs)
+
+    @classmethod
+    def from_store(cls, store: Any, **overrides: Any) -> "AppShell":
+        """Construct an `AppShell` from a persisted `Store` (or plain dict).
+
+        Reads configuration from `store`, tolerantly ignoring keys that are not
+        valid configuration (so version skew does not raise). Explicit keyword
+        `overrides` win over stored values. See `App.from_store`.
+        """
+        data = store.as_dict() if hasattr(store, "as_dict") else dict(store)
+        kwargs = {k: v for k, v in data.items() if k in APP_CONFIG_KWARGS}
+        kwargs.update(overrides)
+        return cls(**kwargs)
+
+    def _config_app(self) -> Any:
+        return self._internal
 
     def __enter__(self) -> "AppShell":
         return self

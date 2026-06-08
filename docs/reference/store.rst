@@ -59,11 +59,12 @@ Bulk and dict-like operations
 -----------------------------
 
 ``Store`` supports the familiar mapping methods; ``update()`` writes once at the
-end rather than per key:
+end rather than per key, and accepts a mapping, keyword arguments, or both:
 
 .. code-block:: python
 
    store.update({"theme": "dark", "font_scale": 1.2})
+   store.update(theme="dark", locale="de_DE")     # keyword form
    store.setdefault("locale", "en_US")
    store.keys(); store.values(); store.items()
    len(store); list(store)
@@ -96,11 +97,39 @@ creating the app, and write it whenever it changes:
    store = bs.Store("settings")
 
    with bs.App(theme=store.get("theme", "bootstrap-light")) as app:
-       def on_toggle():
-           bs.toggle_theme()
-           store.set("theme", bs.get_theme())
-       bs.Button("Toggle theme", on_click=on_toggle)
+       app.on_theme_change(lambda theme: store.update(theme=theme))
+       bs.Button("Toggle theme", on_click=bs.toggle_theme)
    app.run()
+
+Persisting app configuration
+----------------------------
+
+Because app configuration is flat ``App(...)`` kwargs and a ``Store`` is a flat
+dict, the whole persistence story is symmetric: splat the store in to restore,
+and write each value back when it changes. ``App.from_store()`` does the restore
+and *tolerantly ignores keys that are not valid configuration*, so a settings
+file written by an older or newer version (with renamed or removed keys) still
+loads cleanly instead of raising:
+
+.. code-block:: python
+
+   store = bs.Store("settings")          # app config, in its own store
+
+   app = bs.App.from_store(store)        # restore; empty store → defaults
+   app.on_theme_change(lambda theme: store.update(theme=theme))
+   app.on_locale_change(lambda locale: store.update(locale=locale))
+   app.run()
+
+A few practices keep this clean:
+
+- **Keep app *config* separate from app *state*.** Put restorable configuration
+  (theme, locale) in one store and transient state (recent files, last-opened
+  tab) in another, so ``App.from_store`` only ever sees real config keys.
+- **Window geometry is the one exception.** It is a fiddly ``"WxH+X+Y"`` string
+  updated continuously as the window moves, not a clean kwarg — let the built-in
+  ``remember_window_state=True`` flag handle it rather than the store.
+- **Per-value write-back, not a config dump.** React to the specific change
+  events (``on_theme_change``/``on_locale_change``) and write just that key.
 
 See also
 --------

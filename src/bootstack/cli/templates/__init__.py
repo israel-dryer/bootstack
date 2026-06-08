@@ -31,7 +31,7 @@ def main() -> None:
     """Application entry point."""
     with bs.App(
         title="{app_name}",
-        settings={{"theme": os.environ.get("BOOTSTACK_THEME", "{theme}")}},
+        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
         size=(800, 600),
     ) as app:
         MainView()
@@ -322,7 +322,7 @@ def main() -> None:
     """Application entry point."""
     with bs.AppShell(
         title="{app_name}",
-        settings={{"theme": os.environ.get("BOOTSTACK_THEME", "{theme}")}},
+        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
         size=(1000, 650),
     ) as shell:
         shell.toolbar.add_button(icon="sun", on_click=bs.toggle_theme)
