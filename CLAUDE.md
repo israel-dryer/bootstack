@@ -106,24 +106,57 @@ memories (see them for rationale and gotchas).
   `production/app-settings.rst` (was a stub → App configuration reference),
   `widgets/appshell.rst` config section, `reference/store.rst` persistence.
   Memory `project_app_settings_flattening`.
+- **Reference docs review pass** (PR #103, branch `feat/reference-docs-pass`) —
+  technical-writer review + enrich of `docs/reference/*`: fleshed out `errors`
+  (per-error trigger + handling), `scheduling` (idle/at/every patterns,
+  `App.schedule`), `shortcuts` (full wiring, register return/errors), `validation`
+  (triggers, whole-form validation); added new `localization.rst`. Two code fixes
+  the review surfaced: implemented the documented-but-missing **`compare`**
+  validation rule (`other_field` = field/`Signal`/callable/literal; default
+  trigger `blur`), made `Form.validate()` run ALL rules on submit (was silently
+  skipping `blur`/`key`-trigger rules like `compare`/`stringLength`), and
+  `field.validate()` returns True for a ruleless field; fixed two `IntlFormatter`
+  bugs — locale passed positionally into Babel's `tzinfo` slot (crashed every
+  time/datetime preset) and currency `precision` ignored (`¤` placeholder +
+  `currency_digits=False`). Tests `tests/test_validation_rules.py`,
+  `tests/test_intl_format.py`.
+- **Top-level namespace curation + dialogs restructure** (PR #104, branch
+  `feat/namespace-curation`) — top-level `bootstack` slimmed to ~85 names (compose
+  surface); primitives moved to submodules (`data`/`style`/`i18n`/`validation`/
+  `events`/`streams`/`scheduling`/`shortcuts`/`store`/`errors` + new
+  `bootstack.types`); dialog classes → `bootstack.dialogs` with impl under
+  `bootstack/dialogs/_impl/` (`bootstack.widgets.dialogs` removed);
+  `MessageCatalog`/`IntlFormatter`/`get_current_app`/`Image` demoted to internal.
+  New API Overview page; `tests/test_public_surface.py` drift guard. **Clean
+  break, no shims.** See the "Public namespace is CURATED" gotcha. Memory
+  `project_toplevel_api_surface` (+ `project_public_intent_backlog` for the future
+  Image/Icon handle).
 
 ## Next up — candidates (pick one)
 
+- **Docs build warnings cleanup** — `main` has ~38 PRE-EXISTING Sphinx warnings,
+  mostly "duplicate object description" on dataclass attrs (`FileSourceConfig`,
+  `DataSourceProtocol`, `Shortcut`, `DialogButton`, `Form`) + 3 docutils nits
+  (`style/theme.py` `Theme.shades` docstring; `widgets/togglebutton.rst` block
+  quote; `widgets/tree.py` `Tree.roots` docstring). Likely autodoc re-documenting
+  attribute-docstringed dataclass fields twice — add `:no-index:` or adjust
+  autodoc config. ⚠ Incremental Sphinx builds MASK these — always clean-build
+  (`rm -rf docs/_build`) to verify warning-free.
+- **Image / Icon public handle** — design a Tk-free public image/icon handle and
+  re-promote (both currently internal). Memory `project_public_intent_backlog`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
-- **Reference docs example pass** — enrich `docs/reference/*` (esp. `store.rst`
-  persistence patterns now that `from_store`/`update(**kwargs)` exist).
 
 ## Carryover (deferred)
 
-- **Reference docs thin on examples** — the `docs/reference/*` pages are light on
-  worked examples/patterns across the board; enrich next docs pass. SPECIFICALLY
-  `reference/store.rst` must document the persistence patterns + caveats:
-  `bs.App(**store.as_dict())` restore + write-back, store hygiene (app-config in
-  its own store, separate from app-state), version skew / `App.from_store`, and
-  the window-geometry-stays-a-flag exception. Land any needed Store ergonomics
-  (`update(**kwargs)`, `to_dict` alias) WITH those examples. Memories
-  `project_docs_initiative`, `project_app_settings_flattening`.
+- **Reference docs examples** — LARGELY DONE in PR #103 (errors/scheduling/
+  shortcuts/validation enriched; new `localization.rst`). `reference/store.rst`
+  already carries the persistence patterns (`from_store`/`update(**kwargs)`,
+  store hygiene, version skew, window-geometry-stays-a-flag) from the AppSettings
+  work. Remaining: opportunistic enrichment of any still-thin reference page.
+  Memories `project_docs_initiative`, `project_app_settings_flattening`.
+- **Pre-existing docs warnings** — see "Docs build warnings cleanup" under
+  Next up (~38 warnings on `main`; incremental builds mask them).
 
 ---
 
@@ -499,6 +532,26 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   use `event_generate` with `data=` natively (the event system is patched to support it).
 
 ### Widgets and API
+- **Public namespace is CURATED (PR #104)** — top-level `bootstack` (`bs.*`) holds
+  ONLY what you compose a UI from: every widget, `App`/`AppShell`/`Window`,
+  `Signal`, the dialog VERBS (`alert`/`confirm`/`ask_*`/`toast`), and
+  `set_theme`/`toggle_theme`. Import everything else from its submodule —
+  `from bootstack.data import SqliteDataSource, col`; `from bootstack.style import
+  Theme, get_theme_color`; `from bootstack.i18n import L, LV`;
+  `from bootstack.validation import ValidationRule`; `from bootstack.events import
+  Event, Subscription`; `from bootstack.streams import Stream`;
+  `from bootstack.scheduling import Schedule`; `from bootstack.shortcuts import
+  get_shortcuts`; `from bootstack.store import Store`; `from bootstack.errors
+  import ...`; `from bootstack.types import AccentToken`; dialog CLASSES
+  `from bootstack.dialogs import FormDialog`. `MessageCatalog`/`IntlFormatter`/
+  `get_current_app`/`Image` are INTERNAL (not public). Do NOT write `bs.Theme`/
+  `bs.col`/`bs.SqliteDataSource`/`bs.FormDialog` etc. — they no longer exist at
+  top level. Map: `docs/getting-started/api-overview.rst`; guard:
+  `tests/test_public_surface.py`. Memory `project_toplevel_api_surface`.
+- **Dialogs live in `bootstack.dialogs`** — impl under `bootstack/dialogs/_impl/`,
+  public façade `bootstack/dialogs/__init__.py` (verbs + classes).
+  `bootstack.widgets.dialogs` is GONE. Internal deep imports use
+  `bootstack.dialogs._impl.<module>`.
 - **`disabled` on Label** — not appropriate. Label is display-only.
 - **`color=` / `background_color=`** — removed. Use `accent=` / `surface=`.
 - **`bs.App` / `bs.AppShell` config is FLAT kwargs** (settings-flattening, branch
