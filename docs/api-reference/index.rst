@@ -12,10 +12,21 @@ guides, which cross-link into the pages here. The
 
 .. note::
 
-   This section is being built out module by module. The ``bootstack.data``
-   reference below is the first slice; the remaining submodules follow.
+   This section is being built out module by module. The submodules below are
+   complete; the top-level ``bootstack`` widget surface and ``bootstack.types`` /
+   ``bootstack.dialogs`` follow.
 
 .. toctree::
    :maxdepth: 1
 
    data
+   style
+   events
+   signals
+   streams
+   validation
+   i18n
+   scheduling
+   shortcuts
+   store
+   errors

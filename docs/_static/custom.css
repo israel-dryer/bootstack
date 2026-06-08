@@ -2,10 +2,15 @@
 
 html,
 html[data-theme="light"] {
-    --pst-color-primary:       #0d6efd;
-    --pst-color-primary-bg:    #cfe2ff;
-    --pst-color-secondary:     #6c757d;
-    --pst-color-secondary-bg:  #e2e3e5;
+    --pst-color-primary:               #0d6efd;
+    --pst-color-primary-bg:            #cfe2ff;
+    --pst-color-primary-highlight:     #0a58ca;
+    --pst-color-link:                  #0d6efd;
+    --pst-color-link-hover:            #0a58ca;
+    --pst-color-link-higher-contrast:  #0a58ca;
+    --pst-color-secondary:             #6c757d;
+    --pst-color-secondary-bg:          #e2e3e5;
+    --pst-color-secondary-highlight:   #5c636a;
     --pst-color-background:    #ffffff;
     --pst-color-on-background: #ffffff;
     --pst-color-surface:       #f8f9fa;
@@ -15,13 +20,21 @@ html[data-theme="light"] {
     --pst-color-border:        #dee2e6;
     --pst-color-border-muted:  #e9ecef;
     --pst-color-inline-code:   #d63384;
+    /* :target anchor-flash + search highlight — soft amber (highlighter
+       convention), distinct from the blue link/primary palette */
+    --pst-color-target:        #fff3cd;
 }
 
 html[data-theme="dark"] {
-    --pst-color-primary:       #6ea8fe;
-    --pst-color-primary-bg:    #031633;
-    --pst-color-secondary:     #adb5bd;
-    --pst-color-secondary-bg:  #343a40;
+    --pst-color-primary:               #6ea8fe;
+    --pst-color-primary-bg:            #031633;
+    --pst-color-primary-highlight:     #8bb9fe;
+    --pst-color-link:                  #6ea8fe;
+    --pst-color-link-hover:            #8bb9fe;
+    --pst-color-link-higher-contrast:  #8bb9fe;
+    --pst-color-secondary:             #adb5bd;
+    --pst-color-secondary-bg:          #343a40;
+    --pst-color-secondary-highlight:   #bcc4cc;
     --pst-color-background:    #212529;
     --pst-color-on-background: #212529;
     --pst-color-surface:       #343a40;
@@ -31,6 +44,9 @@ html[data-theme="dark"] {
     --pst-color-border:        #495057;
     --pst-color-border-muted:  #373b3e;
     --pst-color-inline-code:   #e685b5;
+    /* :target anchor-flash + search highlight — soft amber (highlighter
+       convention), distinct from the blue link/primary palette */
+    --pst-color-target:        #6e5611;
     /* Admonition note/info — align with primary palette */
     --pst-color-info:          #6ea8fe;
     --pst-color-info-bg:       #0d306e;

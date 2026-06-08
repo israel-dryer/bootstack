@@ -155,6 +155,12 @@ See also
 API reference
 -------------
 
-.. autofunction:: bootstack.i18n.L
+The complete reference lives in :doc:`/api-reference/i18n`. At a glance:
 
-.. autofunction:: bootstack.i18n.LV
+.. currentmodule:: bootstack.i18n
+
+.. autosummary::
+   :nosignatures:
+
+   L
+   LV

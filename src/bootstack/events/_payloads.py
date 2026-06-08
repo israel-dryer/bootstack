@@ -221,7 +221,12 @@ class DisplayModeEvent:
 # ---------------------------------------------------------------------------
 
 ChangeReason = Literal["user", "api", "hide", "forget", "unknown"]
+"""Why a change event fired — a direct `user` edit, an `api` call, a `hide` or
+`forget` of carried data, or `unknown`."""
+
 ChangeMethod = Literal["click", "key", "programmatic", "unknown"]
+"""How a change was made — by mouse `click`, by `key`, `programmatic`ally, or
+`unknown`."""
 
 
 @dataclass(frozen=True, slots=True)

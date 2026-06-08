@@ -205,8 +205,15 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.validation.ValidationRule
-   :members:
+The complete reference for :class:`ValidationRule
+<bootstack.validation.ValidationRule>` and :class:`ValidationResult
+<bootstack.validation.ValidationResult>` lives in
+:doc:`/api-reference/validation`. At a glance:
 
-.. autoclass:: bootstack.validation.ValidationResult
-   :members:
+.. currentmodule:: bootstack.validation
+
+.. autosummary::
+   :nosignatures:
+
+   ValidationRule
+   ValidationResult

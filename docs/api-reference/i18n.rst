@@ -1,0 +1,19 @@
+bootstack.i18n
+==============
+
+.. currentmodule:: bootstack.i18n
+
+Localization helpers. Wrap a string with ``L`` to mark it translatable, or a
+value with ``LV`` to format it for the active locale; both update live when the
+app's locale changes.
+
+For a task-oriented introduction — message catalogs, locale-aware dates and
+numbers, switching locale at runtime — see the :doc:`/reference/localization`
+guide.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   L
+   LV
