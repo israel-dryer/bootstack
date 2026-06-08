@@ -54,17 +54,20 @@ memories (see them for rationale and gotchas).
   `widgets/_impl/composites/tree/source_binding.py`. Mutually exclusive with
   `nodes=`. Memory `project_tree_datasource_backing`. **Deferred:** per-node child
   pagination, tree filtering, auto-refresh on `on_change`, native
-  `TreeDataSourceProtocol`, Tree widget doc page. **Found (not fixed):** latent
-  `SqliteDataSource` TEXT-affinity bug — a column whose FIRST row value is NULL
-  gets TEXT affinity, so int values store as strings (worked around in the binding
-  by string-normalizing the has-children key comparison).
+  `TreeDataSourceProtocol`, Tree widget doc page.
+- **SqliteDataSource schema inference** (branch `feat/sqlite-schema-inference`) —
+  fixed the TEXT-affinity-from-leading-NULL bug surfaced by Tree backing.
+  `load()` now samples the leading rows (`_SCHEMA_SAMPLE_SIZE=1000`) and infers
+  each column's type from the first non-NULL values via `_resolve_column_type`
+  (ignores NULL; INTEGER+REAL → REAL; any other mix → TEXT). Sampled rows are
+  buffered and still inserted; memory stays bounded. Tests:
+  `tests/data/test_schema_inference.py`. The Tree binding keeps its string-
+  normalized key compare as defense-in-depth (all-NULL-in-sample columns can
+  still be TEXT). NOTE: `_ensure_table` (single-record `insert()` into an empty
+  source) still infers from one record — inherent, can't sample.
 
 ## Next up — candidates (pick one)
 
-- **SqliteDataSource schema inference** — fix the TEXT-affinity-from-leading-NULL
-  bug surfaced by Tree backing (infer a column's type by scanning more than the
-  first row, or accept explicit dtypes). General correctness win for the
-  data-science/engineering audience; see `project_tree_datasource_backing`.
 - **Persistent KV / prefs store** (`bs.Store`) — memory `project_persistent_kv_store`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
