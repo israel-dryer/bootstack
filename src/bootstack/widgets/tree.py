@@ -31,7 +31,29 @@ class Tree(PublicWidgetBase):
         nodes: Declarative initial tree — a list of node specs, where each spec
             is a label string or a dict like
             ``{"label": "src", "icon": "folder", "children": [...]}``. Anything
-            not a recognized display key becomes that node's `data`.
+            not a recognized display key becomes that node's `data`. Mutually
+            exclusive with `data_source`.
+        data_source: A flat data source to project as a hierarchy. Each record
+            carries a `parent_field` pointing at its parent's id (an adjacency
+            list); the tree loads one branch at a time, querying a node's
+            children only when it is expanded — so a huge hierarchy shows
+            instantly. Any `DataSourceProtocol` source works. Mutually exclusive
+            with `nodes`.
+        parent_field: With `data_source`, the record field that holds each row's
+            parent id. Defaults to ``'parent_id'``.
+        root_value: With `data_source`, the `parent_field` value that marks a
+            root node. Defaults to ``None`` (a NULL/absent parent).
+        label_field: With `data_source`, the record field used as the node label.
+            Defaults to ``'name'``. Ignored when `node_builder` is given.
+        icon_field: With `data_source`, an optional record field whose value is
+            used as the node icon.
+        node_builder: With `data_source`, an optional callable taking a record
+            and returning a node spec dict (``{'label': ..., 'icon': ...}``) for
+            full control over how a record renders. Overrides
+            `label_field`/`icon_field`.
+        order: With `data_source`, the ordering applied to each sibling group —
+            a sort key or sequence of keys (``'name'``, ``'-created'``, a `col`,
+            or a `SortKey`). Defaults to the source's natural order.
         selection_mode: ``'single'`` (default) — one highlighted node;
             ``'multi'`` — click-to-toggle a set; ``'none'`` — no highlight
             selection (navigation/display only).
@@ -61,6 +83,13 @@ class Tree(PublicWidgetBase):
         self,
         *,
         nodes: list | None = None,
+        data_source: Any = None,
+        parent_field: str = "parent_id",
+        root_value: Any = None,
+        label_field: str = "name",
+        icon_field: str | None = None,
+        node_builder: Callable[[dict], dict] | None = None,
+        order: Any = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
         show_selection_controls: bool = False,
         select_on_click: bool = True,
@@ -100,7 +129,30 @@ class Tree(PublicWidgetBase):
 
         if height is not None:
             self._internal.configure(height=height)
-        if nodes:
+
+        # Data-source backing: project a flat adjacency-list source as a lazy
+        # hierarchy. Mutually exclusive with declarative `nodes=`.
+        self._binding: Any = None
+        if data_source is not None:
+            if nodes:
+                raise ValueError(
+                    "Tree: pass either nodes= or data_source=, not both."
+                )
+            from bootstack.widgets._impl.composites.tree.source_binding import (
+                SourceBinding,
+            )
+
+            self._binding = SourceBinding(
+                data_source,
+                parent_field=parent_field,
+                root_value=root_value,
+                label_field=label_field,
+                icon_field=icon_field,
+                node_builder=node_builder,
+                order=order,
+            )
+            self._internal.load(self._binding.roots())
+        elif nodes:
             self._internal.load(nodes)
 
         # Per-node context menu (set via set_context_menu).
@@ -179,6 +231,22 @@ class Tree(PublicWidgetBase):
     def clear(self) -> None:
         """Remove all nodes."""
         self._internal.clear()
+
+    @property
+    def data_source(self) -> Any:
+        """The backing data source, or ``None`` for a declarative tree."""
+        return self._binding.source if self._binding is not None else None
+
+    def refresh(self) -> None:
+        """Reload a data-source-backed tree from its source.
+
+        Re-queries the roots and discards loaded branches, so the tree reflects
+        records that were inserted, updated, or deleted in the source. Selection
+        and expansion state are reset. A no-op for a declarative tree.
+        """
+        if self._binding is None:
+            return
+        self._internal.load(self._binding.roots())
 
     # ----- navigation / lookup -----
 

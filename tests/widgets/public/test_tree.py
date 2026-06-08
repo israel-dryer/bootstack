@@ -460,3 +460,154 @@ def test_set_context_menu_builder_invoked_per_right_click(shown_app):
     # Detaching removes the subscription.
     tree.set_context_menu(None)
     assert tree._ctx_sub is None
+
+
+# --------------------------------------------------------------------------- data-source backing
+
+
+# Flat adjacency list: src/ (1) -> app.py (2) -> deep (5); src/ -> util.py (3);
+# README.md (4) is a root leaf.
+FLAT_ROWS = [
+    {"id": 1, "parent_id": None, "name": "src", "kind": "folder"},
+    {"id": 2, "parent_id": 1, "name": "app.py", "kind": "file"},
+    {"id": 3, "parent_id": 1, "name": "util.py", "kind": "file"},
+    {"id": 4, "parent_id": None, "name": "README.md", "kind": "file"},
+    {"id": 5, "parent_id": 2, "name": "deep", "kind": "file"},
+]
+
+
+def _counting_source(rows):
+    """A MemoryDataSource that records how many times _query is called."""
+    src = bs.MemoryDataSource()
+    src.load([dict(r) for r in rows])
+    calls = {"n": 0}
+    real_query = src._query
+
+    def counted(condition, sort_keys):
+        calls["n"] += 1
+        return real_query(condition, sort_keys)
+
+    src._query = counted
+    return src, calls
+
+
+@pytest.mark.gui
+def test_datasource_loads_only_roots_initially(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    roots = _roots(tree)
+    assert [n.label for n in roots] == ["src", "README.md"]
+    # No child branch loaded yet.
+    assert all(not n.children for n in roots)
+
+
+@pytest.mark.gui
+def test_datasource_chevrons_reflect_has_children(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    src_node, readme = _roots(tree)
+    # The parent gets a loader (chevron); the leaf root does not.
+    assert src_node.expandable is True
+    assert readme.expandable is False
+    assert readme.is_leaf is True
+
+
+@pytest.mark.gui
+def test_datasource_lazy_expand_loads_branch(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id", order="name")
+    _pump(shown_app)
+
+    # order="name" sorts roots too: README.md before src.
+    src_node = [n for n in _roots(tree) if n.label == "src"][0]
+    tree.expand(src_node)
+    _pump(shown_app)
+
+    # Children loaded, ordered by name; app.py has its own child, util.py does not.
+    assert [n.label for n in src_node.children] == ["app.py", "util.py"]
+    app_py, util_py = src_node.children
+    assert app_py.expandable is True
+    assert util_py.is_leaf is True
+
+    tree.expand(app_py)
+    _pump(shown_app)
+    assert [n.label for n in app_py.children] == ["deep"]
+    assert app_py.children[0].is_leaf is True
+
+
+@pytest.mark.gui
+def test_datasource_data_bag_carries_record(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    src_node = _roots(tree)[0]
+    assert src_node.data["id"] == 1
+    assert src_node.data["kind"] == "folder"
+
+
+@pytest.mark.gui
+def test_datasource_icon_field_and_node_builder(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(
+        data_source=src,
+        parent_field="parent_id",
+        node_builder=lambda r: {"label": f"{r['name']} [{r['kind']}]"},
+    )
+    _pump(shown_app)
+    assert _roots(tree)[0].label == "src [folder]"
+
+
+@pytest.mark.gui
+def test_datasource_missing_label_field_raises(shown_app):
+    src = bs.MemoryDataSource()
+    src.load([{"id": 1, "parent_id": None, "title": "x"}])
+    with pytest.raises(KeyError):
+        bs.Tree(data_source=src, parent_field="parent_id")  # default label_field="name"
+
+
+@pytest.mark.gui
+def test_datasource_and_nodes_mutually_exclusive(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    with pytest.raises(ValueError):
+        bs.Tree(data_source=src, nodes=["a", "b"])
+
+
+@pytest.mark.gui
+def test_datasource_refresh_requeries(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+    assert [n.label for n in _roots(tree)] == ["src", "README.md"]
+
+    src.insert({"id": 6, "parent_id": None, "name": "LICENSE", "kind": "file"})
+    tree.refresh()
+    _pump(shown_app)
+    assert "LICENSE" in [n.label for n in _roots(tree)]
+
+
+@pytest.mark.gui
+def test_datasource_sqlite_backing(shown_app):
+    src = bs.SqliteDataSource()
+    src.load([dict(r) for r in FLAT_ROWS])
+    tree = bs.Tree(data_source=src, parent_field="parent_id", order="name")
+    _pump(shown_app)
+
+    assert [n.label for n in _roots(tree)] == ["README.md", "src"]
+    src_node = [n for n in _roots(tree) if n.label == "src"][0]
+    tree.expand(src_node)
+    _pump(shown_app)
+    assert [n.label for n in src_node.children] == ["app.py", "util.py"]
+    src.close()
+
+
+@pytest.mark.gui
+def test_datasource_property(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    assert tree.data_source is src
+    assert bs.Tree().data_source is None
