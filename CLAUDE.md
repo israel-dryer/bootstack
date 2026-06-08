@@ -92,19 +92,33 @@ memories (see them for rationale and gotchas).
 ## Next up — candidates (pick one)
 
 - **Flatten `AppSettings` into the `App` constructor** (DESIGN DECIDED 2026-06-07,
-  not started; memory `project_app_settings_flattening`) — config is split-brain
-  today (`title`/`size`/`theme` are top-level kwargs but `locale`/`window_style`/
+  not started; full design in memory `project_app_settings_flattening`) — config
+  is split-brain today (`title`/`size`/`theme` top-level but `locale`/`window_style`/
   `remember_*` only via `settings={...}`). Promote settings fields to direct
-  `App(...)` keyword args as the single config path; keep `AppSettings` as an
-  INTERNAL resolved-config holder (runs the locale derivation) + a read accessor
-  `app.settings`; drop the public `settings=` input (pre-release, no shims — touch
-  `AppShell` + examples). `remember_window_state` and a NEW `remember_theme`
-  become plain flat kwargs here (this is the agreed home for `remember_theme` —
-  NOT a standalone PR). `bs.Store` stays the separate persistence layer. Riskiest
-  change (central constructor) → its own focused PR. Open choices: promote all
-  fields vs common-first; keep `app.settings` read accessor (lean yes).
+  `App(...)` kwargs as the single config path. **No public `AppSettings`, no
+  `app.settings`** — config is read/written as **app properties** (`app.theme`,
+  `app.title`, `app.locale`; derived ones like `app.date_format` read-only;
+  cohesive clusters may get a sub-namespace, likely just `app.localization.*`).
+  `AppSettings` survives only as an internal resolved-config holder. Drop public
+  `settings=` (pre-release, no shims — touch `AppShell` + examples). Persistence
+  falls out for free and retires `remember_*`: `bs.App(**store.as_dict())` restore
+  + explicit write-back; keep ONE built-in `remember_window_state` flag for the
+  fiddly geometry string; consider a tolerant `App.from_store()` (version-skew
+  filtering). `bs.Store` stays the separate persistence layer. Riskiest change
+  (central constructor) → its own focused PR.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
+
+## Carryover (deferred)
+
+- **Reference docs thin on examples** — the `docs/reference/*` pages are light on
+  worked examples/patterns across the board; enrich next docs pass. SPECIFICALLY
+  `reference/store.rst` must document the persistence patterns + caveats:
+  `bs.App(**store.as_dict())` restore + write-back, store hygiene (app-config in
+  its own store, separate from app-state), version skew / `App.from_store`, and
+  the window-geometry-stays-a-flag exception. Land any needed Store ergonomics
+  (`update(**kwargs)`, `to_dict` alias) WITH those examples. Memories
+  `project_docs_initiative`, `project_app_settings_flattening`.
 
 ---
 
