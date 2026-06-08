@@ -69,7 +69,7 @@ class TextEntryPart(ValidationMixin, Entry):
         if isinstance(value, (int, float)):
             initial_display = str(value)
         else:
-            initial_display = value or self.textsignal.get() or ''
+            initial_display = value or self.textsignal() or ''
 
         # Parse initial value if format is specified
         if value_format is not None:
@@ -88,7 +88,7 @@ class TextEntryPart(ValidationMixin, Entry):
             self.textsignal.set('')
 
         # track last text emitted for CHANGE
-        self._prev_change_text = self.textsignal.get()
+        self._prev_change_text = self.textsignal()
 
         # subscribe to text changes
         self._on_input_fid = self.textsignal.subscribe(self._handle_change)
@@ -107,7 +107,7 @@ class TextEntryPart(ValidationMixin, Entry):
         # so the Signal is never set to the placeholder text
         if placeholder:
             self._default_fg = self.cget("foreground")
-            if not self.textsignal.get():
+            if not self.textsignal():
                 self._show_placeholder()
             self.bind('<FocusIn>', self._on_focus_in_placeholder, add=True)
             self.bind('<FocusOut>', self._on_focus_out_placeholder, add=True)
@@ -129,7 +129,7 @@ class TextEntryPart(ValidationMixin, Entry):
             self._hide_placeholder()
 
     def _on_focus_out_placeholder(self, _event) -> None:
-        if self._placeholder_text and not self.textsignal.get():
+        if self._placeholder_text and not self.textsignal():
             self._show_placeholder()
 
     def _store_prev_value(self, _: Any):
@@ -150,7 +150,7 @@ class TextEntryPart(ValidationMixin, Entry):
 
     def _handle_change(self, event):
         """Emit <<Input>> event on every text change without parsing."""
-        text = self.textsignal.get()
+        text = self.textsignal()
         if text == self._prev_change_text:
             return
         if self._showing_placeholder:
@@ -167,7 +167,7 @@ class TextEntryPart(ValidationMixin, Entry):
             data = ChangeEvent(
                 value=self._value,
                 prev_value=self._prev_changed_value,
-                text=self.textsignal.get(),
+                text=self.textsignal(),
             )
             self.event_generate('<<Change>>', data=data)
             self._prev_changed_value = self._value
@@ -223,7 +223,7 @@ class TextEntryPart(ValidationMixin, Entry):
         """Bind to `<Return>`. Callback receives `event.data = {'value': Any, 'text': str}`."""
 
         def enrich_callback(event: Event) -> None:
-            data = {"value": self._value, "text": self.textsignal.get()}
+            data = {"value": self._value, "text": self.textsignal()}
             event.data = data
             return callback(event)
 
@@ -280,7 +280,7 @@ class TextEntryPart(ValidationMixin, Entry):
             Current display text if no argument provided, None otherwise
         """
         if value is None:
-            return self.textsignal.get()
+            return self.textsignal()
         else:
             self.textsignal.set(value)
             return None
@@ -304,7 +304,7 @@ class TextEntryPart(ValidationMixin, Entry):
         # Format the value for display
         new_text = self._format_value(self._value)
 
-        if new_text != self.textsignal.get():
+        if new_text != self.textsignal():
             # temporarily silence CHANGE while normalizing text
             fid = getattr(self, '_on_input_fid', None)
             if fid:

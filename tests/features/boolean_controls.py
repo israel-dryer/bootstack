@@ -43,8 +43,8 @@ with App(title="Boolean controls — visual test", minsize=(480, 100), padding=2
     sig = Signal(False)
     state_label_sig = Signal("off")
     def _flip():
-        sig.set(not sig.get())
-        state_label_sig.set("ON" if sig.get() else "off")
+        sig.set(not sig())
+        state_label_sig.set("ON" if sig() else "off")
     with HStack(gap=12, anchor_items="center"):
         Checkbox("Controlled", signal=sig)
         Button("Flip", on_click=_flip, variant="outline")

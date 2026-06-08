@@ -14,9 +14,9 @@ Architecture
   ("array", "read", "write", "unset").
 
 Key behaviors
-- Value access: ``signal()`` or ``signal.get()`` returns the current value;
-  ``signal.set(v)`` updates it. Signals can be passed directly to widget
-  options like ``textsignal``; bootstack uses the underlying Tcl variable name.
+- Value access: ``signal()`` returns the current value; ``signal.set(v)``
+  updates it. Signals can be passed directly to widget options like
+  ``textsignal``; bootstack uses the underlying Tcl variable name.
 - Subscriptions: ``subscribe(cb, immediate=False)`` registers a callback and
   returns a trace id. Multiple subscriptions of the same callback are supported.
   Use ``unsubscribe(cb)`` to remove all subscriptions for that callback or
@@ -26,7 +26,8 @@ Key behaviors
   keeping derived signals alive unnecessarily.
 - Robustness: The last known value is cached and returned if the underlying
   Tcl variable is destroyed. Redundant updates are skipped when the new value
-  equals the current one. Exact type matching is enforced in ``set()``.
+  equals the current one. ``set()`` enforces the signal's type, except that an
+  ``int`` is widened to a ``float``-typed signal.
 
 Usage
 1) Quick start
@@ -34,9 +35,9 @@ Usage
 from bootstack.signals import Signal
 
 count = Signal(0)
-print(count.get())    # -> 0
+print(count())        # -> 0
 count.set(1)
-print(count())        # -> 1 (callable alias of get)
+print(count())        # -> 1
 ```
 
 2) With widgets

@@ -162,7 +162,7 @@ class LocalizationMixin(Misc):
         if hasattr(self, '_signal_formatter'):
             value_format, formatter, source_signal = self._signal_formatter
             # Re-format current value from source signal with new locale
-            formatter(source_signal.get())
+            formatter(source_signal())
 
     def _refresh_localized_fields(self) -> None:
         """Refresh all registered localized fields with the current locale."""

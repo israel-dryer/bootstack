@@ -29,13 +29,15 @@ def is_signal(obj: Any) -> bool:
         obj: Object to check.
 
     Returns:
-        True if object has Signal-like interface (var, subscribe, get, set).
+        True if object has a Signal-like interface (var, subscribe, set, and is
+        callable for reading). `subscribe`/`var` distinguish it from a plain
+        `tk.Variable`.
     """
     return (
         hasattr(obj, 'var')
         and hasattr(obj, 'subscribe')
-        and hasattr(obj, 'get')
         and hasattr(obj, 'set')
+        and callable(obj)
     )
 
 
@@ -109,7 +111,7 @@ def normalize_signal(
         >>> binding = normalize_signal(var)
         >>> binding.variable is var
         True
-        >>> binding.signal.get()
+        >>> binding.signal()
         'world'
     """
     if value is None:
@@ -148,10 +150,10 @@ def create_signal(default_value: Any) -> SignalBinding:
 
     Examples:
         >>> binding = create_signal("")
-        >>> binding.signal.get()
+        >>> binding.signal()
         ''
         >>> binding = create_signal(0.0)
-        >>> binding.signal.get()
+        >>> binding.signal()
         0.0
     """
     from bootstack.signals import Signal

@@ -65,13 +65,21 @@ memories (see them for rationale and gotchas).
   normalized key compare as defense-in-depth (all-NULL-in-sample columns can
   still be TEXT). NOTE: `_ensure_table` (single-record `insert()` into an empty
   source) still infers from one record — inherent, can't sample.
+- **Signal runtime cleanup** (branch `feat/signal-cleanup`) — removed the
+  deprecated `Signal.get()` (call syntax `signal()` is the single getter) and the
+  `__getattr__` tk.Variable proxy (no more silent Tk-method leak); `set()` now
+  widens an `int` into a `float`-typed signal; `subscribe(immediate=)` no longer
+  swallows callback errors. Rewrote ~19 internal `.get()` callers (entry parts,
+  textarea, localization) to call syntax. **Gotcha fixed:** `is_signal()` duck-
+  typed on `hasattr(obj,'get')`; removing `.get()` made it reject real signals so
+  widgets created fresh empty ones — now checks `var`/`subscribe`/`set`/callable.
+  Tests: `tests/signals/test_signal.py`.
 
 ## Next up — candidates (pick one)
 
 - **Persistent KV / prefs store** (`bs.Store`) — memory `project_persistent_kv_store`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
-- **Signal runtime-cleanup pass** — memory `project_signal_api_audit_findings`.
 
 ---
 
@@ -295,17 +303,15 @@ rename + filtering DSL were already DONE.
    record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
    `bs.Store` (dict-like, file-backed). Ties into theme persistence.
 
-**Signal API — DECIDED (prior session):** `signal()` is the single getter,
-`.set()` writes, `.get()` deprecated (doc-excluded). Do NOT adopt callable-setter
-`signal(x)`.
+**Signal API — DONE (branch `feat/signal-cleanup`):** `signal()` is the single
+getter; `.get()` and the `__getattr__` proxy are REMOVED; `.set()` writes (with
+int→float widening); `subscribe(immediate=)` propagates callback errors. Do NOT
+adopt callable-setter `signal(x)`.
 
 **Carryover (lower priority):**
 1. **Index/landing pages** — root `index.rst`, `widgets/index.rst`,
    `reference/index.rst`, section indexes are bare; add orientation/gallery.
-2. **Signal runtime-cleanup pass** — memory `project_signal_api_audit_findings`
-   (remove `.get()` + `__getattr__` proxy; `set()` numeric widening; silent
-   swallow in `subscribe(immediate=)`).
-3. **Tree/Table doc pages** (deferred — complex). DataSource rename should land first.
+2. **Tree/Table doc pages** (deferred — complex). DataSource rename should land first.
 4. **localization / windowing** `tasks/` how-tos.
 5. **Screenshots pending:** Tooltip/Toast, 7 Dialog pages.
 6. **AppShell deferred improvements:** `nav_pane_width=` not wired to

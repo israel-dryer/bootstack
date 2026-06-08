@@ -102,7 +102,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
         if isinstance(value, (int, float)):
             initial_display = str(value)
         else:
-            initial_display = value or self.textsignal.get() or ''
+            initial_display = value or self.textsignal() or ''
 
         # Parse initial value if format is specified
         if value_format is not None:
@@ -121,7 +121,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             self.textsignal.set('')
 
         # Track last text emitted for input events
-        self._prev_change_text = self.textsignal.get()
+        self._prev_change_text = self.textsignal()
 
         # Subscribe to text changes
         self._on_input_fid = self.textsignal.subscribe(self._handle_change)
@@ -152,7 +152,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
 
     def _handle_change(self, event):
         """Emit <<Input>> event on every text change without parsing."""
-        text = self.textsignal.get()
+        text = self.textsignal()
         if text == self._prev_change_text:
             return
 
@@ -165,7 +165,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             data = ChangeEvent(
                 value=self._value,
                 prev_value=self._prev_changed_value,
-                text=self.textsignal.get(),
+                text=self.textsignal(),
             )
             self.event_generate('<<Change>>', data=data)
             self._prev_changed_value = self._value
@@ -233,7 +233,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             Binding identifier for use with off_enter()
         """
         def enrich_callback(event: Event) -> None:
-            data = {"value": self._value, "text": self.textsignal.get()}
+            data = {"value": self._value, "text": self.textsignal()}
             event.data = data
             return callback(event)
 
@@ -297,7 +297,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             Current display text if no argument provided, None otherwise
         """
         if value is None:
-            return self.textsignal.get()
+            return self.textsignal()
         else:
             self.textsignal.set(value)
             return None
@@ -319,7 +319,7 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
         # Format the value for display
         new_text = self._format_value(self._value)
 
-        if new_text != self.textsignal.get():
+        if new_text != self.textsignal():
             # Temporarily silence input events while normalizing text
             fid = getattr(self, '_on_input_fid', None)
             if fid:

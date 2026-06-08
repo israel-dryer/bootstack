@@ -39,10 +39,11 @@ Call the signal to read its current value. Use ``set()`` to update it:
    name()              # "World"  — call to read
    name.set("Universe")
 
-``set()`` enforces the original type. Assigning a value of a different type
+``set()`` enforces the signal's type. Assigning a value of a different type
 raises ``TypeError`` — a ``Signal(0)`` accepts ``set(5)`` but rejects
-``set(1.5)``. Setting the same value the signal already holds is a no-op and
-does not notify subscribers.
+``set(1.5)``. The one exception is numeric widening: a ``float`` signal also
+accepts an ``int`` (``bs.Signal(0.0).set(5)`` stores ``5.0``). Setting the same
+value the signal already holds is a no-op and does not notify subscribers.
 
 Binding to widgets
 ------------------
@@ -130,4 +131,4 @@ API reference
    :members:
    :undoc-members:
    :special-members: __call__
-   :exclude-members: tk, var, name, get, from_variable
+   :exclude-members: tk, var, name, from_variable

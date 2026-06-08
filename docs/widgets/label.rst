@@ -110,7 +110,7 @@ Bind a ``Signal[str]`` to ``textsignal=`` so the label updates automatically.
    count.subscribe(lambda v: count_text.set(f"Count: {v}"))
 
    bs.Label(textsignal=count_text, font="heading-md", accent="primary")
-   bs.Button("+1", on_click=lambda: count.set(count.get() + 1))
+   bs.Button("+1", on_click=lambda: count.set(count() + 1))
 
 Widget sizing
 ~~~~~~~~~~~~~

@@ -21,7 +21,7 @@ with bs.App(title="Stream + Schedule — visual test", minsize=(600, 500), paddi
                 sched = bs.Schedule(app.tk)
 
                 def _tick():
-                    counter.set(counter.get() + 1)
+                    counter.set(counter() + 1)
 
                 with bs.HStack(gap=8, anchor_items="center"):
                     bs.Label("Tick count:")
