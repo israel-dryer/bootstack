@@ -74,12 +74,51 @@ memories (see them for rationale and gotchas).
   typed on `hasattr(obj,'get')`; removing `.get()` made it reject real signals so
   widgets created fresh empty ones — now checks `var`/`subscribe`/`set`/callable.
   Tests: `tests/signals/test_signal.py`.
+- **Preferences store `bs.Store`** (branch `feat/store`) — public, dict-like,
+  JSON file-backed key-value store for app prefs (`store.py`). `get`/`set`/
+  `delete`/`setdefault`/`update`/`clear`/`keys`/`values`/`items`/`as_dict`/
+  `reload`/`save` + full mapping protocol; write-through `autosave=True` default
+  with atomic writes (temp + `os.replace`); JSON-only values (`SerializationError`
+  otherwise), string keys; corrupt/missing file starts empty; no App required.
+  Lives at `<config>/<app>/<name>.json` via new shared helper
+  `_core/paths.py` (`user_config_dir`/`app_config_dir`/`app_config_file`), which
+  also now backs `App._state_file_path` (window-state) — single config-dir
+  convention. Tests `tests/test_store.py`; docs `reference/store.rst` (with a
+  remember-the-theme recipe). `bs.Store` ships standalone; the App-side
+  persistence integration is deferred to the settings-flattening work below (do
+  NOT add a one-off `remember_theme`/`app.store`). Did NOT refactor window-state
+  to route through Store (only shared the path helper).
 
 ## Next up — candidates (pick one)
 
-- **Persistent KV / prefs store** (`bs.Store`) — memory `project_persistent_kv_store`.
+- **Flatten `AppSettings` into the `App` constructor** (DESIGN DECIDED 2026-06-07,
+  not started; full design in memory `project_app_settings_flattening`) — config
+  is split-brain today (`title`/`size`/`theme` top-level but `locale`/`window_style`/
+  `remember_*` only via `settings={...}`). Promote settings fields to direct
+  `App(...)` kwargs as the single config path. **No public `AppSettings`, no
+  `app.settings`** — config is read/written as **app properties** (`app.theme`,
+  `app.title`, `app.locale`; derived ones like `app.date_format` read-only;
+  cohesive clusters may get a sub-namespace, likely just `app.localization.*`).
+  `AppSettings` survives only as an internal resolved-config holder. Drop public
+  `settings=` (pre-release, no shims — touch `AppShell` + examples). Persistence
+  falls out for free and retires `remember_*`: `bs.App(**store.as_dict())` restore
+  + explicit write-back; keep ONE built-in `remember_window_state` flag for the
+  fiddly geometry string; consider a tolerant `App.from_store()` (version-skew
+  filtering). `bs.Store` stays the separate persistence layer. Riskiest change
+  (central constructor) → its own focused PR.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
+
+## Carryover (deferred)
+
+- **Reference docs thin on examples** — the `docs/reference/*` pages are light on
+  worked examples/patterns across the board; enrich next docs pass. SPECIFICALLY
+  `reference/store.rst` must document the persistence patterns + caveats:
+  `bs.App(**store.as_dict())` restore + write-back, store hygiene (app-config in
+  its own store, separate from app-state), version skew / `App.from_store`, and
+  the window-geometry-stays-a-flag exception. Land any needed Store ergonomics
+  (`update(**kwargs)`, `to_dict` alias) WITH those examples. Memories
+  `project_docs_initiative`, `project_app_settings_flattening`.
 
 ---
 
@@ -298,10 +337,10 @@ rename + filtering DSL were already DONE.
    Table "SQL" search mode; fixed `FormDialog(master=)`→`parent=`. Also docs-config
    cleanup (removed `viewcode`, `html_show_sourcelink`/`copy_source` off,
    `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
-3. **Persistent KV / prefs store** (proposed, memory `project_persistent_kv_store`):
-   no public persistent K-V exists (`MemoryDataSource`=RAM, `SqliteDataSource`=
-   record-oriented, `AppSettings`=window-geometry-only despite its name). Propose
-   `bs.Store` (dict-like, file-backed). Ties into theme persistence.
+3. **Persistent KV / prefs store — DONE** (branch `feat/store`, memory
+   `project_persistent_kv_store`): shipped `bs.Store` (dict-like, JSON file-
+   backed). `AppSettings` is still window-geometry-only (not folded into Store —
+   that was deliberately scoped out).
 
 **Signal API — DONE (branch `feat/signal-cleanup`):** `signal()` is the single
 getter; `.get()` and the `__getattr__` proxy are REMOVED; `.set()` writes (with

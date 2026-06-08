@@ -35,6 +35,9 @@ from bootstack.style import (
 # ── Signals ───────────────────────────────────────────────────────────────────
 from bootstack.signals import Signal, TraceOperation
 
+# ── Preferences store ───────────────────────────────────────────────────────────
+from bootstack.store import Store
+
 # ── Data sources ──────────────────────────────────────────────────────────────
 from bootstack.data import (
     BaseDataSource, MemoryDataSource, SqliteDataSource,
@@ -145,6 +148,8 @@ __all__ = [
     "get_font_families", "set_font_family", "update_font_token",
     # Signals
     "Signal", "TraceOperation",
+    # Preferences store
+    "Store",
     # Data sources
     "BaseDataSource", "MemoryDataSource", "SqliteDataSource", "FileDataSource",
     "FileSourceConfig", "DataSourceProtocol", "Record", "Primitive",

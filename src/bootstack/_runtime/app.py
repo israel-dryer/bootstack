@@ -705,19 +705,12 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
     def _state_file_path(self):
         """Return the path where this App's window state is persisted."""
         from pathlib import Path
-        import os
+        from bootstack._core.paths import app_config_file
         if self.settings.state_path:
             return Path(self.settings.state_path)
         # Per-platform config dir; leaf includes app_name to avoid collisions
         # between multiple bootstack apps installed on the same machine.
-        app_name = self.settings.app_name or 'bootstack'
-        if sys.platform == 'darwin':
-            base = Path.home() / 'Library' / 'Application Support'
-        elif sys.platform == 'win32':
-            base = Path(os.environ.get('APPDATA') or (Path.home() / 'AppData' / 'Roaming'))
-        else:
-            base = Path(os.environ.get('XDG_CONFIG_HOME') or (Path.home() / '.config'))
-        return base / app_name / 'window_state.json'
+        return app_config_file('window_state.json', self.settings.app_name)
 
     def _read_saved_geometry(self):
         """Return the persisted 'WxH+X+Y' string, or None if not present/valid."""

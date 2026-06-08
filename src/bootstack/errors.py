@@ -21,11 +21,13 @@ class DuplicateIdError(BootstackError):
 
 
 class SerializationError(BootstackError):
-    """Raised when a persistent data source receives a value it cannot store.
+    """Raised when a file-backed store or data source receives a value it
+    cannot persist.
 
-    File- and database-backed sources carry non-scalar record fields as JSON,
-    so those values must be JSON-serializable (scalars, lists, dicts). Store
-    arbitrary Python objects in an in-memory source instead.
+    File- and database-backed sources carry non-scalar fields as JSON, and
+    `Store` persists its values as JSON, so values must be JSON-serializable
+    (scalars, lists, dicts). Store arbitrary Python objects in an in-memory
+    source instead.
     """
 
 
