@@ -6,9 +6,9 @@ menus display the resolved shortcut text automatically.
 
 Usage::
 
-    import bootstack as bs
+    from bootstack.shortcuts import get_shortcuts
 
-    shortcuts = bs.get_shortcuts()
+    shortcuts = get_shortcuts()
     shortcuts.register("save", "Mod+S", save_file)
     shortcuts.bind_to(app)
 """

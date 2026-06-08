@@ -25,8 +25,10 @@ Choose the starting theme through the app settings, then switch at runtime with
 
 .. code-block:: python
 
+   from bootstack.style import get_theme
+
    bs.toggle_theme()
-   bs.get_theme()        # "ocean-light"
+   get_theme()        # "ocean-light"
 
 .. note::
 
@@ -45,7 +47,7 @@ dictionaries — ready to populate a theme picker:
 .. code-block:: python
 
    with bs.App() as app:
-       themes = bs.get_themes()
+       themes = get_themes()
        by_label = {t["display_name"]: t["name"] for t in themes}
 
        choice = bs.Signal(themes[0]["display_name"])
@@ -61,9 +63,9 @@ theme. Reach for it when you need a theme color for custom drawing:
 
 .. code-block:: python
 
-   bs.get_theme_color("primary")     # a semantic role
-   bs.get_theme_color("background")  # the window background
-   bs.get_theme_color("blue[200]")   # a step on a shade's spectrum
+   get_theme_color("primary")     # a semantic role
+   get_theme_color("background")  # the window background
+   get_theme_color("blue[200]")   # a step on a shade's spectrum
 
 Tokens come in a few forms:
 
@@ -87,7 +89,7 @@ that point at a step within a shade's spectrum, e.g. ``"orange[400]"``:
 
    import bootstack as bs
 
-   bs.Theme(
+   Theme(
        name="amber-dark",
        display_name="Amber Dark",
        mode="dark",
@@ -112,7 +114,7 @@ every hue a semantic role references has to be present in ``shades``:
 
 .. code-block:: python
 
-   bs.Theme(
+   Theme(
        name="mint-light",
        mode="light",
        foreground="#0b3d2e",
@@ -140,9 +142,9 @@ once.
 
    .. code-block:: python
 
-      bs.Theme(name="amber-light", mode="light", base="light",
+      Theme(name="amber-light", mode="light", base="light",
                background="#f7f2e9", semantic={"primary": "orange[600]"}).install()
-      bs.Theme(name="amber-dark", mode="dark", base="dark",
+      Theme(name="amber-dark", mode="dark", base="dark",
                background="#18130a", semantic={"primary": "orange[400]"}).install()
 
       with bs.App(
@@ -172,7 +174,7 @@ To build a theme from data you already have (loaded from a file, say), use
        "name": "amber-dark", "mode": "dark", "base": "dark",
        "background": "#18130a", "semantic": {"primary": "orange[400]"},
    }
-   bs.Theme.from_dict(spec).install()
+   Theme.from_dict(spec).install()
 
 See also
 --------

@@ -2,7 +2,7 @@ Font Dialog
 ===========
 
 ``bs.ask_font()`` opens a modal font selector and returns the selected font.
-``bs.FontDialog`` gives the same selector as a reusable object.
+``FontDialog`` gives the same selector as a reusable object.
 
 .. image:: /_static/examples/font-dialog-hero-light.png
    :class: bs-screenshot-light bs-dialog-screenshot
@@ -56,11 +56,13 @@ for the full token list. ``None`` is returned if the user cancels.
 Reusable dialog object
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``bs.FontDialog`` when you need to inspect the result after ``show()``:
+Use ``FontDialog`` when you need to inspect the result after ``show()``:
 
 .. code-block:: python
 
-   dlg = bs.FontDialog(title="Code Font", default_font="code")
+   from bootstack.dialogs import FontDialog
+
+   dlg = FontDialog(title="Code Font", default_font="code")
    dlg.show()
 
    if dlg.result:
@@ -89,9 +91,9 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.ask_font
+.. autofunction:: bootstack.dialogs.ask_font
 
-.. autoclass:: bootstack.widgets.dialogs.FontDialog
+.. autoclass:: bootstack.dialogs.FontDialog
    :members:
 
 Full Example

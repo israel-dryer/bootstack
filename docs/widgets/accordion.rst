@@ -16,7 +16,7 @@ added via ``add()``.
 Usage
 -----
 
-Basic Accordion
+Basic accordion
 ~~~~~~~~~~~~~~~
 
 ``add(title)`` returns an ``AccordionSection`` context manager. Place child

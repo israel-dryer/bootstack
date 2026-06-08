@@ -102,7 +102,7 @@ Three forms are accepted:
 - **Modifier pattern** — ``"Mod+S"``, ``"Mod+Shift+N"``, ``"F5"`` — translated
   to the platform-correct string automatically (``"Ctrl+S"`` on Windows,
   ``"⌘S"`` on macOS).
-- **Registered key** — a name previously passed to ``bs.get_shortcuts().register()``.
+- **Registered key** — a name previously passed to ``get_shortcuts().register()``.
   Resolved to the platform display string automatically.
 - **Literal string** — anything else is shown as-is (e.g. ``"Ctrl+S"``).
 

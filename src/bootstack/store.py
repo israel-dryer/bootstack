@@ -66,7 +66,7 @@ class Store:
 
     Example:
         ```python
-        store = bs.Store("settings")
+        store = Store("settings")
         app = bs.App(theme=store.get("theme", "light"))
         # later, when the user switches theme:
         store.set("theme", "bootstrap-dark")

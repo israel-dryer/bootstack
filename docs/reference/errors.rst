@@ -2,18 +2,20 @@ Errors
 ======
 
 Every exception the framework raises inherits from :class:`BootstackError
-<bootstack.errors.BootstackError>`, so a single ``except bs.BootstackError``
+<bootstack.errors.BootstackError>`, so a single ``except BootstackError``
 catches anything bootstack throws while letting ordinary Python errors propagate.
 The individual subclasses let you catch one specific failure when you want to
 handle it precisely.
 
 .. code-block:: python
 
+   from bootstack.errors import BootstackError
+
    import bootstack as bs
 
    try:
        risky_setup()
-   except bs.BootstackError as err:
+   except BootstackError as err:
        # any framework error — log it and fall back
        log.warning("bootstack rejected the setup: %s", err)
 
@@ -30,9 +32,11 @@ be misspelled; reach for the string form only for dynamic event names:
 
 .. code-block:: python
 
+   from bootstack.errors import UnknownEventError
+
    try:
        widget.on(event_name, handler)
-   except bs.UnknownEventError as err:
+   except UnknownEventError as err:
        print("no such event:", err)
 
 ``ParentResolutionError``
@@ -61,11 +65,14 @@ if a source is asked to auto-assign an id but the existing ids aren't integers:
 
 .. code-block:: python
 
-   ds = bs.MemoryDataSource().load([{"id": 1, "name": "Ada"}])
+   from bootstack.data import MemoryDataSource
+   from bootstack.errors import DuplicateIdError
+
+   ds = MemoryDataSource().load([{"id": 1, "name": "Ada"}])
 
    try:
        ds.insert({"id": 1, "name": "Linus"})   # 1 already exists
-   except bs.DuplicateIdError as err:
+   except DuplicateIdError as err:
        print("id clash:", err)
 
 ``SerializationError``
@@ -79,11 +86,14 @@ object, use an in-memory source instead:
 
 .. code-block:: python
 
-   store = bs.Store("settings")
+   from bootstack.store import Store
+   from bootstack.errors import SerializationError
+
+   store = Store("settings")
 
    try:
        store.set("connection", open("db.sqlite"))   # not JSON-serializable
-   except bs.SerializationError as err:
+   except SerializationError as err:
        print("can't persist that:", err)
 
 API reference

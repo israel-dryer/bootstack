@@ -14,7 +14,7 @@ from tkinter import Widget
 
 from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
-from bootstack.dialogs.dialog import Dialog
+from bootstack.dialogs._impl.dialog import Dialog
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets._impl.composites.calendar import Calendar
 

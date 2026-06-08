@@ -2,7 +2,7 @@
 
 Build filter conditions with `col` and combine them with the usual operators::
 
-    from bootstack import col
+    from bootstack.data import col
 
     ds.where(col("age") >= 25)
     ds.where((col("status") == "active") & col("name").contains("ada"))

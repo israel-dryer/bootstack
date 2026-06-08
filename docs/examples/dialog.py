@@ -1,7 +1,8 @@
 import bootstack as bs
 
+from bootstack.dialogs import Dialog, DialogButton
 def show_simple():
-    dlg = bs.Dialog(
+    dlg = Dialog(
         title="Confirm deletion",
         content_builder=lambda frame: [
             bs.VStack(padding=(24, 20), gap=8, parent=frame),
@@ -9,8 +10,8 @@ def show_simple():
             bs.Label("This action cannot be undone.", font="caption"),
         ],
         buttons=[
-            bs.DialogButton("Delete", role="danger", result="delete"),
-            bs.DialogButton("Cancel", role="cancel"),
+            DialogButton("Delete", role="danger", result="delete"),
+            DialogButton("Cancel", role="cancel"),
         ],
     )
     dlg.show()
@@ -22,12 +23,12 @@ def show_info():
             bs.Label("bootstack 2.1.0 is ready to install.")
             bs.Label("Release notes: improved themes, new widgets.", font="caption")
 
-    dlg = bs.Dialog(
+    dlg = Dialog(
         title="Update available",
         content_builder=build,
         buttons=[
-            bs.DialogButton("Install now", role="primary", result="install", default=True),
-            bs.DialogButton("Later",       role="cancel"),
+            DialogButton("Install now", role="primary", result="install", default=True),
+            DialogButton("Later",       role="cancel"),
         ],
         min_size=(420, 180),
     )
@@ -38,10 +39,10 @@ def show_anchored():
         with bs.VStack(padding=16, gap=8, parent=frame):
             bs.Label("Saved to Documents/report.pdf")
 
-    dlg = bs.Dialog(
+    dlg = Dialog(
         title=" ",
         content_builder=build,
-        buttons=[bs.DialogButton("OK", role="secondary", result=True, default=True)],
+        buttons=[DialogButton("OK", role="secondary", result=True, default=True)],
         min_size=(320, 100),
     )
     dlg.show()

@@ -1,4 +1,5 @@
 import bootstack as bs
+from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 
@@ -14,12 +15,12 @@ def hero():
                 _Label(container, text="All 12 members will be notified.",
                        font="caption").pack(anchor="w", pady=(6, 0))
 
-            _dlg[0] = bs.Dialog(
+            _dlg[0] = Dialog(
                 title="Publish Report",
                 content_builder=build,
                 buttons=[
-                    bs.DialogButton("Cancel", role="cancel"),
-                    bs.DialogButton("Publish", role="primary", result="publish", default=True),
+                    DialogButton("Cancel", role="cancel"),
+                    DialogButton("Publish", role="primary", result="publish", default=True),
                 ],
                 min_size=(360, 0),
             )

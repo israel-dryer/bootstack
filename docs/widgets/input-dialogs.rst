@@ -111,17 +111,17 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.widgets.dialogs.ask_string
+.. autofunction:: bootstack.dialogs.ask_string
 
-.. autofunction:: bootstack.widgets.dialogs.ask_integer
+.. autofunction:: bootstack.dialogs.ask_integer
 
-.. autofunction:: bootstack.widgets.dialogs.ask_float
+.. autofunction:: bootstack.dialogs.ask_float
 
-.. autofunction:: bootstack.widgets.dialogs.ask_item
+.. autofunction:: bootstack.dialogs.ask_item
 
-.. autofunction:: bootstack.widgets.dialogs.ask_date
+.. autofunction:: bootstack.dialogs.ask_date
 
-.. autofunction:: bootstack.widgets.dialogs.ask_date_range
+.. autofunction:: bootstack.dialogs.ask_date_range
 
 Full Example
 ------------

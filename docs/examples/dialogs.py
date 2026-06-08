@@ -1,23 +1,24 @@
 import bootstack as bs
 
+from bootstack.dialogs import Dialog, DialogButton, FormDialog
 def show_custom():
     def build(frame):
         with bs.VStack(padding=20, gap=8, parent=frame):
             bs.Label("Are you sure you want to delete 3 items?")
             bs.Label("This action cannot be undone.", font="caption")
 
-    dlg = bs.Dialog(
+    dlg = Dialog(
         title="Delete items",
         content_builder=build,
         buttons=[
-            bs.DialogButton("Delete", role="danger", result="delete", default=True),
-            bs.DialogButton("Cancel", role="cancel"),
+            DialogButton("Delete", role="danger", result="delete", default=True),
+            DialogButton("Cancel", role="cancel"),
         ],
     )
     dlg.show()
 
 def show_form():
-    dlg = bs.FormDialog(
+    dlg = FormDialog(
         title="New Contact",
         data={"name": "", "email": "", "phone": ""},
     )

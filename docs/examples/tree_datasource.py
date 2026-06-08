@@ -12,6 +12,7 @@ Run with:
 
 import bootstack as bs
 
+from bootstack.data import MemoryDataSource, SqliteDataSource
 # A flat org chart: every row carries its own id and its parent's id.
 # parent_id is None for the roots.
 ORG = [
@@ -35,7 +36,7 @@ with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)
         # leaf people do not — decided by a batched has-children check per expand.
         with bs.VStack(gap=6):
             bs.Label("MemoryDataSource", font="heading-sm")
-            mem = bs.MemoryDataSource()
+            mem = MemoryDataSource()
             mem.load([dict(r) for r in ORG])
             bs.Tree(
                 data_source=mem,
@@ -48,7 +49,7 @@ with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)
         # SQLite source with a node_builder for computed labels + icons.
         with bs.VStack(gap=6):
             bs.Label("SqliteDataSource + node_builder", font="heading-sm")
-            db = bs.SqliteDataSource()
+            db = SqliteDataSource()
             db.load([dict(r) for r in ORG])
             tree = bs.Tree(
                 data_source=db,

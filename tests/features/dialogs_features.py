@@ -4,6 +4,7 @@ Run with:  python tests/features/dialogs_features.py
 """
 import bootstack as bs
 from datetime import date
+from bootstack.dialogs import Dialog, DialogButton, FormDialog
 
 
 def show(result):
@@ -104,12 +105,12 @@ with bs.App(title="Dialog Features", padding=20, gap=16) as app:
             _Label(c, text="Send report to all 48 team members?").pack(anchor="w")
             _Label(c, text="This cannot be undone.", font="caption").pack(anchor="w", pady=(4, 0))
 
-        dlg = bs.Dialog(
+        dlg = Dialog(
             title="Confirm Send",
             content_builder=build,
             buttons=[
-                bs.DialogButton("Cancel", role="cancel"),
-                bs.DialogButton("Send", role="primary", result="send", default=True),
+                DialogButton("Cancel", role="cancel"),
+                DialogButton("Send", role="primary", result="send", default=True),
             ],
             min_size=(320, 0),
         )
@@ -125,7 +126,7 @@ with bs.App(title="Dialog Features", padding=20, gap=16) as app:
     bs.Label("FormDialog", font="heading-sm")
 
     def open_form():
-        dlg = bs.FormDialog(
+        dlg = FormDialog(
             title="New Contact",
             data={"name": "", "email": "", "phone": ""},
         )
@@ -133,7 +134,7 @@ with bs.App(title="Dialog Features", padding=20, gap=16) as app:
         show(dlg.result)
 
     def open_form_2col():
-        dlg = bs.FormDialog(
+        dlg = FormDialog(
             title="Address",
             data={"street": "", "city": "", "state": "", "zip": ""},
             col_count=2,

@@ -29,7 +29,7 @@ from bootstack.widgets._impl.mixins.validation_mixin import ValidationMixin
 from bootstack.widgets.types import Master
 
 if TYPE_CHECKING:
-    from bootstack.dialogs.dialog import DialogButton
+    from bootstack.dialogs._impl.dialog import DialogButton
     ButtonInput = str | Mapping[str, Any] | DialogButton
 
 DType = Literal['int', 'float', 'bool', 'date', 'datetime', 'password', 'str'] | type | None
@@ -718,7 +718,7 @@ class Form(Frame):
         return normalized
 
     def _normalize_buttons(self, buttons: Sequence[ButtonInput]) -> list["DialogButton"]:
-        from bootstack.dialogs.dialog import DialogButton  # local import to avoid circular init
+        from bootstack.dialogs._impl.dialog import DialogButton  # local import to avoid circular init
 
         normalized: list[DialogButton] = []
         for raw in buttons:

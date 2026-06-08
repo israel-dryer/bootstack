@@ -204,17 +204,10 @@ automatically.
 Custom image
 ~~~~~~~~~~~~
 
-Pass a ``bs.Image`` object to ``image=`` when you need something other than a
-Bootstrap Icon. ``bs.Image`` handles loading, caching, and DPI scaling.
-
-.. code-block:: python
-
-   img = bs.Image.open("logo.png")
-   bs.Button("Launch", image=img, icon_position="left")
-
-   # From bytes (e.g. an embedded resource)
-   img = bs.Image.from_bytes(raw_bytes)
-   bs.Button("Custom", image=img)
+Besides Bootstrap Icon names, ``image=`` accepts an image handle for custom
+artwork (logos, embedded resources). The public image-handle API is being
+finalized for an upcoming release; until then, prefer icon names for button
+artwork.
 
 Handling clicks
 ~~~~~~~~~~~~~~~

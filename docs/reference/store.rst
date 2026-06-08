@@ -1,4 +1,4 @@
-Preferences store
+Preferences Store
 =================
 
 ``Store`` is a small, file-backed key-value store for the bits of state an app
@@ -19,9 +19,11 @@ directory (``Library/Application Support`` on macOS, ``%APPDATA%`` on Windows,
 
 .. code-block:: python
 
+   from bootstack.store import Store
+
    import bootstack as bs
 
-   store = bs.Store("settings")     # <config>/<app>/settings.json
+   store = Store("settings")     # <config>/<app>/settings.json
 
 Pass ``path=`` for an explicit location, or ``app_name=`` to override the
 sub-directory. A ``Store`` does not need a running ``App`` — it is plain file
@@ -79,7 +81,7 @@ Pass ``autosave=False`` to batch changes in memory and flush them yourself with
 
 .. code-block:: python
 
-   store = bs.Store("settings", autosave=False)
+   store = Store("settings", autosave=False)
    store.update(collected_settings)
    store.save()
 
@@ -94,7 +96,7 @@ creating the app, and write it whenever it changes:
 
 .. code-block:: python
 
-   store = bs.Store("settings")
+   store = Store("settings")
 
    with bs.App(theme=store.get("theme", "bootstrap-light")) as app:
        app.on_theme_change(lambda theme: store.update(theme=theme))
@@ -113,7 +115,7 @@ loads cleanly instead of raising:
 
 .. code-block:: python
 
-   store = bs.Store("settings")          # app config, in its own store
+   store = Store("settings")          # app config, in its own store
 
    app = bs.App.from_store(store)        # restore; empty store → defaults
    app.on_theme_change(lambda theme: store.update(theme=theme))

@@ -12,8 +12,7 @@ import time
 
 import pytest
 
-from bootstack import col
-from bootstack.data import MemoryDataSource, SqliteDataSource
+from bootstack.data import col, MemoryDataSource, SqliteDataSource
 
 
 SOURCES = [MemoryDataSource, SqliteDataSource]

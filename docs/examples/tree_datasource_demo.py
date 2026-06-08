@@ -16,6 +16,7 @@ Run with:
 
 import bootstack as bs
 
+from bootstack.data import SqliteDataSource
 # --------------------------------------------------------------------------- data
 
 DIVISIONS = ["Engineering", "Design", "Sales", "Marketing",
@@ -65,7 +66,7 @@ with bs.App(title="Tree — lazy loading at scale", padding=16, gap=12,
 
     # A SqliteDataSource holds the whole flat dataset. Wrap _query so the demo
     # can show that one query runs per expand (the framework does not need this).
-    src = bs.SqliteDataSource()
+    src = SqliteDataSource()
     src.load([dict(r) for r in ROWS])
 
     stats = {"queries": 0}

@@ -15,10 +15,10 @@ ttk = SimpleNamespace(
     Label=Label,
 )
 from bootstack.i18n import MessageCatalog
-from bootstack.dialogs.datedialog import DateDialog
-from bootstack.dialogs.dialog import Dialog, DialogButton
-from bootstack.dialogs.fontdialog import FontDialog
-from bootstack.dialogs.message import MessageBox
+from bootstack.dialogs._impl.datedialog import DateDialog
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton
+from bootstack.dialogs._impl.fontdialog import FontDialog
+from bootstack.dialogs._impl.message import MessageBox
 from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack.widgets._impl.composites.numericentry import NumericEntry
 from bootstack.widgets._impl.composites.dateentry import DateEntry
@@ -328,7 +328,7 @@ class QueryBox:
         Returns:
             Selected color or None if canceled.
         """
-        from bootstack.dialogs.colorchooser import ColorChooserDialog
+        from bootstack.dialogs._impl.colorchooser import ColorChooserDialog
 
         position = kwargs.pop("position", None)
         dialog = ColorChooserDialog(master, title, value)

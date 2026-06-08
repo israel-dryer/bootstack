@@ -113,7 +113,7 @@ class SqliteDataSource(BaseDataSource):
 
         Use a `with` block to close automatically::
 
-            with bs.SqliteDataSource("app.db") as ds:
+            with SqliteDataSource("app.db") as ds:
                 ds.load(rows)
         """
         try:

@@ -13,7 +13,8 @@ import random
 import threading
 
 import bootstack as bs
-from bootstack import col
+from bootstack.data import MemoryDataSource
+from bootstack.data import col
 
 NAMES = ["Alice", "Bob", "Carol", "David", "Eva", "Frank", "Grace", "Henry"]
 STATUSES = ["active", "idle", "offline"]
@@ -32,7 +33,7 @@ def row(name: str, status: str) -> dict:
 
 
 # A shared source — the feed writes to it, the widgets read from it.
-ds = bs.MemoryDataSource().load([row(n, "active") for n in NAMES[:3]])
+ds = MemoryDataSource().load([row(n, "active") for n in NAMES[:3]])
 
 _stop = threading.Event()
 

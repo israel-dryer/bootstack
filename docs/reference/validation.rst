@@ -185,13 +185,15 @@ for checking values from config, a CLI, or a background job:
 
 .. code-block:: python
 
-   rule = bs.ValidationRule("stringLength", min=3, max=8)
+   from bootstack.validation import ValidationRule
+
+   rule = ValidationRule("stringLength", min=3, max=8)
    result = rule.validate("hi")
    result.is_valid     # False
    result.message      # "Enter between 3 and 8 characters."
 
-   bs.ValidationRule("email").validate("a@b.co").is_valid       # True
-   bs.ValidationRule("compare", other_field="yes").validate("no").is_valid  # False
+   ValidationRule("email").validate("a@b.co").is_valid       # True
+   ValidationRule("compare", other_field="yes").validate("no").is_valid  # False
 
 See also
 --------

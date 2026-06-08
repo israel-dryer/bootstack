@@ -474,7 +474,9 @@ table refreshes itself:
 
 .. code-block:: python
 
-   ds = bs.SqliteDataSource("people.db")
+   from bootstack.data import SqliteDataSource
+
+   ds = SqliteDataSource("people.db")
    ds.load(people)
 
    table = bs.DataTable(columns=cols, data_source=ds)

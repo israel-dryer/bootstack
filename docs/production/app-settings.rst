@@ -1,4 +1,4 @@
-App configuration
+App Configuration
 =================
 
 An app is configured entirely through flat constructor keyword arguments, and
@@ -153,7 +153,9 @@ renamed or removed keys) still loads cleanly instead of raising:
 
 .. code-block:: python
 
-   store = bs.Store("settings")          # app config, in its own store
+   from bootstack.store import Store
+
+   store = Store("settings")          # app config, in its own store
 
    app = bs.App.from_store(store)        # restore; empty store → defaults
    app.on_theme_change(lambda theme: store.update(theme=theme))

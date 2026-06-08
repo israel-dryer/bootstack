@@ -16,6 +16,7 @@ from pathlib import Path
 
 import bootstack as bs
 
+from bootstack.data import FileDataSource
 DEPARTMENTS = ["Engineering", "Design", "Sales", "Support"]
 
 
@@ -34,7 +35,7 @@ def main() -> None:
     csv_path = make_csv()
 
     # Stream the file into a SQLite working store (temporary, auto-cleaned).
-    source = bs.FileDataSource(csv_path)
+    source = FileDataSource(csv_path)
     source.load()
 
     with bs.App(title="FileDataSource", size=(720, 480), padding=12, gap=8) as app:

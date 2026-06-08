@@ -18,8 +18,7 @@ import json
 
 import pytest
 
-from bootstack import col
-from bootstack.data import FileDataSource, MemoryDataSource, SqliteDataSource
+from bootstack.data import col, FileDataSource, MemoryDataSource, SqliteDataSource
 from bootstack.errors import SerializationError
 
 

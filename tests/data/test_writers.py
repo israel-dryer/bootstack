@@ -126,7 +126,7 @@ def test_save_selected_only(tmp_path):
 
 
 def test_save_respects_active_filter(tmp_path):
-    from bootstack import col
+    from bootstack.data import col
 
     ds = SqliteDataSource().load(ROWS)
     ds.where(col("name") == "Bob")

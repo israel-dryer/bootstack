@@ -73,7 +73,9 @@ For database or API-backed data, pass a ``DataSourceProtocol`` implementation:
 
 .. code-block:: python
 
-   ds = bs.MemoryDataSource().load(records)
+   from bootstack.data import MemoryDataSource
+
+   ds = MemoryDataSource().load(records)
    bs.ListView(data_source=ds)
 
 Mutate the source directly — even from a background thread — and the list

@@ -4,9 +4,9 @@ A theme is declared in code with the keyword constructor and installed so it
 can be activated by name:
 
 ```python
-import bootstack as bs
+from bootstack.style import Theme
 
-amber_dark = bs.Theme(
+amber_dark = Theme(
     name="amber-dark",
     display_name="Amber Dark",
     mode="dark",

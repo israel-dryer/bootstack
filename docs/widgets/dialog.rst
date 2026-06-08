@@ -1,7 +1,7 @@
 Dialog
 ======
 
-``bs.Dialog`` creates a fully custom modal window. Provide a
+``Dialog`` creates a fully custom modal window. Provide a
 ``content_builder=`` function to lay out any widgets, and a ``buttons=`` list
 to define the footer.
 
@@ -24,12 +24,14 @@ bootstack layout or widget:
 
 .. code-block:: python
 
+   from bootstack.dialogs import Dialog
+
    def build(frame):
        with bs.VStack(padding=24, gap=12, parent=frame):
            bs.Label("New version available", font="heading-sm")
            bs.Label("bootstack 2.1.0 is ready to install.")
 
-   dlg = bs.Dialog(title="Update", content_builder=build)
+   dlg = Dialog(title="Update", content_builder=build)
    dlg.show()
 
 Button roles
@@ -61,13 +63,13 @@ to when that button is clicked:
 
 .. code-block:: python
 
-   dlg = bs.Dialog(
+   dlg = Dialog(
        title="Save changes?",
        content_builder=build,
        buttons=[
-           bs.DialogButton("Save",    role="primary", result="save",    default=True),
-           bs.DialogButton("Discard", role="danger",  result="discard"),
-           bs.DialogButton("Cancel",  role="cancel"),
+           DialogButton("Save",    role="primary", result="save",    default=True),
+           DialogButton("Discard", role="danger",  result="discard"),
+           DialogButton("Cancel",  role="cancel"),
        ],
    )
    dlg.show()
@@ -121,11 +123,11 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.dialogs.dialog.Dialog
+.. autoclass:: bootstack.dialogs.Dialog
    :members:
    :undoc-members:
 
-.. autoclass:: bootstack.dialogs.dialog.DialogButton
+.. autoclass:: bootstack.dialogs.DialogButton
    :members:
 
 Full Example

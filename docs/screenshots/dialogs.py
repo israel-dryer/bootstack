@@ -1,4 +1,5 @@
 import bootstack as bs
+from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 
@@ -22,12 +23,12 @@ with bs.App(title="My App", size=(680, 340), padding=24) as app:
             _Label(container, text="All 12 members will be notified.",
                    font="caption").pack(anchor="w", pady=(6, 0))
 
-        _dlg = bs.Dialog(
+        _dlg = Dialog(
             title="Publish Report",
             content_builder=build,
             buttons=[
-                bs.DialogButton("Cancel", role="cancel"),
-                bs.DialogButton("Publish", role="primary", result="publish", default=True),
+                DialogButton("Cancel", role="cancel"),
+                DialogButton("Publish", role="primary", result="publish", default=True),
             ],
             min_size=(360, 0),
         )

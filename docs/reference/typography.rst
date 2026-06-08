@@ -131,11 +131,13 @@ The monospace ``code`` token keeps its own family so code stays readable; pass
 
 .. code-block:: python
 
+   from bootstack.style import set_font_family
+
    import bootstack as bs
 
    with bs.App() as app:
-       bs.set_font_family("Inter")                       # body, headings, labels…
-       bs.set_font_family("Inter", mono_family="Fira Code")
+       set_font_family("Inter")                       # body, headings, labels…
+       set_font_family("Inter", mono_family="Fira Code")
    app.run()
 
 If the requested family is not installed, a warning is issued and the current
@@ -150,9 +152,9 @@ applies everywhere the token is used:
 
 .. code-block:: python
 
-   bs.update_font_token("body", size=12)              # larger default text
-   bs.update_font_token("code", family="JetBrains Mono")
-   bs.update_font_token("caption", slant="italic")
+   update_font_token("body", size=12)              # larger default text
+   update_font_token("code", family="JetBrains Mono")
+   update_font_token("caption", slant="italic")
 
 Listing installed families
 ---------------------------
@@ -164,7 +166,7 @@ before calling ``set_font_family``:
 .. code-block:: python
 
    with bs.App() as app:
-       families = bs.get_font_families()
+       families = get_font_families()
        bs.Select(options=families, signal=bs.Signal(families[0]))
    app.run()
 
@@ -179,7 +181,7 @@ Choosing a font interactively
 
    choice = bs.ask_font(default_font="body")
    if choice:
-       bs.update_font_token("body", family=choice.family, size=choice.size)
+       update_font_token("body", family=choice.family, size=choice.size)
 
 See also
 --------
@@ -198,4 +200,4 @@ Functions for setting fonts at runtime, plus the ``FontChoice`` result type.
 .. autofunction:: bootstack.style.update_font_token
 .. autofunction:: bootstack.style.get_font_families
 
-.. autoclass:: bootstack.widgets.dialogs.FontChoice
+.. autoclass:: bootstack.dialogs.FontChoice

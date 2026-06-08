@@ -12,17 +12,19 @@ A shortcut has three parts: a **key** (your own identifier, e.g. ``"save"``), a
 The shortcut service
 --------------------
 
-``bs.get_shortcuts()`` returns the shared service. Register your shortcuts, then
+``get_shortcuts()`` returns the shared service. Register your shortcuts, then
 call ``bind_to(app)`` once to make them live. ``register()`` returns the created
 :class:`Shortcut <bootstack.shortcuts.Shortcut>`, and raises ``ValueError`` if
 the key is already taken — so each key is registered exactly once:
 
 .. code-block:: python
 
+   from bootstack.shortcuts import get_shortcuts
+
    import bootstack as bs
 
    with bs.App(title="Editor") as app:
-       shortcuts = bs.get_shortcuts()
+       shortcuts = get_shortcuts()
        shortcuts.register("save", "Mod+S", save_file)
        shortcuts.register("find", "Mod+F", open_search)
        shortcuts.register("quit", "Mod+Q", app.quit)

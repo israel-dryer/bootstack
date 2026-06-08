@@ -57,7 +57,7 @@ def test_theme_setter_is_live(make_app):
     assert app.theme == "bootstrap-dark"
     app.theme = "bootstrap-light"
     assert app.theme == "bootstrap-light"
-    assert bs.get_theme() == "bootstrap-light"
+    assert bs.style.get_theme() == "bootstrap-light"
 
 
 @pytest.mark.gui

@@ -7,6 +7,8 @@ Each sidebar item opens a page demonstrating a widget group.
 
 import bootstack as bs
 from bootstack.signals import Signal
+from bootstack.dialogs import FormDialog
+from bootstack.style import get_style
 
 
 # =============================================================================
@@ -632,7 +634,7 @@ def _build_dialogs_page():
 
         with bs.GroupBox("FormDialog", fill="horizontal"):
             def _show_form():
-                dlg = bs.FormDialog(
+                dlg = FormDialog(
                     title="Settings",
                     data={"name": "", "email": ""},
                     items=[
@@ -656,7 +658,7 @@ def _build_theme_page():
         bs.Label("Switch themes to see all widgets update in real time.", accent="secondary")
 
         with bs.GroupBox("Theme Selector", fill="horizontal", layout="grid", columns=2):
-            style = bs.get_style()
+            style = get_style()
             theme_names = sorted(s["name"] for s in style.theme_provider.list_themes())
 
             with bs.HStack(gap=8):

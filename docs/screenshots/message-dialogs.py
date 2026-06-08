@@ -1,4 +1,5 @@
 import bootstack as bs
+from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack._core.images import Image as _ImageService
@@ -28,12 +29,12 @@ def hero():
                 _Label(msg_frame, text="This action cannot be undone.",
                        font="caption").pack(anchor="w", pady=(4, 0))
 
-            _dlg[0] = bs.Dialog(
+            _dlg[0] = Dialog(
                 title="Confirm Delete",
                 content_builder=build,
                 buttons=[
-                    bs.DialogButton("Cancel", role="cancel"),
-                    bs.DialogButton("Delete", role="danger", result="delete"),
+                    DialogButton("Cancel", role="cancel"),
+                    DialogButton("Delete", role="danger", result="delete"),
                 ],
                 min_size=(420, 160),
             )
@@ -73,10 +74,10 @@ def alert():
                 msg_frame.pack(side="left", anchor="center")
                 _Label(msg_frame, text="File saved successfully.").pack(anchor="w")
 
-            _dlg[0] = bs.Dialog(
+            _dlg[0] = Dialog(
                 title="Done",
                 content_builder=build,
-                buttons=[bs.DialogButton("OK", role="secondary", default=True)],
+                buttons=[DialogButton("OK", role="secondary", default=True)],
                 min_size=(360, 140),
             )
             _dlg[0].show(modal=False)

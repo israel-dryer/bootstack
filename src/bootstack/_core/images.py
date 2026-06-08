@@ -12,7 +12,7 @@ Examples:
     Basic usage with file paths:
 
     ```python
-    from bootstack import Image
+    from bootstack._core.images import Image
 
     # Load an image from disk (cached automatically)
     photo = Image.open("icons/save.png")

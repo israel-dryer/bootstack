@@ -1,7 +1,7 @@
 Form Dialog
 ===========
 
-``bs.FormDialog`` embeds a :class:`Form <bootstack.widgets.forms.Form>` in a
+``FormDialog`` embeds a :class:`Form <bootstack.widgets.forms.Form>` in a
 dialog. Pass ``data=`` to generate fields automatically from a dict, or
 ``items=`` for an explicit layout.
 
@@ -24,7 +24,9 @@ field contents:
 
 .. code-block:: python
 
-   dlg = bs.FormDialog(
+   from bootstack.dialogs import FormDialog
+
+   dlg = FormDialog(
        title="Edit Profile",
        data={"username": "alice", "bio": "", "website": ""},
    )
@@ -43,7 +45,7 @@ Use ``col_count=`` to lay fields out in multiple columns:
 
 .. code-block:: python
 
-   dlg = bs.FormDialog(
+   dlg = FormDialog(
        title="Shipping Address",
        data={"street": "", "city": "", "state": "", "zip": ""},
        col_count=2,
@@ -61,7 +63,7 @@ open:
    def on_change(data):
        print(f"Current values: {data}")
 
-   dlg = bs.FormDialog(
+   dlg = FormDialog(
        title="Live Preview",
        data={"title": "", "description": ""},
        on_data_change=on_change,
@@ -75,7 +77,7 @@ Pass ``resizable=True`` to allow the user to resize the dialog window:
 
 .. code-block:: python
 
-   dlg = bs.FormDialog(
+   dlg = FormDialog(
        title="Notes",
        data={"content": ""},
        resizable=True,
@@ -93,7 +95,7 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.dialogs.FormDialog
+.. autoclass:: bootstack.dialogs.FormDialog
    :members:
 
 Full Example

@@ -63,7 +63,7 @@ Accent colors
    bs.Calendar(accent="success")
    bs.Calendar(accent="danger")
 
-Min / Max bounds
+Min / max bounds
 ~~~~~~~~~~~~~~~~
 
 Dates outside the bounds are disabled and month navigation is blocked

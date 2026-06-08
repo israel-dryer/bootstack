@@ -7,3 +7,4 @@ Getting Started
    installation
    quickstart
    app-structures
+   api-overview

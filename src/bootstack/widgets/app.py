@@ -147,7 +147,9 @@ class App(AppConfigMixin, PublicContainer):
 
         Example:
             ```python
-            store = bs.Store("settings")
+            from bootstack.store import Store
+
+            store = Store("settings")
             app = bs.App.from_store(store)
             app.on_theme_change(lambda t: store.update(theme=t))
             ```

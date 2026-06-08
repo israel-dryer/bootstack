@@ -1,14 +1,15 @@
 import bootstack as bs
 
+from bootstack.dialogs import FormDialog
 def show_simple():
-    dlg = bs.FormDialog(
+    dlg = FormDialog(
         title="New Contact",
         data={"name": "", "email": "", "phone": ""},
     )
     dlg.show()
 
 def show_multi_col():
-    dlg = bs.FormDialog(
+    dlg = FormDialog(
         title="Shipping Address",
         data={"street": "", "city": "", "state": "", "zip": ""},
         col_count=2,

@@ -1640,7 +1640,7 @@ class TableView(Frame):
         return self._open_form_dialog(record)
 
     def _open_form_dialog(self, record: dict | None, *, defaults: dict | None = None) -> dict | None:
-        from bootstack.dialogs.formdialog import FormDialog
+        from bootstack.dialogs._impl.formdialog import FormDialog
 
         try:
             # Ensure geometry info is current so centering uses real widget bounds
@@ -2760,7 +2760,7 @@ class TableView(Frame):
 
     def _show_column_filter_dialog(self, column_idx: int) -> None:
         """Show FilterDialog with distinct values for the column."""
-        from bootstack.dialogs.filterdialog import FilterDialog
+        from bootstack.dialogs._impl.filterdialog import FilterDialog
 
         if column_idx >= len(self._column_keys):
             return
@@ -3001,7 +3001,7 @@ class TableView(Frame):
 
     def _show_column_chooser_dialog(self) -> None:
         """Show a dialog to select which columns are visible."""
-        from bootstack.dialogs.filterdialog import FilterDialog
+        from bootstack.dialogs._impl.filterdialog import FilterDialog
 
         if not self._heading_texts:
             return

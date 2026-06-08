@@ -16,6 +16,7 @@ from __future__ import annotations
 import pytest
 
 import bootstack as bs
+from bootstack.data import MemoryDataSource
 
 
 ROWS = [
@@ -65,7 +66,7 @@ def _rowheight(table) -> int:
 
 @pytest.mark.gui
 def test_memory_source_renders(shown_app):
-    src = bs.MemoryDataSource()
+    src = MemoryDataSource()
     src.load([dict(r) for r in ROWS])
     table = bs.DataTable(data_source=src, columns=["name", "role"], page_size=10)
     _pump(shown_app)
@@ -79,7 +80,7 @@ def test_memory_source_renders(shown_app):
 def test_memory_source_select_rows_roundtrip(shown_app):
     """The bug the decoupling fixed: select_rows silently did nothing for a
     non-Sqlite source because identity was read from a Sqlite-only column."""
-    src = bs.MemoryDataSource()
+    src = MemoryDataSource()
     src.load([dict(r) for r in ROWS])
     table = bs.DataTable(
         data_source=src, columns=["name", "role"], selection_mode="multi", page_size=10
@@ -96,7 +97,7 @@ def test_memory_source_select_rows_roundtrip(shown_app):
 @pytest.mark.gui
 def test_memory_source_hides_internal_selected_field(shown_app):
     """The source's internal `selected` flag must not leak into public records."""
-    src = bs.MemoryDataSource()
+    src = MemoryDataSource()
     src.load([dict(r) for r in ROWS])
     table = bs.DataTable(
         data_source=src, columns=["name", "role"], selection_mode="multi", page_size=10

@@ -32,10 +32,10 @@ class Label(PublicWidgetBase):
             before display. Common values: ``'decimal'``, ``'currency'``,
             ``'percent'``, ``'date_short'``. Requires ``textsignal=`` to be
             set and localization to be enabled.
-        image: A ``bs.Image`` object to display. Load one with
-            ``bs.Image.open()``, ``bs.Image.from_bytes()``, or
-            ``bs.Image.from_pil()``. Use ``icon_position=`` to control
-            placement relative to text.
+        image: An image handle to display, for custom artwork rather than a
+            Bootstrap Icon name. Use ``icon_position=`` to control placement
+            relative to text. (The public image-handle API is being finalized
+            for an upcoming release.)
         icon: Bootstrap Icons name (e.g. ``'house'``, ``'gear'``). See the
             full catalog at https://icons.getbootstrap.com.
         icon_only: If ``True``, show only the icon. Auto-detected when

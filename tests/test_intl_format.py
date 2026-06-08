@@ -17,7 +17,7 @@ from datetime import date, datetime, time
 
 import pytest
 
-from bootstack import IntlFormatter
+from bootstack.i18n import IntlFormatter
 
 TIME_SPECS = ["shortTime", "longTime", "hour", "minute", "second", "millisecond"]
 DATE_SPECS = [
