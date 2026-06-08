@@ -4,6 +4,7 @@ Run with:  python tests/features/dialogs_features.py
 """
 import bootstack as bs
 from datetime import date
+from bootstack.dialogs import Dialog, DialogButton, FormDialog
 
 
 def show(result):

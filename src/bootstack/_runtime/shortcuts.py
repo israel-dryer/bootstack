@@ -7,9 +7,10 @@ Examples:
     .. code-block:: python
 
         import bootstack as bs
+        from bootstack.shortcuts import get_shortcuts
 
         app = bs.App()
-        shortcuts = bs.get_shortcuts()
+        shortcuts = get_shortcuts()
 
         # Register shortcuts
         shortcuts.register("save", "Mod+S", save_file)
@@ -360,9 +361,9 @@ def get_shortcuts() -> Shortcuts:
     Examples:
         .. code-block:: python
 
-            import bootstack as bs
+            from bootstack.shortcuts import get_shortcuts
 
-            shortcuts = bs.get_shortcuts()
+            shortcuts = get_shortcuts()
             shortcuts.register("save", "Mod+S", save_file)
             shortcuts.bind_to(app)
 

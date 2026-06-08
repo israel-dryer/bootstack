@@ -53,7 +53,7 @@ class Schedule:
     Usage::
 
         sched = widget.schedule          # property on every public widget
-        sched = bs.Schedule(widget)      # or construct directly
+        sched = Schedule(widget)      # or construct directly
 
         job = sched.delay(500, callback)   # one-shot after delay
         sched.idle(callback)               # one-shot at next idle
