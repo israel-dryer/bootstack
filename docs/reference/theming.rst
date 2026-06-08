@@ -185,14 +185,18 @@ See also
 API reference
 -------------
 
-Functions for controlling and reading the active theme, and the ``Theme`` class
-for declaring your own.
+The complete reference — the :class:`Theme <bootstack.style.Theme>` class and the
+theme-control functions — lives in :doc:`/api-reference/style` (which also covers
+the font functions). At a glance:
 
-.. autoclass:: bootstack.style.theme.Theme
-   :members:
+.. currentmodule:: bootstack.style
 
-.. autofunction:: bootstack.style.set_theme
-.. autofunction:: bootstack.style.toggle_theme
-.. autofunction:: bootstack.style.get_theme
-.. autofunction:: bootstack.style.get_themes
-.. autofunction:: bootstack.style.get_theme_color
+.. autosummary::
+   :nosignatures:
+
+   Theme
+   set_theme
+   toggle_theme
+   get_theme
+   get_themes
+   get_theme_color

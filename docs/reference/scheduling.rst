@@ -113,8 +113,14 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.scheduling.Schedule
-   :members:
+The complete reference for :class:`Schedule <bootstack.scheduling.Schedule>` and
+the :class:`Job <bootstack.scheduling.Job>` handle lives in
+:doc:`/api-reference/scheduling`. At a glance:
 
-.. autoclass:: bootstack.scheduling.Job
-   :members:
+.. currentmodule:: bootstack.scheduling
+
+.. autosummary::
+   :nosignatures:
+
+   Schedule
+   Job

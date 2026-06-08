@@ -31,29 +31,31 @@ Query language
 --------------
 
 The ``col`` expression API for building filter conditions and sort keys, free of
-SQL. Pass conditions to a source's ``where()`` and sort keys to ``order()``.
+SQL. Call these to construct a query, then pass conditions to a source's
+``where()`` and sort keys to ``order()``.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
    col
-   Column
-   Condition
-   SortKey
    any_of
    all_of
 
-Type aliases
-------------
+Query expression types
+----------------------
 
-The record and cell types shared across the module.
+The objects the query API produces and that ``where()`` / ``order()`` accept —
+handy for type annotations. You rarely construct these directly; build them from
+``col`` and the comparison operators.
 
 .. autosummary::
    :toctree: generated
+   :nosignatures:
 
-   Record
-   Primitive
+   Column
+   Condition
+   SortKey
 
 Readers and writers
 -------------------
@@ -73,3 +75,14 @@ The pluggable format registries behind ``FileDataSource`` and a source's
    register_writer
    supported_read_extensions
    supported_write_extensions
+
+Type aliases
+------------
+
+The record and cell types shared across the module.
+
+.. autosummary::
+   :toctree: generated
+
+   Record
+   Primitive

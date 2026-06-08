@@ -143,6 +143,12 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.store.Store
-   :members:
-   :exclude-members: __init__
+The complete reference for :class:`Store <bootstack.store.Store>` — every mapping
+method — lives in :doc:`/api-reference/store`. At a glance:
+
+.. currentmodule:: bootstack.store
+
+.. autosummary::
+   :nosignatures:
+
+   Store

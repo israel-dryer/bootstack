@@ -1,10 +1,43 @@
 # Initiative — API Reference restructure (docs)
 
 **Status:** Stage 1 (the `bootstack.data` prototype slice) MERGED (PR #107).
-Stage 2 (recipe-lock) done on `feat/api-reference-stage2` — the templates + the
-API-Reference-page / Guide-page recipes are now locked into `CLAUDE.md` under
-"## API Reference & Guide page pattern". Stages 3–5 not started. Decided 2026-06-08
-with the maintainer.
+Stage 2 (recipe-lock) + Stage 3 (subsystem sweep) done on `feat/api-reference-stage2`.
+Stages 4–5 not started. Decided 2026-06-08 with the maintainer.
+
+**Stage 3 outcome (2026-06-08):** Built API-Reference pages for all 10 remaining
+subsystems — `signals`, `streams`, `events`, `errors`, `i18n`, `scheduling`,
+`shortcuts`, `store`, `validation`, `style` (the last covers both the theming and
+typography guides) — each the autodoc home; converted all 11 `reference/*` prose
+pages into Guides (curated `autoclass` removed → cross-link + table-only summary;
+verified zero autodoc directives remain under `reference/`); wired every page into
+`api-reference/index.rst`. Clean-build warning-free. Decisions made during the
+sweep (carry into Stage 4):
+- **Template kinds:** added `function.rst` + `data.rst` (Stage 2) and
+  `exception.rst` (Stage 3) so functions / data-aliases / exceptions all title bare
+  like `class.rst`. Per-class curation via `:template: <name>` (NO `.rst`
+  extension — autosummary resolves it as `autosummary/<name>.rst`; with the
+  extension it silently falls back to `base.rst`). `signal.rst` is the exemplar
+  (`__call__` shown, `tk`/`var`/`name`/`from_variable` excluded).
+- **Grouping conventions** (applied to every page): separate callables from
+  supporting types from enums/aliases; order sections most-reached-for first,
+  bare aliases last.
+- **`__all__` hygiene found + acted on:** `TraceOperation` DEMOTED from
+  `bootstack.signals.__all__` (internal trace tag, no public signature exposes it;
+  now `bootstack.signals` = just `Signal`). `TabRef` recategorized (it is a value
+  type carried *inside* tab payloads, not a payload → "Supporting types").
+- **Re-export temp-homing:** `Signal` (signals) and `set_theme`/`toggle_theme`
+  (style) are top-level re-exports; they hold a TEMPORARY autodoc home on their
+  subsystem page now. **Stage 4 must relocate the home to the top-level `bootstack`
+  page and convert the subsystem entry to a table-only link.**
+- **`FontChoice`:** its old autodoc home was in `typography.rst` (it is a
+  `bootstack.dialogs` type). Home REMOVED; nothing `:class:`-links it (only plain
+  literals), so the build stays clean. **Stage 4 dialogs page must home it.**
+- **`bootstack.signals` page is now Signal-only** (TraceOperation gone, Signal
+  homes top-level in Stage 4) — Stage 4 decides whether this page becomes a
+  table-only pointer up to the top-level Signal stub, or is dropped.
+- **Side fix (independent of the sweep):** `--pst-color-link` was never overridden
+  in `custom.css`, so links rendered in pydata's default teal instead of the brand
+  blue; set `--pst-color-link`/`-hover` in both themes.
 
 > `docs/_dev/` is excluded from the Sphinx build (`conf.py` `exclude_patterns`).
 > This is a dev note, not a published page.
@@ -284,6 +317,32 @@ path**: `Signal`'s stub lives on the top-level `bootstack` page (State), and the
 links UP to the top-level stub — the same trick the data Guide uses) while owning
 the signals-only names (`TraceOperation`, …). Apply this uniformly in the Stage 3
 subsystem sweep so a re-exported name is never documented twice.
+
+**Complete re-export inventory (2026-06-08, full cross-module scan).** Only THREE
+groups of names are exported at both top level and a submodule; everything else
+has a single home already:
+
+1. **`bootstack.signals` → `Signal`** — Stage 3 gave it a TEMP home on
+   `api-reference/signals.rst`. Stage 4 relocates the home to the top-level page
+   (State) and makes `bootstack.signals` table-link up. With `TraceOperation`
+   demoted, signals is then Signal-only → its page likely becomes a table-only
+   pointer, or is dropped.
+2. **`bootstack.style` → `set_theme`, `toggle_theme`** — TEMP home on
+   `api-reference/style.rst` now. Stage 4 relocates these two to the top-level page
+   (Theme verbs); `bootstack.style` keeps its other 7 (`Theme`, `get_theme`,
+   `get_themes`, `get_theme_color`, `get_font_families`, `set_font_family`,
+   `update_font_token`) and table-links the two up.
+3. **`bootstack.widgets` → ~80 names** (every widget, `App`/`AppShell`/`Window`,
+   the dialog verbs, `toast`). The top-level `bootstack` page is their single home
+   (category-grouped — Stage 4). `bootstack.widgets` is internal plumbing and does
+   NOT get its own API-reference page. Their CURRENT homes are the bottom
+   `autoclass` blocks on the `docs/widgets/*` guide pages — Stage 4 drops those.
+
+Single home already (no relocation): `data`, `events`, `i18n`, `scheduling`,
+`shortcuts`, `store`, `streams`, `validation`, `types`. **`bootstack.dialogs` has
+NO `__all__`** — Stage 4 must add one and home `FontChoice`/`FormDialog`/`Dialog`/
+`DialogButton`/`ColorChooserDialog`/`ColorChoice`/`FontDialog`/`FilterDialog` there
+(`FontChoice` lost its old typography-page home in Stage 3).
 
 ### Presentation — the grouped links must read as tables, not a wall of links
 

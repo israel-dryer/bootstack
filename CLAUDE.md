@@ -176,15 +176,26 @@ memories (see them for rationale and gotchas).
   the Guide-page recipe = table-only summary, no bottom `autoclass`, cross-links;
   shallowest-path-wins re-export rule; clean-build verify). Marked the old
   "Reference page pattern" SUPERSEDED and flagged the Widget pattern for its Stage 4
-  autoclass-drop. **NEXT: Stage 3** (sweep subsystems).
+  autoclass-drop.
+- **API Reference restructure — Stage 3** (same branch `feat/api-reference-stage2`) —
+  subsystem sweep. Built API-ref pages for all 10 remaining subsystems (signals,
+  streams, events, errors, i18n, scheduling, shortcuts, store, validation, style —
+  style covers theming+typography), each the autodoc home; converted all 11
+  `reference/*` prose pages to Guides (autoclass → cross-link + table-only summary;
+  zero autodoc homes left under `reference/`). Added `exception.rst`/`signal.rst`
+  templates (bare titles; per-class `:template:` takes **NO** `.rst`). Grouping
+  conventions baked into the recipe. Hygiene: **demoted `TraceOperation`** (internal),
+  **recategorized `TabRef`** (supporting type). `Signal`/`set_theme`/`toggle_theme`
+  hold a TEMP home (Stage 4 relocates up); `FontChoice` home removed (Stage 4 dialogs
+  page). Side fix: `--pst-color-link` brand-blue override in `custom.css`. Flagged
+  out-of-band: `project_signal_subscribe_subscription`. Clean-build warning-free.
+  **NEXT: Stage 4.**
 
 ## Next up — candidates (pick one)
 
-- **★ API Reference restructure — Stage 3+ (docs)** — LEAD CANDIDATE, IN PROGRESS
-  (Stage 1 merged PR #107; Stage 2 recipe-lock done on `feat/api-reference-stage2`).
-  Continue the staged sweep from the brief:
-  **Stage 3** sweep subsystems (move each `reference/*` autodoc home into API
-  Reference, convert prose → Guides, dissolve `reference/`); **Stage 4** sweep
+- **★ API Reference restructure — Stage 4+ (docs)** — LEAD CANDIDATE, IN PROGRESS
+  (Stage 1 merged PR #107; Stages 2+3 done on `feat/api-reference-stage2`).
+  Continue the staged sweep from the brief: **Stage 4** sweep
   widgets (single category-grouped `bootstack` page; `AppShell`→Application; widget
   clusters as flat sibling stubs; doubles as an `__all__`-hygiene audit —
   `ColumnSpec`/`EditFilter`/`EditorType`); **Stage 5** nav re-cut (back to 5).
@@ -464,6 +475,11 @@ adopt callable-setter `signal(x)`.
 - Past-tense event names still pending rename: `SideNav.on_pane_toggled` /
   `on_display_mode_changed`, `ListView.on_selection_changed`,
   `Calendar.on_date_selected` (memory `project_event_naming_revisit`).
+- `Signal.subscribe()` returns a `str` token + `unsubscribe(id)`/`unsubscribe_all()`,
+  unlike events (`Subscription.cancel()`) and streams (`Handle.cancel()`) — flagged
+  to unify to a cancelable handle (memory `project_signal_subscribe_subscription`).
+  Gotcha: `events.Subscription` is Tk-binding-specific, so this needs a shared
+  cancelable-handle abstraction, not a direct reuse. Own branch, not the docs sweep.
 
 ---
 
@@ -517,6 +533,16 @@ header.
   `Primitive`), others as data and pick up `data.rst` (e.g. `Record`) — both now
   title bare, so it no longer matters which. A new documenter kind a future module
   needs (e.g. `exception.rst`) must get the SAME bare-title treatment.
+- **Per-class curation** (a class needing different members than the global
+  `class.rst`): add a per-class template file `_templates/autosummary/<name>.rst`
+  and point that class's `autosummary` entry at it with `:template: <name>` —
+  **WITHOUT the `.rst` extension**. Sphinx's autosummary resolves `:template: X`
+  as `autosummary/X.rst`; passing `signal.rst` builds `autosummary/signal.rst.rst`,
+  silently misses, and falls back to the built-in `base.rst` (full title, no
+  members) — NOT even `class.rst`. `:template:` applies to every name in that
+  directive block, so put the curated class in its own one-name block. Exemplar:
+  `signal.rst` (Signal needs `__call__` shown + `tk`/`var`/`name`/`from_variable`
+  excluded); wired in `api-reference/signals.rst` as `:template: signal`.
 
 ### API Reference page recipe (the autodoc home — one per submodule)
 
@@ -529,6 +555,29 @@ A page like `docs/api-reference/data.rst`. Text-only, **NO screenshots, NO hero*
    `:nosignatures:`. The table renders as a two-column **name | first-line-summary**
    table (pandas/SciPy style) and toctrees each name into an auto-generated per-object
    stub under `docs/api-reference/generated/` (gitignored — regenerates at build).
+   **Grouping conventions** (from the batch-1 review, applied across all pages):
+   (a) **Don't mix kinds in one list** — separate the things you *call*
+   (functions/constructors) from the *supporting types* they produce/consume, from
+   *enumerations/aliases*. E.g. `events` = payload sections + "Supporting types"
+   (`TabRef`, a value carried *inside* a payload) + "Enumerations" (`ChangeReason`…);
+   `data` = "Query language" (`col`/`any_of`/`all_of`) vs "Query expression types"
+   (`Column`/`Condition`/`SortKey`) vs "Type aliases" (`Record`/`Primitive`). A type
+   that only appears *inside* another object (not handed to the user directly) is a
+   supporting type, not a primary entry. (b) **Order sections most-reached-for first,
+   lowest-level lookups last** — primary objects → common callables → their supporting
+   types → feature areas → bare type aliases at the bottom (`data` order: Data sources
+   → Query language → Query expression types → Readers and writers → Type aliases).
+   (c) **Don't sub-section a small/uniform module** — follow the
+   `bootstack.streams` model (intro prose + ONE `autosummary` table, no `---`
+   sub-headings) whenever a module is just a few names of the same kind. Sub-section
+   only when the surface is large OR genuinely mixes kinds (a). `streams`
+   (`Stream`/`Handle`), `validation` (`ValidationRule`/`ValidationResult`),
+   `scheduling` (`Schedule`/`Job`), `shortcuts` (3), and `errors` (5 exceptions) are
+   all single-table; `data`/`events`/`style` earn their groups. The intro carries
+   any rule-vs-result / base-vs-specific nuance — don't spend a heading on it.
+   (d) The audit also surfaces half-public names to demote — e.g. `TraceOperation`
+   (internal trace tag, no public signature exposes it) was dropped from
+   `bootstack.signals.__all__` during this sweep.
 4. List **exactly** the module's `__all__` across the grouped tables (the reference
    IS `__all__`). Good first-line docstrings matter — that line is the summary cell.
 5. Wire the page into `docs/api-reference/index.rst`'s toctree.

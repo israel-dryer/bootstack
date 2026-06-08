@@ -96,12 +96,14 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.streams.Stream
-   :members:
-   :undoc-members:
-   :exclude-members: __init__
+The complete reference — every operator on :class:`Stream
+<bootstack.streams.Stream>` and the :class:`Handle <bootstack.streams.Handle>`
+it returns — lives in :doc:`/api-reference/streams`. At a glance:
 
-.. autoclass:: bootstack.streams.Handle
-   :members:
-   :undoc-members:
-   :exclude-members: __init__
+.. currentmodule:: bootstack.streams
+
+.. autosummary::
+   :nosignatures:
+
+   Stream
+   Handle

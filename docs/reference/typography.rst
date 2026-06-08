@@ -194,10 +194,17 @@ See also
 API reference
 -------------
 
-Functions for setting fonts at runtime, plus the ``FontChoice`` result type.
+The complete reference for the runtime font functions lives in
+:doc:`/api-reference/style` (alongside the theme functions). At a glance:
 
-.. autofunction:: bootstack.style.set_font_family
-.. autofunction:: bootstack.style.update_font_token
-.. autofunction:: bootstack.style.get_font_families
+.. currentmodule:: bootstack.style
 
-.. autoclass:: bootstack.dialogs.FontChoice
+.. autosummary::
+   :nosignatures:
+
+   set_font_family
+   update_font_token
+   get_font_families
+
+The ``FontChoice`` result type returned by ``ask_font()`` is documented with the
+:doc:`/widgets/font-dialog` selector.

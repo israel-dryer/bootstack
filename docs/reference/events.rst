@@ -120,75 +120,21 @@ See also
 API reference
 -------------
 
-Everything in the ``bootstack.events`` catalog: the curated :class:`Event` for
-native events, the :class:`Subscription` handle returned by every binding, and
-the typed payload classes handed to data-carrying handlers.
+The complete catalog — the curated :class:`Event <bootstack.events.Event>`, the
+:class:`Subscription <bootstack.events.Subscription>` handle, and every typed
+payload — lives in :doc:`/api-reference/events`. The most common payloads at a
+glance:
 
-The curated event handed to native/context handlers:
+.. currentmodule:: bootstack.events
 
-.. autoclass:: bootstack.events.Event
-   :members:
+.. autosummary::
+   :nosignatures:
 
-The cancellable handle returned by every binding:
-
-.. autoclass:: bootstack.events.Subscription
-   :members:
-   :exclude-members: __init__
-
-The typed payloads handed to data-carrying handlers. Import them from
-``bootstack.events`` (e.g. ``from bootstack.events import ChangeEvent``).
-
-.. autoclass:: bootstack.events.AccordionChangeEvent
-   :members:
-.. autoclass:: bootstack.events.ButtonGroupClickEvent
-   :members:
-.. autoclass:: bootstack.events.ChangeEvent
-   :members:
-.. autoclass:: bootstack.events.DataChangeEvent
-   :members:
-.. autoclass:: bootstack.events.DateSelectEvent
-   :members:
-.. autoclass:: bootstack.events.DisplayModeEvent
-   :members:
-.. autoclass:: bootstack.events.ExportEvent
-   :members:
-.. autoclass:: bootstack.events.InputEvent
-   :members:
-.. autoclass:: bootstack.events.NavEvent
-   :members:
-.. autoclass:: bootstack.events.PageChangeEvent
-   :members:
-.. autoclass:: bootstack.events.PaneToggleEvent
-   :members:
-.. autoclass:: bootstack.events.RangeSliderCommitEvent
-   :members:
-.. autoclass:: bootstack.events.RangeSliderEvent
-   :members:
-.. autoclass:: bootstack.events.RowEvent
-   :members:
-.. autoclass:: bootstack.events.RowsEvent
-   :members:
-.. autoclass:: bootstack.events.SelectionEvent
-   :members:
-.. autoclass:: bootstack.events.SliderCommitEvent
-   :members:
-.. autoclass:: bootstack.events.SliderEvent
-   :members:
-.. autoclass:: bootstack.events.TabActivateEvent
-   :members:
-.. autoclass:: bootstack.events.TabChangeEvent
-   :members:
-.. autoclass:: bootstack.events.TabCloseEvent
-   :members:
-.. autoclass:: bootstack.events.TabDeactivateEvent
-   :members:
-.. autoclass:: bootstack.events.TabRef
-   :members:
-.. autoclass:: bootstack.events.TextModifiedEvent
-   :members:
-.. autoclass:: bootstack.events.TreeSelectionEvent
-   :members:
-.. autoclass:: bootstack.events.ToggleEvent
-   :members:
-.. autoclass:: bootstack.events.ValidationEvent
-   :members:
+   Event
+   Subscription
+   ChangeEvent
+   InputEvent
+   ValidationEvent
+   SelectionEvent
+   RowsEvent
+   DataChangeEvent

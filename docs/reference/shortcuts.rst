@@ -97,8 +97,16 @@ See also
 API reference
 -------------
 
-.. autoclass:: bootstack.shortcuts.Shortcuts
-   :members:
+The complete reference — the :class:`Shortcuts <bootstack.shortcuts.Shortcuts>`
+service, ``get_shortcuts()``, and the :class:`Shortcut
+<bootstack.shortcuts.Shortcut>` record — lives in :doc:`/api-reference/shortcuts`.
+At a glance:
 
-.. autoclass:: bootstack.shortcuts.Shortcut
-   :members:
+.. currentmodule:: bootstack.shortcuts
+
+.. autosummary::
+   :nosignatures:
+
+   get_shortcuts
+   Shortcuts
+   Shortcut

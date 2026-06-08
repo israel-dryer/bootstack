@@ -99,22 +99,16 @@ object, use an in-memory source instead:
 API reference
 -------------
 
-.. autoclass:: bootstack.errors.BootstackError
-   :members:
-   :undoc-members:
+The complete reference for every exception type lives in
+:doc:`/api-reference/errors`. At a glance:
 
-.. autoclass:: bootstack.errors.UnknownEventError
-   :members:
-   :undoc-members:
+.. currentmodule:: bootstack.errors
 
-.. autoclass:: bootstack.errors.ParentResolutionError
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
 
-.. autoclass:: bootstack.errors.DuplicateIdError
-   :members:
-   :undoc-members:
-
-.. autoclass:: bootstack.errors.SerializationError
-   :members:
-   :undoc-members:
+   BootstackError
+   DuplicateIdError
+   ParentResolutionError
+   SerializationError
+   UnknownEventError
