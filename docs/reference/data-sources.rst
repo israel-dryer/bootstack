@@ -20,12 +20,14 @@ In-memory data
 
 .. code-block:: python
 
+   from bootstack.data import MemoryDataSource, SqliteDataSource, FileDataSource
+
    records = [
        {"name": "Ada", "role": "Engineer"},
        {"name": "Linus", "role": "Maintainer"}
    ]
 
-   ds = bs.MemoryDataSource().load(records)
+   ds = MemoryDataSource().load(records)
    bs.ListView(data_source=ds)
 
 SQLite-backed data
@@ -38,7 +40,7 @@ supply your own to back the table with a database file:
 
 .. code-block:: python
 
-   ds = bs.SqliteDataSource("app.db")
+   ds = SqliteDataSource("app.db")
    ds.load(records)
    bs.DataTable(data_source=ds)
 
@@ -53,7 +55,7 @@ sorting, and CRUD are all fast SQL. Configure parsing and transforms with a
 
 .. code-block:: python
 
-   ds = bs.FileDataSource("people.csv")
+   ds = FileDataSource("people.csv")
    ds.load()
    bs.DataTable(data_source=ds)
 
@@ -75,7 +77,7 @@ Close the store when done — explicitly or with a ``with`` block:
 
 .. code-block:: python
 
-   with bs.FileDataSource("people.csv", cache="people.db") as ds:
+   with FileDataSource("people.csv", cache="people.db") as ds:
        ds.load()
        first = ds.page(0)
 
@@ -93,8 +95,8 @@ nested under a key (an API response like ``{"data": [...]}``), point at it with
 
 .. code-block:: python
 
-   bs.FileDataSource("export.ndjson")                                  # streamed
-   bs.FileDataSource("api.json", bs.FileSourceConfig(json_records_key="data"))
+   FileDataSource("export.ndjson")                                  # streamed
+   FileDataSource("api.json", FileSourceConfig(json_records_key="data"))
 
 .. _carrying-extra-data:
 
@@ -136,14 +138,14 @@ where the records live:
 Filtering and sorting
 ---------------------
 
-Build a filter condition with ``bs.col`` and apply it with ``where()``. Sort
+Build a filter condition with ``col`` and apply it with ``where()``. Sort
 with ``order()`` — a leading ``-`` sorts descending. Both return the source, so
 they chain, and both behave the same whether the data lives in memory, SQLite,
 or a file:
 
 .. code-block:: python
 
-   from bootstack import col
+   from bootstack.data import col
 
    ds.where(col("age") >= 25)
    ds.where(col("department").is_in(["Sales", "Engineering"]))
@@ -166,7 +168,7 @@ parentheses:
 
 .. code-block:: python
 
-   from bootstack import col, all_of, any_of
+   from bootstack.data import all_of, any_of, col
 
    ds.where(all_of(col("status") == "active", col("name").contains("ada")))
    ds.where(any_of(col("dept") == "Sales", col("dept") == "Engineering"))
@@ -209,7 +211,7 @@ and any bound ``Table`` or ``ListView`` updates itself:
 
 .. code-block:: python
 
-   ds = bs.MemoryDataSource().load(initial_rows)
+   ds = MemoryDataSource().load(initial_rows)
    bs.ListView(data_source=ds)
 
    # Later — from a poll loop, a websocket, any thread:
@@ -297,7 +299,9 @@ the storage-specific methods (``load``, ``page``, CRUD):
 
 .. code-block:: python
 
-   class ApiDataSource(bs.BaseDataSource):
+   from bootstack.data import BaseDataSource
+
+   class ApiDataSource(BaseDataSource):
        def load(self, records): ...
        def page(self, page=None): ...
 

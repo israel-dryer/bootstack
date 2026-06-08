@@ -2,7 +2,7 @@ Color Dialog
 ============
 
 ``bs.ask_color()`` opens a modal color chooser and returns the selected color.
-``bs.ColorChooserDialog`` gives the same chooser as a reusable object.
+``ColorChooserDialog`` gives the same chooser as a reusable object.
 
 .. image:: /_static/examples/color-dialog-hero-light.png
    :class: bs-screenshot-light bs-dialog-screenshot
@@ -47,12 +47,14 @@ The return value is a ``ColorChoice`` with three attributes:
 Reusable dialog object
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``bs.ColorChooserDialog`` when you need to inspect the result after ``show()``
+Use ``ColorChooserDialog`` when you need to inspect the result after ``show()``
 or show the same dialog multiple times:
 
 .. code-block:: python
 
-   dlg = bs.ColorChooserDialog(title="Pick a color", color="#ff0000")
+   from bootstack.widgets.dialogs import ColorChooserDialog
+
+   dlg = ColorChooserDialog(title="Pick a color", color="#ff0000")
    dlg.show()
 
    if dlg.result:

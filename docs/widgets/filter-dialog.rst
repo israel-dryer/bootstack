@@ -2,7 +2,7 @@ Filter Dialog
 =============
 
 ``bs.ask_filter()`` opens a multi-select dialog and returns the chosen values.
-``bs.FilterDialog`` gives the same dialog as a reusable object.
+``FilterDialog`` gives the same dialog as a reusable object.
 
 .. image:: /_static/examples/filter-dialog-hero-light.png
    :class: bs-screenshot-light bs-dialog-screenshot
@@ -74,11 +74,13 @@ Each item dict supports:
 Reusable dialog object
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Use ``bs.FilterDialog`` to inspect the result after ``show()``:
+Use ``FilterDialog`` to inspect the result after ``show()``:
 
 .. code-block:: python
 
-   dlg = bs.FilterDialog(
+   from bootstack.widgets.dialogs import FilterDialog
+
+   dlg = FilterDialog(
        title="Status Filter",
        items=items,
        enable_select_all=True,

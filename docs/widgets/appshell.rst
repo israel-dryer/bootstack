@@ -172,7 +172,9 @@ version skew, and the change events write each value back:
 
 .. code-block:: python
 
-   store = bs.Store("settings")
+   from bootstack.store import Store
+
+   store = Store("settings")
    shell = bs.AppShell.from_store(store, title="My App")
    shell.on_theme_change(lambda theme: store.update(theme=theme))
 

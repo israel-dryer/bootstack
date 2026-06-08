@@ -2,7 +2,9 @@ Reference
 =========
 
 Framework services and primitives: theming and typography, localization,
-reactive state, events, validation, data sources, and app-level utilities.
+reactive state, events, validation, data sources, and app-level utilities. Each
+lives in its own submodule (e.g. ``from bootstack.data import SqliteDataSource``);
+see :doc:`/getting-started/api-overview` for the full namespace map.
 
 .. toctree::
    :maxdepth: 1

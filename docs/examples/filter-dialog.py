@@ -1,5 +1,6 @@
 import bootstack as bs
 
+from bootstack.widgets.dialogs import FilterDialog
 COUNTRIES = ["Australia", "Canada", "France", "Germany", "India",
              "Japan", "Mexico", "Spain", "UK", "USA"]
 
@@ -26,7 +27,7 @@ def show_with_search():
         print(f"Selected: {result}")
 
 def show_dict_items():
-    dlg = bs.FilterDialog(
+    dlg = FilterDialog(
         title="Filter by Status",
         items=STATUS_ITEMS,
         enable_select_all=True,
