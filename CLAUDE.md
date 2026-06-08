@@ -131,17 +131,33 @@ memories (see them for rationale and gotchas).
   break, no shims.** See the "Public namespace is CURATED" gotcha. Memory
   `project_toplevel_api_surface` (+ `project_public_intent_backlog` for the future
   Image/Icon handle).
+- **Docs build warnings cleanup + global-items/verb audit** (PR #106, branch
+  `feat/docs-warnings-global-audit`) — docs clean-build went from **39 warnings +
+  1 error → 0**. (a) Dataclass double-documentation: `Attributes:`/`Args:` blocks
+  → per-field **attribute docstrings** (`FileSourceConfig`, `DataSourceProtocol`,
+  `Shortcut`, `DialogButton`; `Form` dropped a redundant `Attributes:` block) so
+  napoleon + autodoc stop each emitting a copy. (b) Docutils nits: `togglebutton.rst`
+  code-block typo, `Dialog.show` nested bullet list (the error), `tree.roots`
+  backtick-glued-to-a-letter, and the ambiguous `type` xref (annotate
+  `FileSourceConfig.column_types` as `typing.Type` so the builtin `type` stops
+  colliding with `Signal.type`/`ValidationRule.type`). (c) **Colon-space sweep** —
+  ROOT CAUSE found: a colon `:` ON THE FIRST LINE of an attribute docstring makes
+  napoleon split it and jam the pre-colon text into a bogus `:type:` field (SILENT
+  unless it also splits a backtick pair → "start-string without end-string"
+  warning). Colon on line 2+ is safe. Fixed all 7 instances (`delimiter`, `role`,
+  5 internal `_core` kwargs). (d) **Global-items/verb audit:** demoted internal
+  engine accessors `get_style`/`get_style_builder`/`get_theme_provider` from public
+  `bootstack.style` (still importable from `bootstack.style.style`; CLI callers
+  repointed; guard test added); renamed `supported_extensions` →
+  **`supported_read_extensions`** (symmetry with `supported_write_extensions`,
+  clean break); confirmed `format_shortcut` is INTERNAL (not exported). Decisions
+  left as-is: `get_theme()`→str / `get_themes()`→list[dict] (documented),
+  `update_font_token` (correctly a partial-update verb), dual `set_theme`/`app.theme`
+  (by design). Verdict: the accessor pattern is healthy — app-scoped globals via
+  `get_*()` (`get_shortcuts()`), no bare singleton instances exported.
 
 ## Next up — candidates (pick one)
 
-- **Docs build warnings cleanup** — `main` has ~38 PRE-EXISTING Sphinx warnings,
-  mostly "duplicate object description" on dataclass attrs (`FileSourceConfig`,
-  `DataSourceProtocol`, `Shortcut`, `DialogButton`, `Form`) + 3 docutils nits
-  (`style/theme.py` `Theme.shades` docstring; `widgets/togglebutton.rst` block
-  quote; `widgets/tree.py` `Tree.roots` docstring). Likely autodoc re-documenting
-  attribute-docstringed dataclass fields twice — add `:no-index:` or adjust
-  autodoc config. ⚠ Incremental Sphinx builds MASK these — always clean-build
-  (`rm -rf docs/_build`) to verify warning-free.
 - **Image / Icon public handle** — design a Tk-free public image/icon handle and
   re-promote (both currently internal). Memory `project_public_intent_backlog`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
@@ -155,8 +171,12 @@ memories (see them for rationale and gotchas).
   store hygiene, version skew, window-geometry-stays-a-flag) from the AppSettings
   work. Remaining: opportunistic enrichment of any still-thin reference page.
   Memories `project_docs_initiative`, `project_app_settings_flattening`.
-- **Pre-existing docs warnings** — see "Docs build warnings cleanup" under
-  Next up (~38 warnings on `main`; incremental builds mask them).
+- **Docs build is now warning-free** (PR #106). ⚠ Keep it that way: incremental
+  Sphinx builds MASK warnings — always clean-build (`rm -rf docs/_build`, then
+  `sphinx-build -W --keep-going`) to verify. When adding dataclass/attribute
+  docstrings, follow the attribute-docstring pattern (NO `Attributes:`/`Args:`
+  block for fields) and keep any colon OFF the first line of an attribute
+  docstring (see the colon-space gotcha under PR #106 above).
 
 ---
 
@@ -778,6 +798,13 @@ autodoc `:members:` then renders each field once with its type + description.
 `autodoc_typehints_description_target = "documented"` suppresses the redundant
 synthesized Parameters block for dataclasses. Exemplars: `bootstack.events`
 payloads, `bootstack.style.theme.Theme`.
+
+⚠ **No colon on the FIRST LINE of an attribute docstring.** napoleon splits the
+first line at the first `:` and jams the pre-colon text into a bogus `:type:`
+field — SILENTLY mangling the rendered type (it only *warns* when the split also
+breaks a backtick pair). A colon on line 2+ is fine. Use an em-dash/period to
+introduce an enum list: `"""Side to pack against — \`'top'\`, \`'bottom'\`..."""`,
+not `"""Side to pack against: ..."""`. (PR #106 swept all existing offenders.)
 
 ```python
 @dataclass
