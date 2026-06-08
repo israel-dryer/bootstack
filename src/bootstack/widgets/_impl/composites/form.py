@@ -244,9 +244,9 @@ class Form(Frame):
                 return True
             value = widget.value
             is_valid = True
+            # An explicit form.validate() is a manual action, so run every rule
+            # regardless of its auto-trigger (matching a field's own validate()).
             for rule in rules:
-                if rule.trigger not in ("always", "manual"):
-                    continue
                 result = rule.validate(value)
                 if not result.is_valid:
                     is_valid = False

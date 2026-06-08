@@ -94,7 +94,8 @@ class ValidationMixin(Widget):
             trigger: Trigger type ('manual', 'key', 'blur', or 'always')
 
         Returns:
-            True if validation was performed (regardless of result)
+            True if every applicable rule passed (vacuously true when no rule
+            applies for this trigger), False on the first failure.
         """
         ran_rule = False
 
@@ -118,7 +119,8 @@ class ValidationMixin(Widget):
             self.event_generate(self.EVENT_VALID, data=payload)
             self.event_generate(self.EVENT_VALIDATED, data=payload)
 
-        return ran_rule
+        # Nothing failed — pass (vacuously when no rule ran for this trigger).
+        return True
 
     # Optional: ergonomic callback registration
     def on_invalid(self, func: Callable) -> None:
