@@ -41,6 +41,11 @@ html[data-theme="dark"] {
     overflow-x: auto;
 }
 
+/* ensure there is sufficient vertical space around logo at full size */
+.navbar-brand.logo {
+    max-height: 48px !important;
+}
+
 /* Screenshot light/dark switching.
    Two-layer approach: (1) prefers-color-scheme as a CSS-only fallback that
    applies instantly on navigation before JS sets data-theme; (2) explicit
