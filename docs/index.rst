@@ -11,4 +11,5 @@ bootstack
    tasks/index
    widgets/index
    reference/index
+   api-reference/index
    production/index
