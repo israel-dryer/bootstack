@@ -81,7 +81,7 @@ class Theme:
     """Reference black (hex). Defaults to `'#000000'`."""
 
     shades: dict[str, str] = field(default_factory=dict)
-    """Mapping of base hue name to hex color, e.g. `{'orange': '#fd7e14'}`.
+    """Mapping of base hue name to hex color, e.g. orange to `'#fd7e14'`.
     Merged onto the base's shades."""
 
     semantic: dict[str, str] = field(default_factory=dict)

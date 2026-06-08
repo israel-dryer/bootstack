@@ -70,16 +70,16 @@ _BINDING_MODIFIERS = {
 
 @dataclass
 class Shortcut:
-    """A registered keyboard shortcut.
+    """A registered keyboard shortcut."""
 
-    Attributes:
-        key: Unique identifier for lookup (e.g., "save", "file.open")
-        pattern: Shortcut pattern (e.g., "Mod+S", "Shift+Alt+N")
-        command: Function to execute when triggered
-    """
     key: str
+    """Unique identifier for lookup (e.g. `'save'`, `'file.open'`)."""
+
     pattern: str
+    """Shortcut pattern (e.g. `'Mod+S'`, `'Shift+Alt+N'`)."""
+
     command: Callable
+    """Function to execute when triggered."""
 
     @property
     def display(self) -> str:

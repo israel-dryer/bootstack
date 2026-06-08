@@ -8,7 +8,7 @@ Each sidebar item opens a page demonstrating a widget group.
 import bootstack as bs
 from bootstack.signals import Signal
 from bootstack.dialogs import FormDialog
-from bootstack.style import get_style
+from bootstack.style.style import get_style
 
 
 # =============================================================================

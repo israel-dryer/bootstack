@@ -12,9 +12,9 @@ if TYPE_CHECKING:
 class PackKwargs(TypedDict, total=False):
     """Keyword options for `pack()` and `pack_configure()`."""
     side: str
-    """Side to pack against: `'top'`, `'bottom'`, `'left'`, or `'right'`. Defaults to `'top'`."""
+    """Side to pack against — `'top'`, `'bottom'`, `'left'`, or `'right'`. Defaults to `'top'`."""
     fill: str
-    """How to fill extra space: `'x'`, `'y'`, `'both'`, or `'none'`. Defaults to `'none'`."""
+    """How to fill extra space — `'x'`, `'y'`, `'both'`, or `'none'`. Defaults to `'none'`."""
     expand: bool | int
     """If True/1, the widget expands to fill extra space in the packing direction. Defaults to False."""
     anchor: str

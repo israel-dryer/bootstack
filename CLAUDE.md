@@ -629,8 +629,11 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 - **Run examples after editing** — always `python docs/examples/<widget>.py` before committing.
 - **Dark mode Note admonition** — override in `custom.css` inside `html[data-theme="dark"]`:
   `--pst-color-info: #6ea8fe; --pst-color-info-bg: #0d306e`.
-- **`Shortcuts` service** — `register(key, "Mod+S", fn)` + `bind_to(app)` wires the keyboard
-  handler. `format_shortcut(spec)` resolves display text only (no binding side effect).
+- **`Shortcuts` service** — public surface is `bootstack.shortcuts`: the `Shortcuts`
+  class, the `Shortcut` dataclass, and the `get_shortcuts()` accessor.
+  `register(key, "Mod+S", fn)` + `bind_to(app)` wires the keyboard handler.
+  `format_shortcut(spec)` (in `_runtime/shortcuts.py`) resolves display text only
+  (no binding side effect) — it is INTERNAL, not exported from `bootstack.shortcuts`.
 
 ---
 

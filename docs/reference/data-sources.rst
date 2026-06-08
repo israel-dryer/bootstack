@@ -373,6 +373,6 @@ Reading and writing files directly (the format registries behind
 
 .. autofunction:: bootstack.data.register_writer
 
-.. autofunction:: bootstack.data.supported_extensions
+.. autofunction:: bootstack.data.supported_read_extensions
 
 .. autofunction:: bootstack.data.supported_write_extensions

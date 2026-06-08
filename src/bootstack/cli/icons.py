@@ -94,7 +94,7 @@ def run_icons() -> None:
 
     def _theme_colors() -> tuple[str, str]:
         try:
-            from bootstack.style import get_style
+            from bootstack.style.style import get_style
             style = get_style()
             return style.colors.get("background", "#ffffff"), style.colors.get("foreground", "#212529")
         except Exception:

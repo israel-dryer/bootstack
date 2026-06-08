@@ -30,32 +30,37 @@ DialogMode = Literal["modal", "popover", "sheet"]
 
 @dataclass
 class DialogButton:
-    """Specification for a dialog button.
+    """Specification for a dialog button."""
 
-    Attributes:
-        text (str): Button label text displayed to the user.
-        role (ButtonRole): Button role determining styling and behavior.
-            - `"primary"`: Main action (blue solid); triggered by Enter when ``default=True``.
-            - `"secondary"`: Neutral action (gray solid); no keyboard shortcut.
-            - `"danger"`: Destructive action (red solid); not focused by default.
-            - `"cancel"`: Cancel action (gray outline); triggered by Escape.
-        result (Any | None): Value assigned to dialog.result when clicked.
-        closes (bool): Whether button closes the dialog when clicked.
-        default (bool): Whether this is the default button (focused, triggered by Enter).
-        command (Callable[[Dialog], None] | None): Callback called when clicked.
-        accent (str | None): Accent token for styling (e.g., 'primary', 'danger').
-        variant (str | None): Style variant (e.g., 'outline', 'link').
-        icon (str | dict | None): Optional icon specification for the button.
-    """
     text: str
+    """Button label text displayed to the user."""
+
     role: ButtonRole = "secondary"
+    """Role that determines the button's styling and keyboard behavior. One of
+    `'primary'` (main action, triggered by Enter when `default=True`),
+    `'secondary'` (neutral action, no keyboard shortcut), `'danger'` (destructive
+    action, not focused by default), or `'cancel'` (triggered by Escape)."""
+
     result: Any | None = None  # value assigned to dialog.result
+    """Value assigned to `dialog.result` when clicked."""
+
     closes: bool = True  # close dialog after click
+    """Whether the button closes the dialog when clicked."""
+
     default: bool = False  # default button (Enter)
+    """Whether this is the default button (focused, triggered by Enter)."""
+
     command: Callable[[Dialog], None] | None = None
+    """Callback invoked when clicked."""
+
     accent: AccentToken | str | None = None
+    """Accent token for styling (e.g. `'primary'`, `'danger'`)."""
+
     variant: VariantToken | str | None = None
+    """Style variant (e.g. `'outline'`, `'link'`)."""
+
     icon: str | dict[str, Any] | None = None  # passed straight to _Button(icon=...)
+    """Optional icon specification for the button."""
 
 
 ButtonSpec = Union[DialogButton, Mapping[str, Any]]
@@ -191,16 +196,13 @@ class Dialog:
         Args:
             position: Optional (x, y) coordinates to position the dialog.
                 If provided, takes precedence over anchor-based positioning.
-            modal: Override the mode's default modality.
-                - If None, uses mode:
-                    - "modal": grab_set + wait_window
-                    - "popover": no grab, but wait_window
-            anchor_to: Positioning target. Can be:
-                - Widget: Anchor to a specific widget
-                - "screen": Anchor to screen edges/corners
-                - "cursor": Anchor to mouse cursor location
-                - "parent": Anchor to parent window (same as widget)
-                - None: Centers on parent (default)
+            modal: Override the mode's default modality. When `None`, follows the
+                mode — `"modal"` grabs focus and waits for the dialog to close;
+                `"popover"` waits without grabbing.
+            anchor_to: Positioning target. A widget anchors to that widget;
+                `"screen"` anchors to the screen edges/corners; `"cursor"` anchors
+                to the mouse cursor; `"parent"` anchors to the parent window; and
+                `None` (default) centers on the parent.
             anchor_point: Point on the anchor target (n, s, e, w, ne, nw, se, sw, center).
                 Default 'center'.
             window_point: Point on the dialog window (n, s, e, w, ne, nw, se, sw, center).

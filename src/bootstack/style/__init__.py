@@ -5,13 +5,14 @@ their modules (`bootstack.style.style`, `bootstack.style.typography`) if you nee
 them. They are deliberately not part of the public API: `Style` subclasses
 `ttk.Style` (a Tkinter leak), and `Typography`/`Font` are internal registries
 slated to be replaced by a public font-token API.
+
+The low-level engine accessors `get_style`, `get_style_builder`, and
+`get_theme_provider` return those internal objects and are likewise not public —
+import them from `bootstack.style.style` if you need them internally.
 """
 from bootstack.style.style import (
-    get_style,
-    get_style_builder,
     get_theme,
     get_theme_color,
-    get_theme_provider,
     get_themes,
     set_theme,
     toggle_theme,
@@ -25,11 +26,8 @@ from bootstack.style.fonts import (
 
 __all__ = [
     "Theme",
-    "get_style",
-    "get_style_builder",
     "get_theme",
     "get_theme_color",
-    "get_theme_provider",
     "get_themes",
     "set_theme",
     "toggle_theme",

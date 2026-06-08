@@ -31,9 +31,6 @@ class Form(PublicWidgetBase):
         accent: Accent token for the form container.
         buttons: Footer buttons — strings, `DialogButton` instances, or dicts.
         parent: Override the context-stack parent.
-
-    Attributes:
-        result: Set by button commands. None until a button is pressed.
     """
 
     def __init__(

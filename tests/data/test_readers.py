@@ -19,7 +19,7 @@ from bootstack.data import (
     get_reader,
     read_records,
     register_reader,
-    supported_extensions,
+    supported_read_extensions,
 )
 
 
@@ -31,7 +31,7 @@ def _has(module: str) -> bool:
 
 
 def test_supported_extensions_includes_stdlib_and_optional():
-    exts = supported_extensions()
+    exts = supported_read_extensions()
     for e in (".csv", ".tsv", ".txt", ".json", ".jsonl", ".ndjson", ".xml",
               ".parquet", ".feather", ".h5"):
         assert e in exts
