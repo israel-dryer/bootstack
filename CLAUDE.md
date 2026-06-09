@@ -89,11 +89,13 @@ memories and git history.
   interleaved with, the Stage 4 *homing* below. **READ FIRST: full brief + per-widget
   checklist + every convention is in `docs/_dev/typing-review.md`.**
   - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
-    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label (worked example).
-  - **NEXT: Inputs** (TextField/PasswordField/NumberField/SpinnerField/PathField/Slider/
-    RangeSlider/TextArea/CodeEditor[remainder: scrollbars→Literal, `**kwargs`]/DateField/
-    TimeField — DateField still shows accent enumerations). Then Selection, Data Display,
-    Layout, Navigation, Overlays/Forms/Dialogs.
+    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label (worked example), Inputs
+    (all 11 — TextField/PasswordField/NumberField/SpinnerField/PathField/Slider/
+    RangeSlider/TextArea/CodeEditor/DateField/TimeField; not committed — awaiting review).
+  - **NEXT: Selection** (Checkbox/Switch/ToggleButton/ToggleGroup/Radio/RadioToggleButton/
+    RadioGroup/Select/SelectButton/Calendar — Radio compound→icon_position + Calendar
+    padding already done; rest pending). Then Data Display, Layout, Navigation,
+    Overlays/Forms/Dialogs.
   - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
     (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
     STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →

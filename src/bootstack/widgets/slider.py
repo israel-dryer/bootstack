@@ -26,32 +26,33 @@ class Slider(PublicWidgetBase):
     keyword-only.
 
     Args:
-        value: Initial value. Defaults to ``0``.
-        min_value: Minimum of the range. Defaults to ``0``.
-        max_value: Maximum of the range. Defaults to ``100``.
-        signal: Reactive ``Signal[float]`` linked to the slider value. The
+        value: Initial value. Defaults to `0`.
+        min_value: Minimum of the range. Defaults to `0`.
+        max_value: Maximum of the range. Defaults to `100`.
+        signal: Reactive `Signal[float]` linked to the slider value. The
             slider and signal stay in sync automatically.
-        orient: Track orientation. ``'horizontal'`` (default) or
-            ``'vertical'``.
-        show_value: If ``True``, shows a floating badge with the current
-            value above the handle. Defaults to ``False``.
-        show_minmax: If ``True``, shows min/max labels at the track ends.
-            Defaults to ``False``.
-        tick_step: Spacing between major tick marks. ``None`` disables
+        orient: Track orientation. Default `'horizontal'`.
+        show_value: If `True`, shows a floating badge with the current
+            value above the handle. Defaults to `False`.
+        show_minmax: If `True`, shows min/max labels at the track ends.
+            Defaults to `False`.
+        tick_step: Spacing between major tick marks. `None` disables
             ticks entirely.
         minor_ticks: Number of minor tick marks between each major tick.
-            Defaults to ``0``.
-        tick_labels: If ``True``, shows numeric labels at major tick
-            positions. Defaults to ``True``.
-        tick_format: Format string applied to tick and badge labels.
-            Defaults to ``'{:.0f}'``.
+            Defaults to `0`.
+        tick_labels: If `True`, shows numeric labels at major tick
+            positions. Defaults to `True`.
+        tick_format: Python format string applied to tick and badge labels.
+            Defaults to `'{:.0f}'`.
         accent: Accent token controlling the fill, handle, and focus ring
-            color. One of ``'primary'`` (default), ``'secondary'``,
-            ``'success'``, ``'warning'``, ``'danger'``.
-        disabled: If ``True``, slider is non-interactive. Defaults to
-            ``False``.
+            color. Defaults to `'primary'`.
+        disabled: If `True`, slider is non-interactive. Defaults to
+            `False`.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -112,7 +113,7 @@ class Slider(PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[float]":
-        """The reactive ``Signal[float]`` linked to this slider."""
+        """The reactive `Signal[float]` linked to this slider."""
         return self._internal.signal
 
     @property
@@ -151,10 +152,15 @@ class Slider(PublicWidgetBase):
     def on_change(self, handler: Callable[[SliderEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired continuously as the handle moves.
 
-        The current value is available via ``slider.value`` inside the handler.
+        The current value is available via `slider.value` inside the handler.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.SliderEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -165,8 +171,13 @@ class Slider(PublicWidgetBase):
     def on_commit(self, handler: Callable[[SliderCommitEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the handle is released.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.SliderCommitEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("commit", handler)
 
@@ -181,31 +192,32 @@ class RangeSlider(PublicWidgetBase):
     All options are keyword-only.
 
     Args:
-        low_value: Initial low-handle value. Defaults to ``0``.
-        high_value: Initial high-handle value. Defaults to ``100``.
-        min_value: Minimum of the range. Defaults to ``0``.
-        max_value: Maximum of the range. Defaults to ``100``.
-        low_signal: Reactive ``Signal[float]`` linked to the low handle.
-        high_signal: Reactive ``Signal[float]`` linked to the high handle.
-        orient: Track orientation. ``'horizontal'`` (default) or
-            ``'vertical'``.
-        show_value: If ``True``, shows floating badges on both handles.
-            Defaults to ``False``.
-        tick_step: Spacing between major tick marks. ``None`` disables
+        low_value: Initial low-handle value. Defaults to `0`.
+        high_value: Initial high-handle value. Defaults to `100`.
+        min_value: Minimum of the range. Defaults to `0`.
+        max_value: Maximum of the range. Defaults to `100`.
+        low_signal: Reactive `Signal[float]` linked to the low handle.
+        high_signal: Reactive `Signal[float]` linked to the high handle.
+        orient: Track orientation. Default `'horizontal'`.
+        show_value: If `True`, shows floating badges on both handles.
+            Defaults to `False`.
+        tick_step: Spacing between major tick marks. `None` disables
             ticks entirely.
         minor_ticks: Number of minor tick marks between each major tick.
-            Defaults to ``0``.
-        tick_labels: If ``True``, shows numeric labels at major tick
-            positions. Defaults to ``True``.
-        tick_format: Format string applied to tick and badge labels.
-            Defaults to ``'{:.0f}'``.
+            Defaults to `0`.
+        tick_labels: If `True`, shows numeric labels at major tick
+            positions. Defaults to `True`.
+        tick_format: Python format string applied to tick and badge labels.
+            Defaults to `'{:.0f}'`.
         accent: Accent token controlling the fill, handles, and focus ring
-            color. One of ``'primary'`` (default), ``'secondary'``,
-            ``'success'``, ``'warning'``, ``'danger'``.
-        disabled: If ``True``, slider is non-interactive. Defaults to
-            ``False``.
+            color. Defaults to `'primary'`.
+        disabled: If `True`, slider is non-interactive. Defaults to
+            `False`.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -278,17 +290,17 @@ class RangeSlider(PublicWidgetBase):
 
     @property
     def value(self) -> tuple[float, float]:
-        """Current ``(low, high)`` values as a tuple."""
+        """Current `(low, high)` values as a tuple."""
         return (self._internal.lovalue, self._internal.hivalue)
 
     @property
     def low_signal(self) -> "Signal[float]":
-        """The reactive ``Signal[float]`` linked to the low handle."""
+        """The reactive `Signal[float]` linked to the low handle."""
         return self._internal._lo_signal
 
     @property
     def high_signal(self) -> "Signal[float]":
-        """The reactive ``Signal[float]`` linked to the high handle."""
+        """The reactive `Signal[float]` linked to the high handle."""
         return self._internal._hi_signal
 
     @property
@@ -327,11 +339,16 @@ class RangeSlider(PublicWidgetBase):
     def on_change(self, handler: Callable[[RangeSliderEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired continuously as either handle moves.
 
-        The current values are available via ``slider.low_value`` and
-        ``slider.high_value`` inside the handler.
+        The current values are available via `slider.low_value` and
+        `slider.high_value` inside the handler.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.RangeSliderEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -342,8 +359,13 @@ class RangeSlider(PublicWidgetBase):
     def on_commit(self, handler: Callable[[RangeSliderCommitEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a handle is released.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.RangeSliderCommitEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("commit", handler)
 

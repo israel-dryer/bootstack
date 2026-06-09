@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.validation import RuleType
 from bootstack.widgets.types import AccentToken
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 
 class FieldAddonMixin:
@@ -23,31 +26,61 @@ class FieldAddonMixin:
         self,
         widget: Literal["button", "label", "toggle"],
         position: Literal["before", "after"],
+        *,
         name: str | None = None,
-        accent: AccentToken | None = None,
-        **kwargs: Any,
+        text: str | None = None,
+        icon: str | None = None,
+        accent: AccentToken | str | None = None,
+        on_click: Callable[[], Any] | None = None,
+        signal: "Signal | None" = None,
     ) -> Any:
-        """Insert a widget inside the field border.
+        """Insert a small widget inside the field border, before or after the input.
+
+        Use this for affordances such as a clear button, a search icon, a unit
+        suffix label, or an on/off toggle.
 
         Args:
-            widget: Widget type — `'button'`, `'label'`, or `'toggle'`.
-            position: `'before'` (left of input) or `'after'` (right of input).
-            name: Key to retrieve the addon later via `addons`. Auto-generated if omitted.
-            accent: Accent token for the addon widget.
-            **kwargs: Additional kwargs passed to the widget constructor
-                (e.g. `icon=`, `command=`, `signal=`, `text=`).
+            widget: Addon type — `'button'` (clickable), `'label'` (static
+                text or icon), or `'toggle'` (on/off control).
+            position: `'before'` (left of the input) or `'after'` (right).
+            name: Key to retrieve the addon later via `addons`. Auto-generated
+                if omitted.
+            text: Text shown on the addon. Applies to any addon type.
+            icon: Bootstrap Icons name shown on the addon (e.g. `'search'`,
+                `'x-lg'`). An icon-only addon is rendered when `icon` is given
+                without `text`.
+            accent: Accent token for the addon. Prefer an accent for a
+                text-only button.
+            on_click: Called with no arguments when a `'button'` or `'toggle'`
+                addon is activated.
+            signal: Reactive `Signal[bool]` bound to a `'toggle'` addon's
+                on/off state.
 
         Returns:
             The created addon widget instance.
         """
         if widget not in self._ADDON_TYPES:
             raise ValueError(f"widget must be 'button', 'label', or 'toggle'; got {widget!r}")
+        if on_click is not None and widget == "label":
+            raise ValueError("on_click is not valid for a 'label' addon")
+        if signal is not None and widget != "toggle":
+            raise ValueError("signal is only valid for a 'toggle' addon")
 
         module_path, cls_name = self._ADDON_TYPES[widget].split("::")
         import importlib
         cls = getattr(importlib.import_module(module_path), cls_name)
 
-        return self._internal.insert_addon(cls, position, name=name, accent=accent, **kwargs)
+        addon_kwargs: dict[str, Any] = {}
+        if text is not None:
+            addon_kwargs["text"] = text
+        if icon is not None:
+            addon_kwargs["icon"] = icon
+        if on_click is not None:
+            addon_kwargs["command"] = on_click
+        if signal is not None:
+            addon_kwargs["signal"] = signal
+
+        return self._internal.insert_addon(cls, position, name=name, accent=accent, **addon_kwargs)
 
     @property
     def addons(self) -> dict[str, Any]:

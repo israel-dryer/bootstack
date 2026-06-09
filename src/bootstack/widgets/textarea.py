@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.textarea import TextArea as _InternalTextArea
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
@@ -53,14 +53,17 @@ class TextArea(PublicWidgetBase):
         height: Visible row count. Default `4`.
         width: Width in character units. Omit to let the widget fill its
             container via layout.
-        scrollbars: Scrollbar visibility — `'auto'` (default), `'vertical'`,
-            `'both'`, or `'none'`.
-        font: Font token. Default `'body'`.
-        accent: Accent token for the focus border. One of `'primary'`,
-            `'secondary'`, `'success'`, `'warning'`, `'danger'`.
+        scrollbars: Scrollbar visibility. Default `'auto'`. Horizontal
+            scrolling requires `wrap=False`.
+        font: Semantic font token. Default `'body'`. See
+            :doc:`/reference/typography`.
+        accent: Accent token applied to the focus border. Default `'primary'`.
         show_border: If True (default), wraps the text area in a themed
             border with a focus ring.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -77,7 +80,7 @@ class TextArea(PublicWidgetBase):
         wrap: bool = True,
         height: int = 4,
         width: int | None = None,
-        scrollbars: str = "auto",
+        scrollbars: Literal["auto", "vertical", "both", "none"] = "auto",
         font: str = "body",
         accent: AccentToken | str = "primary",
         show_border: bool = True,
@@ -112,7 +115,6 @@ class TextArea(PublicWidgetBase):
             internal_kwargs["placeholder"] = placeholder
         if max_length is not None:
             internal_kwargs["max_length"] = max_length
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalTextArea(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -236,8 +238,13 @@ class TextArea(PublicWidgetBase):
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every edit.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 
@@ -248,8 +255,13 @@ class TextArea(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value is committed (on blur).
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -260,8 +272,13 @@ class TextArea(PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the text area gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -272,8 +289,13 @@ class TextArea(PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the text area loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
@@ -284,8 +306,13 @@ class TextArea(PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -296,8 +323,13 @@ class TextArea(PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -308,8 +340,13 @@ class TextArea(PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 
@@ -320,8 +357,13 @@ class TextArea(PublicWidgetBase):
     def on_modified(self, handler: Callable[[TextModifiedEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the dirty state changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.TextModifiedEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("modified", handler)
 
@@ -332,8 +374,13 @@ class TextArea(PublicWidgetBase):
     def on_undo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after an undo operation.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("undo", handler)
 
@@ -344,8 +391,13 @@ class TextArea(PublicWidgetBase):
     def on_redo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after a redo operation.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("redo", handler)
 

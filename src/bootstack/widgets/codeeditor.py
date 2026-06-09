@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tkinter
 from contextlib import contextmanager
-from typing import overload, Any, Callable, Iterator, TYPE_CHECKING
+from typing import overload, Any, Callable, Iterator, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.codeeditor import CodeEditor as _InternalCodeEditor
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
@@ -64,15 +64,19 @@ class CodeEditor(PublicWidgetBase):
         show_indent_guides: If True, draws subtle vertical guide marks at
             each indent stop.
         height: Visible row count. Default `20`.
-        scrollbars: Scrollbar visibility — `'both'` (default), `'auto'`,
-            `'vertical'`, or `'none'`.
-        font: Font for the editor. Default `'code'` (the monospace font token).
+        scrollbars: Scrollbar visibility. Default `'both'`. Horizontal
+            scrolling requires `wrap=False`.
+        font: Semantic font token for the editor. Default `'code'` (the
+            monospace token). See :doc:`/reference/typography`.
         show_border: If True (default), styles the editor frame as a themed
             border with a focus ring.
-        accent: Accent token for the focus border. Default `'primary'`.
+        accent: Accent token applied to the focus border. Default `'primary'`.
         extensions: Additional `EditFilter` instances to install on top of
             the built-in set.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -92,7 +96,7 @@ class CodeEditor(PublicWidgetBase):
         show_line_numbers: bool = True,
         show_indent_guides: bool = False,
         height: int = 20,
-        scrollbars: str = "both",
+        scrollbars: Literal["both", "auto", "vertical", "none"] = "both",
         font: str = "code",
         show_border: bool = True,
         accent: AccentToken | str = "primary",
@@ -366,8 +370,13 @@ class CodeEditor(PublicWidgetBase):
     def on_modified(self, handler: Callable[[TextModifiedEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when `is_dirty` changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.TextModifiedEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("modified", handler)
 
@@ -378,8 +387,13 @@ class CodeEditor(PublicWidgetBase):
     def on_undo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after an undo operation.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("undo", handler)
 
@@ -390,8 +404,13 @@ class CodeEditor(PublicWidgetBase):
     def on_redo(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after a redo operation.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("redo", handler)
 
@@ -402,8 +421,13 @@ class CodeEditor(PublicWidgetBase):
     def on_cursor_move(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the cursor position changes.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("cursor_move", handler)
 
@@ -414,8 +438,13 @@ class CodeEditor(PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the editor gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -426,8 +455,13 @@ class CodeEditor(PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the editor loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 

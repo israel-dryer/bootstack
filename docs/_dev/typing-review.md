@@ -132,10 +132,27 @@ Work in the Stage 4 batch order; tick as completed:
 - [x] Menus & Toolbars: Toolbar, MenuButton, MenuBar, ContextMenu — DONE
       (MenuButton/Toolbar variant→Literal incl 'default'; MenuBar add_button/add_menu
       accent:str→AccentToken; ContextMenu trigger→Literal, density→WidgetDensity).
-- [~] Inputs: TextField, PasswordField, NumberField, SpinnerField, PathField,
-      Slider, RangeSlider, TextArea, CodeEditor, DateField, TimeField
-      (rule_type DONE on the field widgets; CodeEditor events + language/theme
-      docstrings DONE, its scrollbars/`**kwargs` pending; rest pending)
+- [x] Inputs: TextField, PasswordField, NumberField, SpinnerField, PathField,
+      Slider, RangeSlider, TextArea, CodeEditor, DateField, TimeField — DONE.
+      Across all 11: dropped accent/density/justify/orient value enumerations
+      (type self-documents); `font` → `:doc:/reference/typography`; `value_format`
+      (TextField/NumberField/DateField/TimeField) → named-preset + custom-pattern +
+      `:ref:value-formats`; documented `**kwargs` layout cross-link; double→single
+      backticks (textfield/numberfield/slider/passwordfield were still double).
+      Literals promoted: `PathField.mode`, `TextArea.scrollbars`,
+      `DateField.selection_mode`, `CodeEditor.scrollbars`; `PathField.file_filters`
+      → `list[tuple[str,str]]`. Removed the uncurated `internal_kwargs.update(kwargs)`
+      passthrough leak from Spinner/Path/TextArea/Date/Time (addons go through
+      `insert_addon`, not ctor kwargs) so `**kwargs` is layout-only like TextField.
+      `on_*` handler docs: every `on_*` impl now documents `handler` with a
+      `:class:`-linked payload + typed `Subscription`/`Stream` Returns (the type was
+      otherwise invisible — autodoc strips the Overloads block). Verified the payload
+      renders as a cross-ref in the built stubs (NumberField shows 8 distinct links).
+      `FieldAddonMixin.insert_addon` CURATED (per maintainer, during review): dropped
+      the raw `**kwargs`→internal-primitive passthrough (leaked Tk options `command`/
+      `textvariable`/`state`/…) for typed kw-only params — `text`/`icon`/`accent`/
+      `on_click`(→`command`)/`signal`(toggle); validates param↔type applicability.
+      Advances `project_enum_option_typing`'s "insert_addon `**kwargs` redesign".
 - [~] Selection: Checkbox, Switch, ToggleButton, ToggleGroup, Radio,
       RadioToggleButton, RadioGroup, Select, SelectButton, Calendar
       (Radio compound→icon_position DONE; Calendar padding DONE; rest pending)
@@ -172,5 +189,6 @@ Work in the Stage 4 batch order; tick as completed:
 - `show_indicator` REMOVAL (behavior + style builders + screenshots) —
   `project_show_indicator_removal`.
 - `insert_addon` `**kwargs` discoverability redesign (explicit typed params) —
-  `project_enum_option_typing` (accent fix there is DONE; the `**kwargs` redesign isn't).
+  `project_enum_option_typing`. DONE during the Inputs batch (see the Inputs checklist
+  entry): now typed kw-only params, no Tk passthrough.
 - Retiring the now-unused `VariantToken` (after per-widget variants land).
