@@ -89,13 +89,14 @@ memories and git history.
   interleaved with, the Stage 4 *homing* below. **READ FIRST: full brief + per-widget
   checklist + every convention is in `docs/_dev/typing-review.md`.**
   - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
-    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label (worked example), Inputs
-    (all 11 — TextField/PasswordField/NumberField/SpinnerField/PathField/Slider/
-    RangeSlider/TextArea/CodeEditor/DateField/TimeField; not committed — awaiting review).
-  - **NEXT: Selection** (Checkbox/Switch/ToggleButton/ToggleGroup/Radio/RadioToggleButton/
-    RadioGroup/Select/SelectButton/Calendar — Radio compound→icon_position + Calendar
-    padding already done; rest pending). Then Data Display, Layout, Navigation,
-    Overlays/Forms/Dialogs.
+    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label, Inputs (all 11 — committed
+    `4a9609ff`), Selection (all 10 — Checkbox/Switch/ToggleButton/ToggleGroup/Radio/
+    RadioToggleButton/RadioGroup/Select/SelectButton/Calendar; NOT committed — awaiting
+    review). Selection included a maintainer-approved STRUCTURAL cleanup: removed dead
+    `variant` (Switch/Checkbox) + unsupported `density` (Checkbox/Switch/Radio) via
+    per-subclass `__init__`s + an `_internal_options` engine that rejects unknown kwargs.
+  - **NEXT: Data Display** (Label[done]/Badge/ProgressBar/Gauge/ListView/DataTable/Tree).
+    Then Layout, Navigation, Overlays/Forms/Dialogs.
   - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
     (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
     STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
@@ -162,6 +163,17 @@ memories and git history.
   platform app-icon assets — `.ico`/`.png` — for `App`/`Window`). `App`/`Window`
   `icon=` (type `str | AppIcon | Image`) is DEFERRED to this. Memory
   `project_image_icon_public_api`.
+- **Decoupled option shape for the selection family** (initiative, designed
+  2026-06-09) — let `Select`/`SelectButton` options carry a value distinct from
+  their label, via ONE shared `Option = str | tuple[str, Any] | OptionDict` shape
+  (dict = the extensible "data bag" member: `{"text", "value", …icon/disabled}`)
+  normalized once and consumed by all four selection widgets (RadioGroup/ToggleGroup
+  already do `(label,value)` tuples — fold them into the shared normalizer + widen to
+  the dict). Bulk of the work is giving the entry-backed `SelectBox` a real text↔value
+  map (search-on-text, value-space `value`, custom-value semantics). Full brief +
+  open decisions (`text` vs `label` key; `.options` return shape; unknown-value setter
+  behavior): `docs/_dev/select-options-databag.md`. Behavior feature — do AFTER the
+  typing sweep's Data Display batch; lock shape/naming before touching internals.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 
