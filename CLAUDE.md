@@ -193,16 +193,40 @@ memories (see them for rationale and gotchas).
 
 ## Next up — candidates (pick one)
 
-- **★ API Reference restructure — Stage 4+ (docs)** — LEAD CANDIDATE, IN PROGRESS
-  (Stage 1 merged PR #107; Stages 2+3 done on `feat/api-reference-stage2`).
-  Continue the staged sweep from the brief: **Stage 4** sweep
-  widgets (single category-grouped `bootstack` page; `AppShell`→Application; widget
-  clusters as flat sibling stubs; doubles as an `__all__`-hygiene audit —
-  `ColumnSpec`/`EditFilter`/`EditorType`); **Stage 5** nav re-cut (back to 5).
-  Then the post-migration follow-on: flesh out the widget Guides with far more
-  examples (**API Reference is a last resort; Guides carry the teaching**). **Full
-  brief + decisions in `docs/_dev/api-reference-restructure.md`**; memory
-  `project_api_reference_restructure`.
+- **★ API Reference restructure — Stage 4 (docs), IN PROGRESS** — LEAD CANDIDATE.
+  Branch **`feat/api-reference-widgets`** (off main; Stages 1–3 merged to main).
+  Building the single top-level `bootstack` category-grouped API page + converting
+  widget guides to table-only summaries, **cleaning up each widget's public API as it
+  is homed** (per-widget recipe under "## Widget documentation pattern"). Within-group
+  entries are **alphabetical** (lookup layer; Guides keep curated order).
+  **DONE so far (committed on the branch — NOT pushed/PR'd yet):**
+  - Foundation: top-level `api-reference/bootstack.rst`; relocated re-exports
+    `Signal`/`set_theme`/`toggle_theme` up (subsystem pages table-link via `~bootstack.X`).
+  - Batch 1 — Application (App/AppShell/Window) + Actions (Button/ButtonGroup) +
+    full **App/AppShell/Window constructor curation** (dropped `app_author`/`app_version`/
+    `inherit_surface_color`[hardwired]/`name`/`mainloop`; demoted `localize_mode`/
+    `macos_quit_behavior`/`state_path`/`available_themes` → construction-only; promoted
+    `position`/`min_size`/`max_size`/`resizable`/`hdpi`/`scaling`; removed the `tk.Tk`
+    docstring leak; fleshed out `emit`). Memories `project_window_api_hardening`.
+  - Batch 2 — Inputs (11) + Selection (10, incl `Radio`/`RadioToggleButton` first home).
+    Completed the typed-payload `on_*` audit for boolean/selection controls (`on_change`
+    → `ChangeEvent(value, prev_value)`; `on_check`/`on_uncheck` stay data-free `Event`).
+    Memory `project_typed_event_payloads`.
+  - Set **`default_role = "code"`** (single backticks → inline code, colon-safe) +
+    converted the 6 Selection widgets' docstrings double→single — de-risks the
+    framework-wide `project_docstring_backticks` sweep (now safe everywhere).
+  **NEXT: Batch 3 — Data Display** (Label, Badge, ProgressBar, Gauge, ListView,
+  DataTable, Tree + TreeNode). This batch MUST also move **`ColumnSpec` + `EditorType`
+  → `bootstack.types`** (relocate their defs to `widgets/types.py` to avoid circular
+  imports — see the re-export inventory in the brief) and complete the `on_*` payload
+  audit for ListView/DataTable/Tree. Then **Batch 4** Layout + Navigation; **Batch 5**
+  Menus/Overlays/Forms; **Batch 6** Dialogs (give `bootstack.dialogs` an `__all__` +
+  page; home `FontChoice`/`FormDialog`/`Dialog`/`DialogButton`/`ColorChooserDialog`/
+  `ColorChoice`/`FontDialog`/`FilterDialog`); **Stage 5** nav re-cut to 5 +
+  `api-overview` becomes the API-Reference landing. Follow-on: flesh out widget Guides
+  with examples (**API Reference is a last resort; Guides carry teaching**). `EditFilter`
+  already demoted (memory `project_editfilter_public_api`). **Full brief + decisions in
+  `docs/_dev/api-reference-restructure.md`**; memory `project_api_reference_restructure`.
 - **Public Image/Icon API** (initiative, designed 2026-06-08) — three stacked
   pieces: `Image` (Tk-free image handle; re-promote, internal since PR #104),
   `get_icon(name, ...) -> Image` (public factory over the internal font-glyph

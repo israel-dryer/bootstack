@@ -1,8 +1,26 @@
 # Initiative — API Reference restructure (docs)
 
-**Status:** Stage 1 (the `bootstack.data` prototype slice) MERGED (PR #107).
-Stage 2 (recipe-lock) + Stage 3 (subsystem sweep) done on `feat/api-reference-stage2`.
-Stages 4–5 not started. Decided 2026-06-08 with the maintainer.
+**Status:** Stages 1–3 MERGED to main (PR #107 = stage 1; PR #108 = stages 2+3).
+**Stage 4 IN PROGRESS** on branch `feat/api-reference-widgets` (NOT pushed/PR'd
+yet): foundation + batch 1 (Application/Actions + App/Window curation) + batch 2
+(Inputs/Selection + event-payload completions + `default_role="code"` backtick
+fix) DONE; **NEXT = batch 3 Data Display** (incl. `ColumnSpec`/`EditorType` →
+`bootstack.types`). Within-group entries are alphabetical (lookup layer). Stage 5
+not started. Decided/updated 2026-06-08 with the maintainer.
+
+**Stage 4 batch log (branch `feat/api-reference-widgets`):**
+- `80492cac` foundation — top-level `bootstack` page + re-export relocation.
+- `87d9174d` batch 1 — Application + Actions; App/AppShell/Window constructor curation
+  (drop `app_author`/`app_version`/`inherit_surface_color`/`name`/`mainloop`; demote
+  `localize_mode`/`macos_quit_behavior`/`state_path`/`available_themes` → construction-only;
+  promote `position`/`min_size`/`max_size`/`resizable`/`hdpi`/`scaling`; tk-leak + emit fixes).
+- `cd909367` batch 2a — Inputs homed; Selection `on_*` payloads (ChangeEvent value/prev,
+  prev tracked for tristate); `default_role="code"` + Selection docstrings double→single.
+- `bb138edd` batch 2b — Selection homed (incl Radio/RadioToggleButton first home).
+- `e628aa0e` — alphabetical within-group ordering + recipe rule.
+- Out-of-band flags raised this stage: `project_window_api_hardening`,
+  `project_editfilter_public_api`, `project_image_icon_public_api`,
+  `project_signal_subscribe_subscription`, `feedback_cleanup_api_while_documenting`.
 
 **Stage 3 outcome (2026-06-08):** Built API-Reference pages for all 10 remaining
 subsystems — `signals`, `streams`, `events`, `errors`, `i18n`, `scheduling`,
