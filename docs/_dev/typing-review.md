@@ -175,7 +175,54 @@ Work in the Stage 4 batch order; tick as completed:
       TypeError on unknown kwargs (so removed params are rejected at runtime, not
       silently forwarded via `**kwargs`). ToggleButton/RadioToggleButton keep
       variant/density. See memory `project_variant_type_revisit`.
-- [ ] Data Display: Label, Badge, ProgressBar, Gauge, ListView, DataTable, Tree
+- [x] Data Display: Label, Badge, ProgressBar, Gauge, ListView, DataTable, Tree —
+      DONE (NOT committed — awaiting review). Across all: `accent: AccentToken|None`
+      → `AccentToken|str|None` (keeps `'default'`/modifiers); removed the
+      `internal_kwargs.update(kwargs)` passthrough leak so `**kwargs` is layout-only;
+      documented `**kwargs` with the `:doc:/tasks/layout` cross-link; dropped value
+      enumerations the type now shows (selection_mode/sorting_mode/paging_mode/mode/
+      orient — kept the default + meaning); double→single backticks (Tree, Gauge,
+      ProgressBar, Badge, + Label's leftover intro/icon lines). Under-typed promotions:
+      ProgressBar `signal: Any`→`Signal`; ListView `items: list`→`list[dict]`,
+      `data_source: Any`→`DataSourceProtocol`; Tree `data_source: Any`→
+      `DataSourceProtocol`, `nodes: list`→`list[str|dict]`, `order: Any`→
+      `str|Column|SortKey|Sequence[...]|None`; DataTable `export_formats: list[str]`→
+      `list[Literal[csv|tsv|xlsx|json|jsonl|xml|parquet|feather|hdf5]]`. `on_*` handler
+      docs completed everywhere (`:class:`-linked payload + typed Subscription/Stream
+      Returns): ListView item events stay a plain record `dict` (the documented
+      exception) + `selection_changed`→`Event`; DataTable Row/Rows/Selection/Export
+      events; Gauge `SliderEvent`; Tree `on_selection_changed`→`TreeSelectionEvent`
+      (was `Callable[[Any]]`), activate/expand/collapse→`TreeNode`, right_click→`dict`.
+      Badge/Gauge/ProgressBar variant already concrete per-widget Literals (no change).
+      Verified: `test_public_surface.py` green (127), clean `-W` build warning-free,
+      payload cross-refs resolve to stubs in the built HTML.
+      **Review fixes (maintainer, 2026-06-09):**
+      - `on_*` IMPL signatures must be TYPED, not just the `@overload`s. Because
+        `autodoc_typehints="description"`, the param type renders from the IMPL
+        annotation (the signature itself stays bare by design) — a bare
+        `def on_x(self, handler=None):` shows NO payload type at all. Typed every
+        ListView (7) / DataTable (9) / Tree (5) impl as
+        `handler: Callable[[Payload], Any] | None = None) -> Stream | Subscription`.
+        (Inputs/Selection impls were already typed — gap was Data-Display-only;
+        grep `def on_\w+\(self, handler=None\):` now returns nothing.)
+      - PROPERTIES need docstrings too (autodoc renders them): added to ProgressBar
+        (`value`/`max_value`) and Gauge (`value`/`subtitle`). Also swept already-reviewed
+        widgets via an AST scan: DateField/TimeField `disabled`/`read_only`, Radio
+        `disabled`, and the generic `.on()` impl on 10 input/select widgets (all were
+        undocumented). Internal-only `Spinbox`/`Expander` props left as-is. FLAGGED (not
+        an `on_*`, deferred): `guide_layout` on the page-frame handles (AccordionSection/
+        StackPage/SplitPane/TabPage) is undocumented — likely DEMOTE to `_guide_layout`
+        (internal layout-protocol hook) rather than document; decide during Layout/Nav.
+      - Memory `feedback_autodoc_impl_typing` captures this convention + the AST scan.
+      - `TreeNode` (public via `bootstack.widgets.tree`) had 9 undocumented `__slots__`
+        data attributes — added class-level typed annotations + attribute docstrings
+        (`label`/`icon`/`open_icon`/`closed_icon`/`expanded`/`children`/`parent`/`data`/
+        `loader`); annotation-only + `__slots__` is safe (no class-var conflict).
+      **Feature added (Tree, maintainer-requested):** `Tree.find(matcher)` +
+      `find_all(matcher)` — predicate OR `col(...)` condition; condition pushes down
+      on a data-source tree and loads (non-destructively) the path to each hit. Tests
+      in `test_tree.py`. `filter()`/`search()` view-pruning DEFERRED. Memory
+      `project_tree_find_filter`.
 - [ ] Layout: Separator, Card, GroupBox, VStack, HStack, Grid, ScrollView,
       Accordion, SplitView
 - [ ] Navigation: PageStack, Tabs, SideNav

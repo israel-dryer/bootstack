@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, overload
+from typing import Any, Callable, Literal, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.composites.list.listview import ListView as _InternalListView
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -9,53 +9,58 @@ from bootstack.events import Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
+if TYPE_CHECKING:
+    from bootstack.data.types import DataSourceProtocol
+
 
 class ListView(PublicWidgetBase):
     """A virtual-scrolling list for efficiently displaying large datasets.
 
     Renders only visible rows, making it suitable for thousands of records.
-    Populate via ``items=`` (a plain list of dicts) or ``data_source=`` (a
-    ``DataSourceProtocol`` for database-backed or API-backed data).
+    Populate via `items=` (a plain list of dicts) or `data_source=` (a data
+    source for database-backed or API-backed data).
 
-    Each record dict should have an ``'id'`` key; one is auto-generated if absent.
-    Displayed fields are ``'title'``, ``'text'``, ``'icon'``, and ``'badge'``.
-    Other keys are stored and returned by ``get_selected()`` and events but
-    are not rendered.
+    Each record dict should have an `'id'` key; one is auto-generated if absent.
+    Displayed fields are `'title'`, `'text'`, `'icon'`, and `'badge'`. Other
+    keys are stored and returned by `get_selected()` and events but are not
+    rendered.
 
     Args:
         items: Initial list of record dicts.
-        data_source: ``DataSourceProtocol`` implementation for database-backed
-            or API-backed data.
-        selection_mode: ``'none'`` (default) — no selection; ``'single'`` —
-            one item at a time; ``'multi'`` — multiple items.
-        show_selection_controls: If ``True``, show checkboxes (multi) or radio
+        data_source: A data source for database-backed or API-backed data. Any
+            object implementing the data-source protocol is accepted.
+        selection_mode: Item selection behavior — `'single'` allows one item at
+            a time, `'multi'` allows several. Default `'none'` (no selection).
+        show_selection_controls: If `True`, show checkboxes (multi) or radio
             buttons (single) alongside each item.
-        show_chevron: If ``True``, show a right-pointing chevron on each item.
-        allow_remove: If ``True``, show a remove button on each item.
-        allow_reorder: If ``True``, show a drag handle and allow reordering
-            by dragging.
-        striped: If ``True``, alternate the row background color.
-        show_separators: If ``True`` (default), draw a separator line between
+        show_chevron: If `True`, show a right-pointing chevron on each item.
+        allow_remove: If `True`, show a remove button on each item.
+        allow_reorder: If `True`, show a drag handle and allow reordering by
+            dragging.
+        striped: If `True`, alternate the row background color.
+        show_separators: If `True` (default), draw a separator line between
             items.
-        show_scrollbar: If ``True`` (default), show the vertical scrollbar.
+        show_scrollbar: If `True` (default), show the vertical scrollbar.
             Mousewheel scrolling works regardless.
         height: Fixed height in pixels. When set, the list maintains this
             height regardless of its children, making it self-contained for
             scrolling without requiring the parent layout to provide a
             vertical constraint. The widget can still grow beyond this height
-            if placed with ``expand=True`` in a constrained parent.
-        density: Row height. ``'default'`` (default) or ``'compact'``.
+            if placed with `expand=True` in a constrained parent.
+        density: Row height. Default `'default'`.
         accent: Color intent token for the selection highlight and drag
-            indicator. One of ``'primary'``, ``'secondary'``, ``'info'``,
-            ``'success'``, ``'warning'``, ``'danger'``.
+            indicator. Defaults to the theme's default color.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        items: list | None = None,
-        data_source: Any = None,
+        items: list[dict] | None = None,
+        data_source: DataSourceProtocol | None = None,
         selection_mode: Literal["none", "single", "multi"] = "none",
         show_selection_controls: bool = False,
         show_chevron: bool = False,
@@ -66,7 +71,7 @@ class ListView(PublicWidgetBase):
         show_scrollbar: bool = True,
         height: int | None = None,
         density: WidgetDensity = "default",
-        accent: AccentToken | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -91,7 +96,6 @@ class ListView(PublicWidgetBase):
             internal_kwargs["datasource"] = data_source
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
 
         if height is not None and "fill" not in layout_kw:
             layout_kw["fill"] = "x"
@@ -167,11 +171,17 @@ class ListView(PublicWidgetBase):
     def on_item_click(self) -> Stream: ...
     @overload
     def on_item_click(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_click(self, handler=None):
-        """Fired when an item is clicked. The handler receives the record dict — read fields with ``e["field"]``.
+    def on_item_click(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired when an item is clicked.
+
+        Args:
+            handler: Called with the record `dict` — read fields with
+                `e["field"]`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_click", handler)
 
@@ -179,11 +189,18 @@ class ListView(PublicWidgetBase):
     def on_selection_changed(self) -> Stream: ...
     @overload
     def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler=None):
-        """Fired when the selection changes. Call ``get_selected()`` to read it.
+    def on_selection_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Fired when the selection changes.
+
+        Args:
+            handler: Called with the curated
+                :class:`~bootstack.events.Event`; call `get_selected()` to read
+                the current selection. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("selection_changed", handler)
 
@@ -191,11 +208,16 @@ class ListView(PublicWidgetBase):
     def on_item_delete(self) -> Stream: ...
     @overload
     def on_item_delete(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_delete(self, handler=None):
-        """Fired after an item is removed. The handler receives the deleted record dict.
+    def on_item_delete(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired after an item is removed.
+
+        Args:
+            handler: Called with the deleted record `dict`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_delete", handler)
 
@@ -203,11 +225,16 @@ class ListView(PublicWidgetBase):
     def on_item_insert(self) -> Stream: ...
     @overload
     def on_item_insert(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_insert(self, handler=None):
-        """Fired after an item is inserted. The handler receives the new record dict.
+    def on_item_insert(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired after an item is inserted.
+
+        Args:
+            handler: Called with the new record `dict`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_insert", handler)
 
@@ -215,11 +242,16 @@ class ListView(PublicWidgetBase):
     def on_item_update(self) -> Stream: ...
     @overload
     def on_item_update(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_update(self, handler=None):
-        """Fired after an item is updated. The handler receives the updated record dict.
+    def on_item_update(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired after an item is updated.
+
+        Args:
+            handler: Called with the updated record `dict`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_update", handler)
 
@@ -227,11 +259,17 @@ class ListView(PublicWidgetBase):
     def on_item_drag_start(self) -> Stream: ...
     @overload
     def on_item_drag_start(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_drag_start(self, handler=None):
-        """Fired when a drag begins. The handler receives the record dict, including ``source_index``.
+    def on_item_drag_start(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired when a drag begins.
+
+        Args:
+            handler: Called with the record `dict`, including `source_index`.
+                Omit to get a composable :class:`~bootstack.streams.Stream`
+                instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_drag_start", handler)
 
@@ -239,20 +277,25 @@ class ListView(PublicWidgetBase):
     def on_item_drag_end(self) -> Stream: ...
     @overload
     def on_item_drag_end(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_item_drag_end(self, handler=None):
-        """Fired when a drag ends. The handler receives the record dict, including
-        ``source_index`` and ``target_index``.
+    def on_item_drag_end(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired when a drag ends.
+
+        Args:
+            handler: Called with the record `dict`, including `source_index`
+                and `target_index`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("item_drag_end", handler)
 
     # ----- Properties -----
 
     @property
-    def data_source(self) -> Any:
-        """The underlying `DataSourceProtocol` instance."""
+    def data_source(self) -> DataSourceProtocol:
+        """The underlying data source instance."""
         return self._internal.get_datasource()
 
 

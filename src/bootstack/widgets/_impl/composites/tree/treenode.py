@@ -35,6 +35,39 @@ class TreeNode:
         "_tree", "_loaded",
     )
 
+    label: str
+    """The node's display label."""
+
+    icon: str | None
+    """Bootstrap icon name shown before the label, or `None` for no icon."""
+
+    open_icon: str | None
+    """Icon shown while the node is expanded, overriding `icon` when set."""
+
+    closed_icon: str | None
+    """Icon shown while the node is collapsed, overriding `icon` when set."""
+
+    expanded: bool
+    """Whether the node is currently expanded — kept in sync as it expands and
+    collapses."""
+
+    children: list["TreeNode"]
+    """The child nodes, in order. Empty for a leaf, and empty for a lazy node
+    until its `loader` has run on first expand."""
+
+    parent: "TreeNode | None"
+    """The parent node, or `None` for a root node."""
+
+    data: dict[str, Any]
+    """Open-ended data bag for your own attributes. Holds any keyword passed to
+    `add()` that is not a recognized display parameter, and — for a
+    data-source-backed tree — the node's source record."""
+
+    loader: Callable[["TreeNode"], Any] | None
+    """Callable invoked on first expand to fetch children lazily, or `None` for
+    an eagerly-populated node. Receives the node; returns an iterable of child
+    specs."""
+
     def __init__(
         self,
         label: str = "",

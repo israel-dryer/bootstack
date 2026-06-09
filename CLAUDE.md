@@ -91,12 +91,13 @@ memories and git history.
   - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
     Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label, Inputs (all 11 — committed
     `4a9609ff`), Selection (all 10 — Checkbox/Switch/ToggleButton/ToggleGroup/Radio/
-    RadioToggleButton/RadioGroup/Select/SelectButton/Calendar; NOT committed — awaiting
-    review). Selection included a maintainer-approved STRUCTURAL cleanup: removed dead
-    `variant` (Switch/Checkbox) + unsupported `density` (Checkbox/Switch/Radio) via
-    per-subclass `__init__`s + an `_internal_options` engine that rejects unknown kwargs.
-  - **NEXT: Data Display** (Label[done]/Badge/ProgressBar/Gauge/ListView/DataTable/Tree).
-    Then Layout, Navigation, Overlays/Forms/Dialogs.
+    RadioToggleButton/RadioGroup/Select/SelectButton/Calendar), Data Display (all 7 —
+    Label/Badge/ProgressBar/Gauge/ListView/DataTable/Tree). Selection included a
+    maintainer-approved STRUCTURAL cleanup: removed dead `variant` (Switch/Checkbox) +
+    unsupported `density` (Checkbox/Switch/Radio) via per-subclass `__init__`s + an
+    `_internal_options` engine that rejects unknown kwargs.
+  - **NEXT: Layout** (Separator/Card/GroupBox/VStack/HStack/Grid/ScrollView/Accordion/
+    SplitView). Then Navigation, Overlays/Forms/Dialogs.
   - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
     (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
     STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
@@ -118,9 +119,33 @@ memories and git history.
     `reference/localization.rst` formats section. Memories: `project_enum_option_typing`
     (the hub), `project_variant_type_revisit` (now covers accent + variant per-widget),
     `project_show_indicator_removal` (deferred behavior change), `project_image_icon_public_api`.
+  - **Data Display batch (this session):** `accent`→`AccentToken|str|None` everywhere;
+    removed `internal_kwargs.update(kwargs)` leaks (`**kwargs` is layout-only); documented
+    `**kwargs`; promoted under-typed params (ProgressBar `signal`→`Signal`; ListView/Tree
+    `data_source`→`DataSourceProtocol`; ListView `items`→`list[dict]`; Tree `nodes`→
+    `list[str|dict]`, `order`→`str|Column|SortKey|Sequence|None`; DataTable
+    `export_formats`→`list[Literal[...]]`); completed `on_*` payload docs. **TreeNode**
+    (public) got typed annotations + attribute docstrings for its 9 `__slots__` fields.
+    **CRITICAL convention learned (maintainer review):** with `autodoc_typehints="description"`,
+    the rendered param type comes from the **IMPL signature**, not the `@overload`s (those
+    are stripped) — so `on_*`/`on` IMPLS must be typed `handler: Callable[[Payload],Any]|None
+    =None) -> Stream|Subscription`, AND every public `@property` + method needs a docstring,
+    or they render bare. Swept this gap across ALL prior batches too (an AST scan found +
+    fixed: DateField/TimeField `disabled`/`read_only`, Radio `disabled`; the generic `.on()`
+    impl on 10 input/select widgets). Remaining gap (FLAGGED, not an on_*): `guide_layout`
+    on the page-frame handles (AccordionSection/StackPage/SplitPane/TabPage) — likely
+    DEMOTE to `_guide_layout` (internal layout hook) rather than document. Internal-only
+    `Spinbox`/`Expander` props left as-is.
+  - **Tree feature (this session, maintainer-requested):** `Tree.find(matcher)` +
+    `find_all(matcher)` — `matcher` is a predicate OR a `col(...)` condition; a condition
+    pushes down to a data-source-backed tree (reaching unexpanded branches) and loads the
+    path to each hit non-destructively. `filter()`/`search()` view-pruning DEFERRED (open
+    decisions in memory). Memory `project_tree_find_filter`; tests in `test_tree.py`.
   - **Verify each batch:** `python -m pytest tests/test_public_surface.py -q` + a CLEAN
     build — build to a FRESH temp dir when `docs/_build` is locked by an open browser:
     `sphinx-build -b html docs /tmp/bsdocs -W --keep-going` (must be warning-free).
+    **Also run the doc-gap AST scan** (undocumented public props/methods + untyped `on_*`
+    impls) per batch — see the convention above.
 - **★ API Reference restructure — Stage 4 *homing* (docs), IN PROGRESS** (the autosummary
   homing thread — interleaved with the typing sweep above; NOT yet advanced this session).
   Branch **`feat/api-reference-widgets`** (off main; Stages 1–3 merged to main).

@@ -108,6 +108,7 @@ class _RadioBase(PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether the control is disabled (non-interactive and greyed out)."""
         return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter

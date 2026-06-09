@@ -129,6 +129,22 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -159,6 +175,7 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether the field is disabled (non-interactive and greyed out)."""
         return str(self._internal._entry.cget("state")) == "disabled"
 
     @disabled.setter
@@ -167,6 +184,7 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
+        """Whether the field is read-only (selectable but not editable)."""
         return str(self._internal._entry.cget("state")) == "readonly"
 
     @read_only.setter
