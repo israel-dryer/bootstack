@@ -45,6 +45,10 @@ autodoc_default_options     = {
 
 autosummary_generate = True
 
+# Single backticks in docstrings render as inline code (the project convention)
+# and, unlike the default interpreted-text role, are colon-safe (e.g. `h:mm`).
+default_role = "code"
+
 # ---------------------------------------------------------------------------
 # Napoleon (Google-style docstrings)
 # ---------------------------------------------------------------------------

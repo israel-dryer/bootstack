@@ -168,11 +168,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.passwordfield.PasswordField
-   :members:
-   :undoc-members:
-   :inherited-members: FieldAddonMixin
-   :exclude-members: tk
+The complete reference for :class:`PasswordField <bootstack.PasswordField>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.PasswordField
 
 Full Example
 ------------

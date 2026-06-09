@@ -29,24 +29,24 @@ class Select(PublicWidgetBase):
         options: List of string choices presented in the popup. Defaults to
             an empty list.
         value: Initially selected value.
-        signal: Reactive ``Signal[str]`` linked to the selected value. The
+        signal: Reactive `Signal[str]` linked to the selected value. The
             field and signal stay in sync automatically.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
-        required: If ``True``, marks the field as required and prevents
+        required: If `True`, marks the field as required and prevents
             empty submission.
-        searchable: If ``True``, typing in the field filters the option
-            list. Defaults to ``False``.
-        allow_custom_values: If ``True``, users may type values not in
-            ``options``. Defaults to ``False``.
-        read_only: If ``True``, value is visible but the popup cannot be
+        searchable: If `True`, typing in the field filters the option
+            list. Defaults to `False`.
+        allow_custom_values: If `True`, users may type values not in
+            `options`. Defaults to `False`.
+        read_only: If `True`, value is visible but the popup cannot be
             opened.
-        disabled: If ``True``, field is fully non-interactive and dimmed.
+        disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
         accent: Accent token applied to the focus ring. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'default'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+            `'primary'`, `'secondary'`, `'info'`, `'success'`,
+            `'warning'`, `'danger'`, `'default'`.
+        density: Padding density. `'default'` or `'compact'`.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """
@@ -146,7 +146,7 @@ class Select(PublicWidgetBase):
 
     @property
     def selected_index(self) -> int:
-        """Zero-based index of the selected option, or ``-1`` if none selected."""
+        """Zero-based index of the selected option, or `-1` if none selected."""
         return self._internal.selected_index
 
     @selected_index.setter
@@ -181,7 +181,7 @@ class Select(PublicWidgetBase):
         """Register a callback fired when the selection changes.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 

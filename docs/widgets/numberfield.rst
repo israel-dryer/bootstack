@@ -176,11 +176,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.numberfield.NumberField
-   :members:
-   :undoc-members:
-   :inherited-members: FieldAddonMixin
-   :exclude-members: tk
+The complete reference for :class:`NumberField <bootstack.NumberField>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.NumberField
 
 Full Example
 ------------

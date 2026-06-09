@@ -18,26 +18,26 @@ _SELECTBUTTON_EVENTS: dict[str, str] = {
 
 
 class SelectButton(PublicWidgetBase):
-    """A button that opens a dropdown value list — a button-styled alternative to ``Select``.
+    """A button that opens a dropdown value list — a button-styled alternative to `Select`.
 
     Clicking the button opens a popup list of options. The selected value is
-    displayed on the button face. Unlike ``Select``, there is no text field —
+    displayed on the button face. Unlike `Select`, there is no text field —
     the button is the only interaction point.
 
     Args:
         options: Values to display in the list. Each item is converted to a
-            string for display, e.g. ``["Light", "Dark", "Auto"]``.
+            string for display, e.g. `["Light", "Dark", "Auto"]`.
         value: Initially selected value.
-        signal: Reactive ``Signal[str]`` controlling the selected value. When
-            provided, ``value=`` is ignored — seed the Signal directly.
-        disabled: If ``True``, the button is non-interactive and dimmed.
-            Defaults to ``False``.
-        accent: Accent token. One of ``'primary'``, ``'secondary'``,
-            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
-            ``'default'``.
-        variant: Style variant token. ``'solid'`` (default), ``'outline'``,
-            or ``'ghost'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        signal: Reactive `Signal[str]` controlling the selected value. When
+            provided, `value=` is ignored — seed the Signal directly.
+        disabled: If `True`, the button is non-interactive and dimmed.
+            Defaults to `False`.
+        accent: Accent token. One of `'primary'`, `'secondary'`,
+            `'info'`, `'success'`, `'warning'`, `'danger'`,
+            `'default'`.
+        variant: Style variant token. `'solid'` (default), `'outline'`,
+            or `'ghost'`.
+        density: Padding density. `'default'` or `'compact'`.
         icon: Bootstrap Icons name shown on the button beside the value.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
@@ -96,7 +96,7 @@ class SelectButton(PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[str] | None":
-        """The reactive ``Signal`` linked to this button, or ``None``."""
+        """The reactive `Signal` linked to this button, or `None`."""
         return getattr(self._internal, 'textsignal', None)
 
     @property
@@ -118,7 +118,7 @@ class SelectButton(PublicWidgetBase):
         """Register a callback fired whenever the selected value changes.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 

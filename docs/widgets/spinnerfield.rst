@@ -159,11 +159,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.spinnerfield.SpinnerField
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`SpinnerField <bootstack.SpinnerField>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.SpinnerField
 
 Full Example
 ------------

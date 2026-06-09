@@ -173,11 +173,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.codeeditor.CodeEditor
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`CodeEditor <bootstack.CodeEditor>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.CodeEditor
 
 Full Example
 ------------

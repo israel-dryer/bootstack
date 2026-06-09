@@ -168,11 +168,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.textfield.TextField
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`TextField <bootstack.TextField>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.TextField
 
 Full Example
 ------------

@@ -55,6 +55,28 @@ Buttons and button groups for triggering commands.
    Button
    ButtonGroup
 
+Inputs
+------
+
+Text, number, path, date/time, and slider inputs. Most bind to a ``signal=`` /
+``textsignal=`` and support validation ``rules=``.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   TextField
+   PasswordField
+   NumberField
+   SpinnerField
+   PathField
+   Slider
+   RangeSlider
+   TextArea
+   CodeEditor
+   DateField
+   TimeField
+
 Theme
 -----
 

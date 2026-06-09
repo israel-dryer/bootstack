@@ -125,10 +125,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.slider.RangeSlider
-   :members:
-   :undoc-members:
-   :exclude-members: tk
+The complete reference for :class:`RangeSlider <bootstack.RangeSlider>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.RangeSlider
 
 Full Example
 ------------
