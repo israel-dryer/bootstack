@@ -342,11 +342,11 @@ class Bootstyle:
 
             # ===== Surface color inheritance =====
 
+            # Surface inheritance is always on in this framework (the former
+            # `inherit_surface_color` app toggle was removed); an explicit
+            # per-call `inherit_surface` kwarg can still override locally.
             if inherit_surface is None:
-                inherit_surface = (
-                    get_app_settings().inherit_surface_color
-                    if has_current_app() else True
-                )
+                inherit_surface = True
 
             if hasattr(self, 'master') and self.master is not None:
                 parent_surface_token = getattr(self.master, '_surface', 'content')
@@ -481,7 +481,7 @@ class Bootstyle:
                 return
 
             if inherit_surface is None:
-                inherit_surface = get_app_settings().inherit_surface_color
+                inherit_surface = True
 
             func(self, *args, **kwargs)  # the actual constructor
 

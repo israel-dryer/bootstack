@@ -154,7 +154,25 @@ class PublicWidgetBase:
         return Stream(self._internal, _source=_source)
 
     def emit(self, event: str, *, data: Any = None) -> None:
-        """Synthesize `event` on the underlying widget."""
+        """Fire a named event on this widget, as if it produced the event itself.
+
+        This is how a composite widget surfaces high-level activity to its
+        listeners, and the generic counterpart to the `on_*()` shorthands for
+        firing events that have no dedicated method.
+
+        Args:
+            event: The event name, unprefixed — the same name you pass to `on()`
+                or an `on_<event>()` shorthand (e.g. `'change'`, `'select'`).
+            data: The payload delivered to handlers. For a data-carrying event,
+                pass the matching payload dataclass from `bootstack.events` — the
+                same object an `on_<event>()` handler receives. Leave as None for
+                native events (click, hover, focus, …), which carry no payload.
+
+        Example:
+            .. code-block:: python
+
+               widget.emit("change", data=bs.events.ChangeEvent(value=new_value))
+        """
         sequence = resolve_event(self, str(event))
         self._internal.event_generate(sequence, data=data)
 

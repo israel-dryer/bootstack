@@ -203,8 +203,13 @@ memories (see them for rationale and gotchas).
   examples (**API Reference is a last resort; Guides carry the teaching**). **Full
   brief + decisions in `docs/_dev/api-reference-restructure.md`**; memory
   `project_api_reference_restructure`.
-- **Image / Icon public handle** — design a Tk-free public image/icon handle and
-  re-promote (both currently internal). Memory `project_public_intent_backlog`.
+- **Public Image/Icon API** (initiative, designed 2026-06-08) — three stacked
+  pieces: `Image` (Tk-free image handle; re-promote, internal since PR #104),
+  `get_icon(name, ...) -> Image` (public factory over the internal font-glyph
+  renderer), and `AppIcon(icon=, background=, foreground=)` (generates the
+  platform app-icon assets — `.ico`/`.png` — for `App`/`Window`). `App`/`Window`
+  `icon=` (type `str | AppIcon | Image`) is DEFERRED to this. Memory
+  `project_image_icon_public_api`.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 
@@ -486,6 +491,15 @@ adopt callable-setter `signal(x)`.
   real, de-Tkinter-ed CodeEditor extension/plugin API before any re-promotion
   (memory `project_editfilter_public_api`; `NOTE(editfilter-public-api)` in
   `widgets/_impl/composites/textarea/filter.py`).
+- `bs.Window` public-API hardening (surfaced reviewing it for the API Reference,
+  Stage 4; doc gaps fixed inline, rest deferred to its own branch — memory
+  `project_window_api_hardening`): (1) uncurated `**kwargs` leak straight to the
+  internal `Toplevel`/`tkinter.Toplevel` (raw Tk options in; useful `icon`/`alpha`/
+  `toolwindow`/`window_style` only reachable via the escape hatch) — curate to
+  typed params; (2) no live properties (`title`/`size`/`topmost` are
+  construction-only) — add at least a live `title`; (3) modal grab never released
+  explicitly (no `destroy()` override / `grab_release()`; inconsistent with the
+  dialogs) — release on close for modal windows. No memory leak found.
 
 ---
 
@@ -627,6 +641,20 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
 > `bootstack` API Reference page) and replaced with a table-only `autosummary`
 > summary + cross-links, per the Guide-page recipe above. Until then, in-flight
 > widget pages keep the autoclass.
+>
+> ⚠ **Migrating a widget = also clean up its public API** (the maintainer's
+> standing pattern, memory `feedback_cleanup_api_while_documenting`). When you home
+> a widget into the API Reference, audit it the way `App`/`AppShell`/`Window` were:
+> drop dead/redundant kwargs, demote set-once config from runtime properties to
+> construction-only (a property is "live" only if changing it has a complete effect
+> a user would bind to a control), de-Tkinter leaks, fix docstring nits.
+> **In particular, complete the typed-payload `on_*` audit for that widget** (memory
+> `project_typed_event_payloads`, INCOMPLETE): a DATA event gets its specific
+> `bootstack.events` payload type in `@overload` + impl signature; a NATIVE event
+> (`click`/`hover`/`focus`/`blur`/`resize`) keeps `Event`. Known offenders: the
+> boolean/selection controls (`Checkbox` etc.) still type `on_change`/`on_check`/…
+> as generic `Callable[[Event]]`. (Payloads render in the autodoc "Overloads:"
+> block, so fixing the source is enough.)
 
 1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
 2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);

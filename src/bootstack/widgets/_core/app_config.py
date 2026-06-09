@@ -49,32 +49,9 @@ class AppConfigMixin:
         app.title(value)
         app.settings.app_name = value
 
-    @property
-    def name(self) -> str | None:
-        """The application name used for config-directory and taskbar identity."""
-        return self._settings.app_name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        self._settings.app_name = value
-
-    @property
-    def app_author(self) -> str | None:
-        """The application author (reserved for config-path use)."""
-        return self._settings.app_author
-
-    @app_author.setter
-    def app_author(self, value: str | None) -> None:
-        self._settings.app_author = value
-
-    @property
-    def app_version(self) -> str | None:
-        """The application version string."""
-        return self._settings.app_version
-
-    @app_version.setter
-    def app_version(self, value: str | None) -> None:
-        self._settings.app_version = value
+    # The app name (config-directory / taskbar identity) is set via `title=`
+    # (which writes both the title bar and `app_name`); there is no separate
+    # public `name` property — it was redundant with `title`.
 
     # ----- theme -----
 
@@ -117,23 +94,10 @@ class AppConfigMixin:
     def follow_system_appearance(self, value: bool) -> None:
         self._settings.follow_system_appearance = value
 
-    @property
-    def available_themes(self) -> Sequence[str]:
-        """Theme names exposed to theme pickers (empty means all registered)."""
-        return self._settings.available_themes
-
-    @available_themes.setter
-    def available_themes(self, value: Sequence[str]) -> None:
-        self._settings.available_themes = value
-
-    @property
-    def inherit_surface_color(self) -> bool:
-        """Whether child widgets inherit the parent's surface color."""
-        return self._settings.inherit_surface_color
-
-    @inherit_surface_color.setter
-    def inherit_surface_color(self, value: bool) -> None:
-        self._settings.inherit_surface_color = value
+    # `available_themes` is intentionally construction-only (no runtime property):
+    # `App(available_themes=...)` reads as an input ("offer these themes"), but a
+    # getter would collide with `get_themes()` (the actual theme-list query) and
+    # return `()` by default. Read the exposed list via `get_themes()`.
 
     # ----- localization -----
 
@@ -148,14 +112,9 @@ class AppConfigMixin:
         MessageCatalog.locale(value)
         self._settings.locale = value
 
-    @property
-    def localize_mode(self) -> Any:
-        """Localization behavior — `'auto'`, `True`, or `False`."""
-        return self._settings.localize_mode
-
-    @localize_mode.setter
-    def localize_mode(self, value: Any) -> None:
-        self._settings.localize_mode = value
+    # `localize_mode` is construction-only (no runtime property): changing it
+    # would only affect widgets created afterward, not the existing UI, so a
+    # live setter would be misleading. Pass it to the constructor.
 
     @property
     def locale_language(self) -> str | None:
@@ -173,7 +132,7 @@ class AppConfigMixin:
 
     @property
     def locale_time_format(self) -> str | None:
-        """Short time pattern for the active locale (e.g. `'h:mm a'`). Read-only."""
+        """Short time pattern for the active locale, e.g. h:mm a. Read-only."""
         from bootstack._runtime.app import _safe_time_format
         loc = self._settings.locale
         return _safe_time_format(loc) if loc else None
@@ -211,14 +170,9 @@ class AppConfigMixin:
         except Exception:
             pass
 
-    @property
-    def macos_quit_behavior(self) -> str:
-        """How close / Cmd+Q behave on macOS — `'native'` or `'classic'`."""
-        return self._settings.macos_quit_behavior
-
-    @macos_quit_behavior.setter
-    def macos_quit_behavior(self, value: str) -> None:
-        self._settings.macos_quit_behavior = value
+    # `macos_quit_behavior` and `state_path` are construction-only (no runtime
+    # properties): both are set-once startup configuration that a user would not
+    # change while the app runs. Pass them to the constructor.
 
     @property
     def remember_window_state(self) -> bool:
@@ -228,15 +182,6 @@ class AppConfigMixin:
     @remember_window_state.setter
     def remember_window_state(self, value: bool) -> None:
         self._settings.remember_window_state = value
-
-    @property
-    def state_path(self) -> str | None:
-        """Override path for the persisted window-state file, or None."""
-        return self._settings.state_path
-
-    @state_path.setter
-    def state_path(self, value: str | None) -> None:
-        self._settings.state_path = value
 
     # ----- configuration-change events -----
 
@@ -304,13 +249,10 @@ class AppConfigMixin:
 APP_CONFIG_KWARGS: frozenset[str] = frozenset({
     "title",
     "theme",
-    "app_author",
-    "app_version",
     "light_theme",
     "dark_theme",
     "follow_system_appearance",
     "available_themes",
-    "inherit_surface_color",
     "locale",
     "localize_mode",
     "window_style",

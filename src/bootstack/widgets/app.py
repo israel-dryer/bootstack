@@ -21,8 +21,6 @@ class App(AppConfigMixin, PublicContainer):
         title: Window title bar text and the app's display name.
         size: Initial window size as `(width, height)`.
         theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
-        app_author: Application author. Reserved for config-path use.
-        app_version: Application version string.
         light_theme: Theme used for the light end of system-appearance
             tracking and `toggle_theme`.
         dark_theme: Theme used for the dark end of system-appearance
@@ -31,8 +29,6 @@ class App(AppConfigMixin, PublicContainer):
             `dark_theme` to match the OS (currently effective on macOS).
         available_themes: Theme names to expose to theme pickers. Empty means
             all registered themes.
-        inherit_surface_color: If True, child widgets inherit the parent's
-            surface color for consistent backgrounds.
         locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`). Auto-detected
             from the system when not given.
         localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
@@ -43,8 +39,12 @@ class App(AppConfigMixin, PublicContainer):
         remember_window_state: If True, window geometry is saved on close and
             restored on next launch.
         state_path: Optional override for the persisted window-state file.
-
-    `app.tk` returns the underlying `tk.Tk` root window.
+        position: Initial window position as `(x, y)`.
+        min_size: Minimum window size as `(width, height)`.
+        max_size: Maximum window size as `(width, height)`.
+        resizable: Whether the window can be resized as `(width, height)`.
+        scaling: Explicit UI scaling factor. When None, scaling is automatic.
+        hdpi: Enable high-DPI awareness for the application. Default `True`.
     """
 
     _auto_place = False  # no parent
@@ -55,15 +55,11 @@ class App(AppConfigMixin, PublicContainer):
         title: str | None = None,
         size: tuple[int, int] | None = None,
         theme: str | None = None,
-        # application identity
-        app_author: str | None = None,
-        app_version: str | None = None,
         # theme
         light_theme: str = "bootstrap-light",
         dark_theme: str = "bootstrap-dark",
         follow_system_appearance: bool = False,
         available_themes: Sequence[str] = (),
-        inherit_surface_color: bool = True,
         # localization
         locale: str | None = None,
         localize_mode: LocalizeMode = "auto",
@@ -72,6 +68,13 @@ class App(AppConfigMixin, PublicContainer):
         macos_quit_behavior: str = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
+        # window placement / display
+        position: tuple[int, int] | None = None,
+        min_size: tuple[int, int] | None = None,
+        max_size: tuple[int, int] | None = None,
+        resizable: tuple[bool, bool] | None = None,
+        scaling: float | None = None,
+        hdpi: bool = True,
         # Child-guidance (applied to the internal content frame)
         padding: Any = None,
         gap: int = 0,
@@ -85,19 +88,18 @@ class App(AppConfigMixin, PublicContainer):
         self._parent = None
 
         init_kwargs: dict[str, Any] = {
-            "app_author": app_author,
-            "app_version": app_version,
             "light_theme": light_theme,
             "dark_theme": dark_theme,
             "follow_system_appearance": follow_system_appearance,
             "available_themes": available_themes,
-            "inherit_surface_color": inherit_surface_color,
             "locale": locale,
             "localize_mode": localize_mode,
             "window_style": window_style,
             "macos_quit_behavior": macos_quit_behavior,
             "remember_window_state": remember_window_state,
             "state_path": state_path,
+            "scaling": scaling,
+            "hdpi": hdpi,
         }
         if title is not None:
             init_kwargs["title"] = title
@@ -105,6 +107,14 @@ class App(AppConfigMixin, PublicContainer):
             init_kwargs["size"] = size
         if theme is not None:
             init_kwargs["theme"] = theme
+        if position is not None:
+            init_kwargs["position"] = position
+        if min_size is not None:
+            init_kwargs["minsize"] = min_size
+        if max_size is not None:
+            init_kwargs["maxsize"] = max_size
+        if resizable is not None:
+            init_kwargs["resizable"] = resizable
         init_kwargs.update(app_kwargs)
 
         self._tk_root = _InternalApp(**init_kwargs)
@@ -146,13 +156,13 @@ class App(AppConfigMixin, PublicContainer):
             A new `App` configured from the store.
 
         Example:
-            ```python
-            from bootstack.store import Store
+            .. code-block:: python
 
-            store = Store("settings")
-            app = bs.App.from_store(store)
-            app.on_theme_change(lambda t: store.update(theme=t))
-            ```
+               from bootstack.store import Store
+
+               store = Store("settings")
+               app = bs.App.from_store(store)
+               app.on_theme_change(lambda t: store.update(theme=t))
         """
         data = store.as_dict() if hasattr(store, "as_dict") else dict(store)
         kwargs = {k: v for k, v in data.items() if k in APP_CONFIG_KWARGS}
@@ -177,8 +187,6 @@ class App(AppConfigMixin, PublicContainer):
         """Show the window and start the event loop."""
         self._tk_root.deiconify()
         self._tk_root.mainloop()
-
-    mainloop = run
 
     def __exit__(self, exc_type, exc, tb) -> None:
         super().__exit__(exc_type, exc, tb)

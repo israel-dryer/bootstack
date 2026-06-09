@@ -221,9 +221,13 @@ tab-strip navigation.
 API
 ---
 
-.. autoclass:: bootstack.widgets.appshell.AppShell
-   :members:
-   :undoc-members:
+The complete reference for :class:`AppShell <bootstack.AppShell>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.AppShell
 
 Full Example
 ------------

@@ -59,8 +59,6 @@ class AppShell(AppConfigMixin):
         title: Window title and (in undecorated mode) toolbar label.
         size: Initial window size as `(width, height)`.
         theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
-        app_author: Application author. Reserved for config-path use.
-        app_version: Application version string.
         light_theme: Theme used for the light end of system-appearance
             tracking and `toggle_theme`.
         dark_theme: Theme used for the dark end of system-appearance
@@ -68,8 +66,6 @@ class AppShell(AppConfigMixin):
         follow_system_appearance: If True, switch between `light_theme` and
             `dark_theme` to match the OS (currently effective on macOS).
         available_themes: Theme names to expose to theme pickers.
-        inherit_surface_color: If True, child widgets inherit the parent's
-            surface color.
         locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
         localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
         window_style: Windows-only window effect or None to disable.
@@ -81,6 +77,8 @@ class AppShell(AppConfigMixin):
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
         resizable: Whether the window can be resized as `(x, y)`.
+        scaling: Explicit UI scaling factor. When None, scaling is automatic.
+        hdpi: Enable high-DPI awareness for the application. Default `True`.
         undecorated: Remove OS window decorations and use a custom chrome.
             Automatically enables `show_window_controls` and `draggable`.
             Ignored on macOS.
@@ -100,15 +98,11 @@ class AppShell(AppConfigMixin):
         title: str = "",
         size: tuple[int, int] | None = None,
         theme: str | None = None,
-        # application identity
-        app_author: str | None = None,
-        app_version: str | None = None,
         # theme
         light_theme: str = "bootstrap-light",
         dark_theme: str = "bootstrap-dark",
         follow_system_appearance: bool = False,
         available_themes: Sequence[str] = (),
-        inherit_surface_color: bool = True,
         # localization
         locale: str | None = None,
         localize_mode: LocalizeMode = "auto",
@@ -122,6 +116,8 @@ class AppShell(AppConfigMixin):
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
+        scaling: float | None = None,
+        hdpi: bool = True,
         # scaffold
         undecorated: bool = False,
         show_toolbar: bool = True,
@@ -135,13 +131,12 @@ class AppShell(AppConfigMixin):
     ) -> None:
         init_kwargs: dict[str, Any] = {
             "title": title,
-            "app_author": app_author,
-            "app_version": app_version,
             "light_theme": light_theme,
             "dark_theme": dark_theme,
             "follow_system_appearance": follow_system_appearance,
             "available_themes": available_themes,
-            "inherit_surface_color": inherit_surface_color,
+            "scaling": scaling,
+            "hdpi": hdpi,
             "locale": locale,
             "localize_mode": localize_mode,
             "window_style": window_style,

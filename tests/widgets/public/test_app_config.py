@@ -48,7 +48,6 @@ def test_flat_kwargs_map_to_properties(make_app):
     assert app.locale == "de_DE"
     assert app.remember_window_state is True
     assert app.window_style is None
-    assert app.macos_quit_behavior == "classic"
 
 
 @pytest.mark.gui

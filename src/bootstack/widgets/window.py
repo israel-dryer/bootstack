@@ -35,6 +35,10 @@ class Window(PublicContainer):
         gap: Spacing between children.
         fill_items: Default `fill` value for children.
         expand_items: Default `expand` value for children.
+        anchor_items: Default anchor for children that do not fill their cell
+            (e.g. `'center'`, `'w'`, `'e'`).
+        surface: Surface token for the content frame background — `'content'`,
+            `'card'`, `'chrome'`, or `'overlay'`.
     """
 
     _auto_place = False  # top-level window — no parent manages its position
@@ -130,7 +134,12 @@ class Window(PublicContainer):
         return self
 
     def close(self) -> None:
-        """Destroy the window."""
+        """Destroy the window immediately.
+
+        This is a programmatic close: it bypasses the `on_close` callback and any
+        handlers registered with `add_close_handler()` (which guard the user
+        clicking the window's close button), so it cannot be vetoed.
+        """
         self._tk_toplevel.destroy()
 
     def block_until_closed(self) -> Any:

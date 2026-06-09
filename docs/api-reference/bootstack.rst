@@ -17,6 +17,20 @@ section.
    in place; the widget catalog and dialog verbs follow. Until then, the
    :doc:`/widgets/index` catalog documents each widget with usage and examples.
 
+Application
+-----------
+
+The application object and top-level windows. ``App`` is the root of a simple
+app; ``AppShell`` adds a toolbar, navigation pane, and paged content.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   App
+   AppShell
+   Window
+
 State
 -----
 
@@ -28,6 +42,18 @@ The reactive value that binds application state to widgets.
    :template: signal
 
    Signal
+
+Actions
+-------
+
+Buttons and button groups for triggering commands.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   Button
+   ButtonGroup
 
 Theme
 -----
