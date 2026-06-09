@@ -65,16 +65,16 @@ Text, number, path, date/time, and slider inputs. Most bind to a ``signal=`` /
    :toctree: generated
    :nosignatures:
 
-   TextField
-   PasswordField
-   NumberField
-   SpinnerField
-   PathField
-   Slider
-   RangeSlider
-   TextArea
    CodeEditor
    DateField
+   NumberField
+   PasswordField
+   PathField
+   RangeSlider
+   Slider
+   SpinnerField
+   TextArea
+   TextField
    TimeField
 
 Selection
@@ -87,16 +87,16 @@ Checkboxes, switches, radio and toggle groups, dropdowns, and the calendar.
    :toctree: generated
    :nosignatures:
 
+   Calendar
    Checkbox
-   Switch
-   ToggleButton
-   ToggleGroup
-   RadioGroup
    Radio
+   RadioGroup
    RadioToggleButton
    Select
    SelectButton
-   Calendar
+   Switch
+   ToggleButton
+   ToggleGroup
 
 Theme
 -----

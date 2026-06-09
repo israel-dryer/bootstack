@@ -595,9 +595,16 @@ A page like `docs/api-reference/data.rst`. Text-only, **NO screenshots, NO hero*
    `scheduling` (`Schedule`/`Job`), `shortcuts` (3), and `errors` (5 exceptions) are
    all single-table; `data`/`events`/`style` earn their groups. The intro carries
    any rule-vs-result / base-vs-specific nuance — don't spend a heading on it.
-   (d) The audit also surfaces half-public names to demote — e.g. `TraceOperation`
-   (internal trace tag, no public signature exposes it) was dropped from
-   `bootstack.signals.__all__` during this sweep.
+   (d) **Order ENTRIES within a group ALPHABETICALLY** — the API Reference is the
+   lookup layer, so within-group order should be predictable for scanning (the
+   pandas/NumPy convention), NOT curated/common-first. Curated common-first order
+   is the GUIDES' job (the `widgets/index.rst` caption toctrees keep it). The
+   category grouping + a one-line lead-in already carry the semantics; clusters
+   mostly stay adjacent alphabetically anyway (`Radio`/`RadioGroup`/`RadioToggleButton`,
+   `Select`/`SelectButton`, `ToggleButton`/`ToggleGroup`). (e) The audit also
+   surfaces half-public names to demote — e.g. `TraceOperation` (internal trace
+   tag, no public signature exposes it) was dropped from `bootstack.signals.__all__`
+   during this sweep.
 4. List **exactly** the module's `__all__` across the grouped tables (the reference
    IS `__all__`). Good first-line docstrings matter — that line is the summary cell.
 5. Wire the page into `docs/api-reference/index.rst`'s toctree.
