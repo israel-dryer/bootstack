@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton as _InternalCheckButton
 from bootstack.widgets._impl.primitives.switch import Switch as _InternalSwitch
@@ -9,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -34,23 +34,24 @@ class _BooleanControlBase(PublicWidgetBase):
         value: Any = None,
         checked_value: Any = True,
         unchecked_value: Any = False,
-        tristate: bool = False,
         on_change: Callable[[], Any] | None = None,
-        on_icon: str | None = None,
-        off_icon: str | None = None,
-        icon_only: bool = False,
-        show_indicator: bool = True,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        _tristate: bool = False,
+        _internal_options: dict[str, Any] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if kwargs:
+            raise TypeError(
+                f"{type(self).__name__}() got unexpected keyword argument(s): "
+                f"{', '.join(sorted(kwargs))}"
+            )
         self._checked_value = checked_value
         self._unchecked_value = unchecked_value
-        self._tristate = tristate
+        self._tristate = _tristate
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -66,21 +67,14 @@ class _BooleanControlBase(PublicWidgetBase):
             internal_kwargs["onvalue"] = checked_value
         if unchecked_value is not False:
             internal_kwargs["offvalue"] = unchecked_value
-        if on_icon is not None:
-            internal_kwargs["on_icon"] = on_icon
-        if off_icon is not None:
-            internal_kwargs["off_icon"] = off_icon
-        if icon_only:
-            internal_kwargs["icon_only"] = True
-        if not show_indicator:
-            internal_kwargs["show_indicator"] = False
         if disabled:
             internal_kwargs["state"] = "disabled"
         if accent is not None:
             internal_kwargs["accent"] = accent
-        if variant is not None:
-            internal_kwargs["variant"] = variant
-        internal_kwargs.update(kwargs)
+        # Per-subclass styling options (icons, variant, density, …) — only the
+        # ones a given control actually supports are passed in by the subclass.
+        if _internal_options:
+            internal_kwargs.update(_internal_options)
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
 
@@ -91,7 +85,7 @@ class _BooleanControlBase(PublicWidgetBase):
         if signal is None:
             if value is not None:
                 self._internal.set(value)
-            elif not tristate:
+            elif not _tristate:
                 self._internal.set(unchecked_value)
 
         # Track the previous value so on_change can report it. The control may be
@@ -175,11 +169,15 @@ class _BooleanControlBase(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the value changes.
 
-        The handler receives a `ChangeEvent` carrying the new `value` and the
-        `prev_value` (useful for tristate controls).
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`
+                carrying the new `value` and the `prev_value` (useful for
+                tristate controls). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -190,8 +188,13 @@ class _BooleanControlBase(PublicWidgetBase):
     def on_check(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the control becomes checked/selected.
 
+        Args:
+            handler: Called with the :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("check", handler)
 
@@ -202,8 +205,13 @@ class _BooleanControlBase(PublicWidgetBase):
     def on_uncheck(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the control becomes unchecked/deselected.
 
+        Args:
+            handler: Called with the :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("uncheck", handler)
 
@@ -240,15 +248,57 @@ class Checkbox(_BooleanControlBase):
             Useful when `on_icon=`/`off_icon=` serve as the visual cue.
         disabled: If `True`, widget is non-interactive and dimmed.
             Defaults to `False`.
-        accent: Accent token. One of `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`,
-            `'default'`.
-        variant: Style variant token (theme-defined, e.g. `'round'`,
-            `'square'`).
+        accent: Accent token applied to the box and check mark.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalCheckButton
+
+    def __init__(
+        self,
+        label: str = "",
+        *,
+        signal: "Signal | None" = None,
+        value: Any = None,
+        checked_value: Any = True,
+        unchecked_value: Any = False,
+        tristate: bool = False,
+        on_change: Callable[[], Any] | None = None,
+        on_icon: str | None = None,
+        off_icon: str | None = None,
+        icon_only: bool = False,
+        show_indicator: bool = True,
+        disabled: bool = False,
+        accent: AccentToken | str | None = None,
+        parent: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        options: dict[str, Any] = {}
+        if on_icon is not None:
+            options["on_icon"] = on_icon
+        if off_icon is not None:
+            options["off_icon"] = off_icon
+        if icon_only:
+            options["icon_only"] = True
+        if not show_indicator:
+            options["show_indicator"] = False
+        super().__init__(
+            label,
+            signal=signal,
+            value=value,
+            checked_value=checked_value,
+            unchecked_value=unchecked_value,
+            _tristate=tristate,
+            on_change=on_change,
+            disabled=disabled,
+            accent=accent,
+            _internal_options=options,
+            parent=parent,
+            **kwargs,
+        )
 
 
 class Switch(_BooleanControlBase):
@@ -270,14 +320,41 @@ class Switch(_BooleanControlBase):
             `switch.on_change(fn)`.
         disabled: If `True`, widget is non-interactive and dimmed.
             Defaults to `False`.
-        accent: Accent token. One of `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`,
-            `'default'`.
-        variant: Style variant token (theme-defined).
+        accent: Accent token applied to the track when on.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalSwitch
+
+    def __init__(
+        self,
+        label: str = "",
+        *,
+        signal: "Signal | None" = None,
+        value: Any = None,
+        checked_value: Any = True,
+        unchecked_value: Any = False,
+        on_change: Callable[[], Any] | None = None,
+        disabled: bool = False,
+        accent: AccentToken | str | None = None,
+        parent: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            label,
+            signal=signal,
+            value=value,
+            checked_value=checked_value,
+            unchecked_value=unchecked_value,
+            on_change=on_change,
+            disabled=disabled,
+            accent=accent,
+            parent=parent,
+            **kwargs,
+        )
 
 
 class ToggleButton(_BooleanControlBase):
@@ -307,13 +384,14 @@ class ToggleButton(_BooleanControlBase):
             Requires `on_icon=` or `off_icon=` to be set.
         disabled: If `True`, widget is non-interactive and dimmed.
             Defaults to `False`.
-        accent: Accent token. One of `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`,
-            `'default'`.
-        variant: Style variant token (theme-defined).
-        density: Padding density. `'default'` or `'compact'`.
+        accent: Accent token applied to the button when active.
+        variant: Button style variant. Default `'solid'`.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalCheckToggle
 
@@ -331,11 +409,22 @@ class ToggleButton(_BooleanControlBase):
         icon_only: bool = False,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        variant: Literal["solid", "outline", "ghost"] | None = None,
         density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        options: dict[str, Any] = {}
+        if on_icon is not None:
+            options["on_icon"] = on_icon
+        if off_icon is not None:
+            options["off_icon"] = off_icon
+        if icon_only:
+            options["icon_only"] = True
+        if variant is not None:
+            options["variant"] = variant
+        if density is not None:
+            options["density"] = density
         super().__init__(
             label,
             signal=signal,
@@ -343,13 +432,9 @@ class ToggleButton(_BooleanControlBase):
             checked_value=checked_value,
             unchecked_value=unchecked_value,
             on_change=on_change,
-            on_icon=on_icon,
-            off_icon=off_icon,
-            icon_only=icon_only,
             disabled=disabled,
             accent=accent,
-            variant=variant,
-            density=density,
+            _internal_options=options,
             parent=parent,
             **kwargs,
         )

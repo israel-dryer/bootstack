@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -32,15 +32,15 @@ class SelectButton(PublicWidgetBase):
             provided, `value=` is ignored — seed the Signal directly.
         disabled: If `True`, the button is non-interactive and dimmed.
             Defaults to `False`.
-        accent: Accent token. One of `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`,
-            `'default'`.
-        variant: Style variant token. `'solid'` (default), `'outline'`,
-            or `'ghost'`.
-        density: Padding density. `'default'` or `'compact'`.
+        accent: Accent token applied to the button.
+        variant: Button style variant. Default `'solid'`.
+        density: Padding density.
         icon: Bootstrap Icons name shown on the button beside the value.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -51,7 +51,7 @@ class SelectButton(PublicWidgetBase):
         signal: "Signal[str] | None" = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        variant: Literal["solid", "outline", "ghost", "default"] | None = None,
         density: WidgetDensity | None = None,
         icon: str | None = None,
         parent: Any = None,
@@ -78,7 +78,6 @@ class SelectButton(PublicWidgetBase):
             internal_kwargs["density"] = density
         if icon is not None:
             internal_kwargs["icon"] = icon
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalOptionMenu(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -117,8 +116,13 @@ class SelectButton(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selected value changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit
+                to get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

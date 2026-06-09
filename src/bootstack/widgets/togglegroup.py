@@ -1,14 +1,17 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable, Literal
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, VariantToken, Orient
+from bootstack.widgets.types import AccentToken, Event, Orient
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _TOGGLEGROUP_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -37,17 +40,16 @@ class ToggleGroup(PublicWidgetBase):
         value: Initial selection. A `str` for `'single'` mode or a
             `set[str]` for `'multi'` mode. Ignored when `signal=` is
             passed.
-        orient: Layout direction. `'horizontal'` (default) or
-            `'vertical'`.
-        accent: Accent token applied to all buttons. One of `'primary'`,
-            `'secondary'`, `'info'`, `'success'`, `'warning'`,
-            `'danger'`, `'default'`.
-        variant: Style variant. `'solid'` (default), `'outline'`, or
-            `'ghost'`.
+        orient: Layout direction. Default `'horizontal'`.
+        accent: Accent token applied to all buttons.
+        variant: Button style variant. Default `'solid'`.
         disabled: If `True`, all buttons are non-interactive and dimmed.
             Defaults to `False`.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -55,11 +57,11 @@ class ToggleGroup(PublicWidgetBase):
         options: list[str | tuple[str, Any]] | None = None,
         *,
         mode: Literal["single", "multi"] = "single",
-        signal: Any = None,
+        signal: "Signal | None" = None,
         value: Any = None,
         orient: Orient = "horizontal",
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        variant: Literal["solid", "outline", "ghost", "default"] | None = None,
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -83,7 +85,6 @@ class ToggleGroup(PublicWidgetBase):
             internal_kwargs["variant"] = variant
         if disabled:
             internal_kwargs["state"] = "disabled"
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalToggleGroup(tk_master, **internal_kwargs)
 
@@ -151,10 +152,14 @@ class ToggleGroup(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selection changes.
 
-        The current value is available via `group.value` inside the handler.
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`; the
+                current value is also available via `group.value`. Omit to get
+                a composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

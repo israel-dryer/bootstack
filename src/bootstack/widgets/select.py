@@ -43,12 +43,13 @@ class Select(PublicWidgetBase):
             opened.
         disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
-        accent: Accent token applied to the focus ring. One of
-            `'primary'`, `'secondary'`, `'info'`, `'success'`,
-            `'warning'`, `'danger'`, `'default'`.
-        density: Padding density. `'default'` or `'compact'`.
+        accent: Accent token applied to the focus ring.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -180,8 +181,13 @@ class Select(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selection changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit
+                to get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

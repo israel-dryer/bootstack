@@ -153,9 +153,28 @@ Work in the Stage 4 batch order; tick as completed:
       `textvariable`/`state`/…) for typed kw-only params — `text`/`icon`/`accent`/
       `on_click`(→`command`)/`signal`(toggle); validates param↔type applicability.
       Advances `project_enum_option_typing`'s "insert_addon `**kwargs` redesign".
-- [~] Selection: Checkbox, Switch, ToggleButton, ToggleGroup, Radio,
-      RadioToggleButton, RadioGroup, Select, SelectButton, Calendar
-      (Radio compound→icon_position DONE; Calendar padding DONE; rest pending)
+- [x] Selection: Checkbox, Switch, ToggleButton, ToggleGroup, Radio,
+      RadioToggleButton, RadioGroup, Select, SelectButton, Calendar — DONE.
+      Typing/docs: dropped accent/density/orient/icon_position enumerations;
+      under-typed `accent: str`→`AccentToken|str`, `density: str`→`WidgetDensity`,
+      `signal: Any`→`Signal` (radio*/groups); `on_*` handler docs across all
+      (ChangeEvent / Event / DateSelectEvent); documented `**kwargs` layout
+      cross-link + removed the `internal_kwargs.update(kwargs)` passthrough leaks;
+      fixed Calendar's `:class:datetime.date` RST leak.
+      variant → concrete per-widget Literal sourced from `style/builders/`:
+      ToggleButton `['solid','outline','ghost']` (toolbutton.py); ToggleGroup +
+      SelectButton `['solid','outline','ghost','default']` (togglegroup/button.py —
+      docstrings under-reported, omitted `'default'`).
+      STRUCTURAL cleanup (maintainer-approved, mirrors the boolean restructure):
+      `variant` is DEAD on Switch (hardwired `'switch'`) and Checkbox (only a
+      `'default'` builder) → REMOVED; `density` is unsupported on Checkbox/Switch/
+      Radio (RadioButton/CheckButton don't capture it) → REMOVED. Mechanism:
+      `_BooleanControlBase`/`_RadioBase` became engines taking styling via an
+      `_internal_options` dict + a private `_tristate`; each public subclass has its
+      OWN `__init__` exposing only supported params, and the base now RAISES
+      TypeError on unknown kwargs (so removed params are rejected at runtime, not
+      silently forwarded via `**kwargs`). ToggleButton/RadioToggleButton keep
+      variant/density. See memory `project_variant_type_revisit`.
 - [ ] Data Display: Label, Badge, ProgressBar, Gauge, ListView, DataTable, Tree
 - [ ] Layout: Separator, Card, GroupBox, VStack, HStack, Grid, ScrollView,
       Accordion, SplitView

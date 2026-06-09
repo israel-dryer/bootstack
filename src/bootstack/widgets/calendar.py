@@ -17,7 +17,7 @@ class Calendar(PublicWidgetBase):
     Always visible — not a popup. Displays one month in `'single'` mode and
     two months side-by-side in `'range'` mode.
 
-    Dates can be passed as :class:`datetime.date` objects, :class:`datetime.datetime`
+    Dates can be passed as `datetime.date` objects, `datetime.datetime`
     objects, or ISO strings (`"2026-05-31"`).
 
     Args:
@@ -39,12 +39,13 @@ class Calendar(PublicWidgetBase):
         first_weekday: First day of the week as an integer (0=Monday,
             6=Sunday). If omitted, the locale default is used.
         accent: Accent token applied to selected dates and highlights.
-            One of `'primary'`, `'secondary'`, `'info'`,
-            `'success'`, `'warning'`, `'danger'`, `'default'`.
             Defaults to `'primary'`.
         padding: Space in pixels around the calendar grid.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -150,8 +151,14 @@ class Calendar(PublicWidgetBase):
         a complete range has been set (`end` is `None` while the second
         date is still pending).
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.DateSelectEvent`.
+                Omit to get a composable :class:`~bootstack.streams.Stream`
+                instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("<<DateSelect>>", handler)
 
