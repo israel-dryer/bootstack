@@ -51,6 +51,11 @@ For every public wrapper, audit each constructor/method param (and returns):
      patterns like `'#,##0'`, `'dd.MM.yy'` are also accepted. PREREQUISITE: enrich
      `reference/localization.rst` to list the full preset sets + custom-pattern syntax
      (today it only shows decimal/currency/percent) so the link target is complete.
+   - `font` (Label/Button/Toolbar/CodeEditor/many) → stays `str` (open token set:
+     `'body'`, `'heading-lg'`, `'heading-md'`, `'caption'`, `'code'`, `'body+2[italic]'`,
+     …). Docstring: curated examples + cross-link to the font-token reference
+     :doc:`/reference/typography`. (Verify that page lists the tokens + the
+     `[size][modifier]` syntax; enrich if thin, like the localization formats section.)
 2. **`accent` → `AccentToken | str | None`.** `AccentToken` is the 6 universal
    semantic accents (`'primary'`,`'secondary'`,`'info'`,`'success'`,`'warning'`,
    `'danger'`). The `| str` keeps `'default'`, `'muted'`, and modifiers
