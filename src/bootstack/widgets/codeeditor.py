@@ -16,8 +16,8 @@ if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 _CODEEDITOR_EVENTS: dict[str, str] = {
-    "change":      "<<Change>>",
-    "input":       "<KeyRelease>",
+    "change":      "<<BsChange>>",
+    "input":       "<<BsInput>>",
     "modified":    "<<TextModified>>",
     "undo":        "<<TextUndo>>",
     "redo":        "<<TextRedo>>",
@@ -26,9 +26,12 @@ _CODEEDITOR_EVENTS: dict[str, str] = {
     "blur":        "<FocusOut>",
 }
 
+# Sequences emitted on the inner text widget (bound there by `on()`). The typed
+# `<<BsChange>>`/`<<BsInput>>` are re-emitted on `self._internal`, so they are
+# NOT listed here.
 _INNER_SEQUENCES = frozenset({
-    "<<Change>>", "<<TextModified>>", "<<TextUndo>>", "<<TextRedo>>",
-    "<<CursorMove>>", "<KeyRelease>", "<FocusIn>", "<FocusOut>",
+    "<<TextModified>>", "<<TextUndo>>", "<<TextRedo>>",
+    "<<CursorMove>>", "<FocusIn>", "<FocusOut>",
 })
 
 
@@ -41,11 +44,13 @@ class CodeEditor(PublicWidgetBase):
         value: Initial text content.
         textsignal: Reactive `Signal[str]` bound to the editor content.
         language: Pygments lexer name for syntax highlighting (e.g. `'python'`,
-            `'sql'`). `None` disables highlighting.
+            `'json'`, `'sql'`). Any Pygments lexer name works; unknown names
+            fall back to plain text. `None` disables highlighting. See the full
+            list at https://pygments.org/languages/.
         theme: Pygments color scheme. `'auto'` (default) switches between
             `light_theme` and `dark_theme` when the bootstack theme changes.
             Pass an explicit Pygments style name (e.g. `'monokai'`, `'dracula'`)
-            to pin the scheme regardless of the bootstack theme.
+            to pin the scheme. See the full list at https://pygments.org/styles/.
         light_theme: Pygments style used when `theme='auto'` and the active
             bootstack theme is light. Default `'default'`.
         dark_theme: Pygments style used when `theme='auto'` and the active
@@ -130,6 +135,15 @@ class CodeEditor(PublicWidgetBase):
         t = self._internal._core.text
         t.bind("<KeyRelease>",      lambda e: t.event_generate("<<CursorMove>>"), add="+")
         t.bind("<ButtonRelease-1>", lambda e: t.event_generate("<<CursorMove>>"), add="+")
+
+        # Re-emit the core's raw <<Change>> (which carries a low-level
+        # {"op", "index"} dict) as typed payloads on the public widget, so
+        # on_change()/on_input() deliver the editor text — like TextArea.
+        def _emit_typed_change(_e: Any = None) -> None:
+            text = self._internal.value
+            self._internal.event_generate("<<BsChange>>", data=ChangeEvent(value=text, text=text))
+            self._internal.event_generate("<<BsInput>>", data=InputEvent(text=text))
+        t.bind("<<Change>>", _emit_typed_change, add="+")
 
         self._attach_to_parent(layout_kw)
 
@@ -316,8 +330,14 @@ class CodeEditor(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every edit.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent` whose
+                `value` is the editor text. Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -326,10 +346,16 @@ class CodeEditor(PublicWidgetBase):
     @overload
     def on_input(self, handler: Callable[[InputEvent], Any]) -> Subscription: ...
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
-        """Register a callback fired on every keystroke.
+        """Register a callback fired on every edit, before commit.
+
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent` whose
+                `text` is the current content. Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 

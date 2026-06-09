@@ -26,10 +26,10 @@ with bs.App(title="Gauge Demo", padding=20, gap=16) as app:
     # Prefix / suffix / subtitle
     bs.Label("Labels and Formatting", font="heading-sm")
     with bs.HStack(gap=20):
-        bs.Gauge(value=4200, max_value=10000, value_prefix="$", value_format="{:.0f}",
+        bs.Gauge(value=4200, max_value=10000, value_prefix="$", value_template="{:.0f}",
                  subtitle="Revenue", accent="success")
         bs.Gauge(value=72, value_suffix="%", subtitle="Disk Used", accent="warning")
-        bs.Gauge(value=3.7, max_value=5.0, value_format="{:.1f}", subtitle="Rating",
+        bs.Gauge(value=3.7, max_value=5.0, value_template="{:.1f}", subtitle="Rating",
                  accent="primary")
 
     # Segmented / dashed arc

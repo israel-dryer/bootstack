@@ -54,28 +54,64 @@ widget takes text, and it re-formats itself when the locale changes:
    bs.Label(LV(0.42, "percent"))            # "42%"
    bs.Label(LV(date(2025, 9, 2), "longDate"))
 
-Common format specs:
+.. _value-formats:
+
+Format specs
+~~~~~~~~~~~~
+
+A format spec — accepted by ``LV(value, spec)`` and by a widget's
+``value_format=`` — is a **named preset**, a **custom pattern**, or an options
+**dict**.
+
+**Number presets:**
 
 .. list-table::
    :header-rows: 1
-   :widths: 22 78
+   :widths: 30 70
 
-   * - Spec
+   * - Preset
      - Formats…
    * - ``"decimal"``
      - a number with the locale's grouping and decimal marks.
+   * - ``"fixedPoint"``
+     - a number with a fixed number of decimal places.
    * - ``"currency"``
      - money in the locale's default currency.
    * - ``"percent"``
      - a fraction as a percentage (``0.42`` → ``42%``).
-   * - ``"thousands"`` / ``"largeNumber"``
-     - a compact number (``12000`` → ``12K``).
+   * - ``"exponential"``
+     - scientific notation.
+   * - ``"thousands"`` / ``"millions"`` / ``"billions"`` / ``"trillions"``
+     - a number scaled to that unit with a short suffix (``12000`` → ``12K``).
+   * - ``"largeNumber"``
+     - a compact number, choosing the unit automatically.
+
+**Date and time presets:**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Preset
+     - Formats…
    * - ``"shortDate"`` / ``"longDate"``
      - a date, numeric or spelled out.
    * - ``"shortTime"`` / ``"longTime"``
      - a time of day.
+   * - ``"shortDateShortTime"`` / ``"longDateLongTime"``
+     - a date and time together.
+   * - ``"monthAndDay"`` / ``"monthAndYear"`` / ``"quarterAndYear"``
+     - a partial date.
+   * - ``"year"`` / ``"quarter"`` / ``"month"`` / ``"day"`` / ``"dayOfWeek"`` / ``"hour"`` / ``"minute"`` / ``"second"`` / ``"millisecond"``
+     - a single date or time component.
 
-A CLDR pattern string (e.g. ``"yyyy-MM-dd"``) is also accepted for full control.
+**Custom patterns** — for full control, pass a CLDR/Babel pattern string,
+applied in the active locale: ``"#,##0"`` / ``"#,##0.00"`` (numbers),
+``"yyyy-MM-dd"`` / ``"dd.MM.yy"`` (dates).
+
+**Options dict** — pass a dict for fine control, e.g.
+``{"type": "currency", "currency": "EUR", "precision": 2}`` or
+``{"type": "custom", "pattern": "#,##0.0"}``.
 
 Locale-aware input widgets — :doc:`/widgets/numberfield`,
 :doc:`/widgets/datefield`, :doc:`/widgets/timefield` — read user input back in the

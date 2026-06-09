@@ -8,7 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import DateSelectEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event
+from bootstack.widgets.types import AccentToken, Event, Padding
 
 
 class Calendar(PublicWidgetBase):
@@ -42,7 +42,7 @@ class Calendar(PublicWidgetBase):
             One of `'primary'`, `'secondary'`, `'info'`,
             `'success'`, `'warning'`, `'danger'`, `'default'`.
             Defaults to `'primary'`.
-        padding: Padding around the widget.
+        padding: Space in pixels around the calendar grid.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
     """
@@ -61,7 +61,7 @@ class Calendar(PublicWidgetBase):
         show_week_numbers: bool = False,
         first_weekday: int | None = None,
         accent: AccentToken | str | None = None,
-        padding: Any = None,
+        padding: Padding | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:

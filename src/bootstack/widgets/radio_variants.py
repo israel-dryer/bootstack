@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
@@ -34,7 +34,7 @@ class _RadioBase(PublicWidgetBase):
         unselected_icon: str | None = None,
         icon_only: bool = False,
         show_indicator: bool = True,
-        compound: str | None = None,
+        icon_position: Literal["left", "right", "top", "bottom"] | None = None,
         disabled: bool = False,
         accent: str | None = None,
         density: str | None = None,
@@ -70,8 +70,8 @@ class _RadioBase(PublicWidgetBase):
             internal_kwargs["icon_only"] = True
         if not show_indicator:
             internal_kwargs["show_indicator"] = False
-        if compound is not None:
-            internal_kwargs["compound"] = compound
+        if icon_position is not None:
+            internal_kwargs["compound"] = icon_position
         if disabled:
             internal_kwargs["state"] = "disabled"
         if accent is not None:
@@ -163,7 +163,8 @@ class Radio(_RadioBase):
         icon_only: If True, removes extra padding reserved for the label.
             Inferred automatically when `icon=` is set and no label is provided.
         show_indicator: If False, hides the circular indicator.
-        compound: Image placement relative to text.
+        icon_position: Position of the icon relative to the text. One of
+            `'left'`, `'right'`, `'top'`, or `'bottom'`.
         disabled: If True, widget is non-interactive.
         accent: Accent token, e.g. `'primary'`, `'success'`.
         density: Widget density — `'default'` or `'compact'`.

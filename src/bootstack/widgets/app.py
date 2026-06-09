@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any, Literal, Sequence
 
 from bootstack._runtime.app import App as _InternalApp, LocalizeMode
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
 class App(AppConfigMixin, PublicContainer):
@@ -31,11 +32,9 @@ class App(AppConfigMixin, PublicContainer):
             all registered themes.
         locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`). Auto-detected
             from the system when not given.
-        localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
-        window_style: Windows-only window effect (`'mica'`, `'acrylic'`,
-            `'aero'`, `'transparent'`, `'win7'`) or None to disable.
-        macos_quit_behavior: macOS close / Cmd+Q behavior — `'native'` or
-            `'classic'`. No-op on Win/Linux.
+        localize_mode: Localization behavior.
+        window_style: Windows-only window effect, or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
         remember_window_state: If True, window geometry is saved on close and
             restored on next launch.
         state_path: Optional override for the persisted window-state file.
@@ -45,6 +44,12 @@ class App(AppConfigMixin, PublicContainer):
         resizable: Whether the window can be resized as `(width, height)`.
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
+        padding: Inner padding applied to the content frame.
+        gap: Spacing between stacked children. Default `0`.
+        fill_items: Default `fill` for children that don't set their own.
+        expand_items: Default `expand` for children that don't set their own.
+        anchor_items: Default anchor for children that don't fill their cell.
+        surface: Background surface for the content frame.
     """
 
     _auto_place = False  # no parent
@@ -64,8 +69,8 @@ class App(AppConfigMixin, PublicContainer):
         locale: str | None = None,
         localize_mode: LocalizeMode = "auto",
         # platform / window-state persistence
-        window_style: str | None = "mica",
-        macos_quit_behavior: str = "native",
+        window_style: WindowStyle | str | None = "mica",
+        macos_quit_behavior: Literal['native', 'classic'] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
         # window placement / display
@@ -76,12 +81,12 @@ class App(AppConfigMixin, PublicContainer):
         scaling: float | None = None,
         hdpi: bool = True,
         # Child-guidance (applied to the internal content frame)
-        padding: Any = None,
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        surface: str | None = None,
+        anchor_items: Anchor | None = None,
+        surface: SurfaceToken | str | None = None,
         # Extra kwargs forwarded to the internal App (icon, position, etc.)
         **app_kwargs: Any,
     ) -> None:

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from bootstack.validation import RuleType
+from bootstack.widgets.types import AccentToken
+
 
 class FieldAddonMixin:
     """Mixin that exposes `insert_addon` and `addons` on public field wrappers.
@@ -21,7 +24,7 @@ class FieldAddonMixin:
         widget: Literal["button", "label", "toggle"],
         position: Literal["before", "after"],
         name: str | None = None,
-        accent: str | None = None,
+        accent: AccentToken | None = None,
         **kwargs: Any,
     ) -> Any:
         """Insert a widget inside the field border.
@@ -51,7 +54,7 @@ class FieldAddonMixin:
         """Named addon widgets inserted via `insert_addon()`."""
         return self._internal.addons
 
-    def add_validation_rule(self, rule_type: Any, **kwargs: Any) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to the field.
 
         Rules run automatically on blur or key events depending on the rule
@@ -59,8 +62,7 @@ class FieldAddonMixin:
         they are evaluated in order and stop at the first failure.
 
         Args:
-            rule_type: One of ``'required'``, ``'email'``, ``'stringLength'``,
-                ``'pattern'``, ``'compare'``, or ``'custom'``.
+            rule_type: The kind of validation rule to apply.
             **kwargs: Rule-specific options:
 
                 - ``message`` *(all rules)* — override the default error message.

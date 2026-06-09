@@ -10,6 +10,7 @@ from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
@@ -193,11 +194,11 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         """Clear the field, setting the value to `None`."""
         self._internal.value = None
 
-    def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to this field.
 
         Args:
-            rule_type: Rule identifier string (e.g. `'required'`).
+            rule_type: The kind of validation rule to apply.
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
 

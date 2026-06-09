@@ -8,6 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import ChangeEvent, InputEvent, Subscription, TextModifiedEvent, ValidationEvent
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.types import AccentToken, Event
 
 if TYPE_CHECKING:
@@ -185,11 +186,11 @@ class TextArea(PublicWidgetBase):
         """
         return self._internal.validate()
 
-    def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Attach a validation rule to this field.
 
         Args:
-            rule_type: Rule identifier (e.g. `'stringLength'`, `'custom'`).
+            rule_type: The kind of validation rule to apply.
             **kwargs: Rule options such as `message=`, `min=`, `max=`,
                 `trigger=`.
         """

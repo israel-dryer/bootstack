@@ -10,7 +10,7 @@ from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event, AccentToken, WidgetDensity
+from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
 
 
 class _PageFrame:
@@ -67,10 +67,9 @@ class AppShell(AppConfigMixin):
             `dark_theme` to match the OS (currently effective on macOS).
         available_themes: Theme names to expose to theme pickers.
         locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
-        localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
-        window_style: Windows-only window effect or None to disable.
-        macos_quit_behavior: macOS close / Cmd+Q behavior — `'native'` or
-            `'classic'`.
+        localize_mode: Localization behavior.
+        window_style: Windows-only window effect, or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
         remember_window_state: If True, window geometry is saved and restored.
         state_path: Optional override for the persisted window-state file.
         position: Initial window position as `(x, y)`.
@@ -85,10 +84,9 @@ class AppShell(AppConfigMixin):
         show_toolbar: Show the toolbar at the top. Default `True`.
         show_window_controls: Add minimize/maximize/close buttons to the toolbar.
         draggable: Allow window dragging via the toolbar.
-        toolbar_density: Toolbar button density — `'default'` or `'compact'`.
+        toolbar_density: Toolbar button density.
         show_nav: Show the sidebar navigation. Default `True`.
-        nav_display_mode: Initial sidebar mode — `'expanded'`, `'compact'`,
-            or `'minimal'`.
+        nav_display_mode: Initial sidebar mode. Default `'expanded'`.
         nav_accent: Accent color for the active nav item. Default `'primary'`.
     """
 
@@ -107,8 +105,8 @@ class AppShell(AppConfigMixin):
         locale: str | None = None,
         localize_mode: LocalizeMode = "auto",
         # platform / window-state persistence
-        window_style: str | None = "mica",
-        macos_quit_behavior: str = "native",
+        window_style: WindowStyle | str | None = "mica",
+        macos_quit_behavior: Literal['native', 'classic'] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
         # window placement
@@ -126,7 +124,7 @@ class AppShell(AppConfigMixin):
         toolbar_density: WidgetDensity = "default",
         show_nav: bool = True,
         nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
-        nav_accent: AccentToken = "primary",
+        nav_accent: AccentToken | str = "primary",
         **kwargs: Any,
     ) -> None:
         init_kwargs: dict[str, Any] = {
@@ -322,8 +320,14 @@ class AppShell(AppConfigMixin):
     def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the active page changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.PageChangeEvent`
+                (the new and previous page keys, plus any `navigate()` data).
+                Omit to get a composable :class:`~bootstack.streams.Stream`.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         if handler is None:
             def _source(h: Callable) -> Subscription:

@@ -265,8 +265,14 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field value changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent` on
+                commit (blur or Enter). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

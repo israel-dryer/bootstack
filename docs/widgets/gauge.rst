@@ -47,17 +47,17 @@ Labels and formatting
 ~~~~~~~~~~~~~~~~~~~~~
 
 ``subtitle`` appears below the value. ``value_prefix`` and ``value_suffix`` flank
-the number. ``value_format`` is a Python format string applied to the raw value.
+the number. ``value_template`` is a Python format string applied to the raw value.
 
 .. code-block:: python
 
    bs.Gauge(value=4200, max_value=10000,
-            value_prefix="$", value_format="{:.0f}",
+            value_prefix="$", value_template="{:.0f}",
             subtitle="Revenue", accent="success")
 
    bs.Gauge(value=72, value_suffix="%", subtitle="Disk Used", accent="warning")
 
-   bs.Gauge(value=3.7, max_value=5.0, value_format="{:.1f}",
+   bs.Gauge(value=3.7, max_value=5.0, value_template="{:.1f}",
             subtitle="Rating", accent="primary")
 
 Update the subtitle at runtime via the ``subtitle`` property:

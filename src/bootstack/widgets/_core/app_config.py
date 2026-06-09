@@ -18,6 +18,7 @@ from bootstack.events import Subscription
 
 if TYPE_CHECKING:
     from bootstack.streams import Stream
+    from bootstack.widgets.types import WindowStyle
 
 
 class AppConfigMixin:
@@ -154,12 +155,12 @@ class AppConfigMixin:
     # ----- platform / window state -----
 
     @property
-    def window_style(self) -> str | None:
-        """Windows-only window effect (`'mica'`, `'acrylic'`, …) or None."""
+    def window_style(self) -> WindowStyle | str | None:
+        """Windows-only window effect, or None to disable."""
         return self._settings.window_style
 
     @window_style.setter
-    def window_style(self, value: str | None) -> None:
+    def window_style(self, value: WindowStyle | str | None) -> None:
         app = self._config_app()
         app.settings.window_style = value
         # Best-effort live re-apply (Windows / pywinstyles only).

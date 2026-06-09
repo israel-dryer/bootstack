@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu as _InternalContextMenu
 from bootstack.widgets._impl.composites.contextmenu import ContextMenuItem
+from bootstack.widgets.types import WidgetDensity
+from bootstack.events import MenuSelectEvent
 
 _TRIGGER_MAP: dict[str | None, str | None] = {
     "right_click":  "right-click",
@@ -31,13 +33,13 @@ class ContextMenu:
             binding. Accepts any bootstack widget. If omitted, call
             `show(position=(x, y))` manually.
         min_width: Minimum menu width in pixels. Default `150`.
-        trigger: Gesture that auto-shows the menu on `target` — `'right_click'`
-            (default), `'left_click'`, `'double_click'`, or `None` (manual only,
-            call `show()` yourself).
-        on_select: Callback fired whenever any item is activated. Receives a dict
-            with `'type'` (str), `'text'` (str), and `'value'` (Any) keys.
+        trigger: Gesture that auto-shows the menu on `target`. `None` means
+            manual only — call `show()` yourself. Default `'right_click'`.
+        on_select: Callback fired whenever any item is activated. Called with a
+            :class:`~bootstack.events.MenuSelectEvent` (`type`, `text`, `value`
+            of the activated item).
         items: Initial list of `ContextMenuItem` objects to add at construction.
-        density: Item density — `'default'` or `'compact'`.
+        density: Item density. Default `'default'`.
         parent: Parent widget for the Tk hierarchy. Defaults to `target`.
     """
 
@@ -46,10 +48,10 @@ class ContextMenu:
         target: Any = None,
         *,
         min_width: int = 150,
-        trigger: str | None = "right_click",
-        on_select: Callable[[dict[str, Any]], Any] | None = None,
+        trigger: Literal["right_click", "left_click", "double_click", "manual"] | None = "right_click",
+        on_select: Callable[[MenuSelectEvent], Any] | None = None,
         items: list[Any] | None = None,
-        density: str = "default",
+        density: WidgetDensity = "default",
         parent: Any = None,
     ) -> None:
         tk_target = _resolve_tk(target) if target is not None else None
@@ -65,7 +67,14 @@ class ContextMenu:
             "density": density,
         }
         if on_select is not None:
-            internal_kwargs["command"] = on_select
+            _user_on_select = on_select
+            def _on_select(data: dict[str, Any]) -> None:
+                _user_on_select(MenuSelectEvent(
+                    type=data.get("type", ""),
+                    text=data.get("text", ""),
+                    value=data.get("value"),
+                ))
+            internal_kwargs["command"] = _on_select
         if items is not None:
             internal_kwargs["items"] = items
         if tk_target is not None:

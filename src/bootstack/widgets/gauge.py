@@ -24,8 +24,10 @@ class Gauge(PublicWidgetBase):
         subtitle: Secondary label displayed below the value text.
         value_prefix: Text prepended to the displayed value (e.g. ``'$'``).
         value_suffix: Text appended to the displayed value (e.g. ``'%'``).
-        value_format: Python format string applied to the value.
-            Defaults to ``'{:.0f}'`` (integer display).
+        value_template: Python format string applied to the value (e.g.
+            `'{:.0f}'`, `'{:.1f}'`). Pair with `value_prefix`/`value_suffix` for
+            units. Default `'{:.0f}'` (integer display). For locale-aware
+            formatting, format the value yourself and pass it via `value=`.
         size: Diameter of the gauge in pixels. Defaults to ``200``.
         thickness: Width of the arc stroke in pixels. Defaults to ``10``.
         variant: Shape variant. ``'full'`` (default) draws a complete 360° ring;
@@ -51,7 +53,7 @@ class Gauge(PublicWidgetBase):
         subtitle: str | None = None,
         value_prefix: str | None = None,
         value_suffix: str | None = None,
-        value_format: str = "{:.0f}",
+        value_template: str = "{:.0f}",
         size: int = 200,
         thickness: int = 10,
         variant: Literal["full", "semi"] = "full",
@@ -72,7 +74,7 @@ class Gauge(PublicWidgetBase):
             "value": value,
             "minvalue": min_value,
             "maxvalue": max_value,
-            "value_format": value_format,
+            "value_format": value_template,
             "size": size,
             "thickness": thickness,
             "meter_type": variant,

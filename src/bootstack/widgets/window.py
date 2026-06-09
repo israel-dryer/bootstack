@@ -4,6 +4,7 @@ from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
 class Window(PublicContainer):
@@ -29,16 +30,15 @@ class Window(PublicContainer):
         center_on_screen: Center on the screen.
         topmost: Keep the window above other windows.
         undecorated: Remove OS window decorations (`overrideredirect`).
+        window_style: Windows-only window effect. None inherits the app's setting.
         on_close: Callback invoked when the user clicks the close button.
             Return `False` to veto; return `None` or `True` to allow.
         padding: Inner padding for the content frame.
         gap: Spacing between children.
         fill_items: Default `fill` value for children.
         expand_items: Default `expand` value for children.
-        anchor_items: Default anchor for children that do not fill their cell
-            (e.g. `'center'`, `'w'`, `'e'`).
-        surface: Surface token for the content frame background — `'content'`,
-            `'card'`, `'chrome'`, or `'overlay'`.
+        anchor_items: Default anchor for children that do not fill their cell.
+        surface: Surface token for the content frame background.
     """
 
     _auto_place = False  # top-level window — no parent manages its position
@@ -57,14 +57,15 @@ class Window(PublicContainer):
         center_on_screen: bool = False,
         topmost: bool = False,
         undecorated: bool = False,
+        window_style: WindowStyle | str | None = None,
         on_close: Callable[[], bool | None] | None = None,
         # Content frame layout
-        padding: Any = None,
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        surface: str | None = None,
+        anchor_items: Anchor | None = None,
+        surface: SurfaceToken | str | None = None,
         **kwargs: Any,
     ) -> None:
         from bootstack._runtime.toplevel import Toplevel as _InternalToplevel
@@ -91,6 +92,8 @@ class Window(PublicContainer):
             init_kwargs["resizable"] = resizable
         if on_close is not None:
             init_kwargs["on_close"] = on_close
+        if window_style is not None:
+            init_kwargs["window_style"] = window_style
         init_kwargs.update(kwargs)
 
         self._tk_toplevel = _InternalToplevel(**init_kwargs)

@@ -388,6 +388,20 @@ class ButtonGroupClickEvent:
     """The clicked button's icon, if any."""
 
 
+@dataclass(frozen=True, slots=True)
+class MenuSelectEvent:
+    """Fires when a menu item is activated (`MenuButton` / `ContextMenu`)."""
+
+    type: str = ""
+    """The activated item's type — `'command'`, `'check'`, or `'radio'`."""
+
+    text: str = ""
+    """The item's label text."""
+
+    value: Any = None
+    """The item's value (a radio/check value, or `None` for a command)."""
+
+
 # ---------------------------------------------------------------------------
 # Data source — change broadcasting
 # ---------------------------------------------------------------------------

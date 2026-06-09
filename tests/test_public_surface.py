@@ -64,7 +64,7 @@ MOVED = {
         "col", "any_of", "all_of",
     ],
     "bootstack.i18n": ["L", "LV"],
-    "bootstack.validation": ["ValidationRule", "ValidationResult"],
+    "bootstack.validation": ["ValidationRule", "ValidationResult", "RuleType"],
     "bootstack.events": ["Event", "Subscription"],
     "bootstack.streams": ["Stream", "Handle"],
     "bootstack.scheduling": ["Schedule", "Job"],
@@ -81,6 +81,7 @@ MOVED = {
     "bootstack.types": [
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
+        "Padding", "WindowStyle",
     ],
     # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
     # stays importable here for power users. See project_editfilter_public_api.

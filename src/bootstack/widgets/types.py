@@ -39,6 +39,10 @@ Relief = Literal['flat', 'raised', 'sunken', 'groove', 'ridge', 'solid']
 CompoundMode = Literal['text', 'image', 'top', 'bottom', 'left', 'right', 'center', 'none']
 """Relative position of image to text when both are displayed."""
 
+Padding = int | tuple[int, int] | tuple[int, int, int, int]
+"""Widget padding in pixels — a single value for all sides, `(x, y)` for the
+horizontal and vertical amounts, or `(left, top, right, bottom)`."""
+
 # ---------------------------------------------------------------------------
 # Widget state
 # ---------------------------------------------------------------------------
@@ -53,8 +57,10 @@ WidgetDensity = Literal['default', 'compact']
 # bootstack styling tokens
 # ---------------------------------------------------------------------------
 
-AccentToken = Literal['default', 'primary', 'secondary', 'info', 'success', 'warning', 'danger', 'muted']
-"""Semantic color accent token. Accepts modifiers: `'primary[+1]'`, `'primary[500]'`, `'primary[subtle]'`."""
+AccentToken = Literal['primary', 'secondary', 'info', 'success', 'warning', 'danger']
+"""A semantic color accent. The accent params widen this with `| str`, so
+`'default'`, `'muted'`, and modifiers (`'primary[+1]'`, `'primary[500]'`,
+`'primary[subtle]'`) are also accepted."""
 
 VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
 """Widget style variant."""
@@ -62,12 +68,18 @@ VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
 SurfaceToken = Literal['content', 'card', 'card_raised', 'chrome', 'overlay']
 """Background surface context token."""
 
+WindowStyle = Literal['mica', 'acrylic', 'aero', 'transparent', 'win7']
+"""A Windows-only window effect (no-op elsewhere). These are the common effects;
+the underlying pywinstyles library accepts more (pass any as a plain string).
+See https://pypi.org/project/pywinstyles/ for the full set."""
+
 # ---------------------------------------------------------------------------
 # Geometry manager literals
 # ---------------------------------------------------------------------------
 
-Fill = Literal['none', 'x', 'y', 'both']
-"""Fill axis for stack layout."""
+Fill = Literal['none', 'x', 'y', 'both', 'horizontal', 'vertical', 'all']
+"""Fill axis for stack layout. `'horizontal'`/`'vertical'`/`'all'` are readable
+aliases for `'x'`/`'y'`/`'both'`."""
 
 Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw', 'nse', 'nsw', 'new', 'sew', '']
 """Cell alignment for Grid layout. Any combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``."""

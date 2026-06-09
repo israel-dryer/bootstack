@@ -4,6 +4,7 @@ from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.menubar import MenuBar as _InternalMenuBar
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets.types import AccentToken
 
 Region = Literal["before", "center", "after"]
 
@@ -20,6 +21,9 @@ class MenuBar(PublicWidgetBase):
             `'center'`, `'after'`, or a 3-tuple `(before, center, after)`.
         chevron: Show a dropdown chevron on menu buttons. Default `False`.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -55,7 +59,7 @@ class MenuBar(PublicWidgetBase):
         region: Region = "before",
         icon: str | None = None,
         on_click: Callable[[], Any] | None = None,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         disabled: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -63,11 +67,11 @@ class MenuBar(PublicWidgetBase):
 
         Args:
             text: Button label text.
-            region: Target region — `'before'`, `'center'`, or `'after'`.
+            region: Target region.
             icon: Icon name.
             on_click: Callback fired when clicked.
             accent: Accent token override.
-            disabled: If True, button is non-interactive.
+            disabled: If `True`, button is non-interactive.
         """
         kw: dict[str, Any] = {}
         if icon is not None:
@@ -92,7 +96,7 @@ class MenuBar(PublicWidgetBase):
 
         Args:
             text: Label text.
-            region: Target region — `'before'`, `'center'`, or `'after'`.
+            region: Target region.
         """
         self._internal.add_label(text, region=region, **kwargs)
 
@@ -103,7 +107,7 @@ class MenuBar(PublicWidgetBase):
         *,
         region: Region = "before",
         icon: str | None = None,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a dropdown menu button to the specified region.
@@ -111,7 +115,7 @@ class MenuBar(PublicWidgetBase):
         Args:
             text: Menu button label text.
             items: List of `ContextMenuItem` entries for the dropdown.
-            region: Target region — `'before'`, `'center'`, or `'after'`.
+            region: Target region.
             icon: Icon name shown on the button.
             accent: Accent token override.
         """

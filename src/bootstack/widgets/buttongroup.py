@@ -7,7 +7,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import ButtonGroupClickEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
 _BUTTONGROUP_EVENTS: dict[str, str] = {
     "click": "<<BsButtonGroupClick>>",
@@ -23,14 +23,15 @@ class ButtonGroup(PublicWidgetBase):
     of the clicked button.
 
     Args:
-        orient: `'horizontal'` (default) or `'vertical'`.
-        accent: Accent token applied to all buttons. One of `'primary'`,
-            `'secondary'`, `'info'`, `'success'`, `'warning'`, `'danger'`,
-            `'default'`.
-        variant: Style variant — `'solid'` (default), `'outline'`, `'ghost'`.
-        density: Widget density — `'default'` or `'compact'`.
-        disabled: If True, all buttons are non-interactive.
+        orient: Layout orientation. Default `'horizontal'`.
+        accent: Accent token applied to all buttons.
+        variant: Style variant. Default `'solid'`.
+        density: Widget density. Default `'default'`.
+        disabled: If `True`, all buttons are non-interactive.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -38,8 +39,8 @@ class ButtonGroup(PublicWidgetBase):
         orient: Literal["horizontal", "vertical"] = "horizontal",
         *,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str = "solid",
-        density: WidgetDensity | str = "default",
+        variant: Literal["solid", "outline", "ghost"] = "solid",
+        density: WidgetDensity = "default",
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,
@@ -80,10 +81,9 @@ class ButtonGroup(PublicWidgetBase):
             label: Button label text.
             key: Unique string key. Auto-generated if omitted.
             icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`).
-            icon_position: Position of the icon relative to the label. One of
-                `'left'` (default), `'right'`, `'top'`, `'bottom'`. Ignored
-                when `icon_only` is inferred or explicitly set.
-            disabled: If True, this button starts disabled.
+            icon_position: Position of the icon relative to the label. Ignored
+                when `icon_only` is inferred or explicitly set. Default `'left'`.
+            disabled: If `True`, this button starts disabled.
 
         Returns:
             The key assigned to this button.
@@ -208,18 +208,14 @@ class ButtonGroup(PublicWidgetBase):
     def on_click(self, handler: Callable[[ButtonGroupClickEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any button in the group is clicked.
 
-        Called with no handler, returns a composable `Stream`. Called with a
-        handler, binds it immediately and returns a `Subscription`.
-
-        The handler receives a `ButtonGroupClickEvent` with ``key``, ``text``,
-        and ``icon`` for the clicked button.
-
         Args:
-            handler: Called with the click event. Access ``event.key``,
-                ``event.text``, and ``event.icon``.
+            handler: Called with a :class:`~bootstack.events.ButtonGroupClickEvent`
+                (`key`, `text`, `icon` of the clicked button). Omit to get a
+                composable :class:`~bootstack.streams.Stream`.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         if handler is None:
             return self.on("click")
