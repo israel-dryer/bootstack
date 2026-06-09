@@ -158,10 +158,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.boolean_controls.Checkbox
-   :members:
-   :undoc-members:
-   :inherited-members: PublicWidgetBase
+The complete reference for :class:`Checkbox <bootstack.Checkbox>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Checkbox
 
 Full Example
 ------------

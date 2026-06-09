@@ -77,6 +77,27 @@ Text, number, path, date/time, and slider inputs. Most bind to a ``signal=`` /
    DateField
    TimeField
 
+Selection
+---------
+
+Checkboxes, switches, radio and toggle groups, dropdowns, and the calendar.
+``RadioGroup`` is built from ``Radio`` / ``RadioToggleButton`` items.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   Checkbox
+   Switch
+   ToggleButton
+   ToggleGroup
+   RadioGroup
+   Radio
+   RadioToggleButton
+   Select
+   SelectButton
+   Calendar
+
 Theme
 -----
 
