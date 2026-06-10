@@ -222,7 +222,7 @@ API
 ---
 
 The complete reference for :class:`AppShell <bootstack.AppShell>` lives on the
-:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+:doc:`Application </api-reference/application>` API page. At a glance:
 
 .. autosummary::
    :nosignatures:

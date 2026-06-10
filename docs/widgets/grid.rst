@@ -195,9 +195,13 @@ options.
 API
 ---
 
-.. autoclass:: bootstack.widgets.grid.Grid
-   :members:
-   :undoc-members:
+The complete reference for :class:`Grid <bootstack.Grid>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Grid
 
 Full Example
 ------------

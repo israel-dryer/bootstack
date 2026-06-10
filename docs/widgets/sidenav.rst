@@ -196,9 +196,18 @@ collapsible sections in a vertical list.
 API
 ---
 
-.. autoclass:: bootstack.widgets.sidenav.SideNav
-   :members:
-   :undoc-members:
+The complete reference for :class:`SideNav <bootstack.SideNav>` and its item
+handles lives on the :doc:`Widgets </api-reference/widgets>` API page. At a
+glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.SideNav
+   ~bootstack.SideNavGroup
+   ~bootstack.SideNavHeader
+   ~bootstack.SideNavItem
+   ~bootstack.SideNavSeparator
 
 Full Example
 ------------

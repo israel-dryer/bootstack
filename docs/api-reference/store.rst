@@ -1,5 +1,5 @@
-bootstack.store
-===============
+Storage
+=======
 
 .. currentmodule:: bootstack.store
 

@@ -1,5 +1,5 @@
-bootstack.validation
-=====================
+Validation
+==========
 
 .. currentmodule:: bootstack.validation
 

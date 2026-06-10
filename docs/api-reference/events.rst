@@ -1,5 +1,5 @@
-bootstack.events
-================
+Events
+======
 
 .. currentmodule:: bootstack.events
 

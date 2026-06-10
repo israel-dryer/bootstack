@@ -256,7 +256,7 @@ API
 ---
 
 The complete reference for :class:`ButtonGroup <bootstack.ButtonGroup>` lives on
-the :doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+the :doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
 .. autosummary::
    :nosignatures:

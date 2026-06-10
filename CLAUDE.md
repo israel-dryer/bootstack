@@ -192,12 +192,26 @@ memories and git history.
   + re-exported from `bootstack.types`** (`EditorType` dropped from top-level `__all__`,
   the only one there). `ExportJob` kept local in `datatable.py` (return-handle Protocol,
   prose-only in guide — maintainer call 2026-06-09). `on_*` payloads were already typed
-  in the typing sweep (`a6d6d496`) — audit confirmed clean. **NEXT: Batch 4** Layout +
-  Navigation; **Batch 5**
-  Menus/Overlays/Forms; **Batch 6** Dialogs (give `bootstack.dialogs` an `__all__` +
-  page; home `FontChoice`/`FormDialog`/`Dialog`/`DialogButton`/`ColorChooserDialog`/
-  `ColorChoice`/`FontDialog`/`FilterDialog`); **Stage 5** nav re-cut to 5 +
-  `api-overview` becomes the API-Reference landing. Follow-on: flesh out widget Guides
+  in the typing sweep (`a6d6d496`) — audit confirmed clean.
+  **✅ Batch 4 — Layout + Navigation DONE**, then **the whole API-Reference IA was
+  RE-CUT** to a semantic-category structure (2026-06-09, with the maintainer) —
+  see the new "## IA re-cut" section + the deletions list in
+  `docs/_dev/api-reference-restructure.md`. In brief: the single `bootstack` page is
+  GONE; the reference is now **one page per CONCEPT** (Application · Widgets ·
+  Reactivity · Events · Data · Validation · Theming · Localization · Scheduling ·
+  Shortcuts · Storage · Errors — build-flow order, flat 2-level, collapsed by
+  default via `show_nav_level:1`), groups may **cross namespaces** (Reactivity =
+  Signal+streams; Theming = top-level verbs + `bootstack.style`), **stub titles show
+  the FULL path** (all 5 templates flipped to `{{ fullname }}`), and the landing is a
+  pandas-style public-contract + submodule list + `sphinx-design` card grid (secondary
+  TOC removed). `api-overview` RETIRED (folded into the landing). All clean-build
+  warning-free; uncommitted until the "IA restructure" commit.
+  **NEXT: home the remaining un-homed names into the new IA** — Menus/Overlays/Forms
+  widgets → **Widgets** page; dialog verbs + classes → new **Dialogs** group + card
+  (give `bootstack.dialogs` an `__all__`; home `FontChoice`/`FormDialog`/`Dialog`/
+  `DialogButton`/`ColorChooserDialog`/`ColorChoice`/`FontDialog`/`FilterDialog`); the
+  `bootstack.types` aliases (incl. relocated `ColumnSpec`/`EditorType`/`FormOptions`)
+  → new **Types** group + card. Follow-on: flesh out widget Guides
   with examples (**API Reference is a last resort; Guides carry teaching**). `EditFilter`
   already demoted (memory `project_editfilter_public_api`). **Full brief + decisions in
   `docs/_dev/api-reference-restructure.md`**; memory `project_api_reference_restructure`.
@@ -603,7 +617,8 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   `from bootstack.dialogs import FormDialog`. `MessageCatalog`/`IntlFormatter`/
   `get_current_app`/`Image` are INTERNAL (not public). Do NOT write `bs.Theme`/
   `bs.col`/`bs.SqliteDataSource`/`bs.FormDialog` etc. — they no longer exist at
-  top level. Map: `docs/getting-started/api-overview.rst`; guard:
+  top level. Map: the `docs/api-reference/index.rst` landing (public-contract +
+  submodule list; `api-overview` was retired into it); guard:
   `tests/test_public_surface.py`. Memory `project_toplevel_api_surface`.
 - **Dialogs live in `bootstack.dialogs`** — impl under `bootstack/dialogs/_impl/`,
   public façade `bootstack/dialogs/__init__.py` (verbs + classes).

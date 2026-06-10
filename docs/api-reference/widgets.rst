@@ -1,47 +1,13 @@
-bootstack
-=========
+Widgets
+=======
 
 .. currentmodule:: bootstack
 
-The top-level namespace — everything you compose a UI from. Widgets, the
-application shells, reactive state, and the dialog and theme verbs are all
-importable directly as ``bootstack.<name>`` (commonly ``import bootstack as bs``).
-
-Everything you reference *by type to configure behavior* — data sources, events,
-validation rules, tokens — lives in a submodule; see the other pages in this
-section.
-
-.. note::
-
-   This page is being built out. The reactive-state and theme entries below are
-   in place; the widget catalog and dialog verbs follow. Until then, the
-   :doc:`/widgets/index` catalog documents each widget with usage and examples.
-
-Application
------------
-
-The application object and top-level windows. ``App`` is the root of a simple
-app; ``AppShell`` adds a toolbar, navigation pane, and paged content.
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   App
-   AppShell
-   Window
-
-State
------
-
-The reactive value that binds application state to widgets.
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-   :template: signal
-
-   Signal
+Every visual component you place inside a window — actions, inputs, selection
+controls, data displays, layout containers, and navigation. All are importable
+directly as ``bootstack.<name>`` (commonly ``import bootstack as bs``). For
+usage, screenshots, and worked examples, see the :doc:`/widgets/index` catalog;
+this page is the complete lookup reference.
 
 Actions
 -------
@@ -98,7 +64,7 @@ Checkboxes, switches, radio and toggle groups, dropdowns, and the calendar.
    ToggleButton
    ToggleGroup
 
-Data Display
+Data display
 ------------
 
 Read-only views of values and records — text and badges, progress and gauges,
@@ -119,15 +85,46 @@ handles.
    Tree
    TreeNode
 
-Theme
------
+Layout
+------
 
-Switch the active theme at runtime. (Declaring themes and the other theme/font
-functions live in :doc:`/api-reference/style`.)
+Containers that arrange children — stacks, grids, and scroll regions, plus the
+framed and collapsible groupings. ``Accordion`` exposes its sections as
+``AccordionSection`` handles and ``SplitView`` its panes as ``SplitPane`` handles.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
-   set_theme
-   toggle_theme
+   Accordion
+   AccordionSection
+   Card
+   Grid
+   GroupBox
+   HStack
+   ScrollView
+   Separator
+   SplitPane
+   SplitView
+   VStack
+
+Navigation
+----------
+
+Multi-page containers — swap pages with ``PageStack``, tab between them with
+``Tabs``, or drive a sidebar with ``SideNav``. Each parent hands back typed page
+and item handles (``StackPage``, ``TabPage``, and the ``SideNav*`` items).
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   PageStack
+   SideNav
+   SideNavGroup
+   SideNavHeader
+   SideNavItem
+   SideNavSeparator
+   StackPage
+   TabPage
+   Tabs

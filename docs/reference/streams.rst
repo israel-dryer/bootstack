@@ -98,7 +98,7 @@ API reference
 
 The complete reference — every operator on :class:`Stream
 <bootstack.streams.Stream>` and the :class:`Handle <bootstack.streams.Handle>`
-it returns — lives in :doc:`/api-reference/streams`. At a glance:
+it returns — lives in :doc:`/api-reference/reactivity`. At a glance:
 
 .. currentmodule:: bootstack.streams
 

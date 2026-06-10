@@ -1,5 +1,5 @@
-bootstack.shortcuts
-===================
+Shortcuts
+=========
 
 .. currentmodule:: bootstack.shortcuts
 

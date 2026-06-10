@@ -128,7 +128,7 @@ API reference
 -------------
 
 The complete reference — every method on :class:`Signal <bootstack.Signal>` —
-lives on the :doc:`bootstack </api-reference/bootstack>` API page (``Signal`` is
+lives on the :doc:`Reactivity </api-reference/reactivity>` API page (``Signal`` is
 part of the top-level compose surface). At a glance:
 
 .. autosummary::

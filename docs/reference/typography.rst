@@ -195,7 +195,7 @@ API reference
 -------------
 
 The complete reference for the runtime font functions lives in
-:doc:`/api-reference/style` (alongside the theme functions). At a glance:
+:doc:`/api-reference/theming` (alongside the theme functions). At a glance:
 
 .. currentmodule:: bootstack.style
 

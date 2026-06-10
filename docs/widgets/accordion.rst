@@ -194,9 +194,15 @@ containers.
 API
 ---
 
-.. autoclass:: bootstack.widgets.expander.Accordion
-   :members:
-   :undoc-members:
+The complete reference for :class:`Accordion <bootstack.Accordion>` and its
+:class:`AccordionSection <bootstack.AccordionSection>` handles lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Accordion
+   ~bootstack.AccordionSection
 
 Full Example
 ------------

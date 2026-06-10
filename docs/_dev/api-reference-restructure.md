@@ -2,14 +2,81 @@
 
 **Status:** Stages 1–3 MERGED to main (PR #107 = stage 1; PR #108 = stages 2+3).
 **Stage 4 IN PROGRESS** on branch `feat/api-reference-widgets` (NOT pushed/PR'd
-yet): foundation + batch 1 (Application/Actions + App/Window curation) + batch 2
-(Inputs/Selection + event-payload completions + `default_role="code"` backtick
-fix) + batch 3 (Data Display + `ColumnSpec`/`EditorType`/`FormOptions` →
-`bootstack.types`) DONE; **NEXT = batch 4 Layout + Navigation**. Within-group
-entries are alphabetical (lookup layer). Stage 5 not started. Decided/updated
+yet). Batches 1–4 homed the compose surface; then **the IA was re-cut to a
+semantic-category structure** (2026-06-09, with the maintainer — see "## IA
+re-cut" below). **NEXT = home the remaining un-homed names into the new IA:**
+Menus/Overlays/Forms widgets → **Widgets** group; dialog verbs + classes → new
+**Dialogs** group (needs `bootstack.dialogs.__all__`); type aliases → new **Types**
+group. Within-group entries are alphabetical (lookup layer). Decided/updated
 2026-06-09 with the maintainer.
 
+## IA re-cut (2026-06-09) — semantic categories, full-path titles
+
+The single category-grouped `bootstack` page (the original Stage-4 plan) was
+**replaced** by a by-**concept** IA, modeled on the pandas API reference. Decided
+interactively with the maintainer. Shipped on the branch (uncommitted → committed
+in the "IA restructure" commit), clean-build warning-free:
+
+- **One page per semantic category**, each a top-level entry under API Reference
+  (flat, 2 levels: group → entries). Build-flow order: **Application · Widgets ·
+  Reactivity · Events · Data · Validation · Theming · Localization · Scheduling ·
+  Shortcuts · Storage · Errors**. Files: `application/widgets/reactivity/events/
+  data/validation/theming/i18n/scheduling/shortcuts/store/errors.rst`.
+- **Cross-namespace grouping where it helps** (the key shift — groups are NOT
+  module-bound): **Reactivity** homes `bootstack.Signal` + `bootstack.streams.Stream`/
+  `Handle`; **Theming** homes `bootstack.set_theme`/`toggle_theme` + the
+  `bootstack.style.*` theme/font funcs. Entries are listed fully-qualified; pages
+  set NO page-level `currentmodule` when mixing namespaces (avoids the
+  `autosummary.import_cycle` warning).
+- **Full-path stub titles** — all 5 autosummary templates now title with
+  `{{ fullname }}` (was `{{ objname }}`). REVERSES the Stage-2 bare-title decision;
+  the sidebar/stub H1 now reads `bootstack.Button`, `bootstack.style.Theme`, etc.
+- **Collapsed by default** — `conf.py` `show_nav_level: 1` (was 2). Global.
+- **Landing (`api-reference/index.rst`)** is pandas-style: a public-API contract
+  statement + the list of public submodules with one-liners + an "everything else
+  is internal" note, then a `sphinx-design` **card grid** in 4 clusters (Building
+  the interface / Data and validation / Appearance and locale / Services and
+  reference). Secondary TOC removed on this page via
+  `:html_theme.sidebar_secondary.remove: true` (full width for cards). The `toctree`
+  is `:hidden:` (drives the sidebar; cards are the visible body).
+- **`api-overview` RETIRED** — its public-contract + submodule-map content folded
+  into the landing; deleted from `getting-started/`; the getting-started toctree
+  entry + the two inbound `:doc:` links repointed (Reference index →
+  `/api-reference/index`).
+- **Deleted pages:** `bootstack.rst` (dissolved into application/widgets/reactivity/
+  theming), `signals.rst` (→ Reactivity), `streams.rst` (→ Reactivity), `style.rst`
+  (→ Theming).
+- **Guide cross-links repointed** (CRLF-safe byte replace): 40 widget guides →
+  `/api-reference/widgets`, `appshell` → `/api-reference/application`;
+  `reference/signals` + `reference/streams` → `/api-reference/reactivity`;
+  `reference/theming` + `reference/typography` → `/api-reference/theming`. Guides
+  still use `:class:` role links (path-based, resolve to the stub wherever homed —
+  unaffected by the page moves).
+- **Subsystem page H1s relabeled** semantically (Data/Events/Validation/Localization/
+  Scheduling/Shortcuts/Storage/Errors); their `currentmodule` + entries unchanged.
+- **Services** (Scheduling/Shortcuts/Storage) kept as SEPARATE pages — the landing's
+  "Services and reference" card cluster gives the grouping feel without merging the
+  pages (maintainer call). Could still merge to one page if desired.
+
+**Open / remaining for the IA:** Dialogs group (verbs + classes; needs
+`bootstack.dialogs.__all__` — see "Re-exports" below) + a card; Types group
+(`bootstack.types` aliases incl. the relocated `ColumnSpec`/`EditorType`/`FormOptions`)
++ a card; home Menus/Overlays/Forms widgets into the Widgets page. The
+`{{ fullname }}` flip means future stubs need no special handling. The old
+"single-`bootstack`-page" recipe below (category map, cluster table) is
+SUPERSEDED by this re-cut; keep it only for the per-name curation conventions.
+
 **Stage 4 batch log (branch `feat/api-reference-widgets`):**
+- Batch 4 — Layout + Navigation homed (`bootstack.rst` gained a Layout section —
+  Accordion/AccordionSection/Card/Grid/GroupBox/HStack/ScrollView/Separator/
+  SplitPane/SplitView/VStack — and a Navigation section — PageStack/SideNav/
+  SideNavGroup/SideNavHeader/SideNavItem/SideNavSeparator/StackPage/TabPage/Tabs;
+  both alphabetical). 12 guides converted bottom-`autoclass`→table-only (the
+  clusters list the whole family: accordion+section, splitview+pane, pagestack+page,
+  tabs+page, sidenav+4 items). `AccordionSection` got a first reference home (was
+  prose-only). No code changes — `on_*` payloads already typed in sweeps `5fbbc0a7`/
+  `22baa3c7` (PageChange/Tab*/Nav/PaneToggle/DisplayMode/Accordion/Toggle events).
+  Clean build warning-free. NOT committed.
 - Batch 3 — Data Display homed (Label/Badge/ProgressBar/Gauge/ListView/DataTable/
   Tree/TreeNode → Data Display section on `bootstack.rst`, alphabetical). 7 guide
   pages converted bottom-`autoclass`→table-only API section. `ColumnSpec`/`EditorType`

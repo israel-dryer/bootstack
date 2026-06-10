@@ -180,9 +180,13 @@ an elevated background or labelled border.
 API
 ---
 
-.. autoclass:: bootstack.widgets.stacks.HStack
-   :members:
-   :undoc-members:
+The complete reference for :class:`HStack <bootstack.HStack>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.HStack
 
 Full Example
 ------------

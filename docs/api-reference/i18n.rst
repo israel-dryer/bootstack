@@ -1,5 +1,5 @@
-bootstack.i18n
-==============
+Localization
+============
 
 .. currentmodule:: bootstack.i18n
 

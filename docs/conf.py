@@ -119,7 +119,7 @@ html_theme_options = {
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
     "secondary_sidebar_items": ["page-toc"],
     "navigation_with_keys": True,
-    "show_nav_level": 2,
+    "show_nav_level": 1,
 }
 
 html_static_path = ["_static"]

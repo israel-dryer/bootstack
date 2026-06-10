@@ -121,7 +121,7 @@ API
 ---
 
 The complete reference for :class:`Label <bootstack.Label>` lives on the
-:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
 .. autosummary::
    :nosignatures:

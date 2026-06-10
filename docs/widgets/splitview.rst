@@ -177,13 +177,15 @@ non-resizable layout containers.
 API
 ---
 
-.. autoclass:: bootstack.widgets.splitview.SplitView
-   :members:
-   :undoc-members:
+The complete reference for :class:`SplitView <bootstack.SplitView>` and its
+:class:`SplitPane <bootstack.SplitPane>` handles lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
-.. autoclass:: bootstack.widgets.splitview.SplitPane
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.SplitView
+   ~bootstack.SplitPane
 
 Full Example
 ------------

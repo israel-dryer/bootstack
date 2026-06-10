@@ -112,9 +112,13 @@ of related content.
 API
 ---
 
-.. autoclass:: bootstack.widgets.groupbox.GroupBox
-   :members:
-   :undoc-members:
+The complete reference for :class:`GroupBox <bootstack.GroupBox>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.GroupBox
 
 Full Example
 ------------

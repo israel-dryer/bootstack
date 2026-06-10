@@ -161,13 +161,15 @@ non-navigating layout containers.
 API
 ---
 
-.. autoclass:: bootstack.widgets.pagestack.PageStack
-   :members:
-   :undoc-members:
+The complete reference for :class:`PageStack <bootstack.PageStack>` and its
+:class:`StackPage <bootstack.StackPage>` handles lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
-.. autoclass:: bootstack.widgets.pagestack.StackPage
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.PageStack
+   ~bootstack.StackPage
 
 Full Example
 ------------
