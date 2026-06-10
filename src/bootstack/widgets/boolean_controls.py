@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import overload, Any, Callable, Literal, TYPE_CHECKING
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton as _InternalCheckButton
 from bootstack.widgets._impl.primitives.switch import Switch as _InternalSwitch
@@ -9,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -364,7 +364,7 @@ class ToggleButton(_BooleanControlBase):
     used in toolbars and button groups to represent a persistent on/off state.
 
     Args:
-        label: Button label text.
+        text: Button text.
         signal: Reactive `Signal` controlling the pressed state. When
             provided, `value=` is ignored — seed the Signal directly.
         value: Initial value. Ignored when `signal=` is passed.
@@ -397,7 +397,7 @@ class ToggleButton(_BooleanControlBase):
 
     def __init__(
         self,
-        label: str = "",
+        text: str = "",
         *,
         signal: "Signal | None" = None,
         value: Any = None,
@@ -409,7 +409,7 @@ class ToggleButton(_BooleanControlBase):
         icon_only: bool = False,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "outline", "ghost"] | None = None,
+        variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -426,7 +426,7 @@ class ToggleButton(_BooleanControlBase):
         if density is not None:
             options["density"] = density
         super().__init__(
-            label,
+            text,
             signal=signal,
             value=value,
             checked_value=checked_value,

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton as _InternalDropdownButton
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, WidgetDensity, ButtonVariant
 from bootstack.events import MenuSelectEvent
 
 if TYPE_CHECKING:
@@ -32,6 +32,21 @@ def _resolve_item_type(type_: str) -> str:
     return resolved
 
 
+def _translate_item(item: dict[str, Any]) -> dict[str, Any]:
+    """Translate a public item dict to the internal ContextMenu shape.
+
+    Maps the public `type` name to its internal string and the public `on_click`
+    callback key to the toolkit's `command`, so item dicts never need toolkit
+    names. Returns a copy; the input is left untouched.
+    """
+    item = dict(item)
+    if "type" in item:
+        item["type"] = _resolve_item_type(item["type"])
+    if "on_click" in item:
+        item["command"] = item.pop("on_click")
+    return item
+
+
 # Keys that map to explicit constructor parameters — user **kwargs must not
 # override these silently.
 _RESERVED_INTERNAL_KEYS = frozenset({
@@ -48,10 +63,11 @@ class MenuButton(PublicWidgetBase):
     receiving a dict with ``type``, ``text``, and ``value`` keys.
 
     Args:
-        label: Button label text. Defaults to an empty string.
+        text: Button text. Defaults to an empty string.
         items: Initial list of item dicts. Each dict must have a ``type``
             key (``'command'``, ``'check'``, ``'radio'``, or
-            ``'separator'``) plus item-specific keys.
+            ``'separator'``) plus item-specific keys such as ``text``,
+            ``icon``, ``value``, and ``on_click`` (the per-item callback).
         on_select: Callback fired when any menu item is activated. Called with
             a :class:`~bootstack.events.MenuSelectEvent` (`type`, `text`,
             `value` of the activated item).
@@ -77,7 +93,7 @@ class MenuButton(PublicWidgetBase):
 
     def __init__(
         self,
-        label: str = "",
+        text: str = "",
         *,
         items: list[Any] | None = None,
         on_select: Callable[[MenuSelectEvent], Any] | None = None,
@@ -87,7 +103,7 @@ class MenuButton(PublicWidgetBase):
         menu_options: dict[str, Any] | None = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "default", "outline", "ghost"] | None = None,
+        variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
         textsignal: "Signal[str] | None" = None,
         parent: Any = None,
@@ -104,10 +120,10 @@ class MenuButton(PublicWidgetBase):
         }
         if menu_options is not None:
             internal_kwargs["popdown_options"] = menu_options
-        if label:
-            internal_kwargs["text"] = label
+        if text:
+            internal_kwargs["text"] = text
         if items is not None:
-            internal_kwargs["items"] = items
+            internal_kwargs["items"] = [_translate_item(it) for it in items]
         if on_select is not None:
             _user_on_select = on_select
             def _on_select(data: dict[str, Any]) -> None:
@@ -271,24 +287,19 @@ class MenuButton(PublicWidgetBase):
         .. code-block:: python
 
            mb.add_items([
-               {"type": "command",   "text": "Edit",   "icon": "pencil"},
-               {"type": "command",   "text": "Delete", "icon": "trash"},
+               {"type": "command", "text": "Edit",   "icon": "pencil", "on_click": edit},
+               {"type": "command", "text": "Delete", "icon": "trash",  "on_click": delete},
                {"type": "separator"},
-               {"type": "check",     "text": "Pinned", "value": True},
-               {"type": "radio",     "text": "Small",  "value": "sm"},
+               {"type": "check",   "text": "Pinned", "value": True},
+               {"type": "radio",   "text": "Small",  "value": "sm"},
            ])
 
         Args:
             items: List of item dicts. ``type`` accepts ``'command'``,
-                ``'check'``, ``'radio'``, or ``'separator'``.
+                ``'check'``, ``'radio'``, or ``'separator'``; an item's
+                ``on_click`` key sets its per-item callback.
         """
-        translated = []
-        for item in items:
-            item = dict(item)
-            if "type" in item:
-                item["type"] = _resolve_item_type(item["type"])
-            translated.append(item)
-        self._internal.add_items(translated)
+        self._internal.add_items([_translate_item(it) for it in items])
 
     def insert_item(self, index: int, type: str, **kwargs: Any) -> str:
         """Insert a new item at a specific position.
@@ -302,6 +313,8 @@ class MenuButton(PublicWidgetBase):
         Returns:
             The key assigned to the new item.
         """
+        if "on_click" in kwargs:
+            kwargs["command"] = kwargs.pop("on_click")
         result = self._internal.insert_item(index, _resolve_item_type(type), **kwargs)
         return result.key if hasattr(result, "key") else result
 
