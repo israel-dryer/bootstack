@@ -21,8 +21,25 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Linked type aliases + widget-API consistency** (branch `feat/typed-alias-links`,
-  NOT merged) — public type aliases now render as their short NAME, **linked** to a
+- **Widget API gap audit + documentation** (PR #111 — OPEN, pending merge) — audited
+  all ~49 public widgets vs their `_impl/` internals for unexposed capability and fixed
+  the high-value gaps: widget lifecycle (`destroy`/`on_destroy` on `PublicWidgetBase`,
+  `<Destroy>` mapping); a `WindowControlsMixin` (`close`/`show`/`hide`/`minimize`/
+  `maximize`/`set_fullscreen`/`set_topmost`/`on_close`) on App/AppShell/Window — **AppShell
+  is now a `PublicWidgetBase`**, Window gained a live `title`; RadioGroup/ToggleGroup
+  management (`remove`/`configure_item`/`__len__`/`__contains__`, RadioGroup live `title`);
+  live properties (Gauge `min/max_value`, SelectButton `options`, Calendar/DateField date
+  constraints — internal `set_*` mutators); §2c/§2d param + kwargs-leak fixes; 3 behavioral
+  bugs (RangeSlider low/high clamp, NumberField `clear()`→`None`, Form `field_variable()`
+  removed). Plus dark-mode window-border theming (`change_border_color`) and the new
+  **Application** widget category with full-window DWM screenshots (`bs-window-screenshot`
+  CSS; `take_screenshots.py` `_capture_full_window`). A high-effort `/code-review` fixed 3
+  more correctness bugs. Brief: `docs/_dev/widget-api-audit.md`. DEFERRED (recorded in the
+  brief): Toolbar/MenuBar return-handle rework + AppShell façades, option-databag
+  enumerators, review follow-ups #4–#10. Memories `project_widget_attach_detach`,
+  `project_docs_site_fleshout`.
+- **Linked type aliases + widget-API consistency** (merged to `main` this session
+  via rebase) — public type aliases now render as their short NAME, **linked** to a
   `.. py:type::` entry on the API-ref page, framework-wide (was: inline-expanded
   Literals, or empty `autosummary` summaries). The recipe, after a long debugging arc:
   (1) **source consistency** — promote recurring inline Literals to named aliases
@@ -102,6 +119,31 @@ memories and git history.
   **NEXT: Stage 4 (in progress — see below).**
 
 ## Next up — candidates (pick one)
+
+- **Docs site fleshout** — the remaining stub pages: how-to guides (`docs/tasks/*` —
+  getting-input/handling-actions/displaying-data/building-forms/dialogs/navigation),
+  `getting-started/app-structures`, production `cli`/`debugging`/`distribution`; plus a
+  review of `installation`/`quickstart`. A SEPARATE initiative from the api-gap branch
+  (`cli`/`distribution` need investigation, not just writing). State + suggested order in
+  memory `project_docs_site_fleshout`.
+- **Widget attach/detach** — public `detach()`/`attach()` + `on_attach`/`on_detach`
+  events (the deferred `<Map>`/`<Unmap>` lifecycle). Foundational: the layout path must
+  STORE each widget's placement; pack position via a public `index=` → Tk `before`/`after`.
+  Memory `project_widget_attach_detach`.
+- **Toolbar/MenuBar rework** — return public widget handles from `add_*` (the §2b work,
+  via an `_adopt` classmethod) + `Toolbar.content`/make-it-a-container + window-control
+  accessors + MenuBar return handles + AppShell `toolbar`/`nav`/`pages` public façades.
+  HELD pending the maintainer's upcoming Toolbar/MenuBar changes. Detail in
+  `docs/_dev/widget-api-audit.md`.
+- **Decoupled option shape (option-databag)** — one shared `Option = str|tuple|OptionDict`
+  normalizer for the selection family; also subsumes the duplicated RadioGroup/ToggleGroup
+  management API (review finding #6). Memory `project_select_options_databag`; brief
+  `docs/_dev/select-options-databag.md`.
+- **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
+  `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
+  Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
+
+### History — done initiatives
 
 - **✅ DONE — Public-API typing sweep** (branch `feat/api-reference-widgets`, NOT
   pushed). Grew out of Stage 4's "clean up each widget's API as it is homed". Goes
