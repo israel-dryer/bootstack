@@ -62,10 +62,32 @@ def _patch(cls):
 
     def _run(self):
         def _grab():
-            # If the example set app._capture_target to a Toplevel, capture
-            # that window directly instead of the app (useful for dialog heroes).
+            # Examples can set app._capture_target (a Toplevel, e.g. a dialog or
+            # Window) to capture that window instead of the app, and/or
+            # app._capture_full_window to grab the whole OS window (titlebar +
+            # chrome) rather than just the content area.
             target = getattr(self, '_capture_target', None)
-            if target is not None:
+            full = getattr(self, '_capture_full_window', False)
+            if full:
+                # Whole OS window via DWM extended frame bounds — the exact
+                # VISIBLE rect (no drop-shadow margin), so there is no desktop
+                # bleed to clean up beyond the docs' CSS border.
+                win = target if target is not None else self.tk
+                win.update_idletasks()
+                import ctypes
+                from ctypes import wintypes
+                hwnd = ctypes.windll.user32.GetParent(win.winfo_id()) or win.winfo_id()
+                rect = wintypes.RECT()
+                ok = ctypes.windll.dwmapi.DwmGetWindowAttribute(
+                    wintypes.HWND(hwnd), ctypes.c_uint(9),  # DWMWA_EXTENDED_FRAME_BOUNDS
+                    ctypes.byref(rect), ctypes.sizeof(rect))
+                if ok != 0:  # fall back to the full window rect (incl. shadow margin)
+                    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                x, y = rect.left, rect.top
+                w, h = rect.right - rect.left, rect.bottom - rect.top
+                inset = 2  # cut just inside the native window border; the docs
+                           # add a clean CSS border/radius around the image
+            elif target is not None:
                 target.update_idletasks()
                 import re
                 m = re.match(r'(\d+)x(\d+)\+(-?\d+)\+(-?\d+)', target.geometry())

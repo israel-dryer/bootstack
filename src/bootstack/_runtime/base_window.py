@@ -208,6 +208,9 @@ class BaseWindow:
             from bootstack.style.style import get_theme_provider
             color = get_theme_provider().colors['chrome']
             pywinstyles.change_header_color(self, color)
+            # Match the window border to the chrome too, so it honors the theme
+            # (otherwise Windows leaves a light default border in dark mode).
+            pywinstyles.change_border_color(self, color)
         except Exception:
             pass
         finally:

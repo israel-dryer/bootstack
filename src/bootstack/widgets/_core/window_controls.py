@@ -22,6 +22,14 @@ class WindowControlsMixin:
         """
         self._internal.close()
 
+    def show(self) -> None:
+        """Show the window — typically to reveal it again after `hide()`.
+
+        For the application window, `run()` already shows it and starts the
+        event loop; reach for `show()` to bring a hidden window back.
+        """
+        self._internal.show()
+
     def hide(self) -> None:
         """Hide the window without destroying it.
 

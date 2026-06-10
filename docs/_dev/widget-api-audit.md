@@ -271,14 +271,16 @@ These are cheap, high-confidence fixes — a sibling already proves the shape.
   **RESOLVED — omit-by-design (maintainer, 2026-06-10): `ButtonGroup` is for
   ACTION buttons only; toggle/radio/check selection belongs in `ToggleGroup` /
   `RadioGroup`. The internal flexibility stays internal.**
-- `MenuBar` region frames `before`/`center`/`after` (`menubar.py:155/163/171`) — no
-  way to add an arbitrary widget to a region. · needs-decision.
-- `Toolbar.content` frame (`toolbar.py:347`) — `add_widget` requires a toolbar-parented
-  widget but gives no way to *get* that parent; the docstring's own workflow is unusable
-  without it. · expose. Plus window-control button accessors (`:369–382`).
-- `ContextMenu` (just completed) — remaining: live reconfigure delegates (re-`target`,
-  swap `on_select`) `contextmenu.py:1523–1599`; `shift-click`/`ctrl-click` triggers
-  (`:1740`). · needs-decision.
+- **Toolbar & MenuBar — DEFERRED (maintainer, 2026-06-10).** The whole §2b
+  return-public-wrapper work (via an `_adopt` primitive), plus `Toolbar.content` /
+  making Toolbar a container, the window-control button accessors, MenuBar return
+  handles, and the `menubar.py:46` `**kwargs` leak — all **held**: Toolbar and
+  MenuBar are slated for upcoming changes, so we don't churn them now. Revisit as
+  part of that work.
+- `ContextMenu` (completed last session) — remaining gaps reviewed 2026-06-10:
+  **live reconfigure (re-`target`, swap `on_select`) — DECLINED** (re-targeting a
+  context menu at runtime is rare). `shift-click`/`ctrl-click` triggers
+  (`contextmenu.py:1740`) — left for now (niche; ContextMenu otherwise complete).
 
 **Fields** — see §2a/§2d. Plus `PathField.dialog_button` accessor (parallels
 `DateField.picker_button`); `TimeField` (a `SelectBox` subclass) exposes no

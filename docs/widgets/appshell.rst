@@ -7,11 +7,11 @@ pages with `.add_page()` — each page is also wired into the sidebar
 automatically.
 
 .. image:: /_static/examples/appshell-hero-light.png
-   :class: bs-screenshot-light
+   :class: bs-screenshot-light bs-window-screenshot
    :alt: AppShell demo — light theme
 
 .. image:: /_static/examples/appshell-hero-dark.png
-   :class: bs-screenshot-dark
+   :class: bs-screenshot-dark bs-window-screenshot
    :alt: AppShell demo — dark theme
 
 Usage
@@ -112,11 +112,11 @@ be changed at runtime via ``shell.nav.set_display_mode()``.
    shell = bs.AppShell(nav_display_mode="compact")
 
 .. image:: /_static/examples/appshell-compact-light.png
-   :class: bs-screenshot-light
+   :class: bs-screenshot-light bs-window-screenshot
    :alt: AppShell compact sidebar — light theme
 
 .. image:: /_static/examples/appshell-compact-dark.png
-   :class: bs-screenshot-dark
+   :class: bs-screenshot-dark bs-window-screenshot
    :alt: AppShell compact sidebar — dark theme
 
 Navigation
@@ -200,11 +200,6 @@ Window options
        show_window_controls=True,
        draggable=True,
    )
-
-Widget sizing
-~~~~~~~~~~~~~
-
-.. include:: ../shared/widget-sizing.rst
 
 See also
 --------

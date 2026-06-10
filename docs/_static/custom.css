@@ -96,3 +96,15 @@ html[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
 
 /* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
 .bs-dialog-screenshot {}
+
+/* Full-window screenshots (App / Window / AppShell). The native OS border is
+   cropped during capture, so draw a clean border in its place. Use the theme's
+   own border token so the frame follows light/dark automatically; the 6px
+   radius from the base rule rounds it off. */
+.bs-window-screenshot {
+    border: 1px solid var(--pst-color-border);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
+}
+html[data-theme="dark"] .bs-window-screenshot {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
