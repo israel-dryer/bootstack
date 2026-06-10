@@ -19,8 +19,18 @@ There are two kinds of event, and the handler argument differs accordingly:
   :class:`Event <bootstack.events.Event>` describing where it happened and which
   modifier keys were held.
 
-Every payload type is catalogued in this module, so editors can autocomplete the
-attributes available on each event.
+Every payload type is cataloged in :mod:`bootstack.events`, so editors can
+autocomplete the attributes available on each event.
+
+.. note::
+
+   Two widgets hand their handlers a plain object instead of a payload
+   dataclass, by design. :class:`~bootstack.ListView` item events
+   (``on_item_click``, ``on_item_insert``, …) and :class:`~bootstack.Form`'s
+   ``on_data_change`` deliver the **record dict** directly (``e["field"]``).
+   :class:`~bootstack.Tree` node events (``on_activate``, ``on_expand``,
+   ``on_collapse``) deliver the ``TreeNode`` handle. Everywhere else, a
+   data-carrying event is one of the payloads below.
 
 Listening for an event
 ----------------------
@@ -43,19 +53,187 @@ For a simple button action, the ``on_click=`` constructor argument takes a
    bs.Button("Save", on_click=lambda: save())
 
 Every shorthand is a thin wrapper over the generic ``on()`` method, which takes
-the event name as a string. Use it for events without a dedicated shorthand:
+the event name as a string. Reach for it for an event without a dedicated
+shorthand, or when the event name is computed:
 
 .. code-block:: python
 
    widget.on("right_click", show_context_menu)
 
+Events by widget
+----------------
+
+Each widget exposes only the events that make sense for it. This is the map from
+a widget to the events you can bind and the payload each one delivers — reach for
+it when you know the widget but not the event name. (The
+:doc:`API reference </api-reference/events>` is the complementary index,
+organized by payload type.)
+
+**Actions**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - :class:`~bootstack.Button`, :class:`~bootstack.Label`
+     - ``on_click``
+     - :class:`~bootstack.events.Event` (native)
+   * - :class:`~bootstack.ButtonGroup`
+     - ``on_click``
+     - :class:`~bootstack.events.ButtonGroupClickEvent`
+   * - :class:`~bootstack.MenuButton`, :class:`~bootstack.ContextMenu`
+     - ``on_select=`` (constructor)
+     - :class:`~bootstack.events.MenuSelectEvent`
+
+**Text, number, and date fields** (TextField, NumberField, PathField,
+PasswordField, DateField, TimeField, SpinnerField) share one event set —
+``on_input`` fires on every keystroke, ``on_change`` when the value is committed
+(blur or Enter), and ``on_submit`` on Enter.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - Any field
+     - ``on_input``
+     - :class:`~bootstack.events.InputEvent`
+   * - (same)
+     - ``on_change``
+     - :class:`~bootstack.events.ChangeEvent`
+   * - (same)
+     - ``on_submit``
+     - :class:`~bootstack.events.Event`
+   * - (same)
+     - ``on_valid`` / ``on_invalid`` / ``on_validate``
+     - :class:`~bootstack.events.ValidationEvent`
+   * - (same)
+     - ``on_focus`` / ``on_blur``
+     - :class:`~bootstack.events.Event`
+
+**Boolean and selection controls**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - :class:`~bootstack.Checkbox`, :class:`~bootstack.Switch`,
+       :class:`~bootstack.ToggleButton`
+     - ``on_change``
+     - :class:`~bootstack.events.ChangeEvent`
+   * - (same)
+     - ``on_check`` / ``on_uncheck``
+     - :class:`~bootstack.events.Event` (data-free)
+   * - :class:`~bootstack.Select`, :class:`~bootstack.SelectButton`,
+       :class:`~bootstack.RadioGroup`, :class:`~bootstack.ToggleGroup`
+     - ``on_change``
+     - :class:`~bootstack.events.ChangeEvent`
+
+**Sliders and meters**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - :class:`~bootstack.Slider`, :class:`~bootstack.Gauge`
+     - ``on_change``
+     - :class:`~bootstack.events.SliderEvent`
+   * - :class:`~bootstack.Slider`
+     - ``on_commit``
+     - :class:`~bootstack.events.SliderCommitEvent`
+   * - :class:`~bootstack.RangeSlider`
+     - ``on_change`` / ``on_commit``
+     - :class:`~bootstack.events.RangeSliderEvent` /
+       :class:`~bootstack.events.RangeSliderCommitEvent`
+   * - :class:`~bootstack.Calendar`
+     - ``on_date_selected``
+     - :class:`~bootstack.events.DateSelectEvent`
+
+**Lists, tables, and trees**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - :class:`~bootstack.ListView`
+     - ``on_item_click``, ``on_item_insert``, ``on_item_update``,
+       ``on_item_delete``
+     - the record ``dict``
+   * - :class:`~bootstack.DataTable`
+     - ``on_row_click``, ``on_row_double_click``, ``on_row_right_click``
+     - :class:`~bootstack.events.RowEvent`
+   * - :class:`~bootstack.DataTable`
+     - ``on_selection_changed``
+     - :class:`~bootstack.events.SelectionEvent`
+   * - :class:`~bootstack.DataTable`
+     - ``on_rows_insert``, ``on_rows_update``, ``on_rows_delete``,
+       ``on_rows_move``
+     - :class:`~bootstack.events.RowsEvent`
+   * - :class:`~bootstack.DataTable`
+     - ``on_export``
+     - :class:`~bootstack.events.ExportEvent`
+   * - :class:`~bootstack.Tree`
+     - ``on_selection_changed``
+     - :class:`~bootstack.events.TreeSelectionEvent`
+   * - :class:`~bootstack.Tree`
+     - ``on_activate``, ``on_expand``, ``on_collapse``
+     - the ``TreeNode`` handle
+
+**Navigation and containers**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 30 40
+
+   * - Widget
+     - Event
+     - Handler receives
+   * - :class:`~bootstack.Tabs`
+     - ``on_change``
+     - :class:`~bootstack.events.TabChangeEvent`
+   * - :class:`~bootstack.Tabs`
+     - ``on_tab_close``
+     - :class:`~bootstack.events.TabCloseEvent`
+   * - :class:`~bootstack.PageStack`, :class:`~bootstack.AppShell`
+     - ``on_page_change``
+     - :class:`~bootstack.events.PageChangeEvent`
+   * - :class:`~bootstack.SideNav`
+     - ``on_change``
+     - :class:`~bootstack.events.NavEvent`
+   * - :class:`~bootstack.SideNav`
+     - ``on_pane_toggled`` / ``on_display_mode_changed``
+     - :class:`~bootstack.events.PaneToggleEvent` /
+       :class:`~bootstack.events.DisplayModeEvent`
+   * - :class:`~bootstack.Accordion`
+     - ``on_change``
+     - :class:`~bootstack.events.AccordionChangeEvent`
+
+Each widget's own guide lists its complete event set; the tables above cover the
+events you reach for most.
+
 Reading a payload
 -----------------
 
-For a data-carrying event the handler argument is the payload itself. A
-``change`` event, for example, is a :class:`ChangeEvent
-<bootstack.events.ChangeEvent>` carrying the committed ``value``, the
-``prev_value``, and the raw ``text``:
+For a data-carrying event the handler argument is the payload itself. Read the
+attributes straight off it — editors autocomplete them because every payload is
+a frozen dataclass.
+
+A ``change`` event is a :class:`~bootstack.events.ChangeEvent` carrying the
+committed ``value``, the ``prev_value``, and the raw ``text``:
 
 .. code-block:: python
 
@@ -63,6 +241,59 @@ For a data-carrying event the handler argument is the payload itself. A
        print(e.value, "was", e.prev_value)
 
    field.on_change(on_change)
+
+A **slider** distinguishes the value moving from the value settling. Use
+``on_change`` for live feedback as the handle drags, and ``on_commit`` for the
+expensive work you only want once the drag ends:
+
+.. code-block:: python
+
+   preview = bs.Label("100%")
+   slider = bs.Slider(value=100, min_value=0, max_value=200)
+
+   def show_zoom(e):
+       preview.text = f"{e.value:.0f}%"
+
+   slider.on_change(show_zoom)
+   slider.on_commit(lambda e: apply_zoom(e.value))
+
+A **table** reports both the row a user acts on and the current selection. A
+:class:`~bootstack.events.RowEvent` carries the ``record`` and its ``id``; a
+:class:`~bootstack.events.SelectionEvent` carries every selected ``record`` and
+``id``:
+
+.. code-block:: python
+
+   def show_count(e):
+       status.text = f"{len(e.records)} selected"
+
+   table.on_row_double_click(lambda e: open_detail(e.id))
+   table.on_selection_changed(show_count)
+
+A **tab strip** tells you not just which tab is active but *why* it changed — a
+:class:`~bootstack.events.TabChangeEvent` carries the ``current`` and
+``previous`` tab (each a :class:`~bootstack.events.TabRef`), plus the ``reason``
+and ``via`` tags. Use them to ignore programmatic changes, for example:
+
+.. code-block:: python
+
+   def on_tab(e):
+       if e.reason == "user":
+           track_view(e.current.key)
+
+   tabs.on_change(on_tab)
+
+A **page change** carries navigation context — a
+:class:`~bootstack.events.PageChangeEvent` exposes the ``page`` now active, the
+``prev_page``, and ``can_back`` / ``can_forward`` flags you can bind a toolbar
+to:
+
+.. code-block:: python
+
+   def on_page(e):
+       back_button.disabled = not e.can_back
+
+   shell.on_page_change(on_page)
 
 The curated Event
 -----------------
@@ -72,38 +303,106 @@ Native events hand the handler a frozen :class:`Event
 position (``x``, ``y``, ``x_root``, ``y_root``), the widget ``width`` and
 ``height``, scroll ``delta``, modifier-key booleans (``ctrl``, ``shift``,
 ``alt``, ``meta``), and — for keyboard events — a clean ``key`` and ``char``.
-None of the underlying toolkit's bitmask or serial-number plumbing leaks
-through.
 
 .. code-block:: python
 
    button.on_click(lambda e: print("clicked at", e.x, e.y, "ctrl:", e.ctrl))
 
-Cancelling a subscription
--------------------------
+These pointer, focus, and geometry events can be bound on **any** widget by
+name. Several have no ``on_*()`` shorthand, so ``on()`` is the only way to reach
+them:
 
-The :class:`Subscription <bootstack.events.Subscription>` returned by a handler
-binding detaches it when you call ``cancel()``. This matters for handlers that
-outlive the thing they watch:
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Event
+     - Fires when
+   * - ``click``, ``double_click``, ``right_click``
+     - A mouse button is pressed over the widget.
+   * - ``hover``, ``leave``
+     - The pointer enters or leaves the widget.
+   * - ``focus``, ``blur``
+     - The widget gains or loses keyboard focus.
+   * - ``resize``
+     - The widget's size changes.
+
+Each hands the handler a curated :class:`Event <bootstack.events.Event>`. Pass
+any of these names to ``on()`` (``click``, ``focus``, and ``blur`` also have
+shorthands on the widgets that emit them).
+
+Filtering native events
+-----------------------
+
+The modifier state arrives as plain booleans, so branching on it is ordinary
+Python. A Ctrl-click that means something different from a plain click:
+
+.. code-block:: python
+
+   def on_click(e):
+       if e.ctrl:
+           add_to_selection(e.widget)
+       else:
+           replace_selection(e.widget)
+
+   row.on_click(on_click)
+
+To filter *before* the handler runs — so the handler only sees the events you
+care about — bind a :doc:`stream </reference/streams>` instead and chain
+``filter``:
+
+.. code-block:: python
+
+   # Only Ctrl-clicks reach the handler.
+   row.on_click().filter(lambda e: e.ctrl).listen(add_to_selection)
+
+Subscriptions and stream handles
+--------------------------------
+
+Binding a handler directly returns a :class:`Subscription
+<bootstack.events.Subscription>`; building a :doc:`stream </reference/streams>`
+returns a ``Handle``. The two are interchangeable where it counts — both detach
+the handler when you call ``cancel()``, and both work as context managers. Hold
+on to whichever you get when the handler outlives the thing it watches:
 
 .. code-block:: python
 
    sub = item.on_click(handle_select)
    sub.cancel()          # stop listening
 
-A subscription is also a context manager — the binding lasts only for the block:
+A subscription (or handle) is also a context manager, which binds the handler
+only for the duration of a block. Reach for this when a binding's life should
+match a **bounded interaction that runs its own event loop** — most often a
+modal dialog. While the dialog below is open, the table's selection is mirrored
+into it; the handler is removed the moment the dialog closes, even on an error:
 
 .. code-block:: python
 
-   with widget.on("hover", preview):
-       ...               # preview is active here
-   # unbound on exit
+   with table.on_selection_changed(lambda e: dialog.set_count(len(e.records))):
+       dialog.show()     # modal — runs until the user closes it
+
+Around ordinary synchronous code the event loop never pumps, so the handler
+would never fire before the block exits — use ``with`` only when something
+inside it processes events.
 
 Emitting your own events
 ------------------------
 
-Use ``emit()`` to fire an event yourself, optionally with a payload. This is how
-composite widgets surface high-level activity to their listeners:
+Use ``emit()`` to fire an event yourself, optionally with a payload — this is how
+a composite widget surfaces its own high-level activity to listeners. Any name
+that isn't a built-in event is treated as a **custom event**, and its handlers
+receive whatever you pass as ``data``. A plain dict is the natural choice:
+
+.. code-block:: python
+
+   # A handler bound by name...
+   widget.on("row_imported", lambda e: print(e["row"], e["source"]))
+
+   # ...fires when you emit that event with a payload.
+   widget.emit("row_imported", data={"row": 42, "source": "clipboard"})
+
+For a built-in event, pass its matching payload from :mod:`bootstack.events`
+instead — the same object an ``on_<event>()`` handler would receive:
 
 .. code-block:: python
 

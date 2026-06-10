@@ -188,8 +188,8 @@ See also
 
 - :doc:`/reference/theming` — colors, accents, and custom themes.
 - :doc:`/widgets/font-dialog` — the ``ask_font()`` / ``FontDialog`` selector.
-- :class:`Label <bootstack.widgets.label.Label>` — the primary widget for
-  displaying text with font tokens.
+- :class:`~bootstack.Label` — the primary widget for displaying text with font
+  tokens.
 
 API reference
 -------------
