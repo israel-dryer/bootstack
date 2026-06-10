@@ -215,6 +215,37 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def read_only(self, v: bool) -> None:
         self._internal.configure(state="readonly" if v else "normal")
 
+    # ----- Date constraints -----
+
+    @property
+    def min_date(self) -> date | None:
+        """Earliest selectable date. Assigning takes effect the next time the picker opens."""
+        return self._internal._coerce_date(self._internal._min_date)
+
+    @min_date.setter
+    def min_date(self, value: date | str | None) -> None:
+        self._internal._min_date = value
+
+    @property
+    def max_date(self) -> date | None:
+        """Latest selectable date. Assigning takes effect the next time the picker opens."""
+        return self._internal._coerce_date(self._internal._max_date)
+
+    @max_date.setter
+    def max_date(self, value: date | str | None) -> None:
+        self._internal._max_date = value
+
+    @property
+    def disabled_dates(self) -> tuple[date, ...]:
+        """Dates disabled in the picker. Assigning a new iterable takes effect the next time it opens."""
+        raw = self._internal._disabled_dates or []
+        coerce = self._internal._coerce_date
+        return tuple(sorted(d for d in (coerce(x) for x in raw) if d is not None))
+
+    @disabled_dates.setter
+    def disabled_dates(self, value: Iterable[date | str] | None) -> None:
+        self._internal._disabled_dates = value
+
     # ----- Methods -----
 
     def validate(self) -> bool:

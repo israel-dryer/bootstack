@@ -4,6 +4,7 @@ from typing import Any
 
 from bootstack.widgets._impl.primitives.sizegrip import SizeGrip as _InternalSizeGrip
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets.types import AccentToken
 
 
 class SizeGrip(PublicWidgetBase):
@@ -15,12 +16,15 @@ class SizeGrip(PublicWidgetBase):
     Args:
         accent: Accent token for styling.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        accent: str | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -32,7 +36,7 @@ class SizeGrip(PublicWidgetBase):
         internal_kwargs: dict[str, Any] = {}
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
+        # **kwargs is layout-only (split out above) — not forwarded to the internal.
 
         self._internal = _InternalSizeGrip(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)

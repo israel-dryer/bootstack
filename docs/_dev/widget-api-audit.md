@@ -120,6 +120,31 @@ Verified: clean `-W` build, `test_public_surface` (137), `test_slider_events`
 
 ---
 
+## Documentation follow-ups (write AFTER the API surface settles)
+
+Every API change here needs teaching-layer prose (the API-Reference autosummary
+already picks the methods up from their docstrings; the **Topics/Guides** carry
+the teaching). Do this as ONE sweep once §2a/§2b/§2c + the menu cluster land —
+writing it now means re-editing after those change. Checklist:
+
+- **events Topic** (`reference/events.rst`) — add a **Lifecycle** section covering
+  `on_destroy` (and `on_attach`/`on_detach` once that initiative ships).
+- **App / AppShell / Window** widget pages — document `close()` / `hide` /
+  `minimize` / `maximize` / `set_fullscreen` / `set_topmost` / `on_close`
+  (+ the `on_close=` kwarg); Window's live `title`. Consider a windowing how-to
+  under `tasks/` (the carryover already flags a windowing how-to as pending).
+- **RadioGroup / ToggleGroup** pages — the runtime management API
+  (`remove` / `configure_item` / live `title`) with a worked example; fold into
+  the input how-to.
+- **NumberField / SpinnerField / ListView** pages — new params (`wrap`,
+  `value_format`, `select_on_click`); note NumberField `clear()` now empties to
+  `None`, and RangeSlider setters clamp.
+- Whatever §2a/§2b/§2c add (Gauge range, SelectButton options, Calendar/DateField
+  dates; Toolbar/MenuBar return-handles; Scrollbar/SizeGrip) gets documented in
+  the same sweep, on its own widget page.
+
+---
+
 ## 1. Headline (highest-value, recommend fixing before the docs pass)
 
 1. **App / AppShell have almost no window-lifecycle surface.** The public `App`
@@ -198,8 +223,11 @@ MenuButton/ContextMenu/Tree pattern that already does. · **med · expose**.
 (`sizegrip.py:35`) do `internal_kwargs.update(kwargs)`, passing the catch-all
 straight into the ttk constructor — contra the curated layout-only `**kwargs`
 convention every other wrapper follows. `Spinbox` is the worst (it's a full field
-sibling). · **med (Spinbox) / low · expose** (fix the leak; promote any genuinely
-useful option, e.g. Scrollbar `variant`, to a typed param).
+sibling). · **med (Spinbox) / low · expose** (fix the leak; type `orient`/`accent`).
+**Note (2026-06-10):** the internal `Scrollbar` docstring claimed a `variant`
+of `'round'`/`'square'`, but the style builder only has `'default'` — over-reported,
+so there's nothing to promote. (Reinforces "source variants from style/builders/,
+not docstrings.")
 
 ### 2d. Cross-family consistency gaps (a sibling exposes it, this one doesn't)
 
