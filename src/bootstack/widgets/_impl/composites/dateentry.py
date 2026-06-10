@@ -251,6 +251,21 @@ class DateEntry(Field):
                 return None
         return None
 
+    def set_min_date(self, value: date | datetime | str | None) -> None:
+        """Set the earliest selectable date for the picker. None clears the bound."""
+        self._min_date = self._coerce_date(value)
+
+    def set_max_date(self, value: date | datetime | str | None) -> None:
+        """Set the latest selectable date for the picker. None clears the bound."""
+        self._max_date = self._coerce_date(value)
+
+    def set_disabled_dates(self, dates: Iterable[date | datetime | str] | None) -> None:
+        """Replace the dates disabled in the picker. The iterable is coerced and
+        materialized, so a one-shot generator is consumed exactly once here."""
+        self._disabled_dates = [
+            d for d in (self._coerce_date(x) for x in (dates or [])) if d is not None
+        ]
+
     # --- public properties ----------------------------------------------
 
     @property

@@ -224,7 +224,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
 
     @min_date.setter
     def min_date(self, value: date | str | None) -> None:
-        self._internal._min_date = value
+        self._internal.set_min_date(value)
 
     @property
     def max_date(self) -> date | None:
@@ -233,7 +233,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
 
     @max_date.setter
     def max_date(self, value: date | str | None) -> None:
-        self._internal._max_date = value
+        self._internal.set_max_date(value)
 
     @property
     def disabled_dates(self) -> tuple[date, ...]:
@@ -244,7 +244,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
 
     @disabled_dates.setter
     def disabled_dates(self, value: Iterable[date | str] | None) -> None:
-        self._internal._disabled_dates = value
+        self._internal.set_disabled_dates(value)
 
     # ----- Methods -----
 

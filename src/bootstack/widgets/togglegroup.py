@@ -152,7 +152,7 @@ class ToggleGroup(PublicWidgetBase):
         Raises:
             KeyError: If no option with that value exists.
         """
-        self._internal.remove(str(value))
+        self._internal.remove(value)
 
     def configure_item(
         self,
@@ -167,12 +167,13 @@ class ToggleGroup(PublicWidgetBase):
             value: The option to update (the value it was added with).
             label: New display text, when given.
             disabled: When given, disable (`True`) or re-enable (`False`) just
-                this option, independent of the group's overall `disabled`.
+                this option. A later group-level `disabled` change resets every
+                option's state, so apply per-option states after it.
 
         Raises:
             KeyError: If no option with that value exists.
         """
-        key = str(value)
+        key = value
         if label is not None:
             self._internal.configure_item(key, text=label)
         if disabled is not None:
@@ -184,7 +185,7 @@ class ToggleGroup(PublicWidgetBase):
 
     def __contains__(self, value: Any) -> bool:
         """Whether an option with the given `value` is in the group."""
-        return str(value) in self._internal.keys()
+        return value in self._internal.keys()
 
     # ----- Event shorthands -----
 

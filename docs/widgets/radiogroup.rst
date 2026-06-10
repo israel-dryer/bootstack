@@ -111,8 +111,9 @@ Runtime options
 ~~~~~~~~~~~~~~~
 
 Add, remove, and reconfigure options after construction. ``configure_item()``
-updates a single option in place — relabel it, or enable/disable just that one
-independently of the group's overall ``disabled`` state.
+updates a single option in place — relabel it, or enable/disable just that one.
+(Toggling the group-level ``disabled`` resets every option, so apply per-option
+states after it.)
 
 .. code-block:: python
 
