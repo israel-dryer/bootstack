@@ -15,6 +15,7 @@ from bootstack.widgets.types import (
     LayoutKind, AutoFlow,
     WidgetState, WidgetDensity,
     AccentToken, VariantToken, SurfaceToken, WindowStyle,
+    ColumnSpec, EditorType, FormOptions,
 )
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     "LayoutKind", "AutoFlow",
     "WidgetState", "WidgetDensity",
     "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
+    "ColumnSpec", "EditorType", "FormOptions",
 ]

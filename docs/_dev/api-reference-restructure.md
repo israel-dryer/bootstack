@@ -4,11 +4,21 @@
 **Stage 4 IN PROGRESS** on branch `feat/api-reference-widgets` (NOT pushed/PR'd
 yet): foundation + batch 1 (Application/Actions + App/Window curation) + batch 2
 (Inputs/Selection + event-payload completions + `default_role="code"` backtick
-fix) DONE; **NEXT = batch 3 Data Display** (incl. `ColumnSpec`/`EditorType` →
-`bootstack.types`). Within-group entries are alphabetical (lookup layer). Stage 5
-not started. Decided/updated 2026-06-08 with the maintainer.
+fix) + batch 3 (Data Display + `ColumnSpec`/`EditorType`/`FormOptions` →
+`bootstack.types`) DONE; **NEXT = batch 4 Layout + Navigation**. Within-group
+entries are alphabetical (lookup layer). Stage 5 not started. Decided/updated
+2026-06-09 with the maintainer.
 
 **Stage 4 batch log (branch `feat/api-reference-widgets`):**
+- Batch 3 — Data Display homed (Label/Badge/ProgressBar/Gauge/ListView/DataTable/
+  Tree/TreeNode → Data Display section on `bootstack.rst`, alphabetical). 7 guide
+  pages converted bottom-`autoclass`→table-only API section. `ColumnSpec`/`EditorType`
+  /`FormOptions` defs RELOCATED to `widgets/types.py` + re-exported from
+  `bootstack.types` (`__all__` +3); `EditorType` DROPPED from top-level `__all__`
+  (was the only one there); `test_public_surface.py` updated. `ExportJob` kept local
+  in `datatable.py` (return-handle Protocol, prose-only in guide — maintainer call
+  2026-06-09). `on_*` payloads already typed (typing sweep `a6d6d496`) — audit
+  confirmed, no changes. NOT committed.
 - `80492cac` foundation — top-level `bootstack` page + re-export relocation.
 - `87d9174d` batch 1 — Application + Actions; App/AppShell/Window constructor curation
   (drop `app_author`/`app_version`/`inherit_surface_color`/`name`/`mainloop`; demote

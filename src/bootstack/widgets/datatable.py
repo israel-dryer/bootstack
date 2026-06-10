@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, Protocol, TypedDict, overload
+from typing import Any, Callable, Literal, Protocol, overload
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
@@ -10,55 +10,7 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, S
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets.types import WidgetDensity
-
-
-class ColumnSpec(TypedDict, total=False):
-    """A column definition for `DataTable(columns=...)`.
-
-    Columns may be plain key strings or these dicts. Only `key` is required; the
-    editor keys (`editor`, `editor_options`, `dtype`, `readonly`, `required`)
-    shape how the column appears in the built-in add/edit dialog.
-    """
-
-    key: str
-    """Record field this column reads and writes."""
-    text: str
-    """Header label. Defaults to `key`."""
-    width: int
-    """Column width in pixels."""
-    minwidth: int
-    """Minimum column width in pixels."""
-    anchor: str
-    """Cell alignment — `'w'`, `'center'`, or `'e'`."""
-    format: "str | Callable[[Any], str]"
-    """Display formatter for the cell — a format-spec string applied as
-    `spec.format(value)` (e.g. `'${:,.0f}'` → `$70,000`) or a callable
-    `(value) -> str`. Display only: sorting, filtering, editing, and export use
-    the raw value."""
-    dtype: str
-    """Value type hint (e.g. `'int'`, `'text'`); drives alignment and the editor."""
-    editor: str
-    """Field type used in the add/edit dialog (e.g. `'text'`, `'number'`, `'select'`)."""
-    editor_options: dict
-    """Keyword options passed to the editor field."""
-    readonly: bool
-    """Show the column but make it non-editable in the dialog."""
-    required: bool
-    """Require a value in the add/edit dialog."""
-
-
-class FormOptions(TypedDict, total=False):
-    """Layout options for the built-in add/edit dialog (`DataTable(form=...)`)."""
-
-    col_count: int
-    """Number of columns the form fields are laid out in. Default `2`."""
-    min_col_width: int
-    """Minimum width in pixels of each form column. Default `260`."""
-    scrollable: bool
-    """Scroll the form when it is taller than the dialog. Default `True`."""
-    resizable: bool
-    """Allow the dialog to be resized. Default `True`."""
+from bootstack.widgets.types import ColumnSpec, FormOptions, WidgetDensity
 
 
 class ExportJob(Protocol):

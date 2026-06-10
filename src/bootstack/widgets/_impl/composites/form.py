@@ -26,26 +26,13 @@ from bootstack.widgets._impl.composites.selectbox import SelectBox
 from bootstack.widgets._impl.primitives.spinbox import Spinbox
 from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack.widgets._impl.mixins.validation_mixin import ValidationMixin
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import EditorType, Master
 
 if TYPE_CHECKING:
     from bootstack.dialogs._impl.dialog import DialogButton
     ButtonInput = str | Mapping[str, Any] | DialogButton
 
 DType = Literal['int', 'float', 'bool', 'date', 'datetime', 'password', 'str'] | type | None
-
-EditorType = Literal[
-    'textfield',
-    'numberfield',
-    'passwordfield',
-    'datefield',
-    'textarea',
-    'select',
-    'spinnerfield',
-    'switch',
-    'checkbox',
-    'slider',
-]
 
 
 @dataclass
@@ -985,5 +972,4 @@ __all__ = [
     "GroupItem",
     "TabsItem",
     "TabItem",
-    "EditorType",
 ]

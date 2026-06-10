@@ -98,6 +98,27 @@ Checkboxes, switches, radio and toggle groups, dropdowns, and the calendar.
    ToggleButton
    ToggleGroup
 
+Data Display
+------------
+
+Read-only views of values and records — text and badges, progress and gauges,
+and the list, table, and tree views for collections. ``ListView``, ``DataTable``,
+and ``Tree`` bind to a ``data_source=``; ``Tree`` exposes its rows as ``TreeNode``
+handles.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   Badge
+   DataTable
+   Gauge
+   Label
+   ListView
+   ProgressBar
+   Tree
+   TreeNode
+
 Theme
 -----
 

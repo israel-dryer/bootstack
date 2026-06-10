@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence, overload
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
 from bootstack.widgets._impl.composites.form import Form as _InternalForm
 from bootstack.widgets._impl.composites.form import (
-    FormItem, FieldItem, GroupItem, TabsItem, TabItem, EditorType,
+    FormItem, FieldItem, GroupItem, TabsItem, TabItem,
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events

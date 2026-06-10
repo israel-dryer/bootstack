@@ -46,7 +46,7 @@ _EXPORTS: dict[str, str] = {
     "Tooltip": "tooltip", "Toast": "toast", "toast": "toast",
     # Forms
     "Form": "form", "FormItem": "form", "FieldItem": "form", "GroupItem": "form",
-    "TabsItem": "form", "TabItem": "form", "EditorType": "form",
+    "TabsItem": "form", "TabItem": "form",
     # Extension base classes (for building custom public widgets)
     "PublicWidgetBase": "_core.base", "PublicContainer": "_core.container",
     # Dialogs

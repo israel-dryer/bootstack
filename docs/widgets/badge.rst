@@ -82,9 +82,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.label.Badge
-   :members:
-   :undoc-members:
+The complete reference for :class:`Badge <bootstack.Badge>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Badge
 
 Full Example
 ------------

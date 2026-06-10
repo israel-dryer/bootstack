@@ -53,7 +53,6 @@ EXPECTED_TOPLEVEL = {
     "Tooltip", "Toast", "toast",
     # forms
     "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
-    "EditorType",
 }
 
 # Primitives that must live in a submodule and NOT at the top level.
@@ -82,6 +81,7 @@ MOVED = {
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
         "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
+        "ColumnSpec", "EditorType", "FormOptions",
     ],
     # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
     # stays importable here for power users. See project_editfilter_public_api.

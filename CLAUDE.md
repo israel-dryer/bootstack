@@ -185,11 +185,15 @@ memories and git history.
   - Set **`default_role = "code"`** (single backticks → inline code, colon-safe) +
     converted the 6 Selection widgets' docstrings double→single — de-risks the
     framework-wide `project_docstring_backticks` sweep (now safe everywhere).
-  **NEXT: Batch 3 — Data Display** (Label, Badge, ProgressBar, Gauge, ListView,
-  DataTable, Tree + TreeNode). This batch MUST also move **`ColumnSpec` + `EditorType`
-  → `bootstack.types`** (relocate their defs to `widgets/types.py` to avoid circular
-  imports — see the re-export inventory in the brief) and complete the `on_*` payload
-  audit for ListView/DataTable/Tree. Then **Batch 4** Layout + Navigation; **Batch 5**
+  **✅ Batch 3 — Data Display DONE** (uncommitted on the branch): homed Label/Badge/
+  ProgressBar/Gauge/ListView/DataTable/Tree/TreeNode (Data Display section on
+  `bootstack.rst`, alphabetical); 7 guides converted bottom-`autoclass`→table-only API
+  section; **`ColumnSpec`/`EditorType`/`FormOptions` defs relocated to `widgets/types.py`
+  + re-exported from `bootstack.types`** (`EditorType` dropped from top-level `__all__`,
+  the only one there). `ExportJob` kept local in `datatable.py` (return-handle Protocol,
+  prose-only in guide — maintainer call 2026-06-09). `on_*` payloads were already typed
+  in the typing sweep (`a6d6d496`) — audit confirmed clean. **NEXT: Batch 4** Layout +
+  Navigation; **Batch 5**
   Menus/Overlays/Forms; **Batch 6** Dialogs (give `bootstack.dialogs` an `__all__` +
   page; home `FontChoice`/`FormDialog`/`Dialog`/`DialogButton`/`ColorChooserDialog`/
   `ColorChoice`/`FontDialog`/`FilterDialog`); **Stage 5** nav re-cut to 5 +

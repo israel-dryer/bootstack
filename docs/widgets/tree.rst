@@ -256,13 +256,15 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.tree.Tree
-   :members:
-   :undoc-members:
+The complete reference for :class:`Tree <bootstack.Tree>` and its
+:class:`TreeNode <bootstack.TreeNode>` row handles lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
 
-.. autoclass:: bootstack.widgets.tree.TreeNode
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Tree
+   ~bootstack.TreeNode
 
 Full Example
 ------------

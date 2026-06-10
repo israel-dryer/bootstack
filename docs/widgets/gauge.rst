@@ -159,9 +159,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.gauge.Gauge
-   :members:
-   :undoc-members:
+The complete reference for :class:`Gauge <bootstack.Gauge>` lives on the
+:doc:`bootstack </api-reference/bootstack>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Gauge
 
 Full Example
 ------------
