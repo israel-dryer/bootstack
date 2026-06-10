@@ -34,8 +34,8 @@ SQLite-backed data
 ------------------
 
 ``SqliteDataSource`` keeps rows in an SQLite database (in-memory by default, or
-a file path). It is the default source a :class:`DataTable
-<bootstack.widgets.datatable.DataTable>` builds when you pass ``rows=`` — or
+a file path). It is the default source a :class:`~bootstack.DataTable`
+builds when you pass ``rows=`` — or
 supply your own to back the table with a database file:
 
 .. code-block:: python
@@ -62,7 +62,7 @@ sorting, and CRUD are all fast SQL. Configure parsing and transforms with a
 The original file is **read-only input** — edits live in the working store and
 are never written back. To save changes, export to a new file
 (:meth:`export_csv <bootstack.data.SqliteDataSource.export_csv>` or the
-:class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu);
+:class:`~bootstack.DataTable` export menu);
 ``reload()`` re-ingests from the file.
 
 The working store is, by choice:
@@ -285,7 +285,7 @@ Reading and writing go through symmetric registries, so ``read_records`` and
    def write_gzipped_jsonl(path, records, config=None):
        ...
 
-The :class:`DataTable <bootstack.widgets.datatable.DataTable>` export menu is
+The :class:`~bootstack.DataTable` export menu is
 built on these same writers — see its ``export_formats`` option.
 
 Writing your own source
