@@ -101,6 +101,31 @@ the `'-dense'` variants backfill gaps; `'none'` disables auto-placement."""
 BorderMode = Literal['inside', 'outside']
 """Border mode for the place geometry manager."""
 
+ButtonVariant = Literal['default', 'solid', 'outline', 'ghost']
+"""Style variant shared by the button family (Button, ButtonGroup, MenuButton,
+SelectButton, ToggleButton, ToggleGroup, Toolbar) — `'default'`, `'solid'`,
+`'outline'`, or `'ghost'`."""
+
+AccordionVariant = Literal['solid', 'default']
+"""Accordion header style — `'solid'`, or `'default'` for a ghost/transparent header."""
+
+Region = Literal['before', 'center', 'after']
+"""Placement region within a menu bar — `'before'`, `'center'`, or `'after'`."""
+
+IconPosition = Literal['left', 'right', 'top', 'bottom']
+"""Position of an icon relative to a widget's text — `'left'`, `'right'`,
+`'top'`, or `'bottom'`."""
+
+SelectionMode = Literal['none', 'single', 'multi']
+"""How many rows/items can be selected — `'none'`, `'single'`, or `'multi'`."""
+
+ExportScope = Literal['all', 'page', 'selection']
+"""Which rows an export covers — `'all'` rows, the current `'page'`, or the
+current `'selection'`."""
+
+ExportFormat = Literal['csv', 'tsv', 'xlsx']
+"""A tabular export format — `'csv'`, `'tsv'`, or `'xlsx'`."""
+
 # ---------------------------------------------------------------------------
 # Base TypedDicts
 # ---------------------------------------------------------------------------
@@ -167,8 +192,9 @@ class ColumnSpec(TypedDict, total=False):
     the raw value."""
     dtype: str
     """Value type hint (e.g. `'int'`, `'text'`); drives alignment and the editor."""
-    editor: str
-    """Field type used in the add/edit dialog (e.g. `'text'`, `'number'`, `'select'`)."""
+    editor: EditorType
+    """Field type used to edit this column in the add/edit dialog. Inferred from
+    `dtype` when omitted."""
     editor_options: dict
     """Keyword options passed to the editor field."""
     readonly: bool

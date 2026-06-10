@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, overload
+from typing import Any, Callable, overload
 
 from bootstack.widgets._impl.composites.buttongroup import ButtonGroup as _InternalButtonGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import ButtonGroupClickEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, Orient, IconPosition, ButtonVariant
 
 _BUTTONGROUP_EVENTS: dict[str, str] = {
     "click": "<<BsButtonGroupClick>>",
@@ -36,10 +36,10 @@ class ButtonGroup(PublicWidgetBase):
 
     def __init__(
         self,
-        orient: Literal["horizontal", "vertical"] = "horizontal",
+        orient: Orient = "horizontal",
         *,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "outline", "ghost"] = "solid",
+        variant: ButtonVariant = "default",
         density: WidgetDensity = "default",
         disabled: bool = False,
         parent: Any = None,
@@ -71,7 +71,7 @@ class ButtonGroup(PublicWidgetBase):
         *,
         key: str | None = None,
         icon: str | None = None,
-        icon_position: Literal["left", "right", "top", "bottom"] = "left",
+        icon_position: IconPosition = "left",
         disabled: bool = False,
         **kwargs: Any,
     ) -> str:

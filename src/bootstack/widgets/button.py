@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING, overload
+from typing import Any, Callable, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.primitives.button import Button as _InternalButton
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -54,10 +54,10 @@ class Button(PublicWidgetBase):
         *,
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "outline", "ghost"] | None = None,
+        variant: ButtonVariant = "default",
         icon: str | None = None,
         icon_only: bool = False,
-        icon_position: Literal["left", "right", "top", "bottom"] = "left",
+        icon_position: IconPosition = "left",
         image: Any = None,
         width: int | None = None,
         textsignal: "Signal[str] | None" = None,

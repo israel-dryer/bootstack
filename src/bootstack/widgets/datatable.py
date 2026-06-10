@@ -10,7 +10,9 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, S
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets.types import ColumnSpec, FormOptions, WidgetDensity
+from bootstack.widgets.types import (
+    ColumnSpec, FormOptions, WidgetDensity, ExportScope, ExportFormat, SelectionMode,
+)
 
 
 class ExportJob(Protocol):
@@ -94,7 +96,7 @@ class DataTable(PublicWidgetBase):
         columns: list[str | ColumnSpec] | None = None,
         rows: list | None = None,
         data_source: DataSourceProtocol | None = None,
-        selection_mode: Literal["none", "single", "multi"] = "single",
+        selection_mode: SelectionMode = "single",
         sorting_mode: Literal["single", "none"] = "single",
         searchable: bool = True,
         allow_filter: bool = True,
@@ -295,7 +297,7 @@ class DataTable(PublicWidgetBase):
 
     # ----- Export -----
 
-    def to_rows(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = 100_000) -> list[dict]:
+    def to_rows(self, scope: ExportScope = "all", *, max_rows: int | None = 100_000) -> list[dict]:
         """Return the data as a list of record dicts (materialized — small data).
 
         Loads every matching row into memory. For large datasets use
@@ -309,7 +311,7 @@ class DataTable(PublicWidgetBase):
         """
         return self._internal.to_rows(scope, max_rows=max_rows)
 
-    def to_csv(self, scope: Literal["all", "page", "selection"] = "all", *, max_rows: int | None = 100_000) -> str:
+    def to_csv(self, scope: ExportScope = "all", *, max_rows: int | None = 100_000) -> str:
         """Return the data as a CSV string (materialized — small data).
 
         For large datasets use `export_file()`, which streams to disk.
@@ -320,7 +322,7 @@ class DataTable(PublicWidgetBase):
         """
         return self._internal.to_csv(scope, max_rows=max_rows)
 
-    def iter_rows(self, scope: Literal["all", "page", "selection"] = "all", chunk_size: int = 1000):
+    def iter_rows(self, scope: ExportScope = "all", chunk_size: int = 1000):
         """Lazily yield record dicts one at a time, paging the data source.
 
         Memory stays flat regardless of size — suitable for very large exports.
@@ -334,9 +336,9 @@ class DataTable(PublicWidgetBase):
     def export_file(
         self,
         path: str,
-        scope: Literal["all", "page", "selection"] = "all",
+        scope: ExportScope = "all",
         *,
-        format: Literal["csv", "tsv", "xlsx"] | None = None,
+        format: ExportFormat | None = None,
         chunk_size: int = 1000,
         on_progress: Callable[[int, int], Any] | None = None,
     ) -> int:
@@ -362,9 +364,9 @@ class DataTable(PublicWidgetBase):
     def export_file_async(
         self,
         path: str,
-        scope: Literal["all", "page", "selection"] = "all",
+        scope: ExportScope = "all",
         *,
-        format: Literal["csv", "tsv", "xlsx"] | None = None,
+        format: ExportFormat | None = None,
         chunk_size: int = 1000,
         on_progress: Callable[[int, int], Any] | None = None,
         on_done: Callable[[str, int, Any], Any] | None = None,

@@ -24,6 +24,8 @@ __all__ = [
     # dialog classes
     "Dialog", "DialogButton", "FormDialog", "FilterDialog",
     "ColorChooserDialog", "ColorChoice", "FontDialog", "FontChoice",
+    # type aliases
+    "SeverityToken",
 ]
 
 

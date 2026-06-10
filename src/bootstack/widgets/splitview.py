@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter
-from typing import Any, Literal
+from typing import Any
 
 from bootstack.widgets._impl.primitives.panedwindow import PanedWindow as _InternalPanedWindow
 from bootstack.widgets._impl.primitives.frame import Frame as _InternalFrame
@@ -12,6 +12,7 @@ from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fi
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets.types import (
     AccentToken, SurfaceToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
+    Orient,
 )
 
 
@@ -162,7 +163,7 @@ class SplitView(PublicWidgetBase):
 
     def __init__(
         self,
-        orient: Literal["horizontal", "vertical"] = "horizontal",
+        orient: Orient = "horizontal",
         *,
         padding: Padding | None = None,
         accent: AccentToken | str | None = None,

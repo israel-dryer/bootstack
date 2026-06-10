@@ -1,5 +1,4 @@
 import importlib.metadata
-import re
 
 # ---------------------------------------------------------------------------
 # Project
@@ -21,7 +20,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosummary",
-    "sphinx_autodoc_typehints",
     "sphinx_design",
     "sphinx_copybutton",
 ]
@@ -38,6 +36,9 @@ autodoc_typehints_format    = "short"
 # once (in the members list), instead of also getting a redundant, description-
 # less "Parameters" block synthesized from the generated __init__ signature.
 autodoc_typehints_description_target = "documented"
+# Render type references with their short (unqualified) name while keeping the
+# link — so resolved aliases show `IconPosition`, not `bootstack.types.IconPosition`.
+python_use_unqualified_type_names = True
 autodoc_default_options     = {
     "members":          True,
     "undoc-members":    False,
@@ -69,19 +70,64 @@ napoleon_use_rtype              = False
 napoleon_attr_annotations       = True
 
 # ---------------------------------------------------------------------------
-# Type hints
+# Type hints / aliases
 # ---------------------------------------------------------------------------
+# Typehints render via CORE autodoc (NOT `sphinx_autodoc_typehints`): core
+# autodoc honors `autodoc_type_aliases` and emits each alias as a cross-reference
+# to its `.. py:type::` target, where `sphinx_autodoc_typehints` printed it as
+# inert text. PEP 604 unions (`A | B`) render natively from the source form.
+#
+# Exported public type aliases therefore render as their NAME (not the expanded
+# `Literal[...]`/union), linked to the API-reference page that documents them —
+# where the allowed values live. This keeps widget signatures concise and the
+# token vocabulary discoverable/importable.
+#
+# CONTRACT: every name here MUST have a `.. py:type::` target on a public page,
+# or the nitpicky (`-n`) build fails on the dangling xref — which keeps this map
+# and the alias docs in sync. Only EXPORTED aliases (in a public `__all__`) are
+# listed; non-exported internal aliases (e.g. `AccordionVariant`, `Region`)
+# deliberately keep expanding inline, since they are not part of the importable
+# public vocabulary.
+autodoc_type_aliases = {
+    # Map each alias to its FULLY-QUALIFIED name so autodoc emits a cross-ref to
+    # the `.. py:type::` target; `autodoc_typehints_format = "short"` then renders
+    # just the short name as the link text.
+    **{n: f"bootstack.types.{n}" for n in (
+        "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
+        "WidgetDensity", "WidgetState", "Anchor", "Side", "Fill", "Sticky",
+        "LayoutKind", "AutoFlow", "Padding", "Orient", "Justify", "Direction",
+        "Relief", "CompoundMode", "BorderMode", "EditorType",
+        "AccordionVariant", "Region", "ButtonVariant", "IconPosition",
+        "SelectionMode", "ExportScope", "ExportFormat",
+    )},
+    **{n: f"bootstack.events.{n}" for n in (
+        "ChangeReason", "ChangeMethod", "ChangeKind",
+    )},
+    "RuleType": "bootstack.validation.RuleType",
+    "ThemeMode": "bootstack.style.ThemeMode",
+    "SeverityToken": "bootstack.dialogs.SeverityToken",
+    **{n: f"bootstack.data.{n}" for n in ("Record", "Primitive")},
+}
 
-typehints_fully_qualified       = False
-always_document_param_types     = False
-typehints_document_rtype        = True
-always_use_bars_union           = True   # render `A | B`, not `Union[A, B]`
+# Sphinx 9.1: `autodoc_type_aliases` substitutes each alias with a
+# `TypeAliasForwardRef(fqn)` object. Sphinx only unwraps it to a clean reference
+# when it is the WHOLE annotation; nested inside a union (`X | None`) it instead
+# leaks its repr (`TypeAliasForwardRef('bootstack.types.X')`) into the rendered
+# type. Give each instance a `__module__`/`__qualname__` derived from its name so
+# the stringify/restify machinery renders it as an ordinary class reference —
+# which links to the alias's `.. py:type::` target — wherever it appears.
+from sphinx.util.inspect import TypeAliasForwardRef as _TypeAliasForwardRef
+if not getattr(_TypeAliasForwardRef, "_bs_patched", False):
+    _bs_orig_taref_init = _TypeAliasForwardRef.__init__
 
-# NOTE: deliberately NO `autodoc_type_aliases`. Named aliases (`AccentToken`,
-# `RuleType`, `Padding`, …) are expanded to their underlying `Literal[...]`/union
-# in rendered signatures ON PURPOSE — a Literal is self-documenting, so the type
-# shows the allowed values and the docstring does NOT re-enumerate them. The
-# aliases exist for source DRY/annotation, not to hide the values in the docs.
+    def _bs_taref_init(self, name):
+        _bs_orig_taref_init(self, name)
+        module, _, qualname = name.rpartition(".")
+        self.__module__ = module or "builtins"
+        self.__qualname__ = qualname or name
+
+    _TypeAliasForwardRef.__init__ = _bs_taref_init
+    _TypeAliasForwardRef._bs_patched = True
 
 # ---------------------------------------------------------------------------
 # Intersphinx
@@ -152,38 +198,3 @@ exclude_patterns = ["_build", "_dev", "Thumbs.db", ".DS_Store"]
 autodoc_mock_imports = [
     "pywinstyles",
 ]
-
-# ---------------------------------------------------------------------------
-# Drop the injected "Overloads:" field
-# ---------------------------------------------------------------------------
-# `sphinx_autodoc_typehints` injects an "Overloads:" field for @overload-ed
-# methods whose types render as UNLINKED plain text. Our `on_*` shorthands
-# instead document the call forms in Args/Returns with cross-linked event
-# payloads (`:class:` roles), so the Overloads block just restates the same
-# thing unlinked. Strip it. The @overload defs stay in the source — they are
-# for type-checkers/IDEs, not the docs.
-
-_OVERLOADS_FIELD = re.compile(r"^:Overloads:", re.IGNORECASE)
-
-
-def _drop_overloads_field(app, what, name, obj, options, lines):
-    cleaned = []
-    skipping = False
-    for line in lines:
-        if _OVERLOADS_FIELD.match(line):
-            skipping = True
-            continue
-        if skipping:
-            # Continuation of the field = blank or indented lines; the first
-            # flush, non-blank line (the summary or the next field) ends it.
-            if line == "" or line[:1].isspace():
-                continue
-            skipping = False
-        cleaned.append(line)
-    if len(cleaned) != len(lines):
-        lines[:] = cleaned
-
-
-def setup(app):
-    # priority > 500 so this runs AFTER sphinx_autodoc_typehints injects the field.
-    app.connect("autodoc-process-docstring", _drop_overloads_field, priority=1000)

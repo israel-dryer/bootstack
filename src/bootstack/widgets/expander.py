@@ -17,11 +17,8 @@ from bootstack.events import AccordionChangeEvent, Subscription, ToggleEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     Event, AccentToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
+    AccordionVariant,
 )
-
-# Accordion/Expander headers register only the `'solid'` and `'default'` builders
-# (`style/builders/expander.py`); the default reads as a ghost/transparent header.
-AccordionVariant = Literal['solid', 'default']
 
 _EXPANDER_EVENTS: dict[str, str] = {
     "expand":   "<<Toggle>>",

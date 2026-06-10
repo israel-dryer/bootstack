@@ -126,9 +126,16 @@ Enumerations
 
 The string-literal tags carried by the change and data-change payloads.
 
-.. autosummary::
-   :toctree: generated
+.. py:type:: ChangeKind
 
-   ChangeReason
-   ChangeMethod
-   ChangeKind
+   What a data-source change describes — `'load'`, `'insert'`, `'update'`,
+   `'delete'`, `'move'`, `'filter'`, `'sort'`, `'reload'`, `'select'`.
+
+.. py:type:: ChangeMethod
+
+   How a change was made — `'click'`, `'key'`, `'programmatic'`, `'unknown'`.
+
+.. py:type:: ChangeReason
+
+   Why a change event fired — `'user'`, `'api'`, `'hide'`, `'forget'`,
+   `'unknown'`.

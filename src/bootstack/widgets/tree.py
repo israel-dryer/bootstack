@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Iterator, Literal, TYPE_CHECKING, overload
+from typing import Any, Callable, Iterator, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.composites.tree.treeview import TreeView as _InternalTreeView
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
@@ -8,7 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, TreeSelectionEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, WidgetDensity, SelectionMode
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -102,7 +102,7 @@ class Tree(PublicWidgetBase):
         icon_field: str | None = None,
         node_builder: Callable[[dict], dict] | None = None,
         order: str | Column | SortKey | Sequence[str | Column | SortKey] | None = None,
-        selection_mode: Literal["none", "single", "multi"] = "single",
+        selection_mode: SelectionMode = "single",
         show_selection_controls: bool = False,
         select_on_click: bool = True,
         indent: int = 16,

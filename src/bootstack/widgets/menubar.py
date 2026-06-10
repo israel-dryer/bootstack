@@ -4,9 +4,7 @@ from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.menubar import MenuBar as _InternalMenuBar
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken
-
-Region = Literal["before", "center", "after"]
+from bootstack.widgets.types import AccentToken, Region
 
 
 class MenuBar(PublicWidgetBase):

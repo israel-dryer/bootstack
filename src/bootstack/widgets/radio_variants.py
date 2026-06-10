@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import overload, Any, Callable, Literal, TYPE_CHECKING
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
@@ -8,7 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, IconPosition
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -37,7 +37,7 @@ class _RadioBase(PublicWidgetBase):
         unselected_icon: str | None = None,
         icon_only: bool = False,
         show_indicator: bool = True,
-        icon_position: Literal["left", "right", "top", "bottom"] | None = None,
+        icon_position: IconPosition | None = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
         _internal_options: dict[str, Any] | None = None,

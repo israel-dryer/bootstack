@@ -23,8 +23,7 @@ Rule types
 The rule names accepted by ``ValidationRule`` and a field's
 ``add_validation_rule``.
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
+.. py:type:: RuleType
 
-   RuleType
+   A built-in validation rule name — `'required'`, `'email'`, `'pattern'`,
+   `'stringLength'`, `'custom'`, `'compare'`.

@@ -10,7 +10,7 @@ from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     AccentToken, VariantToken, SurfaceToken,
-    Anchor, Justify, Relief, CompoundMode, Padding,
+    Anchor, Justify, Relief, CompoundMode, Padding, IconPosition,
 )
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ class Label(PublicWidgetBase):
         image: Any = None,
         icon: str | None = None,
         icon_only: bool = False,
-        icon_position: Literal["left", "right", "top", "bottom"] = "left",
+        icon_position: IconPosition = "left",
         anchor: Anchor | None = None,
         justify: Justify | None = None,
         padding: Padding | None = None,

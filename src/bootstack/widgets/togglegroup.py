@@ -8,7 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, Orient
+from bootstack.widgets.types import AccentToken, Event, Orient, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -61,7 +61,7 @@ class ToggleGroup(PublicWidgetBase):
         value: Any = None,
         orient: Orient = "horizontal",
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "outline", "ghost", "default"] | None = None,
+        variant: ButtonVariant = "default",
         disabled: bool = False,
         parent: Any = None,
         **kwargs: Any,

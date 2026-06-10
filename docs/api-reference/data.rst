@@ -81,8 +81,10 @@ Type aliases
 
 The record and cell types shared across the module.
 
-.. autosummary::
-   :toctree: generated
+.. py:type:: Primitive
 
-   Record
-   Primitive
+   A single scalar cell value — `str | int | float | bool | None`.
+
+.. py:type:: Record
+
+   One data row, keyed by field name — `dict[str, Any]`.

@@ -1,13 +1,13 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING, overload
+from typing import Any, Callable, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.composites.list.listview import ListView as _InternalListView
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, SelectionMode
 
 if TYPE_CHECKING:
     from bootstack.data.types import DataSourceProtocol
@@ -61,7 +61,7 @@ class ListView(PublicWidgetBase):
         *,
         items: list[dict] | None = None,
         data_source: DataSourceProtocol | None = None,
-        selection_mode: Literal["none", "single", "multi"] = "none",
+        selection_mode: SelectionMode = "none",
         show_selection_controls: bool = False,
         show_chevron: bool = False,
         allow_remove: bool = False,

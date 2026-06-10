@@ -52,3 +52,13 @@ color and font dialogs.
    bootstack.dialogs.FontChoice
    bootstack.dialogs.FontDialog
    bootstack.dialogs.FormDialog
+
+Type aliases
+------------
+
+.. currentmodule:: bootstack.dialogs
+
+.. py:type:: SeverityToken
+
+   Severity level for an alert or toast — `'info'`, `'warning'`, `'danger'`,
+   `'success'`.

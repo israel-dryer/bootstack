@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import Any, Callable
 
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken
+from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
 
 
 class Toolbar(PublicWidgetBase):
@@ -42,7 +42,7 @@ class Toolbar(PublicWidgetBase):
     def __init__(
         self,
         *,
-        button_variant: Literal["solid", "default", "outline", "ghost"] = "ghost",
+        button_variant: ButtonVariant = "ghost",
         density: WidgetDensity = "default",
         surface: SurfaceToken | str | None = None,
         padding: int | tuple[int, int] | None = None,
@@ -93,7 +93,7 @@ class Toolbar(PublicWidgetBase):
         icon: str | None = None,
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "default", "outline", "ghost"] | None = None,
+        variant: ButtonVariant = "default",
         **kwargs: Any,
     ) -> None:
         """Add a button to the toolbar.

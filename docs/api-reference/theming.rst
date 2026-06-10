@@ -49,3 +49,12 @@ Inspect and adjust the application fonts at runtime.
    bootstack.style.get_font_families
    bootstack.style.set_font_family
    bootstack.style.update_font_token
+
+Type aliases
+------------
+
+.. currentmodule:: bootstack.style
+
+.. py:type:: ThemeMode
+
+   Theme appearance mode — `'light'` or `'dark'`.

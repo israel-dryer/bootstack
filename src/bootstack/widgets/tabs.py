@@ -15,6 +15,7 @@ from bootstack.events import Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     Event, AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+    Orient,
 )
 
 _TABS_EVENTS: dict[str, str] = {
@@ -177,7 +178,7 @@ class Tabs(PublicWidgetBase):
     def __init__(
         self,
         *,
-        orient: Literal["horizontal", "vertical"] = "horizontal",
+        orient: Orient = "horizontal",
         show_divider: bool | None = None,
         tab_width: int | Literal["stretch"] | None = None,
         allow_close: bool | Literal["hover"] = False,

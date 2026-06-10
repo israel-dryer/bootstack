@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import overload, Any, Callable, Literal, TYPE_CHECKING
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -51,7 +51,7 @@ class SelectButton(PublicWidgetBase):
         signal: "Signal[str] | None" = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
-        variant: Literal["solid", "outline", "ghost", "default"] | None = None,
+        variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
         icon: str | None = None,
         parent: Any = None,

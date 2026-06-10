@@ -17,7 +17,7 @@ from bootstack.style.style import (
     set_theme,
     toggle_theme,
 )
-from bootstack.style.theme import Theme
+from bootstack.style.theme import Theme, ThemeMode
 from bootstack.style.fonts import (
     get_font_families,
     set_font_family,
@@ -26,6 +26,7 @@ from bootstack.style.fonts import (
 
 __all__ = [
     "Theme",
+    "ThemeMode",
     "get_theme",
     "get_theme_color",
     "get_themes",

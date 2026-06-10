@@ -21,6 +21,27 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Linked type aliases + widget-API consistency** (branch `feat/typed-alias-links`,
+  NOT merged) — public type aliases now render as their short NAME, **linked** to a
+  `.. py:type::` entry on the API-ref page, framework-wide (was: inline-expanded
+  Literals, or empty `autosummary` summaries). The recipe, after a long debugging arc:
+  (1) **source consistency** — promote recurring inline Literals to named aliases
+  (`Orient` reused; new `IconPosition`/`SelectionMode`/`ExportScope`/`ExportFormat`;
+  `ButtonVariant` for the whole button family — which fixed Button/ButtonGroup *missing*
+  `'default'`); export `AccordionVariant`/`Region`/`ThemeMode`/`SeverityToken`. (2)
+  **conf.py** — DROP `sphinx_autodoc_typehints` (it printed alias values as inert text,
+  blocking linking) → core autodoc; `autodoc_type_aliases` maps each alias to its FQN;
+  `python_use_unqualified_type_names = True` (short display, keeps link); and a 4-line
+  `TypeAliasForwardRef.__init__` patch giving it `__module__`/`__qualname__` (Sphinx
+  9.1 leaked its `repr` when the alias was nested in a union — this was the one real
+  Sphinx gap). 6 API-ref pages converted to `py:type` catalogs. Verify: `-W` clean +
+  `python_use_unqualified_type_names` keeps names short + grep built pages for
+  `TypeAliasForwardRef` (must be 0). Memory `project_enum_option_typing`.
+  Widget-API fixes bundled in: MenuButton/ContextMenu `command` Tk-leak (item dicts now
+  take clean `on_click`, translated); MenuButton/ToggleButton button text `label`→`text`
+  (controls keep `label`); `ColumnSpec.editor` `str`→`EditorType`; ContextMenu
+  completeness pass (+7 positioning/sizing params, +4 item methods). DEFERRED: rename the
+  menu item *type* `'command'`→`'action'` (Tk-ism, but a deliberate public name).
 - **Unified data bag** (PR #92) — undisplayed/non-scalar fields carried across
   Tree/DataTable/ListView; SQLite hides non-scalars in a `_bs_data` JSON column;
   `bs.SerializationError` on non-JSON values. Memory `project_data_bag`.
@@ -114,9 +135,11 @@ memories and git history.
     `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
     SplitPane/StackPage/TabPage), a public `on_destroy` lifecycle hook, and retiring the
     now-unused `VariantToken`.
-  - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
-    (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
-    STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
+  - **Conventions (full in brief):** public type aliases render as their short NAME,
+    LINKED to a `.. py:type::` entry (the linked-alias docs work — see "Linked type
+    aliases" below; this REVERSES the old "literals expand inline" rule). NO
+    `_drop_overloads_field` hook and NO `sphinx_autodoc_typehints` anymore (core
+    autodoc renders overloads natively). Under-typed `Any`/`str` →
     real types; per-widget `variant` Literals **sourced from `style/builders/`** (NOT
     docstrings — they under-report, e.g. MenuButton/Toolbar have a `'default'` variant);
     `accent`/`surface` = `Token | str | None`; `padding` → `Padding`; closed sets →
