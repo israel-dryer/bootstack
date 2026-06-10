@@ -108,6 +108,12 @@ html[data-theme="dark"] .bd-content img.bs-window-screenshot {
 /* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
 .bs-dialog-screenshot {}
 
+/* Hidden autosummary block used only to generate stubs + drive an
+   alphabetical sidebar (see api-reference/widgets.rst). */
+.bs-hidden-summary {
+    display: none !important;
+}
+
 /* Full-window screenshots (App / Window / AppShell). The native OS border is
    cropped during capture, so draw a clean border in its place. Use the theme's
    own border token so the frame follows light/dark automatically; the 6px

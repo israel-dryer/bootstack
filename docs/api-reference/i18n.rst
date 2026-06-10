@@ -11,9 +11,6 @@ For a task-oriented introduction — message catalogs, locale-aware dates and
 numbers, switching locale at runtime — see the :doc:`/reference/localization`
 guide.
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
+.. autofunction:: L
 
-   L
-   LV
+.. autofunction:: LV

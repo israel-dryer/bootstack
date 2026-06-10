@@ -36,12 +36,15 @@ Set ``min_value`` and ``max_value`` to match your data's natural scale:
 
    bs.Gauge(value=750, min_value=0, max_value=1000, subtitle="Requests/s")
 
-Update the value at runtime via the ``value`` property:
+Update the value at runtime via the ``value`` property. ``min_value`` and
+``max_value`` are live properties too — assign to them to rescale the gauge as
+your data's range changes:
 
 .. code-block:: python
 
    gauge = bs.Gauge(value=0, max_value=100)
    gauge.value = 65
+   gauge.max_value = 2000     # rescale the arc
 
 Labels and formatting
 ~~~~~~~~~~~~~~~~~~~~~

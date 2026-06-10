@@ -50,12 +50,14 @@ Bounds and step
 
 Use ``min_value=``, ``max_value=``, and ``step=`` to constrain input.
 Arrow keys and the mouse wheel step by ``step``. Stepper buttons disable
-automatically at the bounds.
+automatically at the bounds. Set ``wrap=True`` to wrap from the maximum back to
+the minimum (and vice versa) when stepping past a bound.
 
 .. code-block:: python
 
    bs.NumberField(min_value=0,   max_value=100, step=5,   label="0–100, step 5")
    bs.NumberField(min_value=0.0, max_value=1.0, step=0.1, label="0.0–1.0, step 0.1")
+   bs.NumberField(min_value=1, max_value=12, value=12, wrap=True, label="Month (wraps)")
 
 Stepper buttons
 ~~~~~~~~~~~~~~~
@@ -85,6 +87,7 @@ Call ``increment()`` and ``decrement()`` to step the value in code.
    field = bs.NumberField(value=10, step=5)
    field.increment()    # → 15
    field.decrement(2)   # → 5
+   field.clear()        # empties the field — value becomes None, not 0
 
 Value formatting
 ~~~~~~~~~~~~~~~~

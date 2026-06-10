@@ -76,6 +76,15 @@ at the limits.
        max_date=date(2026, 5, 31),
    )
 
+``min_date`` and ``max_date`` are also live properties — assign to them to move
+the selectable window as availability changes (set either to ``None`` to clear
+that bound):
+
+.. code-block:: python
+
+   cal = bs.Calendar()
+   cal.min_date = date.today()        # no dates before today
+
 Disabled dates
 ~~~~~~~~~~~~~~
 
@@ -84,6 +93,13 @@ Individual dates can be disabled regardless of the min/max range.
 .. code-block:: python
 
    bs.Calendar(disabled_dates=[date(2026, 5, 4), date(2026, 5, 11)])
+
+``disabled_dates`` is a live property too — assign a new iterable to replace the
+disabled set at runtime (for example as booked dates load in):
+
+.. code-block:: python
+
+   cal.disabled_dates = booked_dates
 
 Week numbers
 ~~~~~~~~~~~~

@@ -53,6 +53,18 @@ for a numeric range. Only one mode should be used at a time.
    :class: bs-screenshot-dark
    :alt: SpinnerField modes — dark theme
 
+Value formatting
+~~~~~~~~~~~~~~~~
+
+In numeric mode, ``value_format=`` displays the value with a locale-aware ICU
+pattern — the raw number is preserved internally; only the display changes.
+Requires localization to be enabled.
+
+.. code-block:: python
+
+   bs.SpinnerField(label="Price", value=10, min_value=0, max_value=100,
+                   value_format="currency")
+
 Wrap around
 ~~~~~~~~~~~
 

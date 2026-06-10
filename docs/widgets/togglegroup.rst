@@ -153,7 +153,12 @@ Programmatic control
    group.value = {"A", "C"}    # multi mode — set by set
    group.disabled = True       # lock the group
 
-   group.add("D")              # add option at runtime
+   group.add("D")              # add an option at runtime
+   group.remove("B")           # remove one
+   group.configure_item("C", label="Charlie", disabled=True)  # relabel / disable one
+
+   "D" in group                # membership test, by value
+   len(group)                  # number of options
 
 Widget sizing
 ~~~~~~~~~~~~~

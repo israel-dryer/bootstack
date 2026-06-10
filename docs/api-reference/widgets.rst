@@ -15,7 +15,6 @@ Actions
 Buttons and button groups for triggering commands.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    Button
@@ -28,7 +27,6 @@ Text, number, path, date/time, and slider inputs. Most bind to a ``signal=`` /
 ``textsignal=`` and support validation ``rules=``.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    CodeEditor
@@ -50,7 +48,6 @@ Checkboxes, switches, radio and toggle groups, dropdowns, and the calendar.
 ``RadioGroup`` is built from ``Radio`` / ``RadioToggleButton`` items.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    Calendar
@@ -73,7 +70,6 @@ and ``Tree`` bind to a ``data_source=``; ``Tree`` exposes its rows as ``TreeNode
 handles.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    Badge
@@ -93,7 +89,6 @@ framed and collapsible groupings. ``Accordion`` exposes its sections as
 ``AccordionSection`` handles and ``SplitView`` its panes as ``SplitPane`` handles.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    Accordion
@@ -116,7 +111,6 @@ Multi-page containers — swap pages with ``PageStack``, tab between them with
 and item handles (``StackPage``, ``TabPage``, and the ``SideNav*`` items).
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    PageStack
@@ -136,7 +130,6 @@ Command surfaces — a window menu bar, a toolbar strip, a dropdown menu button,
 and a right-click context menu.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    ContextMenu
@@ -151,7 +144,6 @@ Overlays
 Transient, floating UI — hover tooltips and dismissible toast notifications.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    Toast
@@ -164,7 +156,6 @@ A declarative form builder and the item types that describe its layout — field
 groups, and tabbed sections.
 
 .. autosummary::
-   :toctree: generated
    :nosignatures:
 
    FieldItem
@@ -173,3 +164,80 @@ groups, and tabbed sections.
    GroupItem
    TabItem
    TabsItem
+
+..
+   Hidden, globally-alphabetical toctree. The grouped tables above are
+   display-only (no :toctree:); this single block generates every stub and
+   drives the sidebar nav as one sorted A–Z list, rather than the group order
+   the grouped blocks would otherwise produce.
+
+.. container:: bs-hidden-summary
+
+   .. autosummary::
+      :toctree: generated
+      :nosignatures:
+
+      Accordion
+      AccordionSection
+      Badge
+      Button
+      ButtonGroup
+      Calendar
+      Card
+      Checkbox
+      CodeEditor
+      ContextMenu
+      ContextMenuItem
+      DataTable
+      DateField
+      FieldItem
+      Form
+      FormItem
+      Gauge
+      Grid
+      GroupBox
+      GroupItem
+      HStack
+      Label
+      ListView
+      MenuBar
+      MenuButton
+      NumberField
+      PageStack
+      PasswordField
+      PathField
+      ProgressBar
+      Radio
+      RadioGroup
+      RadioToggleButton
+      RangeSlider
+      ScrollView
+      Select
+      SelectButton
+      Separator
+      SideNav
+      SideNavGroup
+      SideNavHeader
+      SideNavItem
+      SideNavSeparator
+      Slider
+      SpinnerField
+      SplitPane
+      SplitView
+      StackPage
+      Switch
+      TabItem
+      TabPage
+      Tabs
+      TabsItem
+      TextArea
+      TextField
+      TimeField
+      Toast
+      ToggleButton
+      ToggleGroup
+      Toolbar
+      Tooltip
+      Tree
+      TreeNode
+      VStack

@@ -127,8 +127,9 @@ Programmatic control
 
    btn = bs.SelectButton(["A", "B", "C"], value="A")
 
-   btn.value = "C"       # change selection
-   btn.disabled = True   # lock the button
+   btn.value = "C"                 # change selection
+   btn.disabled = True             # lock the button
+   btn.options = ["X", "Y", "Z"]   # replace the choice list (rebuilds the dropdown)
 
 Widget sizing
 ~~~~~~~~~~~~~
