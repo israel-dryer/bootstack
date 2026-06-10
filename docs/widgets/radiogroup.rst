@@ -69,7 +69,9 @@ Accent colors
 Title
 ~~~~~
 
-A ``title=`` adds a label rendered above the group.
+A ``title=`` adds a label rendered above the group. ``title`` is also a live
+property — assign to it to change the label later, or set it to ``None`` to
+remove it.
 
 .. code-block:: python
 
@@ -108,7 +110,10 @@ directly.
 Runtime options
 ~~~~~~~~~~~~~~~
 
-Add or remove options after construction.
+Add, remove, and reconfigure options after construction. ``configure_item()``
+updates a single option in place — relabel it, or enable/disable just that one.
+(Toggling the group-level ``disabled`` resets every option, so apply per-option
+states after it.)
 
 .. code-block:: python
 
@@ -116,6 +121,12 @@ Add or remove options after construction.
    group.add("C")                        # label and value both "C"
    group.add("Delta", value="d")         # separate label and value
    group.remove("A")
+
+   group.configure_item("d", label="Δ Delta")   # relabel one option
+   group.configure_item("C", disabled=True)      # disable just this option
+
+   "d" in group                          # membership test, by value
+   len(group)                            # number of options
 
 Disabled
 ~~~~~~~~
@@ -152,8 +163,9 @@ Programmatic control
 
    group = bs.RadioGroup(["A", "B", "C"], value="A")
 
-   group.value = "B"        # select programmatically
-   group.disabled = True    # lock the group
+   group.value = "B"             # select programmatically
+   group.disabled = True         # lock the group
+   group.title = "Choose one"    # update the label live
 
 Widget sizing
 ~~~~~~~~~~~~~

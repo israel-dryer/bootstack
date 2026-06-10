@@ -276,6 +276,23 @@ class Calendar(ttk.Frame):
             self._display_date = date(s.year, s.month, 1)
         self._refresh_calendar()
 
+    def set_min_date(self, value: date | datetime | str | None) -> None:
+        """Set the earliest selectable date and redraw. None clears the bound."""
+        self._min_date = self._coerce_date(value)
+        self._refresh_calendar()
+
+    def set_max_date(self, value: date | datetime | str | None) -> None:
+        """Set the latest selectable date and redraw. None clears the bound."""
+        self._max_date = self._coerce_date(value)
+        self._refresh_calendar()
+
+    def set_disabled_dates(self, dates: Iterable[date | datetime | str] | None) -> None:
+        """Replace the set of non-selectable dates and redraw."""
+        self._disabled_dates = {
+            d for d in (self._coerce_date(x) for x in (dates or [])) if d is not None
+        }
+        self._refresh_calendar()
+
     @property
     def range(self) -> tuple[date | None, date | None]:
         """The selected date range as (start, end).

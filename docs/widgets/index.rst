@@ -4,6 +4,14 @@ Widgets
 Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
+   :caption: Application
+   :maxdepth: 1
+
+   app
+   appshell
+   window
+
+.. toctree::
    :caption: Actions
    :maxdepth: 1
 
@@ -80,7 +88,6 @@ Every widget bootstack provides, grouped by purpose.
    pagestack
    tabs
    sidenav
-   appshell
 
 .. toctree::
    :caption: Overlays

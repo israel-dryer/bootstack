@@ -108,6 +108,15 @@ Selection
    bs.ListView(items=records, selection_mode="single")
    bs.ListView(items=records, selection_mode="multi", show_selection_controls=True)
 
+By default a click selects the row. Pass ``select_on_click=False`` to decouple
+the two — a click then activates the row (open it, say) without changing the
+selection, which the user drives separately via the checkboxes:
+
+.. code-block:: python
+
+   bs.ListView(items=records, selection_mode="multi",
+               show_selection_controls=True, select_on_click=False)
+
 Read the current selection via ``get_selected()``, which returns a list of
 the full record dicts:
 

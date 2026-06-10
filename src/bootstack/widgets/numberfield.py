@@ -49,6 +49,8 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         max_value: Maximum allowed value (inclusive). No upper bound if omitted.
         step: Amount added or subtracted per increment/decrement. Defaults to
             `1`.
+        wrap: If `True`, stepping past `max_value` wraps to `min_value` and
+            vice versa (requires both bounds set). Defaults to `False`.
         show_steppers: If `False`, hides the +/− stepper buttons. Defaults
             to `True`.
         required: If `True`, marks the field as required and prevents empty
@@ -84,6 +86,7 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         min_value: int | float | None = None,
         max_value: int | float | None = None,
         step: int | float = 1,
+        wrap: bool = False,
         show_steppers: bool = True,
         required: bool = False,
         read_only: bool = False,
@@ -105,6 +108,8 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
             "increment": step,
             "show_spin_buttons": show_steppers,
         }
+        if wrap:
+            internal_kwargs["wrap"] = True
         if textsignal is not None:
             internal_kwargs["textsignal"] = textsignal
         if value_format is not None:
@@ -241,8 +246,12 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().focus_set()
 
     def clear(self) -> None:
-        """Clear the field value."""
-        self._internal.value = 0
+        """Clear the field, leaving it empty.
+
+        The value becomes `None` (an empty field), not `0` — so a cleared
+        required field still reads as blank.
+        """
+        self._internal.value = ""
 
     def select_all(self) -> None:
         """Select all text in the field."""

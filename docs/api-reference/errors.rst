@@ -10,12 +10,17 @@ specific failure.
 For when each one is raised and how to handle it, see the :doc:`/reference/errors`
 guide.
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
+.. autoexception:: BootstackError
+   :show-inheritance:
 
-   BootstackError
-   DuplicateIdError
-   ParentResolutionError
-   SerializationError
-   UnknownEventError
+.. autoexception:: DuplicateIdError
+   :show-inheritance:
+
+.. autoexception:: ParentResolutionError
+   :show-inheritance:
+
+.. autoexception:: SerializationError
+   :show-inheritance:
+
+.. autoexception:: UnknownEventError
+   :show-inheritance:

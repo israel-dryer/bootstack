@@ -88,6 +88,15 @@ dates the picker shows as selectable.
        disabled_dates=[today + timedelta(days=7)],
    )
 
+``min_date``, ``max_date``, and ``disabled_dates`` are also live properties —
+assign to them to update the constraints (the change takes effect the next time
+the picker opens):
+
+.. code-block:: python
+
+   df.min_date = date.today()          # no past dates
+   df.disabled_dates = booked_dates
+
 Reactive binding
 ~~~~~~~~~~~~~~~~
 

@@ -117,6 +117,24 @@ class Gauge(PublicWidgetBase):
     def subtitle(self, v: str) -> None:
         self._internal.subtitle = v
 
+    @property
+    def min_value(self) -> int | float:
+        """The low end of the range. Assigning to it rescales the gauge live."""
+        return self._internal.cget("minvalue")
+
+    @min_value.setter
+    def min_value(self, v: int | float) -> None:
+        self._internal.configure(minvalue=v)
+
+    @property
+    def max_value(self) -> int | float:
+        """The high end of the range. Assigning to it rescales the gauge live."""
+        return self._internal.cget("maxvalue")
+
+    @max_value.setter
+    def max_value(self, v: int | float) -> None:
+        self._internal.configure(maxvalue=v)
+
     # ----- Event shorthands -----
 
     @overload

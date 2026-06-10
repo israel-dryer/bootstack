@@ -277,7 +277,9 @@ class RangeSlider(PublicWidgetBase):
 
     @low_value.setter
     def low_value(self, v: float) -> None:
-        self._internal._lo_signal.set(float(v))
+        # Route through set_lo so the value is clamped to [min, high] — a bare
+        # signal write would let the low handle cross above the high handle.
+        self._internal.set_lo(float(v))
 
     @property
     def high_value(self) -> float:
@@ -286,7 +288,8 @@ class RangeSlider(PublicWidgetBase):
 
     @high_value.setter
     def high_value(self, v: float) -> None:
-        self._internal._hi_signal.set(float(v))
+        # Route through set_hi so the value is clamped to [low, max].
+        self._internal.set_hi(float(v))
 
     @property
     def value(self) -> tuple[float, float]:

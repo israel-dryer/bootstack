@@ -176,6 +176,43 @@ class PublicWidgetBase:
         sequence = resolve_event(self, str(event))
         self._internal.event_generate(sequence, data=data)
 
+    # ----- Lifecycle --------------------------------------------------------
+
+    def destroy(self) -> None:
+        """Destroy the widget and release the resources it holds.
+
+        Removes the widget from its parent, destroys its children, and cancels
+        any pending or repeating jobs on its `schedule`. After this the widget
+        must not be used again. Destroying a container destroys everything
+        inside it.
+        """
+        self._internal.destroy()
+
+    @overload
+    def on_destroy(self) -> "Stream": ...
+    @overload
+    def on_destroy(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_destroy(
+        self,
+        handler: Callable[[Event], Any] | None = None,
+    ) -> "Stream | Subscription":
+        """Register a callback fired when the widget is destroyed.
+
+        Fires once, as the widget is torn down — the place to release resources
+        the widget owns that aren't cleaned up automatically (file handles,
+        observers, external subscriptions). The handler receives a curated
+        :class:`~bootstack.events.Event`.
+
+        Args:
+            handler: Called as the widget is destroyed. Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("destroy", handler)
+
     def __repr__(self) -> str:
         try:
             name = self._internal._w  # type: ignore[attr-defined]

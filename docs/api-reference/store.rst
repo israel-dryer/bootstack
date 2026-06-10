@@ -9,8 +9,6 @@ JSON file and written through on every change.
 For a task-oriented introduction — creating a store, autosave, JSON-only values,
 remembering app state — see the :doc:`/reference/store` guide.
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   Store
+.. autoclass:: Store
+   :members:
+   :show-inheritance:

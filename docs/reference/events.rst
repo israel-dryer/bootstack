@@ -331,6 +331,28 @@ Each hands the handler a curated :class:`Event <bootstack.events.Event>`. Pass
 any of these names to ``on()`` (``click``, ``focus``, and ``blur`` also have
 shorthands on the widgets that emit them).
 
+Widget lifecycle
+----------------
+
+Every widget also reports its own teardown. ``on_destroy`` fires once, as the
+widget is being destroyed — when you call ``widget.destroy()``, when a container
+it lives in is torn down (each child fires its own), or when the window closes.
+It is the place to release anything the widget holds that is not cleaned up for
+you: a file handle, an external subscription, a timer you started outside the
+widget's own ``schedule`` (jobs on that are canceled automatically).
+
+.. code-block:: python
+
+   feed = open_price_feed()
+   ticker = bs.Label("—")
+
+   ticker.on_destroy(lambda e: feed.close())
+
+The handler receives the same curated :class:`Event <bootstack.events.Event>` as
+the native events above. Unlike them, ``on_destroy`` fires exactly once and
+cannot be canceled. For a *window's* close button — which a handler can veto —
+use ``on_close`` instead (see :doc:`/getting-started/app-structures`).
+
 Filtering native events
 -----------------------
 

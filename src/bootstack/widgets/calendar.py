@@ -137,6 +137,35 @@ class Calendar(PublicWidgetBase):
         """Set the selected date range without emitting `<<DateSelect>>`."""
         self._internal.set_range(start, end)
 
+    # ----- Date constraints (live) -----
+
+    @property
+    def min_date(self) -> date | None:
+        """Earliest selectable date. Assigning updates the calendar immediately; `None` clears the bound."""
+        return self._internal._min_date
+
+    @min_date.setter
+    def min_date(self, value: date | datetime | str | None) -> None:
+        self._internal.set_min_date(value)
+
+    @property
+    def max_date(self) -> date | None:
+        """Latest selectable date. Assigning updates the calendar immediately; `None` clears the bound."""
+        return self._internal._max_date
+
+    @max_date.setter
+    def max_date(self, value: date | datetime | str | None) -> None:
+        self._internal.set_max_date(value)
+
+    @property
+    def disabled_dates(self) -> tuple[date, ...]:
+        """The non-selectable dates. Assigning a new iterable updates the calendar immediately."""
+        return tuple(sorted(self._internal._disabled_dates))
+
+    @disabled_dates.setter
+    def disabled_dates(self, value: Iterable[date | datetime | str] | None) -> None:
+        self._internal.set_disabled_dates(value)
+
     # ----- Events -----
 
     @overload

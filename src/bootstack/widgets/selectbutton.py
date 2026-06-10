@@ -94,6 +94,15 @@ class SelectButton(PublicWidgetBase):
         self._internal.set(v)
 
     @property
+    def options(self) -> list[str]:
+        """The list of available options. Assigning a new list rebuilds the dropdown."""
+        return list(self._internal.cget("options"))
+
+    @options.setter
+    def options(self, items: list[Any]) -> None:
+        self._internal.configure(options=list(items))
+
+    @property
     def signal(self) -> "Signal[str] | None":
         """The reactive `Signal` linked to this button, or `None`."""
         return getattr(self._internal, 'textsignal', None)

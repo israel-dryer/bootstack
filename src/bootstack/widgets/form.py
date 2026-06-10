@@ -133,11 +133,7 @@ class Form(PublicWidgetBase):
         """Set the value of the named field."""
         self._internal.set_field_value(key, value)
 
-    # ----- Variable / signal access -----
-
-    def field_variable(self, key: str) -> Any:
-        """Return the Tk Variable for the named field."""
-        return self._internal.field_variable(key)
+    # ----- Signal access -----
 
     def field_signal(self, key: str) -> Any:
         """Return the Signal for the named field value."""
