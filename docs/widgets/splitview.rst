@@ -83,19 +83,26 @@ independently draggable sash.
    with sv.add(weight=1):
        bs.Label("Right")
 
-Minimum pane size
-~~~~~~~~~~~~~~~~~
+Managing panes
+~~~~~~~~~~~~~~
 
-``min_size=`` prevents a sash from being dragged so far that the pane
-collapses below the given pixel width (or height for vertical splits).
+`add()` returns a :class:`SplitPane <bootstack.widgets.splitview.SplitPane>`
+handle. Give it a ``key=`` to address the pane later — look one up with
+``item()``, enumerate them all with ``panes``, and drop one with ``remove()``.
+The pane's ``weight`` is a live property, so you can re-balance the split at
+runtime; for an exact sash position in pixels use ``sash_position()``.
 
 .. code-block:: python
 
    sv = bs.SplitView(fill="both", expand=True)
-   with sv.add(min_size=120):
-       bs.Label("Cannot shrink below 120 px")
-   with sv.add():
-       bs.Label("Unconstrained pane")
+   with sv.add(key="sidebar", weight=1):
+       bs.Label("Sidebar")
+   with sv.add(key="main", weight=3):
+       bs.Label("Main")
+
+   sv.item("sidebar").weight = 2     # re-balance live
+   sv.sash_position(0, 200)          # or place the sash exactly
+   sv.remove("sidebar")              # drop a pane (and its content)
 
 Pane layout
 ~~~~~~~~~~~

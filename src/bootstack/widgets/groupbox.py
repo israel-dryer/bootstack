@@ -9,66 +9,63 @@ from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
 )
-from bootstack.widgets.types import AccentToken
+from bootstack.widgets.types import (
+    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+)
 
 
 class GroupBox(PublicContainer):
     """A labeled container that groups related content inside a bordered frame.
 
     The title is embedded in the top border line, giving the classic fieldset
-    look. Children are laid out according to ``layout``.
+    look. Children are laid out according to `layout`.
 
     Args:
         title: Text label embedded in the top border line. Defaults to an
             empty string (border only, no label).
-        layout: Internal layout manager. One of ``'vstack'`` (default),
-            ``'hstack'``, or ``'grid'``.
-        padding: Space in pixels between the border and the content. Accepts
-            an integer (all sides) or a 2-tuple ``(x, y)``. Defaults to
-            ``16``.
+        layout: Internal layout manager. Defaults to `'vstack'`.
+        padding: Space in pixels between the border and the content. A single
+            value applies to all sides; `(x, y)` sets the horizontal and
+            vertical amounts. Defaults to `16`.
         accent: Color intent token applied to the border and title label.
-            One of ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``. When
-            omitted, the border uses the theme's default foreground color.
-        gap: Space in pixels between child widgets. Defaults to ``0``.
-        fill_items: Default ``fill`` direction applied to every child.
-            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-            Individual children can override this with their own ``fill=``.
-        expand_items: When ``True``, each child expands to consume extra
-            space along the pack direction. Defaults to ``None``.
+            When omitted, the border uses the theme's default foreground color.
+        gap: Space in pixels between child widgets. Defaults to `0`.
+        fill_items: Default `fill` direction applied to every child.
+            Individual children can override this with their own `fill=`.
+        expand_items: When `True`, each child expands to consume extra
+            space along the pack direction. Defaults to `None`.
         anchor_items: Default alignment anchor for children that do not fill
-            their slot. One of ``'n'``, ``'s'``, ``'e'``, ``'w'``,
-            ``'center'``, etc.
-        columns: Column definitions for ``'grid'`` layout. An integer sets
+            their slot.
+        columns: Column definitions for `'grid'` layout. An integer sets
             the number of equal-weight columns; a list sets per-column
-            weights or sizes (e.g. ``[1, 2, 'auto']``).
-        rows: Row definitions for ``'grid'`` layout, same format as
-            ``columns``.
+            weights or sizes — integers are relative weights, `'auto'`
+            sizes to content, `'Npx'` sets a fixed pixel width (e.g.
+            `[1, 2, 'auto', '120px']`).
+        rows: Row definitions for `'grid'` layout, same format as `columns`.
         sticky_items: Default cell alignment for every grid child
-            (e.g. ``'ew'``, ``'nsew'``). Children can override this.
-        auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
-            ``'column'``, ``'row-dense'``, or ``'column-dense'``.
+            (e.g. `'ew'`, `'nsew'`). Children can override this.
+        auto_flow: Grid auto-placement direction. Defaults to `'row'`.
         parent: Override the context-stack parent widget.
-        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
-            ``row=``, ``column=``, etc.) forwarded to the parent
-            geometry manager.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         title: str = "",
         *,
-        layout: str = "vstack",
-        padding: Any = 16,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = 16,
         accent: AccentToken | str | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:

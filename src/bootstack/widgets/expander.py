@@ -16,8 +16,12 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import AccordionChangeEvent, Subscription, ToggleEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
-    Event, AccentToken, VariantToken, Fill, Anchor, Sticky,
+    Event, AccentToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
 )
+
+# Accordion/Expander headers register only the `'solid'` and `'default'` builders
+# (`style/builders/expander.py`); the default reads as a ghost/transparent header.
+AccordionVariant = Literal['solid', 'default']
 
 _EXPANDER_EVENTS: dict[str, str] = {
     "expand":   "<<Toggle>>",
@@ -65,16 +69,15 @@ class Expander(PublicContainer):
             body. If ``False``, the chevron is hidden and the body stays open.
         show_border: If ``True``, draws a border around the entire widget.
             Default ``False``.
-        variant: Header style. One of ``'solid'``, ``'outline'``, ``'ghost'``.
-            Default is the theme's ghost/transparent style.
+        variant: Header style. Defaults to `None` (the default header reads
+            as a ghost/transparent bar).
         icon: Icon name or spec displayed to the left of the title.
         icon_position: Side on which the collapse chevron appears —
             ``'after'`` (default, right of title) or ``'before'`` (left).
         highlight: If ``True``, the header shows a selected visual state while
             the body is expanded. Default ``False``.
-        accent: Color intent token for the header. One of ``'primary'``,
-            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
-            ``'danger'``, ``'default'``. Default ``None`` (theme default).
+        accent: Color intent token for the header. Defaults to `None`
+            (theme default).
         parent: Explicit parent container. Omit to use the current context.
     """
 
@@ -82,24 +85,24 @@ class Expander(PublicContainer):
         self,
         title: str = "",
         *,
-        layout: Literal["vstack", "hstack", "grid"] = "vstack",
-        padding: Any = None,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
         fill_items: Fill | None = None,
         expand_items: bool | None = None,
         anchor_items: Anchor | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         sticky_items: Sticky | None = None,
-        auto_flow: Literal["row", "column"] = "row",
+        auto_flow: AutoFlow = "row",
         expanded: bool = True,
         collapsible: bool = True,
         show_border: bool = False,
-        variant: VariantToken | None = None,
+        variant: AccordionVariant | None = None,
         icon: str | None = None,
         icon_position: Literal["before", "after"] = "after",
         highlight: bool = False,
-        accent: AccentToken | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -125,7 +128,6 @@ class Expander(PublicContainer):
             internal_kwargs["icon"] = icon
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalExpander(tk_master, **internal_kwargs)
 
@@ -222,29 +224,36 @@ register_widget_events(Expander, _EXPANDER_EVENTS)
 
 
 class AccordionSection:
-    """Context-manager container returned by `Accordion.add()`.
+    """A handle for one accordion section — both a layout context and a live controller.
 
-    Accepts the same layout kwargs as `Expander` — `layout=`, `gap=`,
-    `fill_items=`, `expand_items=`, `anchor_items=`, `columns=`, `rows=`,
-    `sticky_items=`, `auto_flow=`.
+    Returned by `Accordion.add()` and by `Accordion.item()` / `items()`. Use it
+    as a `with` block to place child widgets inside the section, and read or call
+    `key` / `title` / `expanded` / `expand()` / `collapse()` / `toggle()` to
+    inspect or drive the section afterward.
+
+    As a context manager it accepts the same layout kwargs as the standalone
+    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
+    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
     """
 
     def __init__(
         self,
         internal_expander: _InternalExpander,
         *,
-        layout: Literal["vstack", "hstack", "grid"] = "vstack",
-        padding: Any = None,
+        key: str,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
         fill_items: Fill | None = None,
         expand_items: bool | None = None,
         anchor_items: Anchor | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         sticky_items: Sticky | None = None,
-        auto_flow: Literal["row", "column"] = "row",
+        auto_flow: AutoFlow = "row",
     ) -> None:
         self._expander = internal_expander
+        self._key = key
         self._layout = layout
 
         content = internal_expander._content_frame
@@ -298,6 +307,39 @@ class AccordionSection:
             options["anchor"] = self._anchor_items
         child._internal.pack(in_=self._child_master(), **options)
 
+    # ----- Section identity, state, and control -----
+
+    @property
+    def key(self) -> str:
+        """The section's unique key, used with `Accordion.item()`/`remove()`."""
+        return self._key
+
+    @property
+    def title(self) -> str:
+        """The section header text. Assigning a new value relabels the header."""
+        return self._expander._title
+
+    @title.setter
+    def title(self, value: str) -> None:
+        self._expander.configure(title=value)
+
+    @property
+    def expanded(self) -> bool:
+        """Whether the section is currently expanded."""
+        return self._expander._expanded
+
+    def expand(self) -> None:
+        """Expand this section."""
+        self._expander.expand()
+
+    def collapse(self) -> None:
+        """Collapse this section."""
+        self._expander.collapse()
+
+    def toggle(self) -> None:
+        """Toggle this section between expanded and collapsed."""
+        self._expander.toggle()
+
     def __enter__(self) -> "AccordionSection":
         push_container(self)
         return self
@@ -313,23 +355,24 @@ class Accordion(PublicWidgetBase):
     context manager for placing child widgets inside that section.
 
     Args:
-        allow_multiple: If ``True``, multiple sections can be expanded at
-            once. Default ``False`` (only one section open at a time).
-        allow_collapse_all: If ``True`` (default), every section can be
-            collapsed. If ``False``, at least one section stays open.
-        show_separators: If ``True``, draws a separator line between sections.
-            Default ``True``.
-        show_border: If ``True``, wraps the accordion in a bordered frame.
-            Default ``True``.
-        variant: Style variant applied to each section header. One of
-            ``'solid'``, ``'outline'``, ``'ghost'``. Default ``None`` (theme
-            default ghost style).
-        accent: Color intent token applied to all section headers. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'default'``. Default ``None``.
+        allow_multiple: If `True`, multiple sections can be expanded at
+            once. Defaults to `False` (only one section open at a time).
+        allow_collapse_all: If `True` (default), every section can be
+            collapsed. If `False`, at least one section stays open.
+        show_separators: If `True`, draws a separator line between sections.
+            Defaults to `True`.
+        show_border: If `True`, wraps the accordion in a bordered frame.
+            Defaults to `True`.
+        variant: Style variant applied to each section header. Defaults to
+            `None` (the default header reads as a ghost/transparent bar).
+        accent: Color intent token applied to all section headers. Defaults
+            to `None` (theme default).
         padding: Space between the outer border and the sections, in pixels.
-            Default ``None``.
+            Defaults to `None`.
         parent: Explicit parent container. Omit to use the current context.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -339,9 +382,9 @@ class Accordion(PublicWidgetBase):
         allow_collapse_all: bool = True,
         show_separators: bool = True,
         show_border: bool = True,
-        variant: VariantToken | None = None,
-        accent: AccentToken | None = None,
-        padding: Any = None,
+        variant: AccordionVariant | None = None,
+        accent: AccentToken | str | None = None,
+        padding: Padding | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -364,8 +407,8 @@ class Accordion(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if padding is not None:
             internal_kwargs["padding"] = padding
-        internal_kwargs.update(kwargs)
 
+        self._sections: dict[str, AccordionSection] = {}
         self._internal = _InternalAccordion(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
@@ -378,23 +421,34 @@ class Accordion(PublicWidgetBase):
             key: The key assigned when the section was added.
         """
         self._internal.remove(key)
+        self._sections.pop(key, None)
 
-    def item(self, key: str) -> Any:
-        """Return the internal expander for a section.
+    def item(self, key: str) -> AccordionSection:
+        """Return the section handle for `key`.
 
         Args:
             key: Section key.
-        """
-        return self._internal.item(key)
 
-    def items(self, expanded: bool | None = None) -> tuple:
-        """Return all section expanders, optionally filtered by expansion state.
+        Returns:
+            The `AccordionSection` for that key — read `expanded`/`title` or call
+            `expand()`/`collapse()`/`toggle()` to drive it.
+        """
+        return self._sections[key]
+
+    def items(self, expanded: bool | None = None) -> tuple[AccordionSection, ...]:
+        """Return all section handles in insertion order, optionally filtered.
 
         Args:
             expanded: If `True`, return only expanded sections. If `False`,
                 only collapsed. If `None` (default), return all.
+
+        Returns:
+            A tuple of `AccordionSection` handles.
         """
-        return self._internal.items(expanded)
+        sections = (self._sections[k] for k in self._internal.keys())
+        if expanded is None:
+            return tuple(sections)
+        return tuple(s for s in sections if s.expanded == expanded)
 
     def keys(self) -> tuple[str, ...]:
         """Return all section keys in insertion order."""
@@ -446,16 +500,16 @@ class Accordion(PublicWidgetBase):
         title: str,
         *,
         key: str | None = None,
-        layout: Literal["vstack", "hstack", "grid"] = "vstack",
-        padding: Any = 16,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = 16,
         gap: int = 0,
         fill_items: Fill | None = None,
         expand_items: bool | None = None,
         anchor_items: Anchor | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         sticky_items: Sticky | None = None,
-        auto_flow: Literal["row", "column"] = "row",
+        auto_flow: AutoFlow = "row",
         expanded: bool | None = None,
         icon: str | None = None,
     ) -> AccordionSection:
@@ -465,24 +519,25 @@ class Accordion(PublicWidgetBase):
             title: Section header text.
             key: Unique identifier used with `item()`, `expand()`, `collapse()`,
                 and `remove()`. Auto-generated if omitted.
-            layout: Body layout — ``'vstack'`` (default), ``'hstack'``, or
-                ``'grid'``.
+            layout: Body layout. Defaults to `'vstack'`.
             padding: Space between the section border and its body, in pixels.
-                Default ``16``.
-            gap: Space between body children in pixels. Default ``0``.
-            fill_items: Default fill direction for body children. One of
-                ``'none'``, ``'x'``, ``'y'``, ``'both'``. Default ``None``.
-            expand_items: If ``True``, body children expand along the pack
-                direction. Default ``None``.
-            anchor_items: Default anchor for body children. Default ``None``.
-            columns: Column definitions for ``'grid'`` layout. Default ``None``.
-            rows: Row definitions for ``'grid'`` layout. Default ``None``.
+                Defaults to `16`.
+            gap: Space between body children in pixels. Defaults to `0`.
+            fill_items: Default fill direction for body children. Defaults to
+                `None`.
+            expand_items: If `True`, body children expand along the pack
+                direction. Defaults to `None`.
+            anchor_items: Default anchor for body children. Defaults to `None`.
+            columns: Column definitions for `'grid'` layout. An integer sets
+                the number of equal-weight columns; a list sets per-column
+                weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
+                Defaults to `None`.
+            rows: Row definitions for `'grid'` layout. Defaults to `None`.
             sticky_items: Default cell alignment for grid children.
-                Default ``None``.
-            auto_flow: Grid placement direction — ``'row'`` (default) or
-                ``'column'``.
+                Defaults to `None`.
+            auto_flow: Grid placement direction. Defaults to `'row'`.
             expanded: Whether the section starts expanded. Defaults to the
-                accordion's own default (collapsed when ``allow_multiple=False``).
+                accordion's own default (collapsed when `allow_multiple=False`).
             icon: Icon name or spec displayed in the section header.
 
         Returns:
@@ -496,8 +551,14 @@ class Accordion(PublicWidgetBase):
         if icon is not None:
             exp_kwargs["icon"] = icon
         internal_exp = self._internal.add(title=title, **exp_kwargs)
-        return AccordionSection(
+        # The internal accordion auto-generates a key when one is not supplied;
+        # recover the resolved key so the section handle can be looked up later.
+        resolved_key = next(
+            k for k, v in self._internal._expanders.items() if v is internal_exp
+        )
+        section = AccordionSection(
             internal_exp,
+            key=resolved_key,
             layout=layout,
             padding=padding,
             gap=gap,
@@ -509,6 +570,8 @@ class Accordion(PublicWidgetBase):
             sticky_items=sticky_items,
             auto_flow=auto_flow,
         )
+        self._sections[resolved_key] = section
+        return section
 
 
 register_widget_events(Accordion, _ACCORDION_EVENTS)

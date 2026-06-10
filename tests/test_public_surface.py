@@ -81,7 +81,7 @@ MOVED = {
     "bootstack.types": [
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
-        "Padding", "WindowStyle",
+        "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
     ],
     # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
     # stays importable here for power users. See project_editfilter_public_api.

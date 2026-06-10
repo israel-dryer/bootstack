@@ -12,6 +12,7 @@ from bootstack.widgets.types import (
     BaseWidgetKwargs, StyledKwargs,
     Anchor, BorderMode, CompoundMode, Direction,
     Fill, Justify, Orient, Padding, Relief, Side, Sticky,
+    LayoutKind, AutoFlow,
     WidgetState, WidgetDensity,
     AccentToken, VariantToken, SurfaceToken, WindowStyle,
 )
@@ -20,6 +21,7 @@ __all__ = [
     "BaseWidgetKwargs", "StyledKwargs",
     "Anchor", "BorderMode", "CompoundMode", "Direction",
     "Fill", "Justify", "Orient", "Padding", "Relief", "Side", "Sticky",
+    "LayoutKind", "AutoFlow",
     "WidgetState", "WidgetDensity",
     "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
 ]

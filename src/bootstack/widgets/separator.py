@@ -16,17 +16,17 @@ class Separator(PublicWidgetBase):
     and can be overridden with an accent token.
 
     Args:
-        orient: Direction of the line. One of ``'horizontal'`` (default)
-            or ``'vertical'``.
-        accent: Color intent token applied to the line. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``.
-            When omitted, the line color is derived from the active surface.
+        orient: Direction of the line. Defaults to `'horizontal'`.
+        accent: Color intent token applied to the line. When omitted, the
+            line color is derived from the active surface.
         thickness: Line thickness in pixels. Defaults to the theme value
             (typically 1 px).
         length: Fixed length in pixels. When omitted the line stretches to
             fill the available space along its axis.
         parent: Override the context-stack parent widget.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -51,7 +51,6 @@ class Separator(PublicWidgetBase):
             internal_kwargs["thickness"] = thickness
         if length is not None:
             internal_kwargs["length"] = length
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalSeparator(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)

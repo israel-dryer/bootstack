@@ -90,6 +90,14 @@ Side = Literal['left', 'top', 'right', 'bottom']
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
 """Layout direction."""
 
+LayoutKind = Literal['vstack', 'hstack', 'grid']
+"""Internal layout manager for a container — `'vstack'`/`'hstack'` pack children
+top-to-bottom / left-to-right; `'grid'` arranges them in rows and columns."""
+
+AutoFlow = Literal['row', 'column', 'row-dense', 'column-dense', 'none']
+"""Grid auto-placement direction. `'row'`/`'column'` fill along that axis;
+the `'-dense'` variants backfill gaps; `'none'` disables auto-placement."""
+
 BorderMode = Literal['inside', 'outside']
 """Border mode for the place geometry manager."""
 

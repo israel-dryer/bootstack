@@ -223,8 +223,67 @@ Work in the Stage 4 batch order; tick as completed:
       on a data-source tree and loads (non-destructively) the path to each hit. Tests
       in `test_tree.py`. `filter()`/`search()` view-pruning DEFERRED. Memory
       `project_tree_find_filter`.
-- [ ] Layout: Separator, Card, GroupBox, VStack, HStack, Grid, ScrollView,
-      Accordion, SplitView
+- [x] Layout: Separator, Card, GroupBox, VStack, HStack, Grid, ScrollView,
+      Accordion, SplitView — DONE (NOT committed — awaiting review). Across all:
+      `padding: Any`→`Padding|None`; `columns`/`rows: int|list`→`int|list[int|str]`;
+      `fill_items`/`anchor_items`/`sticky_items` bare `str`→`Fill`/`Anchor`/`Sticky`
+      (Card/GroupBox were untyped); double→single backticks; dropped value
+      enumerations the type now shows (accent/orient/layout/auto_flow); documented
+      `**kwargs` with the `:doc:/tasks/layout` cross-link; removed the
+      `internal_kwargs.update(kwargs)` passthrough leak (Separator/ScrollView/
+      Expander/Accordion) so `**kwargs` is layout-only.
+      **New aliases (this batch):** `LayoutKind` (`'vstack'|'hstack'|'grid'`) +
+      `AutoFlow` (`'row'|'column'|'row-dense'|'column-dense'|'none'`) added to
+      `widgets/types.py`, re-exported from `bootstack.types`, added to
+      `test_public_surface.py`. Used everywhere `layout=`/`auto_flow=` recur (6 sites
+      each) — directly advances `project_enum_option_typing`. Expander/Accordion/
+      SplitPane `auto_flow` widened 2→5 values (GridFrame supports all 5).
+      **ScrollView:** `show_border`/`padding`/`height`/`width` were documented but
+      only worked via the kwargs leak — PROMOTED to real typed params.
+      **Accordion variant:** `VariantToken|None`→`AccordionVariant` (`Literal['solid',
+      'default']`) — the `Expander.TFrame` builder only registers those two (the
+      default reads as ghost); the old `'outline'`/`'ghost'` were never registered.
+      **Maintainer review (interactive, 2026-06-09):**
+      - Grid-columns pixel form (`'120px'`) added to the `e.g.` for every
+        configurable-layout widget (Card/GroupBox/SplitView.add/Accordion.add).
+      - GroupBox border default is NOT `'stroke'` — the `TLabelframe` builder derives
+        it via `b.border(surface)` (blend toward on-color); `'stroke'` is the default
+        only for plain `Frame` borders. Left accent as `AccentToken|str|None`.
+      - **STRUCTURAL — SplitView pane management** (maintainer-approved): `min_size=`
+        DROPPED (it forwarded `minsize` to `ttk.Panedwindow.add`, which has no such
+        option — a guaranteed `TclError` at runtime; ttk panes only support `-weight`,
+        confirmed via the man page + probing — requested per-pane width/height is NOT
+        honored for sash placement, only `sashpos()` is). `SplitPane` enriched into a
+        live handle: `key` + `weight` (read/write property via `pane(frame, weight=)`)
+        + `remove()`. `SplitView` gained `add(key=)`, `insert(index, ...)`,
+        `move(key, index)` (both via ttk `insert`, which also reorders an existing
+        pane), `item(key)`, `panes`, `keys()`, `__len__`, `remove(key)`. `_panes`
+        registry kept in live order via `_resync_order()` (rebuilt from
+        `_internal.panes()`). Removal uses a direct `tk.call(w, 'forget', frame)` —
+        `WidgetCapabilitiesMixin.forget()` shadows `ttk.Panedwindow.forget(pane)` with
+        a zero-arg override. Guide page `min_size` section → "Managing panes".
+      - **STRUCTURAL — `AccordionSection` enriched** (maintainer-approved): now the
+        single public section handle (both a `with`-block context AND a live
+        controller). Added `key`/`title`(get+set)/`expanded` props + `expand()`/
+        `collapse()`/`toggle()`. `add()` retains one instance per section in
+        `Accordion._sections`; `item(key)`→`AccordionSection` and `items(expanded=)`→
+        `tuple[AccordionSection, ...]` now return handles instead of leaking the
+        internal `_InternalExpander` (was typed `Any`/`tuple`). `remove()` drops it.
+      - **STRUCTURAL — HStack/VStack render fix** (maintainer-approved): params lived
+        in `_StackBase.__init__`, invisible under `autoclass_content="class"`. Gave
+        each its OWN `__init__` (full typed signature) + a class-docstring `Args:`
+        block (boolean-controls precedent). Verified params now render in built HTML.
+        (Global `autoclass_content="both"` rejected — 5 classes carry Args in BOTH
+        class + `__init__` docstrings and would double-render.)
+      - FLAGGED (deferred, NOT done): (a) `guide_layout` on the handle classes
+        (AccordionSection/SplitPane + StackPage/TabPage) stays public+undocumented —
+        full demotion to `_guide_layout` is a protocol-wide rename (called by string
+        in `base.py::_attach_to_parent`); do it holistically across all four handles
+        in a dedicated pass, not piecemeal. (c) **Public `on_destroy` lifecycle hook** — not
+        exposed on any widget today (`<Destroy>` bound internally for cleanup only);
+        a uniform public lifecycle event is its own initiative.
+      Verify: `test_public_surface.py` green (131); clean `-W` build warning-free;
+      `LayoutKind`/`AutoFlow` expand inline in built HTML; HStack params render.
 - [ ] Navigation: PageStack, Tabs, SideNav
 - [ ] Overlays/Forms/Dialogs
 
