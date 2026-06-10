@@ -265,14 +265,26 @@ the open backlog are kept here.
 
 ### Still-live conventions
 
-- **Docs structure** — top-level navbar kept SMALL (~5): Getting Started · Tasks ·
-  Widgets · Reference · Production. `docs/widgets/` = flat leaf pages grouped by
-  `.. toctree:: :caption:` blocks in `widgets/index.rst` (curated common-first
-  order, NOT alphabetical); the 10 old category landing pages are RETIRED.
-  `docs/api/` + `docs/deeper/` are GONE. `show_nav_level: 2` renders captions as
-  sidebar headers. Do NOT promote widget groups to top-level (~14 navbar items
-  overflow pydata). The old "Reference page pattern" is SUPERSEDED by the API
-  Reference & Guide pattern below.
+- **Docs structure** — top-level navbar is now **4 pillars** (numpy-style):
+  **User Guide · Widgets · API Reference · Production** (`docs/index.rst`).
+  - **User Guide** (`docs/user-guide/index.rst`) folds the old Getting Started +
+    Tasks + Reference sections into ONE pillar with three `:caption:` toctree groups —
+    **Getting started** (`/getting-started/*`), **How-to guides** (`/tasks/*`,
+    goal-indexed recipes), **Topics** (`/reference/*`, subsystem-indexed usage guides;
+    both how-to and topics are example-rich — the split is goal-vs-subsystem, NOT
+    recipe-vs-theory, so do NOT call Topics "Concepts"/"Explanation"). The leaf pages
+    STAY in their `getting-started/`/`tasks/`/`reference/` dirs (no URL churn); only the
+    landing + top toctree changed. The three old section `index.rst` landings are DELETED.
+  - **Widgets** (`docs/widgets/index.rst`) = flat leaf pages grouped by
+    `.. toctree:: :caption:` blocks (curated common-first order, NOT alphabetical);
+    kept as its own pillar (large *visual* catalog). The 10 old category landing pages
+    are RETIRED. `docs/api/` + `docs/deeper/` are GONE.
+  - **API Reference** (`docs/api-reference/index.rst`) = the by-concept lookup layer
+    (semantic groups, full-path stub titles, pandas-style card landing — see the IA
+    re-cut in `docs/_dev/api-reference-restructure.md`).
+  - `show_nav_level: 1` (collapsed by default). Do NOT promote sub-groups to top-level
+    (pydata navbar overflows ~6+). The old "Reference page pattern" is SUPERSEDED by the
+    API Reference & Guide pattern below.
 - **No Tkinter in docs or docstrings** — no `tk.*` types/terms unless strictly
   necessary; don't feature the escape hatch. Full `src/` docstring scrub still
   pending. LEFT BY DESIGN: `.tk`/`.var` escape-hatch property docstrings,

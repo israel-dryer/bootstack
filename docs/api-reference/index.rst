@@ -34,8 +34,8 @@ Everything else is internal. Modules and names beginning with an underscore —
 may change at any time; the public API is exactly what this reference documents.
 
 This is the lookup layer. For task-oriented introductions and worked examples,
-start from the :doc:`/widgets/index` catalog and the :doc:`/reference/index`
-guides, which cross-link into the pages here.
+start from the :doc:`/widgets/index` catalog and the :doc:`/user-guide/index`,
+which cross-link into the pages here.
 
 Building the interface
 ----------------------
