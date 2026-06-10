@@ -309,89 +309,19 @@ built-in OK / Cancel buttons.
 API
 ---
 
-.. autoclass:: bootstack.widgets.form.Form
-   :members:
-   :undoc-members:
-   :exclude-members: tk
+The complete reference for :class:`Form <bootstack.Form>` and its item types —
+``FieldItem``, ``GroupItem``, ``TabsItem``, ``TabItem``, and the ``FormItem``
+union — lives on the :doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
-FieldItem
-~~~~~~~~~
+.. autosummary::
+   :nosignatures:
 
-.. class:: bootstack.widgets.form.FieldItem(key, label=None, dtype=None, readonly=False, visible=True, column=None, row=None, columnspan=1, rowspan=1, editor=None, editor_options=...)
-
-   Field definition for use in ``Form(items=[...])``.
-
-   :param key: Unique field identifier. Used to read and write the field value.
-   :param label: Display label shown above the field. Defaults to the
-       capitalized key when ``None``.
-   :param dtype: Type hint controlling the default editor. One of
-       ``'str'``, ``'int'``, ``'float'``, ``'bool'``, ``'date'``,
-       ``'datetime'``, ``'password'``. ``None`` infers the type from the
-       initial value.
-   :param readonly: When ``True``, the field is rendered as read-only.
-       Default ``False``.
-   :param visible: When ``False``, the field is hidden. Default ``True``.
-   :param column: Zero-based grid column. Auto-placed when ``None``.
-   :param row: Zero-based grid row. Auto-placed when ``None``.
-   :param columnspan: Number of grid columns to span. Default ``1``.
-   :param rowspan: Number of grid rows to span. Default ``1``.
-   :param editor: Force a specific editor widget. One of ``'textfield'``,
-       ``'numberfield'``, ``'passwordfield'``, ``'datefield'``, ``'textarea'``,
-       ``'select'``, ``'spinnerfield'``, ``'checkbox'``, ``'switch'``,
-       ``'slider'``. See *Editor types* above for details.
-   :param editor_options: Extra keyword arguments forwarded to the editor
-       widget constructor. For ``'select'``, pass ``{"values": ["A", "B", "C"]}``.
-       Pass ``{"allow_custom_values": True}`` for editable combobox behavior.
-
-GroupItem
-~~~~~~~~~
-
-.. class:: bootstack.widgets.form.GroupItem(items, label=None, col_count=1, min_col_width=..., width=None, height=None, column=None, row=None, columnspan=1, rowspan=1, padding=8)
-
-   Labeled group of fields with its own column layout.
-
-   :param items: Child :class:`FieldItem`, :class:`GroupItem`, or
-       :class:`TabsItem` instances (or equivalent dicts).
-   :param label: Section heading shown above the group border. No border is
-       drawn when ``None``.
-   :param col_count: Number of columns within the group. Default ``1``.
-   :param min_col_width: Minimum column width in pixels.
-   :param width: Fixed width for the group container.
-   :param height: Fixed height for the group container.
-   :param column: Zero-based grid column in the parent form. Auto-placed when ``None``.
-   :param row: Zero-based grid row in the parent form. Auto-placed when ``None``.
-   :param columnspan: Columns to span in the parent grid. Default ``1``.
-   :param rowspan: Rows to span in the parent grid. Default ``1``.
-   :param padding: Internal padding inside the group border. Default ``8``.
-
-TabsItem
-~~~~~~~~
-
-.. class:: bootstack.widgets.form.TabsItem(tabs, label=None, width=None, height=None, column=None, row=None, columnspan=1, rowspan=1)
-
-   Tab container holding one or more :class:`TabItem` entries.
-
-   :param tabs: :class:`TabItem` instances (or equivalent dicts) defining
-       each tab.
-   :param label: Optional heading shown above the tab bar.
-   :param width: Fixed width for the tab container.
-   :param height: Fixed height for the tab container.
-   :param column: Zero-based grid column in the parent form. Auto-placed when ``None``.
-   :param row: Zero-based grid row in the parent form. Auto-placed when ``None``.
-   :param columnspan: Columns to span in the parent grid. Default ``1``.
-   :param rowspan: Rows to span in the parent grid. Default ``1``.
-
-TabItem
-~~~~~~~
-
-.. class:: bootstack.widgets.form.TabItem(label, items, padding=8)
-
-   Single tab within a :class:`TabsItem`.
-
-   :param label: Tab button label.
-   :param items: :class:`FieldItem`, :class:`GroupItem`, or
-       :class:`TabsItem` instances for this tab's content.
-   :param padding: Internal padding inside the tab body. Default ``8``.
+   ~bootstack.Form
+   ~bootstack.FieldItem
+   ~bootstack.GroupItem
+   ~bootstack.TabsItem
+   ~bootstack.TabItem
+   ~bootstack.FormItem
 
 Full Example
 ------------

@@ -58,13 +58,32 @@ in the "IA restructure" commit), clean-build warning-free:
   "Services and reference" card cluster gives the grouping feel without merging the
   pages (maintainer call). Could still merge to one page if desired.
 
-**Open / remaining for the IA:** Dialogs group (verbs + classes; needs
-`bootstack.dialogs.__all__` — see "Re-exports" below) + a card; Types group
-(`bootstack.types` aliases incl. the relocated `ColumnSpec`/`EditorType`/`FormOptions`)
-+ a card; home Menus/Overlays/Forms widgets into the Widgets page. The
-`{{ fullname }}` flip means future stubs need no special handling. The old
-"single-`bootstack`-page" recipe below (category map, cluster table) is
-SUPERSEDED by this re-cut; keep it only for the per-name curation conventions.
+**✅ IA migration COMPLETE (2026-06-09)** — every public name now has a home in the
+new IA. The final batch (committed after the "IA restructure" commit):
+- **Dialogs group** (`dialogs.rst` + card): verbs homed at the top-level path
+  (`bootstack.alert`…`bootstack.toast`), classes at `bootstack.dialogs.*`
+  (`Dialog`/`DialogButton`/`FormDialog`/`FilterDialog`/`ColorChooserDialog`/`ColorChoice`/
+  `FontDialog`/`FontChoice`). Added `bootstack.dialogs.__all__`.
+- **Types group** (`types.rst` + card): the full `bootstack.types.__all__` (style
+  tokens / layout literals / keyword + config dicts incl. `ColumnSpec`/`EditorType`/
+  `FormOptions`).
+- **Menus/Overlays/Forms homed into the Widgets page** (new sections). All ~13
+  remaining guides (toolbar/menubutton/contextmenu/tooltip/toast/forms + the 7 dialog
+  pages) converted to table-only, pointing at Widgets or Dialogs. `menubar.rst` does
+  not exist (MenuBar is API-only, no guide).
+- **Cleanups folded in:** `ColorChoice`/`FontChoice` converted bare `namedtuple` →
+  typed `NamedTuple` with field docstrings; the 4 Form item dataclasses (`FieldItem`/
+  `GroupItem`/`TabsItem`/`TabItem`) given attribute docstrings (ported from the old
+  `forms.rst` manual `.. class::` blocks, which were removed).
+- **`autosummary_filename_map`** added in `conf.py` — `bootstack.toast` → stub
+  `bootstack.toast-verb` to avoid the case-insensitive (Windows) collision with
+  `bootstack.Toast`. The only such pair in the surface.
+
+Clean-build warning-free (remember to `rm -rf docs/api-reference/generated` when stub
+names change — stale stubs persist in the source tree). The old "single-`bootstack`-page"
+recipe below (category map, cluster table) is SUPERSEDED by this re-cut; keep it only
+for the per-name curation conventions. **Stage 4 / the API-Reference restructure is
+DONE** apart from the post-migration Guide enrichment follow-on.
 
 **Stage 4 batch log (branch `feat/api-reference-widgets`):**
 - Batch 4 — Layout + Navigation homed (`bootstack.rst` gained a Layout section —

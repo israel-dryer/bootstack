@@ -128,3 +128,48 @@ and item handles (``StackPage``, ``TabPage``, and the ``SideNav*`` items).
    StackPage
    TabPage
    Tabs
+
+Menus and toolbars
+------------------
+
+Command surfaces — a window menu bar, a toolbar strip, a dropdown menu button,
+and a right-click context menu.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   ContextMenu
+   ContextMenuItem
+   MenuBar
+   MenuButton
+   Toolbar
+
+Overlays
+--------
+
+Transient, floating UI — hover tooltips and dismissible toast notifications.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   Toast
+   Tooltip
+
+Forms
+-----
+
+A declarative form builder and the item types that describe its layout — fields,
+groups, and tabbed sections.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   FieldItem
+   Form
+   FormItem
+   GroupItem
+   TabItem
+   TabsItem

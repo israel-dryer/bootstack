@@ -123,12 +123,15 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.dialogs.Dialog
-   :members:
-   :undoc-members:
+The complete reference for :class:`Dialog <bootstack.dialogs.Dialog>` and
+:class:`DialogButton <bootstack.dialogs.DialogButton>` lives on the
+:doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
 
-.. autoclass:: bootstack.dialogs.DialogButton
-   :members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.dialogs.Dialog
+   ~bootstack.dialogs.DialogButton
 
 Full Example
 ------------

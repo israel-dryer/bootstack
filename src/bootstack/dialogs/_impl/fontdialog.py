@@ -4,7 +4,7 @@ import tkinter
 from collections import namedtuple
 from tkinter import Text, Variable, font
 from types import SimpleNamespace
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 
 from typing_extensions import Unpack
 
@@ -39,7 +39,21 @@ ttk = SimpleNamespace(
 )
 
 
-FontChoice = namedtuple('FontChoice', 'family size weight slant underline overstrike')
+class FontChoice(NamedTuple):
+    """A font selected from `FontDialog` or `ask_font`."""
+
+    family: str
+    """The font family name."""
+    size: int
+    """The point size."""
+    weight: str
+    """The weight — `'normal'` or `'bold'`."""
+    slant: str
+    """The slant — `'roman'` or `'italic'`."""
+    underline: bool
+    """`True` if the font is underlined."""
+    overstrike: bool
+    """`True` if the font is struck through."""
 
 
 class FontDialog:

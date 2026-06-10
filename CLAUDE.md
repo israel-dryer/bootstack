@@ -206,12 +206,14 @@ memories and git history.
   pandas-style public-contract + submodule list + `sphinx-design` card grid (secondary
   TOC removed). `api-overview` RETIRED (folded into the landing). All clean-build
   warning-free; uncommitted until the "IA restructure" commit.
-  **NEXT: home the remaining un-homed names into the new IA** — Menus/Overlays/Forms
-  widgets → **Widgets** page; dialog verbs + classes → new **Dialogs** group + card
-  (give `bootstack.dialogs` an `__all__`; home `FontChoice`/`FormDialog`/`Dialog`/
-  `DialogButton`/`ColorChooserDialog`/`ColorChoice`/`FontDialog`/`FilterDialog`); the
-  `bootstack.types` aliases (incl. relocated `ColumnSpec`/`EditorType`/`FormOptions`)
-  → new **Types** group + card. Follow-on: flesh out widget Guides
+  **✅ IA migration COMPLETE** (2026-06-09) — every public name is now homed: added
+  the **Dialogs** group (verbs at `bootstack.*`, classes at `bootstack.dialogs.*`; gave
+  `bootstack.dialogs` an `__all__`) + the **Types** group (`bootstack.types.__all__`),
+  homed Menus/Overlays/Forms into **Widgets**, converted the ~13 remaining guides to
+  table-only, converted `ColorChoice`/`FontChoice` → typed `NamedTuple`s, enriched the
+  4 Form item dataclasses, and added `autosummary_filename_map` for the `Toast`/`toast`
+  case collision. **All 14 reference groups built, clean-build warning-free.**
+  **NEXT (Stage 4 done; this is the follow-on):** flesh out widget Guides
   with examples (**API Reference is a last resort; Guides carry teaching**). `EditFilter`
   already demoted (memory `project_editfilter_public_api`). **Full brief + decisions in
   `docs/_dev/api-reference-restructure.md`**; memory `project_api_reference_restructure`.

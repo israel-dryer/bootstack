@@ -208,9 +208,13 @@ sidebar navigation panel.
 API
 ---
 
-.. autoclass:: bootstack.widgets.toolbar.Toolbar
-   :members:
-   :undoc-members:
+The complete reference for :class:`Toolbar <bootstack.Toolbar>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Toolbar
 
 Full Example
 ------------

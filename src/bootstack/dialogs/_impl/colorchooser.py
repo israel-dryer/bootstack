@@ -8,7 +8,7 @@ import tkinter
 from collections import namedtuple
 from tkinter import Canvas, IntVar, StringVar
 from types import SimpleNamespace
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, NamedTuple, Optional, Tuple
 
 from PIL import ImageColor
 
@@ -36,7 +36,17 @@ ttk = SimpleNamespace(
 )
 
 ColorValues = namedtuple('ColorValues', 'h s l r g b hex')
-ColorChoice = namedtuple('ColorChoice', 'rgb hsl hex')
+
+
+class ColorChoice(NamedTuple):
+    """A color selected from `ColorChooserDialog` or `ask_color`."""
+
+    rgb: Tuple[int, int, int]
+    """The color as an `(r, g, b)` tuple, each component 0–255."""
+    hsl: Tuple[int, int, int]
+    """The color as an `(h, s, l)` tuple — hue 0–360, saturation and luminance 0–100."""
+    hex: str
+    """The color as a lowercase hex string, e.g. `'#ff0000'`."""
 
 PEN = '✛'
 

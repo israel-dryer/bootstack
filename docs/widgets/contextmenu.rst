@@ -133,9 +133,15 @@ horizontal strip for grouping buttons and menus.
 API
 ---
 
-.. autoclass:: bootstack.widgets.contextmenu.ContextMenu
-   :members:
-   :exclude-members: tk
+The complete reference for :class:`ContextMenu <bootstack.ContextMenu>` and its
+:class:`ContextMenuItem <bootstack.ContextMenuItem>` entries lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ContextMenu
+   ~bootstack.ContextMenuItem
 
 Full Example
 ------------

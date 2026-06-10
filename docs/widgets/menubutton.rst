@@ -225,9 +225,13 @@ standalone action button.
 API
 ---
 
-.. autoclass:: bootstack.widgets.menubutton.MenuButton
-   :members:
-   :exclude-members: tk
+The complete reference for :class:`MenuButton <bootstack.MenuButton>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.MenuButton
 
 Full Example
 ------------

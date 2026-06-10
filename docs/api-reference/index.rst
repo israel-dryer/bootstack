@@ -69,6 +69,13 @@ Building the interface
 
       The typed payloads every ``on_*`` handler receives.
 
+   .. grid-item-card:: Dialogs
+      :link: dialogs
+      :link-type: doc
+
+      One-shot prompt verbs (``alert``, ``confirm``, ``ask_*``) and the dialog
+      classes behind them.
+
 Data and validation
 -------------------
 
@@ -136,6 +143,12 @@ Services and reference
 
       The exception types bootstack raises.
 
+   .. grid-item-card:: Types
+      :link: types
+      :link-type: doc
+
+      Token and keyword types for annotating your own code.
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -144,6 +157,7 @@ Services and reference
    widgets
    reactivity
    events
+   dialogs
    data
    validation
    theming
@@ -152,3 +166,4 @@ Services and reference
    shortcuts
    store
    errors
+   types

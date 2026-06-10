@@ -125,9 +125,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.tooltip.Tooltip
-   :members:
-   :undoc-members:
+The complete reference for :class:`Tooltip <bootstack.Tooltip>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Tooltip
 
 Full Example
 ------------

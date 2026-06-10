@@ -46,6 +46,13 @@ autodoc_default_options     = {
 
 autosummary_generate = True
 
+# Disambiguate stub filenames that differ only by case — they collide on
+# case-insensitive filesystems (Windows/macOS). `Toast` (widget) vs `toast`
+# (dialog verb) is the one such pair in the public surface.
+autosummary_filename_map = {
+    "bootstack.toast": "bootstack.toast-verb",
+}
+
 # Single backticks in docstrings render as inline code (the project convention)
 # and, unlike the default interpreted-text role, are colon-safe (e.g. `h:mm`).
 default_role = "code"
