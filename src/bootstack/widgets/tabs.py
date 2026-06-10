@@ -13,7 +13,9 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event, AccentToken
+from bootstack.widgets.types import (
+    Event, AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+)
 
 _TABS_EVENTS: dict[str, str] = {
     "change":    "<<TabChanged>>",
@@ -23,41 +25,37 @@ _TABS_EVENTS: dict[str, str] = {
 
 
 class TabPage:
-    """Context-manager container returned by `Tabs.add()`.
+    """A handle for one tab — both a layout context and a live controller.
 
-    Place child widgets inside the ``with`` block to add them to the tab's page.
+    Returned by `Tabs.add()` and by `Tabs.item()` / `items()`. Use it as a `with`
+    block to place child widgets, and read `key` / read or set `label`, or call
+    `select()` / `hide()` / `show()` / `remove()` to drive the tab afterward.
 
-    Args:
-        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
-            or ``'grid'``.
-        padding: Space inside the page frame.
-        gap: Space between children in pixels.
-        fill_items: Default fill direction applied to each child.
-        expand_items: Whether children expand to fill available space.
-        anchor_items: Default anchor applied to each child.
-        columns: Column definitions for ``'grid'`` layout.
-        rows: Row definitions for ``'grid'`` layout.
-        sticky_items: Default sticky value for grid children.
-        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
-            ``'column'``.
+    As a context manager it accepts the same layout kwargs as the standalone
+    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
+    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
     """
 
     def __init__(
         self,
         page_widget: tkinter.Widget,
         *,
-        layout: str = "vstack",
-        padding: Any = None,
+        key: str,
+        owner: "Tabs",
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
     ) -> None:
         self._page = page_widget
+        self._key = key
+        self._owner = owner
         self._layout = layout
 
         if layout in ("vstack", "hstack"):
@@ -110,6 +108,38 @@ class TabPage:
             options["anchor"] = self._anchor_items
         child._internal.pack(in_=self._child_master(), **options)
 
+    # ----- Tab identity, label, and control -----
+
+    @property
+    def key(self) -> str:
+        """The tab's unique key, used with `Tabs.item()` / `select()`."""
+        return self._key
+
+    @property
+    def label(self) -> str:
+        """The text shown on the tab. Assigning a new value relabels the tab."""
+        return self._owner._internal.configure_tab(self._key, "text")
+
+    @label.setter
+    def label(self, value: str) -> None:
+        self._owner._internal.configure_tab(self._key, text=value)
+
+    def select(self) -> None:
+        """Select (focus) this tab."""
+        self._owner.select(self._key)
+
+    def hide(self) -> None:
+        """Hide this tab without removing it. Restore with `show()`."""
+        self._owner.hide_tab(self._key)
+
+    def show(self) -> None:
+        """Restore this tab after it was hidden."""
+        self._owner.show_tab(self._key)
+
+    def remove(self) -> None:
+        """Remove this tab and its page entirely."""
+        self._owner.forget_tab(self._key)
+
     def __enter__(self) -> "TabPage":
         push_container(self)
         return self
@@ -135,10 +165,13 @@ class Tabs(PublicWidgetBase):
         tab_width: Fixed tab width in pixels, `'stretch'` to fill available space, or
             `None` (default, size to content).
         allow_close: Show close buttons on tabs. `True` = always, `False` = never,
-            `'hover'` = on hover. Default `False`.
+            `'hover'` = on hover. Defaults to `False`.
         allow_add: Show an add-tab button that fires the `tab_add` event.
-        accent: Accent token for the tab bar.
+        accent: Accent token for the tab bar. Defaults to the theme accent.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -149,7 +182,7 @@ class Tabs(PublicWidgetBase):
         tab_width: int | Literal["stretch"] | None = None,
         allow_close: bool | Literal["hover"] = False,
         allow_add: bool = False,
-        accent: AccentToken | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -169,8 +202,8 @@ class Tabs(PublicWidgetBase):
             internal_kwargs["tab_width"] = tab_width
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
 
+        self._pages: dict[str, TabPage] = {}
         self._internal = _InternalTabView(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
@@ -202,19 +235,19 @@ class Tabs(PublicWidgetBase):
         label: str = "",
         icon: str | None = None,
         closable: bool | Literal["hover"] | None = None,
-        close_command: Callable | None = None,
-        layout: str = "vstack",
-        padding: Any = None,
+        close_command: Callable[[], Any] | None = None,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
     ) -> TabPage:
-        """Add a tab and return a context manager for placing its children.
+        """Add a tab and return a handle for placing its children and controlling it.
 
         Args:
             key: Unique identifier for the tab/page.
@@ -222,18 +255,22 @@ class Tabs(PublicWidgetBase):
             icon: Icon name displayed on the tab.
             closable: Close-button visibility for this tab. Overrides `allow_close`.
             close_command: Called when the close button is clicked.
-            layout: Internal layout — `'vstack'` (default), `'hstack'`, or `'grid'`.
-            gap: Space between children in pixels.
+            layout: Internal layout. Defaults to `'vstack'`.
+            padding: Space inside the page frame. Defaults to `None`.
+            gap: Space between children in pixels. Defaults to `0`.
             fill_items: Default fill direction applied to each child.
             expand_items: Whether children expand to fill available space.
             anchor_items: Default anchor applied to each child.
-            columns: Column definitions for `'grid'` layout.
-            rows: Row definitions for `'grid'` layout.
+            columns: Column definitions for `'grid'` layout. An integer sets
+                the number of equal-weight columns; a list sets per-column
+                weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
+            rows: Row definitions for `'grid'` layout, same format as `columns`.
             sticky_items: Default sticky value for grid children.
-            auto_flow: Grid auto-flow direction.
+            auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
-            `TabPage` — use as a context manager to place children.
+            `TabPage` — use as a context manager to place children, and as a
+            handle to `select()`/`hide()`/`show()`/`remove()` the tab.
         """
         add_kwargs: dict[str, Any] = {}
         if icon is not None:
@@ -244,13 +281,16 @@ class Tabs(PublicWidgetBase):
             add_kwargs["close_command"] = close_command
 
         page_widget = self._internal.add(key, text=label, **add_kwargs)
-        return TabPage(
+        page = TabPage(
             page_widget,
+            key=key, owner=self,
             layout=layout, padding=padding, gap=gap, fill_items=fill_items,
             expand_items=expand_items, anchor_items=anchor_items,
             columns=columns, rows=rows, sticky_items=sticky_items,
             auto_flow=auto_flow,
         )
+        self._pages[key] = page
+        return page
 
     def select(self, key: str) -> None:
         """Select the tab identified by `key`."""
@@ -267,6 +307,7 @@ class Tabs(PublicWidgetBase):
     def forget_tab(self, key: str) -> None:
         """Remove a tab and its page entirely."""
         self._internal.forget_tab(key)
+        self._pages.pop(key, None)
 
     # ----- Properties / introspection -----
 
@@ -283,17 +324,21 @@ class Tabs(PublicWidgetBase):
         """All page keys in insertion order."""
         return self._internal.page_keys()
 
-    def item(self, key: str) -> Any:
-        """Return the tab header item for `key` (for runtime configuration).
+    def item(self, key: str) -> TabPage:
+        """Return the tab handle for `key`.
 
         Args:
             key: Tab key assigned in `add()`.
-        """
-        return self._internal.tab(key)
 
-    def items(self) -> tuple[Any, ...]:
-        """Return all tab header items in insertion order."""
-        return self._internal.tabs()
+        Returns:
+            The `TabPage` for that key — read/set its `label` or call
+            `select()`/`hide()`/`show()`/`remove()`.
+        """
+        return self._pages[key]
+
+    def items(self) -> tuple[TabPage, ...]:
+        """Return all tab handles in insertion order."""
+        return tuple(self._pages[k] for k in self._internal.tab_keys())
 
     # ----- Event shorthands -----
 
@@ -305,7 +350,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when the selected tab changes.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 
@@ -317,7 +362,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when a tab's close button is clicked.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("tab_close", handler)
 
@@ -329,7 +374,7 @@ class Tabs(PublicWidgetBase):
         """Register a callback fired when the add-tab button is clicked.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("tab_add", handler)
 

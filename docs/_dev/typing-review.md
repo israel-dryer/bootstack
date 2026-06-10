@@ -284,7 +284,26 @@ Work in the Stage 4 batch order; tick as completed:
         a uniform public lifecycle event is its own initiative.
       Verify: `test_public_surface.py` green (131); clean `-W` build warning-free;
       `LayoutKind`/`AutoFlow` expand inline in built HTML; HStack params render.
-- [ ] Navigation: PageStack, Tabs, SideNav
+- [x] Navigation: PageStack, Tabs, SideNav — DONE (NOT committed — awaiting review).
+      Core typing: `StackPage`/`TabPage` handles + `PageStack`/`Tabs.add()` got the
+      Layout-batch promotions (`layout`→`LayoutKind`, `padding`→`Padding`,
+      `fill_items`/`anchor_items`/`sticky_items`→`Fill`/`Anchor`/`Sticky`,
+      `columns`/`rows`→`int|list[int|str]`, `auto_flow`→`AutoFlow`); single backticks;
+      `**kwargs`→`:doc:/tasks/layout`; dropped value enumerations the type shows
+      (DisplayMode/layout/auto_flow). `Tabs` `accent: AccentToken|None`→`AccentToken|
+      str|None` + removed its `internal_kwargs.update(kwargs)` leak; `close_command:
+      Callable`→`Callable[[],Any]`; columns px example added. `SideNav` `accent:
+      AccentToken`→`AccentToken|str` (kept `'primary'` default); already returns public
+      `SideNavItem`/`SideNavGroup` handles (no leak) — typing/docstring only.
+      **STRUCTURAL — handle enrichment (mirrors approved Accordion/SplitView):**
+      `StackPage` gained `key` + `navigate()`; `TabPage` gained `key` + `label`
+      (get/set via `configure_tab`) + `select()`/`hide()`/`show()`/`remove()`.
+      `PageStack`/`Tabs` retain handles in `_pages`; `item(key)`→handle and `items()`→
+      `tuple[handle,...]` now return the page handle instead of leaking the internal
+      page widget / tab header (both were typed `Any`). `remove`/`forget_tab` drop from
+      the registry. No internal callers depended on the old leaked returns (verified).
+      Verify: `test_public_surface.py` green (131); clean `-W` build; all new handle
+      members render in built HTML. `guide_layout` flag now covers all four handles.
 - [ ] Overlays/Forms/Dialogs
 
 ## Verify (each batch)
