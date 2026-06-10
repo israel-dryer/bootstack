@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Mapping, Sequence, overload
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Sequence, overload
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
 from bootstack.widgets._impl.composites.form import Form as _InternalForm
@@ -11,6 +11,10 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.streams import Stream
 from bootstack.events import Subscription
+from bootstack.widgets.types import AccentToken
+
+if TYPE_CHECKING:
+    from bootstack.dialogs import DialogButton
 
 
 class Form(PublicWidgetBase):
@@ -24,13 +28,16 @@ class Form(PublicWidgetBase):
         col_count: Number of top-level columns. Default `1`.
         min_col_width: Minimum column width in pixels.
         on_data_change: Callback invoked with the updated data dict on each
-            field change. Equivalent to calling ``on_data_change()`` after
+            field change. Equivalent to calling `on_data_change()` after
             construction.
         width: Fixed form width in pixels.
         height: Fixed form height in pixels.
         accent: Accent token for the form container.
         buttons: Footer buttons — strings, `DialogButton` instances, or dicts.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -43,8 +50,8 @@ class Form(PublicWidgetBase):
         on_data_change: Callable[[dict[str, Any]], Any] | None = None,
         width: int | None = None,
         height: int | None = None,
-        accent: str | None = None,
-        buttons: Sequence | None = None,
+        accent: AccentToken | str | None = None,
+        buttons: Sequence[str | DialogButton | dict[str, Any]] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -67,7 +74,6 @@ class Form(PublicWidgetBase):
             kw["accent"] = accent
         if buttons is not None:
             kw["buttons"] = buttons
-        kw.update(kwargs)
 
         self._internal = _InternalForm(tk_master, **kw)
         self._attach_to_parent(layout_kw)
@@ -151,13 +157,13 @@ class Form(PublicWidgetBase):
         """Register a callback fired whenever any field value changes.
 
         The handler receives the current form data as a dict. Called with no
-        handler, returns a composable ``Stream``.
+        handler, returns a composable `Stream`.
 
         Args:
             handler: Called with the updated data dict on each field change.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         if handler is None:
             return self.on("data_change")

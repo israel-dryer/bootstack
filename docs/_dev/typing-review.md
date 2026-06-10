@@ -304,7 +304,35 @@ Work in the Stage 4 batch order; tick as completed:
       the registry. No internal callers depended on the old leaked returns (verified).
       Verify: `test_public_surface.py` green (131); clean `-W` build; all new handle
       members render in built HTML. `guide_layout` flag now covers all four handles.
-- [ ] Overlays/Forms/Dialogs
+- [x] Overlays/Forms/Dialogs — DONE (NOT committed — awaiting review).
+      **Tooltip/Toast** (overlays, leaf widgets — no `**kwargs` layout): `accent`→
+      `AccentToken|str|None`; single backticks; dropped accent/justify enumerations;
+      `Toast.on_dismiss`/`toast()`→`Callable[[dict|None],Any]`.
+      **Form**: `accent: str`→`AccentToken|str|None` (the `project_enum_option_typing`
+      first-fix); `buttons: Sequence`→`Sequence[str|DialogButton|dict[str,Any]]`
+      (TYPE_CHECKING import to dodge the dialogs↔widgets cycle); removed the
+      `kw.update(kwargs)` leak + documented `**kwargs`→`/tasks/layout`; single
+      backticks. (Form's `field()`/`fields()`/`field_variable()` stay `Any`/`tuple` —
+      Tk-coupled, `project_public_intent_backlog`. Form has no explicit `surface`/
+      `padding` params now the leak is gone — possible follow-up like Card/GroupBox.)
+      **Dialogs** (`dialogs/__init__.py` verbs + `FormDialog`/`ColorChooserDialog`/
+      `FontDialog`/`FilterDialog` wrappers): global double→single backticks (76 lines);
+      `confirm_role: str`→`ButtonRole`; `value_format`→`:ref:value-formats` link on
+      ask_string/integer/float; `default_font`→`:doc:/reference/typography` on
+      FontDialog/ask_font; dropped `severity` value enumerations (`SeverityToken` shows
+      them). **Dialog/DialogButton** (`_impl/dialog.py`, public re-exports): global
+      backticks; `window_style: str`→`WindowStyle|str|None`; `surface: str`→
+      `SurfaceToken|str|None`. `DialogButton` dataclass already clean (attribute
+      docstrings). `ColorChoice`/`FontChoice` are bare namedtuples (no class docstring;
+      documented via the wrappers' `result` props). NOTE: `bootstack.dialogs` still
+      lacks an `__all__` — that's Stage-4 homing Batch 6, not the typing sweep.
+      Verify: `test_public_surface.py` green (131); clean `-W` build; dialog classes
+      construct.
+
+**TYPING SWEEP COMPLETE** — all widget batches done. Remaining cross-cutting follow-ups
+(separate initiatives, NOT this sweep): the holistic `guide_layout`→`_guide_layout`
+demotion on the 4 handle classes; a public `on_destroy` lifecycle hook; retiring the
+now-unused `VariantToken`.
 
 ## Verify (each batch)
 

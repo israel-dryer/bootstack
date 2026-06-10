@@ -95,9 +95,18 @@ memories and git history.
     Label/Badge/ProgressBar/Gauge/ListView/DataTable/Tree). Selection included a
     maintainer-approved STRUCTURAL cleanup: removed dead `variant` (Switch/Checkbox) +
     unsupported `density` (Checkbox/Switch/Radio) via per-subclass `__init__`s + an
-    `_internal_options` engine that rejects unknown kwargs.
-  - **NEXT: Layout** (Separator/Card/GroupBox/VStack/HStack/Grid/ScrollView/Accordion/
-    SplitView). Then Navigation, Overlays/Forms/Dialogs.
+    `_internal_options` engine that rejects unknown kwargs. **Layout** (all 9 —
+    committed `5fbbc0a7`: Separator/Card/GroupBox/VStack/HStack/Grid/ScrollView/
+    Accordion/SplitView; added `LayoutKind`/`AutoFlow` aliases; enriched
+    `AccordionSection` + full `SplitView` pane management + dropped the broken
+    `min_size=`; HStack/VStack own `__init__` so params render). **Navigation** (all 3
+    — committed `22baa3c7`: PageStack/Tabs/SideNav; enriched `StackPage`/`TabPage`
+    handles; `item()`/`items()` return handles, not leaked internals).
+  - **NEXT: Overlays/Forms/Dialogs** — Tooltip/Toast, Form, and the dialog classes
+    (`Dialog`/`FormDialog`/`FilterDialog`/`FontDialog`/`ColorChooserDialog` + the
+    `alert`/`confirm`/`ask_*` verbs). STILL DEFERRED across the sweep: the holistic
+    `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
+    SplitPane/StackPage/TabPage), and a public `on_destroy` lifecycle hook.
   - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
     (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
     STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
