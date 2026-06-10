@@ -69,7 +69,6 @@ html[data-theme="dark"] {
 
 .bs-screenshot-dark,
 .bs-screenshot-light {
-    border-radius: 6px;
     display: block;
     margin: 0.75rem 0 !important;
 }
@@ -90,9 +89,21 @@ html[data-theme="light"] .bs-screenshot-light { display: block !important; }
 html[data-theme="dark"]  .bs-screenshot-dark  { display: block !important; }
 html[data-theme="dark"]  .bs-screenshot-light { display: none  !important; }
 
-/* Prevent pydata's dark-mode brightness filter from altering screenshots. */
-html[data-theme="dark"] .bs-screenshot-dark,
-html[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
+/* Override pydata's dark-mode content-image rule
+   (`.bd-content img:not(.only-dark,.dark-light)`), which paints a white
+   background-color and a border-radius. The white plate flashes at the corners
+   during image decode on first load; our screenshots are already theme-matched,
+   so strip it (and the theme's radius/brightness filter). Matching the theme's
+   specificity with `.bd-content img.<class>`; our CSS loads later, so it wins. */
+html[data-theme="dark"] .bd-content img.bs-screenshot-dark,
+html[data-theme="dark"] .bd-content img.bs-screenshot-light {
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    filter: none !important;
+}
+html[data-theme="dark"] .bd-content img.bs-window-screenshot {
+    border-radius: 6px !important;   /* windows keep their rounded corners */
+}
 
 /* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
 .bs-dialog-screenshot {}
@@ -102,6 +113,7 @@ html[data-theme="dark"] .bs-screenshot-light { filter: none !important; }
    own border token so the frame follows light/dark automatically; the 6px
    radius from the base rule rounds it off. */
 .bs-window-screenshot {
+    border-radius: 6px;
     border: 1px solid var(--pst-color-border);
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
 }
