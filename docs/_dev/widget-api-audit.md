@@ -29,6 +29,36 @@ useful, worth a decision · `low` = niche / plausibly opinionated.
 
 ---
 
+## Code-review follow-ups (deferred from the high-effort review, 2026-06-10)
+
+A high-effort code review of the branch confirmed and **fixed** 3 correctness
+bugs (commit `55e2d12b`): non-string group option keys, the `configure_item`
+"independent of group disabled" overclaim, and DateField `disabled_dates`
+generator exhaustion (added coercing `set_*` mutators to the internal DateEntry).
+Two findings were refuted (NumberField `clear()` is path-safe; the two
+`_coerce_date` copies are identical, not divergent). The rest are cleanup/altitude,
+**deferred** (none block the branch):
+
+- **#4** `SelectButton.options` setter rebuilds the dropdown but does not reconcile
+  the current `value` — the button can show a value no longer in the list.
+- **#5** `docs/scripts/take_screenshots.py`: `GetParent`/`GetWindowRect` are called
+  with no ctypes `argtypes`/`restype` — Win64 HWND-truncation risk (works only
+  because handles are small). Wrap the HWND like the adjacent DWM call does.
+- **#6** RadioGroup/ToggleGroup duplicate `configure_item`/`remove`/`__len__`/
+  `__contains__` verbatim → lift onto a shared selection-group base (folds into
+  `project_select_options_databag`).
+- **#7** `WindowControlsMixin` re-declares `close`/`show`/`add_close_handler`/
+  `remove_close_handler` that `Window` overrides, and `mixin.close()` calls
+  `self._internal.close()` which the `Toplevel` lacks — scope the mixin to
+  App/AppShell, or give the internals a uniform close contract.
+- **#9** Duplicate `_coerce_date` in `calendar.py` and `dateentry.py` (identical) →
+  extract one shared date-utils helper.
+- **#10** Calendar `set_min_date`/`set_max_date`/`set_disabled_dates` each call
+  `_refresh_calendar()` → a batch of constraint changes redraws ~42 cells N times;
+  coalesce to one redraw.
+
+---
+
 ## 0. Impact summary — and what's likely *intentional*
 
 **Read this first.** A "gap" here means *the impl can do X, the wrapper can't* —
