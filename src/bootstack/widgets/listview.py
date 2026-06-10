@@ -33,6 +33,9 @@ class ListView(PublicWidgetBase):
             a time, `'multi'` allows several. Default `'none'` (no selection).
         show_selection_controls: If `True`, show checkboxes (multi) or radio
             buttons (single) alongside each item.
+        select_on_click: Whether clicking an item selects it. Defaults to `True`
+            when `selection_mode` is not `'none'`. Set `False` to decouple a
+            click (e.g. activate or open) from selection.
         show_chevron: If `True`, show a right-pointing chevron on each item.
         allow_remove: If `True`, show a remove button on each item.
         allow_reorder: If `True`, show a drag handle and allow reordering by
@@ -63,6 +66,7 @@ class ListView(PublicWidgetBase):
         data_source: DataSourceProtocol | None = None,
         selection_mode: SelectionMode = "none",
         show_selection_controls: bool = False,
+        select_on_click: bool | None = None,
         show_chevron: bool = False,
         allow_remove: bool = False,
         allow_reorder: bool = False,
@@ -94,6 +98,8 @@ class ListView(PublicWidgetBase):
             internal_kwargs["items"] = items
         if data_source is not None:
             internal_kwargs["datasource"] = data_source
+        if select_on_click is not None:
+            internal_kwargs["select_on_click"] = select_on_click
         if accent is not None:
             internal_kwargs["accent"] = accent
 

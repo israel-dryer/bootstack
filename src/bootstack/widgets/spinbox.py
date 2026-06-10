@@ -1,13 +1,16 @@
 ﻿from __future__ import annotations
 
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.spinbox import Spinbox as _InternalSpinbox
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import Event, AccentToken, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _SPINBOX_EVENTS: dict[str, str] = {
     "change": "<KeyRelease>",
@@ -29,12 +32,15 @@ class Spinbox(PublicWidgetBase):
         step: Increment between values. Default `1`.
         wrap: If True, wraps from max back to min and vice versa.
         value_format: Display format string (e.g. `'%.2f'`).
-        text_signal: Reactive `Signal` linked to the displayed text.
+        textsignal: Reactive `Signal` linked to the displayed text.
         width: Width in character cells.
         disabled: If True, widget is non-interactive.
-        density: `'default'` or `'compact'`.
-        accent: Accent token.
+        density: Padding density.
+        accent: Accent token applied to the focus ring.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -47,11 +53,11 @@ class Spinbox(PublicWidgetBase):
         step: float = 1,
         wrap: bool = False,
         value_format: str | None = None,
-        text_signal: Any = None,
+        textsignal: "Signal | None" = None,
         width: int | None = None,
         disabled: bool = False,
-        density: str | None = None,
-        accent: str | None = None,
+        density: WidgetDensity | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -71,8 +77,8 @@ class Spinbox(PublicWidgetBase):
             internal_kwargs["increment"] = step
         if value_format is not None:
             internal_kwargs["format"] = value_format
-        if text_signal is not None:
-            internal_kwargs["textsignal"] = text_signal
+        if textsignal is not None:
+            internal_kwargs["textsignal"] = textsignal
         if width is not None:
             internal_kwargs["width"] = width
         if disabled:
@@ -81,9 +87,9 @@ class Spinbox(PublicWidgetBase):
             internal_kwargs["density"] = density
         if accent is not None:
             internal_kwargs["accent"] = accent
-        # Clean up any None values accidentally set
+        # Clean up any None values accidentally set. (**kwargs is layout-only —
+        # already split out above — so it is NOT forwarded to the internal widget.)
         internal_kwargs = {k: v for k, v in internal_kwargs.items() if v is not None}
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalSpinbox(tk_master, **internal_kwargs)
 

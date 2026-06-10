@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Literal, Sequence
+from typing import Any, Callable, Literal, Sequence
 
 from bootstack._runtime.app import App as _InternalApp, LocalizeMode
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class App(AppConfigMixin, PublicContainer):
+class App(AppConfigMixin, WindowControlsMixin, PublicContainer):
     """The application window. Behaves as an implicit VStack from the user's
     perspective: accepts `padding`, `gap`, `fill_items`, `expand_items`, and
     `anchor_items` and applies them to its internal content frame.
@@ -38,6 +39,9 @@ class App(AppConfigMixin, PublicContainer):
         remember_window_state: If True, window geometry is saved on close and
             restored on next launch.
         state_path: Optional override for the persisted window-state file.
+        on_close: Handler invoked when the user clicks the window's close button.
+            Return `False` to veto the close; return `None` or `True` to allow
+            it. Not called by the programmatic `close()`.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -73,6 +77,7 @@ class App(AppConfigMixin, PublicContainer):
         macos_quit_behavior: Literal['native', 'classic'] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
+        on_close: Callable[[], bool | None] | None = None,
         # window placement / display
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
@@ -120,6 +125,8 @@ class App(AppConfigMixin, PublicContainer):
             init_kwargs["maxsize"] = max_size
         if resizable is not None:
             init_kwargs["resizable"] = resizable
+        if on_close is not None:
+            init_kwargs["on_close"] = on_close
         init_kwargs.update(app_kwargs)
 
         self._tk_root = _InternalApp(**init_kwargs)

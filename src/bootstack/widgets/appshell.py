@@ -5,9 +5,10 @@ from typing import Any, Callable, Literal, Sequence, overload
 from bootstack._runtime.app import LocalizeMode
 from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
-from bootstack.widgets._core.base import adapt_handler
+from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
+from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
@@ -40,7 +41,7 @@ class _PageFrame:
         pop_container(self)
 
 
-class AppShell(AppConfigMixin):
+class AppShell(AppConfigMixin, WindowControlsMixin, PublicWidgetBase):
     """Application window with built-in toolbar, sidebar navigation, and page stack.
 
     Wraps the internal AppShell to provide the standard desktop app scaffold:
@@ -72,6 +73,9 @@ class AppShell(AppConfigMixin):
         macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
         remember_window_state: If True, window geometry is saved and restored.
         state_path: Optional override for the persisted window-state file.
+        on_close: Handler invoked when the user clicks the window's close button.
+            Return `False` to veto the close; `None` or `True` to allow it. Not
+            called by the programmatic `close()`.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -109,6 +113,7 @@ class AppShell(AppConfigMixin):
         macos_quit_behavior: Literal['native', 'classic'] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
+        on_close: Callable[[], bool | None] | None = None,
         # window placement
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
@@ -162,6 +167,8 @@ class AppShell(AppConfigMixin):
             init_kwargs["maxsize"] = max_size
         if resizable is not None:
             init_kwargs["resizable"] = resizable
+        if on_close is not None:
+            init_kwargs["on_close"] = on_close
         init_kwargs.update(kwargs)
 
         self._internal = _InternalAppShell(**init_kwargs)

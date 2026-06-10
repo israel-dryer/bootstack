@@ -143,6 +143,49 @@ class ToggleGroup(PublicWidgetBase):
         """
         self._internal.add(text=label, value=value if value is not None else label, **kwargs)
 
+    def remove(self, value: Any) -> None:
+        """Remove the option identified by `value`.
+
+        Args:
+            value: The value the option was added with.
+
+        Raises:
+            KeyError: If no option with that value exists.
+        """
+        self._internal.remove(str(value))
+
+    def configure_item(
+        self,
+        value: Any,
+        *,
+        label: str | None = None,
+        disabled: bool | None = None,
+    ) -> None:
+        """Update a single option in place, without rebuilding the group.
+
+        Args:
+            value: The option to update (the value it was added with).
+            label: New display text, when given.
+            disabled: When given, disable (`True`) or re-enable (`False`) just
+                this option, independent of the group's overall `disabled`.
+
+        Raises:
+            KeyError: If no option with that value exists.
+        """
+        key = str(value)
+        if label is not None:
+            self._internal.configure_item(key, text=label)
+        if disabled is not None:
+            self._internal.configure_item(key, state="disabled" if disabled else "normal")
+
+    def __len__(self) -> int:
+        """The number of options in the group."""
+        return len(self._internal.keys())
+
+    def __contains__(self, value: Any) -> bool:
+        """Whether an option with the given `value` is in the group."""
+        return str(value) in self._internal.keys()
+
     # ----- Event shorthands -----
 
     @overload

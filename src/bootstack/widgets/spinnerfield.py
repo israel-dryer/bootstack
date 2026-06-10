@@ -53,6 +53,10 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
         justify: Text alignment. Default `'left'`.
         font: Semantic font token (e.g. `'body'`, `'code'`). See
             :doc:`/reference/typography`.
+        value_format: Format applied when displaying a numeric value — a named
+            preset (e.g. `'decimal'`, `'currency'`, `'percent'`) or a custom
+            pattern (e.g. `'#,##0.00'`). Requires localization enabled. See
+            :ref:`format specs <value-formats>`.
         accent: Accent token applied to the focus ring.
         density: Widget density.
         parent: Override the context-stack parent.
@@ -80,6 +84,7 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
         width: int | None = None,
         justify: Justify | None = None,
         font: str | None = None,
+        value_format: str | None = None,
         accent: AccentToken | str | None = None,
         density: WidgetDensity | None = None,
         parent: Any = None,
@@ -120,6 +125,8 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["justify"] = justify
         if font is not None:
             internal_kwargs["font"] = font
+        if value_format is not None:
+            internal_kwargs["value_format"] = value_format
         if accent is not None:
             internal_kwargs["accent"] = accent
         if density is not None:

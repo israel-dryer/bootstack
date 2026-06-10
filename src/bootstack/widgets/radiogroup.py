@@ -122,6 +122,18 @@ class RadioGroup(PublicWidgetBase):
     def disabled(self, v: bool) -> None:
         self._internal.configure(state="disabled" if v else "normal")
 
+    @property
+    def title(self) -> str | None:
+        """The label rendered above the group. Assigning to it updates it live.
+
+        Set to `None` (or `''`) to remove the label entirely.
+        """
+        return self._internal.cget("text") or None
+
+    @title.setter
+    def title(self, value: str | None) -> None:
+        self._internal.configure(text=value or "")
+
     # ----- Methods -----
 
     def add(self, label: str, value: Any | None = None, **kwargs: Any) -> None:
@@ -136,6 +148,38 @@ class RadioGroup(PublicWidgetBase):
     def remove(self, value: Any) -> None:
         """Remove the button identified by `value`."""
         self._internal.remove(str(value))
+
+    def configure_item(
+        self,
+        value: Any,
+        *,
+        label: str | None = None,
+        disabled: bool | None = None,
+    ) -> None:
+        """Update a single option in place, without rebuilding the group.
+
+        Args:
+            value: The option to update (the value it was added with).
+            label: New display text, when given.
+            disabled: When given, disable (`True`) or re-enable (`False`) just
+                this option, independent of the group's overall `disabled`.
+
+        Raises:
+            KeyError: If no option with that value exists.
+        """
+        key = str(value)
+        if label is not None:
+            self._internal.configure_item(key, text=label)
+        if disabled is not None:
+            self._internal.configure_item(key, state="disabled" if disabled else "normal")
+
+    def __len__(self) -> int:
+        """The number of options in the group."""
+        return len(self._internal.keys())
+
+    def __contains__(self, value: Any) -> bool:
+        """Whether an option with the given `value` is in the group."""
+        return str(value) in self._internal.keys()
 
     # ----- Event shorthands -----
 
