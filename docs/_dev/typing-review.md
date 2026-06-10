@@ -1,8 +1,11 @@
 # Initiative — Public API typing review (the typing sweep)
 
-**Status:** IN PROGRESS on `feat/api-reference-widgets` (folded into the Stage 4
-API-reference work, per "clean up the API as you document it"). Execution = **path A**
-(incremental, by-widget, maintainer reviews each batch). Decided 2026-06-09.
+**Status:** ✅ COMPLETE on `feat/api-reference-widgets` — all widget batches swept
+(Application → Overlays/Forms/Dialogs), each committed and maintainer-reviewed.
+Execution was **path A** (incremental, by-widget). **DECISION (2026-06-09): the
+standalone sweep is finished; remaining/future typing now folds into the Stage-4
+API-Reference homing — a module gets typed when it is homed, not in a separate pass.**
+The per-batch log + conventions below stay as the reference for that homing work.
 
 Surfaced while the maintainer reviewed the Stage 4 API-reference pages: public
 wrappers pervasively under-type params (`Any`, bare `str`), re-enumerate values in

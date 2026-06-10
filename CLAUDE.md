@@ -82,12 +82,14 @@ memories and git history.
 
 ## Next up — candidates (pick one)
 
-- **★★ ACTIVE — Public-API typing sweep** (branch `feat/api-reference-widgets`,
-  committed `6f701449`; NOT pushed). Grew out of Stage 4's "clean up each widget's API
-  as it is homed" while the maintainer reviewed the built docs. Goes widget-by-widget
-  in Stage-4 batch order fixing param TYPES + docstrings — distinct from, and
-  interleaved with, the Stage 4 *homing* below. **READ FIRST: full brief + per-widget
-  checklist + every convention is in `docs/_dev/typing-review.md`.**
+- **✅ DONE — Public-API typing sweep** (branch `feat/api-reference-widgets`, NOT
+  pushed). Grew out of Stage 4's "clean up each widget's API as it is homed". Goes
+  widget-by-widget in Stage-4 batch order fixing param TYPES + docstrings. **ALL widget
+  batches complete** (Application → Overlays/Forms/Dialogs). **DECISION (2026-06-09):
+  the standalone sweep is finished; any remaining/future typing now folds into the
+  Stage-4 API-Reference *homing* below — each module gets typed at the moment it is
+  homed, not in a separate pass.** Full brief + per-widget checklist + every convention:
+  `docs/_dev/typing-review.md`.
   - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
     Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label, Inputs (all 11 — committed
     `4a9609ff`), Selection (all 10 — Checkbox/Switch/ToggleButton/ToggleGroup/Radio/
@@ -102,11 +104,16 @@ memories and git history.
     `min_size=`; HStack/VStack own `__init__` so params render). **Navigation** (all 3
     — committed `22baa3c7`: PageStack/Tabs/SideNav; enriched `StackPage`/`TabPage`
     handles; `item()`/`items()` return handles, not leaked internals).
-  - **NEXT: Overlays/Forms/Dialogs** — Tooltip/Toast, Form, and the dialog classes
-    (`Dialog`/`FormDialog`/`FilterDialog`/`FontDialog`/`ColorChooserDialog` + the
-    `alert`/`confirm`/`ask_*` verbs). STILL DEFERRED across the sweep: the holistic
+    **Overlays/Forms/Dialogs** (final batch — committed `aee08c78`: Tooltip/Toast/Form +
+    the dialog verbs/classes). **FOLD INTO HOMING (not done in the sweep):** convert
+    `ColorChoice`/`FontChoice` from bare `namedtuple`s → typed `NamedTuple`s with field
+    docstrings + single-backtick prose when the `bootstack.dialogs` API-Reference page is
+    built; surface the `bootstack.types` aliases (`LayoutKind`/`AutoFlow`/`Padding`/…)
+    when that page is built (both modules are flagged "pending" in
+    `api-reference/index.rst`). STILL DEFERRED (separate initiatives): the holistic
     `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
-    SplitPane/StackPage/TabPage), and a public `on_destroy` lifecycle hook.
+    SplitPane/StackPage/TabPage), a public `on_destroy` lifecycle hook, and retiring the
+    now-unused `VariantToken`.
   - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
     (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
     STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
