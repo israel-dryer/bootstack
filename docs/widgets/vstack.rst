@@ -179,9 +179,13 @@ elevated background or labelled border.
 API
 ---
 
-.. autoclass:: bootstack.widgets.stacks.VStack
-   :members:
-   :undoc-members:
+The complete reference for :class:`VStack <bootstack.VStack>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.VStack
 
 Full Example
 ------------

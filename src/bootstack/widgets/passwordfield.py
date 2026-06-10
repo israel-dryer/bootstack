@@ -36,25 +36,27 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     Args:
         value: Initial password value (displayed masked).
         placeholder: Ghost text shown when the field is empty and unfocused.
-        textsignal: Reactive ``Signal[str]`` bound to the field text. The
+        textsignal: Reactive `Signal[str]` bound to the field text. The
             field value and signal stay in sync automatically.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
-        required: If ``True``, marks the field as required and prevents empty
+        required: If `True`, marks the field as required and prevents empty
             submission.
         mask: Character used to mask each typed character. Defaults to
-            ``'•'``.
-        show_visibility_toggle: If ``True`` (default), shows the eye-icon
+            `'•'`.
+        show_visibility_toggle: If `True` (default), shows the eye-icon
             button that reveals the password while held.
-        read_only: If ``True``, text is visible and selectable but not
+        read_only: If `True`, text is visible and selectable but not
             editable.
-        disabled: If ``True``, field is fully non-interactive and dimmed.
+        disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
-        accent: Accent token applied to the focus ring. One of ``'primary'``,
-            ``'secondary'``, ``'success'``, ``'warning'``, ``'danger'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        accent: Accent token applied to the focus ring.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -120,6 +122,22 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -144,7 +162,7 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[str] | None":
-        """The reactive ``Signal`` bound to this field, or ``None``."""
+        """The reactive `Signal` bound to this field, or `None`."""
         return getattr(self._internal, 'signal', None)
 
     @property
@@ -198,7 +216,7 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(0, "end")
 
     def select_range(self, start: int, end: int) -> None:
-        """Select text between ``start`` and ``end`` character positions.
+        """Select text between `start` and `end` character positions.
 
         Args:
             start: Start index (0-based, inclusive).
@@ -207,7 +225,7 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(start, end)
 
     def insert(self, index: int, text: str) -> None:
-        """Insert ``text`` at ``index``.
+        """Insert `text` at `index`.
 
         Args:
             index: Character position to insert at.
@@ -216,11 +234,11 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().insert(index, text)
 
     def delete(self, start: int, end: int | None = None) -> None:
-        """Delete characters from ``start`` to ``end``.
+        """Delete characters from `start` to `end`.
 
         Args:
             start: Start index (inclusive).
-            end: End index (exclusive). If ``None``, deletes to end of field.
+            end: End index (exclusive). If `None`, deletes to end of field.
         """
         self._entry_widget().delete(start, "end" if end is None else end)
 
@@ -233,8 +251,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 
@@ -245,8 +268,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field value is committed.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -257,8 +285,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Enter.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -269,8 +302,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -281,8 +319,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
@@ -293,8 +336,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -305,8 +353,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -317,8 +370,13 @@ class PasswordField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 

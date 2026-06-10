@@ -1,5 +1,5 @@
-bootstack.errors
-================
+Errors
+======
 
 .. currentmodule:: bootstack.errors
 

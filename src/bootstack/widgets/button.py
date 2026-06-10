@@ -7,7 +7,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -19,40 +19,33 @@ class Button(PublicWidgetBase):
     The button text is the first positional argument. All styling and
     behavior options are keyword-only.
 
-    Layout kwargs (``fill``, ``expand``, ``margin``, ``anchor``, etc.) are
-    consumed by the parent container and do not reach the button itself.
-
     Args:
         text: Text displayed on the button.
         on_click: Called with no arguments when the button is clicked.
             Equivalent to subscribing to the ``'click'`` event.
-        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
-            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
-            Defaults to the theme's default button color.
-        variant: Visual weight token. One of ``'solid'`` (filled background),
-            ``'outline'`` (border, transparent background), ``'ghost'``
-            (no border, transparent background). Defaults to ``'solid'``.
-        icon: Bootstrap Icons name (e.g. ``'save'``, ``'trash'``). See the
-            full catalog at https://icons.getbootstrap.com.
-        icon_only: If ``True``, show only the icon with no text. Inferred
-            automatically when ``icon=`` is set and no text is provided. Set
-            meaningful ``text`` anyway for accessibility.
-        icon_position: Position of the icon relative to the text. One of
-            ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
+        accent: Color intent token. Defaults to the theme's default button color.
+        variant: Visual weight token. Default `'solid'`.
+        icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`). See the full
+            catalog at https://icons.getbootstrap.com.
+        icon_only: If `True`, show only the icon with no text. Inferred
+            automatically when `icon=` is set and no text is provided. Set
+            meaningful `text` anyway for accessibility.
+        icon_position: Position of the icon or image relative to the text.
+            Default `'left'`.
         image: An image handle to display on the button, for custom artwork
-            rather than a Bootstrap Icon name. Combine with ``icon_position=``
-            to control placement relative to the text. (The public image-handle
-            API is being finalized for an upcoming release.)
+            rather than a Bootstrap Icon name. (The public image-handle API is
+            being finalized for an upcoming release.)
         width: Button width in character units. Useful for making a row of
-            buttons uniform width (e.g. ``width=10``).
-        textsignal: Reactive ``Signal[str]`` bound to the button text.
-            Updates automatically when the signal changes.
-        density: Padding density. ``'default'`` (normal) or ``'compact'``
-            (reduced padding, suited for toolbars).
-        disabled: If ``True``, the button is non-interactive and visually
-            dimmed.
+            buttons uniform width (e.g. `width=10`).
+        textsignal: Reactive `Signal[str]` bound to the button text. Updates
+            automatically when the signal changes.
+        density: Padding density.
+        disabled: If `True`, the button is non-interactive and visually dimmed.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -61,7 +54,7 @@ class Button(PublicWidgetBase):
         *,
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        variant: Literal["solid", "outline", "ghost"] | None = None,
         icon: str | None = None,
         icon_only: bool = False,
         icon_position: Literal["left", "right", "top", "bottom"] = "left",
@@ -160,10 +153,13 @@ class Button(PublicWidgetBase):
         other `on_*` shorthand.
 
         Args:
-            handler: Called with the click `Event` when the button is clicked.
+            handler: Called with the click :class:`~bootstack.events.Event`
+                (pointer position, modifier keys). Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("click", handler)
 

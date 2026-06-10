@@ -22,6 +22,7 @@ from bootstack.events._payloads import (
     DisplayModeEvent,
     ExportEvent,
     InputEvent,
+    MenuSelectEvent,
     NavEvent,
     PageChangeEvent,
     PaneToggleEvent,
@@ -85,6 +86,7 @@ __all__ = [
     "TextModifiedEvent",
     # Payloads — button group
     "ButtonGroupClickEvent",
+    "MenuSelectEvent",
     # Payloads — data source
     "DataChangeEvent",
     "ChangeKind",

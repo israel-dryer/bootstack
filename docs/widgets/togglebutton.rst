@@ -200,10 +200,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.boolean_controls.ToggleButton
-   :members:
-   :undoc-members:
-   :inherited-members: PublicWidgetBase
+The complete reference for :class:`ToggleButton <bootstack.ToggleButton>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ToggleButton
 
 Full Example
 ------------

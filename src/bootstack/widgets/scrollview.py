@@ -5,6 +5,7 @@ from typing import Any, Literal
 
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS
+from bootstack.widgets.types import Padding
 
 
 class ScrollView(PublicContainer):
@@ -15,23 +16,26 @@ class ScrollView(PublicContainer):
     enabled for all descendants.
 
     Args:
-        scroll_direction: Which axis to scroll — `'vertical'`, `'horizontal'`,
-            or `'both'` (default).
+        scroll_direction: Which axis to scroll. Defaults to `'both'`.
         scrollbar_visibility: When scrollbars appear — `'always'` (default),
             `'never'`, `'hover'` (appears on mouse enter), or `'scroll'`
             (auto-hides after `autohide_delay` ms of inactivity).
         autohide_delay: Milliseconds before scrollbars hide in `'scroll'` mode.
-            Default `1000`.
+            Defaults to `1000`.
         height: Fixed height of the viewport in pixels. When set, the
             canvas is pinned to this height regardless of content size.
             Required for vertical scrolling unless the parent already
-            constrains the height.
+            constrains the height. Defaults to `None`.
         width: Fixed width of the viewport in pixels. Pins the canvas
-            width, similar to `height=`.
+            width, similar to `height=`. Defaults to `None`.
         show_border: Draw a 1 px border around the ScrollView frame.
-            Defaults to ``False``.
+            Defaults to `False`.
         padding: Space in pixels between the border and the canvas.
+            Defaults to `None` (no padding).
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -40,6 +44,10 @@ class ScrollView(PublicContainer):
         scroll_direction: Literal["vertical", "horizontal", "both"] = "both",
         scrollbar_visibility: Literal["always", "never", "hover", "scroll"] = "always",
         autohide_delay: int = 1000,
+        height: int | None = None,
+        width: int | None = None,
+        show_border: bool = False,
+        padding: Padding | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -52,7 +60,14 @@ class ScrollView(PublicContainer):
             "scrollbar_visibility": scrollbar_visibility,
             "autohide_delay": autohide_delay,
         }
-        internal_kwargs.update(kwargs)
+        if height is not None:
+            internal_kwargs["height"] = height
+        if width is not None:
+            internal_kwargs["width"] = width
+        if show_border:
+            internal_kwargs["show_border"] = True
+        if padding is not None:
+            internal_kwargs["padding"] = padding
 
         self._internal = _InternalScrollView(tk_master, **internal_kwargs)
         self._content_frame = self._internal.add()

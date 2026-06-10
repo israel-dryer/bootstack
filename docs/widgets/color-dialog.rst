@@ -78,10 +78,17 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.dialogs.ask_color
+The complete reference for :func:`ask_color() <bootstack.ask_color>` and
+:class:`ColorChooserDialog <bootstack.dialogs.ColorChooserDialog>` (and its
+``ColorChoice`` result) lives on the :doc:`Dialogs </api-reference/dialogs>` API
+page. At a glance:
 
-.. autoclass:: bootstack.dialogs.ColorChooserDialog
-   :members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ask_color
+   ~bootstack.dialogs.ColorChooserDialog
+   ~bootstack.dialogs.ColorChoice
 
 Full Example
 ------------

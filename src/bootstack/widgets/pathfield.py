@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.pathentry import PathEntry as _InternalPathEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
@@ -36,8 +36,7 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
 
     Args:
         value: Initial path string.
-        mode: Dialog type — `'open'` (default), `'open_multiple'`, `'save'`,
-            or `'directory'`.
+        mode: Dialog type. Default `'open'`.
         dialog_title: Title shown in the native picker window.
         start_dir: Directory the dialog opens in.
         file_filters: File type filters, e.g. `[('Images', '*.png *.jpg')]`.
@@ -55,20 +54,22 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         disabled: If True, field is non-interactive.
         read_only: If True, value is visible but not editable.
         width: Width in character units.
-        accent: Accent token for the focus ring. One of `'primary'`,
-            `'secondary'`, `'success'`, `'warning'`, `'danger'`.
-        density: Widget density — `'default'` or `'compact'`.
+        accent: Accent token applied to the focus ring.
+        density: Widget density.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         value: str = "",
         *,
-        mode: str = "open",
+        mode: Literal["open", "open_multiple", "save", "directory"] = "open",
         dialog_title: str | None = None,
         start_dir: str | None = None,
-        file_filters: list | None = None,
+        file_filters: list[tuple[str, str]] | None = None,
         default_extension: str | None = None,
         default_filename: str | None = None,
         label: str | None = None,
@@ -122,7 +123,6 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if density is not None:
             internal_kwargs["density"] = density
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalPathEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -137,6 +137,22 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -212,7 +228,7 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(0, "end")
 
     def select_range(self, start: int, end: int) -> None:
-        """Select text between ``start`` and ``end`` character positions.
+        """Select text between `start` and `end` character positions.
 
         Args:
             start: Start index (0-based, inclusive).
@@ -221,7 +237,7 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(start, end)
 
     def insert(self, index: int, text: str) -> None:
-        """Insert ``text`` at ``index``.
+        """Insert `text` at `index`.
 
         Args:
             index: Character position to insert at.
@@ -230,11 +246,11 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().insert(index, text)
 
     def delete(self, start: int, end: int | None = None) -> None:
-        """Delete characters from ``start`` to ``end``.
+        """Delete characters from `start` to `end`.
 
         Args:
             start: Start index (inclusive).
-            end: End index (exclusive). If ``None``, deletes to end of field.
+            end: End index (exclusive). If `None`, deletes to end of field.
         """
         self._entry_widget().delete(start, "end" if end is None else end)
 
@@ -250,8 +266,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         Fires after the user picks a path via the dialog or edits the field
         directly and commits (blur or Enter).
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -262,8 +283,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke in the text portion.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 
@@ -274,8 +300,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Enter.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -286,8 +317,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -298,8 +334,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
@@ -310,8 +351,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -322,8 +368,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -334,8 +385,13 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 

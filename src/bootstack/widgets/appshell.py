@@ -10,7 +10,7 @@ from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event, AccentToken, WidgetDensity
+from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
 
 
 class _PageFrame:
@@ -59,8 +59,6 @@ class AppShell(AppConfigMixin):
         title: Window title and (in undecorated mode) toolbar label.
         size: Initial window size as `(width, height)`.
         theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
-        app_author: Application author. Reserved for config-path use.
-        app_version: Application version string.
         light_theme: Theme used for the light end of system-appearance
             tracking and `toggle_theme`.
         dark_theme: Theme used for the dark end of system-appearance
@@ -68,29 +66,27 @@ class AppShell(AppConfigMixin):
         follow_system_appearance: If True, switch between `light_theme` and
             `dark_theme` to match the OS (currently effective on macOS).
         available_themes: Theme names to expose to theme pickers.
-        inherit_surface_color: If True, child widgets inherit the parent's
-            surface color.
         locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
-        localize_mode: Localization behavior — `'auto'`, `True`, or `False`.
-        window_style: Windows-only window effect or None to disable.
-        macos_quit_behavior: macOS close / Cmd+Q behavior — `'native'` or
-            `'classic'`.
+        localize_mode: Localization behavior.
+        window_style: Windows-only window effect, or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
         remember_window_state: If True, window geometry is saved and restored.
         state_path: Optional override for the persisted window-state file.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
         resizable: Whether the window can be resized as `(x, y)`.
+        scaling: Explicit UI scaling factor. When None, scaling is automatic.
+        hdpi: Enable high-DPI awareness for the application. Default `True`.
         undecorated: Remove OS window decorations and use a custom chrome.
             Automatically enables `show_window_controls` and `draggable`.
             Ignored on macOS.
         show_toolbar: Show the toolbar at the top. Default `True`.
         show_window_controls: Add minimize/maximize/close buttons to the toolbar.
         draggable: Allow window dragging via the toolbar.
-        toolbar_density: Toolbar button density — `'default'` or `'compact'`.
+        toolbar_density: Toolbar button density.
         show_nav: Show the sidebar navigation. Default `True`.
-        nav_display_mode: Initial sidebar mode — `'expanded'`, `'compact'`,
-            or `'minimal'`.
+        nav_display_mode: Initial sidebar mode. Default `'expanded'`.
         nav_accent: Accent color for the active nav item. Default `'primary'`.
     """
 
@@ -100,21 +96,17 @@ class AppShell(AppConfigMixin):
         title: str = "",
         size: tuple[int, int] | None = None,
         theme: str | None = None,
-        # application identity
-        app_author: str | None = None,
-        app_version: str | None = None,
         # theme
         light_theme: str = "bootstrap-light",
         dark_theme: str = "bootstrap-dark",
         follow_system_appearance: bool = False,
         available_themes: Sequence[str] = (),
-        inherit_surface_color: bool = True,
         # localization
         locale: str | None = None,
         localize_mode: LocalizeMode = "auto",
         # platform / window-state persistence
-        window_style: str | None = "mica",
-        macos_quit_behavior: str = "native",
+        window_style: WindowStyle | str | None = "mica",
+        macos_quit_behavior: Literal['native', 'classic'] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
         # window placement
@@ -122,6 +114,8 @@ class AppShell(AppConfigMixin):
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
+        scaling: float | None = None,
+        hdpi: bool = True,
         # scaffold
         undecorated: bool = False,
         show_toolbar: bool = True,
@@ -130,18 +124,17 @@ class AppShell(AppConfigMixin):
         toolbar_density: WidgetDensity = "default",
         show_nav: bool = True,
         nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
-        nav_accent: AccentToken = "primary",
+        nav_accent: AccentToken | str = "primary",
         **kwargs: Any,
     ) -> None:
         init_kwargs: dict[str, Any] = {
             "title": title,
-            "app_author": app_author,
-            "app_version": app_version,
             "light_theme": light_theme,
             "dark_theme": dark_theme,
             "follow_system_appearance": follow_system_appearance,
             "available_themes": available_themes,
-            "inherit_surface_color": inherit_surface_color,
+            "scaling": scaling,
+            "hdpi": hdpi,
             "locale": locale,
             "localize_mode": localize_mode,
             "window_style": window_style,
@@ -327,8 +320,14 @@ class AppShell(AppConfigMixin):
     def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the active page changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.PageChangeEvent`
+                (the new and previous page keys, plus any `navigate()` data).
+                Omit to get a composable :class:`~bootstack.streams.Stream`.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         if handler is None:
             def _source(h: Callable) -> Subscription:

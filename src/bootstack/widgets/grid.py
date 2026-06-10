@@ -1,58 +1,53 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import PublicContainer, GRID_KEYS
-from bootstack.widgets.types import AccentToken, SurfaceToken, Sticky
+from bootstack.widgets.types import AccentToken, SurfaceToken, Sticky, Padding, AutoFlow
 
 
 class Grid(PublicContainer):
     """A container that arranges children in rows and columns.
 
     Children are auto-placed left-to-right, top-to-bottom by default.
-    Column and row sizes are defined with ``columns=`` and ``rows=``;
+    Column and row sizes are defined with `columns=` and `rows=`;
     omitting them lets the grid size itself to fit its children.
 
     Args:
         columns: Column definitions. An integer creates that many
             equal-weight columns. A list sets per-column weights or
-            sizes — integers are relative weights, ``'auto'`` sizes to
-            content, ``'Npx'`` sets a fixed pixel width (e.g.
-            ``'120px'``). Defaults to ``None`` (single column, sized to
-            content).
-        rows: Row definitions, same format as ``columns``. Defaults to
-            ``None`` (rows added automatically as children are placed).
+            sizes — integers are relative weights, `'auto'` sizes to
+            content, `'Npx'` sets a fixed pixel width (e.g. `'120px'`).
+            Defaults to `None` (single column, sized to content).
+        rows: Row definitions, same format as `columns`. Defaults to
+            `None` (rows added automatically as children are placed).
         gap: Space in pixels between cells. An integer applies to both
-            axes; a 2-tuple ``(col_gap, row_gap)`` sets them
-            independently. Defaults to ``0``.
+            axes; a 2-tuple `(col_gap, row_gap)` sets them
+            independently. Defaults to `0`.
         sticky_items: Default cell alignment applied to every child
-            (e.g. ``'ew'``, ``'nsew'``). Children can override this
-            with their own ``sticky=``. Defaults to ``None`` (children
+            (e.g. `'ew'`, `'nsew'`). Children can override this
+            with their own `sticky=`. Defaults to `None` (children
             sit at their natural size in the cell).
-        auto_flow: Auto-placement direction. One of ``'row'`` (default),
-            ``'column'``, ``'row-dense'``, or ``'column-dense'``.
+        auto_flow: Auto-placement direction. Defaults to `'row'`.
         padding: Space in pixels between the grid border and its
-            content. Accepts an integer (all sides) or a 2-tuple
-            ``(x, y)``. Defaults to ``None`` (no padding).
-        surface: Background token. Accepts a surface token
-            (``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``),
-            an accent token (``'primary'``, ``'success'``, etc.), or
-            any token with modifiers (e.g. ``'primary[subtle]'``).
-            Defaults to ``None`` (inherits from parent surface).
-        show_border: When ``True``, draws a 1 px border around the
-            grid. Use at least ``padding=1`` to give the border visual
-            clearance. Defaults to ``False``.
+            content. Defaults to `None` (no padding).
+        surface: Background token. Accepts a surface token, an accent
+            token, or any token with modifiers (e.g. `'primary[subtle]'`).
+            Defaults to `None` (inherits from parent surface).
+        show_border: When `True`, draws a 1 px border around the
+            grid. Use at least `padding=1` to give the border visual
+            clearance. Defaults to `False`.
         width: Fixed width in pixels. Disables frame propagation —
             see the note in :class:`HStack` for sizing behavior.
-            Defaults to ``None``.
+            Defaults to `None`.
         height: Fixed height in pixels. Disables frame propagation —
             see the note in :class:`VStack` for sizing behavior.
-            Defaults to ``None``.
+            Defaults to `None`.
         parent: Override the context-stack parent widget.
-        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
-            ``row=``, ``column=``, etc.) forwarded to the parent
-            geometry manager.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -63,8 +58,8 @@ class Grid(PublicContainer):
         rows: int | list[int | str] | None = None,
         gap: int | tuple[int, int] = 0,
         sticky_items: Sticky | str | None = None,
-        auto_flow: Literal["row", "column", "row-dense", "column-dense", "none"] = "row",
-        padding: Any = None,
+        auto_flow: AutoFlow = "row",
+        padding: Padding | None = None,
         surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,

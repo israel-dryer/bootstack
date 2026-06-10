@@ -223,8 +223,6 @@ class AppSettings:
 
     Attributes:
         app_name: The application name displayed in the title bar.
-        app_author: The application author (used for config paths).
-        app_version: The application version string.
         theme: The current theme name ('light', 'dark', or a specific theme).
         light_theme: The theme to use when `theme='light'`.
         dark_theme: The theme to use when `theme='dark'`.
@@ -236,8 +234,6 @@ class AppSettings:
             Defaults to False so existing apps that pin a theme keep
             doing so.
         available_themes: Sequence of available theme names.
-        inherit_surface_color: If True, child widgets inherit the parent's
-            surface color for consistent backgrounds.
         locale: The locale identifier (e.g., 'en_US', 'de_DE'). Auto-detected
             from system if not specified.
         language: The base language code (e.g., 'en', 'de'). Derived from
@@ -273,8 +269,6 @@ class AppSettings:
     """
     # information
     app_name: str | None = None
-    app_author: str | None = None
-    app_version: str | None = None
 
     # theme
     theme: str = "light"
@@ -282,7 +276,6 @@ class AppSettings:
     dark_theme: str = "bootstrap-dark"
     follow_system_appearance: bool = False
     available_themes: Sequence[str] = ()
-    inherit_surface_color: bool = True
 
     # internationalization
     locale: str | None = None
@@ -402,16 +395,11 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             theme: str | None = None,
             icon: tkinter.PhotoImage | None = None,
 
-            # application identity
-            app_author: str | None = None,
-            app_version: str | None = None,
-
             # theme
             light_theme: str = "bootstrap-light",
             dark_theme: str = "bootstrap-dark",
             follow_system_appearance: bool = False,
             available_themes: Sequence[str] = (),
-            inherit_surface_color: bool = True,
 
             # localization
             locale: str | None = None,
@@ -450,8 +438,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
                 `'bootstrap-dark'`). Defaults to the built-in light theme.
             icon: A PhotoImage or file path used for the window's icon.
                 If None, the default bootstack.png icon is used.
-            app_author: Application author. Reserved for config-path use.
-            app_version: Application version string.
             light_theme: Theme used when following system appearance and the
                 OS is in light mode, and as the light end of `toggle_theme`.
             dark_theme: Theme used when following system appearance and the
@@ -461,8 +447,6 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
                 (currently effective on macOS).
             available_themes: Sequence of theme names to expose to theme
                 pickers. Empty means all registered themes.
-            inherit_surface_color: If True, child widgets inherit the
-                parent's surface color for consistent backgrounds.
             locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
                 Auto-detected from the system when not given.
             localize_mode: Controls localization behavior. `'auto'` enables
@@ -506,14 +490,11 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
         # formats in __post_init__). There is no public AppSettings / settings=.
         self.settings = AppSettings(
             app_name=title,
-            app_author=app_author,
-            app_version=app_version,
             theme=theme if theme is not None else "light",
             light_theme=light_theme,
             dark_theme=dark_theme,
             follow_system_appearance=follow_system_appearance,
             available_themes=available_themes,
-            inherit_surface_color=inherit_surface_color,
             locale=locale,
             localize_mode=localize_mode,
             window_style=window_style,

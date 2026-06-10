@@ -210,13 +210,15 @@ resizable split container showing multiple panes at once.
 API
 ---
 
-.. autoclass:: bootstack.widgets.tabs.Tabs
-   :members:
-   :undoc-members:
+The complete reference for :class:`Tabs <bootstack.Tabs>` and its
+:class:`TabPage <bootstack.TabPage>` handles lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
-.. autoclass:: bootstack.widgets.tabs.TabPage
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Tabs
+   ~bootstack.TabPage
 
 Full Example
 ------------

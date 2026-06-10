@@ -1,14 +1,17 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.radiogroup import RadioGroup as _InternalRadioGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, Orient
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _RADIOGROUP_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -19,34 +22,34 @@ class RadioGroup(PublicWidgetBase):
     """A group of mutually exclusive radio buttons.
 
     Exactly one option can be selected at a time. Options are supplied at
-    construction via ``options=`` and can be added or removed at runtime
-    using ``add()`` and ``remove()``.
+    construction via `options=` and can be added or removed at runtime
+    using `add()` and `remove()`.
 
     Args:
         options: Choices for the group. Each item is either a plain string
-            (label and value are the same) or a ``(label, value)`` tuple,
-            e.g. ``["S", "M", "L"]`` or
-            ``[("Small", "s"), ("Medium", "m"), ("Large", "l")]``.
-        signal: Reactive ``Signal`` holding the selected value. When
-            provided, ``value=`` is ignored — seed the Signal directly.
-        value: Initially selected value. Ignored when ``signal=`` is passed.
-        orient: Layout direction. ``'horizontal'`` (default) or
-            ``'vertical'``.
+            (label and value are the same) or a `(label, value)` tuple,
+            e.g. `["S", "M", "L"]` or
+            `[("Small", "s"), ("Medium", "m"), ("Large", "l")]`.
+        signal: Reactive `Signal` holding the selected value. When
+            provided, `value=` is ignored — seed the Signal directly.
+        value: Initially selected value. Ignored when `signal=` is passed.
+        orient: Layout direction. Default `'horizontal'`.
         title: Optional label rendered above the button group.
-        accent: Accent token applied to all buttons. One of ``'primary'``,
-            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
-            ``'danger'``, ``'default'``.
-        disabled: If ``True``, all buttons are non-interactive and dimmed.
-            Defaults to ``False``.
+        accent: Accent token applied to all buttons.
+        disabled: If `True`, all buttons are non-interactive and dimmed.
+            Defaults to `False`.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         options: list[str | tuple[str, Any]] | None = None,
         *,
-        signal: Any = None,
+        signal: "Signal | None" = None,
         value: Any = None,
         orient: Orient = "horizontal",
         title: str | None = None,
@@ -71,7 +74,6 @@ class RadioGroup(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if disabled:
             internal_kwargs["state"] = "disabled"
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalRadioGroup(tk_master, **internal_kwargs)
 
@@ -86,9 +88,14 @@ class RadioGroup(PublicWidgetBase):
 
         # Trace the signal so <<Change>> fires on the internal Frame whenever
         # the value changes — this lets on_change() use standard Subscription binding.
-        def _on_value_change(_new_value: Any) -> None:
+        self._prev_value = self._internal.signal()
+
+        def _on_value_change(new_value: Any) -> None:
             try:
-                self._internal.event_generate("<<Change>>")
+                prev, self._prev_value = self._prev_value, new_value
+                self._internal.event_generate(
+                    "<<Change>>", data=ChangeEvent(value=new_value, prev_value=prev)
+                )
             except tkinter.TclError:
                 pass
 
@@ -99,7 +106,7 @@ class RadioGroup(PublicWidgetBase):
 
     @property
     def value(self) -> Any:
-        """The currently selected value, or ``None`` if nothing is selected."""
+        """The currently selected value, or `None` if nothing is selected."""
         return self._internal.value
 
     @value.setter
@@ -135,14 +142,18 @@ class RadioGroup(PublicWidgetBase):
     @overload
     def on_change(self) -> Stream: ...
     @overload
-    def on_change(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_change(self, handler: Callable[[ChangeEvent], Any]) -> Subscription: ...
+    def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired whenever the selection changes.
 
-        The current value is available via ``group.value`` inside the handler.
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`; the
+                selected value is also available via `group.value`. Omit to get
+                a composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

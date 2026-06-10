@@ -100,10 +100,15 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.dialogs.ask_filter
+The complete reference for :func:`ask_filter() <bootstack.ask_filter>` and
+:class:`FilterDialog <bootstack.dialogs.FilterDialog>` lives on the
+:doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
 
-.. autoclass:: bootstack.dialogs.FilterDialog
-   :members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ask_filter
+   ~bootstack.dialogs.FilterDialog
 
 Full Example
 ------------

@@ -18,28 +18,32 @@ class Gauge(PublicWidgetBase):
     interactive drag mode for value input.
 
     Args:
-        value: Initial value. Defaults to ``0``.
-        min_value: Minimum of the range. Defaults to ``0``.
-        max_value: Maximum of the range. Defaults to ``100``.
+        value: Initial value. Defaults to `0`.
+        min_value: Minimum of the range. Defaults to `0`.
+        max_value: Maximum of the range. Defaults to `100`.
         subtitle: Secondary label displayed below the value text.
-        value_prefix: Text prepended to the displayed value (e.g. ``'$'``).
-        value_suffix: Text appended to the displayed value (e.g. ``'%'``).
-        value_format: Python format string applied to the value.
-            Defaults to ``'{:.0f}'`` (integer display).
-        size: Diameter of the gauge in pixels. Defaults to ``200``.
-        thickness: Width of the arc stroke in pixels. Defaults to ``10``.
-        variant: Shape variant. ``'full'`` (default) draws a complete 360° ring;
-            ``'semi'`` draws a half-circle arc along the bottom.
+        value_prefix: Text prepended to the displayed value (e.g. `'$'`).
+        value_suffix: Text appended to the displayed value (e.g. `'%'`).
+        value_template: Python format string applied to the value (e.g.
+            `'{:.0f}'`, `'{:.1f}'`). Pair with `value_prefix`/`value_suffix` for
+            units. Default `'{:.0f}'` (integer display). For locale-aware
+            formatting, format the value yourself and pass it via `value=`.
+        size: Diameter of the gauge in pixels. Defaults to `200`.
+        thickness: Width of the arc stroke in pixels. Defaults to `10`.
+        variant: Shape variant. `'full'` (default) draws a complete 360° ring;
+            `'semi'` draws a half-circle arc along the bottom.
         segment_width: Width of each dash segment for a dashed arc style.
-            ``0`` (default) draws a solid arc.
-        interactive: If ``True``, the user can click or drag the arc to change
-            the value. Defaults to ``False``.
-        step: Value increment per drag step in interactive mode. Defaults to ``1``.
-        show_text: If ``False``, hides the center value text. Defaults to ``True``.
-        accent: Color intent token for the arc. One of ``'primary'``,
-            ``'secondary'``, ``'info'``, ``'success'``, ``'warning'``,
-            ``'danger'``. Defaults to the theme's default color.
+            `0` (default) draws a solid arc.
+        interactive: If `True`, the user can click or drag the arc to change
+            the value. Defaults to `False`.
+        step: Value increment per drag step in interactive mode. Defaults to `1`.
+        show_text: If `False`, hides the center value text. Defaults to `True`.
+        accent: Color intent token for the arc. Defaults to the theme's default
+            color.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -51,7 +55,7 @@ class Gauge(PublicWidgetBase):
         subtitle: str | None = None,
         value_prefix: str | None = None,
         value_suffix: str | None = None,
-        value_format: str = "{:.0f}",
+        value_template: str = "{:.0f}",
         size: int = 200,
         thickness: int = 10,
         variant: Literal["full", "semi"] = "full",
@@ -59,7 +63,7 @@ class Gauge(PublicWidgetBase):
         interactive: bool = False,
         step: int | float = 1,
         show_text: bool = True,
-        accent: AccentToken | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -72,7 +76,7 @@ class Gauge(PublicWidgetBase):
             "value": value,
             "minvalue": min_value,
             "maxvalue": max_value,
-            "value_format": value_format,
+            "value_format": value_template,
             "size": size,
             "thickness": thickness,
             "meter_type": variant,
@@ -89,7 +93,6 @@ class Gauge(PublicWidgetBase):
             internal_kwargs["value_suffix"] = value_suffix
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalMeter(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -98,6 +101,7 @@ class Gauge(PublicWidgetBase):
 
     @property
     def value(self) -> int | float:
+        """The current gauge value."""
         return self._internal.value
 
     @value.setter
@@ -106,6 +110,7 @@ class Gauge(PublicWidgetBase):
 
     @property
     def subtitle(self) -> str:
+        """The secondary label shown below the value text."""
         return self._internal.subtitle
 
     @subtitle.setter
@@ -121,8 +126,13 @@ class Gauge(PublicWidgetBase):
     def on_change(self, handler: Callable[[SliderEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the gauge value changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.SliderEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

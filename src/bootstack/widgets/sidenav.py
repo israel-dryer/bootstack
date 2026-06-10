@@ -26,21 +26,21 @@ _SIDENAV_EVENTS: dict[str, str] = {
 class SideNav(PublicWidgetBase):
     """A sidebar navigation container with header, scrollable items, and footer.
 
-    Accepts layout kwargs inline (`fill=`, `expand=`, `margin=`, etc.).
-
     Args:
         title: Title displayed in the pane header.
         show_header: Show the internal header toolbar. Set to `False` when using
             an external toolbar (e.g. `AppShell`).
         show_back_button: Show a back button in the header.
         collapsible: Allow the pane to collapse. Shows a hamburger menu button.
-        display_mode: Initial display mode — `'expanded'`, `'compact'`, or
-            `'minimal'`.
+        display_mode: Initial display mode. Defaults to `'expanded'`.
         is_pane_open: Whether the pane starts open.
         pane_width: Override the default pane width in pixels.
         signal: Reactive `Signal[str]` for the selected item key.
-        accent: Accent token for selection indicators.
+        accent: Accent token for selection indicators. Defaults to `'primary'`.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -54,7 +54,7 @@ class SideNav(PublicWidgetBase):
         is_pane_open: bool = True,
         pane_width: int | None = None,
         signal: "Signal[str] | None" = None,
-        accent: AccentToken = "primary",
+        accent: AccentToken | str = "primary",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -276,7 +276,7 @@ class SideNav(PublicWidgetBase):
         """Switch display mode.
 
         Args:
-            mode: `'expanded'`, `'compact'`, or `'minimal'`.
+            mode: The display mode to switch to.
         """
         self._internal.set_display_mode(mode)
 
@@ -294,7 +294,7 @@ class SideNav(PublicWidgetBase):
 
     @property
     def display_mode(self) -> DisplayMode:
-        """Current display mode: `'expanded'`, `'compact'`, or `'minimal'`."""
+        """The current display mode."""
         return self._internal.display_mode
 
     @property
@@ -312,10 +312,10 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the selected item changes.
 
         Args:
-            handler: Receives a `NavEvent`; ``e.key`` is the newly selected key.
+            handler: Receives a `NavEvent`; `e.key` is the newly selected key.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 
@@ -327,7 +327,7 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the back button is clicked.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("back_requested", handler)
 
@@ -339,10 +339,10 @@ class SideNav(PublicWidgetBase):
         """Register a callback fired when the pane is opened or closed.
 
         Args:
-            handler: Receives a `PaneToggleEvent`; ``e.is_open`` is the new state.
+            handler: Receives a `PaneToggleEvent`; `e.is_open` is the new state.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("pane_toggled", handler)
 
@@ -357,7 +357,7 @@ class SideNav(PublicWidgetBase):
             handler: Receives a `DisplayModeEvent`; `e.mode` is the new mode.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("display_mode_changed", handler)
 

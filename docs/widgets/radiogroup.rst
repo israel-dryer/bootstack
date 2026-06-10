@@ -163,9 +163,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.radiogroup.RadioGroup
-   :members:
-   :undoc-members:
+The complete reference for :class:`RadioGroup <bootstack.RadioGroup>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.RadioGroup
 
 Full Example
 ------------

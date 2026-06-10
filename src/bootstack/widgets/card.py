@@ -8,64 +8,61 @@ from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
     PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
 )
-from bootstack.widgets.types import AccentToken
+from bootstack.widgets.types import (
+    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+)
 
 
 class Card(PublicContainer):
     """A card-surface container that groups content with an elevated background and border.
 
-    Renders with the ``card`` surface token, so nested cards step up through the
-    surface hierarchy automatically (``background`` → ``card`` → ``overlay``).
-    Children are arranged by the internal layout selected with ``layout``.
+    Renders with the `card` surface token, so nested cards step up through the
+    surface hierarchy automatically (`background` → `card` → `overlay`).
+    Children are arranged by the internal layout selected with `layout`.
 
     Args:
-        layout: Internal layout manager. One of ``'vstack'`` (default),
-            ``'hstack'``, or ``'grid'``.
+        layout: Internal layout manager. Defaults to `'vstack'`.
         padding: Space in pixels between the card border and its content.
-            Accepts an integer (all sides) or a 2-tuple ``(x, y)``.
-            Defaults to ``16``.
-        gap: Space in pixels between child widgets. Defaults to ``0``.
-        fill_items: Default ``fill`` direction applied to every child.
-            One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-            Individual children can override this with their own ``fill=``.
-        expand_items: When ``True``, each child expands to take any extra
-            space along the pack direction. Defaults to ``None`` (no expand).
+            A single value applies to all sides; `(x, y)` sets the horizontal
+            and vertical amounts. Defaults to `16`.
+        gap: Space in pixels between child widgets. Defaults to `0`.
+        fill_items: Default `fill` direction applied to every child.
+            Individual children can override this with their own `fill=`.
+        expand_items: When `True`, each child expands to take any extra
+            space along the pack direction. Defaults to `None` (no expand).
         anchor_items: Default alignment anchor applied to each child when it
-            does not fill its slot. One of ``'n'``, ``'s'``, ``'e'``,
-            ``'w'``, ``'center'``, etc.
-        columns: Column definitions for ``'grid'`` layout. An integer sets
+            does not fill its slot.
+        columns: Column definitions for `'grid'` layout. An integer sets
             the number of equal-weight columns; a list sets per-column weights
-            or sizes (e.g. ``[1, 2, 'auto']``).
-        rows: Row definitions for ``'grid'`` layout, same format as
-            ``columns``.
+            or sizes — integers are relative weights, `'auto'` sizes to
+            content, `'Npx'` sets a fixed pixel width (e.g.
+            `[1, 2, 'auto', '120px']`).
+        rows: Row definitions for `'grid'` layout, same format as `columns`.
         sticky_items: Default cell alignment applied to every grid child
-            (e.g. ``'ew'``, ``'nsew'``). Children can override this.
-        auto_flow: Grid auto-placement direction. One of ``'row'`` (default),
-            ``'column'``, ``'row-dense'``, ``'column-dense'``, or ``'none'``.
-        accent: Color intent token applied to the card border. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'muted'``, ``'default'``. When
-            set, the card interior uses a subtle tint of that accent. When
-            omitted, the card uses the next surface step with no border color.
+            (e.g. `'ew'`, `'nsew'`). Children can override this.
+        auto_flow: Grid auto-placement direction. Defaults to `'row'`.
+        accent: Color intent token applied to the card border. When set, the
+            card interior uses a subtle tint of that accent. When omitted, the
+            card uses the next surface step with no border color.
         parent: Override the context-stack parent widget.
-        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
-            ``row=``, ``column=``, etc.) forwarded to the parent
-            geometry manager.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        layout: str = "vstack",
-        padding: Any = 16,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = 16,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
         accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,

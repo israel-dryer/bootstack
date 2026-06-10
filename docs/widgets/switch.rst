@@ -124,10 +124,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.boolean_controls.Switch
-   :members:
-   :undoc-members:
-   :inherited-members: PublicWidgetBase
+The complete reference for :class:`Switch <bootstack.Switch>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Switch
 
 Full Example
 ------------

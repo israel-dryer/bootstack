@@ -548,21 +548,19 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.datatable.DataTable
-   :members:
-   :undoc-members:
+The complete reference for :class:`DataTable <bootstack.DataTable>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
 
-The column and form configuration dicts, and the handle returned by
-``export_file_async``:
+.. autosummary::
+   :nosignatures:
 
-.. autoclass:: bootstack.widgets.datatable.ColumnSpec
-   :members:
+   ~bootstack.DataTable
 
-.. autoclass:: bootstack.widgets.datatable.FormOptions
-   :members:
-
-.. autoclass:: bootstack.widgets.datatable.ExportJob
-   :members:
+The column and form configuration dicts — :class:`ColumnSpec
+<bootstack.types.ColumnSpec>` and :class:`FormOptions
+<bootstack.types.FormOptions>` — live in :mod:`bootstack.types`. The
+``export_file_async`` method returns an ``ExportJob`` handle whose ``cancel()``
+stops the export and removes the partial file.
 
 Full Example
 ------------

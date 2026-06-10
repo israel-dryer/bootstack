@@ -255,11 +255,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.buttongroup.ButtonGroup
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`ButtonGroup <bootstack.ButtonGroup>` lives on
+the :doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ButtonGroup
 
 Full Example
 ------------

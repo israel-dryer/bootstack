@@ -138,9 +138,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.selectbutton.SelectButton
-   :members:
-   :undoc-members:
+The complete reference for :class:`SelectButton <bootstack.SelectButton>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.SelectButton
 
 Full Example
 ------------

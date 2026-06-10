@@ -7,9 +7,7 @@ bootstack
    :hidden:
    :maxdepth: 2
 
-   getting-started/index
-   tasks/index
+   user-guide/index
    widgets/index
-   reference/index
    api-reference/index
    production/index

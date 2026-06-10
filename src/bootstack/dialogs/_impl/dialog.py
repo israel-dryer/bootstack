@@ -15,7 +15,7 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, T
 from bootstack.widgets._impl.primitives.button import Button as _Button
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.separator import Separator as _Separator
-from bootstack.widgets.types import Master, AccentToken, VariantToken
+from bootstack.widgets.types import Master, AccentToken, VariantToken, SurfaceToken, WindowStyle
 from bootstack._runtime.toplevel import Toplevel
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 
@@ -106,32 +106,32 @@ class Dialog:
             Defaults to None.
 
     Args:
-        title: Dialog window title. Defaults to ``'bootstack'``.
+        title: Dialog window title. Defaults to `'bootstack'`.
         content_builder: Callback to build the dialog body. Receives an internal
             frame — place widgets into it using raw internal constructors or by
-            calling ``widget._internal`` directly. If ``None``, the dialog has
+            calling `widget._internal` directly. If `None`, the dialog has
             no body area.
         footer_builder: Callback to build a fully custom footer. Replaces the
             standard button row when provided.
         buttons: List of `DialogButton` (or equivalent dicts) for the footer.
             Ignored when `footer_builder` is given. Buttons are displayed
             right-to-left — the first entry appears rightmost.
-        min_size: Minimum window size as ``(width, height)`` in pixels.
-        max_size: Maximum window size as ``(width, height)`` in pixels.
-        resizable: ``(width, height)`` booleans controlling resize. Default
-            ``(False, False)``.
+        min_size: Minimum window size as `(width, height)` in pixels.
+        max_size: Maximum window size as `(width, height)` in pixels.
+        resizable: `(width, height)` booleans controlling resize. Default
+            `(False, False)`.
         alert: Play the system alert sound when the dialog is shown. Default
-            ``False``.
-        mode: Interaction mode. ``'modal'`` (default) blocks the parent;
-            ``'popover'`` closes on focus loss; ``'sheet'`` renders as a Cocoa
+            `False`.
+        mode: Interaction mode. `'modal'` (default) blocks the parent;
+            `'popover'` closes on focus loss; `'sheet'` renders as a Cocoa
             sheet on macOS and falls back to modal elsewhere.
         undecorated: Remove OS window decorations. Useful for popover-style
-            dialogs. Default ``False``.
-        window_style: Windows-only pywinstyles effect (``'mica'``, ``'acrylic'``,
-            ``'aero'``, etc.). Defaults to the app's window style setting.
+            dialogs. Default `False`.
+        window_style: Windows-only pywinstyles effect (`'mica'`, `'acrylic'`,
+            `'aero'`, etc.). Defaults to the app's window style setting.
         on_close: Callback fired when the dialog is closed by any means (button
             click, X button, Escape, or focus loss in popover mode). Receives
-            no arguments. Useful for non-modal dialogs where ``show()`` does
+            no arguments. Useful for non-modal dialogs where `show()` does
             not block.
         parent: Parent window. Defaults to the active root window.
     """
@@ -149,9 +149,9 @@ class Dialog:
             alert: bool = False,
             mode: DialogMode = "modal",
             undecorated: bool = False,
-            window_style: str | None = None,
+            window_style: WindowStyle | str | None = None,
             on_close: Callable[[], Any] | None = None,
-            surface: str | None = None,
+            surface: SurfaceToken | str | None = None,
             parent: Master = None,
     ):
         import tkinter

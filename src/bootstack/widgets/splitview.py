@@ -10,35 +10,45 @@ from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
-from bootstack.widgets.types import AccentToken, SurfaceToken, Fill, Anchor, Sticky
+from bootstack.widgets.types import (
+    AccentToken, SurfaceToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
+)
 
 
 class SplitPane:
-    """Context-manager container returned by `SplitView.add()`.
+    """A handle for one split pane — both a layout context and a live controller.
 
-    Use as a ``with`` block to place child widgets inside the pane.
-    Supports the same layout kwargs as standalone layout containers:
-    ``layout=``, ``gap=``, ``fill_items=``, ``expand_items=``,
-    ``anchor_items=``, ``columns=``, ``rows=``, ``sticky_items=``,
-    ``auto_flow=``.
+    Returned by `SplitView.add()` and by `SplitView.item()` / `panes`. Use it as a
+    `with` block to place child widgets inside the pane, and read or set `key` /
+    `weight` or call `remove()` to inspect, resize, or drop the pane afterward.
+
+    As a context manager it accepts the same layout kwargs as the standalone
+    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
+    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
     """
 
     def __init__(
         self,
         frame: tkinter.Widget,
         *,
-        layout: Literal["vstack", "hstack", "grid"] = "vstack",
-        padding: Any = None,
+        key: str,
+        paned: _InternalPanedWindow,
+        owner: "SplitView",
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
         fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
         anchor_items: Anchor | str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         sticky_items: Sticky | str | None = None,
-        auto_flow: Literal["row", "column", "row-dense", "column-dense"] = "row",
+        auto_flow: AutoFlow = "row",
     ) -> None:
         self._frame = frame
+        self._key = key
+        self._paned = paned
+        self._owner = owner
         self._layout = layout
 
         if layout in ("vstack", "hstack"):
@@ -91,6 +101,28 @@ class SplitPane:
             options["anchor"] = self._anchor_items
         child._internal.pack(in_=self._child_master(), **options)
 
+    # ----- Pane identity, weight, and removal -----
+
+    @property
+    def key(self) -> str:
+        """The pane's unique key, used with `SplitView.item()` / `remove()`."""
+        return self._key
+
+    @property
+    def weight(self) -> int:
+        """Relative resize weight — panes with a higher weight take proportionally
+        more space when the container grows. Assigning a new value resizes live.
+        """
+        return int(self._paned.pane(self._frame, "weight"))
+
+    @weight.setter
+    def weight(self, value: int) -> None:
+        self._paned.pane(self._frame, weight=value)
+
+    def remove(self) -> None:
+        """Remove this pane and its content from the split view."""
+        self._owner.remove(self._key)
+
     def __enter__(self) -> "SplitPane":
         push_container(self)
         return self
@@ -103,35 +135,36 @@ class SplitView(PublicWidgetBase):
     """A resizable split container with panes separated by draggable sashes.
 
     Add panes with `.add()` and place children inside each pane using the
-    returned context manager. Sashes between panes can be dragged at runtime
-    to resize them.
+    returned `SplitPane` handle. Sashes between panes can be dragged at runtime
+    to resize them. Panes are addressable by key — enumerate them with `panes`,
+    look one up with `item()`, insert one at a position with `insert()`, reorder
+    with `move()`, and drop one with `remove()`.
 
     Args:
-        orient: Pane arrangement — ``'horizontal'`` (side-by-side, default)
-            or ``'vertical'`` (stacked top-to-bottom).
+        orient: Pane arrangement — `'horizontal'` (side-by-side) or
+            `'vertical'` (stacked top-to-bottom). Defaults to `'horizontal'`.
         padding: Space in pixels between the outer border and the pane area.
-            Accepts an integer (all sides) or a 2-tuple ``(x, y)``.
-        accent: Color intent token applied to the sash. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'default'``.
-        surface: Surface token for the pane background. One of
-            ``'content'``, ``'card'``, ``'chrome'``, ``'overlay'``.
+            A single value applies to all sides; `(x, y)` sets the horizontal
+            and vertical amounts. Defaults to `None`.
+        accent: Color intent token applied to the sash. When omitted, the
+            sash uses the theme's default color.
+        surface: Surface token for the pane background.
         sash_thickness: Width (horizontal split) or height (vertical split)
             of the draggable sash in pixels. Defaults to the theme's
             standard sash size (typically 6 px).
         width: Requested width in pixels.
         height: Requested height in pixels.
         parent: Override the context-stack parent.
-        **kwargs: Layout placement kwargs (``fill=``, ``expand=``,
-            ``row=``, ``column=``, ``sticky=``, etc.) forwarded to the
-            parent geometry manager.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         orient: Literal["horizontal", "vertical"] = "horizontal",
         *,
-        padding: Any = None,
+        padding: Padding | None = None,
         accent: AccentToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         sash_thickness: int | None = None,
@@ -157,6 +190,9 @@ class SplitView(PublicWidgetBase):
         if sash_thickness is not None:
             pw_kwargs["style_options"] = {"sash_thickness": sash_thickness}
 
+        self._panes: dict[str, SplitPane] = {}
+        self._pane_counter = 0
+
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = _InternalPanedWindow(tk_master, **pw_kwargs)
         self._attach_to_parent(layout_kw)
@@ -166,58 +202,169 @@ class SplitView(PublicWidgetBase):
     def add(
         self,
         *,
+        key: str | None = None,
         weight: int = 1,
-        min_size: int | None = None,
-        layout: Literal["vstack", "hstack", "grid"] = "vstack",
-        padding: Any = None,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
         fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
         anchor_items: Anchor | str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
         sticky_items: Sticky | str | None = None,
-        auto_flow: Literal["row", "column", "row-dense", "column-dense"] = "row",
+        auto_flow: AutoFlow = "row",
     ) -> SplitPane:
-        """Add a pane and return a context manager for placing its children.
+        """Add a pane and return a handle for placing its children and controlling it.
 
         Args:
-            weight: Relative size weight when the container is resized.
-                Panes with higher weight take proportionally more space.
-                Defaults to ``1``.
-            min_size: Minimum pane size in pixels. The sash cannot be
-                dragged past this boundary. Defaults to ``None`` (no minimum).
-            layout: Internal pane layout — ``'vstack'`` (children stacked
-                top-to-bottom, default), ``'hstack'`` (left-to-right), or
-                ``'grid'``.
-            padding: Space in pixels inside the pane border. Accepts an
-                integer or a 2-tuple ``(x, y)``. Defaults to ``None``.
-            gap: Space in pixels between children. Defaults to ``0``.
+            key: Unique identifier used with `item()` and `remove()`.
+                Auto-generated if omitted.
+            weight: Relative size weight when the container is resized. Panes
+                with a higher weight take proportionally more space. Settable
+                afterward via the pane's `weight` property. Defaults to `1`.
+            layout: Internal pane layout. Defaults to `'vstack'`.
+            padding: Space in pixels inside the pane border. Defaults to `None`.
+            gap: Space in pixels between children. Defaults to `0`.
             fill_items: Default fill direction applied to every child.
-                One of ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
             expand_items: Whether children expand to consume extra space.
             anchor_items: Default anchor applied to every child.
-            columns: Column definitions for ``'grid'`` layout.
-            rows: Row definitions for ``'grid'`` layout.
+            columns: Column definitions for `'grid'` layout. An integer sets
+                the number of equal-weight columns; a list sets per-column
+                weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
+            rows: Row definitions for `'grid'` layout, same format as `columns`.
             sticky_items: Default sticky value for grid children.
-            auto_flow: Grid auto-flow direction — ``'row'`` (default),
-                ``'column'``, ``'row-dense'``, or ``'column-dense'``.
+            auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
-            `SplitPane` — use as a context manager to place children.
+            `SplitPane` — use as a context manager to place children, and as a
+            handle to read/set `weight` or `remove()` the pane.
         """
-        frame = _InternalFrame(self._internal)
-        add_kw: dict[str, Any] = {"weight": weight}
-        if min_size is not None:
-            add_kw["minsize"] = min_size
-        self._internal.add(frame, **add_kw)
-        return SplitPane(
-            frame,
+        return self._create_pane(
+            index=None, key=key, weight=weight,
             layout=layout, padding=padding, gap=gap, fill_items=fill_items,
             expand_items=expand_items, anchor_items=anchor_items,
             columns=columns, rows=rows, sticky_items=sticky_items,
             auto_flow=auto_flow,
         )
+
+    def insert(
+        self,
+        index: int,
+        *,
+        key: str | None = None,
+        weight: int = 1,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
+        gap: int = 0,
+        fill_items: Fill | str | None = None,
+        expand_items: bool | None = None,
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
+    ) -> SplitPane:
+        """Add a pane at a specific position. Accepts the same options as `add()`.
+
+        Args:
+            index: Zero-based position to insert the new pane at. Existing panes
+                at or after this position shift toward the end.
+            key: Unique identifier used with `item()` and `remove()`.
+                Auto-generated if omitted.
+            weight: Relative size weight. Defaults to `1`.
+            layout: Internal pane layout. Defaults to `'vstack'`.
+            padding: Space in pixels inside the pane border. Defaults to `None`.
+            gap: Space in pixels between children. Defaults to `0`.
+            fill_items: Default fill direction applied to every child.
+            expand_items: Whether children expand to consume extra space.
+            anchor_items: Default anchor applied to every child.
+            columns: Column definitions for `'grid'` layout.
+            rows: Row definitions for `'grid'` layout.
+            sticky_items: Default sticky value for grid children.
+            auto_flow: Grid auto-flow direction. Defaults to `'row'`.
+
+        Returns:
+            `SplitPane` — same handle returned by `add()`.
+        """
+        return self._create_pane(
+            index=index, key=key, weight=weight,
+            layout=layout, padding=padding, gap=gap, fill_items=fill_items,
+            expand_items=expand_items, anchor_items=anchor_items,
+            columns=columns, rows=rows, sticky_items=sticky_items,
+            auto_flow=auto_flow,
+        )
+
+    def move(self, key: str, index: int) -> None:
+        """Move an existing pane to a new position.
+
+        Args:
+            key: The key of the pane to move.
+            index: Zero-based target position.
+        """
+        pane = self._panes[key]
+        self._internal.insert(index, pane._frame)
+        self._resync_order()
+
+    def _create_pane(self, *, index: int | None, key: str | None, weight: int, **layout_kw: Any) -> SplitPane:
+        if key is None:
+            key = f"pane_{self._pane_counter}"
+            self._pane_counter += 1
+        if key in self._panes:
+            raise ValueError(f"A pane with the key {key!r} already exists.")
+
+        frame = _InternalFrame(self._internal)
+        if index is None:
+            self._internal.add(frame, weight=weight)
+        else:
+            self._internal.insert(index, frame, weight=weight)
+        pane = SplitPane(frame, key=key, paned=self._internal, owner=self, **layout_kw)
+        self._panes[key] = pane
+        if index is not None:
+            self._resync_order()
+        return pane
+
+    def _resync_order(self) -> None:
+        """Reorder `_panes` to match the live pane order after an insert/move."""
+        by_frame = {str(p._frame): (k, p) for k, p in self._panes.items()}
+        self._panes = dict(
+            by_frame[fid] for fid in self._internal.panes() if fid in by_frame
+        )
+
+    @property
+    def panes(self) -> tuple[SplitPane, ...]:
+        """All panes in left-to-right (or top-to-bottom) order."""
+        return tuple(self._panes.values())
+
+    def __len__(self) -> int:
+        return len(self._panes)
+
+    def keys(self) -> tuple[str, ...]:
+        """All pane keys in order."""
+        return tuple(self._panes)
+
+    def item(self, key: str) -> SplitPane:
+        """Return the pane handle for `key`.
+
+        Args:
+            key: Pane key.
+
+        Returns:
+            The `SplitPane` for that key — read/set its `weight` or `remove()` it.
+        """
+        return self._panes[key]
+
+    def remove(self, key: str) -> None:
+        """Remove a pane and destroy its content.
+
+        Args:
+            key: The key assigned when the pane was added.
+        """
+        pane = self._panes.pop(key)
+        # `WidgetCapabilitiesMixin.forget()` shadows `ttk.Panedwindow.forget(pane)`
+        # with a zero-arg method, so invoke the underlying Tk command directly.
+        self._internal.tk.call(self._internal._w, "forget", pane._frame)
+        pane._frame.destroy()
 
     # ----- Sash control -----
 
@@ -232,11 +379,11 @@ class SplitView(PublicWidgetBase):
 
         Args:
             index: Zero-based sash index.
-            position: New position in pixels. If ``None``, returns the
+            position: New position in pixels. If `None`, returns the
                 current position.
 
         Returns:
-            Current sash position in pixels when ``position`` is ``None``.
+            Current sash position in pixels when `position` is `None`.
         """
         if position is None:
             return self._internal.sashpos(index)

@@ -167,11 +167,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.textarea.TextArea
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`TextArea <bootstack.TextArea>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.TextArea
 
 Full Example
 ------------

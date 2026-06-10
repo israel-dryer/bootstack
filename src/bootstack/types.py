@@ -11,15 +11,19 @@ They are re-exported from :mod:`bootstack.widgets.types`.
 from bootstack.widgets.types import (
     BaseWidgetKwargs, StyledKwargs,
     Anchor, BorderMode, CompoundMode, Direction,
-    Fill, Justify, Orient, Relief, Side, Sticky,
+    Fill, Justify, Orient, Padding, Relief, Side, Sticky,
+    LayoutKind, AutoFlow,
     WidgetState, WidgetDensity,
-    AccentToken, VariantToken, SurfaceToken,
+    AccentToken, VariantToken, SurfaceToken, WindowStyle,
+    ColumnSpec, EditorType, FormOptions,
 )
 
 __all__ = [
     "BaseWidgetKwargs", "StyledKwargs",
     "Anchor", "BorderMode", "CompoundMode", "Direction",
-    "Fill", "Justify", "Orient", "Relief", "Side", "Sticky",
+    "Fill", "Justify", "Orient", "Padding", "Relief", "Side", "Sticky",
+    "LayoutKind", "AutoFlow",
     "WidgetState", "WidgetDensity",
-    "AccentToken", "VariantToken", "SurfaceToken",
+    "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
+    "ColumnSpec", "EditorType", "FormOptions",
 ]

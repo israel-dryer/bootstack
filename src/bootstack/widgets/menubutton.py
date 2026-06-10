@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton as _InternalDropdownButton
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity
+from bootstack.widgets.types import AccentToken, WidgetDensity
+from bootstack.events import MenuSelectEvent
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 # Public item type names → internal ContextMenu type strings.
 _ITEM_TYPE_MAP: dict[str, str] = {
@@ -48,8 +52,9 @@ class MenuButton(PublicWidgetBase):
         items: Initial list of item dicts. Each dict must have a ``type``
             key (``'command'``, ``'check'``, ``'radio'``, or
             ``'separator'``) plus item-specific keys.
-        on_select: Callback fired when any menu item is activated. Receives
-            a dict with ``type`` (str), ``text`` (str), and ``value`` (Any).
+        on_select: Callback fired when any menu item is activated. Called with
+            a :class:`~bootstack.events.MenuSelectEvent` (`type`, `text`,
+            `value` of the activated item).
         icon: Icon name shown on the button face.
         icon_only: If ``True``, hides the label and shows only the icon.
             Inferred automatically when ``icon=`` is set and ``label`` is
@@ -60,15 +65,14 @@ class MenuButton(PublicWidgetBase):
             at construction (e.g. ``{'anchor': 'se', 'offset': 4}``).
         disabled: If ``True``, button is shown but non-interactive. Defaults
             to ``False``.
-        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
-            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``,
-            ``'default'``. Defaults to the theme default.
-        variant: Style variant. One of ``'solid'``, ``'outline'``,
-            ``'ghost'``. Defaults to ``'ghost'``.
-        density: Layout density. ``'default'`` uses standard padding;
-            ``'compact'`` reduces padding and button height.
-        textsignal: ``Signal[str]`` bound to the button label text.
+        accent: Color intent token. Defaults to the theme default.
+        variant: Style variant. Default `'ghost'`.
+        density: Layout density.
+        textsignal: `Signal[str]` bound to the button label text.
         parent: Override the context-stack parent widget.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -76,16 +80,16 @@ class MenuButton(PublicWidgetBase):
         label: str = "",
         *,
         items: list[Any] | None = None,
-        on_select: Callable[[dict[str, Any]], Any] | None = None,
+        on_select: Callable[[MenuSelectEvent], Any] | None = None,
         icon: str | None = None,
         icon_only: bool = False,
         show_arrow: bool = True,
         menu_options: dict[str, Any] | None = None,
         disabled: bool = False,
-        accent: AccentToken | None = None,
-        variant: VariantToken | None = None,
+        accent: AccentToken | str | None = None,
+        variant: Literal["solid", "default", "outline", "ghost"] | None = None,
         density: WidgetDensity | None = None,
-        textsignal: Any = None,
+        textsignal: "Signal[str] | None" = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -105,7 +109,14 @@ class MenuButton(PublicWidgetBase):
         if items is not None:
             internal_kwargs["items"] = items
         if on_select is not None:
-            internal_kwargs["command"] = on_select
+            _user_on_select = on_select
+            def _on_select(data: dict[str, Any]) -> None:
+                _user_on_select(MenuSelectEvent(
+                    type=data.get("type", ""),
+                    text=data.get("text", ""),
+                    value=data.get("value"),
+                ))
+            internal_kwargs["command"] = _on_select
         if icon is not None:
             internal_kwargs["icon"] = icon
         if icon_only:

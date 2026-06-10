@@ -10,7 +10,7 @@ from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     AccentToken, VariantToken, SurfaceToken,
-    Anchor, Justify, Relief, CompoundMode,
+    Anchor, Justify, Relief, CompoundMode, Padding,
 )
 
 if TYPE_CHECKING:
@@ -25,42 +25,35 @@ class Label(PublicWidgetBase):
 
     Args:
         text: Text to display.
-        textsignal: Reactive ``Signal`` bound to the display text. Updates
+        textsignal: Reactive `Signal` bound to the display text. Updates
             automatically when the signal changes. Combine with
-            ``value_format=`` to format numeric or date values.
-        value_format: ICU format pattern applied to the ``textsignal`` value
-            before display. Common values: ``'decimal'``, ``'currency'``,
-            ``'percent'``, ``'date_short'``. Requires ``textsignal=`` to be
-            set and localization to be enabled.
+            `value_format=` to format numeric or date values.
+        value_format: Format applied to the `textsignal` value before display —
+            a named preset (e.g. `'decimal'`, `'currency'`, `'shortDate'`) or a
+            custom pattern (e.g. `'#,##0'`). Requires `textsignal=` and
+            localization enabled. See :ref:`format specs <value-formats>`.
         image: An image handle to display, for custom artwork rather than a
-            Bootstrap Icon name. Use ``icon_position=`` to control placement
+            Bootstrap Icon name. Use `icon_position=` to control placement
             relative to text. (The public image-handle API is being finalized
             for an upcoming release.)
-        icon: Bootstrap Icons name (e.g. ``'house'``, ``'gear'``). See the
+        icon: Bootstrap Icons name (e.g. `'house'`, `'gear'`). See the
             full catalog at https://icons.getbootstrap.com.
-        icon_only: If ``True``, show only the icon. Auto-detected when
-            ``text`` is empty and ``icon`` is provided.
-        icon_position: Position of the icon relative to text. One of
-            ``'left'`` (default), ``'right'``, ``'top'``, ``'bottom'``.
-            Only relevant when both ``text`` and ``icon`` are provided.
-        anchor: Content alignment within the label area. One of ``'n'``,
-            ``'ne'``, ``'e'``, ``'se'``, ``'s'``, ``'sw'``, ``'w'``,
-            ``'nw'``, ``'center'`` (default).
-        justify: Multi-line text alignment. One of ``'left'``, ``'center'``,
-            ``'right'``.
+        icon_only: If `True`, show only the icon. Auto-detected when
+            `text` is empty and `icon` is provided.
+        icon_position: Position of the icon or image relative to the text.
+            Only relevant when an icon or image is shown alongside text.
+            Default `'left'`.
+        anchor: Content alignment within the label area. Default `'center'`.
+        justify: Multi-line text alignment.
         padding: Inner spacing around the text content.
         width: Width in character units.
         wrap_width: Maximum pixel width before text wraps. Set to enable
             multi-line wrapping.
-        font: Semantic font token. Examples: ``'body'``, ``'heading-lg'``,
-            ``'heading-md[bold]'``, ``'caption'``, ``'code'``,
-            ``'body+2[italic]'``.
-        accent: Accent token for semantic text color. One of ``'primary'``,
-            ``'secondary'``, ``'success'``, ``'warning'``, ``'danger'``,
-            ``'default'``.
+        font: Semantic font token. Examples: `'body'`, `'heading-lg'`,
+            `'heading-md[bold]'`, `'caption'`, `'code'`, `'body+2[italic]'`.
+        accent: Semantic color applied to the text.
         variant: Style variant token.
-        surface: Surface context token. One of ``'content'``, ``'card'``,
-            ``'chrome'``, ``'overlay'``.
+        surface: Background surface context.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
     """
@@ -79,11 +72,11 @@ class Label(PublicWidgetBase):
         icon_position: Literal["left", "right", "top", "bottom"] = "left",
         anchor: Anchor | None = None,
         justify: Justify | None = None,
-        padding: Any = None,
+        padding: Padding | None = None,
         width: int | None = None,
         wrap_width: int | None = None,
         font: str | None = None,
-        accent: AccentToken | str | None = None,
+        accent: AccentToken | Literal['muted'] | str | None = None,
         variant: VariantToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         parent: Any = None,
@@ -173,19 +166,17 @@ register_widget_events(Label, {})
 class Badge(Label):
     """Compact styled chip for status indicators, counts, and tags.
 
-    A ``Badge`` is a styled ``Label`` with a fixed visual shape. It accepts
-    the same kwargs as ``Label`` but the icon and image elements are not
-    rendered.
+    A `Badge` is a styled `Label` with a fixed visual shape. It accepts the
+    same kwargs as `Label`, but the icon and image elements are not rendered.
 
     Args:
         text: Text to display inside the badge.
-        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
-            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
-            Defaults to ``'primary'``.
-        variant: Shape variant. ``'square'`` (default, rounded rectangle) or
-            ``'pill'`` (fully rounded).
-        parent: Explicit parent widget. If omitted, the current context-stack
-            container is used.
+        accent: Color intent token for the badge. Defaults to `'primary'`.
+        variant: Shape variant — `'square'` is a rounded rectangle, `'pill'` is
+            fully rounded. Default `'square'`.
+        **kwargs: Other `Label` options (e.g. `font`, `padding`, `width`) plus
+            layout placement options applied by the parent container. See
+            :doc:`/tasks/layout`.
     """
 
     _internal_class = _InternalBadge

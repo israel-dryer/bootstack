@@ -237,11 +237,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.button.Button
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`Button <bootstack.Button>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Button
 
 Full Example
 ------------

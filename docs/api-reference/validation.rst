@@ -1,5 +1,5 @@
-bootstack.validation
-=====================
+Validation
+==========
 
 .. currentmodule:: bootstack.validation
 
@@ -16,3 +16,15 @@ whole-form validation — see the :doc:`/reference/validation` guide.
 
    ValidationRule
    ValidationResult
+
+Rule types
+----------
+
+The rule names accepted by ``ValidationRule`` and a field's
+``add_validation_rule``.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   RuleType

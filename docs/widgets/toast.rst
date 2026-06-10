@@ -156,17 +156,16 @@ Widget sizing
 API
 ---
 
-Toast class
-~~~~~~~~~~~
+The :class:`Toast <bootstack.Toast>` widget is on the
+:doc:`Widgets </api-reference/widgets>` API page; the one-shot
+:func:`toast() <bootstack.toast>` verb is on the :doc:`Dialogs </api-reference/dialogs>`
+page. At a glance:
 
-.. autoclass:: bootstack.widgets.toast.Toast
-   :members:
-   :undoc-members:
+.. autosummary::
+   :nosignatures:
 
-Convenience function
-~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: bootstack.widgets.toast.toast
+   ~bootstack.Toast
+   ~bootstack.toast
 
 Full Example
 ------------

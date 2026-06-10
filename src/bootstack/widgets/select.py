@@ -29,26 +29,27 @@ class Select(PublicWidgetBase):
         options: List of string choices presented in the popup. Defaults to
             an empty list.
         value: Initially selected value.
-        signal: Reactive ``Signal[str]`` linked to the selected value. The
+        signal: Reactive `Signal[str]` linked to the selected value. The
             field and signal stay in sync automatically.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
-        required: If ``True``, marks the field as required and prevents
+        required: If `True`, marks the field as required and prevents
             empty submission.
-        searchable: If ``True``, typing in the field filters the option
-            list. Defaults to ``False``.
-        allow_custom_values: If ``True``, users may type values not in
-            ``options``. Defaults to ``False``.
-        read_only: If ``True``, value is visible but the popup cannot be
+        searchable: If `True`, typing in the field filters the option
+            list. Defaults to `False`.
+        allow_custom_values: If `True`, users may type values not in
+            `options`. Defaults to `False`.
+        read_only: If `True`, value is visible but the popup cannot be
             opened.
-        disabled: If ``True``, field is fully non-interactive and dimmed.
+        disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
-        accent: Accent token applied to the focus ring. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``, ``'default'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        accent: Accent token applied to the focus ring.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -113,6 +114,22 @@ class Select(PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -146,7 +163,7 @@ class Select(PublicWidgetBase):
 
     @property
     def selected_index(self) -> int:
-        """Zero-based index of the selected option, or ``-1`` if none selected."""
+        """Zero-based index of the selected option, or `-1` if none selected."""
         return self._internal.selected_index
 
     @selected_index.setter
@@ -180,8 +197,13 @@ class Select(PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selection changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit
+                to get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 

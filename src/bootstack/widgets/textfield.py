@@ -48,30 +48,32 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     Args:
         value: Initial text value.
         placeholder: Ghost text shown when the field is empty and unfocused.
-        textsignal: Reactive ``Signal[str]`` bound to the field text. The
+        textsignal: Reactive `Signal[str]` bound to the field text. The
             field value and signal stay in sync automatically.
-        value_format: ICU format pattern applied when displaying and parsing
-            the value. Examples: ``'#,##0.00'`` (decimal with thousands),
-            ``'currency'``, ``'percent'``, ``'yyyy-MM-dd'`` (date).
-            Requires localization to be enabled.
+        value_format: Format applied when displaying and parsing the value —
+            a named preset (e.g. `'decimal'`, `'currency'`, `'percent'`) or a
+            custom pattern (e.g. `'#,##0.00'`). Requires localization enabled.
+            See :ref:`format specs <value-formats>`.
         label: Label displayed above the input.
         message: Hint or helper text displayed below the input.
-        required: If ``True``, marks the field as required and prevents empty
+        required: If `True`, marks the field as required and prevents empty
             submission.
-        mask: Character used to mask each typed character (e.g. ``'*'``
+        mask: Character used to mask each typed character (e.g. `'*'`
             for password inputs).
-        read_only: If ``True``, text is visible and selectable but not
+        read_only: If `True`, text is visible and selectable but not
             editable.
-        disabled: If ``True``, field is fully non-interactive and dimmed.
+        disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
-        justify: Text alignment. One of ``'left'`` (default), ``'center'``,
-            ``'right'``.
-        font: Semantic font token (e.g. ``'body'``, ``'code'``).
-        accent: Accent token applied to the focus ring. One of ``'primary'``,
-            ``'secondary'``, ``'success'``, ``'warning'``, ``'danger'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        justify: Text alignment. Default `'left'`.
+        font: Semantic font token (e.g. `'body'`, `'code'`). See
+            :doc:`/reference/typography`.
+        accent: Accent token applied to the focus ring.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -144,6 +146,22 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -168,7 +186,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal[str] | None":
-        """The reactive ``Signal`` bound to this field, or ``None``."""
+        """The reactive `Signal` bound to this field, or `None`."""
         return getattr(self._internal, 'signal', None)
 
     @property
@@ -214,7 +232,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(0, "end")
 
     def select_range(self, start: int, end: int) -> None:
-        """Select text between ``start`` and ``end`` character positions.
+        """Select text between `start` and `end` character positions.
 
         Args:
             start: Start index (0-based, inclusive).
@@ -223,7 +241,7 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(start, end)
 
     def insert(self, index: int, text: str) -> None:
-        """Insert ``text`` at ``index``.
+        """Insert `text` at `index`.
 
         Args:
             index: Character position to insert at.
@@ -232,11 +250,11 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().insert(index, text)
 
     def delete(self, start: int, end: int | None = None) -> None:
-        """Delete characters from ``start`` to ``end``.
+        """Delete characters from `start` to `end`.
 
         Args:
             start: Start index (inclusive).
-            end: End index (exclusive). If ``None``, deletes to end of field.
+            end: End index (exclusive). If `None`, deletes to end of field.
         """
         self._entry_widget().delete(start, "end" if end is None else end)
 
@@ -249,12 +267,17 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
-        Unlike ``on_change()`` which fires on commit (blur or Enter),
-        ``on_input()`` fires after each character typed. Use it for
+        Unlike `on_change()` which fires on commit (blur or Enter),
+        `on_input()` fires after each character typed. Use it for
         real-time feedback, character counting, or live filtering.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 
@@ -265,8 +288,14 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field value changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent` on
+                commit (blur or Enter). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -277,8 +306,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Enter.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -289,8 +323,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -301,8 +340,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
@@ -313,8 +357,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -325,8 +374,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -337,8 +391,13 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 

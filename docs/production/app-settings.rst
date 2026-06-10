@@ -57,18 +57,9 @@ The available options:
    * - ``follow_system_appearance``
      - read/write
      - Track the OS light/dark setting (currently effective on macOS).
-   * - ``available_themes``
-     - read/write
-     - Theme names to expose to theme pickers; empty means all registered.
-   * - ``inherit_surface_color``
-     - read/write
-     - Whether child widgets inherit the parent's surface color.
    * - ``locale``
      - read/write
      - Active locale (e.g. ``'en_US'``); assigning re-localizes live.
-   * - ``localize_mode``
-     - read/write
-     - Localization behavior — ``'auto'``, ``True``, or ``False``.
    * - ``locale_language``
      - read-only
      - Base language derived from the locale (e.g. ``'de'``).
@@ -81,15 +72,20 @@ The available options:
    * - ``window_style``
      - read/write
      - Windows-only window effect (``'mica'``, ``'acrylic'``, …) or ``None``.
-   * - ``macos_quit_behavior``
-     - read/write
-     - macOS close / Cmd+Q behavior — ``'native'`` or ``'classic'``.
    * - ``remember_window_state``
      - read/write
      - Save the window geometry on close and restore it next launch.
-   * - ``state_path``
-     - read/write
-     - Override path for the persisted window-state file.
+
+Construction-only options
+-------------------------
+
+Some configuration is set once at construction and has no live ``app.*`` property
+(changing it at runtime would be incomplete or meaningless): ``localize_mode``,
+``macos_quit_behavior``, ``state_path``, ``available_themes``, and the window
+geometry options (``size``, ``position``, ``min_size``, ``max_size``,
+``resizable``, ``scaling``, ``hdpi``). Pass them to ``App(...)`` / ``AppShell(...)``.
+The exposed theme list is read at runtime via :func:`get_themes
+<bootstack.style.get_themes>`.
 
 Theme and appearance
 --------------------

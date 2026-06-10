@@ -235,9 +235,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.listview.ListView
-   :members:
-   :undoc-members:
+The complete reference for :class:`ListView <bootstack.ListView>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ListView
 
 Full Example
 ------------

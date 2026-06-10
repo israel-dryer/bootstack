@@ -10,6 +10,7 @@ from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
@@ -38,10 +39,10 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         value: Initial time value — a `datetime.time` object or a time
             string (e.g. `'14:30'` or `'2:30 PM'`). Defaults to the current
             time.
-        value_format: ICU time format preset or pattern. Common presets:
-            `'shortTime'` (default, e.g. `'3:30 PM'`), `'longTime'`
-            (e.g. `'3:30:45 PM PST'`). Custom ICU patterns are also accepted:
-            `'HH:mm'` (24-hour), `'h:mm a'` (12-hour), `'HH:mm:ss'`.
+        value_format: Format applied to the displayed time — a named preset
+            (e.g. `'shortTime'`, `'longTime'`) or a custom pattern (e.g.
+            `'HH:mm'`, `'h:mm a'`). Default `'shortTime'`. See
+            :ref:`format specs <value-formats>`.
         interval: Minute interval for dropdown entries. Default `30`.
         min_time: Earliest time shown in the dropdown.
         max_time: Latest time shown in the dropdown.
@@ -54,11 +55,12 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         read_only: If `True`, free-text entry is blocked; user must pick
             from the dropdown.
         width: Width in character cells.
-        accent: Accent color for the focus ring — `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`, or `'default'`.
-            Default `'primary'`.
-        density: Widget density — `'default'` or `'compact'`.
+        accent: Accent color applied to the focus ring. Default `'primary'`.
+        density: Widget density.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -113,8 +115,6 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if density is not None:
             internal_kwargs["density"] = density
-        internal_kwargs.update({k: v for k, v in kwargs.items()
-                                 if k not in internal_kwargs})
 
         self._internal = _InternalTimeEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -129,6 +129,22 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -159,6 +175,7 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether the field is disabled (non-interactive and greyed out)."""
         return str(self._internal._entry.cget("state")) == "disabled"
 
     @disabled.setter
@@ -167,6 +184,7 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
+        """Whether the field is read-only (selectable but not editable)."""
         return str(self._internal._entry.cget("state")) == "readonly"
 
     @read_only.setter
@@ -193,11 +211,11 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         """Clear the field, setting the value to `None`."""
         self._internal.value = None
 
-    def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to this field.
 
         Args:
-            rule_type: Rule identifier string (e.g. `'required'`).
+            rule_type: The kind of validation rule to apply.
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
 
@@ -210,8 +228,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the time value changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -222,8 +245,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Return to confirm input.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -234,8 +262,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -246,8 +279,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -258,8 +296,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a validation check runs.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 
@@ -270,8 +313,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains keyboard focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -282,8 +330,13 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses keyboard focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 

@@ -133,9 +133,13 @@ background and border around a group of content.
 API
 ---
 
-.. autoclass:: bootstack.widgets.card.Card
-   :members:
-   :undoc-members:
+The complete reference for :class:`Card <bootstack.Card>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Card
 
 Full Example
 ------------

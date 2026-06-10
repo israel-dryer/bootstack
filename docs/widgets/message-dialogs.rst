@@ -97,9 +97,15 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.dialogs.alert
+The complete reference for :func:`alert() <bootstack.alert>` and
+:func:`confirm() <bootstack.confirm>` lives on the
+:doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
 
-.. autofunction:: bootstack.dialogs.confirm
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.alert
+   ~bootstack.confirm
 
 Full Example
 ------------

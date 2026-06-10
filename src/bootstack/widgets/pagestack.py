@@ -12,7 +12,9 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import (
+    Event, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+)
 
 _PAGESTACK_EVENTS: dict[str, str] = {
     "page_change": "<<PageChange>>",
@@ -21,41 +23,37 @@ _PAGESTACK_EVENTS: dict[str, str] = {
 
 
 class StackPage:
-    """Context-manager container returned by `PageStack.add()`.
+    """A handle for one page — both a layout context and a navigation target.
 
-    Place child widgets inside the ``with`` block to add them to the page.
+    Returned by `PageStack.add()` and by `PageStack.item()` / `items()`. Use it
+    as a `with` block to place child widgets, and read `key` or call `navigate()`
+    to show the page afterward.
 
-    Args:
-        layout: Internal layout mode — ``'vstack'`` (default), ``'hstack'``,
-            or ``'grid'``.
-        padding: Space inside the page frame.
-        gap: Space between children in pixels.
-        fill_items: Default fill direction applied to each child.
-        expand_items: Whether children expand to fill available space.
-        anchor_items: Default anchor applied to each child.
-        columns: Column definitions for ``'grid'`` layout.
-        rows: Row definitions for ``'grid'`` layout.
-        sticky_items: Default sticky value for grid children.
-        auto_flow: Grid auto-flow direction — ``'row'`` (default) or
-            ``'column'``.
+    As a context manager it accepts the same layout kwargs as the standalone
+    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
+    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
     """
 
     def __init__(
         self,
         page_widget: tkinter.Widget,
         *,
-        layout: str = "vstack",
-        padding: Any = None,
+        key: str,
+        owner: "PageStack",
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
     ) -> None:
         self._page = page_widget
+        self._key = key
+        self._owner = owner
         self._layout = layout
 
         if layout in ("vstack", "hstack"):
@@ -108,6 +106,21 @@ class StackPage:
             options["anchor"] = self._anchor_items
         child._internal.pack(in_=self._child_master(), **options)
 
+    # ----- Page identity and navigation -----
+
+    @property
+    def key(self) -> str:
+        """The page's unique key, used with `PageStack.item()` / `navigate()`."""
+        return self._key
+
+    def navigate(self, data: dict | None = None) -> None:
+        """Navigate to this page.
+
+        Args:
+            data: Optional data dict passed to the page's mount event.
+        """
+        self._owner.navigate(self._key, data=data)
+
     def __enter__(self) -> "StackPage":
         push_container(self)
         return self
@@ -137,15 +150,15 @@ class PageStack(PublicWidgetBase):
         width: Requested width in pixels.
         height: Requested height in pixels.
         parent: Override the context-stack parent.
-        **kwargs: Self-placement kwargs (``fill=``, ``expand=``,
-            ``row=``, ``column=``, etc.) forwarded to the parent
-            geometry manager.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        padding: Any = None,
+        padding: Padding | None = None,
         width: int | None = None,
         height: int | None = None,
         parent: Any = None,
@@ -162,6 +175,7 @@ class PageStack(PublicWidgetBase):
         if height is not None:
             ps_kwargs["height"] = height
 
+        self._pages: dict[str, StackPage] = {}
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = _InternalPageStack(tk_master, **ps_kwargs)
         self._attach_to_parent(layout_kw)
@@ -172,46 +186,54 @@ class PageStack(PublicWidgetBase):
         self,
         key: str,
         *,
-        layout: str = "vstack",
-        padding: Any = None,
+        layout: LayoutKind = "vstack",
+        padding: Padding | None = None,
         gap: int = 0,
-        fill_items: str | None = None,
+        fill_items: Fill | str | None = None,
         expand_items: bool | None = None,
-        anchor_items: str | None = None,
-        columns: int | list | None = None,
-        rows: int | list | None = None,
-        sticky_items: str | None = None,
-        auto_flow: str = "row",
+        anchor_items: Anchor | str | None = None,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        sticky_items: Sticky | str | None = None,
+        auto_flow: AutoFlow = "row",
     ) -> StackPage:
-        """Add a page and return a context manager for placing its children.
+        """Add a page and return a handle for placing its children and navigating to it.
 
         Args:
             key: Unique identifier for this page.
-            layout: Internal layout — `'vstack'` (default), `'hstack'`, or `'grid'`.
-            gap: Space between children in pixels.
+            layout: Internal layout. Defaults to `'vstack'`.
+            padding: Space inside the page frame. Defaults to `None`.
+            gap: Space between children in pixels. Defaults to `0`.
             fill_items: Default fill direction applied to each child.
             expand_items: Whether children expand to fill available space.
             anchor_items: Default anchor applied to each child.
-            columns: Column definitions for `'grid'` layout.
-            rows: Row definitions for `'grid'` layout.
+            columns: Column definitions for `'grid'` layout. An integer sets
+                the number of equal-weight columns; a list sets per-column
+                weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
+            rows: Row definitions for `'grid'` layout, same format as `columns`.
             sticky_items: Default sticky value for grid children.
-            auto_flow: Grid auto-flow direction.
+            auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
-            `StackPage` — use as a context manager to place children.
+            `StackPage` — use as a context manager to place children, and as a
+            handle to `navigate()` to the page.
         """
         page_widget = self._internal.add(key)
-        return StackPage(
+        page = StackPage(
             page_widget,
+            key=key, owner=self,
             layout=layout, padding=padding, gap=gap, fill_items=fill_items,
             expand_items=expand_items, anchor_items=anchor_items,
             columns=columns, rows=rows, sticky_items=sticky_items,
             auto_flow=auto_flow,
         )
+        self._pages[key] = page
+        return page
 
     def remove(self, key: str) -> None:
         """Remove a page and destroy its widget."""
         self._internal.remove(key)
+        self._pages.pop(key, None)
 
     # ----- Navigation -----
 
@@ -254,17 +276,20 @@ class PageStack(PublicWidgetBase):
         """All registered page keys in insertion order."""
         return self._internal.keys()
 
-    def item(self, key: str) -> Any:
-        """Return the page widget for `key`.
+    def item(self, key: str) -> StackPage:
+        """Return the page handle for `key`.
 
         Args:
             key: Page key assigned in `add()`.
-        """
-        return self._internal.item(key)
 
-    def items(self) -> tuple[Any, ...]:
-        """Return all page widgets in insertion order."""
-        return self._internal.items()
+        Returns:
+            The `StackPage` for that key — read its `key` or `navigate()` to it.
+        """
+        return self._pages[key]
+
+    def items(self) -> tuple[StackPage, ...]:
+        """Return all page handles in insertion order."""
+        return tuple(self._pages[k] for k in self._internal.keys())
 
     # ----- Event shorthands -----
 
@@ -276,7 +301,7 @@ class PageStack(PublicWidgetBase):
         """Register a callback fired after every navigation.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("page_change", handler)
 
@@ -288,7 +313,7 @@ class PageStack(PublicWidgetBase):
         """Register a callback fired when a page is mounted.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("page_mount", handler)
 

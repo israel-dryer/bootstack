@@ -185,9 +185,13 @@ framed containers that can be combined with ScrollView.
 API
 ---
 
-.. autoclass:: bootstack.widgets.scrollview.ScrollView
-   :members:
-   :undoc-members:
+The complete reference for :class:`ScrollView <bootstack.ScrollView>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ScrollView
 
 Full Example
 ------------

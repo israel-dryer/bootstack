@@ -8,17 +8,17 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import DateSelectEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event
+from bootstack.widgets.types import AccentToken, Event, Padding
 
 
 class Calendar(PublicWidgetBase):
     """An inline calendar for single-date or date-range selection.
 
-    Always visible — not a popup. Displays one month in ``'single'`` mode and
-    two months side-by-side in ``'range'`` mode.
+    Always visible — not a popup. Displays one month in `'single'` mode and
+    two months side-by-side in `'range'` mode.
 
-    Dates can be passed as :class:`datetime.date` objects, :class:`datetime.datetime`
-    objects, or ISO strings (``"2026-05-31"``).
+    Dates can be passed as `datetime.date` objects, `datetime.datetime`
+    objects, or ISO strings (`"2026-05-31"`).
 
     Args:
         value: Initially selected date (single mode only).
@@ -26,25 +26,26 @@ class Calendar(PublicWidgetBase):
         end_date: Initially selected range end date (range mode).
         disabled_dates: Dates that cannot be selected. Displayed with a
             strikethrough style.
-        selection_mode: ``'single'`` (default) for one date; ``'range'``
+        selection_mode: `'single'` (default) for one date; `'range'`
             for a start–end span.
         min_date: Earliest selectable date. Earlier dates are disabled
             and month navigation is blocked before this point.
         max_date: Latest selectable date. Later dates are disabled
             and month navigation is blocked past this point.
         show_outside_days: Show days from adjacent months in the grid.
-            Defaults to ``True`` in single mode and ``False`` in range mode.
+            Defaults to `True` in single mode and `False` in range mode.
         show_week_numbers: Display ISO 8601 week numbers in the leftmost
-            column. Defaults to ``False``.
+            column. Defaults to `False`.
         first_weekday: First day of the week as an integer (0=Monday,
             6=Sunday). If omitted, the locale default is used.
         accent: Accent token applied to selected dates and highlights.
-            One of ``'primary'``, ``'secondary'``, ``'info'``,
-            ``'success'``, ``'warning'``, ``'danger'``, ``'default'``.
-            Defaults to ``'primary'``.
-        padding: Padding around the widget.
+            Defaults to `'primary'`.
+        padding: Space in pixels around the calendar grid.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -61,7 +62,7 @@ class Calendar(PublicWidgetBase):
         show_week_numbers: bool = False,
         first_weekday: int | None = None,
         accent: AccentToken | str | None = None,
-        padding: Any = None,
+        padding: Padding | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -146,12 +147,18 @@ class Calendar(PublicWidgetBase):
         """Register a callback fired when a date or range is selected.
 
         In single mode the handler fires on every date click. In range mode
-        it fires after each click — check ``calendar.range`` to see whether
-        a complete range has been set (``end`` is ``None`` while the second
+        it fires after each click — check `calendar.range` to see whether
+        a complete range has been set (`end` is `None` while the second
         date is still pending).
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.DateSelectEvent`.
+                Omit to get a composable :class:`~bootstack.streams.Stream`
+                instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("<<DateSelect>>", handler)
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 
 import bootstack as bs
-from bootstack.data import MemoryDataSource, SqliteDataSource
+from bootstack.data import MemoryDataSource, SqliteDataSource, col
 from bootstack.widgets.tree import TreeNode
 
 
@@ -612,3 +612,93 @@ def test_datasource_property(shown_app):
     tree = bs.Tree(data_source=src, parent_field="parent_id")
     assert tree.data_source is src
     assert bs.Tree().data_source is None
+
+
+# --------------------------------------------------------------------------- find / find_all
+
+
+@pytest.mark.gui
+def test_find_predicate_declarative(shown_app):
+    tree = bs.Tree(nodes=PROJECT)
+    _pump(shown_app)
+
+    node = tree.find(lambda n: n.label == "tree.py")
+    assert node is not None and node.label == "tree.py"
+    assert tree.find(lambda n: n.label == "nope") is None
+
+
+@pytest.mark.gui
+def test_find_all_predicate_declarative(shown_app):
+    tree = bs.Tree(nodes=PROJECT)
+    _pump(shown_app)
+
+    py = tree.find_all(lambda n: n.label.endswith(".py"))
+    assert [n.label for n in py] == ["app.py", "tree.py"]  # tree order
+
+
+@pytest.mark.gui
+def test_find_condition_declarative_matches_data_bag(shown_app):
+    tree = bs.Tree(nodes=PROJECT)
+    _pump(shown_app)
+
+    # README.md carries status='draft' in its data bag (overflow kwarg).
+    node = tree.find(col("status") == "draft")
+    assert node is not None and node.label == "README.md"
+
+
+@pytest.mark.gui
+def test_find_predicate_source_sees_loaded_only(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    # A predicate can't push down: the deep node isn't loaded yet, so it's
+    # invisible to a predicate scan.
+    assert tree.find(lambda n: n.label == "deep") is None
+    assert {n.label for n in tree.find_all(lambda n: True)} == {"src", "README.md"}
+
+
+@pytest.mark.gui
+def test_find_condition_source_pushes_down_and_loads_path(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    # 'deep' (id 5) lives under app.py under src — three levels down, unloaded.
+    node = tree.find(col("name") == "deep")
+    assert node is not None
+    assert node.label == "deep"
+    assert node.data["id"] == 5
+
+    # The path was loaded but NOT expanded (non-destructive locate).
+    src_node = [n for n in _roots(tree) if n.label == "src"][0]
+    assert src_node.children  # children materialized
+    assert src_node.expanded is False
+    # And the returned handle can now be revealed normally.
+    tree.reveal(node)
+    _pump(shown_app)
+    assert src_node.expanded is True
+
+
+@pytest.mark.gui
+def test_find_all_condition_source_reaches_every_branch(shown_app):
+    src, _ = _counting_source(FLAT_ROWS)
+    tree = bs.Tree(data_source=src, parent_field="parent_id")
+    _pump(shown_app)
+
+    files = tree.find_all(col("kind") == "file")
+    # Every file anywhere in the hierarchy, regardless of load state.
+    assert {n.label for n in files} == {"app.py", "util.py", "README.md", "deep"}
+
+
+@pytest.mark.gui
+def test_find_condition_sqlite_backing(shown_app):
+    src = SqliteDataSource()
+    src.load([dict(r) for r in FLAT_ROWS])
+    tree = bs.Tree(data_source=src, parent_field="parent_id", order="name")
+    _pump(shown_app)
+
+    node = tree.find(col("name") == "deep")
+    assert node is not None and node.data["id"] == 5
+    assert tree.find(col("name") == "ghost") is None
+    src.close()

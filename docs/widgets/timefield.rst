@@ -135,11 +135,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.timefield.TimeField
-   :members:
-   :undoc-members:
-   :inherited-members: PublicWidgetBase
-   :exclude-members: tk
+The complete reference for :class:`TimeField <bootstack.TimeField>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.TimeField
 
 Full Example
 ------------

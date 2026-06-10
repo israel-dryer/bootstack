@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal, Protocol, TypedDict, overload
+from typing import Any, Callable, Literal, Protocol, overload
 
 from bootstack.widgets._impl.composites.tableview.tableview import (
     TableView as _InternalTableView,
@@ -10,55 +10,7 @@ from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent, S
 from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets.types import WidgetDensity
-
-
-class ColumnSpec(TypedDict, total=False):
-    """A column definition for `DataTable(columns=...)`.
-
-    Columns may be plain key strings or these dicts. Only `key` is required; the
-    editor keys (`editor`, `editor_options`, `dtype`, `readonly`, `required`)
-    shape how the column appears in the built-in add/edit dialog.
-    """
-
-    key: str
-    """Record field this column reads and writes."""
-    text: str
-    """Header label. Defaults to `key`."""
-    width: int
-    """Column width in pixels."""
-    minwidth: int
-    """Minimum column width in pixels."""
-    anchor: str
-    """Cell alignment — `'w'`, `'center'`, or `'e'`."""
-    format: "str | Callable[[Any], str]"
-    """Display formatter for the cell — a format-spec string applied as
-    `spec.format(value)` (e.g. `'${:,.0f}'` → `$70,000`) or a callable
-    `(value) -> str`. Display only: sorting, filtering, editing, and export use
-    the raw value."""
-    dtype: str
-    """Value type hint (e.g. `'int'`, `'text'`); drives alignment and the editor."""
-    editor: str
-    """Field type used in the add/edit dialog (e.g. `'text'`, `'number'`, `'select'`)."""
-    editor_options: dict
-    """Keyword options passed to the editor field."""
-    readonly: bool
-    """Show the column but make it non-editable in the dialog."""
-    required: bool
-    """Require a value in the add/edit dialog."""
-
-
-class FormOptions(TypedDict, total=False):
-    """Layout options for the built-in add/edit dialog (`DataTable(form=...)`)."""
-
-    col_count: int
-    """Number of columns the form fields are laid out in. Default `2`."""
-    min_col_width: int
-    """Minimum width in pixels of each form column. Default `260`."""
-    scrollable: bool
-    """Scroll the form when it is taller than the dialog. Default `True`."""
-    resizable: bool
-    """Allow the dialog to be resized. Default `True`."""
+from bootstack.widgets.types import ColumnSpec, FormOptions, WidgetDensity
 
 
 class ExportJob(Protocol):
@@ -87,11 +39,12 @@ class DataTable(PublicWidgetBase):
             object implementing the data-source protocol is accepted
             (`SqliteDataSource`, `MemoryDataSource`, `FileDataSource`, or a
             custom source).
-        selection_mode: `'none'`, `'single'` (default), or `'multi'`.
-        sorting_mode: `'single'` (default) or `'none'`.
+        selection_mode: Row selection behavior. Default `'single'`.
+        sorting_mode: Whether columns can be sorted. Default `'single'`.
         searchable: Show the search bar. Default `True`.
         allow_filter: Enable column filtering. Default `True`.
-        paging_mode: `'standard'` (default, paginated) or `'virtual'`.
+        paging_mode: `'standard'` paginates the rows; `'virtual'` scrolls them
+            in a single virtual view. Default `'standard'`.
         page_size: Rows per page in standard paging mode. Default `25`.
         allow_add: Allow adding rows via a form dialog. Default `False`.
         allow_edit: Allow editing rows via a form dialog. Default `False`.
@@ -102,13 +55,11 @@ class DataTable(PublicWidgetBase):
             also offered when the optional `bootstack[excel]` dependency is
             installed. For explicit control use `export_file()` / `to_csv()`
             with `scope=`. Default `False`.
-        export_formats: Which formats the export menu offers. Choose from
-            `'csv'`, `'tsv'`, `'xlsx'`, `'json'`, `'jsonl'`, `'xml'`, `'parquet'`,
-            `'feather'`, `'hdf5'`. Default `('csv',)`. Formats needing an optional
-            dependency (`xlsx`→`bootstack[excel]`, `parquet`/`feather`→
-            `bootstack[parquet]`, `hdf5`→`bootstack[hdf5]`) appear only when it is
-            installed. Registry formats export the displayed columns; for the full
-            record set use `data_source.save(path)`.
+        export_formats: Which formats the export menu offers. Default `('csv',)`.
+            Formats needing an optional dependency (`xlsx`→`bootstack[excel]`,
+            `parquet`/`feather`→`bootstack[parquet]`, `hdf5`→`bootstack[hdf5]`)
+            appear only when it is installed. Registry formats export the
+            displayed columns; for the full record set use `data_source.save(path)`.
         striped: Alternate row background colors. Default `True`.
         density: Row compactness — `'default'` or `'compact'` (tighter row
             height, smaller body font and padding). Default `'default'`.
@@ -132,6 +83,9 @@ class DataTable(PublicWidgetBase):
         form: Layout options for the built-in add/edit dialog — a `FormOptions`
             dict (`col_count`, `min_col_width`, `scrollable`, `resizable`).
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -150,7 +104,9 @@ class DataTable(PublicWidgetBase):
         allow_edit: bool = False,
         allow_delete: bool = False,
         allow_export: bool = False,
-        export_formats: list[str] | None = None,
+        export_formats: list[
+            Literal["csv", "tsv", "xlsx", "json", "jsonl", "xml", "parquet", "feather", "hdf5"]
+        ] | None = None,
         striped: bool = True,
         density: WidgetDensity = "default",
         allow_group: bool = False,
@@ -195,7 +151,6 @@ class DataTable(PublicWidgetBase):
             internal_kwargs["form_options"] = form
         if export_formats is not None:
             internal_kwargs["export_formats"] = tuple(export_formats)
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalTableView(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -532,13 +487,17 @@ class DataTable(PublicWidgetBase):
     def on_selection_changed(self) -> Stream: ...
     @overload
     def on_selection_changed(self, handler: Callable[[SelectionEvent], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler=None):
+    def on_selection_changed(self, handler: Callable[[SelectionEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when the set of selected rows changes.
 
-        The handler receives a `SelectionEvent` with `records` and `ids`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.SelectionEvent`
+                (`records`, `ids`). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("selection_changed", handler)
 
@@ -546,13 +505,17 @@ class DataTable(PublicWidgetBase):
     def on_row_click(self) -> Stream: ...
     @overload
     def on_row_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
-    def on_row_click(self, handler=None):
+    def on_row_click(self, handler: Callable[[RowEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when a row is clicked.
 
-        The handler receives a `RowEvent` with `record` and `id`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowEvent` (`record`,
+                `id`). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("row_click", handler)
 
@@ -560,13 +523,17 @@ class DataTable(PublicWidgetBase):
     def on_row_double_click(self) -> Stream: ...
     @overload
     def on_row_double_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
-    def on_row_double_click(self, handler=None):
+    def on_row_double_click(self, handler: Callable[[RowEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when a row is double-clicked.
 
-        The handler receives a `RowEvent` with `record` and `id`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowEvent` (`record`,
+                `id`). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("row_double_click", handler)
 
@@ -574,13 +541,17 @@ class DataTable(PublicWidgetBase):
     def on_row_right_click(self) -> Stream: ...
     @overload
     def on_row_right_click(self, handler: Callable[[RowEvent], Any]) -> Subscription: ...
-    def on_row_right_click(self, handler=None):
+    def on_row_right_click(self, handler: Callable[[RowEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when a row is right-clicked.
 
-        The handler receives a `RowEvent` with `record` and `id`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowEvent` (`record`,
+                `id`). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("row_right_click", handler)
 
@@ -588,13 +559,17 @@ class DataTable(PublicWidgetBase):
     def on_rows_insert(self) -> Stream: ...
     @overload
     def on_rows_insert(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_rows_insert(self, handler=None):
+    def on_rows_insert(self, handler: Callable[[RowsEvent], Any] | None = None) -> Stream | Subscription:
         """Fired after rows are inserted.
 
-        The handler receives a `RowsEvent` with the inserted `records`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowsEvent` carrying
+                the inserted `records`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("rows_insert", handler)
 
@@ -602,13 +577,17 @@ class DataTable(PublicWidgetBase):
     def on_rows_update(self) -> Stream: ...
     @overload
     def on_rows_update(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_rows_update(self, handler=None):
+    def on_rows_update(self, handler: Callable[[RowsEvent], Any] | None = None) -> Stream | Subscription:
         """Fired after rows are updated.
 
-        The handler receives a `RowsEvent` with the updated `records`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowsEvent` carrying
+                the updated `records`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("rows_update", handler)
 
@@ -616,13 +595,17 @@ class DataTable(PublicWidgetBase):
     def on_rows_delete(self) -> Stream: ...
     @overload
     def on_rows_delete(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_rows_delete(self, handler=None):
+    def on_rows_delete(self, handler: Callable[[RowsEvent], Any] | None = None) -> Stream | Subscription:
         """Fired after rows are deleted.
 
-        The handler receives a `RowsEvent` with the deleted `records`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowsEvent` carrying
+                the deleted `records`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("rows_delete", handler)
 
@@ -630,13 +613,17 @@ class DataTable(PublicWidgetBase):
     def on_rows_move(self) -> Stream: ...
     @overload
     def on_rows_move(self, handler: Callable[[RowsEvent], Any]) -> Subscription: ...
-    def on_rows_move(self, handler=None):
+    def on_rows_move(self, handler: Callable[[RowsEvent], Any] | None = None) -> Stream | Subscription:
         """Fired after rows are reordered.
 
-        The handler receives a `RowsEvent` with the moved `records`.
+        Args:
+            handler: Called with a :class:`~bootstack.events.RowsEvent` carrying
+                the moved `records`. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("rows_move", handler)
 
@@ -644,14 +631,18 @@ class DataTable(PublicWidgetBase):
     def on_export(self) -> Stream: ...
     @overload
     def on_export(self, handler: Callable[[ExportEvent], Any]) -> Subscription: ...
-    def on_export(self, handler=None):
+    def on_export(self, handler: Callable[[ExportEvent], Any] | None = None) -> Stream | Subscription:
         """Fired after the data is exported (copied or saved).
 
-        The handler receives an `ExportEvent` with `count`, `target`
-        (`'clipboard'` or `'file'`), `format`, and `path`.
+        Args:
+            handler: Called with an :class:`~bootstack.events.ExportEvent`
+                (`count`, `target` — `'clipboard'` or `'file'` — `format`, and
+                `path`). Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            `Subscription` (with handler) or `Stream` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("export", handler)
 

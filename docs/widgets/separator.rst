@@ -93,9 +93,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.separator.Separator
-   :members:
-   :undoc-members:
+The complete reference for :class:`Separator <bootstack.Separator>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Separator
 
 Full Example
 ------------

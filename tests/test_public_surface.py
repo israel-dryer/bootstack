@@ -40,7 +40,6 @@ EXPECTED_TOPLEVEL = {
     # inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",
     "TextArea", "CodeEditor", "DateField", "TimeField", "Slider", "RangeSlider",
-    "EditFilter",
     # selection
     "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
@@ -54,7 +53,6 @@ EXPECTED_TOPLEVEL = {
     "Tooltip", "Toast", "toast",
     # forms
     "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
-    "EditorType",
 }
 
 # Primitives that must live in a submodule and NOT at the top level.
@@ -65,7 +63,7 @@ MOVED = {
         "col", "any_of", "all_of",
     ],
     "bootstack.i18n": ["L", "LV"],
-    "bootstack.validation": ["ValidationRule", "ValidationResult"],
+    "bootstack.validation": ["ValidationRule", "ValidationResult", "RuleType"],
     "bootstack.events": ["Event", "Subscription"],
     "bootstack.streams": ["Stream", "Handle"],
     "bootstack.scheduling": ["Schedule", "Job"],
@@ -82,8 +80,12 @@ MOVED = {
     "bootstack.types": [
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
+        "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
+        "ColumnSpec", "EditorType", "FormOptions",
     ],
-    "bootstack.widgets": ["PublicWidgetBase", "PublicContainer"],
+    # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
+    # stays importable here for power users. See project_editfilter_public_api.
+    "bootstack.widgets": ["PublicWidgetBase", "PublicContainer", "EditFilter"],
     "bootstack.dialogs": [
         "FormDialog", "Dialog", "DialogButton", "ColorChooserDialog",
         "ColorChoice", "FontDialog", "FontChoice", "FilterDialog",

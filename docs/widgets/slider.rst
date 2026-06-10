@@ -123,11 +123,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.slider.Slider
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :exclude-members: tk
+The complete reference for :class:`Slider <bootstack.Slider>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Slider
 
 Full Example
 ------------

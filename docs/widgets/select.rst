@@ -105,9 +105,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.select.Select
-   :members:
-   :undoc-members:
+The complete reference for :class:`Select <bootstack.Select>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Select
 
 Full Example
 ------------

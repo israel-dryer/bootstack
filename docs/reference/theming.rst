@@ -186,7 +186,7 @@ API reference
 -------------
 
 The complete reference — the :class:`Theme <bootstack.style.Theme>` class and the
-theme-control functions — lives in :doc:`/api-reference/style` (which also covers
+theme-control functions — lives in :doc:`/api-reference/theming` (which also covers
 the font functions). At a glance:
 
 .. currentmodule:: bootstack.style

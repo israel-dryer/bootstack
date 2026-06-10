@@ -26,7 +26,7 @@ from bootstack.widgets._impl.composites.selectbox import SelectBox
 from bootstack.widgets._impl.primitives.spinbox import Spinbox
 from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack.widgets._impl.mixins.validation_mixin import ValidationMixin
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import EditorType, Master
 
 if TYPE_CHECKING:
     from bootstack.dialogs._impl.dialog import DialogButton
@@ -34,74 +34,109 @@ if TYPE_CHECKING:
 
 DType = Literal['int', 'float', 'bool', 'date', 'datetime', 'password', 'str'] | type | None
 
-EditorType = Literal[
-    'textfield',
-    'numberfield',
-    'passwordfield',
-    'datefield',
-    'textarea',
-    'select',
-    'spinnerfield',
-    'switch',
-    'checkbox',
-    'slider',
-]
-
 
 @dataclass
 class FieldItem:
-    """Field definition used by Form."""
+    """A single field in a `Form`, addressed by its `key`."""
+
     key: str
+    """Unique field identifier — used to read and write the field value."""
     label: str | None = None
+    """Display label shown above the field. Defaults to the capitalized `key`."""
     dtype: DType = None
+    """Type hint controlling the default editor — `'str'`, `'int'`, `'float'`,
+    `'bool'`, `'date'`, `'datetime'`, or `'password'`. `None` infers the type from
+    the initial value."""
     readonly: bool = False
+    """Render the field read-only. Default `False`."""
     visible: bool = True
+    """Show the field. Set `False` to hide it. Default `True`."""
     column: int | None = None
+    """Zero-based grid column. Auto-placed when `None`."""
     row: int | None = None
+    """Zero-based grid row. Auto-placed when `None`."""
     columnspan: int = 1
+    """Number of grid columns to span. Default `1`."""
     rowspan: int = 1
+    """Number of grid rows to span. Default `1`."""
     editor: EditorType | None = None
+    """Force a specific editor widget (see `EditorType`). `None` infers it from
+    `dtype`."""
     editor_options: dict[str, Any] = field(default_factory=dict)
+    """Extra keyword arguments forwarded to the editor widget. For `'select'`,
+    pass `{"values": ["A", "B", "C"]}`; add `{"allow_custom_values": True}` for an
+    editable combobox."""
     type: Literal['field'] = "field"
+    """Item-type discriminator. Set automatically; only needed when building items
+    as plain dicts."""
 
 
 @dataclass
 class GroupItem:
-    """Grouping of field items laid out in a grid with optional label/padding."""
+    """A labeled group of fields with its own column layout, placed in a `Form`."""
+
     items: list[FieldItem | Mapping[str, Any] | GroupItem | TabsItem] = field(default_factory=list)
+    """Child `FieldItem`, `GroupItem`, or `TabsItem` instances (or equivalent dicts)."""
     label: str | None = None
+    """Section heading shown above the group border. No border is drawn when `None`."""
     col_count: int = 1
+    """Number of columns within the group. Default `1`."""
     min_col_width: int = DEFAULT_MIN_COL_WIDTH
+    """Minimum column width in pixels."""
     width: int | None = None
+    """Fixed width for the group container."""
     height: int | None = None
+    """Fixed height for the group container."""
     column: int | None = None
+    """Zero-based grid column in the parent form. Auto-placed when `None`."""
     row: int | None = None
+    """Zero-based grid row in the parent form. Auto-placed when `None`."""
     columnspan: int = 1
+    """Columns to span in the parent grid. Default `1`."""
     rowspan: int = 1
+    """Rows to span in the parent grid. Default `1`."""
     padding: int | str | tuple[int, int] | tuple[int, int, int, int] | None = 8
+    """Internal padding inside the group border. Default `8`."""
     type: Literal['group'] = "group"
+    """Item-type discriminator. Set automatically; only needed when building items
+    as plain dicts."""
 
 
 @dataclass
 class TabItem:
-    """Single tab within a TabsItem."""
+    """A single tab within a `TabsItem`."""
+
     label: str
+    """Tab button label."""
     items: list[FieldItem | Mapping[str, Any] | GroupItem | TabsItem] = field(default_factory=list)
+    """`FieldItem`, `GroupItem`, or `TabsItem` instances for this tab's content."""
     padding: int | str | tuple[int, int] | tuple[int, int, int, int] | None = 8
+    """Internal padding inside the tab body. Default `8`."""
 
 
 @dataclass
 class TabsItem:
-    """Tab container with one or more TabItem entries."""
+    """A tab container holding one or more `TabItem` entries, placed in a `Form`."""
+
     tabs: list[TabItem | Mapping[str, Any]] = field(default_factory=list)
+    """`TabItem` instances (or equivalent dicts) defining each tab."""
     label: str | None = None
+    """Optional heading shown above the tab bar."""
     width: int | None = None
+    """Fixed width for the tab container."""
     height: int | None = None
+    """Fixed height for the tab container."""
     column: int | None = None
+    """Zero-based grid column in the parent form. Auto-placed when `None`."""
     row: int | None = None
+    """Zero-based grid row in the parent form. Auto-placed when `None`."""
     columnspan: int = 1
+    """Columns to span in the parent grid. Default `1`."""
     rowspan: int = 1
+    """Rows to span in the parent grid. Default `1`."""
     type: Literal['tabs'] = "tabs"
+    """Item-type discriminator. Set automatically; only needed when building items
+    as plain dicts."""
 
 
 FormItem = FieldItem | GroupItem | TabsItem
@@ -985,5 +1020,4 @@ __all__ = [
     "GroupItem",
     "TabsItem",
     "TabItem",
-    "EditorType",
 ]

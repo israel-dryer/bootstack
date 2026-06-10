@@ -1,11 +1,14 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.progressbar import Progressbar as _InternalProgressbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets.types import AccentToken, Orient
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 
 class ProgressBar(PublicWidgetBase):
@@ -15,17 +18,20 @@ class ProgressBar(PublicWidgetBase):
     progress (a looping animation) for operations whose duration is unknown.
 
     Args:
-        value: Initial progress value. Defaults to ``0``.
-        max_value: Value that represents 100% progress. Defaults to ``100``.
-        mode: ``'determinate'`` (default) shows a fixed fill proportional to
-            ``value / max_value``; ``'indeterminate'`` runs a looping animation.
-        orient: ``'horizontal'`` (default) or ``'vertical'``.
-        signal: Reactive ``Signal`` two-way bound to ``value``.
-        accent: Color intent token. One of ``'primary'``, ``'secondary'``,
-            ``'info'``, ``'success'``, ``'warning'``, ``'danger'``.
-            Defaults to the theme's default color.
-        variant: Style variant. ``'thin'`` reduces the bar height.
+        value: Initial progress value. Defaults to `0`.
+        max_value: Value that represents 100% progress. Defaults to `100`.
+        mode: `'determinate'` shows a fixed fill proportional to
+            `value / max_value`; `'indeterminate'` runs a looping animation.
+            Default `'determinate'`.
+        orient: Track orientation. Default `'horizontal'`.
+        signal: Reactive `Signal` two-way bound to `value`.
+        accent: Color intent token for the bar. Defaults to the theme's default
+            color.
+        variant: Style variant. `'thin'` reduces the bar height.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -35,8 +41,8 @@ class ProgressBar(PublicWidgetBase):
         max_value: float = 100,
         mode: Literal["determinate", "indeterminate"] = "determinate",
         orient: Orient = "horizontal",
-        signal: Any = None,
-        accent: AccentToken | None = None,
+        signal: Signal | None = None,
+        accent: AccentToken | str | None = None,
         variant: Literal["thin"] | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -58,7 +64,6 @@ class ProgressBar(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if variant is not None:
             internal_kwargs["variant"] = variant
-        internal_kwargs.update(kwargs)
 
         self._internal = _InternalProgressbar(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -67,6 +72,7 @@ class ProgressBar(PublicWidgetBase):
 
     @property
     def value(self) -> float:
+        """The current progress value."""
         return self._internal.get()
 
     @value.setter
@@ -75,6 +81,7 @@ class ProgressBar(PublicWidgetBase):
 
     @property
     def max_value(self) -> float:
+        """The value that represents 100% progress."""
         return float(self._internal.cget("maximum"))
 
     @max_value.setter

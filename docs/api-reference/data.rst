@@ -1,5 +1,5 @@
-bootstack.data
-==============
+Data
+====
 
 .. currentmodule:: bootstack.data
 

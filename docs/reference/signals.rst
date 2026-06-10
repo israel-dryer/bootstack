@@ -127,12 +127,11 @@ See also
 API reference
 -------------
 
-The complete reference — every method on :class:`Signal
-<bootstack.signals.Signal>` — lives in :doc:`/api-reference/signals`. At a glance:
-
-.. currentmodule:: bootstack.signals
+The complete reference — every method on :class:`Signal <bootstack.Signal>` —
+lives on the :doc:`Reactivity </api-reference/reactivity>` API page (``Signal`` is
+part of the top-level compose surface). At a glance:
 
 .. autosummary::
    :nosignatures:
 
-   Signal
+   ~bootstack.Signal

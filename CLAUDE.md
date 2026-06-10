@@ -18,193 +18,223 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 ## Recently completed (all merged to `main`)
 
-Listed as pointers only — these shipped and live in code, docs, and the linked
-memories (see them for rationale and gotchas).
+Pointers only — these shipped; rationale, detail, and gotchas live in the linked
+memories and git history.
 
-- **Unified data bag** (PR #92) — undisplayed / non-scalar fields are carried
-  across Tree, DataTable, ListView; SQLite stores non-scalars in a hidden
-  `_bs_data` JSON column; `bs.SerializationError` for non-JSON values on
-  persistent sources. Memory `project_data_bag`.
-- **Large-file streaming** (PRs #93–#96) — streaming chunked `load()`; pluggable
-  reader/writer registries (`data/readers.py`, `data/writers.py`:
-  CSV/TSV/JSON/JSONL/XML built in; Parquet/Feather/HDF5 via `bootstack[parquet]` /
-  `[hdf5]`); `FileDataSource` rebuilt to ingest a file into a SQLite working store
-  (temp / `cache=` / `:memory:`; `close()` + context-manager + finalizer cleanup;
-  mtime cache); source `save()` + DataTable `export_formats`. Memory
-  `project_file_source_streaming`. **Deferred:** background/progressive ingest,
-  keyset pagination, auto-index on sorted/filtered columns.
-- **Tree public-API modernization** (PR #91) — recycle-view canvas Tree with
-  `TreeNode` handles (icon + label rows). Memories `project_tree_row_model`,
+- **Unified data bag** (PR #92) — undisplayed/non-scalar fields carried across
+  Tree/DataTable/ListView; SQLite hides non-scalars in a `_bs_data` JSON column;
+  `bs.SerializationError` on non-JSON values. Memory `project_data_bag`.
+- **Large-file streaming** (PRs #93–#96) — chunked `load()`; pluggable
+  reader/writer registries (CSV/TSV/JSON/JSONL/XML built in; Parquet/Feather/HDF5
+  via extras); `FileDataSource` ingests a file into a SQLite working store; source
+  `save()` + DataTable `export_formats`. Memory `project_file_source_streaming`
+  (deferred: background ingest, keyset pagination, auto-index).
+- **Tree public-API modernization** (PR #91) — recycle-view canvas Tree, `TreeNode`
+  handles (icon+label rows). Memories `project_tree_row_model`,
   `reference_listrow_button_focus_stick`, `reference_treeview_perrow_indicator_state`.
 - **Icon rendering + DataTable polish** — ink-metric icon renderer; `Table`→
   `DataTable` rename + DataSource decoupling. Memories `project_icon_rendering`,
   `project_table_datasource_coupling`.
-- **Docs + public API audit, typed events, theming/font tracks, DataSource
-  observable query + verb rename** — see "Prior initiative" below and the
-  `project_*` memories.
-- **Tree data-source backing** (branch `feat/tree-datasource`, awaiting merge) —
-  `Tree(
-  data_source=src, parent_field="parent_id", root_value=None, label_field=,
-  icon_field=, node_builder=, order=)` projects a FLAT adjacency-list source as a
-  lazy hierarchy: auto-generated per-node `loader`s issue
-  `src._query(col(parent_field)==id, ...)` on expand (uses `_query`, not
-  `where()`, so view state is undisturbed). Record→node = fields + optional
-  `node_builder`; chevrons via a batched has-children `IN(...)` query per expand;
-  `data_source` property + `refresh()`. Impl in
-  `widgets/_impl/composites/tree/source_binding.py`. Mutually exclusive with
-  `nodes=`. Memory `project_tree_datasource_backing`. **Deferred:** per-node child
-  pagination, tree filtering, auto-refresh on `on_change`, native
-  `TreeDataSourceProtocol`, Tree widget doc page.
-- **SqliteDataSource schema inference** (branch `feat/sqlite-schema-inference`) —
-  fixed the TEXT-affinity-from-leading-NULL bug surfaced by Tree backing.
-  `load()` now samples the leading rows (`_SCHEMA_SAMPLE_SIZE=1000`) and infers
-  each column's type from the first non-NULL values via `_resolve_column_type`
-  (ignores NULL; INTEGER+REAL → REAL; any other mix → TEXT). Sampled rows are
-  buffered and still inserted; memory stays bounded. Tests:
-  `tests/data/test_schema_inference.py`. The Tree binding keeps its string-
-  normalized key compare as defense-in-depth (all-NULL-in-sample columns can
-  still be TEXT). NOTE: `_ensure_table` (single-record `insert()` into an empty
-  source) still infers from one record — inherent, can't sample.
-- **Signal runtime cleanup** (branch `feat/signal-cleanup`) — removed the
-  deprecated `Signal.get()` (call syntax `signal()` is the single getter) and the
-  `__getattr__` tk.Variable proxy (no more silent Tk-method leak); `set()` now
-  widens an `int` into a `float`-typed signal; `subscribe(immediate=)` no longer
-  swallows callback errors. Rewrote ~19 internal `.get()` callers (entry parts,
-  textarea, localization) to call syntax. **Gotcha fixed:** `is_signal()` duck-
-  typed on `hasattr(obj,'get')`; removing `.get()` made it reject real signals so
-  widgets created fresh empty ones — now checks `var`/`subscribe`/`set`/callable.
-  Tests: `tests/signals/test_signal.py`.
-- **Preferences store `bs.Store`** (branch `feat/store`) — public, dict-like,
-  JSON file-backed key-value store for app prefs (`store.py`). `get`/`set`/
-  `delete`/`setdefault`/`update`/`clear`/`keys`/`values`/`items`/`as_dict`/
-  `reload`/`save` + full mapping protocol; write-through `autosave=True` default
-  with atomic writes (temp + `os.replace`); JSON-only values (`SerializationError`
-  otherwise), string keys; corrupt/missing file starts empty; no App required.
-  Lives at `<config>/<app>/<name>.json` via new shared helper
-  `_core/paths.py` (`user_config_dir`/`app_config_dir`/`app_config_file`), which
-  also now backs `App._state_file_path` (window-state) — single config-dir
-  convention. Tests `tests/test_store.py`; docs `reference/store.rst` (with a
-  remember-the-theme recipe). `bs.Store` ships standalone; the App-side
-  persistence integration is deferred to the settings-flattening work below (do
-  NOT add a one-off `remember_theme`/`app.store`). Did NOT refactor window-state
-  to route through Store (only shared the path helper).
-- **AppSettings flattening** (PR #101, branch `feat/app-settings-flatten`) — all
-  former `AppSettings` fields are now flat `App(...)`/`AppShell(...)` kwargs (the
-  single config path); public `settings=`/`AppSettings`/`get_app_settings`/
-  `app.settings` are GONE (clean break — `settings=` raises `TypeError`).
-  `AppSettings` survives only as an internal resolved-config holder;
-  `get_app_settings()` is internal-only. Config reads/writes as symmetric `app.*`
-  properties via `AppConfigMixin` (+ `APP_CONFIG_KWARGS`) in
-  `widgets/_core/app_config.py` — LOCALE SURFACE IS FLAT (not a namespace):
-  `app.theme`/`app.locale`/`app.title`/`app.localize_mode` set live, derived
-  read-only `app.locale_date_format`/`_time_format`/`_decimal`/`_thousands`/
-  `_language`. Derived format fields dropped as *inputs* (dead — `IntlFormatter`
-  re-derives from `locale`). `app.on_theme_change`/`on_locale_change` events;
-  `App.from_store(store)`/`AppShell.from_store` (version-skew tolerant) +
-  `Store.update(**kwargs)`. `remember_theme` DEFERRED (store-splat covers it;
-  `remember_window_state` stays the only built-in remember flag). Docs:
-  `production/app-settings.rst` (was a stub → App configuration reference),
-  `widgets/appshell.rst` config section, `reference/store.rst` persistence.
-  Memory `project_app_settings_flattening`.
-- **Reference docs review pass** (PR #103, branch `feat/reference-docs-pass`) —
-  technical-writer review + enrich of `docs/reference/*`: fleshed out `errors`
-  (per-error trigger + handling), `scheduling` (idle/at/every patterns,
-  `App.schedule`), `shortcuts` (full wiring, register return/errors), `validation`
-  (triggers, whole-form validation); added new `localization.rst`. Two code fixes
-  the review surfaced: implemented the documented-but-missing **`compare`**
-  validation rule (`other_field` = field/`Signal`/callable/literal; default
-  trigger `blur`), made `Form.validate()` run ALL rules on submit (was silently
-  skipping `blur`/`key`-trigger rules like `compare`/`stringLength`), and
-  `field.validate()` returns True for a ruleless field; fixed two `IntlFormatter`
-  bugs — locale passed positionally into Babel's `tzinfo` slot (crashed every
-  time/datetime preset) and currency `precision` ignored (`¤` placeholder +
-  `currency_digits=False`). Tests `tests/test_validation_rules.py`,
-  `tests/test_intl_format.py`.
-- **Top-level namespace curation + dialogs restructure** (PR #104, branch
-  `feat/namespace-curation`) — top-level `bootstack` slimmed to ~85 names (compose
-  surface); primitives moved to submodules (`data`/`style`/`i18n`/`validation`/
-  `events`/`streams`/`scheduling`/`shortcuts`/`store`/`errors` + new
-  `bootstack.types`); dialog classes → `bootstack.dialogs` with impl under
-  `bootstack/dialogs/_impl/` (`bootstack.widgets.dialogs` removed);
-  `MessageCatalog`/`IntlFormatter`/`get_current_app`/`Image` demoted to internal.
-  New API Overview page; `tests/test_public_surface.py` drift guard. **Clean
-  break, no shims.** See the "Public namespace is CURATED" gotcha. Memory
-  `project_toplevel_api_surface` (+ `project_public_intent_backlog` for the future
-  Image/Icon handle).
-- **Docs build warnings cleanup + global-items/verb audit** (PR #106, branch
-  `feat/docs-warnings-global-audit`) — docs clean-build went from **39 warnings +
-  1 error → 0**. (a) Dataclass double-documentation: `Attributes:`/`Args:` blocks
-  → per-field **attribute docstrings** (`FileSourceConfig`, `DataSourceProtocol`,
-  `Shortcut`, `DialogButton`; `Form` dropped a redundant `Attributes:` block) so
-  napoleon + autodoc stop each emitting a copy. (b) Docutils nits: `togglebutton.rst`
-  code-block typo, `Dialog.show` nested bullet list (the error), `tree.roots`
-  backtick-glued-to-a-letter, and the ambiguous `type` xref (annotate
-  `FileSourceConfig.column_types` as `typing.Type` so the builtin `type` stops
-  colliding with `Signal.type`/`ValidationRule.type`). (c) **Colon-space sweep** —
-  ROOT CAUSE found: a colon `:` ON THE FIRST LINE of an attribute docstring makes
-  napoleon split it and jam the pre-colon text into a bogus `:type:` field (SILENT
-  unless it also splits a backtick pair → "start-string without end-string"
-  warning). Colon on line 2+ is safe. Fixed all 7 instances (`delimiter`, `role`,
-  5 internal `_core` kwargs). (d) **Global-items/verb audit:** demoted internal
-  engine accessors `get_style`/`get_style_builder`/`get_theme_provider` from public
-  `bootstack.style` (still importable from `bootstack.style.style`; CLI callers
-  repointed; guard test added); renamed `supported_extensions` →
-  **`supported_read_extensions`** (symmetry with `supported_write_extensions`,
-  clean break); confirmed `format_shortcut` is INTERNAL (not exported). Decisions
-  left as-is: `get_theme()`→str / `get_themes()`→list[dict] (documented),
-  `update_font_token` (correctly a partial-update verb), dual `set_theme`/`app.theme`
-  (by design). Verdict: the accessor pattern is healthy — app-scoped globals via
-  `get_*()` (`get_shortcuts()`), no bare singleton instances exported.
-- **API Reference restructure — Stage 1** (PR #107, branch deleted) — first slice
-  of the docs split into narrative (Widgets + Guides) + a unified, complete,
-  by-module **API Reference** (autosummary tree mirroring each submodule's
-  `__all__`). Prototyped on `bootstack.data`: new `docs/api-reference/` section
-  (index + `data.rst` with grouped autosummary tables → 22 auto-generated
-  per-object stubs under gitignored `generated/`); `docs/_templates/autosummary/
-  class.rst` (`:members: :inherited-members: :show-inheritance:` — complete pages,
-  Protocol stays noise-free); `reference/data-sources.rst` re-pointed as a Guide
-  (curated `autoclass` removed = the single autodoc home now lives in the
-  reference; replaced with a cross-link + a table-only `autosummary` summary).
-  Navbar temporarily 6 (Stage 5 re-cut returns it to 5). Clean-build warning-free.
-  **Full brief + all review-stage decisions in `docs/_dev/api-reference-restructure.md`**;
-  memory `project_api_reference_restructure`.
-- **API Reference restructure — Stage 2** (branch `feat/api-reference-stage2`) —
-  recipe-locking, CLAUDE.md only (no docs/code change). Added the canonical
-  **"## API Reference & Guide page pattern (established — follow exactly)"** section
-  (the locked `class.rst` autosummary template + facts; the API-Reference-page recipe
-  = autodoc home, grouped `autosummary` with `:toctree: generated` + `:nosignatures:`;
-  the Guide-page recipe = table-only summary, no bottom `autoclass`, cross-links;
-  shallowest-path-wins re-export rule; clean-build verify). Marked the old
-  "Reference page pattern" SUPERSEDED and flagged the Widget pattern for its Stage 4
-  autoclass-drop.
-- **API Reference restructure — Stage 3** (same branch `feat/api-reference-stage2`) —
-  subsystem sweep. Built API-ref pages for all 10 remaining subsystems (signals,
-  streams, events, errors, i18n, scheduling, shortcuts, store, validation, style —
-  style covers theming+typography), each the autodoc home; converted all 11
-  `reference/*` prose pages to Guides (autoclass → cross-link + table-only summary;
-  zero autodoc homes left under `reference/`). Added `exception.rst`/`signal.rst`
-  templates (bare titles; per-class `:template:` takes **NO** `.rst`). Grouping
-  conventions baked into the recipe. Hygiene: **demoted `TraceOperation`** (internal),
-  **recategorized `TabRef`** (supporting type). `Signal`/`set_theme`/`toggle_theme`
-  hold a TEMP home (Stage 4 relocates up); `FontChoice` home removed (Stage 4 dialogs
-  page). Side fix: `--pst-color-link` brand-blue override in `custom.css`. Flagged
-  out-of-band: `project_signal_subscribe_subscription`. Clean-build warning-free.
-  **NEXT: Stage 4.**
+- **Tree data-source backing** (PR #97) — `Tree(data_source=, parent_field=, ...)`
+  projects a flat adjacency-list source as a lazy hierarchy (per-node loaders via
+  `src._query`, batched has-children chevrons; mutually exclusive with `nodes=`).
+  Impl `widgets/_impl/composites/tree/source_binding.py`. Memory
+  `project_tree_datasource_backing` (deferred: child pagination, tree filtering,
+  auto-refresh, native protocol, doc page).
+- **SqliteDataSource schema inference** (PR #98) — `load()` samples leading rows
+  (`_SCHEMA_SAMPLE_SIZE=1000`) to infer column types, fixing the
+  TEXT-affinity-from-leading-NULL bug surfaced by Tree backing. Tests
+  `tests/data/test_schema_inference.py`. (`_ensure_table` still infers from one
+  record — inherent.)
+- **Signal runtime cleanup** (`feat/signal-cleanup`) — `signal()` is the single
+  getter; removed `.get()` + the `__getattr__` Tk proxy; `set()` widens int→float;
+  `subscribe(immediate=)` propagates errors. `is_signal()` now duck-types on
+  `var`/`subscribe`/`set`/callable. Memory `reference_signal_duck_typing`.
+- **Preferences store `bs.Store`** (`feat/store`) — public dict-like JSON
+  file-backed prefs store; write-through atomic saves, JSON-only values, no App
+  required; lives at `<config>/<app>/<name>.json` via shared `_core/paths.py`.
+  Memory `project_persistent_kv_store`.
+- **AppSettings flattening** (PR #101) — all settings are flat `App(...)`/
+  `AppShell(...)` kwargs; `settings=`/`AppSettings`/`app.settings` GONE (raises
+  `TypeError`); symmetric `app.*` properties via `AppConfigMixin`; `from_store` +
+  `Store.update(**kwargs)`. See the "FLAT kwargs" gotcha. Memory
+  `project_app_settings_flattening`.
+- **Reference docs review pass** (PR #103) — enriched `docs/reference/*` + new
+  `localization.rst`; implemented the `compare` validation rule, made
+  `Form.validate()` run ALL rules on submit, fixed two `IntlFormatter` bugs. Tests
+  `tests/test_validation_rules.py`, `tests/test_intl_format.py`.
+- **Top-level namespace curation + dialogs restructure** (PR #104) — top-level
+  `bootstack` slimmed to the compose surface (~85 names); primitives moved to
+  submodules; dialog classes → `bootstack.dialogs`; clean break. See the "Public
+  namespace is CURATED" gotcha. Memory `project_toplevel_api_surface`.
+- **Docs build warnings cleanup + global-items/verb audit** (PR #106) — clean-build
+  39 warnings+1 error → 0 (attribute docstrings; colon-on-first-line root cause —
+  see Code standards; docutils nits); renamed `supported_extensions`→
+  `supported_read_extensions`; demoted internal style accessors. Keep clean-build
+  warning-free.
+- **API Reference restructure — Stages 1–3** (PR #107 + `feat/api-reference-stage2`,
+  merged) — Diátaxis split: narrative (Widgets + Guides) + unified by-module **API
+  Reference** (autosummary mirroring each `__all__`). All 10 subsystem API-ref pages
+  built (each the autodoc home); all 11 `reference/*` pages converted to Guides.
+  Templates + recipe locked in "## API Reference & Guide page pattern" below. Brief:
+  `docs/_dev/api-reference-restructure.md`; memory `project_api_reference_restructure`.
+  **NEXT: Stage 4 (in progress — see below).**
 
 ## Next up — candidates (pick one)
 
-- **★ API Reference restructure — Stage 4+ (docs)** — LEAD CANDIDATE, IN PROGRESS
-  (Stage 1 merged PR #107; Stages 2+3 done on `feat/api-reference-stage2`).
-  Continue the staged sweep from the brief: **Stage 4** sweep
-  widgets (single category-grouped `bootstack` page; `AppShell`→Application; widget
-  clusters as flat sibling stubs; doubles as an `__all__`-hygiene audit —
-  `ColumnSpec`/`EditFilter`/`EditorType`); **Stage 5** nav re-cut (back to 5).
-  Then the post-migration follow-on: flesh out the widget Guides with far more
-  examples (**API Reference is a last resort; Guides carry the teaching**). **Full
-  brief + decisions in `docs/_dev/api-reference-restructure.md`**; memory
-  `project_api_reference_restructure`.
-- **Image / Icon public handle** — design a Tk-free public image/icon handle and
-  re-promote (both currently internal). Memory `project_public_intent_backlog`.
+- **✅ DONE — Public-API typing sweep** (branch `feat/api-reference-widgets`, NOT
+  pushed). Grew out of Stage 4's "clean up each widget's API as it is homed". Goes
+  widget-by-widget in Stage-4 batch order fixing param TYPES + docstrings. **ALL widget
+  batches complete** (Application → Overlays/Forms/Dialogs). **DECISION (2026-06-09):
+  the standalone sweep is finished; any remaining/future typing now folds into the
+  Stage-4 API-Reference *homing* below — each module gets typed at the moment it is
+  homed, not in a separate pass.** Full brief + per-widget checklist + every convention:
+  `docs/_dev/typing-review.md`.
+  - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
+    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label, Inputs (all 11 — committed
+    `4a9609ff`), Selection (all 10 — Checkbox/Switch/ToggleButton/ToggleGroup/Radio/
+    RadioToggleButton/RadioGroup/Select/SelectButton/Calendar), Data Display (all 7 —
+    Label/Badge/ProgressBar/Gauge/ListView/DataTable/Tree). Selection included a
+    maintainer-approved STRUCTURAL cleanup: removed dead `variant` (Switch/Checkbox) +
+    unsupported `density` (Checkbox/Switch/Radio) via per-subclass `__init__`s + an
+    `_internal_options` engine that rejects unknown kwargs. **Layout** (all 9 —
+    committed `5fbbc0a7`: Separator/Card/GroupBox/VStack/HStack/Grid/ScrollView/
+    Accordion/SplitView; added `LayoutKind`/`AutoFlow` aliases; enriched
+    `AccordionSection` + full `SplitView` pane management + dropped the broken
+    `min_size=`; HStack/VStack own `__init__` so params render). **Navigation** (all 3
+    — committed `22baa3c7`: PageStack/Tabs/SideNav; enriched `StackPage`/`TabPage`
+    handles; `item()`/`items()` return handles, not leaked internals).
+    **Overlays/Forms/Dialogs** (final batch — committed `aee08c78`: Tooltip/Toast/Form +
+    the dialog verbs/classes). **FOLD INTO HOMING (not done in the sweep):** convert
+    `ColorChoice`/`FontChoice` from bare `namedtuple`s → typed `NamedTuple`s with field
+    docstrings + single-backtick prose when the `bootstack.dialogs` API-Reference page is
+    built; surface the `bootstack.types` aliases (`LayoutKind`/`AutoFlow`/`Padding`/…)
+    when that page is built (both modules are flagged "pending" in
+    `api-reference/index.rst`). STILL DEFERRED (separate initiatives): the holistic
+    `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
+    SplitPane/StackPage/TabPage), a public `on_destroy` lifecycle hook, and retiring the
+    now-unused `VariantToken`.
+  - **Conventions (full in brief):** literals SELF-DOCUMENT → NO `autodoc_type_aliases`
+    (they expand inline), `always_use_bars_union=True`, autodoc "Overloads:" block
+    STRIPPED via a conf.py hook (`_drop_overloads_field`). Under-typed `Any`/`str` →
+    real types; per-widget `variant` Literals **sourced from `style/builders/`** (NOT
+    docstrings — they under-report, e.g. MenuButton/Toolbar have a `'default'` variant);
+    `accent`/`surface` = `Token | str | None`; `padding` → `Padding`; closed sets →
+    `Literal`. THIN docstrings (drop value enumerations the type shows; keep the
+    default). `on_*` overloads: document `handler` + `:class:`-link the payload. Open
+    sets with an authority → curated examples + `str` + a `:doc:`/`:ref:` link:
+    `**kwargs`→`/tasks/layout`, `value_format`→`/reference/localization` (`:ref:`
+    `value-formats`), `font`→`/reference/typography`, `window_style`/`language`/`theme`→
+    pywinstyles/Pygments.
+  - **New this session:** public aliases `Padding`/`WindowStyle` (`bootstack.types`),
+    `RuleType` (`bootstack.validation`); `AccentToken` trimmed to the 6 semantic accents;
+    `Fill` widened to its real set. `MenuSelectEvent` payload — MenuButton/ContextMenu
+    `on_select` now typed (was a raw dict). CodeEditor `on_change`/`on_input` now emit
+    typed `ChangeEvent`/`InputEvent` (was a raw `{op,index}` dict). Gauge `value_format`→
+    `value_template`. New `docs/tasks/layout.rst` (placement-options page) + enriched
+    `reference/localization.rst` formats section. Memories: `project_enum_option_typing`
+    (the hub), `project_variant_type_revisit` (now covers accent + variant per-widget),
+    `project_show_indicator_removal` (deferred behavior change), `project_image_icon_public_api`.
+  - **Data Display batch (this session):** `accent`→`AccentToken|str|None` everywhere;
+    removed `internal_kwargs.update(kwargs)` leaks (`**kwargs` is layout-only); documented
+    `**kwargs`; promoted under-typed params (ProgressBar `signal`→`Signal`; ListView/Tree
+    `data_source`→`DataSourceProtocol`; ListView `items`→`list[dict]`; Tree `nodes`→
+    `list[str|dict]`, `order`→`str|Column|SortKey|Sequence|None`; DataTable
+    `export_formats`→`list[Literal[...]]`); completed `on_*` payload docs. **TreeNode**
+    (public) got typed annotations + attribute docstrings for its 9 `__slots__` fields.
+    **CRITICAL convention learned (maintainer review):** with `autodoc_typehints="description"`,
+    the rendered param type comes from the **IMPL signature**, not the `@overload`s (those
+    are stripped) — so `on_*`/`on` IMPLS must be typed `handler: Callable[[Payload],Any]|None
+    =None) -> Stream|Subscription`, AND every public `@property` + method needs a docstring,
+    or they render bare. Swept this gap across ALL prior batches too (an AST scan found +
+    fixed: DateField/TimeField `disabled`/`read_only`, Radio `disabled`; the generic `.on()`
+    impl on 10 input/select widgets). Remaining gap (FLAGGED, not an on_*): `guide_layout`
+    on the page-frame handles (AccordionSection/StackPage/SplitPane/TabPage) — likely
+    DEMOTE to `_guide_layout` (internal layout hook) rather than document. Internal-only
+    `Spinbox`/`Expander` props left as-is.
+  - **Tree feature (this session, maintainer-requested):** `Tree.find(matcher)` +
+    `find_all(matcher)` — `matcher` is a predicate OR a `col(...)` condition; a condition
+    pushes down to a data-source-backed tree (reaching unexpanded branches) and loads the
+    path to each hit non-destructively. `filter()`/`search()` view-pruning DEFERRED (open
+    decisions in memory). Memory `project_tree_find_filter`; tests in `test_tree.py`.
+  - **Verify each batch:** `python -m pytest tests/test_public_surface.py -q` + a CLEAN
+    build — build to a FRESH temp dir when `docs/_build` is locked by an open browser:
+    `sphinx-build -b html docs /tmp/bsdocs -W --keep-going` (must be warning-free).
+    **Also run the doc-gap AST scan** (undocumented public props/methods + untyped `on_*`
+    impls) per batch — see the convention above.
+- **★ API Reference restructure — Stage 4 *homing* (docs), IN PROGRESS** (the autosummary
+  homing thread — interleaved with the typing sweep above; NOT yet advanced this session).
+  Branch **`feat/api-reference-widgets`** (off main; Stages 1–3 merged to main).
+  Building the single top-level `bootstack` category-grouped API page + converting
+  widget guides to table-only summaries, **cleaning up each widget's public API as it
+  is homed** (per-widget recipe under "## Widget documentation pattern"). Within-group
+  entries are **alphabetical** (lookup layer; Guides keep curated order).
+  **DONE so far (committed on the branch — NOT pushed/PR'd yet):**
+  - Foundation: top-level `api-reference/bootstack.rst`; relocated re-exports
+    `Signal`/`set_theme`/`toggle_theme` up (subsystem pages table-link via `~bootstack.X`).
+  - Batch 1 — Application (App/AppShell/Window) + Actions (Button/ButtonGroup) +
+    full **App/AppShell/Window constructor curation** (dropped `app_author`/`app_version`/
+    `inherit_surface_color`[hardwired]/`name`/`mainloop`; demoted `localize_mode`/
+    `macos_quit_behavior`/`state_path`/`available_themes` → construction-only; promoted
+    `position`/`min_size`/`max_size`/`resizable`/`hdpi`/`scaling`; removed the `tk.Tk`
+    docstring leak; fleshed out `emit`). Memories `project_window_api_hardening`.
+  - Batch 2 — Inputs (11) + Selection (10, incl `Radio`/`RadioToggleButton` first home).
+    Completed the typed-payload `on_*` audit for boolean/selection controls (`on_change`
+    → `ChangeEvent(value, prev_value)`; `on_check`/`on_uncheck` stay data-free `Event`).
+    Memory `project_typed_event_payloads`.
+  - Set **`default_role = "code"`** (single backticks → inline code, colon-safe) +
+    converted the 6 Selection widgets' docstrings double→single — de-risks the
+    framework-wide `project_docstring_backticks` sweep (now safe everywhere).
+  **✅ Batch 3 — Data Display DONE** (uncommitted on the branch): homed Label/Badge/
+  ProgressBar/Gauge/ListView/DataTable/Tree/TreeNode (Data Display section on
+  `bootstack.rst`, alphabetical); 7 guides converted bottom-`autoclass`→table-only API
+  section; **`ColumnSpec`/`EditorType`/`FormOptions` defs relocated to `widgets/types.py`
+  + re-exported from `bootstack.types`** (`EditorType` dropped from top-level `__all__`,
+  the only one there). `ExportJob` kept local in `datatable.py` (return-handle Protocol,
+  prose-only in guide — maintainer call 2026-06-09). `on_*` payloads were already typed
+  in the typing sweep (`a6d6d496`) — audit confirmed clean.
+  **✅ Batch 4 — Layout + Navigation DONE**, then **the whole API-Reference IA was
+  RE-CUT** to a semantic-category structure (2026-06-09, with the maintainer) —
+  see the new "## IA re-cut" section + the deletions list in
+  `docs/_dev/api-reference-restructure.md`. In brief: the single `bootstack` page is
+  GONE; the reference is now **one page per CONCEPT** (Application · Widgets ·
+  Reactivity · Events · Data · Validation · Theming · Localization · Scheduling ·
+  Shortcuts · Storage · Errors — build-flow order, flat 2-level, collapsed by
+  default via `show_nav_level:1`), groups may **cross namespaces** (Reactivity =
+  Signal+streams; Theming = top-level verbs + `bootstack.style`), **stub titles show
+  the FULL path** (all 5 templates flipped to `{{ fullname }}`), and the landing is a
+  pandas-style public-contract + submodule list + `sphinx-design` card grid (secondary
+  TOC removed). `api-overview` RETIRED (folded into the landing). All clean-build
+  warning-free; uncommitted until the "IA restructure" commit.
+  **✅ IA migration COMPLETE** (2026-06-09) — every public name is now homed: added
+  the **Dialogs** group (verbs at `bootstack.*`, classes at `bootstack.dialogs.*`; gave
+  `bootstack.dialogs` an `__all__`) + the **Types** group (`bootstack.types.__all__`),
+  homed Menus/Overlays/Forms into **Widgets**, converted the ~13 remaining guides to
+  table-only, converted `ColorChoice`/`FontChoice` → typed `NamedTuple`s, enriched the
+  4 Form item dataclasses, and added `autosummary_filename_map` for the `Toast`/`toast`
+  case collision. **All 14 reference groups built, clean-build warning-free.**
+  **NEXT (Stage 4 done; this is the follow-on):** flesh out widget Guides
+  with examples (**API Reference is a last resort; Guides carry teaching**). `EditFilter`
+  already demoted (memory `project_editfilter_public_api`). **Full brief + decisions in
+  `docs/_dev/api-reference-restructure.md`**; memory `project_api_reference_restructure`.
+- **Public Image/Icon API** (initiative, designed 2026-06-08) — three stacked
+  pieces: `Image` (Tk-free image handle; re-promote, internal since PR #104),
+  `get_icon(name, ...) -> Image` (public factory over the internal font-glyph
+  renderer), and `AppIcon(icon=, background=, foreground=)` (generates the
+  platform app-icon assets — `.ico`/`.png` — for `App`/`Window`). `App`/`Window`
+  `icon=` (type `str | AppIcon | Image`) is DEFERRED to this. Memory
+  `project_image_icon_public_api`.
+- **Decoupled option shape for the selection family** (initiative, designed
+  2026-06-09) — let `Select`/`SelectButton` options carry a value distinct from
+  their label, via ONE shared `Option = str | tuple[str, Any] | OptionDict` shape
+  (dict = the extensible "data bag" member: `{"text", "value", …icon/disabled}`)
+  normalized once and consumed by all four selection widgets (RadioGroup/ToggleGroup
+  already do `(label,value)` tuples — fold them into the shared normalizer + widen to
+  the dict). Bulk of the work is giving the entry-backed `SelectBox` a real text↔value
+  map (search-on-text, value-space `value`, custom-value semantics). Full brief +
+  open decisions (`text` vs `label` key; `.options` return shape; unknown-value setter
+  behavior): `docs/_dev/select-options-databag.md`. Behavior feature — do AFTER the
+  typing sweep's Data Display batch; lock shape/naming before touching internals.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 
@@ -227,259 +257,85 @@ memories (see them for rationale and gotchas).
 
 ## Prior initiative — Sphinx docs + public API audit (MERGED)
 
-**Branch:** `feat/docs-api-improvements` (merged to `main`)
+Branch `feat/docs-api-improvements`, merged to `main`. Shipped: the docs structure,
+the public Table (`DataTable`), the typed-event redesign, the theming + font public
+APIs, the DataSource verb rename + filtering DSL, and the observable-query layer.
+Full detail lives in git history and memories; only the still-live conventions and
+the open backlog are kept here.
 
-### Docs structure (RESOLVED 2026-06-04, committed b7625f36 + follow-ups)
+### Still-live conventions
 
-Top-level sections (pydata horizontal navbar — keep this set SMALL, ~5):
-**Getting Started · Tasks · Widgets · Reference · Production**.
+- **Docs structure** — top-level navbar is now **4 pillars** (numpy-style):
+  **User Guide · Widgets · API Reference · Production** (`docs/index.rst`).
+  - **User Guide** (`docs/user-guide/index.rst`) folds the old Getting Started +
+    Tasks + Reference sections into ONE pillar with three `:caption:` toctree groups —
+    **Getting started** (`/getting-started/*`), **How-to guides** (`/tasks/*`,
+    goal-indexed recipes), **Topics** (`/reference/*`, subsystem-indexed usage guides;
+    both how-to and topics are example-rich — the split is goal-vs-subsystem, NOT
+    recipe-vs-theory, so do NOT call Topics "Concepts"/"Explanation"). The leaf pages
+    STAY in their `getting-started/`/`tasks/`/`reference/` dirs (no URL churn); only the
+    landing + top toctree changed. The three old section `index.rst` landings are DELETED.
+  - **Widgets** (`docs/widgets/index.rst`) = flat leaf pages grouped by
+    `.. toctree:: :caption:` blocks (curated common-first order, NOT alphabetical);
+    kept as its own pillar (large *visual* catalog). The 10 old category landing pages
+    are RETIRED. `docs/api/` + `docs/deeper/` are GONE.
+  - **API Reference** (`docs/api-reference/index.rst`) = the by-concept lookup layer
+    (semantic groups, full-path stub titles, pandas-style card landing — see the IA
+    re-cut in `docs/_dev/api-reference-restructure.md`).
+  - `show_nav_level: 1` (collapsed by default). Do NOT promote sub-groups to top-level
+    (pydata navbar overflows ~6+). The old "Reference page pattern" is SUPERSEDED by the
+    API Reference & Guide pattern below.
+- **No Tkinter in docs or docstrings** — no `tk.*` types/terms unless strictly
+  necessary; don't feature the escape hatch. Full `src/` docstring scrub still
+  pending. LEFT BY DESIGN: `.tk`/`.var` escape-hatch property docstrings,
+  `signals/integration.py` (the Tk bridge).
+- **Event / theming / DataSource APIs are DONE** — reflected in the Architecture +
+  Gotchas sections below and in memories `project_typed_events`,
+  `project_theming_public_api`, `project_datasource_api_naming`,
+  `project_datasource_change_events`. Deferred-only: the visual theme builder
+  (Phase 5, near-ship — emits `bs.Theme(...)` code; do NOT build yet).
 
-- **`docs/widgets/`** — every widget as a flat leaf page. Grouping is done with
-  **caption toctrees** in `widgets/index.rst` (one `.. toctree:: :caption: <Group>`
-  per group, listing widget pages directly). The 10 old category landing pages
-  (`actions.rst`, `inputs.rst`, …) were RETIRED — captions replace them. Curated
-  (common-first) order within groups, NOT alphabetical.
-- **`docs/reference/`** — framework primitives: theming, typography, signals,
-  events, validation, data-sources, shortcuts, scheduling. Flat (no captions).
-- **`docs/api/` and `docs/deeper/` are GONE.** typography moved into reference/.
-- `show_nav_level: 2` (conf.py) renders the caption groups as sidebar headers.
-- Sections are **flat by default**; add caption toctrees only when a section
-  needs internal organization (e.g. if Common Tasks grows).
-- Do NOT promote widget groups to top-level — ~14 navbar items overflow pydata.
+### API/cleanup backlog (deferred, memory-tracked)
 
-**Reference page pattern** — ⚠ **SUPERSEDED by the API Reference restructure**
-(PR #107 + the staged sweep; see "## API Reference & Guide page pattern" below for
-the canonical recipe). The historical pattern was: prose intro → task-ordered
-usage → See also → a hand-**curated** `autoclass` at the bottom (`:members:` at the
-PUBLIC home path, `:exclude-members:` to hide internals). The curated autoclass is
-being REMOVED page by page — the single autodoc home now lives in the **API
-Reference** (autosummary-generated), and these pages become **Guides** that
-cross-link in. Until Stage 3 sweeps a given `reference/*` page, it may still carry
-the old curated `autoclass`; do NOT add new ones. Still in force from the old
-pattern: non-visual (NO screenshots), inline usage only (NO separate Full Example),
-single backticks, Google style. **Exemplars (NEW model): `docs/reference/data-sources.rst`
-(Guide) + `docs/api-reference/data.rst` (API Reference).**
-
-DONE to this pattern (2026-06-05): signals, events, streams, scheduling,
-shortcuts, validation, data-sources, **theming**; errors already fine. **PARKED:
-typography** (blocked on the font track — see Track 2). Docs build is
-warning-free (0).
-
-**Theming public API — DONE (2026-06-05, this branch, Phases 1–4).** New public
-`bs.Theme` (`style/theme.py`): keyword ctor, `base=` inheritance, `from_dict`/
-`to_dict`, `install(activate=)`. All 14 built-ins converted JSON → Python
-`Theme` instances in `style/themes/` (auto-installed; deleted `assets/themes/`
-JSON + `importlib` loading = the PyInstaller fix). Removed `register_user_theme`
-+ CLI `add theme` + the whole `list` command. Demoted `Style`/`Typography`/`Font`
-from the public API (still importable from their modules). `theming.rst`
-rewritten; `ask_font`→`tkinter.font.Font` leak flagged for the font track.
-Deferred: font track (Phase 2-fonts) + `typography.rst`, and the visual theme
-builder (near-ship). See memory `project_theming_public_api`.
-
-**No Tkinter in docs or docstrings** — no `tk.*` types or Tkinter terms unless
-strictly necessary; don't feature escape-hatch interop. A full docstring scrub of
-`src/` is still pending. DONE so far: `signals/signal.py`, `streams/_stream.py`,
-and the public widget wrappers swept this session (`GroupBox`/`Tree` ttk names,
-`CodeEditor` now defaults `font='code'` not `'TkFixedFont'`). LEFT BY DESIGN:
-`.tk`/`.var` escape-hatch property docstrings, `signals/integration.py` (the Tk
-bridge). FONT-TRACK leaks still flagged: `ask_font`/`FontDialog` `default_font`
-accepts Tk font names + `ask_font` returns `tkinter.font.Font` (NOTE(font-track)
-in `widgets/dialogs.py`).
-
-### Status
-
-**Done** (wrapper ✓ · doc page ✓ · example ✓ · screenshots ✓):
-- Actions: Button, ButtonGroup
-- Inputs: TextField, PasswordField, NumberField, Slider, RangeSlider,
-  PathField, SpinnerField, TextArea, CodeEditor, DateField, TimeField
-- Selection: Checkbox, Select, Switch, ToggleButton, RadioGroup, ToggleGroup,
-  SelectButton, Calendar
-- Data Display: Label, Badge, ProgressBar, Gauge, ListView, **DataTable**
-  (renamed from `Table`), **Tree** (rebuilt as a recycle-view; icon+label rows)
-- Layout: Separator, Card, GroupBox, VStack, HStack, Grid, Accordion,
-  ScrollView, SplitView
-- Menus and Toolbars: Toolbar, MenuButton, ContextMenu
-- Navigation: PageStack, Tabs, SideNav, AppShell
-- Overlays: Tooltip, Toast
-- Dialogs: 7 pages (message, input, color, font, filter, dialog, formdialog)
-- Forms
-
-**Pending:**
-- (none) — Tree is DONE (see "Current initiative — Tree public-API
-  modernization"); `git push` the branch.
-- Actions: DropdownButton is internal (public face is MenuButton — no separate page needed)
-
-### Table — DONE (branch `feat/public-table`, this initiative)
-
-Full public Table: sorting, search, column filters, grouping, paging, inline
-editing (form dialogs), two-tier export (materialized + streaming/async), live
-data binding. Highlights from this branch:
-- **Selection checkboxes** — `show_selection_controls=True` shows a per-row
-  checkbox in `#0` (multi only); accent-filled checked / muted-outline unchecked
-  (icons baked at `_MARKER_ICON_SIZE=20`, unscaled for crispness). Visible
-  checkboxes flip selection to **click-to-toggle** (checklist UX, no Ctrl/Shift).
-  Single-select shows no marker (the row wash suffices).
-- **Grouping restructure** — the native tree indicator was **removed from the
-  shared `{style}.Item` layout** (`style/builders/treeview.py`, now `[image,
-  iconspacer, text]`); group expand/collapse uses a **custom chevron image** on
-  group-header rows (swap on click + `<<TreeviewOpen/Close>>`; toggle target =
-  any row with children). Grouped view promotes the **first non-group column into
-  `#0`** so children nest under the header (leaf rows get a transparent
-  placeholder to preserve the depth indent); the group-by column drops out of the
-  value columns; `#0` has no heading. (NOTE: this regressed `bs.Tree`'s native
-  indicator. Tree will NOT use a custom indicator-element — that state path is
-  broken on Tk 8.6.15; it composites `[chevron][icon]` into the item image slot
-  instead. See "Next initiative — Tree public-API modernization".)
-- **Cell `format`** — `ColumnSpec` gains `format` (a format-spec string or a
-  callable), display-only (sort/filter/edit/export use the raw value).
-- **Stable row identity** — `id_field` (default `"id"`): a record's own `id`
-  becomes the row identity (sources adopt it; `bs.DuplicateIdError` on dup /
-  non-int auto-insert). Both Sqlite + Memory sources aligned.
-- **Events** — batch CRUD/move events renamed **plural present tense**:
-  `on_rows_insert`/`on_rows_update`/`on_rows_delete`/`on_rows_move` (carry a
-  `RowsEvent`, fire **once per call** — `insert_rows(6000)` = 1 event).
-  Single-row stays singular (`on_row_click`/`_double_click`/`_right_click`).
-  Double-click a row opens the editor when `allow_edit`.
-- **Docs** — comprehensive `widgets/table.rst` (full `ColumnSpec` reference,
-  `format`, `id_field`, event cross-refs, all features); `ExportEvent` +
-  `DuplicateIdError` added to the reference pages.
-- **DataSource coupling — RESOLVED** (branch `feat/table-datasource-decouple`):
-  the table no longer reads Sqlite-internal columns. Identity/selection route
-  through protocol-level `_record_id`/`_public_record`/`_internal_fields`
-  (defaults on `BaseDataSource`, overrides on `SqliteDataSource` +
-  `MemoryDataSource`), so any `DataSourceProtocol` source works and `select_rows`
-  round-trips. Same branch: `Table`→`DataTable` rename, `density=` exposed,
-  built-in `show_border` removed (wrap in a `Card`/`Frame`), footer separator.
-
-### Cross-cutting wrapper improvements (this + prior sessions)
-- `commit()` and `set_cursor()` removed from all field widgets (TextField,
-  PasswordField, NumberField, PathField, SpinnerField) — internal plumbing
-- `placeholder` property removed from TextField, PasswordField, PathField —
-  constructor-only concern
-- `trigger=` param removed from `validate()` on all 8 field wrappers —
-  internal routing concern, callers are always doing a manual check
-- All field wrappers now have full event parity: 8 shorthands, typed tokens
-- `TextArea.width=` added (was missing; internal hardcoded default)
-- `CodeEditor.height=` added (was hardcoded to 20; now configurable)
-- `LineNumbers` sidebar height bug fixed — no longer overrides `height=`
-- `TextArea` critical bugs fixed: `<<Change>>` vs `<<Changed>>` event name,
-  undefined `inner_sequences` in `on()` (crash), `text_signal` → `textsignal`
-- `CodeEditor`: `text_signal` → `textsignal`, removed `disabled` alias,
-  cleaned up inline imports, added `signal` property
-- DateField calendar picker right-aligns to button side; `position_anchored`
-  now uses actual rendered size (`winfo_width`) for widget anchors
-- **SideNav compact mode**: selection indicator bar now matches fill color
-  (invisible) instead of accent color. `SideNavItem.set_compact()` rebuilds
-  the frame style via `configure_style_options(icon_only=) + rebuild_style()`.
-- **`AppShell.on_page_change`** bug fixed: was binding `<<PageChanged>>`
-  (never fired) — corrected to `<<PageChange>>`.
-- **`Tabs.item()` / `items()`** bug fixed: were calling non-existent
-  `TabView.item/items` — corrected to `tab()` / `tabs()`.
-- **`TabView`** now forwards `<<TabAdd>>` and `<<TabClose>>` to itself so
-  the public wrapper needs no private `_tabs` access for event routing.
-- **`PublicWidgetBase.emit`** simplified: now wraps `event_generate(data=data)`
-  directly — `_bs_emit_data` side-channel removed.
-- **`ContextMenu`**: `ValueError` on unknown `trigger=`; `add_items()` type
-  hint broadened to `list[ContextMenuItem | dict[str, Any]]`.
-- **`AppShell.mainloop`** alias removed from public API.
-- **`Tabs.items()` / `PageStack.items()`** return type fixed to `tuple[Any, ...]`.
-- **`RangeSliderEvent` / `RangeSliderCommitEvent`** payload attrs renamed to
-  snake_case: `lovalue`/`hivalue`/`prev_lovalue`/`prev_hivalue` →
-  `low_value`/`high_value`/`prev_low_value`/`prev_high_value` (matches the
-  wrapper's `low_value`/`high_value` props). Internal RangeSlider widget still
-  uses `lovalue`/`hivalue` internally — separate cleanup.
-
-### Event system redesign — DONE (2026-06-05, commits 40a4495d…56d09d59)
-
-Unpacked typed payloads + curated `Event`; `bootstack.events` is the catalog
-(memory `project_typed_events`). Data-carrying handlers get the payload dataclass
-DIRECTLY (`on_change(lambda e: e.value)`); native handlers get a curated, Tk-free
-`Event` (modifier bools `ctrl/shift/alt/meta`, clean `key/char`, no
-state/serial/keysym_num). The transform lives in `adapt_handler()` at the public
-`on()` boundary (`widgets/_core/base.py`) — `_runtime/events.py` was left
-UNTOUCHED (confirmed). Payloads are namespaced in `bs.events` ONLY (not
-top-level). ListView keeps dict record payloads (dynamic records). GUI tests:
-`tests/widgets/public/test_slider_events.py`. (Note: slider virtual events only
-deliver to a MAPPED widget — show the window in tests.)
-
-### Next session — Track 2 + queued refactors (all memory-tracked)
-
-**RECOMMENDED NEXT: pick from the queued refactors below — the DataSource
-observable query (item 0) is now DONE.** Font track and the DataSource verb
-rename + filtering DSL were already DONE.
-
-0. **DataSource change broadcasting / observable query — DONE (this branch,
-   memory `project_datasource_change_events`).** Both layers shipped: `_ChangeHub`
-   (`data/_observable.py`) + `bs.events.DataChangeEvent`; `ds.on_change(handler=None)`
-   → Subscription/`Stream`, `ds.observe(condition, *order)` → live result-set
-   `Stream`; read-only `_query()` per source; thread-marshal (worker → main via
-   `app.after`) + coalescing (`after_idle`, one flush/turn) + headless sync-degrade
-   + re-entrancy guards. `silence()` is THREAD-LOCAL. Table/ListView auto-refresh
-   (refetch visible window via `page`/`page_slice`, NOT observe) with ALL internal
-   source mutations silenced (TableView silences where/order too — revised policy).
-   ListView `_on_source_change` re-measures (resizes the virtual row pool +
-   scrollbar). Tests `tests/data/test_observable.py`; docs `data-sources.rst`
-   ("Observing changes"); example `docs/examples/observable_datasource.py`.
-   DEFERRED perf opts (relevance-skip, content-hash signature, count cache,
-   `observe_count`) noted in memory — gated by the observe-small/on_change-large
-   routing contract (now documented + enforced by the widgets).
-
-1. **Track 2 — theming public API + font track: DONE.** Theming Phases 1–4
-   (memory `project_theming_public_api`) and the **font track** (Phase 2-fonts —
-   `bs.set_font_family`/`update_font_token`/`get_font_families`, Tk-free
-   `FontChoice`, fixed the `use_fonts(fallback=True)` bug, `typography.rst`
-   written) both COMMITTED (font track commit `250b3d41`). REMAINS only the
-   **visual theme builder (Phase 5)** — deferred until near-ship; emits
-   `bs.Theme(...)` code (CodeEditor + file). Do NOT build yet.
-2. **DataSource verb rename + filtering DSL: DONE** (UNCOMMITTED until this
-   session's commit; memory `project_datasource_api_naming`). Verbs:
-   `load`/`page`/`page_slice`/`insert`/`get`/`update`/`delete`/`move`/`select`/
-   `deselect`/`selected`, `count`/`selected_count` (properties), `export_csv`.
-   `set_filter`/`set_sort` → **`where(condition)`/`order(*keys)`** with a Tk/SQL-
-   free `col` expression DSL (`data/query.py`: `col`, `is_in`, `contains`/etc.,
-   `&`/`|`/`~`, `all_of`/`any_of`; parameterized SQL, injection-safe). Dropped the
-   Table "SQL" search mode; fixed `FormDialog(master=)`→`parent=`. Also docs-config
-   cleanup (removed `viewcode`, `html_show_sourcelink`/`copy_source` off,
-   `_templates/sidebar-nav-bs.html` drops the "Section Navigation" header).
-3. **Persistent KV / prefs store — DONE** (branch `feat/store`, memory
-   `project_persistent_kv_store`): shipped `bs.Store` (dict-like, JSON file-
-   backed). App-side persistence later landed via the settings flattening
-   (PR #101): `App.from_store` + `Store.update(**kwargs)` write-back; window
-   geometry stays a built-in `remember_window_state` flag.
-
-**Signal API — DONE (branch `feat/signal-cleanup`):** `signal()` is the single
-getter; `.get()` and the `__getattr__` proxy are REMOVED; `.set()` writes (with
-int→float widening); `subscribe(immediate=)` propagates callback errors. Do NOT
-adopt callable-setter `signal(x)`.
-
-**Carryover (lower priority):**
-1. **Index/landing pages** — root `index.rst`, `widgets/index.rst`,
-   `reference/index.rst`, section indexes are bare; add orientation/gallery.
-2. **Tree/Table doc pages** (deferred — complex). DataSource rename should land first.
-4. **localization / windowing** `tasks/` how-tos.
-5. **Screenshots pending:** Tooltip/Toast, 7 Dialog pages.
-6. **AppShell deferred improvements:** `nav_pane_width=` not wired to
-   `SideNav(pane_width=)`; nav density/font hardcoded; `toolbar`/`nav` expose
-   internals; group active-child highlight + indentation; footer non-page widgets.
-
-### API/cleanup backlog from the 2026-06-05 audit (memory-tracked)
-- `project_toplevel_api_surface` — audit `bs.*` vs namespaced (events: DONE,
-  payloads live in `bs.events` only).
-- `project_capabilities_relevance` — `_core/capabilities` may be redundant now
-  the public layer abstracts Tk; still imported by data/i18n/mixins.
-- `project_legacy_naming_cleanup` — `TTKBootstrapError` (`_core/exceptions`,
-  overlaps `bootstack.errors`) + pervasive `bootstyle`/`Bootstyle` in `style/`.
-- `project_docstring_backticks` — ~77 files use RST double-backticks; convention
-  is Google + SINGLE backticks. (Markdown ```fences``` in docstrings render
-  broken via autodoc — fixed in `data/` + `_runtime/shortcuts.py`; others remain.)
-- Past-tense event names still pending rename: `SideNav.on_pane_toggled` /
-  `on_display_mode_changed`, `ListView.on_selection_changed`,
-  `Calendar.on_date_selected` (memory `project_event_naming_revisit`).
-- `Signal.subscribe()` returns a `str` token + `unsubscribe(id)`/`unsubscribe_all()`,
-  unlike events (`Subscription.cancel()`) and streams (`Handle.cancel()`) — flagged
-  to unify to a cancelable handle (memory `project_signal_subscribe_subscription`).
-  Gotcha: `events.Subscription` is Tk-binding-specific, so this needs a shared
-  cancelable-handle abstraction, not a direct reuse. Own branch, not the docs sweep.
+- `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
+  public layer abstracts Tk; still imported by data/i18n/mixins.
+- `project_legacy_naming_cleanup` — `TTKBootstrapError` (overlaps `bootstack.errors`)
+  + pervasive `bootstyle`/`Bootstyle` in `style/`.
+- `project_docstring_backticks` — ~77 files use RST double-backticks; convention is
+  Google + SINGLE backticks. (Stage 4 set `default_role="code"`, de-risking the sweep.)
+- `project_event_naming_revisit` — past-tense event names pending rename:
+  `SideNav.on_pane_toggled`/`on_display_mode_changed`, `ListView.on_selection_changed`,
+  `Calendar.on_date_selected`.
+- `project_signal_subscribe_subscription` — `Signal.subscribe()` returns a `str`
+  token (unlike events'/streams' cancelable handles); unify via a shared
+  cancelable-handle abstraction (not a direct reuse — `events.Subscription` is
+  Tk-binding-specific). Own branch.
+- `project_editfilter_public_api` — `EditFilter` DEMOTED (Tk-coupled raw text
+  indices/tags); investigate a de-Tkinter-ed CodeEditor extension API before any
+  re-promotion. `NOTE(editfilter-public-api)` in
+  `widgets/_impl/composites/textarea/filter.py`.
+- `project_window_api_hardening` — `bs.Window` leaks uncurated `**kwargs` to the
+  internal Toplevel (raw Tk options in; useful `icon`/`alpha`/`toolwindow`/
+  `window_style` only via the escape hatch), has no live properties
+  (`title`/`size`/`topmost` are construction-only), and never releases the modal
+  grab. Curate to typed params + add a live `title` + release on close. Own branch.
+- `project_show_indicator_removal` — `show_indicator=` on Checkbox/Radio/
+  RadioToggleButton/RadioGroup FLAGGED FOR REMOVAL (maintainer, 2026-06-08; too
+  niche — only useful paired with `on_icon`/`off_icon`). Radio + RadioToggleButton
+  share it via `_RadioControlBase`. Removal spans the wrappers, internal primitives,
+  the checkbutton/radiobutton style builders, and the checkbox docs/examples/screenshots.
+- `project_enum_option_typing` — promote recurring enumerated `str` kwargs to NAMED
+  `Literal` aliases in `widgets/types.py` (re-exported from `bootstack.types`); the
+  ALIAS docstring carries the value list once, widget docstrings describe meaning only
+  (no value enumeration — REVERSES the Code-standards "valid values per kwarg" rule for
+  aliased types; keep the default). First fixes: `accent: str`→`AccentToken` in
+  `form.py`/`menubar.py`. New aliases: `SelectionMode`/`IconPosition`/`LayoutKind`/
+  `AutoFlow`/`ExportScope`; reuse existing `Orient`/`Fill`/`Anchor`/`Sticky`. Own branch.
+- Lower-priority: bare index/landing pages (root, `widgets/`, `reference/`);
+  localization/windowing `tasks/` how-tos; screenshots pending (Tooltip/Toast, 7
+  Dialog pages); AppShell deferred improvements (`nav_pane_width=` not wired to
+  `SideNav(pane_width=)`, hardcoded nav density/font, group active-child highlight +
+  indentation, footer non-page widgets).
 
 ---
 
@@ -575,9 +431,16 @@ A page like `docs/api-reference/data.rst`. Text-only, **NO screenshots, NO hero*
    `scheduling` (`Schedule`/`Job`), `shortcuts` (3), and `errors` (5 exceptions) are
    all single-table; `data`/`events`/`style` earn their groups. The intro carries
    any rule-vs-result / base-vs-specific nuance — don't spend a heading on it.
-   (d) The audit also surfaces half-public names to demote — e.g. `TraceOperation`
-   (internal trace tag, no public signature exposes it) was dropped from
-   `bootstack.signals.__all__` during this sweep.
+   (d) **Order ENTRIES within a group ALPHABETICALLY** — the API Reference is the
+   lookup layer, so within-group order should be predictable for scanning (the
+   pandas/NumPy convention), NOT curated/common-first. Curated common-first order
+   is the GUIDES' job (the `widgets/index.rst` caption toctrees keep it). The
+   category grouping + a one-line lead-in already carry the semantics; clusters
+   mostly stay adjacent alphabetically anyway (`Radio`/`RadioGroup`/`RadioToggleButton`,
+   `Select`/`SelectButton`, `ToggleButton`/`ToggleGroup`). (e) The audit also
+   surfaces half-public names to demote — e.g. `TraceOperation` (internal trace
+   tag, no public signature exposes it) was dropped from `bootstack.signals.__all__`
+   during this sweep.
 4. List **exactly** the module's `__all__` across the grouped tables (the reference
    IS `__all__`). Good first-line docstrings matter — that line is the summary cell.
 5. Wire the page into `docs/api-reference/index.rst`'s toctree.
@@ -621,6 +484,20 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
 > `bootstack` API Reference page) and replaced with a table-only `autosummary`
 > summary + cross-links, per the Guide-page recipe above. Until then, in-flight
 > widget pages keep the autoclass.
+>
+> ⚠ **Migrating a widget = also clean up its public API** (the maintainer's
+> standing pattern, memory `feedback_cleanup_api_while_documenting`). When you home
+> a widget into the API Reference, audit it the way `App`/`AppShell`/`Window` were:
+> drop dead/redundant kwargs, demote set-once config from runtime properties to
+> construction-only (a property is "live" only if changing it has a complete effect
+> a user would bind to a control), de-Tkinter leaks, fix docstring nits.
+> **In particular, complete the typed-payload `on_*` audit for that widget** (memory
+> `project_typed_event_payloads`, INCOMPLETE): a DATA event gets its specific
+> `bootstack.events` payload type in `@overload` + impl signature; a NATIVE event
+> (`click`/`hover`/`focus`/`blur`/`resize`) keeps `Event`. Known offenders: the
+> boolean/selection controls (`Checkbox` etc.) still type `on_change`/`on_check`/…
+> as generic `Callable[[Event]]`. (Payloads render in the autodoc "Overloads:"
+> block, so fixing the source is enough.)
 
 1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
 2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);
@@ -754,7 +631,8 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   `from bootstack.dialogs import FormDialog`. `MessageCatalog`/`IntlFormatter`/
   `get_current_app`/`Image` are INTERNAL (not public). Do NOT write `bs.Theme`/
   `bs.col`/`bs.SqliteDataSource`/`bs.FormDialog` etc. — they no longer exist at
-  top level. Map: `docs/getting-started/api-overview.rst`; guard:
+  top level. Map: the `docs/api-reference/index.rst` landing (public-contract +
+  submodule list; `api-overview` was retired into it); guard:
   `tests/test_public_surface.py`. Memory `project_toplevel_api_surface`.
 - **Dialogs live in `bootstack.dialogs`** — impl under `bootstack/dialogs/_impl/`,
   public façade `bootstack/dialogs/__init__.py` (verbs + classes).

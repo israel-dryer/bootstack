@@ -95,8 +95,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.dialogs.FormDialog
-   :members:
+The complete reference for :class:`FormDialog <bootstack.dialogs.FormDialog>` lives
+on the :doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.dialogs.FormDialog
 
 Full Example
 ------------

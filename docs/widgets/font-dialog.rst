@@ -91,10 +91,16 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.dialogs.ask_font
+The complete reference for :func:`ask_font() <bootstack.ask_font>` and
+:class:`FontDialog <bootstack.dialogs.FontDialog>` (and its ``FontChoice`` result)
+lives on the :doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
 
-.. autoclass:: bootstack.dialogs.FontDialog
-   :members:
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ask_font
+   ~bootstack.dialogs.FontDialog
+   ~bootstack.dialogs.FontChoice
 
 Full Example
 ------------

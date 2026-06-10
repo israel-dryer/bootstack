@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Iterator, Literal, overload
+from typing import Any, Callable, Iterator, Literal, TYPE_CHECKING, overload
 
 from bootstack.widgets._impl.composites.tree.treeview import TreeView as _InternalTreeView
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.events import Subscription
+from bootstack.events import Subscription, TreeSelectionEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, WidgetDensity
 
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from bootstack.data.types import DataSourceProtocol
+    from bootstack.data.query import Column, Condition, SortKey
+
 __all__ = ["Tree", "TreeNode"]
+
+
+def _node_key(value: Any) -> Any:
+    """Normalize an id for cross-type comparison (mirrors the source binding)."""
+    return None if value is None else str(value)
 
 
 class Tree(PublicWidgetBase):
@@ -30,66 +40,68 @@ class Tree(PublicWidgetBase):
     Args:
         nodes: Declarative initial tree — a list of node specs, where each spec
             is a label string or a dict like
-            ``{"label": "src", "icon": "folder", "children": [...]}``. Anything
+            `{"label": "src", "icon": "folder", "children": [...]}`. Anything
             not a recognized display key becomes that node's `data`. Mutually
             exclusive with `data_source`.
         data_source: A flat data source to project as a hierarchy. Each record
             carries a `parent_field` pointing at its parent's id (an adjacency
             list); the tree loads one branch at a time, querying a node's
             children only when it is expanded — so a huge hierarchy shows
-            instantly. Any `DataSourceProtocol` source works. Mutually exclusive
+            instantly. Any data-source-protocol source works. Mutually exclusive
             with `nodes`.
         parent_field: With `data_source`, the record field that holds each row's
-            parent id. Defaults to ``'parent_id'``.
+            parent id. Defaults to `'parent_id'`.
         root_value: With `data_source`, the `parent_field` value that marks a
-            root node. Defaults to ``None`` (a NULL/absent parent).
+            root node. Defaults to `None` (a NULL/absent parent).
         label_field: With `data_source`, the record field used as the node label.
-            Defaults to ``'name'``. Ignored when `node_builder` is given.
+            Defaults to `'name'`. Ignored when `node_builder` is given.
         icon_field: With `data_source`, an optional record field whose value is
             used as the node icon.
         node_builder: With `data_source`, an optional callable taking a record
-            and returning a node spec dict (``{'label': ..., 'icon': ...}``) for
+            and returning a node spec dict (`{'label': ..., 'icon': ...}`) for
             full control over how a record renders. Overrides
             `label_field`/`icon_field`.
         order: With `data_source`, the ordering applied to each sibling group —
-            a sort key or sequence of keys (``'name'``, ``'-created'``, a `col`,
+            a sort key or sequence of keys (`'name'`, `'-created'`, a `col`,
             or a `SortKey`). Defaults to the source's natural order.
-        selection_mode: ``'single'`` (default) — one highlighted node;
-            ``'multi'`` — click-to-toggle a set; ``'none'`` — no highlight
-            selection (navigation/display only).
-        show_selection_controls: If ``True``, show a per-node selection control
-            (a checkbox in ``multi`` mode, a radio in ``single`` mode) as the
+        selection_mode: Node selection behavior — `'single'` keeps one
+            highlighted node, `'multi'` is click-to-toggle a set, `'none'` does
+            no highlight selection (navigation/display only). Default `'single'`.
+        show_selection_controls: If `True`, show a per-node selection control
+            (a checkbox in `multi` mode, a radio in `single` mode) as the
             visible affordance for selection — mirroring ListView and DataTable.
             A selected row shows both the control and the highlight wash.
-        select_on_click: If ``True`` (default), clicking a row selects it. Set
-            ``False`` with ``show_selection_controls=True`` so that only the
+        select_on_click: If `True` (default), clicking a row selects it. Set
+            `False` with `show_selection_controls=True` so that only the
             control selects and a row click just focuses (e.g. to drive
-            ``on_activate`` for opening, VS Code style).
-        indent: Horizontal indent per depth level, in pixels. Defaults to 16.
-        striped: If ``True``, alternate the row background color.
-        show_scrollbar: If ``True`` (default), show the vertical scrollbar.
+            `on_activate` for opening, VS Code style).
+        indent: Horizontal indent per depth level, in pixels. Defaults to `16`.
+        striped: If `True`, alternate the row background color.
+        show_scrollbar: If `True` (default), show the vertical scrollbar.
             Mousewheel scrolling works regardless.
         height: Fixed height in pixels. When set, the tree maintains this
             height regardless of its content (so it can scroll without the
             parent layout providing a vertical constraint).
-        density: Row height — ``'default'`` (default) or ``'compact'``.
-        accent: Color intent token for the selection highlight. One of
-            ``'primary'``, ``'secondary'``, ``'info'``, ``'success'``,
-            ``'warning'``, ``'danger'``.
+        density: Row height. Default `'default'`.
+        accent: Color intent token for the selection highlight. Defaults to the
+            theme's default color.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        nodes: list | None = None,
-        data_source: Any = None,
+        nodes: list[str | dict] | None = None,
+        data_source: DataSourceProtocol | None = None,
         parent_field: str = "parent_id",
         root_value: Any = None,
         label_field: str = "name",
         icon_field: str | None = None,
         node_builder: Callable[[dict], dict] | None = None,
-        order: Any = None,
+        order: str | Column | SortKey | Sequence[str | Column | SortKey] | None = None,
         selection_mode: Literal["none", "single", "multi"] = "single",
         show_selection_controls: bool = False,
         select_on_click: bool = True,
@@ -98,7 +110,7 @@ class Tree(PublicWidgetBase):
         show_scrollbar: bool = True,
         height: int | None = None,
         density: WidgetDensity = "default",
-        accent: AccentToken | None = None,
+        accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -117,7 +129,6 @@ class Tree(PublicWidgetBase):
         }
         if accent is not None:
             internal_kwargs["accent"] = accent
-        internal_kwargs.update(kwargs)
 
         if height is not None and "fill" not in layout_kw:
             layout_kw["fill"] = "x"
@@ -180,7 +191,7 @@ class Tree(PublicWidgetBase):
 
         Args:
             label: The node's display label.
-            parent: Parent node, or ``None`` for a root node.
+            parent: Parent node, or `None` for a root node.
             icon: Bootstrap icon name shown before the label.
             open_icon: Icon used when the node is expanded (overrides `icon`).
             closed_icon: Icon used when the node is collapsed (overrides `icon`).
@@ -189,7 +200,7 @@ class Tree(PublicWidgetBase):
             loader: Callable invoked on first expand to fetch children lazily.
                 Receives the node; returns an iterable of child specs.
             data: Initial data bag for the node.
-            **extra: Extra keywords folded into the node's `data`.
+            **extra: Extra keywords folded into the node's `data` bag.
         """
         return self._internal.add(
             label, parent=parent, icon=icon, open_icon=open_icon,
@@ -204,7 +215,7 @@ class Tree(PublicWidgetBase):
         Args:
             index: Zero-based position among siblings.
             label: The node's display label.
-            parent: Parent node, or ``None`` for a root node.
+            parent: Parent node, or `None` for a root node.
             **kwargs: Same as `add()`.
         """
         return self._internal.add(label, parent=parent, index=index, **kwargs)
@@ -223,8 +234,8 @@ class Tree(PublicWidgetBase):
 
         Args:
             node: The node to move.
-            parent: New parent, or ``None`` for the root level.
-            index: Position among the new siblings — ``'end'`` or an integer.
+            parent: New parent, or `None` for the root level.
+            index: Position among the new siblings — `'end'` or an integer.
         """
         self._internal.move(node, parent, index)
 
@@ -233,8 +244,8 @@ class Tree(PublicWidgetBase):
         self._internal.clear()
 
     @property
-    def data_source(self) -> Any:
-        """The backing data source, or ``None`` for a declarative tree."""
+    def data_source(self) -> DataSourceProtocol | None:
+        """The backing data source, or `None` for a declarative tree."""
         return self._binding.source if self._binding is not None else None
 
     def refresh(self) -> None:
@@ -263,16 +274,121 @@ class Tree(PublicWidgetBase):
         """Yield every node depth-first, including collapsed ones."""
         return self._internal._iter_all_nodes()
 
-    def find(self, predicate: Callable[[TreeNode], bool]) -> TreeNode | None:
-        """Return the first node for which `predicate` is true, or `None`.
+    def find(self, matcher: "Callable[[TreeNode], bool] | Condition") -> TreeNode | None:
+        """Return the first node matching `matcher`, or `None`.
+
+        `matcher` is either a predicate `(TreeNode) -> bool` or a `col(...)`
+        condition (see :doc:`/reference/data-sources`):
+
+        - A **predicate** is evaluated over the materialized nodes. For a
+          data-source-backed tree that means the currently loaded branches only
+          — a Python callable cannot be pushed down to the source.
+        - A **condition** is matched against each node's `data`. On a
+          declarative tree this scans every node; on a data-source-backed tree
+          it is pushed down to the source, so it reaches nodes in unexpanded
+          branches, and the path to the match is loaded (without expanding it)
+          so a real `TreeNode` handle is returned. Call `reveal()` on the result
+          to scroll it into view.
 
         Args:
-            predicate: Callable taking a `TreeNode` and returning a bool.
+            matcher: A `(TreeNode) -> bool` predicate, or a `col(...)` condition.
         """
+        results = self._find(matcher, first=True)
+        return results[0] if results else None
+
+    def find_all(self, matcher: "Callable[[TreeNode], bool] | Condition") -> list[TreeNode]:
+        """Return every node matching `matcher`.
+
+        Accepts the same predicate-or-condition `matcher` as `find()`, with the
+        same reach (a predicate sees only materialized nodes; a condition is
+        pushed down on a data-source-backed tree). Predicate and declarative
+        matches come back in tree order; pushed-down condition matches come back
+        in the source's order.
+
+        Args:
+            matcher: A `(TreeNode) -> bool` predicate, or a `col(...)` condition.
+        """
+        return self._find(matcher, first=False)
+
+    def _find(self, matcher: Any, *, first: bool) -> list[TreeNode]:
+        from bootstack.data.query import Condition
+
+        # Source-backed tree + condition: push down to reach unloaded branches.
+        if isinstance(matcher, Condition) and self._binding is not None:
+            records = self._binding.source._query(matcher, self._binding.sort_keys)
+            out: list[TreeNode] = []
+            for record in records:
+                node = self._materialize_path(record)
+                if node is not None:
+                    out.append(node)
+                    if first:
+                        break
+            return out
+
+        # Otherwise evaluate over the materialized nodes.
+        if isinstance(matcher, Condition):
+            predicate: Callable[[TreeNode], bool] = lambda n: matcher.matches(n.data)
+        else:
+            predicate = matcher
+        out = []
         for node in self._internal._iter_all_nodes():
             if predicate(node):
-                return node
-        return None
+                out.append(node)
+                if first:
+                    break
+        return out
+
+    def _materialize_path(self, record: dict) -> TreeNode | None:
+        """Load (without expanding) the path from a root to `record`'s node.
+
+        Walks `parent_field` up the source to build the root→record id chain,
+        then descends the view, loading each level's lazy children as needed,
+        and returns the matching `TreeNode` (or `None` if the chain can't be
+        resolved — e.g. a broken adjacency link or a custom `node_builder` whose
+        `data` omits the id).
+        """
+        b = self._binding
+        src = b.source
+
+        def ident(rec: Any) -> Any:
+            # Normalize identity across raw records (where `_record_id` reads the
+            # source's identity column, e.g. SQLite's internal row id) and public
+            # node `data` (where the identity is surfaced as `'id'`).
+            rid = src._record_id(rec)
+            return _node_key(rid if rid is not None else rec.get("id"))
+
+        # Build the root→record chain by walking parent ids up the source. A
+        # row's `parent_field` holds the parent's identity, so fetch each parent
+        # by id via `get()` (handles sources whose identity isn't a plain column).
+        chain = [record]
+        cur = record
+        seen: set = set()
+        while _node_key(cur.get(b.parent_field)) != _node_key(b.root_value):
+            pid = cur.get(b.parent_field)
+            key = _node_key(pid)
+            if key in seen:  # guard a cyclic/broken adjacency list
+                break
+            seen.add(key)
+            parent = src.get(pid)
+            if parent is None:
+                break
+            cur = parent
+            chain.append(cur)
+        chain.reverse()
+
+        # Descend the view, loading each level's children as needed.
+        level = list(self._internal.roots)
+        node: TreeNode | None = None
+        for i, rec in enumerate(chain):
+            rid = ident(rec)
+            node = next((n for n in level if ident(n.data) == rid), None)
+            if node is None:
+                return None
+            if i < len(chain) - 1:  # not the target yet — ensure children exist
+                if node.loader is not None and not node._loaded:
+                    self._internal._load_children(node)
+                level = node.children
+        return node
 
     # ----- expansion -----
 
@@ -338,13 +454,18 @@ class Tree(PublicWidgetBase):
     @overload
     def on_selection_changed(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[Any], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler=None):
-        """Fired when the set of selected nodes changes. The handler receives a
-        `TreeSelectionEvent` with `nodes` (the full selection, in tree order).
+    def on_selection_changed(self, handler: Callable[[TreeSelectionEvent], Any]) -> Subscription: ...
+    def on_selection_changed(self, handler: Callable[[TreeSelectionEvent], Any] | None = None) -> Stream | Subscription:
+        """Fired when the set of selected nodes changes.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.TreeSelectionEvent`
+                carrying `nodes` (the full selection, in tree order). Omit to get
+                a composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("selection_changed", handler)
 
@@ -352,12 +473,16 @@ class Tree(PublicWidgetBase):
     def on_activate(self) -> Stream: ...
     @overload
     def on_activate(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
-    def on_activate(self, handler=None):
-        """Fired when a node is activated (double-click or Enter). The handler
-        receives the `TreeNode`.
+    def on_activate(self, handler: Callable[[TreeNode], Any] | None = None) -> Stream | Subscription:
+        """Fired when a node is activated (double-click or Enter).
+
+        Args:
+            handler: Called with the activated `TreeNode`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("activate", handler)
 
@@ -365,11 +490,16 @@ class Tree(PublicWidgetBase):
     def on_expand(self) -> Stream: ...
     @overload
     def on_expand(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
-    def on_expand(self, handler=None):
-        """Fired when a node is expanded. The handler receives the `TreeNode`.
+    def on_expand(self, handler: Callable[[TreeNode], Any] | None = None) -> Stream | Subscription:
+        """Fired when a node is expanded.
+
+        Args:
+            handler: Called with the expanded `TreeNode`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("expand", handler)
 
@@ -377,11 +507,16 @@ class Tree(PublicWidgetBase):
     def on_collapse(self) -> Stream: ...
     @overload
     def on_collapse(self, handler: Callable[[TreeNode], Any]) -> Subscription: ...
-    def on_collapse(self, handler=None):
-        """Fired when a node is collapsed. The handler receives the `TreeNode`.
+    def on_collapse(self, handler: Callable[[TreeNode], Any] | None = None) -> Stream | Subscription:
+        """Fired when a node is collapsed.
+
+        Args:
+            handler: Called with the collapsed `TreeNode`. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("collapse", handler)
 
@@ -389,12 +524,17 @@ class Tree(PublicWidgetBase):
     def on_right_click(self) -> Stream: ...
     @overload
     def on_right_click(self, handler: Callable[[dict[str, Any]], Any]) -> Subscription: ...
-    def on_right_click(self, handler=None):
-        """Fired on a right-click. The handler receives a dict with ``node``,
-        ``x_root``, and ``y_root`` — enough to position a context menu.
+    def on_right_click(self, handler: Callable[[dict[str, Any]], Any] | None = None) -> Stream | Subscription:
+        """Fired on a right-click.
+
+        Args:
+            handler: Called with a `dict` carrying `node`, `x_root`, and
+                `y_root` — enough to position a context menu. Omit to get a
+                composable :class:`~bootstack.streams.Stream` instead.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("right_click", handler)
 

@@ -1,4 +1,5 @@
 import importlib.metadata
+import re
 
 # ---------------------------------------------------------------------------
 # Project
@@ -45,6 +46,17 @@ autodoc_default_options     = {
 
 autosummary_generate = True
 
+# Disambiguate stub filenames that differ only by case — they collide on
+# case-insensitive filesystems (Windows/macOS). `Toast` (widget) vs `toast`
+# (dialog verb) is the one such pair in the public surface.
+autosummary_filename_map = {
+    "bootstack.toast": "bootstack.toast-verb",
+}
+
+# Single backticks in docstrings render as inline code (the project convention)
+# and, unlike the default interpreted-text role, are colon-safe (e.g. `h:mm`).
+default_role = "code"
+
 # ---------------------------------------------------------------------------
 # Napoleon (Google-style docstrings)
 # ---------------------------------------------------------------------------
@@ -63,6 +75,13 @@ napoleon_attr_annotations       = True
 typehints_fully_qualified       = False
 always_document_param_types     = False
 typehints_document_rtype        = True
+always_use_bars_union           = True   # render `A | B`, not `Union[A, B]`
+
+# NOTE: deliberately NO `autodoc_type_aliases`. Named aliases (`AccentToken`,
+# `RuleType`, `Padding`, …) are expanded to their underlying `Literal[...]`/union
+# in rendered signatures ON PURPOSE — a Literal is self-documenting, so the type
+# shows the allowed values and the docstring does NOT re-enumerate them. The
+# aliases exist for source DRY/annotation, not to hide the values in the docs.
 
 # ---------------------------------------------------------------------------
 # Intersphinx
@@ -107,7 +126,7 @@ html_theme_options = {
     "navbar_end": ["navbar-icon-links", "theme-switcher"],
     "secondary_sidebar_items": ["page-toc"],
     "navigation_with_keys": True,
-    "show_nav_level": 2,
+    "show_nav_level": 1,
 }
 
 html_static_path = ["_static"]
@@ -133,3 +152,38 @@ exclude_patterns = ["_build", "_dev", "Thumbs.db", ".DS_Store"]
 autodoc_mock_imports = [
     "pywinstyles",
 ]
+
+# ---------------------------------------------------------------------------
+# Drop the injected "Overloads:" field
+# ---------------------------------------------------------------------------
+# `sphinx_autodoc_typehints` injects an "Overloads:" field for @overload-ed
+# methods whose types render as UNLINKED plain text. Our `on_*` shorthands
+# instead document the call forms in Args/Returns with cross-linked event
+# payloads (`:class:` roles), so the Overloads block just restates the same
+# thing unlinked. Strip it. The @overload defs stay in the source — they are
+# for type-checkers/IDEs, not the docs.
+
+_OVERLOADS_FIELD = re.compile(r"^:Overloads:", re.IGNORECASE)
+
+
+def _drop_overloads_field(app, what, name, obj, options, lines):
+    cleaned = []
+    skipping = False
+    for line in lines:
+        if _OVERLOADS_FIELD.match(line):
+            skipping = True
+            continue
+        if skipping:
+            # Continuation of the field = blank or indented lines; the first
+            # flush, non-blank line (the summary or the next field) ends it.
+            if line == "" or line[:1].isspace():
+                continue
+            skipping = False
+        cleaned.append(line)
+    if len(cleaned) != len(lines):
+        lines[:] = cleaned
+
+
+def setup(app):
+    # priority > 500 so this runs AFTER sphinx_autodoc_typehints injects the field.
+    app.connect("autodoc-process-docstring", _drop_overloads_field, priority=1000)

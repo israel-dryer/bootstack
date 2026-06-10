@@ -16,7 +16,7 @@ with bs.App(title="API gap fixes — visual test", minsize=(640, 500), padding=0
             bs.Label("insert_addon — label before, button after")
             tf = bs.TextField(placeholder="search…", label="Search", fill="x", expand=True)
             tf.insert_addon("label", "before", icon="search")
-            tf.insert_addon("button", "after", icon="x-lg", name="clear", command=tf.clear)
+            tf.insert_addon("button", "after", icon="x-lg", name="clear", on_click=tf.clear)
 
             bs.Label("insert_addon — toggle before")
             nf = bs.NumberField(label="Amount", fill="x", expand=True)

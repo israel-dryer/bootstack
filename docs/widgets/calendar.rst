@@ -160,9 +160,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.calendar.Calendar
-   :members:
-   :undoc-members:
+The complete reference for :class:`Calendar <bootstack.Calendar>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Calendar
 
 Full Example
 ------------

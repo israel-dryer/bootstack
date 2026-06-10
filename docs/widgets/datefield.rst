@@ -142,11 +142,13 @@ See also
 API
 ---
 
-.. autoclass:: bootstack.widgets.datefield.DateField
-   :members:
-   :undoc-members:
-   :inherited-members: PublicWidgetBase
-   :exclude-members: tk
+The complete reference for :class:`DateField <bootstack.DateField>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.DateField
 
 Full Example
 ------------

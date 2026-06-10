@@ -163,9 +163,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.togglegroup.ToggleGroup
-   :members:
-   :undoc-members:
+The complete reference for :class:`ToggleGroup <bootstack.ToggleGroup>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.ToggleGroup
 
 Full Example
 ------------

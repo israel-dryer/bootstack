@@ -67,7 +67,6 @@ from bootstack.widgets.buttongroup import ButtonGroup
 from bootstack.widgets.codeeditor import CodeEditor
 from bootstack.widgets.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets.datefield import DateField
-from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets.expander import Accordion, AccordionSection
 from bootstack.widgets.gauge import Gauge
 from bootstack.widgets.groupbox import GroupBox
@@ -102,7 +101,7 @@ from bootstack.widgets.tooltip import Tooltip
 
 from bootstack.widgets.calendar import Calendar
 from bootstack.widgets.form import Form
-from bootstack.widgets.form import FormItem, FieldItem, GroupItem, TabsItem, TabItem, EditorType
+from bootstack.widgets.form import FormItem, FieldItem, GroupItem, TabsItem, TabItem
 
 from bootstack.widgets.sidenav import (
     SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
@@ -134,7 +133,6 @@ __all__ = [
     # Inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",
     "TextArea", "CodeEditor", "DateField", "TimeField", "Slider", "RangeSlider",
-    "EditFilter",
     # Selection
     "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
@@ -147,5 +145,4 @@ __all__ = [
     "Tooltip", "Toast", "toast",
     # Forms
     "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
-    "EditorType",
 ]

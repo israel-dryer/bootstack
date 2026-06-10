@@ -120,9 +120,13 @@ Widget sizing
 API
 ---
 
-.. autoclass:: bootstack.widgets.label.Label
-   :members:
-   :undoc-members:
+The complete reference for :class:`Label <bootstack.Label>` lives on the
+:doc:`Widgets </api-reference/widgets>` API page. At a glance:
+
+.. autosummary::
+   :nosignatures:
+
+   ~bootstack.Label
 
 Full Example
 ------------

@@ -1,5 +1,5 @@
-bootstack.events
-================
+Events
+======
 
 .. currentmodule:: bootstack.events
 
@@ -94,8 +94,8 @@ The change/activate/deactivate/close payloads for a tab strip.
 Data and selection payloads
 ---------------------------
 
-Row CRUD, selection, export, tree selection, button-group clicks, and the
-data-source change broadcast.
+Row CRUD, selection, export, tree selection, button-group clicks, menu
+selection, and the data-source change broadcast.
 
 .. autosummary::
    :toctree: generated
@@ -107,6 +107,7 @@ data-source change broadcast.
    TreeSelectionEvent
    ExportEvent
    ButtonGroupClickEvent
+   MenuSelectEvent
    DataChangeEvent
 
 Supporting types

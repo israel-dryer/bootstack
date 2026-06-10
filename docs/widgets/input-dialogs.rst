@@ -111,17 +111,18 @@ See also
 API
 ---
 
-.. autofunction:: bootstack.dialogs.ask_string
+The complete reference for the ``ask_*`` input verbs lives on the
+:doc:`Dialogs </api-reference/dialogs>` API page. At a glance:
 
-.. autofunction:: bootstack.dialogs.ask_integer
+.. autosummary::
+   :nosignatures:
 
-.. autofunction:: bootstack.dialogs.ask_float
-
-.. autofunction:: bootstack.dialogs.ask_item
-
-.. autofunction:: bootstack.dialogs.ask_date
-
-.. autofunction:: bootstack.dialogs.ask_date_range
+   ~bootstack.ask_string
+   ~bootstack.ask_integer
+   ~bootstack.ask_float
+   ~bootstack.ask_item
+   ~bootstack.ask_date
+   ~bootstack.ask_date_range
 
 Full Example
 ------------

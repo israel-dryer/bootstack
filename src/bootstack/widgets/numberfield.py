@@ -31,44 +31,46 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     """A numeric input field with optional stepper buttons.
 
     Accepts integer or float values. Up/Down arrow keys and the mouse wheel
-    step the value by ``step``. The field validates that the typed value is
-    numeric and within ``min_value``/``max_value`` bounds.
+    step the value by `step`. The field validates that the typed value is
+    numeric and within `min_value`/`max_value` bounds.
 
     The initial value is the first positional argument. All options are
     keyword-only.
 
     Args:
-        value: Initial numeric value. Defaults to ``0``.
-        textsignal: Reactive ``Signal[str]`` bound to the field text. The
+        value: Initial numeric value. Defaults to `0`.
+        textsignal: Reactive `Signal[str]` bound to the field text. The
             field and signal stay in sync automatically. Note: the signal
-            must be typed as ``str`` — initialize with ``Signal("0")``,
-            not ``Signal(0)``.
+            must be typed as `str` — initialize with `Signal("0")`,
+            not `Signal(0)`.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
         min_value: Minimum allowed value (inclusive). No lower bound if omitted.
         max_value: Maximum allowed value (inclusive). No upper bound if omitted.
         step: Amount added or subtracted per increment/decrement. Defaults to
-            ``1``.
-        show_steppers: If ``False``, hides the +/− stepper buttons. Defaults
-            to ``True``.
-        required: If ``True``, marks the field as required and prevents empty
+            `1`.
+        show_steppers: If `False`, hides the +/− stepper buttons. Defaults
+            to `True`.
+        required: If `True`, marks the field as required and prevents empty
             submission.
-        read_only: If ``True``, value is visible and selectable but not
+        read_only: If `True`, value is visible and selectable but not
             editable.
-        disabled: If ``True``, field is fully non-interactive and dimmed.
+        disabled: If `True`, field is fully non-interactive and dimmed.
         width: Width in character units.
-        justify: Text alignment inside the entry. One of ``'left'`` (default),
-            ``'center'``, ``'right'``.
-        font: Semantic font token (e.g. ``'body'``, ``'code'``).
-        value_format: ICU format pattern applied when displaying the value.
-            Common patterns: ``'#,##0'`` (thousands separator),
-            ``'#,##0.00'`` (two decimal places), ``'percent'``,
-            ``'currency'``. Requires localization to be enabled.
-        accent: Accent token applied to the focus ring. One of ``'primary'``,
-            ``'secondary'``, ``'success'``, ``'warning'``, ``'danger'``.
-        density: Padding density. ``'default'`` or ``'compact'``.
+        justify: Text alignment inside the entry. Default `'left'`.
+        font: Semantic font token (e.g. `'body'`, `'code'`). See
+            :doc:`/reference/typography`.
+        value_format: Format applied when displaying the value — a named preset
+            (e.g. `'decimal'`, `'currency'`, `'percent'`) or a custom pattern
+            (e.g. `'#,##0.00'`). Requires localization enabled. See
+            :ref:`format specs <value-formats>`.
+        accent: Accent token applied to the focus ring.
+        density: Padding density.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -145,6 +147,22 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         target = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -160,7 +178,7 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def value(self) -> int | float | None:
-        """The current numeric value, or ``None`` if the field is empty."""
+        """The current numeric value, or `None` if the field is empty."""
         return self._internal.value
 
     @value.setter
@@ -169,7 +187,7 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def signal(self) -> "Signal | None":
-        """The reactive ``Signal`` bound to this field, or ``None``."""
+        """The reactive `Signal` bound to this field, or `None`."""
         return getattr(self._internal, 'signal', None)
 
     @property
@@ -193,18 +211,18 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     # ----- Methods -----
 
     def increment(self, steps: int = 1) -> None:
-        """Increment the value by ``steps`` × step size.
+        """Increment the value by `steps` × step size.
 
         Args:
-            steps: Number of steps to increment. Defaults to ``1``.
+            steps: Number of steps to increment. Defaults to `1`.
         """
         self._internal.step(steps)
 
     def decrement(self, steps: int = 1) -> None:
-        """Decrement the value by ``steps`` × step size.
+        """Decrement the value by `steps` × step size.
 
         Args:
-            steps: Number of steps to decrement. Defaults to ``1``.
+            steps: Number of steps to decrement. Defaults to `1`.
         """
         self._internal.step(-steps)
 
@@ -231,7 +249,7 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         self._entry_widget().selection_range(0, "end")
 
     def select_range(self, start: int, end: int) -> None:
-        """Select text between ``start`` and ``end`` character positions.
+        """Select text between `start` and `end` character positions.
 
         Args:
             start: Start index (0-based, inclusive).
@@ -248,8 +266,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_input(self, handler: Callable[[InputEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired on every keystroke.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.InputEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("input", handler)
 
@@ -260,8 +283,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the value is committed.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -272,8 +300,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Enter.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -284,8 +317,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -296,8 +334,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
@@ -308,8 +351,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -320,8 +368,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -332,8 +385,13 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired after any validation run.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 

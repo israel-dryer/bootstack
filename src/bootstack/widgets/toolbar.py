@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, VariantToken, WidgetDensity, SurfaceToken
+from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken
 
 
 class Toolbar(PublicWidgetBase):
@@ -19,31 +19,30 @@ class Toolbar(PublicWidgetBase):
 
     Args:
         button_variant: Default variant applied to every button added via
-            `add_button()`. One of ``'solid'``, ``'outline'``, ``'ghost'``.
-            Defaults to ``'ghost'``.
-        density: Size of toolbar items. ``'compact'`` for tighter padding and
-            smaller buttons, ``'default'`` for standard size.
-            Defaults to ``'default'``.
-        surface: Background surface token. One of ``'content'``, ``'card'``,
-            ``'chrome'``, ``'overlay'``. Defaults to the theme's ``'chrome'``
+            `add_button()`. Default `'ghost'`.
+        density: Size of toolbar items. Default `'default'`.
+        surface: Background surface token. Defaults to the theme's `'chrome'`
             surface.
-        padding: Inner padding in pixels. Accepts an int (all sides), or a
-            ``(horizontal, vertical)`` tuple. Defaults to ``3`` for default
-            density and ``(3, 1)`` for compact.
-        show_border: If ``True``, draws a border around the toolbar frame.
-            Defaults to ``False``.
-        show_window_controls: If ``True``, adds minimize, maximize, and close
-            buttons to the right side. Defaults to ``False``.
-        draggable: If ``True``, clicking and dragging the toolbar repositions
-            the window. Automatically enabled when ``show_window_controls=True``.
-            Defaults to ``False``.
+        padding: Inner padding in pixels — an int (all sides) or a
+            `(horizontal, vertical)` tuple. Defaults to `3` for default density
+            and `(3, 1)` for compact.
+        show_border: If `True`, draws a border around the toolbar frame.
+            Default `False`.
+        show_window_controls: If `True`, adds minimize, maximize, and close
+            buttons to the right side. Default `False`.
+        draggable: If `True`, clicking and dragging the toolbar repositions the
+            window. Automatically enabled when `show_window_controls=True`.
+            Default `False`.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
         self,
         *,
-        button_variant: VariantToken | str = "ghost",
+        button_variant: Literal["solid", "default", "outline", "ghost"] = "ghost",
         density: WidgetDensity = "default",
         surface: SurfaceToken | str | None = None,
         padding: int | tuple[int, int] | None = None,
@@ -94,7 +93,7 @@ class Toolbar(PublicWidgetBase):
         icon: str | None = None,
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
-        variant: VariantToken | str | None = None,
+        variant: Literal["solid", "default", "outline", "ghost"] | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a button to the toolbar.
@@ -106,11 +105,9 @@ class Toolbar(PublicWidgetBase):
             label: Button label text.
             icon: Icon name. When provided without `label`, renders icon-only.
             on_click: Callback fired when the button is clicked.
-            accent: Color intent override. One of ``'primary'``, ``'secondary'``,
-                ``'success'``, ``'warning'``, ``'danger'``, ``'info'``,
-                ``'default'``.
+            accent: Color intent override.
             variant: Variant override. Falls back to the toolbar's
-                ``button_variant`` when not specified.
+                `button_variant` when not specified.
         """
         kw: dict[str, Any] = {}
         if label is not None:

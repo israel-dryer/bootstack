@@ -1,5 +1,5 @@
-bootstack.scheduling
-====================
+Scheduling
+==========
 
 .. currentmodule:: bootstack.scheduling
 

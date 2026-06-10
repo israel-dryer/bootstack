@@ -4,7 +4,7 @@ import textwrap
 from datetime import date
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence
 
-from bootstack.dialogs._impl.dialog import Dialog, DialogButton, ButtonSpec
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton, ButtonSpec, ButtonRole
 from bootstack.dialogs._impl.query import QueryBox as _QueryBox
 from bootstack.dialogs._impl.formdialog import FormDialog as _InternalFormDialog
 from bootstack.dialogs._impl.datedialog import DateDialog as _DateDialog
@@ -15,6 +15,16 @@ from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack._core.images import Image as _ImageService
 from bootstack.style.style import get_theme_color as _get_theme_color
+
+__all__ = [
+    # one-shot verbs
+    "alert", "confirm",
+    "ask_string", "ask_integer", "ask_float", "ask_date", "ask_date_range",
+    "ask_item", "ask_color", "ask_font", "ask_filter",
+    # dialog classes
+    "Dialog", "DialogButton", "FormDialog", "FilterDialog",
+    "ColorChooserDialog", "ColorChoice", "FontDialog", "FontChoice",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -89,15 +99,14 @@ def alert(
     Args:
         message: The message text to display.
         title: Dialog window title.
-        ok_text: Label for the OK button. Defaults to ``'OK'``.
+        ok_text: Label for the OK button. Defaults to `'OK'`.
         severity: Visual severity level — sets a colored icon and controls the
-            default sound behavior. One of ``'info'``, ``'warning'``,
-            ``'danger'``, ``'success'``. ``'warning'`` and ``'danger'`` ring
-            the system bell by default; ``'info'`` and ``'success'`` are silent.
-        icon: Icon name override. Takes precedence over ``severity``.
-        sound: Override the alert sound. ``True`` always rings the bell,
-            ``False`` always suppresses it. ``None`` (default) defers to
-            ``severity``: rings for ``'warning'`` and ``'danger'``, silent
+            default sound behavior. `'warning'` and `'danger'` ring the system
+            bell by default; `'info'` and `'success'` are silent.
+        icon: Icon name override. Takes precedence over `severity`.
+        sound: Override the alert sound. `True` always rings the bell,
+            `False` always suppresses it. `None` (default) defers to
+            `severity`: rings for `'warning'` and `'danger'`, silent
             otherwise.
         parent: Parent widget. Defaults to the active root window.
     """
@@ -121,7 +130,7 @@ def confirm(
     title: str = "",
     confirm_text: str = "Yes",
     cancel_text: str = "No",
-    confirm_role: str = "primary",
+    confirm_role: ButtonRole = "primary",
     severity: SeverityToken | None = None,
     icon: str | None = None,
     sound: bool | None = None,
@@ -132,28 +141,27 @@ def confirm(
     Args:
         message: The question text to display.
         title: Dialog window title.
-        confirm_text: Label for the confirm button. Defaults to ``'Yes'``.
-        cancel_text: Label for the cancel button. Defaults to ``'No'``.
-        confirm_role: Button role controlling styling. Use ``'danger'`` for
-            destructive actions, ``'primary'`` (default) for standard
-            confirmations. When ``'danger'``, the confirm button is not
+        confirm_text: Label for the confirm button. Defaults to `'Yes'`.
+        cancel_text: Label for the cancel button. Defaults to `'No'`.
+        confirm_role: Button role controlling styling. Use `'danger'` for
+            destructive actions, `'primary'` (default) for standard
+            confirmations. When `'danger'`, the confirm button is not
             focused by default so :kbd:`Enter` does not accidentally trigger it.
-            Automatically overridden to ``'danger'`` when ``severity='danger'``
-            and to warning styling when ``severity='warning'``, unless set
+            Automatically overridden to `'danger'` when `severity='danger'`
+            and to warning styling when `severity='warning'`, unless set
             explicitly.
         severity: Visual severity level — sets a colored icon, adjusts the
-            confirm button color for ``'danger'`` and ``'warning'``, and
-            controls the default sound behavior. One of ``'info'``,
-            ``'warning'``, ``'danger'``, ``'success'``.
-        icon: Icon name override. Takes precedence over ``severity``.
-        sound: Override the alert sound. ``True`` always rings the bell,
-            ``False`` always suppresses it. ``None`` (default) defers to
-            ``severity``: rings for ``'warning'`` and ``'danger'``, silent
+            confirm button color for `'danger'` and `'warning'`, and
+            controls the default sound behavior.
+        icon: Icon name override. Takes precedence over `severity`.
+        sound: Override the alert sound. `True` always rings the bell,
+            `False` always suppresses it. `None` (default) defers to
+            `severity`: rings for `'warning'` and `'danger'`, silent
             otherwise.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        ``True`` if the user clicked the confirm button, ``False`` otherwise.
+        `True` if the user clicked the confirm button, `False` otherwise.
     """
     resolved_icon, icon_color = _resolve_icon(icon, severity)
     if sound is None:
@@ -200,7 +208,7 @@ def ask_string(
         title: Dialog window title.
         value: Pre-filled initial value.
         value_format: ICU format pattern for parsing and displaying the value
-            (e.g. a phone mask or postal code pattern).
+            (e.g. a phone mask or postal code pattern). See :ref:`value-formats`.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -236,7 +244,7 @@ def ask_integer(
         max_value: Maximum accepted value.
         step: Increment/decrement step size.
         value_format: ICU format pattern for displaying the value
-            (e.g. ``'#,##0'`` for thousands separators).
+            (e.g. `'#,##0'` for thousands separators). See :ref:`value-formats`.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -275,7 +283,8 @@ def ask_float(
         max_value: Maximum accepted value.
         step: Increment/decrement step size.
         value_format: ICU format pattern for displaying the value
-            (e.g. ``'$#,##0.00'`` for currency, ``'#,##0.##'`` for decimals).
+            (e.g. `'$#,##0.00'` for currency, `'#,##0.##'` for decimals).
+            See :ref:`value-formats`.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
@@ -310,7 +319,7 @@ def ask_date(
         value: Pre-selected initial date. Defaults to today.
         min_date: Earliest selectable date (inclusive).
         max_date: Latest selectable date (inclusive).
-        first_weekday: First day of the week. ``0`` = Monday, ``6`` = Sunday
+        first_weekday: First day of the week. `0` = Monday, `6` = Sunday
             (default).
         disabled_dates: Specific dates to disable from selection.
         parent: Parent widget. Defaults to the active root window.
@@ -350,13 +359,13 @@ def ask_date_range(
         end_date: Pre-selected range end date.
         min_date: Earliest selectable date (inclusive).
         max_date: Latest selectable date (inclusive).
-        first_weekday: First day of the week. ``0`` = Monday, ``6`` = Sunday
+        first_weekday: First day of the week. `0` = Monday, `6` = Sunday
             (default).
         disabled_dates: Specific dates to disable from selection.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        A ``(start, end)`` tuple of `date` objects, or `None` if canceled.
+        A `(start, end)` tuple of `date` objects, or `None` if canceled.
     """
     dlg = _DateDialog(
         master=parent,
@@ -484,13 +493,13 @@ class FormDialog:
         """Display the dialog and block until it is closed.
 
         Args:
-            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+            position: Explicit `(x, y)` screen coordinates for the dialog.
                 Defaults to centered on the parent window.
-            modal: Override the default modality. ``True`` blocks the parent;
-                ``False`` shows a non-blocking dialog.
+            modal: Override the default modality. `True` blocks the parent;
+                `False` shows a non-blocking dialog.
 
         Returns:
-            `self` — allows chaining: ``dlg = FormDialog(...).show(); dlg.result``.
+            `self` — allows chaining: `dlg = FormDialog(...).show(); dlg.result`.
         """
         self._internal.show(position=position, modal=modal)
         return self
@@ -520,7 +529,7 @@ class ColorChooserDialog:
 
     Args:
         title: Dialog window title. Defaults to the localized "Color" string.
-        color: Initial color as a hex string (e.g. ``'#ff0000'``). Defaults to
+        color: Initial color as a hex string (e.g. `'#ff0000'`). Defaults to
             the current theme background color.
         parent: Parent widget. Defaults to the active root window.
     """
@@ -547,25 +556,25 @@ class ColorChooserDialog:
         """Display the dialog and block until it is closed.
 
         Args:
-            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+            position: Explicit `(x, y)` screen coordinates for the dialog.
                 Defaults to centered on the parent window.
-            modal: Block the parent window until closed. Default ``True``.
+            modal: Block the parent window until closed. Default `True`.
 
         Returns:
-            `self` — allows chaining: ``dlg = ColorChooserDialog(...).show(); dlg.result``.
+            `self` — allows chaining: `dlg = ColorChooserDialog(...).show(); dlg.result`.
         """
         self._internal.show(position=position, modal=modal)
         return self
 
     @property
     def result(self) -> ColorChoice | None:
-        """The selected color, or ``None`` if canceled.
+        """The selected color, or `None` if canceled.
 
         Returns a `ColorChoice` namedtuple with three attributes:
 
-        - ``rgb`` — ``(r, g, b)`` tuple, each 0–255.
-        - ``hsl`` — ``(h, s, l)`` tuple: hue 0–360, saturation and luminance 0–100.
-        - ``hex`` — lowercase hex string, e.g. ``'#ff0000'``.
+        - `rgb` — `(r, g, b)` tuple, each 0–255.
+        - `hsl` — `(h, s, l)` tuple: hue 0–360, saturation and luminance 0–100.
+        - `hex` — lowercase hex string, e.g. `'#ff0000'`.
         """
         return self._internal.result
 
@@ -584,8 +593,8 @@ class FontDialog:
 
     Args:
         title: Dialog window title. Defaults to the localized "Font" string.
-        default_font: Font token to show initially (e.g. ``'body'``, ``'code'``,
-            ``'heading-lg'``). Defaults to ``'body'``.
+        default_font: Font token to show initially (e.g. `'body'`, `'code'`,
+            `'heading-lg'`). Defaults to `'body'`. See :doc:`/reference/typography`.
         parent: Parent widget. Defaults to the active root window.
     """
 
@@ -611,29 +620,29 @@ class FontDialog:
         """Display the dialog and block until it is closed.
 
         Args:
-            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+            position: Explicit `(x, y)` screen coordinates for the dialog.
                 Defaults to centered on screen (the font dialog sizes itself on open).
-            modal: Override the default modality. ``True`` blocks the parent;
-                ``False`` shows a non-blocking dialog.
+            modal: Override the default modality. `True` blocks the parent;
+                `False` shows a non-blocking dialog.
 
         Returns:
-            `self` — allows chaining: ``dlg = FontDialog(...).show(); dlg.result``.
+            `self` — allows chaining: `dlg = FontDialog(...).show(); dlg.result`.
         """
         self._internal.show(position=position, modal=modal)
         return self
 
     @property
     def result(self) -> FontChoice | None:
-        """The selected font, or ``None`` if canceled.
+        """The selected font, or `None` if canceled.
 
         Returns a `FontChoice` namedtuple with six attributes:
 
-        - ``family`` — font family name (str).
-        - ``size`` — point size (int).
-        - ``weight`` — ``'normal'`` or ``'bold'``.
-        - ``slant`` — ``'roman'`` or ``'italic'``.
-        - ``underline`` — ``True`` if underlined.
-        - ``overstrike`` — ``True`` if struck through.
+        - `family` — font family name (str).
+        - `size` — point size (int).
+        - `weight` — `'normal'` or `'bold'`.
+        - `slant` — `'roman'` or `'italic'`.
+        - `underline` — `True` if underlined.
+        - `overstrike` — `True` if struck through.
         """
         return self._internal.result
 
@@ -652,12 +661,12 @@ class FilterDialog:
         title: Dialog window title.
         items: Items to display. Each item is a string or a dict with keys:
 
-            - ``text`` (str): Display label (required for dicts).
-            - ``value`` (Any): Value returned when selected. Defaults to ``text``.
-            - ``selected`` (bool): Initial check state. Defaults to ``False``.
+            - `text` (str): Display label (required for dicts).
+            - `value` (Any): Value returned when selected. Defaults to `text`.
+            - `selected` (bool): Initial check state. Defaults to `False`.
         enable_search: Include a search box that filters items by text.
-            Defaults to ``False``.
-        enable_select_all: Include a "Select All" checkbox. Defaults to ``False``.
+            Defaults to `False`.
+        enable_select_all: Include a "Select All" checkbox. Defaults to `False`.
         parent: Parent widget. Defaults to the active root window.
     """
 
@@ -686,13 +695,13 @@ class FilterDialog:
         """Display the dialog and block until it is closed.
 
         Args:
-            position: Explicit ``(x, y)`` screen coordinates for the dialog.
+            position: Explicit `(x, y)` screen coordinates for the dialog.
                 Defaults to centered on the parent window.
-            modal: Override the default modality. ``True`` blocks the parent;
-                ``False`` shows a non-blocking dialog.
+            modal: Override the default modality. `True` blocks the parent;
+                `False` shows a non-blocking dialog.
 
         Returns:
-            `self` — allows chaining: ``dlg = FilterDialog(...).show(); dlg.result``.
+            `self` — allows chaining: `dlg = FilterDialog(...).show(); dlg.result`.
         """
         dlg = _InternalFilterDialog(
             master=self._parent,
@@ -707,7 +716,7 @@ class FilterDialog:
 
     @property
     def result(self) -> list[Any] | None:
-        """List of selected values after closing, or ``None`` if canceled."""
+        """List of selected values after closing, or `None` if canceled."""
         return self._result
 
 
@@ -725,13 +734,13 @@ def ask_color(
 
     Args:
         title: Dialog window title.
-        color: Initial color as a hex string (e.g. ``'#ff0000'``). Defaults to
+        color: Initial color as a hex string (e.g. `'#ff0000'`). Defaults to
             the current theme background color.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        A `ColorChoice` with ``rgb``, ``hsl``, and ``hex`` attributes, or
-        ``None`` if canceled.
+        A `ColorChoice` with `rgb`, `hsl`, and `hex` attributes, or
+        `None` if canceled.
     """
     dlg = ColorChooserDialog(title=title, color=color, parent=parent)
     dlg.show()
@@ -748,13 +757,13 @@ def ask_font(
 
     Args:
         title: Dialog window title.
-        default_font: Font token to show initially (e.g. ``'body'``, ``'code'``,
-            ``'heading-lg'``). Defaults to ``'body'``.
+        default_font: Font token to show initially (e.g. `'body'`, `'code'`,
+            `'heading-lg'`). Defaults to `'body'`. See :doc:`/reference/typography`.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        A `FontChoice` with ``family``, ``size``, ``weight``, ``slant``,
-        ``underline``, and ``overstrike`` attributes, or ``None`` if canceled.
+        A `FontChoice` with `family`, `size`, `weight`, `slant`,
+        `underline`, and `overstrike` attributes, or `None` if canceled.
     """
     dlg = FontDialog(title=title, default_font=default_font, parent=parent)
     dlg.show()
@@ -774,17 +783,17 @@ def ask_filter(
     Args:
         items: Items to display. Each item is a string or a dict with keys:
 
-            - ``text`` (str): Display label (required for dicts).
-            - ``value`` (Any): Value returned when selected. Defaults to ``text``.
-            - ``selected`` (bool): Initial check state. Defaults to ``False``.
+            - `text` (str): Display label (required for dicts).
+            - `value` (Any): Value returned when selected. Defaults to `text`.
+            - `selected` (bool): Initial check state. Defaults to `False`.
         title: Dialog window title.
         enable_search: Include a search box that filters items by text.
-            Defaults to ``False``.
-        enable_select_all: Include a "Select All" checkbox. Defaults to ``False``.
+            Defaults to `False`.
+        enable_select_all: Include a "Select All" checkbox. Defaults to `False`.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
-        A list of selected values, or ``None`` if canceled.
+        A list of selected values, or `None` if canceled.
     """
     dlg = FilterDialog(
         title=title,

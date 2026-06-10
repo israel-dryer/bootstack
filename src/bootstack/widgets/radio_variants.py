@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import overload, Any, Callable
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
@@ -8,7 +8,10 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+
+if TYPE_CHECKING:
+    from bootstack.signals import Signal
 
 _RADIO_EVENTS: dict[str, str] = {
     "change": "<<Change>>",
@@ -26,23 +29,28 @@ class _RadioBase(PublicWidgetBase):
         label: str = "",
         value: Any = None,
         *,
-        signal: Any = None,
-        text_signal: Any = None,
+        signal: "Signal | None" = None,
+        text_signal: "Signal | None" = None,
         on_change: Callable[[], Any] | None = None,
         icon: str | None = None,
         selected_icon: str | None = None,
         unselected_icon: str | None = None,
         icon_only: bool = False,
         show_indicator: bool = True,
-        compound: str | None = None,
+        icon_position: Literal["left", "right", "top", "bottom"] | None = None,
         disabled: bool = False,
-        accent: str | None = None,
-        density: str | None = None,
+        accent: AccentToken | str | None = None,
+        _internal_options: dict[str, Any] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if kwargs:
+            raise TypeError(
+                f"{type(self).__name__}() got unexpected keyword argument(s): "
+                f"{', '.join(sorted(kwargs))}"
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -70,15 +78,15 @@ class _RadioBase(PublicWidgetBase):
             internal_kwargs["icon_only"] = True
         if not show_indicator:
             internal_kwargs["show_indicator"] = False
-        if compound is not None:
-            internal_kwargs["compound"] = compound
+        if icon_position is not None:
+            internal_kwargs["compound"] = icon_position
         if disabled:
             internal_kwargs["state"] = "disabled"
         if accent is not None:
             internal_kwargs["accent"] = accent
-        if density is not None:
-            internal_kwargs["density"] = density
-        internal_kwargs.update(kwargs)
+        # Per-subclass styling options (e.g. density — RadioToggleButton only).
+        if _internal_options:
+            internal_kwargs.update(_internal_options)
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
 
@@ -100,6 +108,7 @@ class _RadioBase(PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether the control is disabled (non-interactive and greyed out)."""
         return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter
@@ -121,8 +130,13 @@ class _RadioBase(PublicWidgetBase):
     def on_change(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
+        Args:
+            handler: Called with the :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -133,8 +147,13 @@ class _RadioBase(PublicWidgetBase):
     def on_select(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when this radio is selected.
 
+        Args:
+            handler: Called with the :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("select", handler)
 
@@ -163,11 +182,13 @@ class Radio(_RadioBase):
         icon_only: If True, removes extra padding reserved for the label.
             Inferred automatically when `icon=` is set and no label is provided.
         show_indicator: If False, hides the circular indicator.
-        compound: Image placement relative to text.
+        icon_position: Position of the icon relative to the text.
         disabled: If True, widget is non-interactive.
-        accent: Accent token, e.g. `'primary'`, `'success'`.
-        density: Widget density — `'default'` or `'compact'`.
+        accent: Accent token applied to the indicator.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalRadioButton
 
@@ -190,11 +211,49 @@ class RadioToggleButton(_RadioBase):
         icon_only: If True, removes extra label padding. Inferred
             automatically when `icon=` is set and no label is provided.
         disabled: If True, widget is non-interactive.
-        accent: Accent token, e.g. `'primary'`, `'success'`.
-        density: Widget density — `'default'` or `'compact'`.
+        accent: Accent token applied to the button when selected.
+        density: Widget density.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
     _internal_class = _InternalRadioToggle
+
+    def __init__(
+        self,
+        label: str = "",
+        value: Any = None,
+        *,
+        signal: "Signal | None" = None,
+        text_signal: "Signal | None" = None,
+        on_change: Callable[[], Any] | None = None,
+        icon: str | None = None,
+        selected_icon: str | None = None,
+        unselected_icon: str | None = None,
+        icon_only: bool = False,
+        disabled: bool = False,
+        accent: AccentToken | str | None = None,
+        density: WidgetDensity | None = None,
+        parent: Any = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            label,
+            value,
+            signal=signal,
+            text_signal=text_signal,
+            on_change=on_change,
+            icon=icon,
+            selected_icon=selected_icon,
+            unselected_icon=unselected_icon,
+            icon_only=icon_only,
+            disabled=disabled,
+            accent=accent,
+            _internal_options=({"density": density} if density is not None else None),
+            parent=parent,
+            **kwargs,
+        )
 
 
 register_widget_events(Radio, _RADIO_EVENTS)

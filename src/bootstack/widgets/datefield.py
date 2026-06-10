@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tkinter
 from datetime import date
-from typing import overload, Any, Callable, Iterable, TYPE_CHECKING
+from typing import overload, Any, Callable, Iterable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.dateentry import DateEntry as _InternalDateEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
@@ -10,6 +10,7 @@ from bootstack.widgets._core.events import resolve_event, register_widget_events
 from bootstack.widgets._core.field_mixin import FieldAddonMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
+from bootstack.validation import RuleType
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
 from bootstack.widgets.types import AccentToken, Event, WidgetDensity
 
@@ -36,7 +37,10 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     Args:
         value: Initial date value — a `date` object or an ISO string
             (`'YYYY-MM-DD'`). `None` for an empty field.
-        value_format: Display format token. Default `'longDate'`.
+        value_format: Format applied to the displayed date — a named preset
+            (e.g. `'shortDate'`, `'longDate'`) or a custom pattern (e.g.
+            `'dd.MM.yy'`). Default `'longDate'`. See
+            :ref:`format specs <value-formats>`.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
         textsignal: Reactive `Signal[str]` bound to the field text. The
@@ -45,8 +49,9 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         picker_title: Title of the picker dialog.
         picker_first_weekday: First day of week in the picker (0=Mon … 6=Sun).
             Default `6` (Sunday).
-        selection_mode: `'single'` (default) or `'range'`. In range mode the
+        selection_mode: Single date or a start/end range. In range mode the
             entry is read-only and dates must be selected via the picker.
+            Default `'single'`.
         range_start: Pre-selected range start date (range mode only).
         range_end: Pre-selected range end date (range mode only).
         min_date: Earliest selectable date.
@@ -55,11 +60,12 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         required: Mark field as required; blocks empty submission.
         disabled: If `True`, field is non-interactive.
         read_only: If `True`, value is visible but not editable.
-        accent: Accent color for the focus ring — `'primary'`, `'secondary'`,
-            `'info'`, `'success'`, `'warning'`, `'danger'`, or `'default'`.
-            Default `'primary'`.
-        density: Widget density — `'default'` or `'compact'`.
+        accent: Accent color applied to the focus ring. Default `'primary'`.
+        density: Widget density.
         parent: Override the context-stack parent.
+        **kwargs: Layout placement options applied by the parent container —
+            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -73,7 +79,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         show_picker_button: bool = True,
         picker_title: str | None = None,
         picker_first_weekday: int = 6,
-        selection_mode: str = "single",
+        selection_mode: Literal["single", "range"] = "single",
         range_start: date | str | None = None,
         range_end: date | str | None = None,
         min_date: date | str | None = None,
@@ -128,8 +134,6 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if density is not None:
             internal_kwargs["density"] = density
-        internal_kwargs.update({k: v for k, v in kwargs.items()
-                                 if k not in internal_kwargs})
 
         self._internal = _InternalDateEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
@@ -144,6 +148,22 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     @overload
     def on(self, event: str, handler: Callable[[Event], Any]) -> Subscription: ...
     def on(self, event: str, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+        """Register a callback for an event by name.
+
+        A generic, string-keyed escape hatch — prefer the typed `on_*`
+        shorthands (e.g. `on_change`), which carry the precise payload type.
+        Called with no handler, returns a composable `Stream`; with a handler,
+        binds it and returns a `Subscription`.
+
+        Args:
+            event: Event name (for example `'change'` or `'focus'`).
+            handler: Called with the event payload. Omit to get a composable
+                :class:`~bootstack.streams.Stream` instead.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
         sequence = resolve_event(self, str(event))
         widget = self._entry_widget() if sequence in _INNER_ENTRY_SEQUENCES else self._internal
         if handler is None:
@@ -179,6 +199,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def disabled(self) -> bool:
+        """Whether the field is disabled (non-interactive and greyed out)."""
         return str(self._entry_widget().cget("state")) == "disabled"
 
     @disabled.setter
@@ -187,6 +208,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
 
     @property
     def read_only(self) -> bool:
+        """Whether the field is read-only (selectable but not editable)."""
         return str(self._entry_widget().cget("state")) == "readonly"
 
     @read_only.setter
@@ -213,11 +235,11 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         """Clear the field, setting the value to `None`."""
         self._internal.value = None
 
-    def add_validation_rule(self, rule_type: str, **kwargs: Any) -> None:
+    def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to this field.
 
         Args:
-            rule_type: Rule identifier string (e.g. `'required'`, `'min_date'`).
+            rule_type: The kind of validation rule to apply.
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
 
@@ -230,8 +252,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_change(self, handler: Callable[[ChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the selected date changes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ChangeEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("change", handler)
 
@@ -242,8 +269,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_submit(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the user presses Return to confirm input.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("submit", handler)
 
@@ -254,8 +286,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_valid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation passes.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("valid", handler)
 
@@ -266,8 +303,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_invalid(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when validation fails.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("invalid", handler)
 
@@ -278,8 +320,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_validate(self, handler: Callable[[ValidationEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a validation check runs.
 
+        Args:
+            handler: Called with a :class:`~bootstack.events.ValidationEvent`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("validate", handler)
 
@@ -290,8 +337,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_focus(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field gains keyboard focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("focus", handler)
 
@@ -302,8 +354,13 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
     def on_blur(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when the field loses keyboard focus.
 
+        Args:
+            handler: Called with an :class:`~bootstack.events.Event`. Omit to
+                get a composable :class:`~bootstack.streams.Stream` instead.
+
         Returns:
-            Subscription — call `.cancel()` to unsubscribe.
+            A cancellable :class:`~bootstack.events.Subscription` when a
+            handler is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("blur", handler)
 
