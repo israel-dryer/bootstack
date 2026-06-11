@@ -21,6 +21,48 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Select grouping + popup height cap** (PR #122, merged) — the LAST piece of the
+  option-databag orbit. Opt-in **`Select(group_by="field")`** clusters the popup
+  under **bold, verbatim** section headers + separators (none above the top group;
+  leading dividers suppressed during search). **Key design (maintainer-chosen over a
+  reserved `"group"` key):** `group_by` NAMES any field already in the option's flat
+  record (a bag key, or `text`/`value`) — like `Tree(parent_field=)` / pandas
+  `groupby`, reusing data the options carry instead of duplicating it. Nothing is
+  reserved; `normalize_option` is untouched. **Presentational only** —
+  `value`/`.selection`/`.options` unaffected; the field rides in the bag. Clusters by
+  first-appearance order; an option missing the field renders headerless. Also shipped
+  **`max_visible_items=N`** (cap the popup at ~N rows before it scrolls); both have
+  symmetric read/write props. New `cluster_records`/`record_field` in
+  `widgets/_core/options.py`; the search filter was extracted to a testable
+  `_apply_search_filter`. Fixes found along the way: popup auto-scrolled past the first
+  header on open (render-order-aware highlight + a header-reveal scroll) and a negative
+  popup geometry when opened before layout (width clamp). DEFERRED: a `group_by`
+  callable + grouping for SelectButton/RadioGroup/ToggleGroup (Select-only this pass).
+  Tests in `test_select_options.py`; Select guide + example + screenshots updated.
+  Memory `project_select_options_databag`.
+- **Universal `.selection` on the record-native widgets** (PR #120, merged) —
+  extends the option family's polymorphic `.selection` accessor (PRs #114–#118) to
+  **ListView / DataTable / Tree**, which carried records but exposed them under
+  divergent names of divergent kinds (`get_selected()` method / `selected_rows` /
+  `selected_nodes`). **Breaking, clean break (no shim):** those three are GONE;
+  `.selection` is now universal and **polymorphic by `selection_mode`** — single →
+  `dict | None` (Tree: `TreeNode | None`), multi → `list[dict]` (Tree:
+  `list[TreeNode]`), none → `None`. ListView/DataTable return record dicts (the
+  bag, indexed by key); Tree returns node **handles** (bag at `node.data`). Each
+  wrapper stores `self._selection_mode` and collapses the internal's always-list to
+  the singular shape. **Behavior note:** DataTable defaults to
+  `selection_mode='single'`, so `table.selection` is a `dict | None` by default (the
+  old `selected_rows` was always a list). Also closed the symmetric **write-side
+  gap**: new **`ListView.select_items(ids)` / `deselect_items(ids)`** (by record id,
+  single-mode replace / multi-mode add) mirroring `DataTable.select_rows` /
+  `deselect_rows` — ListView previously had only `select_all`/`clear_selection`.
+  Both wrap source mutations in `_silence_source()` and emit ONE `<<SelectionChange>>`
+  (a single-mode replace does `deselect_all()` + `select()` but must not double-fire
+  — regression-tested). Verb+noun naming stays per-widget vocabulary (rows/items/
+  nodes) **by design** — not a divergence to reconcile. Tree needed nothing
+  (`select(node)`/`deselect(node)` is the right node-handle primitive). Tests in
+  `test_listview.py`/`test_datatable.py`/`test_tree.py`; guides updated. Memory
+  `project_option_databag`; brief `docs/_dev/option-databag.md`.
 - **Field value/text/label contract + selection data bag** (PRs #113–#116, all
   merged) — a framework-wide field-widget contract and a shared, extensible option
   shape, built across four PRs:
@@ -145,22 +187,6 @@ memories and git history.
 
 ## Next up — candidates (pick one)
 
-- **Selection `.selection` naming alignment** (follow-on from the option-databag PR
-  #116) — extend the universal `.selection` accessor to the record-native widgets
-  **ListView/DataTable/Tree**, which already carry records but expose them under
-  divergent names: `get_selected()` (ListView, method), `selected_rows` (DataTable),
-  `selected_nodes` (Tree). Add the singular/`selection` form and reconcile the
-  plural names; Tree's `selection` returns node handles (bag at `node.data`).
-  **Breaking** (renames shipped API) — its own PR. Brief: `docs/_dev/option-databag.md`.
-- **Option `icon` + per-item `disabled` behavior** — wire up the two reserved
-  `OptionDict` keys (currently carried but inert): render `icon` beside each option's
-  label, and make a single option non-selectable via `disabled` — across the entry-
-  backed Select popup, the menu-backed SelectButton, and the button-backed groups.
-  Touches the icon renderer. Memory `project_option_databag`.
-- **Select grouping** (optgroup-style) — cluster options under group headers in the
-  Select popup (and maybe the family). Maintainer-requested; **discuss shape before
-  building** (composes with the `Option` shape + data bag). Memory
-  `project_select_grouping`.
 - **Docs site fleshout** — the remaining stub pages: how-to guides (`docs/tasks/*` —
   getting-input/handling-actions/displaying-data/building-forms/dialogs/navigation),
   `getting-started/app-structures`, production `cli`/`debugging`/`distribution`; plus a

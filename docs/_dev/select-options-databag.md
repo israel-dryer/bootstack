@@ -1,10 +1,12 @@
 # Initiative — Decoupled option shape for the selection family ("option data bag")
 
-**Status:** PLANNED (brief only — not started). Proposed 2026-06-09.
-**Branch (when started):** `feat/select-options` off `main`.
-**Sequencing:** after the API-reference typing sweep's Data Display batch (it is a
-behavior feature, not part of the sweep). Lock the *shape + naming* here before
-touching the entry-backed internals.
+**Status:** ✅ SUPERSEDED / SHIPPED. This planning brief was realized across
+PRs #114–#116 (the shared `Option` shape + text↔value decoupling + data bag +
+universal `.selection`) and PR #118 (the reserved `icon`/`disabled` keys + icon-only
+inference). The living record is now `docs/_dev/option-databag.md` and memory
+`project_option_databag`; this file is kept only for the original design rationale.
+**Sequencing (historical):** it followed the API-reference typing sweep's Data
+Display batch.
 
 ---
 
