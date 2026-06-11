@@ -287,6 +287,19 @@ class ToggleGroup(Frame):
     def value(self, value: str | set[str]) -> None:
         self.set(value)
 
+    def text_for(self, value: Any) -> str | None:
+        """Return the display text of the option with the given value, or None.
+
+        The selection variable coerces values to strings, so match on the
+        stringified key when an exact lookup misses.
+        """
+        if value is None or value == "":
+            return None
+        button = self._buttons.get(value)
+        if button is None:
+            button = next((b for k, b in self._buttons.items() if str(k) == str(value)), None)
+        return button.cget('text') if button is not None else None
+
     def remove(self, key: str):
         """Remove a button by its key."""
         if key in self._buttons:

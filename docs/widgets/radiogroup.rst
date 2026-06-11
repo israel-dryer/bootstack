@@ -28,7 +28,9 @@ the display text should differ from the stored value.
 
 .. code-block:: python
 
-   bs.RadioGroup([("Small", "s"), ("Medium", "m"), ("Large", "l")], value="m")
+   size = bs.RadioGroup([("Small", "s"), ("Medium", "m"), ("Large", "l")], value="m")
+   size.value   # -> "m"        (the selected value)
+   size.text    # -> "Medium"   (the selected label)
 
 Orientation
 ~~~~~~~~~~~

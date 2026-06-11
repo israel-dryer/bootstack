@@ -121,6 +121,19 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         self._internal.set(v)
 
     @property
+    def text(self) -> str | set[str] | None:
+        """The label(s) of the selected option(s) — the display complement of `value`.
+
+        In single mode, the selected option's label (or `None` if nothing is
+        selected). In multi mode, a `set` of the selected options' labels.
+        Read-only.
+        """
+        value = self._internal.get()
+        if isinstance(value, set):
+            return {t for v in value if (t := self._internal.text_for(v)) is not None}
+        return self._internal.text_for(value)
+
+    @property
     def disabled(self) -> bool:
         """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"
