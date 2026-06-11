@@ -6,6 +6,7 @@ from typing import Any
 
 from bootstack.events import ChangeEvent
 from bootstack.widgets._core.options import (
+    cluster_records,
     normalize_options,
     option_display,
     option_is_icon_only,
@@ -13,6 +14,8 @@ from bootstack.widgets._core.options import (
 )
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.label import Label
+from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets._impl.composites.scrollview import ScrollView
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -40,6 +43,8 @@ class SelectBox(Field):
             show_dropdown_button: bool = True,
             dropdown_button_icon: str = None,
             enable_search: bool = False,
+            group_by: str = None,
+            max_visible_items: int = None,
             **kwargs: Unpack[FieldOptions]
     ):
         """Args:
@@ -62,6 +67,17 @@ class SelectBox(Field):
             enable_search: If True, allows typing in the entry to filter the popup list.
                 When combined with allow_custom_values=False, the first filtered item is selected
                 when the popup closes. With allow_custom_values=True, any typed value is kept.
+            group_by: Name of an option field to cluster the popup rows under
+                non-selectable group headers (e.g. `'category'`). The field is
+                read from each option's flat record, so it may be any carried bag
+                key (or `'text'`/`'value'`). Groups appear in first-appearance
+                order; options missing the field render headerless. Grouping is
+                presentational only — `value`/`selection` are unaffected. None
+                (default) renders a flat list.
+            max_visible_items: Approximate number of option rows the popup shows
+                before it scrolls (height is `max_visible_items * row_height`).
+                Group headers and separators consume some of that budget, so the
+                count is approximate. None (default) uses the built-in cap.
 
         Other Parameters:
             allow_blank: If True, empty input is allowed.
@@ -92,10 +108,15 @@ class SelectBox(Field):
         super().__init__(master, value=self._resolve_display(value), label=label, message=message, **kwargs)
 
         self._search_enabled = enable_search
+        self._group_by = group_by
+        self._max_visible_items = max_visible_items
         self._popup_open = False
+        self._popup_state = None
         self._dropdown_button_icon = dropdown_button_icon or 'chevron-down'
         self._popup_frame = None
+        self._popup_inner = None
         self._item_labels = []
+        self._group_headers = []
 
         # Add dropdown button if needed
         if allow_custom_values or show_dropdown_button:
@@ -193,16 +214,20 @@ class SelectBox(Field):
             'first_filtered_item': None,
             'entry_focus_handler': None,
             'key_bindings': [],
-            'highlighted_index': self.selected_index if self.selected_index >= 0
-                                  else self._first_enabled_index(),
+            # Set once the rows exist — grouping can reorder them, so the
+            # initial highlight is computed against render order (see below).
+            'highlighted_index': 0,
         }
 
         # Setup close handler
         def close_popup(event=None):
             self._close_popup(toplevel, popup_state)
 
+        self._popup_state = popup_state
+
         # Create popup content frame with items
         self._popup_frame = self._create_popup_frame(toplevel, popup_state)
+        popup_state['highlighted_index'] = self._initial_highlight_index()
 
         # Shrink popup to fit content (still withdrawn — resize is invisible)
         self._fit_popup_height(toplevel)
@@ -239,7 +264,9 @@ class SelectBox(Field):
         gap_above = 4 if self._search_enabled else 1
         entry_top = self.entry_widget.winfo_rooty()
         entry_bottom = entry_top + self.entry_widget.winfo_height()
-        width = self.winfo_width() - (2 if self._search_enabled else 6)
+        # Clamp to a sane minimum so opening the popup before the field has been
+        # laid out (winfo_width() == 1) can't produce a negative geometry.
+        width = max(self.winfo_width() - (2 if self._search_enabled else 6), 1)
         screen_h = self.winfo_screenheight()
         if entry_bottom + gap_below + height > screen_h and entry_top - gap_above - height >= 0:
             y = entry_top - gap_above - height
@@ -247,9 +274,21 @@ class SelectBox(Field):
             y = entry_bottom + gap_below
         return x, y, width
 
+    def _popup_max_height(self, item_h: int = None) -> int:
+        """Maximum popup height in px before it scrolls.
+
+        `max_visible_items` (when set) caps the popup at roughly that many option
+        rows — `n * row_height` plus a little chrome overhead. Before any row
+        exists a nominal row height is assumed; `_fit_popup_height` recomputes
+        with the measured height. Falls back to the built-in `_POPUP_MAX_HEIGHT`.
+        """
+        if self._max_visible_items:
+            return self._max_visible_items * (item_h or 30) + 8
+        return self._POPUP_MAX_HEIGHT
+
     def _create_popup_toplevel(self):
         """Create the popup toplevel window (withdrawn, provisional max-height size)."""
-        max_h = self._POPUP_MAX_HEIGHT
+        max_h = self._popup_max_height()
         x, y, width = self._compute_popup_position(max_h)
 
         # The base_window.py warning about overrideredirect on Aqua applies
@@ -267,7 +306,7 @@ class SelectBox(Field):
         return toplevel
 
     def _fit_popup_height(self, toplevel):
-        """Shrink the popup to fit its content, up to _POPUP_MAX_HEIGHT.
+        """Shrink the popup to fit its content, up to the max popup height.
 
         Called after the popup frame is built but before deiconify, so the
         window is still withdrawn and the resize is invisible.
@@ -275,12 +314,19 @@ class SelectBox(Field):
         toplevel.update_idletasks()
 
         item_h = self._item_labels[0].winfo_reqheight() if self._item_labels else 32
-        n = len(self._item_labels)
+        # Measure the packed content directly so group headers (which are not in
+        # _item_labels) are included; fall back to a per-row estimate.
+        if self._popup_inner is not None and self._popup_inner.winfo_exists():
+            self._popup_inner.update_idletasks()
+            content_h = self._popup_inner.winfo_reqheight() + 8
+        else:
+            content_h = len(self._item_labels) * item_h + 8
         # 8px overhead: outer_frame border (2px each side) + padding (3px each side)
-        content_h = n * item_h + 8
-        actual_h = max(min(content_h, self._POPUP_MAX_HEIGHT), item_h)
+        cap = self._popup_max_height(item_h)
+        actual_h = max(min(content_h, cap), item_h)
 
         x, y, width = self._compute_popup_position(actual_h)
+        toplevel.maxsize(width * 2, max(cap, actual_h))
         toplevel.geometry(f"{width}x{actual_h}+{x}+{y}")
 
     def _create_popup_frame(self, toplevel, popup_state):
@@ -301,6 +347,7 @@ class SelectBox(Field):
         # Create inner frame for items
         inner_frame = Frame(scrollview)
         scrollview.add(inner_frame)
+        self._popup_inner = inner_frame
 
         # Make inner frame fill the canvas width
         def on_canvas_configure(event):
@@ -317,47 +364,135 @@ class SelectBox(Field):
         inner_frame.bind('<Configure>', on_inner_frame_configure, add='+')
 
         self._item_labels = []
+        self._group_headers = []
+        self._popup_rows = []
         current_text = self.entry_widget.get()
 
         # Get accent from Field's _accent attribute, fallback to primary if None
         accent = getattr(self, '_accent', None) or 'primary'
 
-        for i, rec in enumerate(self._records):
-            icon, disabled = option_display(rec)
-            btn_kwargs = {}
-            if icon is not None:
-                btn_kwargs['icon'] = icon
-                if option_is_icon_only(rec):
-                    btn_kwargs['icon_only'] = True
-            btn = Button(
-                inner_frame,
-                text=rec.text,
-                accent=accent,
-                variant='selectbox_item',
-                takefocus=False,
-                command=lambda v=rec.value: self._on_item_click(v, toplevel, popup_state),
-                **btn_kwargs,
-            )
-            btn.pack(fill='x')
+        def pack_row(row, **kw):
+            # Pack a popup row and remember its pack options, so search re-packs
+            # (which forget then re-pack) preserve per-row spacing.
+            kw.setdefault('fill', 'x')
+            row._pack_kw = kw
+            row.pack(**kw)
+            self._popup_rows.append(row)
 
-            # Store the option's value (for selection) and text (for filtering).
-            btn._item_value = rec.value
-            btn._item_text = rec.text
-            btn._item_index = i
-            btn._item_disabled = disabled
+        # Cluster rows by the grouping field (a no-op single bucket when
+        # group_by is None). A named group gets a bold header, preceded by a
+        # separator except at the very top. Option buttons keep their
+        # render-order slot in _item_labels so the existing nav/search/highlight
+        # indexing is unchanged. Headers and separators are non-selectable.
+        i = 0
+        for group_label, recs in cluster_records(self._records, self._group_by):
+            header_widgets = []
+            if group_label is not None:
+                if self._popup_rows:  # not the first row — divide from above
+                    sep = Separator(inner_frame, orient='horizontal')
+                    sep._is_separator = True
+                    pack_row(sep, pady=(5, 2))
+                    header_widgets.append(sep)
+                header = self._create_group_header(inner_frame, group_label)
+                pack_row(header)
+                header_widgets.append(header)
+            group_buttons = []
 
-            # A disabled option is dimmed and cannot be chosen — clicking it
-            # does nothing (ttk blocks the command) and it is skipped by the
-            # keyboard navigation and search auto-select below.
-            if disabled:
-                btn.state(['disabled'])
-            # Apply selected state if this row matches the displayed text
-            if rec.text == current_text:
-                btn.state(['selected'])
+            for rec in recs:
+                icon, disabled = option_display(rec)
+                btn_kwargs = {}
+                if icon is not None:
+                    btn_kwargs['icon'] = icon
+                    if option_is_icon_only(rec):
+                        btn_kwargs['icon_only'] = True
+                btn = Button(
+                    inner_frame,
+                    text=rec.text,
+                    accent=accent,
+                    variant='selectbox_item',
+                    takefocus=False,
+                    command=lambda v=rec.value: self._on_item_click(v, toplevel, popup_state),
+                    **btn_kwargs,
+                )
+                pack_row(btn)
 
-            self._item_labels.append(btn)
+                # Store the option's value (for selection) and text (for filtering).
+                btn._item_value = rec.value
+                btn._item_text = rec.text
+                btn._item_index = i
+                btn._item_disabled = disabled
+                # When highlighted, scroll to reveal the group's header/separator
+                # above the button (not just the button) so the section heading
+                # stays on screen.
+                btn._reveal_top = header_widgets[0] if header_widgets else btn
+                i += 1
+
+                # A disabled option is dimmed and cannot be chosen — clicking it
+                # does nothing (ttk blocks the command) and it is skipped by the
+                # keyboard navigation and search auto-select below.
+                if disabled:
+                    btn.state(['disabled'])
+                # Apply selected state if this row matches the displayed text
+                if rec.text == current_text:
+                    btn.state(['selected'])
+
+                self._item_labels.append(btn)
+                group_buttons.append(btn)
+
+            if header_widgets:
+                self._group_headers.append((header_widgets, group_buttons))
 
         return scrollview
+
+    def _repack_popup_rows(self, is_visible):
+        """Re-pack popup rows in canonical render order, hiding filtered ones.
+
+        Forgets every row then re-packs the visible ones in their original
+        order, so a row that reappears after being filtered out lands back in
+        its correct slot (rather than at the end, which a bare `pack()` of a
+        previously-forgotten widget would do). The forget/pack pass is coalesced
+        at idle, so there is no visible flicker.
+
+        Args:
+            is_visible: Predicate called with each row widget; truthy keeps it.
+        """
+        for row in self._popup_rows:
+            row.pack_forget()
+        seen_content = False
+        for row in self._popup_rows:
+            if not is_visible(row):
+                continue
+            is_sep = getattr(row, '_is_separator', False)
+            if is_sep and not seen_content:
+                continue  # a divider with nothing visible above it — drop it
+            row.pack(**getattr(row, '_pack_kw', {'fill': 'x'}))
+            seen_content = seen_content or not is_sep
+
+    def _create_group_header(self, parent, text):
+        """Create a non-selectable group-header label for the popup.
+
+        Rendered in the option rows' font, bold, and verbatim — the group value
+        is never transformed, so `selection`/`group_by` keep the original text.
+        """
+        return Label(parent, text=str(text), font='body[bold]', anchor='w', padding=(8, 4, 4, 3))
+
+    def _initial_highlight_index(self) -> int:
+        """Render-order index of the row to highlight when the popup opens.
+
+        The currently-selected option when it is present and enabled, otherwise
+        the first enabled option. Computed against `_item_labels` (render order)
+        so it stays correct when grouping reorders rows.
+        """
+        selected = self.value
+        first_enabled = None
+        for idx, btn in enumerate(self._item_labels):
+            if getattr(btn, '_item_disabled', False):
+                continue
+            if first_enabled is None:
+                first_enabled = idx
+            if btn._item_value == selected:
+                return idx
+        return first_enabled if first_enabled is not None else 0
 
     def _on_item_click(self, value, toplevel, popup_state):
         """Handle click on item."""
@@ -421,8 +556,13 @@ class SelectBox(Field):
             scroll_top = self._popup_frame.canvas.canvasy(0)
             scroll_bottom = scroll_top + canvas_height
 
-            if btn_y < scroll_top:
-                self._popup_frame.canvas.yview_moveto(btn_y / self._popup_frame.canvas.bbox('all')[3])
+            # When scrolling up, reveal the group's header/separator above the
+            # button (not just the button) so the section heading stays visible.
+            reveal = getattr(btn, '_reveal_top', None) or btn
+            reveal_y = reveal.winfo_y()
+
+            if reveal_y < scroll_top:
+                self._popup_frame.canvas.yview_moveto(reveal_y / self._popup_frame.canvas.bbox('all')[3])
             elif btn_y + btn_height > scroll_bottom:
                 target = (btn_y + btn_height - canvas_height) / self._popup_frame.canvas.bbox('all')[3]
                 self._popup_frame.canvas.yview_moveto(target)
@@ -470,6 +610,57 @@ class SelectBox(Field):
 
         # Initial highlight state is applied after deiconify (see _show_selection_options)
 
+    def _apply_search_filter(self, popup_state):
+        """Filter the popup rows to those matching the entry text.
+
+        Shows option buttons whose display text contains the (case-insensitive)
+        search text; a group's header and separator show only while the group
+        has a visible option. The first enabled match drives the auto-select
+        target and the reset highlight. A no-op when the text is unchanged or the
+        popup is gone.
+        """
+        if popup_state['popup_closed'] or not self._popup_frame or not self._popup_frame.winfo_exists():
+            return
+
+        search_text = self.entry_widget.get().lower()
+
+        # Skip if search text hasn't changed (e.g., arrow key release)
+        if search_text == popup_state['last_search_text']:
+            return
+        popup_state['last_search_text'] = search_text
+
+        # Decide which option buttons match — on the visible TEXT. The first
+        # ENABLED match drives auto-select + the reset highlight.
+        match = {}
+        first_visible = None
+        for btn in self._item_labels:
+            ok = search_text in btn._item_text.lower()
+            match[btn] = ok
+            if ok and first_visible is None and not getattr(btn, '_item_disabled', False):
+                first_visible = btn
+
+        # A group's header + separator show only while it has a visible option.
+        header_visible = {}
+        for header_widgets, group_buttons in self._group_headers:
+            vis = any(match.get(b, False) for b in group_buttons)
+            for w in header_widgets:
+                header_visible[w] = vis
+        self._repack_popup_rows(
+            lambda row: match.get(row, header_visible.get(row, True))
+        )
+
+        # Track first filtered item for auto-select (value-space)
+        popup_state['first_filtered_item'] = first_visible._item_value if first_visible else None
+
+        # Reset highlight to the first enabled visible item
+        visible_buttons = [b for b in self._item_labels if b.winfo_manager()]
+        target = next(
+            (i for i, b in enumerate(visible_buttons)
+             if not getattr(b, '_item_disabled', False)),
+            0,
+        )
+        self._update_highlight(popup_state, target)
+
     def _setup_search_bindings(self, toplevel, popup_state, close_popup):
         """Setup search-specific event bindings."""
         # Initialize first filtered item (stored in value-space); skip disabled
@@ -479,43 +670,10 @@ class SelectBox(Field):
             popup_state['first_filtered_item'] = enabled[0].value
         popup_state['last_search_text'] = self.entry_widget.get().lower()
 
-        # Filter function
-        def filter_items(*args):
-            if popup_state['popup_closed'] or not self._popup_frame or not self._popup_frame.winfo_exists():
-                return
-
-            search_text = self.entry_widget.get().lower()
-
-            # Skip if search text hasn't changed (e.g., arrow key release)
-            if search_text == popup_state['last_search_text']:
-                return
-            popup_state['last_search_text'] = search_text
-
-            # Show/hide buttons based on filter — match on the visible TEXT.
-            # The first ENABLED match drives auto-select + the reset highlight.
-            first_visible = None
-            for btn in self._item_labels:
-                if search_text in btn._item_text.lower():
-                    btn.pack(fill='x')
-                    if first_visible is None and not getattr(btn, '_item_disabled', False):
-                        first_visible = btn
-                else:
-                    btn.pack_forget()
-
-            # Track first filtered item for auto-select (value-space)
-            popup_state['first_filtered_item'] = first_visible._item_value if first_visible else None
-
-            # Reset highlight to the first enabled visible item
-            visible_buttons = [b for b in self._item_labels if b.winfo_manager()]
-            target = next(
-                (i for i, b in enumerate(visible_buttons)
-                 if not getattr(b, '_item_disabled', False)),
-                0,
-            )
-            self._update_highlight(popup_state, target)
-
-        # Bind KeyRelease for filtering
-        keyrelease_binding = self.entry_widget.bind('<KeyRelease>', lambda e: filter_items(), add='+')
+        # Bind KeyRelease for filtering (delegates to the testable method)
+        keyrelease_binding = self.entry_widget.bind(
+            '<KeyRelease>', lambda e: self._apply_search_filter(popup_state), add='+'
+        )
         popup_state['key_bindings'].append(('<KeyRelease>', keyrelease_binding))
 
         # Bind Tab to select highlighted item
@@ -586,7 +744,11 @@ class SelectBox(Field):
 
         # Clean up popup references
         self._popup_frame = None
+        self._popup_inner = None
         self._item_labels = []
+        self._group_headers = []
+        self._popup_rows = []
+        self._popup_state = None
 
         # Handle value selection for search mode without custom values
         if self._search_enabled and not self._allow_custom_values:
@@ -642,6 +804,32 @@ class SelectBox(Field):
                 self.entry_widget.state(['!readonly'])
             else:
                 self.readonly(True)
+        return None
+
+    @configure_delegate('group_by')
+    def _delegate_group_by(self, value=None):
+        """Get or set the option field the popup clusters rows under.
+
+        The change takes effect the next time the popup opens (it is rebuilt on
+        each open). Following the configure-delegate convention, `None` reads the
+        current field; disable grouping at runtime by setting it to `''`.
+        """
+        if value is None:
+            return self._group_by
+        self._group_by = value or None
+        return None
+
+    @configure_delegate('max_visible_items')
+    def _delegate_max_visible_items(self, value=None):
+        """Get or set the approximate visible-row cap before the popup scrolls.
+
+        The change takes effect the next time the popup opens. Following the
+        configure-delegate convention, `None` reads the current value; set it to
+        `0` to restore the built-in default cap.
+        """
+        if value is None:
+            return self._max_visible_items
+        self._max_visible_items = value or None
         return None
 
     @configure_delegate('value')

@@ -47,6 +47,25 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
         fill="x",
     )
 
+    # Grouping — cluster the popup under headers by an option field
+    bs.Label("Grouping", font="heading-sm")
+    bs.Select(
+        options=[
+            {"text": "Apple",    "value": "apple",    "category": "Fruit"},
+            {"text": "Banana",   "value": "banana",   "category": "Fruit"},
+            {"text": "Carrot",   "value": "carrot",   "category": "Vegetable"},
+            {"text": "Broccoli", "value": "broccoli", "category": "Vegetable"},
+            {"text": "Basil",    "value": "basil",    "category": "Herb"},
+        ],
+        group_by="category",
+        label="Ingredient",
+        fill="x",
+    )
+
+    # Capped popup height — long list scrolls after ~6 rows
+    bs.Label("Limited Popup Height", font="heading-sm")
+    bs.Select(COUNTRIES, label="Country (max 6 visible)", max_visible_items=6, fill="x")
+
     # States
     bs.Label("States", font="heading-sm")
     with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):

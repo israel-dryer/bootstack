@@ -98,6 +98,64 @@ def record_to_dict(record: OptionRecord) -> dict:
     return {"text": record.text, "value": record.value, **record.extras}
 
 
+def record_field(record: OptionRecord, field: str) -> Any:
+    """Read one field from a record by name, spanning `text`/`value`/extras.
+
+    The record is treated as the flat `{'text', 'value', ...extras}` bag, so a
+    grouping or display selector can name any carried key (including `text` or
+    `value`).
+
+    Args:
+        record: The normalized option record.
+        field: The key to read.
+
+    Returns:
+        The field's value, or `None` when the record does not carry it.
+    """
+    if field == "text":
+        return record.text
+    if field == "value":
+        return record.value
+    return record.extras.get(field)
+
+
+def cluster_records(
+    records: list[OptionRecord], group_by: str | None
+) -> list[tuple[str | None, list[OptionRecord]]]:
+    """Cluster records into groups by a named bag field, for presentation.
+
+    Buckets appear in **first-appearance** order — the order each distinct group
+    value is first seen while walking `records`. Within a bucket the source
+    order is preserved. A record whose `group_by` field is absent, `None`, or
+    blank falls into the ungrouped bucket (keyed `None`), which renders without a
+    header; that bucket too keeps its first-appearance position.
+
+    Grouping is purely presentational: every record is returned exactly once and
+    unchanged, so `value`/`selection`/`options` are unaffected.
+
+    Args:
+        records: The normalized option records, in source order.
+        group_by: The field name to cluster by, or `None` to skip grouping (the
+            whole list is returned as a single ungrouped bucket).
+
+    Returns:
+        An ordered list of `(group_label, records)` pairs. `group_label` is the
+        group's value coerced to a string, or `None` for the ungrouped bucket.
+    """
+    if not group_by:
+        return [(None, list(records))]
+    order: list[str | None] = []
+    buckets: dict[str | None, list[OptionRecord]] = {}
+    for rec in records:
+        raw = record_field(rec, group_by)
+        label = None if raw is None or str(raw) == "" else str(raw)
+        if label not in buckets:
+            buckets[label] = []
+            order.append(label)
+        buckets[label].append(rec)
+    return [(label, buckets[label]) for label in order]
+
+
 def option_display(record: OptionRecord) -> tuple[Any, bool]:
     """Return the `(icon, disabled)` rendering hints from a record's extras.
 
