@@ -140,9 +140,26 @@ class WindowMenu:
             self._renderer.rebuild()
 
     def _rebuild_native(self) -> None:
-        # macOS native global menu bar — implemented in a later step. Until
-        # then, fall back to the themed strip so macOS isn't broken.
-        self._rebuild_themed()
+        from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
+
+        root = self._host_root()
+        if root is None:
+            return
+
+        # Empty model — detach any existing menubar and stop.
+        if len(self._model) == 0:
+            if self._renderer is not None:
+                try:
+                    self._renderer.destroy()
+                except Exception:
+                    pass
+                self._renderer = None
+            return
+
+        if self._renderer is None:
+            self._renderer = NativeMenuBar(root, self._model)
+        else:
+            self._renderer.rebuild()
 
 
 class MenuHostMixin:

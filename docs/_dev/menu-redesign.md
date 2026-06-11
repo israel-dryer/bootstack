@@ -200,6 +200,15 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
     `menu_layout='fused'|'stacked'` kwarg + the shared-row rendering land once a command-bar
     façade exists on App/Window (converges with the HELD Toolbar rework). AppShell `.menu`
     wiring also pending (Step 4c).
+- **Menu font: compact by default** (`style(menu)` commit) — native menu bars use a smaller
+  font; `ThemedMenuBar` defaults to `density="compact"`.
+- **Step 3 — Renderer B (macOS native): DONE & green (structure).** `menu/render_native.py`
+  (`NativeMenuBar`): flat `tk.Menu` cascades → `root['menu']`; **no icons** (text-only per
+  decision); label translation via `MessageCatalog`; accelerator = `shortcut_display`;
+  check/radio Tk vars held to avoid GC; `destroy()` detaches. Facade `_rebuild_native` now
+  uses it (dispatched on `windowingsystem == 'aqua'`). Tests `test_menu_render_native.py`
+  (5) — `tk.Menu` is cross-platform so cascade STRUCTURE is verified on Windows; the native
+  global-bar APPEARANCE is verified by hand on macOS (clone the branch, run the demo).
 
 ## Open questions / to confirm during build
 
