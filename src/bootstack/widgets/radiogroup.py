@@ -111,6 +111,14 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         self._internal.value = v
 
     @property
+    def text(self) -> str | None:
+        """The label of the selected option, or `None` if nothing is selected.
+
+        Read-only; the display complement of `value` (the selection's value).
+        """
+        return self._internal.text_for(self._internal.value)
+
+    @property
     def disabled(self) -> bool:
         """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"

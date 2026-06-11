@@ -106,6 +106,37 @@ def test_togglegroup_accepts_all_forms(app, options, set_value, expected):
 
 
 # --------------------------------------------------------------------------
+# Group .text (selected label) — value/text duality for the group widgets
+# --------------------------------------------------------------------------
+
+def test_radiogroup_text_is_selected_label(app):
+    rg = bs.RadioGroup(options=[("Small", "s"), ("Medium", "m")], value="m")
+    assert rg.value == "m" and rg.text == "Medium"
+    rg.value = "s"
+    assert rg.text == "Small"
+
+
+def test_radiogroup_text_none_when_empty(app):
+    rg = bs.RadioGroup(options=[("A", "a")])
+    assert rg.text is None
+
+
+def test_togglegroup_single_text_is_label(app):
+    tg = bs.ToggleGroup(options=[("Grid", "grid"), ("List", "list")], value="grid")
+    assert tg.value == "grid" and tg.text == "Grid"
+
+
+def test_togglegroup_multi_text_is_label_set(app):
+    tg = bs.ToggleGroup(
+        options=[("Grid", "grid"), ("List", "list"), ("Card", "card")],
+        mode="multi",
+        value={"grid", "card"},
+    )
+    assert tg.value == {"grid", "card"}
+    assert tg.text == {"Grid", "Card"}
+
+
+# --------------------------------------------------------------------------
 # Text / value divergence
 # --------------------------------------------------------------------------
 

@@ -34,6 +34,23 @@ initial selection as a ``set``.
    bs.ToggleGroup(["Bold", "Italic", "Underline"],
                   mode="multi", value={"Bold", "Underline"})
 
+Decoupled labels and the selected text
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Options accept ``(text, value)`` tuples or ``{"text": ..., "value": ...}`` dicts,
+so a label can differ from its value. ``value`` is value-space; ``text`` mirrors
+it as the selected label(s).
+
+.. code-block:: python
+
+   view = bs.ToggleGroup([("Grid view", "grid"), ("List view", "list")], value="grid")
+   view.value   # -> "grid"        (single mode: the value)
+   view.text    # -> "Grid view"   (single mode: the label)
+
+   tools = bs.ToggleGroup([("Bold", "b"), ("Italic", "i")], mode="multi", value={"b"})
+   tools.value  # -> {"b"}          (multi mode: a set of values)
+   tools.text   # -> {"Bold"}       (multi mode: a set of labels)
+
 .. image:: /_static/examples/togglegroup-multi-light.png
    :class: bs-screenshot-light
    :alt: ToggleGroup multi-select — light theme
