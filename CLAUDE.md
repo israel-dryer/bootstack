@@ -21,6 +21,26 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Widget detach/attach** (PR #123, merged) — public **`detach()` / `attach()` /
+  `is_attached`** on every widget: pull a placed widget out of its layout and put it
+  back **without destroying it**, across all three geometry managers (pack/grid/place).
+  Revives the deferred `<Map>`/`<Unmap>` lifecycle as **`on_attach` / `on_detach`** (now
+  earned by a real control pair; they propagate through ancestors). `guide_layout` records
+  a **`Placement(method, master, options, index)`** snapshot on each child
+  (`widgets/_core/container.py`); `is_attached` is backed by `winfo_manager()` (no flag).
+  **pack ordering:** `detach()` snapshots the index among currently-attached siblings,
+  `attach()` translates via new `resolve_pack_order` → `before=slaves[index]`; new public
+  **`index=`** pack knob (works at construction too), `before=`/`after=` accept public refs.
+  **grid gotcha:** uses `grid_forget` + full reconstruct from stored options — `grid_remove`'s
+  "remembered" state rejects an explicit re-grid. Also shipped **`attached=False`** ctor arg
+  (build a widget hidden in place — records placement, skips mapping, no flicker; a later
+  `attach()` lands it in its declared slot). **Docs:** new "Detaching and reattaching" section
+  in `reference/events.rst`; the inert placement API is **hidden on the top-level window
+  classes** (App/AppShell/Window are `_auto_place=False`, never placed → detach no-ops,
+  attach raises) via a shared `_templates/autosummary/toplevel.rst` excluding the 5 members.
+  Tests `test_attach_detach.py` (20 cases; ONE module-scoped App — multi-App-per-process
+  crashes). Memories `project_widget_attach_detach`; backlog `project_inherited_base_api_docs`
+  (every widget page repeats the inherited base surface — consolidate onto one shared page).
 - **Select grouping + popup height cap** (PR #122, merged) — the LAST piece of the
   option-databag orbit. Opt-in **`Select(group_by="field")`** clusters the popup
   under **bold, verbatim** section headers + separators (none above the top group;
@@ -193,10 +213,6 @@ memories and git history.
   review of `installation`/`quickstart`. A SEPARATE initiative from the api-gap branch
   (`cli`/`distribution` need investigation, not just writing). State + suggested order in
   memory `project_docs_site_fleshout`.
-- **Widget attach/detach** — public `detach()`/`attach()` + `on_attach`/`on_detach`
-  events (the deferred `<Map>`/`<Unmap>` lifecycle). Foundational: the layout path must
-  STORE each widget's placement; pack position via a public `index=` → Tk `before`/`after`.
-  Memory `project_widget_attach_detach`.
 - **Toolbar/MenuBar rework** — return public widget handles from `add_*` (the §2b work,
   via an `_adopt` classmethod) + `Toolbar.content`/make-it-a-container + window-control
   accessors + MenuBar return handles + AppShell `toolbar`/`nav`/`pages` public façades.
