@@ -235,6 +235,15 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   fix. Tests `test_native_contextmenu.py` (5, structural on Windows). **Mac re-verify:
   menu-bar accelerators show the key; context menus are clean text-only.**
 
+- **Step 4c — AppShell `.menu`: DONE & green.** `MenuHostMixin` now asks the host for
+  placement via three hooks (`_menu_root` / `_menu_pack_parent` / `_menu_pack_before`);
+  defaults suit App/Window. AppShell overrides them: native menubar attaches to its
+  `_internal` (itself a Tk root), and the themed strip mounts into the internal
+  `_content_root` **above the toolbar** (`before=self._internal._toolbar`, else the body).
+  Internal AppShell stores `_content_root` + `_body_frame` as anchors. Tests
+  `test_menu_appshell.py` (3). All three window types (App/Window/AppShell) now expose
+  `.menu`.
+
 ## Open questions / to confirm during build
 
 - Fate of the region-bar `MenuBar` composite (defer to HELD Toolbar rework, but the

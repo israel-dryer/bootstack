@@ -71,14 +71,20 @@ class WindowMenu:
 
     # ----- rendering -----
 
-    def _host_root(self) -> Any:
-        return getattr(self._host, "_internal", None)
+    def _menu_root(self) -> Any:
+        """The Tk root/toplevel for the native menubar + shortcut binding."""
+        return self._host._menu_root()
 
-    def _host_content(self) -> Any:
-        return getattr(self._host, "_content_frame", None)
+    def _menu_pack_parent(self) -> Any:
+        """The widget the themed strip packs into."""
+        return self._host._menu_pack_parent()
+
+    def _menu_pack_before(self) -> Any:
+        """The sibling the themed strip packs above (`before=`), or None."""
+        return self._host._menu_pack_before()
 
     def _is_aqua(self) -> bool:
-        root = self._host_root()
+        root = self._menu_root()
         try:
             return root.tk.call("tk", "windowingsystem") == "aqua"
         except Exception:
@@ -86,7 +92,7 @@ class WindowMenu:
 
     def _schedule_rebuild(self) -> None:
         """Coalesce re-renders onto the idle queue (a single rebuild per turn)."""
-        root = self._host_root()
+        root = self._menu_root()
         if root is None:
             self._rebuild()
             return
@@ -108,15 +114,15 @@ class WindowMenu:
         else:
             self._rebuild_themed()
         # Bind the model's pattern shortcuts to this window so keypresses fire.
-        root = self._host_root()
+        root = self._menu_root()
         if root is not None:
             self._model.bind_shortcuts(root)
 
     def _rebuild_themed(self) -> None:
         from bootstack.widgets._impl.composites.menu.render_themed import ThemedMenuBar
 
-        root = self._host_root()
-        if root is None:
+        parent = self._menu_pack_parent()
+        if parent is None:
             return
 
         # Empty model — tear down any existing strip and stop.
@@ -130,11 +136,11 @@ class WindowMenu:
             return
 
         if self._renderer is None:
-            self._renderer = ThemedMenuBar(root, self._model)
-            content = self._host_content()
+            self._renderer = ThemedMenuBar(parent, self._model)
+            before = self._menu_pack_before()
             pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-            if content is not None:
-                pack_kw["before"] = content
+            if before is not None:
+                pack_kw["before"] = before
             self._renderer.pack(**pack_kw)
         else:
             self._renderer.rebuild()
@@ -142,7 +148,7 @@ class WindowMenu:
     def _rebuild_native(self) -> None:
         from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
 
-        root = self._host_root()
+        root = self._menu_root()
         if root is None:
             return
 
@@ -166,9 +172,22 @@ class MenuHostMixin:
     """Adds a lazy `.menu` property returning a `WindowMenu`.
 
     Mixed into the top-level window classes (`App`, `Window`, `AppShell`). The
-    host must expose `_internal` (its Tk toplevel) and, for the themed strip,
-    `_content_frame` (the strip packs above it).
+    facade asks the host where to put the menu via three hooks; the defaults
+    suit `App`/`Window` (whose `_internal` is the Tk root and `_content_frame`
+    is the content area). `AppShell` overrides them to pack above its toolbar.
     """
+
+    def _menu_root(self) -> Any:
+        """Tk root/toplevel for the native menubar (`['menu']`) + shortcuts."""
+        return getattr(self, "_internal", None)
+
+    def _menu_pack_parent(self) -> Any:
+        """Widget the themed strip packs into."""
+        return getattr(self, "_internal", None)
+
+    def _menu_pack_before(self) -> Any:
+        """Sibling the themed strip packs above (`before=`), or None."""
+        return getattr(self, "_content_frame", None)
 
     @property
     def menu(self) -> WindowMenu:
