@@ -12,6 +12,7 @@ from typing_extensions import Unpack
 
 from bootstack.events import ChangeEvent
 from bootstack.widgets._impl.primitives.button import Button
+from bootstack.widgets._impl.composites._dateutils import coerce_date
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets.types import Master
@@ -230,26 +231,7 @@ class DateEntry(Field):
         end_str = fmt.format(end, self._value_format)
         return f"{start_str} – {end_str}"
 
-    @staticmethod
-    def _coerce_date(value) -> date | None:
-        """Coerce a date/datetime/ISO-string to a date, or return None."""
-        if value is None:
-            return None
-        if isinstance(value, datetime):
-            return value.date()
-        if isinstance(value, date):
-            return value
-        if isinstance(value, str):
-            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
-                try:
-                    return datetime.strptime(value, fmt).date()
-                except Exception:
-                    continue
-            try:
-                return datetime.fromisoformat(value).date()
-            except Exception:
-                return None
-        return None
+    _coerce_date = staticmethod(coerce_date)
 
     def set_min_date(self, value: date | datetime | str | None) -> None:
         """Set the earliest selectable date for the picker. None clears the bound."""

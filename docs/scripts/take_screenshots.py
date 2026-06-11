@@ -76,13 +76,20 @@ def _patch(cls):
                 win.update_idletasks()
                 import ctypes
                 from ctypes import wintypes
-                hwnd = ctypes.windll.user32.GetParent(win.winfo_id()) or win.winfo_id()
+                user32 = ctypes.windll.user32
+                # Declare HWND-returning/taking signatures so 64-bit handles are
+                # not silently truncated to a 32-bit c_int (the ctypes default).
+                user32.GetParent.argtypes = [wintypes.HWND]
+                user32.GetParent.restype = wintypes.HWND
+                user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]
+                user32.GetWindowRect.restype = wintypes.BOOL
+                hwnd = user32.GetParent(win.winfo_id()) or win.winfo_id()
                 rect = wintypes.RECT()
                 ok = ctypes.windll.dwmapi.DwmGetWindowAttribute(
                     wintypes.HWND(hwnd), ctypes.c_uint(9),  # DWMWA_EXTENDED_FRAME_BOUNDS
                     ctypes.byref(rect), ctypes.sizeof(rect))
                 if ok != 0:  # fall back to the full window rect (incl. shadow margin)
-                    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                    user32.GetWindowRect(hwnd, ctypes.byref(rect))
                 x, y = rect.left, rect.top
                 w, h = rect.right - rect.left, rect.bottom - rect.top
                 inset = 2  # cut just inside the native window border; the docs

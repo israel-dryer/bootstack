@@ -36,26 +36,27 @@ bugs (commit `55e2d12b`): non-string group option keys, the `configure_item`
 "independent of group disabled" overclaim, and DateField `disabled_dates`
 generator exhaustion (added coercing `set_*` mutators to the internal DateEntry).
 Two findings were refuted (NumberField `clear()` is path-safe; the two
-`_coerce_date` copies are identical, not divergent). The rest are cleanup/altitude,
-**deferred** (none block the branch):
+`_coerce_date` copies are identical, not divergent). The rest were cleanup/altitude;
+all six are now **resolved** on `feat/code-review-followups`:
 
-- **#4** `SelectButton.options` setter rebuilds the dropdown but does not reconcile
-  the current `value` — the button can show a value no longer in the list.
-- **#5** `docs/scripts/take_screenshots.py`: `GetParent`/`GetWindowRect` are called
-  with no ctypes `argtypes`/`restype` — Win64 HWND-truncation risk (works only
-  because handles are small). Wrap the HWND like the adjacent DWM call does.
-- **#6** RadioGroup/ToggleGroup duplicate `configure_item`/`remove`/`__len__`/
-  `__contains__` verbatim → lift onto a shared selection-group base (folds into
-  `project_select_options_databag`).
-- **#7** `WindowControlsMixin` re-declares `close`/`show`/`add_close_handler`/
-  `remove_close_handler` that `Window` overrides, and `mixin.close()` calls
-  `self._internal.close()` which the `Toplevel` lacks — scope the mixin to
-  App/AppShell, or give the internals a uniform close contract.
-- **#9** Duplicate `_coerce_date` in `calendar.py` and `dateentry.py` (identical) →
-  extract one shared date-utils helper.
-- **#10** Calendar `set_min_date`/`set_max_date`/`set_disabled_dates` each call
-  `_refresh_calendar()` → a batch of constraint changes redraws ~42 cells N times;
-  coalesce to one redraw.
+- **#4 ✅** `SelectButton.options` setter now reconciles the current `value` — if it
+  is no longer one of the new options it is cleared, so the button never shows a
+  value the list can't offer. (`optionmenu.py` `_delegate_options`.)
+- **#5 ✅** `docs/scripts/take_screenshots.py`: `GetParent`/`GetWindowRect` now declare
+  HWND `argtypes`/`restype`, fixing the Win64 handle-truncation risk.
+- **#6 ✅** RadioGroup/ToggleGroup `configure_item`/`remove`/`__len__`/`__contains__`
+  lifted onto a shared `SelectionGroupMixin` (`widgets/_core/selection_group.py`).
+  The wider `project_select_options_databag` work can build on this mixin.
+- **#7 ✅** Gave the internals a uniform close contract: `BaseWindow.close()` performs
+  a programmatic, handler-bypassing close (`_do_close()`); `App` still overrides it to
+  quit the event loop. `Window` dropped its redundant `close`/`add_close_handler`/
+  `remove_close_handler` overrides — they now come from `WindowControlsMixin`.
+- **#9 ✅** Extracted one shared `coerce_date` helper
+  (`widgets/_impl/composites/_dateutils.py`); `calendar.py` and `dateentry.py` both
+  delegate via `_coerce_date = staticmethod(coerce_date)`.
+- **#10 ✅** Calendar constraint setters now route through `_request_refresh()`, which
+  coalesces a batch of `min_date`/`max_date`/`disabled_dates` changes into a single
+  idle-time redraw.
 
 ---
 

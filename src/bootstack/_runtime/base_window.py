@@ -341,6 +341,17 @@ class BaseWindow:
         except tkinter.TclError:
             pass
 
+    def close(self) -> None:
+        """Close the window programmatically, bypassing the close handlers.
+
+        This is the uniform close contract every top-level window honors. It
+        performs the default close action directly (``_do_close()``), so the
+        veto handlers registered with ``add_close_handler()`` — which guard the
+        user clicking the window's close button — are not run. The application
+        root overrides this to quit its event loop instead.
+        """
+        self._do_close()
+
     def add_close_handler(self, callback: Callable[[], bool | None]) -> None:
         """Register a callback invoked when the window's close button is clicked.
 
