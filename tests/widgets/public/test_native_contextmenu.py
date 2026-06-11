@@ -1,10 +1,9 @@
-"""Structural tests for the native (macOS) ContextMenu backend.
+"""Structural tests for the de-iconed native (macOS) ContextMenu backend.
 
 `_NativeContextMenu` only runs on Aqua via `ContextMenu`'s dispatch, but it
 builds a plain `tk.Menu`, so its structure is verifiable on any OS. These
-guard the MenuManager retirement (the standalone MenuManager + create_menu are
-gone) while confirming the backend still renders icons (context menus are app
-content — icons kept) with its own slim icon/recolor path. One module-scoped App.
+guard the MenuManager retirement: the backend no longer tracks icons and an
+`icon=` argument is accepted but ignored. One module-scoped App.
 """
 from __future__ import annotations
 
@@ -36,18 +35,16 @@ def test_backend_has_no_menu_manager(app):
     cm.destroy()
 
 
-def test_renders_icon_on_command(app):
+def test_builds_with_icon_arg_ignored_no_crash(app):
     cm = _NativeContextMenu(master=app._tk_root)
+    # icon= is accepted for cross-backend parity but not rendered.
     cm.add_command(text="Open", icon="folder2-open", shortcut="Mod+O", command=lambda: None)
     cm.add_separator()
     cm.add_command(text="Quit", command=lambda: None)
-    assert len(cm.keys()) == 3
-    # Context menus keep icons (app content): the icon'd entry has an image,
-    # the plain one does not.
-    assert cm._menu.entrycget(0, "image") not in ("", None)
-    assert cm._menu.entrycget(2, "image") in ("", None)
-    # And the PhotoImage is retained so Tk doesn't GC it.
-    assert cm._icon_refs
+    keys = cm.keys()
+    assert len(keys) == 3
+    # No image option was set on the icon'd entry.
+    assert cm._menu.entrycget(0, "image") in ("", None)
     cm.destroy()
 
 

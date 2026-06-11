@@ -63,16 +63,18 @@ layout branch, not a subsystem).
 
 1. **Two-surface model.** New `win.menu` facade (menus only) + the existing
    `Toolbar` as the command bar. Do NOT overload either into the other.
-2. **macOS icons: menu BAR text-only; context menus KEEP icons** (revised
-   2026-06-11 after Mac testing). Native `tk.Menu` icons *do* render on Aqua — but in
-   the menu BAR our items sit alongside OS-injected items (Apple/Window/Help/app menu)
-   whose icons use a system selected-state foreground we don't match, so our icons look
-   off there → menu bar stays **text-only**. A context menu is entirely ours (no system
-   items mixed in) and is **app content**, so it **keeps icons** (and matches the
-   Win/Linux `icon=` contract). Net: the standalone `MenuManager` + `create_menu` are
-   retired, but a **slim icon-render + theme-recolor path lives inside
-   `_NativeContextMenu`** (FUTURE: if we ever match the system selected-state icon
-   foreground, menu-bar icons on Mac become viable).
+2. **macOS icons: text-only on ALL native menus — bar AND context** (FINAL,
+   evidence-based after Mac testing 2026-06-11). The root problem is the same on both
+   surfaces: macOS draws menu items with a **selected/hover foreground we can't control**
+   (item text flips to the system highlight color on hover). Our icons render at a *fixed*
+   color, so on hover the icon no longer matches the text — which looks **worse than no
+   icon**. (In the menu bar there's the added clash with OS-injected items'
+   icons.) Tk exposes no per-state icon coloring for `tk.Menu`, so we can't fix it. →
+   **text-only on Mac, uniformly.** This is also the simplest outcome: the standalone
+   `MenuManager` + `create_menu` AND any icon path in `_NativeContextMenu` are all gone;
+   `icon=` is still accepted on the native backend for cross-backend API parity but
+   ignored. (Win/Linux themed backend keeps icons — it controls its own hover styling.)
+   We briefly tried keeping context-menu icons; the hover mismatch killed it.
 3. **Item type rename `command` → `action`.** Types become
    `action`/`check`/`radio`/`separator`. The public verb stays `on_click`. (This is
    the deferred Tk-ism rename the handoff flagged.)
@@ -226,14 +228,12 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   on Mac.**
 - **Step 5 — retire `MenuManager` + legacy `create_menu`: DONE & green.** Deleted
   `_runtime/menu.py` entirely (standalone MenuManager + `create_menu`/`create_menu_items`,
-  which had ZERO callers and weren't publicly exported). `_NativeContextMenu` no longer
-  depends on it: label translation calls `MessageCatalog` directly, and it carries its own
-  **slim self-contained icon path** — `_menu_icon_color` (systemTextColor on Aqua, else
-  theme fg) + `_resolve_icon` (glyph→PhotoImage, refs held) + a `<<ThemeChanged>>` /
-  `<<TkSystemAppearanceChanged>>` binding that rebuilds to recolor icons. The menu BAR
-  renderer (`render_native`) stays text-only (see decision #2). Tests
-  `test_native_contextmenu.py` (5, structural on Windows). **User to re-verify on Mac:
-  context-menu icons present + recolor on theme change; menu-bar accelerators show the key.**
+  zero callers, never publicly exported). `_NativeContextMenu` is fully de-iconed and no
+  longer depends on it: label translation calls `MessageCatalog` directly; `icon=` is
+  accepted for API parity but ignored (text-only, per decision #2 — the hover-foreground
+  mismatch makes icons look worse). Both native surfaces share the word-form accelerator
+  fix. Tests `test_native_contextmenu.py` (5, structural on Windows). **Mac re-verify:
+  menu-bar accelerators show the key; context menus are clean text-only.**
 
 ## Open questions / to confirm during build
 
