@@ -90,6 +90,53 @@ that locks the whole control:
 Setting a disabled option's value programmatically still works — ``disabled`` only
 blocks *user* selection.
 
+Grouping
+~~~~~~~~
+
+Pass ``group_by="field"`` to cluster the popup under section headers, where
+``field`` is any key your options carry — often a category that already lives in
+your data. Grouping is purely presentational: ``value``, ``.selection``, and
+``.options`` are unaffected, and the grouping field rides along in the data bag.
+
+.. code-block:: python
+
+   bs.Select(
+       options=[
+           {"text": "Apple",    "value": "apple",    "category": "Fruit"},
+           {"text": "Banana",   "value": "banana",   "category": "Fruit"},
+           {"text": "Carrot",   "value": "carrot",   "category": "Vegetable"},
+           {"text": "Basil",    "value": "basil",    "category": "Herb"},
+       ],
+       group_by="category",
+       label="Ingredient",
+   )
+
+Groups appear in first-appearance order; an option that lacks the field renders
+without a header. Header text is shown verbatim — it is never re-cased or
+otherwise transformed, so ``.selection`` still returns the original value
+(``{..., "category": "Fruit"}``).
+
+.. image:: /_static/examples/selectfield-grouping-light.png
+   :class: bs-screenshot-light
+   :alt: Select grouping — light theme
+
+.. image:: /_static/examples/selectfield-grouping-dark.png
+   :class: bs-screenshot-dark
+   :alt: Select grouping — dark theme
+
+Limiting the popup height
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The popup grows to fit its options up to a built-in cap, then scrolls. Set
+``max_visible_items=`` to cap it at roughly that many option rows — handy for long
+lists. Group headers and separators count toward the height, so the number is
+approximate.
+
+.. code-block:: python
+
+   countries = ["Canada", "France", "Germany", "Japan", "United States", "..."]
+   bs.Select(countries, label="Country", max_visible_items=8)
+
 Label and message
 ~~~~~~~~~~~~~~~~~
 

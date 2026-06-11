@@ -403,6 +403,185 @@ def test_normalize_allows_icon_only_dict_without_text():
     assert tuple(rec) == ("", "grid", {"icon": "grid"})
 
 
+# --------------------------------------------------------------------------
+# Select grouping — group_by clusters popup rows under headers; the grouping
+# field is read from the flat record, ordering is first-appearance, and the
+# selection contract (value/text/selection/options) is unaffected.
+# --------------------------------------------------------------------------
+
+from bootstack.widgets._core.options import cluster_records, record_field
+
+
+def test_record_field_spans_text_value_and_extras():
+    rec = normalize_option({"text": "Apple", "value": "a", "category": "Fruit"})
+    assert record_field(rec, "text") == "Apple"
+    assert record_field(rec, "value") == "a"
+    assert record_field(rec, "category") == "Fruit"
+    assert record_field(rec, "missing") is None
+
+
+def test_cluster_records_first_appearance_order_and_ungrouped_bucket():
+    recs = normalize_options([
+        {"text": "Apple", "value": "a", "cat": "Fruit"},
+        {"text": "Banana", "value": "b", "cat": "Fruit"},
+        {"text": "Carrot", "value": "c", "cat": "Veg"},
+        "Other",                                            # no 'cat' -> ungrouped
+        {"text": "Date", "value": "d", "cat": "Fruit"},     # non-contiguous Fruit
+    ])
+    clusters = cluster_records(recs, "cat")
+    assert [label for label, _ in clusters] == ["Fruit", "Veg", None]
+    assert [r.text for r in clusters[0][1]] == ["Apple", "Banana", "Date"]
+    assert [r.text for r in clusters[2][1]] == ["Other"]
+
+
+def test_cluster_records_none_group_by_is_single_bucket():
+    recs = normalize_options(["a", "b"])
+    clusters = cluster_records(recs, None)
+    assert len(clusters) == 1 and clusters[0][0] is None
+    assert [r.text for r in clusters[0][1]] == ["a", "b"]
+
+
+def test_cluster_records_blank_field_is_ungrouped():
+    recs = normalize_options([{"text": "X", "value": "x", "g": ""}])
+    assert cluster_records(recs, "g") == [(None, recs)]
+
+
+GROUP_OPTS = [
+    {"text": "Apple", "value": "a", "category": "fruit"},
+    {"text": "Banana", "value": "b", "category": "fruit"},
+    {"text": "Carrot", "value": "c", "category": "produce"},
+    {"text": "Other", "value": "x"},                         # ungrouped, headerless
+]
+
+
+def _open_popup(select, app):
+    box = select._internal
+    app.tk.update()  # lay the field out so the popup gets a real width
+    box._show_selection_options()
+    app.tk.update_idletasks()
+    return box
+
+
+def _dismiss(box):
+    if box._popup_rows:
+        box._popup_rows[0].winfo_toplevel().destroy()
+    box._popup_open = False
+    box._popup_frame = box._popup_inner = None
+    box._item_labels = box._group_headers = box._popup_rows = []
+
+
+def test_select_grouped_popup_render_order(app):
+    s = bs.Select(options=GROUP_OPTS, group_by="category")
+    box = _open_popup(s, app)
+    try:
+        # Option buttons sit in clustered render order; ungrouped trails.
+        assert [b._item_value for b in box._item_labels] == ["a", "b", "c", "x"]
+        # Two named groups; the header label (last widget in each group's
+        # header_widgets) carries the verbatim, untransformed group value.
+        labels = [hw[-1].cget("text") for hw, _ in box._group_headers]
+        assert labels == ["fruit", "produce"]
+        # Headers are not selectable rows.
+        assert all(not hasattr(hw[-1], "_item_value") for hw, _ in box._group_headers)
+    finally:
+        _dismiss(box)
+
+
+def test_select_first_group_has_no_leading_separator(app):
+    s = bs.Select(options=GROUP_OPTS, group_by="category")
+    box = _open_popup(s, app)
+    try:
+        first_widgets, _ = box._group_headers[0]
+        second_widgets, _ = box._group_headers[1]
+        assert len(first_widgets) == 1    # top group: header label only
+        assert len(second_widgets) == 2   # later group: separator + header label
+    finally:
+        _dismiss(box)
+
+
+def test_grouping_is_presentational_only(app):
+    s = bs.Select(options=GROUP_OPTS, group_by="category", value="c")
+    # The selection contract is untouched; the group field rides in the bag.
+    assert s.value == "c"
+    assert s.text == "Carrot"
+    assert s.selection == {"text": "Carrot", "value": "c", "category": "produce"}
+    assert [o.get("category") for o in s.options] == ["fruit", "fruit", "produce", None]
+
+
+def test_grouped_initial_highlight_uses_render_index(app):
+    # Non-contiguous groups make render order differ from source order: source
+    # is [a(fruit), c(produce), b(fruit)] but render clusters to [a, b, c].
+    opts = [
+        {"text": "Apple", "value": "a", "category": "fruit"},
+        {"text": "Carrot", "value": "c", "category": "produce"},
+        {"text": "Banana", "value": "b", "category": "fruit"},
+    ]
+    s = bs.Select(options=opts, group_by="category", value="c")
+    box = _open_popup(s, app)
+    try:
+        assert [b._item_value for b in box._item_labels] == ["a", "b", "c"]
+        # 'c' is render index 2 (not its source index 1).
+        assert box._initial_highlight_index() == 2
+        assert box._item_labels[2]._item_value == "c"
+    finally:
+        _dismiss(box)
+
+
+def test_grouped_search_hides_empty_group_header(app):
+    s = bs.Select(options=GROUP_OPTS, group_by="category", searchable=True)
+    box = _open_popup(s, app)
+    try:
+        box.entry_widget.delete(0, "end")
+        box.entry_widget.insert(0, "carr")          # matches only produce/Carrot
+        box._apply_search_filter(box._popup_state)  # drive the filter directly
+        vis = lambda w: bool(w.winfo_manager())
+        assert [b._item_text for b in box._item_labels if vis(b)] == ["Carrot"]
+        fruit_label = box._group_headers[0][0][-1]
+        produce_label = box._group_headers[1][0][-1]
+        produce_sep = box._group_headers[1][0][0]
+        assert vis(fruit_label) is False            # whole group filtered out
+        assert vis(produce_label) is True
+        # produce is now the top visible group, so its leading divider is dropped
+        assert vis(produce_sep) is False
+    finally:
+        _dismiss(box)
+
+
+def test_group_by_property_roundtrip(app):
+    s = bs.Select(options=GROUP_OPTS)
+    assert s.group_by is None
+    s.group_by = "category"
+    assert s.group_by == "category"
+    s.group_by = None
+    assert s.group_by is None
+
+
+# --------------------------------------------------------------------------
+# Select max_visible_items — caps the popup height before it scrolls.
+# --------------------------------------------------------------------------
+
+def test_max_visible_items_caps_popup_height(app):
+    opts = [{"text": f"Item {i}", "value": i} for i in range(20)]
+    s = bs.Select(options=opts, max_visible_items=5)
+    box = _open_popup(s, app)
+    try:
+        item_h = box._item_labels[0].winfo_reqheight()
+        top = box._popup_rows[0].winfo_toplevel()
+        top.update_idletasks()
+        # 20 items overflow the cap, so the popup is pinned at ~5 rows tall.
+        assert top.winfo_height() <= 5 * item_h + 8 + 2
+    finally:
+        _dismiss(box)
+
+
+def test_max_visible_items_property_roundtrip(app):
+    s = bs.Select(options=["a", "b"])
+    assert s.max_visible_items is None
+    s.max_visible_items = 8
+    assert s.max_visible_items == 8
+    s.max_visible_items = None
+    assert s.max_visible_items is None
+
+
 def test_normalize_icon_without_value_still_requires_text():
     # An icon alone isn't enough to omit text — value is needed to identify it.
     with pytest.raises(ValueError):

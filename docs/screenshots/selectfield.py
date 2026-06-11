@@ -14,6 +14,28 @@ def hero():
     app.run()
 
 
+def grouping():
+    with bs.App(title="Select — Grouping", size=(540, 300), padding=20) as app:
+        sel = bs.Select(
+            options=[
+                {"text": "Apple",    "value": "apple",    "category": "Fruit"},
+                {"text": "Banana",   "value": "banana",   "category": "Fruit"},
+                {"text": "Cherry",   "value": "cherry",   "category": "Fruit"},
+                {"text": "Carrot",   "value": "carrot",   "category": "Vegetable"},
+                {"text": "Broccoli", "value": "broccoli", "category": "Vegetable"},
+                {"text": "Basil",    "value": "basil",    "category": "Herb"},
+                {"text": "Mint",     "value": "mint",     "category": "Herb"},
+            ],
+            group_by="category",
+            label="Ingredient",
+            value="banana",
+            fill="x",
+        )
+
+    app.tk.after(850, sel._internal._show_selection_options)
+    app.run()
+
+
 def states():
     with bs.App(title="Select — States", padding=20) as app:
         with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
@@ -26,6 +48,7 @@ def states():
 
 
 SCENES = {
-    "hero":   hero,
-    "states": states,
+    "hero":     hero,
+    "grouping": grouping,
+    "states":   states,
 }

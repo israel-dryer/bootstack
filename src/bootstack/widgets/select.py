@@ -47,6 +47,17 @@ class Select(PublicWidgetBase):
             list. Defaults to `False`.
         allow_custom_values: If `True`, users may type values not in
             `options`. Defaults to `False`.
+        group_by: Name of an option field to cluster the popup rows under
+            non-selectable group headers (e.g. `'category'`). The field is read
+            from each option's flat record, so it may be any carried bag key (or
+            `'text'`/`'value'`). Groups appear in first-appearance order; an
+            option missing the field renders headerless. Grouping is
+            presentational only — `value`/`selection` are unaffected. `None`
+            (default) renders a flat list.
+        max_visible_items: Approximate number of option rows the popup shows
+            before it scrolls (height is `max_visible_items * row_height`).
+            Group headers and separators consume some of that budget, so the
+            count is approximate. `None` (default) uses the built-in cap.
         read_only: If `True`, value is visible but the popup cannot be
             opened.
         disabled: If `True`, field is fully non-interactive and dimmed.
@@ -71,6 +82,8 @@ class Select(PublicWidgetBase):
         required: bool = False,
         searchable: bool = False,
         allow_custom_values: bool = False,
+        group_by: str | None = None,
+        max_visible_items: int | None = None,
         read_only: bool = False,
         disabled: bool = False,
         width: int | None = None,
@@ -87,6 +100,8 @@ class Select(PublicWidgetBase):
             "items":               options or [],
             "enable_search":       searchable,
             "allow_custom_values": allow_custom_values,
+            "group_by":            group_by,
+            "max_visible_items":   max_visible_items,
             # Public Select rejects an unknown value (unless custom values are
             # allowed); internal/embedded SelectBoxes stay lenient.
             "strict_value":        not allow_custom_values,
@@ -198,6 +213,34 @@ class Select(PublicWidgetBase):
     @options.setter
     def options(self, items: list[Option]) -> None:
         self._internal.configure(items=list(items))
+
+    @property
+    def group_by(self) -> str | None:
+        """Name of the option field the popup clusters rows under, or `None`.
+
+        Assigning a field name groups the popup the next time it opens; assign
+        `None` to render a flat list. Grouping is presentational only — it does
+        not affect `value`, `selection`, or `options`.
+        """
+        return self._internal.cget("group_by")
+
+    @group_by.setter
+    def group_by(self, field: str | None) -> None:
+        self._internal.configure(group_by=field or "")
+
+    @property
+    def max_visible_items(self) -> int | None:
+        """Approximate option-row cap before the popup scrolls, or `None`.
+
+        Assigning takes effect the next time the popup opens; assign `None` to
+        restore the built-in cap. Height is `max_visible_items * row_height`,
+        so group headers and separators make the count approximate.
+        """
+        return self._internal.cget("max_visible_items")
+
+    @max_visible_items.setter
+    def max_visible_items(self, n: int | None) -> None:
+        self._internal.configure(max_visible_items=n or 0)
 
     @property
     def selected_index(self) -> int:
