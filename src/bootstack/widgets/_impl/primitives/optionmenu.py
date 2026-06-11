@@ -6,7 +6,7 @@ from typing import Any, Callable, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.events import ChangeEvent
-from bootstack.widgets._core.options import normalize_options, record_to_dict
+from bootstack.widgets._core.options import normalize_options, option_display, record_to_dict
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets._impl.primitives._menubutton import MenuButton
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -169,15 +169,19 @@ class OptionMenu(MenuButton):
 
         density = self.configure_style_options('density') or 'default'
 
-        menu_items = [
-            ContextMenuItem(
-                type="radiobutton",
-                text=rec.text,
-                variable=self._textvariable,
-                value=rec.text,
+        menu_items = []
+        for rec in self._records:
+            icon, disabled = option_display(rec)
+            menu_items.append(
+                ContextMenuItem(
+                    type="radiobutton",
+                    text=rec.text,
+                    variable=self._textvariable,
+                    value=rec.text,
+                    icon=icon,
+                    disabled=disabled,
+                )
             )
-            for rec in self._records
-        ]
         return ContextMenu(
             self, target=self, items=menu_items,
             anchor="nw", attach="sw",

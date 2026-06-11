@@ -40,6 +40,28 @@ class SelectionGroupMixin:
         rec = getattr(self, "_option_records", {}).get(str(value))
         return record_to_dict(rec) if rec is not None else None
 
+    @staticmethod
+    def _option_render(icon: Any, disabled: bool, text: str | None = None) -> tuple[dict, dict]:
+        """Map the `icon`/`disabled` hints to (internal-add kwargs, extras).
+
+        The internal group forwards `icon`/`state` to each button primitive; the
+        extras dict is what `selection` hands back. An icon with a blank `text`
+        is inferred as icon-only (the button shows the glyph alone). Returns a
+        pair so a single call seeds both the rendered button and the carried
+        record.
+        """
+        add_kwargs: dict[str, Any] = {}
+        extras: dict[str, Any] = {}
+        if icon is not None:
+            add_kwargs["icon"] = icon
+            extras["icon"] = icon
+            if not (text or "").strip():
+                add_kwargs["icon_only"] = True
+        if disabled:
+            add_kwargs["state"] = "disabled"
+            extras["disabled"] = True
+        return add_kwargs, extras
+
     def remove(self, value: Any) -> None:
         """Remove the option identified by `value`.
 

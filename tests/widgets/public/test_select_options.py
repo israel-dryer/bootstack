@@ -8,6 +8,8 @@ import bootstack as bs
 from bootstack.widgets._core.options import (
     normalize_option,
     normalize_options,
+    option_display,
+    option_is_icon_only,
     record_to_dict,
 )
 
@@ -302,3 +304,151 @@ def test_selectbutton_change_event_value_space(app):
     # pre-existing quirk, unrelated to the option shape) — assert every emit
     # carries the value-space value rather than the exact count.
     assert seen and set(seen) == {"s"}
+
+
+# --------------------------------------------------------------------------
+# Reserved option keys: icon (rendered beside the label) + disabled
+# (dimmed, not user-selectable). Both ride in the data bag and are acted on.
+# --------------------------------------------------------------------------
+
+def test_option_display_extracts_icon_and_disabled():
+    plain = normalize_option("a")
+    assert option_display(plain) == (None, False)
+
+    full = normalize_option({"text": "M", "value": "m", "icon": "star", "disabled": True})
+    assert option_display(full) == ("star", True)
+
+    # Falsy/absent disabled normalizes to a plain bool False.
+    icon_only = normalize_option({"text": "M", "value": "m", "icon": "star"})
+    assert option_display(icon_only) == ("star", False)
+
+
+# These two reserved keys still ride in the bag like any extra (selection).
+def test_disabled_and_icon_carried_on_selection(app):
+    rg = bs.RadioGroup(
+        options=[{"text": "Medium", "value": "m", "icon": "star", "disabled": True}],
+        value="m",
+    )
+    assert rg.selection == {"text": "Medium", "value": "m", "icon": "star", "disabled": True}
+
+
+DISABLED_OPTS = [
+    ("Small", "s"),
+    {"text": "Medium", "value": "m", "disabled": True, "icon": "star"},
+    ("Large", "l"),
+]
+
+
+def test_radiogroup_disabled_option_button_is_disabled(app):
+    rg = bs.RadioGroup(options=DISABLED_OPTS)
+    assert "disabled" in rg._internal.item("m").state()
+    assert "disabled" not in rg._internal.item("s").state()
+
+
+def test_togglegroup_single_disabled_option_button_is_disabled(app):
+    tg = bs.ToggleGroup(options=DISABLED_OPTS, mode="single")
+    assert "disabled" in tg._internal.item("m").state()
+    assert "disabled" not in tg._internal.item("l").state()
+
+
+def test_togglegroup_multi_disabled_option_button_is_disabled(app):
+    tg = bs.ToggleGroup(options=DISABLED_OPTS, mode="multi")
+    assert "disabled" in tg._internal.item("m").state()
+
+
+def test_disabled_option_still_settable_programmatically(app):
+    # `disabled` blocks USER interaction only — a programmatic set still works.
+    rg = bs.RadioGroup(options=DISABLED_OPTS, value="s")
+    rg.value = "m"
+    assert rg.value == "m"
+    assert rg.selection["disabled"] is True
+
+
+def test_group_runtime_add_disabled_and_icon(app):
+    rg = bs.RadioGroup(options=[("Small", "s")])
+    rg.add("Medium", "m", icon="star", disabled=True)
+    assert "disabled" in rg._internal.item("m").state()
+    rg.value = "m"
+    assert rg.selection == {"text": "Medium", "value": "m", "icon": "star", "disabled": True}
+
+    tg = bs.ToggleGroup(options=[("Grid", "grid")])
+    tg.add("List", "list", disabled=True)
+    assert "disabled" in tg._internal.item("list").state()
+
+
+def test_select_first_enabled_index_skips_leading_disabled(app):
+    s = bs.Select(options=[
+        {"text": "X", "value": "x", "disabled": True},
+        ("Y", "y"),
+    ])
+    assert s._internal._first_enabled_index() == 1
+
+
+def test_selectbutton_disabled_menu_item(app):
+    sb = bs.SelectButton(options=DISABLED_OPTS)
+    backend = sb._internal._context_menu
+    items = list(getattr(backend, "_items", {}).values())
+    # item order matches option order: Small, Medium (disabled), Large
+    assert "disabled" in items[1].state()
+    assert "disabled" not in items[0].state()
+
+
+# --------------------------------------------------------------------------
+# Icon-only options — inferred from an icon + blank text (no icon_only flag)
+# --------------------------------------------------------------------------
+
+def test_normalize_allows_icon_only_dict_without_text():
+    # `text` may be omitted when icon + value are present — text defaults to "".
+    rec = normalize_option({"icon": "grid", "value": "grid"})
+    assert tuple(rec) == ("", "grid", {"icon": "grid"})
+
+
+def test_normalize_icon_without_value_still_requires_text():
+    # An icon alone isn't enough to omit text — value is needed to identify it.
+    with pytest.raises(ValueError):
+        normalize_option({"icon": "grid"})
+
+
+def test_option_is_icon_only_inference():
+    assert option_is_icon_only(normalize_option({"icon": "grid", "value": "g"})) is True
+    assert option_is_icon_only(normalize_option({"text": "G", "icon": "grid", "value": "g"})) is False
+    assert option_is_icon_only(normalize_option(("Grid", "g"))) is False  # no icon
+    assert option_is_icon_only(normalize_option("Grid")) is False
+
+
+ICON_ONLY_OPTS = [
+    {"icon": "list-ul", "value": "list"},
+    {"icon": "grid", "value": "grid"},
+    {"icon": "geo-alt", "value": "map", "disabled": True},
+]
+
+
+def test_togglegroup_infers_icon_only_buttons(app):
+    tg = bs.ToggleGroup(options=ICON_ONLY_OPTS, value="grid")
+    for key in ("list", "grid", "map"):
+        btn = tg._internal.item(key)
+        assert btn.cget("text") == ""
+        assert btn.configure_style_options("icon_only") is True
+    # disabled still applies alongside icon-only
+    assert "disabled" in tg._internal.item("map").state()
+
+
+def test_radiogroup_infers_icon_only_buttons(app):
+    rg = bs.RadioGroup(options=ICON_ONLY_OPTS, value="list")
+    assert rg._internal.item("list").configure_style_options("icon_only") is True
+
+
+def test_icon_with_text_is_not_icon_only(app):
+    tg = bs.ToggleGroup(options=[{"text": "List", "icon": "list-ul", "value": "list"}], value="list")
+    assert tg._internal.item("list").configure_style_options("icon_only") in (None, False)
+
+
+def test_group_runtime_add_blank_label_is_icon_only(app):
+    rg = bs.RadioGroup()
+    rg.add("", "grid", icon="grid")
+    assert rg._internal.item("grid").configure_style_options("icon_only") is True
+
+
+def test_icon_only_selection_carries_bag(app):
+    tg = bs.ToggleGroup(options=ICON_ONLY_OPTS, value="grid")
+    assert tg.selection == {"text": "", "value": "grid", "icon": "grid"}

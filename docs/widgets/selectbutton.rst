@@ -39,8 +39,11 @@ Like `Select`, an option's label can differ from its value — pass a
    mode.on_change(lambda e: apply_theme(e.value))
 
 Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
-and the reserved ``icon``/``disabled``), any other key you add rides along and is
-returned by ``.selection`` (see :doc:`select` for details).
+and the per-option ``icon``/``disabled``), any other key you add rides along and is
+returned by ``.selection`` (see :doc:`select` for details). A per-option ``icon``
+renders beside that menu item's label, and ``disabled`` greys out a single option
+so it can't be chosen — distinct from the widget-level ``disabled=`` that locks
+the whole control.
 
 Accent colors
 ~~~~~~~~~~~~~

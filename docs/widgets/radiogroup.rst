@@ -34,9 +34,12 @@ the display text should differ from the stored value.
    size.selection  # -> {"text": "Medium", "value": "m"}   (the full record)
 
 Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
-and the reserved ``icon``/``disabled``), any other key you add (e.g.
+and the per-option ``icon``/``disabled``), any other key you add (e.g.
 ``{"text": "Medium", "value": "m", "px": 16}``) rides along and is returned by
-``.selection`` (see :doc:`select` for details).
+``.selection`` (see :doc:`select` for details). A per-option ``icon`` renders
+beside that button's label, and ``disabled`` greys out a single option so it
+can't be chosen — distinct from the group-level ``disabled=`` that locks every
+button.
 
 Orientation
 ~~~~~~~~~~~

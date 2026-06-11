@@ -5,7 +5,12 @@ from typing_extensions import Unpack
 from typing import Any
 
 from bootstack.events import ChangeEvent
-from bootstack.widgets._core.options import normalize_options, record_to_dict
+from bootstack.widgets._core.options import (
+    normalize_options,
+    option_display,
+    option_is_icon_only,
+    record_to_dict,
+)
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.scrollview import ScrollView
@@ -44,7 +49,9 @@ class SelectBox(Field):
             items: Options to present in the popup — each a string,
                 `(text, value)` tuple, or `{'text', 'value'}` dict. The popup
                 and field display each option's text; the selected value is
-                emitted in value-space.
+                emitted in value-space. A dict option may also carry `'icon'`
+                (rendered beside the row label) and `'disabled'` (when `True` the
+                row is dimmed and cannot be chosen).
             label: Optional label text shown above the field.
             message: Optional helper/error message shown below the field.
             allow_custom_values: If True, the entry is editable so users can type
@@ -186,7 +193,8 @@ class SelectBox(Field):
             'first_filtered_item': None,
             'entry_focus_handler': None,
             'key_bindings': [],
-            'highlighted_index': max(0, self.selected_index),
+            'highlighted_index': self.selected_index if self.selected_index >= 0
+                                  else self._first_enabled_index(),
         }
 
         # Setup close handler
@@ -315,13 +323,20 @@ class SelectBox(Field):
         accent = getattr(self, '_accent', None) or 'primary'
 
         for i, rec in enumerate(self._records):
+            icon, disabled = option_display(rec)
+            btn_kwargs = {}
+            if icon is not None:
+                btn_kwargs['icon'] = icon
+                if option_is_icon_only(rec):
+                    btn_kwargs['icon_only'] = True
             btn = Button(
                 inner_frame,
                 text=rec.text,
                 accent=accent,
                 variant='selectbox_item',
                 takefocus=False,
-                command=lambda v=rec.value: self._on_item_click(v, toplevel, popup_state)
+                command=lambda v=rec.value: self._on_item_click(v, toplevel, popup_state),
+                **btn_kwargs,
             )
             btn.pack(fill='x')
 
@@ -329,7 +344,13 @@ class SelectBox(Field):
             btn._item_value = rec.value
             btn._item_text = rec.text
             btn._item_index = i
+            btn._item_disabled = disabled
 
+            # A disabled option is dimmed and cannot be chosen — clicking it
+            # does nothing (ttk blocks the command) and it is skipped by the
+            # keyboard navigation and search auto-select below.
+            if disabled:
+                btn.state(['disabled'])
             # Apply selected state if this row matches the displayed text
             if rec.text == current_text:
                 btn.state(['selected'])
@@ -342,6 +363,32 @@ class SelectBox(Field):
         """Handle click on item."""
         popup_state['item_was_selected'] = True
         self._set_selected_value(value, toplevel, popup_state)
+
+    def _first_enabled_index(self) -> int:
+        """Index of the first non-disabled option, or 0 if all are disabled."""
+        return next(
+            (i for i, rec in enumerate(self._records) if not option_display(rec)[1]),
+            0,
+        )
+
+    def _step_highlight(self, popup_state, step):
+        """Move the highlight by `step`, skipping disabled rows.
+
+        Stops at the first non-disabled visible row in the given direction;
+        keeps the current highlight when the edge is reached.
+        """
+        visible_buttons = [btn for btn in self._item_labels if btn.winfo_manager()]
+        if not visible_buttons:
+            return
+        idx = popup_state['highlighted_index']
+        n = len(visible_buttons)
+        while True:
+            idx += step
+            if idx < 0 or idx >= n:
+                return  # reached the edge — keep the current highlight
+            if not getattr(visible_buttons[idx], '_item_disabled', False):
+                self._update_highlight(popup_state, idx)
+                return
 
     def _update_highlight(self, popup_state, new_index):
         """Update the highlighted item in the popup."""
@@ -385,21 +432,24 @@ class SelectBox(Field):
         # Escape always closes
         toplevel.bind("<Escape>", close_popup)
 
-        # Arrow key navigation
+        # Arrow key navigation (skips disabled rows)
         def on_arrow_down(event):
-            self._update_highlight(popup_state, popup_state['highlighted_index'] + 1)
+            self._step_highlight(popup_state, 1)
             return 'break'
 
         def on_arrow_up(event):
-            self._update_highlight(popup_state, popup_state['highlighted_index'] - 1)
+            self._step_highlight(popup_state, -1)
             return 'break'
 
         def on_enter(event):
             visible_buttons = [btn for btn in self._item_labels if btn.winfo_manager()]
             idx = popup_state['highlighted_index']
             if 0 <= idx < len(visible_buttons):
+                btn = visible_buttons[idx]
+                if getattr(btn, '_item_disabled', False):
+                    return 'break'  # a disabled row can't be chosen
                 popup_state['item_was_selected'] = True
-                self._set_selected_value(visible_buttons[idx]._item_value, toplevel, popup_state)
+                self._set_selected_value(btn._item_value, toplevel, popup_state)
             return 'break'
 
         toplevel.bind("<Down>", on_arrow_down)
@@ -422,9 +472,11 @@ class SelectBox(Field):
 
     def _setup_search_bindings(self, toplevel, popup_state, close_popup):
         """Setup search-specific event bindings."""
-        # Initialize first filtered item (stored in value-space)
-        if self._records:
-            popup_state['first_filtered_item'] = self._records[0].value
+        # Initialize first filtered item (stored in value-space); skip disabled
+        # so an auto-select on close never lands on a non-selectable option.
+        enabled = [rec for rec in self._records if not option_display(rec)[1]]
+        if enabled:
+            popup_state['first_filtered_item'] = enabled[0].value
         popup_state['last_search_text'] = self.entry_widget.get().lower()
 
         # Filter function
@@ -439,12 +491,13 @@ class SelectBox(Field):
                 return
             popup_state['last_search_text'] = search_text
 
-            # Show/hide buttons based on filter — match on the visible TEXT
+            # Show/hide buttons based on filter — match on the visible TEXT.
+            # The first ENABLED match drives auto-select + the reset highlight.
             first_visible = None
             for btn in self._item_labels:
                 if search_text in btn._item_text.lower():
                     btn.pack(fill='x')
-                    if first_visible is None:
+                    if first_visible is None and not getattr(btn, '_item_disabled', False):
                         first_visible = btn
                 else:
                     btn.pack_forget()
@@ -452,8 +505,14 @@ class SelectBox(Field):
             # Track first filtered item for auto-select (value-space)
             popup_state['first_filtered_item'] = first_visible._item_value if first_visible else None
 
-            # Reset highlight to first visible item
-            self._update_highlight(popup_state, 0)
+            # Reset highlight to the first enabled visible item
+            visible_buttons = [b for b in self._item_labels if b.winfo_manager()]
+            target = next(
+                (i for i, b in enumerate(visible_buttons)
+                 if not getattr(b, '_item_disabled', False)),
+                0,
+            )
+            self._update_highlight(popup_state, target)
 
         # Bind KeyRelease for filtering
         keyrelease_binding = self.entry_widget.bind('<KeyRelease>', lambda e: filter_items(), add='+')
@@ -466,8 +525,11 @@ class SelectBox(Field):
             visible_buttons = [btn for btn in self._item_labels if btn.winfo_manager()]
             idx = popup_state['highlighted_index']
             if 0 <= idx < len(visible_buttons):
+                btn = visible_buttons[idx]
+                if getattr(btn, '_item_disabled', False):
+                    return 'break'  # a disabled row can't be chosen
                 popup_state['item_was_selected'] = True
-                self._set_selected_value(visible_buttons[idx]._item_value, toplevel, popup_state)
+                self._set_selected_value(btn._item_value, toplevel, popup_state)
             return 'break'
 
         tab_binding = self.entry_widget.bind('<Tab>', on_tab)

@@ -3,8 +3,6 @@
 import tkinter
 from typing import Any, Callable, Literal, TypedDict
 
-from typing_extensions import Required
-
 # ---------------------------------------------------------------------------
 # Primitive aliases
 # ---------------------------------------------------------------------------
@@ -225,23 +223,23 @@ class FormOptions(TypedDict, total=False):
 class OptionDict(TypedDict, total=False):
     """A single choice for a selection widget, in dict form.
 
-    The dict form is a *data bag*: only `text` is required (and `value` defaults
-    to it). `text`/`value` and the reserved `icon`/`disabled` are the recognized
-    keys; every *other* key rides along as carried data — retrievable as the
-    widget's `selection` (the selected option's full record). Unrecognized keys
-    are accepted, not rejected, so the dict route trades key-typo safety for
-    extensibility. `icon`/`disabled` are reserved to drive rendering/behavior in
-    a future release; until then they are carried like any other key.
+    The dict form is a *data bag*: `text` is required (and `value` defaults to
+    it) UNLESS the dict carries an `icon` and a `value`, in which case `text` may
+    be omitted to request an icon-only option. `text`/`value` and the recognized
+    `icon`/`disabled` keys act on rendering; every *other* key rides along as
+    carried data — retrievable as the widget's `selection` (the selected
+    option's full record). Unrecognized keys are accepted, not rejected, so the
+    dict route trades key-typo safety for extensibility.
     """
 
-    text: Required[str]
-    """Display label for the option. Required."""
+    text: str
+    """Display label. Required unless `icon` + `value` are given (icon-only)."""
     value: Any
     """Stored and emitted value. Defaults to `text` when omitted."""
     icon: str
-    """Reserved for a future per-option icon. Carried but not yet rendered."""
+    """Optional icon spec rendered beside the label — alone when `text` is blank."""
     disabled: bool
-    """Reserved for a future non-selectable option. Carried but not yet honored."""
+    """When `True`, the option is dimmed and cannot be selected by the user."""
 
 
 Option = str | tuple[str, Any] | OptionDict

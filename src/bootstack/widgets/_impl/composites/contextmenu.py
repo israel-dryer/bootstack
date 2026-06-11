@@ -377,6 +377,8 @@ class _ToplevelContextMenu(CustomConfigMixin):
             value: Any = None,
             variable: StringVar | IntVar = None,
             command: Callable = None,
+            icon: str = None,
+            disabled: bool = False,
             key: str = None
     ) -> RadioToggle:
         """Add a radiobutton to the menu.
@@ -387,12 +389,17 @@ class _ToplevelContextMenu(CustomConfigMixin):
             variable: Tkinter Variable to link with.
                 See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             command: Function to call when selected.
+            icon: Optional icon name rendered beside the label.
+            disabled: If True, the item is dimmed and cannot be selected.
             key: Optional unique identifier. Auto-generated if not provided.
         """
 
         def on_select():
             self._handle_item_click('radiobutton', text, command, value)
 
+        rb_kwargs: dict[str, Any] = {}
+        if icon is not None:
+            rb_kwargs['icon'] = icon
         rb = RadioToggle(
             self._frame,
             text=text,
@@ -400,8 +407,11 @@ class _ToplevelContextMenu(CustomConfigMixin):
             variable=variable,
             variant='context-radio',
             density=self._density,
-            command=on_select
+            command=on_select,
+            **rb_kwargs,
         )
+        if disabled:
+            rb.state(['disabled'])
         rb.pack(fill='x', padx=0, pady=0)
         self._register_item(key, rb)
         return rb
@@ -1205,6 +1215,8 @@ class _NativeContextMenu(CustomConfigMixin):
             value: Any = None,
             variable: StringVar | IntVar = None,
             command: Callable = None,
+            icon: str = None,
+            disabled: bool = False,
             key: str = None,
     ) -> str:
         key = key or self._generate_key()
@@ -1227,18 +1239,32 @@ class _NativeContextMenu(CustomConfigMixin):
             if command:
                 command()
 
-        self._menu.add_radiobutton(
-            label=self._resolve_label(text),
-            variable=variable,
-            value=value,
-            command=on_select,
-        )
+        photo, icon_name, icon_size = self._resolve_icon(icon)
+        opts: dict[str, Any] = {
+            'label': self._resolve_label(text),
+            'variable': variable,
+            'value': value,
+            'command': on_select,
+        }
+        if photo is not None:
+            opts['image'] = photo
+            opts['compound'] = 'left'
+        if disabled:
+            opts['state'] = 'disabled'
+
+        self._menu.add_radiobutton(**opts)
+
+        if icon_name and self._mgr is not None:
+            self._mgr.register_icon(self._menu, self._menu.index('end'), icon_name, icon_size)
+
         self._item_specs[key] = {
             'type': 'radiobutton',
             'text': text,
             'value': value,
             'variable': variable,
             'command': command,
+            'icon': icon,
+            'disabled': disabled,
         }
         self._item_order.append(key)
         return key
