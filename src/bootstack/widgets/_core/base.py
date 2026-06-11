@@ -43,6 +43,7 @@ class PublicWidgetBase:
 
     _internal: tkinter.Misc
     _parent: "PublicWidgetBase | None"
+    _placement: Any  # container.Placement — set when first placed in a layout
 
     @staticmethod
     def _resolve_parent(
@@ -63,7 +64,11 @@ class PublicWidgetBase:
             layout_keys = (PLACE_KEYS - {"width", "height", "anchor"}) | PLACE_TRIGGER_KEYS
         else:
             layout_keys = PACK_KEYS | GRID_KEYS
-        return {k: kwargs.pop(k) for k in list(kwargs) if k in layout_keys}
+        layout = {k: kwargs.pop(k) for k in list(kwargs) if k in layout_keys}
+        # `attached` is geometry-manager-agnostic — capture it in every mode.
+        if "attached" in kwargs:
+            layout["attached"] = kwargs.pop("attached")
+        return layout
 
     def _attach_to_parent(self, layout_kw: dict) -> None:
         if not self._auto_place:
@@ -188,6 +193,106 @@ class PublicWidgetBase:
         """
         self._internal.destroy()
 
+    @property
+    def is_attached(self) -> bool:
+        """Whether the widget is currently placed in its layout.
+
+        `True` while the widget occupies space in its parent; `False` after
+        `detach` (or before it has ever been placed). A detached widget keeps
+        its state and can be returned to the layout with `attach`.
+        """
+        try:
+            return bool(self._internal.winfo_manager())
+        except tkinter.TclError:
+            return False
+
+    def detach(self) -> None:
+        """Remove the widget from its layout without destroying it.
+
+        The widget stops occupying space but keeps its state, children, and
+        event bindings, ready to be returned with `attach`. The current
+        position is snapshotted so a plain `attach()` restores it exactly —
+        for stacked siblings this is the index among the *currently attached*
+        siblings, so detaching other siblings first shifts that index.
+
+        Calling `detach` on a widget that is already detached, or one that was
+        never placed in a layout, does nothing. Fires `on_detach`.
+        """
+        placement = getattr(self, "_placement", None)
+        if placement is None or not self.is_attached:
+            return
+        if placement.method == "pack":
+            slaves = list(placement.master.pack_slaves())
+            try:
+                placement.index = slaves.index(self._internal)
+            except ValueError:
+                placement.index = None
+            self._internal.pack_forget()
+        elif placement.method == "grid":
+            # grid_forget (not grid_remove): the "remembered" state left by
+            # grid_remove rejects an explicit re-grid; we reconstruct fully
+            # from the stored cell options instead.
+            self._internal.grid_forget()
+        else:
+            self._internal.place_forget()
+
+    def attach(self, **kwargs: Any) -> None:
+        """Return a detached widget to its layout, optionally moving it.
+
+        With no arguments, restores the widget to exactly where `detach` took
+        it from. Any layout kwargs accepted by the original placement (e.g.
+        `fill`, `expand`, `anchor`, `sticky`, `margin`) override the stored
+        options. For stacked widgets, `index=` sets the position among the
+        currently attached siblings (or pass an explicit `before=`/`after=`
+        sibling); without one, the snapshotted position is used.
+
+        Calling `attach` on a widget that is already attached moves it (the
+        kwargs are re-applied). Fires `on_attach`.
+
+        Args:
+            **kwargs: Layout placement options to override for this placement.
+
+        Raises:
+            ParentResolutionError: If the widget was never placed in a layout.
+        """
+        from bootstack.widgets._core.container import (
+            PACK_KEYS, GRID_KEYS, PLACE_KEYS,
+            normalize_fill, _expand_margin, resolve_pack_order,
+        )
+
+        placement = getattr(self, "_placement", None)
+        if placement is None:
+            raise ParentResolutionError(
+                f"{type(self).__name__} was never placed in a layout; "
+                f"nothing to attach()."
+            )
+        # Re-applying to an attached widget is a move: clear it first so the
+        # placement (and any index math) starts from a clean slate.
+        if self.is_attached:
+            self.detach()
+
+        master = placement.master
+        options = dict(placement.options)
+        if kwargs:
+            if "fill" in kwargs:
+                kwargs["fill"] = normalize_fill(kwargs["fill"])
+            _expand_margin(kwargs)
+
+        if placement.method == "pack":
+            order = {k: kwargs.pop(k) for k in ("index", "before", "after") if k in kwargs}
+            options.update({k: v for k, v in kwargs.items() if k in PACK_KEYS})
+            if not order and placement.index is not None:
+                order["index"] = placement.index
+            order_kw = resolve_pack_order(order, master)
+            self._internal.pack(in_=master, **options, **order_kw)
+        elif placement.method == "grid":
+            options.update({k: v for k, v in kwargs.items() if k in GRID_KEYS})
+            self._internal.grid(in_=master, **options)
+        else:
+            options.update({k: v for k, v in kwargs.items() if k in PLACE_KEYS})
+            self._internal.place(in_=master, **options)
+        placement.options = options
+
     @overload
     def on_destroy(self) -> "Stream": ...
     @overload
@@ -212,6 +317,57 @@ class PublicWidgetBase:
             is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
         return self.on("destroy", handler)
+
+    @overload
+    def on_attach(self) -> "Stream": ...
+    @overload
+    def on_attach(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_attach(
+        self,
+        handler: Callable[[Event], Any] | None = None,
+    ) -> "Stream | Subscription":
+        """Register a callback fired when the widget enters the layout.
+
+        Fires each time the widget becomes visible in its parent — on initial
+        placement and on every `attach`. Pair it with `on_detach` to keep
+        per-visibility resources (timers, observers) tied to the widget's
+        presence on screen. The handler receives a curated
+        :class:`~bootstack.events.Event`.
+
+        Args:
+            handler: Called when the widget is attached. Omit to get a
+                composable :class:`~bootstack.streams.Stream`.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("attach", handler)
+
+    @overload
+    def on_detach(self) -> "Stream": ...
+    @overload
+    def on_detach(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_detach(
+        self,
+        handler: Callable[[Event], Any] | None = None,
+    ) -> "Stream | Subscription":
+        """Register a callback fired when the widget leaves the layout.
+
+        Fires each time the widget stops occupying space in its parent — on
+        `detach` and when an ancestor hides it. Pair it with `on_attach` to
+        release per-visibility resources. The handler receives a curated
+        :class:`~bootstack.events.Event`.
+
+        Args:
+            handler: Called when the widget is detached. Omit to get a
+                composable :class:`~bootstack.streams.Stream`.
+
+        Returns:
+            A cancellable :class:`~bootstack.events.Subscription` when a handler
+            is given, otherwise a :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("detach", handler)
 
     def __repr__(self) -> str:
         try:

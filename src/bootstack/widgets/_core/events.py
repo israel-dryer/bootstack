@@ -18,6 +18,8 @@ class _Widget(_EventCategory):
     BLUR         = "blur"
     RESIZE       = "resize"
     DESTROY      = "destroy"
+    ATTACH       = "attach"
+    DETACH       = "detach"
     EXPAND       = "expand"
     COLLAPSE     = "collapse"
     ACTIVATE     = "activate"
@@ -74,6 +76,8 @@ GLOBAL_EVENT_MAP: dict[str, str] = {
     "blur":         "<FocusOut>",
     "resize":       "<Configure>",
     "destroy":      "<Destroy>",
+    "attach":       "<Map>",
+    "detach":       "<Unmap>",
     # Input
     "input":        "<KeyRelease>",
     "submit":       "<Return>",

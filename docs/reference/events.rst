@@ -353,6 +353,63 @@ the native events above. Unlike them, ``on_destroy`` fires exactly once and
 cannot be canceled. For a *window's* close button — which a handler can veto —
 use ``on_close`` instead (see :doc:`/getting-started/app-structures`).
 
+Detaching and reattaching
+-------------------------
+
+Destroying a widget is permanent. To pull a widget out of the layout *without*
+tearing it down — and put it back later in the same spot — use ``detach`` and
+``attach``. A detached widget stops taking up space but keeps its state,
+children, and bindings.
+
+.. code-block:: python
+
+   panel = bs.VStack()
+   ...
+   panel.detach()            # hide it — frees its space
+   panel.attach()            # bring it back exactly where it was
+
+``attach`` accepts the same layout options as the constructor, so you can move a
+widget as you bring it back. For stacked widgets, ``index=`` sets the position
+among the currently attached siblings (or pass an explicit ``before=`` /
+``after=`` sibling):
+
+.. code-block:: python
+
+   row.detach()
+   row.attach(index=0)       # back at the top of its stack
+
+The ``is_attached`` property reports the current state, and a plain ``detach()``
+on an already-detached widget (or ``attach()`` after a no-argument ``detach``)
+round-trips cleanly.
+
+To build a widget that starts hidden, pass ``attached=False`` to its
+constructor. It is created and parented in place — so a later ``attach()``
+drops it into the slot it was declared in — but takes up no space until shown,
+with no startup flicker:
+
+.. code-block:: python
+
+   with bs.VStack():
+       bs.Label("Account")
+       banner = bs.Label("Saved!", accent="success", attached=False)
+       bs.TextField()
+
+   ...
+   banner.attach()           # reveal it between the label and the field
+
+Two events bracket this. ``on_attach`` fires whenever the widget enters the
+layout — on its initial placement and on every ``attach`` — and ``on_detach``
+fires when it leaves, including when an ancestor hides it. They are the place to
+start and stop work that should only run while the widget is on screen:
+
+.. code-block:: python
+
+   chart = bs.Card()
+   chart.on_attach(lambda e: feed.subscribe(chart.refresh))
+   chart.on_detach(lambda e: feed.unsubscribe(chart.refresh))
+
+Each hands the handler a curated :class:`Event <bootstack.events.Event>`.
+
 Filtering native events
 -----------------------
 
