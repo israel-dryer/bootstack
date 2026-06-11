@@ -22,6 +22,31 @@ Basic
    bs.Select(["Red", "Green", "Blue"])
    bs.Select(["Red", "Green", "Blue"], value="Green")
 
+Option values
+~~~~~~~~~~~~~
+
+An option's displayed label can differ from its stored value. Each option is a
+plain string, a ``(text, value)`` tuple, or a ``{"text": ..., "value": ...}``
+dict. ``value=``, ``.value``, and the change event all work in *value-space* —
+the value, not the label. The label currently shown is available as ``.text``.
+
+.. code-block:: python
+
+   theme = bs.Select(
+       [("Light theme", "light"), ("Dark theme", "dark"), {"text": "Follow system", "value": "auto"}],
+       value="dark",
+   )
+   theme.value            # -> "dark"          (the value)
+   theme.text             # -> "Dark theme"    (the displayed label)
+   theme.value = "auto"   # selects "Follow system"
+   theme.on_change(lambda e: apply_theme(e.value))
+
+   theme.options          # -> [{"text": "Light theme", "value": "light"}, ...]
+
+Setting ``.value`` to something that is not one of the options raises
+``ValueError`` (unless ``allow_custom_values=True``, where a typed value is kept
+as its own text).
+
 Label and message
 ~~~~~~~~~~~~~~~~~
 

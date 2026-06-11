@@ -168,6 +168,12 @@ class TextArea(PublicWidgetBase):
         self._internal.value = v
 
     @property
+    def text(self) -> str:
+        """The current display text. Same as `value` for a text area (no
+        formatting layer). Read-only — assign to `value` to change it."""
+        return self._internal.value
+
+    @property
     def signal(self) -> "Signal[str] | None":
         """The reactive `Signal` bound to this field, or `None`."""
         return getattr(self._internal, "signal", None)

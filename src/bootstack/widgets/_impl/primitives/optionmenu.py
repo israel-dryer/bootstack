@@ -6,10 +6,11 @@ from typing import Any, Callable, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.events import ChangeEvent
+from bootstack.widgets._core.options import normalize_options
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets._impl.primitives._menubutton import MenuButton
 from bootstack.widgets._impl.mixins import configure_delegate
-from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState
+from bootstack.widgets.types import Master, StyledKwargs, CompoundMode, WidgetState, Option
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -45,15 +46,18 @@ class OptionMenu(MenuButton):
             self,
             master: Master = None,
             value: Any = None,
-            options: list[Any] = None,
+            options: list[Option] = None,
             **kwargs: Unpack[OptionMenuKwargs],
     ):
         """Create an OptionMenu backed by a ContextMenu.
 
         Args:
             master: Parent widget. If None, uses the default root window.
-            value: Initial selected value.
-            options: List of values to populate the menu.
+            value: Initial selected value (value-space). Must match one of the
+                options unless it is None/empty.
+            options: Options to populate the menu — each a string,
+                `(text, value)` tuple, or `{'text', 'value'}` dict. The menu
+                shows each option's text; selecting one emits its value.
 
         Other Parameters:
             command: Callback invoked when the value changes via menu selection.
@@ -86,14 +90,18 @@ class OptionMenu(MenuButton):
         )
 
         self._bind_id = None
-        self._menu_options = options if options is not None else []
+        # Normalize options once; keep bidirectional text<->value maps so the
+        # menu can display text while the public value stays in value-space.
+        self._records = normalize_options(options)
+        self._rebuild_option_maps()
 
-        # Store the textvariable if provided, or create a new one
+        # Store the textvariable if provided, or create a new one. The variable
+        # holds the DISPLAY TEXT (it drives the button face + radio highlight).
         self._textvariable = kwargs.pop('textvariable', None)
         if self._textvariable is None:
-            self._textvariable = StringVar(value=str(value) if value is not None else "")
+            self._textvariable = StringVar(value=self._resolve_initial_text(value))
 
-        super().__init__(master, text=value, style_options=style_options, **kwargs)
+        super().__init__(master, text=self._textvariable.get(), style_options=style_options, **kwargs)
 
         # Configure the menubutton to use the textvariable
         self.configure(textvariable=self._textvariable)
@@ -109,11 +117,48 @@ class OptionMenu(MenuButton):
         self.bind('<Return>', lambda _: self.show_menu(), add="+")
         self.bind('<KP_Enter>', lambda _: self.show_menu(), add="+")
 
+    def _rebuild_option_maps(self) -> None:
+        """Rebuild the text<->value lookups from the current records.
+
+        Duplicate texts keep the first value; duplicate values keep the first
+        text. A SelectButton uses a single shared variable keyed on text, so
+        duplicate texts with distinct values cannot be told apart — keep option
+        texts unique.
+        """
+        self._value_by_text: dict[str, Any] = {}
+        self._text_by_value: dict[Any, str] = {}
+        for rec in self._records:
+            self._value_by_text.setdefault(rec.text, rec.value)
+            try:
+                self._text_by_value.setdefault(rec.value, rec.text)
+            except TypeError:
+                pass  # unhashable value — no reverse mapping; display still works
+
+    def _resolve_initial_text(self, value: Any) -> str:
+        """Map an initial value-space value to its display text.
+
+        Returns the empty string for None/empty; raises if the value matches no
+        option.
+        """
+        if value is None or value == "":
+            return ""
+        try:
+            if value in self._text_by_value:
+                return self._text_by_value[value]
+        except TypeError:
+            pass
+        raise ValueError(f"{value!r} is not one of the options")
+
     def _bind_change_event(self):
-        """(Re)bind textsignal to emit <<Change>> Tk events."""
+        """(Re)bind textsignal to emit <<Change>> Tk events (in value-space)."""
         if self._bind_id is not None:
             self.textsignal.unsubscribe(self._bind_id)
-        return self.textsignal.subscribe(lambda v: self.event_generate('<<Change>>', data=ChangeEvent(value=v)))
+        return self.textsignal.subscribe(
+            lambda text: self.event_generate(
+                '<<Change>>',
+                data=ChangeEvent(value=self._value_by_text.get(text, text) if text else None),
+            )
+        )
 
     def _build_context_menu(self):
         # Affordance baked into the button image (focus ring + border line in
@@ -127,11 +172,11 @@ class OptionMenu(MenuButton):
         menu_items = [
             ContextMenuItem(
                 type="radiobutton",
-                text=str(item),
+                text=rec.text,
                 variable=self._textvariable,
-                value=str(item)
+                value=rec.text,
             )
-            for item in self._menu_options
+            for rec in self._records
         ]
         return ContextMenu(
             self, target=self, items=menu_items,
@@ -156,13 +201,32 @@ class OptionMenu(MenuButton):
             self._context_menu.configure(minwidth=max(150, target_w))
         self._context_menu.show()
 
-    def get(self) -> str:
-        """Return the current value."""
+    @property
+    def text(self) -> str:
+        """The display label currently shown on the button."""
         return self._textvariable.get()
 
+    def get(self) -> Any:
+        """Return the current value (value-space), or `None` if nothing is selected."""
+        text = self._textvariable.get()
+        if text == "":
+            return None
+        return self._value_by_text.get(text, text)
+
     def set(self, value: Any) -> None:
-        """Set the current value (coerced to string)."""
-        self._textvariable.set(str(value))
+        """Select the option whose value is `value`, updating the displayed text.
+
+        Passing None or `''` clears the selection. A value that matches no
+        option raises `ValueError`.
+        """
+        if value is None or value == "":
+            self._textvariable.set("")
+            return
+        try:
+            text = self._text_by_value[value]
+        except (KeyError, TypeError):
+            raise ValueError(f"{value!r} is not one of the options")
+        self._textvariable.set(text)
 
     @property
     def value(self) -> str:
@@ -196,15 +260,16 @@ class OptionMenu(MenuButton):
 
     @configure_delegate('options')
     def _delegate_options(self, value=None):
-        """Get or set the menu options list."""
+        """Get the normalized option records, or set new options."""
         if value is None:
-            return self._menu_options
+            return list(self._records)
         else:
-            self._menu_options = value
-            # Reconcile the current selection: if it is no longer one of the
-            # options, clear it so the button never displays a value the list
-            # can't offer (and no menu item stays phantom-selected).
-            if self._textvariable.get() not in {str(item) for item in value}:
+            self._records = normalize_options(value)
+            self._rebuild_option_maps()
+            # Reconcile the current selection: if its display text is no longer
+            # one of the options, clear it so the button never shows a value the
+            # list can't offer (and no menu item stays phantom-selected).
+            if self._textvariable.get() not in self._value_by_text:
                 self._textvariable.set("")
             if self._context_menu:
                 self._context_menu.destroy()

@@ -23,6 +23,20 @@ Pass a list of options. The button displays the currently selected value.
 
    bs.SelectButton(["Light", "Dark", "Auto"], value="Light")
 
+Option values
+~~~~~~~~~~~~~
+
+Like `Select`, an option's label can differ from its value — pass a
+``(text, value)`` tuple or a ``{"text": ..., "value": ...}`` dict. ``value=``,
+``.value``, and the change event are in value-space.
+
+.. code-block:: python
+
+   mode = bs.SelectButton([("Light theme", "light"), ("Dark theme", "dark")], value="dark")
+   mode.value             # -> "dark"          (the value)
+   mode.text              # -> "Dark theme"    (the displayed label)
+   mode.on_change(lambda e: apply_theme(e.value))
+
 Accent colors
 ~~~~~~~~~~~~~
 

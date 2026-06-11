@@ -6,10 +6,11 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.selection_group import SelectionGroupMixin
+from bootstack.widgets._core.options import normalize_options
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, Orient, ButtonVariant
+from bootstack.widgets.types import AccentToken, Event, Option, Orient, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -27,9 +28,9 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
     active at a time; in `'multi'` mode any combination can be active.
 
     Args:
-        options: Choices for the group. Each item is either a plain string
-            (label and value are the same) or a `(label, value)` tuple,
-            e.g. `["Grid", "List"]` or
+        options: Choices for the group. Each item is a plain string (text and
+            value are the same), a `(text, value)` tuple, or a
+            `{'text': ..., 'value': ...}` dict — e.g. `["Grid", "List"]` or
             `[("Grid view", "grid"), ("List view", "list")]`.
         mode: Selection behavior. `'single'` (default) enforces mutual
             exclusivity like a radio group; `'multi'` allows any number
@@ -55,7 +56,7 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
 
     def __init__(
         self,
-        options: list[str | tuple[str, Any]] | None = None,
+        options: list[Option] | None = None,
         *,
         mode: Literal["single", "multi"] = "single",
         signal: "Signal | None" = None,
@@ -90,13 +91,8 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         self._internal = _InternalToggleGroup(tk_master, **internal_kwargs)
 
         # Populate options passed at construction.
-        if options:
-            for opt in options:
-                if isinstance(opt, str):
-                    self._internal.add(text=opt, value=opt)
-                else:
-                    lbl, val = opt
-                    self._internal.add(text=lbl, value=val)
+        for record in normalize_options(options):
+            self._internal.add(text=record.text, value=record.value)
 
         # Trace signal → <<Change>> for consistent Subscription-based on_change().
         self._prev_value = self._internal.signal()

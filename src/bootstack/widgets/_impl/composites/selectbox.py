@@ -2,13 +2,16 @@ from tkinter import Toplevel
 
 from typing_extensions import Unpack
 
+from typing import Any
+
 from bootstack.events import ChangeEvent
+from bootstack.widgets._core.options import normalize_options
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.scrollview import ScrollView
 from bootstack.widgets._impl.composites.field import Field, FieldOptions
 from bootstack.widgets._impl.mixins import configure_delegate
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, Option
 
 
 class SelectBox(Field):
@@ -23,11 +26,12 @@ class SelectBox(Field):
     def __init__(
             self,
             master: Master = None,
-            value: str = None,
-            items: list[str] = None,
+            value: Any = None,
+            items: list[Option] = None,
             label: str = None,
             message: str = None,
             allow_custom_values: bool = False,
+            strict_value: bool = False,
             show_dropdown_button: bool = True,
             dropdown_button_icon: str = None,
             enable_search: bool = False,
@@ -35,8 +39,12 @@ class SelectBox(Field):
     ):
         """Args:
             master: Parent widget. If None, uses the default root window.
-            value: Initial selected value; should typically be present in `items`.
-            items: Sequence of string options to present in the popup list.
+            value: Initial selected value (value-space). Should match one of the
+                options unless `allow_custom_values` is set.
+            items: Options to present in the popup — each a string,
+                `(text, value)` tuple, or `{'text', 'value'}` dict. The popup
+                and field display each option's text; the selected value is
+                emitted in value-space.
             label: Optional label text shown above the field.
             message: Optional helper/error message shown below the field.
             allow_custom_values: If True, the entry is editable so users can type
@@ -65,12 +73,18 @@ class SelectBox(Field):
             width: Width of the entry in characters.
             required: If True, field cannot be empty.
         """
-        super().__init__(master, value=value, label=label, message=message, **kwargs)
-
+        # Normalize options once. The maps only decouple an option's *display
+        # text* from its *value*; the entry keeps owning the raw value (so
+        # `value_format` parsing, e.g. TimeField's time objects, is preserved).
+        self._records = normalize_options(items)
         self._allow_custom_values = allow_custom_values
+        self._strict_value = strict_value
+        self._rebuild_option_maps()
+
+        # Seed the entry with the display form of the initial value.
+        super().__init__(master, value=self._resolve_display(value), label=label, message=message, **kwargs)
+
         self._search_enabled = enable_search
-        self._items = items or []
-        self._last_selected_value = value
         self._popup_open = False
         self._dropdown_button_icon = dropdown_button_icon or 'chevron-down'
         self._popup_frame = None
@@ -95,6 +109,53 @@ class SelectBox(Field):
             self.entry_widget.state(['readonly'])
             self.after_idle(self._bind_readonly_selection_on_click)
 
+    # ----- Option normalization + value<->text mapping -----
+
+    def _rebuild_option_maps(self) -> None:
+        """Rebuild text<->value lookups from the current records.
+
+        Duplicate texts keep the first value; duplicate values keep the first
+        text. Popup selection resolves by the chosen row's record, so duplicate
+        texts with distinct values still select correctly from the list — only
+        the `value` setter (which keys on value) is affected by duplicates.
+        """
+        self._value_by_text: dict[str, Any] = {}
+        self._text_by_value: dict[Any, str] = {}
+        for rec in self._records:
+            self._value_by_text.setdefault(rec.text, rec.value)
+            try:
+                self._text_by_value.setdefault(rec.value, rec.text)
+            except TypeError:
+                pass  # unhashable value — no reverse map; popup selection still works
+
+    def _resolve_display(self, value: Any) -> Any:
+        """Map a value-space value to what the entry should hold.
+
+        The entry owns the raw value <-> display text mapping (via
+        `value_format`); the option map only kicks in to decouple an option's
+        display text from its value:
+
+        - None/empty -> the value itself (the entry clears).
+        - A decoupled option (its text differs from its value) -> the option's
+          display text, which the entry shows verbatim.
+        - A known plain option, a custom value, or a typed value (e.g. a
+          `datetime.time`) -> the value itself, so the entry's `value_format`
+          parses/formats it.
+        - An unknown value, when `strict_value` is set and custom values are
+          off -> raises `ValueError`.
+        """
+        if value is None or value == "":
+            return value
+        try:
+            if value in self._text_by_value:
+                text = self._text_by_value[value]
+                return text if text != value else value
+        except TypeError:
+            pass
+        if self._strict_value and not self._allow_custom_values:
+            raise ValueError(f"{value!r} is not one of the options")
+        return value
+
     def _on_dropdown_click(self):
         """Handle dropdown button click by focusing entry then showing popup."""
         self.entry_widget.focus_set()
@@ -107,7 +168,7 @@ class SelectBox(Field):
 
     def _show_selection_options(self):
         """Create and display the popup list of selectable items."""
-        if not self._items or self._popup_open:
+        if not self._records or self._popup_open:
             return
         if self.entry_widget.instate(['disabled']):
             return
@@ -248,28 +309,29 @@ class SelectBox(Field):
         inner_frame.bind('<Configure>', on_inner_frame_configure, add='+')
 
         self._item_labels = []
-        current_value = self.entry_widget.get()
+        current_text = self.entry_widget.get()
 
         # Get accent from Field's _accent attribute, fallback to primary if None
         accent = getattr(self, '_accent', None) or 'primary'
 
-        for i, item in enumerate(self._items):
+        for i, rec in enumerate(self._records):
             btn = Button(
                 inner_frame,
-                text=item,
+                text=rec.text,
                 accent=accent,
                 variant='selectbox_item',
                 takefocus=False,
-                command=lambda v=item: self._on_item_click(v, toplevel, popup_state)
+                command=lambda v=rec.value: self._on_item_click(v, toplevel, popup_state)
             )
             btn.pack(fill='x')
 
-            # Store item value on button for retrieval
-            btn._item_value = item
+            # Store the option's value (for selection) and text (for filtering).
+            btn._item_value = rec.value
+            btn._item_text = rec.text
             btn._item_index = i
 
-            # Apply selected state if this is the current value
-            if item == current_value:
+            # Apply selected state if this row matches the displayed text
+            if rec.text == current_text:
                 btn.state(['selected'])
 
             self._item_labels.append(btn)
@@ -360,9 +422,9 @@ class SelectBox(Field):
 
     def _setup_search_bindings(self, toplevel, popup_state, close_popup):
         """Setup search-specific event bindings."""
-        # Initialize first filtered item
-        if self._items:
-            popup_state['first_filtered_item'] = self._items[0]
+        # Initialize first filtered item (stored in value-space)
+        if self._records:
+            popup_state['first_filtered_item'] = self._records[0].value
         popup_state['last_search_text'] = self.entry_widget.get().lower()
 
         # Filter function
@@ -377,17 +439,17 @@ class SelectBox(Field):
                 return
             popup_state['last_search_text'] = search_text
 
-            # Show/hide buttons based on filter
+            # Show/hide buttons based on filter — match on the visible TEXT
             first_visible = None
             for btn in self._item_labels:
-                if search_text in btn._item_value.lower():
+                if search_text in btn._item_text.lower():
                     btn.pack(fill='x')
                     if first_visible is None:
                         first_visible = btn
                 else:
                     btn.pack_forget()
 
-            # Track first filtered item for auto-select
+            # Track first filtered item for auto-select (value-space)
             popup_state['first_filtered_item'] = first_visible._item_value if first_visible else None
 
             # Reset highlight to first visible item
@@ -481,12 +543,17 @@ class SelectBox(Field):
         self._close_popup(toplevel, popup_state)
 
     @configure_delegate('items')
-    def _delegate_items(self, value: list[str] = None):
-        """Get or set the available items for the SelectBox."""
+    def _delegate_items(self, value: list[Option] = None):
+        """Get the normalized option records, or set new options."""
         if value is None:
-            return self._items
+            return list(self._records)
         else:
-            self._items = value or []
+            self._records = normalize_options(value)
+            self._rebuild_option_maps()
+            # Reconcile the displayed selection: if its text is no longer an
+            # option (and custom values aren't allowed), clear it.
+            if self.entry_widget.get() not in self._value_by_text and not self._allow_custom_values:
+                self.value = None
         return None
 
     @configure_delegate('allow_custom_values')
@@ -517,55 +584,78 @@ class SelectBox(Field):
 
     @configure_delegate('value')
     def _delegate_value(self, value=None):
-        if value is not None:
+        if value is None:
             return self.value
-        else:
-            self.value = value
-            return None
+        self.value = value
+        return None
 
     @property
     def selected_index(self) -> int:
         """Get or set the selected index.
 
-        Returns -1 if the current value is not in the items list.
-        Setting to -1 or None clears the selection.
+        Returns -1 if nothing is selected (the displayed text matches no
+        option). Setting to -1 or None clears the selection.
         """
-        try:
-            return self._items.index(self.entry_widget.get())
-        except:
-            return -1
+        text = self.entry_widget.get()
+        for i, rec in enumerate(self._records):
+            if rec.text == text:
+                return i
+        return -1
 
     @selected_index.setter
     def selected_index(self, index):
         if index is None or index == -1:
-            self.value = ""
-        elif 0 <= index < len(self._items):
-            self.value = self._items[index]
+            self.value = None
+        elif 0 <= index < len(self._records):
+            self.value = self._records[index].value
         else:
-            raise IndexError(f"index {index} out of range for {len(self._items)} items")
+            raise IndexError(f"index {index} out of range for {len(self._records)} options")
 
     @property
-    def value(self) -> str:
-        """Get or set the selected value."""
+    def text(self) -> str:
+        """The current display text shown in the field (the formatted string)."""
+        return self.entry_widget.get()
+
+    @property
+    def value(self):
+        """The selected value, or None when the field is empty.
+
+        For a decoupled option (its display text differs from its value) this
+        returns the option's value. Otherwise it returns the entry's own raw
+        value, so `value_format` parsing — e.g. TimeField's `datetime.time` —
+        is preserved.
+        """
+        text = self.entry_widget.get()
+        if text == "":
+            return None
+        if text in self._value_by_text and self._value_by_text[text] != text:
+            return self._value_by_text[text]
         return Field.value.fget(self)
 
     @value.setter
     def value(self, value):
-        """Set the selected value and emit `<<Change>>` when it differs."""
-        prev_value = Field.value.fget(self)
+        """Select `value`, updating the displayed text and emitting `<<Change>>`.
+
+        A decoupled option shows its text; a plain/typed/custom value is handed
+        to the entry, which owns the raw value <-> text formatting. An unknown
+        value raises `ValueError` when `strict_value` is set and custom values
+        are off.
+        """
+        prev_value = self.value
+        display = self._resolve_display(value)
         is_readonly = self.entry_widget.instate(['readonly'])
         if is_readonly:
             self.entry_widget.state(['!readonly'])
-        Field.value.fset(self, value)
-        new_value = Field.value.fget(self)
-        display_text = str(new_value) if new_value is not None else ''
-        try:
+        if display is None or display == "":
+            # The entry part's value() setter doesn't reliably clear the field;
+            # empty it directly.
             self.entry_widget.delete(0, 'end')
-            self.entry_widget.insert(0, display_text)
-        except Exception:
-            pass
+        else:
+            # The entry owns raw<->text; setting its value is programmatic (no emit).
+            Field.value.fset(self, display)
         if is_readonly:
             self.entry_widget.state(['readonly'])
+        new_value = self.value
         if new_value != prev_value:
             self.entry_widget._prev_changed_value = new_value
             if not getattr(self, "_suppress_changed_event", False):

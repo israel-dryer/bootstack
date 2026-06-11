@@ -81,7 +81,7 @@ MOVED = {
         "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
         "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
-        "ColumnSpec", "EditorType", "FormOptions",
+        "ColumnSpec", "EditorType", "FormOptions", "Option", "OptionDict",
     ],
     # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
     # stays importable here for power users. See project_editfilter_public_api.

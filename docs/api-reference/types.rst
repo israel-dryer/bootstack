@@ -145,6 +145,13 @@ Literals for selection behavior and tabular data export.
    Which rows an export covers — `'all'` rows, the current `'page'`, or the
    current `'selection'`.
 
+.. py:type:: Option
+
+   A single choice for `Select`, `SelectButton`, `RadioGroup`, or
+   `ToggleGroup` — a plain `str` (text and value are the same), a
+   `(text, value)` tuple, or an `OptionDict`. Lets an option's displayed label
+   differ from its stored value.
+
 .. py:type:: SelectionMode
 
    How many rows or items can be selected — `'none'`, `'single'`, or `'multi'`.
@@ -169,6 +176,9 @@ that ``DataTable`` and ``Form`` accept.
    `'spinnerfield'`, `'switch'`, `'checkbox'`, `'slider'`.
 
 .. autoclass:: FormOptions
+   :members:
+
+.. autoclass:: OptionDict
    :members:
 
 .. autoclass:: StyledKwargs
