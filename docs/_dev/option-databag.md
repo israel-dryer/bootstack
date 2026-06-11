@@ -1,6 +1,13 @@
 # Initiative — Option data bag + the universal `selection` accessor
 
-**Status:** IN PROGRESS. Branch `feat/option-databag` off `main`. Started 2026-06-11.
+**Status:** SHIPPED (fully). The bag + universal `.selection` accessor for the
+option family merged in **PR #116**; the reserved `icon`/`disabled` keys were
+wired up (icon-only inferred from blank text) in **PR #118** (which also flipped
+`ToggleGroup`'s default accent to `'default'` and fixed its disabled-background
+builder); the naming-alignment follow-on — extending `.selection` to
+ListView/DataTable/Tree + the ListView write-side methods — merged in **PR #120**
+(see "Naming-alignment follow-on (PR #120)" below). The design sections below are
+kept as the historical record.
 **Builds on:** the field value/text/label model (`project_field_value_text_model`)
 and the shared `Option` shape shipped in PRs #114/#115.
 
@@ -73,12 +80,36 @@ selection), Tabs/SideNav/PageStack (navigation).
 
 ## This branch vs follow-up
 
-- **This branch (foundation):** parts 1+2 for the **option family only**
-  (Select, SelectButton, RadioGroup, ToggleGroup). The four already expose
-  `value`/`text`; add `selection` returning the full record.
-- **Follow-up PR (naming alignment):** add `.selection` to ListView/DataTable/
-  Tree, mapping/replacing their existing `get_selected()` / `selected_rows` /
-  `selected_nodes`. Separate because it renames shipped API.
+- **Foundation (PR #116):** parts 1+2 for the **option family only** (Select,
+  SelectButton, RadioGroup, ToggleGroup). The four already expose `value`/`text`;
+  added `selection` returning the full record.
+- **Follow-up (PR #120, shipped):** see "Naming-alignment follow-on" below.
+
+## Naming-alignment follow-on (PR #120, shipped)
+
+Extended `.selection` to the record-native **ListView / DataTable / Tree**, which
+carried records but exposed them under divergent names of divergent kinds —
+`ListView.get_selected()` (a method), `DataTable.selected_rows`,
+`Tree.selected_nodes`. **Breaking, clean break (no shim):** those three are GONE.
+
+- `.selection` is **polymorphic by `selection_mode`** (mirrors ToggleGroup):
+  single → `dict | None` (Tree: `TreeNode | None`), multi → `list[dict]` (Tree:
+  `list[TreeNode]`), none → `None`. Each wrapper stores `self._selection_mode` and
+  collapses the internal's always-list to the singular shape.
+- ListView/DataTable return record dicts directly; Tree returns node **handles**
+  (bag at `node.data`) — the principled exception.
+- **Behavior note:** DataTable defaults to `selection_mode='single'`, so
+  `table.selection` is a `dict | None` by default (the old `selected_rows` was
+  always a list).
+- **Write-side gap closed:** new `ListView.select_items(ids)` /
+  `deselect_items(ids)` (by record id; single-mode replace, multi-mode add)
+  mirroring `DataTable.select_rows` / `deselect_rows` — ListView previously had
+  only `select_all`/`clear_selection`. Both wrap source mutations in
+  `_silence_source()` and emit ONE `<<SelectionChange>>` (single-mode replace does
+  `deselect_all()` + `select()` but must not double-fire — regression-tested).
+- Verb+noun naming stays in each widget's own vocabulary (rows / items / nodes)
+  **by design** — not a divergence to reconcile. Tree needed no new method:
+  `select(node)` / `deselect(node)` is the right node-handle primitive.
 
 ## Work surface (option family)
 
@@ -105,7 +136,9 @@ selection), Tabs/SideNav/PageStack (navigation).
 - Clean `-W` docs build; run the select/group examples.
 
 ## Deferred / future
-- Wire up `icon` (render beside each option) and per-item `disabled` — separate
-  PRs once the carry ships.
+- ✅ DONE (PR #118) — `icon` rendered beside each option, per-item `disabled`,
+  and icon-only inferred from blank text.
+- ✅ DONE (PR #120) — `.selection` extended to ListView/DataTable/Tree (see the
+  naming-alignment follow-on above).
 - **Select grouping** (optgroup-style) — see `project_select_grouping`; discuss
-  after this lands.
+  before building. The only remaining piece of this initiative's orbit.
