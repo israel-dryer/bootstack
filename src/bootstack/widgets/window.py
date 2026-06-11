@@ -137,15 +137,6 @@ class Window(WindowControlsMixin, PublicContainer):
         self._tk_toplevel.show()
         return self
 
-    def close(self) -> None:
-        """Destroy the window immediately.
-
-        This is a programmatic close: it bypasses the `on_close` callback and any
-        handlers registered with `add_close_handler()` (which guard the user
-        clicking the window's close button), so it cannot be vetoed.
-        """
-        self._tk_toplevel.destroy()
-
     def block_until_closed(self) -> Any:
         """Show the window and block until it is destroyed.
 
@@ -153,23 +144,6 @@ class Window(WindowControlsMixin, PublicContainer):
             The value of `result` at the time the window was closed.
         """
         return self._tk_toplevel.block_until_closed()
-
-    def add_close_handler(self, callback: Callable[[], bool | None]) -> None:
-        """Register an additional close handler.
-
-        Args:
-            callback: Called when the user attempts to close the window.
-                Return `False` to veto the close.
-        """
-        self._tk_toplevel.add_close_handler(callback)
-
-    def remove_close_handler(self, callback: Callable) -> None:
-        """Remove a previously registered close handler.
-
-        Args:
-            callback: The same callable passed to `add_close_handler()`.
-        """
-        self._tk_toplevel.remove_close_handler(callback)
 
     # ----- Properties -----
 

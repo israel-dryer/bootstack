@@ -16,6 +16,7 @@ from bootstack.widgets.types import Master
 from bootstack.constants import BOTH, CENTER, LEFT, NSEW, X, Y, YES
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime.utility import bind_right_click
+from bootstack.widgets._impl.composites._dateutils import coerce_date
 from bootstack.widgets._impl.mixins import configure_delegate
 
 ttk = SimpleNamespace(
@@ -279,19 +280,41 @@ class Calendar(ttk.Frame):
     def set_min_date(self, value: date | datetime | str | None) -> None:
         """Set the earliest selectable date and redraw. None clears the bound."""
         self._min_date = self._coerce_date(value)
-        self._refresh_calendar()
+        self._request_refresh()
 
     def set_max_date(self, value: date | datetime | str | None) -> None:
         """Set the latest selectable date and redraw. None clears the bound."""
         self._max_date = self._coerce_date(value)
-        self._refresh_calendar()
+        self._request_refresh()
 
     def set_disabled_dates(self, dates: Iterable[date | datetime | str] | None) -> None:
         """Replace the set of non-selectable dates and redraw."""
         self._disabled_dates = {
             d for d in (self._coerce_date(x) for x in (dates or [])) if d is not None
         }
-        self._refresh_calendar()
+        self._request_refresh()
+
+    def _request_refresh(self) -> None:
+        """Coalesce constraint changes into a single redraw.
+
+        Setting `min_date`, `max_date`, and `disabled_dates` in sequence would
+        otherwise redraw the whole grid once per setter. Schedule a single
+        idle-time refresh instead so a batch of constraint changes collapses to
+        one redraw.
+        """
+        if getattr(self, "_refresh_pending", False):
+            return
+        self._refresh_pending = True
+
+        def _do() -> None:
+            self._refresh_pending = False
+            self._refresh_calendar()
+
+        try:
+            self.after_idle(_do)
+        except tkinter.TclError:
+            self._refresh_pending = False
+            self._refresh_calendar()
 
     @property
     def range(self) -> tuple[date | None, date | None]:
@@ -916,25 +939,7 @@ class Calendar(ttk.Frame):
         month = (d.month - 1 + n) % 12 + 1
         return date(year, month, 1)
 
-    @staticmethod
-    def _coerce_date(value: date | datetime | str | None) -> date | None:
-        if value is None:
-            return None
-        if isinstance(value, date) and not isinstance(value, datetime):
-            return value
-        if isinstance(value, datetime):
-            return value.date()
-        if isinstance(value, str):
-            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
-                try:
-                    return datetime.strptime(value, fmt).date()
-                except Exception:
-                    continue
-            try:
-                return datetime.fromisoformat(value).date()
-            except Exception:
-                return None
-        return None
+    _coerce_date = staticmethod(coerce_date)
 
     def _normalize_range(
         self,

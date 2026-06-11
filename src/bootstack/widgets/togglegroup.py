@@ -5,6 +5,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.selection_group import SelectionGroupMixin
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
@@ -18,7 +19,7 @@ _TOGGLEGROUP_EVENTS: dict[str, str] = {
 }
 
 
-class ToggleGroup(PublicWidgetBase):
+class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
     """A group of toggle buttons — single-select or multi-select.
 
     Options are supplied at construction via `options=` and can be added
@@ -142,50 +143,6 @@ class ToggleGroup(PublicWidgetBase):
             value: Value this button represents. Defaults to `label`.
         """
         self._internal.add(text=label, value=value if value is not None else label, **kwargs)
-
-    def remove(self, value: Any) -> None:
-        """Remove the option identified by `value`.
-
-        Args:
-            value: The value the option was added with.
-
-        Raises:
-            KeyError: If no option with that value exists.
-        """
-        self._internal.remove(value)
-
-    def configure_item(
-        self,
-        value: Any,
-        *,
-        label: str | None = None,
-        disabled: bool | None = None,
-    ) -> None:
-        """Update a single option in place, without rebuilding the group.
-
-        Args:
-            value: The option to update (the value it was added with).
-            label: New display text, when given.
-            disabled: When given, disable (`True`) or re-enable (`False`) just
-                this option. A later group-level `disabled` change resets every
-                option's state, so apply per-option states after it.
-
-        Raises:
-            KeyError: If no option with that value exists.
-        """
-        key = value
-        if label is not None:
-            self._internal.configure_item(key, text=label)
-        if disabled is not None:
-            self._internal.configure_item(key, state="disabled" if disabled else "normal")
-
-    def __len__(self) -> int:
-        """The number of options in the group."""
-        return len(self._internal.keys())
-
-    def __contains__(self, value: Any) -> bool:
-        """Whether an option with the given `value` is in the group."""
-        return value in self._internal.keys()
 
     # ----- Event shorthands -----
 

@@ -201,6 +201,11 @@ class OptionMenu(MenuButton):
             return self._menu_options
         else:
             self._menu_options = value
+            # Reconcile the current selection: if it is no longer one of the
+            # options, clear it so the button never displays a value the list
+            # can't offer (and no menu item stays phantom-selected).
+            if self._textvariable.get() not in {str(item) for item in value}:
+                self._textvariable.set("")
             if self._context_menu:
                 self._context_menu.destroy()
             self._context_menu = self._build_context_menu()
