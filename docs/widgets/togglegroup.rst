@@ -54,8 +54,11 @@ it as the selected label(s).
    tools.selection  # -> [{"text": "Bold", "value": "b"}]   (multi: list of records)
 
 Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
-and the reserved ``icon``/``disabled``), any other key you add rides along and is
-returned by ``.selection`` (see :doc:`select` for details).
+and the per-option ``icon``/``disabled``), any other key you add rides along and is
+returned by ``.selection`` (see :doc:`select` for details). A per-option ``icon``
+renders beside that button's label, and ``disabled`` greys out a single option so
+it can't be chosen — distinct from the group-level ``disabled=`` that locks every
+button.
 
 .. image:: /_static/examples/togglegroup-multi-light.png
    :class: bs-screenshot-light
@@ -64,6 +67,52 @@ returned by ``.selection`` (see :doc:`select` for details).
 .. image:: /_static/examples/togglegroup-multi-dark.png
    :class: bs-screenshot-dark
    :alt: ToggleGroup multi-select — dark theme
+
+Icon-only options
+~~~~~~~~~~~~~~~~~~
+
+Give an option an ``icon`` and *no* text and it renders as an icon-only button —
+the widget infers this automatically, so a compact toolbar group needs no
+``icon_only`` flag.
+
+.. code-block:: python
+
+   bs.ToggleGroup(options=[
+       {"icon": "text-left",   "value": "left"},
+       {"icon": "text-center", "value": "center"},
+       {"icon": "text-right",  "value": "right"},
+       {"icon": "justify",     "value": "justify"},
+   ], value="left")
+
+.. image:: /_static/examples/togglegroup-icon_only-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup icon-only toolbar — light theme
+
+.. image:: /_static/examples/togglegroup-icon_only-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup icon-only toolbar — dark theme
+
+Disabling a single option
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Mark one option ``disabled`` to grey it out and make it non-selectable while the
+rest of the group stays interactive — distinct from the group-level ``disabled=``
+that locks every button.
+
+.. code-block:: python
+
+   bs.ToggleGroup(options=[
+       ("Day", "day"), ("Week", "week"), ("Month", "month"),
+       {"text": "Year", "value": "year", "disabled": True},
+   ], value="week")
+
+.. image:: /_static/examples/togglegroup-option_disabled-light.png
+   :class: bs-screenshot-light
+   :alt: ToggleGroup with one option disabled — light theme
+
+.. image:: /_static/examples/togglegroup-option_disabled-dark.png
+   :class: bs-screenshot-dark
+   :alt: ToggleGroup with one option disabled — dark theme
 
 Style variants
 ~~~~~~~~~~~~~~

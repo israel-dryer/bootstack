@@ -30,7 +30,10 @@ class Select(PublicWidgetBase):
         options: Choices presented in the popup. Each item is a plain string,
             a `(text, value)` tuple, or a `{'text': ..., 'value': ...}` dict —
             so an option's displayed label can differ from its stored value.
-            Defaults to an empty list.
+            A dict option may also carry `'icon'` (a glyph rendered beside the
+            row label) and `'disabled'` (when `True` the row is dimmed and
+            cannot be chosen); any other keys ride along as carried data on
+            `selection`. Defaults to an empty list.
         value: Initially selected value (value-space — matches an option's
             value, not its label).
         signal: Reactive `Signal` two-way bound to the field's displayed text.

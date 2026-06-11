@@ -52,11 +52,48 @@ def disabled():
     app.run()
 
 
+def icon_only():
+    # An option with an icon and no text renders as a bare glyph — the widget
+    # infers icon-only automatically, giving a compact toolbar.
+    with bs.App(title="ToggleGroup — Icon only", padding=20) as app:
+        with bs.HStack(gap=16, fill="x"):
+            bs.ToggleGroup(options=[
+                {"icon": "text-left", "value": "left"},
+                {"icon": "text-center", "value": "center"},
+                {"icon": "text-right", "value": "right"},
+                {"icon": "justify", "value": "justify"},
+            ], value="left")
+            bs.ToggleGroup(options=[
+                {"icon": "type-bold", "value": "b"},
+                {"icon": "type-italic", "value": "i"},
+                {"icon": "type-underline", "value": "u"},
+            ], mode="multi", value={"b"})
+
+    app.run()
+
+
+def option_disabled():
+    # A single option disabled (greyed, non-selectable) inside an otherwise
+    # enabled group — distinct from the whole-widget `disabled=`.
+    with bs.App(title="ToggleGroup — Option disabled", padding=20) as app:
+        with bs.HStack(fill="x"):
+            bs.ToggleGroup(options=[
+                ("Day", "day"),
+                ("Week", "week"),
+                ("Month", "month"),
+                {"text": "Year", "value": "year", "disabled": True},
+            ], value="week")
+
+    app.run()
+
+
 SCENES = {
-    "hero":        hero,
-    "multi":       multi,
-    "variants":    variants,
-    "accents":     accents,
-    "orientation": orientation,
-    "disabled":    disabled,
+    "hero":           hero,
+    "multi":          multi,
+    "variants":       variants,
+    "accents":        accents,
+    "orientation":    orientation,
+    "disabled":       disabled,
+    "icon_only":      icon_only,
+    "option_disabled": option_disabled,
 }

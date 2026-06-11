@@ -6,7 +6,7 @@ from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.togglegroup import ToggleGroup as _InternalToggleGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.selection_group import SelectionGroupMixin
-from bootstack.widgets._core.options import normalize_options
+from bootstack.widgets._core.options import normalize_options, option_display
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
@@ -31,7 +31,12 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         options: Choices for the group. Each item is a plain string (text and
             value are the same), a `(text, value)` tuple, or a
             `{'text': ..., 'value': ...}` dict — e.g. `["Grid", "List"]` or
-            `[("Grid view", "grid"), ("List view", "list")]`.
+            `[("Grid view", "grid"), ("List view", "list")]`. A dict option may
+            also carry `'icon'` (a glyph rendered beside the label) and
+            `'disabled'` (when `True` the option is dimmed and cannot be
+            selected); any other keys ride along as carried data on `selection`.
+            An option with an `'icon'` and no text — e.g.
+            `{'icon': 'grid', 'value': 'grid'}` — renders as an icon-only button.
         mode: Selection behavior. `'single'` (default) enforces mutual
             exclusivity like a radio group; `'multi'` allows any number
             of buttons to be active simultaneously.
@@ -95,7 +100,9 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         records = normalize_options(options)
         self._set_option_records(records)
         for record in records:
-            self._internal.add(text=record.text, value=record.value)
+            icon, disabled = option_display(record)
+            add_kwargs, _ = self._option_render(icon, disabled, record.text)
+            self._internal.add(text=record.text, value=record.value, **add_kwargs)
 
         # Trace signal → <<Change>> for consistent Subscription-based on_change().
         self._prev_value = self._internal.signal()
@@ -159,16 +166,28 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
 
     # ----- Methods -----
 
-    def add(self, label: str, value: Any | None = None, **kwargs: Any) -> None:
+    def add(
+        self,
+        label: str,
+        value: Any | None = None,
+        *,
+        icon: Any = None,
+        disabled: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Add a toggle button at runtime.
 
         Args:
-            label: Display text.
+            label: Display text. Pass `''` with an `icon` for an icon-only button.
             value: Value this button represents. Defaults to `label`.
+            icon: Optional icon spec rendered beside the label (alone when
+                `label` is blank).
+            disabled: If `True`, the option is dimmed and cannot be selected.
         """
         resolved = value if value is not None else label
-        self._internal.add(text=label, value=resolved, **kwargs)
-        self._add_option_record(label, resolved)
+        add_kwargs, extras = self._option_render(icon, disabled, label)
+        self._internal.add(text=label, value=resolved, **add_kwargs, **kwargs)
+        self._add_option_record(label, resolved, extras)
 
     # ----- Event shorthands -----
 

@@ -29,7 +29,10 @@ class SelectButton(PublicWidgetBase):
         options: Choices shown in the popup. Each item is a plain string, a
             `(text, value)` tuple, or a `{'text': ..., 'value': ...}` dict — so
             an option's displayed label can differ from its stored value, e.g.
-            `["Light", "Dark"]` or `[("Light theme", "light")]`.
+            `["Light", "Dark"]` or `[("Light theme", "light")]`. A dict option
+            may also carry `'icon'` (a glyph rendered beside the menu label) and
+            `'disabled'` (when `True` the item is dimmed and cannot be chosen);
+            any other keys ride along as carried data on `selection`.
         value: Initially selected value (value-space — matches an option's
             value, not its label). Must match one of the options.
         signal: Reactive `Signal[str]` controlling the selected value. When

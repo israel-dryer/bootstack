@@ -51,7 +51,7 @@ Carrying extra data (the data bag)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The dict form is a *data bag* — alongside the recognized keys (``text``,
-``value``, and the reserved ``icon``/``disabled``), any other key you add rides
+``value``, and the per-option ``icon``/``disabled``), any other key you add rides
 along as carried data. Read the whole selected record, indexed by key, via
 ``.selection``:
 
@@ -72,6 +72,23 @@ along as carried data. Read the whole selected record, indexed by key, via
 ``ListView`` row), or ``None`` when nothing is selected. Unrecognized keys are
 *accepted, not validated* — the dict route is opt-in, so a mistyped key rides
 along silently rather than raising.
+
+Two of the recognized keys change how an option is *presented*: ``icon`` renders a
+glyph beside the option's label in the popup, and ``disabled`` greys the row out
+and makes it non-selectable (keyboard navigation and search auto-select skip it
+too). Per-option ``disabled`` is independent of the widget-level ``disabled=``
+that locks the whole control:
+
+.. code-block:: python
+
+   bs.Select(options=[
+       {"text": "Free",       "value": "free",  "icon": "gift"},
+       {"text": "Pro",        "value": "pro",   "icon": "star"},
+       {"text": "Enterprise", "value": "ent",   "icon": "buildings", "disabled": True},
+   ], value="free")
+
+Setting a disabled option's value programmatically still works — ``disabled`` only
+blocks *user* selection.
 
 Label and message
 ~~~~~~~~~~~~~~~~~

@@ -68,7 +68,7 @@ def build_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
 
     normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
     selected_img = recolor_element_image(image_key, bg_selected, bd_selected, surface, surface)
-    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, bg_disabled)
+    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, surface)
 
     if active_state:
         b.create_style_element_image(
