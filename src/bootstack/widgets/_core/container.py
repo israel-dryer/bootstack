@@ -7,7 +7,7 @@ PACK_KEYS = frozenset({
     "side", "fill", "expand", "anchor",
     "padx", "pady", "ipadx", "ipady",
     "margin", "margin_x", "margin_y",
-    "before", "after", "in_",
+    "index", "before", "after", "in_",
 })
 
 GRID_KEYS = frozenset({
@@ -82,6 +82,54 @@ from bootstack.widgets._core.base import PublicWidgetBase  # noqa: E402
 from bootstack.widgets._core.context import push_container, pop_container  # noqa: E402
 
 
+class Placement:
+    """Snapshot of how a widget was placed, enabling `detach`/`attach`.
+
+    Recorded on the child at layout time by `guide_layout`; consumed by
+    `PublicWidgetBase.detach`/`attach` to remove and re-insert the widget
+    without re-running its constructor. `options` holds the resolved Tk
+    geometry-manager options (no ordering refs); `index` is the pack position
+    among siblings, snapshotted afresh on each `detach`.
+    """
+
+    __slots__ = ("method", "master", "options", "index")
+
+    def __init__(
+        self,
+        method: str,
+        master: tkinter.Misc,
+        options: dict,
+        index: int | None = None,
+    ) -> None:
+        self.method = method      # "pack" | "grid" | "place"
+        self.master = master      # the Tk master the child is placed in
+        self.options = options    # resolved Tk options (no before/after/index)
+        self.index = index        # pack order among siblings (snapshot at detach)
+
+
+def resolve_pack_order(order: dict, master: tkinter.Misc) -> dict:
+    """Translate public `index`/`before`/`after` into a Tk pack-order kwarg.
+
+    Pops the ordering keys from `order` and returns the corresponding Tk
+    `pack()` kwarg dict. `index=` is the position among the master's currently
+    packed children, translated to `before=<that child>` (appended when the
+    index is past the end). Explicit `before=`/`after=` accept either a public
+    widget or a raw Tk widget. `before` wins over `after` wins over `index`.
+    """
+    index = order.pop("index", None)
+    before = order.pop("before", None)
+    after = order.pop("after", None)
+    if before is not None:
+        return {"before": getattr(before, "_internal", before)}
+    if after is not None:
+        return {"after": getattr(after, "_internal", after)}
+    if index is not None:
+        slaves = master.pack_slaves()
+        if 0 <= index < len(slaves):
+            return {"before": slaves[index]}
+    return {}
+
+
 class PublicContainer(PublicWidgetBase):
     """Base for public containers (HStack, VStack, Grid, App).
 
@@ -102,23 +150,46 @@ class PublicContainer(PublicWidgetBase):
         raise NotImplementedError
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
-        """Place `child._internal` under this container."""
+        """Place `child._internal` under this container.
+
+        Records a `Placement` snapshot on the child so it can later be
+        `detach`-ed and `attach`-ed. When `attached=False` is passed, the
+        snapshot is recorded but the widget is NOT mapped — it starts hidden,
+        ready to be shown with `attach`.
+        """
+        attached = layout_kw.pop("attached", True)
         if "fill" in layout_kw:
             layout_kw["fill"] = normalize_fill(layout_kw["fill"])
         _expand_margin(layout_kw)
         place_mode = any(k in layout_kw for k in PLACE_TRIGGER_KEYS)
         tk_widget = child._internal
+        master = self._child_master()
 
         if place_mode:
             options = {k: v for k, v in layout_kw.items() if k in PLACE_KEYS}
-            tk_widget.place(in_=self._child_master(), **options)
+            if attached:
+                tk_widget.place(in_=master, **options)
+            child._placement = Placement("place", master, options)
             return
 
         method, options = self._merge_layout_options(child, layout_kw)
         if method == "pack":
-            tk_widget.pack(in_=self._child_master(), **options)
+            # Capture an explicit index before resolve_pack_order strips it.
+            explicit_index = options.get("index")
+            order_kw = resolve_pack_order(options, master)  # mutates options
+            if attached:
+                tk_widget.pack(in_=master, **options, **order_kw)
+                child._placement = Placement("pack", master, dict(options))
+            else:
+                # Remember the slot a later attach() should restore: an
+                # explicit index if given, else the natural append position
+                # (the count of siblings already packed at this point).
+                index = explicit_index if explicit_index is not None else len(master.pack_slaves())
+                child._placement = Placement("pack", master, dict(options), index=index)
         elif method == "grid":
-            tk_widget.grid(in_=self._child_master(), **options)
+            if attached:
+                tk_widget.grid(in_=master, **options)
+            child._placement = Placement("grid", master, dict(options))
         else:
             raise ValueError(f"Unknown layout method: {method!r}")
 

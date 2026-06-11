@@ -10,6 +10,7 @@ opens a secondary top-level window.
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: toplevel
 
    App
    AppShell
