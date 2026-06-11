@@ -260,6 +260,14 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   `menu_layout` DEFERRED (its toolbar is internal/pre-placed; converges with the HELD Toolbar
   rework). Tests `test_window_chrome.py` (4); `test_menu_appshell.py` updated. Demo
   `docs/examples/menu.py` shows a theme toggle fused on the right.
+- **`chrome_surface` + `chrome_divider` (App/Window):** `chrome_surface` (default `'chrome'`)
+  threads through the chrome frame + `ThemedMenuBar` (→ its `menubar-item` triggers) + the
+  `Toolbar` (→ ghost buttons) so the whole bar repaints to one surface — e.g.
+  `chrome_surface='background'` blends it into the window background. `chrome_divider`
+  (default `True`) toggles the hairline. **GOTCHA:** use `'background'` to blend, NOT
+  `'content'` — `wrapper_base` drops `surface='content'` from style options (treats it as the
+  base default), so `'content'` leaves the `menubar-item` triggers on their `'chrome'` default
+  (chips). See [[reference_surface_content_guard]]. Tests in `test_window_chrome.py` (now 6).
 
 ## Open questions / to confirm during build
 

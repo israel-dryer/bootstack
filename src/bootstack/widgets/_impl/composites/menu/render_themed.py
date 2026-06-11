@@ -30,12 +30,16 @@ class ThemedMenuBar(PackFrame):
         model: MenuModel | None = None,
         *,
         density: WidgetDensity = "compact",
+        surface: str = "chrome",
         **kwargs: Any,
     ) -> None:
-        kwargs.setdefault("surface", "chrome")
+        kwargs.setdefault("surface", surface)
         super().__init__(master, direction="horizontal", fill_items="y", **kwargs)
         self._model = model if model is not None else MenuModel()
         self._density = density
+        # Threaded into the menubar-item triggers so they paint this surface
+        # (the builders paint the normal bg with the surface color, not parent).
+        self._surface = surface
         self._triggers: list[DropdownButton] = []
         # One shared Tk variable per radio group name so radio items in the
         # same group are mutually exclusive.
@@ -71,6 +75,7 @@ class ThemedMenuBar(PackFrame):
                 variant="menubar-item",
                 show_dropdown_button=False,
                 density=self._density,
+                surface=self._surface,
             )
             trigger.pack(side="left")
             self._triggers.append(trigger)

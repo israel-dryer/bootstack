@@ -40,6 +40,22 @@ def test_default_layout_is_fused(app):
     assert app._menu_layout == "fused"
 
 
+def test_chrome_surface_defaults_and_threads(app):
+    # Default chrome surface, and it threads into the menu strip so its
+    # menubar-item triggers paint that surface (not their hardcoded default).
+    assert app._chrome_surface == "chrome"
+    with app.menu.add_menu("Help") as h:
+        h.add_action("About", on_click=lambda: None)
+    app.menu.refresh()
+    assert app.menu._renderer._surface == "chrome"
+
+
+def test_chrome_divider_present_by_default(app):
+    app._ensure_chrome()
+    assert app._chrome_divider_enabled is True
+    assert hasattr(app, "_chrome_divider")
+
+
 def test_fused_then_stacked_rearranges(app):
     # Ensure both menu and toolbar exist in the chrome row.
     with app.menu.add_menu("File") as f:

@@ -128,7 +128,8 @@ class WindowMenu:
             return
 
         if self._renderer is None:
-            self._renderer = ThemedMenuBar(parent, self._model)
+            surface = getattr(self._host, "_chrome_surface", "chrome")
+            self._renderer = ThemedMenuBar(parent, self._model, surface=surface)
             self._host._place_menu_strip(self._renderer)
         else:
             self._renderer.rebuild()
@@ -210,7 +211,8 @@ class ChromeHostMixin:
         from bootstack.widgets._impl.primitives import Separator
 
         root = self._menu_root()
-        chrome = PackFrame(root, direction="horizontal", surface="chrome")
+        surface = getattr(self, "_chrome_surface", "chrome")
+        chrome = PackFrame(root, direction="horizontal", surface=surface)
         content = getattr(self, "_content_frame", None)
         pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
         if content is not None:
@@ -221,12 +223,14 @@ class ChromeHostMixin:
         # Hairline divider between the chrome row and the content below — the
         # native convention (Windows command bars / macOS toolbars), and it
         # guarantees separation in themes where chrome ≈ content surface.
-        divider = Separator(root, orient="horizontal")
-        div_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-        if content is not None:
-            div_kw["before"] = content
-        divider.pack(**div_kw)
-        self._chrome_divider = divider
+        # Suppressible via chrome_divider=False (e.g. for a fully seamless blend).
+        if getattr(self, "_chrome_divider_enabled", True):
+            divider = Separator(root, orient="horizontal")
+            div_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+            if content is not None:
+                div_kw["before"] = content
+            divider.pack(**div_kw)
+            self._chrome_divider = divider
 
         return chrome
 
@@ -282,8 +286,10 @@ class ChromeHostMixin:
             chrome = self._ensure_chrome()
             shim = _ChromeContainer(chrome, self._arrange_chrome)
             # Compact density so the command bar matches the (compact) menu bar
-            # height when fused into the same row.
-            tb = Toolbar(parent=shim, density="compact")
+            # height when fused; surface threaded so its ghost buttons paint the
+            # chosen chrome surface (rather than their default).
+            surface = getattr(self, "_chrome_surface", "chrome")
+            tb = Toolbar(parent=shim, density="compact", surface=surface)
             self._toolbar_widget = tb
             self._arrange_chrome()
         return tb

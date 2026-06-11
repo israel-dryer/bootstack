@@ -59,6 +59,11 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
             on Windows/Linux — `'fused'` (one row: menus left, toolbar right) or
             `'stacked'` (menu row above a separate toolbar row). No effect on
             macOS (the menu bar moves to the global bar). Default `'fused'`.
+        chrome_surface: Surface token for the menu bar / toolbar row — e.g.
+            `'chrome'` (default, a distinct bar) or `'background'` to blend it
+            into the window background. Applies to the bar and its buttons.
+        chrome_divider: Draw a hairline divider between the menu/toolbar row and
+            the content. Default `True`; set `False` for a seamless blend.
     """
 
     _auto_place = False  # no parent
@@ -92,6 +97,8 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
         hdpi: bool = True,
         # chrome
         menu_layout: Literal["fused", "stacked"] = "fused",
+        chrome_surface: SurfaceToken | str = "chrome",
+        chrome_divider: bool = True,
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
@@ -104,6 +111,8 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
     ) -> None:
         self._parent = None
         self._menu_layout = menu_layout
+        self._chrome_surface = chrome_surface
+        self._chrome_divider_enabled = chrome_divider
 
         init_kwargs: dict[str, Any] = {
             "light_theme": light_theme,
