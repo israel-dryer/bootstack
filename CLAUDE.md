@@ -21,6 +21,24 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Option `icon` + `disabled` wired up; icon-only inferred** (PR #118, merged) —
+  activates the two reserved `OptionDict` keys carried (but inert) since #116,
+  across the whole selection family (Select / SelectButton / RadioGroup /
+  ToggleGroup). `icon` renders a glyph beside the option label; `disabled` dims an
+  option and blocks **user** selection (keyboard nav + search auto-select skip it;
+  a programmatic `value=` set still works). **Icon-only is INFERRED** — an option
+  with an `icon` and blank text (e.g. `{'icon': 'grid', 'value': 'grid'}`) renders
+  as a bare glyph, no `icon_only` flag; `normalize_option` now allows omitting
+  `text` when `icon` + `value` are present, and `OptionDict.text` is no longer
+  `Required`. Shared interpretation: `option_display` / `option_is_icon_only`
+  (`widgets/_core/options.py`) + `SelectionGroupMixin._option_render`; both
+  ContextMenu radiobutton backends (Toplevel + native) gained `icon`/`disabled`.
+  Also: **`ToggleGroup` now defaults to `accent='default'`** (neutral
+  elevated-surface selection, not primary; explicit `accent=` overrides) and a
+  fix to the `solid`/`default` togglegroup builder's disabled image (transparent
+  slot was the disabled color, now `surface`, so a disabled toggle blends). Tests
+  in `test_select_options.py`; ToggleGroup guide gained Icon-only + per-option
+  disabled sections + scenes. Memory `project_option_databag`.
 - **Field value/text/label contract + selection data bag** (PRs #113–#116, all
   merged) — a framework-wide field-widget contract and a shared, extensible option
   shape, built across four PRs:
@@ -152,11 +170,6 @@ memories and git history.
   `selected_nodes` (Tree). Add the singular/`selection` form and reconcile the
   plural names; Tree's `selection` returns node handles (bag at `node.data`).
   **Breaking** (renames shipped API) — its own PR. Brief: `docs/_dev/option-databag.md`.
-- **Option `icon` + per-item `disabled` behavior** — wire up the two reserved
-  `OptionDict` keys (currently carried but inert): render `icon` beside each option's
-  label, and make a single option non-selectable via `disabled` — across the entry-
-  backed Select popup, the menu-backed SelectButton, and the button-backed groups.
-  Touches the icon renderer. Memory `project_option_databag`.
 - **Select grouping** (optgroup-style) — cluster options under group headers in the
   Select popup (and maybe the family). Maintainer-requested; **discuss shape before
   building** (composes with the `Option` shape + data bag). Memory
@@ -176,13 +189,6 @@ memories and git history.
   accessors + MenuBar return handles + AppShell `toolbar`/`nav`/`pages` public façades.
   HELD pending the maintainer's upcoming Toolbar/MenuBar changes. Detail in
   `docs/_dev/widget-api-audit.md`.
-- **Decoupled option shape (option-databag)** — one shared `Option = str|tuple|OptionDict`
-  normalizer for the selection family; also subsumes the duplicated RadioGroup/ToggleGroup
-  management API (review finding #6). Memory `project_select_options_databag`; brief
-  `docs/_dev/select-options-databag.md`.
-- **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
-  `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
-  Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
 
 ### History — done initiatives
 
@@ -330,17 +336,11 @@ memories and git history.
   platform app-icon assets — `.ico`/`.png` — for `App`/`Window`). `App`/`Window`
   `icon=` (type `str | AppIcon | Image`) is DEFERRED to this. Memory
   `project_image_icon_public_api`.
-- **Decoupled option shape for the selection family** (initiative, designed
-  2026-06-09) — let `Select`/`SelectButton` options carry a value distinct from
-  their label, via ONE shared `Option = str | tuple[str, Any] | OptionDict` shape
-  (dict = the extensible "data bag" member: `{"text", "value", …icon/disabled}`)
-  normalized once and consumed by all four selection widgets (RadioGroup/ToggleGroup
-  already do `(label,value)` tuples — fold them into the shared normalizer + widen to
-  the dict). Bulk of the work is giving the entry-backed `SelectBox` a real text↔value
-  map (search-on-text, value-space `value`, custom-value semantics). Full brief +
-  open decisions (`text` vs `label` key; `.options` return shape; unknown-value setter
-  behavior): `docs/_dev/select-options-databag.md`. Behavior feature — do AFTER the
-  typing sweep's Data Display batch; lock shape/naming before touching internals.
+- **✅ DONE — Decoupled option shape for the selection family** (designed 2026-06-09)
+  — shipped across PRs #114–#116 (shared `Option` shape, text↔value decoupling,
+  data bag, universal `.selection`) and #118 (`icon`/`disabled` + icon-only). Living
+  record: `docs/_dev/option-databag.md`, memory `project_option_databag`. The old
+  planning brief `docs/_dev/select-options-databag.md` is marked superseded.
 - **Deferred file-streaming items** — background/progressive ingest, keyset
   pagination, auto-index (memory `project_file_source_streaming`).
 

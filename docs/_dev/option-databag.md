@@ -1,6 +1,10 @@
 # Initiative — Option data bag + the universal `selection` accessor
 
-**Status:** IN PROGRESS. Branch `feat/option-databag` off `main`. Started 2026-06-11.
+**Status:** SHIPPED. The bag + universal `selection` accessor merged in **PR #116**;
+the reserved `icon`/`disabled` keys were wired up (with icon-only inferred from
+blank text) in **PR #118** — which also flipped `ToggleGroup`'s default accent to
+`'default'` and fixed the togglegroup disabled-background builder. Remaining
+follow-on: extend `.selection` to ListView/DataTable/Tree (breaking rename, own PR).
 **Builds on:** the field value/text/label model (`project_field_value_text_model`)
 and the shared `Option` shape shipped in PRs #114/#115.
 
@@ -105,7 +109,12 @@ selection), Tabs/SideNav/PageStack (navigation).
 - Clean `-W` docs build; run the select/group examples.
 
 ## Deferred / future
-- Wire up `icon` (render beside each option) and per-item `disabled` — separate
-  PRs once the carry ships.
+- ✅ DONE (PR #118) — `icon` rendered beside each option, per-item `disabled`,
+  and icon-only inferred from blank text. `option_display` / `option_is_icon_only`
+  in `widgets/_core/options.py`; `SelectionGroupMixin._option_render`; both
+  ContextMenu radiobutton backends extended.
+- **Extend `.selection` to ListView/DataTable/Tree** — they already carry records
+  but under divergent names (`get_selected()`/`selected_rows`/`selected_nodes`).
+  Breaking rename; own PR. (The current "Next up" front-runner.)
 - **Select grouping** (optgroup-style) — see `project_select_grouping`; discuss
-  after this lands.
+  before building.
