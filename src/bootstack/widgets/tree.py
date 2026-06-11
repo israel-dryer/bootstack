@@ -115,6 +115,7 @@ class Tree(PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
+        self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -429,9 +430,17 @@ class Tree(PublicWidgetBase):
     # ----- selection -----
 
     @property
-    def selected_nodes(self) -> list[TreeNode]:
-        """The currently selected nodes, in tree order."""
-        return self._internal.get_selected()
+    def selection(self) -> TreeNode | list[TreeNode] | None:
+        """The selected node(s) — node handles, in tree order.
+
+        In `'single'` mode, the selected :class:`TreeNode` (or `None` when
+        nothing is selected). In `'multi'` mode, a `list` of nodes (empty when
+        nothing is selected). Each node's data bag is at `node.data`. Read-only.
+        """
+        nodes = self._internal.get_selected()
+        if self._selection_mode == "multi":
+            return nodes
+        return nodes[0] if nodes else None
 
     def select(self, node: TreeNode) -> None:
         """Select a node (replaces in single mode, adds in multi)."""

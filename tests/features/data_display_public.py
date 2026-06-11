@@ -47,7 +47,7 @@ with App(title="Data Display", minsize=(900, 620), padding=0, gap=0) as app:
             lbl_sel = Label("Selected: []")
 
             def show_selection(_event=None):
-                selected = lv.get_selected()
+                selected = lv.selection
                 lbl_sel.text = f"Selected: {[r['name'] for r in selected]}"
 
             lv.on_selection_changed(show_selection)

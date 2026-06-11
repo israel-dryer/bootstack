@@ -90,7 +90,7 @@ def test_memory_source_select_rows_roundtrip(shown_app):
     table.select_rows([10, 30])
     _pump(shown_app)
 
-    selected_ids = sorted(r["id"] for r in table.selected_rows)
+    selected_ids = sorted(r["id"] for r in table.selection)
     assert selected_ids == [10, 30]
 
 
@@ -109,7 +109,7 @@ def test_memory_source_hides_internal_selected_field(shown_app):
 
     for r in table.to_rows("all"):
         assert "selected" not in r
-    for r in table.selected_rows:
+    for r in table.selection:
         assert "selected" not in r
 
 
@@ -123,7 +123,7 @@ def test_sqlite_source_default_still_works(shown_app):
     table.select_rows([20])
     _pump(shown_app)
 
-    assert [r["id"] for r in table.selected_rows] == [20]
+    assert [r["id"] for r in table.selection] == [20]
     for r in table.to_rows("all"):
         assert "_bs_row_id" not in r and "_bs_selected" not in r
 
@@ -209,3 +209,36 @@ def test_density_compact_is_shorter_than_default(shown_app):
     _pump(shown_app)
 
     assert _rowheight(compact_table) < _rowheight(default_table)
+
+
+# --------------------------------------------------------------------------- selection shape
+
+
+@pytest.mark.gui
+def test_selection_single_mode_is_a_record_dict(shown_app):
+    """Single mode: `.selection` is the selected record dict (or None)."""
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"],
+                         selection_mode="single", page_size=10)
+    _pump(shown_app)
+
+    assert table.selection is None
+
+    table.select_rows([20])
+    _pump(shown_app)
+    sel = table.selection
+    assert isinstance(sel, dict)
+    assert sel["id"] == 20 and sel["name"] == "Boole"
+
+
+@pytest.mark.gui
+def test_selection_multi_mode_is_a_list(shown_app):
+    """Multi mode: `.selection` is always a list — empty when none selected."""
+    table = bs.DataTable(rows=[dict(r) for r in ROWS], columns=["name", "role"],
+                         selection_mode="multi", page_size=10)
+    _pump(shown_app)
+
+    assert table.selection == []
+
+    table.select_rows([10, 30])
+    _pump(shown_app)
+    assert sorted(r["id"] for r in table.selection) == [10, 30]

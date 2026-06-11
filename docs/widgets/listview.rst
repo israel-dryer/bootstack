@@ -52,7 +52,7 @@ Carrying extra data
 ~~~~~~~~~~~~~~~~~~~~
 
 The keys above are a *view* over the record, not the record itself. Extra keys
-are still carried through and handed back — ``get_selected()`` and the item
+are still carried through and handed back — ``selection`` and the item
 events return the full record dict, including the undisplayed fields:
 
 .. code-block:: python
@@ -117,19 +117,23 @@ selection, which the user drives separately via the checkboxes:
    bs.ListView(items=records, selection_mode="multi",
                show_selection_controls=True, select_on_click=False)
 
-Read the current selection via ``get_selected()``, which returns a list of
-the full record dicts:
+Read the current selection via ``selection``. In ``"multi"`` mode it returns a
+list of the full record dicts; in ``"single"`` mode the selected record dict (or
+``None``). Non-displayed fields ride along in each record:
 
 .. code-block:: python
 
    lv = bs.ListView(items=records, selection_mode="multi")
-   lv.on_selection_changed(lambda e: print(lv.get_selected()))
+   lv.on_selection_changed(lambda e: print(lv.selection))
 
-Clear or fill the selection programmatically:
+Set the selection programmatically by record ``id`` — ``select_items`` replaces
+the selection in single mode and adds in multi mode; ``deselect_items`` removes:
 
 .. code-block:: python
 
-   lv.select_all()       # multi mode only
+   lv.select_items([3, 7])   # by record id
+   lv.deselect_items([3])
+   lv.select_all()           # multi mode only
    lv.clear_selection()
 
 .. image:: /_static/examples/listview-selection-light.png
@@ -206,7 +210,7 @@ to unsubscribe:
    lv = bs.ListView(items=records, selection_mode="single")
 
    sub = lv.on_item_click(lambda e: print("clicked:", e["title"]))
-   lv.on_selection_changed(lambda e: print("selected:", lv.get_selected()))
+   lv.on_selection_changed(lambda e: print("selected:", lv.selection))
    lv.on_item_delete(lambda e: print("deleted:", e["id"]))
 
    sub.cancel()   # unsubscribe
