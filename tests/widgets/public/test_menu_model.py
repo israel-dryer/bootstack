@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from bootstack._runtime.shortcuts import get_shortcuts
+from bootstack._runtime.shortcuts import get_shortcuts, tk_aqua_accelerator
 from bootstack.widgets._impl.composites.menu import MenuGroup, MenuItem, MenuModel
 
 
@@ -220,3 +220,29 @@ def test_clear_releases_shortcuts():
     model.clear()
     assert svc.all() == {}
     assert list(model) == []
+
+
+# ----- Tk-Aqua accelerator (word form for native macOS menus) -----
+
+def test_aqua_accelerator_uses_modifier_words():
+    # Tk on Aqua renders these words as glyphs; the key must survive.
+    assert tk_aqua_accelerator("Mod+N") == "Command+N"
+    assert tk_aqua_accelerator("Mod+Shift+Z") == "Command+Shift+Z"
+    assert tk_aqua_accelerator("Ctrl+S") == "Control+S"
+    assert tk_aqua_accelerator("Alt+F4") == "Option+F4"
+
+
+def test_aqua_accelerator_bare_function_key():
+    assert tk_aqua_accelerator("F5") == "F5"
+
+
+def test_aqua_accelerator_empty_and_literal():
+    assert tk_aqua_accelerator(None) == ""
+    assert tk_aqua_accelerator("") == ""
+    # No modifier separator / not an F-key → literal, returned unchanged.
+    assert tk_aqua_accelerator("press any key") == "press any key"
+
+
+def test_aqua_accelerator_resolves_registered_key_to_pattern():
+    get_shortcuts().register("save", "Mod+S", lambda: None)
+    assert tk_aqua_accelerator("save") == "Command+S"

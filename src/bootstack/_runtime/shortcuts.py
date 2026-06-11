@@ -444,4 +444,53 @@ def format_shortcut(spec: str | None) -> str:
     return spec
 
 
-__all__ = ['Shortcut', 'Shortcuts', 'get_shortcuts', 'format_shortcut', 'classify_shortcut']
+# Tk on Aqua renders these modifier WORDS as the ⌘/⌥/⌃/⇧ glyphs in menu
+# accelerators. It does NOT parse the glyphs themselves, so a native tk.Menu
+# must be given the word form — not `Shortcut.display`.
+_AQUA_ACCEL_WORDS = {
+    'mod': 'Command', 'command': 'Command', 'cmd': 'Command',
+    'ctrl': 'Control', 'control': 'Control',
+    'alt': 'Option', 'option': 'Option', 'opt': 'Option',
+    'shift': 'Shift',
+}
+
+
+def tk_aqua_accelerator(spec: str | None) -> str:
+    """Accelerator string for a native macOS `tk.Menu` entry.
+
+    Tk on Aqua converts modifier *words* (`Command`, `Option`, `Control`,
+    `Shift`) into the ⌘/⌥/⌃/⇧ glyphs when drawing a menu accelerator, but it
+    does not understand a pre-rendered glyph string. So a native menu must be
+    given the word form (e.g. `'Command+N'`) rather than `format_shortcut`'s
+    display (`'⌘N'`), which would show the modifier but drop the key.
+
+    Accepts the same three forms as `format_shortcut` — a registered key
+    (resolved to its pattern), a pattern, or a literal (returned unchanged).
+
+    Args:
+        spec: A registered key, modifier pattern, or literal display.
+
+    Returns:
+        A Tk-Aqua accelerator string, or empty string when `spec` is empty.
+    """
+    kind = classify_shortcut(spec)
+    if kind == 'empty':
+        return ''
+    if kind == 'literal':
+        return spec
+    pattern = Shortcuts().get(spec).pattern if kind == 'registered' else spec
+
+    parts = pattern.split('+')
+    key = parts[-1]
+    mods: list[str] = []
+    for part in parts[:-1]:
+        word = _AQUA_ACCEL_WORDS.get(part.lower(), part.capitalize())
+        if word not in mods:
+            mods.append(word)
+    return '+'.join(mods + [key.upper()])
+
+
+__all__ = [
+    'Shortcut', 'Shortcuts', 'get_shortcuts', 'format_shortcut',
+    'classify_shortcut', 'tk_aqua_accelerator',
+]

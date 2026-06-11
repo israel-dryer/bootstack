@@ -210,6 +210,21 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   (5) — `tk.Menu` is cross-platform so cascade STRUCTURE is verified on Windows; the native
   global-bar APPEARANCE is verified by hand on macOS (clone the branch, run the demo).
 
+- **Native accelerator fix (Mac):** native `tk.Menu` accelerators were given the
+  pre-symbolized display (`'⌘N'`), which Tk-Aqua can't parse — it showed the modifier
+  but DROPPED the key. New `tk_aqua_accelerator(spec)` in `_runtime/shortcuts.py` emits
+  the WORD form (`'Command+N'`) that Tk renders as `⌘N`. Used by both native surfaces
+  (`render_native` menu bar + `_NativeContextMenu._resolve_shortcut`). Themed Win/Linux
+  path keeps `format_shortcut` (plain Label). Unit-tested (4 cases). **User to re-verify
+  on Mac.**
+- **Step 5 — retire `MenuManager` + legacy `create_menu`: DONE & green.** Deleted
+  `_runtime/menu.py` entirely (MenuManager + `create_menu`/`create_menu_items`, which had
+  ZERO callers and weren't publicly exported). De-iconed `_NativeContextMenu` (per decision
+  #2 — Mac context menus drop icons too): removed all `_mgr`/icon-tracking/recolor code and
+  the `image`/`compound` opts; label translation now calls `MessageCatalog` directly;
+  `icon=` still accepted for API parity but ignored. Tests `test_native_contextmenu.py` (5,
+  structural on Windows). **User to re-verify the Mac context-menu look (no icons).**
+
 ## Open questions / to confirm during build
 
 - Fate of the region-bar `MenuBar` composite (defer to HELD Toolbar rework, but the

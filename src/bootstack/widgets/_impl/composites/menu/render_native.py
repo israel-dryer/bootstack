@@ -15,6 +15,7 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Any
 
+from bootstack._runtime.shortcuts import tk_aqua_accelerator
 from bootstack.widgets._impl.composites.menu.model import MenuItem, MenuModel
 
 
@@ -111,8 +112,11 @@ class NativeMenuBar:
             "command": item.on_click,
             "state": "disabled" if item.disabled else "normal",
         }
-        if item.shortcut_display:
-            opts["accelerator"] = item.shortcut_display
+        # Native menus need the word-form accelerator (Tk renders the glyphs);
+        # the pre-symbolized display would show the modifier but drop the key.
+        acc = tk_aqua_accelerator(item.shortcut)
+        if acc:
+            opts["accelerator"] = acc
         submenu.add_command(**opts)
 
     def destroy(self) -> None:

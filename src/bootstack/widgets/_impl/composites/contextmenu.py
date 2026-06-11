@@ -993,8 +993,9 @@ class _NativeContextMenu(CustomConfigMixin):
 
     Internal backend used by `ContextMenu` on macOS so the popup is a real
     NSMenu — sidesteps the key-window/activation issues that affect a
-    reused overrideredirect Toplevel. Theming follows the system menu look;
-    icons re-render on theme change via the bootstack image service.
+    reused overrideredirect Toplevel. Theming follows the system menu look.
+    Menus are text-only here (no icons) by native convention; an `icon=`
+    argument is accepted for cross-backend API parity but ignored.
     """
 
     def __init__(
@@ -1022,7 +1023,6 @@ class _NativeContextMenu(CustomConfigMixin):
         sizing, dismissal, and typography on the host platform.
         """
         import tkinter as tk
-        from bootstack._runtime.menu import MenuManager
 
         super().__init__()
         self._master = master
@@ -1041,12 +1041,9 @@ class _NativeContextMenu(CustomConfigMixin):
         self._density = density
         self._command = command
 
-        # Create the native menu and look up the per-root MenuManager so
-        # icon resolution, label translation, and <<ThemeChanged>> tracking
-        # are shared with the rest of the app's tk.Menu surfaces (menubars,
-        # other context menus). Avoids duplicating those concerns here.
+        # Native tk.Menu (NSMenu on macOS). Text-only by convention — icons
+        # are intentionally not rendered on the native backend.
         self._menu = tk.Menu(master, tearoff=0)
-        self._mgr = MenuManager.for_widget(master) if master is not None else None
 
         # Item tracking by key with insertion order; specs are kept so we
         # can rebuild the menu on insert/move (tk.Menu has no atomic move).
@@ -1085,20 +1082,15 @@ class _NativeContextMenu(CustomConfigMixin):
         return self._item_order.index(key)
 
     def _resolve_label(self, text: str | None) -> str:
-        """Translate a label via MenuManager (or pass-through if no manager)."""
-        if self._mgr is None:
-            return text or ''
-        return self._mgr.translate_label(text) or ''
+        """Translate a semantic message key; pass plain text through unchanged."""
+        if not text:
+            return ''
+        try:
+            from bootstack.i18n import MessageCatalog
 
-    def _resolve_icon(self, icon_spec: Any) -> tuple[Any, str | None, int]:
-        """Resolve an icon spec via MenuManager.
-
-        Returns `(None, None, 0)` when no manager is available or the
-        spec doesn't produce an icon, mirroring MenuManager's contract.
-        """
-        if self._mgr is None:
-            return None, None, 0
-        return self._mgr.resolve_icon(icon_spec)
+            return MessageCatalog.translate(text) or text
+        except Exception:
+            return text
 
     def _wrap_command(self, type_: str, text: str | None,
                       command: Callable | None, value: Any = None) -> Callable:
@@ -1114,17 +1106,18 @@ class _NativeContextMenu(CustomConfigMixin):
         return fire
 
     def _resolve_shortcut(self, shortcut: str | None) -> str | None:
-        """Platform-correct accelerator display via the Shortcuts service.
+        """Native-menu accelerator for `shortcut`.
 
-        Accepts a registered key, a modifier pattern (`'Mod+S'`,
-        `'F5'`), or a literal display string. See
-        `bootstack._runtime.shortcuts.format_shortcut` for details.
+        Accepts a registered key, a modifier pattern (`'Mod+S'`, `'F5'`), or a
+        literal string. Uses the Tk-Aqua *word* form (`'Command+S'`) so the
+        native menu renders the ⌘ glyph AND the key — a pre-symbolized display
+        would drop the key. See
+        `bootstack._runtime.shortcuts.tk_aqua_accelerator`.
         """
         if not shortcut:
             return None
-        from bootstack._runtime.shortcuts import format_shortcut
-        display = format_shortcut(shortcut)
-        return display or None
+        from bootstack._runtime.shortcuts import tk_aqua_accelerator
+        return tk_aqua_accelerator(shortcut) or None
 
     # ----- Public API mirroring the themed backend ---------------------------
 
@@ -1142,25 +1135,18 @@ class _NativeContextMenu(CustomConfigMixin):
         if key in self._item_specs:
             raise ValueError(f"Item with key '{key}' already exists")
 
-        photo, icon_name, icon_size = self._resolve_icon(icon)
         accelerator = self._resolve_shortcut(shortcut)
 
         opts: dict[str, Any] = {
             'label': self._resolve_label(text),
             'command': self._wrap_command('command', text, command),
         }
-        if photo is not None:
-            opts['image'] = photo
-            opts['compound'] = 'left'
         if accelerator:
             opts['accelerator'] = accelerator
         if disabled:
             opts['state'] = 'disabled'
 
         self._menu.add_command(**opts)
-
-        if icon_name and self._mgr is not None:
-            self._mgr.register_icon(self._menu, self._menu.index('end'), icon_name, icon_size)
 
         self._item_specs[key] = {
             'type': 'command',
@@ -1239,23 +1225,16 @@ class _NativeContextMenu(CustomConfigMixin):
             if command:
                 command()
 
-        photo, icon_name, icon_size = self._resolve_icon(icon)
         opts: dict[str, Any] = {
             'label': self._resolve_label(text),
             'variable': variable,
             'value': value,
             'command': on_select,
         }
-        if photo is not None:
-            opts['image'] = photo
-            opts['compound'] = 'left'
         if disabled:
             opts['state'] = 'disabled'
 
         self._menu.add_radiobutton(**opts)
-
-        if icon_name and self._mgr is not None:
-            self._mgr.register_icon(self._menu, self._menu.index('end'), icon_name, icon_size)
 
         self._item_specs[key] = {
             'type': 'radiobutton',
@@ -1340,30 +1319,7 @@ class _NativeContextMenu(CustomConfigMixin):
         self._item_order.remove(key)
         self._item_specs.pop(key, None)
         self._var_refs.pop(key, None)
-        # Drop all icon-tracking entries for this menu and re-register
-        # remaining items so MenuManager's index map stays correct after
-        # the deletion shifted later items down by one.
-        if self._mgr is not None:
-            self._mgr.unregister_menu(self._menu)
-            self._reregister_icons()
         return None
-
-    def _reregister_icons(self) -> None:
-        """Re-register tracked icons with MenuManager from current spec state.
-
-        Used after remove/move/rebuild operations so theme-change updates
-        target the correct entry indices.
-        """
-        if self._mgr is None:
-            return
-        for i, key in enumerate(self._item_order):
-            spec = self._item_specs.get(key, {})
-            icon_spec = spec.get('icon')
-            if not icon_spec or icon_spec == 'empty':
-                continue
-            _, name, size = self._mgr.resolve_icon(icon_spec)
-            if name:
-                self._mgr.register_icon(self._menu, i, name, size)
 
     def move_item(self, from_key_or_index: str | int, to_index: int) -> dict:
         key = self._resolve_key(from_key_or_index)
@@ -1403,14 +1359,6 @@ class _NativeContextMenu(CustomConfigMixin):
             pass
 
     def destroy(self) -> None:
-        # Drop tracking entries with the shared MenuManager so its
-        # <<ThemeChanged>> handler doesn't try to reconfigure a deleted
-        # menu's entries on the next theme change.
-        if self._mgr is not None:
-            try:
-                self._mgr.unregister_menu(self._menu)
-            except Exception:
-                pass
         try:
             self._menu.destroy()
         except TclError:
@@ -1422,8 +1370,7 @@ class _NativeContextMenu(CustomConfigMixin):
         """Tear down and re-add all entries from stored specs.
 
         Used by `insert_item` and `move_item` since tk.Menu offers no
-        atomic reorder. Icon tracking is unregistered then re-registered
-        with MenuManager so theme-change updates target the right indices.
+        atomic reorder.
         """
         try:
             last = self._menu.index('end')
@@ -1434,9 +1381,6 @@ class _NativeContextMenu(CustomConfigMixin):
                 self._menu.delete(0, last)
             except TclError:
                 pass
-
-        if self._mgr is not None:
-            self._mgr.unregister_menu(self._menu)
 
         for key in self._item_order:
             spec = self._item_specs[key]
@@ -1455,20 +1399,12 @@ class _NativeContextMenu(CustomConfigMixin):
                         'command', text, spec.get('command'),
                     ),
                 }
-                photo, icon_name, icon_size = self._resolve_icon(spec.get('icon'))
-                if photo is not None:
-                    opts['image'] = photo
-                    opts['compound'] = 'left'
                 accelerator = self._resolve_shortcut(spec.get('shortcut'))
                 if accelerator:
                     opts['accelerator'] = accelerator
                 if spec.get('disabled'):
                     opts['state'] = 'disabled'
                 self._menu.add_command(**opts)
-                if icon_name and self._mgr is not None:
-                    self._mgr.register_icon(
-                        self._menu, self._menu.index('end'), icon_name, icon_size,
-                    )
             elif type_ == 'checkbutton':
                 var = self._var_refs[key]
                 command = spec.get('command')
@@ -1634,8 +1570,6 @@ class _NativeContextMenu(CustomConfigMixin):
                 self._menu.delete(0, last)
         except TclError:
             pass
-        if self._mgr is not None:
-            self._mgr.unregister_menu(self._menu)
         self._item_specs = {}
         self._item_order = []
         self._counter = 0
