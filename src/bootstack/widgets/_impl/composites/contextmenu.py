@@ -1041,8 +1041,9 @@ class _NativeContextMenu(CustomConfigMixin):
         self._density = density
         self._command = command
 
-        # Native tk.Menu (NSMenu on macOS). Text-only by convention — icons
-        # are intentionally not rendered on the native backend.
+        # Native tk.Menu (NSMenu on macOS). Unlike the menu BAR (text-only by
+        # convention), a context menu is app content, so icons are rendered
+        # here — re-colored on theme/appearance change (see `_on_theme_changed`).
         self._menu = tk.Menu(master, tearoff=0)
 
         # Item tracking by key with insertion order; specs are kept so we
@@ -1051,10 +1052,16 @@ class _NativeContextMenu(CustomConfigMixin):
         self._item_order: list[str] = []
         self._counter = 0
 
-        # Strong ref to Tk variables so they aren't GC'd while the menu
-        # holds them. PhotoImage refs live in MenuManager.menu_items so
-        # we don't need to track them locally.
+        # Strong refs so Tk objects the menu holds aren't GC'd: variables for
+        # check/radio items, and PhotoImages for item icons.
         self._var_refs: dict[str, Any] = {}
+        self._icon_refs: list[Any] = []
+
+        # Re-render icons when the theme or macOS appearance changes so their
+        # color tracks the menu text color. Bound on the root; ids kept for
+        # clean teardown in destroy().
+        self._theme_binds: list[tuple[str, str]] = []
+        self._bind_theme_tracking()
 
         if items:
             self.add_items(items)
@@ -1091,6 +1098,74 @@ class _NativeContextMenu(CustomConfigMixin):
             return MessageCatalog.translate(text) or text
         except Exception:
             return text
+
+    # ----- Icon rendering (context menus only — not the menu bar) ------------
+
+    def _menu_icon_color(self) -> str:
+        """Foreground color for item icons.
+
+        On Aqua, NSMenu uses system appearance regardless of the app theme, so
+        icons must match the system text color (which Tk keeps in sync with
+        macOS light/dark mode). Elsewhere the app theme's foreground is right.
+        """
+        try:
+            winsys = self._menu.tk.call('tk', 'windowingsystem')
+        except TclError:
+            winsys = None
+        if winsys == 'aqua':
+            try:
+                r, g, b = self._menu.winfo_rgb('systemTextColor')
+                return f'#{r >> 8:02x}{g >> 8:02x}{b >> 8:02x}'
+            except TclError:
+                pass
+        from bootstack.style.style import get_style
+        return get_style().style_builder.color('foreground')
+
+    def _resolve_icon(self, icon_spec: Any) -> Any:
+        """Render an icon spec to a themed PhotoImage, or `None`.
+
+        Accepts a glyph name or `{'name', 'size'}`. The returned image is also
+        retained (strong ref) so Tk doesn't GC it while the menu holds it.
+        """
+        if not icon_spec or icon_spec == 'empty':
+            return None
+        if isinstance(icon_spec, dict):
+            name, size = icon_spec.get('name'), icon_spec.get('size')
+        else:
+            name, size = icon_spec, None
+        if not name:
+            return None
+        if size is None:
+            try:
+                from tkinter import font as _tkfont
+                size = _tkfont.nametofont('TkMenuFont').metrics('linespace')
+            except Exception:
+                size = 16
+        try:
+            from bootstack._core.images import Image as _ImageService
+            photo = _ImageService.get_icon(name, size, self._menu_icon_color())
+        except Exception:
+            return None
+        self._icon_refs.append(photo)
+        return photo
+
+    def _bind_theme_tracking(self) -> None:
+        """Bind theme / macOS-appearance changes to re-render item icons."""
+        try:
+            root = self._menu.winfo_toplevel()
+        except TclError:
+            return
+        for seq in ('<<ThemeChanged>>', '<<TkSystemAppearanceChanged>>'):
+            try:
+                func_id = root.bind(seq, self._on_theme_changed, add='+')
+                self._theme_binds.append((seq, func_id))
+            except TclError:
+                pass
+
+    def _on_theme_changed(self, event: Any = None) -> None:
+        """Re-render the menu so icon colors track the new theme/appearance."""
+        if self._item_order:
+            self._rebuild_menu()
 
     def _wrap_command(self, type_: str, text: str | None,
                       command: Callable | None, value: Any = None) -> Callable:
@@ -1141,6 +1216,10 @@ class _NativeContextMenu(CustomConfigMixin):
             'label': self._resolve_label(text),
             'command': self._wrap_command('command', text, command),
         }
+        photo = self._resolve_icon(icon)
+        if photo is not None:
+            opts['image'] = photo
+            opts['compound'] = 'left'
         if accelerator:
             opts['accelerator'] = accelerator
         if disabled:
@@ -1231,6 +1310,10 @@ class _NativeContextMenu(CustomConfigMixin):
             'value': value,
             'command': on_select,
         }
+        photo = self._resolve_icon(icon)
+        if photo is not None:
+            opts['image'] = photo
+            opts['compound'] = 'left'
         if disabled:
             opts['state'] = 'disabled'
 
@@ -1359,6 +1442,19 @@ class _NativeContextMenu(CustomConfigMixin):
             pass
 
     def destroy(self) -> None:
+        # Unbind the theme/appearance handlers so they don't fire on a torn-
+        # down menu after the next theme change.
+        if self._theme_binds:
+            try:
+                root = self._menu.winfo_toplevel()
+                for seq, func_id in self._theme_binds:
+                    try:
+                        root.unbind(seq, func_id)
+                    except TclError:
+                        pass
+            except TclError:
+                pass
+            self._theme_binds = []
         try:
             self._menu.destroy()
         except TclError:
@@ -1382,6 +1478,10 @@ class _NativeContextMenu(CustomConfigMixin):
             except TclError:
                 pass
 
+        # Icons are re-resolved below with the current menu color, so drop the
+        # old PhotoImage refs (a fresh set is collected as entries are re-added).
+        self._icon_refs = []
+
         for key in self._item_order:
             spec = self._item_specs[key]
             type_ = spec['type']
@@ -1399,6 +1499,10 @@ class _NativeContextMenu(CustomConfigMixin):
                         'command', text, spec.get('command'),
                     ),
                 }
+                photo = self._resolve_icon(spec.get('icon'))
+                if photo is not None:
+                    opts['image'] = photo
+                    opts['compound'] = 'left'
                 accelerator = self._resolve_shortcut(spec.get('shortcut'))
                 if accelerator:
                     opts['accelerator'] = accelerator
@@ -1437,12 +1541,17 @@ class _NativeContextMenu(CustomConfigMixin):
                     if _cmd:
                         _cmd()
 
-                self._menu.add_radiobutton(
-                    label=label,
-                    variable=var,
-                    value=value,
-                    command=on_select,
-                )
+                radio_opts: dict[str, Any] = {
+                    'label': label,
+                    'variable': var,
+                    'value': value,
+                    'command': on_select,
+                }
+                photo = self._resolve_icon(spec.get('icon'))
+                if photo is not None:
+                    radio_opts['image'] = photo
+                    radio_opts['compound'] = 'left'
+                self._menu.add_radiobutton(**radio_opts)
 
     def _compute_position(self, position: tuple[int, int] | None) -> tuple[int, int]:
         """Resolve the screen-coordinate target for `tk_popup`.
@@ -1574,6 +1683,7 @@ class _NativeContextMenu(CustomConfigMixin):
         self._item_order = []
         self._counter = 0
         self._var_refs = {}
+        self._icon_refs = []
         self.add_items(value)
         return None
 

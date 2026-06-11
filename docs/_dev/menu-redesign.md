@@ -63,9 +63,16 @@ layout branch, not a subsystem).
 
 1. **Two-surface model.** New `win.menu` facade (menus only) + the existing
    `Toolbar` as the command bar. Do NOT overload either into the other.
-2. **macOS icons: drop on ALL Mac native menus** (menu bar AND right-click context
-   menus). → Lets us largely **retire `MenuManager`** (its entire job is icon
-   tracking + theme-aware recolor on `tk.Menu`).
+2. **macOS icons: menu BAR text-only; context menus KEEP icons** (revised
+   2026-06-11 after Mac testing). Native `tk.Menu` icons *do* render on Aqua — but in
+   the menu BAR our items sit alongside OS-injected items (Apple/Window/Help/app menu)
+   whose icons use a system selected-state foreground we don't match, so our icons look
+   off there → menu bar stays **text-only**. A context menu is entirely ours (no system
+   items mixed in) and is **app content**, so it **keeps icons** (and matches the
+   Win/Linux `icon=` contract). Net: the standalone `MenuManager` + `create_menu` are
+   retired, but a **slim icon-render + theme-recolor path lives inside
+   `_NativeContextMenu`** (FUTURE: if we ever match the system selected-state icon
+   foreground, menu-bar icons on Mac become viable).
 3. **Item type rename `command` → `action`.** Types become
    `action`/`check`/`radio`/`separator`. The public verb stays `on_click`. (This is
    the deferred Tk-ism rename the handoff flagged.)
@@ -218,12 +225,15 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   path keeps `format_shortcut` (plain Label). Unit-tested (4 cases). **User to re-verify
   on Mac.**
 - **Step 5 — retire `MenuManager` + legacy `create_menu`: DONE & green.** Deleted
-  `_runtime/menu.py` entirely (MenuManager + `create_menu`/`create_menu_items`, which had
-  ZERO callers and weren't publicly exported). De-iconed `_NativeContextMenu` (per decision
-  #2 — Mac context menus drop icons too): removed all `_mgr`/icon-tracking/recolor code and
-  the `image`/`compound` opts; label translation now calls `MessageCatalog` directly;
-  `icon=` still accepted for API parity but ignored. Tests `test_native_contextmenu.py` (5,
-  structural on Windows). **User to re-verify the Mac context-menu look (no icons).**
+  `_runtime/menu.py` entirely (standalone MenuManager + `create_menu`/`create_menu_items`,
+  which had ZERO callers and weren't publicly exported). `_NativeContextMenu` no longer
+  depends on it: label translation calls `MessageCatalog` directly, and it carries its own
+  **slim self-contained icon path** — `_menu_icon_color` (systemTextColor on Aqua, else
+  theme fg) + `_resolve_icon` (glyph→PhotoImage, refs held) + a `<<ThemeChanged>>` /
+  `<<TkSystemAppearanceChanged>>` binding that rebuilds to recolor icons. The menu BAR
+  renderer (`render_native`) stays text-only (see decision #2). Tests
+  `test_native_contextmenu.py` (5, structural on Windows). **User to re-verify on Mac:
+  context-menu icons present + recolor on theme change; menu-bar accelerators show the key.**
 
 ## Open questions / to confirm during build
 
