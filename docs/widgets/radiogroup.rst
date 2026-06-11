@@ -29,8 +29,14 @@ the display text should differ from the stored value.
 .. code-block:: python
 
    size = bs.RadioGroup([("Small", "s"), ("Medium", "m"), ("Large", "l")], value="m")
-   size.value   # -> "m"        (the selected value)
-   size.text    # -> "Medium"   (the selected label)
+   size.value      # -> "m"        (the selected value)
+   size.text       # -> "Medium"   (the selected label)
+   size.selection  # -> {"text": "Medium", "value": "m"}   (the full record)
+
+Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
+and the reserved ``icon``/``disabled``), any other key you add (e.g.
+``{"text": "Medium", "value": "m", "px": 16}``) rides along and is returned by
+``.selection`` (see :doc:`select` for details).
 
 Orientation
 ~~~~~~~~~~~

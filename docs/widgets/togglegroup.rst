@@ -44,12 +44,18 @@ it as the selected label(s).
 .. code-block:: python
 
    view = bs.ToggleGroup([("Grid view", "grid"), ("List view", "list")], value="grid")
-   view.value   # -> "grid"        (single mode: the value)
-   view.text    # -> "Grid view"   (single mode: the label)
+   view.value      # -> "grid"        (single mode: the value)
+   view.text       # -> "Grid view"   (single mode: the label)
+   view.selection  # -> {"text": "Grid view", "value": "grid"}   (single: one record)
 
    tools = bs.ToggleGroup([("Bold", "b"), ("Italic", "i")], mode="multi", value={"b"})
-   tools.value  # -> {"b"}          (multi mode: a set of values)
-   tools.text   # -> {"Bold"}       (multi mode: a set of labels)
+   tools.value      # -> {"b"}          (multi mode: a set of values)
+   tools.text       # -> {"Bold"}       (multi mode: a set of labels)
+   tools.selection  # -> [{"text": "Bold", "value": "b"}]   (multi: list of records)
+
+Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
+and the reserved ``icon``/``disabled``), any other key you add rides along and is
+returned by ``.selection`` (see :doc:`select` for details).
 
 .. image:: /_static/examples/togglegroup-multi-light.png
    :class: bs-screenshot-light

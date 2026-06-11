@@ -6,7 +6,7 @@ from typing import Any, Callable, TypedDict, TYPE_CHECKING
 from typing_extensions import Unpack
 
 from bootstack.events import ChangeEvent
-from bootstack.widgets._core.options import normalize_options
+from bootstack.widgets._core.options import normalize_options, record_to_dict
 from bootstack.widgets._impl.composites.contextmenu import ContextMenu, ContextMenuItem
 from bootstack.widgets._impl.primitives._menubutton import MenuButton
 from bootstack.widgets._impl.mixins import configure_delegate
@@ -205,6 +205,17 @@ class OptionMenu(MenuButton):
     def text(self) -> str:
         """The display label currently shown on the button."""
         return self._textvariable.get()
+
+    @property
+    def selection(self) -> dict | None:
+        """The selected option as a full record dict (the data bag), or None."""
+        text = self._textvariable.get()
+        if text == "":
+            return None
+        for rec in self._records:
+            if rec.text == text:
+                return record_to_dict(rec)
+        return None
 
     def get(self) -> Any:
         """Return the current value (value-space), or `None` if nothing is selected."""

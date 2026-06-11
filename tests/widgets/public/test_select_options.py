@@ -53,14 +53,23 @@ def test_normalize_preserves_extras():
     assert record_to_dict(rec) == {"text": "S", "value": "s", "icon": "star"}
 
 
+def test_normalize_carries_arbitrary_extras_as_databag():
+    # The dict form is a data bag: any key beyond text/value rides along (it is
+    # NOT rejected — the dict route is opt-in, the caller owns the typo risk).
+    rec = normalize_option({"text": "Canada", "value": "CA", "phone": "+1", "region": "americas"})
+    assert rec.extras == {"phone": "+1", "region": "americas"}
+    assert record_to_dict(rec) == {
+        "text": "Canada", "value": "CA", "phone": "+1", "region": "americas",
+    }
+
+
 def test_normalize_options_list_and_none():
     assert normalize_options(None) == []
     assert [r.text for r in normalize_options(["a", ("B", "b")])] == ["a", "B"]
 
 
 @pytest.mark.parametrize("bad, exc", [
-    ({"value": "x"}, ValueError),       # missing text
-    ({"text": "a", "bogus": 1}, ValueError),  # unknown key
+    ({"value": "x"}, ValueError),       # missing required text
     (("a", "b", "c"), ValueError),      # bad tuple arity
     ({"text": 1}, TypeError),           # non-string text
     (123, TypeError),                   # wrong type
@@ -103,6 +112,56 @@ def test_radiogroup_accepts_all_forms(app, options, set_value, expected):
 def test_togglegroup_accepts_all_forms(app, options, set_value, expected):
     tg = bs.ToggleGroup(options=options, value=set_value)
     assert tg.value == expected
+
+
+# --------------------------------------------------------------------------
+# selection — the selected option's full record (the data bag)
+# --------------------------------------------------------------------------
+
+def test_select_selection_is_record_with_bag(app):
+    s = bs.Select(options=[
+        {"text": "Canada", "value": "CA", "phone": "+1"},
+        {"text": "Japan", "value": "JP", "phone": "+81"},
+    ], value="JP")
+    assert s.selection == {"text": "Japan", "value": "JP", "phone": "+81"}
+    assert s.selection["phone"] == "+81"
+    s.value = "CA"
+    assert s.selection["phone"] == "+1"
+
+
+def test_selectbutton_selection_is_record_with_bag(app):
+    sb = bs.SelectButton(options=[{"text": "Dark", "value": "dark", "accent": "x"}], value="dark")
+    assert sb.selection == {"text": "Dark", "value": "dark", "accent": "x"}
+
+
+def test_radiogroup_selection_is_record_with_bag(app):
+    rg = bs.RadioGroup(options=[{"text": "Small", "value": "s", "px": 12}], value="s")
+    assert rg.selection == {"text": "Small", "value": "s", "px": 12}
+
+
+def test_togglegroup_single_selection_is_record(app):
+    tg = bs.ToggleGroup(options=[("Grid", "grid"), {"text": "List", "value": "list", "icon": "rows"}], value="list")
+    assert tg.selection == {"text": "List", "value": "list", "icon": "rows"}
+
+
+def test_togglegroup_multi_selection_is_list_of_records(app):
+    tg = bs.ToggleGroup(
+        options=[("Bold", "b"), ("Italic", "i"), ("Underline", "u")],
+        mode="multi", value={"b", "u"},
+    )
+    sel = tg.selection
+    assert isinstance(sel, list)
+    assert {d["value"] for d in sel} == {"b", "u"}
+
+
+def test_select_selection_none_when_unselected(app):
+    s = bs.Select(options=["a", "b"])
+    assert s.selection is None
+
+
+def test_plain_string_option_selection_is_minimal_record(app):
+    s = bs.Select(options=["a", "b"], value="a")
+    assert s.selection == {"text": "a", "value": "a"}
 
 
 # --------------------------------------------------------------------------
