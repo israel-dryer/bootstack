@@ -225,9 +225,13 @@ class FormOptions(TypedDict, total=False):
 class OptionDict(TypedDict, total=False):
     """A single choice for a selection widget, in dict form.
 
-    The dict form is the extensible member of the `Option` shape: only `text`
-    is required, and `value` defaults to `text` when omitted. The remaining
-    keys are reserved for per-option extras and are not yet wired up.
+    The dict form is a *data bag*: only `text` is required (and `value` defaults
+    to it). `text`/`value` and the reserved `icon`/`disabled` are the recognized
+    keys; every *other* key rides along as carried data — retrievable as the
+    widget's `selection` (the selected option's full record). Unrecognized keys
+    are accepted, not rejected, so the dict route trades key-typo safety for
+    extensibility. `icon`/`disabled` are reserved to drive rendering/behavior in
+    a future release; until then they are carried like any other key.
     """
 
     text: Required[str]
@@ -235,9 +239,9 @@ class OptionDict(TypedDict, total=False):
     value: Any
     """Stored and emitted value. Defaults to `text` when omitted."""
     icon: str
-    """Reserved for a future per-option icon. Not yet rendered."""
+    """Reserved for a future per-option icon. Carried but not yet rendered."""
     disabled: bool
-    """Reserved for a future non-selectable option. Not yet honored."""
+    """Reserved for a future non-selectable option. Carried but not yet honored."""
 
 
 Option = str | tuple[str, Any] | OptionDict

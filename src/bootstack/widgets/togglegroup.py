@@ -90,8 +90,11 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
 
         self._internal = _InternalToggleGroup(tk_master, **internal_kwargs)
 
-        # Populate options passed at construction.
-        for record in normalize_options(options):
+        # Populate options passed at construction; keep the records (the data
+        # bag) so `selection` can return each option's full dict.
+        records = normalize_options(options)
+        self._set_option_records(records)
+        for record in records:
             self._internal.add(text=record.text, value=record.value)
 
         # Trace signal → <<Change>> for consistent Subscription-based on_change().
@@ -134,6 +137,18 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         return self._internal.text_for(value)
 
     @property
+    def selection(self) -> dict | list[dict] | None:
+        """The selected option(s) as full record dicts — the data bag.
+
+        In single mode, the selected option's `{text, value, ...extras}` dict
+        (or `None`). In multi mode, a `list` of those dicts. Read-only.
+        """
+        value = self._internal.get()
+        if isinstance(value, set):
+            return [d for v in value if (d := self._record_dict_for(v)) is not None]
+        return self._record_dict_for(value)
+
+    @property
     def disabled(self) -> bool:
         """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"
@@ -151,7 +166,9 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
             label: Display text.
             value: Value this button represents. Defaults to `label`.
         """
-        self._internal.add(text=label, value=value if value is not None else label, **kwargs)
+        resolved = value if value is not None else label
+        self._internal.add(text=label, value=resolved, **kwargs)
+        self._add_option_record(label, resolved)
 
     # ----- Event shorthands -----
 

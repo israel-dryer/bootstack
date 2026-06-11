@@ -47,6 +47,32 @@ Setting ``.value`` to something that is not one of the options raises
 ``ValueError`` (unless ``allow_custom_values=True``, where a typed value is kept
 as its own text).
 
+Carrying extra data (the data bag)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The dict form is a *data bag* — alongside the recognized keys (``text``,
+``value``, and the reserved ``icon``/``disabled``), any other key you add rides
+along as carried data. Read the whole selected record, indexed by key, via
+``.selection``:
+
+.. code-block:: python
+
+   country = bs.Select(options=[
+       {"text": "Canada", "value": "CA", "phone": "+1"},
+       {"text": "Japan",  "value": "JP", "phone": "+81"},
+   ], value="JP")
+
+   country.value             # -> "JP"
+   country.selection         # -> {"text": "Japan", "value": "JP", "phone": "+81"}
+   country.selection["phone"]  # -> "+81"
+
+   country.on_change(lambda e: dial(country.selection["phone"]))
+
+``.selection`` is the selected option's full dict (the same shape you'd get from a
+``ListView`` row), or ``None`` when nothing is selected. Unrecognized keys are
+*accepted, not validated* — the dict route is opt-in, so a mistyped key rides
+along silently rather than raising.
+
 Label and message
 ~~~~~~~~~~~~~~~~~
 

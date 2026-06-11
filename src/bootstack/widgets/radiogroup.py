@@ -79,8 +79,11 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
 
         self._internal = _InternalRadioGroup(tk_master, **internal_kwargs)
 
-        # Populate options passed at construction.
-        for record in normalize_options(options):
+        # Populate options passed at construction; keep the records (the data
+        # bag) so `selection` can return each option's full dict.
+        records = normalize_options(options)
+        self._set_option_records(records)
+        for record in records:
             self._internal.add(text=record.text, value=record.value)
 
         # Trace the signal so <<Change>> fires on the internal Frame whenever
@@ -119,6 +122,15 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         return self._internal.text_for(self._internal.value)
 
     @property
+    def selection(self) -> dict | None:
+        """The selected option as a full record dict — the data bag — or `None`.
+
+        `{'text': ..., 'value': ..., ...any extra keys}`, indexed by key like any
+        record. Read-only.
+        """
+        return self._record_dict_for(self._internal.value)
+
+    @property
     def disabled(self) -> bool:
         """Whether all buttons in the group are non-interactive."""
         return self._internal._state == "disabled"
@@ -148,7 +160,9 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
             label: Display text for the button.
             value: Value assigned when this button is selected. Defaults to `label`.
         """
-        self._internal.add(text=label, value=value if value is not None else label, **kwargs)
+        resolved = value if value is not None else label
+        self._internal.add(text=label, value=resolved, **kwargs)
+        self._add_option_record(label, resolved)
 
     # ----- Event shorthands -----
 

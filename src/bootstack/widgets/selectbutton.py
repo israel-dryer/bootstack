@@ -111,6 +111,15 @@ class SelectButton(PublicWidgetBase):
         return self._internal.text
 
     @property
+    def selection(self) -> dict | None:
+        """The selected option as a full record dict — the data bag — or `None`.
+
+        `{'text': ..., 'value': ..., ...any extra keys}`, indexed by key like
+        any record. Read-only.
+        """
+        return self._internal.selection
+
+    @property
     def options(self) -> list[OptionDict]:
         """The available options as normalized `{'text', 'value'}` records.
 

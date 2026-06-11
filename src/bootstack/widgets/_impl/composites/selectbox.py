@@ -5,7 +5,7 @@ from typing_extensions import Unpack
 from typing import Any
 
 from bootstack.events import ChangeEvent
-from bootstack.widgets._core.options import normalize_options
+from bootstack.widgets._core.options import normalize_options, record_to_dict
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.scrollview import ScrollView
@@ -615,6 +615,22 @@ class SelectBox(Field):
     def text(self) -> str:
         """The current display text shown in the field (the formatted string)."""
         return self.entry_widget.get()
+
+    @property
+    def selection(self) -> dict | None:
+        """The selected option as a full record dict (the data bag), or None.
+
+        Returns the matching option's `{text, value, ...extras}`; None when
+        nothing is selected or the current value is a custom/off-list one (not
+        one of the options).
+        """
+        value = self.value
+        if value is None:
+            return None
+        for rec in self._records:
+            if rec.value == value:
+                return record_to_dict(rec)
+        return None
 
     @property
     def value(self):

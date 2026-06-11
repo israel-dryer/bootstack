@@ -35,7 +35,12 @@ Like `Select`, an option's label can differ from its value — pass a
    mode = bs.SelectButton([("Light theme", "light"), ("Dark theme", "dark")], value="dark")
    mode.value             # -> "dark"          (the value)
    mode.text              # -> "Dark theme"    (the displayed label)
+   mode.selection         # -> {"text": "Dark theme", "value": "dark"}   (the full record)
    mode.on_change(lambda e: apply_theme(e.value))
+
+Options are a *data bag* — alongside the recognized keys (``text``, ``value``,
+and the reserved ``icon``/``disabled``), any other key you add rides along and is
+returned by ``.selection`` (see :doc:`select` for details).
 
 Accent colors
 ~~~~~~~~~~~~~

@@ -11,9 +11,6 @@ from typing import Any, Iterable, NamedTuple
 
 from bootstack.widgets.types import Option
 
-# Keys an OptionDict may carry. `text` is required; `value` defaults to `text`.
-_KNOWN_OPTION_KEYS = frozenset({"text", "value", "icon", "disabled"})
-
 
 class OptionRecord(NamedTuple):
     """A normalized option — what every selection widget consumes internally."""
@@ -29,6 +26,12 @@ class OptionRecord(NamedTuple):
 def normalize_option(opt: Option) -> OptionRecord:
     """Coerce a single `Option` to an `OptionRecord`.
 
+    The dict form is a *data bag*: only `text` is required (and `value` defaults
+    to it). `text`/`value` and the reserved `icon`/`disabled` are the recognized
+    keys; every other key rides along as carried data, retrievable via the
+    widget's `selection`. Unrecognized keys are NOT rejected — the dict route is
+    opt-in, so the caller accepts the risk of a mistyped key.
+
     Args:
         opt: A plain string, a `(text, value)` tuple, or an `OptionDict`.
 
@@ -39,7 +42,7 @@ def normalize_option(opt: Option) -> OptionRecord:
         TypeError: If `opt` is not a string, 2-tuple, or dict, or if a dict
             `text` is not a string.
         ValueError: If a tuple does not have exactly two items, or a dict is
-            missing `text` or carries an unknown key.
+            missing `text`.
     """
     if isinstance(opt, str):
         return OptionRecord(opt, opt, {})
@@ -47,16 +50,12 @@ def normalize_option(opt: Option) -> OptionRecord:
     if isinstance(opt, dict):
         if "text" not in opt:
             raise ValueError(f"option dict is missing the required 'text' key: {opt!r}")
-        unknown = set(opt) - _KNOWN_OPTION_KEYS
-        if unknown:
-            raise ValueError(
-                f"option dict has unknown key(s) {sorted(unknown)}: {opt!r} "
-                f"(allowed: {sorted(_KNOWN_OPTION_KEYS)})"
-            )
         text = opt["text"]
         if not isinstance(text, str):
             raise TypeError(f"option 'text' must be a string, got {type(text).__name__}: {opt!r}")
         value = opt["value"] if "value" in opt else text
+        # The bag: every key except text/value, including the reserved
+        # icon/disabled (carried now, interpreted by the widget later).
         extras = {k: opt[k] for k in opt if k not in ("text", "value")}
         return OptionRecord(text, value, extras)
 
