@@ -5,10 +5,11 @@ from typing import Any, Callable, Literal
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
+from bootstack.widgets._core.window_menu import MenuHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class Window(WindowControlsMixin, PublicContainer):
+class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
     """A secondary top-level window.
 
     Behaves as an implicit `VStack` from the user's perspective: children

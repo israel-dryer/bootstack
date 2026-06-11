@@ -91,6 +91,9 @@ class MenuGroup:
         self.text = text
         self.key = key or text
         self.items: list[MenuItem] = []
+        self.on_change: Callable[[], Any] | None = None
+        """Optional callback fired after any item is added (set by the host
+        facade to trigger a coalesced re-render)."""
 
     # ----- builders -----
 
@@ -173,12 +176,14 @@ class MenuGroup:
         if item.key is None:
             item.key = f"{self.key}.{len(self.items)}"
         self.items.append(item)
+        if self.on_change is not None:
+            self.on_change()
         return item
 
     def __enter__(self) -> "MenuGroup":
         return self
 
-    def __exit__(self, *exc: Any) -> Literal[False]:
+    def __exit__(self, *exc: Any) -> bool:
         return False
 
     def __len__(self) -> int:

@@ -7,10 +7,11 @@ from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
+from bootstack.widgets._core.window_menu import MenuHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class App(AppConfigMixin, WindowControlsMixin, PublicContainer):
+class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
     """The application window. Behaves as an implicit VStack from the user's
     perspective: accepts `padding`, `gap`, `fill_items`, `expand_items`, and
     `anchor_items` and applies them to its internal content frame.

@@ -183,6 +183,23 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   - **DEFERRED renderer-A interaction polish** (after the facade is visible): hover-to-
     switch between open menus, Alt-to-focus + arrow navigation across triggers. Core
     click-to-open works; these are feel refinements.
+- **Step 4a — facade + placement (Win/Linux): DONE & green.** `widgets/_core/window_menu.py`
+  (`WindowMenu` + `MenuHostMixin`): lazy `.menu` on `App`/`Window`; imperative
+  `add_menu(...)` (context-manager group) + declarative `load([...])`; coalesced
+  `after_idle` re-render so the build-then-run pattern renders once; themed strip packs
+  at `side="top"` above the content frame; pattern shortcuts bound to the host window on
+  each rebuild. `model.py` gained a `MenuGroup.on_change` hook. Demo `docs/examples/menu.py`
+  (runs on Win/Linux/Mac). Tests `test_menu_facade.py` (6). **Tests relocated to
+  `tests/widgets/public/`** (the widget GUI test home; default `testpaths`).
+  - **Suite note:** GUI test modules cannot co-run in one process (creating a 2nd `App`
+    after the 1st is destroyed crashes Tk) — a PRE-EXISTING constraint affecting the whole
+    `tests/widgets/public` suite, not new. Run GUI modules one at a time. Menu modules pass
+    individually (model 20, themed 5, facade 6).
+  - **DEFERRED to Step 4b — `menu_layout` + fusing with the command bar.** App/Window have
+    no command bar yet (only AppShell has a `Toolbar`), so there is nothing to fuse. The
+    `menu_layout='fused'|'stacked'` kwarg + the shared-row rendering land once a command-bar
+    façade exists on App/Window (converges with the HELD Toolbar rework). AppShell `.menu`
+    wiring also pending (Step 4c).
 
 ## Open questions / to confirm during build
 
