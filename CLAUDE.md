@@ -21,7 +21,32 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Widget API gap audit + documentation** (PR #111 — OPEN, pending merge) — audited
+- **Field value/text/label contract + selection data bag** (PRs #113–#116, all
+  merged) — a framework-wide field-widget contract and a shared, extensible option
+  shape, built across four PRs:
+  - **#113** code-review follow-ups #4–#10 (SelectButton value reconcile, ctypes HWND
+    types, shared `SelectionGroupMixin`, uniform `BaseWindow.close`, shared
+    `coerce_date`, Calendar redraw coalescing).
+  - **#114** the **value/text/label** model: `label` = caption beside a control,
+    `text` = formatted display (new public **read-only `.text`** across the field
+    family — TextField/NumberField/…/Select/CodeEditor), `value` = raw datum.
+    LOAD-BEARING RULE: **never derive value from text** (doing so broke
+    `TimeField.value` → returned the formatted string instead of `datetime.time`;
+    `SelectBox.value` now defers to `Field.value` and the option map only layers on
+    for *decoupled* options). Shared `Option = str | tuple | OptionDict` shape +
+    `normalize_option`; `SelectBox.strict_value` flag (public `Select` strict,
+    embedded SelectBoxes lenient). Catalog is `.options` (`.texts`/`.values` dropped).
+  - **#115** `.text` (selected label) on RadioGroup/ToggleGroup (mirrors `value`:
+    str | set in multi); `text_for(value)` on the internal composites.
+  - **#116** the **option data bag**: `normalize_option` no longer rejects unknown
+    dict keys (recognized = `text`/`value`/`icon`/`disabled`; everything else is
+    carried data); a universal polymorphic **`.selection`** accessor returns the
+    selected option's full record dict (`dict | None`, or `list[dict]` for
+    ToggleGroup multi). RadioGroup/ToggleGroup keep records via `SelectionGroupMixin`.
+  Memories `project_field_value_text_model`, `project_option_databag`. Briefs:
+  `docs/_dev/option-databag.md` (+ the value/text model in the memory).
+- **Widget API gap audit + documentation** (PR #111, merged; review follow-ups
+  #4–#10 shipped in PR #113) — audited
   all ~49 public widgets vs their `_impl/` internals for unexposed capability and fixed
   the high-value gaps: widget lifecycle (`destroy`/`on_destroy` on `PublicWidgetBase`,
   `<Destroy>` mapping); a `WindowControlsMixin` (`close`/`show`/`hide`/`minimize`/
@@ -120,6 +145,22 @@ memories and git history.
 
 ## Next up — candidates (pick one)
 
+- **Selection `.selection` naming alignment** (follow-on from the option-databag PR
+  #116) — extend the universal `.selection` accessor to the record-native widgets
+  **ListView/DataTable/Tree**, which already carry records but expose them under
+  divergent names: `get_selected()` (ListView, method), `selected_rows` (DataTable),
+  `selected_nodes` (Tree). Add the singular/`selection` form and reconcile the
+  plural names; Tree's `selection` returns node handles (bag at `node.data`).
+  **Breaking** (renames shipped API) — its own PR. Brief: `docs/_dev/option-databag.md`.
+- **Option `icon` + per-item `disabled` behavior** — wire up the two reserved
+  `OptionDict` keys (currently carried but inert): render `icon` beside each option's
+  label, and make a single option non-selectable via `disabled` — across the entry-
+  backed Select popup, the menu-backed SelectButton, and the button-backed groups.
+  Touches the icon renderer. Memory `project_option_databag`.
+- **Select grouping** (optgroup-style) — cluster options under group headers in the
+  Select popup (and maybe the family). Maintainer-requested; **discuss shape before
+  building** (composes with the `Option` shape + data bag). Memory
+  `project_select_grouping`.
 - **Docs site fleshout** — the remaining stub pages: how-to guides (`docs/tasks/*` —
   getting-input/handling-actions/displaying-data/building-forms/dialogs/navigation),
   `getting-started/app-structures`, production `cli`/`debugging`/`distribution`; plus a
