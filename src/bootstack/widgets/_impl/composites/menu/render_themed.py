@@ -29,7 +29,7 @@ class ThemedMenuBar(PackFrame):
         master: Master = None,
         model: MenuModel | None = None,
         *,
-        density: WidgetDensity = "default",
+        density: WidgetDensity = "compact",
         **kwargs: Any,
     ) -> None:
         kwargs.setdefault("surface", "chrome")
