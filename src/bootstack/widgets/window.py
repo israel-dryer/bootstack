@@ -41,6 +41,9 @@ class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
         expand_items: Default `expand` value for children.
         anchor_items: Default anchor for children that do not fill their cell.
         surface: Surface token for the content frame background.
+        menu_layout: How the menu bar and toolbar (command bar) stack at the top
+            on Windows/Linux — `'fused'` (one row) or `'stacked'` (two rows). No
+            effect on macOS (the menu bar moves to the global bar). Default `'fused'`.
     """
 
     _auto_place = False  # top-level window — no parent manages its position
@@ -61,6 +64,8 @@ class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
         undecorated: bool = False,
         window_style: WindowStyle | str | None = None,
         on_close: Callable[[], bool | None] | None = None,
+        # chrome
+        menu_layout: Literal["fused", "stacked"] = "fused",
         # Content frame layout
         padding: Padding | None = None,
         gap: int = 0,
@@ -73,6 +78,7 @@ class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
         from bootstack._runtime.toplevel import Toplevel as _InternalToplevel
 
         self._parent = None
+        self._menu_layout = menu_layout
 
         init_kwargs: dict[str, Any] = {
             "title": title,

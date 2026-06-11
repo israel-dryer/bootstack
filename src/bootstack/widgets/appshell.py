@@ -367,15 +367,21 @@ class AppShell(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicWidgetB
     def _menu_root(self) -> Any:
         return self._internal
 
-    def _menu_pack_parent(self) -> Any:
+    def _menu_strip_parent(self) -> Any:
         return getattr(self._internal, "_content_root", self._internal)
 
-    def _menu_pack_before(self) -> Any:
-        # Pack above the toolbar when present, else above the body.
-        return (
+    def _place_menu_strip(self, strip: Any) -> None:
+        # Mount above the toolbar when present, else above the body. AppShell
+        # does not use the chrome row (its toolbar is internal and pre-placed);
+        # `menu_layout` does not apply here (deferred to the Toolbar rework).
+        before = (
             getattr(self._internal, "_toolbar", None)
             or getattr(self._internal, "_body_frame", None)
         )
+        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if before is not None:
+            pack_kw["before"] = before
+        strip.pack(**pack_kw)
 
     @property
     def toolbar(self) -> Any:

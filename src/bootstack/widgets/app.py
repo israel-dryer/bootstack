@@ -55,6 +55,10 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
         expand_items: Default `expand` for children that don't set their own.
         anchor_items: Default anchor for children that don't fill their cell.
         surface: Background surface for the content frame.
+        menu_layout: How the menu bar and toolbar (command bar) stack at the top
+            on Windows/Linux — `'fused'` (one row: menus left, toolbar right) or
+            `'stacked'` (menu row above a separate toolbar row). No effect on
+            macOS (the menu bar moves to the global bar). Default `'fused'`.
     """
 
     _auto_place = False  # no parent
@@ -86,6 +90,8 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
         resizable: tuple[bool, bool] | None = None,
         scaling: float | None = None,
         hdpi: bool = True,
+        # chrome
+        menu_layout: Literal["fused", "stacked"] = "fused",
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
@@ -97,6 +103,7 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
         **app_kwargs: Any,
     ) -> None:
         self._parent = None
+        self._menu_layout = menu_layout
 
         init_kwargs: dict[str, Any] = {
             "light_theme": light_theme,

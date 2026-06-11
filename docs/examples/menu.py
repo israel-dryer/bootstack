@@ -7,7 +7,7 @@ window. On macOS they relocate to the native global menu bar.
 """
 import bootstack as bs
 
-with bs.App(title="Menu demo", size=(560, 360), window_style=None) as app:
+with bs.App(title="Menu demo", size=(560, 360)) as app:
 
     with app.menu.add_menu("File") as file:
         file.add_action("New", shortcut="Mod+N", on_click=lambda: bs.toast("New"))
@@ -29,7 +29,12 @@ with bs.App(title="Menu demo", size=(560, 360), window_style=None) as app:
         view.add_radio("Dark", value="dark", group="theme",
                        on_click=lambda: bs.set_theme("bootstrap-dark"))
 
-    bs.Label("Use the menus above. Shortcuts (e.g. Ctrl+N) fire too.",
+    # Command bar: on Windows/Linux it fuses into the menu row (default
+    # menu_layout="fused"); add_spacer() pushes the theme toggle to the right.
+    app.toolbar.add_spacer()
+    app.toolbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+
+    bs.Label("Menus on the left, a theme toggle on the right. Shortcuts fire too.",
              font="heading-md")
 
 app.run()

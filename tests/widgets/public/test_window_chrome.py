@@ -1,0 +1,64 @@
+"""Smoke tests for the App/Window command bar (`.toolbar`) + `menu_layout`.
+
+Structural only; visuals verified by hand. ONE module-scoped App (creating
+several Apps in one process crashes Tk) — layout variants are exercised by
+toggling `_menu_layout` and re-arranging.
+"""
+from __future__ import annotations
+
+import pytest
+
+pytestmark = pytest.mark.gui
+
+
+@pytest.fixture(scope="module")
+def app():
+    import bootstack as bs
+
+    app = bs.App(window_style=None)
+    app._tk_root.withdraw()
+    try:
+        yield app
+    finally:
+        try:
+            app._tk_root.destroy()
+        except Exception:
+            pass
+
+
+def test_toolbar_is_lazy_singleton(app):
+    assert app.toolbar is app.toolbar
+
+
+def test_toolbar_lives_in_the_chrome_row(app):
+    tb = app.toolbar
+    tb.add_button(label="Theme", on_click=lambda: None)
+    assert tb._internal in app._chrome.pack_slaves()
+
+
+def test_default_layout_is_fused(app):
+    assert app._menu_layout == "fused"
+
+
+def test_fused_then_stacked_rearranges(app):
+    # Ensure both menu and toolbar exist in the chrome row.
+    with app.menu.add_menu("File") as f:
+        f.add_action("Quit", on_click=lambda: None)
+    app.toolbar  # realize it
+    app.menu.refresh()
+    strip = app.menu._renderer
+    tb_widget = app.toolbar._internal
+
+    # Fused → one row: menu strip left, both present, strip before toolbar.
+    app._menu_layout = "fused"
+    app._arrange_chrome()
+    kids = app._chrome.pack_slaves()
+    assert strip in kids and tb_widget in kids
+    assert kids.index(strip) < kids.index(tb_widget)
+    assert strip.pack_info().get("side") == "left"
+
+    # Stacked → two rows: both packed side=top.
+    app._menu_layout = "stacked"
+    app._arrange_chrome()
+    assert strip.pack_info().get("side") == "top"
+    assert tb_widget.pack_info().get("side") == "top"

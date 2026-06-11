@@ -48,7 +48,7 @@ def test_strip_packs_above_the_toolbar(shell):
         strip = menu._renderer
         toolbar = shell._internal._toolbar
         # Both pack into the same content root; the strip comes first.
-        parent = shell._menu_pack_parent()
+        parent = shell._menu_strip_parent()
         kids = parent.pack_slaves()
         assert strip in kids and toolbar in kids
         assert kids.index(strip) < kids.index(toolbar)

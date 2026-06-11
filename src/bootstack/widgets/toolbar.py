@@ -93,7 +93,7 @@ class Toolbar(PublicWidgetBase):
         icon: str | None = None,
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
-        variant: ButtonVariant = "default",
+        variant: ButtonVariant | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a button to the toolbar.
@@ -106,8 +106,8 @@ class Toolbar(PublicWidgetBase):
             icon: Icon name. When provided without `label`, renders icon-only.
             on_click: Callback fired when the button is clicked.
             accent: Color intent override.
-            variant: Variant override. Falls back to the toolbar's
-                `button_variant` when not specified.
+            variant: Variant override. When omitted, falls back to the toolbar's
+                `button_variant` (default `'ghost'`).
         """
         kw: dict[str, Any] = {}
         if label is not None:

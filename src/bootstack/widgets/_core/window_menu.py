@@ -75,14 +75,6 @@ class WindowMenu:
         """The Tk root/toplevel for the native menubar + shortcut binding."""
         return self._host._menu_root()
 
-    def _menu_pack_parent(self) -> Any:
-        """The widget the themed strip packs into."""
-        return self._host._menu_pack_parent()
-
-    def _menu_pack_before(self) -> Any:
-        """The sibling the themed strip packs above (`before=`), or None."""
-        return self._host._menu_pack_before()
-
     def _is_aqua(self) -> bool:
         root = self._menu_root()
         try:
@@ -121,7 +113,7 @@ class WindowMenu:
     def _rebuild_themed(self) -> None:
         from bootstack.widgets._impl.composites.menu.render_themed import ThemedMenuBar
 
-        parent = self._menu_pack_parent()
+        parent = self._host._menu_strip_parent()
         if parent is None:
             return
 
@@ -137,11 +129,7 @@ class WindowMenu:
 
         if self._renderer is None:
             self._renderer = ThemedMenuBar(parent, self._model)
-            before = self._menu_pack_before()
-            pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-            if before is not None:
-                pack_kw["before"] = before
-            self._renderer.pack(**pack_kw)
+            self._host._place_menu_strip(self._renderer)
         else:
             self._renderer.rebuild()
 
@@ -168,26 +156,107 @@ class WindowMenu:
             self._renderer.rebuild()
 
 
-class MenuHostMixin:
-    """Adds a lazy `.menu` property returning a `WindowMenu`.
+class _ChromeContainer:
+    """Minimal public-container shim so a public `Toolbar` parents into the
+    host's chrome frame. Defers all packing to the host's arranger."""
 
-    Mixed into the top-level window classes (`App`, `Window`, `AppShell`). The
-    facade asks the host where to put the menu via three hooks; the defaults
-    suit `App`/`Window` (whose `_internal` is the Tk root and `_content_frame`
-    is the content area). `AppShell` overrides them to pack above its toolbar.
+    _auto_place = True
+
+    def __init__(self, frame: Any, arrange: Any) -> None:
+        self._frame = frame
+        self._arrange = arrange
+
+    def _child_master(self) -> Any:
+        return self._frame
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        # Don't pack here — the host arranger positions the toolbar per layout.
+        self._arrange()
+
+
+class ChromeHostMixin:
+    """Lazy `.menu` (menu bar) + `.toolbar` (command bar), laid out as top chrome.
+
+    On `App`/`Window` the menu strip and the toolbar share one host-owned chrome
+    row, arranged per `menu_layout`: `'fused'` (one row — menus left, toolbar
+    fills right) or `'stacked'` (menu-strip row, toolbar row beneath). `AppShell`
+    overrides the placement hooks (its toolbar is internal and pre-placed), so it
+    does not use the chrome row.
     """
+
+    # ----- menu placement hooks (consumed by WindowMenu) -----
 
     def _menu_root(self) -> Any:
         """Tk root/toplevel for the native menubar (`['menu']`) + shortcuts."""
         return getattr(self, "_internal", None)
 
-    def _menu_pack_parent(self) -> Any:
-        """Widget the themed strip packs into."""
-        return getattr(self, "_internal", None)
+    def _menu_strip_parent(self) -> Any:
+        """Widget the themed menu strip is constructed under."""
+        return self._ensure_chrome()
 
-    def _menu_pack_before(self) -> Any:
-        """Sibling the themed strip packs above (`before=`), or None."""
-        return getattr(self, "_content_frame", None)
+    def _place_menu_strip(self, strip: Any) -> None:
+        """Register the menu strip and (re)arrange the chrome row."""
+        self._menu_strip = strip
+        self._arrange_chrome()
+
+    # ----- chrome row -----
+
+    def _ensure_chrome(self) -> Any:
+        chrome = getattr(self, "_chrome", None)
+        if chrome is not None:
+            return chrome
+        from bootstack.widgets._impl.primitives.packframe import PackFrame
+
+        from bootstack.widgets._impl.primitives import Separator
+
+        root = self._menu_root()
+        chrome = PackFrame(root, direction="horizontal", surface="chrome")
+        content = getattr(self, "_content_frame", None)
+        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if content is not None:
+            pack_kw["before"] = content
+        chrome.pack(**pack_kw)
+        self._chrome = chrome
+
+        # Hairline divider between the chrome row and the content below — the
+        # native convention (Windows command bars / macOS toolbars), and it
+        # guarantees separation in themes where chrome ≈ content surface.
+        divider = Separator(root, orient="horizontal")
+        div_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if content is not None:
+            div_kw["before"] = content
+        divider.pack(**div_kw)
+        self._chrome_divider = divider
+
+        return chrome
+
+    def _arrange_chrome(self) -> None:
+        """(Re)pack the menu strip + toolbar in the chrome row per `menu_layout`."""
+        chrome = getattr(self, "_chrome", None)
+        if chrome is None:
+            return
+        strip = getattr(self, "_menu_strip", None)
+        toolbar = getattr(self, "_toolbar_widget", None)
+        tb_widget = toolbar._internal if toolbar is not None else None
+        layout = getattr(self, "_menu_layout", "fused")
+
+        for widget in (strip, tb_widget):
+            if widget is not None:
+                try:
+                    widget.pack_forget()
+                except Exception:
+                    pass
+
+        if layout == "stacked":
+            if strip is not None:
+                strip.pack(side="top", fill="x")
+            if tb_widget is not None:
+                tb_widget.pack(side="top", fill="x")
+        else:  # fused: menus left, toolbar fills the rest (its spacer pushes right)
+            if strip is not None:
+                strip.pack(side="left")
+            if tb_widget is not None:
+                tb_widget.pack(side="left", fill="x", expand=True)
 
     @property
     def menu(self) -> WindowMenu:
@@ -197,3 +266,28 @@ class MenuHostMixin:
             wm = WindowMenu(self)
             self._window_menu = wm
         return wm
+
+    @property
+    def toolbar(self) -> Any:
+        """The window's command bar — a `Toolbar`. Lazily created on first access.
+
+        Lives in the top chrome row (beside or below the menu bar per
+        `menu_layout`). Add buttons/labels/separators and an `add_spacer()` to
+        push trailing items (e.g. a theme toggle) to the right.
+        """
+        tb = getattr(self, "_toolbar_widget", None)
+        if tb is None:
+            from bootstack.widgets.toolbar import Toolbar
+
+            chrome = self._ensure_chrome()
+            shim = _ChromeContainer(chrome, self._arrange_chrome)
+            # Compact density so the command bar matches the (compact) menu bar
+            # height when fused into the same row.
+            tb = Toolbar(parent=shim, density="compact")
+            self._toolbar_widget = tb
+            self._arrange_chrome()
+        return tb
+
+
+# Back-compat alias (the mixin grew from menu-only to full chrome).
+MenuHostMixin = ChromeHostMixin

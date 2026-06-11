@@ -244,6 +244,23 @@ with bs.Window(title="Editor", menu_layout="fused") as win:
   `test_menu_appshell.py` (3). All three window types (App/Window/AppShell) now expose
   `.menu`.
 
+- **Step 4b — command bar + `menu_layout` (App/Window): DONE & green.** `app.toolbar` /
+  `window.toolbar` lazily create a public `Toolbar` (the command bar — reused, not a new
+  widget) parented into a host-owned **chrome row** shared with the menu strip. `MenuHostMixin`
+  → `ChromeHostMixin` (back-compat alias kept): hooks `_menu_strip_parent` / `_place_menu_strip`,
+  a `_ChromeContainer` shim so the public `Toolbar` parents into the chrome frame, and
+  `_arrange_chrome()` that packs menu strip + toolbar per `menu_layout`. **`menu_layout`** ctor
+  kwarg on App/Window — `'fused'` (default; one row: menus left, toolbar fills right via its
+  `add_spacer`) / `'stacked'` (two rows). No effect on macOS (menu leaves for the global bar).
+  Command bar defaults to **compact density** (matches the menu bar) and **ghost buttons** —
+  the latter via a fix to `Toolbar.add_button` (`variant` default `"default"`→`None` so it
+  honors the toolbar's `button_variant='ghost'`, per its own docstring; also corrects standalone
+  Toolbars). A themed hairline `Separator` is packed between the chrome row and the content
+  (native convention; guarantees separation in themes where chrome ≈ content). AppShell
+  `menu_layout` DEFERRED (its toolbar is internal/pre-placed; converges with the HELD Toolbar
+  rework). Tests `test_window_chrome.py` (4); `test_menu_appshell.py` updated. Demo
+  `docs/examples/menu.py` shows a theme toggle fused on the right.
+
 ## Open questions / to confirm during build
 
 - Fate of the region-bar `MenuBar` composite (defer to HELD Toolbar rework, but the
