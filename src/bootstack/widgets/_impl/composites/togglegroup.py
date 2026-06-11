@@ -53,7 +53,7 @@ class ToggleGroup(Frame):
                 or 'multi' for checkbox behavior allowing multiple selections.
             orient: Layout orientation - 'horizontal' (default) or 'vertical'.
             accent: Accent token for styling (e.g., 'primary', 'danger').
-                Defaults to 'primary'.
+                Defaults to 'default' (a neutral selected state).
             variant: Style variant (e.g., 'outline', 'ghost').
             variable: Optional tk.Variable for controlling the value. For single mode,
                 use StringVar; for multi mode, use SetVar.
@@ -70,7 +70,7 @@ class ToggleGroup(Frame):
         # Extract ToggleGroup-specific options before super().__init__
         self._mode = kwargs.pop('mode', 'single')
         self._orientation = kwargs.pop('orient', 'horizontal')
-        accent = kwargs.pop('accent', None) or 'primary'
+        accent = kwargs.pop('accent', None) or 'default'
         variant = kwargs.pop('variant', None)  # None (default), 'outline', or 'ghost'
         self._state = kwargs.pop('state', 'normal')
 
