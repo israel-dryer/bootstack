@@ -340,11 +340,11 @@ def test_single_selection_replaces(shown_app):
 
     tree.select(src)
     _pump(shown_app)
-    assert tree.selected_nodes == [src]
+    assert tree.selection == src
 
     tree.select(readme)
     _pump(shown_app)
-    assert tree.selected_nodes == [readme]
+    assert tree.selection == readme
 
 
 @pytest.mark.gui
@@ -357,15 +357,15 @@ def test_multi_selection_accumulates_and_clears(shown_app):
     tree.select(a)
     tree.select(b)
     _pump(shown_app)
-    assert set(tree.selected_nodes) >= {a, b}
+    assert set(tree.selection) >= {a, b}
 
     tree.deselect(a)
     _pump(shown_app)
-    assert a not in tree.selected_nodes
+    assert a not in tree.selection
 
     tree.clear_selection()
     _pump(shown_app)
-    assert tree.selected_nodes == []
+    assert tree.selection == []
 
 
 @pytest.mark.gui
@@ -376,11 +376,24 @@ def test_multi_select_cascades_to_descendants(shown_app):
 
     tree.select(src)
     _pump(shown_app)
-    selected = set(tree.selected_nodes)
+    selected = set(tree.selection)
     # Parent + all descendants selected by the cascade.
     assert src in selected
     for child in src.children:
         assert child in selected
+
+
+@pytest.mark.gui
+def test_selection_empty_shape_by_mode(shown_app):
+    """`.selection` is None (single/none) or [] (multi) when nothing is selected."""
+    single = bs.Tree(nodes=PROJECT, selection_mode="single")
+    multi = bs.Tree(nodes=PROJECT, selection_mode="multi")
+    none = bs.Tree(nodes=PROJECT, selection_mode="none")
+    _pump(shown_app)
+
+    assert single.selection is None
+    assert multi.selection == []
+    assert none.selection is None
 
 
 # --------------------------------------------------------------------------- events

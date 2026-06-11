@@ -1101,6 +1101,36 @@ class ListView(Frame):
         self._update_rows()
         self.event_generate('<<SelectionChange>>')
 
+    def select_items(self, ids: list) -> None:
+        """Select items by record `id`.
+
+        In single-selection mode the current selection is replaced; in multi
+        mode the given items are added. No-op when selection is disabled.
+        Generates a <<SelectionChange>> event.
+        """
+        if self._selection_mode == 'none':
+            return
+        with self._silence_source():
+            if self._selection_mode == 'single':
+                self._datasource.deselect_all()
+            for record_id in ids:
+                if record_id is not None:  # id 0 is valid, don't skip it
+                    self._datasource.select(record_id)
+        self._update_rows()
+        self.event_generate('<<SelectionChange>>')
+
+    def deselect_items(self, ids: list) -> None:
+        """Remove the given items from the selection by record `id`.
+
+        Generates a <<SelectionChange>> event.
+        """
+        with self._silence_source():
+            for record_id in ids:
+                if record_id is not None:
+                    self._datasource.deselect(record_id)
+        self._update_rows()
+        self.event_generate('<<SelectionChange>>')
+
     def scroll_to_top(self):
         """Scroll to the beginning of the list.
 

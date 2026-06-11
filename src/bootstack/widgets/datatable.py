@@ -121,6 +121,7 @@ class DataTable(PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
+        self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -253,9 +254,18 @@ class DataTable(PublicWidgetBase):
         self._internal.deselect_all()
 
     @property
-    def selected_rows(self) -> list[dict]:
-        """Currently selected record dicts."""
-        return self._internal.selected_rows
+    def selection(self) -> dict | list[dict] | None:
+        """The selected row(s) — the data bag.
+
+        In `'single'` mode, the selected record `dict` (or `None` when nothing
+        is selected). In `'multi'` mode, a `list` of record dicts (empty when
+        nothing is selected). Each record carries its non-displayed fields too,
+        indexed by key like any record. Read-only.
+        """
+        rows = self._internal.selected_rows
+        if self._selection_mode == "multi":
+            return rows
+        return rows[0] if rows else None
 
     # ----- Scroll -----
 

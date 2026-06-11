@@ -22,7 +22,7 @@ class ListView(PublicWidgetBase):
 
     Each record dict should have an `'id'` key; one is auto-generated if absent.
     Displayed fields are `'title'`, `'text'`, `'icon'`, and `'badge'`. Other
-    keys are stored and returned by `get_selected()` and events but are not
+    keys are stored and returned by `selection` and events but are not
     rendered.
 
     Args:
@@ -80,6 +80,7 @@ class ListView(PublicWidgetBase):
         **kwargs: Any,
     ) -> None:
         self._parent = self._resolve_parent(parent)
+        self._selection_mode = selection_mode
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -149,13 +150,42 @@ class ListView(PublicWidgetBase):
 
     # ----- Selection -----
 
-    def get_selected(self) -> list[dict]:
-        """Return currently selected records as a list of dicts."""
-        return self._internal.get_selected()
+    @property
+    def selection(self) -> dict | list[dict] | None:
+        """The selected record(s) — the data bag.
+
+        In `'single'` mode, the selected record `dict` (or `None` when nothing
+        is selected). In `'multi'` mode, a `list` of record dicts (empty when
+        nothing is selected). Each record carries its non-displayed fields too,
+        indexed by key like any record. Read-only.
+        """
+        rows = self._internal.get_selected()
+        if self._selection_mode == "multi":
+            return rows
+        return rows[0] if rows else None
+
+    def select_items(self, record_ids: list) -> None:
+        """Select items by record `id`.
+
+        In `'single'` mode this replaces the current selection; in `'multi'`
+        mode the items are added to it.
+
+        Args:
+            record_ids: Record ids of the items to select.
+        """
+        self._internal.select_items(record_ids)
 
     def select_all(self) -> None:
         """Select all items. Only effective when `selection_mode='multi'`."""
         self._internal.select_all()
+
+    def deselect_items(self, record_ids: list) -> None:
+        """Remove the given items from the selection by record `id`.
+
+        Args:
+            record_ids: Record ids to deselect.
+        """
+        self._internal.deselect_items(record_ids)
 
     def clear_selection(self) -> None:
         """Deselect all items."""
@@ -200,7 +230,7 @@ class ListView(PublicWidgetBase):
 
         Args:
             handler: Called with the curated
-                :class:`~bootstack.events.Event`; call `get_selected()` to read
+                :class:`~bootstack.events.Event`; read `selection` to get
                 the current selection. Omit to get a composable
                 :class:`~bootstack.streams.Stream` instead.
 

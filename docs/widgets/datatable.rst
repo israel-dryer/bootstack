@@ -141,15 +141,17 @@ Selection
 ~~~~~~~~~
 
 ``selection_mode`` is ``'single'`` (default), ``'multi'``, or ``'none'``. Read the
-current selection with ``selected_rows`` and react with ``on_selection_changed``,
-whose :class:`SelectionEvent <bootstack.events.SelectionEvent>` carries the
-selected ``records`` and their ``ids``:
+current selection with ``selection`` — a single record ``dict`` (or ``None``) in
+single mode, a ``list`` of record dicts in multi mode — and react with
+``on_selection_changed``, whose
+:class:`SelectionEvent <bootstack.events.SelectionEvent>` carries the selected
+``records`` and their ``ids``:
 
 .. code-block:: python
 
    table = bs.DataTable(columns=cols, rows=people, selection_mode="multi")
    table.on_selection_changed(lambda e: print(e.records, e.ids))
-   print(table.selected_rows)
+   print(table.selection)   # list of record dicts (multi mode)
 
 Manage the selection programmatically. Users can also press ``Escape`` over the
 table to clear it — handy in single-select mode, where clicking cannot return to

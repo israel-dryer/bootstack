@@ -164,7 +164,10 @@ descendants, and a partially-checked parent shows a mixed (dash) marker.
    :class: bs-screenshot-dark
    :alt: Tree multi-select cascade — dark theme
 
-Read the selection through the ``selected_nodes`` property, or change it in code:
+Read the selection through the ``selection`` property — a single
+:class:`TreeNode <bootstack.TreeNode>` (or ``None``) in single mode, a ``list``
+of nodes in multi mode; each node's data bag is at ``node.data``. Or change it in
+code:
 
 .. code-block:: python
 
