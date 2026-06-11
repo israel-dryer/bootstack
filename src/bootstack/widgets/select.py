@@ -6,10 +6,11 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.selectbox import SelectBox as _InternalSelectBox
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
+from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity
+from bootstack.widgets.types import AccentToken, Event, Option, OptionDict, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -26,11 +27,15 @@ class Select(PublicWidgetBase):
     keyword-only.
 
     Args:
-        options: List of string choices presented in the popup. Defaults to
-            an empty list.
-        value: Initially selected value.
-        signal: Reactive `Signal[str]` linked to the selected value. The
-            field and signal stay in sync automatically.
+        options: Choices presented in the popup. Each item is a plain string,
+            a `(text, value)` tuple, or a `{'text': ..., 'value': ...}` dict —
+            so an option's displayed label can differ from its stored value.
+            Defaults to an empty list.
+        value: Initially selected value (value-space — matches an option's
+            value, not its label).
+        signal: Reactive `Signal` two-way bound to the field's displayed text.
+            With decoupled options (text differs from value), bind to the value
+            via `on_change`/`value`; the signal carries the display text.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
         required: If `True`, marks the field as required and prevents
@@ -54,9 +59,9 @@ class Select(PublicWidgetBase):
 
     def __init__(
         self,
-        options: list[str] | None = None,
+        options: list[Option] | None = None,
         *,
-        value: str | None = None,
+        value: Any = None,
         signal: "Signal[str] | None" = None,
         label: str | None = None,
         message: str | None = None,
@@ -76,9 +81,12 @@ class Select(PublicWidgetBase):
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
-            "items":              options or [],
-            "enable_search":      searchable,
+            "items":               options or [],
+            "enable_search":       searchable,
             "allow_custom_values": allow_custom_values,
+            # Public Select rejects an unknown value (unless custom values are
+            # allowed); internal/embedded SelectBoxes stay lenient.
+            "strict_value":        not allow_custom_values,
         }
         if value is not None:
             internal_kwargs["value"] = value
@@ -144,22 +152,39 @@ class Select(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def value(self) -> str:
-        """The currently selected value."""
+    def value(self) -> Any:
+        """The currently selected value, or `None` if unselected.
+
+        This is the option's *value* (value-space). For the displayed label, see
+        `text`.
+        """
         return self._internal.value
 
     @value.setter
-    def value(self, v: str) -> None:
+    def value(self, v: Any) -> None:
         self._internal.value = v
 
     @property
-    def options(self) -> list[str]:
-        """The list of available options."""
-        return list(self._internal._items)
+    def text(self) -> str:
+        """The label currently shown in the field — the selected option's text.
+
+        Read-only; the complement of `value` (the selection's value). Assign to
+        `value` to change the selection.
+        """
+        return self._internal.text
+
+    @property
+    def options(self) -> list[OptionDict]:
+        """The available options as normalized `{'text', 'value'}` records.
+
+        Assigning a new list rebuilds the popup. Accepts the same `Option`
+        forms as the constructor (strings, `(text, value)` tuples, or dicts).
+        """
+        return [record_to_dict(r) for r in self._internal.cget("items")]
 
     @options.setter
-    def options(self, items: list[str]) -> None:
-        self._internal._items = list(items)
+    def options(self, items: list[Option]) -> None:
+        self._internal.configure(items=list(items))
 
     @property
     def selected_index(self) -> int:

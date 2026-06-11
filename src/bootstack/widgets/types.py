@@ -3,6 +3,8 @@
 import tkinter
 from typing import Any, Callable, Literal, TypedDict
 
+from typing_extensions import Required
+
 # ---------------------------------------------------------------------------
 # Primitive aliases
 # ---------------------------------------------------------------------------
@@ -214,3 +216,35 @@ class FormOptions(TypedDict, total=False):
     """Scroll the form when it is taller than the dialog. Default `True`."""
     resizable: bool
     """Allow the dialog to be resized. Default `True`."""
+
+
+# ---------------------------------------------------------------------------
+# Selection options (the shared "data bag" option shape)
+# ---------------------------------------------------------------------------
+
+class OptionDict(TypedDict, total=False):
+    """A single choice for a selection widget, in dict form.
+
+    The dict form is the extensible member of the `Option` shape: only `text`
+    is required, and `value` defaults to `text` when omitted. The remaining
+    keys are reserved for per-option extras and are not yet wired up.
+    """
+
+    text: Required[str]
+    """Display label for the option. Required."""
+    value: Any
+    """Stored and emitted value. Defaults to `text` when omitted."""
+    icon: str
+    """Reserved for a future per-option icon. Not yet rendered."""
+    disabled: bool
+    """Reserved for a future non-selectable option. Not yet honored."""
+
+
+Option = str | tuple[str, Any] | OptionDict
+"""A single choice for `Select`, `SelectButton`, `RadioGroup`, or `ToggleGroup`.
+
+Three interchangeable forms, all normalized to a `(text, value)` pair:
+
+- a plain `str` — text and value are the same (`'Small'`);
+- a `(text, value)` tuple — decoupled label and value (`('Small', 's')`);
+- an `OptionDict` — `{'text': 'Small', 'value': 's'}`; the extensible form."""

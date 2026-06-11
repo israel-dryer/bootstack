@@ -6,10 +6,11 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.radiogroup import RadioGroup as _InternalRadioGroup
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.selection_group import SelectionGroupMixin
+from bootstack.widgets._core.options import normalize_options
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, Orient
+from bootstack.widgets.types import AccentToken, Event, Option, Orient
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -27,9 +28,9 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
     using `add()` and `remove()`.
 
     Args:
-        options: Choices for the group. Each item is either a plain string
-            (label and value are the same) or a `(label, value)` tuple,
-            e.g. `["S", "M", "L"]` or
+        options: Choices for the group. Each item is a plain string (text and
+            value are the same), a `(text, value)` tuple, or a
+            `{'text': ..., 'value': ...}` dict — e.g. `["S", "M", "L"]` or
             `[("Small", "s"), ("Medium", "m"), ("Large", "l")]`.
         signal: Reactive `Signal` holding the selected value. When
             provided, `value=` is ignored — seed the Signal directly.
@@ -48,7 +49,7 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
 
     def __init__(
         self,
-        options: list[str | tuple[str, Any]] | None = None,
+        options: list[Option] | None = None,
         *,
         signal: "Signal | None" = None,
         value: Any = None,
@@ -79,13 +80,8 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         self._internal = _InternalRadioGroup(tk_master, **internal_kwargs)
 
         # Populate options passed at construction.
-        if options:
-            for opt in options:
-                if isinstance(opt, str):
-                    self._internal.add(text=opt, value=opt)
-                else:
-                    lbl, val = opt
-                    self._internal.add(text=lbl, value=val)
+        for record in normalize_options(options):
+            self._internal.add(text=record.text, value=record.value)
 
         # Trace the signal so <<Change>> fires on the internal Frame whenever
         # the value changes — this lets on_change() use standard Subscription binding.

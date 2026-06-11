@@ -5,9 +5,10 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant
+from bootstack.widgets.types import AccentToken, Event, Option, OptionDict, WidgetDensity, ButtonVariant
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -25,9 +26,12 @@ class SelectButton(PublicWidgetBase):
     the button is the only interaction point.
 
     Args:
-        options: Values to display in the list. Each item is converted to a
-            string for display, e.g. `["Light", "Dark", "Auto"]`.
-        value: Initially selected value.
+        options: Choices shown in the popup. Each item is a plain string, a
+            `(text, value)` tuple, or a `{'text': ..., 'value': ...}` dict — so
+            an option's displayed label can differ from its stored value, e.g.
+            `["Light", "Dark"]` or `[("Light theme", "light")]`.
+        value: Initially selected value (value-space — matches an option's
+            value, not its label). Must match one of the options.
         signal: Reactive `Signal[str]` controlling the selected value. When
             provided, `value=` is ignored — seed the Signal directly.
         disabled: If `True`, the button is non-interactive and dimmed.
@@ -45,7 +49,7 @@ class SelectButton(PublicWidgetBase):
 
     def __init__(
         self,
-        options: list[Any] | None = None,
+        options: list[Option] | None = None,
         *,
         value: Any = None,
         signal: "Signal[str] | None" = None,
@@ -85,8 +89,12 @@ class SelectButton(PublicWidgetBase):
     # ----- Properties -----
 
     @property
-    def value(self) -> str:
-        """The currently selected value."""
+    def value(self) -> Any:
+        """The currently selected value, or `None` if unselected.
+
+        This is the option's *value* (value-space). For the displayed label, see
+        `text`.
+        """
         return self._internal.get()
 
     @value.setter
@@ -94,12 +102,25 @@ class SelectButton(PublicWidgetBase):
         self._internal.set(v)
 
     @property
-    def options(self) -> list[str]:
-        """The list of available options. Assigning a new list rebuilds the dropdown."""
-        return list(self._internal.cget("options"))
+    def text(self) -> str:
+        """The label currently shown on the button — the selected option's text.
+
+        Read-only; the complement of `value`. Assign to `value` to change the
+        selection.
+        """
+        return self._internal.text
+
+    @property
+    def options(self) -> list[OptionDict]:
+        """The available options as normalized `{'text', 'value'}` records.
+
+        Assigning a new list rebuilds the dropdown. Accepts the same `Option`
+        forms as the constructor (strings, `(text, value)` tuples, or dicts).
+        """
+        return [record_to_dict(r) for r in self._internal.cget("options")]
 
     @options.setter
-    def options(self, items: list[Any]) -> None:
+    def options(self, items: list[Option]) -> None:
         self._internal.configure(options=list(items))
 
     @property

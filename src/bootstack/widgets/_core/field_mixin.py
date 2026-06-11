@@ -87,6 +87,16 @@ class FieldAddonMixin:
         """Named addon widgets inserted via `insert_addon()`."""
         return self._internal.addons
 
+    @property
+    def text(self) -> str:
+        """The current display text shown in the field.
+
+        This is the formatted string the user sees, as opposed to `value`, which
+        is the raw parsed datum (e.g. for a `DateField`, `text` is `'Jan 2, 2024'`
+        while `value` is a `date`). Read-only — assign to `value` to change it.
+        """
+        return self._internal.get()
+
     def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to the field.
 

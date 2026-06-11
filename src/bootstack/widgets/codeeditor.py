@@ -200,6 +200,12 @@ class CodeEditor(PublicWidgetBase):
         self._internal.value = v
 
     @property
+    def text(self) -> str:
+        """The current display text. Same as `value` for a code editor (no
+        formatting layer). Read-only — assign to `value` to change it."""
+        return self._internal.value
+
+    @property
     def signal(self) -> "Signal[str] | None":
         """The reactive `Signal` bound to this editor, or `None`."""
         return getattr(self._internal._core, "signal", None)

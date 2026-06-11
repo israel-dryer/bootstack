@@ -23,8 +23,8 @@ Pass a list of strings — the label and value are the same for each option.
 
    bs.RadioGroup(["Small", "Medium", "Large"], value="Medium")
 
-Use ``(label, value)`` tuples when the display text should differ from the
-stored value.
+Use ``(text, value)`` tuples — or ``{"text": ..., "value": ...}`` dicts — when
+the display text should differ from the stored value.
 
 .. code-block:: python
 
