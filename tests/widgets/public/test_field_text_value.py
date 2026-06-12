@@ -45,6 +45,95 @@ FIELD_FACTORIES = [
 ]
 
 
+def test_numberfield_signal_is_numeric_and_two_way(app):
+    sig = bs.Signal(0.22)
+    nf = bs.NumberField(signal=sig, min_value=0.0, max_value=0.5, step=0.1)
+    app._tk_root.update_idletasks()
+
+    # Seeds the field from the signal's numeric value.
+    assert nf.value == 0.22
+
+    # signal -> field
+    sig.set(0.4)
+    app._tk_root.update_idletasks()
+    assert nf.value == 0.4
+
+    # field commit -> signal, as a number (not text)
+    entry = nf._internal._entry
+    entry.delete(0, "end")
+    entry.insert(0, "0.3")
+    entry.event_generate("<FocusOut>")
+    app._tk_root.update_idletasks()
+    assert sig() == 0.3
+    assert isinstance(sig(), float)
+
+
+def test_typed_fields_signal_binds_value_not_text(app):
+    import datetime
+
+    # DateField: signal carries a date.
+    dsig = bs.Signal(datetime.date(2024, 1, 2))
+    df = bs.DateField(signal=dsig)
+    app._tk_root.update_idletasks()
+    assert df.value == datetime.date(2024, 1, 2)
+    assert df.signal is dsig
+    dsig.set(datetime.date(2025, 6, 15))
+    app._tk_root.update_idletasks()
+    assert df.value == datetime.date(2025, 6, 15)
+
+    # TimeField: signal carries a time.
+    tsig = bs.Signal(datetime.time(8, 30))
+    tf = bs.TimeField(signal=tsig)
+    app._tk_root.update_idletasks()
+    assert tf.value == datetime.time(8, 30)
+    assert isinstance(tf.value, datetime.time)
+
+
+def test_value_signal_unsubscribes_on_destroy(app):
+    # A Signal usually outlives the widgets bound to it; destroying a bound field
+    # must release its subscription so the field is not pinned in memory.
+    sig = bs.Signal(0.0)
+    before = len(sig._subscribers)
+    nf = bs.NumberField(signal=sig, step=0.1)
+    app._tk_root.update_idletasks()
+    assert len(sig._subscribers) == before + 1  # bound
+
+    nf.destroy()
+    app._tk_root.update_idletasks()
+    assert len(sig._subscribers) == before  # released
+
+
+def test_push_to_signal_reconciles_numeric_types(app):
+    # int field value -> float-typed signal widens cleanly.
+    fsig = bs.Signal(0.0)
+    nf = bs.NumberField(signal=fsig, step=1)
+    nf._push_to_signal(5)
+    assert fsig() == 5.0 and isinstance(fsig(), float)
+
+    # Fractional value -> int-typed signal is incompatible: it must NOT raise
+    # into the Tk loop; the signal simply keeps its prior value.
+    isig = bs.Signal(2)
+    nf2 = bs.NumberField(signal=isig, step=1)
+    nf2._push_to_signal(0.3)
+    assert isig() == 2
+
+    # An integral float -> int-typed signal coerces back to int.
+    nf2._push_to_signal(7.0)
+    assert isig() == 7 and isinstance(isig(), int)
+
+
+def test_numberfield_stepping_stays_on_step_grid(app):
+    nf = bs.NumberField(value=0.0, min_value=0.0, max_value=1.0, step=0.05)
+    entry = nf._internal._entry
+    values = []
+    for _ in range(8):
+        entry.event_generate("<<Increment>>")
+        app._tk_root.update_idletasks()
+        values.append(nf.value)
+    # No accumulated float error — every value is a clean multiple of 0.05.
+    assert values == [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+
+
 @pytest.mark.parametrize("name, make", FIELD_FACTORIES, ids=[f[0] for f in FIELD_FACTORIES])
 def test_field_exposes_text_as_str(app, name, make):
     w = make()

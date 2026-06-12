@@ -7,7 +7,7 @@ from typing import overload, Any, Callable, Iterable, Literal, TYPE_CHECKING
 from bootstack.widgets._impl.composites.dateentry import DateEntry as _InternalDateEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.widgets._core.field_mixin import FieldAddonMixin
+from bootstack.widgets._core.field_mixin import FieldAddonMixin, ValueSignalMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
 from bootstack.validation import RuleType
@@ -28,7 +28,7 @@ _DATEFIELD_EVENTS: dict[str, str] = {
 }
 
 
-class DateField(FieldAddonMixin, PublicWidgetBase):
+class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     """A date input field with an optional calendar picker button.
 
     In `'single'` mode `value` returns a `date`; in `'range'` mode it returns
@@ -43,8 +43,11 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
             :ref:`format specs <value-formats>`.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
-        textsignal: Reactive `Signal[str]` bound to the field text. The
-            field value and signal stay in sync automatically.
+        signal: Reactive `Signal` two-way bound to the field's `date` value (not
+            its text). When given, it seeds the initial value. This is the usual
+            way to bind a date field.
+        textsignal: Reactive `Signal[str]` bound to the field's raw text rather
+            than its date value. Niche; prefer `signal`.
         show_picker_button: Show the calendar icon button. Default `True`.
         picker_title: Title of the picker dialog.
         picker_first_weekday: First day of week in the picker (0=Mon … 6=Sun).
@@ -72,6 +75,7 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         self,
         value: str | date | None = None,
         *,
+        signal: "Signal | None" = None,
         value_format: str = "longDate",
         label: str | None = None,
         message: str | None = None,
@@ -138,6 +142,9 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         self._internal = _InternalDateEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+        if signal is not None:
+            self._bind_value_signal(signal)
+
     # ----- Event routing -----
 
     def _entry_widget(self) -> tkinter.Misc:
@@ -177,11 +184,6 @@ class DateField(FieldAddonMixin, PublicWidgetBase):
         return Subscription(widget, sequence, bind_id)
 
     # ----- Properties -----
-
-    @property
-    def signal(self) -> "Signal[str] | None":
-        """The reactive signal bound to this field's text, if any."""
-        return getattr(self._internal, 'signal', None)
 
     @property
     def picker_button(self):

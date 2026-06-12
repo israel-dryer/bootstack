@@ -171,6 +171,20 @@ class NumberEntryPart(TextEntryPart):
             return 'break'
         self.step(-1)
 
+    def _increment_decimals(self) -> int:
+        """Number of decimal places implied by the increment.
+
+        Used to quantize stepped values to the step grid so floating-point
+        error does not accumulate across repeated steps.
+        """
+        from decimal import Decimal
+
+        try:
+            exponent = Decimal(str(self._increment)).as_tuple().exponent
+        except Exception:
+            return 0
+        return max(0, -exponent) if isinstance(exponent, int) else 0
+
     def _apply_bounds(self, x: float) -> float:
         """Apply min/max bounds with optional wrapping."""
         lo = float(self._minvalue) if self._minvalue is not None else None
@@ -216,9 +230,11 @@ class NumberEntryPart(TextEntryPart):
         # Apply bounds/wrapping
         new_value = self._apply_bounds(new_value)
 
-        # Coerce to desired type
+        # Coerce to desired type. Snap floats to the increment's decimal
+        # precision so repeated stepping doesn't accumulate float error (e.g.
+        # 0.05 + 0.05 + 0.05 → 0.15000000000000002).
         if self._num_type is float:
-            coerced = float(new_value)
+            coerced = round(new_value, self._increment_decimals())
         else:
             coerced = int(round(new_value))
 

@@ -7,7 +7,7 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.timeentry import TimeEntry as _InternalTimeEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.widgets._core.field_mixin import FieldAddonMixin
+from bootstack.widgets._core.field_mixin import FieldAddonMixin, ValueSignalMixin
 from bootstack.events import ChangeEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
 from bootstack.validation import RuleType
@@ -28,7 +28,7 @@ _TIME_FIELD_EVENTS: dict[str, str] = {
 }
 
 
-class TimeField(FieldAddonMixin, PublicWidgetBase):
+class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     """A time-input field with a searchable dropdown of time intervals.
 
     Displays a formatted time value and shows a dropdown list of times at
@@ -48,6 +48,9 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         max_time: Latest time shown in the dropdown.
         label: Label displayed above the field.
         message: Hint text displayed below the field.
+        signal: Reactive `Signal` two-way bound to the field's `time` value (not
+            its text). When given, it seeds the initial value. This is the usual
+            way to bind a time field.
         textsignal: Reactive `Signal[str]` bound to the field text. The
             field value and signal stay in sync automatically.
         required: If `True`, field cannot be left empty.
@@ -67,6 +70,7 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         self,
         value: datetime.time | str | None = None,
         *,
+        signal: "Signal | None" = None,
         value_format: str = "shortTime",
         interval: int = 30,
         min_time: datetime.time | str | None = None,
@@ -119,6 +123,9 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         self._internal = _InternalTimeEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+        if signal is not None:
+            self._bind_value_signal(signal)
+
     # ----- Event routing -----
 
     def _entry_widget(self) -> tkinter.Misc:
@@ -158,11 +165,6 @@ class TimeField(FieldAddonMixin, PublicWidgetBase):
         return Subscription(widget, sequence, bind_id)
 
     # ----- Properties -----
-
-    @property
-    def signal(self) -> "Signal[str] | None":
-        """The reactive signal bound to this field's text, if any."""
-        return getattr(self._internal, 'signal', None)
 
     @property
     def value(self) -> "datetime.time | None":
