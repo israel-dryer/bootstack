@@ -45,8 +45,10 @@ EXPECTED_TOPLEVEL = {
     "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # data display
-    "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable", "Tree",
-    "TreeNode",
+    "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable",
+    "Tree", "TreeNode",
+    # media
+    "Picture",
     # navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",

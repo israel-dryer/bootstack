@@ -35,7 +35,8 @@ _EXPORTS: dict[str, str] = {
     "RadioGroup": "radiogroup", "Select": "select", "SelectButton": "selectbutton",
     "Calendar": "calendar",
     # Data display
-    "Label": "label", "Badge": "label", "ProgressBar": "progressbar",
+    "Label": "label", "Badge": "label", "Picture": "picture",
+    "ProgressBar": "progressbar",
     "Gauge": "gauge", "ListView": "listview", "DataTable": "datatable", "Tree": "tree",
     # Navigation
     "PageStack": "pagestack", "StackPage": "pagestack",

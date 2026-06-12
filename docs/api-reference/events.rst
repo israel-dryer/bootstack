@@ -110,6 +110,19 @@ selection, and the data-source change broadcast.
    MenuSelectEvent
    DataChangeEvent
 
+Picture and media payloads
+--------------------------
+
+The load and error events fired by :class:`Picture <bootstack.Picture>` as it
+decodes and displays an image.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   ImageLoadEvent
+   ImageErrorEvent
+
 Supporting types
 ----------------
 

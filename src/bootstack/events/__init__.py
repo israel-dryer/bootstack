@@ -21,6 +21,8 @@ from bootstack.events._payloads import (
     DateSelectEvent,
     DisplayModeEvent,
     ExportEvent,
+    ImageErrorEvent,
+    ImageLoadEvent,
     InputEvent,
     MenuSelectEvent,
     NavEvent,
@@ -62,6 +64,9 @@ __all__ = [
     # Payloads — expander / accordion
     "ToggleEvent",
     "AccordionChangeEvent",
+    # Payloads — picture / media
+    "ImageLoadEvent",
+    "ImageErrorEvent",
     # Payloads — navigation
     "PageChangeEvent",
     "NavEvent",

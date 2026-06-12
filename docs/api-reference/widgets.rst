@@ -81,6 +81,17 @@ handles.
    Tree
    TreeNode
 
+Media
+-----
+
+Image and media display. ``Picture`` shows an :class:`Image <bootstack.images.Image>`
+scaled to fit, with fit modes, rounded corners, and animated-GIF playback.
+
+.. autosummary::
+   :nosignatures:
+
+   Picture
+
 Layout
 ------
 
@@ -205,6 +216,7 @@ groups, and tabbed sections.
       PageStack
       PasswordField
       PathField
+      Picture
       ProgressBar
       Radio
       RadioGroup
