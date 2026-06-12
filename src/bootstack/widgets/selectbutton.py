@@ -5,10 +5,11 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.icon_image_props import IconProperty
 from bootstack.widgets._core.options import record_to_dict
 from bootstack.events import ChangeEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, Option, OptionDict, WidgetDensity, ButtonVariant
+from bootstack.widgets.types import AccentToken, Event, Option, OptionDict, WidgetDensity, ButtonVariant, IconSpec
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -18,7 +19,7 @@ _SELECTBUTTON_EVENTS: dict[str, str] = {
 }
 
 
-class SelectButton(PublicWidgetBase):
+class SelectButton(IconProperty, PublicWidgetBase):
     """A button that opens a dropdown value list — a button-styled alternative to `Select`.
 
     Clicking the button opens a popup list of options. The selected value is
@@ -60,7 +61,7 @@ class SelectButton(PublicWidgetBase):
         accent: AccentToken | str | None = None,
         variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
-        icon: str | None = None,
+        icon: str | IconSpec | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:

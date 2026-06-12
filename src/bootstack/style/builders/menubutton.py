@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image, recolor_element_image

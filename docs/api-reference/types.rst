@@ -152,6 +152,11 @@ Literals for selection behavior and tabular data export.
    `(text, value)` tuple, or an `OptionDict`. Lets an option's displayed label
    differ from its stored value.
 
+.. py:type:: Icon
+
+   An icon as either a Bootstrap Icons name (`'bell-fill'`) or an `IconSpec`
+   mapping for control over size and color.
+
 .. py:type:: SelectionMode
 
    How many rows or items can be selected — `'none'`, `'single'`, or `'multi'`.
@@ -176,6 +181,9 @@ that ``DataTable`` and ``Form`` accept.
    `'spinnerfield'`, `'switch'`, `'checkbox'`, `'slider'`.
 
 .. autoclass:: FormOptions
+   :members:
+
+.. autoclass:: IconSpec
    :members:
 
 .. autoclass:: OptionDict

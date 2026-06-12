@@ -19,6 +19,7 @@ The following submodules are also public; import the names you need from each
 - ``bootstack.events`` — Event objects and the typed payloads ``on_*`` handlers
   receive.
 - ``bootstack.streams`` — Composable event pipelines — debounce, filter, map.
+- ``bootstack.images`` — Image handles, themed icons, and application icons.
 - ``bootstack.style`` — Color themes, runtime theme switching, and fonts.
 - ``bootstack.validation`` — Rules that validate what a user enters.
 - ``bootstack.i18n`` — Translatable text and locale-aware formatting.
@@ -101,6 +102,12 @@ Appearance and locale
 .. grid:: 1 2 2 2
    :gutter: 3
 
+   .. grid-item-card:: Images
+      :link: images
+      :link-type: doc
+
+      Image handles, theme-aware icons, and generated application icons.
+
    .. grid-item-card:: Theming
       :link: theming
       :link-type: doc
@@ -160,6 +167,7 @@ Services and reference
    dialogs
    data
    validation
+   images
    theming
    i18n
    scheduling

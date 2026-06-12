@@ -5,7 +5,7 @@ This module contains style builders for ttk.Combobox widget and variants.
 
 from __future__ import annotations
 
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image

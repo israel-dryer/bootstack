@@ -29,6 +29,7 @@ EXPECTED_TOPLEVEL = {
     # dialog verbs
     "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
+    "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
     # application & windows
     "App", "AppShell", "Window",
     # layout
@@ -69,6 +70,7 @@ MOVED = {
     "bootstack.scheduling": ["Schedule", "Job"],
     "bootstack.shortcuts": ["Shortcuts", "Shortcut", "get_shortcuts"],
     "bootstack.store": ["Store"],
+    "bootstack.images": ["Image", "get_icon", "AppIcon", "list_icons"],
     "bootstack.errors": [
         "BootstackError", "UnknownEventError", "ParentResolutionError",
         "DuplicateIdError", "SerializationError",
@@ -82,6 +84,7 @@ MOVED = {
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
         "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
         "ColumnSpec", "EditorType", "FormOptions", "Option", "OptionDict",
+        "Icon", "IconSpec",
     ],
     # EditFilter demoted from top-level (Tk-coupled CodeEditor extension hook);
     # stays importable here for power users. See project_editfilter_public_api.

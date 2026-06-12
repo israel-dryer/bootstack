@@ -20,8 +20,6 @@ MAIN_PY_TEMPLATE = '''\
 Run with: python -m {module_name}
 """
 
-import os
-
 import bootstack as bs
 
 from {module_name}.views.main_view import MainView
@@ -31,7 +29,7 @@ def main() -> None:
     """Application entry point."""
     with bs.App(
         title="{app_name}",
-        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
+        theme="{theme}",
         size=(800, 600),
     ) as app:
         MainView()
@@ -293,7 +291,6 @@ bootstack build
 Application settings are defined in `bootstack.toml`:
 
 - `[app]` - Application metadata
-- `[settings]` - Runtime settings (theme, language)
 - `[layout]` - Default layout preferences
 - `[build]` - Build/packaging configuration (after `bootstack promote`)
 '''
@@ -310,8 +307,6 @@ APPSHELL_MAIN_PY_TEMPLATE = '''\
 Run with: python -m {module_name}
 """
 
-import os
-
 import bootstack as bs
 
 from {module_name}.pages.home_page import HomePage
@@ -322,7 +317,7 @@ def main() -> None:
     """Application entry point."""
     with bs.AppShell(
         title="{app_name}",
-        theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
+        theme="{theme}",
         size=(1000, 650),
     ) as shell:
         shell.commandbar.add_button(icon="sun", on_click=bs.toggle_theme)
@@ -478,7 +473,6 @@ bootstack build
 Application settings are defined in `bootstack.toml`:
 
 - `[app]` - Application metadata
-- `[settings]` - Runtime settings (theme, language)
 - `[layout]` - Default layout preferences
 - `[build]` - Build/packaging configuration (after `bootstack promote`)
 '''

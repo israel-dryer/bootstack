@@ -4,7 +4,8 @@ from typing import Any, Callable, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton as _InternalDropdownButton
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, WidgetDensity, ButtonVariant
+from bootstack.widgets._core.icon_image_props import IconProperty
+from bootstack.widgets.types import AccentToken, WidgetDensity, ButtonVariant, IconSpec
 from bootstack.events import MenuSelectEvent
 
 if TYPE_CHECKING:
@@ -55,7 +56,7 @@ _RESERVED_INTERNAL_KEYS = frozenset({
 })
 
 
-class MenuButton(PublicWidgetBase):
+class MenuButton(IconProperty, PublicWidgetBase):
     """A button that opens a dropdown menu when clicked.
 
     Items are added at construction via ``items=`` or dynamically with
@@ -97,7 +98,7 @@ class MenuButton(PublicWidgetBase):
         *,
         items: list[Any] | None = None,
         on_select: Callable[[MenuSelectEvent], Any] | None = None,
-        icon: str | None = None,
+        icon: str | IconSpec | None = None,
         icon_only: bool = False,
         show_arrow: bool = True,
         menu_options: dict[str, Any] | None = None,

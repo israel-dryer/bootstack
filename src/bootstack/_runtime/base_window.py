@@ -18,6 +18,7 @@ The BaseWindow mixin provides:
 
 from __future__ import annotations
 
+import os
 import sys
 import tkinter
 import warnings
@@ -271,15 +272,19 @@ class BaseWindow:
                     pass
             return
 
-        # User provided a custom icon
+        # User provided a custom icon — a path string or a photo-image object
+        # (Tk's PhotoImage or Pillow's ImageTk.PhotoImage, both accepted by
+        # iconphoto()).
         try:
-            if isinstance(iconphoto, tkinter.PhotoImage):
-                self._icon = iconphoto
-                self.iconphoto(True, self._icon)
-            elif str(iconphoto).lower().endswith('.ico'):
-                self.wm_iconbitmap(str(iconphoto))
+            if isinstance(iconphoto, (str, os.PathLike)):
+                path = str(iconphoto)
+                if path.lower().endswith('.ico'):
+                    self.wm_iconbitmap(path)
+                else:
+                    self._icon = tkinter.PhotoImage(file=path, master=self)
+                    self.iconphoto(True, self._icon)
             else:
-                self._icon = tkinter.PhotoImage(file=iconphoto, master=self)
+                self._icon = iconphoto
                 self.iconphoto(True, self._icon)
         except (tkinter.TclError, Exception) as e:
             print(f'Failed to load icon: {iconphoto} - {e}')
@@ -397,7 +402,34 @@ class BaseWindow:
         self._apply_window_style()
         if getattr(self, 'winsys', None) == 'win32':
             self.update()
-        self.deiconify()
+
+        # Reveal-after-settle: some content can only realize its final size once
+        # the window is mapped (e.g. a ScrollView's canvas filling its viewport).
+        # Map the window invisibly, let it settle, then reveal it — so it never
+        # visibly shifts into place on open. Restores any prior alpha.
+        try:
+            prev_alpha = self.attributes('-alpha')
+        except tkinter.TclError:
+            prev_alpha = None
+        if prev_alpha is not None:
+            try:
+                self.attributes('-alpha', 0.0)
+            except tkinter.TclError:
+                prev_alpha = None
+
+        try:
+            self.deiconify()
+            self.update_idletasks()
+            if getattr(self, 'winsys', None) == 'win32':
+                self.update()
+        finally:
+            # Always restore visibility — if settling raised (e.g. a pending
+            # callback in update()), the window must not stay stuck at alpha 0.
+            if prev_alpha is not None:
+                try:
+                    self.attributes('-alpha', prev_alpha)
+                except tkinter.TclError:
+                    pass
 
     def title(self, value: str | None = None) -> str:
         """Get or set the window title.

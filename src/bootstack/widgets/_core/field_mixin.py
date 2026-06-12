@@ -125,3 +125,91 @@ class FieldAddonMixin:
             field.add_validation_rule("custom", func=lambda v: v.isdigit())
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
+
+
+class ValueSignalMixin:
+    """Two-way binds a field's typed `.value` to a public `signal`.
+
+    The signal carries the field's **value** (a number, date, time, …) — not its
+    text. The inheriting wrapper must expose a `value` property (get and set) and
+    an `on_change` event; this mixin keeps the two in sync, seeding the field from
+    the signal and updating the signal when the field commits a new value.
+    """
+
+    value: Any
+    on_change: Callable
+
+    def _bind_value_signal(self, signal: "Signal") -> None:
+        """Establish the two-way binding between `self.value` and `signal`."""
+        self._value_signal = signal
+        self._value_syncing = False
+
+        current = signal()
+        if current is not None:
+            self.value = current
+        else:
+            self._push_to_signal(self.value)
+
+        def _from_signal(v: Any) -> None:
+            if self._value_syncing or v is None:
+                return
+            self._value_syncing = True
+            try:
+                self.value = v
+            finally:
+                self._value_syncing = False
+
+        def _to_signal(_event: Any) -> None:
+            if self._value_syncing:
+                return
+            v = self.value
+            if v is None:
+                return
+            self._value_syncing = True
+            try:
+                self._push_to_signal(v)
+            finally:
+                self._value_syncing = False
+
+        # Hold the subscription id so it can be released on destroy. A Signal
+        # usually outlives the widgets bound to it, so a dangling subscription
+        # would pin a destroyed field (and all it references) in memory.
+        self._value_sub = signal.subscribe(_from_signal)
+        self.on_change(_to_signal)
+        self.on_destroy(lambda _e: self._release_value_signal())
+
+    def _push_to_signal(self, value: Any) -> None:
+        """Write `value` to the bound signal, reconciling numeric types.
+
+        `Signal` is strict about value type (it only widens `int` into a
+        `float`-typed signal). A numeric field can produce either an `int` or a
+        `float`, so reconcile the two here. If the signal's type is genuinely
+        incompatible (for example an `int`-typed signal and a fractional value),
+        leave the signal unchanged rather than raising into the Tk event loop.
+        """
+        signal = self._value_signal
+        target = getattr(signal, "_type", None)
+        if target is not None and type(value) is not target:
+            if target is float and type(value) is int:
+                value = float(value)
+            elif target is int and type(value) is float and value.is_integer():
+                value = int(value)
+        try:
+            signal.set(value)
+        except TypeError:
+            pass
+
+    def _release_value_signal(self) -> None:
+        """Drop the value-signal subscription (called on widget destroy)."""
+        sub = getattr(self, "_value_sub", None)
+        if sub is not None:
+            try:
+                self._value_signal.unsubscribe(sub)
+            except Exception:
+                pass
+            self._value_sub = None
+
+    @property
+    def signal(self) -> "Signal | None":
+        """The reactive `Signal` bound to this field's value, or `None`."""
+        return getattr(self, "_value_signal", None)

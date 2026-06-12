@@ -26,7 +26,7 @@ import argparse
 import sys
 from typing import Sequence
 
-from bootstack.cli import add, build, doctor, icons, promote, run, start
+from bootstack.cli import add, appicon, build, doctor, icons, promote, run, start
 from bootstack.cli.demo import run_demo
 
 
@@ -80,6 +80,7 @@ For more information on a command:
     add.add_parser(subparsers)
     doctor.add_parser(subparsers)
     icons.add_parser(subparsers)
+    appicon.add_parser(subparsers)
 
     # Gallery command
     gallery_parser = subparsers.add_parser(

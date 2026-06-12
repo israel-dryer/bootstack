@@ -31,7 +31,7 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
     def __init__(
             self,
             title: str = "bootstack",
-            icon: tkinter.PhotoImage | None = None,
+            icon: tkinter.PhotoImage | str | None = None,
             size: Optional[Tuple[int, int]] = None,
             position: Optional[Tuple[int, int]] = None,
             minsize: Optional[Tuple[int, int]] = None,

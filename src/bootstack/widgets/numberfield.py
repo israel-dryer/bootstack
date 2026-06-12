@@ -6,7 +6,7 @@ from typing import overload, Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.numericentry import NumericEntry as _InternalNumericEntry
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.events import resolve_event, register_widget_events
-from bootstack.widgets._core.field_mixin import FieldAddonMixin
+from bootstack.widgets._core.field_mixin import FieldAddonMixin, ValueSignalMixin
 from bootstack.events import ChangeEvent, InputEvent, Subscription, ValidationEvent
 from bootstack.streams import Stream
 from bootstack.widgets.textfield import _INNER_ENTRY_SEQUENCES
@@ -14,6 +14,23 @@ from bootstack.widgets.types import AccentToken, Event, Justify, WidgetDensity
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
+
+def _as_number(raw: Any) -> int | float | None:
+    """Coerce a field's stored value to a number, regardless of representation.
+
+    The numeric field stores its value as text in some code paths; the public
+    contract is that `value` (and the bound `signal`) is always a number.
+    """
+    if raw is None or raw == "":
+        return None
+    if isinstance(raw, (int, float)):
+        return raw
+    try:
+        f = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return int(f) if f.is_integer() else f
+
 
 _NUMBER_FIELD_EVENTS: dict[str, str] = {
     "input":    "<<Input>>",
@@ -27,7 +44,7 @@ _NUMBER_FIELD_EVENTS: dict[str, str] = {
 }
 
 
-class NumberField(FieldAddonMixin, PublicWidgetBase):
+class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     """A numeric input field with optional stepper buttons.
 
     Accepts integer or float values. Up/Down arrow keys and the mouse wheel
@@ -39,10 +56,15 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
 
     Args:
         value: Initial numeric value. Defaults to `0`.
-        textsignal: Reactive `Signal[str]` bound to the field text. The
-            field and signal stay in sync automatically. Note: the signal
-            must be typed as `str` — initialize with `Signal("0")`,
-            not `Signal(0)`.
+        signal: Reactive `Signal` two-way bound to the field's numeric value.
+            Carries the parsed number (`int`/`float`), not the text. Use a
+            float-typed signal — `Signal(0.0)` — when the field accepts
+            fractional values, so they bind cleanly; an `int`-typed `Signal(0)`
+            holds whole numbers only. When given, it seeds the initial value.
+            This is the usual way to bind a number field.
+        textsignal: Reactive `Signal[str]` bound to the field's raw text (rather
+            than its numeric value). Niche; prefer `signal`. The signal must be
+            typed as `str` — initialize with `Signal("0")`, not `Signal(0)`.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
         min_value: Minimum allowed value (inclusive). No lower bound if omitted.
@@ -79,6 +101,7 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         self,
         value: int | float = 0,
         *,
+        signal: "Signal | None" = None,
         textsignal: "Signal | None" = None,
         value_format: str | None = None,
         label: str | None = None,
@@ -142,6 +165,9 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
         self._internal = _InternalNumericEntry(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
 
+        if signal is not None:
+            self._bind_value_signal(signal)
+
     # ----- Event routing -----
 
     def _entry_widget(self) -> tkinter.Misc:
@@ -184,16 +210,11 @@ class NumberField(FieldAddonMixin, PublicWidgetBase):
     @property
     def value(self) -> int | float | None:
         """The current numeric value, or `None` if the field is empty."""
-        return self._internal.value
+        return _as_number(self._internal.value)
 
     @value.setter
     def value(self, v: int | float) -> None:
         self._internal.value = v
-
-    @property
-    def signal(self) -> "Signal | None":
-        """The reactive `Signal` bound to this field, or `None`."""
-        return getattr(self._internal, 'signal', None)
 
     @property
     def read_only(self) -> bool:

@@ -1,12 +1,53 @@
 ﻿from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
+
+if TYPE_CHECKING:
+    from bootstack.images import AppIcon, Image
+
+
+def _resolve_window_parent(parent: Any) -> Any:
+    """Resolve a public widget (or tk widget) to its containing tk window.
+
+    Accepts an `App`, a `Window`, or any widget inside one, and returns the
+    enclosing toplevel — so centering and transient-parenting act on the window,
+    not on a small child widget.
+    """
+    if parent is None:
+        return None
+    widget = None
+    for attr in ("_tk_root", "_tk_toplevel", "_internal"):
+        widget = getattr(parent, attr, None)
+        if widget is not None:
+            break
+    if widget is None:
+        widget = parent  # assume it is already a tk widget
+    try:
+        return widget.winfo_toplevel()
+    except Exception:
+        return widget
+
+
+def _resolve_anchor_widget(target: Any) -> Any:
+    """Resolve an anchor target to a tk widget (keeping it, not its toplevel).
+
+    A string (`'screen'`/`'cursor'`/`'parent'`) passes through; a public widget
+    resolves to the underlying tk widget so a window can be placed relative to
+    that exact widget (e.g. beside a field).
+    """
+    if isinstance(target, str) or target is None:
+        return target
+    for attr in ("_tk_toplevel", "_tk_root", "_internal"):
+        widget = getattr(target, attr, None)
+        if widget is not None:
+            return widget
+    return target
 
 
 class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
@@ -21,6 +62,8 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
     Args:
         title: Window title bar text.
         size: Initial size as `(width, height)`.
+        icon: Title-bar and taskbar icon — an icon file path, an `Image` handle,
+            or an `AppIcon`. Defaults to the bootstack icon.
         position: Initial position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
@@ -28,7 +71,12 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
         modal: Modality level. `False` — non-modal (default). `True` or
             `'window'` — grabs input from the parent only. `'app'` — grabs
             input from all windows.
-        center_on_parent: Center over the parent/transient window.
+        parent: The window this one belongs to — an `App`, another `Window`, or
+            any widget inside one. Makes this window transient to it (stacks
+            above it, hides with it) and is the target for `center_on_parent`.
+            Defaults to the main application window.
+        center_on_parent: Center over `parent` (the main window if `parent` is
+            not given).
         center_on_screen: Center on the screen.
         topmost: Keep the window above other windows.
         undecorated: Remove OS window decorations (`overrideredirect`).
@@ -58,11 +106,13 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
         *,
         title: str = "",
         size: tuple[int, int] | None = None,
+        icon: "str | Image | AppIcon | None" = None,
         position: tuple[int, int] | None = None,
         min_size: tuple[int, int] | None = None,
         max_size: tuple[int, int] | None = None,
         resizable: tuple[bool, bool] | None = None,
         modal: Literal[False, True, "window", "app"] = False,
+        parent: Any = None,
         center_on_parent: bool = False,
         center_on_screen: bool = False,
         topmost: bool = False,
@@ -111,9 +161,26 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
             init_kwargs["on_close"] = on_close
         if window_style is not None:
             init_kwargs["window_style"] = window_style
+
+        parent_widget = _resolve_window_parent(parent)
+        self._parent_window = parent_widget
+        if parent_widget is not None:
+            init_kwargs["transient"] = parent_widget
+
+        from bootstack.widgets._core.image_binding import resolve_window_icon
+
+        icon_path, icon_image = resolve_window_icon(icon)
+        if icon_path is not None:
+            init_kwargs["icon"] = icon_path
         init_kwargs.update(kwargs)
 
         self._tk_toplevel = _InternalToplevel(**init_kwargs)
+
+        # An Image handle needs the window to exist before it can be rendered.
+        self._window_icon_photo = None
+        if icon_image is not None:
+            self._window_icon_photo = icon_image._materialize()
+            self._tk_toplevel._setup_icon(self._window_icon_photo)
 
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
@@ -144,12 +211,54 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
 
     # ----- Lifecycle -----
 
-    def show(self) -> "Window":
-        """Show the window and apply any modal grab.
+    def show(
+        self,
+        *,
+        anchor_to: Any = None,
+        anchor_point: Anchor = "center",
+        window_point: Anchor = "center",
+        offset: tuple[int, int] = (0, 0),
+        auto_flip: bool = True,
+    ) -> "Window":
+        """Show the window, optionally positioned relative to a widget.
+
+        With no arguments the window appears at its configured position (or
+        centered on its `parent`). Pass `anchor_to` to place it relative to a
+        widget instead — for example, to the right of a field.
+
+        Args:
+            anchor_to: A widget to position this window against, or one of
+                `'screen'`, `'cursor'`, or `'parent'`. When given, this overrides
+                centering.
+            anchor_point: The point on the anchor target to align to — one of
+                `'n'`, `'s'`, `'e'`, `'w'`, `'ne'`, `'nw'`, `'se'`, `'sw'`, or
+                `'center'`. For example, `'e'` is the target's right edge.
+            window_point: The matching point on this window placed at the anchor
+                (same value set). For example, `anchor_point='e'` with
+                `window_point='w'` puts this window's left edge at the target's
+                right edge — i.e. to its right.
+            offset: Extra `(x, y)` pixel offset from the anchored position.
+            auto_flip: Flip to the opposite side if the window would otherwise go
+                off-screen. Defaults to `True`.
 
         Returns:
             `self` — allows chaining: ``win = Window(...).show()``.
         """
+        if anchor_to is not None:
+            from bootstack._runtime.window_utilities import WindowPositioning
+
+            toplevel = self._tk_toplevel
+            toplevel.update_idletasks()
+            WindowPositioning.position_anchored(
+                window=toplevel,
+                anchor_to=_resolve_anchor_widget(anchor_to),
+                parent=self._parent_window,
+                anchor_point=anchor_point,
+                window_point=window_point,
+                offset=offset,
+                auto_flip=auto_flip,
+                ensure_visible=True,
+            )
         self._tk_toplevel.show()
         return self
 

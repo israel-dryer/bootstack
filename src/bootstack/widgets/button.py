@@ -5,15 +5,16 @@ from typing import Any, Callable, TYPE_CHECKING, overload
 from bootstack.widgets._impl.primitives.button import Button as _InternalButton
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.icon_image_props import IconProperty, ImageProperty
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant
+from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant, IconSpec
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class Button(PublicWidgetBase):
+class Button(IconProperty, ImageProperty, PublicWidgetBase):
     """A clickable action trigger.
 
     The button text is the first positional argument. All styling and
@@ -25,16 +26,17 @@ class Button(PublicWidgetBase):
             Equivalent to subscribing to the ``'click'`` event.
         accent: Color intent token. Defaults to the theme's default button color.
         variant: Visual weight token. Default `'solid'`.
-        icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`). See the full
-            catalog at https://icons.getbootstrap.com.
+        icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`) — see the full
+            catalog at https://icons.getbootstrap.com — or an `IconSpec` mapping
+            (`{'name', 'size', 'color'}`) for control over size and color.
         icon_only: If `True`, show only the icon with no text. Inferred
             automatically when `icon=` is set and no text is provided. Set
             meaningful `text` anyway for accessibility.
         icon_position: Position of the icon or image relative to the text.
             Default `'left'`.
-        image: An image handle to display on the button, for custom artwork
-            rather than a Bootstrap Icon name. (The public image-handle API is
-            being finalized for an upcoming release.)
+        image: An `Image` handle (from `bootstack.images`) to display on the
+            button, for custom artwork rather than a Bootstrap Icon name. Also
+            accepts a `get_icon` result.
         width: Button width in character units. Useful for making a row of
             buttons uniform width (e.g. `width=10`).
         textsignal: Reactive `Signal[str]` bound to the button text. Updates
@@ -55,7 +57,7 @@ class Button(PublicWidgetBase):
         on_click: Callable[[], Any] | None = None,
         accent: AccentToken | str | None = None,
         variant: ButtonVariant = "default",
-        icon: str | None = None,
+        icon: str | IconSpec | None = None,
         icon_only: bool = False,
         icon_position: IconPosition = "left",
         image: Any = None,
@@ -86,8 +88,14 @@ class Button(PublicWidgetBase):
             internal_kwargs["icon"] = icon
         if icon_only:
             internal_kwargs["icon_only"] = True
+        deferred_image = None
         if image is not None:
-            internal_kwargs["image"] = image
+            from bootstack.images import Image as _ImageHandle
+
+            if isinstance(image, _ImageHandle):
+                deferred_image = image
+            else:
+                internal_kwargs["image"] = image
         if width is not None:
             internal_kwargs["width"] = width
         if textsignal is not None:
@@ -98,6 +106,10 @@ class Button(PublicWidgetBase):
             internal_kwargs["state"] = "disabled"
 
         self._internal = _InternalButton(tk_master, **internal_kwargs)
+        if deferred_image is not None:
+            from bootstack.widgets._core.image_binding import bind_image
+
+            bind_image(self, self._internal, deferred_image)
         self._attach_to_parent(layout_kw)
 
     # ----- Properties -----
@@ -110,15 +122,6 @@ class Button(PublicWidgetBase):
     @text.setter
     def text(self, value: str) -> None:
         self._internal.configure(text=value)
-
-    @property
-    def icon(self) -> str | None:
-        """Bootstrap Icons name shown on the button, or ``None`` if no icon is set."""
-        return self._internal.configure_style_options("icon")
-
-    @icon.setter
-    def icon(self, value: str | None) -> None:
-        self._internal.configure(icon=value)
 
     @property
     def disabled(self) -> bool:

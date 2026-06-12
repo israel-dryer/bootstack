@@ -16,11 +16,39 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 ---
 
-## Recently completed (all merged to `main`)
+## Recently completed (merged to `main` unless noted)
 
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Public Image/Icon API + AppIcon + field signals + toml cleanup** (branch
+  **`feat/image-icon-api`** — **committed, NOT yet PR'd/merged**; reviewed) — new public
+  **`bootstack.images`**: a toolkit-free **`Image`** handle (`open`/`from_bytes`/`from_pil`,
+  lazy materialize, theme-following), **`get_icon`/`list_icons`**, and **`AppIcon`** (a
+  glyph on a rounded tile) that **`App`/`Window` accept as `icon=`** and that exports
+  **`.ico`/`.icns`/`.png`** via `save()` for packaging. Live **`icon`/`image` property
+  setters** on Label/Button/MenuButton/SelectButton; the icon **spec** `{name,size,color}`
+  is public via `bootstack.types` (**`Icon`/`IconSpec`**, color resolves theme tokens).
+  **AppIcon render** is the hard-won part: size-aware `shape="auto"` (glyph-only at small
+  title-bar sizes, **tile** from taskbar size up), **integer-ratio tile supersampling**,
+  glyph drawn at **native display size + pixel-aligned** (`_render_icon(align=)`),
+  size-dependent padding, and **DPI-matched sizes baked into the `.ico`** (the small-size
+  crispness fix — true per-size sharpness still needs hand-drawn grid-aligned art).
+  Ships the **`bootstack appicon`** GUI designer and **`[build.icon]`** glyph generation.
+  Also: **`Window(parent=)`** + anchored **`Window.show(anchor_to=, anchor_point=, …)`**;
+  **reveal-after-settle** window show (no open-time shift); **typed `signal=`** on
+  Number/Date/Time fields (binds the parsed value, not text; committed separately);
+  **`bootstack.toml` scoped to a build/scaffold manifest** (runtime **`[settings]`**
+  removed — runtime config is `App()` kwargs + `Store`); framework lifecycle fixes
+  (scheduler descendant-destroy guard, grid prune-on-destroy, clipboard helpers); public
+  **file-dialog verbs** (`ask_save_file`/`ask_open_file`/`ask_open_files`/`ask_directory`).
+  Docs: `reference/images` guide, `api-reference/images`, the **Application Icons** how-to
+  (`tasks/application-icons` — runtime-vs-build-icon distinction + glyph/color tips). A
+  **pre-commit review (5 agents)** found+fixed 2 HIGH (field-Signal leak; Signal type-
+  mismatch crash) + 2 MEDIUM (image-clear theme-binding leak; `show()` alpha-not-in-finally)
+  + nits. Memories `project_image_icon_public_api`, `project_field_value_signal_dtype`,
+  `project_app_settings_flattening`. **REMAINING:** open a PR; follow-up `Picture`
+  display widget (animated GIF / splash) is a separate branch.
 - **Menu bar + command bar** (PR #124, merged) — cross-platform **`app.menubar`**
   (also `window.menubar` / `shell.menubar`): a single-layer menu model with two
   renderers — a themed in-window strip on **Win/Linux** and the **native global menu

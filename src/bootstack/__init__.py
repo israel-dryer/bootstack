@@ -22,6 +22,7 @@ submodules — for example::
     from bootstack.validation import ValidationRule
     from bootstack.style import Theme, get_theme_color
     from bootstack.events import Event, Subscription
+    from bootstack.images import Image, get_icon, AppIcon
     from bootstack.types import AccentToken
 
 See the "API overview" in the documentation for the full map.
@@ -50,6 +51,7 @@ from bootstack.dialogs import (
     alert, confirm, ask_string, ask_integer, ask_float,
     ask_date, ask_date_range, ask_item,
     ask_color, ask_font, ask_filter,
+    ask_save_file, ask_open_file, ask_open_files, ask_directory,
 )
 
 # ── Application & windows ─────────────────────────────────────────────────────
@@ -121,6 +123,7 @@ __all__ = [
     # Dialog verbs
     "alert", "confirm", "ask_string", "ask_integer", "ask_float", "ask_date",
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
+    "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
     # Application & windows
     "App", "AppShell", "Window",
     # Layout

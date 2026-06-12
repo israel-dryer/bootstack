@@ -30,7 +30,7 @@ _RENDER_BATCH = 200
 def run_icons() -> None:
     import tkinter as tk
     from bootstack.signals import Signal
-    from bootstack._core.images import Image
+    from bootstack._core.images import _ImageService
     from bootstack._runtime.app import App as _App
     from bootstack.widgets._impl.primitives.frame import Frame as _Frame
     from bootstack.widgets._impl.primitives.label import Label as _Label
@@ -77,7 +77,7 @@ def run_icons() -> None:
     _Label(statusbar, textsignal=status_sig, font="caption", accent="muted").pack(side="left")
 
     # ── Data + render state ──────────────────────────────────────────────────
-    _, glyphmap = Image._load_icon_assets()
+    _, glyphmap = _ImageService._load_icon_assets()
     all_names: list[str] = sorted(glyphmap.keys())
 
     _photos: list[Any] = []            # strong refs — prevents Tk GC
@@ -161,7 +161,7 @@ def run_icons() -> None:
             cx = col * cell_w + cell_w // 2
             cy = row * _CELL_H + 6
 
-            photo = Image.get_icon(name, _ICON_SIZE, fg)
+            photo = _ImageService.get_icon(name, _ICON_SIZE, fg)
             _photos.append(photo)
 
             img_id = canvas.create_image(

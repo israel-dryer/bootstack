@@ -18,6 +18,7 @@ from bootstack.widgets.types import (
     AccentToken, VariantToken, SurfaceToken, WindowStyle,
     ColumnSpec, EditorType, FormOptions,
     Option, OptionDict,
+    Icon, IconSpec,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
     "ColumnSpec", "EditorType", "FormOptions",
     "Option", "OptionDict",
+    "Icon", "IconSpec",
 ]

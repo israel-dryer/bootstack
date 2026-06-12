@@ -26,6 +26,7 @@ see :doc:`/widgets/index`.
    /tasks/dialogs
    /tasks/navigation
    /tasks/layout
+   /tasks/application-icons
 
 .. toctree::
    :caption: Topics
@@ -33,6 +34,7 @@ see :doc:`/widgets/index`.
 
    /reference/theming
    /reference/typography
+   /reference/images
    /reference/localization
    /reference/signals
    /reference/events

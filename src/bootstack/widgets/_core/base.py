@@ -109,6 +109,28 @@ class PublicWidgetBase:
             self._schedule = Schedule(self._internal)
         return self._schedule
 
+    # ----- Clipboard ---------------------------------------------------------
+
+    def set_clipboard(self, text: str) -> None:
+        """Replace the system clipboard contents with `text`.
+
+        Args:
+            text: The text to place on the clipboard.
+        """
+        self._internal.clipboard_set(text)
+
+    def get_clipboard(self) -> str:
+        """Return the current text contents of the system clipboard.
+
+        Returns:
+            The clipboard text, or an empty string when the clipboard is empty
+            or holds non-text data.
+        """
+        try:
+            return self._internal.clipboard_get()
+        except Exception:
+            return ""
+
     # ----- on() — overloaded -------------------------------------------------
 
     @overload

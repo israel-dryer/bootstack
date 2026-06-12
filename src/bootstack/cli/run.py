@@ -83,10 +83,6 @@ def run_run(args: argparse.Namespace) -> None:
         else:
             env["PYTHONPATH"] = str(src_dir)
 
-    # Pass theme from config so the app can pick it up
-    if config is not None and config.settings.theme:
-        env["BOOTSTACK_THEME"] = config.settings.theme
-
     try:
         result = subprocess.run(
             [sys.executable, str(entry_point)],

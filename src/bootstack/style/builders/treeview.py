@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import font
 
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image

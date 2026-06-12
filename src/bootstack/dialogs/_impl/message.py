@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from typing import Any, Callable, List, Optional
 
 from bootstack.widgets._impl.primitives import Frame, Label
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.constants import *
 from bootstack.i18n import MessageCatalog
 from .dialog import ButtonRole, Dialog, DialogButton

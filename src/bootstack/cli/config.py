@@ -24,11 +24,6 @@ id = "{app_id}"
 entry = "{entry}"
 template = "{template}"
 
-[settings]
-theme = "{theme}"
-language = "en"
-appearance = "system"
-
 [layout]
 default_container = "grid"
 """
@@ -41,7 +36,15 @@ windowed = true
 onefile = false
 
 [build.icon]
+# Point at an existing icon file:
 # path = "assets/icon.ico"
+# ...or generate one from a Bootstrap icon glyph. Colors must be hex values
+# (theme tokens cannot be resolved at build time, when no app is running):
+# glyph = "rocket"
+# shape = "auto"          # auto | tile | glyph (auto: glyph-only small, tile large)
+# background = "#0d6efd"
+# foreground = "#ffffff"
+# radius = 0.22
 
 [build.datas]
 include = [
@@ -64,15 +67,6 @@ class AppConfig:
 
 
 @dataclass
-class SettingsConfig:
-    """The [settings] section of bootstack.toml."""
-
-    theme: str = "bootstrap-light"
-    language: str = "en"
-    appearance: str = "system"  # system | light | dark
-
-
-@dataclass
 class LayoutConfig:
     """The [layout] section of bootstack.toml."""
 
@@ -81,9 +75,20 @@ class LayoutConfig:
 
 @dataclass
 class BuildIconConfig:
-    """The [build.icon] section of bootstack.toml."""
+    """The [build.icon] section of bootstack.toml.
+
+    Either point `path` at an existing icon file, or set `glyph` to generate an
+    icon from a Bootstrap icon at build time. Generated-icon colors must be hex
+    values — theme tokens cannot be resolved during a build, when no application
+    is running.
+    """
 
     path: Optional[str] = None
+    glyph: Optional[str] = None
+    shape: str = "auto"
+    background: str = "#0d6efd"
+    foreground: str = "#ffffff"
+    radius: float = 0.22
 
 
 @dataclass
@@ -109,7 +114,6 @@ class TtkbConfig:
     """Complete bootstack.toml configuration."""
 
     app: AppConfig = field(default_factory=AppConfig)
-    settings: SettingsConfig = field(default_factory=SettingsConfig)
     layout: LayoutConfig = field(default_factory=LayoutConfig)
     build: Optional[BuildConfig] = None
 
@@ -117,7 +121,6 @@ class TtkbConfig:
     def from_dict(cls, data: dict[str, Any]) -> TtkbConfig:
         """Create TtkbConfig from a dictionary (parsed TOML)."""
         app_data = data.get("app", {})
-        settings_data = data.get("settings", {})
         layout_data = data.get("layout", {})
         build_data = data.get("build")
 
@@ -126,12 +129,6 @@ class TtkbConfig:
             id=app_data.get("id", "com.example.myapp"),
             entry=app_data.get("entry", "src/myapp/main.py"),
             template=app_data.get("template", "basic"),
-        )
-
-        settings = SettingsConfig(
-            theme=settings_data.get("theme", "bootstrap-light"),
-            language=settings_data.get("language", "en"),
-            appearance=settings_data.get("appearance", "system"),
         )
 
         layout = LayoutConfig(
@@ -147,11 +144,18 @@ class TtkbConfig:
                 backend=build_data.get("backend", "pyinstaller"),
                 windowed=build_data.get("windowed", True),
                 onefile=build_data.get("onefile", False),
-                icon=BuildIconConfig(path=icon_data.get("path")),
+                icon=BuildIconConfig(
+                    path=icon_data.get("path"),
+                    glyph=icon_data.get("glyph"),
+                    shape=icon_data.get("shape", "auto"),
+                    background=icon_data.get("background", "#0d6efd"),
+                    foreground=icon_data.get("foreground", "#ffffff"),
+                    radius=float(icon_data.get("radius", 0.22)),
+                ),
                 datas=BuildDatasConfig(include=datas_data.get("include", [])),
             )
 
-        return cls(app=app, settings=settings, layout=layout, build=build)
+        return cls(app=app, layout=layout, build=build)
 
     @classmethod
     def load(cls, path: Path | str = "bootstack.toml") -> TtkbConfig:
@@ -252,7 +256,6 @@ def generate_config(
         name=name,
         app_id=app_id,
         entry=entry,
-        theme=theme,
         template=template,
     )
 
