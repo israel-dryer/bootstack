@@ -393,7 +393,7 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             title: str | None = None,
             *,
             theme: str | None = None,
-            icon: tkinter.PhotoImage | None = None,
+            icon: tkinter.PhotoImage | str | None = None,
 
             # theme
             light_theme: str = "bootstrap-light",

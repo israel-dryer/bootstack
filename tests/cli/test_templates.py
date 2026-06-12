@@ -86,13 +86,13 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
     assert cfg["app"]["name"] == "MyApp"
     assert cfg["app"]["template"] == "basic"
     assert cfg["app"]["entry"] == "src/myapp/main.py"
-    assert cfg["settings"]["theme"] == "cosmo"
+    assert "settings" not in cfg  # runtime config is not a toml concern
     assert "build" not in cfg  # promote adds it later
 
-    # main.py respects BOOTSTACK_THEME (env override path) and references the
-    # right view subclass for the chosen container.
+    # main.py bakes the chosen theme as a literal and references the right view
+    # subclass for the chosen container.
     main_src = (target / "src" / "myapp" / "main.py").read_text(encoding="utf-8")
-    assert 'os.environ.get("BOOTSTACK_THEME", "cosmo")' in main_src
+    assert 'theme="cosmo"' in main_src
     assert "from myapp.views.main_view import MainView" in main_src
 
     view_src = (target / "src" / "myapp" / "views" / "main_view.py").read_text(encoding="utf-8")
@@ -131,11 +131,11 @@ def test_create_appshell_project(tmp_path: Path, simple: bool) -> None:
 
     cfg = _load_toml(target / "bootstack.toml")
     assert cfg["app"]["template"] == "appshell"
-    assert cfg["settings"]["theme"] == "superhero"
+    assert "settings" not in cfg  # runtime config is not a toml concern
 
     main_src = (target / "src" / "myshell" / "main.py").read_text(encoding="utf-8")
     assert "bs.AppShell" in main_src
-    assert 'os.environ.get("BOOTSTACK_THEME", "superhero")' in main_src
+    assert 'theme="superhero"' in main_src
     assert "HomePage" in main_src and "SettingsPage" in main_src
 
 

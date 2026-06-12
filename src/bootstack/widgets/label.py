@@ -6,18 +6,19 @@ from bootstack.widgets._impl.primitives.label import Label as _InternalLabel
 from bootstack.widgets._impl.primitives.badge import Badge as _InternalBadge
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
+from bootstack.widgets._core.icon_image_props import IconProperty, ImageProperty
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     AccentToken, VariantToken, SurfaceToken,
-    Anchor, Justify, Relief, CompoundMode, Padding, IconPosition,
+    Anchor, Justify, Relief, CompoundMode, Padding, IconPosition, IconSpec,
 )
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
 
 
-class Label(PublicWidgetBase):
+class Label(IconProperty, ImageProperty, PublicWidgetBase):
     """Static text display with optional icon, semantic styling, and font tokens.
 
     The display text is the first positional argument. All options are
@@ -32,12 +33,12 @@ class Label(PublicWidgetBase):
             a named preset (e.g. `'decimal'`, `'currency'`, `'shortDate'`) or a
             custom pattern (e.g. `'#,##0'`). Requires `textsignal=` and
             localization enabled. See :ref:`format specs <value-formats>`.
-        image: An image handle to display, for custom artwork rather than a
-            Bootstrap Icon name. Use `icon_position=` to control placement
-            relative to text. (The public image-handle API is being finalized
-            for an upcoming release.)
-        icon: Bootstrap Icons name (e.g. `'house'`, `'gear'`). See the
-            full catalog at https://icons.getbootstrap.com.
+        image: An `Image` handle (from `bootstack.images`) to display, for custom
+            artwork rather than a Bootstrap Icon name. Also accepts a `get_icon`
+            result. Use `icon_position=` to control placement relative to text.
+        icon: Bootstrap Icons name (e.g. `'house'`, `'gear'`) — see the full
+            catalog at https://icons.getbootstrap.com — or an `IconSpec` mapping
+            (`{'name', 'size', 'color'}`) for control over size and color.
         icon_only: If `True`, show only the icon. Auto-detected when
             `text` is empty and `icon` is provided.
         icon_position: Position of the icon or image relative to the text.
@@ -67,7 +68,7 @@ class Label(PublicWidgetBase):
         textsignal: "Signal | None" = None,
         value_format: str | None = None,
         image: Any = None,
-        icon: str | None = None,
+        icon: str | IconSpec | None = None,
         icon_only: bool = False,
         icon_position: IconPosition = "left",
         anchor: Anchor | None = None,
@@ -93,8 +94,20 @@ class Label(PublicWidgetBase):
             internal_kwargs["textsignal"] = textsignal
         if value_format is not None:
             internal_kwargs["value_format"] = value_format
+        deferred_image = None
         if image is not None:
-            internal_kwargs["image"] = image
+            from bootstack.images import Image as _ImageHandle
+
+            if isinstance(image, _ImageHandle):
+                deferred_image = image
+                has_text = bool(text) or textsignal is not None
+                if not has_text or icon_only:
+                    internal_kwargs["icon_only"] = True
+                    internal_kwargs["compound"] = "image"
+                else:
+                    internal_kwargs["compound"] = icon_position
+            else:
+                internal_kwargs["image"] = image
         if icon is not None:
             internal_kwargs["icon"] = icon
             has_text = bool(text) or textsignal is not None
@@ -125,6 +138,10 @@ class Label(PublicWidgetBase):
             internal_kwargs["surface"] = surface
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
+        if deferred_image is not None:
+            from bootstack.widgets._core.image_binding import bind_image
+
+            bind_image(self, self._internal, deferred_image)
         self._attach_to_parent(layout_kw)
 
     # ----- Properties -----

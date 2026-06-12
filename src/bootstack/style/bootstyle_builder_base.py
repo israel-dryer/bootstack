@@ -484,6 +484,20 @@ class BootstyleBuilderBase:
                 result['size'] = scale_size(result['size'])
             return result
 
+    def _resolve_icon_color(self, color: Any) -> str | None:
+        """Resolve an icon-spec color, turning a theme token into a hex value.
+
+        A hex value passes through; a theme token (such as `'primary'`) is
+        resolved against the active theme; any other string (e.g. a named color
+        like `'white'`) is left for the renderer to interpret.
+        """
+        if not color:
+            return None
+        try:
+            return self.color(color)
+        except Exception:
+            return color
+
     def map_stateful_icons(self, icon: IconSpec, foreground_spec: Sequence[tuple]):
         """
         Build and return a TTK image state map for icons, using the
@@ -526,7 +540,7 @@ class BootstyleBuilderBase:
             return []
 
         base_size: int = int(icon.get('size') or 20)
-        base_color: str | None = icon.get('color')
+        base_color: str | None = self._resolve_icon_color(icon.get('color'))
 
         # Build per-state override lookup: {state_str: {'name':..., 'color':...}}
         state_overrides: dict[str, IconStateMap] = {}
@@ -543,7 +557,7 @@ class BootstyleBuilderBase:
                 if 'name' in ov and ov['name']:
                     override['name'] = ov['name']  # type: ignore[assignment]
                 if 'color' in ov and ov['color']:
-                    override['color'] = ov['color']  # type: ignore[assignment]
+                    override['color'] = self._resolve_icon_color(ov['color'])  # type: ignore[assignment]
                 if override:
                     state_overrides[st] = override
 
@@ -577,8 +591,8 @@ class BootstyleBuilderBase:
                 cache[key] = img
                 return img
 
-            from bootstack._core.images import Image
-            img = Image.get_icon(name, size, color or "black")
+            from bootstack._core.images import _ImageService
+            img = _ImageService.get_icon(name, size, color or "black")
             cache[key] = img
             return img
 

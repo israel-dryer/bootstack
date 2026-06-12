@@ -19,7 +19,7 @@ from typing_extensions import Literal, TypedDict, Unpack
 from bootstack.widgets.types import Master, WidgetDensity
 
 from bootstack.events import RowEvent, RowsEvent, SelectionEvent, ExportEvent
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.style.style import get_style
 # Row identity and the set of hidden internal columns are read through the
 # datasource's protocol-level helpers (`_record_id`, `_public_record`,

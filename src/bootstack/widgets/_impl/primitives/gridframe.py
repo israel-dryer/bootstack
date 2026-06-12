@@ -177,6 +177,35 @@ class GridFrame(Frame):
             for dc in range(colspan):
                 self._occupied.discard((row + dr, col + dc))
 
+    def _prune_destroyed(self) -> None:
+        """Drop managed widgets that have been destroyed, freeing their cells.
+
+        Tk's `destroy()` does not route through `grid_forget()`, so without this
+        the auto-flow cursor and the occupied-cell set would keep stale entries
+        for gone widgets — causing re-added children to fall through to the
+        `(0, 0)` fallback and stack on top of one another.
+        """
+        survivors = []
+        pruned = False
+        for entry in self._managed:
+            widget = entry[0]
+            try:
+                alive = bool(widget.winfo_exists())
+            except Exception:
+                alive = False
+            if alive:
+                survivors.append(entry)
+            else:
+                self._free_area(*entry[2])
+                self._removed.discard(widget)
+                pruned = True
+        if pruned:
+            self._managed = survivors
+            # Restart the flow cursor; `_find_next_position` skips cells still
+            # occupied by survivors, so it lands on the first genuinely free one.
+            self._next_row = 0
+            self._next_col = 0
+
     def _find_next_position(self, rowspan: int = 1, colspan: int = 1) -> tuple[int, int]:
         """Find the next available position using auto-flow rules."""
         if self._auto_flow == "none":
@@ -368,6 +397,11 @@ class GridFrame(Frame):
 
         Applies frame defaults, handles gap spacing, auto-placement, and tracks the widget.
         """
+        # Reclaim cells from any children destroyed since the last placement so
+        # auto-flow positions this widget correctly (Tk destroy() bypasses
+        # grid_forget()).
+        self._prune_destroyed()
+
         # Check if widget was hidden via grid_remove and is being restored
         if widget in self._removed and not options:
             # Restore widget to its original position

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.builders.utils import apply_icon_mapping, button_font, normalize_button_density

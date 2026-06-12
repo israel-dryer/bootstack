@@ -208,5 +208,11 @@ class Schedule:
 
     # ----- internal ----------------------------------------------------------
 
-    def _on_destroy(self, *_: Any) -> None:
+    def _on_destroy(self, event: Any = None) -> None:
+        # `<Destroy>` propagates up from descendants, so this handler fires
+        # whenever any child of the owner is destroyed. Only cancel the owner's
+        # jobs when the owner itself is going away — otherwise destroying a child
+        # widget would wipe out unrelated scheduled work on its ancestors.
+        if event is not None and getattr(event, "widget", None) is not self._owner:
+            return
         self.cancel_all()

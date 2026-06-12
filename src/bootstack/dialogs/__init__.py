@@ -13,7 +13,7 @@ from bootstack.dialogs._impl.fontdialog import FontDialog as _InternalFontDialog
 from bootstack.dialogs._impl.filterdialog import FilterDialog as _InternalFilterDialog
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
-from bootstack._core.images import Image as _ImageService
+from bootstack._core.images import _ImageService
 from bootstack.style.style import get_theme_color as _get_theme_color
 
 __all__ = [
@@ -21,6 +21,7 @@ __all__ = [
     "alert", "confirm",
     "ask_string", "ask_integer", "ask_float", "ask_date", "ask_date_range",
     "ask_item", "ask_color", "ask_font", "ask_filter",
+    "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
     # dialog classes
     "Dialog", "DialogButton", "FormDialog", "FilterDialog",
     "ColorChooserDialog", "ColorChoice", "FontDialog", "FontChoice",
@@ -806,3 +807,141 @@ def ask_filter(
     )
     dlg.show()
     return dlg.result
+
+
+# File-system dialogs (native OS choosers) ----------------------------------
+
+def _run_file_dialog(_name: str, parent: Any, **options: Any) -> Any:
+    """Call a `tkinter.filedialog` function with cleaned options."""
+    import tkinter
+    from tkinter import filedialog
+
+    opts = {k: v for k, v in options.items() if v not in (None, "")}
+    master = parent if parent is not None else tkinter._default_root
+    if master is not None:
+        opts["parent"] = master
+    return getattr(filedialog, _name)(**opts)
+
+
+def _coerce_file_types(file_types: Any) -> Any:
+    if not file_types:
+        return None
+    return [tuple(ft) for ft in file_types]
+
+
+def ask_save_file(
+    *,
+    title: str = "",
+    initial_file: str = "",
+    initial_dir: str = "",
+    file_types: list[tuple[str, str]] | None = None,
+    default_extension: str = "",
+    parent: Any = None,
+) -> str | None:
+    """Show a native save dialog and return the chosen path.
+
+    Args:
+        title: Dialog window title.
+        initial_file: Suggested file name.
+        initial_dir: Directory to open in. Defaults to the last used location.
+        file_types: Selectable file types as `(label, pattern)` pairs, for
+            example `[('PNG image', '*.png'), ('All files', '*.*')]`.
+        default_extension: Extension appended when the user omits one (for
+            example `'.png'`).
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        The chosen file path, or `None` if canceled.
+    """
+    path = _run_file_dialog(
+        "asksaveasfilename",
+        parent,
+        title=title,
+        initialfile=initial_file,
+        initialdir=initial_dir,
+        filetypes=_coerce_file_types(file_types),
+        defaultextension=default_extension,
+    )
+    return path or None
+
+
+def ask_open_file(
+    *,
+    title: str = "",
+    initial_dir: str = "",
+    file_types: list[tuple[str, str]] | None = None,
+    parent: Any = None,
+) -> str | None:
+    """Show a native open dialog for a single file and return its path.
+
+    Args:
+        title: Dialog window title.
+        initial_dir: Directory to open in. Defaults to the last used location.
+        file_types: Selectable file types as `(label, pattern)` pairs, for
+            example `[('Images', '*.png *.jpg'), ('All files', '*.*')]`.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        The chosen file path, or `None` if canceled.
+    """
+    path = _run_file_dialog(
+        "askopenfilename",
+        parent,
+        title=title,
+        initialdir=initial_dir,
+        filetypes=_coerce_file_types(file_types),
+    )
+    return path or None
+
+
+def ask_open_files(
+    *,
+    title: str = "",
+    initial_dir: str = "",
+    file_types: list[tuple[str, str]] | None = None,
+    parent: Any = None,
+) -> list[str]:
+    """Show a native open dialog allowing several files.
+
+    Args:
+        title: Dialog window title.
+        initial_dir: Directory to open in. Defaults to the last used location.
+        file_types: Selectable file types as `(label, pattern)` pairs.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        The chosen file paths, or an empty list if canceled.
+    """
+    paths = _run_file_dialog(
+        "askopenfilenames",
+        parent,
+        title=title,
+        initialdir=initial_dir,
+        filetypes=_coerce_file_types(file_types),
+    )
+    return list(paths) if isinstance(paths, (list, tuple)) else []
+
+
+def ask_directory(
+    *,
+    title: str = "",
+    initial_dir: str = "",
+    parent: Any = None,
+) -> str | None:
+    """Show a native folder chooser and return the chosen directory.
+
+    Args:
+        title: Dialog window title.
+        initial_dir: Directory to open in. Defaults to the last used location.
+        parent: Parent widget. Defaults to the active root window.
+
+    Returns:
+        The chosen directory path, or `None` if canceled.
+    """
+    path = _run_file_dialog(
+        "askdirectory",
+        parent,
+        title=title,
+        initialdir=initial_dir,
+    )
+    return path or None

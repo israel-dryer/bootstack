@@ -250,3 +250,24 @@ Three interchangeable forms, all normalized to a `(text, value)` pair:
 - a plain `str` — text and value are the same (`'Small'`);
 - a `(text, value)` tuple — decoupled label and value (`('Small', 's')`);
 - an `OptionDict` — `{'text': 'Small', 'value': 's'}`; the extensible form."""
+
+
+class IconSpec(TypedDict, total=False):
+    """A detailed icon specification: a Bootstrap icon name with size and color.
+
+    Use in place of a plain icon name wherever a widget accepts `icon=`, to
+    control the rendered size and color — for example
+    `icon={'name': 'bell-fill', 'size': 24, 'color': 'primary'}`.
+    """
+
+    name: str
+    """Bootstrap Icons name, e.g. `'bell-fill'`."""
+    size: int
+    """Icon size in pixels (automatically DPI-scaled)."""
+    color: str
+    """Icon color — a theme color token (e.g. `'primary'`) or a hex string."""
+
+
+Icon = str | IconSpec
+"""An icon as either a Bootstrap Icons name (`'bell-fill'`) or an `IconSpec`
+mapping for control over size and color."""

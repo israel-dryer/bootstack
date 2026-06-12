@@ -4,31 +4,34 @@ This module provides a unified image service for loading, caching, and managing
 Tk-compatible PhotoImage objects. It uses Pillow as the backend to support a wide
 variety of image formats beyond what Tk natively supports.
 
-The primary interface is the `Image` class, which provides class methods for
-loading images from various sources while automatically caching them to avoid
+The primary interface is the `_ImageService` class, which provides class methods
+for loading images from various sources while automatically caching them to avoid
 repeated decoding and to prevent garbage collection issues with Tk images.
+
+This is the internal render/cache backend. The public, Tk-free image handle that
+delegates to it lives in `bootstack.images` (`Image`/`get_icon`/`AppIcon`).
 
 Examples:
     Basic usage with file paths:
 
     ```python
-    from bootstack._core.images import Image
+    from bootstack._core.images import _ImageService
 
     # Load an image from disk (cached automatically)
-    photo = Image.open("icons/save.png")
+    photo = _ImageService.open("icons/save.png")
     button = Button(app, image=photo)
     ```
 
     Loading from bytes (e.g., embedded resources):
 
     ```python
-    photo = Image.from_bytes(icon_data)
+    photo = _ImageService.from_bytes(icon_data)
     ```
 
     Creating transparent spacer images:
 
     ```python
-    spacer = Image.transparent(16, 16)
+    spacer = _ImageService.transparent(16, 16)
     ```
 """
 
@@ -60,7 +63,7 @@ class ImageCacheInfo:
     items: int
 
 
-class Image:
+class _ImageService:
     """Platform image service for loading and caching PhotoImage objects.
 
     This class provides a centralized service for working with images in
@@ -76,17 +79,17 @@ class Image:
     Examples:
         ```python
             # From a file path
-            icon = Image.open("path/to/icon.png")
+            icon = _ImageService.open("path/to/icon.png")
 
             # From raw bytes
-            icon = Image.from_bytes(embedded_data)
+            icon = _ImageService.from_bytes(embedded_data)
 
             # From a PIL Image object
             pil_img = PILImage.open("photo.jpg").resize((100, 100))
-            icon = Image.from_pil(pil_img)
+            icon = _ImageService.from_pil(pil_img)
 
             # Create a transparent spacer
-            spacer = Image.transparent(32, 32)
+            spacer = _ImageService.transparent(32, 32)
         ```
 
     Note:
@@ -148,7 +151,7 @@ class Image:
             An ImageCacheInfo object containing cache statistics.
 
         Examples:
-            >>> info = Image.cache_info()
+            >>> info = _ImageService.cache_info()
             >>> print(f"Cached images: {info.items}")
         """
         return ImageCacheInfo(items=len(cls._cache))
@@ -174,11 +177,11 @@ class Image:
             A Tk-compatible PhotoImage that can be used with widgets.
 
         Examples:
-            >>> photo = Image.open("assets/logo.png")
+            >>> photo = _ImageService.open("assets/logo.png")
             >>> label = Label(app, image=photo)
 
             >>> # With custom cache key for versioning
-            >>> photo = Image.open("icon.png", key=("icon", "v2"))
+            >>> photo = _ImageService.open("icon.png", key=("icon", "v2"))
         """
         p = Path(path).expanduser().resolve()
         cache_key = key if key is not None else ("file", str(p))
@@ -200,9 +203,9 @@ class Image:
 
         Args:
             image: A PIL Image object to convert.
-            key: Optional custom cache key. If not provided, the object id
-                of the PIL Image is used (note: this means the same PIL Image
-                object will be cached, but copies won't hit the cache).
+            key: Optional custom cache key. If not provided, a key derived from
+                the image's content is used, so equal images share a photo and a
+                new image can never collide with a freed one's cached photo.
 
         Returns:
             A Tk-compatible PhotoImage that can be used with widgets.
@@ -211,9 +214,23 @@ class Image:
             >>> from PIL import Image as PILImage
             >>> pil_img = PILImage.open("photo.jpg")
             >>> pil_img = pil_img.resize((100, 100))
-            >>> photo = Image.from_pil(pil_img)
+            >>> photo = _ImageService.from_pil(pil_img)
         """
-        cache_key = key if key is not None else ("pil", id(image))
+        if key is not None:
+            cache_key: Hashable = key
+        else:
+            # Content-based key. id(image) is NOT safe: PIL images are short-lived
+            # (e.g. a freshly rendered icon), and once garbage-collected their id
+            # can be reused by a different image — which would then be served the
+            # previous image's cached photo (a stale/duplicated picture).
+            try:
+                cache_key = (
+                    "pil", image.mode, image.size,
+                    hashlib.md5(image.tobytes()).hexdigest(),
+                )
+            except Exception:
+                # Content not byte-serializable — render fresh, uncached.
+                return PILPhotoImage(image=image)
         cached = cls.get_cached(cache_key)
         if cached is not None:
             return cached
@@ -242,10 +259,10 @@ class Image:
             >>> # Load from embedded resource
             >>> with open("icon.png", "rb") as f:
             ...     icon_data = f.read()
-            >>> photo = Image.from_bytes(icon_data)
+            >>> photo = _ImageService.from_bytes(icon_data)
 
             >>> # With custom cache key
-            >>> photo = Image.from_bytes(data, key="my-icon")
+            >>> photo = _ImageService.from_bytes(data, key="my-icon")
         """
         digest = hashlib.md5(data).hexdigest()
         cache_key = key if key is not None else ("bytes", digest)
@@ -276,7 +293,7 @@ class Image:
 
         Examples:
             >>> # Create a 16x16 transparent spacer
-            >>> spacer = Image.transparent(16, 16)
+            >>> spacer = _ImageService.transparent(16, 16)
             >>> label = Label(app, image=spacer)
 
             >>> # Use as compound image padding
@@ -354,7 +371,20 @@ class Image:
         return cls.set_cached(key, photo)
 
     @classmethod
-    def _render_icon(cls, name: str, size: int, color: str) -> PILImage.Image:
+    def _render_icon(
+        cls, name: str, size: int, color: str, *, align: bool = False
+    ) -> PILImage.Image:
+        """Render a named glyph to an RGBA image of `size` x `size`.
+
+        Args:
+            name: Bootstrap Icons glyph name.
+            size: Output edge length in pixels.
+            color: Fill color (hex).
+            align: Snap the glyph's draw origin to the final pixel grid. Crisper
+                for standalone marks (e.g. app icons) where the glyph fills the
+                frame; off by default so glyphs sitting beside text keep their
+                exact optical centering.
+        """
         _, glyphmap = cls._load_icon_assets()
         glyph = glyphmap.get(name)
         if glyph is None:
@@ -366,6 +396,14 @@ class Image:
             oversample = 2
         else:
             oversample = 1
+
+        def _snap(dx: float, dy: float) -> tuple[float, float]:
+            # Round the draw origin to a multiple of `oversample` so that after
+            # the downscale the glyph lands on whole pixels — its edges stay crisp
+            # instead of being antialiased across a sub-pixel offset.
+            if not align:
+                return dx, dy
+            return round(dx / oversample) * oversample, round(dy / oversample) * oversample
 
         canvas_size = size * oversample
         pad = int(canvas_size * _ICON_PAD_FACTOR)
@@ -388,6 +426,7 @@ class Image:
             dy = (canvas_size - ink_h) / 2 - nt * font_size
             if _ICON_Y_BIAS:
                 dy += canvas_size * _ICON_Y_BIAS
+            dx, dy = _snap(dx, dy)
             draw.text((dx, dy), glyph, font=font, fill=color)
         else:
             # Fallback for glyphs absent from icon_metrics.json: measure with
@@ -414,6 +453,7 @@ class Image:
             dy = pad + (inner - full_height) // 2 + (ascent - bbox[3])
             if _ICON_Y_BIAS:
                 dy += int(canvas_size * _ICON_Y_BIAS)
+            dx, dy = _snap(dx, dy)
             draw.text((dx, dy), glyph, font=font, fill=color)
 
         if oversample > 1:

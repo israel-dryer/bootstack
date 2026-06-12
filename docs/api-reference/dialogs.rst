@@ -24,11 +24,15 @@ blocks until dismissed, and returns the user's choice (or ``None`` on cancel).
    bootstack.ask_color
    bootstack.ask_date
    bootstack.ask_date_range
+   bootstack.ask_directory
    bootstack.ask_filter
    bootstack.ask_float
    bootstack.ask_font
    bootstack.ask_integer
    bootstack.ask_item
+   bootstack.ask_open_file
+   bootstack.ask_open_files
+   bootstack.ask_save_file
    bootstack.ask_string
    bootstack.confirm
    bootstack.toast

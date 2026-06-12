@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 from bootstack._runtime.app import App as _InternalApp, LocalizeMode
+
+if TYPE_CHECKING:
+    from bootstack.images import AppIcon, Image
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
@@ -23,6 +26,8 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
     Args:
         title: Window title bar text and the app's display name.
         size: Initial window size as `(width, height)`.
+        icon: Title-bar and taskbar icon — an icon file path, an `Image` handle,
+            or an `AppIcon`. Defaults to the bootstack icon.
         theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
         light_theme: Theme used for the light end of system-appearance
             tracking and `toggle_theme`.
@@ -76,6 +81,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         *,
         title: str | None = None,
         size: tuple[int, int] | None = None,
+        icon: "str | Image | AppIcon | None" = None,
         theme: str | None = None,
         # theme
         light_theme: str = "bootstrap-light",
@@ -147,9 +153,25 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
             init_kwargs["resizable"] = resizable
         if on_close is not None:
             init_kwargs["on_close"] = on_close
+
         init_kwargs.update(app_kwargs)
 
         self._tk_root = _InternalApp(**init_kwargs)
+
+        # Resolve the icon AFTER the root exists. An `AppIcon` may resolve theme
+        # color tokens (which need the style/root) and a deferred `Image` must be
+        # rendered against the root — doing either before the root would spin up
+        # a stray default root and bind the icon to the wrong interpreter.
+        self._app_icon_photo = None
+        if icon is not None:
+            from bootstack.widgets._core.image_binding import resolve_window_icon
+
+            icon_path, icon_image = resolve_window_icon(icon)
+            if icon_path is not None:
+                self._tk_root._setup_icon(icon_path)
+            elif icon_image is not None:
+                self._app_icon_photo = icon_image._materialize()
+                self._tk_root._setup_icon(self._app_icon_photo)
 
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
@@ -217,7 +239,10 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
 
     def run(self) -> None:
         """Show the window and start the event loop."""
-        self._tk_root.deiconify()
+        # Let the internal mainloop center and *then* show the window — it
+        # flushes layout and applies the window style while still withdrawn, so
+        # the window is fully drawn and positioned before it becomes visible.
+        # (Deiconifying here first would map it uncentered, then jump on center.)
         self._tk_root.mainloop()
 
     def __exit__(self, exc_type, exc, tb) -> None:

@@ -48,11 +48,36 @@ ONEFILE = config.build.onefile if config.build else False
 
 # Icon handling
 ICON_PATH = None
-if config.build and config.build.icon.path:
-    icon_candidate = PROJECT_ROOT / config.build.icon.path
+_icon_cfg = config.build.icon if config.build else None
+if _icon_cfg and _icon_cfg.path:
+    icon_candidate = PROJECT_ROOT / _icon_cfg.path
     if icon_candidate.exists():
         ICON_PATH = str(icon_candidate)
-else:
+elif _icon_cfg and _icon_cfg.glyph:
+    # Generate an .ico from a glyph. No app runs during a build, so colors must
+    # be hex — a theme token cannot be resolved and would fail to render.
+    if not (_icon_cfg.background.startswith("#") and _icon_cfg.foreground.startswith("#")):
+        print(
+            "[build.icon] background/foreground must be hex colors (e.g. "
+            "'#0d6efd'); theme tokens need a running app. Using the default icon."
+        )
+    else:
+        try:
+            from bootstack.images import AppIcon
+            out = PROJECT_ROOT / "build" / "app-icon.ico"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            AppIcon(
+                _icon_cfg.glyph,
+                background=_icon_cfg.background,
+                foreground=_icon_cfg.foreground,
+                radius=_icon_cfg.radius,
+                shape=_icon_cfg.shape,
+            ).save(str(out))
+            ICON_PATH = str(out)
+        except Exception as exc:
+            print(f"Could not generate app icon from glyph {{_icon_cfg.glyph!r}}: {{exc}}")
+
+if ICON_PATH is None:
     # Fall back to the bundled bootstack launch icon (the same artwork
     # the runtime sets via wm_iconphoto, just rendered as a multi-size
     # .ico for Windows). Users can override by setting [build.icon] path
