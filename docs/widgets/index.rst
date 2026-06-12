@@ -64,6 +64,7 @@ Every widget bootstack provides, grouped by purpose.
    :maxdepth: 1
 
    picture
+   gallery
 
 .. toctree::
    :caption: Layout
