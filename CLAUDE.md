@@ -21,6 +21,26 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Menu bar + command bar** (PR #124, merged) — cross-platform **`app.menubar`**
+  (also `window.menubar` / `shell.menubar`): a single-layer menu model with two
+  renderers — a themed in-window strip on **Win/Linux** and the **native global menu
+  bar** (`NSMenu`) on **macOS** — behind one API. Build imperatively
+  (`with app.menubar.add_menu("File") as f: f.add_action(...)`) or declaratively
+  (`app.menubar.load([...])`); item types `action`/`check`/`radio`/`separator`;
+  `shortcut=` displays AND binds (patterns auto-register via the `Shortcuts` service;
+  macOS uses word-form accelerators). Plus **`app.commandbar`** (the widget renamed
+  `Toolbar`→**`CommandBar`**) sharing the top chrome row, with **`menu_layout`**
+  (`'fused'` default/`'stacked'`), **`chrome_surface`** (blend via `'background'` /
+  brand via an accent — NOT `'content'`, see memory), **`chrome_divider`**. **Breaking
+  (pre-release):** legacy region-bar **`bs.MenuBar` REMOVED**; **`Toolbar`→`CommandBar`**;
+  accessors **`app.menu`→`app.menubar`**, **`app.toolbar`→`app.commandbar`**
+  (`shell.toolbar`→`shell.commandbar`); `MenuManager`/`create_menu` retired;
+  `MenuHostMixin`→`ChromeHostMixin`. **macOS menus are text-only** (icons mismatch the
+  system hover foreground). Internal composite + ttk style stay `Toolbar`. Tests under
+  `tests/widgets/public/test_menu_*` + `test_window_chrome` (run GUI modules one at a
+  time — one `App` per process). Memory `project_menu_redesign`; brief
+  `docs/_dev/menu-redesign.md`. Follow-up: `project_macos_window_chrome` /
+  `docs/_dev/macos-window-chrome.md` (native window chrome — not started).
 - **Widget detach/attach** (PR #123, merged) — public **`detach()` / `attach()` /
   `is_attached`** on every widget: pull a placed widget out of its layout and put it
   back **without destroying it**, across all three geometry managers (pack/grid/place).
@@ -213,11 +233,14 @@ memories and git history.
   review of `installation`/`quickstart`. A SEPARATE initiative from the api-gap branch
   (`cli`/`distribution` need investigation, not just writing). State + suggested order in
   memory `project_docs_site_fleshout`.
-- **Toolbar/MenuBar rework** — return public widget handles from `add_*` (the §2b work,
-  via an `_adopt` classmethod) + `Toolbar.content`/make-it-a-container + window-control
-  accessors + MenuBar return handles + AppShell `toolbar`/`nav`/`pages` public façades.
-  HELD pending the maintainer's upcoming Toolbar/MenuBar changes. Detail in
-  `docs/_dev/widget-api-audit.md`.
+- **CommandBar/AppShell rework** — PARTLY addressed by the menu redesign (PR #124:
+  `Toolbar`→`CommandBar`, legacy `MenuBar` removed, `app.menubar`/`app.commandbar`).
+  REMAINING: return public widget handles from `add_*` (the §2b work, via an `_adopt`
+  classmethod) + `CommandBar.content`/make-it-a-container + window-control accessors +
+  AppShell `commandbar`/`nav`/`pages` public façades (today `shell.commandbar` still
+  returns the INTERNAL composite with the `command=` API, not a public `CommandBar`).
+  Also fold `menu_layout`/`chrome_surface` into AppShell (deferred — its command bar is
+  internal/pre-placed). Detail in `docs/_dev/widget-api-audit.md`.
 - **Decoupled option shape (option-databag)** — one shared `Option = str|tuple|OptionDict`
   normalizer for the selection family; also subsumes the duplicated RadioGroup/ToggleGroup
   management API (review finding #6). Memory `project_select_options_databag`; brief
@@ -974,7 +997,9 @@ app.run()
 
 # AppShell
 with bs.AppShell(title="My App", theme="bootstrap-light") as shell:
-    shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
+    shell.commandbar.add_button(icon="sun", command=bs.toggle_theme)
+    with shell.menubar.add_menu("File") as file:
+        file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
     with shell.add_page("home", text="Home", icon="house"):
         bs.Label("Welcome!")
     shell.navigate("home")
