@@ -60,6 +60,12 @@ Every widget bootstack provides, grouped by purpose.
    tree
 
 .. toctree::
+   :caption: Media
+   :maxdepth: 1
+
+   picture
+
+.. toctree::
    :caption: Layout
    :maxdepth: 1
 

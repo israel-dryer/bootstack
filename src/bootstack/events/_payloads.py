@@ -156,6 +156,33 @@ class AccordionChangeEvent:
 
 
 # ---------------------------------------------------------------------------
+# Picture / media
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class ImageLoadEvent:
+    """Fires when a `Picture` has decoded its source and displayed it."""
+
+    width: int = 0
+    """The natural pixel width of the loaded image."""
+
+    height: int = 0
+    """The natural pixel height of the loaded image."""
+
+    frames: int = 1
+    """The number of frames — greater than one for an animated source."""
+
+
+@dataclass(frozen=True, slots=True)
+class ImageErrorEvent:
+    """Fires when a `Picture` fails to load or decode its source."""
+
+    message: str = ""
+    """A human-readable description of the failure."""
+
+
+# ---------------------------------------------------------------------------
 # Navigation — PageStack, SideNav
 # ---------------------------------------------------------------------------
 

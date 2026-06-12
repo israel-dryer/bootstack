@@ -79,6 +79,7 @@ from bootstack.widgets.numberfield import NumberField
 from bootstack.widgets.pagestack import PageStack, StackPage
 from bootstack.widgets.pathfield import PathField
 from bootstack.widgets.passwordfield import PasswordField
+from bootstack.widgets.picture import Picture
 from bootstack.widgets.progressbar import ProgressBar
 from bootstack.widgets.radio_variants import Radio, RadioToggleButton
 from bootstack.widgets.radiogroup import RadioGroup
@@ -140,6 +141,8 @@ __all__ = [
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # Data display
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable", "Tree", "TreeNode",
+    # Media
+    "Picture",
     # Navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
