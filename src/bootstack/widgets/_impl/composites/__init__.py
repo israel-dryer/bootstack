@@ -4,7 +4,6 @@ from bootstack.widgets._impl.composites.accordion import Accordion
 from bootstack.widgets._impl.composites.compositeframe import Composite, CompositeFrame
 from bootstack.widgets._impl.composites.expander import Expander
 from bootstack.widgets._impl.composites.list import ListItem, ListView, MemoryDataSource, DataSourceProtocol
-from bootstack.widgets._impl.composites.menubar import MenuBar
 from bootstack.widgets._impl.composites.sidenav import (
     SideNav,
     SideNavItem,
@@ -26,7 +25,6 @@ __all__ = [
     'ListView',
     'MemoryDataSource',
     'DataSourceProtocol',
-    'MenuBar',
     'RangeSlider',
     'SideNav',
     'SideNavItem',

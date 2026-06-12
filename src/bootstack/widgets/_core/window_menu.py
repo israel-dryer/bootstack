@@ -1,11 +1,11 @@
-"""The `menu` facade for top-level windows.
+"""The `menubar` / `commandbar` facade for top-level windows.
 
-`MenuHostMixin` gives `App` / `Window` / `AppShell` a lazy `.menu` property
+`ChromeHostMixin` gives `App` / `Window` / `AppShell` a lazy `.menubar` property
 returning a `WindowMenu`. The facade owns a platform-neutral `MenuModel`,
 renders it per platform (themed in-window strip on Windows/Linux; native global
-menu bar on macOS — added in a later step), and binds the model's shortcuts to
-the host window. Re-renders are coalesced to idle so the natural build pattern
-(`with win.menu.add_menu("File") as file: ...`) renders once, after all items
+menu bar on macOS), and binds the model's shortcuts to the host window.
+Re-renders are coalesced to idle so the natural build pattern
+(`with win.menubar.add_menu("File") as file: ...`) renders once, after all items
 are added.
 """
 from __future__ import annotations
@@ -158,7 +158,7 @@ class WindowMenu:
 
 
 class _ChromeContainer:
-    """Minimal public-container shim so a public `Toolbar` parents into the
+    """Minimal public-container shim so a public `CommandBar` parents into the
     host's chrome frame. Defers all packing to the host's arranger."""
 
     _auto_place = True
@@ -176,13 +176,13 @@ class _ChromeContainer:
 
 
 class ChromeHostMixin:
-    """Lazy `.menu` (menu bar) + `.toolbar` (command bar), laid out as top chrome.
+    """Lazy `.menubar` + `.commandbar`, laid out as top chrome.
 
-    On `App`/`Window` the menu strip and the toolbar share one host-owned chrome
-    row, arranged per `menu_layout`: `'fused'` (one row — menus left, toolbar
-    fills right) or `'stacked'` (menu-strip row, toolbar row beneath). `AppShell`
-    overrides the placement hooks (its toolbar is internal and pre-placed), so it
-    does not use the chrome row.
+    On `App`/`Window` the menu strip and the command bar share one host-owned
+    chrome row, arranged per `menu_layout`: `'fused'` (one row — menus left,
+    command bar fills right) or `'stacked'` (menu-strip row, command-bar row
+    beneath). `AppShell` overrides the placement hooks (its command bar is
+    internal and pre-placed), so it does not use the chrome row.
     """
 
     # ----- menu placement hooks (consumed by WindowMenu) -----
@@ -240,8 +240,8 @@ class ChromeHostMixin:
         if chrome is None:
             return
         strip = getattr(self, "_menu_strip", None)
-        toolbar = getattr(self, "_toolbar_widget", None)
-        tb_widget = toolbar._internal if toolbar is not None else None
+        commandbar = getattr(self, "_commandbar_widget", None)
+        tb_widget = commandbar._internal if commandbar is not None else None
         layout = getattr(self, "_menu_layout", "fused")
 
         for widget in (strip, tb_widget):
@@ -263,7 +263,7 @@ class ChromeHostMixin:
                 tb_widget.pack(side="left", fill="x", expand=True)
 
     @property
-    def menu(self) -> WindowMenu:
+    def menubar(self) -> WindowMenu:
         """The window's menu bar (menus only). Lazily created on first access."""
         wm = getattr(self, "_window_menu", None)
         if wm is None:
@@ -272,16 +272,16 @@ class ChromeHostMixin:
         return wm
 
     @property
-    def toolbar(self) -> Any:
-        """The window's command bar — a `Toolbar`. Lazily created on first access.
+    def commandbar(self) -> Any:
+        """The window's command bar — a `CommandBar`. Lazily created on first access.
 
         Lives in the top chrome row (beside or below the menu bar per
         `menu_layout`). Add buttons/labels/separators and an `add_spacer()` to
         push trailing items (e.g. a theme toggle) to the right.
         """
-        tb = getattr(self, "_toolbar_widget", None)
+        tb = getattr(self, "_commandbar_widget", None)
         if tb is None:
-            from bootstack.widgets.toolbar import Toolbar
+            from bootstack.widgets.commandbar import CommandBar
 
             chrome = self._ensure_chrome()
             shim = _ChromeContainer(chrome, self._arrange_chrome)
@@ -289,11 +289,7 @@ class ChromeHostMixin:
             # height when fused; surface threaded so its ghost buttons paint the
             # chosen chrome surface (rather than their default).
             surface = getattr(self, "_chrome_surface", "chrome")
-            tb = Toolbar(parent=shim, density="compact", surface=surface)
-            self._toolbar_widget = tb
+            tb = CommandBar(parent=shim, density="compact", surface=surface)
+            self._commandbar_widget = tb
             self._arrange_chrome()
         return tb
-
-
-# Back-compat alias (the mixin grew from menu-only to full chrome).
-MenuHostMixin = ChromeHostMixin

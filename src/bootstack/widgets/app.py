@@ -7,11 +7,11 @@ from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
-from bootstack.widgets._core.window_menu import MenuHostMixin
+from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
+class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer):
     """The application window. Behaves as an implicit VStack from the user's
     perspective: accepts `padding`, `gap`, `fill_items`, `expand_items`, and
     `anchor_items` and applies them to its internal content frame.
@@ -55,13 +55,16 @@ class App(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicContainer):
         expand_items: Default `expand` for children that don't set their own.
         anchor_items: Default anchor for children that don't fill their cell.
         surface: Background surface for the content frame.
-        menu_layout: How the menu bar and toolbar (command bar) stack at the top
-            on Windows/Linux — `'fused'` (one row: menus left, toolbar right) or
+        menu_layout: How the menu bar and toolbar stack at the top on
+            Windows/Linux — `'fused'` (one row: menus left, toolbar right) or
             `'stacked'` (menu row above a separate toolbar row). No effect on
             macOS (the menu bar moves to the global bar). Default `'fused'`.
-        chrome_surface: Surface token for the menu bar / toolbar row — e.g.
-            `'chrome'` (default, a distinct bar) or `'background'` to blend it
-            into the window background. Applies to the bar and its buttons.
+        chrome_surface: Color token for the menu bar / toolbar row, applied to
+            the bar and its buttons as one unit. `'chrome'` (default) is a
+            distinct bar; `'background'` blends it into the window body; an
+            accent token like `'primary'` makes a branded colored bar. Accepts
+            any surface or accent token (avoid `'content'`, which is treated as
+            the base surface and won't apply).
         chrome_divider: Draw a hairline divider between the menu/toolbar row and
             the content. Default `True`; set `False` for a seamless blend.
     """

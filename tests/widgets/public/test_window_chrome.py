@@ -1,4 +1,4 @@
-"""Smoke tests for the App/Window command bar (`.toolbar`) + `menu_layout`.
+"""Smoke tests for the App/Window command bar (`.commandbar`) + `menu_layout`.
 
 Structural only; visuals verified by hand. ONE module-scoped App (creating
 several Apps in one process crashes Tk) — layout variants are exercised by
@@ -27,11 +27,11 @@ def app():
 
 
 def test_toolbar_is_lazy_singleton(app):
-    assert app.toolbar is app.toolbar
+    assert app.commandbar is app.commandbar
 
 
 def test_toolbar_lives_in_the_chrome_row(app):
-    tb = app.toolbar
+    tb = app.commandbar
     tb.add_button(label="Theme", on_click=lambda: None)
     assert tb._internal in app._chrome.pack_slaves()
 
@@ -44,10 +44,10 @@ def test_chrome_surface_defaults_and_threads(app):
     # Default chrome surface, and it threads into the menu strip so its
     # menubar-item triggers paint that surface (not their hardcoded default).
     assert app._chrome_surface == "chrome"
-    with app.menu.add_menu("Help") as h:
+    with app.menubar.add_menu("Help") as h:
         h.add_action("About", on_click=lambda: None)
-    app.menu.refresh()
-    assert app.menu._renderer._surface == "chrome"
+    app.menubar.refresh()
+    assert app.menubar._renderer._surface == "chrome"
 
 
 def test_chrome_divider_present_by_default(app):
@@ -58,12 +58,12 @@ def test_chrome_divider_present_by_default(app):
 
 def test_fused_then_stacked_rearranges(app):
     # Ensure both menu and toolbar exist in the chrome row.
-    with app.menu.add_menu("File") as f:
+    with app.menubar.add_menu("File") as f:
         f.add_action("Quit", on_click=lambda: None)
-    app.toolbar  # realize it
-    app.menu.refresh()
-    strip = app.menu._renderer
-    tb_widget = app.toolbar._internal
+    app.commandbar  # realize it
+    app.menubar.refresh()
+    strip = app.menubar._renderer
+    tb_widget = app.commandbar._internal
 
     # Fused → one row: menu strip left, both present, strip before toolbar.
     app._menu_layout = "fused"

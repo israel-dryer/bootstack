@@ -39,11 +39,11 @@ def _reset_shortcuts():
 
 
 def test_menu_is_lazy_singleton(app):
-    assert app.menu is app.menu  # same object each access
+    assert app.menubar is app.menubar  # same object each access
 
 
 def test_add_menu_renders_themed_strip(app):
-    menu = app.menu
+    menu = app.menubar
     try:
         with menu.add_menu("File") as file:
             file.add_action("Open", on_click=lambda: None)
@@ -58,7 +58,7 @@ def test_add_menu_renders_themed_strip(app):
 
 
 def test_pattern_shortcuts_bound_to_window(app):
-    menu = app.menu
+    menu = app.menubar
     try:
         with menu.add_menu("File") as file:
             file.add_action("Save", shortcut="Mod+S", on_click=lambda: None)
@@ -71,7 +71,7 @@ def test_pattern_shortcuts_bound_to_window(app):
 
 
 def test_load_declarative_then_render(app):
-    menu = app.menu
+    menu = app.menubar
     try:
         menu.load([
             {"text": "File", "items": [{"text": "Open", "on_click": lambda: None}]},
@@ -85,7 +85,7 @@ def test_load_declarative_then_render(app):
 
 
 def test_clear_tears_down_strip(app):
-    menu = app.menu
+    menu = app.menubar
     with menu.add_menu("File") as file:
         file.add_action("Open", on_click=lambda: None)
     menu.refresh()
@@ -98,7 +98,7 @@ def test_clear_tears_down_strip(app):
 
 def test_idle_debounce_flush_via_update(app):
     """Building inside a block and flushing idle tasks renders once."""
-    menu = app.menu
+    menu = app.menubar
     try:
         with menu.add_menu("View") as view:
             view.add_action("Zoom in", on_click=lambda: None)

@@ -5,11 +5,11 @@ from typing import Any, Callable, Literal
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
-from bootstack.widgets._core.window_menu import MenuHostMixin
+from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
+class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
     """A secondary top-level window.
 
     Behaves as an implicit `VStack` from the user's perspective: children
@@ -41,11 +41,12 @@ class Window(WindowControlsMixin, MenuHostMixin, PublicContainer):
         expand_items: Default `expand` value for children.
         anchor_items: Default anchor for children that do not fill their cell.
         surface: Surface token for the content frame background.
-        menu_layout: How the menu bar and toolbar (command bar) stack at the top
-            on Windows/Linux — `'fused'` (one row) or `'stacked'` (two rows). No
+        menu_layout: How the menu bar and toolbar stack at the top on
+            Windows/Linux — `'fused'` (one row) or `'stacked'` (two rows). No
             effect on macOS (the menu bar moves to the global bar). Default `'fused'`.
-        chrome_surface: Surface token for the menu bar / toolbar row — e.g.
-            `'chrome'` (default) or `'background'` to blend it into the background.
+        chrome_surface: Color token for the menu bar / toolbar row — `'chrome'`
+            (default), `'background'` to blend into the window, or an accent like
+            `'primary'` for a branded bar. Any surface/accent token (not `'content'`).
         chrome_divider: Draw a hairline divider below the menu/toolbar row.
             Default `True`; set `False` for a seamless blend.
     """

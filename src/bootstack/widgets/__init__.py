@@ -19,7 +19,7 @@ _EXPORTS: dict[str, str] = {
     "Accordion": "expander", "AccordionSection": "expander",
     # Actions
     "Button": "button", "ButtonGroup": "buttongroup", "MenuButton": "menubutton",
-    "MenuBar": "menubar", "Toolbar": "toolbar",
+    "CommandBar": "commandbar",
     "ContextMenu": "contextmenu", "ContextMenuItem": "contextmenu",
     # Inputs
     "TextField": "textfield", "PasswordField": "passwordfield",

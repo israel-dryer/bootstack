@@ -9,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
-from bootstack.widgets._core.window_menu import MenuHostMixin
+from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
@@ -42,7 +42,7 @@ class _PageFrame:
         pop_container(self)
 
 
-class AppShell(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicWidgetBase):
+class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidgetBase):
     """Application window with built-in toolbar, sidebar navigation, and page stack.
 
     Wraps the internal AppShell to provide the standard desktop app scaffold:
@@ -359,7 +359,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicWidgetB
         """Underlying `tk.Tk` root window. UNSUPPORTED — escape-hatch use only."""
         return self._internal
 
-    # ----- Menu placement (MenuHostMixin hooks) -----
+    # ----- Menu placement (ChromeHostMixin hooks) -----
     # AppShell's `_internal` is itself a Tk root (the internal AppShell
     # subclasses the internal App), so the native menubar attaches to it. The
     # themed strip mounts into the internal content root, above the toolbar.
@@ -384,11 +384,11 @@ class AppShell(AppConfigMixin, WindowControlsMixin, MenuHostMixin, PublicWidgetB
         strip.pack(**pack_kw)
 
     @property
-    def toolbar(self) -> Any:
-        """The internal toolbar composite, or `None` if ``show_toolbar=False``.
+    def commandbar(self) -> Any:
+        """The internal command-bar composite, or `None` if ``show_toolbar=False``.
 
         Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on
-        this object — it exposes the internal API, not the public `Toolbar`
+        this object — it exposes the internal API, not the public `CommandBar`
         wrapper.
         """
         return self._internal.toolbar

@@ -1,4 +1,4 @@
-"""Smoke tests for the AppShell `.menu` facade (Windows/Linux themed path).
+"""Smoke tests for the AppShell `.menubar` facade (Windows/Linux themed path).
 
 Structural only; visual appearance is verified by hand. One module-scoped AppShell.
 """
@@ -25,7 +25,7 @@ def shell():
 
 
 def test_appshell_menu_renders_themed_strip(shell):
-    menu = shell.menu
+    menu = shell.menubar
     try:
         with menu.add_menu("File") as file:
             file.add_action("Open", on_click=lambda: None)
@@ -40,7 +40,7 @@ def test_appshell_menu_renders_themed_strip(shell):
 
 def test_strip_packs_above_the_toolbar(shell):
     """The menu strip is packed before the toolbar (i.e. visually above it)."""
-    menu = shell.menu
+    menu = shell.menubar
     try:
         with menu.add_menu("Edit") as edit:
             edit.add_action("Undo", on_click=lambda: None)
