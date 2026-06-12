@@ -371,6 +371,35 @@ def get_shortcuts() -> Shortcuts:
     return Shortcuts()
 
 
+def classify_shortcut(spec: str | None) -> str:
+    """Classify a shortcut spec into one of four kinds.
+
+    Returns one of:
+
+    - `'empty'` — `spec` is `None` or empty.
+    - `'registered'` — `spec` matches a key registered with the
+      `Shortcuts` service. The keypress is (or will be) bound there; a
+      caller should treat it as display-only.
+    - `'pattern'` — a modifier expression like `'Mod+S'` or a bare
+      function key like `'F5'`. Not registered; a caller may register and
+      bind it themselves.
+    - `'literal'` — anything else; a plain display string to show as-is.
+
+    Args:
+        spec: A registered key, modifier pattern, or literal display.
+    """
+    if not spec:
+        return 'empty'
+    if Shortcuts().get(spec) is not None:
+        return 'registered'
+    looks_like_pattern = '+' in spec or (
+        len(spec) >= 2
+        and spec[0].upper() == 'F'
+        and spec[1:].isdigit()
+    )
+    return 'pattern' if looks_like_pattern else 'literal'
+
+
 def format_shortcut(spec: str | None) -> str:
     """Resolve a shortcut spec to its platform-appropriate display string.
 
@@ -403,27 +432,65 @@ def format_shortcut(spec: str | None) -> str:
             format_shortcut("⌘S")         # "⌘S" — passes through unchanged
 
     """
-    if not spec:
+    kind = classify_shortcut(spec)
+    if kind == 'empty':
         return ''
-
-    # 1) Registered key wins.
-    registered = Shortcuts().get(spec)
-    if registered is not None:
-        return registered.display
-
-    # 2) Pattern-shaped strings (contain '+' or are bare F-keys) get
-    # parsed into a transient Shortcut for display only — no registration,
-    # no binding side effect.
-    looks_like_pattern = '+' in spec or (
-        len(spec) >= 2
-        and spec[0].upper() == 'F'
-        and spec[1:].isdigit()
-    )
-    if looks_like_pattern:
+    if kind == 'registered':
+        return Shortcuts().get(spec).display
+    if kind == 'pattern':
+        # Transient Shortcut for display only — no registration, no binding.
         return Shortcut(key='', pattern=spec, command=lambda: None).display
-
-    # 3) Anything else is treated as a literal display string.
+    # 'literal' — treat as a display string.
     return spec
 
 
-__all__ = ['Shortcut', 'Shortcuts', 'get_shortcuts', 'format_shortcut']
+# Tk on Aqua renders these modifier WORDS as the ⌘/⌥/⌃/⇧ glyphs in menu
+# accelerators. It does NOT parse the glyphs themselves, so a native tk.Menu
+# must be given the word form — not `Shortcut.display`.
+_AQUA_ACCEL_WORDS = {
+    'mod': 'Command', 'command': 'Command', 'cmd': 'Command',
+    'ctrl': 'Control', 'control': 'Control',
+    'alt': 'Option', 'option': 'Option', 'opt': 'Option',
+    'shift': 'Shift',
+}
+
+
+def tk_aqua_accelerator(spec: str | None) -> str:
+    """Accelerator string for a native macOS `tk.Menu` entry.
+
+    Tk on Aqua converts modifier *words* (`Command`, `Option`, `Control`,
+    `Shift`) into the ⌘/⌥/⌃/⇧ glyphs when drawing a menu accelerator, but it
+    does not understand a pre-rendered glyph string. So a native menu must be
+    given the word form (e.g. `'Command+N'`) rather than `format_shortcut`'s
+    display (`'⌘N'`), which would show the modifier but drop the key.
+
+    Accepts the same three forms as `format_shortcut` — a registered key
+    (resolved to its pattern), a pattern, or a literal (returned unchanged).
+
+    Args:
+        spec: A registered key, modifier pattern, or literal display.
+
+    Returns:
+        A Tk-Aqua accelerator string, or empty string when `spec` is empty.
+    """
+    kind = classify_shortcut(spec)
+    if kind == 'empty':
+        return ''
+    if kind == 'literal':
+        return spec
+    pattern = Shortcuts().get(spec).pattern if kind == 'registered' else spec
+
+    parts = pattern.split('+')
+    key = parts[-1]
+    mods: list[str] = []
+    for part in parts[:-1]:
+        word = _AQUA_ACCEL_WORDS.get(part.lower(), part.capitalize())
+        if word not in mods:
+            mods.append(word)
+    return '+'.join(mods + [key.upper()])
+
+
+__all__ = [
+    'Shortcut', 'Shortcuts', 'get_shortcuts', 'format_shortcut',
+    'classify_shortcut', 'tk_aqua_accelerator',
+]

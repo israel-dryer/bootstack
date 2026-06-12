@@ -157,7 +157,7 @@ within its parent — separate from how it arranges its own children.
 
 .. code-block:: python
 
-   # Toolbar row that fills the window width
+   # Command bar row that fills the window width
    with bs.HStack(gap=8, fill="x", anchor_items="center"):
        bs.Button("File")
        bs.Button("Edit")

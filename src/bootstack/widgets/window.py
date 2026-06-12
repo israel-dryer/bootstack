@@ -5,10 +5,11 @@ from typing import Any, Callable, Literal
 from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
 from bootstack.widgets._core.window_controls import WindowControlsMixin
+from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
 
 
-class Window(WindowControlsMixin, PublicContainer):
+class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
     """A secondary top-level window.
 
     Behaves as an implicit `VStack` from the user's perspective: children
@@ -40,6 +41,14 @@ class Window(WindowControlsMixin, PublicContainer):
         expand_items: Default `expand` value for children.
         anchor_items: Default anchor for children that do not fill their cell.
         surface: Surface token for the content frame background.
+        menu_layout: How the menu bar and toolbar stack at the top on
+            Windows/Linux — `'fused'` (one row) or `'stacked'` (two rows). No
+            effect on macOS (the menu bar moves to the global bar). Default `'fused'`.
+        chrome_surface: Color token for the menu bar / toolbar row — `'chrome'`
+            (default), `'background'` to blend into the window, or an accent like
+            `'primary'` for a branded bar. Any surface/accent token (not `'content'`).
+        chrome_divider: Draw a hairline divider below the menu/toolbar row.
+            Default `True`; set `False` for a seamless blend.
     """
 
     _auto_place = False  # top-level window — no parent manages its position
@@ -60,6 +69,10 @@ class Window(WindowControlsMixin, PublicContainer):
         undecorated: bool = False,
         window_style: WindowStyle | str | None = None,
         on_close: Callable[[], bool | None] | None = None,
+        # chrome
+        menu_layout: Literal["fused", "stacked"] = "fused",
+        chrome_surface: SurfaceToken | str = "chrome",
+        chrome_divider: bool = True,
         # Content frame layout
         padding: Padding | None = None,
         gap: int = 0,
@@ -72,6 +85,9 @@ class Window(WindowControlsMixin, PublicContainer):
         from bootstack._runtime.toplevel import Toplevel as _InternalToplevel
 
         self._parent = None
+        self._menu_layout = menu_layout
+        self._chrome_surface = chrome_surface
+        self._chrome_divider_enabled = chrome_divider
 
         init_kwargs: dict[str, Any] = {
             "title": title,

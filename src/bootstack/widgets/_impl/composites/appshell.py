@@ -169,6 +169,9 @@ class AppShell(App):
             _root.pack(fill='both', expand=True)
         else:
             _root = self
+        # Anchor for a menu bar mounted above the toolbar (see public AppShell
+        # `_menu_pack_*` hooks). `_content_root` is what toolbar/body pack into.
+        self._content_root = _root
 
         # --- Toolbar ---
         if show_toolbar:
@@ -201,6 +204,7 @@ class AppShell(App):
         # --- Body (nav + pages) ---
         body = Frame(_root)
         body.pack(side='top', fill='both', expand=True)
+        self._body_frame = body
 
         # --- SideNav ---
         if show_nav:

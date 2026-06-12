@@ -325,7 +325,7 @@ def main() -> None:
         theme=os.environ.get("BOOTSTACK_THEME", "{theme}"),
         size=(1000, 650),
     ) as shell:
-        shell.toolbar.add_button(icon="sun", on_click=bs.toggle_theme)
+        shell.commandbar.add_button(icon="sun", on_click=bs.toggle_theme)
 
         with shell.add_page("home", text="Home", icon="house"):
             HomePage()

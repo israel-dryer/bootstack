@@ -72,7 +72,6 @@ from bootstack.widgets.gauge import Gauge
 from bootstack.widgets.groupbox import GroupBox
 from bootstack.widgets.label import Badge, Label
 from bootstack.widgets.listview import ListView
-from bootstack.widgets.menubar import MenuBar
 from bootstack.widgets.menubutton import MenuButton
 from bootstack.widgets.numberfield import NumberField
 from bootstack.widgets.pagestack import PageStack, StackPage
@@ -96,7 +95,7 @@ from bootstack.widgets.tree import Tree, TreeNode
 from bootstack.widgets.textfield import TextField
 from bootstack.widgets.toast import Toast, toast
 from bootstack.widgets.togglegroup import ToggleGroup
-from bootstack.widgets.toolbar import Toolbar
+from bootstack.widgets.commandbar import CommandBar
 from bootstack.widgets.tooltip import Tooltip
 
 from bootstack.widgets.calendar import Calendar
@@ -128,7 +127,7 @@ __all__ = [
     "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
-    "Button", "ButtonGroup", "MenuButton", "MenuBar", "Toolbar",
+    "Button", "ButtonGroup", "MenuButton", "CommandBar",
     "ContextMenu", "ContextMenuItem",
     # Inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",

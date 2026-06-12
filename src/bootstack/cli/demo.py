@@ -695,7 +695,7 @@ def run_demo():
         size=(1100, 750),
     ) as shell:
 
-        shell.toolbar.add_button(icon="sun", command=bs.toggle_theme)
+        shell.commandbar.add_button(icon="sun", command=bs.toggle_theme)
 
         # Page registry: key → (page_frame, builder)
         _pages: dict[str, tuple[object, object]] = {}

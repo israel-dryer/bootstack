@@ -9,6 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
+from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
@@ -41,7 +42,7 @@ class _PageFrame:
         pop_container(self)
 
 
-class AppShell(AppConfigMixin, WindowControlsMixin, PublicWidgetBase):
+class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidgetBase):
     """Application window with built-in toolbar, sidebar navigation, and page stack.
 
     Wraps the internal AppShell to provide the standard desktop app scaffold:
@@ -358,12 +359,36 @@ class AppShell(AppConfigMixin, WindowControlsMixin, PublicWidgetBase):
         """Underlying `tk.Tk` root window. UNSUPPORTED — escape-hatch use only."""
         return self._internal
 
+    # ----- Menu placement (ChromeHostMixin hooks) -----
+    # AppShell's `_internal` is itself a Tk root (the internal AppShell
+    # subclasses the internal App), so the native menubar attaches to it. The
+    # themed strip mounts into the internal content root, above the toolbar.
+
+    def _menu_root(self) -> Any:
+        return self._internal
+
+    def _menu_strip_parent(self) -> Any:
+        return getattr(self._internal, "_content_root", self._internal)
+
+    def _place_menu_strip(self, strip: Any) -> None:
+        # Mount above the toolbar when present, else above the body. AppShell
+        # does not use the chrome row (its toolbar is internal and pre-placed);
+        # `menu_layout` does not apply here (deferred to the Toolbar rework).
+        before = (
+            getattr(self._internal, "_toolbar", None)
+            or getattr(self._internal, "_body_frame", None)
+        )
+        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if before is not None:
+            pack_kw["before"] = before
+        strip.pack(**pack_kw)
+
     @property
-    def toolbar(self) -> Any:
-        """The internal toolbar composite, or `None` if ``show_toolbar=False``.
+    def commandbar(self) -> Any:
+        """The internal command-bar composite, or `None` if ``show_toolbar=False``.
 
         Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on
-        this object — it exposes the internal API, not the public `Toolbar`
+        this object — it exposes the internal API, not the public `CommandBar`
         wrapper.
         """
         return self._internal.toolbar

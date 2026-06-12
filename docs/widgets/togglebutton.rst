@@ -1,7 +1,7 @@
 ToggleButton
 ============
 
-A button that stays pressed when active — toolbar-style toggle.
+A button that stays pressed when active — command-bar-style toggle.
 
 .. image:: /_static/examples/togglebutton-hero-light.png
    :class: bs-screenshot-light
@@ -95,7 +95,7 @@ Icon only
 ~~~~~~~~~
 
 Set ``icon_only=True`` to show just the icon with no label text. Useful for
-compact toolbars.
+compact command bars.
 
 .. code-block:: python
 

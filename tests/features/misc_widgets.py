@@ -1,19 +1,21 @@
-"""Visual test for ScrollView, SpinnerField, TimeField, and MenuBar."""
+"""Visual test for ScrollView, SpinnerField, TimeField, and the menu bar."""
 from bootstack import (
     App, VStack, HStack, Label, Button,
-    MenuBar, ScrollView, SpinnerField, TimeField,
+    ScrollView, SpinnerField, TimeField,
 )
 from bootstack.signals import Signal
 
 
 with App(title="Misc Widgets — visual test", size=(680, 600), padding=0, gap=0) as app:
 
-    # --- MenuBar ---
-    mb = MenuBar(fill="x")
-    mb.add_button("File", region="before", on_click=lambda: print("File"))
-    mb.add_button("Edit", region="before", on_click=lambda: print("Edit"))
-    mb.add_label("bootstack demo", region="center")
-    mb.add_button("Help", region="after", on_click=lambda: print("Help"))
+    # --- menu bar ---
+    with app.menubar.add_menu("File") as file:
+        file.add_action("New", on_click=lambda: print("New"))
+        file.add_action("Quit", on_click=app.close)
+    with app.menubar.add_menu("Edit") as edit:
+        edit.add_action("Undo", on_click=lambda: print("Undo"))
+    with app.menubar.add_menu("Help") as help_menu:
+        help_menu.add_action("About", on_click=lambda: print("About"))
 
     # --- Body ---
     with VStack(padding=16, gap=16, fill="both", expand=True):

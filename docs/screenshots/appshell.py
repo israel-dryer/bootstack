@@ -4,8 +4,8 @@ import bootstack as bs
 def hero():
     with bs.AppShell(title="My App", size=(720, 520)) as shell:
         shell._capture_full_window = True
-        shell.toolbar.add_spacer()
-        shell.toolbar.add_button(icon="circle-half", command=bs.toggle_theme)
+        shell.commandbar.add_spacer()
+        shell.commandbar.add_button(icon="circle-half", command=bs.toggle_theme)
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
             with bs.VStack(fill="x", gap=12, padding=24):
@@ -47,8 +47,8 @@ def hero():
 def compact():
     with bs.AppShell(title="My App", size=(720, 520), nav_display_mode="compact") as shell:
         shell._capture_full_window = True
-        shell.toolbar.add_spacer()
-        shell.toolbar.add_button(icon="circle-half", command=bs.toggle_theme)
+        shell.commandbar.add_spacer()
+        shell.commandbar.add_button(icon="circle-half", command=bs.toggle_theme)
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
             with bs.VStack(fill="x", gap=12, padding=24):
