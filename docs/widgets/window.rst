@@ -81,6 +81,22 @@ the window immediately, bypassing the ``on_close`` veto.
 
    win.on_close(lambda: bs.confirm("Close without saving?"))
 
+Menu bar and command bar
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Window`` has the same chrome as :doc:`App </widgets/app>`: a
+:doc:`menu bar </widgets/menubar>` via ``window.menubar`` and a ``window.commandbar``,
+plus the ``menu_layout``, ``chrome_surface``, and ``chrome_divider`` options.
+See the App page's *Menu bar and command bar* section for details.
+
+.. code-block:: python
+
+   win = bs.Window(title="Settings", menu_layout="fused")
+   with win.menubar.add_menu("File") as file:
+       file.add_action("Close", shortcut="Mod+W", on_click=win.close)
+   win.commandbar.add_spacer()
+   win.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+
 See also
 --------
 

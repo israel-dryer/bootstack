@@ -127,7 +127,7 @@ See also
 :class:`MenuButton <bootstack.widgets.menubutton.MenuButton>` —
 a button that opens a dropdown menu on click.
 
-:class:`Toolbar <bootstack.widgets.toolbar.Toolbar>` —
+:class:`CommandBar <bootstack.CommandBar>` —
 horizontal strip for grouping buttons and menus.
 
 API

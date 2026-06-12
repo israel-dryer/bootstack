@@ -3,8 +3,8 @@ import bootstack as bs
 with bs.AppShell(title="My App", size=(800, 540)) as shell:
 
     # ── Toolbar ───────────────────────────────────────────────────────────────
-    shell.toolbar.add_spacer()
-    shell.toolbar.add_button(icon="circle-half", command=bs.toggle_theme)
+    shell.commandbar.add_spacer()
+    shell.commandbar.add_button(icon="circle-half", command=bs.toggle_theme)
 
     # ── Pages ─────────────────────────────────────────────────────────────────
     with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):

@@ -123,20 +123,19 @@ and item handles (``StackPage``, ``TabPage``, and the ``SideNav*`` items).
    TabPage
    Tabs
 
-Menus and toolbars
-------------------
+Menus and command bars
+----------------------
 
-Command surfaces — a window menu bar, a toolbar strip, a dropdown menu button,
+Command surfaces — a window menu bar, a command bar strip, a dropdown menu button,
 and a right-click context menu.
 
 .. autosummary::
    :nosignatures:
 
+   CommandBar
    ContextMenu
    ContextMenuItem
-   MenuBar
    MenuButton
-   Toolbar
 
 Overlays
 --------
@@ -186,6 +185,7 @@ groups, and tabbed sections.
       Card
       Checkbox
       CodeEditor
+      CommandBar
       ContextMenu
       ContextMenuItem
       DataTable
@@ -200,7 +200,6 @@ groups, and tabbed sections.
       HStack
       Label
       ListView
-      MenuBar
       MenuButton
       NumberField
       PageStack
@@ -236,7 +235,6 @@ groups, and tabbed sections.
       Toast
       ToggleButton
       ToggleGroup
-      Toolbar
       Tooltip
       Tree
       TreeNode

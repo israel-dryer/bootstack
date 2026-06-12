@@ -122,10 +122,83 @@ See :doc:`/production/app-settings` for the full configuration reference — eve
 option, the locale-derived read-only properties, persisting state across
 launches with a :class:`Store <bootstack.store.Store>`, and ``App.from_store()``.
 
+Menu bar and command bar
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``app.menubar`` is the application :doc:`menu bar </widgets/menubar>` (File / Edit /
+…). ``app.commandbar`` is the :class:`CommandBar <bootstack.CommandBar>` — for widgets
+that aren't menus, such as a theme toggle or a search box. Both sit in a shared
+row at the top of the window.
+
+.. code-block:: python
+
+   with bs.App(title="Editor") as app:
+       with app.menubar.add_menu("File") as file:
+           file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+
+       app.commandbar.add_spacer()                       # push trailing items right
+       app.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+   app.run()
+
+Layout
+^^^^^^
+
+``menu_layout`` controls how the menu bar and command bar stack on Windows/Linux.
+``"fused"`` (default) puts them in one row — menus on the left, the command bar
+filling the right:
+
+.. image:: /_static/examples/menubar-fused-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: Fused menu bar and command bar (one row) — light theme
+
+.. image:: /_static/examples/menubar-fused-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: Fused menu bar and command bar (one row) — dark theme
+
+``"stacked"`` gives the command bar its own row beneath the menus — better when it
+carries many items:
+
+.. code-block:: python
+
+   bs.App(title="Editor", menu_layout="stacked")
+
+.. image:: /_static/examples/menubar-stacked-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: Stacked menu bar and command bar (two rows) — light theme
+
+.. image:: /_static/examples/menubar-stacked-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: Stacked menu bar and command bar (two rows) — dark theme
+
+``menu_layout`` has no effect on macOS, where the menu bar moves to the global
+bar and only the command bar stays in the window.
+
+Surface
+^^^^^^^
+
+``chrome_surface`` recolors the whole bar — frame, menus, and command-bar buttons —
+as one unit. It takes any surface or accent token:
+``"background"`` blends the bar into the window body, the default ``"chrome"``
+keeps it distinct, and an accent like ``"primary"`` makes a branded colored bar.
+Pair it with ``chrome_divider=False`` to drop the hairline rule for a seamless
+blend.
+
+.. code-block:: python
+
+   bs.App(title="Editor", chrome_surface="background", chrome_divider=False)
+
+.. image:: /_static/examples/menubar-surface-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: Menu bar surface blended into the background — light theme
+
+.. image:: /_static/examples/menubar-surface-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: Menu bar surface blended into the background — dark theme
+
 See also
 --------
 
-:class:`~bootstack.AppShell` — an ``App`` with a built-in toolbar, sidebar
+:class:`~bootstack.AppShell` — an ``App`` with a built-in command bar, sidebar
 navigation, and page stack: the standard desktop-app scaffold.
 
 :class:`~bootstack.Window` — a secondary window opened from a running app.

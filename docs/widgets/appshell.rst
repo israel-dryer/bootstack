@@ -1,7 +1,7 @@
 AppShell
 ========
 
-A full application scaffold with a toolbar across the top, a collapsible
+A full application scaffold with a command bar across the top, a collapsible
 sidebar navigation on the left, and a page stack for the content area. Add
 pages with `.add_page()` — each page is also wired into the sidebar
 automatically.
@@ -75,18 +75,18 @@ Pass ``scrollable=True`` to wrap a page's content in a vertical scroll area.
        for i in range(100):
            bs.Label(f"Log entry {i}")
 
-Toolbar
-~~~~~~~
+Command bar
+~~~~~~~~~~~
 
-``shell.toolbar`` exposes the built-in toolbar. Add buttons, labels,
+``shell.commandbar`` exposes the built-in command bar. Add buttons, labels,
 separators, and spacers to it. Use ``command=`` (not ``on_click=``) when
 calling ``add_button()`` on this object.
 
 .. code-block:: python
 
-   shell.toolbar.add_spacer()
-   shell.toolbar.add_button(icon="sun-moon", command=bs.toggle_theme)
-   shell.toolbar.add_button(label="Save", icon="save", command=save)
+   shell.commandbar.add_spacer()
+   shell.commandbar.add_button(icon="sun-moon", command=bs.toggle_theme)
+   shell.commandbar.add_button(label="Save", icon="save", command=save)
 
 Sidebar display modes
 ~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +164,7 @@ changed at runtime through ``shell.*`` properties. Assigning ``shell.theme`` or
    )
 
    shell.theme = "bootstrap-light"     # switch the theme now
-   shell.toolbar.add_button(icon="sun-moon", command=bs.toggle_theme)
+   shell.commandbar.add_button(icon="sun-moon", command=bs.toggle_theme)
 
 React to changes and persist them across launches with a :class:`Store
 <bootstack.store.Store>` — ``from_store()`` restores configuration and tolerates
@@ -181,6 +181,26 @@ version skew, and the change events write each value back:
 See :doc:`/production/app-settings` for the full configuration reference —
 every option, the locale-derived read-only properties, and window-state
 persistence.
+
+Menu bar
+~~~~~~~~
+
+``shell.menubar`` is the application :doc:`menu bar </widgets/menubar>` — the same
+API as on :class:`App <bootstack.widgets.app.App>`. On Windows/Linux it mounts
+just above the built-in command bar; on macOS it relocates to the native global
+menu bar.
+
+.. code-block:: python
+
+   with bs.AppShell(title="My App") as shell:
+       with shell.menubar.add_menu("File") as file:
+           file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+       ...
+
+The fused/stacked layout (``menu_layout``) and ``chrome_surface`` options are
+specific to :doc:`App </widgets/app>` / :doc:`Window </widgets/window>` —
+``AppShell`` already owns its command bar (``shell.commandbar``), which carries your
+command-bar buttons.
 
 Window options
 ~~~~~~~~~~~~~~
