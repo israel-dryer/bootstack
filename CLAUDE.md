@@ -16,13 +16,13 @@ Go from nothing to something fast. The user should never need to `import tkinter
 
 ---
 
-## Recently completed (merged to `main` unless noted)
+## Recently completed (all merged to `main`)
 
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Public Image/Icon API + AppIcon + field signals + toml cleanup** (branch
-  **`feat/image-icon-api`** — **committed, NOT yet PR'd/merged**; reviewed) — new public
+- **Public Image/Icon API + AppIcon + field signals + toml cleanup** (PR #125,
+  merged; reviewed) — new public
   **`bootstack.images`**: a toolkit-free **`Image`** handle (`open`/`from_bytes`/`from_pil`,
   lazy materialize, theme-following), **`get_icon`/`list_icons`**, and **`AppIcon`** (a
   glyph on a rounded tile) that **`App`/`Window` accept as `icon=`** and that exports
@@ -47,8 +47,8 @@ memories and git history.
   **pre-commit review (5 agents)** found+fixed 2 HIGH (field-Signal leak; Signal type-
   mismatch crash) + 2 MEDIUM (image-clear theme-binding leak; `show()` alpha-not-in-finally)
   + nits. Memories `project_image_icon_public_api`, `project_field_value_signal_dtype`,
-  `project_app_settings_flattening`. **REMAINING:** open a PR; follow-up `Picture`
-  display widget (animated GIF / splash) is a separate branch.
+  `project_app_settings_flattening`. Follow-up: a `Picture` display widget
+  (animated GIF / splash) on a separate branch.
 - **Menu bar + command bar** (PR #124, merged) — cross-platform **`app.menubar`**
   (also `window.menubar` / `shell.menubar`): a single-layer menu model with two
   renderers — a themed in-window strip on **Win/Linux** and the **native global menu
