@@ -39,7 +39,7 @@ def test_single_tier_navigation_cascade():
         assert len(changes) >= 1               # <<PageChange>> re-emitted on the shell
 
         # Selecting via the nav panel routes through the model.
-        shell._on_nav_select("home")
+        shell._workspace_select(shell.current_workspace, "home")
         assert shell.current_page == "home"
         assert shell.pages.current()[0] == "home"
 

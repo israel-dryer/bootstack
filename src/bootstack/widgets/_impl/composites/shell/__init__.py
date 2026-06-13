@@ -14,6 +14,7 @@ Later layers (rail, tree provider, collapse) build on top of these.
 from bootstack.widgets._impl.composites.shell.content_host import ContentHost
 from bootstack.widgets._impl.composites.shell.layout import ShellLayout
 from bootstack.widgets._impl.composites.shell.nav_panel import NavPanel
+from bootstack.widgets._impl.composites.shell.rail import Rail
 from bootstack.widgets._impl.composites.shell.providers import (
     ListNavProvider,
     NavProvider,
@@ -21,14 +22,17 @@ from bootstack.widgets._impl.composites.shell.providers import (
     TreeNavProvider,
 )
 from bootstack.widgets._impl.composites.shell.shell import Shell
+from bootstack.widgets._impl.composites.shell.workspace import Workspace
 
 __all__ = [
     "ShellLayout",
     "NavPanel",
+    "Rail",
     "ContentHost",
     "NavProvider",
     "StaticProvider",
     "ListNavProvider",
     "TreeNavProvider",
+    "Workspace",
     "Shell",
 ]

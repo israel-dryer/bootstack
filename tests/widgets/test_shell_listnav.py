@@ -39,7 +39,7 @@ def test_list_nav_master_detail_cascade():
         # Selecting another record re-renders the detail.
         keys = shell.provider.keys()
         assert len(keys) == 2
-        shell._on_nav_select(keys[1])
+        shell._workspace_select(shell.current_workspace, keys[1])
         assert seen[-1]["text"] == "Thermocouple"
         sel_id = seen[-1]["id"]               # real record id (for source ops)
 
