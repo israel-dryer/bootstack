@@ -59,8 +59,11 @@ tracks whether a rail outranks the sidebar:
 - **`list_nav` / `tree_nav` keep their list/tree row language in *all* contexts**
   — a data list reads as a list (Mail's sidebar), never as pills. *("You'd never
   see a pill sidebar next to a list nav — that's the wrong navigation structure.")*
-- **Rail** → strong rounded toggle-button (muted→full-color) + indicator bar, on
-  its **own chrome/elevation color**.
+- **Rail** → the VS Code **activity-bar** treatment: muted unselected glyph →
+  **full-strength glyph + accent indicator bar**, **FLAT (not rounded)**, on its
+  **own chrome/elevation color**. The rail is built on the `navitem` **bar** asset,
+  **not** the rounded `button` asset. The rounded "pill" is the *standalone-static*
+  look ONLY — do not give it to the rail (a previous draft conflated the two).
 
 Because shell-level `add_page` (no rail) and workspace `add_page` (rail present)
 are mutually exclusive, a provider always knows its tier at mount — no runtime
@@ -99,8 +102,9 @@ chevron and Ctrl-B agree for the static case.
 - **8 — Collapsible groups (accordion) + custom panel.** 1-level collapsible
   groups in the static provider; `ws.panel()` custom mode.
 - **9 — Visual hierarchy (the big styling pass — discuss before implementing).**
-  Tier-relative styling per R3: rail strong toggle-button + bar + own chrome
-  color; tier-2 sidebar quiet list rows; tier-1 standalone static rounded pills;
+  Tier-relative styling per R3: rail = FLAT VS Code bar treatment (`navitem`
+  asset: muted→full-strength glyph + accent bar, NOT rounded) + own chrome color;
+  tier-2 sidebar quiet list rows; tier-1 standalone static rounded pills;
   `list_nav` → real `ListView`, tree aligned to the quiet wash; named elevation
   tokens (rail/sidebar/content); tree empty-state placeholder.
   - **Collapsible groups (step 8):** **indent/nest** grouped items under their
@@ -115,6 +119,12 @@ chevron and Ctrl-B agree for the static case.
     standalone and exempt. The API allows the mix (flexibility); examples/docs
     model the consistent idiom.
 - **10 — Dock** (reserved, deferred). **11 — Polish** + swap public AppShell.
+  Includes the deferred **rail follow-ups**: (a) **footer actions/menus** — a
+  non-radio path for plain icon buttons + icon menu buttons pinned to the rail
+  footer (VS Code's gear/accounts), styled to match the rail (muted→hover, no
+  selection bar); (b) **rail item tooltips** — the rail is icon-only, so each
+  item wants a tooltip (built into the per-item `RadioToggle`). Both designed
+  with the `shell.rail` public façade in this step.
 
 ---
 
@@ -185,7 +195,11 @@ chevron and Ctrl-B agree for the static case.
 13. **Per-tier visual hierarchy (rail vs sidebar vs content).** *(REVISED by
     Revision 2 / R3 — the per-tier hierarchy stands; the seam rule is removed and
     sidebar styling is now tier-relative: standalone static = rounded pills
-    (compact = those pills icon-only), under-rail static = quiet list rows.)* Three reinforcing
+    (compact = those pills icon-only), under-rail static = quiet list rows. The
+    RAIL uses the FLAT `navitem` bar treatment (muted→full-strength glyph + accent
+    bar), NOT the rounded `button` asset — rounded is the standalone-static pill
+    ONLY. The "reuse ToggleButton + rounded button asset for the rail" wording
+    below is the conflation R3 corrects.)* Three reinforcing
     axes of distinction so two icon columns never compete and *"the eye lands on
     exactly one high-contrast item per tier"* (design doc §6):
     - **Elevation:** rail = 0, sidebar = 1, content = 2 — **named elevation

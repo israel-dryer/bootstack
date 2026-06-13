@@ -196,6 +196,86 @@ def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     b.map_style(ttk_style, **state_spec)
 
 
+@BootstyleBuilderTTk.register_builder('rail', 'Toolbutton')
+def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+    """Build the workspace-rail item — the VS Code activity-bar treatment.
+
+    A radio toggle (single-select) rendered icon-only on the chrome surface:
+    the glyph is muted when idle and full-strength when selected (or hovered),
+    and the `navitem` asset's left indicator bar shows the accent color when
+    selected. The background stays flat in every state (no wash / no fill) — the
+    bar carries the selection. The accent lives in the bar, not the glyph.
+    """
+    accent_token = accent or 'primary'
+    surface_token = options.get('surface', 'chrome')
+    density = options.get('density', 'default')
+    icon_only = options.get('icon_only', True)
+    image_key = f'navitem_{normalize_button_density(density)}'
+
+    surface = b.color(surface_token)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
+    surface_pressed = b.pressed(surface_hover)
+    on_surface = b.on_color(surface)
+    muted = b.muted_foreground(surface)
+    accent_color = b.color(accent_token)
+    disabled = b.disabled()
+    on_disabled = b.disabled('text', disabled)
+
+    # Flat background throughout; the left bar is hidden (== fill) unless selected.
+    normal_img  = recolor_element_image(image_key, surface, surface, surface, surface)
+    hover_img   = recolor_element_image(image_key, surface_hover, surface_hover, surface_hover, surface)
+    pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, surface_pressed, surface)
+    # Selected: accent bar visible, background still flat (no wash).
+    selected_img         = recolor_element_image(image_key, surface,         surface,         accent_color, surface)
+    selected_hover_img   = recolor_element_image(image_key, surface_hover,   surface_hover,   accent_color, surface)
+    selected_pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, accent_color, surface)
+    disabled_img = recolor_element_image(image_key, disabled, disabled, surface, surface)
+
+    b.create_style_element_image(
+        ElementImage(
+            f'{ttk_style}.border', normal_img.image, sticky="nsew",
+            border=normal_img.meta.border, padding=normal_img.meta.border
+        ).state_specs(
+            [
+                ('disabled', disabled_img.image),
+                ('selected pressed', selected_pressed_img.image),
+                ('selected hover', selected_hover_img.image),
+                ('selected', selected_img.image),
+                ('pressed', pressed_img.image),
+                ('hover', hover_img.image),
+                ('', normal_img.image)
+            ]))
+
+    b.create_style_layout(ttk_style, toolbutton_layout(ttk_style))
+
+    # Rail items are tall, near-square tap targets (VS Code activity bar), not the
+    # icon-height of a normal icon-only toolbutton. Generous vertical padding +
+    # anchor center gives the larger hit area and vertical rhythm.
+    rail_padding = options.get('padding') or b.scale((0, 7, 0, 7))
+
+    b.configure_style(
+        ttk_style,
+        background=surface,
+        foreground=muted,
+        relief='flat',
+        padding=rail_padding,
+        anchor='center',
+        font=button_font(density),
+    )
+
+    state_spec = dict(
+        foreground=[
+            ('disabled', on_disabled),
+            ('selected', on_surface),
+            ('hover', on_surface),
+            ('', muted),
+        ]
+    )
+    state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
+
+    b.map_style(ttk_style, **state_spec)
+
+
 @BootstyleBuilderTTk.register_builder('default', 'NavigationButton.TFrame')
 def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """Build NavigationButton frame style with selection indicator.
