@@ -86,11 +86,13 @@ Media
 
 Image and media display. ``Picture`` shows an :class:`Image <bootstack.images.Image>`
 scaled to fit, with fit modes, rounded corners, and animated-GIF playback; ``Gallery``
-is a record-native, recycling grid of selectable thumbnails.
+is a record-native, recycling grid of selectable thumbnails; ``Carousel`` steps through
+image slides one at a time with transitions and autoplay.
 
 .. autosummary::
    :nosignatures:
 
+   Carousel
    Gallery
    Picture
 
@@ -196,6 +198,7 @@ groups, and tabbed sections.
       ButtonGroup
       Calendar
       Card
+      Carousel
       Checkbox
       CodeEditor
       CommandBar

@@ -168,6 +168,60 @@ bs.Gallery(items=None, data_source=None, *, image_field="image", caption_field=N
 **Deferred v1:** drag-reorder, remove buttons, grouping/section headers, async thumbnail
 decode (Phase 1.5), rich keyboard nav.
 
+## Carousel (BUILT — branch feat/carousel)
+
+One-at-a-time image stepper — the "focus on one" member (single active index, NOT
+record-native multi-select). Plugs into the lightbox seam Gallery exposes via
+`on_item_activate` (open a Carousel over the same `items` at the activated index).
+
+**Canvas-based stage (the key implementation decision):** the stage is its OWN `tk.Canvas`
+(built like Picture's internal / the Gallery tile — canvas + shared `_image_fit`/
+`_ImageService` helpers), NOT the Picture widget embedded. This is what makes transitions
+work: **slide** = two image items on the canvas animated via `coords()`/`move()` (genuinely
+needs a canvas); **fade** = `PIL.Image.blend(A, B, t)` over frames → PhotoImage swaps. Both
+driven by the `Schedule` service. Tradeoff: Picture's GIF animation loop is NOT reused, so
+**animated-GIF slides are deferred** — v1 slides are static (first frame). Compose each slide
+to a full-box RGBA (fitted image centered on transparent → canvas surface letterboxes) so
+slide/fade operate on uniform `(w,h)` images.
+
+**API:**
+```python
+bs.Carousel(items=None, data_source=None, *, image_field="image", caption_field=None,
+            index=0, fit="contain", transition="slide", show_arrows=True,
+            indicator="dots", autoplay=False, interval=4000, loop=True,
+            corner_radius=0, accent=None, surface=None, parent=None, **kwargs)
+```
+- Properties: `index` (get/set), `current` (record dict), `count`, `is_playing`.
+- Methods: `next()`, `previous()`, `go_to(index)`, `play()`, `pause()`.
+- Events: `on_change` (active slide changed → current record dict), `on_item_click`
+  (click the stage — close-lightbox / open-detail seam).
+- Keyboard: ←/→ navigate.
+
+**Decisions LOCKED (2026-06-12):**
+- **`transition="slide"` default** (the carousel standard), `"fade"` and `"none"` options;
+  both implemented v1.
+- **Static slides** (animated-GIF-in-a-slide deferred).
+- **`indicator="dots"`** default, auto-switch dots→`"count"` past ~8 slides; `"none"` option.
+- **Chevrons overlaid** on the stage (left/right center). Caption + indicator overlaid
+  bottom-center (canvas items; white text w/ dark shadow for readability — full gradient
+  scrim is a later refinement).
+- **`fit="contain"`** default (show the whole image, vs Gallery's `cover`).
+- **`corner_radius` rounds the CONTAINER, not each image** (maintainer call) — a fixed
+  rounded corner-mask overlay (4 corners painted the surface color, AA via `rounded_mask`)
+  sits above the images and below the chrome, so slides move *under* a steady rounded frame.
+  Rounding each image (Picture/Gallery behavior) would make rounded corners slide across.
+  Note: with `contain` on a same-surface parent the rounded corners fall in the letterbox and
+  blend away (correct) — the rounding reads against `cover` or a contrasting parent surface.
+
+**Deferred v1:** animated-GIF slides, swipe/drag, thumbnail filmstrip, gradient caption scrim.
+
+**Follow-up — demo video:** a short looping MP4 of the transitions belongs on the Carousel
+guide (a still can't show motion). The first attempt had a screen-recorder pay watermark and
+was pulled. When a clean capture is ready: drop it at `docs/_static/examples/carousel-active.mp4`,
+re-add a `.bs-video` CSS rule (full-window capture → border+radius+shadow like
+`bs-window-screenshot`) and a `.. raw:: html` `<video class="bs-video" autoplay loop muted
+playsinline controls>` block after the hero in `docs/widgets/carousel.rst`.
+
 ## Phase 1.5 (planned, NOT this pass) — async load + web URLs
 
 URLs are a *source* concern → `Image.from_url(url)` on the handle (not a `Picture` special
