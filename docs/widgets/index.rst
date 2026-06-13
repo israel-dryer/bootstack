@@ -66,6 +66,7 @@ Every widget bootstack provides, grouped by purpose.
    picture
    gallery
    carousel
+   avatar
 
 .. toctree::
    :caption: Layout

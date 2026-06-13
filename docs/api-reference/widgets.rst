@@ -87,11 +87,13 @@ Media
 Image and media display. ``Picture`` shows an :class:`Image <bootstack.images.Image>`
 scaled to fit, with fit modes, rounded corners, and animated-GIF playback; ``Gallery``
 is a record-native, recycling grid of selectable thumbnails; ``Carousel`` steps through
-image slides one at a time with transitions and autoplay.
+image slides one at a time with transitions and autoplay; ``Avatar`` is a small identity
+badge showing a picture or initials.
 
 .. autosummary::
    :nosignatures:
 
+   Avatar
    Carousel
    Gallery
    Picture
@@ -193,6 +195,7 @@ groups, and tabbed sections.
 
       Accordion
       AccordionSection
+      Avatar
       Badge
       Button
       ButtonGroup
