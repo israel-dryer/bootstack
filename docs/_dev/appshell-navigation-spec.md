@@ -439,7 +439,15 @@ with shell.add_workspace("tools", text="Tools", icon="tools") as ws:
    two-tier rail look identical; `remember_nav_state` persistence.
 8. **Custom panel mode** — `ws.panel()`; `supports_compact = False`.
 9. **Elevation tokens** — rail/sidebar/content as named elevation tokens
-   (light/dark flip).
+   (light/dark flip). Also align selection COLOR across providers (decision #12):
+   the selected-wash hue already matches (`tree_nav`'s `Tree` rows and the
+   `NavPanel` items both use `subtle(accent)`), but two items remain — (a) compute
+   the tree's wash against the *sidebar* surface so the shade matches exactly, and
+   (b) settle ONE selected-label foreground convention across `add_page`/`list_nav`/
+   `tree_nav` (accent text vs plain `on_surface` — sidebars go both ways; today nav
+   items flip to accent, the tree stays plain). If accent text is chosen, keep the
+   tree's flip **role-scoped** (nav-role only) so content-area data grids stay
+   `on_surface`. The left bar stays a flat-list affordance (no bar on the tree).
 10. **Detail dock** *(reserved — likely a follow-on)* — wire the slot + axis.
 11. **Polish** — window-control accessors, fold `menu_layout`/`chrome_surface`,
     `bootstack.events` additions, docs (clean `-W` build), `test_public_surface`.
