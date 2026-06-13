@@ -159,13 +159,29 @@ class Shell(ShellLayout):
         """Add a footer-pinned nav item and its page in the implicit workspace."""
         return self._default_workspace().add_footer_page(key, text=text, icon=icon)
 
-    def add_header(self, text: str) -> Any:
-        """Add a static section header to the implicit workspace."""
-        return self._default_workspace().add_header(text)
+    def add_header(self, text: str, *, collapsible: bool = False) -> Any:
+        """Add a section header (optionally a 1-level collapsible group)."""
+        return self._default_workspace().add_header(text, collapsible=collapsible)
 
     def add_separator(self) -> Any:
         """Add a separator to the implicit workspace."""
         return self._default_workspace().add_separator()
+
+    def panel(self) -> Any:
+        """Claim the implicit workspace as a custom panel; return its container."""
+        return self._default_workspace().panel()
+
+    def expand_all(self) -> None:
+        """Expand every collapsible group in the active workspace's sidebar."""
+        ws = self.workspace
+        if ws is not None:
+            ws.expand_all()
+
+    def collapse_all(self) -> None:
+        """Collapse every collapsible group in the active workspace's sidebar."""
+        ws = self.workspace
+        if ws is not None:
+            ws.collapse_all()
 
     def list_nav(self, source: Any, *, text_field: str = "text", icon_field: str = "icon") -> Any:
         """Fill the implicit workspace from a `DataSource` (flat master-detail)."""

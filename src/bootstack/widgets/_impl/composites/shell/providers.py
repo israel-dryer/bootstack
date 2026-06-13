@@ -117,9 +117,17 @@ class StaticProvider:
         self._keys.append(key)
         return page
 
-    def add_header(self, text: str) -> Any:
-        """Add a static section header."""
-        return self._nav.add_header(text)
+    def add_header(self, text: str, *, collapsible: bool = False) -> Any:
+        """Add a section header (optionally a 1-level collapsible group)."""
+        return self._nav.add_header(text, collapsible=collapsible)
+
+    def expand_all(self) -> None:
+        """Expand every collapsible group."""
+        self._nav.expand_all()
+
+    def collapse_all(self) -> None:
+        """Collapse every collapsible group."""
+        self._nav.collapse_all()
 
     def add_separator(self) -> Any:
         """Add a separator."""
@@ -444,3 +452,54 @@ class TreeNavProvider:
     def tree(self) -> Any:
         """The sidebar `Tree` widget."""
         return self._tree
+
+
+class CustomProvider:
+    """Escape-hatch provider — a blank sidebar container the user fills.
+
+    There is no cascade and no per-page memory: the workspace hands back the
+    sidebar container (via `panel`) and its content region (via `Workspace.content`)
+    and the user drives content-switching themselves. A custom panel cannot
+    collapse to icons (its content is arbitrary), so `supports_compact` is False —
+    it only hides.
+    """
+
+    supports_compact = False
+
+    def __init__(self) -> None:
+        self._container: Frame | None = None
+        self._content: Frame | None = None
+
+    def mount(
+        self,
+        sidebar: Frame,
+        content: Frame,
+        *,
+        on_select: Callable[[str], None],
+        on_refresh: Callable[[], None] | None = None,
+    ) -> None:
+        # No selection model: on_select/on_refresh are unused.
+        self._container = Frame(sidebar)
+        self._container.pack(fill="both", expand=True)
+        self._content = content
+
+    # ----- Provider contract (mostly inert) -----
+
+    def set_compact(self, compact: bool) -> None:
+        pass
+
+    def show(self, key: str, data: dict | None = None) -> None:
+        pass
+
+    def select_visual(self, key: str | None) -> None:
+        pass
+
+    def keys(self) -> tuple[str, ...]:
+        return ()
+
+    # ----- Accessors -----
+
+    @property
+    def container(self) -> Frame:
+        """The blank sidebar container to fill."""
+        return self._container

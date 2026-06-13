@@ -103,6 +103,17 @@ chevron and Ctrl-B agree for the static case.
   color; tier-2 sidebar quiet list rows; tier-1 standalone static rounded pills;
   `list_nav` → real `ListView`, tree aligned to the quiet wash; named elevation
   tokens (rail/sidebar/content); tree empty-state placeholder.
+  - **Collapsible groups (step 8):** **indent/nest** grouped items under their
+    header so grouped vs ungrouped reads clearly (the unindented look in step 8 is
+    why a mixed sidebar jars); style the chevron (size/weight/placement) and the
+    collapsible-header treatment (distinct from a plain static label); quiet the
+    per-item accent fg/icon coloring per R3.
+  - **Composition guideline (docs, not enforced):** use grouping *consistently* —
+    a flat list, or everything under collapsible sections (VS Code Explorer); a
+    single primary item *above* groups is acceptable, but don't sprinkle loose
+    top-level items among collapsible groups. The pinned footer is conventionally
+    standalone and exempt. The API allows the mix (flexibility); examples/docs
+    model the consistent idiom.
 - **10 — Dock** (reserved, deferred). **11 — Polish** + swap public AppShell.
 
 ---

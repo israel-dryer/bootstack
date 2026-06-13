@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from bootstack.widgets._impl.composites.shell.providers import (
+    CustomProvider,
     ListNavProvider,
     StaticProvider,
     TreeNavProvider,
@@ -120,13 +121,42 @@ class Workspace:
         """Add a nav item pinned to the sidebar footer and its page."""
         return self.add_page(key, text=text, icon=icon, footer=True)
 
-    def add_header(self, text: str) -> Any:
-        """Add a static section header to the sidebar."""
-        return self._ensure_static().add_header(text)
+    def add_header(self, text: str, *, collapsible: bool = False) -> Any:
+        """Add a section header (optionally a 1-level collapsible group)."""
+        return self._ensure_static().add_header(text, collapsible=collapsible)
 
     def add_separator(self) -> Any:
         """Add a separator to the sidebar."""
         return self._ensure_static().add_separator()
+
+    def expand_all(self) -> None:
+        """Expand every collapsible group in the sidebar (if any)."""
+        if self._provider is not None and hasattr(self._provider, "expand_all"):
+            self._provider.expand_all()
+
+    def collapse_all(self) -> None:
+        """Collapse every collapsible group in the sidebar (if any)."""
+        if self._provider is not None and hasattr(self._provider, "collapse_all"):
+            self._provider.collapse_all()
+
+    # ----- Custom mode -----
+
+    def panel(self) -> Any:
+        """Claim the workspace as a custom panel; return its sidebar container.
+
+        The workspace enters custom mode: no provider cascade, no compaction.
+        Fill the returned container with your own sidebar UI and drive the
+        content region yourself via `content`.
+        """
+        self._claim_provider()
+        self._provider = CustomProvider()
+        self._mount_provider()
+        return self._provider.container
+
+    @property
+    def content(self) -> Any:
+        """The workspace's content region frame (for hand-driven swapping)."""
+        return self._content
 
     # ----- Data-bound content API -----
 

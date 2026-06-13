@@ -16,6 +16,7 @@ from bootstack.widgets._impl.composites.shell.layout import ShellLayout
 from bootstack.widgets._impl.composites.shell.nav_panel import NavPanel
 from bootstack.widgets._impl.composites.shell.rail import Rail
 from bootstack.widgets._impl.composites.shell.providers import (
+    CustomProvider,
     ListNavProvider,
     NavProvider,
     StaticProvider,
@@ -33,6 +34,7 @@ __all__ = [
     "StaticProvider",
     "ListNavProvider",
     "TreeNavProvider",
+    "CustomProvider",
     "Workspace",
     "Shell",
 ]
