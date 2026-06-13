@@ -10,6 +10,7 @@ from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets.types import Master, StyledKwargs, WidgetDensity
+from bootstack.style.typography import get_font
 
 
 class ListItemKwargs(StyledKwargs, total=False):
@@ -72,6 +73,11 @@ class ListItem(CompositeFrame):
         self._item_index = 0
         self._selection_icon = None
         self._drag_state = None
+        # Full (untruncated) title/text — the labels render an ellipsized copy
+        # sized to the row's available width (see _retruncate).
+        self._full_title = None
+        self._full_text = None
+        self._last_avail = -1
 
         # configuration properties
         self._show_separator = kwargs.pop('show_separator', False)
@@ -175,6 +181,11 @@ class ListItem(CompositeFrame):
 
         # row-level keyboard events
         self.bind('<space>', self._on_space, add='+')
+
+        # Re-ellipsize the title/text whenever the center frame's allotment
+        # changes (sidebar resize, or the icon/chevron settling) so a long value
+        # can never push the icon/chevron out of the row.
+        self._center_frame.bind('<Configure>', self._on_configure_truncate, add='+')
 
     @property
     def selected(self):
@@ -331,22 +342,28 @@ class ListItem(CompositeFrame):
     def _update_title(self, text=None):
         """Update title widget."""
         title_font = 'caption[bold]' if self._density == 'compact' else 'body[bold]'
+        self._full_title = text
         if text is not None:
+            shown = self._elide(text, get_font(title_font), self._avail_text_px())
             if not self._title_widget:
                 self._title_widget = Label(
                     self._center_frame,
-                    text=text,
+                    text=shown,
                     font=title_font,
                     variant='list',
                     ttk_class='ListView.TLabel',
                     takefocus=False,
                     accent=self._accent,
+                    # width=1 so the label never drives the center frame wider
+                    # than its allotment — fill='x' stretches it back out, and
+                    # the elided text is sized to that allotment (see _retruncate).
+                    width=1,
                     style_options=self._li_style_opts(),
                 )
                 self._title_widget.pack(side='top', fill='x', anchor='w', padx=(0, 3))
                 self.register_composite(self._title_widget)
             else:
-                self._title_widget.configure(text=text)
+                self._title_widget.configure(text=shown)
         else:
             if self._title_widget:
                 try:
@@ -361,22 +378,25 @@ class ListItem(CompositeFrame):
         """Update text widget."""
         # Use caption font for compact density
         text_font = 'caption' if self._density == 'compact' else 'body'
+        self._full_text = text
         if text is not None:
+            shown = self._elide(text, get_font(text_font), self._avail_text_px())
             if not self._text_widget:
                 self._text_widget = Label(
                     self._center_frame,
-                    text=text,
+                    text=shown,
                     font=text_font,
                     variant='list',
                     ttk_class='ListView.TLabel',
                     takefocus=False,
                     accent=self._accent,
+                    width=1,
                     style_options=self._li_style_opts(),
                 )
                 self._text_widget.pack(side='top', fill='x', padx=(0, 3))
                 self.register_composite(self._text_widget)
             else:
-                self._text_widget.configure(text=text)
+                self._text_widget.configure(text=shown)
         else:
             if self._text_widget:
                 try:
@@ -386,6 +406,68 @@ class ListItem(CompositeFrame):
                     pass
                 finally:
                     self._text_widget = None
+
+    # ----- Title/text ellipsis -----
+
+    def _avail_text_px(self) -> int:
+        """Pixels available to the center title/text before they must elide.
+
+        Read straight off the center frame's own allotted width. Because the
+        labels carry `width=1`, the center frame never inflates past its
+        allotment, so this is the true available width and it re-fires its
+        `<Configure>` whenever the icon/chevron settle or the sidebar resizes.
+        """
+        try:
+            w = self._center_frame.winfo_width()
+            if w <= 1:
+                return 0
+            # 3px = the label's own right padx.
+            return max(0, w - 3)
+        except TclError:
+            return 0
+
+    @staticmethod
+    def _elide(text, font, avail: int):
+        """Return `text` shortened with a trailing ellipsis to fit `avail` px."""
+        if not text or avail <= 0:
+            return text
+        try:
+            if font.measure(text) <= avail:
+                return text
+            ell = '…'
+            if font.measure(ell) > avail:
+                return ''
+            lo, hi = 0, len(text)
+            while lo < hi:
+                mid = (lo + hi + 1) // 2
+                if font.measure(text[:mid].rstrip() + ell) <= avail:
+                    lo = mid
+                else:
+                    hi = mid - 1
+            return (text[:lo].rstrip() + ell) if lo > 0 else ell
+        except TclError:
+            return text
+
+    def _on_configure_truncate(self, event=None):
+        """Re-ellipsize when the row's available width changes."""
+        avail = self._avail_text_px()
+        if avail <= 0 or avail == self._last_avail:
+            return
+        self._last_avail = avail
+        self._retruncate(avail)
+
+    def _retruncate(self, avail: int | None = None):
+        """Re-apply ellipsis to the title/text against the current width."""
+        if avail is None:
+            avail = self._avail_text_px()
+        if avail <= 0:
+            return
+        if self._title_widget and self._full_title is not None:
+            font = get_font('caption[bold]' if self._density == 'compact' else 'body[bold]')
+            self._title_widget.configure(text=self._elide(self._full_title, font, avail))
+        if self._text_widget and self._full_text is not None:
+            font = get_font('caption' if self._density == 'compact' else 'body')
+            self._text_widget.configure(text=self._elide(self._full_text, font, avail))
 
     def _update_badge(self, text=None):
         """Update badge widget."""
@@ -429,6 +511,15 @@ class ListItem(CompositeFrame):
                 )
                 self._chevron_widget.pack(side='right', padx=6)
                 self.register_composite(self._chevron_widget)
+                # The chevron is created lazily (after_idle), so it misses the
+                # <<CompositeSelect>> broadcast that ran when selection was first
+                # applied. Sync it to the row's current selection now, otherwise
+                # a row selected on first load shows an unselected chevron color.
+                if self._data.get('selected'):
+                    try:
+                        self._chevron_widget.event_generate('<<CompositeSelect>>')
+                    except TclError:
+                        pass
         else:
             if self._chevron_widget:
                 try:
