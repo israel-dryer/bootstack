@@ -130,6 +130,44 @@ no audio, no A/V sync, no scrub-bar — a true player (audio + sync + codec cove
 of scope for the framework; point users at an embedded external player instead. This is
 why the docs category is "Media", not "Images".
 
+## Gallery (BUILT — branch feat/gallery)
+
+A scrollable, selectable thumbnail grid. Record-native: reuses the ListView/DataTable/Tree
+rails (data bag, universal `.selection`, `data_source=`, recycle-view).
+
+**Recycle design (the key insight):** NOT a hard 2D recycler. Model the grid as a VERTICAL
+scroll of rows where each row is a HORIZONTAL strip of N tiles — so it's ListView's proven
+1D row-recycle, each "row" rendering `columns` records (a slice) instead of one. Pool =
+`(visible_rows + overscan) × columns` tiles. Each tile embeds a `Picture` (cover-fit
+thumbnail) + optional caption `Label`; recycle swaps each tile's `image`/caption from the
+new record (Picture's live `image` setter makes this cheap). No existing 2D-grid recycle in
+the codebase — ListView 1D is the only precedent; this reuses it.
+
+**API:**
+```python
+bs.Gallery(items=None, data_source=None, *, image_field="image", caption_field=None,
+           columns="auto", tile_size=(160,160), fit="cover", corner_radius=0, gap=8,
+           selection_mode="none", surface=None, parent=None, **kwargs)
+```
+- `items=`/`data_source=` like ListView; universal `.selection` (single→dict|None,
+  multi→list[dict]); `select_items`/`deselect_items`/`select_all`/`clear_selection`;
+  auto-refresh on source change.
+- `image_field`/`caption_field` NAME keys in the flat record (Tree(parent_field=)/
+  Select(group_by=) idiom).
+- Events: `on_select` (coarse change → read `.selection`, family convention), `on_item_click`
+  (record dict), `on_item_activate` (double-click → record dict — the Carousel/lightbox seam).
+
+**Decisions LOCKED (2026-06-12):**
+- **Responsive columns** — `columns="auto"` default (reflow on `<Configure>` from container
+  width / tile width), `int` override for a fixed grid.
+- **Captions opt-in** — `caption_field=` off by default (galleries usually want them, unlike
+  Picture which is caption-out).
+- **Highlight-ring selection** — accent-colored ring/overlay on selected tiles (NOT a
+  ListView-style checkbox control).
+
+**Deferred v1:** drag-reorder, remove buttons, grouping/section headers, async thumbnail
+decode (Phase 1.5), rich keyboard nav.
+
 ## Phase 1.5 (planned, NOT this pass) — async load + web URLs
 
 URLs are a *source* concern → `Image.from_url(url)` on the handle (not a `Picture` special

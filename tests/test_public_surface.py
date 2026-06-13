@@ -48,7 +48,7 @@ EXPECTED_TOPLEVEL = {
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable",
     "Tree", "TreeNode",
     # media
-    "Picture",
+    "Picture", "Gallery",
     # navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",

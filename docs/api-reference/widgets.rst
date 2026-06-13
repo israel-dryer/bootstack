@@ -85,11 +85,13 @@ Media
 -----
 
 Image and media display. ``Picture`` shows an :class:`Image <bootstack.images.Image>`
-scaled to fit, with fit modes, rounded corners, and animated-GIF playback.
+scaled to fit, with fit modes, rounded corners, and animated-GIF playback; ``Gallery``
+is a record-native, recycling grid of selectable thumbnails.
 
 .. autosummary::
    :nosignatures:
 
+   Gallery
    Picture
 
 Layout
@@ -204,6 +206,7 @@ groups, and tabbed sections.
       FieldItem
       Form
       FormItem
+      Gallery
       Gauge
       Grid
       GroupBox

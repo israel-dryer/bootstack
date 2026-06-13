@@ -12,18 +12,18 @@ shrink-wrap to the image, it reports its allocated pixel size through
 from __future__ import annotations
 
 from tkinter import Canvas, TclError
-from typing import Any, Literal
+from typing import Any
 
-from PIL import Image as PILImage, ImageChops, ImageDraw, ImageSequence
-from PIL.Image import Resampling
+from PIL import Image as PILImage, ImageSequence
 from PIL.ImageTk import PhotoImage
 
 from bootstack.events import ImageErrorEvent, ImageLoadEvent
 from bootstack.style.style import get_style
+from bootstack.widgets._impl.composites._image_fit import (
+    FitMode, fit_image, round_corners, rounded_mask,
+)
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets.types import Master
-
-FitMode = Literal["contain", "cover", "fill", "none", "scale-down"]
 
 # Map an anchor token to a (relative-x, relative-y) position in the box and the
 # matching Tk canvas image anchor. Used to place an image that does not fill the
@@ -217,67 +217,18 @@ class Picture(Frame):
 
     def _compose(self, frame: PILImage.Image, bw: int, bh: int) -> PILImage.Image:
         """Scale/crop `frame` to the box per the fit policy; round the corners."""
-        iw, ih = frame.size
-        fit = self._fit
-
-        if fit == "fill":
-            result = frame.resize((bw, bh), Resampling.LANCZOS)
-        elif fit == "cover":
-            scale = max(bw / iw, bh / ih)
-            scaled = frame.resize(
-                (max(1, round(iw * scale)), max(1, round(ih * scale))),
-                Resampling.LANCZOS,
-            )
-            # Center-crop the overflow so the result is exactly the box.
-            left = (scaled.width - bw) // 2
-            top = (scaled.height - bh) // 2
-            result = scaled.crop((left, top, left + bw, top + bh))
-        else:
-            # contain / scale-down / none — never crop; may be smaller than box.
-            if fit == "none":
-                scale = 1.0
-            else:
-                scale = min(bw / iw, bh / ih)
-                if fit == "scale-down":
-                    scale = min(scale, 1.0)
-            tw, th = max(1, round(iw * scale)), max(1, round(ih * scale))
-            result = frame.resize((tw, th), Resampling.LANCZOS) if (tw, th) != (iw, ih) else frame.copy()
-
+        result = fit_image(frame, bw, bh, self._fit)
         if self._corner_radius > 0:
-            result = self._round_corners(result, self._corner_radius)
+            result = round_corners(result, self._corner_radius, self._corner_mask(*result.size))
         return result
 
-    def _round_corners(self, img: PILImage.Image, radius: int) -> PILImage.Image:
-        """Apply an antialiased rounded-rectangle alpha mask to `img`."""
-        w, h = img.size
-        radius = min(radius, w // 2, h // 2)
-        if radius <= 0:
-            return img
-        mask = self._corner_mask(w, h, radius)
-        out = img.convert("RGBA")
-        # Intersect with any existing alpha so transparent pixels stay transparent.
-        out.putalpha(ImageChops.multiply(mask, out.getchannel("A")))
-        return out
-
-    def _corner_mask(self, w: int, h: int, radius: int) -> PILImage.Image:
-        """A cached, antialiased rounded-rect mask for a `w`x`h` box.
-
-        The mask is drawn supersampled and downscaled with LANCZOS — PIL draws
-        `rounded_rectangle` aliased at 1x, so the curve would otherwise be jagged.
-        Cached by (w, h, radius): an animation or a steady-size resize reuses it.
-        """
-        key = (w, h, radius)
-        if self._mask_key == key and self._mask is not None:
-            return self._mask
-        ss = 4 if max(w, h) <= 600 else 2
-        big = PILImage.new("L", (w * ss, h * ss), 0)
-        ImageDraw.Draw(big).rounded_rectangle(
-            [0, 0, w * ss - 1, h * ss - 1], radius=radius * ss, fill=255
-        )
-        mask = big.resize((w, h), Resampling.LANCZOS)
-        self._mask_key = key
-        self._mask = mask
-        return mask
+    def _corner_mask(self, w: int, h: int) -> PILImage.Image:
+        """A cached rounded-rect mask for a `w`x`h` result (reused across frames)."""
+        key = (w, h, self._corner_radius)
+        if self._mask_key != key or self._mask is None:
+            self._mask = rounded_mask(w, h, self._corner_radius)
+            self._mask_key = key
+        return self._mask
 
     def _clear_canvas(self) -> None:
         if self._img_id is not None:
