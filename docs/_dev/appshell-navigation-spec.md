@@ -76,26 +76,38 @@ clean breaking changes, no compat shims.
     - **Elevation:** rail = 0, sidebar = 1, content = 2 — **named elevation
       tokens** (light themes darken with depth; dark themes often lighten — the
       token lets it flip correctly per theme).
-    - **Active markers differ by tier — the bar is sidebar-only:**
-      - **Rail active** = a **subtle accent-tinted wash** (`b.subtle(accent,
-        surface)`, resolved against the *rail* surface — it must be tuned against
-        elevation 0, not the sidebar's surface) + glyph at **full neutral
-        foreground**; inactive glyphs **muted**; **no bar, no accent on the glyph**
-        (accent appears once, as the wash tint — accent-wash + accent-glyph is "too
-        much"). The rail must carry its active state independently because the hide
-        gesture can remove the sidebar entirely.
-      - **Sidebar active** = subtle wash + **accent foreground** + **left indicator
-        bar** (decision #12); the wash carries selection through compact mode where
-        the bar matches the fill and disappears.
+    - **Active markers (REVISED 2026-06-13 to the maintainer's VS Code model —
+      this supersedes the earlier "bar is sidebar-only" of decision #12):**
+      - **Rail (workspace) = the STRONG tier.** Unselected glyphs **muted**;
+        selected glyph **full color** (the **toggle-button** muted→full-color
+        treatment — *reuse the existing ToggleButton/toggle styling + rounded
+        `button` asset*, NOT the flat `navitem` asset), **plus the indicator bar**
+        (accent OR just foreground). The rail owns the bar.
+      - **Sidebar list (page) = the QUIET tier.** **Subtle wash only** —
+        `subtle(accent)`, **no bar, no muted/full-color, no accent text**. Just a
+        quiet selection wash.
+      - Rationale: one bar (on the rail) + a quiet list resolves the accent-overload
+        the maintainer flagged (rail accent + sidebar bar + sidebar accent text was
+        "too much"). VS Code: activity bar = bar + muted/full-color; side list =
+        subtle wash.
     - **Icon scale — two tokens:** `inline_icon_size` (small, ~16–18px
       density-scaled — expanded item beside a label) vs `rail_icon_size` (larger,
-      ~20–24px — standalone categorical glyph). Size alone signals the tier.
-    - **The seam rule (load-bearing):** a compacted *single* sidebar adopts the
-      **rail paradigm wholesale** — `rail_icon_size`, the rail wash+neutral-glyph
-      marker (NOT the bar), and `rail_width` — so collapsing a one-workspace
-      sidebar is visually identical to a two-tier rail (collapse never reveals a
-      seam). Net: only two icon sizes system-wide (inline, rail/compact), and
-      "compact" ≡ "rail".
+      ~28px — standalone categorical glyph). Size alone signals the tier.
+    - **List rendering:** `list_nav` should use the **real `ListView` widget**
+      (recycling for large/live lists + the subtle-wash selection it already does);
+      static `add_page` keeps `NavPanel` (ListView is overkill — can't do
+      interspersed headers/separators/footer, and recycling is wasted on a few
+      authored items). The `tree` uses the `Tree` widget; align its selected wash
+      to the sidebar's subtle wash (no accent text), per decision #12.
+    - **The seam rule:** a compacted *single* sidebar adopts the rail paradigm
+      (rail treatment + `rail_width`), so collapsing a one-workspace sidebar looks
+      like a two-tier rail. With the revised model the rail = toggle-button +
+      muted/full-color + bar, so the compacted sidebar shows that.
+    - **Interim state (step 6):** the rail is built from compact `SideNavItem`
+      (flat navitem asset, ~28px icon, no bar, accent-glyph-on-select) — a
+      placeholder; step 9 rebuilds it on the toggle-button treatment above. The
+      tree opens **unselected** by default (correct for a hierarchy); add an
+      empty-state placeholder in the content area so a fresh tree isn't blank.
 
 ---
 
@@ -438,17 +450,19 @@ with shell.add_workspace("tools", text="Tools", icon="tools") as ws:
    (visibility); shared `rail_width`/`sidebar_width` tokens so single-collapse and
    two-tier rail look identical; `remember_nav_state` persistence.
 8. **Custom panel mode** — `ws.panel()`; `supports_compact = False`.
-9. **Elevation tokens** — rail/sidebar/content as named elevation tokens
-   (light/dark flip). Also align selection COLOR across providers (decision #12):
-   the selected-wash hue already matches (`tree_nav`'s `Tree` rows and the
-   `NavPanel` items both use `subtle(accent)`), but two items remain — (a) compute
-   the tree's wash against the *sidebar* surface so the shade matches exactly, and
-   (b) settle ONE selected-label foreground convention across `add_page`/`list_nav`/
-   `tree_nav` (accent text vs plain `on_surface` — sidebars go both ways; today nav
-   items flip to accent, the tree stays plain). If accent text is chosen, keep the
-   tree's flip **role-scoped** (nav-role only) so content-area data grids stay
-   `on_surface`. The left bar stays a flat-list affordance (no bar on the tree).
-10. **Detail dock** *(reserved — likely a follow-on)* — wire the slot + axis.
+9. **Elevation + selection tokens** — the visual hierarchy per the REVISED
+   decision #13 (the authoritative model). Concretely:
+   - **Rail:** rebuild on the **toggle-button treatment** (muted unselected →
+     full-color selected, rounded `button` asset) **+ the indicator bar** (accent
+     or foreground); replace the interim compact-`SideNavItem` rail. ~28px glyph.
+   - **Sidebar list:** reduce to **subtle wash only** — strip the bar + accent
+     text from the `NavPanel` nav items (currently flat `navitem` asset has the
+     bar).
+   - **`list_nav` → real `ListView`** (recycling + subtle wash); static keeps
+     `NavPanel`. **Tree** selected wash → align to the sidebar subtle wash
+     (role-scoped; don't touch content-area grids), no accent text.
+   - Rail/sidebar/content as named **elevation tokens** (light/dark flip).
+   - **Tree empty-state placeholder** in the content area (tree opens unselected).
 11. **Polish** — window-control accessors, fold `menu_layout`/`chrome_surface`,
     `bootstack.events` additions, docs (clean `-W` build), `test_public_surface`.
 
