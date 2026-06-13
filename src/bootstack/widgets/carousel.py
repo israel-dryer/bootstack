@@ -163,6 +163,21 @@ class Carousel(PublicWidgetBase):
         """Stop auto-advancing."""
         self._internal.pause()
 
+    def stop(self) -> None:
+        """Stop auto-advancing and return to the first slide."""
+        self._internal.stop()
+
+    # ----- Data -----
+
+    @property
+    def data_source(self) -> "DataSourceProtocol":
+        """The underlying data source instance."""
+        return self._internal.get_datasource()
+
+    def reload(self) -> None:
+        """Reload from the data source and refresh the current slide."""
+        self._internal.reload()
+
     # ----- Events -----
 
     @overload

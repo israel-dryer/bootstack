@@ -13,7 +13,6 @@ of `columns` tiles — the 1D list recycle generalized one axis, not a 2D recycl
 from __future__ import annotations
 
 import contextlib
-from pathlib import Path
 from tkinter import Canvas, TclError
 from typing import Any, Literal
 
@@ -21,10 +20,11 @@ from PIL import Image as PILImage, ImageDraw
 from PIL.Image import Resampling
 from PIL.ImageTk import PhotoImage
 
-from bootstack._core.images import _ImageService
 from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.style.style import get_style
-from bootstack.widgets._impl.composites._image_fit import FitMode, fit_image, round_corners
+from bootstack.widgets._impl.composites._image_fit import (
+    FitMode, fit_image, resolve_pil, round_corners,
+)
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
@@ -35,26 +35,6 @@ _RING_THICKNESS = 3
 _RING_GAP = 3                       # separation between the image and the ring
 _RING_PAD = _RING_GAP + _RING_THICKNESS   # margin reserved around the image
 EMPTY = {"__empty__": True, "id": "__empty__"}
-
-
-def _resolve_pil(source: Any) -> "PILImage.Image | None":
-    """Resolve a record's image field to a PIL image (first frame), or None."""
-    if source is None:
-        return None
-    from bootstack.images import Image as _ImageHandle
-
-    try:
-        if isinstance(source, _ImageHandle):
-            return source._load_pil()
-        if isinstance(source, (str, Path)):
-            return PILImage.open(Path(source).expanduser())
-        from PIL.Image import Image as _PILImage
-
-        if isinstance(source, _PILImage):
-            return source
-    except Exception:
-        return None
-    return None
 
 
 class GalleryTile(Frame):
@@ -130,7 +110,7 @@ class GalleryTile(Frame):
         )
 
     def _render_thumb(self, source: Any) -> None:
-        pil = _resolve_pil(source)
+        pil = resolve_pil(source)
         if pil is None:
             self._canvas.itemconfigure(self._img_id, image="")
             self._photo = None
@@ -138,8 +118,18 @@ class GalleryTile(Frame):
         composed = fit_image(pil.convert("RGBA"), self._tw, self._th, self._fit)
         if self._radius > 0:
             composed = round_corners(composed, self._radius)
-        self._photo = _ImageService.from_pil(composed)
+        # A plain PhotoImage (kept alive by self._photo, GC'd when replaced) — do
+        # NOT route through the global _ImageService cache, which never evicts and
+        # would accumulate one entry per distinct thumbnail as the grid scrolls.
+        self._photo = PhotoImage(composed)
         self._canvas.itemconfigure(self._img_id, image=self._photo)
+
+    def refresh_surface(self) -> None:
+        """Re-resolve the canvas background after a theme change."""
+        try:
+            self._canvas.configure(background=self._surface_color())
+        except TclError:
+            pass
 
     def _on_click(self, _event) -> None:
         # Call the gallery directly: virtual events do NOT bubble from a child
@@ -220,10 +210,22 @@ class Gallery(Frame):
             except Exception:
                 self._change_sub = None
         self.bind("<Destroy>", self._on_destroy, add="+")
+        self.bind("<<BsThemeChanged>>", self._on_theme, add="+")
+        # First render is driven by the container's <Configure> (bound above);
+        # no init timer needed.
 
-        self.after(10, self._relayout)
+    # ----- theme / silence / source change ----------------------------------
 
-    # ----- silence / source change ------------------------------------------
+    def _on_theme(self, _event=None) -> None:
+        """Re-apply theme-dependent colors after a theme switch.
+
+        The tile surface backgrounds and the accent selection ring are resolved
+        from theme tokens; rebuild them so they track the new theme.
+        """
+        for tile in self._tiles:
+            tile.refresh_surface()
+        if self._tiles:
+            self._build_ring()   # new accent color, re-shared to every tile
 
     def _silence_source(self):
         silence = getattr(self._datasource, "_silence", None)
