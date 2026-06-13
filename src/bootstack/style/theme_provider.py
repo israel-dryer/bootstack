@@ -316,6 +316,7 @@ class ThemeProvider:
             surfaces = {
                 'chrome': tinted_surface(max(bg_lightness - 3, 3)),    # Darker than content
                 'content': bg,                                          # Theme background
+                'raised': tinted_surface(min(bg_lightness + 2, 18)),   # Subtle elevation (half of card)
                 'card': tinted_surface(min(bg_lightness + 4, 20)),     # First card elevation
                 'card_raised': tinted_surface(min(bg_lightness + 8, 25)), # Second card elevation
                 'overlay': tinted_surface(min(bg_lightness + 7, 25)),  # Menus, dialogs
@@ -329,6 +330,7 @@ class ThemeProvider:
             surfaces = {
                 'chrome': tinted_surface(max(bg_lightness - 8, 88)),     # Noticeably darker
                 'content': bg,                                            # Theme background
+                'raised': tinted_surface(max(bg_lightness - 2, 94)),     # Subtle elevation (half of card)
                 'card': tinted_surface(max(bg_lightness - 4, 92)),       # First card elevation
                 'card_raised': tinted_surface(max(bg_lightness - 7, 88)),# Second card elevation
                 'overlay': tinted_surface(max(bg_lightness - 2, 96)),    # Subtle for popups

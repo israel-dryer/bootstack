@@ -49,9 +49,14 @@ DEFAULT_DOCK_WIDTH = 280
 # tint (and round their corners) against the SAME surface they render on, so the
 # color can never mismatch the background; callers thread these down rather than
 # hardcoding a surface token independently.
+#
+# Elevation tiers: the rail is the chrome tier; the sidebar (and dock) sit on a
+# SUBTLE `raised` elevation (half the `card` step) — gentle, not a big ramp, and
+# reinforced by the dividers. Selection is neutral, so a subtle elevation no
+# longer washes it out. content < raised < chrome.
 RAIL_SURFACE = "chrome"
-SIDEBAR_SURFACE = "card"
-DOCK_SURFACE = "card"
+SIDEBAR_SURFACE = "raised"
+DOCK_SURFACE = "raised"
 STATUSBAR_SURFACE = "chrome"
 
 
@@ -132,12 +137,14 @@ class ShellLayout(App):
         self._body = Frame(root)
         self._rail = Frame(self._body, surface=RAIL_SURFACE)
         # A thin divider between the rail and the sidebar reinforces the tier
-        # boundary (shown only when the rail renders).
-        self._rail_sep = Separator(self._body, orient="vertical")
+        # boundary (shown only when the rail renders). Each divider takes the
+        # surface of the region it edges so its stroke is derived against that
+        # surface, not the default content surface.
+        self._rail_sep = Separator(self._body, orient="vertical", surface=RAIL_SURFACE)
         self._sidebar = Frame(self._body, surface=SIDEBAR_SURFACE)
         # A matching divider on the sidebar's right edge defines the sidebar/
         # content boundary (shown only when the sidebar is visible).
-        self._sidebar_sep = Separator(self._body, orient="vertical")
+        self._sidebar_sep = Separator(self._body, orient="vertical", surface=SIDEBAR_SURFACE)
         self._content = Frame(self._body)
         self._dock = Frame(self._body, surface=DOCK_SURFACE)
 
