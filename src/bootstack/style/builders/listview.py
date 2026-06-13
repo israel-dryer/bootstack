@@ -12,6 +12,21 @@ from bootstack.style.builders.utils import (
 )
 
 
+def _selection_wash(b: BootstyleBuilderTTk, accent: str, background: str, options: dict) -> str:
+    """Row selection background — NEUTRAL by default; accent only when opted in.
+
+    Governs the row's background wash only. The selection control's glyph still
+    follows the accent (it reads as the accent indicator regardless). `wash=False`
+    drops the wash entirely (selection shown via the control); `accent_selection`
+    requests the old accent-tinted wash.
+    """
+    if not options.get('wash', True):
+        return background
+    if options.get('accent_selection', False):
+        return b.subtle(accent or 'primary', background)
+    return b.active(background)
+
+
 @BootstyleBuilderTTk.register_builder('container', 'ListView.TFrame')
 def build_list_container_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """List container frame style - no hover state (only items should have hover)."""
@@ -28,11 +43,8 @@ def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str =
     surface_token = options.get('surface', 'content')
     base_token = surface_token.split('[')[0]
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent_token, background)
-    if not options.get('wash', True):
-        selected = background  # selection shown via the control, not a row wash
+    selected = _selection_wash(b, accent, background, options)
     b.configure_style(ttk_style, background=background, relief='flat')
 
     # No hover wash and no 'focus' wash: rows show selection only (keyboard focus
@@ -72,11 +84,8 @@ def build_list_item_style(
     accent_token = accent or 'primary'
 
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent_token, background)
-    if not options.get('wash', True):
-        selected = background  # selection shown via the control, not a row wash
+    selected = _selection_wash(b, accent, background, options)
 
     # Use separated image for separated variant, otherwise use standard list_item
     is_separated = 'separated' in variant
@@ -147,9 +156,8 @@ def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent or 'primary', background)
+    selected = _selection_wash(b, accent, background, options)
 
     b.create_style_layout(
         ttk_style,
@@ -214,15 +222,11 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent or 'primary', background)
+    selected = _selection_wash(b, accent, background, options)
     on_background = b.on_color(background)
     on_selected = b.on_color(selected)
     on_disabled = b.disabled('text', background)
-    if not options.get('wash', True):
-        selected = background      # icon/chevron don't wash when row wash is off
-        on_selected = on_background
 
     # Create layout (remove focus border)
     b.create_style_layout(
@@ -285,16 +289,13 @@ def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     density = normalize_button_density(options.get('density', 'default'))
 
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent or 'primary', background)
+    # Neutral row wash by default; the GLYPH foreground below stays accent so the
+    # checked control is the accent indicator regardless of the wash.
+    selected = _selection_wash(b, accent, background, options)
     accent_color = b.color(accent or 'primary')
     muted = b.color('muted')
     on_disabled = b.disabled('text', background)
-    if not options.get('wash', True):
-        # Row wash is off: the control keeps its accent GLYPH fill (foreground)
-        # but drops its own selected BACKGROUND box so it matches the row.
-        selected = background
 
     b.create_style_layout(
         ttk_style,
@@ -349,16 +350,10 @@ def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
     foreground_token = options.get('foreground', None)
 
     background = b.color(surface_token)
-    active = b.elevate(b.color(base_token), 2)
     pressed = b.pressed(background)
-    selected = b.subtle(accent or 'primary', background)
-    on_selected = b.on_color(selected)
+    selected = _selection_wash(b, accent, background, options)
     on_background = b.color(foreground_token) if foreground_token else b.on_color(background)
-    if not options.get('wash', True):
-        # No row wash: text keeps its normal background and color (selection is
-        # shown by the control instead).
-        selected = background
-        on_selected = on_background
+    on_selected = b.on_color(selected)
 
     # Selection only — no hover wash, no 'focus' wash (keyboard focus = row bar).
     # Row hover was removed (competed with stripe/selection washes).
