@@ -128,7 +128,43 @@ class Carousel(Frame):
         self._stage.bind("<Right>", lambda e: self.next())
         self.bind("<<BsThemeChanged>>", self._on_theme, add="+")
 
+        # Auto-refresh when the data source changes externally (parity with the
+        # other record-native widgets); the subscription is released on destroy.
+        self._change_sub = None
+        on_change = getattr(self._datasource, "on_change", None)
+        if callable(on_change):
+            try:
+                self._change_sub = on_change(self._on_source_change)
+            except Exception:
+                self._change_sub = None
+        self.bind("<Destroy>", self._on_destroy, add="+")
+
     # ----- theme / data ------------------------------------------------------
+
+    def _on_source_change(self, _event: Any = None) -> None:
+        try:
+            self.reload()
+        except Exception:
+            pass
+
+    def _on_destroy(self, event: Any = None) -> None:
+        if event is not None and getattr(event, "widget", None) is not self:
+            return
+        sub, self._change_sub = self._change_sub, None
+        if sub is not None:
+            try:
+                sub.cancel()
+            except Exception:
+                pass
+
+    def reload(self) -> None:
+        """Reload from the data source and refresh the current slide."""
+        n = self._count()
+        self._index = max(0, min(self._index, n - 1)) if n else 0
+        if self._box[0] > 1 and self._box[1] > 1:
+            self._set_current(self._compose(self._pil_at(self._index), *self._box))
+            self._ensure_frame(*self._box)
+            self._draw_overlays(*self._box)
 
     def _surface_color(self) -> str:
         token = getattr(self, "_surface", None) or "background"
@@ -242,6 +278,9 @@ class Carousel(Frame):
         self._box = box
         if box[0] <= 1 or box[1] <= 1:
             return
+        # Don't fight an in-flight transition; it recomposes at the settled box.
+        if self._transitioning:
+            return
         self._set_current(self._compose(self._pil_at(self._index), *box))
         self._ensure_frame(*box)
         self._draw_overlays(*box)
@@ -261,7 +300,12 @@ class Carousel(Frame):
             return
         w, h = self._box
         if w <= 1 or h <= 1:
+            # Not laid out yet — record the index and announce the change; the
+            # first <Configure> will render it.
             self._index = index
+            record = self._public_at(index)
+            if record is not None:
+                self.event_generate("<<Change>>", data=record)
             return
         next_pil = self._compose(self._pil_at(index), w, h)
         self._index = index
@@ -338,7 +382,14 @@ class Carousel(Frame):
         step(1)
 
     def _after_change(self) -> None:
-        self._draw_overlays(*self._box)
+        bw, bh = self._box
+        if bw > 1 and bh > 1:
+            # A resize deferred during the transition leaves the settled image at
+            # the old size — recompose if it no longer matches the live box.
+            if self._cur_pil is None or self._cur_pil.size != (bw, bh):
+                self._set_current(self._compose(self._pil_at(self._index), bw, bh))
+            self._ensure_frame(bw, bh)
+            self._draw_overlays(bw, bh)
         record = self._public_at(self._index)
         if record is not None:
             self.event_generate("<<Change>>", data=record)
@@ -442,6 +493,11 @@ class Carousel(Frame):
         self._autoplay = False
         self._cancel_autoplay()
 
+    def stop(self) -> None:
+        """Stop autoplay and return to the first slide."""
+        self.pause()
+        self.go_to(0)
+
     def _arm_autoplay(self) -> None:
         self._cancel_autoplay()
         if self._autoplay:
@@ -454,6 +510,12 @@ class Carousel(Frame):
 
     def _autoplay_tick(self) -> None:
         self._autoplay_job = None
+        if self._transitioning:
+            # A tick landed mid-transition; next() would no-op and autoplay would
+            # die (no _after_change to re-arm). Retry shortly instead.
+            if self._autoplay:
+                self._autoplay_job = self._schedule.delay(_FRAME_MS * 8, self._autoplay_tick)
+            return
         self.next()   # _after_change re-arms
 
     # ----- events / accessors ------------------------------------------------
