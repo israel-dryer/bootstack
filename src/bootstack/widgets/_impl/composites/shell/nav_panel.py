@@ -1,21 +1,28 @@
 """The static navigation panel — single-select items, headers, separators, footer.
 
 `NavPanel` renders a flat, single-select list into a sidebar region: items in a
-scrolling main area plus a pinned footer area. Selection is driven externally
-(by the shell, from `NavModel`) — clicking an item reports the key via the
-`on_select` callback; the shell decides what becomes active and calls `select()`
-back to update the visual state. The panel never owns selection truth.
+scrolling main area plus a pinned footer area. Each item is a `RadioToggle`
+sharing one `Signal`, so single-select is the radio machinery itself — no
+hand-rolled selection state. The items are styled via a native Toolbutton
+**variant** (`nav-quiet` under a rail; `nav-pill` standalone is added later), so
+the look is driven by the style engine, not custom composite state.
 
-Collapsible groups are deliberately absent (see `docs/_dev/appshell-navigation-spec.md`,
-decision #11): the primary nav is a flat list of items plus *static* headers.
+Selection truth still lives in the shell's `NavModel`: clicking an item reports
+the key via the `on_select` callback; the shell decides what becomes active and
+calls `select()` back (setting the shared signal) to reflect it.
+
+Section headers may be **1-level collapsible groups** (a header + the run of
+items after it, up to the next header/separator). Compaction to icon-only is a
+native `-compound` toggle on each item (`'left'` <-> `'image'`).
 """
 
 from __future__ import annotations
 
 from typing import Callable
 
+from bootstack.signals import Signal
 from bootstack.widgets._impl.primitives.frame import Frame
-from bootstack.widgets._impl.composites.sidenav.item import SideNavItem
+from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle
 from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 
@@ -26,7 +33,10 @@ class NavPanel(Frame):
     Args:
         master: Parent widget (a sidebar region).
         on_select: Called with an item key when that item is clicked.
-        accent: Accent token for the active-item indicator.
+        accent: Accent token for the active item.
+        variant: Toolbutton style variant for the items (the tier treatment) —
+            `'nav-quiet'` under a rail, `'nav-pill'` standalone.
+        surface: Surface token the items sit on (the sidebar region surface).
     """
 
     def __init__(
@@ -35,40 +45,57 @@ class NavPanel(Frame):
         *,
         on_select: Callable[[str], None],
         accent: str = "primary",
+        variant: str = "nav-quiet",
+        surface: str = "card",
     ) -> None:
-        super().__init__(master)
+        super().__init__(master, surface=surface)
         self._on_select = on_select
         self._accent = accent
-        self._items: dict[str, SideNavItem] = {}
-        self._selected: str | None = None
+        self._variant = variant
+        self._surface = surface
+        self._items: dict[str, RadioToggle] = {}
         self._compact = False
+        # Shared selection signal: value is the selected item key (radio
+        # single-select). "" is the sentinel for "nothing selected" (a Signal is
+        # typed by its initial value, so it can't hold None here).
+        self._signal: Signal = Signal("")
         # Insertion-ordered main-area children (items, headers, separators) so
         # compaction can re-pack them in order; footer items tracked separately.
-        self._main_children: list[Frame] = []
-        self._footer_items: list[SideNavItem] = []
+        self._main_children: list = []
+        self._footer_items: list = []
 
         # Footer pinned to the bottom; main area fills the rest above it.
-        self._footer = Frame(self)
+        self._footer = Frame(self, surface=surface)
         self._footer.pack(side="bottom", fill="x")
-        self._main = Frame(self)
+        self._main = Frame(self, surface=surface)
         self._main.pack(side="top", fill="both", expand=True)
 
-    def add_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
+    def add_item(self, key: str, *, text: str = "", icon=None) -> RadioToggle:
         """Add a selectable item to the main area; wire its click to `on_select`."""
         return self._add_item(self._main, key, text=text, icon=icon, footer=False)
 
-    def add_footer_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
+    def add_footer_item(self, key: str, *, text: str = "", icon=None) -> RadioToggle:
         """Add a selectable item pinned to the footer."""
         return self._add_item(self._footer, key, text=text, icon=icon, footer=True)
 
-    def _add_item(self, parent: Frame, key: str, *, text: str, icon, footer: bool) -> SideNavItem:
+    def _add_item(self, parent: Frame, key: str, *, text: str, icon, footer: bool) -> RadioToggle:
         if key in self._items:
             raise ValueError(f"duplicate nav item key: {key!r}")
-        item = SideNavItem(parent, key=key, text=text, icon=icon, accent=self._accent)
-        if self._compact:
-            item.set_compact(True)
+        item = RadioToggle(
+            parent,
+            value=key,
+            signal=self._signal,
+            text=text,
+            icon=icon,
+            compound="image" if self._compact else "left",
+            accent=self._accent,
+            surface=self._surface,
+            variant=self._variant,
+        )
         item.pack(fill="x")
-        item.on_invoked(lambda _event, k=key: self._on_select(k))
+        # Click reports the key to the shell (which drives NavModel). The radio
+        # also updates the shared signal on click; the shell reconciles via select().
+        item.bind("<Button-1>", lambda _e, k=key: self._on_select(k), add="+")
         self._items[key] = item
         (self._footer_items if footer else self._main_children).append(item)
         return item
@@ -81,8 +108,8 @@ class NavPanel(Frame):
                 if item in tracker:
                     tracker.remove(item)
             item.destroy()
-            if self._selected == key:
-                self._selected = None
+            if self._signal() == key:
+                self._signal.set("")
 
     def update_item(self, key: str, *, text: str | None = None, icon=None) -> None:
         """Update an existing item's label and/or icon in place."""
@@ -94,13 +121,6 @@ class NavPanel(Frame):
         if icon is not None:
             item.configure(icon=icon)
 
-    def add_header(self, text: str) -> SideNavHeader:
-        """Add a static (non-collapsible) section header to the main area.
-
-        Uses a tighter top margin than the stock `SideNavHeader` default — the
-        header alone carries enough separation, so a roomy top gap reads as
-        excess (especially when it follows an item).
-        """
     def add_header(self, text: str, *, collapsible: bool = False) -> SideNavHeader:
         """Add a section header to the main area.
 
@@ -158,9 +178,9 @@ class NavPanel(Frame):
     def _relayout_main(self) -> None:
         """Re-pack the main area in insertion order, honoring compact + groups.
 
-        - Compact: items render icon-only; headers and separators hide; collapsed
-          groups are *flattened* (their items still show as icons) — collapse
-          state is preserved and restored on expand.
+        - Compact: items render icon-only (`-compound='image'`); headers and
+          separators hide; collapsed groups are *flattened* (their items still
+          show as icons) — collapse state is preserved and restored on expand.
         - Expanded: headers/separators show; an item is hidden when it belongs to
           a collapsed group (the run of items after a collapsed collapsible
           header, up to the next header or separator).
@@ -177,19 +197,22 @@ class NavPanel(Frame):
                 group_collapsed = False
                 if not self._compact:
                     child.pack(fill="x")
-            else:  # SideNavItem
-                child.set_compact(self._compact)
+            else:  # RadioToggle nav item
+                child.configure(compound="image" if self._compact else "left")
                 if self._compact or not group_collapsed:
                     child.pack(fill="x")
 
     def set_compact(self, compact: bool) -> None:
-        """Render items icon-only (compact) or with labels (expanded)."""
+        """Render items icon-only (compact) or with labels (expanded).
+
+        Compaction is a native `-compound` toggle on each item, not a style state.
+        """
         if self._compact == compact:
             return
         self._compact = compact
         self._relayout_main()
         for item in self._footer_items:
-            item.set_compact(compact)
+            item.configure(compound="image" if compact else "left")
 
     @property
     def compact(self) -> bool:
@@ -198,14 +221,12 @@ class NavPanel(Frame):
 
     def select(self, key: str | None) -> None:
         """Set the visual selection to `key` (or clear it with `None`)."""
-        for k, item in self._items.items():
-            item.set_selected(k == key)
-        self._selected = key
+        self._signal.set(key if key is not None else "")
 
     @property
     def selected(self) -> str | None:
         """The currently selected item key, or `None`."""
-        return self._selected
+        return self._signal() or None
 
     def item_keys(self) -> tuple[str, ...]:
         """All item keys (main + footer) in insertion order."""

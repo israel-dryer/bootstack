@@ -36,6 +36,7 @@ from typing import Any
 from bootstack._runtime.app import App
 from bootstack.widgets._impl.composites.toolbar import Toolbar
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.separator import Separator
 
 
 # Default region sizing (pixels). Rail and compact sidebar share a width so a
@@ -121,6 +122,9 @@ class ShellLayout(App):
         # Body row + its slots.
         self._body = Frame(root)
         self._rail = Frame(self._body, surface="chrome")
+        # A thin divider between the rail and the sidebar reinforces the tier
+        # boundary (shown only when the rail renders).
+        self._rail_sep = Separator(self._body, orient="vertical")
         self._sidebar = Frame(self._body, surface="card")
         self._content = Frame(self._body)
         self._dock = Frame(self._body, surface="card")
@@ -150,10 +154,11 @@ class ShellLayout(App):
 
     def _relayout_body(self) -> None:
         """Re-pack the body slots left-to-right in canonical order."""
-        for child in (self._rail, self._sidebar, self._content, self._dock):
+        for child in (self._rail, self._rail_sep, self._sidebar, self._content, self._dock):
             child.pack_forget()
         if self._show_rail:
             self._rail.pack(side="left", fill="y")
+            self._rail_sep.pack(side="left", fill="y")
         if self._show_sidebar:
             self._sidebar.pack(side="left", fill="y")
         self._content.pack(side="left", fill="both", expand=True)

@@ -285,6 +285,83 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     b.map_style(ttk_style, **state_spec)
 
 
+@BootstyleBuilderTTk.register_builder('nav-quiet', 'Toolbutton')
+def build_nav_quiet_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+    """Build the quiet sidebar nav item (the under-a-rail / tier-2 treatment).
+
+    A flat full-width row: the selected row gets a **subtle accent wash** only —
+    **no indicator bar** and a **neutral foreground** (no accent text/icon), so
+    the wash alone marks selection (VS Code's Explorer / a settings list). This
+    is a `RadioToggle` (single-select) styled via the native engine; compaction
+    to icon-only is a `-compound` toggle on the widget, not a style concern.
+    """
+    accent_token = accent or 'primary'
+    surface_token = options.get('surface', 'card')
+    density = options.get('density', 'default')
+    icon_only = options.get('icon_only', False)
+    anchor = options.get('anchor', 'w')
+    image_key = f'navitem_{normalize_button_density(density)}'
+
+    surface = b.color(surface_token)
+    surface_hover = b.color(f'{surface_token}_hover') if b.colors.get(f'{surface_token}_hover') else b.active(surface)
+    surface_pressed = b.pressed(surface_hover)
+    on_surface = b.on_color(surface)
+    active = b.subtle(accent_token, surface)
+    active_pressed = b.pressed(active)
+    disabled = b.disabled()
+    on_disabled = b.disabled('text', disabled)
+
+    # The bar channel (3rd) always matches the fill, so no bar ever shows. The
+    # subtle wash appears only on the selected state.
+    normal_img  = recolor_element_image(image_key, surface, surface, surface, surface)
+    hover_img   = recolor_element_image(image_key, surface_hover, surface_hover, surface_hover, surface)
+    pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, surface_pressed, surface)
+    selected_img         = recolor_element_image(image_key, active,         active,         active,         surface)
+    selected_hover_img   = recolor_element_image(image_key, active,         active,         active,         surface)
+    selected_pressed_img = recolor_element_image(image_key, active_pressed, active_pressed, active_pressed, surface)
+    disabled_img = recolor_element_image(image_key, disabled, disabled, disabled, surface)
+
+    b.create_style_element_image(
+        ElementImage(
+            f'{ttk_style}.border', normal_img.image, sticky="nsew",
+            border=normal_img.meta.border, padding=normal_img.meta.border
+        ).state_specs(
+            [
+                ('disabled', disabled_img.image),
+                ('selected pressed', selected_pressed_img.image),
+                ('selected hover', selected_hover_img.image),
+                ('selected', selected_img.image),
+                ('pressed', pressed_img.image),
+                ('hover', hover_img.image),
+                ('', normal_img.image)
+            ]))
+
+    b.create_style_layout(ttk_style, toolbutton_layout(ttk_style))
+
+    nav_padding = options.get('padding') or b.scale((12, 6, 12, 6))
+
+    b.configure_style(
+        ttk_style,
+        background=surface,
+        foreground=on_surface,
+        relief='flat',
+        padding=nav_padding,
+        anchor=anchor,
+        font=button_font(density),
+    )
+
+    # Neutral foreground in every state — the wash is the only selection marker.
+    state_spec = dict(
+        foreground=[
+            ('disabled', on_disabled),
+            ('', on_surface),
+        ]
+    )
+    state_spec = apply_icon_mapping(b, options, state_spec, icon_size(icon_only, density))
+
+    b.map_style(ttk_style, **state_spec)
+
+
 @BootstyleBuilderTTk.register_builder('default', 'NavigationButton.TFrame')
 def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """Build NavigationButton frame style with selection indicator.
