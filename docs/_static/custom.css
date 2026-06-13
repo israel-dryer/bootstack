@@ -126,3 +126,23 @@ html[data-theme="dark"] .bd-content img.bs-window-screenshot {
 html[data-theme="dark"] .bs-window-screenshot {
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 }
+
+/* Demo videos (content-only captures) — plain, no border or shadow. Light/dark
+   variants follow the theme exactly as the screenshot classes do. */
+.bs-video-dark,
+.bs-video-light {
+    display: block;
+    margin: 0.75rem auto;
+    max-width: 100%;
+    height: auto;
+}
+.bs-video-dark  { display: none  !important; }
+.bs-video-light { display: block !important; }
+@media (prefers-color-scheme: dark) {
+    .bs-video-dark  { display: block !important; }
+    .bs-video-light { display: none  !important; }
+}
+html[data-theme="light"] .bs-video-dark  { display: none  !important; }
+html[data-theme="light"] .bs-video-light { display: block !important; }
+html[data-theme="dark"]  .bs-video-dark  { display: block !important; }
+html[data-theme="dark"]  .bs-video-light { display: none  !important; }
