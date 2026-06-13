@@ -6,12 +6,35 @@ object-fit scaling and antialiased rounded-corner masking live in one place.
 
 from __future__ import annotations
 
-from typing import Literal
+from pathlib import Path
+from typing import Any, Literal
 
 from PIL import Image as PILImage, ImageChops, ImageDraw
 from PIL.Image import Resampling
 
 FitMode = Literal["contain", "cover", "fill", "none", "scale-down"]
+
+
+def resolve_pil(source: Any) -> "PILImage.Image | None":
+    """Resolve an image source (Image handle, path, or PIL image) to a PIL image.
+
+    Returns the first frame for an animated source, or None when `source` is
+    None or cannot be decoded.
+    """
+    if source is None:
+        return None
+    from bootstack.images import Image as _ImageHandle
+
+    try:
+        if isinstance(source, _ImageHandle):
+            return source._load_pil()
+        if isinstance(source, (str, Path)):
+            return PILImage.open(Path(source).expanduser())
+        if isinstance(source, PILImage.Image):
+            return source
+    except Exception:
+        return None
+    return None
 
 
 def fit_image(frame: PILImage.Image, bw: int, bh: int, fit: FitMode) -> PILImage.Image:

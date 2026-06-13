@@ -36,7 +36,7 @@ _EXPORTS: dict[str, str] = {
     "Calendar": "calendar",
     # Data display
     "Label": "label", "Badge": "label", "Picture": "picture", "Gallery": "gallery",
-    "ProgressBar": "progressbar",
+    "Carousel": "carousel", "ProgressBar": "progressbar",
     "Gauge": "gauge", "ListView": "listview", "DataTable": "datatable", "Tree": "tree",
     # Navigation
     "PageStack": "pagestack", "StackPage": "pagestack",
