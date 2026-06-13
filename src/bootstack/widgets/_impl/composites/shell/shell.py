@@ -103,12 +103,19 @@ class Shell(ShellLayout):
     def _create_workspace(self, key: str, *, text: str = "", icon=None, is_footer: bool = False) -> Workspace:
         panel = self._panel_stack.add(key)
         content = self._content_stack.add(key)
+        # Tier-relative static treatment: the implicit default workspace is the
+        # standalone primary nav (no rail) -> prominent pills; a named workspace
+        # sits under the rail -> quiet rows. (list_nav/tree keep their own row
+        # language regardless; only the static provider reads this.)
+        nav_variant = "nav-pill" if key == _DEFAULT_WORKSPACE else "nav-quiet"
         ws = Workspace(
             key, panel, content,
             nav_accent=self._nav_accent,
             on_select=self._workspace_select,
             on_refresh=self._workspace_refresh,
             on_first_page=self._on_first_page,
+            nav_variant=nav_variant,
+            nav_surface=self.sidebar_surface,
         )
         self._workspaces[key] = ws
         # The implicit default workspace never gets a rail icon (single-tier).

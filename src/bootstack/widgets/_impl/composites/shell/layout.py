@@ -45,6 +45,15 @@ DEFAULT_RAIL_WIDTH = 52
 DEFAULT_SIDEBAR_WIDTH = 240
 DEFAULT_DOCK_WIDTH = 280
 
+# Region surfaces — the single source of truth. Nav items blend their selection
+# tint (and round their corners) against the SAME surface they render on, so the
+# color can never mismatch the background; callers thread these down rather than
+# hardcoding a surface token independently.
+RAIL_SURFACE = "chrome"
+SIDEBAR_SURFACE = "card"
+DOCK_SURFACE = "card"
+STATUSBAR_SURFACE = "chrome"
+
 
 class ShellLayout(App):
     """The shell's band layout — a window of toggleable region slots.
@@ -117,17 +126,17 @@ class ShellLayout(App):
 
         # Full-width bands.
         self._chrome = Frame(root)
-        self._statusbar = Toolbar(root, surface="chrome", draggable=False)
+        self._statusbar = Toolbar(root, surface=STATUSBAR_SURFACE, draggable=False)
 
         # Body row + its slots.
         self._body = Frame(root)
-        self._rail = Frame(self._body, surface="chrome")
+        self._rail = Frame(self._body, surface=RAIL_SURFACE)
         # A thin divider between the rail and the sidebar reinforces the tier
         # boundary (shown only when the rail renders).
         self._rail_sep = Separator(self._body, orient="vertical")
-        self._sidebar = Frame(self._body, surface="card")
+        self._sidebar = Frame(self._body, surface=SIDEBAR_SURFACE)
         self._content = Frame(self._body)
-        self._dock = Frame(self._body, surface="card")
+        self._dock = Frame(self._body, surface=DOCK_SURFACE)
 
         # Fixed-width slots keep their requested width instead of shrinking to
         # fit their children.
@@ -240,6 +249,16 @@ class ShellLayout(App):
     def content(self) -> Frame:
         """The content slot (the active page)."""
         return self._content
+
+    @property
+    def sidebar_surface(self) -> str:
+        """Surface token the sidebar region renders on (for matched nav tints)."""
+        return SIDEBAR_SURFACE
+
+    @property
+    def rail_surface(self) -> str:
+        """Surface token the rail region renders on."""
+        return RAIL_SURFACE
 
     @property
     def dock(self) -> Frame:

@@ -48,11 +48,15 @@ class Workspace:
         on_select: Callable[[str, str], None],
         on_refresh: Callable[[str], None],
         on_first_page: Callable[[str, str], None],
+        nav_variant: str = "nav-quiet",
+        nav_surface: str = "card",
     ) -> None:
         self._key = key
         self._sidebar = sidebar_panel
         self._content = content_frame
         self._nav_accent = nav_accent
+        self._nav_variant = nav_variant
+        self._nav_surface = nav_surface
         self._on_select = on_select
         self._on_refresh = on_refresh
         self._on_first_page = on_first_page
@@ -82,7 +86,9 @@ class Workspace:
 
     def _ensure_static(self) -> StaticProvider:
         if self._provider is None:
-            self._provider = StaticProvider(accent=self._nav_accent)
+            self._provider = StaticProvider(
+                accent=self._nav_accent, variant=self._nav_variant, surface=self._nav_surface
+            )
             self._mount_provider()
         elif not isinstance(self._provider, StaticProvider):
             raise RuntimeError(
@@ -164,7 +170,8 @@ class Workspace:
         """Fill the workspace from a `DataSource` (flat master-detail)."""
         self._claim_provider()
         self._provider = ListNavProvider(
-            source, text_field=text_field, icon_field=icon_field, accent=self._nav_accent
+            source, text_field=text_field, icon_field=icon_field,
+            accent=self._nav_accent, surface=self._nav_surface,
         )
         self._mount_provider()
         return self._provider

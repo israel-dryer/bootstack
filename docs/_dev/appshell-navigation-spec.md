@@ -112,6 +112,14 @@ chevron and Ctrl-B agree for the static case.
     why a mixed sidebar jars); style the chevron (size/weight/placement) and the
     collapsible-header treatment (distinct from a plain static label); quiet the
     per-item accent fg/icon coloring per R3.
+  - **Sidebar nav-item style variants (native Toolbutton variants):** the items
+    are `RadioToggle`s styled by native variants — `nav-quiet` (under-rail: square
+    `navitem` wash + neutral fg), `nav-pill`/`nav-pill-compact` (standalone:
+    rounded `card` pill + accent fg). The pill is currently a **ghost** treatment
+    (subtle accent tint + accent fg). **FOLLOW-UP:** add a **`solid`** pill variant
+    — fill the pill with the solid accent token and use the on-color foreground
+    (e.g. white-on-accent); ghost stays the default. This generalizes to offering
+    the button-family variants (ghost/solid/outline) for sidebar items.
   - **Composition guideline (docs, not enforced):** use grouping *consistently* —
     a flat list, or everything under collapsible sections (VS Code Explorer); a
     single primary item *above* groups is acceptable, but don't sprinkle loose

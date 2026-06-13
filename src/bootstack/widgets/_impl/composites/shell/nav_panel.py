@@ -27,6 +27,11 @@ from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 
 
+# Container-controlled spacing (the button's own size is the style's job).
+_ITEM_GAP = 3       # vertical gap between nav buttons
+_COMPACT_INSET = 6  # horizontal inset of the compact (rail-width) sidebar
+
+
 class NavPanel(Frame):
     """A flat, single-select list of navigation items with a pinned footer.
 
@@ -64,11 +69,18 @@ class NavPanel(Frame):
         self._main_children: list = []
         self._footer_items: list = []
 
-        # Footer pinned to the bottom; main area fills the rest above it.
+        # Pill items are inset from the sidebar edges (the rounded pill needs
+        # breathing room from the container); quiet rows run full-width.
+        self._inset = 8 if variant == "nav-pill" else 0
+
+        # Footer pinned to the bottom; main area fills the rest above it. The top
+        # gap matches the horizontal inset so the first pill has even breathing
+        # room from the container.
         self._footer = Frame(self, surface=surface)
         self._footer.pack(side="bottom", fill="x")
         self._main = Frame(self, surface=surface)
         self._main.pack(side="top", fill="both", expand=True)
+        self._apply_inset(self._inset)
 
     def add_item(self, key: str, *, text: str = "", icon=None) -> RadioToggle:
         """Add a selectable item to the main area; wire its click to `on_select`."""
@@ -90,9 +102,9 @@ class NavPanel(Frame):
             compound="image" if self._compact else "left",
             accent=self._accent,
             surface=self._surface,
-            variant=self._variant,
+            variant=self._item_variant(),
         )
-        item.pack(fill="x")
+        item.pack(fill="x", pady=(0, _ITEM_GAP))
         # Click reports the key to the shell (which drives NavModel). The radio
         # also updates the shared signal on click; the shell reconciles via select().
         item.bind("<Button-1>", lambda _e, k=key: self._on_select(k), add="+")
@@ -198,21 +210,36 @@ class NavPanel(Frame):
                 if not self._compact:
                     child.pack(fill="x")
             else:  # RadioToggle nav item
-                child.configure(compound="image" if self._compact else "left")
                 if self._compact or not group_collapsed:
-                    child.pack(fill="x")
+                    child.pack(fill="x", pady=(0, _ITEM_GAP))
+
+    def _item_variant(self) -> str:
+        """The Toolbutton style variant for items in the current mode."""
+        return f"{self._variant}-compact" if self._compact else self._variant
+
+    def _apply_inset(self, inset: int) -> None:
+        """Re-pad the main/footer containers (the pill inset from the edges)."""
+        self._main.pack_configure(padx=inset, pady=(inset, 0))
+        self._footer.pack_configure(padx=inset, pady=(0, inset))
 
     def set_compact(self, compact: bool) -> None:
         """Render items icon-only (compact) or with labels (expanded).
 
-        Compaction is a native `-compound` toggle on each item, not a style state.
+        Compaction swaps each item to the matching `-compact` style variant (a
+        centered icon-only layout) and flips `-compound` to hide the label — both
+        native, no custom composite state.
         """
         if self._compact == compact:
             return
         self._compact = compact
+        # Compact shrinks the sidebar to the rail width; use a small inset so the
+        # pills don't touch the edges (the card pill is narrow enough to fit).
+        self._apply_inset(_COMPACT_INSET if compact else self._inset)
+        variant = self._item_variant()
+        compound = "image" if compact else "left"
+        for item in self._items.values():
+            item.configure(variant=variant, compound=compound)
         self._relayout_main()
-        for item in self._footer_items:
-            item.configure(compound="image" if compact else "left")
 
     @property
     def compact(self) -> bool:

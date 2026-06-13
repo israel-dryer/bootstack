@@ -85,8 +85,10 @@ class StaticProvider:
 
     supports_compact = True
 
-    def __init__(self, *, accent: str = "primary") -> None:
+    def __init__(self, *, accent: str = "primary", variant: str = "nav-quiet", surface: str = "card") -> None:
         self._accent = accent
+        self._variant = variant
+        self._surface = surface
         self._nav: NavPanel | None = None
         self._pages: PageStack | None = None
         self._keys: list[str] = []
@@ -100,7 +102,10 @@ class StaticProvider:
         on_refresh: Callable[[], None] | None = None,
     ) -> None:
         # Static authoring never refreshes from a source; on_refresh is ignored.
-        self._nav = NavPanel(sidebar, on_select=on_select, accent=self._accent)
+        self._nav = NavPanel(
+            sidebar, on_select=on_select, accent=self._accent,
+            variant=self._variant, surface=self._surface,
+        )
         self._nav.pack(fill="both", expand=True)
         self._pages = PageStack(content)
         self._pages.pack(fill="both", expand=True)
@@ -186,11 +191,13 @@ class ListNavProvider:
         text_field: str = "text",
         icon_field: str = "icon",
         accent: str = "primary",
+        surface: str = "card",
     ) -> None:
         self._source = source
         self._text_field = text_field
         self._icon_field = icon_field
         self._accent = accent
+        self._surface = surface
         self._nav: NavPanel | None = None
         self._host: ContentHost | None = None
         self._detail: Callable[[dict], Any] | None = None
@@ -208,7 +215,9 @@ class ListNavProvider:
         on_refresh: Callable[[], None] | None = None,
     ) -> None:
         self._on_refresh = on_refresh
-        self._nav = NavPanel(sidebar, on_select=on_select, accent=self._accent)
+        self._nav = NavPanel(
+            sidebar, on_select=on_select, accent=self._accent, surface=self._surface
+        )
         self._nav.pack(fill="both", expand=True)
         self._host = ContentHost(content)
         self._populate()
