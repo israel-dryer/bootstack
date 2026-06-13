@@ -166,18 +166,19 @@ class StaticProvider:
 
 
 class ListNavProvider:
-    """Flat, data-bound provider — a `DataSource` drives the sidebar list.
+    """Flat, data-bound provider — a `DataSource` drives a sidebar `ListView`.
 
-    Each record becomes a single-select nav item (keyed by record id); selecting
-    one re-renders a single `@detail` body parameterized by that record. The
-    detail body receives the **public record dict** (the universal `.selection`
-    shape) — not a bespoke node object.
+    Each record becomes a single-select row (keyed by record id); selecting one
+    re-renders a single `@detail` body parameterized by that record — the public
+    record dict (the universal `.selection` shape). Rows render the record's
+    `text`/`icon`; the recycling `ListView` follows the source live and inherits
+    the sidebar surface (no surface plumbing needed).
 
     Args:
-        source: A `DataSourceProtocol` supplying records.
-        text_field: Record field used for the item label.
-        icon_field: Record field used for the item icon.
-        accent: Accent token for the active nav item.
+        source: A `DataSourceProtocol` supplying records (with `text`/`icon`).
+        accent: Accent token (the selection control follows it; the row
+            selection itself is a neutral wash by default).
+        separator: Draw separator lines between rows. Default False (flush).
     """
 
     # A label-less data list is a poor nav, so list_nav is hidden-or-shown,
@@ -188,23 +189,22 @@ class ListNavProvider:
         self,
         source: Any,
         *,
-        text_field: str = "text",
-        icon_field: str = "icon",
         accent: str = "primary",
-        surface: str = "card",
+        separator: bool = False,
     ) -> None:
         self._source = source
-        self._text_field = text_field
-        self._icon_field = icon_field
         self._accent = accent
-        self._surface = surface
-        self._nav: NavPanel | None = None
+        self._separator = separator
+        self._listview: Any = None
         self._host: ContentHost | None = None
+        self._sidebar_host: ContentHost | None = None
         self._detail: Callable[[dict], Any] | None = None
-        self._records: dict[str, dict] = {}
-        self._order: list[str] = []
+        self._selected: str | None = None
+        self._cache: dict[str, dict] = {}
+        self._on_select: Callable[[str], None] | None = None
         self._on_refresh: Callable[[], None] | None = None
         self._sub: Any = None
+        self._src_sub: Any = None
 
     def mount(
         self,
@@ -214,16 +214,29 @@ class ListNavProvider:
         on_select: Callable[[str], None],
         on_refresh: Callable[[], None] | None = None,
     ) -> None:
+        from bootstack.widgets.listview import ListView
+
+        self._on_select = on_select
         self._on_refresh = on_refresh
-        self._nav = NavPanel(
-            sidebar, on_select=on_select, accent=self._accent, surface=self._surface
-        )
-        self._nav.pack(fill="both", expand=True)
         self._host = ContentHost(content)
-        self._populate()
-        # Live updates: rebuild items when the source changes (delivered on the
-        # UI thread by the data layer). Stored so it can be cancelled on close.
-        self._sub = self._source.on_change(self._on_source_change)
+        self._sidebar_host = ContentHost(sidebar)
+        self._listview = ListView(
+            parent=self._sidebar_host,
+            data_source=self._source,
+            selection_mode="single",
+            show_separators=self._separator,
+            show_scrollbar=False,   # mousewheel scrolls; no always-on bar in a nav
+            density="compact",      # dense data list; also differentiates from the static pill nav
+            accent=self._accent,
+            fill="both",
+            expand=True,
+        )
+        self._cache = self._read()
+        self._sub = self._listview.on_select(self._on_listview_select)
+        # The ListView refreshes its own rows from the source; we observe too, to
+        # re-render the open detail when the selected record changes in place and
+        # to let the host reconcile selection on add/remove.
+        self._src_sub = self._source.on_change(self._on_source_change)
 
     def set_detail(self, fn: Callable[[dict], Any]) -> None:
         """Register the parameterized detail body builder."""
@@ -238,65 +251,41 @@ class ListNavProvider:
             out[str(rec.get("id"))] = rec
         return out
 
-    def _label(self, rec: dict) -> str:
-        return str(rec.get(self._text_field, ""))
-
-    def _icon(self, rec: dict):
-        return rec.get(self._icon_field)
-
-    def _populate(self) -> None:
-        self._records = self._read()
-        self._order = list(self._records)
-        for key, rec in self._records.items():
-            self._nav.add_item(key, text=self._label(rec), icon=self._icon(rec))
+    def _on_listview_select(self, _event: Any = None) -> None:
+        sel = self._listview.selection
+        if not sel:
+            return
+        self._selected = str(sel.get("id"))
+        self._on_select(self._selected)
 
     def _on_source_change(self, _event: Any = None) -> None:
-        """Reconcile the sidebar against the source (add / remove / update).
+        """React to a source change (the ListView refreshes its own rows).
 
-        Incremental: removed records drop their items, new records append, and
-        changed labels/icons update in place. Source reordering is not reflected
-        (new items append) — acceptable for a small nav list.
+        Re-render the open detail if the selected record changed in place, and
+        let the host reconcile the active selection (e.g. the selected record was
+        removed).
         """
         new = self._read()
-        old_keys = set(self._records)
-        new_keys = set(new)
-
-        for key in old_keys - new_keys:
-            self._nav.remove_item(key)
-            self._records.pop(key, None)
-            if key in self._order:
-                self._order.remove(key)
-
-        updated: set[str] = set()
-        for key, rec in new.items():
-            if key not in self._records:
-                self._order.append(key)
-                self._nav.add_item(key, text=self._label(rec), icon=self._icon(rec))
-            else:
-                old = self._records[key]
-                if self._label(old) != self._label(rec) or self._icon(old) != self._icon(rec):
-                    self._nav.update_item(key, text=self._label(rec), icon=self._icon(rec))
-                if old != rec:
-                    updated.add(key)
-            self._records[key] = rec
-
-        # If the selected record's data changed, re-render its detail in place
-        # (only then — no flicker on unrelated changes).
-        sel = self._nav.selected
-        if sel is not None and sel in updated:
-            self.show(sel)
-
+        key = self._selected
+        changed = (
+            key is not None and key in new and key in self._cache
+            and new[key] != self._cache[key]
+        )
+        self._cache = new
+        if changed:
+            self.show(key)
         if self._on_refresh is not None:
             self._on_refresh()
 
     def close(self) -> None:
-        """Cancel the source subscription."""
-        if self._sub is not None:
-            try:
-                self._sub.cancel()
-            except Exception:
-                pass
-            self._sub = None
+        """Cancel the selection + source subscriptions."""
+        for sub in (self._sub, self._src_sub):
+            if sub is not None:
+                try:
+                    sub.cancel()
+                except Exception:
+                    pass
+        self._sub = self._src_sub = None
 
     # ----- Provider contract -----
 
@@ -305,24 +294,35 @@ class ListNavProvider:
         pass
 
     def show(self, key: str, data: dict | None = None) -> None:
-        record = self._records.get(key)
+        record = self._cache.get(key)
         self._host.clear()
         if self._detail is not None and record is not None:
             with self._host:
                 self._detail(record)
 
     def select_visual(self, key: str | None) -> None:
-        self._nav.select(key)
+        self._selected = key
+        if key is None:
+            self._listview.clear_selection()
+            return
+        record = self._cache.get(key)
+        if record is not None:
+            self._listview.select_items([record.get("id")])
 
     def keys(self) -> tuple[str, ...]:
-        return tuple(self._order)
+        return tuple(self._read().keys())
 
     # ----- Accessors -----
 
     @property
-    def nav(self) -> NavPanel:
-        """The sidebar navigation panel."""
-        return self._nav
+    def nav(self) -> Any:
+        """The sidebar list widget (the `ListView`)."""
+        return self._listview
+
+    @property
+    def listview(self) -> Any:
+        """The sidebar `ListView`."""
+        return self._listview
 
 
 class TreeNavProvider:
@@ -382,6 +382,7 @@ class TreeNavProvider:
             "parent": self._sidebar_host,
             "selection_mode": "single",
             "show_scrollbar": False,
+            "density": "compact",   # dense, matching list_nav; distinct from the static pill nav
             "accent": self._accent,
             "fill": "both",
             "expand": True,

@@ -166,13 +166,15 @@ class Workspace:
 
     # ----- Data-bound content API -----
 
-    def list_nav(self, source: Any, *, text_field: str = "text", icon_field: str = "icon") -> Any:
-        """Fill the workspace from a `DataSource` (flat master-detail)."""
+    def list_nav(self, source: Any, *, separator: bool = False) -> Any:
+        """Fill the workspace from a `DataSource` (flat master-detail).
+
+        Records render their `text`/`icon` in a recycling `ListView` (which
+        inherits the sidebar surface). `separator` draws divider lines between
+        rows; default is flush.
+        """
         self._claim_provider()
-        self._provider = ListNavProvider(
-            source, text_field=text_field, icon_field=icon_field,
-            accent=self._nav_accent, surface=self._nav_surface,
-        )
+        self._provider = ListNavProvider(source, accent=self._nav_accent, separator=separator)
         self._mount_provider()
         return self._provider
 
