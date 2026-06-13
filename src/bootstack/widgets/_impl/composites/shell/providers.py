@@ -18,6 +18,7 @@ from typing import Any, Callable, Protocol, runtime_checkable
 
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.pagestack import PageStack
+from bootstack.widgets._impl.composites.shell.content_host import ContentHost
 from bootstack.widgets._impl.composites.shell.nav_panel import NavPanel
 
 
@@ -114,3 +115,86 @@ class StaticProvider:
     def pages(self) -> PageStack:
         """The content page deck."""
         return self._pages
+
+
+class ListNavProvider:
+    """Flat, data-bound provider — a `DataSource` drives the sidebar list.
+
+    Each record becomes a single-select nav item (keyed by record id); selecting
+    one re-renders a single `@detail` body parameterized by that record. The
+    detail body receives the **public record dict** (the universal `.selection`
+    shape) — not a bespoke node object.
+
+    Args:
+        source: A `DataSourceProtocol` supplying records.
+        text_field: Record field used for the item label.
+        icon_field: Record field used for the item icon.
+        accent: Accent token for the active nav item.
+    """
+
+    supports_compact = True
+
+    def __init__(
+        self,
+        source: Any,
+        *,
+        text_field: str = "text",
+        icon_field: str = "icon",
+        accent: str = "primary",
+    ) -> None:
+        self._source = source
+        self._text_field = text_field
+        self._icon_field = icon_field
+        self._accent = accent
+        self._nav: NavPanel | None = None
+        self._host: ContentHost | None = None
+        self._detail: Callable[[dict], Any] | None = None
+        self._records: dict[str, dict] = {}
+        self._order: list[str] = []
+
+    def mount(self, sidebar: Frame, content: Frame, *, on_select: Callable[[str], None]) -> None:
+        self._nav = NavPanel(sidebar, on_select=on_select, accent=self._accent)
+        self._nav.pack(fill="both", expand=True)
+        self._host = ContentHost(content)
+        self._populate()
+
+    def set_detail(self, fn: Callable[[dict], Any]) -> None:
+        """Register the parameterized detail body builder."""
+        self._detail = fn
+
+    def _populate(self) -> None:
+        self._records.clear()
+        self._order.clear()
+        src = self._source
+        records = [src._public_record(r) for r in src.page_slice(0, src.count)]
+        for rec in records:
+            key = str(rec.get("id"))
+            self._records[key] = rec
+            self._order.append(key)
+            self._nav.add_item(
+                key,
+                text=str(rec.get(self._text_field, "")),
+                icon=rec.get(self._icon_field),
+            )
+
+    # ----- Provider contract -----
+
+    def show(self, key: str, data: dict | None = None) -> None:
+        record = self._records.get(key)
+        self._host.clear()
+        if self._detail is not None and record is not None:
+            with self._host:
+                self._detail(record)
+
+    def select_visual(self, key: str | None) -> None:
+        self._nav.select(key)
+
+    def keys(self) -> tuple[str, ...]:
+        return tuple(self._order)
+
+    # ----- Accessors -----
+
+    @property
+    def nav(self) -> NavPanel:
+        """The sidebar navigation panel."""
+        return self._nav

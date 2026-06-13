@@ -60,6 +60,13 @@ def test_single_tier_navigation_cascade():
         shell.navigate("settings")             # footer item is navigable
         assert shell.current_page == "settings"
         assert shell.pages.current()[0] == "settings"
+
+        # detail() is rejected on a static (non-data-bound) provider.
+        with pytest.raises(RuntimeError):
+            shell.detail(lambda record: None)
+        # add_page already claimed a static provider -> list_nav is rejected.
+        with pytest.raises(RuntimeError):
+            shell.list_nav(source=object())
     finally:
         shell.destroy()
 
