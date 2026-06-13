@@ -26,6 +26,7 @@ from bootstack.widgets._impl.composites.shell.layout import ShellLayout
 from bootstack.widgets._impl.composites.shell.providers import (
     ListNavProvider,
     StaticProvider,
+    TreeNavProvider,
 )
 
 
@@ -159,6 +160,39 @@ class Shell(ShellLayout):
         self._claim_provider()
         self._provider = ListNavProvider(
             source, text_field=text_field, icon_field=icon_field, accent=self._nav_accent
+        )
+        self._mount_provider()
+        return self._provider
+
+    def tree_nav(
+        self,
+        *,
+        nodes: list | None = None,
+        source: Any = None,
+        parent_field: str = "parent_id",
+        label_field: str = "name",
+        icon_field: str = "icon",
+    ) -> Any:
+        """Fill the workspace from a hierarchy (tree master-detail).
+
+        Pass `nodes=` for an inline hierarchy, or `source=`/`parent_field=` to
+        project a flat adjacency-list `DataSource`. Pair with `@detail` to render
+        the selected node. A tree opens with nothing selected.
+
+        Returns:
+            The `TreeNavProvider`.
+
+        Raises:
+            RuntimeError: If the workspace already has a provider.
+        """
+        self._claim_provider()
+        self._provider = TreeNavProvider(
+            nodes=nodes,
+            source=source,
+            parent_field=parent_field,
+            label_field=label_field,
+            icon_field=icon_field,
+            accent=self._nav_accent,
         )
         self._mount_provider()
         return self._provider

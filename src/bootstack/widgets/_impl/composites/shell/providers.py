@@ -284,3 +284,137 @@ class ListNavProvider:
     def nav(self) -> NavPanel:
         """The sidebar navigation panel."""
         return self._nav
+
+
+class TreeNavProvider:
+    """Hierarchical, data-bound provider — a `Tree` drives the sidebar.
+
+    Nodes may be declared inline (`nodes=`) or projected from a flat
+    adjacency-list `source` (`source=`/`parent_field=`). Selecting a node
+    re-renders one `@detail` body with the node normalized to a record dict
+    (`text` from the node label, `icon`, the node id, plus the node's data bag) —
+    the same universal `.selection` shape `list_nav` uses (spec decision #10).
+
+    Hierarchy is incompatible with the icon-rail (a branch cannot render as one
+    glyph), so this provider does not support compaction.
+    """
+
+    supports_compact = False
+
+    def __init__(
+        self,
+        *,
+        nodes: list | None = None,
+        source: Any = None,
+        parent_field: str = "parent_id",
+        label_field: str = "name",
+        icon_field: str = "icon",
+        accent: str = "primary",
+    ) -> None:
+        self._nodes = nodes
+        self._source = source
+        self._parent_field = parent_field
+        self._label_field = label_field
+        self._icon_field = icon_field
+        self._accent = accent
+        self._tree: Any = None
+        self._host: ContentHost | None = None
+        self._sidebar_host: ContentHost | None = None
+        self._detail: Callable[[dict], Any] | None = None
+        self._on_select: Callable[[str], None] | None = None
+        self._nodes_by_key: dict[str, Any] = {}
+        self._sub: Any = None
+
+    def mount(
+        self,
+        sidebar: Frame,
+        content: Frame,
+        *,
+        on_select: Callable[[str], None],
+        on_refresh: Callable[[], None] | None = None,
+    ) -> None:
+        from bootstack.widgets.tree import Tree
+
+        self._on_select = on_select
+        self._host = ContentHost(content)
+        self._sidebar_host = ContentHost(sidebar)
+
+        tree_kwargs: dict[str, Any] = {
+            "parent": self._sidebar_host,
+            "selection_mode": "single",
+            "show_scrollbar": False,
+            "accent": self._accent,
+            "fill": "both",
+            "expand": True,
+        }
+        if self._source is not None:
+            tree_kwargs.update(
+                data_source=self._source,
+                parent_field=self._parent_field,
+                label_field=self._label_field,
+                icon_field=self._icon_field,
+            )
+        elif self._nodes is not None:
+            tree_kwargs["nodes"] = self._nodes
+        self._tree = Tree(**tree_kwargs)
+        self._sub = self._tree.on_select(self._on_tree_select)
+
+    def set_detail(self, fn: Callable[[dict], Any]) -> None:
+        """Register the parameterized detail body builder."""
+        self._detail = fn
+
+    # ----- Selection plumbing (node identity -> string key) -----
+
+    def _key_for(self, node: Any) -> str:
+        key = str(id(node))
+        self._nodes_by_key[key] = node
+        return key
+
+    def _record(self, node: Any, key: str) -> dict:
+        rec = dict(getattr(node, "data", {}) or {})
+        rec["text"] = node.label
+        rec["icon"] = node.icon
+        rec["id"] = key
+        return rec
+
+    def _on_tree_select(self, _event: Any) -> None:
+        node = self._tree.selection
+        if node is None:
+            return
+        self._on_select(self._key_for(node))
+
+    # ----- Provider contract -----
+
+    def show(self, key: str, data: dict | None = None) -> None:
+        node = self._nodes_by_key.get(key)
+        self._host.clear()
+        if self._detail is not None and node is not None:
+            with self._host:
+                self._detail(self._record(node, key))
+
+    def select_visual(self, key: str | None) -> None:
+        node = self._nodes_by_key.get(key) if key is not None else None
+        if node is not None:
+            self._tree.select(node)
+
+    def keys(self) -> tuple[str, ...]:
+        # Trees register keys lazily as nodes are selected (nodes may be created
+        # on expand). Empty until the first selection — so the shell never
+        # auto-selects a tree (a tree opens with nothing selected).
+        return tuple(self._nodes_by_key)
+
+    def close(self) -> None:
+        """Cancel the tree selection subscription."""
+        if self._sub is not None:
+            try:
+                self._sub.cancel()
+            except Exception:
+                pass
+            self._sub = None
+
+    # ----- Accessors -----
+
+    @property
+    def tree(self) -> Any:
+        """The sidebar `Tree` widget."""
+        return self._tree

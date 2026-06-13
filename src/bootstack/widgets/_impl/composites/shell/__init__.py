@@ -18,6 +18,7 @@ from bootstack.widgets._impl.composites.shell.providers import (
     ListNavProvider,
     NavProvider,
     StaticProvider,
+    TreeNavProvider,
 )
 from bootstack.widgets._impl.composites.shell.shell import Shell
 
@@ -28,5 +29,6 @@ __all__ = [
     "NavProvider",
     "StaticProvider",
     "ListNavProvider",
+    "TreeNavProvider",
     "Shell",
 ]
