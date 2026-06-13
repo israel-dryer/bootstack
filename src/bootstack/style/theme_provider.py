@@ -314,7 +314,7 @@ class ThemeProvider:
         if is_dark:
             # Dark mode: lower lightness = darker/recessed
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 3, 3)),    # Darker than content
+                'chrome': tinted_surface(max(bg_lightness - 7, 3)),    # Darkest shell chrome (rail/status)
                 'content': bg,                                          # Theme background
                 'raised': tinted_surface(min(bg_lightness + 2, 18)),   # Subtle elevation (half of card)
                 'card': tinted_surface(min(bg_lightness + 4, 20)),     # First card elevation
@@ -328,7 +328,7 @@ class ThemeProvider:
         else:
             # Light mode: use subtle darkening for elevation (since bg is often near-white)
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 8, 88)),     # Noticeably darker
+                'chrome': tinted_surface(max(bg_lightness - 14, 80)),    # Darkest shell chrome (rail/status)
                 'content': bg,                                            # Theme background
                 'raised': tinted_surface(max(bg_lightness - 2, 94)),     # Subtle elevation (half of card)
                 'card': tinted_surface(max(bg_lightness - 4, 92)),       # First card elevation
