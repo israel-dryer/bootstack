@@ -284,28 +284,47 @@ memories and git history.
 
 ## Next up
 
-### ★ ACTIVE — AppShell + SideNav refactor (START HERE, fresh session)
+### ★ ACTIVE — AppShell + navigation clean-slate rewrite (START HERE, fresh session)
 
-The chosen next initiative (maintainer, 2026-06-12). A combined rework of
-**AppShell** and **SideNav** — make AppShell expose real public widget handles,
-and refactor SideNav's API/internals (its event renames have been intentionally
-deferred to this). **Scope, goals, and known issues: `docs/_dev/appshell-sidenav-refactor.md`**
-(seed brief). Memory `project_appshell_sidenav_refactor`. Pulls together:
+A clean-slate VS Code-style **rail + swappable sidebar + content** rewrite of the
+shell's navigation (supersedes the original combined-refactor framing below).
+**Live spec: `docs/_dev/appshell-navigation-spec.md` — read Revision 2 (model
+finalization) + Revision 3 (accordion sections vs static groups).** Memory
+`project_appshell_sidenav_refactor`. Seed brief (`docs/_dev/appshell-sidenav-refactor.md`)
+is now background-only.
 
-- **AppShell public façades** — `shell.commandbar` today returns the INTERNAL
-  composite with the old `command=` API, not a public `CommandBar`; same for
-  nav/pages. Expose public handles (`commandbar`/`nav`/`pages`), return public
-  widgets from `add_*` (the `_adopt`-classmethod pattern), `CommandBar.content` /
-  make-it-a-container, window-control accessors, and fold `menu_layout` /
-  `chrome_surface` into AppShell. Detail in `docs/_dev/widget-api-audit.md`.
-- **SideNav refactor** — fold in the deferred event renames
-  `on_pane_toggled → on_toggle`, `on_display_mode_changed → on_display_change`
-  (present-tense convention, `project_event_naming_revisit`); plus the long-standing
-  SideNav/AppShell deferred improvements (see Carryover): `nav_pane_width=` not wired
-  to `SideNav(pane_width=)`, hardcoded nav density/font, group active-child highlight +
-  indentation, footer non-page widgets.
-- Related context: `project_menu_redesign` (the PR #124 menu/command-bar redesign
-  this builds on), `project_macos_window_chrome` (native chrome follow-up, separate).
+**Branch `feat/appshell-navigation`. Steps 1–9 DONE & committed:** NavModel →
+region layout → single-tier wiring → provider seam → all 3 providers + live refresh
+→ two-tier rail + VS Code gesture → sidebar collapse/visibility/nav-state persistence
+→ 1-level groups (now being redesigned, see below) → **full step-9 styling**: dark
+rail/chrome surface (rail/status tier sits clearly below the neutral selection
+wash), neutral selection by default + `accent_selection` opt-in, subtle `raised`
+sidebar elevation, `list_nav` on the real recycling `ListView` with **pixel-ellipsis
+title/text truncation** (labels `width=1` so they never push the icon/chevron off;
+`_elide` via `get_font().measure`; re-elides on the center frame's `<Configure>`),
+density + chevron exposed on `list_nav`/`tree_nav`.
+
+**NEXT = the step-8 REDESIGN per Revision 3** (the flat header+run "collapsible
+group" was the wrong model — it can't hold "an accordion containing a list"). Five
+steps in the spec: (1) revert the flat-run hack so `add_header()` is a pure label
+again; (2) `NavGroup` — an `Expander`-backed content host exposing the workspace
+content verbs (`add_page`/`list_nav`/`tree_nav`/`panel`/`@detail`) via context
+manager; (3) workspace accordion mode (`add_group()`, key/selection aggregation
+across sections, navigate-to-reveal, nested content deck); (4) style the `Expander`
+header to the workspace nav language; (5) rewrite `test_shell_groups` + add
+accordion/heterogeneous-body/reveal cases. Three sidebar archetypes are locked:
+flat-static (compactable) · grouped-static (`add_header` labels, flush button-style
+items) · accordion (`add_group` sections, hidden↔expanded, no icon-compact).
+
+**Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
+framework code). Side note logged: a future `Tabs` `variant='secondary'` (top
+indicator) — `project_secondary_tab_variant`, NOT part of this work.
+
+- Related context: `project_menu_redesign` (PR #124 menu/command-bar this builds
+  on), `project_macos_window_chrome` (native chrome follow-up, separate). Deferred
+  AppShell-public-façade items (public `commandbar`/`nav`/`pages` handles,
+  window-control accessors) land when the rewritten internals are swapped onto the
+  public `AppShell` in the spec's step 11.
 
 ### Other candidates
 
