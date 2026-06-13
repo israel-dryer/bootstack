@@ -6,13 +6,16 @@ pages with `.add()`, place child widgets inside each page using the returned
 context manager, then call `navigate()` to switch between them. Forward and back
 navigation is tracked automatically.
 
-.. image:: /_static/examples/pagestack-hero-light.png
-   :class: bs-screenshot-light
-   :alt: PageStack demo — light theme
+.. raw:: html
 
-.. image:: /_static/examples/pagestack-hero-dark.png
-   :class: bs-screenshot-dark
-   :alt: PageStack demo — dark theme
+   <video class="bs-video-light" autoplay loop muted playsinline controls
+          aria-label="PageStack — navigating between pages">
+     <source src="../_static/examples/pagestack-video-light.mp4" type="video/mp4">
+   </video>
+   <video class="bs-video-dark" autoplay loop muted playsinline controls
+          aria-label="PageStack — navigating between pages">
+     <source src="../_static/examples/pagestack-video-dark.mp4" type="video/mp4">
+   </video>
 
 Usage
 -----

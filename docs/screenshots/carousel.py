@@ -42,16 +42,7 @@ def _slide(i: int) -> str:
     return path
 
 
-_ITEMS = [{"id": i, "image": _slide(i), "name": f"Slide {i + 1}"} for i in range(5)]
 _MANY = [{"id": i, "image": _slide(i), "name": f"Photo {i + 1}"} for i in range(24)]
-
-
-def hero():
-    with bs.App(title="Carousel", size=(620, 440), padding=16) as app:
-        bs.Carousel(items=_ITEMS, image_field="image", caption_field="name",
-                    fit="cover", indicator="dots", corner_radius=14,
-                    fill="both", expand=True)
-    app.run()
 
 
 def many():
@@ -64,6 +55,5 @@ def many():
 
 
 SCENES = {
-    "hero": hero,
     "many": many,
 }

@@ -9,13 +9,16 @@ indicator, an optional caption, transitions, and autoplay.
 It pairs naturally with `Gallery.on_item_activate` to open a full-size pop-up
 viewer: a `Carousel` over the same `items`, starting at the activated slide.
 
-.. image:: /_static/examples/carousel-hero-light.png
-   :class: bs-screenshot-light
-   :alt: Carousel — light theme
+.. raw:: html
 
-.. image:: /_static/examples/carousel-hero-dark.png
-   :class: bs-screenshot-dark
-   :alt: Carousel — dark theme
+   <video class="bs-video-light" autoplay loop muted playsinline controls
+          aria-label="Carousel — slide transitions and navigation">
+     <source src="../_static/examples/carousel-video-light.mp4" type="video/mp4">
+   </video>
+   <video class="bs-video-dark" autoplay loop muted playsinline controls
+          aria-label="Carousel — slide transitions and navigation">
+     <source src="../_static/examples/carousel-video-dark.mp4" type="video/mp4">
+   </video>
 
 Usage
 -----
