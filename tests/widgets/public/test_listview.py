@@ -124,7 +124,7 @@ def test_single_mode_replace_fires_one_event(shown_app):
     _pump(shown_app)
 
     fires = []
-    lv.on_selection_changed(lambda e: fires.append(e))
+    lv.on_select(lambda e: fires.append(e))
     _pump(shown_app)
 
     lv.select_items([1])

@@ -157,7 +157,7 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - :class:`~bootstack.events.RangeSliderEvent` /
        :class:`~bootstack.events.RangeSliderCommitEvent`
    * - :class:`~bootstack.Calendar`
-     - ``on_date_selected``
+     - ``on_select``
      - :class:`~bootstack.events.DateSelectEvent`
 
 **Lists, tables, and trees**
@@ -177,7 +177,7 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - ``on_row_click``, ``on_row_double_click``, ``on_row_right_click``
      - :class:`~bootstack.events.RowEvent`
    * - :class:`~bootstack.DataTable`
-     - ``on_selection_changed``
+     - ``on_select``
      - :class:`~bootstack.events.SelectionEvent`
    * - :class:`~bootstack.DataTable`
      - ``on_rows_insert``, ``on_rows_update``, ``on_rows_delete``,
@@ -187,7 +187,7 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - ``on_export``
      - :class:`~bootstack.events.ExportEvent`
    * - :class:`~bootstack.Tree`
-     - ``on_selection_changed``
+     - ``on_select``
      - :class:`~bootstack.events.TreeSelectionEvent`
    * - :class:`~bootstack.Tree`
      - ``on_activate``, ``on_expand``, ``on_collapse``
@@ -268,7 +268,7 @@ A **table** reports both the row a user acts on and the current selection. A
        status.text = f"{len(e.records)} selected"
 
    table.on_row_double_click(lambda e: open_detail(e.id))
-   table.on_selection_changed(show_count)
+   table.on_select(show_count)
 
 A **tab strip** tells you not just which tab is active but *why* it changed — a
 :class:`~bootstack.events.TabChangeEvent` carries the ``current`` and
@@ -457,7 +457,7 @@ into it; the handler is removed the moment the dialog closes, even on an error:
 
 .. code-block:: python
 
-   with table.on_selection_changed(lambda e: dialog.set_count(len(e.records))):
+   with table.on_select(lambda e: dialog.set_count(len(e.records))):
        dialog.show()     # modal — runs until the user closes it
 
 Around ordinary synchronous code the event loop never pumps, so the handler

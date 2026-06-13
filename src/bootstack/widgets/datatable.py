@@ -496,10 +496,10 @@ class DataTable(PublicWidgetBase):
     # ----- Events -----
 
     @overload
-    def on_selection_changed(self) -> Stream: ...
+    def on_select(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[SelectionEvent], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[SelectionEvent], Any] | None = None) -> Stream | Subscription:
+    def on_select(self, handler: Callable[[SelectionEvent], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[SelectionEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when the set of selected rows changes.
 
         Args:
@@ -511,7 +511,7 @@ class DataTable(PublicWidgetBase):
             A cancellable :class:`~bootstack.events.Subscription` when a handler
             is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
-        return self.on("selection_changed", handler)
+        return self.on("select", handler)
 
     @overload
     def on_row_click(self) -> Stream: ...
@@ -660,7 +660,7 @@ class DataTable(PublicWidgetBase):
 
 
 _DATATABLE_EVENTS: dict[str, str] = {
-    "selection_changed": "<<SelectionChange>>",
+    "select":            "<<SelectionChange>>",
     "row_click":         "<<RowClick>>",
     "row_double_click":  "<<RowDoubleClick>>",
     "row_right_click":   "<<RowRightClick>>",

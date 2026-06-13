@@ -81,7 +81,7 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
         else:
             selection.text = "No rows selected"
 
-    table.on_selection_changed(show_selection)
+    table.on_select(show_selection)
 
     def show_export(e):
         where = e.path if e.target == "file" else "the clipboard"
