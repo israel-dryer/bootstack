@@ -9,7 +9,7 @@ from typing import Optional
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
-from bootstack.style.utility import recolor_element_image, mix_colors, create_transparent_image
+from bootstack.style.utility import recolor_element_image, create_transparent_image
 from bootstack.style.builders.utils import apply_icon_mapping, resolve_icon_spec
 from bootstack.style.builders.toolbutton import (
     toolbutton_layout, button_padding, button_font, icon_size, normalize_button_density
@@ -432,16 +432,18 @@ def _build_nav_compact(b, ttk_style, *, accent_token, options, image_key, select
 
 
 def _quiet_colors(b, accent_token, options):
-    # Subtle wash + neutral foreground (the wash alone marks selection).
+    # Neutral default: a light neutral wash (the active/hover level) marks the
+    # selection — no accent — with a neutral foreground, like the buttons. Accent
+    # is opt-in via a future variant.
     surface = b.color(options.get('surface', 'card'))
-    return b.subtle(accent_token, surface), b.on_color(surface)
+    return b.active(surface), b.on_color(surface)
 
 
 def _pill_colors(b, accent_token, options):
-    # Stronger accent tint + accent foreground (the prominent macOS-style pill).
+    # Neutral default: a light neutral pill (active/hover level, no accent tint) +
+    # neutral foreground; the rounded pill shape carries the prominence.
     surface = b.color(options.get('surface', 'card'))
-    ratio = 0.14 if b.provider.mode == 'light' else 0.18
-    return mix_colors(b.color(accent_token), surface, ratio), b.color(accent_token)
+    return b.active(surface), b.on_color(surface)
 
 
 @BootstyleBuilderTTk.register_builder('nav-quiet', 'Toolbutton')
