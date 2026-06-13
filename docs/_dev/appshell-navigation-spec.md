@@ -136,6 +136,111 @@ chevron and Ctrl-B agree for the static case.
 
 ---
 
+## Revision 3 — accordion sections vs. static groups (2026-06-13, with maintainer)
+
+Step 8 shipped "1-level collapsible groups" as a **flat run** — a header plus the
+sibling items following it, where collapse just *hides the run*. That model
+conflated two different primitives and can't express "an accordion containing a
+list" (the body isn't a container, just later siblings). Revision 3 corrects the
+model. **Supersedes Revision 2 / R2** (the flat-accordion restoration).
+
+### The three sidebar archetypes
+
+The grouping element is the tell. A static **header is a label**; an accordion
+**header is a control**. They look different by design.
+
+| archetype | grouping element | items | collapse |
+|---|---|---|---|
+| **Flat static** | none | quiet/pill nav rows | compact → icons |
+| **Grouped static** | `add_header()` — a quiet label | quiet nav rows | hidden ↔ expanded |
+| **Accordion** | `add_group()` — an interactive bar (`Expander`) | *anything* (rows / list / tree / custom) | hidden ↔ expanded |
+
+### Accordion — `add_group()` returns a `NavGroup` (context manager + content host)
+
+A `NavGroup` exposes the **same content verbs as the workspace** (`add_page`,
+`list_nav`, `tree_nav`, `panel()`, `@detail`) plus `expand`/`collapse`/`toggle`/
+`expanded`/`title`. Each section owns its content; selecting anything in any
+section drives the **one shared content/detail region** (the VS Code editor-area
+model). Backed by the existing `Expander` (header is a `CompositeFrame` with
+hover/press/selected — *configured*, not hand-styled); reuses the existing
+providers mounted into the section body (sidebar side) + the shared content region
+(detail side).
+
+```python
+ws = shell.add_workspace("explorer", text="Explorer", icon="files")
+
+with ws.add_group("Folders", icon="folder") as g:   # section of nav pages
+    g.add_page("src",   text="src",   icon="folder")
+    g.add_page("tests", text="tests", icon="folder")
+
+with ws.add_group("Outline") as g:                   # section that IS a tree
+    g.tree_nav(nodes=outline_nodes)
+    @g.detail
+    def show(node): ...
+
+with ws.add_group("Timeline", expanded=False) as g:  # section that IS a list
+    g.list_nav(source=timeline)
+    @g.detail
+    def show(record): ...
+```
+
+- `ws.add_group(title, *, icon=None, expanded=True)` → `NavGroup`.
+- Detail is **per-section** for data-bound sections (`@g.detail`); `add_page`
+  sections render their page. All feed the shared content region (one active at a
+  time, via a content deck keyed by active item).
+- `ws.expand_all()`/`collapse_all()` retarget to the sections.
+
+### Grouped-static — `add_header()` is now a pure label
+
+`collapsible=` is **removed** from `add_header` (and from `SideNavHeader`). A
+static header is a non-interactive small-caps secondary label; the items after it
+are ordinary quiet nav rows, **flush** under the label (the label's color + top
+margin carry the hierarchy — no indentation). *Decision: grouped-static items keep
+the button/quiet-row language, NOT list-item rows* — row style encodes what the
+row is (nav rows = pages; list rows = records). The header label is what makes
+grouped-static "its own thing"; the items don't diverge. Genuinely list-dense
+grouped rows are the signal to use an accordion section containing a `list_nav`.
+
+### Model implications
+
+1. **Workspace = a container of content-hosts.** Today one `_provider`. New: a
+   workspace is *either* a single provider (flat/grouped static, list, tree,
+   custom) *or* a set of accordion sections. First `add_group()` claims accordion
+   mode; mixing top-level `add_page` with groups is disallowed (the consistency
+   guideline).
+2. **Key aggregation.** Each section reports its keys up; the workspace aggregates
+   (keys unique within a workspace). `NavModel` still holds one `(workspace,
+   page)` truth.
+3. **Navigate-to-reveal.** `navigate(ws, key)` finds the owning section, expands
+   it, shows + visually selects there, and clears the visual selection in sibling
+   sections.
+4. **Compact.** Flat-static stays compactable; grouped-static and accordion are
+   `supports_compact=False` (hidden ↔ expanded) — VS Code "collapses completely":
+   Ctrl-B hides the whole sidebar, only the rail remains. No icon-flattened
+   accordion.
+
+### Implementation steps (step 8 redesign)
+
+1. **Revert the flat-run hack** — drop `collapsible=`/chevron/`_toggle_group` from
+   `SideNavHeader` + `NavPanel` + `add_header`; header is a label again.
+2. **`NavGroup`** — an `Expander`-backed content host exposing the workspace
+   content verbs; mounts its provider into the `Expander.content` (sidebar) +
+   shared content region (detail). Context manager.
+3. **Workspace accordion mode** — `add_group()`; aggregate keys/selection across
+   sections; route `show`/`select_visual` to the owning section; nested content
+   deck. `expand_all`/`collapse_all` retarget.
+4. **Styling** — configure the `Expander` header to the workspace nav language
+   (quiet vs pill); section body inherits the sidebar surface.
+5. **Tests** — rewrite `test_shell_groups`; add accordion-section + heterogeneous-
+   body + navigate-to-reveal cases.
+
+### Side note (unrelated, logged for later)
+
+Create a **`'secondary'` Tabs variant** that draws the selection indicator at the
+**top** of the tab instead of the bottom. Not part of the appshell work.
+
+---
+
 ## 1. Locked decisions (from discussion)
 
 1. **Single-tier is two-tier with one workspace.** The rail (workspace switcher)
