@@ -352,6 +352,7 @@ placement/window-state/etc. via `AppConfigMixin`), plus navigation options.
 | `rail_width` | `int \| None` | token | rail / compact width (shared token — collapse is seamless) |
 | `collapsible` | `bool` | `True` | show the in-sidebar chevron + bind Ctrl/Cmd-B (collapse: compact for a standalone static sidebar, else hide — see R6) |
 | `nav_accent` | `AccentToken \| str` | `'primary'` | active-item accent |
+| `rail_labels` | `bool` | `False` | show a caption under each rail icon (widens the rail); icon-only otherwise |
 | `remember_nav_state` | `bool` | `False` | persist sidebar_mode + per-workspace page across sessions |
 | `show_statusbar` | `bool` | `False` | force the status band on (else content-driven) |
 | `show_dock` *(reserved)* | `bool` | `False` | render the detail/inspector dock |

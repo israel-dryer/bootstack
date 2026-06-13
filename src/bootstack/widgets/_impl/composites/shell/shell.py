@@ -57,8 +57,13 @@ class Shell(ShellLayout):
         collapsible: bool = True,
         remember_nav_state: bool = False,
         nav_accent: str = "primary",
+        rail_labels: bool = False,
         **kwargs: Any,
     ) -> None:
+        # A labeled rail (caption under each icon) needs a wider strip than the
+        # icon-only default; widen unless the caller pinned rail_width explicitly.
+        if rail_labels and "rail_width" not in kwargs:
+            kwargs["rail_width"] = 72
         super().__init__(
             title=title, theme=theme, size=size, undecorated=undecorated, **kwargs
         )
@@ -81,7 +86,9 @@ class Shell(ShellLayout):
         # The tier-1 workspace switcher (hidden until > 1 workspace).
         # NB: must NOT be named `self._rail` — that is ShellLayout's rail *region*
         # frame; shadowing it orphans the region so it never packs into the body.
-        self._railnav = Rail(self.rail, on_select=self._rail_select, accent=nav_accent)
+        self._railnav = Rail(
+            self.rail, on_select=self._rail_select, accent=nav_accent, labels=rail_labels
+        )
         self._railnav.pack(fill="both", expand=True)
 
         self._model.subscribe(self._on_model_change)

@@ -45,10 +45,12 @@ class Rail(Frame):
         on_select: Callable[[str], None],
         accent: str = "primary",
         icon_size: int | None = None,
+        labels: bool = False,
     ) -> None:
         super().__init__(master, surface="chrome")
         self._on_select = on_select
         self._accent = accent
+        self._labels = labels
         self._icon_size = icon_size if icon_size is not None else self.DEFAULT_ICON_SIZE
         # Shared selection signal: the value is the active workspace key, so the
         # matching RadioToggle renders selected (radio single-select). A Signal is
@@ -67,16 +69,21 @@ class Rail(Frame):
         if key in self._items:
             raise ValueError(f"duplicate rail key: {key!r}")
         parent = self._footer if footer else self._main
-        item = RadioToggle(
-            parent,
+        # Labeled rail: a small caption under the icon (compound='top'); otherwise
+        # icon-only (relies on tooltips for discoverability — a future add).
+        toggle_kwargs: dict = dict(
             value=key,
             signal=self._signal,
             icon=self._icon_spec(icon),
-            icon_only=True,
             accent=self._accent,
             variant="rail",
             surface="chrome",
         )
+        if self._labels:
+            toggle_kwargs.update(text=text, compound="top", style_options={"labeled": True})
+        else:
+            toggle_kwargs.update(icon_only=True)
+        item = RadioToggle(parent, **toggle_kwargs)
         item.pack(fill="x")
         # Catch ALL clicks (including a re-click on the active item) so the shell
         # can run the VS Code gesture; the radio itself only reports changes.

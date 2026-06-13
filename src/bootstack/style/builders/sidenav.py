@@ -210,6 +210,9 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     surface_token = options.get('surface', 'chrome')
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', True)
+    # Labeled rail: a small caption under the icon (compound='top' on the widget)
+    # instead of icon-only + tooltips. Dedicated variant, so we just flip the font.
+    labeled = options.get('labeled', False)
     image_key = f'navitem_{normalize_button_density(density)}'
 
     surface = b.color(surface_token)
@@ -250,8 +253,14 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
 
     # Rail items are tall, near-square tap targets (VS Code activity bar), not the
     # icon-height of a normal icon-only toolbutton. Generous vertical padding +
-    # anchor center gives the larger hit area and vertical rhythm.
-    rail_padding = options.get('padding') or b.scale((0, 7, 0, 7))
+    # anchor center gives the larger hit area and vertical rhythm. Labeled rails
+    # use a smaller caption font and a touch more room for the stacked label.
+    if labeled:
+        rail_font = 'caption'
+        rail_padding = options.get('padding') or b.scale((2, 8, 2, 8))
+    else:
+        rail_font = button_font(density)
+        rail_padding = options.get('padding') or b.scale((0, 7, 0, 7))
 
     b.configure_style(
         ttk_style,
@@ -260,7 +269,7 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
         relief='flat',
         padding=rail_padding,
         anchor='center',
-        font=button_font(density),
+        font=rail_font,
     )
 
     state_spec = dict(
