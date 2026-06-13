@@ -35,8 +35,19 @@ class NavProvider(Protocol):
     supports_compact: bool
     """Whether the sidebar may collapse to an icon rail (false for custom panels)."""
 
-    def mount(self, sidebar: Frame, content: Frame, *, on_select: Callable[[str], None]) -> None:
-        """Build the sidebar UI in `sidebar` and prepare the `content` region."""
+    def mount(
+        self,
+        sidebar: Frame,
+        content: Frame,
+        *,
+        on_select: Callable[[str], None],
+        on_refresh: Callable[[], None] | None = None,
+    ) -> None:
+        """Build the sidebar UI in `sidebar` and prepare the `content` region.
+
+        `on_refresh` (optional) is invoked after the provider rebuilds its items
+        from a changed source, so the host can reconcile the active selection.
+        """
         ...
 
     def show(self, key: str, data: dict | None = None) -> None:
@@ -67,7 +78,15 @@ class StaticProvider:
         self._pages: PageStack | None = None
         self._keys: list[str] = []
 
-    def mount(self, sidebar: Frame, content: Frame, *, on_select: Callable[[str], None]) -> None:
+    def mount(
+        self,
+        sidebar: Frame,
+        content: Frame,
+        *,
+        on_select: Callable[[str], None],
+        on_refresh: Callable[[], None] | None = None,
+    ) -> None:
+        # Static authoring never refreshes from a source; on_refresh is ignored.
         self._nav = NavPanel(sidebar, on_select=on_select, accent=self._accent)
         self._nav.pack(fill="both", expand=True)
         self._pages = PageStack(content)
@@ -151,31 +170,98 @@ class ListNavProvider:
         self._detail: Callable[[dict], Any] | None = None
         self._records: dict[str, dict] = {}
         self._order: list[str] = []
+        self._on_refresh: Callable[[], None] | None = None
+        self._sub: Any = None
 
-    def mount(self, sidebar: Frame, content: Frame, *, on_select: Callable[[str], None]) -> None:
+    def mount(
+        self,
+        sidebar: Frame,
+        content: Frame,
+        *,
+        on_select: Callable[[str], None],
+        on_refresh: Callable[[], None] | None = None,
+    ) -> None:
+        self._on_refresh = on_refresh
         self._nav = NavPanel(sidebar, on_select=on_select, accent=self._accent)
         self._nav.pack(fill="both", expand=True)
         self._host = ContentHost(content)
         self._populate()
+        # Live updates: rebuild items when the source changes (delivered on the
+        # UI thread by the data layer). Stored so it can be cancelled on close.
+        self._sub = self._source.on_change(self._on_source_change)
 
     def set_detail(self, fn: Callable[[dict], Any]) -> None:
         """Register the parameterized detail body builder."""
         self._detail = fn
 
-    def _populate(self) -> None:
-        self._records.clear()
-        self._order.clear()
+    def _read(self) -> dict[str, dict]:
+        """Read all current public records keyed by id, in source order."""
         src = self._source
-        records = [src._public_record(r) for r in src.page_slice(0, src.count)]
-        for rec in records:
-            key = str(rec.get("id"))
+        out: dict[str, dict] = {}
+        for raw in src.page_slice(0, src.count):
+            rec = src._public_record(raw)
+            out[str(rec.get("id"))] = rec
+        return out
+
+    def _label(self, rec: dict) -> str:
+        return str(rec.get(self._text_field, ""))
+
+    def _icon(self, rec: dict):
+        return rec.get(self._icon_field)
+
+    def _populate(self) -> None:
+        self._records = self._read()
+        self._order = list(self._records)
+        for key, rec in self._records.items():
+            self._nav.add_item(key, text=self._label(rec), icon=self._icon(rec))
+
+    def _on_source_change(self, _event: Any = None) -> None:
+        """Reconcile the sidebar against the source (add / remove / update).
+
+        Incremental: removed records drop their items, new records append, and
+        changed labels/icons update in place. Source reordering is not reflected
+        (new items append) — acceptable for a small nav list.
+        """
+        new = self._read()
+        old_keys = set(self._records)
+        new_keys = set(new)
+
+        for key in old_keys - new_keys:
+            self._nav.remove_item(key)
+            self._records.pop(key, None)
+            if key in self._order:
+                self._order.remove(key)
+
+        updated: set[str] = set()
+        for key, rec in new.items():
+            if key not in self._records:
+                self._order.append(key)
+                self._nav.add_item(key, text=self._label(rec), icon=self._icon(rec))
+            else:
+                old = self._records[key]
+                if self._label(old) != self._label(rec) or self._icon(old) != self._icon(rec):
+                    self._nav.update_item(key, text=self._label(rec), icon=self._icon(rec))
+                if old != rec:
+                    updated.add(key)
             self._records[key] = rec
-            self._order.append(key)
-            self._nav.add_item(
-                key,
-                text=str(rec.get(self._text_field, "")),
-                icon=rec.get(self._icon_field),
-            )
+
+        # If the selected record's data changed, re-render its detail in place
+        # (only then — no flicker on unrelated changes).
+        sel = self._nav.selected
+        if sel is not None and sel in updated:
+            self.show(sel)
+
+        if self._on_refresh is not None:
+            self._on_refresh()
+
+    def close(self) -> None:
+        """Cancel the source subscription."""
+        if self._sub is not None:
+            try:
+                self._sub.cancel()
+            except Exception:
+                pass
+            self._sub = None
 
     # ----- Provider contract -----
 

@@ -41,6 +41,27 @@ def test_list_nav_master_detail_cascade():
         assert len(keys) == 2
         shell._on_nav_select(keys[1])
         assert seen[-1]["text"] == "Thermocouple"
+        sel_id = seen[-1]["id"]               # real record id (for source ops)
+
+        # --- Live source refresh (changes are coalesced via after_idle) ---
+        seen.clear()
+
+        # Insert: a new record appears in the sidebar.
+        new_id = source.insert({"text": "DAQ-9211", "icon": "hdd", "status": "active"})
+        shell.update()                        # flush the coalesced change
+        assert str(new_id) in shell.provider.keys()
+        assert len(shell.provider.keys()) == 3
+
+        # Update the SELECTED record -> its detail re-renders with fresh data.
+        source.update(sel_id, {"text": "Thermocouple", "icon": "thermometer", "status": "offline"})
+        shell.update()
+        assert seen and seen[-1]["status"] == "offline"
+
+        # Delete the selected record -> selection reconciles to the first item.
+        source.delete(sel_id)
+        shell.update()
+        assert str(sel_id) not in shell.provider.keys()
+        assert shell.current_page in shell.provider.keys()
 
         # Mutual exclusivity: add_page after list_nav is rejected.
         import pytest

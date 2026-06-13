@@ -88,7 +88,12 @@ class Shell(ShellLayout):
     def _mount_provider(self) -> None:
         if not self._model.has_workspace(_DEFAULT_WORKSPACE):
             self._model.add_workspace(_DEFAULT_WORKSPACE)
-        self._provider.mount(self.sidebar, self.content, on_select=self._on_nav_select)
+        self._provider.mount(
+            self.sidebar,
+            self.content,
+            on_select=self._on_nav_select,
+            on_refresh=self._on_provider_refresh,
+        )
 
     # ----- Static content API -----
 
@@ -206,6 +211,13 @@ class Shell(ShellLayout):
         if change.facet == "page" and change.page is not None:
             self._sync_page(change.page)
 
+    def _on_provider_refresh(self) -> None:
+        # The provider rebuilt its items from a changed source; reconcile the
+        # active selection if it vanished (e.g. the selected record was deleted).
+        keys = self._provider.keys()
+        if keys and self._model.active_page() not in keys:
+            self.navigate(keys[0])
+
     def _sync_page(self, key: str) -> None:
         data = self._pending_data or {}
         self._pending_data = None
@@ -214,6 +226,18 @@ class Shell(ShellLayout):
         payload = PageChangeEvent(page=key, prev_page=self._prev_page, data=dict(data))
         self._prev_page = key
         self.event_generate("<<PageChange>>", data=payload, when="tail")
+
+    # ----- Lifecycle -----
+
+    def destroy(self) -> None:
+        """Cancel provider subscriptions, then tear down the window."""
+        provider = getattr(self, "_provider", None)
+        if provider is not None and hasattr(provider, "close"):
+            try:
+                provider.close()
+            except Exception:
+                pass
+        super().destroy()
 
     # ----- Accessors -----
 

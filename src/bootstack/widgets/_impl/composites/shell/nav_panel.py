@@ -65,6 +65,24 @@ class NavPanel(Frame):
         self._items[key] = item
         return item
 
+    def remove_item(self, key: str) -> None:
+        """Remove and destroy an item by key (no error if absent)."""
+        item = self._items.pop(key, None)
+        if item is not None:
+            item.destroy()
+            if self._selected == key:
+                self._selected = None
+
+    def update_item(self, key: str, *, text: str | None = None, icon=None) -> None:
+        """Update an existing item's label and/or icon in place."""
+        item = self._items.get(key)
+        if item is None:
+            return
+        if text is not None:
+            item.configure(text=text)
+        if icon is not None:
+            item.configure(icon=icon)
+
     def add_header(self, text: str) -> SideNavHeader:
         """Add a static (non-collapsible) section header to the main area.
 
