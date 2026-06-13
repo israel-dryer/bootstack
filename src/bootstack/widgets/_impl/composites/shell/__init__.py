@@ -3,10 +3,14 @@
 Layered per `docs/_dev/appshell-navigation-spec.md`:
 
 - `layout.ShellLayout` — Layer 1, the dumb region/slot band layout.
+- `nav_panel.NavPanel` — the static single-select nav list (sidebar).
+- `shell.Shell` — wires `NavModel` to the regions (single-tier path).
 
-Later layers (wiring to `NavModel`, providers, rail) build on top of this.
+Later layers (providers, rail, collapse) build on top of these.
 """
 
 from bootstack.widgets._impl.composites.shell.layout import ShellLayout
+from bootstack.widgets._impl.composites.shell.nav_panel import NavPanel
+from bootstack.widgets._impl.composites.shell.shell import Shell
 
-__all__ = ["ShellLayout"]
+__all__ = ["ShellLayout", "NavPanel", "Shell"]
