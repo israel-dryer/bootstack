@@ -202,9 +202,10 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
 
     A radio toggle (single-select) rendered icon-only on the chrome surface:
     the glyph is muted when idle and full-strength when selected (or hovered),
-    and the `navitem` asset's left indicator bar shows the accent color when
-    selected. The background stays flat in every state (no wash / no fill) — the
-    bar carries the selection. The accent lives in the bar, not the glyph.
+    and the `navitem` asset's left indicator bar shows the **foreground** color
+    when selected (neutral by default — accent is opt-in, like the buttons). The
+    background stays flat in every state (no wash / no fill) — the bar carries the
+    selection.
     """
     accent_token = accent or 'primary'
     surface_token = options.get('surface', 'chrome')
@@ -220,7 +221,8 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     surface_pressed = b.pressed(surface_hover)
     on_surface = b.on_color(surface)
     muted = b.muted_foreground(surface)
-    accent_color = b.color(accent_token)
+    # Neutral indicator bar by default (the foreground); accent is opt-in.
+    bar_color = on_surface
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
@@ -228,10 +230,10 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     normal_img  = recolor_element_image(image_key, surface, surface, surface, surface)
     hover_img   = recolor_element_image(image_key, surface_hover, surface_hover, surface_hover, surface)
     pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, surface_pressed, surface)
-    # Selected: accent bar visible, background still flat (no wash).
-    selected_img         = recolor_element_image(image_key, surface,         surface,         accent_color, surface)
-    selected_hover_img   = recolor_element_image(image_key, surface_hover,   surface_hover,   accent_color, surface)
-    selected_pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, accent_color, surface)
+    # Selected: foreground bar visible, background still flat (no wash).
+    selected_img         = recolor_element_image(image_key, surface,         surface,         bar_color, surface)
+    selected_hover_img   = recolor_element_image(image_key, surface_hover,   surface_hover,   bar_color, surface)
+    selected_pressed_img = recolor_element_image(image_key, surface_pressed, surface_pressed, bar_color, surface)
     disabled_img = recolor_element_image(image_key, disabled, disabled, surface, surface)
 
     b.create_style_element_image(
