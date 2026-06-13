@@ -67,6 +67,16 @@ class Workspace:
         """The workspace's navigation provider (or `None`)."""
         return self._provider
 
+    @property
+    def supports_compact(self) -> bool:
+        """Whether this workspace's provider can render icon-only (compact)."""
+        return bool(getattr(self._provider, "supports_compact", False))
+
+    def set_compact(self, compact: bool) -> None:
+        """Render the sidebar icon-only (`compact`) or with labels."""
+        if self._provider is not None and hasattr(self._provider, "set_compact"):
+            self._provider.set_compact(compact)
+
     # ----- Provider selection (lazy + mutually exclusive) -----
 
     def _ensure_static(self) -> StaticProvider:

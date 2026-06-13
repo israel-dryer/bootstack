@@ -33,7 +33,13 @@ class NavProvider(Protocol):
     """
 
     supports_compact: bool
-    """Whether the sidebar may collapse to an icon rail (false for custom panels)."""
+    """Whether the sidebar may render icon-only (compact).
+
+    True only for the static provider, whose items carry authored icons. A
+    data-bound list (`list_nav`) or hierarchy (`tree_nav`) cannot meaningfully
+    compact, so theirs is False — they are hidden or shown, never icon-only.
+    Compaction is also gated by the host to the standalone case (no rail).
+    """
 
     def mount(
         self,
@@ -47,6 +53,13 @@ class NavProvider(Protocol):
 
         `on_refresh` (optional) is invoked after the provider rebuilds its items
         from a changed source, so the host can reconcile the active selection.
+        """
+        ...
+
+    def set_compact(self, compact: bool) -> None:
+        """Render the sidebar icon-only (`compact`) or with labels.
+
+        A no-op for providers where `supports_compact` is False.
         """
         ...
 
@@ -114,6 +127,9 @@ class StaticProvider:
 
     # ----- Provider contract -----
 
+    def set_compact(self, compact: bool) -> None:
+        self._nav.set_compact(compact)
+
     def show(self, key: str, data: dict | None = None) -> None:
         self._pages.navigate(key, data=data)
 
@@ -151,7 +167,9 @@ class ListNavProvider:
         accent: Accent token for the active nav item.
     """
 
-    supports_compact = True
+    # A label-less data list is a poor nav, so list_nav is hidden-or-shown,
+    # never icon-only (spec Revision 2 / R1).
+    supports_compact = False
 
     def __init__(
         self,
@@ -264,6 +282,10 @@ class ListNavProvider:
             self._sub = None
 
     # ----- Provider contract -----
+
+    def set_compact(self, compact: bool) -> None:
+        # list_nav never compacts (supports_compact is False); see R1.
+        pass
 
     def show(self, key: str, data: dict | None = None) -> None:
         record = self._records.get(key)
@@ -384,6 +406,10 @@ class TreeNavProvider:
         self._on_select(self._key_for(node))
 
     # ----- Provider contract -----
+
+    def set_compact(self, compact: bool) -> None:
+        # A hierarchy cannot render as icons; tree_nav never compacts (see R1).
+        pass
 
     def show(self, key: str, data: dict | None = None) -> None:
         node = self._nodes_by_key.get(key)

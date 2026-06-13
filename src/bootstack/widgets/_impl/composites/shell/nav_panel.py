@@ -41,6 +41,11 @@ class NavPanel(Frame):
         self._accent = accent
         self._items: dict[str, SideNavItem] = {}
         self._selected: str | None = None
+        self._compact = False
+        # Insertion-ordered main-area children (items, headers, separators) so
+        # compaction can re-pack them in order; footer items tracked separately.
+        self._main_children: list[Frame] = []
+        self._footer_items: list[SideNavItem] = []
 
         # Footer pinned to the bottom; main area fills the rest above it.
         self._footer = Frame(self)
@@ -50,25 +55,31 @@ class NavPanel(Frame):
 
     def add_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
         """Add a selectable item to the main area; wire its click to `on_select`."""
-        return self._add_item(self._main, key, text=text, icon=icon)
+        return self._add_item(self._main, key, text=text, icon=icon, footer=False)
 
     def add_footer_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
         """Add a selectable item pinned to the footer."""
-        return self._add_item(self._footer, key, text=text, icon=icon)
+        return self._add_item(self._footer, key, text=text, icon=icon, footer=True)
 
-    def _add_item(self, parent: Frame, key: str, *, text: str, icon) -> SideNavItem:
+    def _add_item(self, parent: Frame, key: str, *, text: str, icon, footer: bool) -> SideNavItem:
         if key in self._items:
             raise ValueError(f"duplicate nav item key: {key!r}")
         item = SideNavItem(parent, key=key, text=text, icon=icon, accent=self._accent)
+        if self._compact:
+            item.set_compact(True)
         item.pack(fill="x")
         item.on_invoked(lambda _event, k=key: self._on_select(k))
         self._items[key] = item
+        (self._footer_items if footer else self._main_children).append(item)
         return item
 
     def remove_item(self, key: str) -> None:
         """Remove and destroy an item by key (no error if absent)."""
         item = self._items.pop(key, None)
         if item is not None:
+            for tracker in (self._main_children, self._footer_items):
+                if item in tracker:
+                    tracker.remove(item)
             item.destroy()
             if self._selected == key:
                 self._selected = None
@@ -92,14 +103,45 @@ class NavPanel(Frame):
         """
         # (left, top, right, bottom) — aligned to the item icon column.
         header = SideNavHeader(self._main, text=text, padding=(12, 10, 12, 4))
-        header.pack(fill="x")
+        if not self._compact:
+            header.pack(fill="x")
+        self._main_children.append(header)
         return header
 
     def add_separator(self) -> SideNavSeparator:
         """Add a separator to the main area."""
         sep = SideNavSeparator(self._main)
-        sep.pack(fill="x")
+        if not self._compact:
+            sep.pack(fill="x")
+        self._main_children.append(sep)
         return sep
+
+    def set_compact(self, compact: bool) -> None:
+        """Render items icon-only (compact) or with labels (expanded).
+
+        Section headers and separators are meaningless without labels, so they
+        hide in compact mode and restore — in their original positions — on
+        expand. The main area is re-packed in insertion order to keep that
+        ordering stable across toggles.
+        """
+        if self._compact == compact:
+            return
+        self._compact = compact
+        for child in self._main_children:
+            child.pack_forget()
+        for child in self._main_children:
+            if isinstance(child, SideNavItem):
+                child.set_compact(compact)
+                child.pack(fill="x")
+            elif not compact:
+                child.pack(fill="x")
+        for item in self._footer_items:
+            item.set_compact(compact)
+
+    @property
+    def compact(self) -> bool:
+        """Whether the panel is rendering items icon-only."""
+        return self._compact
 
     def select(self, key: str | None) -> None:
         """Set the visual selection to `key` (or clear it with `None`)."""

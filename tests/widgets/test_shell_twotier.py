@@ -65,6 +65,21 @@ def test_two_tier_rail_and_gesture():
         shell._rail_select("acquire")
         assert shell.sidebar_visible is True
 
+        # Compact is gated OFF under a rail: a tier-2 sidebar stays expanded even
+        # when the mode is compact (an icon panel beside the icon rail is noise).
+        assert ws1.supports_compact is True            # provider can, in principle
+        shell.sidebar_mode = "compact"
+        assert shell.sidebar_visible is True
+        assert ws1.provider.nav.compact is False       # but not icon-compacted here
+        shell.sidebar_mode = "expanded"
+
+        # Under a rail, Ctrl-B hides/shows (the rail stays as nav) — no compact.
+        assert shell._can_compact_active() is False
+        shell._on_toggle_shortcut()
+        assert shell.sidebar_visible is False
+        shell._on_toggle_shortcut()
+        assert shell.sidebar_visible is True
+
         # Mixing shell-level pages with workspaces is rejected.
         import pytest
         with pytest.raises(RuntimeError):

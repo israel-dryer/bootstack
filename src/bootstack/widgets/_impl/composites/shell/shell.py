@@ -38,6 +38,10 @@ class Shell(ShellLayout):
         size: Initial window size as `(width, height)`.
         undecorated: Remove OS chrome and draw a custom border.
         sidebar_mode: Initial sidebar mode (`'expanded'`/`'compact'`/`'hidden'`).
+            `'compact'` (icon-only) applies only to a standalone static sidebar.
+        collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B to toggle it.
+        remember_nav_state: Persist the sidebar mode + per-workspace active page
+            across sessions, restoring them on the next launch.
         nav_accent: Accent token for the active nav item.
         **kwargs: Forwarded to `ShellLayout` / `App` (widths, position, etc.).
     """
@@ -50,6 +54,8 @@ class Shell(ShellLayout):
         size: tuple[int, int] | None = None,
         undecorated: bool = False,
         sidebar_mode: SidebarMode = "expanded",
+        collapsible: bool = True,
+        remember_nav_state: bool = False,
         nav_accent: str = "primary",
         **kwargs: Any,
     ) -> None:
@@ -59,6 +65,9 @@ class Shell(ShellLayout):
 
         self._model = NavModel(sidebar_mode=sidebar_mode)
         self._nav_accent = nav_accent
+        self._collapsible = collapsible
+        self._remember_nav_state = remember_nav_state
+        self._initial_applied = False
         self._workspaces: dict[str, Workspace] = {}
         self._pending_data: dict | None = None
         self._prev_page: str | None = None
@@ -76,6 +85,11 @@ class Shell(ShellLayout):
         self._railnav.pack(fill="both", expand=True)
 
         self._model.subscribe(self._on_model_change)
+
+        # Ctrl/Cmd-B toggles sidebar visibility (the hamburger action).
+        if self._collapsible:
+            self.bind("<Control-b>", self._on_toggle_shortcut, add="+")
+            self.bind("<Command-b>", self._on_toggle_shortcut, add="+")
 
     # ----- Workspace creation -----
 
@@ -208,6 +222,52 @@ class Shell(ShellLayout):
         """Key of the active workspace, or `None`."""
         return self._model.active_workspace
 
+    # ----- Sidebar visibility / compaction -----
+
+    def toggle_sidebar(self) -> None:
+        """Toggle the sidebar between hidden and shown (the hamburger action)."""
+        self._model.toggle_sidebar()
+
+    def show_sidebar(self) -> None:
+        """Show the sidebar, restoring its last non-hidden mode."""
+        self._model.show_sidebar()
+
+    def hide_sidebar(self) -> None:
+        """Hide the sidebar entirely."""
+        self._model.hide_sidebar()
+
+    @property
+    def sidebar_mode(self) -> SidebarMode:
+        """The sidebar mode (`'hidden'`/`'compact'`/`'expanded'`).
+
+        Setting `'compact'` only takes visual effect on a standalone static
+        sidebar (no rail); otherwise it renders as expanded.
+        """
+        return self._model.sidebar_mode
+
+    @sidebar_mode.setter
+    def sidebar_mode(self, mode: SidebarMode) -> None:
+        self._model.set_sidebar_mode(mode)
+
+    def _can_compact_active(self) -> bool:
+        """Whether the active sidebar can compact (standalone static, no rail)."""
+        ws = self.workspace
+        return not self._model.rail_visible and ws is not None and ws.supports_compact
+
+    def _on_toggle_shortcut(self, _event: Any = None) -> str:
+        # Collapse the sidebar as far as is useful: to icons when the active
+        # sidebar can compact (standalone static — never strands the only nav),
+        # otherwise hide it (a data list can't compact; under a rail the rail
+        # stays as nav, so hiding is safe). The explicit toggle_sidebar()/
+        # show_sidebar()/hide_sidebar() verbs remain pure visibility.
+        if self._can_compact_active():
+            self.sidebar_mode = (
+                "expanded" if self._model.sidebar_mode == "compact" else "compact"
+            )
+        else:
+            self.toggle_sidebar()
+        return "break"
+
     # ----- Model -> view -----
 
     def _rail_select(self, ws_key: str) -> None:
@@ -237,9 +297,35 @@ class Shell(ShellLayout):
         elif change.facet == "workspace" and change.workspace is not None:
             self._switch_workspace(change.workspace)
         elif change.facet == "sidebar":
-            self.set_sidebar_visible(change.sidebar_mode != "hidden")
+            self._apply_sidebar_mode(change.sidebar_mode)
         elif change.facet == "structure":
             self._sync_rail_visibility()
+
+    def _apply_sidebar_mode(self, mode: SidebarMode | None) -> None:
+        """Reflect a sidebar mode in the view.
+
+        `compact` (icon-only + narrower width) is gated to the standalone static
+        case: it applies only when no rail is showing and the active provider
+        supports it; otherwise the sidebar renders expanded.
+        """
+        if mode is None:
+            mode = self._model.sidebar_mode
+        if mode == "hidden":
+            self.set_sidebar_visible(False)
+            return
+        self.set_sidebar_visible(True)
+        ws = self.workspace
+        compact = (
+            mode == "compact"
+            and not self._model.rail_visible
+            and ws is not None
+            and ws.supports_compact
+        )
+        # Configure the slot frame directly so the stored expanded-width token is
+        # not clobbered (set_sidebar_width mutates the token).
+        self.sidebar.configure(width=self._rail_width if compact else self._sidebar_width)
+        if ws is not None:
+            ws.set_compact(compact)
 
     def _render_page(self, ws_key: str, page_key: str) -> None:
         ws = self._workspaces[ws_key]
@@ -266,8 +352,85 @@ class Shell(ShellLayout):
 
     # ----- Lifecycle -----
 
+    def mainloop(self, n: int = 0) -> None:
+        """Apply the initial (and any persisted) nav state, then run the loop."""
+        self._apply_initial_state()
+        super().mainloop(n=n)
+
+    def _apply_initial_state(self) -> None:
+        """Restore persisted state (if enabled) and reflect the sidebar mode.
+
+        Runs once, just before the event loop starts — after all pages have been
+        authored — so a restored page/workspace overrides the authored default
+        (mirroring window-geometry restore).
+        """
+        if self._initial_applied:
+            return
+        self._initial_applied = True
+        if self._remember_nav_state:
+            self._restore_nav_state()
+        self._apply_sidebar_mode(self._model.sidebar_mode)
+
+    # ----- Nav-state persistence -----
+
+    def _nav_state_path(self):
+        from bootstack._core.paths import app_config_file
+        return app_config_file("nav_state.json", self.settings.app_name)
+
+    def _restore_nav_state(self) -> None:
+        import json
+        try:
+            raw = self._nav_state_path().read_text()
+            data = json.loads(raw)
+        except (FileNotFoundError, OSError, json.JSONDecodeError):
+            return
+        if not isinstance(data, dict):
+            return
+        # Per-workspace remembered pages (only those still present).
+        pages = data.get("active_page")
+        if isinstance(pages, dict):
+            for ws_key, page in pages.items():
+                ws = self._workspaces.get(ws_key)
+                if ws is not None and page in ws.keys():
+                    self._model.select_page(page, workspace=ws_key)
+        # Active workspace.
+        active_ws = data.get("active_workspace")
+        if isinstance(active_ws, str) and self._model.has_workspace(active_ws):
+            self._model.select_workspace(active_ws)
+        # Sidebar mode.
+        mode = data.get("sidebar_mode")
+        if mode in ("hidden", "compact", "expanded"):
+            self._model.set_sidebar_mode(mode)
+
+    def _save_nav_state(self) -> None:
+        import json
+        path = self._nav_state_path()
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            return
+        pages = {
+            k: self._model.active_page(k)
+            for k in self._workspaces
+            if self._model.active_page(k) is not None
+        }
+        data = {
+            "sidebar_mode": self._model.sidebar_mode,
+            "active_workspace": self._model.active_workspace,
+            "active_page": pages,
+        }
+        try:
+            path.write_text(json.dumps(data))
+        except OSError:
+            pass
+
     def destroy(self) -> None:
-        """Close provider subscriptions, then tear down the window."""
+        """Persist nav state, close provider subscriptions, then tear down."""
+        if getattr(self, "_remember_nav_state", False):
+            try:
+                self._save_nav_state()
+            except Exception:
+                pass
         for ws in getattr(self, "_workspaces", {}).values():
             ws.close()
         super().destroy()

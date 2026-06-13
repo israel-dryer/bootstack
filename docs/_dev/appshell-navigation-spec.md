@@ -11,6 +11,102 @@ clean breaking changes, no compat shims.
 
 ---
 
+## Revision 2 — model finalization (2026-06-13, with maintainer)
+
+A design conversation (driven by VS Code pattern analysis) refined the navigation
+model. The decisions below **supersede** parts of §1 where they conflict (marked
+inline). Net: the model is *simpler* — one strong icon tier (the rail), one quiet
+panel tier (the sidebar), **tier-relative** styling, and collapsible groups
+restored.
+
+**R1 — Drop the *seam rule*, not `compact` itself.** Compact (icon-only) stays a
+real sidebar state, but **only for a standalone static sidebar** (no rail) — the
+primary nav narrowing to an icon strip (Gmail / admin-dashboard style). What is
+removed is the **seam rule**: the mandate that a compacted single sidebar adopt the
+rail's exact paradigm + `rail_width` so it looks indistinguishable from a two-tier
+rail (decisions #1/#5/#13). Compact is just the static pills rendered icon-only at
+an icon-fitting width — it is *not* pretending to be a workspace rail (there is no
+rail when it's standalone, so no confusion). Specifics:
+- **Sidebar axis stays `hidden ↔ compact ↔ expanded`** — NavModel `SidebarMode`
+  is unchanged (`compact` retained).
+- **Compact is static-only.** `list_nav` / `tree_nav` are **`hidden ↔ expanded`**
+  only — a label-less data list / icon-only hierarchy is meaningless ("a list nav
+  can be hidden, but not compact, whatever that even means"). So
+  `supports_compact` = `True` for the static provider, `False` for list/tree.
+- **Under a rail, every tier-2 sidebar is `hidden ↔ expanded`** regardless of
+  provider — an icon-only panel beside the icon rail is two icon columns = noise
+  (the §2.2 invariant). So compact applies only to the *standalone* static case.
+
+Icon-compaction-into-a-rail-lookalike is what's gone; "want a real rail" → add
+workspaces (the rail is a first-class tier you opt into, not an emergent state of a
+collapsed sidebar).
+
+**R2 — Collapsible accordion groups are restored (reverses decision #11's
+removal).** "A static sidenav with collapsible section headers" and "a 1-level
+accordion" are the *same widget* — a non-collapsible header is just a group pinned
+open. So this is **folded into the static provider** (optional `collapsible`
+groups), not a 4th provider. Hard rule: **accordions are 1 level** (collapsible
+section → flat items, no nesting). Depth → `tree_nav`. This is what fills real
+two-tier sidebars (VS Code Explorer/Extensions, Slack/Discord channels).
+
+**R3 — Sidebar styling is tier-relative, not provider-absolute.** Prominence
+tracks whether a rail outranks the sidebar:
+- **Static, standalone (no rail) = the primary nav** → **button-like, rounded
+  "pill" items** (macOS System Settings vibe). Reuses the rounded `button` asset
+  family.
+- **Static, under a rail = tier-2** → **quiet flat full-width list rows** (the
+  rail is now the strong tier; the sidebar recedes).
+- **`list_nav` / `tree_nav` keep their list/tree row language in *all* contexts**
+  — a data list reads as a list (Mail's sidebar), never as pills. *("You'd never
+  see a pill sidebar next to a list nav — that's the wrong navigation structure.")*
+- **Rail** → strong rounded toggle-button (muted→full-color) + indicator bar, on
+  its **own chrome/elevation color**.
+
+Because shell-level `add_page` (no rail) and workspace `add_page` (rail present)
+are mutually exclusive, a provider always knows its tier at mount — no runtime
+flipping between pills and flat rows.
+
+**R4 — Static `add_page` stays on both shell and workspace.** It is the
+single-tier idiom, but valid under a rail (e.g. a footer "Settings" workspace with
+General/Appearance sub-pages), rendered in the tier-2 quiet language per R3.
+
+**R5 — One sidebar selection language *per tier*.** All providers in the same tier
+render rows alike (decision #12's spirit): tier-2 (under-rail) = quiet wash, no
+bar, no accent text; tier-1 standalone static = rounded pill. The rail owns the
+bar.
+
+**R6 — Ctrl-B collapses the sidebar as far as is *useful*, context-dependently.**
+VS Code's Ctrl-B fully hides the side panel because the activity bar (rail) stays
+as a fallback nav. A **standalone static sidebar is the only nav**, so hiding it
+strands the user — there, Ctrl-B = **expanded ↔ compact** (shrink to icons, never
+strand). For a **data-bound** sidebar (can't compact) or **any sidebar under a
+rail** (rail remains as nav), Ctrl-B = **expanded ↔ hidden** (VS Code behavior).
+So: compact-toggle when `not rail_visible and provider.supports_compact`, else
+visibility-toggle. The explicit verbs `toggle_sidebar()`/`show_sidebar()`/
+`hide_sidebar()` stay **pure visibility** (the hamburger primitive); only the
+keyboard shortcut is context-smart. The step-9 chevron does expanded↔compact, so
+chevron and Ctrl-B agree for the static case.
+
+**Re-scoped build order** (supersedes §5 steps 7–11):
+- **7 — Sidebar visibility/compaction + persistence** (slimmed): wire
+  `hidden ↔ compact ↔ expanded` → view, where **compact = icon-only + narrower
+  width, gated to the standalone static case** (no rail, `supports_compact`);
+  `toggle_sidebar`/`show_sidebar`/`hide_sidebar` (pure visibility) + `sidebar_mode`
+  rw prop + context-smart **Ctrl/Cmd-B** (compact-toggle for standalone static,
+  else hide — R6); `remember_nav_state` (sidebar_mode + per-workspace page). **No
+  visible chevron control** (the trigger for compact↔expanded is folded into step
+  9). **No PanedWindow sash** (deferred to a separate 7b follow-up).
+- **8 — Collapsible groups (accordion) + custom panel.** 1-level collapsible
+  groups in the static provider; `ws.panel()` custom mode.
+- **9 — Visual hierarchy (the big styling pass — discuss before implementing).**
+  Tier-relative styling per R3: rail strong toggle-button + bar + own chrome
+  color; tier-2 sidebar quiet list rows; tier-1 standalone static rounded pills;
+  `list_nav` → real `ListView`, tree aligned to the quiet wash; named elevation
+  tokens (rail/sidebar/content); tree empty-state placeholder.
+- **10 — Dock** (reserved, deferred). **11 — Polish** + swap public AppShell.
+
+---
+
 ## 1. Locked decisions (from discussion)
 
 1. **Single-tier is two-tier with one workspace.** The rail (workspace switcher)
@@ -25,8 +121,11 @@ clean breaking changes, no compat shims.
 4. **Two modes per workspace.** *Provider mode* (blessed: cascade +
    collapse-to-rail + per-workspace memory) vs *custom mode* (blank container,
    user owns content-switching, **hides but does not compact to a rail**).
-5. **Collapse-to-rail requires icon-representable content.** Inherent constraint,
-   not a bug — only provider-mode panels compact; custom panels only hide.
+5. **Collapse-to-rail requires icon-representable content.** *(REVISED by Revision
+   2 / R1 — `compact` (icon-only) is retained but applies ONLY to a standalone
+   static sidebar; the seam rule "compact looks like the rail" is removed. Nothing
+   compacts *into a rail*.)* Inherent constraint, not a bug — only the static
+   provider compacts (icon-only); list/tree and custom panels only hide.
 6. **VS Code rail gesture.** Click the **active** rail icon → hide the sidebar.
    Click a **different** rail icon → switch workspace + show the sidebar.
 7. **Three independent layout axes; rail→sidebar content-coupled.** Visibility of
@@ -44,7 +143,9 @@ clean breaking changes, no compat shims.
 10. **Detail payload normalized to one shape** (resolves design-doc open
     decision #2): both `list_nav` and `tree_nav` detail builders receive the
     universal `.selection` **record dict**, not dict-vs-node.
-11. **`SideNav` stays standalone, and is simplified.** It remains a public widget
+11. **`SideNav` stays standalone, and is simplified.** *(PARTLY SUPERSEDED by
+    Revision 2 / R2 — collapsible groups are RESTORED as 1-level accordions folded
+    into the static provider. The rest of this decision stands.)* It remains a public widget
     usable outside a shell (the seed-brief renames land on it: `on_toggle`/
     `on_display_change`), and the AppShell static (`add_page`) provider renders
     the *same* primitive. **Collapsible groups (`SideNavGroup` expandability) are
@@ -70,7 +171,10 @@ clean breaking changes, no compat shims.
     `ButtonGroup`'s baked shapes with a role-specific builder. Cleanup: drop the
     unused `variant`/`VariantToken` kwarg from `SideNavItem`
     (`project_variant_type_revisit`).
-13. **Per-tier visual hierarchy (rail vs sidebar vs content).** Three reinforcing
+13. **Per-tier visual hierarchy (rail vs sidebar vs content).** *(REVISED by
+    Revision 2 / R3 — the per-tier hierarchy stands; the seam rule is removed and
+    sidebar styling is now tier-relative: standalone static = rounded pills
+    (compact = those pills icon-only), under-rail static = quiet list rows.)* Three reinforcing
     axes of distinction so two icon columns never compete and *"the eye lands on
     exactly one high-contrast item per tier"* (design doc §6):
     - **Elevation:** rail = 0, sidebar = 1, content = 2 — **named elevation
@@ -141,7 +245,7 @@ the `statusbar` band is built minimal.
 regions subscribe.
 
 ```python
-SidebarMode = Literal["hidden", "compact", "expanded"]
+SidebarMode = Literal["hidden", "compact", "expanded"]  # compact = static-only (R1)
 
 @dataclass
 class WorkspaceState:
@@ -173,9 +277,12 @@ class NavModel:
 ```
 
 Invariant: `sidebar_mode` is a single linear axis (`hidden → compact → expanded`),
-so "hidden but expanded" is unrepresentable. In two-tier the rail is the
-always-present tier-1, so the secondary panel uses only `hidden ↔ expanded`
-(no own compact — two icon-rails side by side is noise).
+so "hidden but expanded" is unrepresentable. *(Revision 2 / R1: `compact` is
+retained but applies ONLY to a standalone static sidebar — `list_nav`/`tree_nav`
+and any under-rail tier-2 sidebar use `hidden ↔ expanded` only. A single sidebar
+never morphs into a rail-lookalike; "want a rail" → add workspaces.)* In two-tier
+the rail is the always-present tier-1, so the secondary panel uses only
+`hidden ↔ expanded` (no own compact — two icon-rails side by side is noise).
 
 `rail_renders == len([w for w in workspaces if not w.is_footer]) + footers > 1`
 (i.e. more than one workspace total). Pure function of workspace count.
@@ -218,7 +325,7 @@ placement/window-state/etc. via `AppConfigMixin`), plus navigation options.
 | `sidebar_mode` | `'expanded'\|'compact'\|'hidden'` | `'expanded'` | initial sidebar state |
 | `sidebar_width` | `int \| None` | token | expanded width |
 | `rail_width` | `int \| None` | token | rail / compact width (shared token — collapse is seamless) |
-| `collapsible` | `bool` | `True` | show the in-sidebar chevron + bind Ctrl/Cmd-B |
+| `collapsible` | `bool` | `True` | show the in-sidebar chevron + bind Ctrl/Cmd-B (collapse: compact for a standalone static sidebar, else hide — see R6) |
 | `nav_accent` | `AccentToken \| str` | `'primary'` | active-item accent |
 | `remember_nav_state` | `bool` | `False` | persist sidebar_mode + per-workspace page across sessions |
 | `show_statusbar` | `bool` | `False` | force the status band on (else content-driven) |
