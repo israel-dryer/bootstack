@@ -222,10 +222,10 @@ class ListView(PublicWidgetBase):
         return self.on("item_click", handler)
 
     @overload
-    def on_selection_changed(self) -> Stream: ...
+    def on_select(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[Event], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
+    def on_select(self, handler: Callable[[Event], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[Event], Any] | None = None) -> Stream | Subscription:
         """Fired when the selection changes.
 
         Args:
@@ -238,7 +238,7 @@ class ListView(PublicWidgetBase):
             A cancellable :class:`~bootstack.events.Subscription` when a handler
             is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
-        return self.on("selection_changed", handler)
+        return self.on("select", handler)
 
     @overload
     def on_item_delete(self) -> Stream: ...
@@ -337,7 +337,7 @@ class ListView(PublicWidgetBase):
 
 _LISTVIEW_EVENTS: dict[str, str] = {
     "item_click":        "<<ItemClick>>",
-    "selection_changed": "<<SelectionChange>>",
+    "select":            "<<SelectionChange>>",
     "item_delete":       "<<ItemDelete>>",
     "item_insert":       "<<ItemInsert>>",
     "item_update":       "<<ItemUpdate>>",

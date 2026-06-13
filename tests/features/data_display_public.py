@@ -50,7 +50,7 @@ with App(title="Data Display", minsize=(900, 620), padding=0, gap=0) as app:
                 selected = lv.selection
                 lbl_sel.text = f"Selected: {[r['name'] for r in selected]}"
 
-            lv.on_selection_changed(show_selection)
+            lv.on_select(show_selection)
 
             with HStack(gap=8):
                 Button("Select All",    on_click=lv.select_all)

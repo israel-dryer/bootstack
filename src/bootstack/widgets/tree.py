@@ -461,10 +461,10 @@ class Tree(PublicWidgetBase):
     # ----- events -----
 
     @overload
-    def on_selection_changed(self) -> Stream: ...
+    def on_select(self) -> Stream: ...
     @overload
-    def on_selection_changed(self, handler: Callable[[TreeSelectionEvent], Any]) -> Subscription: ...
-    def on_selection_changed(self, handler: Callable[[TreeSelectionEvent], Any] | None = None) -> Stream | Subscription:
+    def on_select(self, handler: Callable[[TreeSelectionEvent], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[TreeSelectionEvent], Any] | None = None) -> Stream | Subscription:
         """Fired when the set of selected nodes changes.
 
         Args:
@@ -476,7 +476,7 @@ class Tree(PublicWidgetBase):
             A cancellable :class:`~bootstack.events.Subscription` when a handler
             is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
-        return self.on("selection_changed", handler)
+        return self.on("select", handler)
 
     @overload
     def on_activate(self) -> Stream: ...
@@ -632,7 +632,7 @@ class Tree(PublicWidgetBase):
 
 
 _TREE_EVENTS: dict[str, str] = {
-    "selection_changed": "<<TreeSelectionChange>>",
+    "select":            "<<TreeSelectionChange>>",
     "activate":          "<<TreeActivate>>",
     "expand":            "<<TreeExpand>>",
     "collapse":          "<<TreeCollapse>>",

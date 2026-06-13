@@ -124,7 +124,7 @@ list of the full record dicts; in ``"single"`` mode the selected record dict (or
 .. code-block:: python
 
    lv = bs.ListView(items=records, selection_mode="multi")
-   lv.on_selection_changed(lambda e: print(lv.selection))
+   lv.on_select(lambda e: print(lv.selection))
 
 Set the selection programmatically by record ``id`` — ``select_items`` replaces
 the selection in single mode and adds in multi mode; ``deselect_items`` removes:
@@ -210,7 +210,7 @@ to unsubscribe:
    lv = bs.ListView(items=records, selection_mode="single")
 
    sub = lv.on_item_click(lambda e: print("clicked:", e["title"]))
-   lv.on_selection_changed(lambda e: print("selected:", lv.selection))
+   lv.on_select(lambda e: print("selected:", lv.selection))
    lv.on_item_delete(lambda e: print("deleted:", e["id"]))
 
    sub.cancel()   # unsubscribe

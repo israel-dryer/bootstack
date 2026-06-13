@@ -169,10 +169,10 @@ class Calendar(PublicWidgetBase):
     # ----- Events -----
 
     @overload
-    def on_date_selected(self) -> Stream: ...
+    def on_select(self) -> Stream: ...
     @overload
-    def on_date_selected(self, handler: Callable[[DateSelectEvent], Any]) -> Subscription: ...
-    def on_date_selected(self, handler: Callable[[DateSelectEvent], Any] | None = None) -> Stream | Subscription:
+    def on_select(self, handler: Callable[[DateSelectEvent], Any]) -> Subscription: ...
+    def on_select(self, handler: Callable[[DateSelectEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when a date or range is selected.
 
         In single mode the handler fires on every date click. In range mode

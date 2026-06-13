@@ -130,7 +130,7 @@ Override the locale default for the first column (0=Monday, 6=Sunday).
 Events
 ~~~~~~
 
-``on_date_selected()`` fires after every click. In range mode it fires
+``on_select()`` fires after every click. In range mode it fires
 twice — once when the start is set (``end`` is ``None``) and again when
 the end is set.
 
@@ -139,7 +139,7 @@ the end is set.
    cal = bs.Calendar()
 
    # Single mode
-   cal.on_date_selected(lambda e: print("selected:", cal.value))
+   cal.on_select(lambda e: print("selected:", cal.value))
 
    # Range mode — wait for a complete range
    cal = bs.Calendar(selection_mode="range")
@@ -147,10 +147,10 @@ the end is set.
        start, end = cal.range
        if end is not None:
            print(f"range: {start} → {end}")
-   cal.on_date_selected(_on_select)
+   cal.on_select(_on_select)
 
    # As a Stream
-   cal.on_date_selected().listen(lambda e: refresh(cal.value))
+   cal.on_select().listen(lambda e: refresh(cal.value))
 
 Programmatic control
 ~~~~~~~~~~~~~~~~~~~~

@@ -186,14 +186,14 @@ Events
 
 All ``on_*`` methods return a ``Subscription`` when called with a handler, or a
 ``Stream`` when called without one; call ``.cancel()`` on the subscription to
-unsubscribe. ``on_selection_changed`` delivers a
+unsubscribe. ``on_select`` delivers a
 :class:`~bootstack.events.TreeSelectionEvent` (with ``nodes``); ``on_activate``,
 ``on_expand``, and ``on_collapse`` pass the affected ``TreeNode``; and
 ``on_right_click`` carries enough to position your own menu.
 
 .. code-block:: python
 
-   tree.on_selection_changed(lambda e: print([n.label for n in e.nodes]))
+   tree.on_select(lambda e: print([n.label for n in e.nodes]))
    tree.on_activate(lambda node: open_file(node))          # double-click / Enter
    tree.on_expand(lambda node: print("opened", node.label))
    tree.on_collapse(lambda node: print("closed", node.label))

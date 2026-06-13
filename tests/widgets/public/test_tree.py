@@ -400,11 +400,11 @@ def test_selection_empty_shape_by_mode(shown_app):
 
 
 @pytest.mark.gui
-def test_on_selection_changed_fires_with_event(shown_app):
+def test_on_select_fires_with_event(shown_app):
     tree = bs.Tree(nodes=PROJECT, selection_mode="single")
     _pump(shown_app)
     received = []
-    tree.on_selection_changed(lambda e: received.append(e))
+    tree.on_select(lambda e: received.append(e))
 
     tree.select(_roots(tree)[1])
     _pump(shown_app)
@@ -416,12 +416,12 @@ def test_on_selection_changed_fires_with_event(shown_app):
 @pytest.mark.gui
 def test_reselecting_same_node_does_not_reemit(shown_app):
     """Single-mode: re-clicking the already-selected node must not re-fire
-    on_selection_changed."""
+    on_select."""
     tree = bs.Tree(nodes=PROJECT, selection_mode="single")
     _pump(shown_app)
     node = _roots(tree)[1]
     received = []
-    tree.on_selection_changed(lambda e: received.append(e))
+    tree.on_select(lambda e: received.append(e))
 
     tree.select(node)
     _pump(shown_app)
