@@ -21,6 +21,35 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Media widget suite — Picture / Gallery / Carousel / Avatar** (PRs #126–#132,
+  all merged) — a family of media-display widgets built on the public `Image`
+  handle, in a new **Media** docs category. **`Picture`** (#126) is the display
+  atom: object-fit modes (`contain`/`cover`/`fill`/`none`/`scale-down`),
+  responsive resize, antialiased rounded corners, animated-GIF playback (via
+  `Schedule`), typed `on_load`/`on_error` + `on_click`; the shared
+  `widgets/_impl/composites/_image_fit.py` helper (fit/round/`resolve_pil`) was
+  extracted here. **`Gallery`** (#127) is a **record-native recycling thumbnail
+  grid** (reuses `items=`/`data_source=`, the universal `.selection`,
+  `select_items`/…; `image_field`/`caption_field`; responsive auto-columns;
+  accent selection ring). **`Carousel`** (#128) is a one-at-a-time stepper —
+  slide/fade transitions (own canvas, two-image `canvas.move` / `Image.blend`),
+  `corner_radius` rounds the **container** (a fixed corner-mask), **neutral** dots
+  auto-switching to a count past 8 slides, `data_source`/`reload`,
+  `on_change`/`on_item_click`. **`Avatar`** (#132) is an image-or-initials
+  identity badge (circle/rounded/square; initials via Tk text in the app UI font;
+  image-load fallback). Plus: an **image-subsystem review** (#129 — fixed a
+  Gallery global-cache leak, added Gallery theme handling, Carousel
+  parity/edge-cases); the **`on_select` rename** (#130 — `on_selection_changed`
+  (ListView/DataTable/Tree) + `on_date_selected` (Calendar) → `on_select`,
+  present-tense convention); and **theme-aware demo videos** (#131 — PageStack +
+  Carousel heroes are now `bs-video-light/dark` MP4s, with a `.gitignore`
+  exception). Memories: `project_picture_suite`, `project_avatar_widget`,
+  `project_doc_demo_videos`, `project_image_subsystem_review`,
+  `project_event_naming_revisit`. Brief `docs/_dev/picture-suite.md`. **Deferred**
+  (in the brief/memories): `Image.from_url()` + async/off-thread load (Phase 1.5),
+  a silent video source via `bootstack[video]` (Phase 2), a splash screen, an
+  `_ImageService._cache` LRU cap, animated-GIF carousel slides, more demo videos
+  (Toast/Tooltip/Tabs/Accordion are the Tier-1 candidates).
 - **Public Image/Icon API + AppIcon + field signals + toml cleanup** (PR #125,
   merged; reviewed) — new public
   **`bootstack.images`**: a toolkit-free **`Image`** handle (`open`/`from_bytes`/`from_pil`,
@@ -253,7 +282,32 @@ memories and git history.
   `docs/_dev/api-reference-restructure.md`; memory `project_api_reference_restructure`.
   **NEXT: Stage 4 (in progress — see below).**
 
-## Next up — candidates (pick one)
+## Next up
+
+### ★ ACTIVE — AppShell + SideNav refactor (START HERE, fresh session)
+
+The chosen next initiative (maintainer, 2026-06-12). A combined rework of
+**AppShell** and **SideNav** — make AppShell expose real public widget handles,
+and refactor SideNav's API/internals (its event renames have been intentionally
+deferred to this). **Scope, goals, and known issues: `docs/_dev/appshell-sidenav-refactor.md`**
+(seed brief). Memory `project_appshell_sidenav_refactor`. Pulls together:
+
+- **AppShell public façades** — `shell.commandbar` today returns the INTERNAL
+  composite with the old `command=` API, not a public `CommandBar`; same for
+  nav/pages. Expose public handles (`commandbar`/`nav`/`pages`), return public
+  widgets from `add_*` (the `_adopt`-classmethod pattern), `CommandBar.content` /
+  make-it-a-container, window-control accessors, and fold `menu_layout` /
+  `chrome_surface` into AppShell. Detail in `docs/_dev/widget-api-audit.md`.
+- **SideNav refactor** — fold in the deferred event renames
+  `on_pane_toggled → on_toggle`, `on_display_mode_changed → on_display_change`
+  (present-tense convention, `project_event_naming_revisit`); plus the long-standing
+  SideNav/AppShell deferred improvements (see Carryover): `nav_pane_width=` not wired
+  to `SideNav(pane_width=)`, hardcoded nav density/font, group active-child highlight +
+  indentation, footer non-page widgets.
+- Related context: `project_menu_redesign` (the PR #124 menu/command-bar redesign
+  this builds on), `project_macos_window_chrome` (native chrome follow-up, separate).
+
+### Other candidates
 
 - **Docs site fleshout** — the remaining stub pages: how-to guides (`docs/tasks/*` —
   getting-input/handling-actions/displaying-data/building-forms/dialogs/navigation),
@@ -261,14 +315,6 @@ memories and git history.
   review of `installation`/`quickstart`. A SEPARATE initiative from the api-gap branch
   (`cli`/`distribution` need investigation, not just writing). State + suggested order in
   memory `project_docs_site_fleshout`.
-- **CommandBar/AppShell rework** — PARTLY addressed by the menu redesign (PR #124:
-  `Toolbar`→`CommandBar`, legacy `MenuBar` removed, `app.menubar`/`app.commandbar`).
-  REMAINING: return public widget handles from `add_*` (the §2b work, via an `_adopt`
-  classmethod) + `CommandBar.content`/make-it-a-container + window-control accessors +
-  AppShell `commandbar`/`nav`/`pages` public façades (today `shell.commandbar` still
-  returns the INTERNAL composite with the `command=` API, not a public `CommandBar`).
-  Also fold `menu_layout`/`chrome_surface` into AppShell (deferred — its command bar is
-  internal/pre-placed). Detail in `docs/_dev/widget-api-audit.md`.
 - **Decoupled option shape (option-databag)** — one shared `Option = str|tuple|OptionDict`
   normalizer for the selection family; also subsumes the duplicated RadioGroup/ToggleGroup
   management API (review finding #6). Memory `project_select_options_databag`; brief
