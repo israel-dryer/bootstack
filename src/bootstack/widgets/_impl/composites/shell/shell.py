@@ -197,9 +197,9 @@ class Shell(ShellLayout):
         if ws is not None:
             ws.collapse_all()
 
-    def list_nav(self, source: Any, *, separator: bool = False) -> Any:
+    def list_nav(self, source: Any, *, separator: bool = False, density: str = "default") -> Any:
         """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
-        return self._default_workspace().list_nav(source, separator=separator)
+        return self._default_workspace().list_nav(source, separator=separator, density=density)
 
     def tree_nav(self, **kwargs: Any) -> Any:
         """Fill the implicit workspace from a hierarchy (tree master-detail)."""

@@ -191,10 +191,12 @@ class ListNavProvider:
         *,
         accent: str = "primary",
         separator: bool = False,
+        density: str = "default",
     ) -> None:
         self._source = source
         self._accent = accent
         self._separator = separator
+        self._density = density
         self._listview: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -226,7 +228,8 @@ class ListNavProvider:
             selection_mode="single",
             show_separators=self._separator,
             show_scrollbar=False,   # mousewheel scrolls; no always-on bar in a nav
-            density="compact",      # dense data list; also differentiates from the static pill nav
+            show_chevron=True,      # disclosure affordance — this is a nav list
+            density=self._density,
             accent=self._accent,
             fill="both",
             expand=True,
@@ -349,6 +352,7 @@ class TreeNavProvider:
         label_field: str = "name",
         icon_field: str = "icon",
         accent: str = "primary",
+        density: str = "default",
     ) -> None:
         self._nodes = nodes
         self._source = source
@@ -356,6 +360,7 @@ class TreeNavProvider:
         self._label_field = label_field
         self._icon_field = icon_field
         self._accent = accent
+        self._density = density
         self._tree: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -382,7 +387,7 @@ class TreeNavProvider:
             "parent": self._sidebar_host,
             "selection_mode": "single",
             "show_scrollbar": False,
-            "density": "compact",   # dense, matching list_nav; distinct from the static pill nav
+            "density": self._density,
             "accent": self._accent,
             "fill": "both",
             "expand": True,

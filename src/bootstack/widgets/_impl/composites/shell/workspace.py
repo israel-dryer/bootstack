@@ -166,15 +166,18 @@ class Workspace:
 
     # ----- Data-bound content API -----
 
-    def list_nav(self, source: Any, *, separator: bool = False) -> Any:
+    def list_nav(self, source: Any, *, separator: bool = False, density: str = "default") -> Any:
         """Fill the workspace from a `DataSource` (flat master-detail).
 
-        Records render their `text`/`icon` in a recycling `ListView` (which
-        inherits the sidebar surface). `separator` draws divider lines between
-        rows; default is flush.
+        Records render their `icon`/`title`/`text` in a recycling `ListView`
+        (which inherits the sidebar surface). `separator` draws divider lines
+        between rows (default flush); `density` is `'default'`/`'compact'`
+        (compact suits one-line items, default suits richer two-line items).
         """
         self._claim_provider()
-        self._provider = ListNavProvider(source, accent=self._nav_accent, separator=separator)
+        self._provider = ListNavProvider(
+            source, accent=self._nav_accent, separator=separator, density=density
+        )
         self._mount_provider()
         return self._provider
 
@@ -186,8 +189,12 @@ class Workspace:
         parent_field: str = "parent_id",
         label_field: str = "name",
         icon_field: str = "icon",
+        density: str = "default",
     ) -> Any:
-        """Fill the workspace from a hierarchy (tree master-detail)."""
+        """Fill the workspace from a hierarchy (tree master-detail).
+
+        `density` is `'default'`/`'compact'`.
+        """
         self._claim_provider()
         self._provider = TreeNavProvider(
             nodes=nodes,
@@ -196,6 +203,7 @@ class Workspace:
             label_field=label_field,
             icon_field=icon_field,
             accent=self._nav_accent,
+            density=density,
         )
         self._mount_provider()
         return self._provider
