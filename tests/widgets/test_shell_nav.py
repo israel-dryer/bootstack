@@ -49,5 +49,24 @@ def test_single_tier_navigation_cascade():
             shell.navigate("nope")
         with pytest.raises(ValueError):
             shell.add_page("home")             # duplicate
+
+        # Static nav extras: headers, separators, footer pages.
+        shell.add_header("Documents")
+        shell.add_separator()
+        shell.add_page("files", text="Files", icon="folder")
+        shell.add_footer_page("settings", text="Settings", icon="gear")
+        assert "files" in shell.nav.item_keys()
+        assert "settings" in shell.nav.item_keys()
+        shell.navigate("settings")             # footer item is navigable
+        assert shell.current_page == "settings"
+        assert shell.pages.current()[0] == "settings"
     finally:
         shell.destroy()
+
+
+def test_static_provider_satisfies_protocol():
+    from bootstack.widgets._impl.composites.shell import NavProvider, StaticProvider
+
+    provider = StaticProvider()
+    assert isinstance(provider, NavProvider)   # runtime-checkable Protocol
+    assert provider.supports_compact is True

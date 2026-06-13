@@ -19,6 +19,7 @@ from bootstack.widgets._core.navmodel import NavChange, NavModel, SidebarMode
 from bootstack.widgets._impl.composites.pagestack import PageStack
 from bootstack.widgets._impl.composites.shell.layout import ShellLayout
 from bootstack.widgets._impl.composites.shell.nav_panel import NavPanel
+from bootstack.widgets._impl.composites.shell.providers import StaticProvider
 
 
 # Key of the implicit single workspace backing the shell-level page methods.
@@ -57,19 +58,18 @@ class Shell(ShellLayout):
         self._page_keys: set[str] = set()
         self._pending_data: dict | None = None
 
-        # Content deck (active page) + nav panel (sidebar items).
-        self._pages = PageStack(self.content)
-        self._pages.pack(fill="both", expand=True)
-        self._nav = NavPanel(self.sidebar, on_select=self._on_nav_select, accent=nav_accent)
-        self._nav.pack(fill="both", expand=True)
+        # One provider fills the sidebar + content for the (single, implicit)
+        # workspace. Static is the default; data-bound providers slot in later.
+        self._provider = StaticProvider(accent=nav_accent)
+        self._provider.mount(self.sidebar, self.content, on_select=self._on_nav_select)
 
         # React to model changes; re-emit page changes on the shell itself.
         self._model.subscribe(self._on_model_change)
-        self._pages.on_page_changed(self._reemit_page_change)
+        self._provider.pages.on_page_changed(self._reemit_page_change)
 
     # ----- Content API -----
 
-    def add_page(self, key: str, *, text: str = "", icon=None) -> Any:
+    def add_page(self, key: str, *, text: str = "", icon=None, footer: bool = False) -> Any:
         """Add a nav item and its page; return the page frame.
 
         The first page added is auto-selected so the content area is never
@@ -79,6 +79,7 @@ class Shell(ShellLayout):
             key: Unique key for the nav item and page.
             text: Sidebar label.
             icon: Icon name or icon-spec dict.
+            footer: Pin the nav item to the sidebar footer.
 
         Returns:
             The page `Frame` to parent content into.
@@ -94,13 +95,24 @@ class Shell(ShellLayout):
         if not self._model.has_workspace(_DEFAULT_WORKSPACE):
             self._model.add_workspace(_DEFAULT_WORKSPACE)
 
-        page = self._pages.add(key)
-        self._nav.add_item(key, text=text, icon=icon)
+        page = self._provider.add_page(key, text=text, icon=icon, footer=footer)
         self._page_keys.add(key)
 
         if self._model.active_page() is None:
             self.navigate(key)
         return page
+
+    def add_footer_page(self, key: str, *, text: str = "", icon=None) -> Any:
+        """Add a nav item pinned to the sidebar footer and its page."""
+        return self.add_page(key, text=text, icon=icon, footer=True)
+
+    def add_header(self, text: str) -> Any:
+        """Add a static section header to the sidebar."""
+        return self._provider.add_header(text)
+
+    def add_separator(self) -> Any:
+        """Add a separator to the sidebar."""
+        return self._provider.add_separator()
 
     # ----- Navigation -----
 
@@ -137,8 +149,8 @@ class Shell(ShellLayout):
     def _sync_page(self, key: str) -> None:
         data = self._pending_data
         self._pending_data = None
-        self._nav.select(key)
-        self._pages.navigate(key, data=data)
+        self._provider.select_visual(key)
+        self._provider.show(key, data=data)
 
     def _reemit_page_change(self, event: Any) -> None:
         # Surface the PageStack's change on the shell so consumers bind one place.
@@ -152,11 +164,16 @@ class Shell(ShellLayout):
         return self._model
 
     @property
+    def provider(self) -> StaticProvider:
+        """The active workspace's navigation provider."""
+        return self._provider
+
+    @property
     def pages(self) -> PageStack:
-        """The content page deck."""
-        return self._pages
+        """The content page deck of the active provider."""
+        return self._provider.pages
 
     @property
     def nav(self) -> NavPanel:
-        """The sidebar navigation panel."""
-        return self._nav
+        """The sidebar navigation panel of the active provider."""
+        return self._provider.nav

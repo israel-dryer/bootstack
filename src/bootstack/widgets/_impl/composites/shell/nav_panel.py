@@ -1,13 +1,13 @@
-"""The static navigation panel — single-select nav items in the sidebar.
+"""The static navigation panel — single-select items, headers, separators, footer.
 
-`NavPanel` is the seed of the static (`add_page`) provider: it renders a flat,
-single-select list of `SideNavItem`s into a sidebar region. Selection is driven
-externally (by the shell, from `NavModel`) — clicking an item reports the key via
-the `on_select` callback; the shell decides what becomes active and calls
-`select()` back to update the visual state. The panel never owns selection truth.
+`NavPanel` renders a flat, single-select list into a sidebar region: items in a
+scrolling main area plus a pinned footer area. Selection is driven externally
+(by the shell, from `NavModel`) — clicking an item reports the key via the
+`on_select` callback; the shell decides what becomes active and calls `select()`
+back to update the visual state. The panel never owns selection truth.
 
 Collapsible groups are deliberately absent (see `docs/_dev/appshell-navigation-spec.md`,
-decision #11): the primary nav is a flat list of items plus static headers.
+decision #11): the primary nav is a flat list of items plus *static* headers.
 """
 
 from __future__ import annotations
@@ -16,10 +16,12 @@ from typing import Callable
 
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.composites.sidenav.item import SideNavItem
+from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
+from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 
 
 class NavPanel(Frame):
-    """A flat, single-select list of navigation items.
+    """A flat, single-select list of navigation items with a pinned footer.
 
     Args:
         master: Parent widget (a sidebar region).
@@ -40,22 +42,46 @@ class NavPanel(Frame):
         self._items: dict[str, SideNavItem] = {}
         self._selected: str | None = None
 
+        # Footer pinned to the bottom; main area fills the rest above it.
+        self._footer = Frame(self)
+        self._footer.pack(side="bottom", fill="x")
+        self._main = Frame(self)
+        self._main.pack(side="top", fill="both", expand=True)
+
     def add_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
-        """Add a navigation item and wire its click to `on_select`.
+        """Add a selectable item to the main area; wire its click to `on_select`."""
+        return self._add_item(self._main, key, text=text, icon=icon)
 
-        Args:
-            key: Unique item key (also the page key).
-            text: Display label.
-            icon: Icon name or icon-spec dict.
+    def add_footer_item(self, key: str, *, text: str = "", icon=None) -> SideNavItem:
+        """Add a selectable item pinned to the footer."""
+        return self._add_item(self._footer, key, text=text, icon=icon)
 
-        Returns:
-            The created `SideNavItem`.
-        """
-        item = SideNavItem(self, key=key, text=text, icon=icon, accent=self._accent)
+    def _add_item(self, parent: Frame, key: str, *, text: str, icon) -> SideNavItem:
+        if key in self._items:
+            raise ValueError(f"duplicate nav item key: {key!r}")
+        item = SideNavItem(parent, key=key, text=text, icon=icon, accent=self._accent)
         item.pack(fill="x")
         item.on_invoked(lambda _event, k=key: self._on_select(k))
         self._items[key] = item
         return item
+
+    def add_header(self, text: str) -> SideNavHeader:
+        """Add a static (non-collapsible) section header to the main area.
+
+        Uses a tighter top margin than the stock `SideNavHeader` default — the
+        header alone carries enough separation, so a roomy top gap reads as
+        excess (especially when it follows an item).
+        """
+        # (left, top, right, bottom) — aligned to the item icon column.
+        header = SideNavHeader(self._main, text=text, padding=(12, 10, 12, 4))
+        header.pack(fill="x")
+        return header
+
+    def add_separator(self) -> SideNavSeparator:
+        """Add a separator to the main area."""
+        sep = SideNavSeparator(self._main)
+        sep.pack(fill="x")
+        return sep
 
     def select(self, key: str | None) -> None:
         """Set the visual selection to `key` (or clear it with `None`)."""
@@ -69,5 +95,5 @@ class NavPanel(Frame):
         return self._selected
 
     def item_keys(self) -> tuple[str, ...]:
-        """All item keys in insertion order."""
+        """All item keys (main + footer) in insertion order."""
         return tuple(self._items)
