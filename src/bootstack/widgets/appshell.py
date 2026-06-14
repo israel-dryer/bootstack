@@ -148,10 +148,12 @@ class _Workspace:
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> Any:
         """Fill the workspace from a `DataSource` (flat master-detail)."""
         return self._internal.list_nav(
-            source, separator=separator, density=density, placeholder=placeholder
+            source, separator=separator, density=density,
+            placeholder=placeholder, chevron=chevron,
         )
 
     def tree_nav(self, **kwargs: Any) -> Any:
@@ -467,10 +469,12 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> Any:
         """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
         return self._internal.list_nav(
-            source, separator=separator, density=density, placeholder=placeholder
+            source, separator=separator, density=density,
+            placeholder=placeholder, chevron=chevron,
         )
 
     def tree_nav(self, **kwargs: Any) -> Any:
@@ -644,11 +648,14 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
 
         Use with ``with shell.content:`` or ``parent=shell.content`` to place
         widgets in the content area directly — the escape hatch for custom
-        (`panel`) mode.
+        (`panel`) mode. Targets the active workspace's content frame, not the
+        layout region (which hosts the page deck).
         """
+        ws = self._internal.workspace
+        frame = ws.content if ws is not None else self._internal.content
         host = getattr(self, "_content_host", None)
-        if host is None:
-            host = self._content_host = _PageFrame(self._internal.content)
+        if host is None or host._internal is not frame:
+            host = self._content_host = _PageFrame(frame)
         return host
 
     @property

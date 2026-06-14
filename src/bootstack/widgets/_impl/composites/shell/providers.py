@@ -171,6 +171,9 @@ class ListNavProvider:
         accent: Accent token (the selection control follows it; the row
             selection itself is a neutral wash by default).
         separator: Draw separator lines between rows. Default False (flush).
+        chevron: Show a right-pointing chevron on each row. Off by default — a
+            disclosure affordance worth adding only when the row visibly drills
+            into something.
     """
 
     # A label-less data list is a poor nav, so list_nav is hidden-or-shown,
@@ -185,12 +188,14 @@ class ListNavProvider:
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> None:
         self._source = source
         self._accent = accent
         self._separator = separator
         self._density = density
         self._placeholder = placeholder
+        self._chevron = chevron
         self._listview: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -222,7 +227,7 @@ class ListNavProvider:
             selection_mode="single",
             show_separators=self._separator,
             show_scrollbar=False,   # mousewheel scrolls; no always-on bar in a nav
-            show_chevron=True,      # disclosure affordance — this is a nav list
+            show_chevron=self._chevron,  # opt-in disclosure affordance
             density=self._density,
             accent=self._accent,
             fill="both",

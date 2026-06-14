@@ -511,13 +511,16 @@ class ListItem(CompositeFrame):
                 )
                 self._chevron_widget.pack(side='right', padx=6)
                 self.register_composite(self._chevron_widget)
-                # The chevron is created lazily (after_idle), so it misses the
-                # <<CompositeSelect>> broadcast that ran when selection was first
-                # applied. Sync it to the row's current selection now, otherwise
-                # a row selected on first load shows an unselected chevron color.
+                # The chevron is created lazily (after_idle), after the row's
+                # selection state was already applied to the other composites —
+                # so it misses the sync. Its selected color comes from the ttk
+                # 'selected' STATE (see CompositeFrame._update_states), not the
+                # <<CompositeSelect>> event, so apply that state directly now;
+                # otherwise a row selected on first load shows an unselected
+                # chevron color.
                 if self._data.get('selected'):
                     try:
-                        self._chevron_widget.event_generate('<<CompositeSelect>>')
+                        self._chevron_widget.state(['selected'])
                     except TclError:
                         pass
         else:

@@ -172,6 +172,7 @@ class Workspace:
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> Any:
         """Fill the workspace from a `DataSource` (flat master-detail).
 
@@ -180,12 +181,13 @@ class Workspace:
         between rows (default flush); `density` is `'default'`/`'compact'`
         (compact suits one-line items, default suits richer two-line items).
         `placeholder` is the quiet empty-state shown in the content area when the
-        source has no records.
+        source has no records. `chevron` adds a per-row disclosure chevron (off by
+        default — use it only when a row visibly drills into something).
         """
         self._claim_provider()
         self._provider = ListNavProvider(
             source, accent=self._nav_accent, separator=separator,
-            density=density, placeholder=placeholder,
+            density=density, placeholder=placeholder, chevron=chevron,
         )
         self._mount_provider()
         return self._provider

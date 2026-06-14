@@ -202,10 +202,12 @@ class Shell(ShellLayout):
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> Any:
         """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
         return self._default_workspace().list_nav(
-            source, separator=separator, density=density, placeholder=placeholder
+            source, separator=separator, density=density,
+            placeholder=placeholder, chevron=chevron,
         )
 
     def tree_nav(self, **kwargs: Any) -> Any:
