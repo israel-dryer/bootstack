@@ -747,7 +747,7 @@ def run_demo():
         _built: set[str] = set()
 
         def _build_page(key: str) -> None:
-            if key in _built:
+            if key in _built or key not in _pages:
                 return
             page, builder = _pages[key]
             with page:
