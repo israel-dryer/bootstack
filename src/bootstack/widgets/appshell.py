@@ -192,7 +192,21 @@ class Workspace:
         ).tree
 
     def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
-        """Register the data-bound detail body (decorator)."""
+        """Register this workspace's detail renderer (decorator).
+
+        Pairs with a data-bound sidebar (`list_nav` / `tree_nav`) to form a
+        master-detail view: when the selection changes, `fn` runs with the
+        selected record and rebuilds the content area. Decorate a builder that
+        creates widgets the usual way — it runs inside the content frame. The
+        first row is selected on load, so the detail is never empty on open.
+
+        Args:
+            fn: Builder called with the selected record — the row's `dict` (for
+                `tree_nav`, the node's record `dict`). Its return value is ignored.
+
+        Returns:
+            `fn` unchanged, so it works as a decorator.
+        """
         return self._internal.detail(fn)
 
     # ----- Navigation -----
@@ -576,7 +590,20 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         ).tree
 
     def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
-        """Register the implicit workspace's data-bound detail body (decorator)."""
+        """Register the detail renderer for the shell's data-bound sidebar (decorator).
+
+        The single-tier equivalent of `Workspace.detail`: pairs with a top-level
+        `list_nav` / `tree_nav` to form a master-detail view. When the selection
+        changes, `fn` runs with the selected record and rebuilds the content
+        area. The first row is selected on load, so the detail is never empty.
+
+        Args:
+            fn: Builder called with the selected record — the row's `dict` (for
+                `tree_nav`, the node's record `dict`). Its return value is ignored.
+
+        Returns:
+            `fn` unchanged, so it works as a decorator.
+        """
         return self._internal.detail(fn)
 
     # ----- Two-tier workspaces -----
