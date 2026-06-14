@@ -83,11 +83,12 @@ Every widget bootstack provides, grouped by purpose.
    splitview
 
 .. toctree::
-   :caption: Menus and Command Bars
+   :caption: Chrome bars and menus
    :maxdepth: 1
 
    menubar
    commandbar
+   statusbar
    menubutton
    contextmenu
 
