@@ -64,7 +64,7 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     normal_img = recolor_element_image(image_key, bg_normal, bd_normal, surface, surface)
     active_img = recolor_element_image(image_key, bg_active, bd_active, surface, surface)
     pressed_img = recolor_element_image(image_key, bg_pressed, bd_pressed, surface, surface)
-    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, bg_disabled)
+    disabled_img = recolor_element_image(image_key, bg_disabled, bd_disabled, surface, surface)
 
     if active_state:
         b.create_style_element_image(

@@ -332,8 +332,8 @@ changed at runtime through ``shell.*`` properties. Assigning ``shell.theme`` or
    shell = bs.AppShell(
        title="My App",
        theme="bootstrap-dark",
-       light_theme="ocean-light",
-       dark_theme="ocean-dark",
+       light_theme="nord-light",
+       dark_theme="nord-dark",
        locale="de_DE",
    )
 

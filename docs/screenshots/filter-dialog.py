@@ -1,4 +1,4 @@
-from bootstack.dialogs.filterdialog import FilterDialog as _FD
+from bootstack.dialogs._impl.filterdialog import FilterDialog as _FD
 import bootstack as bs
 
 ITEMS = ["Australia", "Canada", "France", "Germany", "India",

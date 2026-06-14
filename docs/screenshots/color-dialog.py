@@ -1,4 +1,4 @@
-from bootstack.dialogs.colorchooser import ColorChooserDialog as _CCD
+from bootstack.dialogs._impl.colorchooser import ColorChooserDialog as _CCD
 import bootstack as bs
 
 _COLOR = "#186be7"

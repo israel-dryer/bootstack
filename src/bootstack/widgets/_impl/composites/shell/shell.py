@@ -61,7 +61,7 @@ class Shell(ShellLayout):
         sidebar_mode: SidebarMode = "expanded",
         collapsible: bool = True,
         remember_nav_state: bool = False,
-        nav_accent: str | None = None,
+        nav_accent: str | None = "primary",
         nav_selection: str = "ghost",
         rail_labels: bool = False,
         **kwargs: Any,

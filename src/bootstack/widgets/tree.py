@@ -111,7 +111,7 @@ class Tree(PublicWidgetBase):
         height: int | None = None,
         density: WidgetDensity = "default",
         accent: AccentToken | str | None = None,
-        accent_selection: bool = False,
+        accent_selection: bool = True,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:

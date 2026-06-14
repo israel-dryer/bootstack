@@ -1,28 +1,29 @@
 """Public `Theme` object for declaring and installing color themes.
 
-A theme is declared in code with the keyword constructor and installed so it
-can be activated by name:
+A theme is a *family*: you declare the semantic accent colors once (as the
+midpoint `[500]` of each ramp) plus a light and/or dark background block, and the
+family generates both mode variants. Each accent expands into a 50–950 tint/shade
+spectrum; the framework selects the right step per mode (a darker solid on light,
+a brighter one on dark) so you never hand-write per-mode shades.
 
 ```python
 from bootstack.style import Theme
 
-amber_dark = Theme(
-    name="amber-dark",
-    display_name="Amber Dark",
-    mode="dark",
-    base="dark",                      # inherit shades/surfaces, override the rest
-    foreground="#f8f9fa",
-    background="#18130a",
-    shades={"orange": "#fd7e14"},     # only what differs from the base
-    semantic={"primary": "orange[400]", "secondary": "yellow[400]"},
-)
-amber_dark.install()                  # register it
-bs.set_theme("amber-dark")            # activate it
+Theme(
+    name="bootstrap",
+    primary="#0d6efd", success="#198754", danger="#dc3545",
+    info="#0dcaf0", warning="#ffc107",          # the [500] anchors
+    light=dict(background="#ffffff", foreground="#212529"),
+    dark=dict(background="#212529",  foreground="#f8f9fa"),
+).install()                                      # registers bootstrap-light + -dark
+
+bs.set_theme("bootstrap-dark")                   # activate a generated variant
 ```
 
-Installing only registers the theme; activation is a separate `set_theme` call
-(or `install(activate=True)`). A theme can be declared and installed at module
-level before an app exists — color resolution is deferred until activation.
+Installing registers the generated variants (`<name>-light` / `<name>-dark`);
+activation is a separate `set_theme` call (or `install(activate=True)`). Themes
+can be declared and installed at module level before an app exists — color
+resolution is deferred until activation.
 """
 from __future__ import annotations
 
@@ -30,9 +31,24 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from bootstack._core.exceptions import ThemeError
-from bootstack.style.theme_provider import get_theme, register_theme
+from bootstack.style.theme_provider import register_theme
 
 ThemeMode = Literal["light", "dark"]
+
+# Accent roles that take a `[500]` anchor and generate their own ramp.
+_ACCENT_ROLES = ("primary", "success", "info", "warning", "danger")
+
+# Which ramp step a SOLID (button fill, etc.) uses per mode. On light a darker
+# step reads against white; on dark a brighter step reads against the dark
+# background. `warning`/`info` stay at the bright `[500]` on light — they can't
+# carry white text at any shade (they use dark on-color), so darkening them only
+# mutes them.
+_SOLID_STOP = {
+    "light": {"primary": 600, "success": 600, "danger": 600, "info": 500, "warning": 500},
+    "dark":  {"primary": 400, "success": 400, "danger": 400, "info": 400, "warning": 400},
+}
+# Neutral (gray) step used for the `secondary` role per mode.
+_SECONDARY_STOP = {"light": 700, "dark": 400}
 
 
 def _default_display_name(name: str) -> str:
@@ -41,148 +57,128 @@ def _default_display_name(name: str) -> str:
 
 @dataclass
 class Theme:
-    """A color theme declared in code.
+    """A color theme family declared in code.
 
-    Colors are described with a small set of base `shades` (named hues) plus
-    `semantic` roles that reference a step within a shade's generated spectrum,
-    e.g. `'orange[400]'`. Each shade automatically expands into a 50–950 tint/
-    shade spectrum at activation time.
+    Declare the semantic accent colors as `[500]` anchors plus a `light` and/or
+    `dark` block (`background`/`foreground`). Each accent generates a 50–950
+    ramp; the framework picks the per-mode step for solids, washes, borders, and
+    emphasis text. `install()` registers the generated `<name>-light` and
+    `<name>-dark` variants.
 
-    Set `base` to inherit every field from an existing theme (e.g. `'dark'`,
-    `'bootstrap-light'`) and override only the keys that differ. `shades` and
-    `semantic` are merged with the base per key; scalar fields fall back to the
-    base when omitted, and `mode` is inherited from the base when not given.    """
+    Args:
+        name: Family name; generated variants are `<name>-light` / `<name>-dark`.
+        primary: Primary accent color (the `[500]` ramp midpoint), as hex.
+        success: Success accent color (hex).
+        info: Info accent color (hex).
+        warning: Warning accent color (hex).
+        danger: Danger accent color (hex).
+        secondary: Optional colored secondary accent (hex). When omitted,
+            `secondary` derives from the neutral ramp.
+        neutral: Gray base for the neutral ramp (borders, muted text, secondary).
+        light: `{'background': ..., 'foreground': ...}` for the light variant, or
+            None to skip it.
+        dark: `{'background': ..., 'foreground': ...}` for the dark variant.
+        surfaces: Optional surface overrides — either a flat
+            `{'chrome': '#...'}` (both modes) or per-mode
+            `{'light': {...}, 'dark': {...}}`. Pins surfaces the auto-derivation
+            can't produce well (e.g. chrome on a very-dark background).
+        display_name: Human label base; the mode is appended (` Light`/` Dark`).
+        white: Reference white. Defaults to `'#ffffff'`.
+        black: Reference black. Defaults to `'#000000'`.
+    """
 
     name: str
-    """Canonical theme name used by `set_theme` (e.g. `'amber-dark'`)."""
 
-    mode: ThemeMode | None = None
-    """Color mode, `'light'` or `'dark'`. Inherited from `base` when omitted;
-    defaults to `'light'` if there is no base."""
+    primary: str | None = None
+    success: str | None = None
+    info: str | None = None
+    warning: str | None = None
+    danger: str | None = None
+    secondary: str | None = None
 
+    neutral: str = "#adb5bd"
+
+    light: dict[str, str] | None = None
+    dark: dict[str, str] | None = None
+
+    surfaces: dict | None = None
     display_name: str | None = None
-    """Human-friendly label shown in theme pickers. Derived from `name` when
-    omitted."""
+    white: str = "#ffffff"
+    black: str = "#000000"
 
-    base: str | None = None
-    """Name of an installed theme to inherit from, or None for a fully
-    self-contained theme."""
-
-    foreground: str | None = None
-    """Default text color (hex). Required when there is no `base`."""
-
-    background: str | None = None
-    """Main surface color (hex). Required when there is no `base`."""
-
-    white: str | None = None
-    """Reference white (hex). Defaults to `'#ffffff'`."""
-
-    black: str | None = None
-    """Reference black (hex). Defaults to `'#000000'`."""
-
-    shades: dict[str, str] = field(default_factory=dict)
-    """Mapping of base hue name to hex color, e.g. orange to `'#fd7e14'`.
-    Merged onto the base's shades."""
-
-    semantic: dict[str, str] = field(default_factory=dict)
-    """Mapping of semantic role to a shade-spectrum token, e.g.
-    `{'primary': 'orange[400]'}`. Merged onto the base's semantic roles."""
-
-    @classmethod
-    def from_dict(cls, data: dict) -> Theme:
-        """Build a `Theme` from a plain dict using the theme schema keys.
-
-        Args:
-            data: Mapping with `name` and any of the theme fields
-                (`mode`, `display_name`, `base`, `foreground`, `background`,
-                `white`, `black`, `shades`, `semantic`).
-        """
-        try:
-            name = data["name"]
-        except KeyError:
-            raise ThemeError("Theme dict is missing the required 'name' key.")
-        return cls(
-            name=name,
-            mode=data.get("mode"),
-            display_name=data.get("display_name"),
-            base=data.get("base"),
-            foreground=data.get("foreground"),
-            background=data.get("background"),
-            white=data.get("white"),
-            black=data.get("black"),
-            shades=dict(data.get("shades") or {}),
-            semantic=dict(data.get("semantic") or {}),
-        )
-
-    def to_dict(self) -> dict:
-        """Return the fully resolved theme as a schema dict (base merged in)."""
-        return self._resolve()
-
-    def _resolve(self) -> dict:
-        if self.base is not None:
-            base_data = get_theme(self.base)
-            mode = self.mode or base_data.get("mode") or "light"
-            return {
-                "name": self.name,
-                "display_name": (
-                    self.display_name
-                    or base_data.get("display_name")
-                    or _default_display_name(self.name)
-                ),
-                "mode": mode,
-                "foreground": (
-                    self.foreground if self.foreground is not None
-                    else base_data.get("foreground")
-                ),
-                "background": (
-                    self.background if self.background is not None
-                    else base_data.get("background")
-                ),
-                "white": (
-                    self.white if self.white is not None
-                    else base_data.get("white", "#ffffff")
-                ),
-                "black": (
-                    self.black if self.black is not None
-                    else base_data.get("black", "#000000")
-                ),
-                "shades": {**(base_data.get("shades") or {}), **self.shades},
-                "semantic": {**(base_data.get("semantic") or {}), **self.semantic},
-            }
-
-        if self.foreground is None or self.background is None:
+    def _schema(self, mode: ThemeMode) -> dict | None:
+        block = self.light if mode == "light" else self.dark
+        if block is None:
+            return None
+        if "background" not in block or "foreground" not in block:
             raise ThemeError(
-                f"Theme '{self.name}' has no base, so it must define both "
-                f"'foreground' and 'background'."
+                f"Theme '{self.name}' {mode} block must define both "
+                f"'background' and 'foreground'."
             )
-        return {
-            "name": self.name,
-            "display_name": self.display_name or _default_display_name(self.name),
-            "mode": self.mode or "light",
-            "foreground": self.foreground,
-            "background": self.background,
-            "white": self.white if self.white is not None else "#ffffff",
-            "black": self.black if self.black is not None else "#000000",
-            "shades": dict(self.shades),
-            "semantic": dict(self.semantic),
-        }
 
-    def install(self, *, activate: bool = False) -> Theme:
-        """Register the theme so it can be activated by name.
+        solid = _SOLID_STOP[mode]
+        shades: dict[str, str] = {"gray": self.neutral}
+        semantic: dict[str, str] = {}
+
+        for role in _ACCENT_ROLES:
+            anchor = getattr(self, role)
+            if anchor:
+                shades[role] = anchor
+                semantic[role] = f"{role}[{solid[role]}]"
+
+        if self.secondary:
+            shades["secondary"] = self.secondary
+            semantic["secondary"] = f"secondary[{solid['primary']}]"
+        else:
+            semantic["secondary"] = f"gray[{_SECONDARY_STOP[mode]}]"
+
+        base_label = self.display_name or _default_display_name(self.name)
+        schema: dict = {
+            "name": f"{self.name}-{mode}",
+            "display_name": f"{base_label} {mode.title()}",
+            "mode": mode,
+            "foreground": block["foreground"],
+            "background": block["background"],
+            "white": self.white,
+            "black": self.black,
+            "shades": shades,
+            "semantic": semantic,
+        }
+        if self.surfaces:
+            override = self.surfaces.get(mode, None)
+            if override is None and not ({"light", "dark"} & set(self.surfaces)):
+                override = self.surfaces  # flat dict → applies to both modes
+            if override:
+                schema["surfaces"] = dict(override)
+        return schema
+
+    def variants(self) -> list[dict]:
+        """Return the generated per-mode schema dicts (light first, then dark)."""
+        return [s for s in (self._schema("light"), self._schema("dark")) if s]
+
+    def install(self, *, activate: bool | str = False) -> Theme:
+        """Register the generated variants so they can be activated by name.
 
         Args:
-            activate: When True, also make this the active theme immediately
-                (equivalent to calling `set_theme(name)` afterward).
+            activate: True activates the light variant; pass a variant name
+                (e.g. `'bootstrap-dark'`) to activate that one.
 
         Returns:
             This theme, to allow `theme = Theme(...).install()`.
         """
-        register_theme(self.name, self._resolve())
+        schemas = self.variants()
+        if not schemas:
+            raise ThemeError(
+                f"Theme '{self.name}' defines neither a 'light' nor a 'dark' block."
+            )
+        for schema in schemas:
+            register_theme(schema["name"], schema)
         if activate:
             from bootstack.style.style import set_theme
-            set_theme(self.name)
+            target = activate if isinstance(activate, str) else schemas[0]["name"]
+            set_theme(target)
         return self
 
     def __repr__(self) -> str:
-        base = f" base={self.base}" if self.base else ""
-        return f"<Theme name={self.name} mode={self.mode or '?'}{base}>"
+        modes = "+".join(m for m, b in (("light", self.light), ("dark", self.dark)) if b)
+        return f"<Theme {self.name} ({modes or 'empty'})>"

@@ -1,4 +1,4 @@
-from bootstack.dialogs.formdialog import FormDialog as _InternalFormDialog
+from bootstack.dialogs._impl.formdialog import FormDialog as _InternalFormDialog
 import bootstack as bs
 
 

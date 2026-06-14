@@ -212,15 +212,31 @@ class BootstyleBuilderBase:
         surface_val = surface or self.colors.get('background')
 
         if role == "text":
+            # Prefer the precomputed per-semantic emphasis token (a readable,
+            # accent-tinted text color), else darken/lighten the base.
+            emphasis = self.colors.get(f"{token}_emphasis") if isinstance(token, str) else None
+            if emphasis:
+                return emphasis
             if self.provider.mode == "light":
                 return darken_color(base_color, 0.25)
             else:
                 return lighten_color(base_color, 0.25)
         else:  # background
+            # Blend the accent into the surface — surface-relative, so the wash
+            # reads in BOTH modes (a pure shade like [900] is surface-blind and
+            # lands darker than a dark surface, making the selection recede). Use
+            # the mode's accent stop: [500] (the bright anchor) on light, [400]
+            # (the dark-optimized, brighter accent) on dark so low-luminance hues
+            # like blue still lift off the dark surface. A gentler blend on light
+            # (the surface is bright, so a little tint reads); a touch more on
+            # dark where the wash must lift to register.
             if self.provider.mode == "light":
-                return mix_colors(base_color, surface_val, 0.08)
+                stop, fraction = "500", 0.14
             else:
-                return mix_colors(base_color, surface_val, 0.10)
+                stop, fraction = "400", 0.20
+            anchor = self.colors.get(f"{token}[{stop}]") if isinstance(token, str) else None
+            blend_into = anchor if anchor else base_color
+            return mix_colors(blend_into, surface_val, fraction)
 
     def active(self, color: str) -> str:
         return self._state_color(color, "active")

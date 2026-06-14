@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
-from bootstack.style.utility import create_transparent_image, recolor_element_image
+from bootstack.style.utility import create_transparent_image, mix_colors, recolor_element_image
 
 
 @BootstyleBuilderTTk.register_builder('switch', 'TCheckbutton')
@@ -24,14 +24,18 @@ def build_switch_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'pr
     focus = b.focus(normal)
     focus_ring = b.color('foreground')
 
+    # Disabled ON keeps a muted (faded) accent track so it still reads as "on",
+    # mixed halfway toward the surface; OFF stays a neutral gray track.
+    muted_accent = mix_colors(normal, background, 0.5)
+
     normal_checked_img = recolor_element_image('switch_on', normal, background, background, background)
     normal_unchecked_img = recolor_element_image('switch_off', border, background, background, background)
 
     focus_checked_img = recolor_element_image('switch_on', focus, background, focus_ring, background)
     focus_unchecked_img = recolor_element_image('switch_off', border, background, focus_ring, background)
 
-    disabled_checked_img = recolor_element_image('switch_on', background, foreground_disabled, background, background)
-    disabled_unchecked_img = recolor_element_image('switch_off', border, foreground_disabled, background, background)
+    disabled_checked_img = recolor_element_image('switch_on', muted_accent, background, background, background)
+    disabled_unchecked_img = recolor_element_image('switch_off', border, background, background, background)
 
     spacer_img = create_transparent_image(6, 1)
     b.create_style_element_image(ElementImage(f'{ttk_style}.spacer', spacer_img, sticky="ew"))

@@ -12,6 +12,11 @@ _current_theme = None
 # Weights for generating color spectrum tints (toward white) and shades (toward black)
 # Each weight represents how much of the original color to retain when mixing
 # Full 50-step increments from 50-450 (tints) and 550-950 (shades)
+# Tint (toward white) / shade (toward black) weights per 50-step stop. The named
+# 100-step stops match Bootstrap 5.3's scale exactly — 100/200/300 = tint
+# 80/60/40, 400 = tint 20, 600/700/800/900 = shade 20/40/60/80 — so `[100]`/
+# `[200]`/`[800]` equal Bootstrap's bg-subtle/border-subtle/text-emphasis. The
+# half-steps (150/250/…) interpolate linearly between the Bootstrap anchors.
 TINT_WEIGHTS = {
     50: 0.90,
     100: 0.80,
@@ -19,20 +24,20 @@ TINT_WEIGHTS = {
     200: 0.60,
     250: 0.50,
     300: 0.40,
-    350: 0.325,
-    400: 0.25,
-    450: 0.125,
+    350: 0.30,
+    400: 0.20,
+    450: 0.10,
 }
 SHADE_WEIGHTS = {
-    550: 0.125,
-    600: 0.25,
-    650: 0.325,
+    550: 0.10,
+    600: 0.20,
+    650: 0.30,
     700: 0.40,
     750: 0.50,
     800: 0.60,
-    850: 0.725,
-    900: 0.85,
-    950: 0.95,
+    850: 0.70,
+    900: 0.80,
+    950: 0.90,
 }
 
 
@@ -265,6 +270,28 @@ class ThemeProvider:
                 continue
             colors[token] = colors[value]
 
+        # Per-semantic subtle / border / emphasis tokens (Bootstrap 5.3 model),
+        # sourced from the accent's hue-FAMILY scale stops so they stay vibrant
+        # regardless of how dark the semantic solid is. Light: bg-subtle=[100],
+        # border-subtle=[200], text-emphasis=[800]; dark uses the dark end.
+        # border-subtle + text-emphasis are fixed accent shades (light: [200]/
+        # [800]; dark: [700]/[300]). The bg-subtle WASH is NOT precomputed here —
+        # it is surface-relative (a blend of the accent anchor into whatever
+        # surface it sits on), computed in `BootstyleBuilder.subtle()`.
+        import re as _re
+        _stop_re = _re.compile(r'^([a-z]+)\[\d+\]$')
+        _is_dark = self.mode == 'dark'
+        _stops = ('700', '300') if _is_dark else ('200', '800')
+        for token, value in self._semantic.items():
+            if token in neutral_tokens:
+                continue
+            m = _stop_re.match(str(value))
+            if m is None:
+                continue
+            family = m.group(1)
+            for suffix, stop in zip(('border_subtle', 'emphasis'), _stops):
+                colors[f'{token}_{suffix}'] = colors.get(f'{family}[{stop}]')
+
         # Surface tokens - semantic ramps for container backgrounds
         self._build_surface_tokens(colors)
 
@@ -290,55 +317,68 @@ class ThemeProvider:
         - overlay: Floating elements (menus, dialogs, tooltips)
         - input: Form control backgrounds
         """
+        from bootstack.style.utility import darken_color, lighten_color
         is_dark = self.mode == 'dark'
         bg = colors['background']
         fg = colors['foreground']
 
-        # Extract hue and saturation from background for tinting
-        hue, sat, bg_lightness = color_to_hsl(bg, model='hex')
+        # Derive surfaces by darkening/lightening the BACKGROUND — this preserves
+        # the theme's hue AND saturation at every level (rebuilding at a target
+        # lightness with capped saturation washed the tint out and could invert
+        # the content/sidebar hierarchy). `content` is always the background;
+        # `chrome` is the recessed shell tier (darkest in both modes).
+        def dk(amount: float) -> str:
+            return darken_color(bg, amount)
 
-        # Cap saturation for subtle tinting (avoid garish surfaces)
-        # Use 0 saturation for near-neutral backgrounds
+        def lt(amount: float) -> str:
+            return lighten_color(bg, amount)
+
+        # Helpers for the muted-foreground + hover tokens below (a tinted gray at
+        # a target lightness; the main surfaces use dk/lt above).
+        hue, sat, bg_lightness = color_to_hsl(bg, model='hex')
         tint_sat = min(sat, 25) if sat >= 5 else 0
 
         def tinted_surface(lightness: float) -> str:
-            """Generate a surface color with the theme's tint at given lightness."""
             if tint_sat == 0:
-                # No tint - pure neutral grey
                 return hsl_to_hex(0, 0, lightness)
             return hsl_to_hex(hue, tint_sat, lightness)
 
-        # Define surface lightness levels for each mode
-        # content = theme background (as defined in JSON)
-        # Other surfaces are relative to it
         if is_dark:
-            # Dark mode: lower lightness = darker/recessed
+            # Elevation lightens off the dark bg; chrome darkens (recessed).
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 7, 3)),    # Darkest shell chrome (rail/status)
-                'content': bg,                                          # Theme background
-                'raised': tinted_surface(min(bg_lightness + 2, 18)),   # Subtle elevation (half of card)
-                'card': tinted_surface(min(bg_lightness + 4, 20)),     # First card elevation
-                'card_raised': tinted_surface(min(bg_lightness + 8, 25)), # Second card elevation
-                'overlay': tinted_surface(min(bg_lightness + 7, 25)),  # Menus, dialogs
-                'input': tinted_surface(min(bg_lightness + 2, 16)),    # Form control backgrounds
+                'chrome': dk(0.40),
+                'content': bg,
+                'raised': lt(0.05),
+                'card': lt(0.09),
+                'card_raised': lt(0.15),
+                'overlay': lt(0.12),
+                'input': lt(0.03),
             }
-            # Stroke colors for borders
-            colors['stroke'] = tinted_surface(min(bg_lightness + 12, 30))
-            colors['stroke_subtle'] = tinted_surface(min(bg_lightness + 6, 22))
+            colors['stroke'] = lt(0.22)
+            colors['stroke_subtle'] = lt(0.10)
         else:
-            # Light mode: use subtle darkening for elevation (since bg is often near-white)
+            # Surfaces darken off the light bg; content stays the lightest.
             surfaces = {
-                'chrome': tinted_surface(max(bg_lightness - 14, 80)),    # Darkest shell chrome (rail/status)
-                'content': bg,                                            # Theme background
-                'raised': tinted_surface(max(bg_lightness - 2, 94)),     # Subtle elevation (half of card)
-                'card': tinted_surface(max(bg_lightness - 4, 92)),       # First card elevation
-                'card_raised': tinted_surface(max(bg_lightness - 7, 88)),# Second card elevation
-                'overlay': tinted_surface(max(bg_lightness - 2, 96)),    # Subtle for popups
-                'input': bg,                                              # Form control backgrounds (= content)
+                'chrome': dk(0.10),
+                'content': bg,
+                'raised': dk(0.025),
+                'card': dk(0.05),
+                'card_raised': dk(0.085),
+                'overlay': dk(0.025),
+                'input': bg,
             }
-            # Stroke colors for borders
-            colors['stroke'] = tinted_surface(max(bg_lightness - 20, 70))
-            colors['stroke_subtle'] = tinted_surface(max(bg_lightness - 10, 80))
+            colors['stroke'] = dk(0.14)
+            colors['stroke_subtle'] = dk(0.06)
+
+        # Per-theme surface overrides (escape hatch for cases the derivation
+        # can't produce well, e.g. a very-dark or very-light background).
+        override = self.raw.get('surfaces') if isinstance(self.raw, dict) else None
+        if override:
+            for name, value in override.items():
+                if name == 'stroke' or name == 'stroke_subtle':
+                    colors[name] = value
+                else:
+                    surfaces[name] = value
 
         # Add surfaces to colors
         for name, value in surfaces.items():

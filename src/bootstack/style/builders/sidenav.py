@@ -9,7 +9,7 @@ from typing import Optional
 
 from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
 from bootstack.style.element import Element, ElementImage
-from bootstack.style.utility import recolor_element_image, create_transparent_image
+from bootstack.style.utility import recolor_element_image, create_transparent_image, mix_colors
 from bootstack.style.builders.utils import apply_icon_mapping, resolve_icon_spec
 from bootstack.style.builders.toolbutton import (
     toolbutton_layout, button_padding, button_font, icon_size, normalize_button_density
@@ -366,13 +366,18 @@ def _build_nav_expanded(b, ttk_style, *, accent_token, options, image_key, selec
     """Expanded nav item: icon element + spacer + text label (a real icon/text gap)."""
     density = options.get('density', 'default')
     surface, surface_hover, surface_pressed, on_surface, disabled, on_disabled = _nav_colors(b, accent_token, options)
+    # Idle items are slightly muted (a light blend toward the surface) so the
+    # selected item — and content headings — stay the brightest text. A gentle
+    # mute, not the heavy header mute, so idle rows still sit above the section
+    # headers in the 3-tier hierarchy (selected > idle > header).
+    idle_fg = mix_colors(on_surface, surface, 0.85)
     _nav_border_element(
         b, ttk_style, image_key, surface=surface, surface_hover=surface_hover,
         surface_pressed=surface_pressed, selected_bg=selected_bg,
         selected_pressed=b.pressed(selected_bg), disabled=disabled,
     )
 
-    fg_spec = [('disabled', on_disabled), ('selected', selected_fg), ('', on_surface)]
+    fg_spec = [('disabled', on_disabled), ('selected', selected_fg), ('', idle_fg)]
 
     # Icon as its own stateful element (recolored to follow the text foreground).
     icon_spec = resolve_icon_spec(options)
@@ -403,18 +408,19 @@ def _build_nav_expanded(b, ttk_style, *, accent_token, options, image_key, selec
             [Element('Toolbutton.padding', sticky="nsew").children(row)]))
 
     b.configure_style(
-        ttk_style, background=surface, foreground=on_surface, relief='flat',
+        ttk_style, background=surface, foreground=idle_fg, relief='flat',
         padding=options.get('padding') or b.scale((10, 8, 10, 8)),
         anchor=options.get('anchor', 'w'), font=button_font(density),
     )
     # Only the text label's foreground here — the icon element carries its own.
-    b.map_style(ttk_style, foreground=[('disabled', on_disabled), ('selected', selected_fg), ('', on_surface)])
+    b.map_style(ttk_style, foreground=fg_spec)
 
 
 def _build_nav_compact(b, ttk_style, *, accent_token, options, image_key, selected_bg, selected_fg):
     """Compact nav item: a single centered icon (icon-only)."""
     density = options.get('density', 'default')
     surface, surface_hover, surface_pressed, on_surface, disabled, on_disabled = _nav_colors(b, accent_token, options)
+    idle_fg = mix_colors(on_surface, surface, 0.85)  # slight idle mute (see _build_nav_expanded)
     _nav_border_element(
         b, ttk_style, image_key, surface=surface, surface_hover=surface_hover,
         surface_pressed=surface_pressed, selected_bg=selected_bg,
@@ -422,14 +428,14 @@ def _build_nav_compact(b, ttk_style, *, accent_token, options, image_key, select
     )
     b.create_style_layout(ttk_style, toolbutton_layout(ttk_style))
     b.configure_style(
-        ttk_style, background=surface, foreground=on_surface, relief='flat',
+        ttk_style, background=surface, foreground=idle_fg, relief='flat',
         # No horizontal padding: the compact sidebar is only the rail width, and
         # the icon centers via anchor; a bit more vertical padding makes the
         # icon-only buttons taller/squarer.
         padding=options.get('padding') or b.scale((0, 10, 0, 10)), anchor='center',
         font=button_font(density),
     )
-    state_spec = dict(foreground=[('disabled', on_disabled), ('selected', selected_fg), ('', on_surface)])
+    state_spec = dict(foreground=[('disabled', on_disabled), ('selected', selected_fg), ('', idle_fg)])
     state_spec = apply_icon_mapping(b, options, state_spec, _NAV_COMPACT_ICON_SIZE)
     b.map_style(ttk_style, **state_spec)
 
@@ -438,16 +444,23 @@ def _selection_colors(b, accent_token, options):
     """Selected nav-item (background, foreground), per accent + selection style.
 
     Neutral by default (a light active-level wash + neutral fg). With an accent:
-    `'ghost'` (default) = a subtle accent wash + accent fg; `'solid'` = the solid
-    accent filled + the on-accent (e.g. white) fg — the higher-emphasis selected
-    look. Solid needs an accent; without one it falls back to the neutral wash.
+    `'ghost'` (default) = a subtle accent wash + **full foreground** text;
+    `'solid'` = the solid accent filled + the on-accent (e.g. white) fg — the
+    higher-emphasis look. Solid needs an accent; without one falls back to neutral.
+
+    The ghost foreground is the full foreground (bright on dark, dark on light),
+    NOT the accent — accent text is too dim for low-luminance hues (blue) to pop
+    consistently. The accent identity instead lives in the wash + the indicator
+    bar, which read by hue regardless of luminance, so selection pops uniformly
+    across every accent. Idle items are muted, so the bright selected text stands
+    out (the prominence is luminance, not color).
     """
     surface = b.color(options.get('surface', 'card'))
     if accent_token:
         if options.get('selection_style') == 'solid':
             fill = b.color(accent_token)
             return fill, b.on_color(fill)
-        return b.subtle(accent_token, surface), b.color(accent_token)
+        return b.subtle(accent_token, surface), b.on_color(surface)
     return b.active(surface), b.on_color(surface)
 
 

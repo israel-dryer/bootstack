@@ -130,7 +130,9 @@ def build_ghost_expander_header_label_style(b: BootstyleBuilderTTk, ttk_style: s
 
     foreground_state_map = [
         ('disabled', on_disabled),
-        ('selected', accent_color),
+        # Selected uses the plain foreground (not the accent) so the header text
+        # reads well over the subtle accent wash — same as the sidenav subtle nav.
+        ('selected', on_surface),
         ('', on_surface)
     ]
 

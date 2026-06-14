@@ -1,464 +1,128 @@
-"""Built-in color themes, defined as `Theme` instances.
+"""Built-in color theme families, defined as `Theme` instances.
 
-These replace the former `assets/themes/*.json` files so themes are plain
-Python objects — importable, type-checked, and free of any asset-bundling
-step (no PyInstaller `--add-data` needed). They are installed into the theme
-registry by `install_builtin_themes`, called from the theme provider.
+Each family declares its semantic accent colors (the `[500]` ramp anchors) plus a
+light and dark background block; `install()` generates and registers both
+`<name>-light` and `<name>-dark` variants. The framework picks the per-mode ramp
+step for solids, washes, borders, and emphasis — there is no per-mode shade
+boilerplate. Installed into the registry by `install_builtin_themes`, called from
+the theme provider.
+
+The non-bootstrap families adapt well-known, open-licensed designer palettes
+(Nord, Solarized, Catppuccin, Gruvbox, Dracula, Tokyo Night, One, Everforest) to
+the framework's semantic roles.
 """
 from __future__ import annotations
 
 from bootstack.style.theme import Theme
 
-BOOTSTRAP_LIGHT = Theme(
-    name="bootstrap-light",
-    display_name="Bootstrap Light",
-    mode="light",
-    foreground="#212529",
-    background="#ffffff",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "blue[600]",
-        "secondary": "gray[700]",
-        "info": "cyan[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
+# --- Bootstrap (the neutral reference) -------------------------------------
+BOOTSTRAP = Theme(
+    name="bootstrap",
+    primary="#0d6efd", success="#198754", info="#0dcaf0", warning="#ffc107", danger="#dc3545",
+    light=dict(background="#ffffff", foreground="#212529"),
+    dark=dict(background="#212529", foreground="#f8f9fa"),
 )
 
-BOOTSTRAP_DARK = Theme(
-    name="bootstrap-dark",
-    display_name="Bootstrap Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#212529",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "blue[400]",
-        "secondary": "gray[400]",
-        "info": "cyan[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
+# --- PyData (professional teal) --------------------------------------------
+PYDATA = Theme(
+    name="pydata",
+    display_name="PyData",
+    primary="#0a7d91", success="#198754", info="#0dcaf0", warning="#ffc107", danger="#dc3545",
+    secondary="#8045e5",
+    neutral="#677384",
+    light=dict(background="#ffffff", foreground="#222832"),
+    dark=dict(background="#14181e", foreground="#ced6dd"),
 )
 
-AMBER_LIGHT = Theme(
-    name="amber-light",
-    display_name="Amber Light",
-    mode="light",
-    foreground="#212529",
-    background="#f7f2e9",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "orange[600]",
-        "secondary": "yellow[600]",
-        "info": "cyan[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
+# --- Nord (cool arctic) -----------------------------------------------------
+NORD = Theme(
+    name="nord",
+    primary="#5e81ac", success="#a3be8c", info="#88c0d0", warning="#ebcb8b", danger="#bf616a",
+    secondary="#b48ead",
+    neutral="#4c566a",
+    light=dict(background="#eceff4", foreground="#2e3440"),
+    dark=dict(background="#2e3440", foreground="#eceff4"),
 )
 
-AMBER_DARK = Theme(
-    name="amber-dark",
-    display_name="Amber Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#18130a",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "orange[400]",
-        "secondary": "yellow[400]",
-        "info": "cyan[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
+# --- Solarized (precision classic) -----------------------------------------
+SOLARIZED = Theme(
+    name="solarized",
+    primary="#268bd2", success="#859900", info="#2aa198", warning="#b58900", danger="#dc322f",
+    secondary="#6c71c4",
+    neutral="#839496",
+    light=dict(background="#f6f1e9", foreground="#586e75"),
+    dark=dict(background="#002b36", foreground="#93a1a1"),
 )
 
-AURORA_LIGHT = Theme(
-    name="aurora-light",
-    display_name="Aurora Light",
-    mode="light",
-    foreground="#212529",
-    background="#f3f8f4",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "teal[600]",
-        "secondary": "purple[600]",
-        "info": "cyan[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "pink[600]",
-    },
+# --- Catppuccin (soft pastel) ----------------------------------------------
+CATPPUCCIN = Theme(
+    name="catppuccin",
+    primary="#8839ef", success="#40a02b", info="#179299", warning="#df8e1d", danger="#d20f39",
+    secondary="#ea76cb",
+    neutral="#8c8fa1",
+    light=dict(background="#eff1f5", foreground="#4c4f69"),
+    dark=dict(background="#1e1e2e", foreground="#cdd6f4"),
 )
 
-AURORA_DARK = Theme(
-    name="aurora-dark",
-    display_name="Aurora Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#071514",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "teal[400]",
-        "secondary": "purple[400]",
-        "info": "cyan[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "pink[400]",
-    },
+# --- Gruvbox (warm retro) ---------------------------------------------------
+GRUVBOX = Theme(
+    name="gruvbox",
+    primary="#458588", success="#98971a", info="#689d6a", warning="#d79921", danger="#cc241d",
+    secondary="#d65d0e",
+    neutral="#928374",
+    light=dict(background="#f2ede9", foreground="#3c3836"),
+    dark=dict(background="#282828", foreground="#ebdbb2"),
 )
 
-FOREST_LIGHT = Theme(
-    name="forest-light",
-    display_name="Forest Light",
-    mode="light",
-    foreground="#212529",
-    background="#f3f8f4",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "green[600]",
-        "secondary": "teal[600]",
-        "info": "teal[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
+# --- Dracula (vibrant) ------------------------------------------------------
+DRACULA = Theme(
+    name="dracula",
+    primary="#bd93f9", success="#50fa7b", info="#8be9fd", warning="#ffb86c", danger="#ff5555",
+    secondary="#ff79c6",
+    neutral="#6272a4",
+    light=dict(background="#f8f8f2", foreground="#282a36"),
+    dark=dict(background="#282a36", foreground="#f8f8f2"),
 )
 
-FOREST_DARK = Theme(
-    name="forest-dark",
-    display_name="Forest Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#0b1610",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "green[400]",
-        "secondary": "teal[400]",
-        "info": "teal[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
+# --- Tokyo Night (deep blue/purple) ----------------------------------------
+TOKYO_NIGHT = Theme(
+    name="tokyo-night",
+    display_name="Tokyo Night",
+    primary="#7aa2f7", success="#9ece6a", info="#7dcfff", warning="#e0af68", danger="#f7768e",
+    secondary="#bb9af7",
+    neutral="#565f89",
+    light=dict(background="#e1e2e7", foreground="#343b58"),
+    dark=dict(background="#1a1b26", foreground="#c0caf5"),
 )
 
-OCEAN_LIGHT = Theme(
-    name="ocean-light",
-    display_name="Ocean Light",
-    mode="light",
-    foreground="#212529",
-    background="#e9f7fb",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "cyan[600]",
-        "secondary": "blue[600]",
-        "info": "blue[600]",
-        "success": "teal[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
+# --- One (Atom, clean neutral) ---------------------------------------------
+ONE = Theme(
+    name="one",
+    primary="#4078f2", success="#50a14f", info="#0184bc", warning="#c18401", danger="#e45649",
+    secondary="#a626a4",
+    neutral="#a0a1a7",
+    light=dict(background="#fafafa", foreground="#383a42"),
+    dark=dict(background="#282c34", foreground="#abb2bf"),
 )
 
-OCEAN_DARK = Theme(
-    name="ocean-dark",
-    display_name="Ocean Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#07141f",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "cyan[400]",
-        "secondary": "blue[400]",
-        "info": "blue[400]",
-        "success": "teal[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
+# --- Everforest (green-leaning, soft) --------------------------------------
+EVERFOREST = Theme(
+    name="everforest",
+    primary="#3a94c5", success="#8da101", info="#35a77c", warning="#dfa000", danger="#f85552",
+    secondary="#df69ba",
+    neutral="#939f91",
+    light=dict(background="#edf3ed", foreground="#5c6a72"),
+    dark=dict(background="#2d353b", foreground="#d3c6aa"),
 )
 
-PYDATA_LIGHT = Theme(
-    name="pydata-light",
-    display_name="PyData Light",
-    mode="light",
-    foreground="#222832",
-    background="#ffffff",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "teal": "#0a7d91",
-        "violet": "#8045e5",
-        "pink": "#c132af",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "cyan": "#0dcaf0",
-        "gray": "#677384",
-    },
-    semantic={
-        "primary": "teal[500]",
-        "secondary": "violet[500]",
-        "info": "cyan[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
-)
-
-PYDATA_DARK = Theme(
-    name="pydata-dark",
-    display_name="PyData Dark",
-    mode="dark",
-    foreground="#ced6dd",
-    background="#14181e",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "teal": "#0a7d91",
-        "violet": "#8045e5",
-        "pink": "#c132af",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "cyan": "#0dcaf0",
-        "gray": "#677384",
-    },
-    semantic={
-        "primary": "teal[400]",
-        "secondary": "violet[400]",
-        "info": "cyan[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
-)
-
-ROSE_LIGHT = Theme(
-    name="rose-light",
-    display_name="Rose Light",
-    mode="light",
-    foreground="#212529",
-    background="#fff5f8",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "pink[600]",
-        "secondary": "red[600]",
-        "info": "cyan[600]",
-        "success": "green[600]",
-        "warning": "yellow[600]",
-        "danger": "red[600]",
-    },
-)
-
-ROSE_DARK = Theme(
-    name="rose-dark",
-    display_name="Rose Dark",
-    mode="dark",
-    foreground="#f8f9fa",
-    background="#190910",
-    white="#ffffff",
-    black="#000000",
-    shades={
-        "blue": "#0d6efd",
-        "indigo": "#6610f2",
-        "purple": "#6f42c1",
-        "red": "#dc3545",
-        "orange": "#fd7e14",
-        "yellow": "#ffc107",
-        "green": "#198754",
-        "teal": "#20c997",
-        "cyan": "#0dcaf0",
-        "gray": "#adb5bd",
-        "pink": "#d63384",
-    },
-    semantic={
-        "primary": "pink[400]",
-        "secondary": "red[400]",
-        "info": "cyan[400]",
-        "success": "green[400]",
-        "warning": "yellow[400]",
-        "danger": "red[400]",
-    },
-)
-
-#: All built-in themes, in display order.
+#: All built-in theme families, in display order.
 BUILTIN_THEMES = [
-    BOOTSTRAP_LIGHT,
-    BOOTSTRAP_DARK,
-    AMBER_LIGHT,
-    AMBER_DARK,
-    AURORA_LIGHT,
-    AURORA_DARK,
-    FOREST_LIGHT,
-    FOREST_DARK,
-    OCEAN_LIGHT,
-    OCEAN_DARK,
-    PYDATA_LIGHT,
-    PYDATA_DARK,
-    ROSE_LIGHT,
-    ROSE_DARK,
+    BOOTSTRAP, PYDATA, NORD, SOLARIZED, CATPPUCCIN,
+    GRUVBOX, DRACULA, TOKYO_NIGHT, ONE, EVERFOREST,
 ]
 
 
 def install_builtin_themes() -> None:
-    """Register every built-in theme into the theme registry (idempotent)."""
+    """Register every built-in theme variant into the theme registry (idempotent)."""
     for theme in BUILTIN_THEMES:
         theme.install()
