@@ -28,7 +28,7 @@ from bootstack.widgets._impl.composites._image_fit import (
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, ScrollbarVariant
 
 OVERSCAN_ROWS = 1
 _RING_THICKNESS = 3
@@ -160,9 +160,11 @@ class Gallery(Frame):
         gap: int = 8,
         selection_mode: Literal["none", "single", "multi"] = "none",
         accent: str | None = None,
+        scrollbar_variant: ScrollbarVariant = "thin",
         **kwargs: Any,
     ) -> None:
         super().__init__(master, **kwargs)
+        self._scrollbar_variant = scrollbar_variant
 
         self._image_field = image_field
         self._caption_field = caption_field
@@ -190,7 +192,11 @@ class Gallery(Frame):
         self._ring_photo: PhotoImage | None = None
         self._row_h = self._th + 2 * _RING_PAD + (24 if caption_field else 0) + gap
 
-        self._scrollbar = Scrollbar(self, orient="vertical", command=self._on_scroll)
+        sb_surface = getattr(self, '_surface', None)
+        sb_kw = {'surface': sb_surface} if sb_surface else {}
+        self._scrollbar = Scrollbar(
+            self, orient="vertical", command=self._on_scroll,
+            variant=self._scrollbar_variant, **sb_kw)
         self._scrollbar.pack(side="right", fill="y")
         self._container = Frame(self)
         self._container.pack(side="left", fill="both", expand=True)

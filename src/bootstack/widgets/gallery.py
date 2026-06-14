@@ -7,7 +7,7 @@ from bootstack.streams import Stream
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._impl.composites.gallery import Gallery as _InternalGallery
-from bootstack.widgets.types import AccentToken, SelectionMode, SurfaceToken
+from bootstack.widgets.types import AccentToken, SelectionMode, SurfaceToken, ScrollbarVariant
 
 if TYPE_CHECKING:
     from bootstack.data.types import DataSourceProtocol
@@ -48,6 +48,8 @@ class Gallery(PublicWidgetBase):
         gap: Spacing between tiles in pixels. Default `8`.
         selection_mode: Tile selection behavior — `'single'`, `'multi'`, or
             `'none'` (default). Selected tiles show an accent highlight ring.
+        scrollbar_variant: Scrollbar style — `'thin'` (default) for a slim bar,
+            or `'default'` for the standard rounded bar.
         accent: Color intent token for the selection ring. Defaults to the
             theme's primary color.
         surface: Background surface token shown behind the tiles.
@@ -70,6 +72,7 @@ class Gallery(PublicWidgetBase):
         corner_radius: int = 0,
         gap: int = 8,
         selection_mode: SelectionMode = "none",
+        scrollbar_variant: ScrollbarVariant = "thin",
         accent: AccentToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         parent: Any = None,
@@ -89,6 +92,7 @@ class Gallery(PublicWidgetBase):
             "corner_radius": corner_radius,
             "gap": gap,
             "selection_mode": selection_mode,
+            "scrollbar_variant": scrollbar_variant,
         }
         if items is not None:
             internal_kwargs["items"] = items

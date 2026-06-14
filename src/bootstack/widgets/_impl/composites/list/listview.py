@@ -8,7 +8,7 @@ from typing_extensions import Unpack
 from bootstack.data import MemoryDataSource, DataSourceProtocol
 from bootstack.widgets._impl.composites.list.listitem import ListItem
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, ScrollbarVariant
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
 from bootstack.widgets._impl.mixins import configure_delegate
 
@@ -50,6 +50,7 @@ class ListView(Frame):
             select_on_click: bool = None,
             density: Literal['default', 'compact'] = 'default',
             accent_selection: bool = False,
+            scrollbar_variant: ScrollbarVariant = 'thin',
             **kwargs: Unpack[FrameKwargs]
     ):
         """Initialize a ListView widget.
@@ -99,6 +100,7 @@ class ListView(Frame):
         self._enable_dragging = enable_dragging
         self._show_separator = show_separator
         self._scrollbar_visibility = scrollbar_visibility
+        self._scrollbar_variant = scrollbar_variant
         self._select_on_click = select_on_click
         self._enable_focus = enable_focus
         self._enable_hover = enable_hover
@@ -137,7 +139,11 @@ class ListView(Frame):
         # container then fills the space to its left.
         from bootstack.style.style import get_style
         self._scrollbar_gutter = get_style().style_builder.scale(6)
-        self._scrollbar = Scrollbar(self, orient='vertical', command=self._on_scroll)
+        sb_surface = getattr(self, '_surface', None)
+        sb_kw = {'surface': sb_surface} if sb_surface else {}
+        self._scrollbar = Scrollbar(
+            self, orient='vertical', command=self._on_scroll,
+            variant=self._scrollbar_variant, **sb_kw)
         if self._scrollbar_visibility == 'always':
             self._scrollbar.pack(side='right', fill='y', padx=(self._scrollbar_gutter, 0))
 

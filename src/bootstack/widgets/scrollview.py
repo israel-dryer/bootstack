@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView
 from bootstack.widgets._core.container import PublicContainer, PACK_KEYS
-from bootstack.widgets.types import Padding
+from bootstack.widgets.types import Padding, ScrollbarVariant
 
 
 class ScrollView(PublicContainer):
@@ -20,6 +20,8 @@ class ScrollView(PublicContainer):
         scrollbar_visibility: When scrollbars appear — `'always'` (default),
             `'never'`, `'hover'` (appears on mouse enter), or `'scroll'`
             (auto-hides after `autohide_delay` ms of inactivity).
+        scrollbar_variant: Scrollbar style — `'default'` (standard rounded bar)
+            or `'thin'` (slim square bar).
         autohide_delay: Milliseconds before scrollbars hide in `'scroll'` mode.
             Defaults to `1000`.
         height: Fixed height of the viewport in pixels. When set, the
@@ -43,6 +45,7 @@ class ScrollView(PublicContainer):
         *,
         scroll_direction: Literal["vertical", "horizontal", "both"] = "both",
         scrollbar_visibility: Literal["always", "never", "hover", "scroll"] = "always",
+        scrollbar_variant: ScrollbarVariant = "default",
         autohide_delay: int = 1000,
         height: int | None = None,
         width: int | None = None,
@@ -58,6 +61,7 @@ class ScrollView(PublicContainer):
         internal_kwargs: dict[str, Any] = {
             "scroll_direction": scroll_direction,
             "scrollbar_visibility": scrollbar_visibility,
+            "scrollbar_variant": scrollbar_variant,
             "autohide_delay": autohide_delay,
         }
         if height is not None:

@@ -53,6 +53,10 @@ WidgetState = Literal['normal', 'active', 'disabled', 'readonly']
 WidgetDensity = Literal['default', 'compact']
 """Widget density — `'default'` for normal sizing, `'compact'` for reduced padding."""
 
+ScrollbarVariant = Literal['default', 'thin']
+"""Scrollbar style — `'default'` for the standard rounded bar, `'thin'` for a slim
+square bar that suits compact lists, panels, and popups."""
+
 # ---------------------------------------------------------------------------
 # bootstack styling tokens
 # ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ class Scrollbar(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Scro
             takefocus: Whether the widget participates in focus traversal.
             style: Explicit ttk style name (overrides accent/variant).
             accent: Accent token for styling, e.g. 'primary', 'danger', 'success'.
-            variant: Style variant, e.g. 'default', 'round', 'square'.
+            variant: Style variant — 'default' (rounded) or 'thin' (slim square).
             surface: Optional surface token; otherwise inherited.
             style_options: Optional dict forwarded to the style builder.
         """

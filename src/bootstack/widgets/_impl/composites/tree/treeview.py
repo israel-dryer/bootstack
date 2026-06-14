@@ -19,7 +19,7 @@ from bootstack.widgets._impl.composites.tree.treeitem import TreeItem, EMPTY
 from bootstack.widgets._impl.composites.tree.treenode import TreeNode
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar
-from bootstack.widgets.types import Master
+from bootstack.widgets.types import Master, ScrollbarVariant
 from typing_extensions import Unpack
 
 VISIBLE_ROWS = 20
@@ -45,6 +45,7 @@ class TreeView(Frame):
         enable_hover: bool = True,
         density: Literal["default", "compact"] = "default",
         accent_selection: bool = False,
+        scrollbar_variant: ScrollbarVariant = "thin",
         **kwargs: Unpack[FrameKwargs],
     ) -> None:
         _user_accent = kwargs.get("accent")
@@ -62,6 +63,7 @@ class TreeView(Frame):
         self._striped_background = striped_background
         self._show_separator = show_separator
         self._scrollbar_visibility = scrollbar_visibility
+        self._scrollbar_variant = scrollbar_variant
         self._enable_hover = enable_hover
         self._density = density
 
@@ -95,7 +97,11 @@ class TreeView(Frame):
 
         from bootstack.style.style import get_style
         self._scrollbar_gutter = get_style().style_builder.scale(6)
-        self._scrollbar = Scrollbar(self, orient="vertical", command=self._on_scroll)
+        sb_surface = getattr(self, '_surface', None)
+        sb_kw = {'surface': sb_surface} if sb_surface else {}
+        self._scrollbar = Scrollbar(
+            self, orient="vertical", command=self._on_scroll,
+            variant=self._scrollbar_variant, **sb_kw)
         if self._scrollbar_visibility == "always":
             self._scrollbar.pack(side="right", fill="y", padx=(self._scrollbar_gutter, 0))
 

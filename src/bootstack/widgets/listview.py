@@ -7,7 +7,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity, SelectionMode
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, SelectionMode, ScrollbarVariant
 
 if TYPE_CHECKING:
     from bootstack.data.types import DataSourceProtocol
@@ -45,6 +45,8 @@ class ListView(PublicWidgetBase):
             items.
         show_scrollbar: If `True` (default), show the vertical scrollbar.
             Mousewheel scrolling works regardless.
+        scrollbar_variant: Scrollbar style — `'thin'` (default) for a slim bar
+            suited to lists, or `'default'` for the standard rounded bar.
         height: Fixed height in pixels. When set, the list maintains this
             height regardless of its children, making it self-contained for
             scrolling without requiring the parent layout to provide a
@@ -73,6 +75,7 @@ class ListView(PublicWidgetBase):
         striped: bool = False,
         show_separators: bool = True,
         show_scrollbar: bool = True,
+        scrollbar_variant: ScrollbarVariant = "thin",
         height: int | None = None,
         density: WidgetDensity = "default",
         accent: AccentToken | str | None = None,
@@ -94,6 +97,7 @@ class ListView(PublicWidgetBase):
             "striped": striped,
             "show_separator": show_separators,
             "scrollbar_visibility": "always" if show_scrollbar else "never",
+            "scrollbar_variant": scrollbar_variant,
             "density": density,
             "accent_selection": accent_selection,
         }
