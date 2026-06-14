@@ -86,19 +86,25 @@ def master_detail_list():
 
 
 def master_detail_tree():
-    files = MemoryDataSource().load([
-        {"id": "src", "name": "src", "parent_id": None, "icon": "folder", "kind": "Folder", "size": ""},
-        {"id": "app", "name": "app.py", "parent_id": "src", "icon": "filetype-py", "kind": "Python source", "size": "4.2 KB"},
-        {"id": "utils", "name": "utils.py", "parent_id": "src", "icon": "filetype-py", "kind": "Python source", "size": "1.8 KB"},
-        {"id": "docs", "name": "docs", "parent_id": None, "icon": "folder", "kind": "Folder", "size": ""},
-        {"id": "readme", "name": "README.md", "parent_id": "docs", "icon": "filetype-md", "kind": "Markdown", "size": "920 B"},
-    ])
+    tree_nodes = [
+        {"label": "src", "icon": "folder", "children": [
+            {"label": "app.py", "icon": "filetype-py", "kind": "Python source", "size": "4.2 KB"},
+            {"label": "utils.py", "icon": "filetype-py", "kind": "Python source", "size": "1.8 KB"},
+        ]},
+        {"label": "tests", "icon": "folder", "children": [
+            {"label": "test_app.py", "icon": "filetype-py", "kind": "Python source", "size": "2.0 KB"},
+        ]},
+        {"label": "docs", "icon": "folder", "children": [
+            {"label": "README.md", "icon": "filetype-md", "kind": "Markdown", "size": "920 B"},
+        ]},
+        {"label": "LICENSE", "icon": "file-earmark", "kind": "Text", "size": "1.1 KB"},
+    ]
     with bs.AppShell(title="Files", size=(820, 520)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_label("Project", font="heading-md")
         shell.commandbar.add_spacer()
         shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
-        shell.tree_nav(source=files, parent_field="parent_id", label_field="name", placeholder="Select a file")
+        tree = shell.tree_nav(nodes=tree_nodes, placeholder="Select a file")
 
         @shell.detail
         def show(node):
@@ -107,6 +113,11 @@ def master_detail_tree():
                 bs.Label(node.get("kind", ""), font="caption")
                 if node.get("size"):
                     bs.Label(f"Size: {node['size']}")
+
+        tree.expand_all()
+        app = tree.find(lambda node: node.label == "app.py")
+        if app is not None:
+            tree.select(app)
     shell.run()
 
 

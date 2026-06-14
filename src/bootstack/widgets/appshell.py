@@ -150,15 +150,23 @@ class _Workspace:
         placeholder: str = "Select an item to view",
         chevron: bool = False,
     ) -> Any:
-        """Fill the workspace from a `DataSource` (flat master-detail)."""
+        """Fill the workspace from a `DataSource` (flat master-detail).
+
+        Returns the `ListView` driving the sidebar — use it to read `.selection`
+        or drive selection (`select_items`).
+        """
         return self._internal.list_nav(
             source, separator=separator, density=density,
             placeholder=placeholder, chevron=chevron,
-        )
+        ).nav
 
     def tree_nav(self, **kwargs: Any) -> Any:
-        """Fill the workspace from a hierarchy (tree master-detail)."""
-        return self._internal.tree_nav(**kwargs)
+        """Fill the workspace from a hierarchy (tree master-detail).
+
+        Returns the `Tree` driving the sidebar — use it to drive the view
+        (`expand`/`expand_all`/`collapse`/`select`/`find`).
+        """
+        return self._internal.tree_nav(**kwargs).tree
 
     def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
         """Register the data-bound detail body (decorator)."""
@@ -471,15 +479,23 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         placeholder: str = "Select an item to view",
         chevron: bool = False,
     ) -> Any:
-        """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
+        """Fill the implicit workspace from a `DataSource` (flat master-detail).
+
+        Returns the `ListView` driving the sidebar — use it to read `.selection`
+        or drive selection (`select_items`).
+        """
         return self._internal.list_nav(
             source, separator=separator, density=density,
             placeholder=placeholder, chevron=chevron,
-        )
+        ).nav
 
     def tree_nav(self, **kwargs: Any) -> Any:
-        """Fill the implicit workspace from a hierarchy (tree master-detail)."""
-        return self._internal.tree_nav(**kwargs)
+        """Fill the implicit workspace from a hierarchy (tree master-detail).
+
+        Returns the `Tree` driving the sidebar — use it to drive the view
+        (`expand`/`expand_all`/`collapse`/`select`/`find`).
+        """
+        return self._internal.tree_nav(**kwargs).tree
 
     def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
         """Register the implicit workspace's data-bound detail body (decorator)."""
