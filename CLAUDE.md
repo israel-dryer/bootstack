@@ -288,15 +288,15 @@ memories and git history.
 
 A clean-slate VS Code-style **rail + swappable sidebar + content** rewrite of the
 shell's navigation (supersedes the original combined-refactor framing below).
-**Live spec: `docs/_dev/appshell-navigation-spec.md` — read Revision 2 (model
-finalization) + Revision 3 (accordion sections vs static groups).** Memory
-`project_appshell_sidenav_refactor`. Seed brief (`docs/_dev/appshell-sidenav-refactor.md`)
-is now background-only.
+**Live spec: `docs/_dev/appshell-navigation-spec.md` — read Revision 4 (the
+accordion CUT — current decision) first, then Revision 2/3 for the superseded
+arc.** Memory `project_appshell_sidenav_refactor`. Seed brief
+(`docs/_dev/appshell-sidenav-refactor.md`) is now background-only.
 
 **Branch `feat/appshell-navigation`. Steps 1–9 DONE & committed:** NavModel →
 region layout → single-tier wiring → provider seam → all 3 providers + live refresh
 → two-tier rail + VS Code gesture → sidebar collapse/visibility/nav-state persistence
-→ 1-level groups (now being redesigned, see below) → **full step-9 styling**: dark
+→ grouped-static (`add_header`; accordion tried then cut, see below) → **step-9 styling**: dark
 rail/chrome surface (rail/status tier sits clearly below the neutral selection
 wash), neutral selection by default + `accent_selection` opt-in, subtle `raised`
 sidebar elevation, `list_nav` on the real recycling `ListView` with **pixel-ellipsis
@@ -304,17 +304,23 @@ title/text truncation** (labels `width=1` so they never push the icon/chevron of
 `_elide` via `get_font().measure`; re-elides on the center frame's `<Configure>`),
 density + chevron exposed on `list_nav`/`tree_nav`.
 
-**NEXT = the step-8 REDESIGN per Revision 3** (the flat header+run "collapsible
-group" was the wrong model — it can't hold "an accordion containing a list"). Five
-steps in the spec: (1) revert the flat-run hack so `add_header()` is a pure label
-again; (2) `NavGroup` — an `Expander`-backed content host exposing the workspace
-content verbs (`add_page`/`list_nav`/`tree_nav`/`panel`/`@detail`) via context
-manager; (3) workspace accordion mode (`add_group()`, key/selection aggregation
-across sections, navigate-to-reveal, nested content deck); (4) style the `Expander`
-header to the workspace nav language; (5) rewrite `test_shell_groups` + add
-accordion/heterogeneous-body/reveal cases. Three sidebar archetypes are locked:
-flat-static (compactable) · grouped-static (`add_header` labels, flush button-style
-items) · accordion (`add_group` sections, hidden↔expanded, no icon-compact).
+**DONE — accordion CUT + grouped-static finished (committed `580e0218`, Revision
+4).** The Revision-3 accordion was built then **dropped** (maintainer: not worth
+the trouble — the "section that IS a list/tree" carried all the complexity/bugs
+and conflated content-hierarchy with nav). `NavGroup`/`ProviderHost` deleted;
+`Workspace` back to a single provider; `add_group`/`expand_all`/`collapse_all`
+gone; `SideNavHeader` is a plain label. **Sidebar = three shapes only:**
+flat-static (`add_page`, compactable) · grouped-static (`add_header` = a plain
+**muted** label, flush items, `10→16` top-gap group break) · data-bound
+(`list_nav`/`tree_nav`). A collapsible sub-list → compose `bs.Accordion` in a
+custom `panel()`. **Scrollable static nav**: `NavPanel` item area in a `ScrollView`
+(wheel + auto-hiding bar), footer pinned outside; overflow-gated gutter/bar +
+footer divider (`'never'`↔`'scroll'`, hysteresis, no flicker); canvas bg painted
+to the sidebar surface. **`nav-quiet` square under a rail, `nav-pill` standalone**
+(mixed-provider workspaces must share one row language). Test `test_shell_groups`
+rewritten for grouped-static. Deferred: thin/overlay nav scrollbar (17px classic
+now — step-9 styling); `Workspace` context-manager support (two-tier examples use
+`with`). **NEXT: the deferred public-AppShell swap (spec step 11) + step-9 styling.**
 
 **Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
 framework code). Side note logged: a future `Tabs` `variant='secondary'` (top

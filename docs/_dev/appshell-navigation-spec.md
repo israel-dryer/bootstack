@@ -241,6 +241,56 @@ Create a **`'secondary'` Tabs variant** that draws the selection indicator at th
 
 ---
 
+## Revision 4 — accordion CUT (2026-06-13, with maintainer)
+
+After building the Revision-3 accordion (`add_group` → `NavGroup` over `Expander`,
+heterogeneous list/tree/page section bodies, shared content region, navigate-to-
+reveal), the maintainer pulled the plug: **the accordion is not worth the
+trouble.** The heavy, bug-prone part was "a section that *is* a list/tree" — the
+shared content deck across sections, reveal into a collapsed data view, sibling-
+selection clearing, the no-intrinsic-height fix, the header highlight wash. It also
+conflated content-hierarchy with navigation, exactly what the design doc warns
+against. **Supersedes Revision 2 / R2 and Revision 3.**
+
+**Decision: drop the built-in accordion.** The sidebar has three authored shapes:
+
+| shape | how | scroll |
+|---|---|---|
+| **flat-static** | `add_page` | compact → icons; item area scrolls |
+| **grouped-static** | `add_page` + `add_header` (a plain **muted** label, flush items, larger top gap for the group break) | item area scrolls |
+| **data-bound** | `list_nav` / `tree_nav` | the recycling widget scrolls itself |
+
+A collapsible section that hides/reveals a sub-list is a **content** concern —
+compose `bs.Accordion` inside a custom `panel()`. `NavGroup` / `ProviderHost` were
+deleted; `Workspace` is back to a single provider; `add_group` / `expand_all` /
+`collapse_all` are gone from `Shell`/`Workspace`; `SideNavHeader` is a plain label.
+
+**Also shipped this pass (the grouped-static finish):**
+- **Muted section headers** — `SideNavHeader.DEFAULT_ACCENT='muted'` (was full-
+  strength); a header is quiet chrome, the clickable rows carry the contrast.
+- **Bigger group break** — `NavPanel.add_header` top padding `10→16` (bottom stays
+  `4`, so the header still hugs its own items).
+- **Scrollable static nav** — `NavPanel` wraps its item area in a `ScrollView`
+  (mousewheel + auto-hiding bar) with the **footer pinned** outside it. Overflow-
+  gated: when content fits → `scrollbar_visibility='never'` (no gutter, no bar,
+  no footer divider, items full-width); when it overflows → `'scroll'` (gutter +
+  bar) and a `SideNavSeparator` divider appears above the footer. The 8px-vs-bar-
+  width difference + a 4px epsilon gives stable hysteresis (no flicker). Canvas
+  background is painted to the sidebar surface (repaint on `<<BsThemeChanged>>`).
+- **Square (`nav-quiet`) under a rail, `nav-pill` standalone stays** — confirmed:
+  under a rail you have mixed-provider workspaces (static + list + tree) that must
+  share one row language, so the pill is single-tier-only.
+
+**Deferred (noted, not done):** thin/overlay nav scrollbar (the bar is the 17px
+classic width — a step-9 styling item); `Workspace` is not yet a context manager
+though the two-tier examples use `with shell.add_workspace(...) as ws:` (close
+when the public `AppShell` is swapped on, step 11).
+
+Tests: `test_shell_groups` rewritten for grouped-static. Throwaway demos
+`development/shell_*_demo.py` stay untracked.
+
+---
+
 ## 1. Locked decisions (from discussion)
 
 1. **Single-tier is two-tier with one workspace.** The rail (workspace switcher)
