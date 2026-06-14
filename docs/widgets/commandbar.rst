@@ -202,9 +202,6 @@ full application scaffold with a built-in command bar, sidebar, and page stack.
 :class:`Button <bootstack.widgets.button.Button>` —
 standalone button widget.
 
-:class:`SideNav <bootstack.widgets.sidenav.SideNav>` —
-sidebar navigation panel.
-
 API
 ---
 

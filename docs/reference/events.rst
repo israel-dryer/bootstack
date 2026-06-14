@@ -211,11 +211,11 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
    * - :class:`~bootstack.PageStack`, :class:`~bootstack.AppShell`
      - ``on_page_change``
      - :class:`~bootstack.events.PageChangeEvent`
-   * - :class:`~bootstack.SideNav`
-     - ``on_change``
-     - :class:`~bootstack.events.NavEvent`
-   * - :class:`~bootstack.SideNav`
-     - ``on_pane_toggled`` / ``on_display_mode_changed``
+   * - :class:`~bootstack.AppShell`
+     - ``on_workspace_change``
+     - :class:`~bootstack.events.WorkspaceChangeEvent`
+   * - :class:`~bootstack.AppShell`
+     - ``on_sidebar_toggle`` / ``on_sidebar_mode_change``
      - :class:`~bootstack.events.PaneToggleEvent` /
        :class:`~bootstack.events.DisplayModeEvent`
    * - :class:`~bootstack.Accordion`

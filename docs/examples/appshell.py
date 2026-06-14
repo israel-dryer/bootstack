@@ -4,7 +4,7 @@ with bs.AppShell(title="My App", size=(800, 540)) as shell:
 
     # ── Toolbar ───────────────────────────────────────────────────────────────
     shell.commandbar.add_spacer()
-    shell.commandbar.add_button(icon="circle-half", command=bs.toggle_theme)
+    shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
 
     # ── Pages ─────────────────────────────────────────────────────────────────
     with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):

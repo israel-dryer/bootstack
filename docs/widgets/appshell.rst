@@ -1,10 +1,11 @@
 AppShell
 ========
 
-A full application scaffold with a command bar across the top, a collapsible
-sidebar navigation on the left, and a page stack for the content area. Add
-pages with `.add_page()` — each page is also wired into the sidebar
-automatically.
+A full application scaffold: a menu / command bar across the top, a navigation
+sidebar on the left, and a content area that swaps as you navigate. With a single
+set of pages it is a plain sidebar app; add more than one *workspace* and a
+VS Code-style icon **rail** appears to switch between them. A full-width status
+band can run along the bottom.
 
 .. image:: /_static/examples/appshell-hero-light.png
    :class: bs-screenshot-light bs-window-screenshot
@@ -17,12 +18,12 @@ automatically.
 Usage
 -----
 
-Adding pages
+Static pages
 ~~~~~~~~~~~~
 
-`add_page(key, text=, icon=)` registers a sidebar nav item and a content
-page together. Use the returned value as a context manager to place child
-widgets on that page.
+`add_page(key, text=, icon=)` registers a sidebar nav item and its content page
+together. Use the returned value as a context manager to place child widgets on
+that page. `navigate()` selects the active page (the sidebar selection follows).
 
 .. code-block:: python
 
@@ -34,19 +35,18 @@ widgets on that page.
        shell.navigate("dashboard")
    shell.run()
 
-Nav groups, headers, and separators
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Headers, separators, and footer items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Organize sidebar items with collapsible groups, non-selectable section
-headers, and visual separators — the same structural elements as
-:class:`SideNav <bootstack.widgets.sidenav.SideNav>`.
+Chunk a flat list with `add_header()` (a quiet section label) and
+`add_separator()` (a divider). Pin an item to the bottom of the sidebar with
+`add_footer_page()` — handy for a Settings or Account entry.
 
 .. code-block:: python
 
-   shell.add_group("main", text="Main", expanded=True)
-   with shell.add_page("dashboard", text="Dashboard", icon="house", group="main"):
+   with shell.add_page("dashboard", text="Dashboard", icon="house"):
        ...
-   with shell.add_page("inbox", text="Inbox", icon="inbox", group="main"):
+   with shell.add_page("inbox", text="Inbox", icon="inbox"):
        ...
 
    shell.add_separator()
@@ -54,18 +54,15 @@ headers, and visual separators — the same structural elements as
    with shell.add_page("files", text="Files", icon="folder"):
        ...
 
-Footer items
-~~~~~~~~~~~~
-
-Use `add_footer_page()` to pin a nav item to the bottom of the sidebar.
-
-.. code-block:: python
-
    with shell.add_footer_page("settings", text="Settings", icon="gear"):
-       bs.Label("Settings page")
+       ...
+
+For a collapsible sub-list, compose an :class:`Accordion
+<bootstack.widgets.accordion.Accordion>` inside a custom panel (see *Custom
+panel* below) — the static sidebar itself stays flat by design.
 
 Scrollable pages
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Pass ``scrollable=True`` to wrap a page's content in a vertical scroll area.
 
@@ -75,24 +72,133 @@ Pass ``scrollable=True`` to wrap a page's content in a vertical scroll area.
        for i in range(100):
            bs.Label(f"Log entry {i}")
 
+Data-bound sidebar (master–detail)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Instead of authored pages, fill the sidebar straight from a data source with
+`list_nav()` (a flat list) or `tree_nav()` (a hierarchy). Decorate a builder with
+`@shell.detail` to render the body for the selected record — it receives the
+record as a dict. The first item is selected automatically.
+
+.. code-block:: python
+
+   from bootstack.data import MemoryDataSource
+
+   devices = MemoryDataSource().load([
+       {"id": 1, "title": "Sensor A", "text": "online"},
+       {"id": 2, "title": "Sensor B", "text": "offline"},
+   ])
+
+   with bs.AppShell(title="Devices") as shell:
+       shell.list_nav(devices)
+
+       @shell.detail
+       def show(record):
+           with bs.VStack(fill="both", gap=12, padding=24):
+               bs.Label(record["title"], font="heading-lg")
+               bs.Label(record["text"])
+   shell.run()
+
+A workspace is filled by exactly one provider — static `add_page` *or*
+`list_nav` *or* `tree_nav` *or* a custom `panel()`. Mixing them raises.
+
+Workspaces (the rail)
+~~~~~~~~~~~~~~~~~~~~~~
+
+Add named *workspaces* with `add_workspace()` — each gets its own rail icon and
+its own sidebar, authored with the very same page API. The rail appears
+automatically once there is more than one workspace, so single-tier and two-tier
+apps are written the same way. `add_footer_workspace()` pins a workspace (e.g.
+Settings) to the bottom of the rail. Shell-level page methods and
+`add_workspace()` are mutually exclusive — use one style or the other.
+
+.. code-block:: python
+
+   with bs.AppShell(title="Console", size=(960, 600)) as shell:
+       with shell.add_workspace("acquire", text="Acquire", icon="cpu") as ws:
+           with ws.add_page("sensors", text="Sensors", icon="thermometer-half"):
+               bs.Label("Sensors", font="heading-lg")
+           ws.add_header("Hardware")
+           with ws.add_page("ports", text="Ports", icon="usb-symbol"):
+               bs.Label("Ports", font="heading-lg")
+
+       with shell.add_workspace("devices", text="Devices", icon="hdd-stack") as ws:
+           ws.list_nav(devices)
+           @ws.detail
+           def show(record):
+               bs.Label(record["title"], font="heading-lg")
+
+       with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
+           with ws.add_page("general", text="General", icon="sliders"):
+               bs.Label("Settings", font="heading-lg")
+
+       shell.navigate("acquire", "sensors")   # workspace first, then page
+   shell.run()
+
+Custom panel
+~~~~~~~~~~~~
+
+`panel()` claims the sidebar as a blank container you fill yourself — the escape
+hatch when none of the providers fit. Drive the content region with
+``shell.content`` (or a workspace's ``ws.content``).
+
+.. code-block:: python
+
+   with shell.panel():
+       bs.Label("Filters", font="heading-md")
+       with bs.Accordion():
+           ...
+
 Command bar
 ~~~~~~~~~~~
 
-``shell.commandbar`` exposes the built-in command bar. Add buttons, labels,
-separators, and spacers to it. Use ``command=`` (not ``on_click=``) when
-calling ``add_button()`` on this object.
+``shell.commandbar`` is the built-in :class:`CommandBar <bootstack.CommandBar>`,
+in the top chrome row. Add buttons, labels, separators, and an ``add_spacer()``
+to push trailing items to the right.
 
 .. code-block:: python
 
    shell.commandbar.add_spacer()
-   shell.commandbar.add_button(icon="sun-moon", command=bs.toggle_theme)
-   shell.commandbar.add_button(label="Save", icon="save", command=save)
+   shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+   shell.commandbar.add_button(label="Save", icon="save", on_click=save)
 
-Sidebar display modes
-~~~~~~~~~~~~~~~~~~~~~
+Menu bar
+~~~~~~~~
 
-``nav_display_mode=`` controls the initial sidebar appearance. It can also
-be changed at runtime via ``shell.nav.set_display_mode()``.
+``shell.menubar`` is the application :doc:`menu bar </widgets/menubar>` — the same
+API as on :class:`App <bootstack.widgets.app.App>`. It shares the top chrome row
+with the command bar on Windows/Linux and relocates to the native global menu bar
+on macOS.
+
+.. code-block:: python
+
+   with bs.AppShell(title="My App") as shell:
+       with shell.menubar.add_menu("File") as file:
+           file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+       ...
+
+Status bar
+~~~~~~~~~~
+
+``shell.statusbar`` is a full-width band along the bottom for **passive** status —
+counts, sync state, a ready message (keep interactive controls on the command
+bar). It renders only once a segment is added, or when the shell is built with
+``show_statusbar=True``. ``add_spacer()`` (or ``side="right"``) pushes following
+segments to the right cluster.
+
+.. code-block:: python
+
+   shell.statusbar.add_text("Ready")
+   shell.statusbar.add_spacer()
+   shell.statusbar.add_text("v1.0", side="right")
+
+Sidebar visibility
+~~~~~~~~~~~~~~~~~~~
+
+``sidebar_mode=`` sets the initial sidebar state; the property reads and writes it
+live. ``Ctrl/Cmd-B`` toggles it (when ``collapsible=True``), and the explicit
+``toggle_sidebar()`` / ``show_sidebar()`` / ``hide_sidebar()`` verbs control
+visibility directly.
 
 .. list-table::
    :header-rows: 1
@@ -103,47 +209,55 @@ be changed at runtime via ``shell.nav.set_display_mode()``.
    * - ``'expanded'``
      - Full-width sidebar with icons and labels (default).
    * - ``'compact'``
-     - Narrow sidebar showing icons only.
-   * - ``'minimal'``
-     - Sidebar hidden; toggling overlays it on the content.
+     - Narrow, icon-only sidebar (a standalone static sidebar only).
+   * - ``'hidden'``
+     - Sidebar hidden; the rail (if present) remains as navigation.
 
 .. code-block:: python
 
-   shell = bs.AppShell(nav_display_mode="compact")
-
-.. image:: /_static/examples/appshell-compact-light.png
-   :class: bs-screenshot-light bs-window-screenshot
-   :alt: AppShell compact sidebar — light theme
-
-.. image:: /_static/examples/appshell-compact-dark.png
-   :class: bs-screenshot-dark bs-window-screenshot
-   :alt: AppShell compact sidebar — dark theme
+   shell = bs.AppShell(sidebar_mode="compact")
+   shell.sidebar_mode = "expanded"   # change it live
+   shell.toggle_sidebar()
 
 Navigation
 ~~~~~~~~~~
 
-Call `navigate()` to switch the active page programmatically. The sidebar
-selection updates automatically.
+`navigate()` switches the active page (single-tier) or workspace + page
+(two-tier). Read the current selection from ``current`` / ``current_workspace``.
 
 .. code-block:: python
 
-   shell.navigate("dashboard")
-   shell.current           # 'dashboard'
+   shell.navigate("dashboard")          # page in the active workspace
+   shell.navigate("devices", "sensor1") # workspace, then page
+   shell.current                        # active page key
+   shell.current_workspace              # active workspace key
 
 Events
 ~~~~~~
 
-``on_page_change`` fires whenever the active page changes.
+All shorthands take a handler (returns a cancellable
+:class:`Subscription <bootstack.events.Subscription>`) or no argument (returns a
+composable :class:`Stream <bootstack.streams.Stream>`).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 66
+
+   * - Shorthand
+     - Handler receives
+   * - ``on_page_change``
+     - :class:`~bootstack.events.PageChangeEvent`
+   * - ``on_workspace_change``
+     - :class:`~bootstack.events.WorkspaceChangeEvent`
+   * - ``on_sidebar_toggle``
+     - :class:`~bootstack.events.PaneToggleEvent`
+   * - ``on_sidebar_mode_change``
+     - :class:`~bootstack.events.DisplayModeEvent`
 
 .. code-block:: python
 
-   def on_change(event):
-       print("now on:", shell.current)
-
-   shell.on_page_change(on_change)
-
-   # Stream form
-   shell.on_page_change().listen(lambda e: print(shell.current))
+   shell.on_page_change(lambda e: print("now on:", e.page))
+   shell.on_workspace_change().listen(lambda e: print("workspace:", e.workspace))
 
 Theme, locale, and configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +278,6 @@ changed at runtime through ``shell.*`` properties. Assigning ``shell.theme`` or
    )
 
    shell.theme = "bootstrap-light"     # switch the theme now
-   shell.commandbar.add_button(icon="sun-moon", command=bs.toggle_theme)
 
 React to changes and persist them across launches with a :class:`Store
 <bootstack.store.Store>` — ``from_store()`` restores configuration and tolerates
@@ -182,28 +295,8 @@ See :doc:`/production/app-settings` for the full configuration reference —
 every option, the locale-derived read-only properties, and window-state
 persistence.
 
-Menu bar
-~~~~~~~~
-
-``shell.menubar`` is the application :doc:`menu bar </widgets/menubar>` — the same
-API as on :class:`App <bootstack.widgets.app.App>`. On Windows/Linux it mounts
-just above the built-in command bar; on macOS it relocates to the native global
-menu bar.
-
-.. code-block:: python
-
-   with bs.AppShell(title="My App") as shell:
-       with shell.menubar.add_menu("File") as file:
-           file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-       ...
-
-The fused/stacked layout (``menu_layout``) and ``chrome_surface`` options are
-specific to :doc:`App </widgets/app>` / :doc:`Window </widgets/window>` —
-``AppShell`` already owns its command bar (``shell.commandbar``), which carries your
-command-bar buttons.
-
 Window options
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -214,24 +307,20 @@ Window options
        resizable=(True, True),
    )
 
-   # Custom chrome (no OS title bar)
-   bs.AppShell(
-       undecorated=True,
-       show_window_controls=True,
-       draggable=True,
-   )
+   # Custom chrome (no OS title bar; draws a themed border instead)
+   bs.AppShell(undecorated=True)
 
 See also
 --------
-
-:class:`SideNav <bootstack.widgets.sidenav.SideNav>` —
-standalone sidebar navigation, for use without the full AppShell scaffold.
 
 :class:`PageStack <bootstack.widgets.pagestack.PageStack>` —
 page navigation without a built-in sidebar.
 
 :class:`Tabs <bootstack.widgets.tabs.Tabs>` —
 tab-strip navigation.
+
+:class:`CommandBar <bootstack.CommandBar>` —
+the standalone command-bar widget.
 
 API
 ---
