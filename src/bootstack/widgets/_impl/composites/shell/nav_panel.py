@@ -76,6 +76,7 @@ class NavPanel(Frame):
         # Pill items are inset from the sidebar edges (the rounded pill needs
         # breathing room from the container); quiet rows run full-width.
         self._inset = 8 if variant == "nav-pill" else 0
+        self._current_inset = self._inset
 
         # Footer pinned to the bottom; the item area scrolls in the space above it
         # (a wheel-scrollable canvas with an auto-hiding bar — the footer itself
@@ -85,14 +86,17 @@ class NavPanel(Frame):
         self._footer.pack(side="bottom", fill="x")
         # A divider above the footer, shown ONLY when the item area scrolls — so a
         # pinned footer reads as its own band instead of abutting a clipped row.
-        # When everything fits it stays hidden (no needless chrome).
-        self._footer_divider = SideNavSeparator(self, surface=surface, padding=(0, 0, 0, 0))
+        # When everything fits it stays hidden (no needless chrome). The vertical
+        # padding gives the line breathing room from the last scrolled row above
+        # and the footer item below (a flush line reads as cramped).
+        self._footer_divider = SideNavSeparator(self, surface=surface, padding=(0, 8, 0, 8))
         # Start with no gutter/bar; overflow detection switches it on only when the
         # content is actually tall enough to scroll (see _update_overflow_state).
         self._scroll = ScrollView(
             self,
             scroll_direction="vertical",
             scrollbar_visibility="never",
+            scrollbar_variant="thin",
             surface=surface,
         )
         self._scroll.pack(side="top", fill="both", expand=True)
@@ -215,8 +219,32 @@ class NavPanel(Frame):
         Pills need breathing room; quiet rows run flush (inset 0). The item area
         is a canvas window (not pack-managed), so its inset is its own padding.
         """
-        self._main.configure(padding=(inset, inset, inset, 0))
-        self._footer.pack_configure(padx=inset, pady=(0, inset))
+        self._current_inset = inset
+        self._apply_insets()
+
+    def _gutter(self) -> int:
+        """Width reserved for the scrollbar while the content overflows (else 0)."""
+        if not self._content_overflows():
+            return 0
+        try:
+            w = self._scroll.vertical_scrollbar.winfo_reqwidth()
+            return w if w > 1 else 0
+        except Exception:
+            return 0
+
+    def _apply_insets(self) -> None:
+        """Apply the content + footer insets, accounting for the scrollbar gutter.
+
+        The gutter sits WITHIN the right inset rather than adding to it, so the
+        right margin stays about the left inset (not inset + gutter). The content's
+        right padding is reduced by the gutter; the footer (not scrolled) reserves
+        max(inset, gutter) so a footer item's right edge still lines up with the
+        scrolled rows.
+        """
+        inset = self._current_inset
+        gutter = self._gutter()
+        self._main.configure(padding=(inset, inset, max(inset - gutter, 0), 0))
+        self._footer.pack_configure(padx=(inset, max(inset, gutter)), pady=(0, inset))
 
     def _paint_canvas_surface(self) -> None:
         """Match the scroll canvas background to the sidebar surface token."""
@@ -263,6 +291,9 @@ class NavPanel(Frame):
                 self._footer_divider.pack(side="bottom", fill="x")
             elif not show_divider and mapped:
                 self._footer_divider.pack_forget()
+            # Keep the content + footer insets in sync with the gutter so the
+            # right margin stays even and footer items align with the scrolled rows.
+            self._apply_insets()
         finally:
             self._updating_overflow = False
 

@@ -189,10 +189,13 @@ class Workspace:
         label_field: str = "name",
         icon_field: str = "icon",
         density: str = "default",
+        placeholder: str = "Select an item to view",
     ) -> Any:
         """Fill the workspace from a hierarchy (tree master-detail).
 
-        `density` is `'default'`/`'compact'`.
+        `density` is `'default'`/`'compact'`. `placeholder` is the quiet
+        empty-state shown in the content area until a node is picked (a tree
+        opens unselected).
         """
         self._claim_provider()
         self._provider = TreeNavProvider(
@@ -203,6 +206,7 @@ class Workspace:
             icon_field=icon_field,
             accent=self._nav_accent,
             density=density,
+            placeholder=placeholder,
         )
         self._mount_provider()
         return self._provider

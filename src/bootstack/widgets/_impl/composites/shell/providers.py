@@ -345,6 +345,7 @@ class TreeNavProvider:
         icon_field: str = "icon",
         accent: str = "primary",
         density: str = "default",
+        placeholder: str = "Select an item to view",
     ) -> None:
         self._nodes = nodes
         self._source = source
@@ -353,6 +354,7 @@ class TreeNavProvider:
         self._icon_field = icon_field
         self._accent = accent
         self._density = density
+        self._placeholder = placeholder
         self._tree: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -395,6 +397,16 @@ class TreeNavProvider:
             tree_kwargs["nodes"] = self._nodes
         self._tree = Tree(**tree_kwargs)
         self._sub = self._tree.on_select(self._on_tree_select)
+        # A tree opens with nothing selected, so the content area would be blank.
+        # Show a quiet placeholder until the first node is picked.
+        self._render_placeholder()
+
+    def _render_placeholder(self) -> None:
+        """Render a centered, muted empty-state in the content region."""
+        from bootstack.widgets._impl.primitives.label import Label
+
+        self._host.clear()
+        Label(self._host._internal, text=self._placeholder, accent="muted").pack(expand=True)
 
     def set_detail(self, fn: Callable[[dict], Any]) -> None:
         """Register the parameterized detail body builder."""
@@ -428,10 +440,12 @@ class TreeNavProvider:
 
     def show(self, key: str, data: dict | None = None) -> None:
         node = self._nodes_by_key.get(key)
-        self._host.clear()
         if self._detail is not None and node is not None:
+            self._host.clear()
             with self._host:
                 self._detail(self._record(node, key))
+        else:
+            self._render_placeholder()
 
     def select_visual(self, key: str | None) -> None:
         node = self._nodes_by_key.get(key) if key is not None else None
