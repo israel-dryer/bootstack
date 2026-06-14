@@ -1,4 +1,4 @@
-﻿"""SideNavHeader widget for section labels in navigation menus."""
+"""SideNavHeader widget for section labels in navigation menus."""
 
 from typing import Any
 
@@ -19,17 +19,22 @@ class SideNavHeaderKwargs(TypedDict, total=False):
 
 
 class SideNavHeader(Frame):
-    """A non-selectable section header for grouping navigation items.
+    """A section header for grouping navigation items.
 
     SideNavHeader provides a text label to identify groups of related
     navigation items. Unlike SideNavItem, headers are not selectable
-    and serve only as visual labels. Uses the 'label' font token for styling.
+    and serve only as visual labels — a quiet, non-interactive section
+    marker. Uses the 'label' font token for styling.
 
+    A header is always a plain label; it does not collapse its items (a
+    collapsible sub-list is a content concern — use a `bs.Accordion`).
     """
 
     DEFAULT_PADDING = (8, 20, 8, 4)
     DEFAULT_FONT = 'label'
-    DEFAULT_ACCENT = 'default'
+    # Muted, not full-strength: a section header is quiet chrome that names a
+    # group — it should recede so the clickable items carry the contrast.
+    DEFAULT_ACCENT = 'muted'
 
     def __init__(
         self,
@@ -51,7 +56,7 @@ class SideNavHeader(Frame):
 
         super().__init__(master, **kwargs)
 
-        # Create header label with 'label' font (smaller, bold) and secondary accent
+        # Header label with 'label' font (smaller, bold) and secondary accent.
         self._text_label = Label(
             self,
             text=text,

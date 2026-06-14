@@ -89,18 +89,23 @@ class ScrollView(Frame):
         self.canvas = Canvas(self, **canvas_kw)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
 
-        # Create scrollbars
+        # Create scrollbars. Thread our own surface through so the scrollbar track
+        # matches the container (an auto-hiding bar then leaves no tinted gutter).
+        sb_surface = getattr(self, "_surface", None)
+        sb_kw: dict[str, Any] = {"surface": sb_surface} if sb_surface else {}
         self.vertical_scrollbar = Scrollbar(
             master=self,
             orient='vertical',
             command=self.canvas.yview,
-            variant=self._scrollbar_variant
+            variant=self._scrollbar_variant,
+            **sb_kw,
         )
         self.horizontal_scrollbar = Scrollbar(
             master=self,
             orient='horizontal',
             command=self.canvas.xview,
-            variant=self._scrollbar_variant
+            variant=self._scrollbar_variant,
+            **sb_kw,
         )
 
         # Configure canvas scrolling

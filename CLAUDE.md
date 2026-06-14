@@ -284,28 +284,64 @@ memories and git history.
 
 ## Next up
 
-### ★ ACTIVE — AppShell + SideNav refactor (START HERE, fresh session)
+### ★ ACTIVE — AppShell + navigation clean-slate rewrite (START HERE, fresh session)
 
-The chosen next initiative (maintainer, 2026-06-12). A combined rework of
-**AppShell** and **SideNav** — make AppShell expose real public widget handles,
-and refactor SideNav's API/internals (its event renames have been intentionally
-deferred to this). **Scope, goals, and known issues: `docs/_dev/appshell-sidenav-refactor.md`**
-(seed brief). Memory `project_appshell_sidenav_refactor`. Pulls together:
+A clean-slate VS Code-style **rail + swappable sidebar + content** rewrite of the
+shell's navigation (supersedes the original combined-refactor framing below).
+**Live spec: `docs/_dev/appshell-navigation-spec.md` — read Revision 4 (the
+accordion CUT — current decision) first, then Revision 2/3 for the superseded
+arc.** Memory `project_appshell_sidenav_refactor`. Seed brief
+(`docs/_dev/appshell-sidenav-refactor.md`) is now background-only.
 
-- **AppShell public façades** — `shell.commandbar` today returns the INTERNAL
-  composite with the old `command=` API, not a public `CommandBar`; same for
-  nav/pages. Expose public handles (`commandbar`/`nav`/`pages`), return public
-  widgets from `add_*` (the `_adopt`-classmethod pattern), `CommandBar.content` /
-  make-it-a-container, window-control accessors, and fold `menu_layout` /
-  `chrome_surface` into AppShell. Detail in `docs/_dev/widget-api-audit.md`.
-- **SideNav refactor** — fold in the deferred event renames
-  `on_pane_toggled → on_toggle`, `on_display_mode_changed → on_display_change`
-  (present-tense convention, `project_event_naming_revisit`); plus the long-standing
-  SideNav/AppShell deferred improvements (see Carryover): `nav_pane_width=` not wired
-  to `SideNav(pane_width=)`, hardcoded nav density/font, group active-child highlight +
-  indentation, footer non-page widgets.
-- Related context: `project_menu_redesign` (the PR #124 menu/command-bar redesign
-  this builds on), `project_macos_window_chrome` (native chrome follow-up, separate).
+**Branch `feat/appshell-navigation`. Steps 1–9 DONE & committed:** NavModel →
+region layout → single-tier wiring → provider seam → all 3 providers + live refresh
+→ two-tier rail + VS Code gesture → sidebar collapse/visibility/nav-state persistence
+→ grouped-static (`add_header`; accordion tried then cut, see below) → **step-9 styling**: dark
+rail/chrome surface (rail/status tier sits clearly below the neutral selection
+wash), neutral selection by default + `accent_selection` opt-in, subtle `raised`
+sidebar elevation, `list_nav` on the real recycling `ListView` with **pixel-ellipsis
+title/text truncation** (labels `width=1` so they never push the icon/chevron off;
+`_elide` via `get_font().measure`; re-elides on the center frame's `<Configure>`),
+density + chevron exposed on `list_nav`/`tree_nav`.
+
+**DONE — accordion CUT + grouped-static finished (committed `580e0218`, Revision
+4).** The Revision-3 accordion was built then **dropped** (maintainer: not worth
+the trouble — the "section that IS a list/tree" carried all the complexity/bugs
+and conflated content-hierarchy with nav). `NavGroup`/`ProviderHost` deleted;
+`Workspace` back to a single provider; `add_group`/`expand_all`/`collapse_all`
+gone; `SideNavHeader` is a plain label. **Sidebar = three shapes only:**
+flat-static (`add_page`, compactable) · grouped-static (`add_header` = a plain
+**muted** label, flush items, `10→16` top-gap group break) · data-bound
+(`list_nav`/`tree_nav`). A collapsible sub-list → compose `bs.Accordion` in a
+custom `panel()`. **Scrollable static nav**: `NavPanel` item area in a `ScrollView`
+(wheel + auto-hiding bar), footer pinned outside; overflow-gated gutter/bar +
+footer divider (`'never'`↔`'scroll'`, hysteresis, no flicker); canvas bg painted
+to the sidebar surface. **`nav-quiet` square under a rail, `nav-pill` standalone**
+(mixed-provider workspaces must share one row language). Test `test_shell_groups`
+rewritten for grouped-static. **Sidebar styling round shipped** (committed): a
+reusable **`'thin'` 4px square scrollbar variant** (Pillow `create_box_image`;
+`ScrollView` threads surface), `NavPanel` scrollable item area (footer pinned,
+overflow-gated bar + footer divider, gutter absorbed into the right inset so the
+margin stays even + footer re-aligns), and **empty-state placeholders** for
+`tree_nav`/empty `list_nav` (`placeholder=`). The current step is DONE.
+**NEXT = step 11 (the public-AppShell swap)**, which now also owns: **drop the
+standalone `bs.SideNav`** (decided — coupled to removing the old sidenav-based
+AppShell that `bs.AppShell` still points at; `SideNavHeader`/`SideNavSeparator`
+stay, used by `NavPanel`); **wire + style the statusbar + menubar/command bar**
+into the new shell (chrome band is an empty Frame, statusbar a bare Toolbar);
+`Workspace` context-manager support; the public façade (`commandbar`/`nav`/`pages`
++ window controls). Separate initiative: thin-scrollbar public exposure + audit
+other scrollable widgets (memory `project_thin_scrollbar_initiative`).
+
+**Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
+framework code). Side note logged: a future `Tabs` `variant='secondary'` (top
+indicator) — `project_secondary_tab_variant`, NOT part of this work.
+
+- Related context: `project_menu_redesign` (PR #124 menu/command-bar this builds
+  on), `project_macos_window_chrome` (native chrome follow-up, separate). Deferred
+  AppShell-public-façade items (public `commandbar`/`nav`/`pages` handles,
+  window-control accessors) land when the rewritten internals are swapped onto the
+  public `AppShell` in the spec's step 11.
 
 ### Other candidates
 
