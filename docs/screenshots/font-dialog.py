@@ -1,4 +1,4 @@
-from bootstack.dialogs.fontdialog import FontDialog as _FD
+from bootstack.dialogs._impl.fontdialog import FontDialog as _FD
 import bootstack as bs
 
 

@@ -2,7 +2,7 @@ import bootstack as bs
 from bootstack.dialogs import Dialog, DialogButton
 from bootstack.widgets._impl.primitives.label import Label as _Label
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
-from bootstack._core.images import Image as _ImageService
+from bootstack.images import Image as _ImageService
 from bootstack.style.style import get_theme_color as _get_theme_color
 
 

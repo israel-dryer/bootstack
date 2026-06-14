@@ -1,6 +1,6 @@
 import bootstack as bs
-from bootstack.dialogs.query import QueryDialog as _QueryDialog
-from bootstack.dialogs.datedialog import DateDialog as _DateDialog
+from bootstack.dialogs._impl.query import QueryDialog as _QueryDialog
+from bootstack.dialogs._impl.datedialog import DateDialog as _DateDialog
 from datetime import date
 
 
