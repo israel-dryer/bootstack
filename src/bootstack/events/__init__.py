@@ -44,6 +44,7 @@ from bootstack.events._payloads import (
     TextModifiedEvent,
     ToggleEvent,
     ValidationEvent,
+    WorkspaceChangeEvent,
 )
 from bootstack.events._subscription import Subscription
 
@@ -72,6 +73,7 @@ __all__ = [
     "NavEvent",
     "PaneToggleEvent",
     "DisplayModeEvent",
+    "WorkspaceChangeEvent",
     # Payloads — tabs
     "TabRef",
     "TabChangeEvent",

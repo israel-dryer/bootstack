@@ -5,9 +5,6 @@ from bootstack.widgets._impl.composites.compositeframe import Composite, Composi
 from bootstack.widgets._impl.composites.expander import Expander
 from bootstack.widgets._impl.composites.list import ListItem, ListView, MemoryDataSource, DataSourceProtocol
 from bootstack.widgets._impl.composites.sidenav import (
-    SideNav,
-    SideNavItem,
-    SideNavGroup,
     SideNavHeader,
     SideNavSeparator,
 )
@@ -26,9 +23,6 @@ __all__ = [
     'MemoryDataSource',
     'DataSourceProtocol',
     'RangeSlider',
-    'SideNav',
-    'SideNavItem',
-    'SideNavGroup',
     'SideNavHeader',
     'SideNavSeparator',
     'Slider',

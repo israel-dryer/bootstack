@@ -123,19 +123,14 @@ framed and collapsible groupings. ``Accordion`` exposes its sections as
 Navigation
 ----------
 
-Multi-page containers — swap pages with ``PageStack``, tab between them with
-``Tabs``, or drive a sidebar with ``SideNav``. Each parent hands back typed page
-and item handles (``StackPage``, ``TabPage``, and the ``SideNav*`` items).
+Multi-page containers — swap pages with ``PageStack`` or tab between them with
+``Tabs``. Each parent hands back typed page handles (``StackPage``, ``TabPage``).
+For a full application sidebar, use :class:`~bootstack.AppShell`.
 
 .. autosummary::
    :nosignatures:
 
    PageStack
-   SideNav
-   SideNavGroup
-   SideNavHeader
-   SideNavItem
-   SideNavSeparator
    StackPage
    TabPage
    Tabs
@@ -235,11 +230,6 @@ groups, and tabbed sections.
       Select
       SelectButton
       Separator
-      SideNav
-      SideNavGroup
-      SideNavHeader
-      SideNavItem
-      SideNavSeparator
       Slider
       SpinnerField
       SplitPane

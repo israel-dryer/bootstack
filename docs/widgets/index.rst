@@ -97,7 +97,6 @@ Every widget bootstack provides, grouped by purpose.
 
    pagestack
    tabs
-   sidenav
 
 .. toctree::
    :caption: Overlays

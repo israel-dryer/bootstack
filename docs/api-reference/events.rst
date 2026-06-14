@@ -72,6 +72,7 @@ Page, nav-pane, display-mode, and accordion activity.
    :nosignatures:
 
    PageChangeEvent
+   WorkspaceChangeEvent
    NavEvent
    PaneToggleEvent
    DisplayModeEvent

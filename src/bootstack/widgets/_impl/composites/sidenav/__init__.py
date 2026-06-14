@@ -1,24 +1,16 @@
-﻿"""SideNav widgets for building navigation interfaces.
+"""Static navigation building blocks shared by the shell's nav panel.
 
-This package provides a complete navigation solution:
+The standalone `SideNav` widget was retired with the AppShell rewrite; what
+remains are the two non-interactive primitives the shell's `NavPanel` composes:
 
-- SideNav: Main container with pane, header, content, and footer
-- SideNavGroup: Collapsible group of items (expander in expanded mode, popup in compact)
-- SideNavItem: Selectable navigation item with icon and text
-- SideNavHeader: Non-selectable section label
-- SideNavSeparator: Visual divider between groups
+- SideNavHeader: a non-selectable section label
+- SideNavSeparator: a visual divider between groups
 """
 
-from bootstack.widgets._impl.composites.sidenav.item import SideNavItem
-from bootstack.widgets._impl.composites.sidenav.group import SideNavGroup
 from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
-from bootstack.widgets._impl.composites.sidenav.view import SideNav
 
 __all__ = [
-    'SideNav',
-    'SideNavGroup',
-    'SideNavItem',
     'SideNavHeader',
     'SideNavSeparator',
 ]

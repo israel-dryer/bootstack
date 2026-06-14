@@ -17,7 +17,12 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from bootstack.events import PageChangeEvent
+from bootstack.events import (
+    DisplayModeEvent,
+    PageChangeEvent,
+    PaneToggleEvent,
+    WorkspaceChangeEvent,
+)
 from bootstack.widgets._core.navmodel import NavChange, NavModel, SidebarMode
 from bootstack.widgets._impl.composites.pagestack import PageStack
 from bootstack.widgets._impl.composites.shell.layout import ShellLayout
@@ -76,6 +81,11 @@ class Shell(ShellLayout):
         self._workspaces: dict[str, Workspace] = {}
         self._pending_data: dict | None = None
         self._prev_page: str | None = None
+        self._prev_workspace: str | None = None
+        # Track sidebar visibility separately so compact<->expanded transitions
+        # fire <<SidebarModeChange>> but NOT <<SidebarToggle>> (a pure-visibility
+        # event); only a hidden<->shown flip toggles.
+        self._prev_sidebar_visible: bool = sidebar_mode != "hidden"
 
         # Sidebar + content are decks of per-workspace frames.
         self._panel_stack = PageStack(self.sidebar)
@@ -323,8 +333,23 @@ class Shell(ShellLayout):
                 self._render_page(change.workspace, change.page)
         elif change.facet == "workspace" and change.workspace is not None:
             self._switch_workspace(change.workspace)
+            payload = WorkspaceChangeEvent(
+                workspace=change.workspace, prev_workspace=self._prev_workspace
+            )
+            self._prev_workspace = change.workspace
+            self.event_generate("<<WorkspaceChange>>", data=payload, when="tail")
         elif change.facet == "sidebar":
             self._apply_sidebar_mode(change.sidebar_mode)
+            mode = change.sidebar_mode or self._model.sidebar_mode
+            self.event_generate(
+                "<<SidebarModeChange>>", data=DisplayModeEvent(mode=mode), when="tail"
+            )
+            visible = self._model.sidebar_visible
+            if visible != self._prev_sidebar_visible:
+                self._prev_sidebar_visible = visible
+                self.event_generate(
+                    "<<SidebarToggle>>", data=PaneToggleEvent(is_open=visible), when="tail"
+                )
         elif change.facet == "structure":
             self._sync_rail_visibility()
 

@@ -288,7 +288,12 @@ class NavPanel(Frame):
             show_divider = overflow and bool(self._footer_items)
             mapped = self._footer_divider.winfo_manager() != ""
             if show_divider and not mapped:
-                self._footer_divider.pack(side="bottom", fill="x")
+                # Pack the divider BEFORE the expanding scroll view in the pack
+                # order — otherwise, when the content overflows, the `expand=True`
+                # scroll claims the whole cavity first and the divider (last in
+                # order) is squeezed to zero height and never maps. `side="bottom"`
+                # still seats it just above the (earlier-packed) footer.
+                self._footer_divider.pack(side="bottom", fill="x", before=self._scroll)
             elif not show_divider and mapped:
                 self._footer_divider.pack_forget()
             # Keep the content + footer insets in sync with the gutter so the

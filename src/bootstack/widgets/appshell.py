@@ -1,34 +1,54 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any, Callable, Literal, Sequence, overload
 
 from bootstack._runtime.app import LocalizeMode
-from bootstack.widgets._impl.composites.appshell import AppShell as _InternalAppShell
+from bootstack.widgets._impl.composites.shell.shell import Shell as _InternalShell
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
-from bootstack.events import PageChangeEvent, Subscription
+from bootstack.events import (
+    DisplayModeEvent,
+    PageChangeEvent,
+    PaneToggleEvent,
+    Subscription,
+    WorkspaceChangeEvent,
+)
 from bootstack.streams import Stream
-from bootstack.widgets.types import Event, AccentToken, WidgetDensity, WindowStyle
+from bootstack.widgets.statusbar import StatusBar
+from bootstack.widgets.types import AccentToken, SurfaceToken, WindowStyle
 
 
 class _PageFrame:
-    """Context-manager proxy returned by `AppShell.add_page()`.
+    """Context-manager proxy returned by `add_page()` / `panel()`.
 
-    Push onto the context stack so widgets created inside
-    ``with shell.add_page(...):`` are automatically parented to the page.
+    Pushes onto the context stack so widgets created inside
+    ``with shell.add_page(...):`` are automatically parented to the page. When
+    `scrollable=True`, children parent into an internal vertical `ScrollView`.
     """
 
-    def __init__(self, tk_frame: Any) -> None:
+    def __init__(self, tk_frame: Any, scrollable: bool = False) -> None:
         self._internal = tk_frame
+        self._scroll: Any = None
+        if scrollable:
+            from bootstack.widgets.scrollview import ScrollView
+
+            # The scrollview parents into this page frame (its `guide_layout`
+            # runs while `self._scroll` is still None), then claims children.
+            self._scroll = ScrollView(parent=self, fill="both", expand=True)
 
     def _child_master(self) -> Any:
+        if self._scroll is not None:
+            return self._scroll._child_master()
         return self._internal
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        if self._scroll is not None:
+            self._scroll.guide_layout(child, **layout_kw)
+            return
         if "fill" in layout_kw:
             layout_kw["fill"] = normalize_fill(layout_kw["fill"])
         options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
@@ -42,29 +62,165 @@ class _PageFrame:
         pop_container(self)
 
 
+class _Workspace:
+    """Public handle for one workspace (returned by `add_workspace()`).
+
+    A context manager exposing the same content API the shell has — so a
+    single-tier app and a two-tier workspace are authored identically. Fill it
+    with `add_page()` (static) or one of `list_nav()` / `tree_nav()` / `panel()`,
+    then drive selection with `navigate()`.
+    """
+
+    def __init__(self, internal_ws: Any, shell: "AppShell") -> None:
+        self._internal = internal_ws
+        self._shell = shell
+
+    @property
+    def key(self) -> str:
+        """The workspace identifier."""
+        return self._internal.key
+
+    def __enter__(self) -> "_Workspace":
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        try:
+            self._shell._internal.update_idletasks()
+        except Exception:
+            pass
+
+    # ----- Static content -----
+
+    def add_page(
+        self,
+        key: str,
+        *,
+        text: str = "",
+        icon: str | dict | None = None,
+        scrollable: bool = False,
+    ) -> _PageFrame:
+        """Add a nav item and its page; return a context-manager page proxy."""
+        frame = self._internal.add_page(key, text=text, icon=icon)
+        return _PageFrame(frame, scrollable=scrollable)
+
+    def add_footer_page(
+        self,
+        key: str,
+        *,
+        text: str = "",
+        icon: str | dict | None = None,
+        scrollable: bool = False,
+    ) -> _PageFrame:
+        """Add a nav item pinned to the sidebar footer and its page."""
+        frame = self._internal.add_footer_page(key, text=text, icon=icon)
+        return _PageFrame(frame, scrollable=scrollable)
+
+    def add_header(self, text: str) -> Any:
+        """Add a plain section-label header (grouped-static)."""
+        return self._internal.add_header(text)
+
+    def add_separator(self) -> Any:
+        """Add a separator to the sidebar."""
+        return self._internal.add_separator()
+
+    def panel(self) -> _PageFrame:
+        """Claim the workspace as a custom panel; return its sidebar container."""
+        return _PageFrame(self._internal.panel())
+
+    @property
+    def content(self) -> Any:
+        """The workspace's content region frame (for hand-driven swapping)."""
+        return self._internal.content
+
+    # ----- Data-bound content -----
+
+    def list_nav(
+        self,
+        source: Any,
+        *,
+        separator: bool = False,
+        density: str = "default",
+        placeholder: str = "Select an item to view",
+    ) -> Any:
+        """Fill the workspace from a `DataSource` (flat master-detail)."""
+        return self._internal.list_nav(
+            source, separator=separator, density=density, placeholder=placeholder
+        )
+
+    def tree_nav(self, **kwargs: Any) -> Any:
+        """Fill the workspace from a hierarchy (tree master-detail)."""
+        return self._internal.tree_nav(**kwargs)
+
+    def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
+        """Register the data-bound detail body (decorator)."""
+        return self._internal.detail(fn)
+
+    # ----- Navigation -----
+
+    def navigate(self, page: str, *, data: dict | None = None) -> None:
+        """Navigate to a page in this workspace."""
+        self._shell._internal.navigate(self.key, page, data=data)
+
+    @property
+    def current(self) -> str | None:
+        """Key of this workspace's active page, or `None`."""
+        return self._shell._internal.model.active_page(self.key)
+
+
+class _Rail:
+    """Public handle for the workspace rail (returned by `shell.rail`).
+
+    The rail is mostly framework-driven; its public surface switches workspaces
+    and observes changes. Methods are no-ops when the rail is not rendered (a
+    single-workspace shell).
+    """
+
+    def __init__(self, shell: "AppShell") -> None:
+        self._shell = shell
+
+    def select(self, key: str) -> None:
+        """Switch to the workspace `key` and show its sidebar."""
+        model = self._shell._internal.model
+        model.select_workspace(key)
+        model.show_sidebar()
+
+    @property
+    def current(self) -> str | None:
+        """Key of the active workspace, or `None`."""
+        return self._shell._internal.current_workspace
+
+    def on_change(self, handler: Callable[[WorkspaceChangeEvent], Any]) -> Subscription:
+        """Register a callback fired when the active workspace changes."""
+        return self._shell.on_workspace_change(handler)
+
+
 class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidgetBase):
-    """Application window with built-in toolbar, sidebar navigation, and page stack.
+    """Application window with rail + swappable sidebar navigation and content.
 
-    Wraps the internal AppShell to provide the standard desktop app scaffold:
-    toolbar across the top, collapsible sidebar on the left, and a page
-    content area on the right.
+    The shell is the standard desktop scaffold: an optional menu bar and command
+    bar across the top, a navigation sidebar on the left, a content area, and an
+    optional status band along the bottom. A workspace **rail** appears
+    automatically once you add more than one workspace (VS Code style); with a
+    single workspace the shell is a plain sidebar + content app.
 
-    Use `add_page()` to register nav items and their page frames together.
-    Pages support context-manager syntax so widgets inside the ``with`` block
-    are automatically parented to that page.
+    Fill the (implicit) sidebar with `add_page()` for static authored pages, or
+    `list_nav()` / `tree_nav()` for data-bound master-detail. For a multi-section
+    app, add named `add_workspace()` workspaces — each is authored with the same
+    page API. Pages support context-manager syntax so widgets inside the ``with``
+    block are parented to that page automatically.
 
-    Like `App`, configuration is a single flat path: pass options as
-    constructor kwargs and read or change them through matching `app.*`
-    properties (e.g. `shell.theme`, `shell.locale`).
+    Like `App`, configuration is a single flat path: pass options as constructor
+    kwargs and read or change them through matching `shell.*` properties (e.g.
+    `shell.theme`, `shell.locale`, `shell.sidebar_mode`).
 
     Args:
-        title: Window title and (in undecorated mode) toolbar label.
+        title: Window title and (in undecorated mode) chrome label.
         size: Initial window size as `(width, height)`.
-        theme: Theme name to apply on startup (e.g. ``'bootstrap-dark'``).
-        light_theme: Theme used for the light end of system-appearance
-            tracking and `toggle_theme`.
-        dark_theme: Theme used for the dark end of system-appearance
-            tracking and `toggle_theme`.
+        theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
+        light_theme: Theme used for the light end of system-appearance tracking
+            and `toggle_theme`.
+        dark_theme: Theme used for the dark end of system-appearance tracking
+            and `toggle_theme`.
         follow_system_appearance: If True, switch between `light_theme` and
             `dark_theme` to match the OS (currently effective on macOS).
         available_themes: Theme names to expose to theme pickers.
@@ -75,24 +231,31 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         remember_window_state: If True, window geometry is saved and restored.
         state_path: Optional override for the persisted window-state file.
         on_close: Handler invoked when the user clicks the window's close button.
-            Return `False` to veto the close; `None` or `True` to allow it. Not
-            called by the programmatic `close()`.
+            Return `False` to veto the close; `None` or `True` to allow it.
         position: Initial window position as `(x, y)`.
         min_size: Minimum window size as `(width, height)`.
         max_size: Maximum window size as `(width, height)`.
         resizable: Whether the window can be resized as `(x, y)`.
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
-        undecorated: Remove OS window decorations and use a custom chrome.
-            Automatically enables `show_window_controls` and `draggable`.
+        undecorated: Remove OS window decorations and draw a custom border.
             Ignored on macOS.
-        show_toolbar: Show the toolbar at the top. Default `True`.
-        show_window_controls: Add minimize/maximize/close buttons to the toolbar.
-        draggable: Allow window dragging via the toolbar.
-        toolbar_density: Toolbar button density.
-        show_nav: Show the sidebar navigation. Default `True`.
-        nav_display_mode: Initial sidebar mode. Default `'expanded'`.
+        menu_layout: Chrome arrangement — `'fused'` (menus and command bar share
+            one row) or `'stacked'` (command bar below the menu strip).
+        chrome_surface: Surface token for the top chrome row. Default `'chrome'`.
+        chrome_divider: Draw a hairline under the chrome row. Default `True`.
+        show_sidebar: Render the sidebar region. Default `True`.
+        sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
+            `'compact'` (icon-only) applies only to a standalone static sidebar.
+        sidebar_width: Expanded sidebar width in pixels.
+        rail_width: Workspace-rail (and compact-sidebar) width in pixels.
+        collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B. Default `True`.
         nav_accent: Accent color for the active nav item. Default `'primary'`.
+        rail_labels: Show a caption under each rail icon (widens the rail).
+        remember_nav_state: Persist the sidebar mode and per-workspace active page
+            across sessions. Default `False`.
+        show_statusbar: Force the bottom status band on (otherwise it appears once
+            a status segment is added). Default `False`.
     """
 
     def __init__(
@@ -111,7 +274,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         localize_mode: LocalizeMode = "auto",
         # platform / window-state persistence
         window_style: WindowStyle | str | None = "mica",
-        macos_quit_behavior: Literal['native', 'classic'] = "native",
+        macos_quit_behavior: Literal["native", "classic"] = "native",
         remember_window_state: bool = False,
         state_path: str | None = None,
         on_close: Callable[[], bool | None] | None = None,
@@ -122,19 +285,37 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         resizable: tuple[bool, bool] | None = None,
         scaling: float | None = None,
         hdpi: bool = True,
-        # scaffold
+        # chrome
+        menu_layout: Literal["fused", "stacked"] = "fused",
+        chrome_surface: SurfaceToken | str = "chrome",
+        chrome_divider: bool = True,
+        # scaffold / navigation
         undecorated: bool = False,
-        show_toolbar: bool = True,
-        show_window_controls: bool = False,
-        draggable: bool = False,
-        toolbar_density: WidgetDensity = "default",
-        show_nav: bool = True,
-        nav_display_mode: Literal["expanded", "compact", "minimal"] = "expanded",
+        show_sidebar: bool = True,
+        sidebar_mode: Literal["expanded", "compact", "hidden"] = "expanded",
+        sidebar_width: int | None = None,
+        rail_width: int | None = None,
+        collapsible: bool = True,
         nav_accent: AccentToken | str = "primary",
+        rail_labels: bool = False,
+        remember_nav_state: bool = False,
+        show_statusbar: bool = False,
         **kwargs: Any,
     ) -> None:
+        self._menu_layout = menu_layout
+        self._chrome_surface = chrome_surface
+        self._chrome_divider_enabled = chrome_divider
+        self._chrome_shown = False
+        self._statusbar: StatusBar | None = None
+        self._rail: _Rail | None = None
+
+        # `show_sidebar=False` is the hidden mode (the model is the truth).
+        if not show_sidebar:
+            sidebar_mode = "hidden"
+
         init_kwargs: dict[str, Any] = {
             "title": title,
+            "undecorated": undecorated,
             "light_theme": light_theme,
             "dark_theme": dark_theme,
             "follow_system_appearance": follow_system_appearance,
@@ -147,14 +328,12 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             "macos_quit_behavior": macos_quit_behavior,
             "remember_window_state": remember_window_state,
             "state_path": state_path,
-            "show_toolbar": show_toolbar,
-            "show_window_controls": show_window_controls,
-            "draggable": draggable,
-            "toolbar_density": toolbar_density,
-            "show_nav": show_nav,
-            "nav_display_mode": nav_display_mode,
+            "sidebar_mode": sidebar_mode,
+            "collapsible": collapsible,
             "nav_accent": nav_accent,
-            "undecorated": undecorated,
+            "rail_labels": rail_labels,
+            "remember_nav_state": remember_nav_state,
+            "chrome_surface": chrome_surface,
         }
         if size is not None:
             init_kwargs["size"] = size
@@ -170,9 +349,17 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             init_kwargs["resizable"] = resizable
         if on_close is not None:
             init_kwargs["on_close"] = on_close
+        if sidebar_width is not None:
+            init_kwargs["sidebar_width"] = sidebar_width
+        if rail_width is not None:
+            init_kwargs["rail_width"] = rail_width
         init_kwargs.update(kwargs)
 
-        self._internal = _InternalAppShell(**init_kwargs)
+        self._internal = _InternalShell(**init_kwargs)
+
+        if show_statusbar:
+            # Materialize the band now so it is present from the first frame.
+            _ = self.statusbar
 
     @classmethod
     def from_store(cls, store: Any, **overrides: Any) -> "AppShell":
@@ -199,7 +386,25 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         except Exception:
             pass
 
-    # ----- Content -----
+    # ----- Chrome hooks (mount menubar / command bar into the Shell's band) -----
+
+    def _menu_root(self) -> Any:
+        # The Shell is itself a Tk root (subclasses the internal App), so the
+        # native menubar and shortcut bindings attach to it.
+        return self._internal
+
+    def _ensure_chrome(self) -> Any:
+        # Reuse the Shell's existing chrome band region instead of building a
+        # second chrome frame — it is already arranged by the layer-1 layout.
+        # `_arrange_chrome` reads `self._chrome`, so it must be set here (the
+        # base mixin sets it when it builds its own frame; we adopt the band).
+        if not self._chrome_shown:
+            self._internal.set_chrome_visible(True)
+            self._chrome_shown = True
+        self._chrome = self._internal.chrome
+        return self._chrome
+
+    # ----- Shell-level content (delegates to the implicit default workspace) ----
 
     def add_page(
         self,
@@ -207,9 +412,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         *,
         text: str = "",
         icon: str | dict | None = None,
-        group: str | None = None,
         scrollable: bool = False,
-        **nav_kwargs: Any,
     ) -> _PageFrame:
         """Add a nav item and its page, returning a context-manager page proxy.
 
@@ -217,22 +420,14 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             key: Unique identifier for the nav item and page.
             text: Display label in the sidebar.
             icon: Icon name or icon configuration dict.
-            group: Key of the nav group to add this item to.
             scrollable: If `True`, wrap the page in a vertical `ScrollView`.
-            **nav_kwargs: Extra kwargs forwarded to the internal nav item.
 
         Returns:
-            A `_PageFrame` context manager. Use with ``with`` to parent
-            child widgets into the page automatically.
+            A `_PageFrame` context manager. Use with ``with`` to parent child
+            widgets into the page automatically.
         """
-        kw: dict[str, Any] = {"text": text, "scrollable": scrollable}
-        if icon is not None:
-            kw["icon"] = icon
-        if group is not None:
-            kw["group"] = group
-        kw.update(nav_kwargs)
-        tk_frame = self._internal.add_page(key, **kw)
-        return _PageFrame(tk_frame)
+        frame = self._internal.add_page(key, text=text, icon=icon)
+        return _PageFrame(frame, scrollable=scrollable)
 
     def add_footer_page(
         self,
@@ -241,109 +436,191 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         text: str = "",
         icon: str | dict | None = None,
         scrollable: bool = False,
-        **nav_kwargs: Any,
     ) -> _PageFrame:
-        """Add a nav item pinned to the sidebar footer and its page.
+        """Add a nav item pinned to the sidebar footer and its page."""
+        frame = self._internal.add_footer_page(key, text=text, icon=icon)
+        return _PageFrame(frame, scrollable=scrollable)
 
-        Args:
-            key: Unique identifier for the nav item and page.
-            text: Display label in the sidebar footer.
-            icon: Icon name or icon configuration dict.
-            scrollable: If `True`, wrap the page in a vertical `ScrollView`.
-            **nav_kwargs: Extra kwargs forwarded to the internal nav item.
+    def add_header(self, text: str) -> Any:
+        """Add a plain section-label header to the sidebar (grouped-static)."""
+        return self._internal.add_header(text)
 
-        Returns:
-            A `_PageFrame` context manager. Use with ``with`` to parent
-            child widgets into the page automatically.
-        """
-        kw: dict[str, Any] = {"text": text, "scrollable": scrollable, "is_footer": True}
-        if icon is not None:
-            kw["icon"] = icon
-        kw.update(nav_kwargs)
-        tk_frame = self._internal.add_page(key, **kw)
-        return _PageFrame(tk_frame)
+    def add_separator(self) -> Any:
+        """Add a separator to the sidebar."""
+        return self._internal.add_separator()
 
-    def add_group(
+    def panel(self) -> _PageFrame:
+        """Claim the implicit workspace as a custom panel; return its container."""
+        return _PageFrame(self._internal.panel())
+
+    def list_nav(
         self,
-        key: str,
+        source: Any,
         *,
-        text: str = "",
-        icon: str | dict | None = None,
-        expanded: bool = False,
-        **kwargs: Any,
+        separator: bool = False,
+        density: str = "default",
+        placeholder: str = "Select an item to view",
     ) -> Any:
-        """Add a collapsible nav group.
+        """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
+        return self._internal.list_nav(
+            source, separator=separator, density=density, placeholder=placeholder
+        )
 
-        Args:
-            key: Unique identifier for the group.
-            text: Display label.
-            icon: Icon name or configuration.
-            expanded: Initial expansion state.
+    def tree_nav(self, **kwargs: Any) -> Any:
+        """Fill the implicit workspace from a hierarchy (tree master-detail)."""
+        return self._internal.tree_nav(**kwargs)
 
-        Returns:
-            The internal `SideNavGroup`.
+    def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
+        """Register the implicit workspace's data-bound detail body (decorator)."""
+        return self._internal.detail(fn)
+
+    # ----- Two-tier workspaces -----
+
+    def add_workspace(
+        self, key: str, *, text: str = "", icon: str | dict | None = None
+    ) -> _Workspace:
+        """Add a workspace (a rail icon → its own sidebar panel + content).
+
+        Adding a second workspace reveals the rail. Mutually exclusive with the
+        shell-level page methods.
         """
-        kw: dict[str, Any] = {"text": text, "is_expanded": expanded}
-        if icon is not None:
-            kw["icon"] = icon
-        kw.update(kwargs)
-        return self._internal.add_group(key, **kw)
+        return _Workspace(self._internal.add_workspace(key, text=text, icon=icon), self)
 
-    def add_header(self, text: str, **kwargs: Any) -> Any:
-        """Add a section header to the nav sidebar.
-
-        Args:
-            text: Header text.
-
-        Returns:
-            The internal `SideNavHeader`.
-        """
-        return self._internal.add_header(text, **kwargs)
-
-    def add_separator(self, **kwargs: Any) -> Any:
-        """Add a separator to the nav sidebar.
-
-        Returns:
-            The internal `SideNavSeparator`.
-        """
-        return self._internal.add_separator(**kwargs)
+    def add_footer_workspace(
+        self, key: str, *, text: str = "", icon: str | dict | None = None
+    ) -> _Workspace:
+        """Add a workspace pinned to the bottom of the rail."""
+        return _Workspace(
+            self._internal.add_footer_workspace(key, text=text, icon=icon), self
+        )
 
     # ----- Navigation -----
 
-    def navigate(self, key: str, data: dict | None = None) -> None:
-        """Navigate programmatically, updating the nav selection and page stack.
+    def navigate(self, *keys: str, data: dict | None = None) -> None:
+        """Navigate to a page (single-tier) or a workspace + page (two-tier).
+
+        `navigate(page)` selects a page in the active workspace;
+        `navigate(workspace, page)` switches workspace and selects a page in it.
 
         Args:
-            key: Page key to navigate to.
-            data: Optional data dict passed to the page.
+            *keys: One key (page) or two keys (workspace, page).
+            data: Optional data dict passed to the page's change event.
         """
-        self._internal.navigate(key, data=data)
+        self._internal.navigate(*keys, data=data)
+
+    @property
+    def current(self) -> str | None:
+        """Key of the active workspace's active page, or `None`."""
+        return self._internal.current_page
+
+    @property
+    def current_workspace(self) -> str | None:
+        """Key of the active workspace, or `None`."""
+        return self._internal.current_workspace
+
+    # ----- Sidebar visibility / compaction -----
+
+    def toggle_sidebar(self) -> None:
+        """Toggle the sidebar between hidden and shown (the hamburger action)."""
+        self._internal.toggle_sidebar()
+
+    def show_sidebar(self) -> None:
+        """Show the sidebar, restoring its last non-hidden mode."""
+        self._internal.show_sidebar()
+
+    def hide_sidebar(self) -> None:
+        """Hide the sidebar entirely."""
+        self._internal.hide_sidebar()
+
+    @property
+    def sidebar_mode(self) -> str:
+        """The sidebar mode (`'hidden'`/`'compact'`/`'expanded'`)."""
+        return self._internal.sidebar_mode
+
+    @sidebar_mode.setter
+    def sidebar_mode(self, mode: str) -> None:
+        self._internal.sidebar_mode = mode
 
     # ----- Events -----
+
+    def _bind_virtual(
+        self, sequence: str, handler: Callable[[Any], Any] | None
+    ) -> Stream | Subscription:
+        if handler is None:
+            def _source(h: Callable) -> Subscription:
+                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
+                return Subscription(self._internal, sequence, bid)
+
+            return Stream(self._internal, _source=_source)
+        bid = self._internal.bind(sequence, adapt_handler(handler), add="+")
+        return Subscription(self._internal, sequence, bid)
 
     @overload
     def on_page_change(self) -> Stream: ...
     @overload
     def on_page_change(self, handler: Callable[[PageChangeEvent], Any]) -> Subscription: ...
-    def on_page_change(self, handler: Callable[[PageChangeEvent], Any] | None = None) -> Stream | Subscription:
+    def on_page_change(
+        self, handler: Callable[[PageChangeEvent], Any] | None = None
+    ) -> Stream | Subscription:
         """Register a callback fired when the active page changes.
 
         Args:
             handler: Called with a :class:`~bootstack.events.PageChangeEvent`
                 (the new and previous page keys, plus any `navigate()` data).
                 Omit to get a composable :class:`~bootstack.streams.Stream`.
-
-        Returns:
-            A cancellable :class:`~bootstack.events.Subscription` when a handler
-            is given, otherwise a :class:`~bootstack.streams.Stream`.
         """
-        if handler is None:
-            def _source(h: Callable) -> Subscription:
-                bid = self._internal.bind("<<PageChange>>", adapt_handler(h), add="+")
-                return Subscription(self._internal, "<<PageChange>>", bid)
-            return Stream(self._internal, _source=_source)
-        bid = self._internal.bind("<<PageChange>>", adapt_handler(handler), add="+")
-        return Subscription(self._internal, "<<PageChange>>", bid)
+        return self._bind_virtual("<<PageChange>>", handler)
+
+    @overload
+    def on_workspace_change(self) -> Stream: ...
+    @overload
+    def on_workspace_change(
+        self, handler: Callable[[WorkspaceChangeEvent], Any]
+    ) -> Subscription: ...
+    def on_workspace_change(
+        self, handler: Callable[[WorkspaceChangeEvent], Any] | None = None
+    ) -> Stream | Subscription:
+        """Register a callback fired when the rail switches workspace.
+
+        Args:
+            handler: Called with a
+                :class:`~bootstack.events.WorkspaceChangeEvent`. Omit to get a
+                composable :class:`~bootstack.streams.Stream`.
+        """
+        return self._bind_virtual("<<WorkspaceChange>>", handler)
+
+    @overload
+    def on_sidebar_toggle(self) -> Stream: ...
+    @overload
+    def on_sidebar_toggle(self, handler: Callable[[PaneToggleEvent], Any]) -> Subscription: ...
+    def on_sidebar_toggle(
+        self, handler: Callable[[PaneToggleEvent], Any] | None = None
+    ) -> Stream | Subscription:
+        """Register a callback fired when the sidebar is shown or hidden.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.PaneToggleEvent`.
+                Omit to get a composable :class:`~bootstack.streams.Stream`.
+        """
+        return self._bind_virtual("<<SidebarToggle>>", handler)
+
+    @overload
+    def on_sidebar_mode_change(self) -> Stream: ...
+    @overload
+    def on_sidebar_mode_change(
+        self, handler: Callable[[DisplayModeEvent], Any]
+    ) -> Subscription: ...
+    def on_sidebar_mode_change(
+        self, handler: Callable[[DisplayModeEvent], Any] | None = None
+    ) -> Stream | Subscription:
+        """Register a callback fired when the sidebar mode changes.
+
+        Args:
+            handler: Called with a :class:`~bootstack.events.DisplayModeEvent`
+                (`compact` ↔ `expanded`). Omit to get a composable
+                :class:`~bootstack.streams.Stream`.
+        """
+        return self._bind_virtual("<<SidebarModeChange>>", handler)
 
     # ----- Lifecycle -----
 
@@ -352,61 +629,44 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         self._internal.deiconify()
         self._internal.mainloop()
 
-    # ----- Properties -----
+    # ----- Region accessors -----
+
+    @property
+    def content(self) -> Any:
+        """The content region frame (the active page container)."""
+        return self._internal.content
+
+    @property
+    def statusbar(self) -> StatusBar:
+        """The bottom status band (passive status). Lazily created on first access.
+
+        The band renders once a segment is added (or `show_statusbar=True`).
+        """
+        if self._statusbar is None:
+            self._statusbar = StatusBar(
+                self._internal.statusbar,
+                lambda: self._internal.set_statusbar_visible(True),
+            )
+        return self._statusbar
+
+    @property
+    def rail(self) -> _Rail:
+        """The workspace switcher. Methods no-op when the rail is not rendered."""
+        if self._rail is None:
+            self._rail = _Rail(self)
+        return self._rail
+
+    @property
+    def pages(self) -> Any:
+        """The active static provider's content page deck (or `None`)."""
+        return self._internal.pages
+
+    @property
+    def nav(self) -> Any:
+        """The active provider's sidebar navigation panel (or `None`)."""
+        return self._internal.nav
 
     @property
     def tk(self) -> Any:
         """Underlying `tk.Tk` root window. UNSUPPORTED — escape-hatch use only."""
         return self._internal
-
-    # ----- Menu placement (ChromeHostMixin hooks) -----
-    # AppShell's `_internal` is itself a Tk root (the internal AppShell
-    # subclasses the internal App), so the native menubar attaches to it. The
-    # themed strip mounts into the internal content root, above the toolbar.
-
-    def _menu_root(self) -> Any:
-        return self._internal
-
-    def _menu_strip_parent(self) -> Any:
-        return getattr(self._internal, "_content_root", self._internal)
-
-    def _place_menu_strip(self, strip: Any) -> None:
-        # Mount above the toolbar when present, else above the body. AppShell
-        # does not use the chrome row (its toolbar is internal and pre-placed);
-        # `menu_layout` does not apply here (deferred to the Toolbar rework).
-        before = (
-            getattr(self._internal, "_toolbar", None)
-            or getattr(self._internal, "_body_frame", None)
-        )
-        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-        if before is not None:
-            pack_kw["before"] = before
-        strip.pack(**pack_kw)
-
-    @property
-    def commandbar(self) -> Any:
-        """The internal command-bar composite, or `None` if ``show_toolbar=False``.
-
-        Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on
-        this object — it exposes the internal API, not the public `CommandBar`
-        wrapper.
-        """
-        return self._internal.toolbar
-
-    @property
-    def nav(self) -> Any:
-        """The internal sidebar navigation, or `None` if ``show_nav=False``.
-
-        Exposes the internal composite — not the public `SideNav` wrapper.
-        """
-        return self._internal.nav
-
-    @property
-    def pages(self) -> Any:
-        """The internal `PageStack`."""
-        return self._internal.pages
-
-    @property
-    def current(self) -> str | None:
-        """Key of the currently displayed page, or `None`."""
-        return self._internal.current_page
