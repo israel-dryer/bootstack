@@ -36,7 +36,7 @@ EXPECTED_TOPLEVEL = {
     "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # actions
-    "Button", "ButtonGroup", "MenuButton", "CommandBar",
+    "Button", "ButtonGroup", "MenuButton", "CommandBar", "StatusBar",
     "ContextMenu", "ContextMenuItem",
     # inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",

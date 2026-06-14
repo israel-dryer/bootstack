@@ -207,7 +207,7 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     background stays flat in every state (no wash / no fill) — the bar carries the
     selection.
     """
-    accent_token = accent or 'primary'
+    accent_token = accent  # None -> neutral
     surface_token = options.get('surface', 'chrome')
     density = options.get('density', 'default')
     icon_only = options.get('icon_only', True)
@@ -221,8 +221,9 @@ def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: 
     surface_pressed = b.pressed(surface_hover)
     on_surface = b.on_color(surface)
     muted = b.muted_foreground(surface)
-    # Neutral indicator bar by default (the foreground); accent is opt-in.
-    bar_color = on_surface
+    # Neutral indicator bar by default (the foreground); when an accent is set
+    # (`nav_accent`), the bar shows it.
+    bar_color = b.color(accent_token) if accent_token else on_surface
     disabled = b.disabled()
     on_disabled = b.disabled('text', disabled)
 
@@ -433,25 +434,35 @@ def _build_nav_compact(b, ttk_style, *, accent_token, options, image_key, select
     b.map_style(ttk_style, **state_spec)
 
 
-def _quiet_colors(b, accent_token, options):
-    # Neutral default: a light neutral wash (the active/hover level) marks the
-    # selection — no accent — with a neutral foreground, like the buttons. Accent
-    # is opt-in via a future variant.
+def _selection_colors(b, accent_token, options):
+    """Selected nav-item (background, foreground), per accent + selection style.
+
+    Neutral by default (a light active-level wash + neutral fg). With an accent:
+    `'ghost'` (default) = a subtle accent wash + accent fg; `'solid'` = the solid
+    accent filled + the on-accent (e.g. white) fg — the higher-emphasis selected
+    look. Solid needs an accent; without one it falls back to the neutral wash.
+    """
     surface = b.color(options.get('surface', 'card'))
+    if accent_token:
+        if options.get('selection_style') == 'solid':
+            fill = b.color(accent_token)
+            return fill, b.on_color(fill)
+        return b.subtle(accent_token, surface), b.color(accent_token)
     return b.active(surface), b.on_color(surface)
+
+
+def _quiet_colors(b, accent_token, options):
+    return _selection_colors(b, accent_token, options)
 
 
 def _pill_colors(b, accent_token, options):
-    # Neutral default: a light neutral pill (active/hover level, no accent tint) +
-    # neutral foreground; the rounded pill shape carries the prominence.
-    surface = b.color(options.get('surface', 'card'))
-    return b.active(surface), b.on_color(surface)
+    return _selection_colors(b, accent_token, options)
 
 
 @BootstyleBuilderTTk.register_builder('nav-quiet', 'Toolbutton')
 def build_nav_quiet_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """Quiet sidebar nav item (under a rail): subtle wash, neutral fg, no bar."""
-    accent_token = accent or 'primary'
+    accent_token = accent  # None -> neutral
     image_key = f'navitem_{normalize_button_density(options.get("density", "default"))}'
     sel_bg, sel_fg = _quiet_colors(b, accent_token, options)
     _build_nav_expanded(b, ttk_style, accent_token=accent_token, options=options,
@@ -461,7 +472,7 @@ def build_nav_quiet_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, acc
 @BootstyleBuilderTTk.register_builder('nav-quiet-compact', 'Toolbutton')
 def build_nav_quiet_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """Quiet nav item compacted to a centered icon."""
-    accent_token = accent or 'primary'
+    accent_token = accent  # None -> neutral
     image_key = f'navitem_{normalize_button_density(options.get("density", "default"))}'
     sel_bg, sel_fg = _quiet_colors(b, accent_token, options)
     _build_nav_compact(b, ttk_style, accent_token=accent_token, options=options,
@@ -477,7 +488,7 @@ def build_nav_pill_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, acce
     foreground. Distinct from the quiet under-a-rail treatment (square wash +
     neutral fg).
     """
-    accent_token = accent or 'primary'
+    accent_token = accent  # None -> neutral
     image_key = 'card'
     sel_bg, sel_fg = _pill_colors(b, accent_token, options)
     _build_nav_expanded(b, ttk_style, accent_token=accent_token, options=options,
@@ -487,7 +498,7 @@ def build_nav_pill_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, acce
 @BootstyleBuilderTTk.register_builder('nav-pill-compact', 'Toolbutton')
 def build_nav_pill_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
     """Standalone nav item compacted to a centered icon (rounded pill on select)."""
-    accent_token = accent or 'primary'
+    accent_token = accent  # None -> neutral
     image_key = 'card'
     sel_bg, sel_fg = _pill_colors(b, accent_token, options)
     _build_nav_compact(b, ttk_style, accent_token=accent_token, options=options,

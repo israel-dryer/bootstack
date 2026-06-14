@@ -44,11 +44,13 @@ class TreeView(Frame):
         scrollbar_visibility: Literal["always", "never"] = "always",
         enable_hover: bool = True,
         density: Literal["default", "compact"] = "default",
+        accent_selection: bool = False,
         **kwargs: Unpack[FrameKwargs],
     ) -> None:
         _user_accent = kwargs.get("accent")
         super().__init__(master, variant="container", ttk_class="ListView.TFrame", **kwargs)
         self._accent = _user_accent or "primary"
+        self._accent_selection = accent_selection
 
         self.winsys = self.tk.call("tk", "windowingsystem")
 
@@ -184,7 +186,7 @@ class TreeView(Frame):
                 show_selection_controls=self._show_selection_controls,
                 select_on_click=self._select_on_click,
                 show_separator=self._show_separator, density=self._density,
-                accent=self._accent,
+                accent=self._accent, accent_selection=self._accent_selection,
             )
             row.pack(fill="x")
             self._rows.append(row)

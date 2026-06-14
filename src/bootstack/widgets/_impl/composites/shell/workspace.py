@@ -59,6 +59,7 @@ class Workspace:
         on_first_page: Callable[[str, str], None],
         nav_variant: str = "nav-quiet",
         nav_surface: str = "card",
+        nav_selection: str = "ghost",
     ) -> None:
         self._key = key
         self._sidebar = sidebar_panel
@@ -66,6 +67,7 @@ class Workspace:
         self._nav_accent = nav_accent
         self._nav_variant = nav_variant
         self._nav_surface = nav_surface
+        self._nav_selection = nav_selection
         self._on_select = on_select
         self._on_refresh = on_refresh
         self._on_first_page = on_first_page
@@ -96,7 +98,8 @@ class Workspace:
     def _ensure_static(self) -> StaticProvider:
         if self._provider is None:
             self._provider = StaticProvider(
-                accent=self._nav_accent, variant=self._nav_variant, surface=self._nav_surface
+                accent=self._nav_accent, variant=self._nav_variant,
+                surface=self._nav_surface, selection=self._nav_selection,
             )
             self._mount_provider()
         elif not isinstance(self._provider, StaticProvider):
@@ -172,6 +175,7 @@ class Workspace:
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> Any:
         """Fill the workspace from a `DataSource` (flat master-detail).
 
@@ -180,12 +184,13 @@ class Workspace:
         between rows (default flush); `density` is `'default'`/`'compact'`
         (compact suits one-line items, default suits richer two-line items).
         `placeholder` is the quiet empty-state shown in the content area when the
-        source has no records.
+        source has no records. `chevron` adds a per-row disclosure chevron (off by
+        default — use it only when a row visibly drills into something).
         """
         self._claim_provider()
         self._provider = ListNavProvider(
             source, accent=self._nav_accent, separator=separator,
-            density=density, placeholder=placeholder,
+            density=density, placeholder=placeholder, chevron=chevron,
         )
         self._mount_provider()
         return self._provider

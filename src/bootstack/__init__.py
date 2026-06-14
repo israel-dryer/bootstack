@@ -102,6 +102,7 @@ from bootstack.widgets.textfield import TextField
 from bootstack.widgets.toast import Toast, toast
 from bootstack.widgets.togglegroup import ToggleGroup
 from bootstack.widgets.commandbar import CommandBar
+from bootstack.widgets.statusbar import StatusBar
 from bootstack.widgets.tooltip import Tooltip
 
 from bootstack.widgets.calendar import Calendar
@@ -130,7 +131,7 @@ __all__ = [
     "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
-    "Button", "ButtonGroup", "MenuButton", "CommandBar",
+    "Button", "ButtonGroup", "MenuButton", "CommandBar", "StatusBar",
     "ContextMenu", "ContextMenuItem",
     # Inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",

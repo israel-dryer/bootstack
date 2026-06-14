@@ -92,6 +92,9 @@ class ShellLayout(App):
         sidebar_width: int = DEFAULT_SIDEBAR_WIDTH,
         dock_width: int = DEFAULT_DOCK_WIDTH,
         chrome_surface: str = "chrome",
+        rail_surface: str = RAIL_SURFACE,
+        sidebar_surface: str = SIDEBAR_SURFACE,
+        statusbar_surface: str = STATUSBAR_SURFACE,
         **kwargs: Any,
     ) -> None:
         # overrideredirect has no effect on macOS — disable undecorated there.
@@ -99,6 +102,9 @@ class ShellLayout(App):
             undecorated = False
 
         self._chrome_surface = chrome_surface
+        self._rail_surface = rail_surface
+        self._sidebar_surface = sidebar_surface
+        self._statusbar_surface = statusbar_surface
         app_kwargs: dict[str, Any] = {"title": title, "override_redirect": undecorated}
         if theme is not None:
             app_kwargs["theme"] = theme
@@ -147,22 +153,22 @@ class ShellLayout(App):
         # included), so they live at the window level above/below the body.
         self._chrome = Frame(root, surface=self._chrome_surface)
         self._chrome_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
-        self._statusbar = Toolbar(root, surface=STATUSBAR_SURFACE, draggable=False)
+        self._statusbar = Toolbar(root, surface=self._statusbar_surface, draggable=False)
         self._status_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
 
         # Body row + its slots.
         self._body = Frame(root)
-        self._rail = Frame(self._body, surface=RAIL_SURFACE)
+        self._rail = Frame(self._body, surface=self._rail_surface)
         # A thin divider between the rail and the sidebar reinforces the tier
         # boundary (shown only when the rail renders). Each divider takes the
         # surface of the region it edges so its stroke is derived against that
         # surface, not the default content surface.
-        self._rail_sep = Separator(self._body, orient="vertical", surface=RAIL_SURFACE,
+        self._rail_sep = Separator(self._body, orient="vertical", surface=self._rail_surface,
                                    border_strength=DIVIDER_BORDER_STRENGTH)
-        self._sidebar = Frame(self._body, surface=SIDEBAR_SURFACE)
+        self._sidebar = Frame(self._body, surface=self._sidebar_surface)
         # A matching divider on the sidebar's right edge defines the sidebar/
         # content boundary (shown only when the sidebar is visible).
-        self._sidebar_sep = Separator(self._body, orient="vertical", surface=SIDEBAR_SURFACE,
+        self._sidebar_sep = Separator(self._body, orient="vertical", surface=self._sidebar_surface,
                                       border_strength=DIVIDER_BORDER_STRENGTH)
         self._content = Frame(self._body)
         self._dock = Frame(self._body, surface=DOCK_SURFACE)
@@ -288,12 +294,17 @@ class ShellLayout(App):
     @property
     def sidebar_surface(self) -> str:
         """Surface token the sidebar region renders on (for matched nav tints)."""
-        return SIDEBAR_SURFACE
+        return self._sidebar_surface
 
     @property
     def rail_surface(self) -> str:
         """Surface token the rail region renders on."""
-        return RAIL_SURFACE
+        return self._rail_surface
+
+    @property
+    def statusbar_surface(self) -> str:
+        """Surface token the status band renders on."""
+        return self._statusbar_surface
 
     @property
     def dock(self) -> Frame:

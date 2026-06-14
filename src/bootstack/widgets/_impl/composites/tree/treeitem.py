@@ -42,6 +42,7 @@ class TreeItem(CompositeFrame):
         show_separator: bool = False,
         density: str = "default",
         accent: Optional[str] = None,
+        accent_selection: bool = False,
     ) -> None:
         self._data: dict = {}
         self._state: dict = {}
@@ -61,6 +62,8 @@ class TreeItem(CompositeFrame):
         # Selected rows always show the wash, even alongside a selection control
         # (checkbox/radio): wash + control, consistent with DataTable.
         self._wash = True
+        # Neutral selection wash by default; opt in to an accent-tinted wash.
+        self._accent_selection = accent_selection
 
         item_padding = (6, 3) if density == "compact" else (8, 4)
 
@@ -72,10 +75,12 @@ class TreeItem(CompositeFrame):
             ttk_class="ListView.TFrame",
             padding=item_padding,
             accent=self._accent,
-            style_options=dict(hoverable=hoverable, density=density, wash=self._wash),
+            style_options=dict(hoverable=hoverable, density=density, wash=self._wash,
+                               accent_selection=accent_selection),
         )
 
-        style_opts = dict(hoverable=hoverable, density=density, wash=self._wash)
+        style_opts = dict(hoverable=hoverable, density=density, wash=self._wash,
+                          accent_selection=accent_selection)
 
         # Left region: [<indent padx> chevron-slot][checkbox?][icon]
         self._left_frame = Frame(
@@ -154,7 +159,8 @@ class TreeItem(CompositeFrame):
     # ----- helpers -----
 
     def _style_opts(self) -> dict:
-        return dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
+        return dict(hoverable=self._hoverable, density=self._density, wash=self._wash,
+                    accent_selection=self._accent_selection)
 
     def _bind_row_mouse(self, widget) -> None:
         """Bind double-click (activate) and right-click on a row-level widget."""

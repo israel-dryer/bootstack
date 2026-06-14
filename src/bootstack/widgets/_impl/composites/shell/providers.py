@@ -85,10 +85,12 @@ class StaticProvider:
 
     supports_compact = True
 
-    def __init__(self, *, accent: str = "primary", variant: str = "nav-quiet", surface: str = "card") -> None:
+    def __init__(self, *, accent: str | None = None, variant: str = "nav-quiet",
+                 surface: str = "card", selection: str = "ghost") -> None:
         self._accent = accent
         self._variant = variant
         self._surface = surface
+        self._selection = selection
         self._nav: NavPanel | None = None
         self._pages: PageStack | None = None
         self._keys: list[str] = []
@@ -104,7 +106,7 @@ class StaticProvider:
         # Static authoring never refreshes from a source; on_refresh is ignored.
         self._nav = NavPanel(
             sidebar, on_select=on_select, accent=self._accent,
-            variant=self._variant, surface=self._surface,
+            variant=self._variant, surface=self._surface, selection=self._selection,
         )
         self._nav.pack(fill="both", expand=True)
         self._pages = PageStack(content)
@@ -171,6 +173,9 @@ class ListNavProvider:
         accent: Accent token (the selection control follows it; the row
             selection itself is a neutral wash by default).
         separator: Draw separator lines between rows. Default False (flush).
+        chevron: Show a right-pointing chevron on each row. Off by default — a
+            disclosure affordance worth adding only when the row visibly drills
+            into something.
     """
 
     # A label-less data list is a poor nav, so list_nav is hidden-or-shown,
@@ -181,16 +186,18 @@ class ListNavProvider:
         self,
         source: Any,
         *,
-        accent: str = "primary",
+        accent: str | None = None,
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
+        chevron: bool = False,
     ) -> None:
         self._source = source
         self._accent = accent
         self._separator = separator
         self._density = density
         self._placeholder = placeholder
+        self._chevron = chevron
         self._listview: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -222,9 +229,11 @@ class ListNavProvider:
             selection_mode="single",
             show_separators=self._separator,
             show_scrollbar=False,   # mousewheel scrolls; no always-on bar in a nav
-            show_chevron=True,      # disclosure affordance — this is a nav list
+            show_chevron=self._chevron,  # opt-in disclosure affordance
             density=self._density,
             accent=self._accent,
+            # When a nav accent is set, the row selection tints to it (else neutral).
+            accent_selection=bool(self._accent),
             fill="both",
             expand=True,
         )
@@ -364,7 +373,7 @@ class TreeNavProvider:
         parent_field: str = "parent_id",
         label_field: str = "name",
         icon_field: str = "icon",
-        accent: str = "primary",
+        accent: str | None = None,
         density: str = "default",
         placeholder: str = "Select an item to view",
     ) -> None:
@@ -404,6 +413,8 @@ class TreeNavProvider:
             "show_scrollbar": False,
             "density": self._density,
             "accent": self._accent,
+            # When a nav accent is set, the row selection tints to it (else neutral).
+            "accent_selection": bool(self._accent),
             "fill": "both",
             "expand": True,
         }

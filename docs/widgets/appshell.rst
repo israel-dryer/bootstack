@@ -180,17 +180,33 @@ on macOS.
 Status bar
 ~~~~~~~~~~
 
-``shell.statusbar`` is a full-width band along the bottom for **passive** status —
-counts, sync state, a ready message (keep interactive controls on the command
-bar). It renders only once a segment is added, or when the shell is built with
-``show_statusbar=True``. ``add_spacer()`` (or ``side="right"``) pushes following
-segments to the right cluster.
+``shell.statusbar`` is a full-width band along the bottom, intended for
+**passive** status — counts, sync state, a ready message. Interactive controls
+(buttons, a search box) belong on the command bar by convention; the status bar
+reads best as a quiet display strip. It renders only once a segment is added, or
+when the shell is built with ``show_statusbar=True``. ``add_spacer()`` (or
+``side="right"``) pushes following segments to the right cluster.
 
 .. code-block:: python
 
    shell.statusbar.add_text("Ready")
    shell.statusbar.add_spacer()
    shell.statusbar.add_text("v1.0", side="right")
+
+Pass ``textsignal=`` to make a segment **reactive** — bind it to a
+:class:`Signal <bootstack.Signal>` and it updates live as the value changes:
+
+.. code-block:: python
+
+   selected = bs.Signal("0 selected")
+   shell.statusbar.add_text(textsignal=selected)
+   ...
+   selected.set("3 selected")   # the status updates automatically
+
+The :class:`~bootstack.StatusBar` handle also supports
+``add_widget()`` (a custom passive widget), ``add_spacer()``, and ``clear()``;
+or use it as a container — ``with shell.statusbar:`` parents widgets into the
+left cluster.
 
 Sidebar visibility
 ~~~~~~~~~~~~~~~~~~~
@@ -218,6 +234,50 @@ visibility directly.
    shell = bs.AppShell(sidebar_mode="compact")
    shell.sidebar_mode = "expanded"   # change it live
    shell.toggle_sidebar()
+
+Styling
+~~~~~~~
+
+Each region's background is a :doc:`surface token </reference/theming>` you can
+override; the defaults give the shell its layered look (the rail and status band
+sit on the elevated ``chrome`` surface, the sidebar a step below). The dividers
+and the nav-item selection wash blend against these automatically.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 22 50
+
+   * - Kwarg
+     - Default
+     - Region
+   * - ``chrome_surface``
+     - ``'chrome'``
+     - The top menu / command-bar band.
+   * - ``rail_surface``
+     - ``'chrome'``
+     - The workspace rail.
+   * - ``sidebar_surface``
+     - ``'raised'``
+     - The navigation sidebar.
+   * - ``statusbar_surface``
+     - ``'chrome'``
+     - The bottom status band.
+
+The selected nav item is **neutral** by default. Set ``nav_accent`` to tint the
+selection (and the rail's indicator) with an accent, and ``nav_selection`` to
+choose how the accent reads:
+
+.. code-block:: python
+
+   # subtle accent wash + accent text (the default emphasis)
+   bs.AppShell(nav_accent="primary")
+
+   # a filled accent pill with on-accent (white) text — higher emphasis
+   bs.AppShell(nav_accent="primary", nav_selection="solid")
+
+``nav_accent`` colors the rail indicator bar, the static nav pills/rows, and the
+``list_nav`` / ``tree_nav`` selection wash; ``nav_selection`` (``'ghost'`` default
+or ``'solid'``) applies to the static nav items.
 
 Navigation
 ~~~~~~~~~~
@@ -302,6 +362,7 @@ Window options
 
    bs.AppShell(
        title="My App",
+       icon="assets/app.ico",        # icon file, an Image, or an AppIcon
        size=(1024, 768),
        min_size=(640, 480),
        resizable=(True, True),

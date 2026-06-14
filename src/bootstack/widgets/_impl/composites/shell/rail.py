@@ -43,13 +43,15 @@ class Rail(Frame):
         master,
         *,
         on_select: Callable[[str], None],
-        accent: str = "primary",
+        accent: str | None = None,
         icon_size: int | None = None,
         labels: bool = False,
+        surface: str = "chrome",
     ) -> None:
-        super().__init__(master, surface="chrome")
+        super().__init__(master, surface=surface)
         self._on_select = on_select
         self._accent = accent
+        self._surface = surface
         self._labels = labels
         self._icon_size = icon_size if icon_size is not None else self.DEFAULT_ICON_SIZE
         # Shared selection signal: the value is the active workspace key, so the
@@ -59,9 +61,9 @@ class Rail(Frame):
         self._signal: Signal = Signal("")
         self._items: dict[str, RadioToggle] = {}
 
-        self._footer = Frame(self, surface="chrome")
+        self._footer = Frame(self, surface=surface)
         self._footer.pack(side="bottom", fill="x")
-        self._main = Frame(self, surface="chrome")
+        self._main = Frame(self, surface=surface)
         self._main.pack(side="top", fill="both", expand=True)
 
     def add_workspace(self, key: str, *, icon=None, text: str = "", footer: bool = False) -> RadioToggle:
@@ -77,7 +79,7 @@ class Rail(Frame):
             icon=self._icon_spec(icon),
             accent=self._accent,
             variant="rail",
-            surface="chrome",
+            surface=self._surface,
         )
         if self._labels:
             toggle_kwargs.update(text=text, compound="top", style_options={"labeled": True})

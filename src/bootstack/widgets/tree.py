@@ -111,6 +111,7 @@ class Tree(PublicWidgetBase):
         height: int | None = None,
         density: WidgetDensity = "default",
         accent: AccentToken | str | None = None,
+        accent_selection: bool = False,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -127,6 +128,7 @@ class Tree(PublicWidgetBase):
             "striped": striped,
             "scrollbar_visibility": "always" if show_scrollbar else "never",
             "density": density,
+            "accent_selection": accent_selection,
         }
         if accent is not None:
             internal_kwargs["accent"] = accent
