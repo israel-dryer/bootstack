@@ -3,8 +3,8 @@ Theming
 
 A theme defines the application's color palette — the text and background colors,
 the named accent roles (``primary``, ``success``, ``danger`` …) that widgets draw
-with, and the surface colors behind cards, menus, and inputs. bootstack ships
-seven light/dark theme pairs, and you can declare your own.
+with, and the surface colors behind cards, menus, and inputs. bootstack ships ten
+light/dark theme pairs, and you can declare your own.
 
 Setting the theme
 -----------------
@@ -16,8 +16,8 @@ Choose the starting theme through the app settings, then switch at runtime with
 
    import bootstack as bs
 
-   with bs.App(theme="ocean-dark") as app:
-       bs.Button("Day mode", on_click=lambda: bs.set_theme("ocean-light"))
+   with bs.App(theme="nord-dark") as app:
+       bs.Button("Day mode", on_click=lambda: bs.set_theme("nord-light"))
    app.run()
 
 ``toggle_theme()`` flips between the configured light and dark themes, and
@@ -28,7 +28,7 @@ Choose the starting theme through the app settings, then switch at runtime with
    from bootstack.style import get_theme
 
    bs.toggle_theme()
-   get_theme()        # "ocean-light"
+   get_theme()        # "nord-light"
 
 .. note::
 
@@ -63,101 +63,81 @@ theme. Reach for it when you need a theme color for custom drawing:
 
 .. code-block:: python
 
-   get_theme_color("primary")     # a semantic role
-   get_theme_color("background")  # the window background
-   get_theme_color("blue[200]")   # a step on a shade's spectrum
+   get_theme_color("primary")        # a semantic role
+   get_theme_color("background")     # the window background
+   get_theme_color("primary[200]")   # a step on the primary ramp
 
 Tokens come in a few forms:
 
 - **Semantic roles** — ``primary``, ``secondary``, ``info``, ``success``,
   ``warning``, ``danger``. These are what widgets use through ``accent=``.
 - **Base colors** — ``foreground``, ``background``, ``white``, ``black``.
-- **Shades and their spectrum** — a base hue such as ``blue`` or ``orange``, plus
-  50-step tints and shades from ``blue[50]`` (lightest) through ``blue[500]`` (the
-  base hue) to ``blue[950]`` (darkest).
+- **Shades and their spectrum** — every accent role (and the neutral ``gray``)
+  expands into a 50-step spectrum, addressed as ``primary[50]`` (lightest)
+  through ``primary[500]`` (the declared anchor) to ``primary[950]`` (darkest).
+  The shade families are named for their roles — ``gray``, ``primary``,
+  ``success``, ``info``, ``warning``, ``danger`` (and ``secondary`` when the
+  theme declares a colored secondary).
 - **Surfaces** — container backgrounds: ``content``, ``card``, ``chrome``,
-  ``overlay``, and ``input``.
+  ``raised``, ``overlay``, and ``input``.
 
 Declaring a custom theme
 ------------------------
 
-Create a ``Theme`` and ``install()`` it to register it under its name. A theme
-describes a small set of base **shades** (named hues) and the **semantic** roles
-that point at a step within a shade's spectrum, e.g. ``"orange[400]"``:
+A theme is a **family**: declare each semantic accent once — as the ``[500]``
+midpoint of its ramp — plus a ``light`` and/or ``dark`` block giving the
+``background`` and ``foreground``. ``install()`` generates and registers both the
+``<name>-light`` and ``<name>-dark`` variant; the framework picks the right ramp
+step per mode (a darker solid on a light background, a brighter one on dark) so
+you never hand-write per-mode shades:
 
 .. code-block:: python
 
    import bootstack as bs
+   from bootstack.style import Theme
 
    Theme(
-       name="amber-dark",
-       display_name="Amber Dark",
-       mode="dark",
-       base="dark",                  # inherit everything from the dark theme…
-       background="#18130a",         # …then override only what differs
-       foreground="#f8f9fa",
-       shades={"orange": "#fd7e14"},
-       semantic={"primary": "orange[400]", "secondary": "yellow[400]"},
+       name="sunset",
+       display_name="Sunset",
+       primary="#fd7e14", success="#198754", info="#0dcaf0",
+       warning="#ffc107", danger="#dc3545",   # the [500] anchors
+       secondary="#9d4edd",                    # optional colored secondary
+       neutral="#8c8a93",                      # gray base for borders/muted text
+       light=dict(background="#fbf7f2", foreground="#2b2118"),
+       dark=dict(background="#211a14", foreground="#f3e9dd"),
    ).install()
 
-   with bs.App(theme="amber-dark") as app:
+   with bs.App(theme="sunset-dark") as app:
        bs.Button("Primary", accent="primary")
    app.run()
 
-Setting ``base`` inherits every field from an existing theme — its shades,
-semantic roles, surfaces, and mode — so you declare only what changes. ``shades``
-and ``semantic`` are merged onto the base entry by entry.
+Each accent expands into a full 50–950 spectrum from its anchor, and the neutral
+gray drives borders, muted text, and the ``secondary`` role when no colored
+``secondary`` is given. Surface colors (cards, chrome, inputs) are derived from
+the background automatically, preserving its hue.
 
-Omit ``base`` to define a self-contained theme. It must then provide
-``foreground``, ``background``, and a full set of shades and semantic roles —
-every hue a semantic role references has to be present in ``shades``:
+You only need one of ``light`` / ``dark`` — provide both for a matched pair.
+``install(activate=True)`` registers **and** activates the light variant in one
+call; pass a variant name to activate that one instead:
+
+.. code-block:: python
+
+   Theme(name="sunset", primary="#fd7e14",
+         dark=dict(background="#211a14", foreground="#f3e9dd")
+   ).install(activate="sunset-dark")
+
+When the auto-derived surfaces don't suit a particular background — a very dark
+chrome band, say — pin them with ``surfaces=`` (a flat dict applies to both
+modes; a ``{"light": ..., "dark": ...}`` dict targets one mode):
 
 .. code-block:: python
 
    Theme(
-       name="mint-light",
-       mode="light",
-       foreground="#0b3d2e",
-       background="#f2fbf7",
-       shades={
-           "teal": "#00897b", "green": "#2e7d32", "cyan": "#00acc1",
-           "yellow": "#fdd835", "red": "#e53935", "gray": "#9e9e9e",
-       },
-       semantic={
-           "primary": "teal[600]", "secondary": "gray[600]", "info": "cyan[600]",
-           "success": "green[600]", "warning": "yellow[700]", "danger": "red[600]",
-       },
+       name="sunset", primary="#fd7e14",
+       light=dict(background="#fbf7f2", foreground="#2b2118"),
+       dark=dict(background="#211a14", foreground="#f3e9dd"),
+       surfaces={"dark": {"chrome": "#171109"}},
    ).install()
-
-``install()`` registers the theme; activate it with ``set_theme(name)`` or by
-passing ``theme=name`` to ``bs.App``. Use ``install(activate=True)`` to do both at
-once.
-
-.. tip::
-
-   Custom themes work best in pairs. Providing a light **and** a dark variant lets
-   users switch appearance with ``toggle_theme()``. Point the ``light_theme`` and
-   ``dark_theme`` options at your two themes to make them the toggle pair — it is
-   not required, but recommended:
-
-   .. code-block:: python
-
-      Theme(name="amber-light", mode="light", base="light",
-               background="#f7f2e9", semantic={"primary": "orange[600]"}).install()
-      Theme(name="amber-dark", mode="dark", base="dark",
-               background="#18130a", semantic={"primary": "orange[400]"}).install()
-
-      with bs.App(
-          theme="amber-light",
-          light_theme="amber-light",
-          dark_theme="amber-dark",
-      ) as app:
-          bs.Button("Toggle", on_click=bs.toggle_theme)
-      app.run()
-
-   A light theme typically points its semantic roles at a darker step (e.g.
-   ``orange[600]``) for contrast on a light background, and a dark theme at a
-   lighter step (e.g. ``orange[400]``).
 
 .. note::
 
@@ -165,16 +145,18 @@ once.
    exists — its colors are resolved when the theme is activated, not when it is
    created.
 
-To build a theme from data you already have (loaded from a file, say), use
-``Theme.from_dict`` with the same keys:
+To build a theme from data you already have (loaded from a file, say), unpack the
+mapping into the constructor — ``Theme`` is a plain dataclass, so the keys are
+just its fields:
 
 .. code-block:: python
 
    spec = {
-       "name": "amber-dark", "mode": "dark", "base": "dark",
-       "background": "#18130a", "semantic": {"primary": "orange[400]"},
+       "name": "sunset",
+       "primary": "#fd7e14",
+       "dark": {"background": "#211a14", "foreground": "#f3e9dd"},
    }
-   Theme.from_dict(spec).install()
+   Theme(**spec).install()
 
 See also
 --------

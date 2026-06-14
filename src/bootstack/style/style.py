@@ -445,7 +445,7 @@ def get_style(master: Master = None) -> Style:
 
     Examples:
         >>> style = get_style()
-        >>> style.theme_use("ocean-dark")
+        >>> style.theme_use("nord-dark")
     """
     if _style_instance:
         return _style_instance
@@ -473,10 +473,10 @@ def set_theme(name: str) -> None:
     """Set the active application theme.
 
     Args:
-        name: Theme name to activate (e.g., "ocean-dark", "bootstrap-light", "aurora-dark").
+        name: Theme name to activate (e.g., "bootstrap-light", "nord-dark").
 
     Examples:
-        >>> set_theme("ocean-dark")
+        >>> set_theme("nord-dark")
     """
     style = get_style()
     style.theme_use(name)
