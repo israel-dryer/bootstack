@@ -122,17 +122,9 @@ class StaticProvider:
         self._keys.append(key)
         return page
 
-    def add_header(self, text: str, *, collapsible: bool = False) -> Any:
-        """Add a section header (optionally a 1-level collapsible group)."""
-        return self._nav.add_header(text, collapsible=collapsible)
-
-    def expand_all(self) -> None:
-        """Expand every collapsible group."""
-        self._nav.expand_all()
-
-    def collapse_all(self) -> None:
-        """Collapse every collapsible group."""
-        self._nav.collapse_all()
+    def add_header(self, text: str) -> Any:
+        """Add a plain section-label header."""
+        return self._nav.add_header(text)
 
     def add_separator(self) -> Any:
         """Add a separator."""

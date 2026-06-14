@@ -10,6 +10,12 @@ The workspace exposes the same content API the shell does — `add_page` /
 `list_nav` / `tree_nav` / `@detail` / headers — so a single-tier app and a
 two-tier workspace are authored identically (the spec's degenerate-case
 unification).
+
+The sidebar has three authored shapes: a flat nav list (`add_page`), the same
+list chunked by static `add_header` labels (grouped-static), or a data-bound
+`list_nav` / `tree_nav`. There is no built-in collapsible accordion — a section
+that hides/reveals a sub-list is a content concern; compose `bs.Accordion`
+inside a custom `panel()` if you need one.
 """
 
 from __future__ import annotations
@@ -36,6 +42,9 @@ class Workspace:
         on_refresh: Called `(workspace_key)` after a data-bound provider rebuilds.
         on_first_page: Called `(workspace_key, page_key)` when the workspace's
             first page is added (so the shell can auto-select it).
+        nav_variant: Static-item style variant for the tier (`'nav-pill'`
+            standalone, `'nav-quiet'` under a rail).
+        nav_surface: Surface token the sidebar items sit on.
     """
 
     def __init__(
@@ -127,23 +136,13 @@ class Workspace:
         """Add a nav item pinned to the sidebar footer and its page."""
         return self.add_page(key, text=text, icon=icon, footer=True)
 
-    def add_header(self, text: str, *, collapsible: bool = False) -> Any:
-        """Add a section header (optionally a 1-level collapsible group)."""
-        return self._ensure_static().add_header(text, collapsible=collapsible)
+    def add_header(self, text: str) -> Any:
+        """Add a plain section-label header (grouped-static)."""
+        return self._ensure_static().add_header(text)
 
     def add_separator(self) -> Any:
         """Add a separator to the sidebar."""
         return self._ensure_static().add_separator()
-
-    def expand_all(self) -> None:
-        """Expand every collapsible group in the sidebar (if any)."""
-        if self._provider is not None and hasattr(self._provider, "expand_all"):
-            self._provider.expand_all()
-
-    def collapse_all(self) -> None:
-        """Collapse every collapsible group in the sidebar (if any)."""
-        if self._provider is not None and hasattr(self._provider, "collapse_all"):
-            self._provider.collapse_all()
 
     # ----- Custom mode -----
 
@@ -151,8 +150,8 @@ class Workspace:
         """Claim the workspace as a custom panel; return its sidebar container.
 
         The workspace enters custom mode: no provider cascade, no compaction.
-        Fill the returned container with your own sidebar UI and drive the
-        content region yourself via `content`.
+        Fill the returned container with your own sidebar UI (e.g. a
+        `bs.Accordion`) and drive the content region yourself via `content`.
         """
         self._claim_provider()
         self._provider = CustomProvider()

@@ -11,9 +11,11 @@ Selection truth still lives in the shell's `NavModel`: clicking an item reports
 the key via the `on_select` callback; the shell decides what becomes active and
 calls `select()` back (setting the shared signal) to reflect it.
 
-Section headers may be **1-level collapsible groups** (a header + the run of
-items after it, up to the next header/separator). Compaction to icon-only is a
-native `-compound` toggle on each item (`'left'` <-> `'image'`).
+Section headers are plain, non-interactive labels (they chunk a flat list and
+hide on compaction). There is no built-in collapsible section — hiding/revealing
+a sub-list is a content concern (compose `bs.Accordion` in a custom panel).
+Compaction to icon-only is a native `-compound` toggle on each item
+(`'left'` <-> `'image'`); headers and separators hide while compact.
 """
 
 from __future__ import annotations
@@ -21,8 +23,10 @@ from __future__ import annotations
 from typing import Callable
 
 from bootstack.signals import Signal
+from bootstack.style.style import get_style
 from bootstack.widgets._impl.primitives.frame import Frame
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle
+from bootstack.widgets._impl.composites.scrollview import ScrollView
 from bootstack.widgets._impl.composites.sidenav.header import SideNavHeader
 from bootstack.widgets._impl.composites.sidenav.separator import SideNavSeparator
 
@@ -73,13 +77,33 @@ class NavPanel(Frame):
         # breathing room from the container); quiet rows run full-width.
         self._inset = 8 if variant == "nav-pill" else 0
 
-        # Footer pinned to the bottom; main area fills the rest above it. The top
-        # gap matches the horizontal inset so the first pill has even breathing
-        # room from the container.
+        # Footer pinned to the bottom; the item area scrolls in the space above it
+        # (a wheel-scrollable canvas with an auto-hiding bar — the footer itself
+        # never scrolls). The canvas background is painted to the sidebar surface
+        # so the area below short content doesn't flash the default canvas color.
         self._footer = Frame(self, surface=surface)
         self._footer.pack(side="bottom", fill="x")
-        self._main = Frame(self, surface=surface)
-        self._main.pack(side="top", fill="both", expand=True)
+        # A divider above the footer, shown ONLY when the item area scrolls — so a
+        # pinned footer reads as its own band instead of abutting a clipped row.
+        # When everything fits it stays hidden (no needless chrome).
+        self._footer_divider = SideNavSeparator(self, surface=surface, padding=(0, 0, 0, 0))
+        # Start with no gutter/bar; overflow detection switches it on only when the
+        # content is actually tall enough to scroll (see _update_overflow_state).
+        self._scroll = ScrollView(
+            self,
+            scroll_direction="vertical",
+            scrollbar_visibility="never",
+            surface=surface,
+        )
+        self._scroll.pack(side="top", fill="both", expand=True)
+        self._main = self._scroll.add(surface=surface)
+        self._updating_overflow = False
+        self._paint_canvas_surface()
+        self.bind("<<BsThemeChanged>>", lambda _e: self._paint_canvas_surface(), add="+")
+        # Re-evaluate the gutter/bar + footer divider whenever the content height
+        # or viewport changes (items added/removed, sidebar resized, compaction).
+        self._scroll.canvas.bind("<Configure>", lambda _e: self._update_overflow_state(), add="+")
+        self._main.bind("<Configure>", lambda _e: self._update_overflow_state(), add="+")
         self._apply_inset(self._inset)
 
     def add_item(self, key: str, *, text: str = "", icon=None) -> RadioToggle:
@@ -110,6 +134,10 @@ class NavPanel(Frame):
         item.bind("<Button-1>", lambda _e, k=key: self._on_select(k), add="+")
         self._items[key] = item
         (self._footer_items if footer else self._main_children).append(item)
+        if footer:
+            # A footer item may appear after the content is laid out; the divider
+            # gate depends on footer presence, so re-evaluate now.
+            self._update_overflow_state()
         return item
 
     def remove_item(self, key: str) -> None:
@@ -122,6 +150,7 @@ class NavPanel(Frame):
             item.destroy()
             if self._signal() == key:
                 self._signal.set("")
+            self._update_overflow_state()
 
     def update_item(self, key: str, *, text: str | None = None, icon=None) -> None:
         """Update an existing item's label and/or icon in place."""
@@ -133,24 +162,21 @@ class NavPanel(Frame):
         if icon is not None:
             item.configure(icon=icon)
 
-    def add_header(self, text: str, *, collapsible: bool = False) -> SideNavHeader:
-        """Add a section header to the main area.
+    def add_header(self, text: str) -> SideNavHeader:
+        """Add a plain section-label header to the main area.
 
-        With `collapsible=True` the header gains a chevron and toggles the run of
-        items that follows it (up to the next header or separator) — a 1-level
-        accordion group. `collapsible=False` is a plain static section label (a
-        group "pinned open").
+        A header is a quiet, non-interactive label that chunks the flat list; it
+        hides while the panel is compacted. (There is no collapsible-header
+        primitive — a collapsible sub-list is a content concern.)
 
         Uses a tighter top margin than the stock `SideNavHeader` default — the
         header alone carries enough separation, so a roomy top gap reads as
         excess (especially when it follows an item).
         """
-        # (left, top, right, bottom) — aligned to the item icon column.
-        header = SideNavHeader(
-            self._main, text=text, padding=(12, 10, 12, 4), collapsible=collapsible
-        )
-        if collapsible:
-            header._on_toggle = lambda h=header: self._toggle_group(h)
+        # (left, top, right, bottom) — aligned to the item icon column. A roomier
+        # top gap separates the new group from the one above; the small bottom gap
+        # keeps the header bound to its own items.
+        header = SideNavHeader(self._main, text=text, padding=(12, 16, 12, 4))
         if not self._compact:
             header.pack(fill="x")
         self._main_children.append(header)
@@ -164,63 +190,81 @@ class NavPanel(Frame):
         self._main_children.append(sep)
         return sep
 
-    def _toggle_group(self, header: SideNavHeader) -> None:
-        """Collapse/expand a collapsible header's item run."""
-        header.set_collapsed(not header.collapsed)
-        self._relayout_main()
-
-    def expand_all(self) -> None:
-        """Expand every collapsible group."""
-        self._set_all_groups_collapsed(False)
-
-    def collapse_all(self) -> None:
-        """Collapse every collapsible group."""
-        self._set_all_groups_collapsed(True)
-
-    def _set_all_groups_collapsed(self, collapsed: bool) -> None:
-        changed = False
-        for child in self._main_children:
-            if isinstance(child, SideNavHeader) and child.collapsible:
-                if child.collapsed != collapsed:
-                    child.set_collapsed(collapsed)
-                    changed = True
-        if changed:
-            self._relayout_main()
-
     def _relayout_main(self) -> None:
-        """Re-pack the main area in insertion order, honoring compact + groups.
+        """Re-pack the main area in insertion order, honoring compact.
 
-        - Compact: items render icon-only (`-compound='image'`); headers and
-          separators hide; collapsed groups are *flattened* (their items still
-          show as icons) — collapse state is preserved and restored on expand.
-        - Expanded: headers/separators show; an item is hidden when it belongs to
-          a collapsed group (the run of items after a collapsed collapsible
-          header, up to the next header or separator).
+        Compact renders items icon-only (`-compound='image'`) and hides headers
+        and separators (a label-less icon strip); expanded shows everything.
         """
         for child in self._main_children:
             child.pack_forget()
-        group_collapsed = False  # whether the current item run is collapsed
         for child in self._main_children:
-            if isinstance(child, SideNavHeader):
-                group_collapsed = child.collapsible and child.collapsed
-                if not self._compact:
-                    child.pack(fill="x")
-            elif isinstance(child, SideNavSeparator):
-                group_collapsed = False
+            if isinstance(child, (SideNavHeader, SideNavSeparator)):
                 if not self._compact:
                     child.pack(fill="x")
             else:  # RadioToggle nav item
-                if self._compact or not group_collapsed:
-                    child.pack(fill="x", pady=(0, _ITEM_GAP))
+                child.pack(fill="x", pady=(0, _ITEM_GAP))
 
     def _item_variant(self) -> str:
         """The Toolbutton style variant for items in the current mode."""
         return f"{self._variant}-compact" if self._compact else self._variant
 
     def _apply_inset(self, inset: int) -> None:
-        """Re-pad the main/footer containers (the pill inset from the edges)."""
-        self._main.pack_configure(padx=inset, pady=(inset, 0))
+        """Inset the scrolled item area + footer from the sidebar edges.
+
+        Pills need breathing room; quiet rows run flush (inset 0). The item area
+        is a canvas window (not pack-managed), so its inset is its own padding.
+        """
+        self._main.configure(padding=(inset, inset, inset, 0))
         self._footer.pack_configure(padx=inset, pady=(0, inset))
+
+    def _paint_canvas_surface(self) -> None:
+        """Match the scroll canvas background to the sidebar surface token."""
+        try:
+            color = get_style().style_builder.color(self._surface)
+            self._scroll.canvas.configure(background=color)
+        except Exception:
+            pass
+
+    def _content_overflows(self) -> bool:
+        """Whether the item content is taller than the scroll viewport.
+
+        Uses a small epsilon so a 1–4px overhang doesn't toggle the gutter — and,
+        with the gutter's own width, gives stable hysteresis (no flicker).
+        """
+        try:
+            bbox = self._scroll.canvas.bbox("all")
+            if not bbox:
+                return False
+            viewport_h = self._scroll.canvas.winfo_height()
+            return viewport_h > 1 and (bbox[3] - bbox[1]) > viewport_h + 4
+        except Exception:
+            return False
+
+    def _update_overflow_state(self) -> None:
+        """Reserve the scrollbar gutter + show the footer divider only on overflow.
+
+        When the content fits, the bar/gutter is off (`'never'`) so items run
+        full-width and there's no footer divider; when it overflows, the gutter +
+        auto-hiding bar turn on (`'scroll'`) and a divider separates the pinned
+        footer from the scrolling rows.
+        """
+        if self._updating_overflow:
+            return
+        self._updating_overflow = True
+        try:
+            overflow = self._content_overflows()
+            desired = "scroll" if overflow else "never"
+            if self._scroll.cget("scrollbar_visibility") != desired:
+                self._scroll.configure(scrollbar_visibility=desired)
+            show_divider = overflow and bool(self._footer_items)
+            mapped = self._footer_divider.winfo_manager() != ""
+            if show_divider and not mapped:
+                self._footer_divider.pack(side="bottom", fill="x")
+            elif not show_divider and mapped:
+                self._footer_divider.pack_forget()
+        finally:
+            self._updating_overflow = False
 
     def set_compact(self, compact: bool) -> None:
         """Render items icon-only (compact) or with labels (expanded).
