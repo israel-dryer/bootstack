@@ -318,9 +318,20 @@ custom `panel()`. **Scrollable static nav**: `NavPanel` item area in a `ScrollVi
 footer divider (`'never'`↔`'scroll'`, hysteresis, no flicker); canvas bg painted
 to the sidebar surface. **`nav-quiet` square under a rail, `nav-pill` standalone**
 (mixed-provider workspaces must share one row language). Test `test_shell_groups`
-rewritten for grouped-static. Deferred: thin/overlay nav scrollbar (17px classic
-now — step-9 styling); `Workspace` context-manager support (two-tier examples use
-`with`). **NEXT: the deferred public-AppShell swap (spec step 11) + step-9 styling.**
+rewritten for grouped-static. **Sidebar styling round shipped** (committed): a
+reusable **`'thin'` 4px square scrollbar variant** (Pillow `create_box_image`;
+`ScrollView` threads surface), `NavPanel` scrollable item area (footer pinned,
+overflow-gated bar + footer divider, gutter absorbed into the right inset so the
+margin stays even + footer re-aligns), and **empty-state placeholders** for
+`tree_nav`/empty `list_nav` (`placeholder=`). The current step is DONE.
+**NEXT = step 11 (the public-AppShell swap)**, which now also owns: **drop the
+standalone `bs.SideNav`** (decided — coupled to removing the old sidenav-based
+AppShell that `bs.AppShell` still points at; `SideNavHeader`/`SideNavSeparator`
+stay, used by `NavPanel`); **wire + style the statusbar + menubar/command bar**
+into the new shell (chrome band is an empty Frame, statusbar a bare Toolbar);
+`Workspace` context-manager support; the public façade (`commandbar`/`nav`/`pages`
++ window controls). Separate initiative: thin-scrollbar public exposure + audit
+other scrollable widgets (memory `project_thin_scrollbar_initiative`).
 
 **Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
 framework code). Side note logged: a future `Tabs` `variant='secondary'` (top

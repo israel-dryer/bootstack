@@ -281,10 +281,37 @@ deleted; `Workspace` is back to a single provider; `add_group` / `expand_all` /
   under a rail you have mixed-provider workspaces (static + list + tree) that must
   share one row language, so the pill is single-tier-only.
 
-**Deferred (noted, not done):** thin/overlay nav scrollbar (the bar is the 17px
-classic width — a step-9 styling item); `Workspace` is not yet a context manager
-though the two-tier examples use `with shell.add_workspace(...) as ws:` (close
-when the public `AppShell` is swapped on, step 11).
+**Also shipped after the cut (sidebar styling round, committed):**
+- **Scrollable static nav** — `NavPanel` item area in a `ScrollView`; footer
+  pinned outside. Overflow-gated: fits → no gutter/bar/divider, items full-width;
+  overflows → bar + footer divider. The scrollbar gutter is **absorbed into the
+  right inset** (right margin stays even, not inset+gutter) and the footer
+  re-aligns to the scrolled rows — both adapt to the live bar width.
+- **Thin scrollbar** — new reusable **`'thin'`** scrollbar variant (4px solid
+  square thumb via `create_box_image`, track painted to the surface); `ScrollView`
+  threads its surface to its scrollbars. `NavPanel` uses it. (The 8/17px confusion
+  earlier was a stale-read artifact — the bar was always thin; it's now 4px.)
+- **Muted section headers** (`SideNavHeader.DEFAULT_ACCENT='muted'`) + a larger
+  group break (header top padding `10→16`).
+- **Empty-state placeholders** — `tree_nav` (opens unselected) and an empty
+  `list_nav` show a centered muted placeholder until a row is picked
+  (`placeholder=` on both).
+
+**Deferred → step 11 (the public-AppShell swap):**
+- **Drop the standalone `bs.SideNav`.** Decided (its unique value is thin — app
+  nav = AppShell, in-dialog nav = vertical `Tabs`; and it duplicates `NavPanel`).
+  Coupled to removing the old AppShell: the current public `bs.AppShell` is still
+  the OLD sidenav-based one, so SideNav can't be removed until the new `Shell` is
+  swapped on. `SideNavHeader`/`SideNavSeparator` stay (used by `NavPanel`).
+- **Wire + style the statusbar and menubar/command bar** into the new shell — the
+  `chrome` band is an empty `Frame` and the `statusbar` is a bare `Toolbar`; the
+  public `commandbar`/`menubar`/`statusbar` APIs aren't on the new `Shell` yet.
+- **`Workspace` context-manager support** (`with shell.add_workspace(...) as ws:`).
+- Public AppShell façade (`commandbar`/`nav`/`pages` + window-control accessors).
+
+**Separate initiative:** expose/document the `'thin'` scrollbar variant publicly +
+audit other scrollable widgets for narrow bars (memory
+`project_thin_scrollbar_initiative`).
 
 Tests: `test_shell_groups` rewritten for grouped-static. Throwaway demos
 `development/shell_*_demo.py` stay untracked.
