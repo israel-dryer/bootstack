@@ -267,6 +267,12 @@ class Toolbar(Frame):
         Returns:
             Label: The created label.
         """
+        # Show icon AND text when both are given. The internal Label primitive
+        # defaults to icon-only (no compound) — the public Label wrapper's
+        # compound logic doesn't run on this path, so set it here.
+        has_text = bool(text) or kwargs.get('textsignal') is not None
+        if icon is not None and has_text and 'compound' not in kwargs:
+            kwargs['compound'] = 'left'
         lbl = Label(
             self._content_frame,
             text=text,
