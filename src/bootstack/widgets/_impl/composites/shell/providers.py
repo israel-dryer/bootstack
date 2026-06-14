@@ -184,11 +184,13 @@ class ListNavProvider:
         accent: str = "primary",
         separator: bool = False,
         density: str = "default",
+        placeholder: str = "Select an item to view",
     ) -> None:
         self._source = source
         self._accent = accent
         self._separator = separator
         self._density = density
+        self._placeholder = placeholder
         self._listview: Any = None
         self._host: ContentHost | None = None
         self._sidebar_host: ContentHost | None = None
@@ -232,6 +234,17 @@ class ListNavProvider:
         # re-render the open detail when the selected record changes in place and
         # to let the host reconcile selection on add/remove.
         self._src_sub = self._source.on_change(self._on_source_change)
+        # An empty source has no first record to auto-select, so the content area
+        # would be blank — show a quiet placeholder until rows arrive.
+        if not self._cache:
+            self._render_placeholder()
+
+    def _render_placeholder(self) -> None:
+        """Render a centered, muted empty-state in the content region."""
+        from bootstack.widgets._impl.primitives.label import Label
+
+        self._host.clear()
+        Label(self._host._internal, text=self._placeholder, accent="muted").pack(expand=True)
 
     def set_detail(self, fn: Callable[[dict], Any]) -> None:
         """Register the parameterized detail body builder."""
@@ -266,9 +279,15 @@ class ListNavProvider:
             key is not None and key in new and key in self._cache
             and new[key] != self._cache[key]
         )
+        emptied = bool(self._cache) and not new
         self._cache = new
         if changed:
             self.show(key)
+        elif emptied:
+            # The list drained to nothing — replace the stale detail with the
+            # placeholder (the host won't reconcile to a new selection).
+            self._selected = None
+            self._render_placeholder()
         if self._on_refresh is not None:
             self._on_refresh()
 
@@ -290,10 +309,12 @@ class ListNavProvider:
 
     def show(self, key: str, data: dict | None = None) -> None:
         record = self._cache.get(key)
-        self._host.clear()
         if self._detail is not None and record is not None:
+            self._host.clear()
             with self._host:
                 self._detail(record)
+        else:
+            self._render_placeholder()
 
     def select_visual(self, key: str | None) -> None:
         self._selected = key

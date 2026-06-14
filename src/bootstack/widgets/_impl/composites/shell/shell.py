@@ -185,9 +185,18 @@ class Shell(ShellLayout):
         """Claim the implicit workspace as a custom panel; return its container."""
         return self._default_workspace().panel()
 
-    def list_nav(self, source: Any, *, separator: bool = False, density: str = "default") -> Any:
+    def list_nav(
+        self,
+        source: Any,
+        *,
+        separator: bool = False,
+        density: str = "default",
+        placeholder: str = "Select an item to view",
+    ) -> Any:
         """Fill the implicit workspace from a `DataSource` (flat master-detail)."""
-        return self._default_workspace().list_nav(source, separator=separator, density=density)
+        return self._default_workspace().list_nav(
+            source, separator=separator, density=density, placeholder=placeholder
+        )
 
     def tree_nav(self, **kwargs: Any) -> Any:
         """Fill the implicit workspace from a hierarchy (tree master-detail)."""

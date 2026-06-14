@@ -165,17 +165,27 @@ class Workspace:
 
     # ----- Data-bound content API -----
 
-    def list_nav(self, source: Any, *, separator: bool = False, density: str = "default") -> Any:
+    def list_nav(
+        self,
+        source: Any,
+        *,
+        separator: bool = False,
+        density: str = "default",
+        placeholder: str = "Select an item to view",
+    ) -> Any:
         """Fill the workspace from a `DataSource` (flat master-detail).
 
         Records render their `icon`/`title`/`text` in a recycling `ListView`
         (which inherits the sidebar surface). `separator` draws divider lines
         between rows (default flush); `density` is `'default'`/`'compact'`
         (compact suits one-line items, default suits richer two-line items).
+        `placeholder` is the quiet empty-state shown in the content area when the
+        source has no records.
         """
         self._claim_provider()
         self._provider = ListNavProvider(
-            source, accent=self._nav_accent, separator=separator, density=density
+            source, accent=self._nav_accent, separator=separator,
+            density=density, placeholder=placeholder,
         )
         self._mount_provider()
         return self._provider
