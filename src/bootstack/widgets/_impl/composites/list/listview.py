@@ -150,6 +150,13 @@ class ListView(Frame):
 
         # Bind events
         self.bind('<Configure>', self._on_resize, add='+')
+        # The striped row surface is applied imperatively at pool-creation time,
+        # so it must be re-resolved on theme change. `<<BsThemeChanged>>` fires on
+        # the root (virtual events don't reach descendants), so bind there and
+        # release on destroy — the same pattern as the image theme-follow helper.
+        self._theme_root = self.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            '<<BsThemeChanged>>', self._on_theme_changed, add='+')
         self._bind_scroll_events(self)
         self._bind_scroll_events(self._container)
 
@@ -208,6 +215,13 @@ class ListView(Frame):
         """Cancel the data-source subscription when the widget is destroyed."""
         if event is not None and getattr(event, 'widget', None) is not self:
             return
+        bind_id = getattr(self, '_theme_bind_id', None)
+        if bind_id:
+            try:
+                self._theme_root.unbind('<<BsThemeChanged>>', bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
         sub = self._change_sub
         self._change_sub = None
         if sub is not None:
@@ -809,6 +823,20 @@ class ListView(Frame):
 
         # Fallback to original data if we can't fetch fresh state
         self.event_generate('<<ItemClick>>', data=event.data)
+
+    def _on_theme_changed(self, _event: Any = None) -> None:
+        """Re-resolve theme-dependent per-row surfaces on a theme change.
+
+        The striped background is applied imperatively (not via a ttk style), so
+        it does not update when the theme rebuilds — re-apply it to every pooled
+        row and re-render so the new theme's colors take effect.
+        """
+        try:
+            for i, row in enumerate(self._rows):
+                self._apply_widget_surface(row, i)
+            self._full_update_rows()
+        except Exception:
+            pass
 
     def _apply_widget_surface(self, row: ListItem, widget_index: int) -> None:
         """Apply surface color to a row widget based on its position in the pool.

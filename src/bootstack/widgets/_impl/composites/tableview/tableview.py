@@ -483,6 +483,13 @@ class TableView(Frame):
             except Exception:
                 self._change_sub = None
         self.bind('<Destroy>', self._on_table_destroy, add='+')
+        # The alternating-row stripe is applied via imperative tag colors, which
+        # are NOT refreshed by the ttk style rebuild. `<<BsThemeChanged>>` is fired
+        # on the root (virtual events don't reach descendants), so bind there and
+        # release on destroy — the same pattern as the image theme-follow helper.
+        self._theme_root = self.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            '<<BsThemeChanged>>', self._on_theme_changed, add='+')
 
     def _silence_source(self):
         """Context manager suppressing source change broadcasts for our own writes."""
@@ -503,6 +510,13 @@ class TableView(Frame):
         """Release subscriptions, in-flight exports, and the tooltip on destroy."""
         if event is not None and getattr(event, 'widget', None) is not self:
             return
+        bind_id = getattr(self, '_theme_bind_id', None)
+        if bind_id:
+            try:
+                self._theme_root.unbind('<<BsThemeChanged>>', bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
         sub = self._change_sub
         self._change_sub = None
         if sub is not None:
@@ -2065,6 +2079,14 @@ class TableView(Frame):
                 self._tree.column(idx, width=width, minwidth=self._column_min_width)
             except Exception:
                 pass
+
+    def _on_theme_changed(self, _event: Any = None) -> None:
+        """Re-resolve the imperative stripe tag colors on a theme change (tag
+        colors aren't refreshed by the ttk style rebuild)."""
+        try:
+            self._apply_row_alternation()
+        except Exception:
+            pass
 
     def _apply_row_alternation(self) -> None:
         """Apply alternating row colors via a tag."""
