@@ -4,7 +4,7 @@ from typing import Any, Callable
 
 from bootstack.widgets._impl.primitives.scrollbar import Scrollbar as _InternalScrollbar
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets.types import AccentToken, Orient
+from bootstack.widgets.types import AccentToken, Orient, ScrollbarVariant
 
 
 class Scrollbar(PublicWidgetBase):
@@ -19,6 +19,8 @@ class Scrollbar(PublicWidgetBase):
         on_scroll: Callback invoked on scroll actions. Receives the scroll
             arguments — `(fraction,)` for a move, or `(first, last)` for a drag.
         accent: Accent token for styling.
+        variant: Scrollbar style — `'default'` (standard rounded bar) or
+            `'thin'` (slim square bar).
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -31,6 +33,7 @@ class Scrollbar(PublicWidgetBase):
         *,
         on_scroll: Callable | None = None,
         accent: AccentToken | str | None = None,
+        variant: ScrollbarVariant = "default",
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -44,6 +47,8 @@ class Scrollbar(PublicWidgetBase):
             internal_kwargs["command"] = on_scroll
         if accent is not None:
             internal_kwargs["accent"] = accent
+        if variant is not None:
+            internal_kwargs["variant"] = variant
         # **kwargs is layout-only (split out above) — not forwarded to the internal.
 
         self._internal = _InternalScrollbar(tk_master, **internal_kwargs)

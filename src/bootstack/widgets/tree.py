@@ -8,7 +8,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, TreeSelectionEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity, SelectionMode
+from bootstack.widgets.types import AccentToken, WidgetDensity, SelectionMode, ScrollbarVariant
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -79,6 +79,8 @@ class Tree(PublicWidgetBase):
         striped: If `True`, alternate the row background color.
         show_scrollbar: If `True` (default), show the vertical scrollbar.
             Mousewheel scrolling works regardless.
+        scrollbar_variant: Scrollbar style — `'thin'` (default) for a slim bar,
+            or `'default'` for the standard rounded bar.
         height: Fixed height in pixels. When set, the tree maintains this
             height regardless of its content (so it can scroll without the
             parent layout providing a vertical constraint).
@@ -108,6 +110,7 @@ class Tree(PublicWidgetBase):
         indent: int = 16,
         striped: bool = False,
         show_scrollbar: bool = True,
+        scrollbar_variant: ScrollbarVariant = "thin",
         height: int | None = None,
         density: WidgetDensity = "default",
         accent: AccentToken | str | None = None,
@@ -127,6 +130,7 @@ class Tree(PublicWidgetBase):
             "indent": indent,
             "striped": striped,
             "scrollbar_visibility": "always" if show_scrollbar else "never",
+            "scrollbar_variant": scrollbar_variant,
             "density": density,
             "accent_selection": accent_selection,
         }

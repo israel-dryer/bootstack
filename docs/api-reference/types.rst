@@ -60,6 +60,11 @@ lower-level appearance literals.
 
    Sizing density — `'default'`, or `'compact'` for reduced padding.
 
+.. py:type:: ScrollbarVariant
+
+   Scrollbar style — `'default'` for the standard rounded bar, or `'thin'`
+   for a slim square bar that suits compact lists, panels, and popups.
+
 .. py:type:: WidgetState
 
    Widget interaction state — `'normal'`, `'active'`, `'disabled'`, `'readonly'`.

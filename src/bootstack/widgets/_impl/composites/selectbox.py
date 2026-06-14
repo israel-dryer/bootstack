@@ -341,6 +341,8 @@ class SelectBox(Field):
             outer_frame,
             scroll_direction='vertical',
             scrollbar_visibility='always',
+            scrollbar_variant='thin',
+            surface='content',
         )
         scrollview.pack(fill='both', expand=True)
 
