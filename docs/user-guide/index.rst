@@ -24,7 +24,7 @@ see :doc:`/widgets/index`.
    /tasks/handling-actions
    /tasks/building-forms
    /tasks/dialogs
-   /tasks/navigation
+   /tasks/navigation/index
    /tasks/layout
    /tasks/application-icons
 
