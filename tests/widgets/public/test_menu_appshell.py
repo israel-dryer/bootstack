@@ -38,16 +38,18 @@ def test_appshell_menu_renders_themed_strip(shell):
         menu.refresh()
 
 
-def test_strip_packs_above_the_toolbar(shell):
-    """The menu strip is packed before the toolbar (i.e. visually above it)."""
+def test_strip_packs_before_the_command_bar(shell):
+    """The menu strip is packed before the command bar in the chrome row
+    (left of it when fused, above it when stacked)."""
     menu = shell.menubar
+    commandbar = shell.commandbar  # lazily builds the command bar into the chrome
     try:
         with menu.add_menu("Edit") as edit:
             edit.add_action("Undo", on_click=lambda: None)
         menu.refresh()
         strip = menu._renderer
-        toolbar = shell._internal._toolbar
-        # Both pack into the same content root; the strip comes first.
+        toolbar = commandbar._internal
+        # Both pack into the same chrome row; the strip comes first.
         parent = shell._menu_strip_parent()
         kids = parent.pack_slaves()
         assert strip in kids and toolbar in kids

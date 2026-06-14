@@ -125,6 +125,10 @@ class WindowMenu:
                 except Exception:
                     pass
                 self._renderer = None
+                # Clear the host's stale strip reference and re-arrange the
+                # chrome (otherwise a later command-bar build packs a dead
+                # window — the strip the host still points at was destroyed).
+                self._host._place_menu_strip(None)
             return
 
         if self._renderer is None:
