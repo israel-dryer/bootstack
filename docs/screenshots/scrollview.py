@@ -11,6 +11,17 @@ def hero():
     app.run()
 
 
+def thin():
+    with bs.App(title="ScrollView — Thin scrollbar", size=(720, 300), padding=20, gap=8) as app:
+        with bs.ScrollView(scroll_direction="vertical", scrollbar_variant="thin",
+                           fill="both", expand=True):
+            for i in range(1, 30):
+                with bs.HStack(fill="x", padding=8):
+                    bs.Label(f"Row {i:02d}")
+                bs.Separator(fill="x")
+    app.run()
+
+
 def horizontal():
     with bs.App(title="ScrollView — Horizontal", size=(720, 130), padding=20, gap=8) as app:
         with bs.ScrollView(scroll_direction="horizontal", fill="x",
@@ -23,5 +34,6 @@ def horizontal():
 
 SCENES = {
     "hero":       hero,
+    "thin":       thin,
     "horizontal": horizontal,
 }

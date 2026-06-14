@@ -105,6 +105,30 @@ Scrollbar visibility
    # Scrollbar appears during scroll, hides after 1.5 s
    bs.ScrollView(scrollbar_visibility="scroll", autohide_delay=1500)
 
+Scrollbar style
+~~~~~~~~~~~~~~~
+
+``scrollbar_variant=`` selects the bar style — ``'default'`` (the standard
+rounded bar, used here) or ``'thin'`` (a slim square bar that suits compact
+lists, panels, and popups). The list-style widgets (:class:`ListView
+<bootstack.ListView>`, :class:`Tree <bootstack.Tree>`, :class:`Gallery
+<bootstack.Gallery>`) default to ``'thin'``; ``ScrollView`` keeps the standard
+bar by default since it is a general-purpose container.
+
+.. code-block:: python
+
+   with bs.ScrollView(scrollbar_variant="thin", fill="both", expand=True):
+       for i in range(30):
+           bs.Label(f"Row {i:02d}")
+
+.. image:: /_static/examples/scrollview-thin-light.png
+   :class: bs-screenshot-light
+   :alt: ScrollView thin scrollbar — light theme
+
+.. image:: /_static/examples/scrollview-thin-dark.png
+   :class: bs-screenshot-dark
+   :alt: ScrollView thin scrollbar — dark theme
+
 Border
 ~~~~~~
 
