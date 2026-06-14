@@ -107,6 +107,8 @@ class ListItem(CompositeFrame):
         # Selected rows always show the wash, even alongside a selection control:
         # wash + control, consistent with DataTable.
         self._wash = True
+        # Neutral selection wash by default; opt in to an accent-tinted wash.
+        self._accent_selection = kwargs.pop('accent_selection', False)
 
         # Adjust padding based on density
         item_padding = (6, 3) if self._density == 'compact' else (8, 4)
@@ -199,7 +201,8 @@ class ListItem(CompositeFrame):
 
     def _li_style_opts(self) -> dict:
         """Common style options for child widgets (carries the wash flag)."""
-        opts = dict(hoverable=self._hoverable, density=self._density, wash=self._wash)
+        opts = dict(hoverable=self._hoverable, density=self._density, wash=self._wash,
+                    accent_selection=self._accent_selection)
         if self._separator_color:
             opts['separator'] = self._separator_color
         return opts

@@ -76,6 +76,7 @@ class ListView(PublicWidgetBase):
         height: int | None = None,
         density: WidgetDensity = "default",
         accent: AccentToken | str | None = None,
+        accent_selection: bool = False,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -94,6 +95,7 @@ class ListView(PublicWidgetBase):
             "show_separator": show_separators,
             "scrollbar_visibility": "always" if show_scrollbar else "never",
             "density": density,
+            "accent_selection": accent_selection,
         }
         if items is not None:
             internal_kwargs["items"] = items

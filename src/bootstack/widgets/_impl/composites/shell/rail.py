@@ -43,7 +43,7 @@ class Rail(Frame):
         master,
         *,
         on_select: Callable[[str], None],
-        accent: str = "primary",
+        accent: str | None = None,
         icon_size: int | None = None,
         labels: bool = False,
     ) -> None:

@@ -267,7 +267,9 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         sidebar_width: Expanded sidebar width in pixels.
         rail_width: Workspace-rail (and compact-sidebar) width in pixels.
         collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B. Default `True`.
-        nav_accent: Accent color for the active nav item. Default `'primary'`.
+        nav_accent: Accent for the active nav item. When `None` (default) the
+            selection is a neutral wash; set an accent token to tint the selected
+            nav item / rail indicator with it.
         rail_labels: Show a caption under each rail icon (widens the rail).
         remember_nav_state: Persist the sidebar mode and per-workspace active page
             across sessions. Default `False`.
@@ -313,7 +315,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         sidebar_width: int | None = None,
         rail_width: int | None = None,
         collapsible: bool = True,
-        nav_accent: AccentToken | str = "primary",
+        nav_accent: AccentToken | str | None = None,
         rail_labels: bool = False,
         remember_nav_state: bool = False,
         show_statusbar: bool = False,

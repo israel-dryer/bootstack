@@ -49,6 +49,7 @@ class ListView(Frame):
             enable_hover: bool = True,
             select_on_click: bool = None,
             density: Literal['default', 'compact'] = 'default',
+            accent_selection: bool = False,
             **kwargs: Unpack[FrameKwargs]
     ):
         """Initialize a ListView widget.
@@ -104,6 +105,7 @@ class ListView(Frame):
         self._striped = striped
         self._striped_background = striped_background
         self._density = density
+        self._accent_selection = accent_selection
 
         # Virtual scrolling state
         self._start_index = 0
@@ -331,7 +333,8 @@ class ListView(Frame):
                 focusable=self._enable_focus,
                 hoverable=self._enable_hover,
                 accent=self._accent,
-                density=self._density
+                density=self._density,
+                accent_selection=self._accent_selection,
             )
 
             # When striped AND separated, draw the row divider in the stripe

@@ -85,7 +85,7 @@ class StaticProvider:
 
     supports_compact = True
 
-    def __init__(self, *, accent: str = "primary", variant: str = "nav-quiet", surface: str = "card") -> None:
+    def __init__(self, *, accent: str | None = None, variant: str = "nav-quiet", surface: str = "card") -> None:
         self._accent = accent
         self._variant = variant
         self._surface = surface
@@ -184,7 +184,7 @@ class ListNavProvider:
         self,
         source: Any,
         *,
-        accent: str = "primary",
+        accent: str | None = None,
         separator: bool = False,
         density: str = "default",
         placeholder: str = "Select an item to view",
@@ -230,6 +230,8 @@ class ListNavProvider:
             show_chevron=self._chevron,  # opt-in disclosure affordance
             density=self._density,
             accent=self._accent,
+            # When a nav accent is set, the row selection tints to it (else neutral).
+            accent_selection=bool(self._accent),
             fill="both",
             expand=True,
         )
@@ -369,7 +371,7 @@ class TreeNavProvider:
         parent_field: str = "parent_id",
         label_field: str = "name",
         icon_field: str = "icon",
-        accent: str = "primary",
+        accent: str | None = None,
         density: str = "default",
         placeholder: str = "Select an item to view",
     ) -> None:
@@ -409,6 +411,8 @@ class TreeNavProvider:
             "show_scrollbar": False,
             "density": self._density,
             "accent": self._accent,
+            # When a nav accent is set, the row selection tints to it (else neutral).
+            "accent_selection": bool(self._accent),
             "fill": "both",
             "expand": True,
         }

@@ -53,7 +53,7 @@ class NavPanel(Frame):
         master,
         *,
         on_select: Callable[[str], None],
-        accent: str = "primary",
+        accent: str | None = None,
         variant: str = "nav-quiet",
         surface: str = "card",
     ) -> None:
