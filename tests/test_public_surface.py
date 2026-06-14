@@ -51,7 +51,6 @@ EXPECTED_TOPLEVEL = {
     "Picture", "Gallery", "Carousel", "Avatar",
     # navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
-    "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
     # overlays
     "Tooltip", "Toast", "toast",
     # forms

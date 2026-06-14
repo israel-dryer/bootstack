@@ -108,10 +108,6 @@ from bootstack.widgets.calendar import Calendar
 from bootstack.widgets.form import Form
 from bootstack.widgets.form import FormItem, FieldItem, GroupItem, TabsItem, TabItem
 
-from bootstack.widgets.sidenav import (
-    SideNav, SideNavItem, SideNavGroup, SideNavHeader, SideNavSeparator,
-)
-
 
 # ── Public API surface ────────────────────────────────────────────────────────
 # The curated top-level namespace: things you compose a UI with. Framework
@@ -148,7 +144,6 @@ __all__ = [
     "Picture", "Gallery", "Carousel", "Avatar",
     # Navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
-    "SideNav", "SideNavItem", "SideNavGroup", "SideNavHeader", "SideNavSeparator",
     # Overlays
     "Tooltip", "Toast", "toast",
     # Forms

@@ -41,8 +41,6 @@ _EXPORTS: dict[str, str] = {
     # Navigation
     "PageStack": "pagestack", "StackPage": "pagestack",
     "Tabs": "tabs", "TabPage": "tabs",
-    "SideNav": "sidenav", "SideNavItem": "sidenav", "SideNavGroup": "sidenav",
-    "SideNavHeader": "sidenav", "SideNavSeparator": "sidenav",
     # Overlays
     "Tooltip": "tooltip", "Toast": "toast", "toast": "toast",
     # Forms

@@ -243,6 +243,17 @@ class DisplayModeEvent:
     """The new display mode."""
 
 
+@dataclass(frozen=True, slots=True)
+class WorkspaceChangeEvent:
+    """Fires when the shell's active workspace changes (a rail switch)."""
+
+    workspace: str = ""
+    """The key of the workspace now active."""
+
+    prev_workspace: str | None = None
+    """The key of the previously active workspace, or `None`."""
+
+
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------

@@ -26,7 +26,11 @@ def build_separator_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 
 
     surface = b.color(surface_token)
     if accent_token == 'border':
-        accent_color = b.border(surface)
+        # `border_strength` (0..1) blends the stroke toward the surface's on-color;
+        # higher = closer to the surface = quieter line. Omitted = the b.border
+        # default. Lets callers (e.g. the shell dividers) soften the stroke.
+        strength = options.get('border_strength')
+        accent_color = b.border(surface) if strength is None else b.border(surface, strength)
     else:
         accent_color = b.color(accent_token)
 
