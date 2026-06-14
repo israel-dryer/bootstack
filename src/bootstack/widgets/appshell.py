@@ -128,9 +128,16 @@ class _Workspace:
         return _PageFrame(self._internal.panel())
 
     @property
-    def content(self) -> Any:
-        """The workspace's content region frame (for hand-driven swapping)."""
-        return self._internal.content
+    def content(self) -> _PageFrame:
+        """The workspace's content region as a container for hand-driven content.
+
+        Use with ``with ws.content:`` or ``parent=ws.content`` to place widgets
+        in the content area directly — the escape hatch for custom (`panel`) mode.
+        """
+        host = getattr(self, "_content_host", None)
+        if host is None:
+            host = self._content_host = _PageFrame(self._internal.content)
+        return host
 
     # ----- Data-bound content -----
 
@@ -632,9 +639,17 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     # ----- Region accessors -----
 
     @property
-    def content(self) -> Any:
-        """The content region frame (the active page container)."""
-        return self._internal.content
+    def content(self) -> _PageFrame:
+        """The content region as a container for hand-driven content.
+
+        Use with ``with shell.content:`` or ``parent=shell.content`` to place
+        widgets in the content area directly — the escape hatch for custom
+        (`panel`) mode.
+        """
+        host = getattr(self, "_content_host", None)
+        if host is None:
+            host = self._content_host = _PageFrame(self._internal.content)
+        return host
 
     @property
     def statusbar(self) -> StatusBar:
