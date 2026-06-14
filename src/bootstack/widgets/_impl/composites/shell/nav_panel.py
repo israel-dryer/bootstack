@@ -56,12 +56,14 @@ class NavPanel(Frame):
         accent: str | None = None,
         variant: str = "nav-quiet",
         surface: str = "card",
+        selection: str = "ghost",
     ) -> None:
         super().__init__(master, surface=surface)
         self._on_select = on_select
         self._accent = accent
         self._variant = variant
         self._surface = surface
+        self._selection = selection
         self._items: dict[str, RadioToggle] = {}
         self._compact = False
         # Shared selection signal: value is the selected item key (radio
@@ -131,6 +133,7 @@ class NavPanel(Frame):
             accent=self._accent,
             surface=self._surface,
             variant=self._item_variant(),
+            style_options={"selection_style": self._selection},
         )
         item.pack(fill="x", pady=(0, _ITEM_GAP))
         # Click reports the key to the shell (which drives NavModel). The radio

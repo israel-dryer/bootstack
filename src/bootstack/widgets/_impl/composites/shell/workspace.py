@@ -59,6 +59,7 @@ class Workspace:
         on_first_page: Callable[[str, str], None],
         nav_variant: str = "nav-quiet",
         nav_surface: str = "card",
+        nav_selection: str = "ghost",
     ) -> None:
         self._key = key
         self._sidebar = sidebar_panel
@@ -66,6 +67,7 @@ class Workspace:
         self._nav_accent = nav_accent
         self._nav_variant = nav_variant
         self._nav_surface = nav_surface
+        self._nav_selection = nav_selection
         self._on_select = on_select
         self._on_refresh = on_refresh
         self._on_first_page = on_first_page
@@ -96,7 +98,8 @@ class Workspace:
     def _ensure_static(self) -> StaticProvider:
         if self._provider is None:
             self._provider = StaticProvider(
-                accent=self._nav_accent, variant=self._nav_variant, surface=self._nav_surface
+                accent=self._nav_accent, variant=self._nav_variant,
+                surface=self._nav_surface, selection=self._nav_selection,
             )
             self._mount_provider()
         elif not isinstance(self._provider, StaticProvider):

@@ -434,23 +434,29 @@ def _build_nav_compact(b, ttk_style, *, accent_token, options, image_key, select
     b.map_style(ttk_style, **state_spec)
 
 
-def _quiet_colors(b, accent_token, options):
-    # Neutral by default: a light neutral wash (the active/hover level) + neutral
-    # foreground, like the buttons. When an accent is set (`nav_accent`), the
-    # selection tints to it — a subtle accent wash + accent foreground.
+def _selection_colors(b, accent_token, options):
+    """Selected nav-item (background, foreground), per accent + selection style.
+
+    Neutral by default (a light active-level wash + neutral fg). With an accent:
+    `'ghost'` (default) = a subtle accent wash + accent fg; `'solid'` = the solid
+    accent filled + the on-accent (e.g. white) fg — the higher-emphasis selected
+    look. Solid needs an accent; without one it falls back to the neutral wash.
+    """
     surface = b.color(options.get('surface', 'card'))
     if accent_token:
+        if options.get('selection_style') == 'solid':
+            fill = b.color(accent_token)
+            return fill, b.on_color(fill)
         return b.subtle(accent_token, surface), b.color(accent_token)
     return b.active(surface), b.on_color(surface)
+
+
+def _quiet_colors(b, accent_token, options):
+    return _selection_colors(b, accent_token, options)
 
 
 def _pill_colors(b, accent_token, options):
-    # Neutral by default (the rounded pill shape carries the prominence); tints to
-    # the accent when one is set.
-    surface = b.color(options.get('surface', 'card'))
-    if accent_token:
-        return b.subtle(accent_token, surface), b.color(accent_token)
-    return b.active(surface), b.on_color(surface)
+    return _selection_colors(b, accent_token, options)
 
 
 @BootstyleBuilderTTk.register_builder('nav-quiet', 'Toolbutton')

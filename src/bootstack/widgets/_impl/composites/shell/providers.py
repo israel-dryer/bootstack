@@ -85,10 +85,12 @@ class StaticProvider:
 
     supports_compact = True
 
-    def __init__(self, *, accent: str | None = None, variant: str = "nav-quiet", surface: str = "card") -> None:
+    def __init__(self, *, accent: str | None = None, variant: str = "nav-quiet",
+                 surface: str = "card", selection: str = "ghost") -> None:
         self._accent = accent
         self._variant = variant
         self._surface = surface
+        self._selection = selection
         self._nav: NavPanel | None = None
         self._pages: PageStack | None = None
         self._keys: list[str] = []
@@ -104,7 +106,7 @@ class StaticProvider:
         # Static authoring never refreshes from a source; on_refresh is ignored.
         self._nav = NavPanel(
             sidebar, on_select=on_select, accent=self._accent,
-            variant=self._variant, surface=self._surface,
+            variant=self._variant, surface=self._surface, selection=self._selection,
         )
         self._nav.pack(fill="both", expand=True)
         self._pages = PageStack(content)

@@ -62,6 +62,7 @@ class Shell(ShellLayout):
         collapsible: bool = True,
         remember_nav_state: bool = False,
         nav_accent: str | None = None,
+        nav_selection: str = "ghost",
         rail_labels: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -75,6 +76,7 @@ class Shell(ShellLayout):
 
         self._model = NavModel(sidebar_mode=sidebar_mode)
         self._nav_accent = nav_accent
+        self._nav_selection = nav_selection
         self._collapsible = collapsible
         self._remember_nav_state = remember_nav_state
         self._initial_applied = False
@@ -97,7 +99,8 @@ class Shell(ShellLayout):
         # NB: must NOT be named `self._rail` — that is ShellLayout's rail *region*
         # frame; shadowing it orphans the region so it never packs into the body.
         self._railnav = Rail(
-            self.rail, on_select=self._rail_select, accent=nav_accent, labels=rail_labels
+            self.rail, on_select=self._rail_select, accent=nav_accent,
+            labels=rail_labels, surface=self.rail_surface,
         )
         self._railnav.pack(fill="both", expand=True)
 
@@ -126,6 +129,7 @@ class Shell(ShellLayout):
             on_first_page=self._on_first_page,
             nav_variant=nav_variant,
             nav_surface=self.sidebar_surface,
+            nav_selection=self._nav_selection,
         )
         self._workspaces[key] = ws
         # The implicit default workspace never gets a rail icon (single-tier).

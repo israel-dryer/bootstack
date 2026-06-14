@@ -135,16 +135,17 @@ For a full application sidebar, use :class:`~bootstack.AppShell`.
    TabPage
    Tabs
 
-Menus and command bars
-----------------------
+Chrome bars and menus
+---------------------
 
-Command surfaces — a window menu bar, a command bar strip, a dropdown menu button,
-and a right-click context menu.
+Window chrome strips — a command bar, a passive status bar, a window menu bar, a
+dropdown menu button, and a right-click context menu.
 
 .. autosummary::
    :nosignatures:
 
    CommandBar
+   StatusBar
    ContextMenu
    ContextMenuItem
    MenuButton
@@ -235,6 +236,7 @@ groups, and tabbed sections.
       SplitPane
       SplitView
       StackPage
+      StatusBar
       Switch
       TabItem
       TabPage

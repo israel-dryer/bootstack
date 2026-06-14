@@ -13,5 +13,20 @@ opens a secondary top-level window.
    :template: toplevel
 
    App
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: appshell
+
    AppShell
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: toplevel
+
    Window
+
+The :class:`AppShell <bootstack.AppShell>` reference also documents its returned
+handles (``Workspace``, ``Page``, ``Rail``) in a *Supporting classes* section.

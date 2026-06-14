@@ -28,7 +28,45 @@ extensions = [
 # Autodoc
 # ---------------------------------------------------------------------------
 
-autodoc_member_order        = "bysource"
+autodoc_member_order        = "groupwise"
+# Group members by kind, leading with state (attributes/properties) before
+# behavior (methods) — the pandas/NumPy convention. Sphinx 9.1's default
+# (non-legacy) autodoc ranks groupwise members by each item's
+# `_groupwise_order_key`, where property (60) sorts after method (50), so methods
+# would lead. Override those keys so state-bearing members sort first; class
+# methods keep priority within the method group (they act as alt constructors).
+from sphinx.ext.autodoc import _property_types as _autodoc_pt  # noqa: E402
+
+
+def _state_first_order_key(self) -> int:
+    obj_type = self.obj_type
+    if obj_type in ("attribute", "property"):
+        return 20
+    if obj_type == "data":
+        return 10
+    if obj_type == "method":
+        if getattr(self, "is_classmethod", False):
+            return 48
+        if getattr(self, "is_staticmethod", False):
+            return 49
+        return 50
+    if obj_type == "exception":
+        return 5
+    if obj_type == "class":
+        return 30
+    if obj_type == "type":
+        return 70
+    return 55  # function / decorator / anything else
+
+
+for _pt_cls in (
+    _autodoc_pt._ClassDefProperties,
+    _autodoc_pt._FunctionDefProperties,
+    _autodoc_pt._AssignStatementProperties,
+    _autodoc_pt._TypeStatementProperties,
+):
+    _pt_cls._groupwise_order_key = property(_state_first_order_key)
+
 autodoc_typehints           = "description"
 autodoc_typehints_format    = "short"
 # Only emit parameter type hints for params that have an explicit docstring
