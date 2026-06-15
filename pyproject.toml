@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bootstack"
 version = "0.1.0a9"
-description = "End-to-end Python desktop framework. Declarative layout, reactive signals, semantic styling, 60+ widgets, and PyInstaller support out of the box."
+description = "From idea to a shipped desktop app, fast — a declarative, reactive, batteries-included Python UI framework with 60+ widgets, semantic theming, and built-in packaging."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
