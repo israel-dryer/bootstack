@@ -43,6 +43,12 @@ How-to guides
 
       Text, numbers, dates, choices, and sliders — and binding them to state.
 
+   .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Composing Fields
+      :link: /tasks/composing-fields
+      :link-type: doc
+
+      Add icons, labels, buttons, and toggles inside a field to specialize it.
+
    .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Handling Actions
       :link: /tasks/handling-actions
       :link-type: doc
@@ -183,6 +189,7 @@ Topics
 
    /tasks/displaying-data
    /tasks/getting-input
+   /tasks/composing-fields
    /tasks/handling-actions
    /tasks/building-forms
    /tasks/dialogs

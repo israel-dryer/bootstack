@@ -164,6 +164,7 @@ Boolean and choice controls bind through `signal=` as well — a `Checkbox` to a
 See also
 --------
 
+- :doc:`composing-fields` — add icons, buttons, and toggles inside a field.
 - :doc:`/reference/signals` — binding, deriving, and combining reactive values.
 - :doc:`/reference/validation` — checking input against rules.
 - :doc:`handling-actions` — reacting to changes and clicks.
