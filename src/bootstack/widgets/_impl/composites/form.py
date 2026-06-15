@@ -49,6 +49,10 @@ class FieldItem:
     the initial value."""
     readonly: bool = False
     """Render the field read-only. Default `False`."""
+    required: bool = False
+    """Mark the field as required — adds a `'required'` validation rule and appends
+    an asterisk to the label. Honored by the text, number, password, date, and
+    select editors; has no effect on boolean or slider editors. Default `False`."""
     visible: bool = True
     """Show the field. Set `False` to hide it. Default `True`."""
     column: int | None = None
@@ -563,6 +567,8 @@ class Form(Frame):
 
         editor = item.editor or self._default_editor_for_dtype(item.dtype, self._data.get(item.key))
         options = dict(item.editor_options or {})
+        if item.required:
+            options["required"] = True
         initial_value = self._data.get(item.key)
         variable = self._variable_for_item(item, initial_value, editor)
         label_text = item.label if item.label is not None else item.key.replace("_", " ").title()
@@ -723,6 +729,7 @@ class Form(Frame):
                         label=raw.get('label'),
                         dtype=raw.get('dtype'),
                         readonly=raw.get('readonly', False),
+                        required=raw.get('required', False),
                         visible=raw.get('visible', True),
                         column=raw.get('column'),
                         row=raw.get('row'),
@@ -762,7 +769,7 @@ class Form(Frame):
             elif isinstance(raw, Mapping):
                 normalized.append(DialogButton(**raw))  # type: ignore[arg-type]
             elif isinstance(raw, str):
-                normalized.append(DialogButton(text=raw, role="primary" if not normalized else "secondary"))
+                normalized.append(DialogButton(text=raw))
         return normalized
 
     # --- data helpers ---------------------------------------------------
