@@ -7,6 +7,7 @@ from typing import Literal
 
 ContainerType = Literal["grid", "pack"]
 TemplateType = Literal["basic", "appshell"]
+NavStyle = Literal["single", "grouped", "master-detail", "workspaces"]
 
 
 # =============================================================================
@@ -68,7 +69,7 @@ class MainView:
             self._build()
 
     def _build(self) -> None:
-        bs.Label("Welcome to {app_name}", font="heading-lg[bold]", columnspan=2)
+        bs.Label("Welcome to {app_name}", font="heading-lg", columnspan=2)
         bs.Label("Name:")
         self.name_field = bs.TextField()
         bs.Label("Email:")
@@ -105,9 +106,9 @@ class MainView:
             self._build()
 
     def _build(self) -> None:
-        bs.Label("Welcome to {app_name}", font="heading-lg[bold]")
-        self.name_field = bs.TextField(label="Name:", fill="horizontal")
-        self.email_field = bs.TextField(label="Email:", fill="horizontal")
+        bs.Label("Welcome to {app_name}", font="heading-lg")
+        self.name_field = bs.TextField(label="Name:", fill="x")
+        self.email_field = bs.TextField(label="Email:", fill="x")
         bs.Button("Get Started", accent="primary", on_click=self._on_submit)
 
     def _on_submit(self) -> None:
@@ -143,7 +144,7 @@ class {class_name}:
             self._build()
 
     def _build(self) -> None:
-        bs.Label("{class_name}", font="heading-lg[bold]", columnspan=2)
+        bs.Label("{class_name}", font="heading-lg", columnspan=2)
         # Add your widgets here
 '''
 
@@ -170,7 +171,7 @@ class {class_name}:
             self._build()
 
     def _build(self) -> None:
-        bs.Label("{class_name}", font="heading-lg[bold]")
+        bs.Label("{class_name}", font="heading-lg")
         # Add your widgets here
 '''
 
@@ -181,52 +182,40 @@ DIALOG_TEMPLATE = '''\
 """
 
 import bootstack as bs
-from bootstack.dialogs import Dialog
+from bootstack.dialogs import Dialog, DialogButton
 
 
-class {class_name}(Dialog):
-    """{class_name} modal dialog."""
+class {class_name}:
+    """A custom {class_name} dialog.
 
-    def __init__(self, parent, title: str = "{class_name}", **kwargs):
-        super().__init__(parent, title=title, **kwargs)
+    Usage::
 
-    def create_body(self, master) -> bs.Frame:
-        """Create the dialog body."""
-        body = bs.Frame(master, padding=20)
+        result = {class_name}(parent=app).show()
+        if result:
+            ...
+    """
 
-        bs.Label(
-            body,
-            text="Dialog content goes here",
-        ).pack(pady=10)
+    def __init__(self, parent=None):
+        self._dialog = Dialog(
+            title="{class_name}",
+            content_builder=self._build,
+            buttons=[
+                DialogButton("Cancel", role="cancel"),
+                DialogButton("OK", role="primary", result=True, default=True),
+            ],
+            min_size=(360, 200),
+            parent=parent,
+        )
 
-        return body
+    def _build(self, frame) -> None:
+        """Fill the dialog body."""
+        with bs.VStack(padding=20, gap=8, parent=frame):
+            bs.Label("Dialog content goes here.")
 
-    def create_buttonbox(self, master) -> bs.Frame:
-        """Create the dialog buttons."""
-        box = bs.Frame(master, padding=(20, 10))
-
-        bs.Button(
-            box,
-            text="Cancel",
-            command=self.cancel,
-        ).pack(side="right", padx=5)
-
-        bs.Button(
-            box,
-            text="OK",
-            accent="primary",
-            command=self.ok,
-        ).pack(side="right")
-
-        return box
-
-    def validate(self) -> bool:
-        """Validate dialog input before closing."""
-        return True
-
-    def apply(self) -> None:
-        """Process dialog input after OK is clicked."""
-        self.result = True
+    def show(self):
+        """Show the dialog modally and return its result (None if cancelled)."""
+        self._dialog.show()
+        return self._dialog.result
 '''
 
 
@@ -300,7 +289,29 @@ Application settings are defined in `bootstack.toml`:
 # AppShell templates
 # =============================================================================
 
-APPSHELL_MAIN_PY_TEMPLATE = '''\
+def _appshell_chrome(app_name: str) -> str:
+    """The shared menu bar, command bar, and status bar baseline for AppShell
+    scaffolds. Delete what you do not need."""
+    return f'''\
+        # --- Menu bar -------------------------------------------------------
+        with shell.menubar.add_menu("File") as file_menu:
+            file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+        with shell.menubar.add_menu("Help") as help_menu:
+            help_menu.add_action(
+                "About",
+                on_click=lambda: bs.alert("{app_name}", title="About"),
+            )
+
+        # --- Command bar ----------------------------------------------------
+        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+
+        # --- Status bar -----------------------------------------------------
+        shell.statusbar.add_text("Ready")
+        shell.statusbar.add_text("v0.1.0", side="right")
+'''
+
+
+APPSHELL_MAIN_SINGLE_TEMPLATE = '''\
 """
 {app_name} - A bootstack application.
 
@@ -319,18 +330,154 @@ def main() -> None:
         title="{app_name}",
         theme="{theme}",
         size=(1000, 650),
+        show_statusbar=True,
     ) as shell:
-        shell.commandbar.add_button(icon="sun", on_click=bs.toggle_theme)
-
+{chrome}
+        # --- Navigation: a flat sidebar of pages ----------------------------
         with shell.add_page("home", text="Home", icon="house"):
             HomePage()
 
-        shell.add_separator()
-
-        with shell.add_page("settings", text="Settings", icon="gear", is_footer=True):
+        with shell.add_footer_page("settings", text="Settings", icon="gear"):
             SettingsPage()
 
         shell.navigate("home")
+
+    shell.run()
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+APPSHELL_MAIN_GROUPED_TEMPLATE = '''\
+"""
+{app_name} - A bootstack application.
+
+Run with: python -m {module_name}
+"""
+
+import bootstack as bs
+
+from {module_name}.pages.home_page import HomePage
+from {module_name}.pages.reports_page import ReportsPage
+from {module_name}.pages.profile_page import ProfilePage
+from {module_name}.pages.settings_page import SettingsPage
+
+
+def main() -> None:
+    """Application entry point."""
+    with bs.AppShell(
+        title="{app_name}",
+        theme="{theme}",
+        size=(1000, 650),
+        show_statusbar=True,
+    ) as shell:
+{chrome}
+        # --- Navigation: pages grouped under section headers ----------------
+        shell.add_header("Workspace")
+        with shell.add_page("home", text="Home", icon="house"):
+            HomePage()
+        with shell.add_page("reports", text="Reports", icon="bar-chart"):
+            ReportsPage()
+
+        shell.add_header("Account")
+        with shell.add_page("profile", text="Profile", icon="person"):
+            ProfilePage()
+
+        with shell.add_footer_page("settings", text="Settings", icon="gear"):
+            SettingsPage()
+
+        shell.navigate("home")
+
+    shell.run()
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+APPSHELL_MAIN_MASTER_DETAIL_TEMPLATE = '''\
+"""
+{app_name} - A bootstack application.
+
+Run with: python -m {module_name}
+"""
+
+import bootstack as bs
+from bootstack.data import MemoryDataSource
+
+from {module_name}.pages.detail_view import DetailView
+
+# Sample records drive the sidebar list. Swap in your own data source.
+RECORDS = MemoryDataSource().load([
+    {{"id": 1, "title": "Dana Reyes", "text": "Q3 roadmap review", "icon": "person"}},
+    {{"id": 2, "title": "Sam Okonkwo", "text": "Budget approval", "icon": "person"}},
+    {{"id": 3, "title": "Priya Nair", "text": "New hire onboarding", "icon": "person"}},
+])
+
+
+def main() -> None:
+    """Application entry point."""
+    with bs.AppShell(
+        title="{app_name}",
+        theme="{theme}",
+        size=(1000, 650),
+        show_statusbar=True,
+    ) as shell:
+{chrome}
+        # --- Navigation: a record list drives a detail view -----------------
+        shell.list_nav(RECORDS)
+
+        @shell.detail
+        def show(record):
+            DetailView(record)
+
+    shell.run()
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+APPSHELL_MAIN_WORKSPACES_TEMPLATE = '''\
+"""
+{app_name} - A bootstack application.
+
+Run with: python -m {module_name}
+"""
+
+import bootstack as bs
+
+from {module_name}.pages.home_page import HomePage
+from {module_name}.pages.reports_page import ReportsPage
+from {module_name}.pages.settings_page import SettingsPage
+
+
+def main() -> None:
+    """Application entry point."""
+    with bs.AppShell(
+        title="{app_name}",
+        theme="{theme}",
+        size=(1000, 650),
+        show_statusbar=True,
+        rail_labels=True,
+    ) as shell:
+{chrome}
+        # --- Navigation: a labeled rail of workspaces -----------------------
+        with shell.add_workspace("home", text="Home", icon="house") as ws:
+            with ws.add_page("overview", text="Overview", icon="speedometer2"):
+                HomePage()
+
+        with shell.add_workspace("reports", text="Reports", icon="bar-chart") as ws:
+            with ws.add_page("monthly", text="Monthly", icon="calendar3"):
+                ReportsPage()
+
+        with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
+            with ws.add_page("general", text="General", icon="sliders"):
+                SettingsPage()
 
     shell.run()
 
@@ -354,7 +501,7 @@ class HomePage:
             self._build()
 
     def _build(self):
-        bs.Label("Welcome to {app_name}", font="heading-xl[bold]")
+        bs.Label("Welcome to {app_name}", font="heading-xl")
         bs.Label(
             "This is your home page. Edit this file to get started.",
             wrap_width=500,
@@ -407,9 +554,51 @@ class {class_name}:
             self._build()
 
     def _build(self):
-        bs.Label("{page_title}", font="heading-xl[bold]")
+        bs.Label("{page_title}", font="heading-lg")
         with bs.GroupBox("Content", fill="both", expand=True):
             pass  # Add your widgets here
+'''
+
+
+APPSHELL_CONTENT_PAGE_TEMPLATE = '''\
+"""{page_title} page."""
+
+import bootstack as bs
+
+
+class {class_name}:
+    """{page_title} page content."""
+
+    def __init__(self, parent=None):
+        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+            self._build()
+
+    def _build(self):
+        bs.Label("{page_title}", font="heading-lg")
+        with bs.GroupBox("Content", fill="both", expand=True):
+            bs.Label("Add your widgets here.")
+'''
+
+
+APPSHELL_DETAIL_VIEW_TEMPLATE = '''\
+"""Detail view for the record selected in the sidebar list."""
+
+import bootstack as bs
+
+
+class DetailView:
+    """Renders the record selected in the master list."""
+
+    def __init__(self, record, parent=None):
+        self.record = record
+        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+            self._build()
+
+    def _build(self):
+        bs.Label(self.record["title"], font="heading-lg")
+        bs.Label(self.record.get("text", ""), accent="secondary")
+        bs.Separator(fill="x")
+        bs.Label("Detail content for this record goes here.")
 '''
 
 
@@ -438,8 +627,8 @@ bootstack add page DashboardPage
 
 # Then wire it up in main.py:
 #   from {module_name}.pages.dashboard_page import DashboardPage
-#   page = shell.add_page("dashboard", text="Dashboard", icon="speedometer2")
-#   DashboardPage(page)
+#   with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
+#       DashboardPage()
 ```
 
 ### Building for Distribution
@@ -522,6 +711,7 @@ def create_project(
     theme: str = "bootstrap-light",
     template: TemplateType = "basic",
     simple: bool = False,
+    nav: NavStyle = "single",
 ) -> None:
     """Create a new bootstack project.
 
@@ -532,9 +722,11 @@ def create_project(
         theme: Theme name for the application.
         template: Project template ('basic' or 'appshell').
         simple: If True, create minimal project without build config.
+        nav: Navigation style for the appshell template ('single', 'grouped',
+            'master-detail', or 'workspaces'). Ignored for the basic template.
     """
     if template == "appshell":
-        _create_appshell_project(name, target_dir, theme, simple)
+        _create_appshell_project(name, target_dir, theme, simple, nav)
     else:
         _create_basic_project(name, target_dir, container, theme, simple)
 
@@ -609,13 +801,22 @@ def _create_basic_project(
         (target_dir / "README.md").write_text(readme_content, encoding="utf-8")
 
 
+_APPSHELL_MAIN_TEMPLATES = {
+    "single": APPSHELL_MAIN_SINGLE_TEMPLATE,
+    "grouped": APPSHELL_MAIN_GROUPED_TEMPLATE,
+    "master-detail": APPSHELL_MAIN_MASTER_DETAIL_TEMPLATE,
+    "workspaces": APPSHELL_MAIN_WORKSPACES_TEMPLATE,
+}
+
+
 def _create_appshell_project(
     name: str,
     target_dir: Path,
     theme: str,
     simple: bool,
+    nav: NavStyle = "single",
 ) -> None:
-    """Create an AppShell project with sidebar navigation and pages."""
+    """Create an AppShell project with the chosen navigation style."""
     from bootstack.cli.config import write_config
 
     # Normalize names
@@ -632,11 +833,13 @@ def _create_appshell_project(
     if not simple:
         assets_dir.mkdir(parents=True, exist_ok=True)
 
-    # Write main.py
-    main_content = APPSHELL_MAIN_PY_TEMPLATE.format(
+    # Write main.py for the chosen navigation style
+    main_template = _APPSHELL_MAIN_TEMPLATES.get(nav, APPSHELL_MAIN_SINGLE_TEMPLATE)
+    main_content = main_template.format(
         app_name=name,
         module_name=module_name,
         theme=theme,
+        chrome=_appshell_chrome(name),
     )
     (src_dir / "main.py").write_text(main_content, encoding="utf-8")
 
@@ -649,14 +852,30 @@ def _create_appshell_project(
         '"""Pages package."""\n', encoding="utf-8"
     )
 
-    # Write home_page.py
-    home_content = APPSHELL_HOME_PAGE_TEMPLATE.format(app_name=name)
-    (pages_dir / "home_page.py").write_text(home_content, encoding="utf-8")
+    def _write_content_page(class_name: str, title: str) -> None:
+        content = APPSHELL_CONTENT_PAGE_TEMPLATE.format(
+            class_name=class_name, page_title=title
+        )
+        (pages_dir / f"{_camel_to_snake(class_name)}.py").write_text(
+            content, encoding="utf-8"
+        )
 
-    # Write settings_page.py
-    (pages_dir / "settings_page.py").write_text(
-        APPSHELL_SETTINGS_PAGE_TEMPLATE, encoding="utf-8"
-    )
+    # Write the page files the chosen nav style imports
+    if nav == "master-detail":
+        (pages_dir / "detail_view.py").write_text(
+            APPSHELL_DETAIL_VIEW_TEMPLATE, encoding="utf-8"
+        )
+    else:
+        (pages_dir / "home_page.py").write_text(
+            APPSHELL_HOME_PAGE_TEMPLATE.format(app_name=name), encoding="utf-8"
+        )
+        (pages_dir / "settings_page.py").write_text(
+            APPSHELL_SETTINGS_PAGE_TEMPLATE, encoding="utf-8"
+        )
+        if nav in ("grouped", "workspaces"):
+            _write_content_page("ReportsPage", "Reports")
+        if nav == "grouped":
+            _write_content_page("ProfilePage", "Profile")
 
     # Write bootstack.toml
     write_config(

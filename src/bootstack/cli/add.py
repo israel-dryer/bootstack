@@ -204,8 +204,8 @@ def run_add_page(args: argparse.Namespace) -> None:
     import_module = f"{module_name}.pages" if module_name else "<module>.pages"
     print(f"  from {import_module}.{file_path.stem} import {class_name}")
     scrollable_arg = ", scrollable=True" if scrollable else ""
-    print(f'  page = shell.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg})')
-    print(f"  {class_name}(page)")
+    print(f'  with shell.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg}):')
+    print(f"      {class_name}()")
 
 
 def run_add_dialog(args: argparse.Namespace) -> None:
