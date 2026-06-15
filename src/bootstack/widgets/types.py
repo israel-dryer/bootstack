@@ -130,6 +130,13 @@ current `'selection'`."""
 ExportFormat = Literal['csv', 'tsv', 'xlsx']
 """A tabular export format — `'csv'`, `'tsv'`, or `'xlsx'`."""
 
+ToastCorner = Literal['top-left', 'top-right', 'bottom-left', 'bottom-right']
+"""A screen corner for a `toast()` or `Notification` — anchored to the corner of
+the monitor the app window is on, where they stack."""
+
+SnackbarAlign = Literal['left', 'center', 'right']
+"""Horizontal alignment of a `Snackbar` along the app window's bottom edge."""
+
 # ---------------------------------------------------------------------------
 # Base TypedDicts
 # ---------------------------------------------------------------------------

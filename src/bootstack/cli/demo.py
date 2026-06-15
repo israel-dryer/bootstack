@@ -589,7 +589,7 @@ def _build_overlays_page():
             bs.Label("Click buttons to show toast notifications:")
 
             def show_toast(title, message, accent):
-                bs.Toast(title=title, message=message, accent=accent, duration=3000).show()
+                bs.toast(message, title=title, accent=accent, duration=3000)
 
             with bs.HStack(gap=8):
                 bs.Button("Success", accent="success",
@@ -612,17 +612,16 @@ def _build_dialogs_page():
             with bs.HStack(gap=8):
                 bs.Button("alert()",   on_click=lambda: bs.alert("Operation complete."))
                 bs.Button("confirm()", accent="warning",
-                          on_click=lambda: bs.Toast(
-                              title="Result",
-                              detail=f"confirm() → {bs.confirm('Continue?')}",
-                              duration=2000,
-                          ).show())
+                          on_click=lambda: bs.toast(
+                              f"confirm() returned {bs.confirm('Continue?')}",
+                              title="Result", duration=2000,
+                          ))
 
         with bs.GroupBox("Input Dialogs", fill="horizontal"):
             def _ask(fn, *args, **kw):
                 result = fn(*args, **kw)
                 if result is not None:
-                    bs.Toast(title="Result", detail=str(result), duration=2000).show()
+                    bs.toast(str(result), title="Result", duration=2000)
 
             with bs.HStack(gap=8):
                 bs.Button("ask_string()",
@@ -644,7 +643,7 @@ def _build_dialogs_page():
                 )
                 dlg.show()
                 if dlg.result:
-                    bs.Toast(title="Form Result", message=str(dlg.result), duration=3000).show()
+                    bs.toast(str(dlg.result), title="Form Result", duration=3000)
 
             bs.Button("Open FormDialog", accent="primary", on_click=_show_form)
 
@@ -672,7 +671,7 @@ def _build_theme_page():
 
         with bs.GroupBox("Accent Colors", fill="horizontal"):
             with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
-                for color in ("primary", "secondary", "success", "warning", "danger"):
+                for color in ("primary", "secondary", "info", "success", "warning", "danger"):
                     bs.Button(color.title(), accent=color)
 
         with bs.GroupBox("Surfaces", fill="horizontal"):

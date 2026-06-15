@@ -55,6 +55,7 @@ class Toast:
             position: str | None = None,
             alert: bool = False,
             on_dismissed: Callable[[Any], Any] | None = None,
+            place: Callable[[Any], None] | None = None,
     ) -> None:
         """Initialize a Toast notification.
 
@@ -93,6 +94,10 @@ class Toast:
         self._position = position
         self._alert = alert
         self._on_dismissed = on_dismissed
+        # Optional positioning hook: a callable given the built (off-screen,
+        # measured) Toplevel that sets its final geometry. Lets a facade own
+        # corner/window placement and stacking; bypasses the default logic.
+        self._place = place
 
         # top level widget
         self._toplevel: Toplevel | None = None
@@ -208,9 +213,17 @@ class Toast:
         has_title_and_message = has_title and self._message is not None
         resolved_title_font = "label" if has_title else "body"
         subtle_accent = f"{self._accent}[subtle]" if self._accent else None
-        muted_foreground = "background[muted]" if self._accent is None else f"{self._accent}[muted]"
-        resolved_icon = self._icon if self._icon is not None else "bell-fill"
-        icon_spec = resolved_icon if isinstance(resolved_icon, dict) else {"name": resolved_icon, "size": 20}
+        # Text uses the accent's *emphasis* shade — a dark, readable, accent-
+        # tinted color (matching Bootstrap's text-emphasis), not the bright base
+        # accent, which is low-contrast and harsh as text on the subtle wash.
+        # No accent -> None, so the label falls back to the on-surface foreground.
+        text_accent = f"{self._accent}_emphasis" if self._accent else None
+        # Icon is opt-in (no forced default): a toast is its message, optionally
+        # preceded by an icon. Frameworks don't agree on a default, so render one
+        # only when asked.
+        icon_spec = None
+        if self._icon:
+            icon_spec = self._icon if isinstance(self._icon, dict) else {"name": self._icon, "size": 20}
 
         # ------ Toplevel setup ------
 
@@ -230,55 +243,61 @@ class Toast:
 
         # ------ Toast Layout ------
 
-        container = _Frame(top, padding=4, accent=self._accent, show_border=True,
+        # The container carries the subtle accent wash; the border stays neutral
+        # (no accent) so the card has a quiet edge rather than a bright outline.
+        container = _Frame(top, padding=4, show_border=True,
                            surface=subtle_accent or 'overlay')
         container.pack(fill='both', expand=True)
 
-        header = _Frame(container, padding=(8, 8, 0, 8))
+        # Tight gap below the title so it reads as one unit with the message;
+        # the breathing room lives on the outside (container padding + message
+        # bottom). A lone title (no message) keeps a balanced bottom instead.
+        header_bottom = 8 if not has_title_and_message else 2
+        header = _Frame(container, padding=(8, 8, 8, header_bottom))
         header.pack(side='top', fill='x')
 
-        # icon
+        # icon — the emphasis shade, like the text, so it stays legible on the
+        # subtle wash (the bright base accent — e.g. warning's yellow — washes
+        # out against its own pale tint).
         if icon_spec:
-            _Label(header, icon=icon_spec, accent=self._accent).pack(side='left', padx=(0, 8))
+            _Label(header, icon=icon_spec, accent=text_accent).pack(side='left', padx=(0, 8))
 
-        # title
+        # title — emphasis (dark, readable accent-tinted) text
         _Label(
             header,
             text=self._title if has_title else self._message,
             font=resolved_title_font,
             wraplength=380,
             justify='left',
-            accent=self._accent,
+            accent=text_accent,
         ).pack(side='left', fill='x')
 
-        # close
+        # close — a clickable x icon, not a Button: a compact button still floors
+        # ~12px above the title row and would inflate the header. A Label icon
+        # matches the title/icon height, so the row stays content-sized.
         if self._show_close_button:
-            _Button(
-                header,
-                icon="x",
-                accent=self._accent,
-                variant="ghost",
-                style_options={"icon_only": True},
-                command=self.hide
-            ).pack(side='right')
+            close = _Label(header, icon={"name": "x-lg", "size": 14}, accent="secondary")
+            close.configure(cursor="hand2")
+            close.bind("<Button-1>", lambda _e: self.hide())
+            close.pack(side='right', padx=(4, 0))
 
-        # memo
+        # memo — muted metadata (no extra vertical padding; the header owns it)
         if self._memo:
             _Label(
                 header,
                 text=self._memo,
                 font="caption",
-                accent=self._accent,
-            ).pack(side='right', pady=8, padx=(0, 0 if self._show_close_button else 12))
+                accent="secondary",
+            ).pack(side='right', padx=(0, 4 if self._show_close_button else 12))
 
-        # message
+        # message — emphasis text
         if has_title_and_message:
             _Label(
                 container,
                 text=self._message,
                 wraplength=400,
                 justify='left',
-                accent=self._accent,
+                accent=text_accent,
             ).pack(side='top', fill='x', pady=(0, 8), padx=8)
 
         # buttons
@@ -316,8 +335,13 @@ class Toast:
         )
         top.update_idletasks()
 
+        # A facade-supplied placement hook owns corner/window positioning and
+        # stacking; it runs while the window is still off-screen, so there is no
+        # reposition flash.
+        if self._place is not None:
+            self._place(top)
         # Apply positioning using WindowPositioning utilities
-        if self._position:
+        elif self._position:
             # Support legacy geometry strings (e.g., "-25-75")
             if self._position.startswith(('+', '-')):
                 # Legacy geometry string - use directly

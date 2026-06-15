@@ -153,13 +153,17 @@ dropdown menu button, and a right-click context menu.
 Overlays
 --------
 
-Transient, floating UI — hover tooltips and dismissible toast notifications.
+Transient, floating UI — hover tooltips and the three message surfaces
+(passive toast, persistent notification, and in-app snackbar).
 
 .. autosummary::
    :nosignatures:
 
-   Toast
+   Notification
+   Snackbar
    Tooltip
+   snackbar
+   toast
 
 Forms
 -----
@@ -217,6 +221,7 @@ groups, and tabbed sections.
       Label
       ListView
       MenuButton
+      Notification
       NumberField
       PageStack
       PasswordField
@@ -232,6 +237,8 @@ groups, and tabbed sections.
       SelectButton
       Separator
       Slider
+      Snackbar
+      snackbar
       SpinnerField
       SplitPane
       SplitView
@@ -245,7 +252,7 @@ groups, and tabbed sections.
       TextArea
       TextField
       TimeField
-      Toast
+      toast
       ToggleButton
       ToggleGroup
       Tooltip

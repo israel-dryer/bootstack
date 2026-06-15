@@ -1,73 +1,71 @@
+"""Hero screenshots for the Toasts & Notifications guide.
+
+One card per scene, captured directly via app._capture_target. Each card is
+placed over the (topmost) app window so the small capture pad picks up a clean
+neutral backdrop rather than the desktop. The internal engine is used so the
+scene can position each card and grab its Toplevel; the rendered cards are
+identical to the public toast() / Notification / Snackbar surfaces.
+
+Regenerate with::
+
+    py -3.12 docs/scripts/take_screenshots.py toast
+"""
 import bootstack as bs
+from bootstack.widgets._impl.composites.toast import Toast as _Toast
+
+# The runner places the app at +200+100; sit the card just inside it.
+_POS = "+230+150"
+
+
+def _scene(name, size, **toast_kwargs):
+    with bs.App(title=name, size=size, padding=0) as app:
+        def show():
+            t = _Toast(duration=9000, position=_POS, **toast_kwargs)
+            t.show()
+            app._capture_target = t._toplevel
+        # Show after the runner lifts the app to topmost (t=800) so the card,
+        # also topmost, sits above it; grab follows at t=950.
+        app.tk.after(850, show)
+    app.run()
 
 
 def hero():
-    with bs.App(title="Toast", size=(440, 80), padding=0) as app:
-        def show_toast():
-            bs.Toast(
-                message="Your files have been saved.",
-                duration=8000,
-                position="+212+141",
-            ).show()
-        app.tk.after(850, show_toast)
-    app.run()
+    # A passive toast — single line: icon + message, no title, no close button.
+    _scene(
+        "toast", (440, 160),
+        message="Your changes were saved.",
+        icon="check-circle-fill",
+        accent="success",
+        show_close_button=False,
+    )
 
 
-def detail():
-    with bs.App(title="Toast — Detail", size=(440, 80), padding=0) as app:
-        def show_toast():
-            bs.Toast(
-                message="Backup complete",
-                detail="just now",
-                accent="success",
-                duration=8000,
-                position="+212+141",
-            ).show()
-        app.tk.after(850, show_toast)
-    app.run()
+def notification():
+    # Persistent — close button + muted detail.
+    _scene(
+        "notification", (440, 200),
+        title="Backup complete",
+        message="3.2 GB uploaded to the cloud.",
+        memo="just now",
+        icon="cloud-check",
+        accent="success",
+        show_close_button=True,
+    )
 
 
-def accents():
-    with bs.App(title="Toast — Accents", size=(440, 320), padding=0) as app:
-        def show_toasts():
-            for i, (accent, message, icon) in enumerate([
-                ("info",    "Update available", "info-circle-fill"),
-                ("success", "Changes saved",    "check-circle-fill"),
-                ("warning", "Storage is low",   "exclamation-triangle-fill"),
-                ("danger",  "Upload failed",    "x-circle-fill"),
-            ]):
-                bs.Toast(
-                    message=message,
-                    accent=accent,
-                    icon=icon,
-                    duration=8000,
-                    position=f"+212+{141 + i * 78}",
-                ).show()
-        app.tk.after(850, show_toasts)
-    app.run()
-
-
-def actions():
-    with bs.App(title="Toast — Actions", size=(440, 180), padding=0) as app:
-        def show_toast():
-            bs.Toast(
-                title="Delete 3 files?",
-                message="This action cannot be undone.",
-                show_close_button=False,
-                actions=[
-                    {"text": "Cancel"},
-                    {"text": "Delete", "accent": "danger"},
-                ],
-                duration=8000,
-                position="+212+141",
-            ).show()
-        app.tk.after(850, show_toast)
-    app.run()
+def snackbar():
+    # Neutral surface + a single ghost action (matches the public Snackbar).
+    _scene(
+        "snackbar", (440, 160),
+        message="Conversation archived.",
+        icon="",
+        show_close_button=False,
+        buttons=[{"text": "Undo", "variant": "ghost", "accent": "primary"}],
+    )
 
 
 SCENES = {
-    "hero":    hero,
-    "detail":  detail,
-    "accents": accents,
-    "actions": actions,
+    "hero": hero,
+    "notification": notification,
+    "snackbar": snackbar,
 }

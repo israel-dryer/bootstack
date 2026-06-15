@@ -1,84 +1,35 @@
-"""Toast demo — click buttons to trigger notifications."""
+"""Toasts, notifications, and snackbars — click each to compare."""
 import bootstack as bs
 
 
-def _basic():
-    bs.toast("This is a simple notification.")
+with bs.App(title="Transient messages", size=(560, 360), padding=20, gap=12) as app:
+    bs.Label("Transient messages", font="heading-lg")
+    bs.Label("Three surfaces, each for a different job.", accent="secondary")
 
+    with bs.GroupBox("toast() — passive, auto-dismiss", fill="x"):
+        with bs.HStack(gap=8):
+            bs.Button("Saved", accent="success",
+                      on_click=lambda: bs.toast("Your changes were saved.",
+                                                icon="check-circle", accent="success"))
+            bs.Button("Low battery", accent="warning",
+                      on_click=lambda: bs.toast("Battery at 12%.",
+                                                icon="battery-half", accent="warning"))
 
-def _with_title():
-    bs.toast("Your changes have been saved.", title="File saved", accent="success",
-             icon="check-circle")
+    with bs.GroupBox("Notification — persistent, closes on demand", fill="x"):
+        bs.Button("Notify",
+                  on_click=lambda: bs.Notification(
+                      "Backup complete",
+                      message="3.2 GB uploaded to the cloud.",
+                      detail="just now", icon="cloud-check", accent="success",
+                  ).show())
 
-
-def _success():
-    bs.Toast(title="Success", message="Operation completed successfully.",
-             accent="success", duration=3000).show()
-
-
-def _warning():
-    bs.Toast(title="Low disk space",
-             message="You have less than 1 GB remaining.",
-             accent="warning", icon="exclamation-triangle", duration=4000).show()
-
-
-def _danger():
-    bs.Toast(title="Upload failed",
-             message="Could not reach the server. Check your connection.",
-             accent="danger", icon="x-circle", duration=5000).show()
-
-
-def _info():
-    bs.Toast(title="Update available",
-             message="Version 2.1 is ready to install.",
-             accent="info", icon="arrow-down-circle", duration=4000).show()
-
-
-def _with_detail():
-    bs.Toast(message="Backup completed.", detail="just now",
-             accent="success", icon="cloud-check", duration=3000).show()
-
-
-def _with_actions():
-    bs.Toast(
-        title="Delete 3 files?",
-        message="This action cannot be undone.",
-        accent="danger",
-        show_close_button=False,
-        actions=[
-            {"text": "Cancel"},
-            {"text": "Delete", "accent": "danger"},
-        ],
-    ).show()
-
-
-def _persistent():
-    bs.Toast(title="Action required",
-             message="Review pending changes before proceeding.",
-             accent="warning", duration=None).show()
-
-
-with bs.App(title="Toast", minsize=(500, 500), padding=20, gap=12) as app:
-
-    bs.Label("Simple notification", font="heading-md")
-    with bs.HStack(gap=8):
-        bs.Button("Basic", on_click=_basic)
-        bs.Button("With title and icon", on_click=_with_title)
-
-    bs.Label("Accent colors", font="heading-md")
-    with bs.HStack(gap=8):
-        bs.Button("Success", on_click=_success)
-        bs.Button("Warning", on_click=_warning)
-        bs.Button("Danger", on_click=_danger)
-        bs.Button("Info", on_click=_info)
-
-    bs.Label("Detail text", font="heading-md")
-    bs.Button("With detail (timestamp)", on_click=_with_detail)
-
-    bs.Label("Action buttons", font="heading-md")
-    bs.Button("Confirm delete", on_click=_with_actions)
-
-    bs.Label("Persistent (no auto-dismiss)", font="heading-md")
-    bs.Button("Show persistent", on_click=_persistent)
+    with bs.GroupBox("Snackbar — one action, window bottom edge", fill="x"):
+        with bs.HStack(gap=8):
+            bs.Button("Archive",
+                      on_click=lambda: bs.snackbar("Conversation archived.",
+                                                   action="Undo",
+                                                   on_action=lambda: bs.toast("Restored.")))
+            bs.Button("Copy",
+                      on_click=lambda: bs.snackbar("Copied to clipboard."))
 
 app.run()

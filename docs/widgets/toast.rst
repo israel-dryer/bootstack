@@ -1,152 +1,158 @@
-Toast
-=====
+Toasts & Notifications
+======================
 
-A temporary notification that floats over the application and auto-dismisses
-after a configurable delay.
+bootstack has three transient message surfaces, each for a distinct job:
+
+- :func:`bs.toast() <bootstack.toast>` — a **passive** message that fades on its
+  own, in a screen corner.
+- :class:`bs.Notification <bootstack.Notification>` — a **persistent** corner
+  message the user closes.
+- :class:`bs.Snackbar <bootstack.Snackbar>` — an **in-app** message with a single
+  action, at the window's bottom edge.
+
+They share one look (a compact card with an icon, message, and severity color)
+but differ in *where* they sit, *how long* they stay, and *whether* they ask for
+a response. Pick by the job, not the appearance.
+
+Choosing a surface
+------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 28 18 18 18
+
+   * - Surface
+     - Use it for
+     - Lifetime
+     - Anchored to
+     - Action
+   * - ``toast()``
+     - "FYI" that needs no response (*Saved*, *Copied*)
+     - Auto-dismiss
+     - A monitor corner
+     - None
+   * - ``Notification``
+     - News that should wait to be seen (*Backup finished*)
+     - Until closed
+     - A monitor corner
+     - Close only
+   * - ``Snackbar``
+     - Feedback on an action just taken, maybe reversible
+     - Auto-dismiss
+     - The window's bottom
+     - One (*Undo*)
+
+A rule of thumb: reach for ``toast()`` first. Upgrade to ``Notification`` when
+the message must persist, and to ``Snackbar`` when it offers a single response.
+Anything that *blocks* the user until answered is a dialog
+(:doc:`/tasks/dialogs`), not a message.
+
+Toast
+-----
+
+:func:`bs.toast() <bootstack.toast>` shows a message and returns immediately — it
+is fire-and-forget. It floats in a corner of the monitor the app window is on,
+stacks under any toasts already there, and fades after ``duration``. There is no
+close button: a toast is passive by definition.
+
+At its simplest a toast is just its message on one line. The icon and the title
+are both optional — add an icon to lead the message, or a title for a two-line
+card:
+
+.. code-block:: python
+
+   bs.toast("Your changes were saved.")                          # message only
+   bs.toast("Battery at 12%.", icon="battery-half", accent="warning")  # icon + message
+   bs.toast("Could not reach the server.", title="Sync failed",  # title + message
+            accent="danger")
 
 .. image:: /_static/examples/toast-hero-light.png
    :class: bs-screenshot-light
-   :alt: Toast — light theme
+   :alt: A passive toast in a corner — light theme
 
 .. image:: /_static/examples/toast-hero-dark.png
    :class: bs-screenshot-dark
-   :alt: Toast — dark theme
+   :alt: A passive toast in a corner — dark theme
 
-Usage
------
-
-Simple notification
-~~~~~~~~~~~~~~~~~~~
-
-Use :func:`bs.toast` for a one-liner that shows and returns immediately.
-The toast auto-dismisses after 3 seconds by default.
+The accent colors the icon and text (in a readable, dark-tinted shade) and gives
+the card a soft tint; omit it for a neutral toast. ``corner=`` overrides the
+default placement (bottom-right, top-right on Linux):
 
 .. code-block:: python
 
-   bs.toast("Your message here.")
-   bs.toast("File saved.", title="Success", accent="success")
+   bs.toast("Pinned to the top-left.", corner="top-left", duration=6000)
 
-With icon
-~~~~~~~~~
+Notification
+------------
 
-Pass any Bootstrap Icons name to ``icon=``.
-
-.. code-block:: python
-
-   bs.Toast(
-       title="Download complete",
-       message="report-2024.pdf was saved.",
-       icon="download",
-       accent="primary",
-       duration=4000,
-   ).show()
-
-Accent colors
-~~~~~~~~~~~~~
+:class:`bs.Notification <bootstack.Notification>` is the persistent sibling: same
+corner, same stacking, but it does **not** auto-dismiss. It carries a close
+button and stays until the user dismisses it or your code does. Build it, then
+``show()`` — keep the handle if you want to ``dismiss()`` it later (e.g. when a
+job it announced is superseded). The title is the headline:
 
 .. code-block:: python
 
-   bs.Toast(message="Update available", icon="info-circle-fill",          accent="info").show()
-   bs.Toast(message="Changes saved",   icon="check-circle-fill",         accent="success").show()
-   bs.Toast(message="Storage is low",  icon="exclamation-triangle-fill", accent="warning").show()
-   bs.Toast(message="Upload failed",   icon="x-circle-fill",             accent="danger").show()
-
-.. image:: /_static/examples/toast-accents-light.png
-   :class: bs-screenshot-light
-   :alt: Toast accent colors — light theme
-
-.. image:: /_static/examples/toast-accents-dark.png
-   :class: bs-screenshot-dark
-   :alt: Toast accent colors — dark theme
-
-Detail text
-~~~~~~~~~~~
-
-``detail`` places a small muted string on the right side of the header row —
-useful for timestamps or brief metadata.
-
-.. code-block:: python
-
-   bs.Toast(
-       message="Backup complete",
+   note = bs.Notification(
+       "Backup complete",
+       message="3.2 GB uploaded to the cloud.",
        detail="just now",
+       icon="cloud-check",
        accent="success",
    ).show()
 
-.. image:: /_static/examples/toast-detail-light.png
+   # later, when it no longer applies
+   note.dismiss()
+
+.. image:: /_static/examples/toast-notification-light.png
    :class: bs-screenshot-light
-   :alt: Toast with detail text — light theme
+   :alt: A persistent notification with a close button — light theme
 
-.. image:: /_static/examples/toast-detail-dark.png
+.. image:: /_static/examples/toast-notification-dark.png
    :class: bs-screenshot-dark
-   :alt: Toast with detail text — dark theme
+   :alt: A persistent notification with a close button — dark theme
 
-Action buttons
-~~~~~~~~~~~~~~
+A notification is message-only — it informs, it does not ask. If you need the
+user to *do* something, that is a snackbar action or a dialog.
 
-Pass ``actions`` as a list of button kwarg dicts. Clicking a button dismisses
-the toast and passes the dict to ``on_dismiss``.
+Snackbar
+--------
+
+:class:`bs.Snackbar <bootstack.Snackbar>` belongs to the app, not the screen: it
+sits at the bottom edge of the window and moves with it. It is for brief feedback
+on something that just happened, optionally with a single way to respond — the
+classic *"Message archived. [Undo]"*. Only one snackbar shows at a time; a new
+one replaces it. Use the :func:`bs.snackbar() <bootstack.snackbar>` verb for the
+common one-liner, or the class when you want to ``dismiss()`` it yourself:
 
 .. code-block:: python
 
-   bs.Toast(
-       title="Delete 3 files?",
-       message="This action cannot be undone.",
-       show_close_button=False,
-       actions=[
-           {"text": "Cancel"},
-           {"text": "Delete", "accent": "danger"},
-       ],
-       on_dismiss=lambda btn: print("clicked:", btn),
-   ).show()
+   bs.snackbar("Conversation archived.", action="Undo", on_action=restore)
+   bs.snackbar("Copied to clipboard.")                       # no action
 
-.. image:: /_static/examples/toast-actions-light.png
+.. image:: /_static/examples/toast-snackbar-light.png
    :class: bs-screenshot-light
-   :alt: Toast with action buttons — light theme
+   :alt: A snackbar with an Undo action at the window bottom — light theme
 
-.. image:: /_static/examples/toast-actions-dark.png
+.. image:: /_static/examples/toast-snackbar-dark.png
    :class: bs-screenshot-dark
-   :alt: Toast with action buttons — dark theme
+   :alt: A snackbar with an Undo action at the window bottom — dark theme
 
-Dismiss callback
-~~~~~~~~~~~~~~~~
+The action fires ``on_action`` and then dismisses. Unlike a toast, a snackbar's
+surface stays neutral — severity coloring is the corner surfaces' job; the
+``accent`` here only tints the action button. ``align=`` moves it along the
+bottom edge (``'left'``, ``'center'``, or ``'right'``).
 
-``on_dismiss`` fires whenever the toast closes — via the close button,
-auto-dismiss timer, or an action button. Action dismissals pass the button's
-kwarg dict; all others pass ``None``.
+Reacting to dismissal
+---------------------
 
-.. code-block:: python
-
-   def on_done(btn):
-       if btn and btn.get("text") == "Delete":
-           delete_files()
-
-   bs.Toast(title="Delete?", actions=[{"text": "Delete"}],
-            on_dismiss=on_done).show()
-
-Duration
-~~~~~~~~
-
-Set ``duration`` (milliseconds) for auto-dismiss. Pass ``None`` to keep the
-toast visible until the user closes it.
+All three take an ``on_dismiss`` callback, fired with no arguments whenever the
+message goes away — by timeout, the close button, the snackbar action, or a
+manual ``dismiss()``:
 
 .. code-block:: python
 
-   bs.toast("Visible for 5 seconds.", duration=5000)
-   bs.Toast(title="Action required", message="...", duration=None).show()
-
-Programmatic control
-~~~~~~~~~~~~~~~~~~~~
-
-Create with :class:`bs.Toast`, then call ``show()`` / ``hide()`` /
-``destroy()`` at any time.
-
-.. code-block:: python
-
-   t = bs.Toast(title="Processing…", duration=None)
-   t.show()
-   # … when done …
-   t.hide()
+   bs.toast("Synced.", on_dismiss=lambda: print("gone"))
 
 Widget sizing
 ~~~~~~~~~~~~~
@@ -156,16 +162,16 @@ Widget sizing
 API
 ---
 
-The :class:`Toast <bootstack.Toast>` widget is on the
-:doc:`Widgets </api-reference/widgets>` API page; the one-shot
-:func:`toast() <bootstack.toast>` verb is on the :doc:`Dialogs </api-reference/dialogs>`
+The verbs and classes live on the :doc:`Widgets </api-reference/widgets>` API
 page. At a glance:
 
 .. autosummary::
    :nosignatures:
 
-   ~bootstack.Toast
    ~bootstack.toast
+   ~bootstack.Notification
+   ~bootstack.Snackbar
+   ~bootstack.snackbar
 
 Full Example
 ------------
