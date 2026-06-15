@@ -32,10 +32,10 @@ class SerializationError(BootstackError):
 
 
 class NavigationError(BootstackError):
-    """Raised when a navigation operation fails.
+    """Raised when a navigation operation references a wrong key.
 
-    Examples: adding a page or tab whose key already exists, navigating to a
-    key that does not exist, or supplying an out-of-range index.
+    Examples: adding a page, tab, or workspace whose key already exists, or
+    selecting, looking up, or removing one whose key does not exist.
     """
 
 

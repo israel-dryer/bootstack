@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import pytest
 
+from bootstack.errors import NavigationError
 from bootstack.widgets._core.navmodel import NavChange, NavModel, WorkspaceState
 
 
@@ -45,7 +46,7 @@ def test_footer_workspace_does_not_auto_activate():
 def test_duplicate_and_empty_workspace_keys_raise():
     m = NavModel()
     m.add_workspace("a")
-    with pytest.raises(ValueError):
+    with pytest.raises(NavigationError):
         m.add_workspace("a")
     with pytest.raises(ValueError):
         m.add_workspace("")
@@ -53,7 +54,7 @@ def test_duplicate_and_empty_workspace_keys_raise():
 
 def test_workspace_unknown_key_raises():
     m = NavModel()
-    with pytest.raises(KeyError):
+    with pytest.raises(NavigationError):
         m.workspace("nope")
 
 
@@ -100,7 +101,7 @@ def test_select_workspace_same_is_noop():
 
 def test_select_unknown_workspace_raises():
     m = NavModel()
-    with pytest.raises(KeyError):
+    with pytest.raises(NavigationError):
         m.select_workspace("nope")
 
 
@@ -145,7 +146,7 @@ def test_select_page_without_active_workspace_raises():
 def test_select_page_unknown_workspace_raises():
     m = NavModel()
     m.add_workspace("a")
-    with pytest.raises(KeyError):
+    with pytest.raises(NavigationError):
         m.select_page("p1", workspace="nope")
 
 
@@ -188,7 +189,7 @@ def test_activate_rail_active_workspace_shows_when_hidden():
 def test_activate_rail_unknown_raises():
     m = NavModel()
     m.add_workspace("a")
-    with pytest.raises(KeyError):
+    with pytest.raises(NavigationError):
         m.activate_rail("nope")
 
 

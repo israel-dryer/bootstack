@@ -285,10 +285,16 @@ class TabView(Frame):
 
         Args:
             key: The identifier of the tab to select.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
         """
-        if key in self._tab_map and key not in self._hidden_tabs:
-            self._set_next_change("api", "programmatic")
-            self._tab_variable.set(key)
+        if key not in self._tab_map:
+            raise NavigationError(f"No tab with key '{key}'")
+        if key in self._hidden_tabs:
+            return
+        self._set_next_change("api", "programmatic")
+        self._tab_variable.set(key)
 
     def navigate(self, key: str, data: dict = None) -> None:
         """Navigate to a tab/page with optional data.
@@ -296,12 +302,18 @@ class TabView(Frame):
         Args:
             key: The identifier of the tab/page to navigate to.
             data: Optional data to pass to the page.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
         """
-        if key in self._tab_map and key not in self._hidden_tabs:
-            self._set_next_change("api", "programmatic")
-            self._tab_variable.set(key)
-            if data:
-                self._page_stack.navigate(key, data=data)
+        if key not in self._tab_map:
+            raise NavigationError(f"No tab with key '{key}'")
+        if key in self._hidden_tabs:
+            return
+        self._set_next_change("api", "programmatic")
+        self._tab_variable.set(key)
+        if data:
+            self._page_stack.navigate(key, data=data)
 
     def hide_tab(self, key: str) -> None:
         """Hide a tab without removing it from the registry.
@@ -314,7 +326,7 @@ class TabView(Frame):
             key: The identifier of the tab to hide.
 
         Raises:
-            KeyError: If no tab with the given key exists.
+            NavigationError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
             raise NavigationError(f"No tab with key '{key}'")
@@ -340,7 +352,7 @@ class TabView(Frame):
             key: The identifier of the tab to show.
 
         Raises:
-            KeyError: If no tab with the given key exists.
+            NavigationError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
             raise NavigationError(f"No tab with key '{key}'")
@@ -355,9 +367,12 @@ class TabView(Frame):
 
         Args:
             key: The identifier of the tab/page to remove.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
-            return
+            raise NavigationError(f"No tab with key '{key}'")
 
         was_selected = self._tab_variable.get() == key
 
