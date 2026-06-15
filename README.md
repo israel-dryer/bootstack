@@ -9,8 +9,14 @@
 ![](https://img.shields.io/github/stars/israel-dryer/bootstack.svg)
 ![](https://img.shields.io/github/forks/israel-dryer/bootstack.svg)
 
-> **Active alpha.** APIs may change before the first stable release.
-> Documentation is coming soon.
+> **Pre-release.** The API may still change before 1.0. Full documentation is at
+> **[bootstack.org](https://bootstack.org)**.
+
+### From idea to a shipped desktop app — fast.
+
+bootstack gives engineers, data scientists, and hobbyists everything to build a
+polished desktop interface and package it into a standalone executable —
+declarative, reactive, and batteries-included, all in pure Python.
 
 <picture>
   <source media="(prefers-color-scheme: dark)"  srcset="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/hero-dark.png">
@@ -39,13 +45,15 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 
 ## Installation
 
-Requires Python 3.12+.
-
-Install directly from the repository:
+Requires Python 3.12+ and Tk/Tcl (bundled with most Python distributions).
+bootstack is in pre-release, so opt in with `--pre`:
 
 ```bash
-pip install git+https://github.com/israel-dryer/bootstack.git
+python -m pip install --pre bootstack
 ```
+
+See the [installation guide](https://bootstack.org/getting-started/installation/)
+for platform-specific Tk setup and the optional data-format extras.
 
 ## See it
 
@@ -155,14 +163,14 @@ app.run()
 ## Features
 
 - **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, undecorated windows with custom chrome
-- **60+ themed widgets** — ttk-derived primitives plus higher-level composites (Table, Tree, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Toast, Tooltip, and more)
-- **9 dialogs** — Message, Query, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog, plus a `Dialog` base
+- **60+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
+- **Dialogs and messages** — `alert()` / `confirm()` / `ask_*()` prompts and `FormDialog` / `FontDialog` / `FilterDialog`, plus non-blocking `toast()`, `Notification`, and `Snackbar` surfaces
 - **Layout containers** — `VStack`, `HStack`, and `Grid` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Expander`
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost, link), consistent across widgets
 - **Built-in themes** — paired light/dark variants (amber, aurora, bootstrap, classic, docs, forest, ocean, rose) with runtime theme switching and a custom-theme API
-- **Reactive signals** — observable state with subscribe/get/set, integrates with widgets via `signal=` / `textsignal=`
-- **Forms & validation** — `Form` and `Field` with built-in validators
-- **DataSource** — common interface over in-memory, SQLite, and file backends, with pagination, filtering, sorting, CRUD, and CSV export
+- **Reactive signals** — observable state with subscribe/set, integrates with widgets via `signal=` / `textsignal=`
+- **Forms & validation** — `Form` with built-in field-level validators and inline error messages
+- **DataSource** — common interface over in-memory, SQLite, and file backends, with pagination, filtering, sorting, CRUD, and CSV/TSV/Excel export
 - **Localization (i18n)** — 23 bundled message catalogs, locale-aware number/date/time formatting via Babel, runtime language switching
 - **Icons & images** — Bootstrap Icons catalog with theme-aware recoloring, DPI scaling, and caching
 - **Platform support** — DPI awareness, multi-monitor centering, mica/acrylic effects on Windows
@@ -172,15 +180,16 @@ app.run()
 
 | Category | Widgets |
 |----------|---------|
-| **Actions** | Button, ButtonGroup, MenuButton, DropdownButton, ContextMenu |
+| **Actions** | Button, ButtonGroup, MenuButton, ContextMenu, CommandBar |
 | **Inputs** | TextField, PasswordField, PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, TimeField |
-| **Selection** | Checkbox, Switch, ToggleButton, RadioGroup, ToggleGroup, Select, Calendar |
-| **Data Display** | Label, Badge, ListView, Tree, Table, ProgressBar, Gauge |
-| **Layout** | VStack, HStack, Grid, Card, GroupBox, SplitView, ScrollView, Accordion, Expander, Separator |
-| **Navigation** | AppShell, Toolbar, SideNav, Tabs, PageStack |
-| **Dialogs** | MessageDialog, QueryDialog, ColorChooser, ColorDropper, DateDialog, FontDialog, FilterDialog, FormDialog |
-| **Overlays** | Toast, Tooltip |
-| **Forms** | Form, Field (with validation) |
+| **Selection** | Checkbox, Switch, ToggleButton, Radio, RadioGroup, ToggleGroup, Select, SelectButton, Calendar |
+| **Data Display** | Label, Badge, ListView, Tree, DataTable, ProgressBar, Gauge |
+| **Media** | Avatar, Picture, Gallery, Carousel |
+| **Layout** | VStack, HStack, Grid, Card, GroupBox, SplitView, ScrollView, Accordion, Separator |
+| **Navigation** | AppShell, CommandBar, SideNav, StatusBar, Tabs, PageStack |
+| **Dialogs** | `alert()`, `confirm()`, `ask_*()` prompts, FormDialog, FontDialog, FilterDialog |
+| **Overlays** | `toast()`, Notification, Snackbar, Tooltip |
+| **Forms** | Form, with field-level validation |
 
 ## CLI
 
@@ -202,7 +211,8 @@ bootstack build                             # Package for distribution
 
 ## Documentation
 
-Documentation is coming soon.
+Full documentation — guides, the widget catalog, and the API reference — lives at
+**[bootstack.org](https://bootstack.org)**.
 
 ## Links
 
