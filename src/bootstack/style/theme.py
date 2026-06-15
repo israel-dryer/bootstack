@@ -27,13 +27,18 @@ resolution is deferred until activation.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, replace
 from typing import Literal
 
 from bootstack._core.exceptions import ThemeError
 from bootstack.style.theme_provider import register_theme
 
 ThemeMode = Literal["light", "dark"]
+
+# Registry of declared theme FAMILIES by name (e.g. "bootstrap" -> Theme), so a
+# theme can be derived from an existing one by name. Built-ins register
+# themselves via install() at startup; see _resolve_base().
+_FAMILIES: dict[str, "Theme"] = {}
 
 # Accent roles that take a `[500]` anchor and generate their own ramp.
 _ACCENT_ROLES = ("primary", "success", "info", "warning", "danger")
@@ -152,6 +157,39 @@ class Theme:
                 schema["surfaces"] = dict(override)
         return schema
 
+    @classmethod
+    def from_existing(cls, base: "str | Theme", *, name: str, **overrides) -> "Theme":
+        """Derive a new theme from an existing one, overriding only some tokens.
+
+        Every token you don't override is inherited from `base`, so you can brand
+        a built-in family by changing just its `primary` (and any others you want):
+
+            Theme.from_existing("bootstrap", name="acme", primary="#ff5722").install()
+            bs.set_theme("acme-light")
+
+        Args:
+            base: The theme to build on — a built-in or already-installed family
+                name (e.g. `'bootstrap'`), or a `Theme` instance. Required.
+            name: Family name for the derived theme; its `install()` registers
+                `<name>-light` / `<name>-dark`. Required.
+            **overrides: Any `Theme` token to replace (`primary`, `neutral`,
+                `light`, `dark`, `surfaces`, `display_name`, ...).
+
+        Returns:
+            A new `Theme`; call `install()` on it to register its variants.
+
+        Raises:
+            ThemeError: If `base` names a theme family that is not registered, or
+                an override names a token that is not a `Theme` field.
+        """
+        source = base if isinstance(base, Theme) else _resolve_base(base)
+        unknown = set(overrides) - {f.name for f in fields(cls)}
+        if unknown:
+            raise ThemeError(
+                f"Unknown theme token(s): {', '.join(sorted(unknown))}."
+            )
+        return replace(source, name=name, **overrides)
+
     def variants(self) -> list[dict]:
         """Return the generated per-mode schema dicts (light first, then dark)."""
         return [s for s in (self._schema("light"), self._schema("dark")) if s]
@@ -173,6 +211,7 @@ class Theme:
             )
         for schema in schemas:
             register_theme(schema["name"], schema)
+        _FAMILIES[self.name] = self
         if activate:
             from bootstack.style.style import set_theme
             target = activate if isinstance(activate, str) else schemas[0]["name"]
@@ -182,3 +221,25 @@ class Theme:
     def __repr__(self) -> str:
         modes = "+".join(m for m, b in (("light", self.light), ("dark", self.dark)) if b)
         return f"<Theme {self.name} ({modes or 'empty'})>"
+
+
+def _resolve_base(name: str) -> Theme:
+    """Resolve a theme-family name to its `Theme`, seeding built-ins lazily."""
+    if name not in _FAMILIES:
+        # Seed the built-in families on demand (lazy import avoids a cycle).
+        try:
+            from bootstack.style.themes import BUILTIN_THEMES
+            for theme in BUILTIN_THEMES:
+                _FAMILIES.setdefault(theme.name, theme)
+        except Exception:
+            pass
+    source = _FAMILIES.get(name)
+    if source is None and (name.endswith("-light") or name.endswith("-dark")):
+        source = _FAMILIES.get(name.rsplit("-", 1)[0])
+    if source is None:
+        known = ", ".join(sorted(_FAMILIES)) or "none"
+        raise ThemeError(
+            f"Unknown base theme '{name}'. Pass a registered family name "
+            f"(known: {known}) or a Theme instance."
+        )
+    return source
