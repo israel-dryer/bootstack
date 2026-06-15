@@ -344,18 +344,22 @@ class BootstyleBuilderBase:
                     elif hsl_lum <= 70 and not (35 <= hue <= 70):
                         accent_force_light = True
 
-            # Saturated accents: force pure white text so contrast decisions
-            # don't accidentally favor dark foreground on mid-tone accents.
-            if accent_force_light:
+            # Never force white when white is actually unreadable. A bright but
+            # mid-luminance accent like cyan (info) has far higher contrast with
+            # black than white (~10:1 vs ~2:1), so it must take dark text — the
+            # luminance buckets alone would wrongly pick white. Gate the
+            # light-text bias on white clearing a real WCAG contrast threshold.
+            contrast_white = 1.05 / (lum + 0.05)  # ratio of #ffffff vs the color
+            white_ok = contrast_white >= 4.5
+
+            # Saturated / dark-ish accents prefer white text — but only when it
+            # is legible; otherwise fall through to a contrast-chosen dark color.
+            if (accent_force_light or lum <= 0.55) and white_ok:
                 candidates = ["#ffffff"]
-            # Anything darker than ~55% luminance is treated as a dark surface:
-            # always use light text, even if contrast math slightly prefers dark.
-            elif lum <= 0.55:
-                candidates = ["#ffffff"]
-            # Mid-light colors (e.g., warning/info) can work with either;
-            # allow contrast to choose, but still bias toward theme foreground.
+            # Mid-light colors (e.g., warning, info): let contrast choose, with a
+            # bias toward the theme foreground.
             elif lum <= 0.80:
-                candidates = [foreground, "#ffffff", "#000000"]
+                candidates = [foreground, "#000000", "#ffffff"]
             # Very light backgrounds -> dark text
             else:
                 candidates = [foreground, "#000000"]
