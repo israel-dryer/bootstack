@@ -118,7 +118,9 @@ def _patch(cls):
             from PIL import Image
             Path(output).parent.mkdir(parents=True, exist_ok=True)
             img = ImageGrab.grab(bbox=(x + inset, y + inset, x + w - inset, y + h - inset))
-            max_w = 720
+            # Default 720px keeps shots crisp inside a sidebar'd doc page; a scene
+            # can opt into a wider capture (e.g. the sidebar-less home hero).
+            max_w = getattr(self, '_capture_max_width', 720)
             if img.width > max_w:
                 ratio = max_w / img.width
                 img = img.resize((max_w, max(1, int(img.height * ratio))), Image.LANCZOS)

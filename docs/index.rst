@@ -3,12 +3,73 @@
 bootstack
 =========
 
-*Python desktop apps without the ceremony.*
+.. rst-class:: bs-lead
 
-bootstack is a batteries-included framework for building desktop applications in
-Python. You describe the interface with nested ``with`` blocks — the code
-hierarchy *is* the layout — and bootstack handles spacing, theming, reactive
-state, and packaging. No geometry math, no manual parenting, no CSS.
+From idea to a shipped desktop app — fast.
+
+bootstack gives engineers, data scientists, and hobbyists everything to build a
+polished desktop interface and package it into a standalone executable —
+declarative, reactive, and batteries-included, all in pure Python.
+
+.. container:: hero-ctas
+
+   .. button-ref:: getting-started/quickstart
+      :ref-type: doc
+      :color: primary
+      :class: sd-px-4 sd-fs-5
+
+      Get started
+
+   .. button-ref:: widgets/index
+      :ref-type: doc
+      :color: secondary
+      :outline:
+      :class: sd-px-4 sd-fs-5
+
+      Browse widgets
+
+.. image:: /_static/examples/home-hero-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: A bootstack analytics dashboard — light theme
+
+.. image:: /_static/examples/home-hero-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: A bootstack analytics dashboard — dark theme
+
+Why bootstack
+-------------
+
+.. grid:: 1 2 2 2
+   :gutter: 3
+
+   .. grid-item-card:: :octicon:`code;1.5em;sd-mr-1` Declarative and reactive
+
+      Your code mirrors the interface — nested ``with`` blocks *are* the layout —
+      and state bound once flows to every widget that uses it. No geometry math,
+      no manual wiring.
+
+   .. grid-item-card:: :octicon:`package;1.5em;sd-mr-1` Batteries included
+
+      60+ themed widgets — tables, trees, calendars, a syntax-highlighting code
+      editor, forms with validation, and data sources — plus icons and
+      localization. The pieces of a real application, already built.
+
+   .. grid-item-card:: :octicon:`paintbrush;1.5em;sd-mr-1` Looks right by default
+
+      Semantic styling — ``accent="primary"``, ``variant="outline"`` — instead of
+      hand-picked colors, so the same code looks correct across eight light/dark
+      themes and switches at runtime.
+
+   .. grid-item-card:: :octicon:`terminal;1.5em;sd-mr-1` Ready to ship
+
+      Lightweight to install with no heavy runtime, and a CLI that scaffolds,
+      runs, and packages your project into a standalone executable.
+
+A glimpse
+---------
+
+A complete window is a handful of lines — the structure you read is the structure
+you get:
 
 .. code-block:: python
 
@@ -24,25 +85,11 @@ state, and packaging. No geometry math, no manual parenting, no CSS.
 
 .. image:: /_static/examples/quickstart-hello-light.png
    :class: bs-screenshot-light bs-window-screenshot
-   :alt: A bootstack window with three accent buttons — light theme
+   :alt: The Hello bootstack window — light theme
 
 .. image:: /_static/examples/quickstart-hello-dark.png
    :class: bs-screenshot-dark bs-window-screenshot
-   :alt: A bootstack window with three accent buttons — dark theme
-
-Why bootstack
--------------
-
-- **Declarative layout** — ``VStack`` / ``HStack`` / ``Grid`` containers place and
-  space children for you, and the ``with`` blocks mirror your UI.
-- **Reactive signals** — bind a value once and it flows to every widget that uses
-  it, in both directions.
-- **Semantic styling** — ``accent="primary"``, ``variant="outline"``; the same
-  code looks right across every theme and in light or dark mode.
-- **60+ widgets** — inputs, tables, trees, calendars, a syntax-highlighting code
-  editor, and more, out of the box.
-- **A real CLI** — scaffold a project, run it, and package a standalone
-  executable with ``bootstack build``.
+   :alt: The Hello bootstack window — dark theme
 
 Start here
 ----------
@@ -50,36 +97,29 @@ Start here
 .. grid:: 1 2 2 2
    :gutter: 3
 
-   .. grid-item-card:: Quick Start
+   .. grid-item-card:: :octicon:`rocket;1.5em;sd-mr-1` Quick Start
       :link: getting-started/quickstart
       :link-type: doc
 
-      Your first window in 60 seconds — then navigation apps and reactive state.
+      Your first window in minutes — then navigation apps and reactive state.
 
-   .. grid-item-card:: User Guide
+   .. grid-item-card:: :octicon:`book;1.5em;sd-mr-1` User Guide
       :link: user-guide/index
       :link-type: doc
 
-      Goal-oriented how-to guides and subsystem topics: input, actions, data,
-      forms, layout, navigation, theming, and more.
+      Goal-oriented how-to guides and subsystem topics.
 
-   .. grid-item-card:: Widgets
+   .. grid-item-card:: :octicon:`apps;1.5em;sd-mr-1` Widgets
       :link: widgets/index
       :link-type: doc
 
-      The visual catalog — every component with worked examples and screenshots.
+      The visual catalog — every component with examples and screenshots.
 
-   .. grid-item-card:: API Reference
+   .. grid-item-card:: :octicon:`code;1.5em;sd-mr-1` API Reference
       :link: api-reference/index
       :link-type: doc
 
-      The complete public API, grouped by concept and titled by import path.
-
-   .. grid-item-card:: Production
-      :link: production/index
-      :link-type: doc
-
-      Packaging, the CLI, debugging, and application settings for shipping.
+      The complete public API, grouped by concept.
 
 Install
 -------

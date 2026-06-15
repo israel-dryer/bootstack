@@ -1,11 +1,97 @@
 Widgets
 =======
 
-Every widget bootstack provides, grouped by purpose.
+The visual catalog — every widget bootstack provides, grouped by purpose. Each
+page has a runnable example and screenshots in both themes. Browse a category
+below, or jump straight to a widget from the sidebar.
+
+.. grid:: 1 2 2 2
+   :gutter: 3
+
+   .. grid-item-card:: :octicon:`device-desktop;1.5em;sd-mr-1` Application
+
+      The top-level window — a plain window, a navigation shell, or a secondary
+      window.
+
+      :doc:`app` · :doc:`appshell` · :doc:`window`
+
+   .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Actions
+
+      Buttons that trigger commands.
+
+      :doc:`button` · :doc:`buttongroup`
+
+   .. grid-item-card:: :octicon:`pencil;1.5em;sd-mr-1` Inputs
+
+      Free-text, numeric, and date/time entry — single- and multi-line.
+
+      :doc:`textfield` · :doc:`passwordfield` · :doc:`numberfield` ·
+      :doc:`pathfield` · :doc:`spinnerfield` · :doc:`textarea` ·
+      :doc:`codeeditor` · :doc:`slider` · :doc:`rangeslider` ·
+      :doc:`datefield` · :doc:`timefield`
+
+   .. grid-item-card:: :octicon:`check-circle;1.5em;sd-mr-1` Selection
+
+      Choose from a set of options — toggles, radios, dropdowns, and a calendar.
+
+      :doc:`checkbox` · :doc:`switch` · :doc:`togglebutton` · :doc:`radiogroup` ·
+      :doc:`togglegroup` · :doc:`select` · :doc:`selectbutton` · :doc:`calendar`
+
+   .. grid-item-card:: :octicon:`table;1.5em;sd-mr-1` Data Display
+
+      Show values and records — labels, badges, meters, lists, tables, and trees.
+
+      :doc:`label` · :doc:`badge` · :doc:`progressbar` · :doc:`gauge` ·
+      :doc:`listview` · :doc:`datatable` · :doc:`tree`
+
+   .. grid-item-card:: :octicon:`image;1.5em;sd-mr-1` Media
+
+      Display images — a single picture, a grid, a carousel, or an avatar.
+
+      :doc:`picture` · :doc:`gallery` · :doc:`carousel` · :doc:`avatar`
+
+   .. grid-item-card:: :octicon:`columns;1.5em;sd-mr-1` Layout
+
+      Arrange and group widgets — stacks, grids, cards, and resizable panes.
+
+      :doc:`vstack` · :doc:`hstack` · :doc:`grid` · :doc:`card` · :doc:`groupbox` ·
+      :doc:`separator` · :doc:`accordion` · :doc:`scrollview` · :doc:`splitview`
+
+   .. grid-item-card:: :octicon:`list-unordered;1.5em;sd-mr-1` Chrome, bars, and menus
+
+      Window chrome — the menu bar, command bar, status bar, and pop-up menus.
+
+      :doc:`menubar` · :doc:`commandbar` · :doc:`statusbar` · :doc:`menubutton` ·
+      :doc:`contextmenu`
+
+   .. grid-item-card:: :octicon:`arrow-switch;1.5em;sd-mr-1` Navigation
+
+      Switch between views — a swappable page stack and tabs.
+
+      :doc:`pagestack` · :doc:`tabs`
+
+   .. grid-item-card:: :octicon:`comment;1.5em;sd-mr-1` Overlays
+
+      Transient surfaces that float above the content — tooltips and toasts.
+
+      :doc:`tooltip` · :doc:`toast`
+
+   .. grid-item-card:: :octicon:`comment-discussion;1.5em;sd-mr-1` Dialogs
+
+      Modal prompts — messages, input, pickers, and custom dialogs.
+
+      :doc:`message-dialogs` · :doc:`input-dialogs` · :doc:`color-dialog` ·
+      :doc:`font-dialog` · :doc:`filter-dialog` · :doc:`dialog` · :doc:`formdialog`
+
+   .. grid-item-card:: :octicon:`checklist;1.5em;sd-mr-1` Forms
+
+      Collect a set of fields, laid out and validated together.
+
+      :doc:`forms`
 
 .. toctree::
    :caption: Application
-   :maxdepth: 1
+   :hidden:
 
    app
    appshell
@@ -13,14 +99,14 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Actions
-   :maxdepth: 1
+   :hidden:
 
    button
    buttongroup
 
 .. toctree::
    :caption: Inputs
-   :maxdepth: 1
+   :hidden:
 
    textfield
    passwordfield
@@ -36,7 +122,7 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Selection
-   :maxdepth: 1
+   :hidden:
 
    checkbox
    select
@@ -49,7 +135,7 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Data Display
-   :maxdepth: 1
+   :hidden:
 
    label
    badge
@@ -61,7 +147,7 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Media
-   :maxdepth: 1
+   :hidden:
 
    picture
    gallery
@@ -70,7 +156,7 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Layout
-   :maxdepth: 1
+   :hidden:
 
    separator
    card
@@ -84,7 +170,7 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Chrome bars and menus
-   :maxdepth: 1
+   :hidden:
 
    menubar
    commandbar
@@ -94,21 +180,21 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Navigation
-   :maxdepth: 1
+   :hidden:
 
    pagestack
    tabs
 
 .. toctree::
    :caption: Overlays
-   :maxdepth: 1
+   :hidden:
 
    tooltip
    toast
 
 .. toctree::
    :caption: Dialogs
-   :maxdepth: 1
+   :hidden:
 
    message-dialogs
    input-dialogs
@@ -120,6 +206,6 @@ Every widget bootstack provides, grouped by purpose.
 
 .. toctree::
    :caption: Forms
-   :maxdepth: 1
+   :hidden:
 
    forms
