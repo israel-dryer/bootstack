@@ -50,6 +50,12 @@ class Carousel(PublicWidgetBase):
         loop: Wrap around past the first and last slides. Default `True`.
         corner_radius: Rounded-corner radius for the slide image, in pixels.
             Default `0`.
+        aspect_ratio: Width-to-height ratio used to derive the carousel's minimum
+            height when it sits in a container that doesn't impose one (a scroll
+            view, an auto-fit window). Default `1.5`. Ignored when `height` is
+            set. `fill`/`expand` still grow the stage past this floor.
+        height: Explicit minimum height for the slide stage, in pixels. Overrides
+            `aspect_ratio`. Default `None` (derive from `aspect_ratio`).
         accent: Color intent token to brand the active indicator dot. By default
             the dots are neutral (white), which reads on any image; set this to
             color the active dot.
@@ -76,6 +82,8 @@ class Carousel(PublicWidgetBase):
         interval: int = 4000,
         loop: bool = True,
         corner_radius: int = 0,
+        aspect_ratio: float = 1.5,
+        height: int | None = None,
         accent: AccentToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         parent: Any = None,
@@ -97,6 +105,8 @@ class Carousel(PublicWidgetBase):
             "interval": interval,
             "loop": loop,
             "corner_radius": corner_radius,
+            "aspect_ratio": aspect_ratio,
+            "height": height,
         }
         if items is not None:
             internal_kwargs["items"] = items

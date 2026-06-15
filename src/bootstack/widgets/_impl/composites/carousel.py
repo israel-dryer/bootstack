@@ -72,6 +72,8 @@ class Carousel(Frame):
         interval: int = 4000,
         loop: bool = True,
         corner_radius: int = 0,
+        aspect_ratio: float = 1.5,
+        height: int | None = None,
         accent: str | None = None,
         **kwargs: Any,
     ) -> None:
@@ -120,6 +122,13 @@ class Carousel(Frame):
         self._next_photo: PhotoImage | None = None
 
         surface = self._surface_color()
+        # Requested-height FLOOR so the carousel never collapses in a container
+        # that doesn't impose a height (a scroll view, an auto-fit window). The
+        # public wrapper freezes this frame with `pack_propagate(False)`, so its
+        # own configured `height` is its requested height; `fill`/`expand` still
+        # grow it past this floor when the parent has room.
+        floor_h = height if height else round(400 / max(0.1, aspect_ratio))
+        self.configure(height=floor_h)
         self._stage = Canvas(self, highlightthickness=0, bd=0, background=surface)
         self._stage.pack(fill="both", expand=True)
         self._stage.bind("<Configure>", self._on_configure, add="+")

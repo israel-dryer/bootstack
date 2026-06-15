@@ -161,10 +161,12 @@ class Gallery(Frame):
         selection_mode: Literal["none", "single", "multi"] = "none",
         accent: str | None = None,
         scrollbar_variant: ScrollbarVariant = "thin",
+        rows: int = 2,
         **kwargs: Any,
     ) -> None:
         super().__init__(master, **kwargs)
         self._scrollbar_variant = scrollbar_variant
+        self._min_rows = max(1, rows)
 
         self._image_field = image_field
         self._caption_field = caption_field
@@ -200,6 +202,13 @@ class Gallery(Frame):
         self._scrollbar.pack(side="right", fill="y")
         self._container = Frame(self)
         self._container.pack(side="left", fill="both", expand=True)
+
+        # Requested-height FLOOR so the grid never reports ~0 height in a
+        # container that doesn't impose one (a scroll view, an auto-fit window).
+        # The public wrapper freezes this frame with `pack_propagate(False)`, so
+        # its own configured `height` is its requested height; `fill`/`expand`
+        # still grow it past this floor when the parent has room.
+        self.configure(height=self._min_rows * self._row_h)
 
         # Bind resize on the CONTAINER and use the event's width/height directly —
         # winfo_width() read during the parent's <Configure> lags a cycle behind
