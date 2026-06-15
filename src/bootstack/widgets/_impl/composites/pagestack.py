@@ -5,7 +5,7 @@ from typing_extensions import TypedDict, Unpack
 
 from bootstack.events import PageChangeEvent
 from bootstack.widgets._impl.primitives import Frame
-from bootstack.widgets.types import Master, AccentToken, SurfaceToken, VariantToken
+from bootstack.widgets.types import Master, AccentToken, SurfaceToken
 from bootstack._core import NavigationError
 
 
@@ -17,7 +17,7 @@ class PageOptions(TypedDict, total=False):
     cursor: str
     show_border: bool
     accent: AccentToken | str
-    variant: VariantToken | str
+    variant: str
     surface: SurfaceToken | str
     style_options: dict[str, Any]
 

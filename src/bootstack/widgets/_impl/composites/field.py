@@ -19,7 +19,7 @@ from bootstack.widgets._impl.mixins.entry_mixin import EntryMixin
 from bootstack.widgets._impl._parts.numberentry_part import NumberEntryPart
 from bootstack.widgets._impl._parts.textentry_part import TextEntryPart
 from bootstack.widgets._impl._parts.spinnerentry_part import SpinnerEntryPart
-from bootstack.widgets.types import Master, AccentToken, Justify, VariantToken, WidgetDensity, WidgetState
+from bootstack.widgets.types import Master, AccentToken, Justify, WidgetDensity, WidgetState
 
 FieldKind = Literal['text', 'numeric', 'spinbox']
 
@@ -68,7 +68,7 @@ class FieldOptions(TypedDict, total=False):
     allow_blank: bool
     accent: AccentToken | str
     density: WidgetDensity
-    variant: VariantToken | str
+    variant: str
     cursor: str
     value_format: str
     exportselection: bool

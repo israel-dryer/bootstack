@@ -83,7 +83,7 @@ MOVED = {
         "get_font_families", "set_font_family", "update_font_token",
     ],
     "bootstack.types": [
-        "AccentToken", "VariantToken", "SurfaceToken", "WidgetDensity",
+        "AccentToken", "SurfaceToken", "WidgetDensity",
         "BaseWidgetKwargs", "StyledKwargs", "Anchor", "Fill", "Side", "Sticky",
         "Padding", "WindowStyle", "LayoutKind", "AutoFlow",
         "ColumnSpec", "EditorType", "FormOptions", "Option", "OptionDict",

@@ -52,10 +52,6 @@ lower-level appearance literals.
    Background surface context — `'content'`, `'card'`, `'card_raised'`,
    `'chrome'`, `'overlay'`.
 
-.. py:type:: VariantToken
-
-   Widget style variant — `'solid'`, `'outline'`, `'ghost'`, `'toggle'`.
-
 .. py:type:: WidgetDensity
 
    Sizing density — `'default'`, or `'compact'` for reduced padding.

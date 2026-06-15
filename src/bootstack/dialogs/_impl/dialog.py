@@ -15,7 +15,7 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, T
 from bootstack.widgets._impl.primitives.button import Button as _Button
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.separator import Separator as _Separator
-from bootstack.widgets.types import Master, AccentToken, VariantToken, SurfaceToken, WindowStyle
+from bootstack.widgets.types import Master, AccentToken, ButtonVariant, SurfaceToken, WindowStyle
 from bootstack._runtime.toplevel import Toplevel
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 
@@ -56,8 +56,8 @@ class DialogButton:
     accent: AccentToken | str | None = None
     """Accent token for styling (e.g. `'primary'`, `'danger'`)."""
 
-    variant: VariantToken | str | None = None
-    """Style variant (e.g. `'outline'`, `'link'`)."""
+    variant: ButtonVariant | str | None = None
+    """Button style variant — `'default'`, `'solid'`, `'outline'`, or `'ghost'`."""
 
     icon: str | dict[str, Any] | None = None  # passed straight to _Button(icon=...)
     """Optional icon specification for the button."""
