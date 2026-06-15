@@ -32,14 +32,27 @@ BUILD_CONFIG_TEMPLATE = """\
 
 [build]
 backend = "pyinstaller"
-windowed = true
-onefile = false
+windowed = true      # GUI app with no console window (false to keep a console)
+onefile = true       # one executable (false for a folder, which starts faster)
+
+# Modules PyInstaller misses (add the ones your app fails to import at runtime),
+# and modules to leave out of the build:
+# hidden_imports = ["some_package"]
+# excludes = ["tkinter.test"]
+
+# This file is a starting point. For any PyInstaller option not covered here,
+# edit the generated spec at build/pyinstaller/app.spec directly — it is a
+# standard PyInstaller spec and is only regenerated with
+# `bootstack promote --pyinstaller --force`.
 
 [build.icon]
-# Point at an existing icon file:
+# Point at an existing icon file (a single file, or per-platform art):
 # path = "assets/icon.ico"
-# ...or generate one from a Bootstrap icon glyph. Colors must be hex values
-# (theme tokens cannot be resolved at build time, when no app is running):
+# windows = "assets/icon.ico"
+# macos = "assets/icon.icns"
+# ...or generate one from a Bootstrap icon glyph — rendered in the host
+# platform's format at build time. Colors must be hex values (theme tokens
+# cannot be resolved at build time, when no app is running):
 # glyph = "rocket"
 # shape = "auto"          # auto | tile | glyph (auto: glyph-only small, tile large)
 # background = "#0d6efd"
@@ -84,6 +97,9 @@ class BuildIconConfig:
     """
 
     path: Optional[str] = None
+    windows: Optional[str] = None
+    macos: Optional[str] = None
+    linux: Optional[str] = None
     glyph: Optional[str] = None
     shape: str = "auto"
     background: str = "#0d6efd"
@@ -104,7 +120,9 @@ class BuildConfig:
 
     backend: str = "pyinstaller"
     windowed: bool = True
-    onefile: bool = False
+    onefile: bool = True
+    hidden_imports: list[str] = field(default_factory=list)
+    excludes: list[str] = field(default_factory=list)
     icon: BuildIconConfig = field(default_factory=BuildIconConfig)
     datas: BuildDatasConfig = field(default_factory=BuildDatasConfig)
 
@@ -143,9 +161,14 @@ class TtkbConfig:
             build = BuildConfig(
                 backend=build_data.get("backend", "pyinstaller"),
                 windowed=build_data.get("windowed", True),
-                onefile=build_data.get("onefile", False),
+                onefile=build_data.get("onefile", True),
+                hidden_imports=build_data.get("hidden_imports", []),
+                excludes=build_data.get("excludes", []),
                 icon=BuildIconConfig(
                     path=icon_data.get("path"),
+                    windows=icon_data.get("windows"),
+                    macos=icon_data.get("macos"),
+                    linux=icon_data.get("linux"),
                     glyph=icon_data.get("glyph"),
                     shape=icon_data.get("shape", "auto"),
                     background=icon_data.get("background", "#0d6efd"),
