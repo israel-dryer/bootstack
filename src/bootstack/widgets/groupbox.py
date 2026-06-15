@@ -10,7 +10,7 @@ from bootstack.widgets._core.container import (
     PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
 )
 from bootstack.widgets.types import (
-    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow, LocalizeMode,
 )
 
 
@@ -45,6 +45,8 @@ class GroupBox(PublicContainer):
         sticky_items: Default cell alignment for every grid child
             (e.g. `'ew'`, `'nsew'`). Children can override this.
         auto_flow: Grid auto-placement direction. Defaults to `'row'`.
+        localize: Whether the title is translated through the catalog — `True`,
+            `False`, or `'auto'`. Defaults to the app's `localize_mode`.
         parent: Override the context-stack parent widget.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -66,6 +68,7 @@ class GroupBox(PublicContainer):
         rows: int | list[int | str] | None = None,
         sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
+        localize: LocalizeMode | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -78,6 +81,8 @@ class GroupBox(PublicContainer):
         lf_kwargs: dict[str, Any] = {"text": title, "padding": padding}
         if accent is not None:
             lf_kwargs["accent"] = accent
+        if localize is not None:
+            lf_kwargs["localize"] = localize
 
         self._internal = _LabelFrame(tk_master, **lf_kwargs)
 

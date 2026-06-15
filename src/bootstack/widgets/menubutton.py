@@ -5,7 +5,7 @@ from typing import Any, Callable, TYPE_CHECKING
 from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton as _InternalDropdownButton
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.icon_image_props import IconProperty
-from bootstack.widgets.types import AccentToken, WidgetDensity, ButtonVariant, IconSpec
+from bootstack.widgets.types import AccentToken, WidgetDensity, ButtonVariant, IconSpec, LocalizeMode
 from bootstack.events import MenuSelectEvent
 
 if TYPE_CHECKING:
@@ -86,6 +86,8 @@ class MenuButton(IconProperty, PublicWidgetBase):
         variant: Style variant. Default `'ghost'`.
         density: Layout density.
         textsignal: `Signal[str]` bound to the button label text.
+        localize: Whether the button text is translated through the catalog —
+            `True`, `False`, or `'auto'`. Defaults to the app's `localize_mode`.
         parent: Override the context-stack parent widget.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -107,6 +109,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
         variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
         textsignal: "Signal[str] | None" = None,
+        localize: LocalizeMode | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -148,6 +151,8 @@ class MenuButton(IconProperty, PublicWidgetBase):
             internal_kwargs["density"] = density
         if textsignal is not None:
             internal_kwargs["textsignal"] = textsignal
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         # Merge extra kwargs, skipping any that would override an explicit param.
         for k, v in kwargs.items():

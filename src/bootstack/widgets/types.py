@@ -30,6 +30,10 @@ Anchor = Literal['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw', 'center']
 Orient = Literal['horizontal', 'vertical']
 """Widget orientation."""
 
+LocalizeMode = bool | Literal['auto']
+"""Whether a widget's text is translated through the catalog — `True`, `False`, or
+`'auto'` (translate when a translation is registered, otherwise show the literal)."""
+
 Justify = Literal['left', 'center', 'right']
 """Text justification within a widget."""
 

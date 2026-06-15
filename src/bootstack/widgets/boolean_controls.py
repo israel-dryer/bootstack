@@ -9,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant, LocalizeMode
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -37,6 +37,7 @@ class _BooleanControlBase(PublicWidgetBase):
         on_change: Callable[[], Any] | None = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
+        localize: LocalizeMode | None = None,
         _tristate: bool = False,
         _internal_options: dict[str, Any] | None = None,
         parent: Any = None,
@@ -71,6 +72,8 @@ class _BooleanControlBase(PublicWidgetBase):
             internal_kwargs["state"] = "disabled"
         if accent is not None:
             internal_kwargs["accent"] = accent
+        if localize is not None:
+            internal_kwargs["localize"] = localize
         # Per-subclass styling options (icons, variant, density, …) — only the
         # ones a given control actually supports are passed in by the subclass.
         if _internal_options:
