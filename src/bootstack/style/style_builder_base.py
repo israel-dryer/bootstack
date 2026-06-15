@@ -31,11 +31,11 @@ class IconStateMap(TypedDict, total=False):
 ForegroundStateSpec = tuple[str, str | dict[str, str]]
 
 
-class BootstyleBuilderBase:
-    """Shared base for TTK and Tk bootstyle builders.
+class StyleBuilderBase:
+    """Shared base for TTK and Tk style builders.
 
     Centralizes theme provider plumbing and color utilities so both
-    BootstyleBuilder (TTK) and BootstyleBuilderTk (Tk) can inherit and
+    StyleBuilder (TTK) and StyleBuilderTk (Tk) can inherit and
     avoid duplication.
     """
 

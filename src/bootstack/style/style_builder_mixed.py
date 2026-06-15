@@ -12,11 +12,11 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
+from bootstack.style.style_builder_base import StyleBuilderBase
 from bootstack.style.theme_provider import ThemeProvider
 
 
-class BootstyleBuilderMixed(BootstyleBuilderBase):
+class StyleBuilderMixed(StyleBuilderBase):
     """Builder for TTK widgets containing legacy Tk components.
 
     This class provides methods to style embedded Tk components within
@@ -79,11 +79,11 @@ class BootstyleBuilderMixed(BootstyleBuilderBase):
             widget.tk.call(f"{popdown_path}.f.l", "configure", *tk_settings)
 
             # Build a themed scrollbar style and apply it to the popdown
-            # scrollbar. Bootstyle.create_ttk_style returns a hashed style
+            # scrollbar. StyleResolver.create_ttk_style returns a hashed style
             # name (e.g. bs[xxx].Default.Vertical.TScrollbar) that is rebuilt
             # automatically on theme change.
-            from bootstack.style.bootstyle import Bootstyle
-            sb_style = Bootstyle.create_ttk_style(
+            from bootstack.style.style_resolver import StyleResolver
+            sb_style = StyleResolver.create_ttk_style(
                 'TScrollbar', variant='default',
                 style_options={'orient': 'vertical', 'show_arrows': False},
             )

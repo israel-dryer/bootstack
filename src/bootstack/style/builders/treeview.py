@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import font
 
 from bootstack._core.images import _ImageService
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image
 from bootstack.style.builders.utils import normalize_button_density, _snap_even
@@ -61,9 +61,9 @@ def _treeview_cell_padding(density: str) -> tuple[int, int]:
     return (2, 0) if density == 'compact' else (6, 0)
 
 
-@BootstyleBuilderTTk.register_builder('default', 'Treeview')
-@BootstyleBuilderTTk.register_builder('tree', 'Treeview')
-def build_tree_style(b: BootstyleBuilderTTk, ttk_style: str, **options):
+@StyleBuilderTtk.register_builder('default', 'Treeview')
+@StyleBuilderTtk.register_builder('tree', 'Treeview')
+def build_tree_style(b: StyleBuilderTtk, ttk_style: str, **options):
     """
     Create treeview style.
 

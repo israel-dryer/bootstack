@@ -10,7 +10,7 @@ from typing import Optional
 
 from bootstack._core.images import _ImageService
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
@@ -25,8 +25,8 @@ from bootstack.style.builders.utils import (
 )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TField')
-def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TField')
+def build_field_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
@@ -63,8 +63,8 @@ def build_field_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None
     b.configure_style(ttk_style, background=fill)
 
 
-@BootstyleBuilderTTk.register_builder('input', 'TField')
-def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('input', 'TField')
+def build_field_input_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
@@ -118,8 +118,8 @@ def build_field_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str 
     )
 
 
-@BootstyleBuilderTTk.register_builder('spinner', 'TField')
-def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('spinner', 'TField')
+def build_spinner_input_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     fill_token = options.get('input_background') or 'background'
     density = normalize_button_density(options.get('density', 'default'))
@@ -211,21 +211,21 @@ def build_spinner_input_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     )
 
 
-@BootstyleBuilderTTk.register_builder('prefix', 'TField')
-def build_field_prefix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('prefix', 'TField')
+def build_field_prefix_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     build_field_addon_style(b, ttk_style, accent, **options)
 
 
-@BootstyleBuilderTTk.register_builder('suffix', 'TField')
-def build_field_suffix_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('suffix', 'TField')
+def build_field_suffix_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     build_field_addon_style(b, ttk_style, accent, **options)
 
 
-def build_field_addon_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+def build_field_addon_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Build prefix/suffix addon styles for entry fields.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         ttk_style: The TTK style name.
         accent: Accent color of the button, if provided.
         **options: Style options including 'density', 'surface', 'icon', 'icon_only'.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.builders.utils import toolbutton_layout, button_padding, button_font, apply_icon_mapping, icon_size
 from bootstack.style.element import ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -11,8 +11,8 @@ from bootstack.style.utility import recolor_element_image
 CALENDAR_DENSITY = 'compact'
 
 
-@BootstyleBuilderTTk.register_builder('calendar-day', 'Toolbutton')
-def build_calendar_day_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('calendar-day', 'Toolbutton')
+def build_calendar_day_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the calendar day button style.
 
@@ -88,8 +88,8 @@ def build_calendar_day_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, 
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('calendar-range', 'Toolbutton')
-def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('calendar-range', 'Toolbutton')
+def build_calendar_range_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the calendar range button style.
 
@@ -166,8 +166,8 @@ def build_calendar_range_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('calendar-outside', 'Toolbutton')
-def build_calendar_outside_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('calendar-outside', 'Toolbutton')
+def build_calendar_outside_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure style for outside/disabled calendar days.
 
@@ -193,8 +193,8 @@ def build_calendar_outside_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
 
 
 
-@BootstyleBuilderTTk.register_builder('calendar-date', 'Toolbutton')
-def build_calendar_date_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('calendar-date', 'Toolbutton')
+def build_calendar_date_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the calendar date button style.
 

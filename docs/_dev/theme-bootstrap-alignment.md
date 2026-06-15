@@ -146,7 +146,7 @@ Plus from the alignment work (light mode): chrome `max(bg-10, 88)` = `#e6e6e6`
    override; light chrome L90 + softer stroke (done).
 5. **Themes** — collapse 14 defs → 7 families.
 6. **Docstrings** — update the `blue[100]`/`orange[400]` examples in
-   `theme.py`/`style.py`/`bootstyle_builder_base.py` to semantic refs.
+   `theme.py`/`style.py`/`style_builder_base.py` to semantic refs.
 7. **Selection default** — decide `nav_accent` default (`"primary"` vs neutral);
    the wash is now the vibrant `[100]`.
 

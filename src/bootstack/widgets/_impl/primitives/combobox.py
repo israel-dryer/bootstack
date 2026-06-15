@@ -134,8 +134,8 @@ class Combobox(TextSignalMixin, TTKWrapperBase, WidgetCapabilitiesMixin, TtkStat
                 return
 
         try:
-            from bootstack.style.bootstyle_builder_mixed import BootstyleBuilderMixed
-            BootstyleBuilderMixed().update_combobox_popdown_style(self)
+            from bootstack.style.style_builder_mixed import StyleBuilderMixed
+            StyleBuilderMixed().update_combobox_popdown_style(self)
         except Exception:
             pass
 

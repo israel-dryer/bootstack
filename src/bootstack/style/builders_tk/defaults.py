@@ -2,37 +2,37 @@ from __future__ import annotations
 
 from typing_extensions import Any
 
-from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
+from bootstack.style.style_builder_tk import StyleBuilderTk
 
 
-@BootstyleBuilderBuilderTk.register_builder('Tk')
-def build_tk_root(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Tk')
+def build_tk_root(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     widget.configure(background=bg)
     widget.option_add('*Text*Font', 'TkDefaultFont')
 
 
-@BootstyleBuilderBuilderTk.register_builder('Toplevel')
-def build_tk_toplevel(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Toplevel')
+def build_tk_toplevel(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     widget.configure(background=bg)
 
 
-@BootstyleBuilderBuilderTk.register_builder('Frame')
-def build_tk_frame(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Frame')
+def build_tk_frame(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     widget.configure(background=bg)
 
 
-@BootstyleBuilderBuilderTk.register_builder('Label')
-def build_tk_label(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Label')
+def build_tk_label(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     fg = builder.on_color(bg)
     widget.configure(background=bg, foreground=fg)
 
 
-@BootstyleBuilderBuilderTk.register_builder('Button')
-def build_tk_button(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Button')
+def build_tk_button(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('primary')
     fg = builder.on_color(bg)
     widget.configure(
@@ -45,8 +45,8 @@ def build_tk_button(builder: BootstyleBuilderBuilderTk, widget: Any, **options: 
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Entry')
-def build_tk_entry(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Entry')
+def build_tk_entry(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('background')
     fg = builder.colors.get('foreground')
     accent = builder.color('primary')
@@ -63,8 +63,8 @@ def build_tk_entry(builder: BootstyleBuilderBuilderTk, widget: Any, **options: A
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Text')
-def build_tk_text(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Text')
+def build_tk_text(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('background')
     fg = builder.colors.get('foreground')
     border = builder.border(bg)
@@ -86,14 +86,14 @@ def build_tk_text(builder: BootstyleBuilderBuilderTk, widget: Any, **options: An
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Canvas')
-def build_tk_canvas(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Canvas')
+def build_tk_canvas(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     widget.configure(background=bg, highlightthickness=0)
 
 
-@BootstyleBuilderBuilderTk.register_builder('Checkbutton')
-def build_tk_checkbutton(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Checkbutton')
+def build_tk_checkbutton(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     fg = builder.colors.get('foreground')
     accent = builder.color('primary')
@@ -106,8 +106,8 @@ def build_tk_checkbutton(builder: BootstyleBuilderBuilderTk, widget: Any, **opti
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Radiobutton')
-def build_tk_radiobutton(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Radiobutton')
+def build_tk_radiobutton(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     accent = builder.color('primary')
     bg = builder.color(options.get('surface', 'content'))
     fg = builder.colors.get('foreground')
@@ -121,8 +121,8 @@ def build_tk_radiobutton(builder: BootstyleBuilderBuilderTk, widget: Any, **opti
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Scale')
-def build_tk_scale(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Scale')
+def build_tk_scale(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     accent = builder.color('primary')
     hover = builder.active(accent)
     border = builder.color('border')
@@ -139,8 +139,8 @@ def build_tk_scale(builder: BootstyleBuilderBuilderTk, widget: Any, **options: A
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Listbox')
-def build_tk_listbox(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Listbox')
+def build_tk_listbox(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('background')
     fg = builder.color('foreground')
     accent = builder.subtle('primary', bg)
@@ -159,8 +159,8 @@ def build_tk_listbox(builder: BootstyleBuilderBuilderTk, widget: Any, **options:
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Menu')
-def build_tk_menu(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Menu')
+def build_tk_menu(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('background')
     fg = builder.color('foreground')
     accent = builder.elevate(bg, 2)
@@ -177,8 +177,8 @@ def build_tk_menu(builder: BootstyleBuilderBuilderTk, widget: Any, **options: An
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Menubutton')
-def build_tk_menubutton(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Menubutton')
+def build_tk_menubutton(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('primary')
     fg = builder.on_color(bg)
     hover = builder.active(bg)
@@ -192,8 +192,8 @@ def build_tk_menubutton(builder: BootstyleBuilderBuilderTk, widget: Any, **optio
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Labelframe')
-def build_tk_labelframe(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Labelframe')
+def build_tk_labelframe(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color(options.get('surface', 'content'))
     fg = builder.on_color(bg)
     border = builder.border(bg)
@@ -206,8 +206,8 @@ def build_tk_labelframe(builder: BootstyleBuilderBuilderTk, widget: Any, **optio
     )
 
 
-@BootstyleBuilderBuilderTk.register_builder('Spinbox')
-def build_tk_spinbox(builder: BootstyleBuilderBuilderTk, widget: Any, **options: Any) -> None:
+@StyleBuilderTk.register_builder('Spinbox')
+def build_tk_spinbox(builder: StyleBuilderTk, widget: Any, **options: Any) -> None:
     bg = builder.color('background')
     fg = builder.color('foreground')
     border = builder.border(bg)

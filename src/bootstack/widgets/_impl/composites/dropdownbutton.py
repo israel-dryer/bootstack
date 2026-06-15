@@ -60,7 +60,7 @@ class DropdownButton(MenuButton):
 
         Other Parameters:
             image: Tk image to display.
-            icon: Bootstyle icon spec for the button content.
+            icon: StyleResolver icon spec for the button content.
             icon_only: Whether to reserve label padding when showing only an icon.
             compound: Placement of image relative to text.
             padding: Extra padding around the button content.
@@ -113,8 +113,8 @@ class DropdownButton(MenuButton):
         # Offset compensates for the focus-ring affordance baked into the
         # button image so the dropdown's left edge aligns with the visible
         # button border. Same treatment as OptionMenu.
-        from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
-        offset_x = BootstyleBuilderBase.scale_from_source(10)
+        from bootstack.style.style_builder_base import StyleBuilderBase
+        offset_x = StyleBuilderBase.scale_from_source(10)
         density = self.configure_style_options('density') or 'default'
         options = {
             "anchor": "nw",

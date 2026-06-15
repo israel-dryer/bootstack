@@ -16,10 +16,19 @@ guide.
 .. autoexception:: DuplicateIdError
    :show-inheritance:
 
+.. autoexception:: NavigationError
+   :show-inheritance:
+
 .. autoexception:: ParentResolutionError
    :show-inheritance:
 
 .. autoexception:: SerializationError
+   :show-inheritance:
+
+.. autoexception:: StyleBuilderError
+   :show-inheritance:
+
+.. autoexception:: ThemeError
    :show-inheritance:
 
 .. autoexception:: UnknownEventError

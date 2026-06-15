@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TLabel')
-def build_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TLabel')
+def build_label(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     background = b.color(surface_token)
     if accent is None:

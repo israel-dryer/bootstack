@@ -78,7 +78,7 @@ class ListView(Frame):
             **kwargs: Additional keyword arguments forwarded to `Frame`.
         """
         # Capture user-provided accent for row propagation and the drag indicator.
-        # super().__init__ runs through the bootstyle wrapper which sets self._accent
+        # super().__init__ runs through the style wrapper which sets self._accent
         # to whatever's in kwargs (None if absent), so we re-assert with a 'primary'
         # fallback after super() completes.
         _user_accent = kwargs.get('accent')

@@ -7,12 +7,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 
 
-def _apply_icon_mapping(b: BootstyleBuilderTTk, options: dict, state_spec: dict, default_size: int):
+def _apply_icon_mapping(b: StyleBuilderTtk, options: dict, state_spec: dict, default_size: int):
     """Apply icon mapping to the state spec if icon is provided."""
     icon = options.get('icon')
     if icon is None:
@@ -26,8 +26,8 @@ def _apply_icon_mapping(b: BootstyleBuilderTTk, options: dict, state_spec: dict,
     return state_spec
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TabItem.TFrame')
-def build_tab_item_bar_frame(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TabItem.TFrame')
+def build_tab_item_bar_frame(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """TabItem frame style for bar/underline variant."""
     orient = options.get('orient', 'horizontal')
     accent_token = accent or 'primary'
@@ -63,8 +63,8 @@ def build_tab_item_bar_frame(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     b.configure_style(ttk_style, background=surface, relief='flat')
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TabItem.TLabel')
-def build_tab_item_bar_label(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TabItem.TLabel')
+def build_tab_item_bar_label(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """TabItem label style for bar/underline variant."""
     accent_token = accent or 'primary'
     surface_token = options.get('surface', 'content')
@@ -97,7 +97,7 @@ def build_tab_item_bar_label(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
 
 # --- TabItem.TButton builders (for close button) ---
 
-def _build_tab_item_button_layout(b: BootstyleBuilderTTk, ttk_style: str):
+def _build_tab_item_button_layout(b: StyleBuilderTtk, ttk_style: str):
     """Create standard button layout for TabItem close buttons."""
     b.create_style_layout(
         ttk_style,
@@ -109,8 +109,8 @@ def _build_tab_item_button_layout(b: BootstyleBuilderTTk, ttk_style: str):
     )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TabItem.TButton')
-def build_tab_item_bar_button(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TabItem.TButton')
+def build_tab_item_bar_button(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """TabItem close button style for bar variant - matches frame background."""
     accent_token = accent or 'primary'
     surface_token = options.get('surface', 'content')
@@ -166,8 +166,8 @@ def build_tab_item_bar_button(b: BootstyleBuilderTTk, ttk_style: str, accent: Op
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('icon', 'TabItem.TButton')
-def build_tab_item_icon_button(b: BootstyleBuilderTTk, ttk_style: str, _: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('icon', 'TabItem.TButton')
+def build_tab_item_icon_button(b: StyleBuilderTtk, ttk_style: str, _: Optional[str] = None, **options):
     """TabItem close button style - generic icon only button (fallback)."""
     surface_token = options.get('surface', 'content')
 

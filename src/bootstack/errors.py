@@ -31,10 +31,37 @@ class SerializationError(BootstackError):
     """
 
 
+class NavigationError(BootstackError):
+    """Raised when a navigation operation fails.
+
+    Examples: adding a page or tab whose key already exists, navigating to a
+    key that does not exist, or supplying an out-of-range index.
+    """
+
+
+class ThemeError(BootstackError):
+    """Raised when a theme-related operation fails.
+
+    Examples: requesting an unknown theme name, or loading a malformed theme
+    definition.
+    """
+
+
+class StyleBuilderError(BootstackError):
+    """Raised when a widget style cannot be built.
+
+    Examples: an unsupported `variant` for a widget, or a missing required
+    theme color token.
+    """
+
+
 __all__ = [
     "BootstackError",
     "DuplicateIdError",
+    "NavigationError",
     "ParentResolutionError",
     "SerializationError",
+    "StyleBuilderError",
+    "ThemeError",
     "UnknownEventError",
 ]

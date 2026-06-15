@@ -1,7 +1,7 @@
 """Tk (legacy tkinter) widget builders for bootstack.
 
 Importing this package registers default builder functions for common Tk
-widgets using the BootstyleBuilderTk registry. Builders receive the actual
+widgets using the StyleBuilderTk registry. Builders receive the actual
 widget instance, plus theme/color utilities via the builder object.
 """
 

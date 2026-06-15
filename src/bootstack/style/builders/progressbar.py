@@ -5,21 +5,21 @@ This module contains style builders for ttk.Progressbar widgets and variants.
 
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TProgressbar')
-def build_default_progressbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'primary', **options):
+@StyleBuilderTtk.register_builder('default', 'TProgressbar')
+def build_default_progressbar_style(b: StyleBuilderTtk, ttk_style: str, accent: str = 'primary', **options):
     build_progressbar_style(b, ttk_style, accent, 'default', **options)
 
 
-@BootstyleBuilderTTk.register_builder('thin', 'TProgressbar')
-def build_thin_progressbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'primary', **options):
+@StyleBuilderTtk.register_builder('thin', 'TProgressbar')
+def build_thin_progressbar_style(b: StyleBuilderTtk, ttk_style: str, accent: str = 'primary', **options):
     build_progressbar_style(b, ttk_style, accent, 'thin', **options)
 
-def build_progressbar_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str, variant: str, **options):
+def build_progressbar_style(b: StyleBuilderTtk, ttk_style: str, accent: str, variant: str, **options):
     orient = options.get("orient")
     surface_token = options.get("surface", "content")
 

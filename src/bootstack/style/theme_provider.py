@@ -277,7 +277,7 @@ class ThemeProvider:
         # border-subtle + text-emphasis are fixed accent shades (light: [200]/
         # [800]; dark: [700]/[300]). The bg-subtle WASH is NOT precomputed here —
         # it is surface-relative (a blend of the accent anchor into whatever
-        # surface it sits on), computed in `BootstyleBuilder.subtle()`.
+        # surface it sits on), computed in `StyleBuilder.subtle()`.
         import re as _re
         _stop_re = _re.compile(r'^([a-z]+)\[\d+\]$')
         _is_dark = self.mode == 'dark'

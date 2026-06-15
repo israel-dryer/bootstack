@@ -95,8 +95,8 @@ class MenuButton(LocalizationMixin, TextSignalMixin, IconMixin, TTKWrapperBase, 
             if int(self.tk.eval(f"winfo viewable {menu_path}")):
                 self.tk.call(menu_path, 'unpost')
                 return 'break'
-            from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
-            offset = BootstyleBuilderBase.scale_from_source(10)
+            from bootstack.style.style_builder_base import StyleBuilderBase
+            offset = StyleBuilderBase.scale_from_source(10)
             x = self.winfo_rootx() + offset
             y = self.winfo_rooty() + self.winfo_height()
             self.tk.call(menu_path, 'post', x, y)

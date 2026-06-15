@@ -1,7 +1,7 @@
 ﻿"""Font modifier syntax for inline font customization in bootstack widgets.
 
 This module provides a mixin that enables concise font modification syntax for all
-bootstack widgets. The syntax uses bracket notation similar to bootstyle modifiers,
+bootstack widgets. The syntax uses bracket notation similar to style modifiers,
 allowing inline font customization without creating custom Font objects.
 
 ## Syntax

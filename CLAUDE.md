@@ -21,6 +21,58 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Pre-release `0.1.0a10` shipped + docs deploy fixed** (PRs #139–#140 merged;
+  release built from `main`) — **Toast split** (PR #139): the kitchen-sink Toast
+  became three public widgets over one engine — `toast()` (single-line, icon
+  opt-in, corner-stacked on the current monitor), `Notification` (titled card),
+  `Snackbar`/`snackbar()` (neutral surface, window-bottom anchored, accent only on
+  the action); emphasis-shade text (`{accent}_emphasis`), `on_color` light-mode
+  contrast fix (info cyan → black text). **Pre-release readiness** (PR #140): full
+  **gallery/demo-app widget coverage** (Media/MenuButton/SelectButton/ToggleButton/
+  RadioToggleButton/RangeSlider/ListView/ScrollView/PageStack/Notification/Snackbar/
+  ContextMenu/shell chrome) + a **`ToggleButton(icon=)`** framework add (fallback for
+  both states; `on_icon`/`off_icon` override); `installation.rst` rewrite (`pip
+  install --pre`, Tk-install checks, version pin); a **pre-release announcement
+  banner** (conf.py `html_theme_options`); **README** refresh (banner, `--pre`,
+  hero swap, Table→DataTable / Toolbar→CommandBar fixes); `requirements.txt` /
+  `requirements-dev.txt` / `pyproject.toml` deps + description sync; app-settings
+  doc review. Release via `bump-my-version` (a9→**a10**, tag `v0.1.0a10`) → PyPI
+  trusted-publish + GitHub Release (both ✓). **Docs deploy fix** (commit `5959e7b3`,
+  direct to `main`): `docs/CNAME` (`bootstack.org`) had been deleted in `13c01d4d`
+  (old mkdocs copied `docs/` to the site root; **Sphinx does not**) — restored it +
+  `html_extra_path = ["CNAME"]`; also reverted the docs trigger `tags:v*`→`branches:
+  [main]` because the `github-pages` environment protection **rejects tag
+  deployments**. `bootstack.org` now serves HTTP 200 with the CNAME at root.
+  Memory `project_prerelease_readiness`, `project_toast_notification_split`.
+  **FOLLOW-UPS:** (1) workflow action versions bumped to the Node-24 majors ahead of
+  the 2026-06-16 cutoff — **DONE**, PR #141 (`checkout@v6`/`setup-python@v6`/
+  `upload-artifact@v7`/`download-artifact@v8`/`upload-pages-artifact@v5`/
+  `deploy-pages@v5`/`action-gh-release@v3`). (2) legacy ttkbootstrap naming purge —
+  **DONE** (branch `chore/cleanse-ttkbootstrap`): `bootstyle*.py`→`style_resolver.py`/
+  `style_builder_*.py`, `Bootstyle`→`StyleResolver`, `BootstyleBuilder*`→`StyleBuilder*`,
+  dead dash-string parser + `bootstyle` config-key path deleted, exceptions unified onto
+  the public `bootstack.errors.BootstackError` (Navigation/Theme/StyleBuilder now public;
+  Tabs aligned to `NavigationError`), `TTKBOOTSTRAP_DEBUG`→`BOOTSTACK_DEBUG`. (3) standing
+  backlog (still open): docstring-backtick sweep. (Toast woven into the user-guide
+  how-tos — **DONE**, PR #140 commit `d95d298a`.)
+- **AppShell + navigation clean-slate rewrite SHIPPED** (PRs #133–#136, all merged;
+  in `0.1.0a10`) — the VS Code-style **rail + swappable sidebar + content** rewrite
+  landed and the public **`bs.AppShell` was swapped onto the new `Shell`** (#135),
+  **dropping the standalone `bs.SideNav`** (`SideNavHeader`/`SideNavSeparator` stay,
+  used by `NavPanel`). Sidebar = three shapes: flat-static (`add_page`) ·
+  grouped-static (`add_header` muted label) · data-bound (`list_nav`/`tree_nav`); the
+  Revision-3 accordion was built then **cut** (spec Revision 4). Scrollable `NavPanel`
+  (footer pinned, overflow-gated thin scrollbar), neutral selection + `accent_selection`
+  opt-in, pixel-ellipsis truncation. Statusbar + menubar/command bar wired + styled;
+  `Workspace` context-manager; public façade (`commandbar`/`nav`/`pages` + window
+  controls). **Companions in the same release:** **theme/Bootstrap-alignment v2**
+  (#137 — v2 theme-family model, Bootstrap-aligned colors, color-independent sidebar
+  selection, accent defaults) · **thin-scrollbar public exposure** (#138 —
+  `ScrollbarVariant` alias, list widgets default to thin) · **nav-patterns docs**
+  (#136 — standalone `StatusBar` guide + AppShell nav-pattern articles). Spec
+  `docs/_dev/appshell-navigation-spec.md` (Revision 4). Memories
+  `project_appshell_sidenav_refactor`, `project_theme_bootstrap_alignment`,
+  `project_thin_scrollbar_initiative`, `project_nav_patterns_section`.
 - **Media widget suite — Picture / Gallery / Carousel / Avatar** (PRs #126–#132,
   all merged) — a family of media-display widgets built on the public `Image`
   handle, in a new **Media** docs category. **`Picture`** (#126) is the display
@@ -284,80 +336,30 @@ memories and git history.
 
 ## Next up
 
-### ★ ACTIVE — AppShell + navigation clean-slate rewrite (START HERE, fresh session)
-
-A clean-slate VS Code-style **rail + swappable sidebar + content** rewrite of the
-shell's navigation (supersedes the original combined-refactor framing below).
-**Live spec: `docs/_dev/appshell-navigation-spec.md` — read Revision 4 (the
-accordion CUT — current decision) first, then Revision 2/3 for the superseded
-arc.** Memory `project_appshell_sidenav_refactor`. Seed brief
-(`docs/_dev/appshell-sidenav-refactor.md`) is now background-only.
-
-**Branch `feat/appshell-navigation`. Steps 1–9 DONE & committed:** NavModel →
-region layout → single-tier wiring → provider seam → all 3 providers + live refresh
-→ two-tier rail + VS Code gesture → sidebar collapse/visibility/nav-state persistence
-→ grouped-static (`add_header`; accordion tried then cut, see below) → **step-9 styling**: dark
-rail/chrome surface (rail/status tier sits clearly below the neutral selection
-wash), neutral selection by default + `accent_selection` opt-in, subtle `raised`
-sidebar elevation, `list_nav` on the real recycling `ListView` with **pixel-ellipsis
-title/text truncation** (labels `width=1` so they never push the icon/chevron off;
-`_elide` via `get_font().measure`; re-elides on the center frame's `<Configure>`),
-density + chevron exposed on `list_nav`/`tree_nav`.
-
-**DONE — accordion CUT + grouped-static finished (committed `580e0218`, Revision
-4).** The Revision-3 accordion was built then **dropped** (maintainer: not worth
-the trouble — the "section that IS a list/tree" carried all the complexity/bugs
-and conflated content-hierarchy with nav). `NavGroup`/`ProviderHost` deleted;
-`Workspace` back to a single provider; `add_group`/`expand_all`/`collapse_all`
-gone; `SideNavHeader` is a plain label. **Sidebar = three shapes only:**
-flat-static (`add_page`, compactable) · grouped-static (`add_header` = a plain
-**muted** label, flush items, `10→16` top-gap group break) · data-bound
-(`list_nav`/`tree_nav`). A collapsible sub-list → compose `bs.Accordion` in a
-custom `panel()`. **Scrollable static nav**: `NavPanel` item area in a `ScrollView`
-(wheel + auto-hiding bar), footer pinned outside; overflow-gated gutter/bar +
-footer divider (`'never'`↔`'scroll'`, hysteresis, no flicker); canvas bg painted
-to the sidebar surface. **`nav-quiet` square under a rail, `nav-pill` standalone**
-(mixed-provider workspaces must share one row language). Test `test_shell_groups`
-rewritten for grouped-static. **Sidebar styling round shipped** (committed): a
-reusable **`'thin'` 4px square scrollbar variant** (Pillow `create_box_image`;
-`ScrollView` threads surface), `NavPanel` scrollable item area (footer pinned,
-overflow-gated bar + footer divider, gutter absorbed into the right inset so the
-margin stays even + footer re-aligns), and **empty-state placeholders** for
-`tree_nav`/empty `list_nav` (`placeholder=`). The current step is DONE.
-**NEXT = step 11 (the public-AppShell swap)**, which now also owns: **drop the
-standalone `bs.SideNav`** (decided — coupled to removing the old sidenav-based
-AppShell that `bs.AppShell` still points at; `SideNavHeader`/`SideNavSeparator`
-stay, used by `NavPanel`); **wire + style the statusbar + menubar/command bar**
-into the new shell (chrome band is an empty Frame, statusbar a bare Toolbar);
-`Workspace` context-manager support; the public façade (`commandbar`/`nav`/`pages`
-+ window controls). Separate initiative: thin-scrollbar public exposure + audit
-other scrollable widgets (memory `project_thin_scrollbar_initiative`).
-
-**Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
-framework code). Side note logged: a future `Tabs` `variant='secondary'` (top
-indicator) — `project_secondary_tab_variant`, NOT part of this work.
-
-- Related context: `project_menu_redesign` (PR #124 menu/command-bar this builds
-  on), `project_macos_window_chrome` (native chrome follow-up, separate). Deferred
-  AppShell-public-façade items (public `commandbar`/`nav`/`pages` handles,
-  window-control accessors) land when the rewritten internals are swapped onto the
-  public `AppShell` in the spec's step 11.
+> The AppShell + navigation clean-slate rewrite that lived here is **SHIPPED**
+> (PRs #133–#138, in `0.1.0a10`) — see the pointer at the top of "Recently
+> completed". The big nav initiative is done; what remains below is the standing
+> backlog.
 
 ### Other candidates
 
-- **Docs site fleshout** — the remaining stub pages: how-to guides (`docs/tasks/*` —
-  getting-input/handling-actions/displaying-data/building-forms/dialogs/navigation),
-  `getting-started/app-structures`, production `cli`/`debugging`/`distribution`; plus a
-  review of `installation`/`quickstart`. A SEPARATE initiative from the api-gap branch
-  (`cli`/`distribution` need investigation, not just writing). State + suggested order in
-  memory `project_docs_site_fleshout`.
-- **Decoupled option shape (option-databag)** — one shared `Option = str|tuple|OptionDict`
-  normalizer for the selection family; also subsumes the duplicated RadioGroup/ToggleGroup
-  management API (review finding #6). Memory `project_select_options_databag`; brief
-  `docs/_dev/select-options-databag.md`.
+- **Docs site fleshout — substantially DONE.** The how-to guides (`docs/tasks/*` —
+  getting-input/handling-actions/displaying-data/building-forms/composing-fields/
+  dialogs/layout/application-icons + the full `navigation/` set), `getting-started/
+  app-structures`, and the production pages (`cli`/`debugging`/`distribution`) are all
+  written and substantial. Remaining is only opportunistic: a review pass on
+  `installation`/`quickstart` and enrichment of any still-thin page. Memory
+  `project_docs_site_fleshout`.
+- **Docstring-backtick sweep** — many `src/` files still use RST double-backticks;
+  the convention is Google + SINGLE backticks (de-risked — `default_role="code"` is
+  set). Memory `project_docstring_backticks`.
 - **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
+
+**Throwaway demos `development/shell_*_demo.py` stay UNTRACKED** (scratch, not
+framework code). Side note logged: a future `Tabs` `variant='secondary'` (top
+indicator) — `project_secondary_tab_variant`, a standalone item.
 
 ### History — done initiatives
 
@@ -580,8 +582,6 @@ the open backlog are kept here.
 
 - `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
   public layer abstracts Tk; still imported by data/i18n/mixins.
-- `project_legacy_naming_cleanup` — `TTKBootstrapError` (overlaps `bootstack.errors`)
-  + pervasive `bootstyle`/`Bootstyle` in `style/`.
 - `project_docstring_backticks` — ~77 files use RST double-backticks; convention is
   Google + SINGLE backticks. (Stage 4 set `default_role="code"`, de-risking the sweep.)
 - `project_event_naming_revisit` — past-tense event names pending rename:

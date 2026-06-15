@@ -1060,8 +1060,8 @@ class TableView(Frame):
         # Inset the tree by the focus-ring affordance baked into sibling
         # entry images so the tree's content edge lines up with the visible
         # edge of the toolbar/footer entries (search box, pagination input).
-        from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
-        affordance = BootstyleBuilderBase.scale_from_source(8)
+        from bootstack.style.style_builder_base import StyleBuilderBase
+        affordance = StyleBuilderBase.scale_from_source(8)
         self._tree.grid(row=1, column=0, sticky="nsew", padx=affordance)
         self._display_columns = list(range(len(cols)))
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.builders.utils import button_padding, apply_icon_mapping, icon_size, button_font
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -20,9 +20,9 @@ def _toolbutton_layout(ttk_style: str) -> Element:
         ])
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'ButtonGroup')
-@BootstyleBuilderTTk.register_builder('default', 'ButtonGroup')
-def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'ButtonGroup')
+@StyleBuilderTtk.register_builder('default', 'ButtonGroup')
+def build_button_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the button style.
 
@@ -113,8 +113,8 @@ def build_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'ButtonGroup')
-def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('outline', 'ButtonGroup')
+def build_outline_button_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the outline button group style.
 
@@ -217,8 +217,8 @@ def build_outline_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'ButtonGroup')
-def build_ghost_button_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('ghost', 'ButtonGroup')
+def build_ghost_button_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the ghost button group style.
 

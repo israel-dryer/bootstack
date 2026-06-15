@@ -8,7 +8,7 @@ from tkinter.ttk import Style as ttkStyle
 from typing import Dict, Optional, Set
 
 from bootstack._runtime.app import get_app_settings
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.theme_provider import ThemeProvider, use_theme
 from bootstack.widgets.types import Master
 
@@ -21,7 +21,7 @@ class Style(ttkStyle):
     This class extends ttk.Style to provide:
 
     - Singleton pattern (one instance per Tkinter master)
-    - Integration with BootstyleBuilder registry
+    - Integration with StyleBuilder registry
     - Theme management via ThemeProvider
     - Automatic style rebuilding on theme changes
     - Custom style options support
@@ -63,7 +63,7 @@ class Style(ttkStyle):
         super().__init__(master)
 
         self._theme_provider = use_theme(theme)
-        self._style_builder = BootstyleBuilderTTk(theme_provider=self._theme_provider, style_instance=None)
+        self._style_builder = StyleBuilderTtk(theme_provider=self._theme_provider, style_instance=None)
         self._style_builder.set_style_instance(self)
 
         # Style registries
@@ -89,11 +89,11 @@ class Style(ttkStyle):
         self._initialized = True
 
     @property
-    def style_builder(self) -> BootstyleBuilderTTk:
+    def style_builder(self) -> StyleBuilderTtk:
         """Get the builder manager instance.
 
         Returns:
-            BootstyleBuilder instance
+            StyleBuilder instance
         """
         return self._style_builder
 
@@ -292,8 +292,8 @@ class Style(ttkStyle):
                     variant = parsed['variant']
 
             if variant is None:
-                from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
-                variant = BootstyleBuilderTTk.get_default_variant(widget_class)
+                from bootstack.style.style_builder_ttk import StyleBuilderTtk
+                variant = StyleBuilderTtk.get_default_variant(widget_class)
 
             self._style_builder.call_builder(
                 widget_class=widget_class,
@@ -306,8 +306,8 @@ class Style(ttkStyle):
     def _get_tk_builder(self):
         """Return the cached Tk builder, creating it on first call."""
         if self._cached_tk_builder is None:
-            from bootstack.style.bootstyle_builder_tk import BootstyleBuilderBuilderTk
-            self._cached_tk_builder = BootstyleBuilderBuilderTk(
+            from bootstack.style.style_builder_tk import StyleBuilderTk
+            self._cached_tk_builder = StyleBuilderTk(
                 theme_provider=self._theme_provider,
                 style_instance=self,
             )
@@ -392,8 +392,8 @@ class Style(ttkStyle):
             return None
 
         # Determine variant using registered builders for this widget
-        from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
-        builder_variants = set(v.lower() for v in BootstyleBuilderTTk.get_registered_builders(widget_class))
+        from bootstack.style.style_builder_ttk import StyleBuilderTtk
+        builder_variants = set(v.lower() for v in StyleBuilderTtk.get_registered_builders(widget_class))
 
         variant = None
         accent = None
@@ -411,18 +411,18 @@ class Style(ttkStyle):
                 accent = part
 
         if variant is None:
-            variant = BootstyleBuilderTTk.get_default_variant(widget_class)
+            variant = StyleBuilderTtk.get_default_variant(widget_class)
 
         return {
             'widget_class': widget_class,
             'variant': variant
         }
 
-    def get_style_builder(self) -> BootstyleBuilderTTk:
+    def get_style_builder(self) -> StyleBuilderTtk:
         """Get the style builder instance.
 
         Returns:
-            BootstyleBuilder instance
+            StyleBuilder instance
         """
         return self._style_builder
 
@@ -453,11 +453,11 @@ def get_style(master: Master = None) -> Style:
         return Style(master)
 
 
-def get_style_builder() -> BootstyleBuilderTTk:
+def get_style_builder() -> StyleBuilderTtk:
     """Return the style builder for the currently active theme.
 
     Returns:
-        The BootstyleBuilderTTk instance for the active theme.
+        The StyleBuilderTtk instance for the active theme.
 
     Examples:
         >>> builder = get_style_builder()

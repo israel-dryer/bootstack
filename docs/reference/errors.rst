@@ -96,6 +96,56 @@ object, use an in-memory source instead:
    except SerializationError as err:
        print("can't persist that:", err)
 
+``NavigationError``
+~~~~~~~~~~~~~~~~~~~
+
+Raised by navigation containers — :class:`PageStack <bootstack.PageStack>` and
+:class:`Tabs <bootstack.Tabs>` — when a key is wrong: adding a page or tab whose
+key already exists, or navigating to a key that doesn't:
+
+.. code-block:: python
+
+   from bootstack.errors import NavigationError
+
+   with bs.App() as app:
+       tabs = bs.Tabs()
+       tabs.add("home", label="Home")
+
+       try:
+           tabs.add("home", label="Duplicate")   # key already exists
+       except NavigationError as err:
+           print("nav:", err)
+
+``ThemeError``
+~~~~~~~~~~~~~~
+
+Raised when a theme operation fails — most often requesting a theme name that
+isn't registered, or loading a malformed theme definition:
+
+.. code-block:: python
+
+   from bootstack.errors import ThemeError
+
+   try:
+       bs.set_theme("not-a-real-theme")
+   except ThemeError as err:
+       print("bad theme:", err)
+
+``StyleBuilderError``
+~~~~~~~~~~~~~~~~~~~~~
+
+Raised when a widget style can't be built — typically an unsupported ``variant``
+for that widget type:
+
+.. code-block:: python
+
+   from bootstack.errors import StyleBuilderError
+
+   try:
+       bs.Button("Go", variant="not-a-variant")
+   except StyleBuilderError as err:
+       print("bad variant:", err)
+
 API reference
 -------------
 
@@ -109,6 +159,9 @@ The complete reference for every exception type lives in
 
    BootstackError
    DuplicateIdError
+   NavigationError
    ParentResolutionError
    SerializationError
+   StyleBuilderError
+   ThemeError
    UnknownEventError

@@ -5,13 +5,13 @@ This module contains style builders for ttk.Separator widgets and variants.
 
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import ElementImage, Element
 from bootstack.style.utility import create_box_image
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TSeparator')
-def build_separator_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TSeparator')
+def build_separator_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     accent_token = accent or 'border'
     surface_token = options.get('surface', 'content')
     orient = options.get('orient', 'horizontal')
