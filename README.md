@@ -31,7 +31,7 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 - **30% less code** — the declarative, context-manager layout eliminates geometry calls, explicit parenting, and most of the wiring boilerplate
 - **Reads like Python** — nested `with` blocks mirror your UI structure; the code hierarchy *is* the layout
 - **Modern layout system** — `HStack`, `VStack`, and `Grid` containers handle spacing, alignment, and fill automatically; CSS conventions (`gap`, `padding`, `margin`, `fill`, `anchor`) without writing CSS
-- **50+ widgets out of the box** — primitives through full composites: tables, trees, calendars, date pickers, gauges, sliders, and more — including a full `CodeEditor` with syntax highlighting, line numbers, bracket matching, smart indent, and search; no external editor dependency required
+- **60+ widgets out of the box** — primitives through full composites: tables, trees, calendars, date pickers, gauges, sliders, and more — including a full `CodeEditor` with syntax highlighting, line numbers, bracket matching, smart indent, and search; no external editor dependency required
 - **Reactive signals** — observable state that flows between widgets; bind once, update everywhere
 - **Event and stream pipelines** — compose, filter, debounce, and throttle UI events with a chainable stream API
 - **Built-in icons** — the full Bootstrap Icons catalog, theme-aware and DPI-scaled, bundled with the framework
@@ -89,7 +89,7 @@ app.run()
   <img alt="bootstack quick start example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-light.png">
 </picture>
 
-For navigation-based apps, use `AppShell` — it gives you a toolbar, sidebar, and page stack in one call:
+For navigation-based apps, use `AppShell` — it gives you a command bar, sidebar, and page stack in one call:
 
 ```python
 import bootstack as bs
@@ -162,8 +162,8 @@ app.run()
 
 ## Features
 
-- **Application scaffolding** — `App` for blank windows, `AppShell` for toolbar + sidebar + page-stack apps, undecorated windows with custom chrome
-- **50+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
+- **Application scaffolding** — `App` for blank windows, `AppShell` for command-bar + sidebar + page-stack apps, undecorated windows with custom chrome
+- **60+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
 - **Dialogs and messages** — `alert()` / `confirm()` / `ask_*()` prompts and `FormDialog` / `FontDialog` / `FilterDialog`, plus non-blocking `toast()`, `Notification`, and `Snackbar` surfaces
 - **Layout containers** — `VStack`, `HStack`, and `Grid` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Expander`
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost), consistent across widgets
