@@ -568,6 +568,19 @@ the open backlog are kept here.
   - `show_nav_level: 1` (collapsed by default). Do NOT promote sub-groups to top-level
     (pydata navbar overflows ~6+). The old "Reference page pattern" is SUPERSEDED by the
     API Reference & Guide pattern below.
+- **Title casing + how-to naming** (2026-06-15) — TWO-TIER casing, applied
+  consistently: **page titles (H1) and card/sidenav titles are Title Case**
+  (`Building Forms`, `Images and Icons` — conjunctions like `and` stay lowercase);
+  **in-page section headers are sentence case** (`Backing a widget with a data
+  source`). **How-to (`/tasks/*`) titles are action-driven gerunds** —
+  `‹Gerund› ‹object›` (`Displaying Data`, `Using the Clipboard`, `Showing Dialogs`),
+  NOT topical nouns. **Topics (`/reference/*`) keep noun/subsystem titles** (`Events`,
+  `Data Sources`) — that's correct, not a violation. Keep titles short enough to not
+  wrap in the sidenav (~≤20 chars; drop articles: `Setting App Icons`, not `Setting an
+  Application Icon`). **A page's H1, its User-Guide card title, and its sidenav entry
+  must all match** (the sidenav shows the H1, so a card/H1 mismatch shows as drift).
+  How-to card grid + the hidden toctree are ordered by **learning progression** (build
+  a screen → compose → app structure → ship), and both must stay in the SAME order.
 - **No Tkinter in docs or docstrings** — no `tk.*` types/terms unless strictly
   necessary; don't feature the escape hatch. Full `src/` docstring scrub still
   pending. LEFT BY DESIGN: `.tk`/`.var` escape-hatch property docstrings,
@@ -600,11 +613,10 @@ the open backlog are kept here.
   `window_style` only via the escape hatch), has no live properties
   (`title`/`size`/`topmost` are construction-only), and never releases the modal
   grab. Curate to typed params + add a live `title` + release on close. Own branch.
-- `project_show_indicator_removal` — `show_indicator=` on Checkbox/Radio/
-  RadioToggleButton/RadioGroup FLAGGED FOR REMOVAL (maintainer, 2026-06-08; too
-  niche — only useful paired with `on_icon`/`off_icon`). Radio + RadioToggleButton
-  share it via `_RadioControlBase`. Removal spans the wrappers, internal primitives,
-  the checkbutton/radiobutton style builders, and the checkbox docs/examples/screenshots.
+- `project_show_indicator_removal` — **KEEP (reversed 2026-06-15).** `show_indicator=`
+  was briefly flagged for removal but is being kept: the `show_indicator=False` +
+  `on_icon`/`off_icon` combo is exactly what makes an icon-driven custom checkbox, and
+  removing it would orphan that. GitHub #144 closed won't-do. Do NOT re-propose removal.
 - `project_enum_option_typing` — promote recurring enumerated `str` kwargs to NAMED
   `Literal` aliases in `widgets/types.py` (re-exported from `bootstack.types`); the
   ALIAS docstring carries the value list once, widget docstrings describe meaning only
