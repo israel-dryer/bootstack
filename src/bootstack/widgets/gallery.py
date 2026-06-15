@@ -50,6 +50,10 @@ class Gallery(PublicWidgetBase):
             `'none'` (default). Selected tiles show an accent highlight ring.
         scrollbar_variant: Scrollbar style — `'thin'` (default) for a slim bar,
             or `'default'` for the standard rounded bar.
+        rows: Number of tile rows used to derive the gallery's minimum height
+            when it sits in a container that doesn't impose one (a scroll view,
+            an auto-fit window). Default `2`. `fill`/`expand` still grow the grid
+            past this floor and reflow more rows in.
         accent: Color intent token for the selection ring. Defaults to the
             theme's primary color.
         surface: Background surface token shown behind the tiles.
@@ -73,6 +77,7 @@ class Gallery(PublicWidgetBase):
         gap: int = 8,
         selection_mode: SelectionMode = "none",
         scrollbar_variant: ScrollbarVariant = "thin",
+        rows: int = 2,
         accent: AccentToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         parent: Any = None,
@@ -93,6 +98,7 @@ class Gallery(PublicWidgetBase):
             "gap": gap,
             "selection_mode": selection_mode,
             "scrollbar_variant": scrollbar_variant,
+            "rows": rows,
         }
         if items is not None:
             internal_kwargs["items"] = items

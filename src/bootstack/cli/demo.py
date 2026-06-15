@@ -807,13 +807,16 @@ def _build_media_page():
             bs.Picture(photos[1]["image"], width=180, height=120, fit="contain")
             bs.Picture(photos[2]["image"], width=120, height=120, fit="cover", corner_radius=60)
 
-        with bs.GroupBox("Gallery", fill="both", expand=True):
-            bs.Gallery(items=photos, image_field="image", caption_field="title",
-                       tile_size=(120, 120), fill="both", expand=True)
-
         with bs.GroupBox("Carousel", fill="horizontal"):
             bs.Carousel(items=photos, image_field="image", caption_field="title",
                         fit="cover", fill="horizontal")
+
+        # Gallery last: it scrolls internally and swallows the wheel event, so
+        # keeping it at the bottom leaves the carousel/picture rows above it as
+        # places to grab and scroll the page itself.
+        with bs.GroupBox("Gallery", fill="both", expand=True):
+            bs.Gallery(items=photos, image_field="image", caption_field="title",
+                       tile_size=(120, 120), fill="both", expand=True)
 
 
 # =============================================================================
