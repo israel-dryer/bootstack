@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, Type, TypeVar
 
 from bootstack.signals.types import TraceOperation
 from bootstack._core.variables import SetVar
+from bootstack.streams import Handle
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -249,7 +250,7 @@ class Signal(Generic[T]):
         self.subscribe(update)
         return derived
 
-    def subscribe(self, callback: Callable[[T], Any], *, immediate: bool = False) -> str:
+    def subscribe(self, callback: Callable[[T], Any], *, immediate: bool = False) -> Handle:
         """
         Subscribe to value changes of this signal.
 
@@ -259,7 +260,8 @@ class Signal(Generic[T]):
                 value at subscription time. Defaults to False.
 
         Returns:
-            A subscription id — pass it to `unsubscribe()` to stop listening.
+            A cancellable `Handle` — call `.cancel()` to stop listening, or use
+            it as a context manager to unsubscribe on exit.
         """
         fid = self._trace.add("write", callback, self)
         self._subscribers[fid] = callback
@@ -268,27 +270,12 @@ class Signal(Generic[T]):
             # Call synchronously at subscription time; let any error surface to
             # the caller rather than swallowing a real bug in the callback.
             callback(self())
-        return fid
+        return Handle(lambda: self._unsubscribe(fid))
 
-    def unsubscribe(self, funcid: str) -> None:
-        """
-        Remove a previously registered subscriber.
-
-        Args:
-            funcid: The function id returned from `subscribe()`.
-        """
+    def _unsubscribe(self, funcid: str) -> None:
+        """Remove a previously registered subscriber by its trace id."""
         self._subscribers.pop(funcid, None)
         self._trace.remove(funcid)
-
-    def unsubscribe_all(self) -> None:
-        """
-        Remove all currently subscribed callbacks.
-        """
-        # Copy keys to avoid mutation during iteration
-        for fid in list(self._subscribers.keys()):
-            self._trace.remove(fid)
-        self._subscribers.clear()
-        self._callback_index.clear()
 
     @property
     def name(self) -> str:

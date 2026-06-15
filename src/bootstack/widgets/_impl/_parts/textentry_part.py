@@ -309,7 +309,7 @@ class TextEntryPart(ValidationMixin, Entry):
             fid = getattr(self, '_on_input_fid', None)
             if fid:
                 try:
-                    self.textsignal.unsubscribe(fid)
+                    fid.cancel()
                 except TclError:
                     pass
             self.textsignal.set(new_text)
@@ -375,7 +375,7 @@ class TextEntryPart(ValidationMixin, Entry):
         """Clean up signal subscriptions and destroy the widget."""
         if self._on_input_fid:
             try:
-                self.textsignal.unsubscribe(self._on_input_fid)
+                self._on_input_fid.cancel()
             except Exception:
                 pass  # Ignore all errors during cleanup
             self._on_input_fid = None

@@ -77,7 +77,7 @@ Reacting to changes
 -------------------
 
 Subscribe a callback to run whenever the value changes. The callback receives
-the new value:
+the new value, and ``subscribe`` returns a cancellable handle:
 
 .. code-block:: python
 
@@ -85,8 +85,16 @@ the new value:
 
    count.set(1)        # prints "count is now 1"
 
-   count.unsubscribe(sub)      # stop listening
-   count.unsubscribe_all()     # drop every subscriber
+   sub.cancel()        # stop listening
+
+The handle is also a context manager, so a subscription can be scoped to a block
+and cancelled automatically on exit:
+
+.. code-block:: python
+
+   with count.subscribe(on_change):
+       ...             # listening here
+   # cancelled on exit
 
 Pass ``immediate=True`` to fire the callback once with the current value at
 subscription time, in addition to future changes:
