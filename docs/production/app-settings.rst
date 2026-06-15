@@ -109,10 +109,15 @@ themes automatically when the user changes the OS appearance. See
 Localization
 ------------
 
-``locale=`` sets the active locale; ``localize_mode=`` controls whether widget
-text is auto-localized. The locale-derived formatting values are exposed as
-read-only properties (they are computed from the locale, so they update whenever
-``app.locale`` changes):
+``locale=`` sets the active locale. ``localize_mode=`` controls automatic text
+translation for the whole app — ``"auto"`` (the default — translate when a
+translation is registered for the locale, otherwise show the literal), ``True``
+(always), or ``False`` (never); an individual widget overrides it with
+``localize=``. Register your own translations with
+:func:`~bootstack.i18n.add_translations` — see :doc:`/reference/localization`.
+
+The locale-derived formatting values are exposed as read-only properties (they
+are computed from the locale, so they update whenever ``app.locale`` changes):
 
 .. code-block:: python
 

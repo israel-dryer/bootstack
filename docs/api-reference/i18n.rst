@@ -1,16 +1,29 @@
-Localization
-============
+Localization (i18n)
+===================
 
 .. currentmodule:: bootstack.i18n
 
-Localization helpers. Wrap a string with ``L`` to mark it translatable, or a
-value with ``LV`` to format it for the active locale; both update live when the
-app's locale changes.
+Localization helpers. Widget text is translated automatically when a translation
+is registered for the active locale; wrap a string with ``L`` to mark it
+translatable with interpolation, or a value with ``LV`` to format it for the
+locale. Register your own translations with the catalog functions below.
 
-For a task-oriented introduction — message catalogs, locale-aware dates and
-numbers, switching locale at runtime — see the :doc:`/reference/localization`
-guide.
+For a task-oriented introduction — automatic translation, registering strings,
+locale-aware dates and numbers, switching locale at runtime — see the
+:doc:`/reference/localization` guide.
+
+Translatable text and values
+----------------------------
 
 .. autofunction:: L
 
 .. autofunction:: LV
+
+Extending the translation catalog
+---------------------------------
+
+.. autofunction:: add_translation
+
+.. autofunction:: add_translations
+
+.. autofunction:: load_translations

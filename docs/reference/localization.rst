@@ -1,5 +1,5 @@
-Localization
-============
+Localization (i18n)
+===================
 
 bootstack apps can speak the user's language and follow their regional
 conventions. There are two halves:
@@ -118,23 +118,55 @@ Locale-aware input widgets — :doc:`/widgets/numberfield`,
 active locale automatically, so a German user can type ``1.234,56`` and you get
 ``1234.56``.
 
-Marking text for translation
-----------------------------
+Translating your own text
+-------------------------
 
-Wrap a message key in ``L(...)`` wherever a widget takes text and it resolves in
-the active locale, re-translating itself on a locale change:
+Widget text is translated **automatically**. In the default
+``localize_mode="auto"``, a plain string is translated when a translation is
+registered for the active locale, and shown as-is otherwise — so ordinary text
+needs no wrapping:
+
+.. code-block:: python
+
+   bs.Label("Save")        # renders the translation of "Save" if one is registered
+   bs.Button("Cancel")     # same — no L() needed
+
+Register your own translations with the catalog functions (inside a running app):
+
+.. code-block:: python
+
+   from bootstack.i18n import add_translations
+
+   add_translations("es", {"Save": "Guardar", "Cancel": "Cancelar"})
+   add_translations("de", {"Save": "Speichern", "Cancel": "Abbrechen"})
+
+- ``add_translation(locale, source, translated)`` — register one string.
+- ``add_translations(locale, mapping)`` — register a ``{source: translated}`` batch.
+- ``load_translations(directory)`` — load ``.msg`` catalog files from a folder.
+
+Use ``L(...)`` when you need **interpolation** — it looks up the translation and
+fills in ``{}``-style placeholders with `str.format` (positional or named):
 
 .. code-block:: python
 
    from bootstack.i18n import L
 
-   bs.Label(L("greeting"))
-   bs.Button(L("button.save"), on_click=save)
+   bs.Label(L("Hello, {0}", name))         # positional
+   bs.Label(L("Hello, {name}", name=user)) # named
 
-bootstack's own widget text is translated for every bundled locale out of the
-box (see below). A first-class API for registering your *own* application
-translation catalogs is still being finalized; until it lands, ``LV`` already
-covers locale-aware *values* in full, and ``L`` resolves the bundled strings.
+Opting a widget out
+~~~~~~~~~~~~~~~~~~~
+
+Every text widget takes a ``localize=`` argument — ``True``, ``False``, or
+``"auto"`` — to override the app default for one widget. Set ``False`` to keep a
+proper noun, brand name, or identifier from being translated:
+
+.. code-block:: python
+
+   bs.Label("Acme Corp", localize=False)   # never translated
+
+bootstack's own widget text (dialog buttons, built-in labels) is already
+translated for every bundled locale out of the box — see below.
 
 Reading locale conventions
 --------------------------
@@ -200,3 +232,6 @@ The complete reference lives in :doc:`/api-reference/i18n`. At a glance:
 
    L
    LV
+   add_translation
+   add_translations
+   load_translations
