@@ -1,7 +1,7 @@
 """Style builder functions for bootstack widgets.
 
 This package contains individual builder functions organized by widget type.
-Each builder is registered with the BootstyleBuilder registry using decorators.
+Each builder is registered with the StyleBuilder registry using decorators.
 
 Builder modules are automatically imported to trigger registration.
 """

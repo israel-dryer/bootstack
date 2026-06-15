@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Optional
 
 from bootstack._core.images import _ImageService
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image, recolor_element_image
 from bootstack.style.builders.utils import (
@@ -52,7 +52,7 @@ def _chevron_size(density: str) -> int:
 
 
 def _create_chevron_images(
-        b: BootstyleBuilderTTk, ttk_style: str, foreground: str, disabled: str, active: str = None,
+        b: StyleBuilderTtk, ttk_style: str, foreground: str, disabled: str, active: str = None,
         icon_name: str = 'caret-down-fill', density: str = 'default'):
     """Create chevron icon images for dropdown indicator.
 
@@ -86,14 +86,14 @@ def _create_chevron_images(
     )
 
 
-def _create_spacer(b: BootstyleBuilderTTk, ttk_style: str, density: str = 'default'):
+def _create_spacer(b: StyleBuilderTtk, ttk_style: str, density: str = 'default'):
     """Create a small spacer element."""
     width = 6 if density == 'compact' else 8
     spacer_img = create_transparent_image(width, 1)
     b.create_style_element_image(ElementImage(f'{ttk_style}.spacer', spacer_img, sticky="ew", width=width))
 
 
-def _menubutton_padding(b: BootstyleBuilderTTk, icon_only: bool, density: str) -> int | tuple[int, ...]:
+def _menubutton_padding(b: StyleBuilderTtk, icon_only: bool, density: str) -> int | tuple[int, ...]:
     """Calculate menubutton padding based on options."""
     if icon_only:
         return 0
@@ -102,9 +102,9 @@ def _menubutton_padding(b: BootstyleBuilderTTk, icon_only: bool, density: str) -
     return b.scale((8, 0, 4, 0))
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'TMenubutton')
-@BootstyleBuilderTTk.register_builder('default', 'TMenubutton')
-def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'TMenubutton')
+@StyleBuilderTtk.register_builder('default', 'TMenubutton')
+def build_solid_menubutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the solid menubutton style.
 
     Style options include:
@@ -188,8 +188,8 @@ def build_solid_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'TMenubutton')
-def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('outline', 'TMenubutton')
+def build_outline_menubutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the outline menubutton style.
 
     Style options include:
@@ -280,8 +280,8 @@ def build_outline_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'TMenubutton')
-def build_ghost_menubutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('ghost', 'TMenubutton')
+def build_ghost_menubutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Configure the ghost menubutton style.
 
     Style options include:

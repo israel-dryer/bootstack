@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image, create_transparent_image, mix_colors
 from bootstack.style.builders.utils import apply_icon_mapping, resolve_icon_spec
@@ -16,8 +16,8 @@ from bootstack.style.builders.toolbutton import (
 )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'NavigationView.TFrame')
-def build_navigationview_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('default', 'NavigationView.TFrame')
+def build_navigationview_frame_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Build SideNav frame style for group expanders.
 
     Uses standard button assets (no selection indicator needed since
@@ -64,8 +64,8 @@ def build_navigationview_frame_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'NavigationView.TLabel')
-def build_navigationview_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'NavigationView.TLabel')
+def build_navigationview_label_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Build SideNav label style with state-aware foreground colors.
 
     Matches the ghost Toolbutton foreground color behavior.
@@ -111,8 +111,8 @@ def build_navigationview_label_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('navigation', 'Toolbutton')
-def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('navigation', 'Toolbutton')
+def build_navigation_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Build navigation Toolbutton style with selection indicator.
 
     Uses nav-button assets with a left-side selection indicator bar
@@ -196,8 +196,8 @@ def build_navigation_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('rail', 'Toolbutton')
-def build_rail_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('rail', 'Toolbutton')
+def build_rail_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Build the workspace-rail item — the VS Code activity-bar treatment.
 
     A radio toggle (single-select) rendered icon-only on the chrome surface:
@@ -472,8 +472,8 @@ def _pill_colors(b, accent_token, options):
     return _selection_colors(b, accent_token, options)
 
 
-@BootstyleBuilderTTk.register_builder('nav-quiet', 'Toolbutton')
-def build_nav_quiet_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('nav-quiet', 'Toolbutton')
+def build_nav_quiet_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Quiet sidebar nav item (under a rail): subtle wash, neutral fg, no bar."""
     accent_token = accent  # None -> neutral
     image_key = f'navitem_{normalize_button_density(options.get("density", "default"))}'
@@ -482,8 +482,8 @@ def build_nav_quiet_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, acc
                         image_key=image_key, selected_bg=sel_bg, selected_fg=sel_fg)
 
 
-@BootstyleBuilderTTk.register_builder('nav-quiet-compact', 'Toolbutton')
-def build_nav_quiet_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('nav-quiet-compact', 'Toolbutton')
+def build_nav_quiet_compact_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Quiet nav item compacted to a centered icon."""
     accent_token = accent  # None -> neutral
     image_key = f'navitem_{normalize_button_density(options.get("density", "default"))}'
@@ -492,8 +492,8 @@ def build_nav_quiet_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: 
                        image_key=image_key, selected_bg=sel_bg, selected_fg=sel_fg)
 
 
-@BootstyleBuilderTTk.register_builder('nav-pill', 'Toolbutton')
-def build_nav_pill_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('nav-pill', 'Toolbutton')
+def build_nav_pill_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Standalone sidebar nav item: a rounded accent pill + accent fg (macOS vibe).
 
     The primary nav (no rail): the selected row gets a rounded accent-tinted pill
@@ -508,8 +508,8 @@ def build_nav_pill_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, acce
                         image_key=image_key, selected_bg=sel_bg, selected_fg=sel_fg)
 
 
-@BootstyleBuilderTTk.register_builder('nav-pill-compact', 'Toolbutton')
-def build_nav_pill_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('nav-pill-compact', 'Toolbutton')
+def build_nav_pill_compact_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Standalone nav item compacted to a centered icon (rounded pill on select)."""
     accent_token = accent  # None -> neutral
     image_key = 'card'
@@ -518,8 +518,8 @@ def build_nav_pill_compact_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: s
                        image_key=image_key, selected_bg=sel_bg, selected_fg=sel_fg)
 
 
-@BootstyleBuilderTTk.register_builder('default', 'NavigationButton.TFrame')
-def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'NavigationButton.TFrame')
+def build_navigationbutton_frame_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Build NavigationButton frame style with selection indicator.
 
     Uses nav-button assets with a left-side selection indicator bar
@@ -587,8 +587,8 @@ def build_navigationbutton_frame_style(b: BootstyleBuilderTTk, ttk_style: str, a
     )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'NavigationButton.TLabel')
-def build_navigationbutton_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'NavigationButton.TLabel')
+def build_navigationbutton_label_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Build NavigationButton label style with state-aware colors.
 
     Labels inside the navigation button container that respond to

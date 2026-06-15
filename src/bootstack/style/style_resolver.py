@@ -1,7 +1,7 @@
-"""Bootstyle parsing and widget integration for bootstack.
+"""Style resolution and widget integration for bootstack.
 
-Handles parsing of bootstyle strings and provides integration layer between
-user-friendly bootstyle syntax and TTK style names.
+Resolves accent/variant tokens into TTK style names and wires those styles
+onto widgets by overriding their constructors.
 """
 
 from __future__ import annotations
@@ -9,79 +9,8 @@ from __future__ import annotations
 from typing import Optional
 
 from bootstack._runtime.app import get_app_settings, has_current_app
-from bootstack._core.exceptions import BootstyleParsingError
 from bootstack.style.token_maps import (COLOR_TOKENS, CONTAINER_CLASSES, ORIENT_CLASSES, WIDGET_CLASS_MAP)
 
-
-
-def parse_bootstyle_v2(bootstyle: str, widget_class: str) -> dict:
-    """Parse bootstyle string using V2 syntax (dash-separated).
-
-    Syntax: `accent-variant-widget` where all parts are optional.
-    Checks actual theme colors and registered variants. Unknown parts are
-    treated as custom colors.
-
-    Args:
-        widget_class: TTK widget class name (e.g., "TButton")
-
-    Returns:
-        Dict with: accent, variant, widget_class, cross_widget
-    """
-    if not bootstyle:
-        return {
-            'accent': None,
-            'variant': "default",
-            'widget_class': widget_class,
-            'cross_widget': False,
-            'orient': None,
-        }
-
-    from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
-    from bootstack.style.theme_provider import use_theme
-
-    theme_colors = use_theme().colors
-    if not isinstance(bootstyle, str):
-        raise BootstyleParsingError(f'bootstyle must be a string. Received the value: {bootstyle}')
-    parts = bootstyle.lower().split('-')
-
-    accent = None
-    variant = None
-    resolved_widget = widget_class
-    cross_widget = False
-    orient = None
-
-    # First pass: resolve widget target (so variant tokens can be validated)
-    for part in parts:
-        if part in WIDGET_CLASS_MAP:
-            resolved_widget = WIDGET_CLASS_MAP[part]
-            if resolved_widget != widget_class:
-                cross_widget = True
-
-    # Second pass: resolve accent/variant/orientation
-    for part in parts:
-        if part in WIDGET_CLASS_MAP:
-            # already handled in first pass
-            continue
-        if part in theme_colors or part in COLOR_TOKENS or '[' in part:
-            accent = part
-            continue
-        if part in ("horizontal", "vertical"):
-            orient = part
-            continue
-        if BootstyleBuilderTTk.has_builder(resolved_widget, part):
-            variant = part
-            continue
-        # If we reach here, it's unrecognized
-        message = f"Unrecognized variant or accent token: '{part}'"
-        raise BootstyleParsingError(message)
-
-    return {
-        'accent': accent,
-        'variant': variant,
-        'widget_class': resolved_widget,
-        'cross_widget': cross_widget,
-        'orient': orient
-    }
 
 
 def to_pascal_case(s: str) -> str:
@@ -140,14 +69,6 @@ def normalize_orientation(orient: str):
     else:
         return 'Horizontal'
 
-
-
-def parse_bootstyle(bootstyle: str, widget_class: str) -> dict:
-    """Parse bootstyle string using configured parsing method.
-
-    Main entry point for bootstyle parsing.
-    """
-    return parse_bootstyle_v2(bootstyle, widget_class)
 
 
 def extract_orient_from_style(ttk_style: str):
@@ -239,11 +160,11 @@ def extract_widget_class_from_style(ttk_style: str) -> Optional[str]:
     return None
 
 
-class Bootstyle:
-    """Widget integration layer for bootstyle functionality.
+class StyleResolver:
+    """Widget integration layer for the style system.
 
-    Wires bootstack into tkinter/ttk by overriding widget constructors and
-    configure methods to accept `bootstyle` parameter.
+    Wires bootstack into tkinter/ttk by overriding widget constructors to
+    resolve `accent`/`variant` tokens into TTK style names.
     """
 
     @staticmethod
@@ -265,7 +186,7 @@ class Bootstyle:
         Returns:
             Generated TTK style name
         """
-        from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+        from bootstack.style.style_builder_ttk import StyleBuilderTtk
 
         # If no accent and no variant, return base widget class
         if not accent and not variant:
@@ -278,7 +199,7 @@ class Bootstyle:
         surface = style_options.get("surface")
 
         builder_variant = variant if variant is not None else \
-            BootstyleBuilderTTk.get_default_variant(widget_class)
+            StyleBuilderTtk.get_default_variant(widget_class)
 
         custom_prefix = None
 
@@ -312,7 +233,7 @@ class Bootstyle:
 
     @staticmethod
     def override_ttk_widget_constructor(func):
-        """Override ttk widget __init__ to accept bootstyle, accent, and variant parameters."""
+        """Override ttk widget __init__ to accept accent and variant parameters."""
 
         def __init__wrapper(self, *args, **kwargs):
 
@@ -321,7 +242,6 @@ class Bootstyle:
             if accent == 'default':
                 accent = None
             variant = kwargs.pop("variant", None)
-            kwargs.pop("bootstyle", None)  # removed param — discard silently
 
             had_style_kwarg = 'style' in kwargs
 
@@ -399,7 +319,7 @@ class Bootstyle:
 
             if (accent or variant) and style_class:
 
-                ttk_style = Bootstyle.create_ttk_style(
+                ttk_style = StyleResolver.create_ttk_style(
                     widget_class=style_class,
                     style_options=style_options,
                     accent=accent,
@@ -408,12 +328,12 @@ class Bootstyle:
                 self.configure(style=ttk_style)
 
             elif style_class and not had_style_kwarg:
-                from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+                from bootstack.style.style_builder_ttk import StyleBuilderTtk
                 from bootstack.style.style import get_style
 
-                default_variant = BootstyleBuilderTTk.get_default_variant(style_class)
+                default_variant = StyleBuilderTtk.get_default_variant(style_class)
 
-                if BootstyleBuilderTTk.has_builder(style_class, default_variant):
+                if StyleBuilderTtk.has_builder(style_class, default_variant):
 
                     # Build options first so we can decide if a custom bs[...] prefix is needed
                     custom_prefix = None
@@ -515,11 +435,9 @@ class Bootstyle:
 
 
 __all__ = [
-    'parse_bootstyle',
-    'parse_bootstyle_v2',
     'generate_ttk_style_name',
     'extract_accent_from_style',
     'extract_variant_from_style',
     'extract_widget_class_from_style',
-    'Bootstyle',
+    'StyleResolver',
 ]

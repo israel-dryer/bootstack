@@ -1,22 +1,20 @@
-﻿"""Shared base for ttk wrapper widgets with bootstyle and config delegation.
+﻿"""Shared base for ttk wrapper widgets with style and config delegation.
 
 This base class wires up:
-- Constructor: delegates to Bootstyle's constructor wrapper for init-time style
+- Constructor: delegates to StyleResolver's constructor wrapper for init-time style
   setup, including surface color inheritance and default variants.
 - Configure: routes keys annotated via @configure_delegate to their handlers,
   then forwards remaining options to the underlying ttk widget.
 - Index access: `w['key']` and `w['key'] = value` work for delegated keys and
-  for `style`/`bootstyle` queries.
-- Bootstyle handler: implements @configure_delegate('bootstyle') so runtime
-  updates apply via the style engine without monkey-patching ttk.
+  for `style` queries.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from bootstack.style.bootstyle import (
-    Bootstyle,
+from bootstack.style.style_resolver import (
+    StyleResolver,
     extract_accent_from_style,
     extract_variant_from_style,
 )
@@ -40,9 +38,9 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
     _ttk_base: type
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
-        """Initialize the wrapper, applying font modifier syntax and Bootstyle setup."""
+        """Initialize the wrapper, applying font modifier syntax and StyleResolver setup."""
         font_value = self._init_font_mixin(kwargs)
-        init_wrapper = Bootstyle.override_ttk_widget_constructor(self._ttk_base.__init__)  # type: ignore[attr-defined]
+        init_wrapper = StyleResolver.override_ttk_widget_constructor(self._ttk_base.__init__)  # type: ignore[attr-defined]
         init_wrapper(self, *args, **kwargs)
         if font_value is not None:
             self._delegate_font(font_value)
@@ -68,12 +66,12 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
     # tk alias
     config = configure
 
-    # Indexing support: delegate custom keys; handle style/bootstyle queries
+    # Indexing support: delegate custom keys; handle style queries
     def __setitem__(self, key: str, value: Any) -> None:  # noqa: D401
         if key in getattr(self, "_configure_delegate_map", {}):
             self._config_delegate_set(key, value)
             return None
-        if key in ("bootstyle", "style") and getattr(self, "__class__", None).__name__ != "OptionMenu":
+        if key == "style" and getattr(self, "__class__", None).__name__ != "OptionMenu":
             return self.configure(**{key: value})
         return self._ttk_base.__setitem__(self, key, value)  # type: ignore[misc]
 
@@ -82,7 +80,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             handled, value = self._config_delegate_get(key)
             if handled:
                 return value
-        if key in ("bootstyle", "style") and getattr(self, "__class__", None).__name__ != "OptionMenu":
+        if key == "style" and getattr(self, "__class__", None).__name__ != "OptionMenu":
             return self.configure(cnf=key)
         return self._ttk_base.__getitem__(self, key)  # type: ignore[misc]
 
@@ -129,7 +127,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
                 pass
 
         # Generate NEW style name with NEW hash based on new options
-        ttk_style = Bootstyle.create_ttk_style(
+        ttk_style = StyleResolver.create_ttk_style(
             widget_class=widget_class,
             style_options=style_options or None,
             accent=accent,
@@ -191,7 +189,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             style_options["surface"] = value
             setattr(self, "_surface", value)
 
-        ttk_style = Bootstyle.create_ttk_style(
+        ttk_style = StyleResolver.create_ttk_style(
             widget_class=widget_class,
             accent=value,
             variant=current_variant,
@@ -206,7 +204,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
         - Query: returns the current variant name or None
         - Set: updates the widget style with the new variant, preserving accent
 
-        Note: If the variant is not valid for this widget type, a BootstyleBuilderError
+        Note: If the variant is not valid for this widget type, a StyleBuilderError
         will be raised.
         """
         # Query path
@@ -246,7 +244,7 @@ class TTKWrapperBase(FontMixin, ConfigureDelegationMixin):
             except Exception:
                 pass
 
-        ttk_style = Bootstyle.create_ttk_style(
+        ttk_style = StyleResolver.create_ttk_style(
             widget_class=widget_class,
             accent=current_accent,
             variant=value,

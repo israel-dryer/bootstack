@@ -6,23 +6,23 @@ from collections.abc import Sequence
 
 from typing_extensions import Any, Protocol
 
-from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase, IconSpec
+from bootstack.style.style_builder_base import StyleBuilderBase, IconSpec
 from bootstack.style.theme_provider import ThemeProvider
 
 
 class TkBuilderCallable(Protocol):
-    def __call__(self, builder: "BootstyleBuilderBuilderTk", widget: Any, **options: Any) -> None:  # noqa: ANN401
+    def __call__(self, builder: "StyleBuilderTk", widget: Any, **options: Any) -> None:  # noqa: ANN401
         ...
 
 
-class BootstyleBuilderBuilderTk(BootstyleBuilderBase):
+class StyleBuilderTk(StyleBuilderBase):
     """Builder registry for legacy Tk widgets.
 
-    Mirrors the TTK BootstyleBuilder API, but targets Tk widgets and passes
+    Mirrors the TTK StyleBuilder API, but targets Tk widgets and passes
     the actual widget instance to builder functions.
 
     Usage:
-        >>> @BootstyleBuilderBuilderTk.register_builder('Button')
+        >>> @StyleBuilderTk.register_builder('Button')
         ... def build_tk_button(builder, widget, **opts):
         ...     bg = builder.color(opts.get('surface', 'content'))
         ...     widget.configure(background=bg, foreground=builder.colors.get('foreground'))
@@ -35,7 +35,7 @@ class BootstyleBuilderBuilderTk(BootstyleBuilderBase):
     def __init__(self, theme_provider: Optional[ThemeProvider] = None, style_instance: Optional[Any] = None):
         super().__init__(theme_provider, style_instance)
 
-    # Color utilities and provider/colors properties are inherited from BootstyleBase
+    # Color utilities and provider/colors properties are inherited from StyleBuilderBase
 
     # ----- Registry API -----
     @classmethod
@@ -105,5 +105,5 @@ class BootstyleBuilderBuilderTk(BootstyleBuilderBase):
         error if accidentally invoked from the Tk builder.
         """
         raise NotImplementedError(
-            "map_stateful_icons is only supported for TTK styles via BootstyleBuilderBuilderTTk."
+            "map_stateful_icons is only supported for TTK styles via StyleBuilderTtk."
         )

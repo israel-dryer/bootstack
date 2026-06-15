@@ -5,7 +5,7 @@ This module contains style builders for ttk.Radiobutton widgets and variants.
 
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import create_transparent_image, recolor_element_image
 from bootstack.style.builders.utils import resolve_icon_spec
@@ -15,8 +15,8 @@ from bootstack.style.builders.utils import resolve_icon_spec
 _STATE_ICON_SIZE = 22
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TRadiobutton')
-def build_radiobutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = 'primary', **options):
+@StyleBuilderTtk.register_builder('default', 'TRadiobutton')
+def build_radiobutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = 'primary', **options):
     accent_token = accent or 'primary'
     surface_token = options.get('surface', 'content')
 

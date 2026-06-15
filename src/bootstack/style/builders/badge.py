@@ -4,21 +4,21 @@ This module contains style builders for ttk.Label widget badge variants.
 """
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 
 
-@BootstyleBuilderTTk.register_builder('square', 'TBadge')
-def build_default_badge_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('square', 'TBadge')
+def build_default_badge_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     build_badge(b, ttk_style, accent, 'square', **options)
 
-@BootstyleBuilderTTk.register_builder('pill', 'TBadge')
-def build_pill_badge_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('pill', 'TBadge')
+def build_pill_badge_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     build_badge(b, ttk_style, accent, 'pill', **options)
 
 
-def build_badge(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, variant: str = 'square', **options):
+def build_badge(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, variant: str = 'square', **options):
     """Create a badge style for the variant specified"""
 
     surface_token = options.get('surface', 'content')

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
@@ -12,7 +12,7 @@ from bootstack.style.builders.utils import (
 )
 
 
-def _selection_wash(b: BootstyleBuilderTTk, accent: str, background: str, options: dict) -> str:
+def _selection_wash(b: StyleBuilderTtk, accent: str, background: str, options: dict) -> str:
     """Row selection background — NEUTRAL by default; accent only when opted in.
 
     Governs the row's background wash only. The selection control's glyph still
@@ -27,16 +27,16 @@ def _selection_wash(b: BootstyleBuilderTTk, accent: str, background: str, option
     return b.active(background)
 
 
-@BootstyleBuilderTTk.register_builder('container', 'ListView.TFrame')
-def build_list_container_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('container', 'ListView.TFrame')
+def build_list_container_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """List container frame style - no hover state (only items should have hover)."""
     surface_token = options.get('surface', 'content')
     background = b.color(surface_token)
     b.configure_style(ttk_style, background=background, relief='flat')
 
 
-@BootstyleBuilderTTk.register_builder('list', 'ListView.TFrame')
-def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('list', 'ListView.TFrame')
+def build_list_frame_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """List internal frame style - has state mapping to sync with parent ListItem."""
     hoverable = options.get('hoverable', True)
     accent_token = accent or 'primary'
@@ -59,18 +59,18 @@ def build_list_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str =
     b.map_style(ttk_style, background=[x for x in background_state_map if x is not None])
 
 
-@BootstyleBuilderTTk.register_builder('item', 'ListView.TFrame')
-def build_list_item_default_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('item', 'ListView.TFrame')
+def build_list_item_default_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     build_list_item_style(b, ttk_style, accent, 'list-item', **options)
 
 
-@BootstyleBuilderTTk.register_builder('separated_item', 'ListView.TFrame')
-def build_list_item_separated_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('separated_item', 'ListView.TFrame')
+def build_list_item_separated_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     build_list_item_style(b, ttk_style, accent, 'list-item-separated', **options)
 
 
 def build_list_item_style(
-        b: BootstyleBuilderTTk,
+        b: StyleBuilderTtk,
         ttk_style: str,
         accent: Optional[str] = None,
         variant: str = 'item',
@@ -148,8 +148,8 @@ def build_list_item_style(
     b.configure_style(ttk_style, background=background, relief='flat')
 
 
-@BootstyleBuilderTTk.register_builder('list', 'ListView.TButton')
-def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('list', 'ListView.TButton')
+def build_list_item_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
     base_token = surface_token.split('[')[0]
@@ -185,26 +185,26 @@ def build_list_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     )
 
 
-@BootstyleBuilderTTk.register_builder('radio', 'ListView.TLabel')
-def build_list_item_radio_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('radio', 'ListView.TLabel')
+def build_list_item_radio_label(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     build_list_item_label(b, ttk_style, accent, 'list-radio', **options)
 
 
-@BootstyleBuilderTTk.register_builder('check', 'ListView.TLabel')
-def build_list_item_check_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('check', 'ListView.TLabel')
+def build_list_item_check_label(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     build_list_item_label(b, ttk_style, accent, 'list-checkbox', **options)
 
 
-@BootstyleBuilderTTk.register_builder('list', 'ListView.TLabel')
-def build_list_item_default_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('list', 'ListView.TLabel')
+def build_list_item_default_label(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     build_list_item_label(b, ttk_style, accent, 'list', **options)
 
 
-def _list_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
+def _list_icon_size(b: StyleBuilderTtk, density: str) -> int:
     """Get icon size for list items based on density.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The density ('default' or 'compact').
 
     Returns:
@@ -213,9 +213,9 @@ def _list_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
     return 16 if density == 'compact' else 18
 
 
-@BootstyleBuilderTTk.register_builder('icon', 'ListView.TButton')
-@BootstyleBuilderTTk.register_builder('icon', 'ListView.TLabel')
-def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('icon', 'ListView.TButton')
+@StyleBuilderTtk.register_builder('icon', 'ListView.TLabel')
+def build_list_icon(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     hoverable = options.get('hoverable', True)
     surface_token = options.get('surface', 'content')
     base_token = surface_token.split('[')[0]
@@ -275,8 +275,8 @@ def build_list_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, 
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('selection', 'ListView.TLabel')
-def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('selection', 'ListView.TLabel')
+def build_list_selection_icon(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Selection checkbox/radio icon for list rows.
 
     Mirrors the DataTable selection markers: the glyph is a muted outline when
@@ -336,7 +336,7 @@ def build_list_selection_icon(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     b.map_style(ttk_style, **state_spec)
 
 
-def build_list_item_label(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, variant: str = None, **options):
+def build_list_item_label(b: StyleBuilderTtk, ttk_style: str, accent: str = None, variant: str = None, **options):
     """
 
     Style Options

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
@@ -24,9 +24,9 @@ from bootstack.style.builders.utils import (
 # and limit the number of images created for each style.
 
 
-@BootstyleBuilderTTk.register_builder('default', 'Toolbutton')
-@BootstyleBuilderTTk.register_builder('solid', 'Toolbutton')
-def build_solid_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('default', 'Toolbutton')
+@StyleBuilderTtk.register_builder('solid', 'Toolbutton')
+def build_solid_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the solid toolbutton style.
 
@@ -112,8 +112,8 @@ def build_solid_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent:
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'Toolbutton')
-def build_outline_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('outline', 'Toolbutton')
+def build_outline_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the outline toolbutton style.
 
@@ -197,8 +197,8 @@ def build_outline_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accen
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'Toolbutton')
-def build_ghost_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('ghost', 'Toolbutton')
+def build_ghost_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the ghost toolbutton style.
 

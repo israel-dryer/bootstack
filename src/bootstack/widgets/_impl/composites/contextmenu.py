@@ -12,7 +12,7 @@ from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets.types import WidgetDensity
 
 from bootstack._runtime.shortcuts import get_shortcuts, format_shortcut
-from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
+from bootstack.style.style_builder_base import StyleBuilderBase
 from bootstack.widgets._impl.primitives import RadioToggle, CheckToggle, Frame, Label, Separator
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets.types import Master
@@ -153,7 +153,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._height = height
         self._anchor = (anchor or 'nw').lower()
         self._attach = (attach or 'nw').lower()
-        self._offset = offset if offset is not None else (BootstyleBuilderBase.scale_from_source(10), 0)
+        self._offset = offset if offset is not None else (StyleBuilderBase.scale_from_source(10), 0)
         self._hide_on_outside_click = hide_on_outside_click
         self._density = density
         self._command = command
@@ -1041,7 +1041,7 @@ class _NativeContextMenu(CustomConfigMixin):
         # Default offset matches the themed backend so consumers that pass
         # an explicit offset for chrome alignment don't need a Mac-specific
         # branch. The native menu still clamps to screen edges itself.
-        self._offset = offset if offset is not None else (BootstyleBuilderBase.scale_from_source(10), 0)
+        self._offset = offset if offset is not None else (StyleBuilderBase.scale_from_source(10), 0)
         self._hide_on_outside_click = hide_on_outside_click
         self._density = density
         self._command = command

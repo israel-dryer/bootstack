@@ -283,11 +283,11 @@ def scale_size(widget=None, size=None):
 def _debug_enabled() -> bool:
     """Return True if debug logging is enabled.
 
-    Controlled via the environment variable `TTKBOOTSTRAP_DEBUG`.
+    Controlled via the environment variable `BOOTSTACK_DEBUG`.
     Accepts: "1", "true", "yes" (case-insensitive) as truthy values.
     """
     import os
-    return str(os.environ.get("TTKBOOTSTRAP_DEBUG", "")).lower() in {"1", "true", "yes"}
+    return str(os.environ.get("BOOTSTACK_DEBUG", "")).lower() in {"1", "true", "yes"}
 
 
 def debug_log_exception(message: str = "") -> None:
@@ -301,7 +301,7 @@ def debug_log_exception(message: str = "") -> None:
     try:
         import traceback
         if message:
-            print(f"TTKBootstrap DEBUG: {message}")
+            print(f"bootstack DEBUG: {message}")
         traceback.print_exc()
     except Exception:
         # Never raise from debug logging

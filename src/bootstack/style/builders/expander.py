@@ -1,12 +1,12 @@
 """Style builders for the Expander widget."""
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.builders.utils import apply_icon_mapping
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'Expander.TFrame')
-def build_solid_expander_header_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'Expander.TFrame')
+def build_solid_expander_header_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     # use a subtle background with foreground if normal, otherwise subtle accent with accent foreground
 
     accent = b.default(accent or 'primary')
@@ -37,8 +37,8 @@ def build_solid_expander_header_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     )
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'Expander.TLabel')
-def build_solid_expander_header_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'Expander.TLabel')
+def build_solid_expander_header_label_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """Expander header label style with state-aware foreground."""
     accent = b.default(accent or 'primary')
     surface_token = options.get('surface', 'content')
@@ -73,8 +73,8 @@ def build_solid_expander_header_label_style(b: BootstyleBuilderTTk, ttk_style: s
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('default', 'Expander.TFrame')
-def build_ghost_expander_header_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'Expander.TFrame')
+def build_ghost_expander_header_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     accent_token = accent or 'foreground'
     surface_token = options.get('surface', 'content')
 
@@ -106,8 +106,8 @@ def build_ghost_expander_header_style(b: BootstyleBuilderTTk, ttk_style: str, ac
     )
 
 
-@BootstyleBuilderTTk.register_builder('default', 'Expander.TLabel')
-def build_ghost_expander_header_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'Expander.TLabel')
+def build_ghost_expander_header_label_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Expander header label style with state-aware foreground."""
     accent_token = accent or 'foreground'
     surface_token = options.get('surface', 'content')

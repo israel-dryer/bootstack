@@ -4,14 +4,9 @@ from __future__ import annotations
 
 from . import colorutils, publisher, capabilities
 from bootstack._core.exceptions import (
-    TTKBootstrapError,
-    LayoutError,
     ThemeError,
-    ConfigError,
-    StateError,
     NavigationError,
-    BootstyleBuilderError,
-    BootstyleParsingError,
+    StyleBuilderError,
     ConfigurationWarning,
 )
 
@@ -19,13 +14,8 @@ __all__ = [
     "colorutils",
     "publisher",
     "capabilities",
-    "TTKBootstrapError",
-    "LayoutError",
     "ThemeError",
-    "ConfigError",
-    "StateError",
     "NavigationError",
-    "BootstyleBuilderError",
-    "BootstyleParsingError",
+    "StyleBuilderError",
     "ConfigurationWarning",
 ]

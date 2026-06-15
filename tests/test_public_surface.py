@@ -74,7 +74,8 @@ MOVED = {
     "bootstack.images": ["Image", "get_icon", "AppIcon", "list_icons"],
     "bootstack.errors": [
         "BootstackError", "UnknownEventError", "ParentResolutionError",
-        "DuplicateIdError", "SerializationError",
+        "DuplicateIdError", "SerializationError", "NavigationError",
+        "ThemeError", "StyleBuilderError",
     ],
     "bootstack.style": [
         "Theme", "get_theme", "get_theme_color", "get_themes",

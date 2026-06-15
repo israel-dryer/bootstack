@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import ElementImage
 from bootstack.style.utility import recolor_element_image
 from bootstack.style.builders.utils import (
@@ -21,9 +21,9 @@ from bootstack.style.builders.utils import (
 )
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'TButton')
-@BootstyleBuilderTTk.register_builder('default', 'TButton')
-def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'TButton')
+@StyleBuilderTtk.register_builder('default', 'TButton')
+def build_solid_button_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the button style.
 
@@ -113,8 +113,8 @@ def build_solid_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'TButton')
-def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('outline', 'TButton')
+def build_outline_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the outline button style.
 
@@ -213,8 +213,8 @@ def build_outline_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: s
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'TButton')
-def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('ghost', 'TButton')
+def build_ghost_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the ghost button style.
 
@@ -289,8 +289,8 @@ def build_ghost_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('selectbox_item', 'TButton')
-def build_selectbox_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('selectbox_item', 'TButton')
+def build_selectbox_item_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """Configure the style for selectbox dropdown items with selected state support.
 
     Style options include:

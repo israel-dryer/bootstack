@@ -16,6 +16,7 @@ from bootstack.events import (
 )
 from bootstack.widgets._impl.composites.pagestack import PageStack
 from bootstack.widgets.types import Master
+from bootstack._core import NavigationError
 
 
 class TabView(Frame):
@@ -316,7 +317,7 @@ class TabView(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         if key in self._hidden_tabs:
             return
 
@@ -342,7 +343,7 @@ class TabView(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         self._hidden_tabs.discard(key)
         self._tabs.show(key)
 
@@ -457,7 +458,7 @@ class TabView(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tab_map:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         return self._tab_map[key]
 
     def tabs(self) -> tuple[TabItem, ...]:

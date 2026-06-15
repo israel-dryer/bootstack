@@ -5,11 +5,11 @@ This module contains style builders for ttk.Panedwindow widget and variants.
 
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 
 
-@BootstyleBuilderTTk.register_builder('default', 'TPanedwindow')
-def build_paned_window_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('default', 'TPanedwindow')
+def build_paned_window_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     accent_token = accent or 'border'
     surface_token = options.get('surface', 'content')
     sash_thickness = options.get('sash_thickness', b.scale(6))

@@ -15,6 +15,7 @@ from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.composites.tabs.tabitem import TabItem
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
+from bootstack._core import NavigationError
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -298,7 +299,7 @@ class Tabs(Frame):
             self._counter += 1
 
         if key in self._tabs:
-            raise ValueError(f"A tab with the key '{key}' already exists.")
+            raise NavigationError(f"A tab with the key '{key}' already exists.")
 
         # Default value to key if not specified
         if value is None:
@@ -373,7 +374,7 @@ class Tabs(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tabs:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
 
         tab = self._tabs.pop(key)
         self._tab_order.remove(key)
@@ -392,7 +393,7 @@ class Tabs(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tabs:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         if key not in self._hidden:
             self._hidden.add(key)
             self._tabs[key].pack_forget()
@@ -407,7 +408,7 @@ class Tabs(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tabs:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         if key in self._hidden:
             self._hidden.discard(key)
             tab = self._tabs[key]
@@ -446,7 +447,7 @@ class Tabs(Frame):
             KeyError: If no tab with the given key exists.
         """
         if key not in self._tabs:
-            raise KeyError(f"No tab with key '{key}'")
+            raise NavigationError(f"No tab with key '{key}'")
         return self._tabs[key]
 
     def items(self) -> tuple[TabItem, ...]:

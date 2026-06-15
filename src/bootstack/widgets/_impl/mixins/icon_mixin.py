@@ -1,7 +1,7 @@
 ﻿"""Icon mixin for widgets that support theme-aware icons.
 
 Provides a `@configure_delegate('icon')` handler that applies an icon through
-the style system and preserves current bootstyle tokens, orientation, and
+the style system and preserves current style tokens, orientation, and
 surface color where applicable.
 """
 

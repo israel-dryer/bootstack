@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from bootstack._core.images import _ImageService
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.builders.utils import apply_icon_mapping, button_font, normalize_button_density
 from bootstack.style.element import Element
 from bootstack.style.utility import create_transparent_image
@@ -19,8 +19,8 @@ def _context_item_layout(ttk_style: str) -> Element:
         ])
 
 
-@BootstyleBuilderTTk.register_builder('context-check', 'Toolbutton')
-def build_context_check_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('context-check', 'Toolbutton')
+def build_context_check_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     density = normalize_button_density(options.get('density', 'default'))
 
@@ -77,8 +77,8 @@ def build_context_check_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('context-radio', 'Toolbutton')
-def build_context_radio_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('context-radio', 'Toolbutton')
+def build_context_radio_toolbutton_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     surface_token = options.get('surface', 'content')
     density = normalize_button_density(options.get('density', 'default'))
 
@@ -135,8 +135,8 @@ def build_context_radio_toolbutton_style(b: BootstyleBuilderTTk, ttk_style: str,
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('context-frame', 'TFrame')
-def build_context_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('context-frame', 'TFrame')
+def build_context_frame_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the context menu frame style for composite items.
 
@@ -165,8 +165,8 @@ def build_context_frame_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     )
 
 
-@BootstyleBuilderTTk.register_builder('context-label', 'TLabel')
-def build_context_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('context-label', 'TLabel')
+def build_context_label_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the context menu label style for shortcut text.
 
@@ -210,8 +210,8 @@ def build_context_label_style(b: BootstyleBuilderTTk, ttk_style: str, accent: st
     )
 
 
-@BootstyleBuilderTTk.register_builder('context-item', 'TButton')
-def build_context_item_button_style(b: BootstyleBuilderTTk, ttk_style: str, accent: str = None, **options):
+@StyleBuilderTtk.register_builder('context-item', 'TButton')
+def build_context_item_button_style(b: StyleBuilderTtk, ttk_style: str, accent: str = None, **options):
     """
     Configure the context menu button style.
 

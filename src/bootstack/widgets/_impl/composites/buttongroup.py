@@ -67,7 +67,7 @@ class ButtonGroup(Frame):
         """
         # Store ButtonGroup-specific options from explicit parameters
         # NOTE: _color and _variant are set AFTER super().__init__() because
-        # the bootstyle wrapper in TTKWrapperBase sets them to None/extracted values
+        # the style wrapper in TTKWrapperBase sets them to None/extracted values
         self._orientation = orient
         self._state = state
 

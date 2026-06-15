@@ -5,7 +5,7 @@ This module contains style builders for ttk.Menubutton widgets and variants.
 
 from __future__ import annotations
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
 
@@ -13,9 +13,9 @@ V_PAD = 6
 H_PAD = 8
 
 
-@BootstyleBuilderTTk.register_builder('menubar-item', 'TMenubutton')
-@BootstyleBuilderTTk.register_builder('menubar-item', 'TButton')
-def build_menubar_item(b: BootstyleBuilderTTk, ttk_style: str, color: str = None, **options):
+@StyleBuilderTtk.register_builder('menubar-item', 'TMenubutton')
+@StyleBuilderTtk.register_builder('menubar-item', 'TButton')
+def build_menubar_item(b: StyleBuilderTtk, ttk_style: str, color: str = None, **options):
     surface_token = options.get('surface', 'chrome')
 
     surface = b.color(surface_token)
@@ -63,7 +63,7 @@ def build_menubar_item(b: BootstyleBuilderTTk, ttk_style: str, color: str = None
     b.map_style(ttk_style, **state_spec)
 
 
-def _apply_icon_mapping(b: BootstyleBuilderTTk, options: dict, state_spec: dict) -> dict:
+def _apply_icon_mapping(b: StyleBuilderTtk, options: dict, state_spec: dict) -> dict:
     """Apply icon mapping if an icon is provided in options."""
     icon = options.get('icon')
     if icon is None:

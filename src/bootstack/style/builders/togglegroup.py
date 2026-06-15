@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+from bootstack.style.style_builder_ttk import StyleBuilderTtk
 from bootstack.style.builders.utils import button_padding, apply_icon_mapping, icon_size, button_font
 from bootstack.style.element import Element, ElementImage
 from bootstack.style.utility import recolor_element_image
@@ -26,9 +26,9 @@ def _toolbutton_layout(ttk_style: str) -> Element:
         ])
 
 
-@BootstyleBuilderTTk.register_builder('solid', 'ToggleGroup')
-@BootstyleBuilderTTk.register_builder('default', 'ToggleGroup')
-def build_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('solid', 'ToggleGroup')
+@StyleBuilderTtk.register_builder('default', 'ToggleGroup')
+def build_toggle_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the toggle group style.
 
@@ -116,8 +116,8 @@ def build_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Opt
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('outline', 'ToggleGroup')
-def build_outline_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('outline', 'ToggleGroup')
+def build_outline_toggle_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the outline toggle group style.
 
@@ -215,8 +215,8 @@ def build_outline_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, acc
     b.map_style(ttk_style, **state_spec)
 
 
-@BootstyleBuilderTTk.register_builder('ghost', 'ToggleGroup')
-def build_ghost_toggle_group_style(b: BootstyleBuilderTTk, ttk_style: str, accent: Optional[str] = None, **options):
+@StyleBuilderTtk.register_builder('ghost', 'ToggleGroup')
+def build_ghost_toggle_group_style(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None, **options):
     """
     Configure the ghost toggle group style.
 

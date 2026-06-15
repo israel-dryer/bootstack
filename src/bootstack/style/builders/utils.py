@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from bootstack.style.element import Element
 
 if TYPE_CHECKING:
-    from bootstack.style.bootstyle_builder_ttk import BootstyleBuilderTTk
+    from bootstack.style.style_builder_ttk import StyleBuilderTtk
 
 # Standard bootstack color tokens
 COLORS = {
@@ -231,11 +231,11 @@ def button_font(density: str) -> str:
     return 'caption' if density == 'compact' else 'body'
 
 
-def button_height(b: BootstyleBuilderTTk, density: str) -> int:
+def button_height(b: StyleBuilderTtk, density: str) -> int:
     """Get button height based on density, matching the total height of input fields.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The button density ('default' or 'compact').
 
     Returns:
@@ -244,11 +244,11 @@ def button_height(b: BootstyleBuilderTTk, density: str) -> int:
     return b.scale(37) if density == 'compact' else b.scale(43)
 
 
-def button_padding(b: BootstyleBuilderTTk, icon_only: bool, density: Any) -> int | tuple[int, ...]:
+def button_padding(b: StyleBuilderTtk, icon_only: bool, density: Any) -> int | tuple[int, ...]:
     """Calculate button padding based on options.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         icon_only: Whether the button displays only an icon.
         density: The button density ('default' or 'compact').
 
@@ -289,7 +289,7 @@ def resolve_icon_spec(options: dict) -> 'str | dict | None':
 
 
 def apply_icon_mapping(
-        b: BootstyleBuilderTTk,
+        b: StyleBuilderTtk,
         options: dict,
         state_spec: dict,
         default_size: int | None = None
@@ -297,7 +297,7 @@ def apply_icon_mapping(
     """Apply icon mapping to a state specification dictionary.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         options: Style options dictionary containing 'icon', 'on_icon', 'off_icon',
             and 'icon_only' keys.
         state_spec: The state specification dictionary to update.
@@ -340,11 +340,11 @@ def entry_font(density: str) -> str:
     return str(get_font(font_token))
 
 
-def entry_padding(b: BootstyleBuilderTTk, density: str) -> tuple:
+def entry_padding(b: StyleBuilderTtk, density: str) -> tuple:
     """Get entry padding based on density.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The entry density ('default' or 'compact').
 
     Returns:
@@ -354,11 +354,11 @@ def entry_padding(b: BootstyleBuilderTTk, density: str) -> tuple:
         return b.scale((6, 0))
     return b.scale((6, 0))
 
-def field_height(b: BootstyleBuilderTTk, density: str) -> int:
+def field_height(b: StyleBuilderTtk, density: str) -> int:
     """Get entry element height based on density.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The entry density ('default' or 'compact').
 
     Returns:
@@ -366,11 +366,11 @@ def field_height(b: BootstyleBuilderTTk, density: str) -> int:
     """
     return b.scale(26) if density == 'compact' else b.scale(33)
 
-def entry_height(b: BootstyleBuilderTTk, density: str) -> int:
+def entry_height(b: StyleBuilderTtk, density: str) -> int:
     """Get entry element height based on density.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The entry density ('default' or 'compact').
 
     Returns:
@@ -383,11 +383,11 @@ def _snap_even(v: int) -> int:
     return v if v % 2 == 0 else v + 1
 
 
-def entry_icon_size(b: BootstyleBuilderTTk, density: str) -> int:
+def entry_icon_size(b: StyleBuilderTtk, density: str) -> int:
     """Get icon size for entry widgets (chevrons, spinner arrows).
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The entry density ('default' or 'compact').
 
     Returns:
@@ -409,11 +409,11 @@ def entry_image_key(base: str, density: str) -> str:
     return f'{base}_{density}'
 
 
-def spinner_arrow_height(b: BootstyleBuilderTTk, density: str) -> int:
+def spinner_arrow_height(b: StyleBuilderTtk, density: str) -> int:
     """Get height for spinner arrow elements based on density.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
         density: The entry density ('default' or 'compact').
 
     Returns:
@@ -422,11 +422,11 @@ def spinner_arrow_height(b: BootstyleBuilderTTk, density: str) -> int:
     return _snap_even(b.scale(10) if density == 'compact' else b.scale(13))
 
 
-def spinner_arrow_width(b: BootstyleBuilderTTk) -> int:
+def spinner_arrow_width(b: StyleBuilderTtk) -> int:
     """Get width for spinner arrow elements.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
 
     Returns:
         Scaled arrow width in pixels, snapped to an even number.
@@ -434,11 +434,11 @@ def spinner_arrow_width(b: BootstyleBuilderTTk) -> int:
     return _snap_even(b.scale(16))
 
 
-def chevron_width(b: BootstyleBuilderTTk) -> int:
+def chevron_width(b: StyleBuilderTtk) -> int:
     """Get width for combobox chevron element.
 
     Args:
-        b: The bootstyle builder instance.
+        b: The style builder instance.
 
     Returns:
         Scaled chevron width in pixels, snapped to an even number.

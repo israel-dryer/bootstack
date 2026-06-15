@@ -63,7 +63,7 @@ class OptionMenu(MenuButton):
         Other Parameters:
             command: Callback invoked when the value changes via menu selection.
             image: Tk image to display.
-            icon: Bootstyle icon spec for the label content.
+            icon: StyleResolver icon spec for the label content.
             icon_only: Whether to reserve label padding when showing only an icon.
             compound: Placement of image relative to text.
             padding: Extra padding around the menubutton content.
@@ -219,8 +219,8 @@ class OptionMenu(MenuButton):
         # Affordance baked into the button image (focus ring + border line in
         # source-px); aligning the menu's left edge to it matches the visible
         # button border the same way the combobox popdown does.
-        from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
-        offset_x = BootstyleBuilderBase.scale_from_source(10)
+        from bootstack.style.style_builder_base import StyleBuilderBase
+        offset_x = StyleBuilderBase.scale_from_source(10)
 
         density = self.configure_style_options('density') or 'default'
 
@@ -256,8 +256,8 @@ class OptionMenu(MenuButton):
             return
         # Match the menu's minimum width to the visible button width so the
         # dropdown never renders narrower than its trigger.
-        from bootstack.style.bootstyle_builder_base import BootstyleBuilderBase
-        affordance = BootstyleBuilderBase.scale_from_source(10)
+        from bootstack.style.style_builder_base import StyleBuilderBase
+        affordance = StyleBuilderBase.scale_from_source(10)
         target_w = self.winfo_width() - 2 * affordance
         if target_w > 0:
             self._context_menu.configure(minwidth=max(150, target_w))

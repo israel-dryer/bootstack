@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import tkinter as tk
 
-from bootstack.style.bootstyle import Bootstyle
+from bootstack.style.style_resolver import StyleResolver
 
 # Native Tk widget classes whose constructors get the autostyle wrapper.
 # Limited to the raw Tk widgets the framework actually instantiates or
@@ -26,7 +26,7 @@ _TK_WIDGETS = (
 
 
 def install_tk_autostyle() -> None:
-    """Patch Tk widgets to enable autostyle via Bootstyle.
+    """Patch Tk widgets to enable autostyle via StyleResolver.
 
     - Wraps Tk widget `__init__` with surface color inheritance and theme
       background application using registered Tk builders.
@@ -36,7 +36,7 @@ def install_tk_autostyle() -> None:
     import bootstack.style.builders_tk  # noqa: F401
 
     for widget in _TK_WIDGETS:
-        _init = Bootstyle.override_tk_widget_constructor(widget.__init__)
+        _init = StyleResolver.override_tk_widget_constructor(widget.__init__)
         widget.__init__ = _init
 
 

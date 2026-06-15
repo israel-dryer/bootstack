@@ -78,16 +78,6 @@ class Frame(TTKWrapperBase, WidgetCapabilitiesMixin, TtkStateMixin, ttk.Frame):
                     self._refresh_descendant_input_backgrounds(old_input_bg, new_input_bg)
         return result
 
-    @configure_delegate("bootstyle")
-    def _delegate_bootstyle(self, value: Any = None):
-        """Get or set the bootstyle string."""
-        old_surface = getattr(self, "_surface", "background")
-        result = super()._delegate_bootstyle(value)
-        new_surface = getattr(self, "_surface", "background")
-        if value is not None and old_surface != new_surface:
-            self._refresh_descendant_surfaces(old_surface, new_surface)
-        return result
-
     def _refresh_descendant_surfaces(self, old_surface: str, new_surface: str) -> None:
         if old_surface == new_surface:
             return

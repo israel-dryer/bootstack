@@ -49,14 +49,14 @@ class MessageDialog:
         Args:
             message: The message text to display. Supports multiline strings.
             title: The dialog window title.
-            buttons: List of button labels. Can specify color as "label:color".
-                If None, defaults to ["Cancel", "OK"]. Legacy "bootstyle" syntax
-                is still supported (e.g., "OK:primary").
+            buttons: List of button labels. Can specify an accent as
+                "label:accent" (e.g., "OK:primary"). If None, defaults to
+                ["Cancel", "OK"].
             command: Optional callback function to execute when any button is pressed.
             width: Maximum width in characters for text wrapping.
             master: Parent widget for the dialog.
             alert: If True, rings the system bell when shown.
-            default: The button label to use as default. Receives primary bootstyle and focus.
+            default: The button label to use as default. Receives the primary accent and focus.
             padding: Padding around the message content.
             icon: Optional icon specification. Can be a string (icon name) or dict with
                 keys: 'name' (required), 'size' (default 32), 'color' (optional).
@@ -139,7 +139,7 @@ class MessageDialog:
         button_specs: List[DialogButton] = []
 
         for i, button in enumerate(button_labels):
-            # Parse "text:bootstyle" format
+            # Parse "text:accent" format
             cnf = button.split(":")
             text = cnf[0]
 
