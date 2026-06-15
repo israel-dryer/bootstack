@@ -57,7 +57,7 @@ a rail, without rewriting what you have.
 
 .. seealso::
 
-   For the full ``AppShell`` API — every method, property, and option — see the
+   For the full `AppShell` API — every method, property, and option — see the
    :doc:`AppShell widget guide </widgets/appshell>`. For lower-level page
    switching without a sidebar, see :doc:`PageStack </widgets/pagestack>` and
    :doc:`Tabs </widgets/tabs>`.

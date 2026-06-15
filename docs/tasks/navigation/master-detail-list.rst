@@ -17,8 +17,8 @@ How it works
 ------------
 
 `list_nav(source)` fills the sidebar from a :doc:`data source
-</reference/data-sources>`, rendering each record's ``title`` / ``text`` /
-``icon`` as a row. Decorate a builder with ``@shell.detail`` to render the body
+</reference/data-sources>`, rendering each record's `title` / `text` /
+`icon` as a row. Decorate a builder with `@shell.detail` to render the body
 for the selected record — it receives the record as a dict. The first record is
 selected automatically, so the detail view is never empty on open.
 

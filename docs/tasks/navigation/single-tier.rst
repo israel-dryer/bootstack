@@ -17,7 +17,7 @@ How it works
 ------------
 
 `add_page(key, *, text, icon)` registers a sidebar item and its content page
-together, and returns a context manager — widgets created inside the ``with``
+together, and returns a context manager — widgets created inside the `with`
 block are parented to that page. `add_footer_page()` pins an item (Settings,
 Account) to the bottom of the sidebar. `navigate(key)` selects the starting page.
 
