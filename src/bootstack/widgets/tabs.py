@@ -12,6 +12,7 @@ from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fi
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import Subscription
+from bootstack._core import NavigationError
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
     Event, AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
@@ -294,19 +295,35 @@ class Tabs(PublicWidgetBase):
         return page
 
     def select(self, key: str) -> None:
-        """Select the tab identified by `key`."""
+        """Select the tab identified by `key`.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
+        """
         self._internal.select(key)
 
     def hide_tab(self, key: str) -> None:
-        """Hide a tab without removing it. Restore with `show_tab()`."""
+        """Hide a tab without removing it. Restore with `show_tab()`.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
+        """
         self._internal.hide_tab(key)
 
     def show_tab(self, key: str) -> None:
-        """Restore a previously hidden tab."""
+        """Restore a previously hidden tab.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
+        """
         self._internal.show_tab(key)
 
     def forget_tab(self, key: str) -> None:
-        """Remove a tab and its page entirely."""
+        """Remove a tab and its page entirely.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
+        """
         self._internal.forget_tab(key)
         self._pages.pop(key, None)
 
@@ -334,7 +351,12 @@ class Tabs(PublicWidgetBase):
         Returns:
             The `TabPage` for that key — read/set its `label` or call
             `select()`/`hide()`/`show()`/`remove()`.
+
+        Raises:
+            NavigationError: If no tab with the given key exists.
         """
+        if key not in self._pages:
+            raise NavigationError(f"No tab with key '{key}'")
         return self._pages[key]
 
     def items(self) -> tuple[TabPage, ...]:

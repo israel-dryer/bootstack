@@ -99,9 +99,10 @@ object, use an in-memory source instead:
 ``NavigationError``
 ~~~~~~~~~~~~~~~~~~~
 
-Raised by navigation containers — :class:`PageStack <bootstack.PageStack>` and
-:class:`Tabs <bootstack.Tabs>` — when a key is wrong: adding a page or tab whose
-key already exists, or navigating to a key that doesn't:
+Raised by the navigation containers — :class:`PageStack <bootstack.PageStack>`
+and :class:`Tabs <bootstack.Tabs>`, and the AppShell side navigation — when a key
+is wrong: adding a page, tab, or workspace whose key already exists, or selecting,
+looking up, or removing one whose key doesn't exist:
 
 .. code-block:: python
 

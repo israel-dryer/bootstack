@@ -23,6 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Literal
 
+from bootstack._core import NavigationError
 from bootstack.streams import Handle
 
 
@@ -146,8 +147,10 @@ class NavModel:
         """Return the workspace registered under `key`.
 
         Raises:
-            KeyError: If no workspace with that key exists.
+            NavigationError: If no workspace with that key exists.
         """
+        if key not in self._index:
+            raise NavigationError(f"No workspace with key {key!r}")
         return self._index[key]
 
     def has_workspace(self, key: str) -> bool:
@@ -195,12 +198,13 @@ class NavModel:
             The created `WorkspaceState`.
 
         Raises:
-            ValueError: If `key` is empty or already registered.
+            ValueError: If `key` is empty.
+            NavigationError: If `key` is already registered.
         """
         if not key:
             raise ValueError("workspace key must be non-empty")
         if key in self._index:
-            raise ValueError(f"duplicate workspace key: {key!r}")
+            raise NavigationError(f"Workspace {key!r} already exists")
 
         ws = WorkspaceState(
             key=key, text=text, icon=icon, is_footer=is_footer, provider=provider
@@ -221,10 +225,10 @@ class NavModel:
         rail gesture on top.
 
         Raises:
-            KeyError: If no workspace with that key exists.
+            NavigationError: If no workspace with that key exists.
         """
         if key not in self._index:
-            raise KeyError(key)
+            raise NavigationError(f"No workspace with key {key!r}")
         if key == self._active_workspace:
             return
         self._active_workspace = key
@@ -238,14 +242,14 @@ class NavModel:
             workspace: Workspace to set it on; defaults to the active workspace.
 
         Raises:
-            KeyError: If the target workspace does not exist.
+            NavigationError: If the target workspace does not exist.
             ValueError: If there is no active workspace and none is given.
         """
         ws_key = workspace if workspace is not None else self._active_workspace
         if ws_key is None:
             raise ValueError("no active workspace to select a page on")
         if ws_key not in self._index:
-            raise KeyError(ws_key)
+            raise NavigationError(f"No workspace with key {ws_key!r}")
         if self._active_page.get(ws_key) == key:
             return
         self._active_page[ws_key] = key
@@ -259,10 +263,10 @@ class NavModel:
         switches to it and shows the sidebar.
 
         Raises:
-            KeyError: If no workspace with that key exists.
+            NavigationError: If no workspace with that key exists.
         """
         if key not in self._index:
-            raise KeyError(key)
+            raise NavigationError(f"No workspace with key {key!r}")
         if key == self._active_workspace:
             self.toggle_sidebar()
         else:

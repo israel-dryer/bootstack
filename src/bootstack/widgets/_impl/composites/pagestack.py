@@ -90,13 +90,20 @@ class PageStack(Frame):
         Args:
             key: The identifier of the page to remove
 
+        Raises:
+            NavigationError: If no page with the given key exists.
+            ValueError: If key is an empty string.
+
         Note:
             If the removed page is currently displayed, the current page
             will be set to None without navigating to another page.
         """
-        if key in self._pages:
-            page = self._pages.pop(key)
-            page.destroy()
+        if not key:
+            raise ValueError("Page key cannot be an empty string")
+        if key not in self._pages:
+            raise NavigationError(f"Page {key} does not exist")
+        page = self._pages.pop(key)
+        page.destroy()
         if self._current == key:
             self._current = None
 
@@ -246,13 +253,13 @@ class PageStack(Frame):
             The page widget.
 
         Raises:
-            KeyError: If no page with the given key exists.
+            NavigationError: If no page with the given key exists.
             ValueError: If key is an empty string.
         """
         if not key:
             raise ValueError("Page key cannot be an empty string")
         if key not in self._pages:
-            raise KeyError(f"No page with key '{key}'")
+            raise NavigationError(f"Page {key} does not exist")
         return self._pages[key]
 
     def items(self) -> tuple[tkinter.Widget, ...]:
@@ -284,13 +291,13 @@ class PageStack(Frame):
             Otherwise returns the result of configure() if kwargs are provided.
 
         Raises:
-            KeyError: If no page with the given key exists.
+            NavigationError: If no page with the given key exists.
             ValueError: If key is an empty string.
         """
         if not key:
             raise ValueError("Page key cannot be an empty string")
         if key not in self._pages:
-            raise KeyError(f"No page with key '{key}'")
+            raise NavigationError(f"Page {key} does not exist")
         if option is not None:
             return self._pages[key].cget(option)
         else:

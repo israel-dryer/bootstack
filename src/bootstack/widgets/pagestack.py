@@ -12,6 +12,7 @@ from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import PageChangeEvent, Subscription
 from bootstack.streams import Stream
+from bootstack._core import NavigationError
 from bootstack.widgets.types import (
     Event, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
 )
@@ -231,7 +232,11 @@ class PageStack(PublicWidgetBase):
         return page
 
     def remove(self, key: str) -> None:
-        """Remove a page and destroy its widget."""
+        """Remove a page and destroy its widget.
+
+        Raises:
+            NavigationError: If no page with the given key exists.
+        """
         self._internal.remove(key)
         self._pages.pop(key, None)
 
@@ -243,6 +248,9 @@ class PageStack(PublicWidgetBase):
         Args:
             key: Page identifier to navigate to.
             data: Optional data dict passed to the page's mount event.
+
+        Raises:
+            NavigationError: If no page with the given key exists.
         """
         self._internal.navigate(key, data=data)
 
@@ -284,7 +292,12 @@ class PageStack(PublicWidgetBase):
 
         Returns:
             The `StackPage` for that key — read its `key` or `navigate()` to it.
+
+        Raises:
+            NavigationError: If no page with the given key exists.
         """
+        if key not in self._pages:
+            raise NavigationError(f"No page with key '{key}'")
         return self._pages[key]
 
     def items(self) -> tuple[StackPage, ...]:
