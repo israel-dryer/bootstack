@@ -99,7 +99,7 @@ from bootstack.widgets.textarea import TextArea
 from bootstack.widgets.timefield import TimeField
 from bootstack.widgets.tree import Tree, TreeNode
 from bootstack.widgets.textfield import TextField
-from bootstack.widgets.toast import Toast, toast
+from bootstack.widgets.toast import toast, Notification, Snackbar, snackbar
 from bootstack.widgets.togglegroup import ToggleGroup
 from bootstack.widgets.commandbar import CommandBar
 from bootstack.widgets.statusbar import StatusBar
@@ -146,7 +146,7 @@ __all__ = [
     # Navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     # Overlays
-    "Tooltip", "Toast", "toast",
+    "Tooltip", "toast", "Notification", "Snackbar", "snackbar",
     # Forms
     "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
 ]

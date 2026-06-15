@@ -52,7 +52,7 @@ EXPECTED_TOPLEVEL = {
     # navigation
     "PageStack", "StackPage", "Tabs", "TabPage",
     # overlays
-    "Tooltip", "Toast", "toast",
+    "Tooltip", "toast", "Notification", "Snackbar", "snackbar",
     # forms
     "Form", "FormItem", "FieldItem", "GroupItem", "TabsItem", "TabItem",
 }

@@ -86,10 +86,11 @@ autodoc_default_options     = {
 autosummary_generate = True
 
 # Disambiguate stub filenames that differ only by case — they collide on
-# case-insensitive filesystems (Windows/macOS). `Toast` (widget) vs `toast`
-# (dialog verb) is the one such pair in the public surface.
+# case-insensitive filesystems (Windows/macOS). The message surfaces pair a
+# class with a same-name verb: `Snackbar`/`snackbar` and the `toast` verb.
 autosummary_filename_map = {
     "bootstack.toast": "bootstack.toast-verb",
+    "bootstack.snackbar": "bootstack.snackbar-verb",
 }
 
 # Single backticks in docstrings render as inline code (the project convention)
