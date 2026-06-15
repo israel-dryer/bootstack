@@ -49,7 +49,7 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
     shell.commandbar.add_label("Acme Analytics", font="heading-md")
     shell.commandbar.add_spacer()
     shell.commandbar.add_button("Export", icon="download")
-    shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+    shell.commandbar.add_theme_toggle()
 
     shell.statusbar.add_text("Connected", icon="wifi")
     shell.statusbar.add_text("Synced 2 minutes ago", icon="arrow-repeat")

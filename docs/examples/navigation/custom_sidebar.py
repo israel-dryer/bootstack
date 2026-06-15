@@ -19,7 +19,7 @@ PRODUCTS = [
 with bs.AppShell(title="Shop", size=(900, 580)) as shell:
     shell.commandbar.add_label("Shop", font="heading-md")
     shell.commandbar.add_spacer()
-    shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+    shell.commandbar.add_theme_toggle()
 
     category = bs.Signal("All")
     max_price = bs.Signal(100)

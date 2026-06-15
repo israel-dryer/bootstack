@@ -15,7 +15,7 @@ def single_tier():
         shell._capture_full_window = True
         shell.commandbar.add_label("Acme Analytics", font="heading-md")
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         with shell.add_page("overview", text="Overview", icon="speedometer2"):
             with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
                 bs.Label("Overview", font="heading-lg")
@@ -39,7 +39,7 @@ def grouped_sidebar():
         shell._capture_full_window = True
         shell.commandbar.add_label("Settings", font="heading-md")
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         shell.add_header("Account")
         with shell.add_page("profile", text="Profile", icon="person"):
             with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
@@ -72,7 +72,7 @@ def master_detail_list():
         shell._capture_full_window = True
         shell.commandbar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         shell.list_nav(inbox, chevron=True)
 
         @shell.detail
@@ -103,7 +103,7 @@ def master_detail_tree():
         shell._capture_full_window = True
         shell.commandbar.add_label("Project", font="heading-md")
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         tree = shell.tree_nav(nodes=tree_nodes, placeholder="Select a file")
 
         @shell.detail
@@ -129,7 +129,7 @@ def workspaces():
     with bs.AppShell(title="Workspace", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:
             ws.list_nav(inbox, chevron=True)
 
@@ -159,7 +159,7 @@ def custom_sidebar():
         shell._capture_full_window = True
         shell.commandbar.add_label("Shop", font="heading-md")
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
         category = bs.Signal("All")
         max_price = bs.Signal(100)
         results = bs.Signal("")

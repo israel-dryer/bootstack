@@ -10,7 +10,7 @@ import bootstack as bs
 with bs.AppShell(title="Settings", size=(860, 580)) as shell:
     shell.commandbar.add_label("Settings", font="heading-md")
     shell.commandbar.add_spacer()
-    shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+    shell.commandbar.add_theme_toggle()
 
     shell.add_header("Account")
     with shell.add_page("profile", text="Profile", icon="person"):

@@ -303,7 +303,7 @@ def _appshell_chrome(app_name: str) -> str:
             )
 
         # --- Command bar ----------------------------------------------------
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
 
         # --- Status bar -----------------------------------------------------
         shell.statusbar.add_text("Ready")
@@ -536,7 +536,7 @@ class SettingsPage:
         with bs.GroupBox("Preferences", fill="both", expand=True):
             with bs.HStack(gap=8):
                 bs.Label("Theme:")
-                bs.Button("Toggle Light / Dark", on_click=bs.toggle_theme)
+                bs.ThemeToggle()
 '''
 
 

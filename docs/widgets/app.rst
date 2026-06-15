@@ -115,7 +115,7 @@ takes effect live.
 .. code-block:: python
 
    with bs.App(title="Notes", theme="bootstrap-dark", locale="de_DE") as app:
-       bs.Button("Toggle theme", on_click=bs.toggle_theme)
+       bs.ThemeToggle()
    app.run()
 
 See :doc:`/production/app-settings` for the full configuration reference — every
@@ -137,7 +137,7 @@ row at the top of the window.
            file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
 
        app.commandbar.add_spacer()                       # push trailing items right
-       app.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+       app.commandbar.add_theme_toggle()
    app.run()
 
 Layout

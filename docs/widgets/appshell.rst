@@ -159,7 +159,7 @@ to push trailing items to the right.
 .. code-block:: python
 
    shell.commandbar.add_spacer()
-   shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+   shell.commandbar.add_theme_toggle()
    shell.commandbar.add_button(label="Save", icon="save", on_click=save)
 
 Menu bar

@@ -22,7 +22,7 @@ inbox = MemoryDataSource().load([
 with bs.AppShell(title="Mail", size=(900, 580)) as shell:
     shell.commandbar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
     shell.commandbar.add_spacer()
-    shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+    shell.commandbar.add_theme_toggle()
 
     shell.list_nav(inbox, chevron=True)
 

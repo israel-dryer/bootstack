@@ -95,7 +95,7 @@ See the App page's *Menu bar and command bar* section for details.
    with win.menubar.add_menu("File") as file:
        file.add_action("Close", shortcut="Mod+W", on_click=win.close)
    win.commandbar.add_spacer()
-   win.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+   win.commandbar.add_theme_toggle()
 
 See also
 --------

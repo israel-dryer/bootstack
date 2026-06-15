@@ -100,7 +100,7 @@ creating the app, and write it whenever it changes:
 
    with bs.App(theme=store.get("theme", "bootstrap-light")) as app:
        app.on_theme_change(lambda theme: store.update(theme=theme))
-       bs.Button("Toggle theme", on_click=bs.toggle_theme)
+       bs.ThemeToggle()
    app.run()
 
 Persisting app configuration
