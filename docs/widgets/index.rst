@@ -72,7 +72,8 @@ below, or jump straight to a widget from the sidebar.
 
    .. grid-item-card:: :octicon:`comment;1.5em;sd-mr-1` Overlays
 
-      Transient surfaces that float above the content — tooltips and toasts.
+      Transient surfaces that float above the content — tooltips, and the
+      toast / notification / snackbar message family.
 
       :doc:`tooltip` · :doc:`toast`
 

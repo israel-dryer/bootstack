@@ -17,13 +17,19 @@ it and pick a matching icon:
    bs.alert("Your changes have been saved.", severity="success")
    bs.alert("The file could not be opened.", title="Error", severity="danger")
 
-For a message that should *not* steal focus — a passive "Saved" confirmation —
-use a toast instead. `bs.toast()` slides in, lingers, and dismisses itself:
+For a message that should *not* steal focus, reach for one of the transient
+surfaces instead of a dialog. A :func:`bs.toast() <bootstack.toast>` slides into
+a screen corner and dismisses itself — the passive "Saved" confirmation:
 
 .. code-block:: python
 
    bs.toast("Document saved", accent="success")
    bs.toast("Upload failed — retrying", accent="warning", duration=5000)
+
+When the message offers a single response — *"Message archived. [Undo]"* — that
+is a :class:`bs.Snackbar <bootstack.Snackbar>`, not a dialog; when it should stay
+until the user dismisses it, a :class:`bs.Notification <bootstack.Notification>`.
+See :doc:`/widgets/toast` for all three.
 
 Asking a yes/no question
 ------------------------
