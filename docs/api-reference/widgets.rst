@@ -139,16 +139,16 @@ For a full application sidebar, use :class:`~bootstack.AppShell`.
 Chrome bars and menus
 ---------------------
 
-Window chrome strips — a command bar, a passive status bar, a window menu bar, a
+Window chrome strips — a toolbar, a passive status bar, a window menu bar, a
 dropdown menu button, and a right-click context menu.
 
 .. autosummary::
    :nosignatures:
 
-   CommandBar
-   StatusBar
    ContextMenu
    ContextMenuItem
+   StatusBar
+   Toolbar
    MenuButton
 
 Overlays
@@ -205,7 +205,6 @@ groups, and tabbed sections.
       Carousel
       Checkbox
       CodeEditor
-      CommandBar
       ContextMenu
       ContextMenuItem
       DataTable
@@ -257,6 +256,7 @@ groups, and tabbed sections.
       toast
       ToggleButton
       ToggleGroup
+      Toolbar
       Tooltip
       Tree
       TreeNode

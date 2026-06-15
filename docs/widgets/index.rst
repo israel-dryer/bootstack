@@ -61,7 +61,7 @@ below, or jump straight to a widget from the sidebar.
 
       Window chrome — the menu bar, command bar, status bar, and pop-up menus.
 
-      :doc:`menubar` · :doc:`commandbar` · :doc:`statusbar` · :doc:`menubutton` ·
+      :doc:`menubar` · :doc:`toolbar` · :doc:`statusbar` · :doc:`menubutton` ·
       :doc:`contextmenu`
 
    .. grid-item-card:: :octicon:`arrow-switch;1.5em;sd-mr-1` Navigation
@@ -175,7 +175,7 @@ below, or jump straight to a widget from the sidebar.
    :hidden:
 
    menubar
-   commandbar
+   toolbar
    statusbar
    menubutton
    contextmenu

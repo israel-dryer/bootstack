@@ -33,7 +33,7 @@ lower-level appearance literals.
 
 .. py:type:: ButtonVariant
 
-   Style variant shared by the button family (Button, ButtonGroup, CommandBar,
+   Style variant shared by the button family (Button, ButtonGroup, Toolbar,
    MenuButton, SelectButton, ToggleButton, ToggleGroup) — `'default'`, `'solid'`,
    `'outline'`, or `'ghost'`.
 

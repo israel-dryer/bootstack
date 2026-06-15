@@ -162,7 +162,7 @@ class WindowMenu:
 
 
 class _ChromeContainer:
-    """Minimal public-container shim so a public `CommandBar` parents into the
+    """Minimal public-container shim so a public `Toolbar` parents into the
     host's chrome frame. Defers all packing to the host's arranger."""
 
     _auto_place = True
@@ -277,7 +277,7 @@ class ChromeHostMixin:
 
     @property
     def commandbar(self) -> Any:
-        """The window's command bar — a `CommandBar`. Lazily created on first access.
+        """The window's command bar — a `Toolbar`. Lazily created on first access.
 
         Lives in the top chrome row (beside or below the menu bar per
         `menu_layout`). Add buttons/labels/separators and an `add_spacer()` to
@@ -285,7 +285,7 @@ class ChromeHostMixin:
         """
         tb = getattr(self, "_commandbar_widget", None)
         if tb is None:
-            from bootstack.widgets.commandbar import CommandBar
+            from bootstack.widgets.toolbar import Toolbar
 
             chrome = self._ensure_chrome()
             shim = _ChromeContainer(chrome, self._arrange_chrome)
@@ -293,7 +293,7 @@ class ChromeHostMixin:
             # height when fused; surface threaded so its ghost buttons paint the
             # chosen chrome surface (rather than their default).
             surface = getattr(self, "_chrome_surface", "chrome")
-            tb = CommandBar(parent=shim, density="compact", surface=surface)
+            tb = Toolbar(parent=shim, density="compact", surface=surface)
             self._commandbar_widget = tb
             self._arrange_chrome()
         return tb

@@ -7,33 +7,30 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
 
 
-class CommandBar(PublicWidgetBase):
+class Toolbar(PublicWidgetBase):
     """A horizontal strip of buttons, labels, and other widgets.
 
-    The command bar holds an app's commands — buttons, a search box, a theme
-    toggle — as distinct from the menu bar, which holds menus. Items are added
-    left-to-right via `add_button()`, `add_label()`, `add_separator()`,
-    `add_spacer()`, and `add_widget()`. Call `add_spacer()` to push subsequent
-    items to the right side.
+    The toolbar holds an app's commands — buttons, a search box, a theme toggle.
+    Items are added left-to-right via `add_button()`, `add_label()`,
+    `add_separator()`, `add_spacer()`, and `add_widget()`. Call `add_spacer()` to
+    push subsequent items to the right side.
 
-    A command bar appears automatically at the top of `App`, `Window`, and
-    `AppShell` (via `app.commandbar`) — use this widget directly to build a
-    standalone command bar or a custom titlebar.
+    Use this widget directly to build a standalone toolbar or a custom titlebar.
 
     Args:
         button_variant: Default variant applied to every button added via
             `add_button()`. Default `'ghost'`.
-        density: Size of command-bar items. Default `'default'`.
+        density: Size of toolbar items. Default `'default'`.
         surface: Background surface token. Defaults to the theme's `'chrome'`
             surface.
         padding: Inner padding in pixels — an int (all sides) or a
             `(horizontal, vertical)` tuple. Defaults to `3` for default density
             and `(3, 1)` for compact.
-        show_border: If `True`, draws a border around the command-bar frame.
+        show_border: If `True`, draws a border around the toolbar frame.
             Default `False`.
         show_window_controls: If `True`, adds minimize, maximize, and close
             buttons to the right side. Default `False`.
-        draggable: If `True`, clicking and dragging the command bar repositions
+        draggable: If `True`, clicking and dragging the toolbar repositions
             the window. Automatically enabled when `show_window_controls=True`.
             Default `False`.
         parent: Override the context-stack parent.
@@ -53,8 +50,16 @@ class CommandBar(PublicWidgetBase):
         show_window_controls: bool = False,
         draggable: bool = False,
         parent: Any = None,
+        _toolbar: Any = None,
         **kwargs: Any,
     ) -> None:
+        if _toolbar is not None:
+            # Adoption: wrap a pre-built internal toolbar (e.g. an AppShell's
+            # titlebar band, which already carries its window controls + drag).
+            self._internal = _toolbar
+            self._parent = None
+            return
+
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
@@ -79,7 +84,7 @@ class CommandBar(PublicWidgetBase):
 
     @property
     def density(self) -> WidgetDensity:
-        """Current density setting for command-bar items."""
+        """Current density setting for toolbar items."""
         return self._internal.density
 
     @property
@@ -99,7 +104,7 @@ class CommandBar(PublicWidgetBase):
         variant: ButtonVariant | None = None,
         **kwargs: Any,
     ) -> None:
-        """Add a button to the command bar.
+        """Add a button to the toolbar.
 
         When both `label` and `icon` are given, the button shows text and icon
         side by side. When only `icon` is given, the button is icon-only.
@@ -134,7 +139,7 @@ class CommandBar(PublicWidgetBase):
         font: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """Add a non-interactive label to the command bar.
+        """Add a non-interactive label to the toolbar.
 
         Args:
             text: Label text.
@@ -164,7 +169,7 @@ class CommandBar(PublicWidgetBase):
         self._internal.add_spacer()
 
     def add_widget(self, widget: Any, **kwargs: Any) -> Any:
-        """Add a widget to the command bar.
+        """Add a widget to the toolbar.
 
         Pass a widget **class** to have the bar build it for you — `kwargs` are
         forwarded to its constructor:
@@ -184,13 +189,13 @@ class CommandBar(PublicWidgetBase):
         self._internal.add_widget(tk_widget, **kwargs)
         return widget
 
-    # ----- Container protocol (so `parent=commandbar` works) -----
+    # ----- Container protocol (so `parent=toolbar` works) -----
 
     def _child_master(self) -> Any:
         return self._internal.content
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
-        # A widget created with `parent=commandbar` is packed into the bar.
+        # A widget created with `parent=toolbar` is packed into the bar.
         self._internal.add_widget(child._internal)
 
     @property

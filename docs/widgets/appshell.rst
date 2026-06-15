@@ -152,7 +152,7 @@ hatch when none of the providers fit. Drive the content region with
 Command bar
 ~~~~~~~~~~~
 
-``shell.commandbar`` is the built-in :class:`CommandBar <bootstack.CommandBar>`,
+``shell.commandbar`` is the built-in :class:`Toolbar <bootstack.Toolbar>`,
 in the top chrome row. Add buttons, labels, separators, and an ``add_spacer()``
 to push trailing items to the right.
 
@@ -380,8 +380,8 @@ page navigation without a built-in sidebar.
 :class:`Tabs <bootstack.widgets.tabs.Tabs>` —
 tab-strip navigation.
 
-:class:`CommandBar <bootstack.CommandBar>` —
-the standalone command-bar widget.
+:class:`Toolbar <bootstack.Toolbar>` —
+the standalone toolbar widget.
 
 API
 ---

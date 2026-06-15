@@ -102,7 +102,7 @@ from bootstack.widgets.tree import Tree, TreeNode
 from bootstack.widgets.textfield import TextField
 from bootstack.widgets.toast import toast, Notification, Snackbar, snackbar
 from bootstack.widgets.togglegroup import ToggleGroup
-from bootstack.widgets.commandbar import CommandBar
+from bootstack.widgets.toolbar import Toolbar
 from bootstack.widgets.statusbar import StatusBar
 from bootstack.widgets.tooltip import Tooltip
 
@@ -132,7 +132,7 @@ __all__ = [
     "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
-    "Button", "ButtonGroup", "ThemeToggle", "MenuButton", "CommandBar", "StatusBar",
+    "Button", "ButtonGroup", "ThemeToggle", "MenuButton", "Toolbar", "StatusBar",
     "ContextMenu", "ContextMenuItem",
     # Inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",

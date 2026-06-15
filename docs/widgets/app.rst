@@ -126,7 +126,7 @@ Menu bar and command bar
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``app.menubar`` is the application :doc:`menu bar </widgets/menubar>` (File / Edit /
-…). ``app.commandbar`` is the :class:`CommandBar <bootstack.CommandBar>` — for widgets
+…). ``app.commandbar`` is the :class:`Toolbar <bootstack.Toolbar>` — for widgets
 that aren't menus, such as a theme toggle or a search box. Both sit in a shared
 row at the top of the window.
 

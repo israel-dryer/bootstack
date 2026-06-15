@@ -112,7 +112,7 @@ The command bar (App and Window)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Widgets that aren't menus — a search box, a theme toggle — belong in the
-**command bar** (``app.commandbar``), a :class:`CommandBar <bootstack.CommandBar>` that shares
+**command bar** (``app.commandbar``), a :class:`Toolbar <bootstack.Toolbar>` that shares
 the top row with the menu bar. On Windows/Linux you can fuse them into one row or
 stack them, and recolor the whole bar, via the
 ``menu_layout`` / ``chrome_surface`` / ``chrome_divider`` options on
@@ -124,8 +124,8 @@ built-in command bar; the fused/stacked layout is specific to App/Window.)
 See also
 --------
 
-:class:`CommandBar <bootstack.CommandBar>` —
-the command bar widget, usable standalone too.
+:class:`Toolbar <bootstack.Toolbar>` —
+the toolbar widget, usable standalone too.
 
 :class:`MenuButton <bootstack.MenuButton>` —
 a single button that opens an action menu.
