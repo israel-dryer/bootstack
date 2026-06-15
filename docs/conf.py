@@ -132,7 +132,7 @@ autodoc_type_aliases = {
     # the `.. py:type::` target; `autodoc_typehints_format = "short"` then renders
     # just the short name as the link text.
     **{n: f"bootstack.types.{n}" for n in (
-        "AccentToken", "VariantToken", "SurfaceToken", "WindowStyle",
+        "AccentToken", "SurfaceToken", "WindowStyle",
         "WidgetDensity", "WidgetState", "Anchor", "Side", "Fill", "Sticky",
         "LayoutKind", "AutoFlow", "Padding", "Orient", "Justify", "Direction",
         "Relief", "CompoundMode", "BorderMode", "EditorType",

@@ -70,9 +70,6 @@ AccentToken = Literal['primary', 'secondary', 'info', 'success', 'warning', 'dan
 `'default'`, `'muted'`, and modifiers (`'primary[+1]'`, `'primary[500]'`,
 `'primary[subtle]'`) are also accepted."""
 
-VariantToken = Literal['solid', 'outline', 'ghost', 'toggle']
-"""Widget style variant."""
-
 SurfaceToken = Literal['content', 'card', 'card_raised', 'chrome', 'overlay']
 """Background surface context token."""
 
@@ -157,7 +154,7 @@ class BaseWidgetKwargs(TypedDict, total=False):
 class StyledKwargs(BaseWidgetKwargs, total=False):
     """Extends BaseWidgetKwargs with bootstack styling tokens."""
     accent: AccentToken | str
-    variant: VariantToken | str
+    variant: str
     surface: SurfaceToken | str
     style_options: dict[str, Any]
 

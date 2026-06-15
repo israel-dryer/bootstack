@@ -10,7 +10,7 @@ from bootstack.widgets._impl.primitives.checktoggle import CheckToggle
 from bootstack._core.variables import SetVar
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets._impl.primitives import Frame
-from bootstack.widgets.types import Orient, AccentToken, VariantToken, SurfaceToken
+from bootstack.widgets.types import Orient, AccentToken, SurfaceToken
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -24,7 +24,7 @@ class ToggleGroupKwargs(TypedDict, total=False):
     value: str | set[str]
     orient: Orient
     accent: AccentToken | str
-    variant: VariantToken | str
+    variant: str
     show_border: bool
     surface: SurfaceToken | str
     style_options: dict[str, Any]

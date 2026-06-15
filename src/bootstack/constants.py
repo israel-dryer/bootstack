@@ -32,7 +32,6 @@ from bootstack.widgets.types import (
     Sticky,
     AccentToken,
     SurfaceToken,
-    VariantToken,
     WidgetDensity,
     WidgetState,
 )
@@ -276,7 +275,7 @@ INDETERMINATE: Final[ProgressMode] = 'indeterminate'
 __all__ = [
     # Re-exported type aliases (canonical source: bootstack.widgets.types)
     'Anchor', 'AccentToken', 'BorderMode', 'CompoundMode', 'Fill', 'Justify',
-    'Orient', 'Relief', 'Side', 'Sticky', 'SurfaceToken', 'VariantToken',
+    'Orient', 'Relief', 'Side', 'Sticky', 'SurfaceToken',
     'WidgetDensity', 'WidgetState',
     # Literal types canonical to this module
     'ActiveStyle', 'Align', 'IndexPos', 'LineJoin', 'LineCap', 'MenuItemType',

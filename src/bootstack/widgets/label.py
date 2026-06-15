@@ -10,7 +10,7 @@ from bootstack.widgets._core.icon_image_props import IconProperty, ImageProperty
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
-    AccentToken, VariantToken, SurfaceToken,
+    AccentToken, SurfaceToken,
     Anchor, Justify, Relief, CompoundMode, Padding, IconPosition, IconSpec,
 )
 
@@ -53,7 +53,6 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
         font: Semantic font token. Examples: `'body'`, `'heading-lg'`,
             `'heading-md[bold]'`, `'caption'`, `'code'`, `'body+2[italic]'`.
         accent: Semantic color applied to the text.
-        variant: Style variant token.
         surface: Background surface context.
         localize: Whether the text is translated through the catalog — `True`,
             `False`, or `'auto'` (translate when a translation is registered,
@@ -82,12 +81,15 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
         wrap_width: int | None = None,
         font: str | None = None,
         accent: AccentToken | Literal['muted'] | str | None = None,
-        variant: VariantToken | str | None = None,
         surface: SurfaceToken | str | None = None,
         localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        # `variant` is not a public Label option (Label has only the implicit
+        # 'default'); it rides in via kwargs as the conduit for the Badge
+        # subclass, which sets its own 'square'/'pill' on a Badge ttk class.
+        variant = kwargs.pop("variant", None)
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
