@@ -127,6 +127,16 @@ def _build_buttons_page():
                 bg.add("Copy",  icon="copy")
                 bg.add("Paste", icon="clipboard")
 
+        with bs.GroupBox("MenuButton", fill="horizontal", layout="hstack", gap=12):
+            mb = bs.MenuButton("Actions", icon="three-dots", accent="primary")
+            mb.add_item("New file", icon="file-earmark")
+            mb.add_item("Open…", icon="folder2-open")
+            mb.add_separator()
+            mb.add_item("Delete", icon="trash")
+            mb2 = bs.MenuButton("View", icon="eye", variant="outline")
+            mb2.add_item("Zoom in", icon="zoom-in")
+            mb2.add_item("Zoom out", icon="zoom-out")
+
 
 # -- Text Inputs -------------------------------------------------------------
 
@@ -311,12 +321,26 @@ def _build_selection_page():
                 tg2.add("JavaScript", value="javascript")
                 tg2.add("Rust",       value="rust")
 
-        with bs.GroupBox("Select", fill="horizontal"):
+        with bs.GroupBox("Select & SelectButton", fill="horizontal", gap=8):
             bs.Select(
                 label="Size:",
                 options=["Small", "Medium", "Large", "Extra Large"],
                 value="Medium", fill="horizontal",
             )
+            with bs.HStack(gap=8):
+                bs.SelectButton(options=["Day", "Week", "Month"], value="Week", accent="primary")
+                bs.SelectButton(options=["Light", "Dark", "System"], value="System", variant="outline")
+
+        with bs.GroupBox("ToggleButton", fill="horizontal", layout="hstack", gap=8):
+            bs.ToggleButton("Bold", value=True)
+            bs.ToggleButton("Italic")
+            bs.ToggleButton("Mute", icon="volume-mute")
+
+        with bs.GroupBox("RadioToggleButton (segmented)", fill="horizontal", layout="hstack", gap=0):
+            view = Signal("grid")
+            bs.RadioToggleButton("Grid",  "grid",  signal=view)
+            bs.RadioToggleButton("List",  "list",  signal=view)
+            bs.RadioToggleButton("Cards", "cards", signal=view)
 
 
 # -- Calendar -----------------------------------------------------------------
@@ -394,6 +418,20 @@ def _build_data_page():
             bs.Badge("Pill",  accent="primary", variant="pill")
             bs.Badge("99+",   accent="danger",  variant="pill")
             bs.Badge("New",   accent="success")
+
+        with bs.GroupBox("ListView", fill="horizontal"):
+            bs.ListView(
+                items=[
+                    {"id": 1, "title": "Inbox",   "text": "12 unread messages",   "icon": "inbox",        "badge": "12"},
+                    {"id": 2, "title": "Starred", "text": "Flagged for follow-up", "icon": "star-fill"},
+                    {"id": 3, "title": "Sent",    "text": "Your sent mail",        "icon": "send"},
+                    {"id": 4, "title": "Drafts",  "text": "1 unfinished draft",    "icon": "file-earmark", "badge": "1"},
+                    {"id": 5, "title": "Archive", "text": "240 archived items",    "icon": "archive"},
+                ],
+                selection_mode="single",
+                height=200,
+                fill="horizontal",
+            )
 
         with bs.GroupBox("DataTable", fill="both", expand=True):
             employees = [
@@ -479,6 +517,10 @@ def _build_progress_page():
         with bs.GroupBox("Slider (drag to control progress bars)", fill="horizontal"):
             bs.Slider(min_value=0, max_value=100, signal=slider_value, fill="horizontal")
 
+        with bs.GroupBox("RangeSlider", fill="horizontal"):
+            bs.RangeSlider(low_value=25, high_value=75, min_value=0, max_value=100,
+                           show_value=True, accent="primary", fill="horizontal")
+
         with bs.GroupBox("ProgressBar", fill="horizontal", gap=8):
             bs.ProgressBar(signal=slider_value, max_value=100, fill="horizontal")
             bs.ProgressBar(value=75,  max_value=100, accent="success", fill="horizontal")
@@ -535,6 +577,12 @@ def _build_layout_page():
                 bs.Label("Right Pane")
                 bs.Label("Both panes are resizable", accent="secondary", font="caption")
 
+        with bs.GroupBox("ScrollView", fill="horizontal"):
+            bs.Label("A fixed-height region that scrolls its overflow:", accent="secondary")
+            with bs.ScrollView(height=140, show_border=True, fill="horizontal", padding=8):
+                for i in range(20):
+                    bs.Label(f"Scrollable row {i + 1}")
+
         with bs.GroupBox("Separator", fill="horizontal", gap=8):
             bs.Separator(fill="horizontal")
             bs.Separator(accent="primary",  fill="horizontal")
@@ -564,6 +612,19 @@ def _build_navigation_page():
             with tabs2.add("doc1", label="Document 1", icon="file-text"):
                 bs.Label("Content for Document 1.", padding=20)
 
+        with bs.GroupBox("PageStack (swap content in place)", fill="both", expand=True):
+            ps = bs.PageStack(fill="both", expand=True)
+            with ps.add("welcome"):
+                bs.Label("Welcome page", font="heading-md", padding=20)
+            with ps.add("details"):
+                bs.Label("Details page", font="heading-md", padding=20)
+            with ps.add("done"):
+                bs.Label("All done!", font="heading-md", padding=20)
+            with bs.HStack(gap=8):
+                bs.Button("Welcome", on_click=lambda: ps.navigate("welcome"))
+                bs.Button("Details", on_click=lambda: ps.navigate("details"))
+                bs.Button("Done",    on_click=lambda: ps.navigate("done"))
+
 
 # -- Overlays -----------------------------------------------------------------
 
@@ -571,7 +632,8 @@ def _build_navigation_page():
 def _build_overlays_page():
     with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
         bs.Label("Overlays", font="heading-xl")
-        bs.Label("Toasts and tooltips.", accent="secondary")
+        bs.Label("Tooltips, the toast/notification/snackbar message family, and context menus.",
+                 accent="secondary")
 
         with bs.GroupBox("Tooltip", fill="horizontal"):
             bs.Label("Hover over the buttons below:")
@@ -598,6 +660,28 @@ def _build_overlays_page():
                           on_click=lambda: show_toast("Warning", "Check your settings.", "warning"))
                 bs.Button("Error",   accent="danger",
                           on_click=lambda: show_toast("Error", "Something went wrong.", "danger"))
+
+        with bs.GroupBox("Notification & Snackbar", fill="horizontal", gap=8):
+            bs.Label("Persistent corner notification, and an in-app snackbar with one action:",
+                     accent="secondary")
+            with bs.HStack(gap=8):
+                bs.Button("Notification", on_click=lambda: bs.Notification(
+                    "Backup complete", message="3.2 GB uploaded to the cloud.",
+                    detail="just now", icon="cloud-check", accent="success").show())
+                bs.Button("Snackbar (Undo)", on_click=lambda: bs.snackbar(
+                    "Conversation archived.", action="Undo"))
+
+        with bs.GroupBox("ContextMenu", fill="horizontal", gap=8):
+            bs.Label("Right-click the area below:", accent="secondary")
+            target = bs.Card(padding=24, fill="horizontal", anchor_items="center")
+            with target:
+                bs.Label("Right-click me", accent="secondary")
+            menu = bs.ContextMenu(target=target)
+            menu.add_item("Cut", icon="scissors")
+            menu.add_item("Copy", icon="copy")
+            menu.add_item("Paste", icon="clipboard")
+            menu.add_separator()
+            menu.add_item("Delete", icon="trash")
 
 
 # -- Dialogs ------------------------------------------------------------------
@@ -681,6 +765,57 @@ def _build_theme_page():
                         bs.Label(surface.title(), surface=surface)
 
 
+# -- Media --------------------------------------------------------------------
+
+
+def _demo_photos():
+    """A few solid-color tiles as `Image` handles, for the media widgets."""
+    from PIL import Image as _PILImage
+    from bootstack.images import Image
+
+    swatches = [
+        ("Sunset", (244, 114, 82)),
+        ("Ocean",  (56, 132, 222)),
+        ("Forest", (71, 159, 118)),
+        ("Berry",  (176, 42, 88)),
+        ("Amber",  (240, 180, 41)),
+        ("Slate",  (90, 99, 110)),
+    ]
+    return [
+        {"title": name, "image": Image.from_pil(_PILImage.new("RGB", (320, 320), rgb))}
+        for name, rgb in swatches
+    ]
+
+
+def _build_media_page():
+    from bootstack.images import get_icon
+
+    photos = _demo_photos()
+
+    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+        bs.Label("Media", font="heading-xl")
+        bs.Label("Identity badges, images, thumbnail grids, and carousels.", accent="secondary")
+
+        with bs.GroupBox("Avatar", fill="horizontal", layout="hstack", gap=12):
+            bs.Avatar(name="Ada Lovelace")
+            bs.Avatar(name="Grace Hopper", shape="rounded")
+            bs.Avatar(initials="JS", shape="square")
+            bs.Avatar(image=get_icon("person-fill", size=40))
+
+        with bs.GroupBox("Picture", fill="horizontal", layout="hstack", gap=16):
+            bs.Picture(photos[0]["image"], width=180, height=120, fit="cover", corner_radius=8)
+            bs.Picture(photos[1]["image"], width=180, height=120, fit="contain")
+            bs.Picture(photos[2]["image"], width=120, height=120, fit="cover", corner_radius=60)
+
+        with bs.GroupBox("Gallery", fill="both", expand=True):
+            bs.Gallery(items=photos, image_field="image", caption_field="title",
+                       tile_size=(120, 120), fill="both", expand=True)
+
+        with bs.GroupBox("Carousel", fill="horizontal"):
+            bs.Carousel(items=photos, image_field="image", caption_field="title",
+                        fit="cover", fill="horizontal")
+
+
 # =============================================================================
 # Gallery app
 # =============================================================================
@@ -694,7 +829,13 @@ def run_demo():
         size=(1100, 750),
     ) as shell:
 
-        shell.commandbar.add_button(icon="sun", command=bs.toggle_theme)
+        shell.commandbar.add_label("Widget Gallery")
+        shell.commandbar.add_spacer()
+        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+
+        shell.statusbar.add_text("Ready")
+        shell.statusbar.add_spacer()
+        shell.statusbar.add_text(f"bootstack v{bs.__version__}")
 
         # Page registry: key → (page_frame, builder)
         _pages: dict[str, tuple[object, object]] = {}
@@ -727,9 +868,13 @@ def run_demo():
         _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
 
         shell.add_separator()
+        shell.add_header("Media")
+        _register("media",      _build_media_page,      text="Media",       icon="images",             scrollable=True)
+
+        shell.add_separator()
         shell.add_header("Layout")
         _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
-        _register("navigation", _build_navigation_page, text="Tab Views",   icon="window-stack",       scrollable=True)
+        _register("navigation", _build_navigation_page, text="Navigation",  icon="window-stack",       scrollable=True)
 
         shell.add_separator()
         shell.add_header("Overlays & Dialogs")
