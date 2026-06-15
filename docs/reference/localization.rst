@@ -54,6 +54,18 @@ widget takes text, and it re-formats itself when the locale changes:
    bs.Label(LV(0.42, "percent"))            # "42%"
    bs.Label(LV(date(2025, 9, 2), "longDate"))
 
+For a value that **changes** — bound to a :class:`~bootstack.Signal` — use the
+widget's ``value_format=`` instead. It applies the same spec to the signal's
+value and re-formats live as either the value or the locale changes:
+
+.. code-block:: python
+
+   total = bs.Signal(1234.56)
+   bs.Label(textsignal=total, value_format="currency")   # re-formats when total changes
+
+So ``LV`` formats a one-off value and ``value_format=`` formats a reactive one;
+both take the same format specs below.
+
 .. _value-formats:
 
 Format specs
