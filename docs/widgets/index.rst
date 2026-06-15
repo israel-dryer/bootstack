@@ -19,7 +19,7 @@ below, or jump straight to a widget from the sidebar.
 
       Buttons that trigger commands.
 
-      :doc:`button` · :doc:`buttongroup`
+      :doc:`button` · :doc:`buttongroup` · :doc:`theme-toggle`
 
    .. grid-item-card:: :octicon:`pencil;1.5em;sd-mr-1` Inputs
 
@@ -104,6 +104,7 @@ below, or jump straight to a widget from the sidebar.
 
    button
    buttongroup
+   theme-toggle
 
 .. toctree::
    :caption: Inputs

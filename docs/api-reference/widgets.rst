@@ -19,6 +19,7 @@ Buttons and button groups for triggering commands.
 
    Button
    ButtonGroup
+   ThemeToggle
 
 Inputs
 ------
@@ -251,6 +252,7 @@ groups, and tabbed sections.
       TabsItem
       TextArea
       TextField
+      ThemeToggle
       TimeField
       toast
       ToggleButton

@@ -63,6 +63,7 @@ from bootstack.widgets.window import Window
 from bootstack.widgets.stacks import HStack, VStack
 from bootstack.widgets.grid import Grid
 from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
+from bootstack.widgets.theme_toggle import ThemeToggle
 from bootstack.widgets.button import Button
 from bootstack.widgets.card import Card
 from bootstack.widgets.buttongroup import ButtonGroup
@@ -131,7 +132,7 @@ __all__ = [
     "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
-    "Button", "ButtonGroup", "MenuButton", "CommandBar", "StatusBar",
+    "Button", "ButtonGroup", "ThemeToggle", "MenuButton", "CommandBar", "StatusBar",
     "ContextMenu", "ContextMenuItem",
     # Inputs
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",

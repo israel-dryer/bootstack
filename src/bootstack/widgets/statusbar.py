@@ -97,19 +97,31 @@ class StatusBar(PublicWidgetBase):
             self._internal.add_spacer()
             self._has_right_spacer = True
 
-    def add_widget(self, widget: Any, *, side: Literal["left", "right"] = "left") -> None:
-        """Add a passive widget to the left or right cluster.
+    def add_widget(self, widget: Any, *, side: Literal["left", "right"] = "left", **kwargs: Any) -> Any:
+        """Add a widget to the left or right cluster.
+
+        Pass a widget **class** to have the bar build it (`kwargs` go to its
+        constructor), or an existing widget **instance**:
+
+            status.add_widget(bs.ThemeToggle, side="right")
+            status.add_widget(my_label)
 
         Args:
-            widget: A public widget (or raw internal widget) parented to this
-                status bar's `content` frame.
+            widget: A widget class or instance.
             side: `'left'` (default) or `'right'` (after the spacer).
+            **kwargs: Constructor arguments, used only when `widget` is a class.
+
+        Returns:
+            The widget (the new instance when a class is given).
         """
         if side == "right":
             self._ensure_right()
+        if isinstance(widget, type):
+            return widget(parent=self, **kwargs)
         tk_widget = getattr(widget, "_internal", widget)
         self._internal.add_widget(tk_widget)
         self._show()
+        return widget
 
     def add_text(
         self,
