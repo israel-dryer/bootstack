@@ -143,7 +143,9 @@ needs no wrapping:
    bs.Label("Save")        # renders the translation of "Save" if one is registered
    bs.Button("Cancel")     # same — no L() needed
 
-Register your own translations with the catalog functions (inside a running app):
+Register your own translations with the catalog functions. Call them any time —
+including at startup, *before* you build the app — and they apply when widgets
+resolve their text:
 
 .. code-block:: python
 

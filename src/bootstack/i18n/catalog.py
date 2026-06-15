@@ -6,7 +6,8 @@ when a translation is registered for the current locale, and left as-is
 otherwise. These functions register your own strings so that auto-localization
 (and the explicit :func:`~bootstack.i18n.L` spec) can resolve them.
 
-They require a running application — call them inside a ``with bs.App():`` block.
+Call them any time — including at startup, *before* you build the app. The
+registrations persist and apply when widgets resolve their text.
 """
 
 from __future__ import annotations
