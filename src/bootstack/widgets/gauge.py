@@ -7,7 +7,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import SliderEvent, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event
+from bootstack.widgets.types import AccentToken, Event, SurfaceToken
 
 
 class Gauge(PublicWidgetBase):
@@ -40,6 +40,9 @@ class Gauge(PublicWidgetBase):
         show_text: If `False`, hides the center value text. Defaults to `True`.
         accent: Color intent token for the arc. Defaults to the theme's default
             color.
+        surface: Surface token for the gauge background, so it matches the
+            container it sits on (e.g. `'card'` inside a `Card`). Defaults to the
+            window background.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -64,6 +67,7 @@ class Gauge(PublicWidgetBase):
         step: int | float = 1,
         show_text: bool = True,
         accent: AccentToken | str | None = None,
+        surface: SurfaceToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -93,6 +97,8 @@ class Gauge(PublicWidgetBase):
             internal_kwargs["value_suffix"] = value_suffix
         if accent is not None:
             internal_kwargs["accent"] = accent
+        if surface is not None:
+            internal_kwargs["surface"] = surface
 
         self._internal = _InternalMeter(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)

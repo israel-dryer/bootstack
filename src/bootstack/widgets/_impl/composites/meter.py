@@ -34,6 +34,7 @@ class Meter(Frame):
             self,
             master: Master = None,
             accent: str = None,
+            surface: str = None,
 
             # value parameters
             value: int | float = 0,
@@ -128,7 +129,7 @@ class Meter(Frame):
         self._secondary_style = secondary_style or 'background[muted]'
 
         # color tokens (separate from resolved colors)
-        self._surface_token = 'background'
+        self._surface_token = surface or 'background'
 
         # state tracking
         self._towards_maximum = True
