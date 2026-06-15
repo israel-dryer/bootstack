@@ -99,7 +99,7 @@ flips between the ``light_theme`` and ``dark_theme`` pair:
                 light_theme="bootstrap-light",
                 dark_theme="bootstrap-dark")
 
-   bs.Button("Toggle", on_click=bs.toggle_theme)
+   bs.ThemeToggle()
 
 On macOS, ``follow_system_appearance=True`` switches between the light and dark
 themes automatically when the user changes the OS appearance. See

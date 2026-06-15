@@ -751,7 +751,7 @@ def _build_theme_page():
 
             with bs.HStack(gap=8):
                 bs.Label("Quick:", width=10)
-                bs.Button("Toggle Light / Dark", on_click=bs.toggle_theme)
+                bs.ThemeToggle()
 
         with bs.GroupBox("Accent Colors", fill="horizontal"):
             with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
@@ -831,7 +831,7 @@ def run_demo():
 
         shell.commandbar.add_label("Widget Gallery")
         shell.commandbar.add_spacer()
-        shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+        shell.commandbar.add_theme_toggle()
 
         shell.statusbar.add_text("Ready")
         shell.statusbar.add_spacer()

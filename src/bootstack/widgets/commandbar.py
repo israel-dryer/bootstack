@@ -163,15 +163,51 @@ class CommandBar(PublicWidgetBase):
         """Add a flexible spacer that pushes subsequent items to the right."""
         self._internal.add_spacer()
 
-    def add_widget(self, widget: Any, **pack_kwargs: Any) -> None:
-        """Add an arbitrary widget to the command bar.
+    def add_widget(self, widget: Any, **kwargs: Any) -> Any:
+        """Add a widget to the command bar.
 
-        The widget must have been created with the command bar as its parent, or
-        pass a raw internal widget here.
+        Pass a widget **class** to have the bar build it for you — `kwargs` are
+        forwarded to its constructor:
+
+            bar.add_widget(bs.ThemeToggle, variant="ghost")
+
+        Or pass an existing widget **instance** — `kwargs` are pack options:
+
+            bar.add_widget(my_widget, padx=4)
+
+        Returns:
+            The widget (the new instance when a class is given).
+        """
+        if isinstance(widget, type):
+            return widget(parent=self, **kwargs)
+        tk_widget = getattr(widget, "_internal", widget)
+        self._internal.add_widget(tk_widget, **kwargs)
+        return widget
+
+    # ----- Container protocol (so `parent=commandbar` works) -----
+
+    def _child_master(self) -> Any:
+        return self._internal.content
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        # A widget created with `parent=commandbar` is packed into the bar.
+        self._internal.add_widget(child._internal)
+
+    @property
+    def content(self) -> Any:
+        """The bar's content frame — parent custom widgets here."""
+        return self._internal.content
+
+    def add_theme_toggle(self, **kwargs: Any) -> Any:
+        """Add a `ThemeToggle` — a sun/moon button that flips the theme.
 
         Args:
-            widget: A public widget instance or raw internal widget.
-            **pack_kwargs: Pack options forwarded to the widget's placement.
+            **kwargs: Forwarded to `ThemeToggle` — e.g. `variant`, `density`,
+                `accent`, `light_icon`, `dark_icon`.
+
+        Returns:
+            The created `ThemeToggle`.
         """
-        tk_widget = getattr(widget, "_internal", widget)
-        self._internal.add_widget(tk_widget, **pack_kwargs)
+        from bootstack.widgets.theme_toggle import ThemeToggle
+
+        return ThemeToggle(parent=self, **kwargs)

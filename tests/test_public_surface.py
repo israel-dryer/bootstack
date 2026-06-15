@@ -42,7 +42,7 @@ EXPECTED_TOPLEVEL = {
     "TextField", "PasswordField", "NumberField", "PathField", "SpinnerField",
     "TextArea", "CodeEditor", "DateField", "TimeField", "Slider", "RangeSlider",
     # selection
-    "Checkbox", "Switch", "ToggleButton", "ToggleGroup", "Radio",
+    "Checkbox", "Switch", "ToggleButton", "ThemeToggle", "ToggleGroup", "Radio",
     "RadioToggleButton", "RadioGroup", "Select", "SelectButton", "Calendar",
     # data display
     "Label", "Badge", "ProgressBar", "Gauge", "ListView", "DataTable",

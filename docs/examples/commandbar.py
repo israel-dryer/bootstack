@@ -15,7 +15,7 @@ with bs.App(title="CommandBar demo", minsize=(700, 300), padding=16) as app:
             tb1.add_button("Open", icon="folder2-open")
             tb1.add_button("Save", icon="floppy")
             tb1.add_spacer()
-            tb1.add_button(icon="circle-half", on_click=bs.toggle_theme)
+            tb1.add_theme_toggle()
             tb1.add_button(icon="gear")
 
         # ── Compact density ────────────────────────────────────────────────

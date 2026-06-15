@@ -185,7 +185,7 @@ AppShell command bar.
 
    with bs.AppShell(title="My App") as shell:
        shell.commandbar.add_spacer()
-       shell.commandbar.add_button(icon="circle-half", command=bs.toggle_theme)
+       shell.commandbar.add_theme_toggle()
        ...
 
 Widget sizing

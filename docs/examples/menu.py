@@ -34,7 +34,7 @@ with bs.App(title="Menu demo", size=(600, 380)) as app:
 
     # Theme switcher: a toggle in the toolbar, fused to the right of the menus.
     app.commandbar.add_spacer()
-    app.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
+    app.commandbar.add_theme_toggle()
 
     bs.Label("A sample menu, with a theme switcher in the toolbar.",
              font="heading-md")
