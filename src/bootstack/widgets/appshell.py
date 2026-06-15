@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 from bootstack._runtime.app import LocalizeMode
 from bootstack.widgets._impl.composites.shell.shell import Shell as _InternalShell
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
-from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
+from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
@@ -676,18 +677,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
 
     # ----- Events -----
 
-    def _bind_virtual(
-        self, sequence: str, handler: Callable[[Any], Any] | None
-    ) -> Stream | Subscription:
-        if handler is None:
-            def _source(h: Callable) -> Subscription:
-                bid = self._internal.bind(sequence, adapt_handler(h), add="+")
-                return Subscription(self._internal, sequence, bid)
-
-            return Stream(self._internal, _source=_source)
-        bid = self._internal.bind(sequence, adapt_handler(handler), add="+")
-        return Subscription(self._internal, sequence, bid)
-
     @overload
     def on_page_change(self) -> Stream: ...
     @overload
@@ -702,7 +691,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 (the new and previous page keys, plus any `navigate()` data).
                 Omit to get a composable :class:`~bootstack.streams.Stream`.
         """
-        return self._bind_virtual("<<PageChange>>", handler)
+        return self.on("page_change", handler)
 
     @overload
     def on_workspace_change(self) -> Stream: ...
@@ -720,7 +709,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 :class:`~bootstack.events.WorkspaceChangeEvent`. Omit to get a
                 composable :class:`~bootstack.streams.Stream`.
         """
-        return self._bind_virtual("<<WorkspaceChange>>", handler)
+        return self.on("workspace_change", handler)
 
     @overload
     def on_sidebar_toggle(self) -> Stream: ...
@@ -735,7 +724,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             handler: Called with a :class:`~bootstack.events.PaneToggleEvent`.
                 Omit to get a composable :class:`~bootstack.streams.Stream`.
         """
-        return self._bind_virtual("<<SidebarToggle>>", handler)
+        return self.on("sidebar_toggle", handler)
 
     @overload
     def on_sidebar_mode_change(self) -> Stream: ...
@@ -753,7 +742,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 (`compact` ↔ `expanded`). Omit to get a composable
                 :class:`~bootstack.streams.Stream`.
         """
-        return self._bind_virtual("<<SidebarModeChange>>", handler)
+        return self.on("sidebar_mode_change", handler)
 
     # ----- Lifecycle -----
 
@@ -814,3 +803,13 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     def tk(self) -> Any:
         """Underlying `tk.Tk` root window. UNSUPPORTED — escape-hatch use only."""
         return self._internal
+
+
+_APPSHELL_EVENTS = {
+    "page_change":         "<<PageChange>>",
+    "workspace_change":    "<<WorkspaceChange>>",
+    "sidebar_toggle":      "<<SidebarToggle>>",
+    "sidebar_mode_change": "<<SidebarModeChange>>",
+}
+
+register_widget_events(AppShell, _APPSHELL_EVENTS)
