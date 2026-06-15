@@ -168,6 +168,26 @@ fills in ``{}``-style placeholders with `str.format` (positional or named):
    bs.Label(L("Hello, {0}", name))         # positional
    bs.Label(L("Hello, {name}", name=user)) # named
 
+File-based catalogs
+~~~~~~~~~~~~~~~~~~~
+
+For larger apps, or when translators work in standard tooling, keep translations
+in gettext ``.po`` files and load them with ``load_po``. The ``.po`` is read
+directly — **no** ``msgfmt`` compile step and no ``.mo`` files:
+
+.. code-block:: python
+
+   from bootstack.i18n import load_po
+
+   load_po("assets/locales/es.po")   # locale read from the file's header
+   load_po("assets/locales/de.po")
+
+Scaffold starter ``.po`` files with ``bootstack add i18n --po`` — it places them
+under ``assets/``, which the build already bundles, and ``load_po`` resolves the
+path in both a development run and a packaged executable. Plain
+``bootstack add i18n`` (no flag) instead scaffolds a small Python module using
+``add_translations`` — the simplest path, with nothing extra to bundle.
+
 Opting a widget out
 ~~~~~~~~~~~~~~~~~~~
 
@@ -248,4 +268,5 @@ The complete reference lives in :doc:`/api-reference/i18n`. At a glance:
    LV
    add_translation
    add_translations
+   load_po
    load_translations

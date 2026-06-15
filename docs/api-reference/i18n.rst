@@ -26,4 +26,6 @@ Extending the translation catalog
 
 .. autofunction:: add_translations
 
+.. autofunction:: load_po
+
 .. autofunction:: load_translations
