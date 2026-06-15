@@ -8,7 +8,7 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._core.icon_image_props import IconProperty, ImageProperty
 from bootstack.events import Event, Subscription
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant, IconSpec
+from bootstack.widgets.types import AccentToken, WidgetDensity, IconPosition, ButtonVariant, IconSpec, LocalizeMode
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -43,6 +43,9 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
             automatically when the signal changes.
         density: Padding density.
         disabled: If `True`, the button is non-interactive and visually dimmed.
+        localize: Whether the text is translated through the catalog — `True`,
+            `False`, or `'auto'`. Defaults to the app's `localize_mode`. Set
+            `False` to keep a proper noun or identifier untranslated.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
         **kwargs: Layout placement options applied by the parent container —
@@ -65,6 +68,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         textsignal: "Signal[str] | None" = None,
         density: WidgetDensity | None = None,
         disabled: bool = False,
+        localize: LocalizeMode | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -104,6 +108,8 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
             internal_kwargs["density"] = density
         if disabled:
             internal_kwargs["state"] = "disabled"
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         self._internal = _InternalButton(tk_master, **internal_kwargs)
         if deferred_image is not None:

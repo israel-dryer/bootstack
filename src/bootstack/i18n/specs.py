@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional, Tuple
 
 from .msgcat import MessageCatalog
 from .intl_format import IntlFormatter, FormatSpec
@@ -48,6 +48,7 @@ class LocalizedTextSpec(LocalizedSpec):
     """
     key: str
     fmtargs: Tuple[Any, ...] = ()
+    fmtkwargs: Dict[str, Any] = field(default_factory=dict)
     original: Optional[str] = None
 
     enabled: bool = True
@@ -55,14 +56,24 @@ class LocalizedTextSpec(LocalizedSpec):
     def resolve(self, locale: str) -> str:
         """Resolve to translated text using MessageCatalog.
 
+        Looks the key up in the catalog, then applies Python ``str.format``
+        interpolation with any positional/keyword arguments — so placeholders use
+        ``{0}`` / ``{name}`` style.
+
         Args:
             locale: The locale code (unused, MessageCatalog uses its own state).
 
         Returns:
-            The translated string, or the original/key as fallback.
+            The translated, interpolated string, or the original/key as fallback.
         """
         try:
-            return MessageCatalog.translate(self.key, *self.fmtargs)
+            text = MessageCatalog.translate(self.key)
+            if self.fmtargs or self.fmtkwargs:
+                try:
+                    text = text.format(*self.fmtargs, **self.fmtkwargs)
+                except (IndexError, KeyError, ValueError):
+                    pass
+            return text
         except Exception:
             return self.original or self.key
 
@@ -102,24 +113,26 @@ class LocalizedValueSpec(LocalizedSpec):
             return str(self.value)
 
 
-def L(key: str, *fmtargs: Any) -> LocalizedTextSpec:
-    """Create a LocalizedTextSpec for translatable text.
+def L(key: str, *fmtargs: Any, **fmtkwargs: Any) -> LocalizedTextSpec:
+    """Mark text as translatable, with optional `{}`-style interpolation.
 
-    Shorthand constructor that creates a text localization spec with the
-    translation key and optional format arguments.
+    The key is looked up in the translation catalog for the active locale, then
+    formatted with Python `str.format` — so placeholders use `{0}` / `{name}`
+    style. The spec re-resolves whenever the locale changes.
 
     Args:
-        key: The message ID or semantic key for translation lookup.
-        *fmtargs: Optional formatting arguments for string interpolation.
+        key: The source string or message id to translate.
+        *fmtargs: Positional values for `{0}`, `{1}`, … placeholders.
+        **fmtkwargs: Named values for `{name}` placeholders.
 
     Returns:
-        A LocalizedTextSpec instance.
+        A `LocalizedTextSpec` you can pass anywhere a widget takes text.
 
     Examples:
-        >>> spec = L("greeting", "World")
-        >>> # Will translate "greeting" with "World" as format argument
+        >>> L("Hello, {0}", name)             # positional
+        >>> L("Hello, {name}", name=user)     # named
     """
-    return LocalizedTextSpec(key=key, fmtargs=fmtargs, original=key)
+    return LocalizedTextSpec(key=key, fmtargs=fmtargs, fmtkwargs=fmtkwargs, original=key)
 
 
 def LV(value: Any, format_spec: FormatSpec) -> LocalizedValueSpec:

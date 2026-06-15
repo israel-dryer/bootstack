@@ -19,8 +19,8 @@ How it works
 `panel()` claims the sidebar as a blank container and returns it as a context
 manager — fill it with any widgets. You then drive the content area yourself
 through `shell.content` (also a container), typically by binding widgets to a
-:class:`Signal <bootstack.Signal>`. There is no provider cascade and no
-compaction.
+:class:`Signal <bootstack.Signal>`. Nothing is added or collapsed automatically —
+the panel is yours to fill and manage.
 
 .. code-block:: python
 

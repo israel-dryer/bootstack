@@ -5,9 +5,8 @@ An app is configured entirely through flat constructor keyword arguments, and
 that same configuration is read and changed at runtime through matching ``app.*``
 properties. What goes in comes back out symmetrically — ``bs.App(theme=...)`` in,
 ``app.theme`` out — so there is no separate settings object to construct, inject,
-or look up. The same surface is shared by :class:`App
-<bootstack.widgets.app.App>` and :class:`AppShell
-<bootstack.widgets.appshell.AppShell>`.
+or look up. The same surface is shared by :class:`App <bootstack.App>` and
+:class:`AppShell <bootstack.AppShell>`.
 
 .. code-block:: python
 
@@ -26,8 +25,8 @@ Reading and changing configuration
 ----------------------------------
 
 Every configuration option is a property on the app. Reading returns the current
-value; assigning changes it, and for the options the toolkit can change live
-(theme, locale, title) the change takes effect immediately:
+value; assigning changes it, and for the options that take effect live
+(theme, locale, title) the change applies immediately:
 
 .. code-block:: python
 
@@ -109,10 +108,15 @@ themes automatically when the user changes the OS appearance. See
 Localization
 ------------
 
-``locale=`` sets the active locale; ``localize_mode=`` controls whether widget
-text is auto-localized. The locale-derived formatting values are exposed as
-read-only properties (they are computed from the locale, so they update whenever
-``app.locale`` changes):
+``locale=`` sets the active locale. ``localize_mode=`` controls automatic text
+translation for the whole app — ``"auto"`` (the default — translate when a
+translation is registered for the locale, otherwise show the literal), ``True``
+(always), or ``False`` (never); an individual widget overrides it with
+``localize=``. Register your own translations with
+:func:`~bootstack.i18n.add_translations` — see :doc:`/reference/localization`.
+
+The locale-derived formatting values are exposed as read-only properties (they
+are computed from the locale, so they update whenever ``app.locale`` changes):
 
 .. code-block:: python
 

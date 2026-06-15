@@ -1,10 +1,10 @@
 import bootstack as bs
 
-with bs.App(title="Semantic Styling", size=(500, 360), theme="dark") as app:
+with bs.App(title="Semantic Styling", size=(600, 360)) as app:
     with bs.VStack(padding=20, gap=16):
         bs.Label("Accent Colors", font="heading-md[bold]")
         with bs.HStack(gap=8):
-            for accent in ("primary", "secondary", "success", "warning", "danger"):
+            for accent in ("primary", "secondary", "success", "info", "warning", "danger"):
                 bs.Button(accent.title(), accent=accent)
 
         bs.Label("Style Variants", font="heading-md[bold]")

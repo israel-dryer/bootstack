@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.radiogroup import RadioGroup as _InternalRadioGroup
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -45,6 +45,11 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         accent: Accent token applied to all buttons.
         disabled: If `True`, all buttons are non-interactive and dimmed.
             Defaults to `False`.
+        localize: Whether option labels (and the `title`) are translated through
+            the catalog — `True`, `False`, or `'auto'` (translate when a
+            translation is registered, otherwise show the literal). Defaults to
+            the app's `localize_mode`. Set `False` to keep proper nouns
+            untranslated; override a single option with its `localize` key.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
@@ -62,9 +67,11 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         title: str | None = None,
         accent: AccentToken | str | None = None,
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        self._localize = localize
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
@@ -81,6 +88,8 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if disabled:
             internal_kwargs["state"] = "disabled"
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         self._internal = _InternalRadioGroup(tk_master, **internal_kwargs)
 
@@ -91,6 +100,9 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         for record in records:
             icon, disabled = option_display(record)
             add_kwargs, _ = self._option_render(icon, disabled, record.text)
+            item_localize = self._resolve_localize(record)
+            if item_localize is not None:
+                add_kwargs["localize"] = item_localize
             self._internal.add(text=record.text, value=record.value, **add_kwargs)
 
         # Trace the signal so <<Change>> fires on the internal Frame whenever
@@ -167,6 +179,7 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
         *,
         icon: Any = None,
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a radio button to the group at runtime.
@@ -178,9 +191,16 @@ class RadioGroup(SelectionGroupMixin, PublicWidgetBase):
             icon: Optional icon spec rendered beside the label (alone when
                 `label` is blank).
             disabled: If `True`, the option is dimmed and cannot be selected.
+            localize: Translation mode for this option's label, overriding the
+                group's `localize=`. Defaults to the group setting.
         """
         resolved = value if value is not None else label
         add_kwargs, extras = self._option_render(icon, disabled, label)
+        item_localize = self._resolve_localize(override=localize)
+        if item_localize is not None:
+            add_kwargs["localize"] = item_localize
+        if localize is not None:
+            extras["localize"] = localize
         self._internal.add(text=label, value=resolved, **add_kwargs, **kwargs)
         self._add_option_record(label, resolved, extras)
 

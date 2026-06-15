@@ -60,6 +60,11 @@ shorthand, or when the event name is computed:
 
    widget.on("right_click", show_context_menu)
 
+The shorthand and the generic form are the same call: for an event named
+``change``, ``widget.on_change(handler)`` is shorthand for
+``widget.on("change", handler)``. The tables below name each event, so you can
+use either form.
+
 Events by widget
 ----------------
 
@@ -79,13 +84,13 @@ organized by payload type.)
      - Event
      - Handler receives
    * - :class:`~bootstack.Button`, :class:`~bootstack.Label`
-     - ``on_click``
+     - ``click``
      - :class:`~bootstack.events.Event` (native)
    * - :class:`~bootstack.ButtonGroup`
-     - ``on_click``
+     - ``click``
      - :class:`~bootstack.events.ButtonGroupClickEvent`
    * - :class:`~bootstack.MenuButton`, :class:`~bootstack.ContextMenu`
-     - ``on_select=`` (constructor)
+     - ``select``
      - :class:`~bootstack.events.MenuSelectEvent`
 
 **Text, number, and date fields** (TextField, NumberField, PathField,
@@ -101,19 +106,19 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - Event
      - Handler receives
    * - Any field
-     - ``on_input``
+     - ``input``
      - :class:`~bootstack.events.InputEvent`
    * - (same)
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.ChangeEvent`
    * - (same)
-     - ``on_submit``
+     - ``submit``
      - :class:`~bootstack.events.Event`
    * - (same)
-     - ``on_valid`` / ``on_invalid`` / ``on_validate``
+     - ``valid`` / ``invalid`` / ``validate``
      - :class:`~bootstack.events.ValidationEvent`
    * - (same)
-     - ``on_focus`` / ``on_blur``
+     - ``focus`` / ``blur``
      - :class:`~bootstack.events.Event`
 
 **Boolean and selection controls**
@@ -127,14 +132,14 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - Handler receives
    * - :class:`~bootstack.Checkbox`, :class:`~bootstack.Switch`,
        :class:`~bootstack.ToggleButton`
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.ChangeEvent`
    * - (same)
-     - ``on_check`` / ``on_uncheck``
+     - ``check`` / ``uncheck``
      - :class:`~bootstack.events.Event` (data-free)
    * - :class:`~bootstack.Select`, :class:`~bootstack.SelectButton`,
        :class:`~bootstack.RadioGroup`, :class:`~bootstack.ToggleGroup`
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.ChangeEvent`
 
 **Sliders and meters**
@@ -147,17 +152,17 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - Event
      - Handler receives
    * - :class:`~bootstack.Slider`, :class:`~bootstack.Gauge`
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.SliderEvent`
    * - :class:`~bootstack.Slider`
-     - ``on_commit``
+     - ``commit``
      - :class:`~bootstack.events.SliderCommitEvent`
    * - :class:`~bootstack.RangeSlider`
-     - ``on_change`` / ``on_commit``
+     - ``change`` / ``commit``
      - :class:`~bootstack.events.RangeSliderEvent` /
        :class:`~bootstack.events.RangeSliderCommitEvent`
    * - :class:`~bootstack.Calendar`
-     - ``on_select``
+     - ``select``
      - :class:`~bootstack.events.DateSelectEvent`
 
 **Lists, tables, and trees**
@@ -170,27 +175,27 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - Event
      - Handler receives
    * - :class:`~bootstack.ListView`
-     - ``on_item_click``, ``on_item_insert``, ``on_item_update``,
-       ``on_item_delete``
+     - ``item_click``, ``item_insert``, ``item_update``,
+       ``item_delete``
      - the record ``dict``
    * - :class:`~bootstack.DataTable`
-     - ``on_row_click``, ``on_row_double_click``, ``on_row_right_click``
+     - ``row_click``, ``row_double_click``, ``row_right_click``
      - :class:`~bootstack.events.RowEvent`
    * - :class:`~bootstack.DataTable`
-     - ``on_select``
+     - ``select``
      - :class:`~bootstack.events.SelectionEvent`
    * - :class:`~bootstack.DataTable`
-     - ``on_rows_insert``, ``on_rows_update``, ``on_rows_delete``,
-       ``on_rows_move``
+     - ``rows_insert``, ``rows_update``, ``rows_delete``,
+       ``rows_move``
      - :class:`~bootstack.events.RowsEvent`
    * - :class:`~bootstack.DataTable`
-     - ``on_export``
+     - ``export``
      - :class:`~bootstack.events.ExportEvent`
    * - :class:`~bootstack.Tree`
-     - ``on_select``
+     - ``select``
      - :class:`~bootstack.events.TreeSelectionEvent`
    * - :class:`~bootstack.Tree`
-     - ``on_activate``, ``on_expand``, ``on_collapse``
+     - ``activate``, ``expand``, ``collapse``
      - the ``TreeNode`` handle
 
 **Navigation and containers**
@@ -203,23 +208,23 @@ PasswordField, DateField, TimeField, SpinnerField) share one event set —
      - Event
      - Handler receives
    * - :class:`~bootstack.Tabs`
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.TabChangeEvent`
    * - :class:`~bootstack.Tabs`
-     - ``on_tab_close``
+     - ``tab_close``
      - :class:`~bootstack.events.TabCloseEvent`
    * - :class:`~bootstack.PageStack`, :class:`~bootstack.AppShell`
-     - ``on_page_change``
+     - ``page_change``
      - :class:`~bootstack.events.PageChangeEvent`
    * - :class:`~bootstack.AppShell`
-     - ``on_workspace_change``
+     - ``workspace_change``
      - :class:`~bootstack.events.WorkspaceChangeEvent`
    * - :class:`~bootstack.AppShell`
-     - ``on_sidebar_toggle`` / ``on_sidebar_mode_change``
+     - ``sidebar_toggle`` / ``sidebar_mode_change``
      - :class:`~bootstack.events.PaneToggleEvent` /
        :class:`~bootstack.events.DisplayModeEvent`
    * - :class:`~bootstack.Accordion`
-     - ``on_change``
+     - ``change``
      - :class:`~bootstack.events.AccordionChangeEvent`
 
 Each widget's own guide lists its complete event set; the tables above cover the

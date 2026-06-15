@@ -26,6 +26,13 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         help="Project template: 'basic' for single-view app, 'appshell' for sidebar navigation (default: basic)",
     )
     parser.add_argument(
+        "--nav",
+        choices=["single", "grouped", "master-detail", "workspaces"],
+        default="single",
+        help="Navigation style for the appshell template (default: single, "
+             "ignored for the basic template)",
+    )
+    parser.add_argument(
         "--simple",
         action="store_true",
         help="Create minimal project without assets or build configuration",
@@ -57,10 +64,14 @@ def run_start(args: argparse.Namespace) -> None:
     container = args.container
     theme = args.theme
     template = args.template
+    nav = args.nav
 
     # Warn if --container is used with appshell (it's ignored)
     if template == "appshell" and container != "grid":
         print("Note: --container is ignored for appshell template.")
+    # Warn if --nav is used with the basic template (it's ignored)
+    if template == "basic" and nav != "single":
+        print("Note: --nav is ignored for the basic template.")
 
     # Determine target directory
     if args.dir:
@@ -85,6 +96,7 @@ def run_start(args: argparse.Namespace) -> None:
         theme=theme,
         template=template,
         simple=simple,
+        nav=nav,
     )
 
     # Print success message

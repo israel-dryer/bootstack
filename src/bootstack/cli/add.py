@@ -88,8 +88,14 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
     i18n_parser.add_argument(
         "--languages",
         nargs="+",
-        default=["en"],
-        help="Languages to support (default: en)",
+        default=["es"],
+        help="Locale codes to scaffold (default: es)",
+    )
+    i18n_parser.add_argument(
+        "--po",
+        action="store_true",
+        help="Scaffold .po catalog files in assets/locales/ instead of a Python "
+             "translations module",
     )
     i18n_parser.set_defaults(func=run_add_i18n)
 
@@ -114,7 +120,7 @@ def run_add_view(args: argparse.Namespace) -> None:
     project_root = config_path.parent
     config = TtkbConfig.load(config_path)
 
-    # Reject in AppShell projects — views belong to the basic template
+    # Reject in AppShell projects - views belong to the basic template
     if config.app.template == "appshell":
         print("Error: 'bootstack add view' is for basic-template projects.")
         print("This project uses the 'appshell' template. Use 'bootstack add page' instead.")
@@ -198,14 +204,14 @@ def run_add_page(args: argparse.Namespace) -> None:
 
     print(f"Created page: {file_path.relative_to(project_root)}")
     print()
-    print("This created the file only — it is NOT yet shown in the sidebar.")
+    print("This created the file only - it is NOT yet shown in the sidebar.")
     print("To register it with the AppShell, paste these lines into main.py:")
     print()
     import_module = f"{module_name}.pages" if module_name else "<module>.pages"
     print(f"  from {import_module}.{file_path.stem} import {class_name}")
     scrollable_arg = ", scrollable=True" if scrollable else ""
-    print(f'  page = shell.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg})')
-    print(f"  {class_name}(page)")
+    print(f'  with shell.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg}):')
+    print(f"      {class_name}()")
 
 
 def run_add_dialog(args: argparse.Namespace) -> None:
@@ -252,38 +258,103 @@ def run_add_dialog(args: argparse.Namespace) -> None:
 
 
 def run_add_i18n(args: argparse.Namespace) -> None:
-    """Add internationalization support to the project."""
+    """Add internationalization support to the project.
+
+    By default this scaffolds a Python translations module (the simplest path -
+    no tooling, bundled with your code). With ``--po`` it scaffolds ``.po``
+    catalog files in ``assets/`` for a file-based workflow.
+    """
     languages = args.languages
 
-    # Find project configuration
     config_path = find_config()
     if config_path is None:
         print("Error: No bootstack.toml found. Are you in a bootstack project?")
         return
-
     project_root = config_path.parent
 
-    # Create locales directory structure
-    locales_dir = project_root / "locales"
+    if args.po:
+        _scaffold_po_catalogs(project_root, languages)
+    else:
+        config = TtkbConfig.load(config_path)
+        entry_path = Path(config.app.entry)
+        module_name = entry_path.parts[1] if len(entry_path.parts) > 1 else None
+        _scaffold_i18n_module(project_root, module_name, languages)
+
+
+def _scaffold_i18n_module(project_root, module_name, languages) -> None:
+    """Scaffold a Python translations module using add_translations()."""
+    if not module_name:
+        print("Error: could not determine the project module from bootstack.toml.")
+        return
+
+    target = project_root / "src" / module_name / "i18n.py"
+    if target.exists():
+        print(f"{target.relative_to(project_root)} already exists - not overwritten.")
+        return
+
+    target.write_text(_get_i18n_module_template(languages), encoding="utf-8")
+    print(f"Created: {target.relative_to(project_root)}")
+    print()
+    print("Wire it into main.py - call it before creating the app:")
+    print()
+    print(f"  from {module_name}.i18n import install_translations")
+    print("  install_translations()")
+    print("  with bs.AppShell(...):  # or bs.App(...)")
+    print("      ...")
+    print()
+    print("Then add your strings to i18n.py. Widget text auto-localizes - once a")
+    print('translation is registered, bs.Label("Save") shows it for the active locale.')
+
+
+def _scaffold_po_catalogs(project_root, languages) -> None:
+    """Scaffold .po catalog files in assets/locales/ for a file-based workflow."""
+    locales_dir = project_root / "assets" / "locales"
+    locales_dir.mkdir(parents=True, exist_ok=True)
 
     for lang in languages:
-        lang_dir = locales_dir / lang / "LC_MESSAGES"
-        lang_dir.mkdir(parents=True, exist_ok=True)
-
-        # Create .po file template
-        po_file = lang_dir / "messages.po"
+        po_file = locales_dir / f"{lang}.po"
         if not po_file.exists():
-            po_content = _get_po_template(lang)
-            po_file.write_text(po_content, encoding="utf-8")
+            po_file.write_text(_get_po_template(lang), encoding="utf-8")
             print(f"Created: {po_file.relative_to(project_root)}")
 
     print()
-    print("Internationalization support added!")
+    print("These .po files live under assets/, so the build bundles them already")
+    print("(assets/** is in [build.datas]). Fill in the translations, then load them")
+    print("at startup - before the app:")
     print()
-    print("Next steps:")
-    print("  1. Add translatable strings to your .po files")
-    print("  2. Compile with: msgfmt locales/<lang>/LC_MESSAGES/messages.po -o locales/<lang>/LC_MESSAGES/messages.mo")
-    print("  3. Use translations in code: bs.L('Hello')")
+    print("  from bootstack.i18n import load_po")
+    for lang in languages:
+        print(f'  load_po("assets/locales/{lang}.po")')
+    print()
+    print('Widget text then auto-localizes - bs.Label("Save") shows the translation.')
+
+
+def _get_i18n_module_template(languages) -> str:
+    """Python translations-module template using add_translations()."""
+    blocks = []
+    for lang in languages:
+        blocks.append(
+            f'    add_translations("{lang}", {{\n'
+            f'        # "Save": "...",\n'
+            f'        # "Cancel": "...",\n'
+            f'    }})'
+        )
+    body = "\n".join(blocks) if blocks else "    pass"
+    return (
+        '"""Application translations.\n'
+        "\n"
+        "Call install_translations() at startup, before creating the app, so the\n"
+        "strings are registered when widgets resolve their text. Widget text\n"
+        "auto-localizes: a plain string is translated when a translation exists.\n"
+        '"""\n'
+        "\n"
+        "from bootstack.i18n import add_translations\n"
+        "\n"
+        "\n"
+        "def install_translations() -> None:\n"
+        '    """Register the application\'s translations."""\n'
+        f"{body}\n"
+    )
 
 
 def _get_po_template(lang: str) -> str:

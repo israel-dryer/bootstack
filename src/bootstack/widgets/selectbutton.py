@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.optionmenu import OptionMenu as _InternalOptionMenu
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -44,6 +44,12 @@ class SelectButton(IconProperty, PublicWidgetBase):
         variant: Button style variant. Default `'solid'`.
         density: Padding density.
         icon: Bootstrap Icons name shown on the button beside the value.
+        localize: Whether option labels (and the selected label on the button
+            face) are translated through the catalog — `True`, `False`, or
+            `'auto'` (translate when a translation is registered, otherwise show
+            the literal). Defaults to the app's `localize_mode`. Set `False` to
+            keep proper nouns untranslated; override a single option with its
+            `localize` key.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
@@ -62,6 +68,7 @@ class SelectButton(IconProperty, PublicWidgetBase):
         variant: ButtonVariant = "default",
         density: WidgetDensity | None = None,
         icon: str | IconSpec | None = None,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -86,6 +93,8 @@ class SelectButton(IconProperty, PublicWidgetBase):
             internal_kwargs["density"] = density
         if icon is not None:
             internal_kwargs["icon"] = icon
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         self._internal = _InternalOptionMenu(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)

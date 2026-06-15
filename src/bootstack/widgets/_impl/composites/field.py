@@ -190,6 +190,10 @@ class Field(EntryMixin, Frame):
 
         self._entry: EntryWidget
         self._addons: dict[str, Button | Label | CheckToggle] = {}
+        # Addon keys that stay interactive while the field is read-only (opt-in
+        # via insert_addon(active_when_readonly=True)) — for read-only-safe
+        # actions like copy or reveal. They still dim when the field is disabled.
+        self._readonly_active: set[str] = set()
 
         # layout
         label_text = self._label_text or ''
@@ -519,6 +523,7 @@ class Field(EntryMixin, Frame):
             name: str | None = None,
             accent: str | None = None,
             pack_options: dict[str, Any] = None,
+            active_when_readonly: bool = False,
             **kwargs: Any
     ) -> FieldAddonWidget:
         """Insert a widget addon before or after the entry input.
@@ -546,6 +551,10 @@ class Field(EntryMixin, Frame):
             pack_options: Optional dictionary of additional pack() options to apply when placing the addon widget.
                 Common options include padx, pady, etc. The side and after/before options are set automatically based
                 on position.
+            active_when_readonly: If True, the addon stays interactive while the
+                field is read-only (for read-only-safe actions like copy or
+                reveal). It still dims when the field is fully disabled. Default
+                False — the addon follows the field's read-only state.
             **kwargs: Additional keyword arguments passed to the widget constructor.
                 For Button: text, command, icon, accent, variant, etc.
                 For Label: text, icon, image, accent, etc.
@@ -572,6 +581,8 @@ class Field(EntryMixin, Frame):
         instance = widget(master=self._field, accent=accent, **kwargs)
         key = name or str(instance)
         self._addons[key] = instance
+        if active_when_readonly:
+            self._readonly_active.add(key)
 
         # configure layout
         options = pack_options or {}
@@ -589,6 +600,19 @@ class Field(EntryMixin, Frame):
         instance.bind('<FocusOut>', lambda _: self._field.state(['!focus']), add=True)
 
         return instance
+
+    def remove_addon(self, key: str) -> None:
+        """Remove a previously-inserted addon by its key.
+
+        Args:
+            key: The addon's name (as passed to or returned by `insert_addon`).
+
+        Raises:
+            KeyError: If no addon with that key exists.
+        """
+        instance = self._addons.pop(key)
+        self._readonly_active.discard(key)
+        instance.destroy()
 
     def _reserve_message_space(self) -> None:
         if not self._show_messages:
@@ -616,7 +640,21 @@ class Field(EntryMixin, Frame):
                 pass
 
     def _sync_addon_state(self, event: Any = None) -> None:
-        """Ensure addons match the entry's interactivity state."""
-        entry_states = self._entry.state()
-        disabled = 'disabled' in entry_states or 'readonly' in entry_states
-        self._set_addons_state(disabled)
+        """Match each addon to the field's interactivity state.
+
+        A `disabled` field dims every addon. A `readonly` field dims its addons
+        too — most act on the value (clear, the spin buttons), so leaving them
+        live would let the user mutate a field that is supposed to be
+        uneditable. Addons inserted with `active_when_readonly=True` (read-only
+        safe actions, e.g. copy or reveal) are the exception: they stay live
+        while read-only, but still dim when the field is fully disabled.
+        """
+        states = self._entry.state()
+        fully_disabled = 'disabled' in states
+        readonly = 'readonly' in states
+        for key, item in self._addons.items():
+            off = fully_disabled or (readonly and key not in self._readonly_active)
+            try:
+                item.configure(state='disabled' if off else '!disabled')
+            except TclError:
+                pass

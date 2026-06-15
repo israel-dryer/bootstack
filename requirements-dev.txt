@@ -1,12 +1,21 @@
-# Localization
-Babel>=2.12
+# Development dependencies — runtime + docs + tooling.
+# Install the package editable alongside these: `pip install -e .`
 
-# Build & Publishing
+-r requirements.txt
+
+# Docs (mirror the [docs] extra in pyproject.toml)
+sphinx>=7.2
+pydata-sphinx-theme
+sphinx-design
+sphinx-copybutton
+sphinx-autobuild
+
+# Build & publishing
 build>=1.0
 twine>=5.0
 bump-my-version>=1.0
 
-# Code Quality
+# Code quality & tests
 ruff>=0.8
 mypy>=1.0
 pytest>=8.0

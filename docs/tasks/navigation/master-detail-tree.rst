@@ -17,13 +17,13 @@ How it works
 ------------
 
 `tree_nav` builds the sidebar from a hierarchy and **returns the** `Tree`
-**driving it**. Decorate a builder with ``@shell.detail`` to render the selected
-node, received as a record dict (its label is ``text``). A tree opens with
-nothing selected, so a ``placeholder`` shows in the content area until a node is
+**driving it**. Decorate a builder with `@shell.detail` to render the selected
+node, received as a record dict (its label is `text`). A tree opens with
+nothing selected, so a `placeholder` shows in the content area until a node is
 picked.
 
-Declare the hierarchy inline with ``nodes=`` (each a ``{"label", "icon",
-"children", ...}`` spec; extra keys ride along as the node's data):
+Declare the hierarchy inline with `nodes=` (each a `{"label", "icon",
+"children", ...}` spec; extra keys ride along as the node's data):
 
 .. code-block:: python
 
@@ -37,12 +37,12 @@ Declare the hierarchy inline with ``nodes=`` (each a ``{"label", "icon",
    def show(node):
        bs.Label(node["text"], font="heading-lg")
 
-For large or dynamic hierarchies, pass ``source=`` instead — a flat
+For large or dynamic hierarchies, pass `source=` instead — a flat
 adjacency-list :doc:`data source </reference/data-sources>` where each row names
-its parent (``tree_nav(source=files, parent_field="parent_id", label_field="name")``);
+its parent (`tree_nav(source=files, parent_field="parent_id", label_field="name")`);
 the tree then loads each branch lazily as it expands.
 
-Because ``tree_nav`` hands back the `Tree`, you can drive the view — the file
+Because `tree_nav` hands back the `Tree`, you can drive the view — the file
 explorer above opens expanded with a file selected:
 
 .. code-block:: python

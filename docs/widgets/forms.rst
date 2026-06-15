@@ -263,7 +263,10 @@ and ``result`` keys. When clicked, ``form.result`` is set to that button's
        submit(form.value)
 
 Button ``role`` controls the visual style: ``'primary'``, ``'secondary'``,
-``'danger'``, or ``'cancel'``.
+``'danger'``, or ``'cancel'``. A plain string button carries no role, so it
+renders in the neutral default style regardless of its position in the row — give
+a button a ``role`` (through a dict or ``DialogButton``) to make it primary or
+destructive.
 
 .. note::
 

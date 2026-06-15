@@ -33,6 +33,7 @@ class FieldAddonMixin:
         accent: AccentToken | str | None = None,
         on_click: Callable[[], Any] | None = None,
         signal: "Signal | None" = None,
+        active_when_readonly: bool = False,
     ) -> Any:
         """Insert a small widget inside the field border, before or after the input.
 
@@ -55,6 +56,12 @@ class FieldAddonMixin:
                 addon is activated.
             signal: Reactive `Signal[bool]` bound to a `'toggle'` addon's
                 on/off state.
+            active_when_readonly: Keep the addon interactive while the field is
+                read-only. Off by default, so addons follow the field's
+                read-only state — appropriate since most act on the value (a
+                clear button, the spin buttons). Set `True` only for a
+                read-only-safe action such as a copy or reveal button; it still
+                dims when the field is fully disabled.
 
         Returns:
             The created addon widget instance.
@@ -70,6 +77,11 @@ class FieldAddonMixin:
         import importlib
         cls = getattr(importlib.import_module(module_path), cls_name)
 
+        if name is None:
+            seq = getattr(self, "_addon_seq", 0)
+            self._addon_seq = seq + 1
+            name = f"addon_{seq}"
+
         addon_kwargs: dict[str, Any] = {}
         if text is not None:
             addon_kwargs["text"] = text
@@ -80,7 +92,61 @@ class FieldAddonMixin:
         if signal is not None:
             addon_kwargs["signal"] = signal
 
-        return self._internal.insert_addon(cls, position, name=name, accent=accent, **addon_kwargs)
+        return self._internal.insert_addon(
+            cls, position, name=name, accent=accent,
+            active_when_readonly=active_when_readonly, **addon_kwargs,
+        )
+
+    def update_addon(
+        self,
+        name: str,
+        *,
+        text: str | None = None,
+        icon: str | None = None,
+        accent: AccentToken | str | None = None,
+        on_click: Callable[[], Any] | None = None,
+    ) -> None:
+        """Reconfigure an existing addon in place.
+
+        Only the options you pass are changed. Use this, for example, to flip a
+        toggle addon's label between two units, or swap a button's icon.
+
+        Args:
+            name: The addon's name (as passed to `insert_addon`).
+            text: New text for the addon.
+            icon: New Bootstrap Icons name for the addon.
+            accent: New accent token for the addon.
+            on_click: New click handler for a `'button'` or `'toggle'` addon.
+
+        Raises:
+            KeyError: If no addon with that name exists.
+        """
+        try:
+            addon = self._internal.addons[name]
+        except KeyError:
+            raise KeyError(f"no addon named {name!r}") from None
+        config: dict[str, Any] = {}
+        if text is not None:
+            config["text"] = text
+        if icon is not None:
+            config["icon"] = icon
+        if accent is not None:
+            config["accent"] = accent
+        if on_click is not None:
+            config["command"] = on_click
+        if config:
+            addon.configure(**config)
+
+    def remove_addon(self, name: str) -> None:
+        """Remove an addon inserted with `insert_addon()`.
+
+        Args:
+            name: The addon's name (as passed to `insert_addon`).
+
+        Raises:
+            KeyError: If no addon with that name exists.
+        """
+        self._internal.remove_addon(name)
 
     @property
     def addons(self) -> dict[str, Any]:

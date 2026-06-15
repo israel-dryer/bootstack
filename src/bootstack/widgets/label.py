@@ -55,6 +55,10 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
         accent: Semantic color applied to the text.
         variant: Style variant token.
         surface: Background surface context.
+        localize: Whether the text is translated through the catalog — `True`,
+            `False`, or `'auto'` (translate when a translation is registered,
+            otherwise show the literal). Defaults to the app's `localize_mode`.
+            Set `False` to keep a proper noun or identifier untranslated.
         parent: Explicit parent widget. If omitted, the current context-stack
             container is used.
     """
@@ -80,6 +84,7 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
         accent: AccentToken | Literal['muted'] | str | None = None,
         variant: VariantToken | str | None = None,
         surface: SurfaceToken | str | None = None,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -136,6 +141,8 @@ class Label(IconProperty, ImageProperty, PublicWidgetBase):
             internal_kwargs["variant"] = variant
         if surface is not None:
             internal_kwargs["surface"] = surface
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         self._internal = self._internal_class(tk_master, **internal_kwargs)
         if deferred_image is not None:

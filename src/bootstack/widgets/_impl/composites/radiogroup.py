@@ -28,6 +28,7 @@ class RadioGroupKwargs(TypedDict, total=False):
     show_indicator: bool
     show_border: bool
     surface: SurfaceToken | str
+    localize: bool | Literal['auto']
     style_options: dict[str, Any]
     # Frame options
     padding: Any
@@ -77,6 +78,9 @@ class RadioGroup(Frame):
         self._labeltext = kwargs.pop('text', None)
         self._labelanchor = kwargs.pop('labelanchor', 'n')
         self._state = kwargs.pop('state', 'normal')
+        # Localization mode for the group label (items are localized by the
+        # public wrapper per-button). None means inherit the app default.
+        self._localize = kwargs.pop('localize', None)
         self._show_indicator = kwargs.pop('show_indicator', True)
 
         # Handle signal/variable/value
@@ -127,6 +131,10 @@ class RadioGroup(Frame):
         # Build the UI
         self._build_ui()
 
+    def _label_localize_kwargs(self) -> dict:
+        """Forward the group's localize mode to the title Label when set."""
+        return {} if self._localize is None else {"localize": self._localize}
+
     def _build_ui(self):
         """Construct the widget layout."""
         # Create button container
@@ -134,7 +142,7 @@ class RadioGroup(Frame):
 
         # Create label if text provided
         if self._labeltext:
-            self._label = Label(self, text=self._labeltext)
+            self._label = Label(self, text=self._labeltext, **self._label_localize_kwargs())
 
         # Position based on labelanchor
         self._update_layout()
@@ -445,7 +453,7 @@ class RadioGroup(Frame):
         self._labeltext = value
         if value and not self._label:
             # Create label if it doesn't exist
-            self._label = Label(self, text=value)
+            self._label = Label(self, text=value, **self._label_localize_kwargs())
             self._update_layout()
         elif self._label:
             if value:

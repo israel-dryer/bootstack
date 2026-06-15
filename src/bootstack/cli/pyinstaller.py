@@ -46,16 +46,27 @@ ENTRY_POINT = PROJECT_ROOT / config.app.entry
 WINDOWED = config.build.windowed if config.build else True
 ONEFILE = config.build.onefile if config.build else False
 
-# Icon handling
+# Icon handling — resolve the icon for the platform this build runs on
+# (PyInstaller can't cross-compile, so we only need the host's format).
+_HOST_KEY = {{"win32": "windows", "darwin": "macos", "linux": "linux"}}.get(sys.platform)
+_HOST_EXT = {{"win32": ".ico", "darwin": ".icns"}}.get(sys.platform, ".png")
+
 ICON_PATH = None
 _icon_cfg = config.build.icon if config.build else None
-if _icon_cfg and _icon_cfg.path:
-    icon_candidate = PROJECT_ROOT / _icon_cfg.path
-    if icon_candidate.exists():
-        ICON_PATH = str(icon_candidate)
+
+# A host-specific path (windows/macos/linux) wins over the generic path.
+_icon_path = None
+if _icon_cfg:
+    _host_specific = getattr(_icon_cfg, _HOST_KEY, None) if _HOST_KEY else None
+    _icon_path = _host_specific or _icon_cfg.path
+
+if _icon_path:
+    _candidate = PROJECT_ROOT / _icon_path
+    if _candidate.exists():
+        ICON_PATH = str(_candidate)
 elif _icon_cfg and _icon_cfg.glyph:
-    # Generate an .ico from a glyph. No app runs during a build, so colors must
-    # be hex — a theme token cannot be resolved and would fail to render.
+    # Render the glyph into the host platform's icon format. No app runs during a
+    # build, so colors must be hex — a theme token cannot be resolved.
     if not (_icon_cfg.background.startswith("#") and _icon_cfg.foreground.startswith("#")):
         print(
             "[build.icon] background/foreground must be hex colors (e.g. "
@@ -64,7 +75,7 @@ elif _icon_cfg and _icon_cfg.glyph:
     else:
         try:
             from bootstack.images import AppIcon
-            out = PROJECT_ROOT / "build" / "app-icon.ico"
+            out = PROJECT_ROOT / "build" / ("app-icon" + _HOST_EXT)
             out.parent.mkdir(parents=True, exist_ok=True)
             AppIcon(
                 _icon_cfg.glyph,
@@ -78,10 +89,7 @@ elif _icon_cfg and _icon_cfg.glyph:
             print(f"Could not generate app icon from glyph {{_icon_cfg.glyph!r}}: {{exc}}")
 
 if ICON_PATH is None:
-    # Fall back to the bundled bootstack launch icon (the same artwork
-    # the runtime sets via wm_iconphoto, just rendered as a multi-size
-    # .ico for Windows). Users can override by setting [build.icon] path
-    # in bootstack.toml.
+    # Fall back to the bundled bootstack launch icon. Override with [build.icon].
     try:
         import bootstack
         default_icon = Path(bootstack.__file__).parent / "assets" / "bootstack.ico"
@@ -144,6 +152,9 @@ hiddenimports = [
     "dateutil",
     "dateparser",
 ]
+# Extra hidden imports from [build] hidden_imports
+if config.build and config.build.hidden_imports:
+    hiddenimports += list(config.build.hidden_imports)
 
 # babel.bin is a CLI script package whose __init__.py calls exit(1) when
 # imported without args; PyInstaller's binary-dependency analyzer
@@ -152,6 +163,9 @@ hiddenimports = [
 excludes = [
     "babel.bin",
 ]
+# Extra excludes from [build] excludes
+if config.build and config.build.excludes:
+    excludes += list(config.build.excludes)
 
 
 # =============================================================================

@@ -18,6 +18,14 @@ Hello bootstack
 
    app.run()
 
+.. image:: /_static/examples/quickstart-hello-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: The Hello bootstack window — light theme
+
+.. image:: /_static/examples/quickstart-hello-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: The Hello bootstack window — dark theme
+
 A few things to notice:
 
 - ``with bs.App(...) as app:`` creates the window and pushes it onto the
@@ -51,6 +59,14 @@ For apps with a sidebar and multiple pages, use ``AppShell``:
        shell.navigate("home")
 
    shell.run()
+
+.. image:: /_static/examples/quickstart-navigation-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: An AppShell navigation window — light theme
+
+.. image:: /_static/examples/quickstart-navigation-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: An AppShell navigation window — dark theme
 
 ``shell.add_page()`` returns a page container. Use it as a context manager
 to place widgets inside it. ``shell.navigate()`` sets the initially visible

@@ -9,10 +9,15 @@ public API.
 from .msgcat import MessageCatalog
 from .intl_format import IntlFormatter
 from .specs import L, LV
+from .catalog import add_translation, add_translations, load_po, load_translations
 
-# Public surface is L / LV; MessageCatalog and IntlFormatter stay importable
-# (internal engines) but are intentionally excluded from __all__.
+# Public surface: L / LV and the catalog-extension helpers. MessageCatalog and
+# IntlFormatter stay importable (internal engines) but are excluded from __all__.
 __all__ = [
     "L",
     "LV",
+    "add_translation",
+    "add_translations",
+    "load_po",
+    "load_translations",
 ]

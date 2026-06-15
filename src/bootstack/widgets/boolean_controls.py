@@ -9,7 +9,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import Subscription, ChangeEvent
 from bootstack.streams import Stream
-from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant
+from bootstack.widgets.types import AccentToken, Event, WidgetDensity, ButtonVariant, LocalizeMode
 
 if TYPE_CHECKING:
     from bootstack.signals import Signal
@@ -37,6 +37,7 @@ class _BooleanControlBase(PublicWidgetBase):
         on_change: Callable[[], Any] | None = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
+        localize: LocalizeMode | None = None,
         _tristate: bool = False,
         _internal_options: dict[str, Any] | None = None,
         parent: Any = None,
@@ -71,6 +72,8 @@ class _BooleanControlBase(PublicWidgetBase):
             internal_kwargs["state"] = "disabled"
         if accent is not None:
             internal_kwargs["accent"] = accent
+        if localize is not None:
+            internal_kwargs["localize"] = localize
         # Per-subclass styling options (icons, variant, density, …) — only the
         # ones a given control actually supports are passed in by the subclass.
         if _internal_options:
@@ -374,14 +377,17 @@ class ToggleButton(_BooleanControlBase):
             Defaults to `False`.
         on_change: Shorthand callback fired on every toggle. Equivalent to
             `btn.on_change(fn)`.
+        icon: Bootstrap Icons name shown in both states — the fallback for
+            `on_icon`/`off_icon` when those are not given. Pass `on_icon`/
+            `off_icon` to override the icon per state.
         on_icon: Bootstrap Icons name shown when the button is active/pressed.
             Use alone to swap icon on activation, or pair with `off_icon=`
             to show different icons per state,
-            e.g. `on_icon="star-fill", off_icon="star"`.
+            e.g. `on_icon="star-fill", off_icon="star"`. Falls back to `icon`.
         off_icon: Bootstrap Icons name shown when the button is inactive.
-            Can be used alone or paired with `on_icon=`.
+            Can be used alone or paired with `on_icon=`. Falls back to `icon`.
         icon_only: If `True`, shows only the icon with no label text.
-            Requires `on_icon=` or `off_icon=` to be set.
+            Requires `icon=`, `on_icon=`, or `off_icon=` to be set.
         disabled: If `True`, widget is non-interactive and dimmed.
             Defaults to `False`.
         accent: Accent token applied to the button when active.
@@ -404,6 +410,7 @@ class ToggleButton(_BooleanControlBase):
         checked_value: Any = True,
         unchecked_value: Any = False,
         on_change: Callable[[], Any] | None = None,
+        icon: str | None = None,
         on_icon: str | None = None,
         off_icon: str | None = None,
         icon_only: bool = False,
@@ -415,10 +422,13 @@ class ToggleButton(_BooleanControlBase):
         **kwargs: Any,
     ) -> None:
         options: dict[str, Any] = {}
-        if on_icon is not None:
-            options["on_icon"] = on_icon
-        if off_icon is not None:
-            options["off_icon"] = off_icon
+        # `icon` is the fallback for both states; on_icon/off_icon override it.
+        resolved_on = on_icon if on_icon is not None else icon
+        resolved_off = off_icon if off_icon is not None else icon
+        if resolved_on is not None:
+            options["on_icon"] = resolved_on
+        if resolved_off is not None:
+            options["off_icon"] = resolved_off
         if icon_only:
             options["icon_only"] = True
         if variant is not None:
