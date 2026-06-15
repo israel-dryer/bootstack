@@ -7,6 +7,7 @@ One scene per recipe, each a self-contained field with addons. Regenerate with::
 import datetime
 
 import bootstack as bs
+from bootstack.clipboard import set_clipboard
 
 
 def search():
@@ -49,7 +50,7 @@ def copy():
         key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, fill="x")
 
         def do_copy():
-            key.set_clipboard(key.value)
+            set_clipboard(key.value)
 
         key.insert_addon("button", "after", name="copy", icon="clipboard",
                          on_click=do_copy, active_when_readonly=True)

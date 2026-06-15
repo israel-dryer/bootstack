@@ -71,6 +71,7 @@ MOVED = {
     "bootstack.scheduling": ["Schedule", "Job"],
     "bootstack.shortcuts": ["Shortcuts", "Shortcut", "get_shortcuts"],
     "bootstack.store": ["Store"],
+    "bootstack.clipboard": ["get_clipboard", "set_clipboard"],
     "bootstack.images": ["Image", "get_icon", "AppIcon", "list_icons"],
     "bootstack.errors": [
         "BootstackError", "UnknownEventError", "ParentResolutionError",

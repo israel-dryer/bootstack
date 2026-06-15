@@ -1,5 +1,5 @@
-Dialogs & Alerts
-================
+Showing Dialogs
+===============
 
 A dialog interrupts the app to tell the user something or to collect one quick
 answer. bootstack ships ready-made dialog **verbs** for the common cases — each

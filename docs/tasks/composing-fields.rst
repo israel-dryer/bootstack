@@ -1,5 +1,5 @@
-Composing Custom Fields
-=======================
+Composing Fields
+================
 
 Every bootstack field — :class:`~bootstack.TextField`,
 :class:`~bootstack.NumberField`, :class:`~bootstack.DateField`, and the rest —
@@ -109,10 +109,12 @@ writes the field to the clipboard, so it opts back in with
 
 .. code-block:: python
 
+   from bootstack.clipboard import set_clipboard
+
    key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, fill="x")
 
    def do_copy():
-       key.set_clipboard(key.value)
+       set_clipboard(key.value)
 
    key.insert_addon("button", "after", name="copy", icon="clipboard",
                     on_click=do_copy, active_when_readonly=True)
