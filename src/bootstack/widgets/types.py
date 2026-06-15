@@ -248,6 +248,10 @@ class OptionDict(TypedDict, total=False):
     """Optional icon spec rendered beside the label — alone when `text` is blank."""
     disabled: bool
     """When `True`, the option is dimmed and cannot be selected by the user."""
+    localize: "bool | Literal['auto']"
+    """Per-option translation mode — `True`, `False`, or `'auto'`. Overrides the
+    widget's group-level `localize=` for just this option. Set `False` to keep a
+    proper noun or identifier untranslated."""
 
 
 Option = str | tuple[str, Any] | OptionDict

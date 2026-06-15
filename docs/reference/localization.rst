@@ -199,6 +199,31 @@ proper noun, brand name, or identifier from being translated:
 
    bs.Label("Acme Corp", localize=False)   # never translated
 
+The selection groups — :class:`~bootstack.RadioGroup`,
+:class:`~bootstack.ToggleGroup`, :class:`~bootstack.ButtonGroup`,
+:class:`~bootstack.SelectButton`, :class:`~bootstack.Radio`, and
+:class:`~bootstack.RadioToggleButton` — accept ``localize=`` too. On a group it
+governs every option label (and the ``RadioGroup`` title); a single option can
+override it, either through its ``add()`` call or a ``localize`` key in the
+option's data bag:
+
+.. code-block:: python
+
+   # Whole group untranslated (language names stay in their own language)
+   bs.RadioGroup(["English", "Español", "Français"], localize=False)
+
+   # Group translates, but one proper-noun option opts out
+   bs.SelectButton([
+       "Save",
+       "Cancel",
+       {"text": "GitHub", "value": "gh", "localize": False},
+   ])
+
+   # Per-item override when adding at runtime
+   group = bs.ButtonGroup()
+   group.add("Save")                    # translated
+   group.add("Acme", localize=False)    # kept verbatim
+
 bootstack's own widget text (dialog buttons, built-in labels) is already
 translated for every bundled locale out of the box — see below.
 

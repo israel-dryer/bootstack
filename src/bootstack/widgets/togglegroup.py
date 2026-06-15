@@ -52,6 +52,11 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         variant: Button style variant. Default `'solid'`.
         disabled: If `True`, all buttons are non-interactive and dimmed.
             Defaults to `False`.
+        localize: Whether option labels are translated through the catalog —
+            `True`, `False`, or `'auto'` (translate when a translation is
+            registered, otherwise show the literal). Defaults to the app's
+            `localize_mode`. Set `False` to keep proper nouns untranslated;
+            override a single option with its `localize` key.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
@@ -70,9 +75,11 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         accent: AccentToken | str | None = None,
         variant: ButtonVariant = "default",
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        self._localize = localize
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
@@ -102,6 +109,9 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         for record in records:
             icon, disabled = option_display(record)
             add_kwargs, _ = self._option_render(icon, disabled, record.text)
+            item_localize = self._resolve_localize(record)
+            if item_localize is not None:
+                add_kwargs["localize"] = item_localize
             self._internal.add(text=record.text, value=record.value, **add_kwargs)
 
         # Trace signal → <<Change>> for consistent Subscription-based on_change().
@@ -173,6 +183,7 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
         *,
         icon: Any = None,
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         **kwargs: Any,
     ) -> None:
         """Add a toggle button at runtime.
@@ -183,9 +194,16 @@ class ToggleGroup(SelectionGroupMixin, PublicWidgetBase):
             icon: Optional icon spec rendered beside the label (alone when
                 `label` is blank).
             disabled: If `True`, the option is dimmed and cannot be selected.
+            localize: Translation mode for this option's label, overriding the
+                group's `localize=`. Defaults to the group setting.
         """
         resolved = value if value is not None else label
         add_kwargs, extras = self._option_render(icon, disabled, label)
+        item_localize = self._resolve_localize(override=localize)
+        if item_localize is not None:
+            add_kwargs["localize"] = item_localize
+        if localize is not None:
+            extras["localize"] = localize
         self._internal.add(text=label, value=resolved, **add_kwargs, **kwargs)
         self._add_option_record(label, resolved, extras)
 

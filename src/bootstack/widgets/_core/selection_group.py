@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from bootstack.widgets._core.options import OptionRecord, record_to_dict
+from bootstack.widgets._core.options import OptionRecord, record_to_dict, option_localize
 
 
 class SelectionGroupMixin:
@@ -61,6 +61,29 @@ class SelectionGroupMixin:
             add_kwargs["state"] = "disabled"
             extras["disabled"] = True
         return add_kwargs, extras
+
+    def _resolve_localize(self, record: OptionRecord | None = None, override: Any = None) -> Any:
+        """Resolve the effective `localize` for an option.
+
+        Precedence: an explicit per-item `override` (from `add(localize=)`), then
+        the option's own `localize` key (carried in its data bag), then the
+        widget's group-level `localize=`. `None` at every level means defer to
+        the app's `localize_mode`, so it is not forwarded to the item.
+
+        Args:
+            record: The option's normalized record, when adding from options.
+            override: A per-call `localize` from `add()`.
+
+        Returns:
+            The resolved `localize` mode, or `None` to inherit the app default.
+        """
+        if override is not None:
+            return override
+        if record is not None:
+            item = option_localize(record)
+            if item is not None:
+                return item
+        return getattr(self, "_localize", None)
 
     def remove(self, value: Any) -> None:
         """Remove the option identified by `value`.

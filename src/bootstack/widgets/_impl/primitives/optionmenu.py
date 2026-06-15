@@ -29,6 +29,7 @@ class OptionMenuKwargs(StyledKwargs, total=False):
     default: Any
     textvariable: Any
     textsignal: Signal[str]
+    localize: Any
     show_dropdown_button: bool
     dropdown_button_icon: str | dict
 
@@ -90,24 +91,41 @@ class OptionMenu(MenuButton):
         )
 
         self._bind_id = None
+        # Localization mode for the option labels + button face. None defers to
+        # the app's localize_mode; False keeps the raw labels untranslated.
+        self._localize = kwargs.pop('localize', None)
         # Normalize options once; keep bidirectional text<->value maps so the
         # menu can display text while the public value stays in value-space.
         self._records = normalize_options(options)
         self._rebuild_option_maps()
 
-        # Store the textvariable if provided, or create a new one. The variable
-        # holds the DISPLAY TEXT (it drives the button face + radio highlight).
+        # Store the textvariable if provided, or create a new one. This variable
+        # holds the raw VALUE-KEY text (untranslated): it drives the radio
+        # highlight, the public value/selection, and <<Change>> in value-space.
         self._textvariable = kwargs.pop('textvariable', None)
         if self._textvariable is None:
             self._textvariable = StringVar(value=self._resolve_initial_text(value))
 
-        super().__init__(master, text=self._textvariable.get(), style_options=style_options, **kwargs)
+        # A separate variable backs the visible button face, holding the
+        # (optionally translated) DISPLAY text — decoupled from the value key so
+        # the face can localize while value-space stays raw.
+        self._display_var = StringVar(value=self._display_text(self._textvariable.get()))
 
-        # Configure the menubutton to use the textvariable
+        # The mixin must not touch the face (we own its translation), so disable
+        # its localization; OptionMenu localizes the face via `_display_var`.
+        super().__init__(master, text=self._display_var.get(), localize=False, style_options=style_options, **kwargs)
+
+        # Bind the textsignal to the value-key variable (drives <<Change>> + the
+        # public signal), then point the visible face at the display variable.
         self.configure(textvariable=self._textvariable)
+        self._ttk_base.configure(self, textvariable=self._display_var)
 
-        # Bind signal to change event
+        # Bind signal to change event (also keeps the face display in sync)
         self._bind_id = self._bind_change_event()
+        self._sync_display()
+        # The locale-change event is generated on the root; bind there (not on
+        # self) so the face re-translates live, matching the mixin's pattern.
+        self.winfo_toplevel().bind('<<LocaleChanged>>', lambda _e: self._sync_display(), add="+")
 
         # Create menu items that update the shared variable
         self._context_menu = self._build_context_menu()
@@ -116,6 +134,36 @@ class OptionMenu(MenuButton):
         self.bind('<Button-1>', lambda _: self.show_menu(), add="+")
         self.bind('<Return>', lambda _: self.show_menu(), add="+")
         self.bind('<KP_Enter>', lambda _: self.show_menu(), add="+")
+
+    def _effective_localize(self) -> Any:
+        """Resolve the active localize mode, deferring to the app when unset."""
+        if self._localize is not None:
+            return self._localize
+        try:
+            from bootstack._runtime.app import get_app_settings
+            return get_app_settings().localize_mode
+        except Exception:
+            return 'auto'
+
+    def _display_text(self, raw: str) -> str:
+        """Map a raw value-key label to its display text under the active mode.
+
+        Returns the label unchanged when localization is off or no translation
+        is registered; otherwise the catalog translation.
+        """
+        if not raw:
+            return ''
+        if self._effective_localize() is False:
+            return raw
+        try:
+            from bootstack.i18n import MessageCatalog
+            return MessageCatalog.translate(raw) or raw
+        except Exception:
+            return raw
+
+    def _sync_display(self) -> None:
+        """Refresh the visible face from the current value-key text."""
+        self._display_var.set(self._display_text(self._textvariable.get()))
 
     def _rebuild_option_maps(self) -> None:
         """Rebuild the text<->value lookups from the current records.
@@ -150,15 +198,22 @@ class OptionMenu(MenuButton):
         raise ValueError(f"{value!r} is not one of the options")
 
     def _bind_change_event(self):
-        """(Re)bind textsignal to emit <<Change>> Tk events (in value-space)."""
+        """(Re)bind textsignal to emit <<Change>> Tk events (in value-space).
+
+        The same subscription keeps the localized face in sync, since the value
+        key changes whenever a selection is made.
+        """
         if self._bind_id is not None:
             self.textsignal.unsubscribe(self._bind_id)
-        return self.textsignal.subscribe(
-            lambda text: self.event_generate(
+
+        def _on_change(text: str) -> None:
+            self._sync_display()
+            self.event_generate(
                 '<<Change>>',
                 data=ChangeEvent(value=self._value_by_text.get(text, text) if text else None),
             )
-        )
+
+        return self.textsignal.subscribe(_on_change)
 
     def _build_context_menu(self):
         # Affordance baked into the button image (focus ring + border line in
@@ -172,6 +227,8 @@ class OptionMenu(MenuButton):
         menu_items = []
         for rec in self._records:
             icon, disabled = option_display(rec)
+            # A per-option localize key overrides the widget-level mode.
+            item_localize = rec.extras.get("localize", self._localize)
             menu_items.append(
                 ContextMenuItem(
                     type="radiobutton",
@@ -180,6 +237,7 @@ class OptionMenu(MenuButton):
                     value=rec.text,
                     icon=icon,
                     disabled=disabled,
+                    localize=item_localize,
                 )
             )
         return ContextMenu(
@@ -207,8 +265,8 @@ class OptionMenu(MenuButton):
 
     @property
     def text(self) -> str:
-        """The display label currently shown on the button."""
-        return self._textvariable.get()
+        """The display label currently shown on the button (translated)."""
+        return self._display_var.get()
 
     @property
     def selection(self) -> dict | None:

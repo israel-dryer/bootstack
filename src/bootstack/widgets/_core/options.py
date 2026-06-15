@@ -175,6 +175,23 @@ def option_display(record: OptionRecord) -> tuple[Any, bool]:
     return record.extras.get("icon"), bool(record.extras.get("disabled"))
 
 
+def option_localize(record: OptionRecord) -> Any:
+    """Return a record's per-option `localize` override, or `None` if absent.
+
+    The `localize` key rides in the option's extras (the data bag), like `icon`
+    and `disabled`. When present it overrides the widget's group-level
+    `localize=` for just this option; `None` means defer to the group setting.
+
+    Args:
+        record: The normalized option record.
+
+    Returns:
+        The `localize` override (`True`/`False`/`'auto'`), or `None` when the
+        option does not carry one.
+    """
+    return record.extras.get("localize")
+
+
 def option_is_icon_only(record: OptionRecord) -> bool:
     """Whether an option should render as icon-only (a glyph with no label).
 

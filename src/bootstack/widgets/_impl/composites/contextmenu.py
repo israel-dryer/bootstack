@@ -379,6 +379,7 @@ class _ToplevelContextMenu(CustomConfigMixin):
             command: Callable = None,
             icon: str = None,
             disabled: bool = False,
+            localize: Any = None,
             key: str = None
     ) -> RadioToggle:
         """Add a radiobutton to the menu.
@@ -391,6 +392,8 @@ class _ToplevelContextMenu(CustomConfigMixin):
             command: Function to call when selected.
             icon: Optional icon name rendered beside the label.
             disabled: If True, the item is dimmed and cannot be selected.
+            localize: Translation mode for the label — True, False, or 'auto'.
+                None defers to the app default.
             key: Optional unique identifier. Auto-generated if not provided.
         """
 
@@ -400,6 +403,8 @@ class _ToplevelContextMenu(CustomConfigMixin):
         rb_kwargs: dict[str, Any] = {}
         if icon is not None:
             rb_kwargs['icon'] = icon
+        if localize is not None:
+            rb_kwargs['localize'] = localize
         rb = RadioToggle(
             self._frame,
             text=text,
@@ -1081,10 +1086,15 @@ class _NativeContextMenu(CustomConfigMixin):
     def _key_to_index(self, key: str) -> int:
         return self._item_order.index(key)
 
-    def _resolve_label(self, text: str | None) -> str:
-        """Translate a semantic message key; pass plain text through unchanged."""
+    def _resolve_label(self, text: str | None, localize: Any = None) -> str:
+        """Translate a semantic message key; pass plain text through unchanged.
+
+        When `localize` is `False`, the label is left untranslated.
+        """
         if not text:
             return ''
+        if localize is False:
+            return text
         try:
             from bootstack.i18n import MessageCatalog
 
@@ -1203,6 +1213,7 @@ class _NativeContextMenu(CustomConfigMixin):
             command: Callable = None,
             icon: str = None,
             disabled: bool = False,
+            localize: Any = None,
             key: str = None,
     ) -> str:
         key = key or self._generate_key()
@@ -1226,7 +1237,7 @@ class _NativeContextMenu(CustomConfigMixin):
                 command()
 
         opts: dict[str, Any] = {
-            'label': self._resolve_label(text),
+            'label': self._resolve_label(text, localize),
             'variable': variable,
             'value': value,
             'command': on_select,
@@ -1244,6 +1255,7 @@ class _NativeContextMenu(CustomConfigMixin):
             'command': command,
             'icon': icon,
             'disabled': disabled,
+            'localize': localize,
         }
         self._item_order.append(key)
         return key
@@ -1389,7 +1401,7 @@ class _NativeContextMenu(CustomConfigMixin):
                 self._menu.add_separator()
                 continue
 
-            label = self._resolve_label(spec.get('text'))
+            label = self._resolve_label(spec.get('text'), spec.get('localize'))
             text = spec.get('text')
 
             if type_ == 'command':

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Callable, overload
+from typing import Any, Callable, Literal, overload
 
 from bootstack.widgets._impl.composites.buttongroup import ButtonGroup as _InternalButtonGroup
 from bootstack.widgets._core.base import PublicWidgetBase
@@ -28,6 +28,11 @@ class ButtonGroup(PublicWidgetBase):
         variant: Style variant. Default `'solid'`.
         density: Widget density. Default `'default'`.
         disabled: If `True`, all buttons are non-interactive.
+        localize: Whether button labels are translated through the catalog —
+            `True`, `False`, or `'auto'` (translate when a translation is
+            registered, otherwise show the literal). Defaults to the app's
+            `localize_mode`. Set `False` to keep proper nouns untranslated;
+            override a single button with `add(..., localize=...)`.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -42,9 +47,11 @@ class ButtonGroup(PublicWidgetBase):
         variant: ButtonVariant = "default",
         density: WidgetDensity = "default",
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
+        self._localize = localize
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
@@ -73,6 +80,7 @@ class ButtonGroup(PublicWidgetBase):
         icon: str | None = None,
         icon_position: IconPosition = "left",
         disabled: bool = False,
+        localize: bool | Literal['auto'] | None = None,
         **kwargs: Any,
     ) -> str:
         """Add a button to the group.
@@ -84,6 +92,8 @@ class ButtonGroup(PublicWidgetBase):
             icon_position: Position of the icon relative to the label. Ignored
                 when `icon_only` is inferred or explicitly set. Default `'left'`.
             disabled: If `True`, this button starts disabled.
+            localize: Translation mode for this button's label, overriding the
+                group's `localize=`. Defaults to the group setting.
 
         Returns:
             The key assigned to this button.
@@ -103,6 +113,9 @@ class ButtonGroup(PublicWidgetBase):
             btn_kwargs["compound"] = icon_position
         if disabled:
             btn_kwargs["state"] = "disabled"
+        item_localize = localize if localize is not None else self._localize
+        if item_localize is not None:
+            btn_kwargs["localize"] = item_localize
         btn_kwargs.update(kwargs)
 
         _key = key

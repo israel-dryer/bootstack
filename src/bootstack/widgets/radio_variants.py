@@ -1,6 +1,6 @@
 ﻿from __future__ import annotations
 
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.primitives.radiobutton import RadioButton as _InternalRadioButton
 from bootstack.widgets._impl.primitives.radiotoggle import RadioToggle as _InternalRadioToggle
@@ -40,6 +40,7 @@ class _RadioBase(PublicWidgetBase):
         icon_position: IconPosition | None = None,
         disabled: bool = False,
         accent: AccentToken | str | None = None,
+        localize: bool | Literal['auto'] | None = None,
         _internal_options: dict[str, Any] | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -84,6 +85,8 @@ class _RadioBase(PublicWidgetBase):
             internal_kwargs["state"] = "disabled"
         if accent is not None:
             internal_kwargs["accent"] = accent
+        if localize is not None:
+            internal_kwargs["localize"] = localize
         # Per-subclass styling options (e.g. density — RadioToggleButton only).
         if _internal_options:
             internal_kwargs.update(_internal_options)
@@ -185,6 +188,9 @@ class Radio(_RadioBase):
         icon_position: Position of the icon relative to the text.
         disabled: If True, widget is non-interactive.
         accent: Accent token applied to the indicator.
+        localize: Whether the label is translated through the catalog — `True`,
+            `False`, or `'auto'`. Defaults to the app's `localize_mode`. Set
+            `False` to keep a proper noun untranslated.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -213,6 +219,9 @@ class RadioToggleButton(_RadioBase):
         disabled: If True, widget is non-interactive.
         accent: Accent token applied to the button when selected.
         density: Widget density.
+        localize: Whether the label is translated through the catalog — `True`,
+            `False`, or `'auto'`. Defaults to the app's `localize_mode`. Set
+            `False` to keep a proper noun untranslated.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
             `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
@@ -235,6 +244,7 @@ class RadioToggleButton(_RadioBase):
         disabled: bool = False,
         accent: AccentToken | str | None = None,
         density: WidgetDensity | None = None,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -250,6 +260,7 @@ class RadioToggleButton(_RadioBase):
             icon_only=icon_only,
             disabled=disabled,
             accent=accent,
+            localize=localize,
             _internal_options=({"density": density} if density is not None else None),
             parent=parent,
             **kwargs,
