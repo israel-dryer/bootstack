@@ -157,3 +157,74 @@ def test_selectbutton_live_locale_change(app):
     app._tk_root.update()
     assert sb_on.text == "Guardar"
     assert sb.text == "Save"  # localize=False stays raw across changes
+
+
+# --------------------------------------------------------------------------
+# Select (editable combobox) — entry face translates, value stays value-space
+# --------------------------------------------------------------------------
+
+def test_select_plain_face_translates_value_raw(app):
+    s = bs.Select(["Save", "Cancel"], value="Save")
+    assert s.text == "Guardar"
+    assert s.value == "Save"
+    assert s.selection == {"text": "Save", "value": "Save"}
+    assert s.selected_index == 0
+    s.value = "Cancel"
+    assert s.text == "Cancelar"
+    assert s.value == "Cancel"
+
+
+def test_select_localize_false(app):
+    s = bs.Select(["Save", "Cancel"], value="Save", localize=False)
+    assert s.text == "Save"
+    assert s.value == "Save"
+
+
+def test_select_decoupled_value(app):
+    s = bs.Select([("Save", "s"), ("Cancel", "c")], value="s")
+    assert s.text == "Guardar"
+    assert s.value == "s"
+    assert s.selection == {"text": "Save", "value": "s"}
+
+
+def test_select_per_item_override(app):
+    s = bs.Select([{"text": "GitHub", "value": "gh", "localize": False}, "Save"], value="gh")
+    assert s.text == "GitHub"
+    assert s.value == "gh"
+    s.value = "Save"
+    assert s.text == "Guardar"
+
+
+def test_select_custom_value(app):
+    s = bs.Select(["Save"], allow_custom_values=True)
+    s.value = "anything"
+    assert s.text == "anything"
+    assert s.value == "anything"
+
+
+def test_select_popup_rows_translate_and_search(app):
+    s = bs.Select(["Save", "Cancel"], value="Save", searchable=True)
+    app._tk_root.update()
+    sb = s._internal
+    sb._show_selection_options()
+    app._tk_root.update()
+    assert [b.cget("text") for b in sb._item_labels] == ["Guardar", "Cancelar"]
+    # search matches the displayed (translated) labels
+    sb.entry_widget.delete(0, "end")
+    sb.entry_widget.insert(0, "guar")
+    sb._apply_search_filter(sb._popup_state)
+    app._tk_root.update()
+    visible = [b.cget("text") for b in sb._item_labels if b.winfo_manager()]
+    assert visible == ["Guardar"]
+
+
+def test_select_live_locale_change(app):
+    s = bs.Select(["Save", "Cancel"], value="Save")
+    app.locale = "en"
+    app._tk_root.update()
+    assert s.text == "Save"  # no en translation
+    assert s.value == "Save"
+    app.locale = "es"
+    app._tk_root.update()
+    assert s.text == "Guardar"
+    assert s.value == "Save"

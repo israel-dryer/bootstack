@@ -96,16 +96,29 @@ class SelectBox(Field):
             width: Width of the entry in characters.
             required: If True, field cannot be empty.
         """
+        # Localization mode for option display (entry face + popup rows). None
+        # defers to the app's localize_mode; False keeps the raw labels.
+        self._localize = kwargs.pop('localize', None)
         # Normalize options once. The maps only decouple an option's *display
         # text* from its *value*; the entry keeps owning the raw value (so
         # `value_format` parsing, e.g. TimeField's time objects, is preserved).
+        # When localization is active the display text is the translated label,
+        # so a plain option is treated like a decoupled one (display != value).
         self._records = normalize_options(items)
         self._allow_custom_values = allow_custom_values
         self._strict_value = strict_value
         self._rebuild_option_maps()
 
+        # Forward an explicit localize mode to Field so the label/message follow
+        # it too; when unset, Field keeps its own 'auto' default.
+        if self._localize is not None:
+            kwargs['localize'] = self._localize
+
         # Seed the entry with the display form of the initial value.
         super().__init__(master, value=self._resolve_display(value), label=label, message=message, **kwargs)
+
+        # Re-translate the displayed text + option maps on a live locale switch.
+        self.winfo_toplevel().bind('<<LocaleChanged>>', self._on_locale_changed_refresh, add='+')
 
         self._search_enabled = enable_search
         self._group_by = group_by
@@ -139,22 +152,90 @@ class SelectBox(Field):
 
     # ----- Option normalization + value<->text mapping -----
 
-    def _rebuild_option_maps(self) -> None:
-        """Rebuild text<->value lookups from the current records.
+    def _effective_localize(self, item_mode: Any = None) -> Any:
+        """Resolve the active localize mode, deferring to the app when unset.
 
-        Duplicate texts keep the first value; duplicate values keep the first
-        text. Popup selection resolves by the chosen row's record, so duplicate
-        texts with distinct values still select correctly from the list — only
-        the `value` setter (which keys on value) is affected by duplicates.
+        A per-option `item_mode` (its `localize` bag key) wins; then the
+        widget-level mode; then the app's `localize_mode`.
+        """
+        if item_mode is not None:
+            return item_mode
+        if self._localize is not None:
+            return self._localize
+        try:
+            from bootstack._runtime.app import get_app_settings
+            return get_app_settings().localize_mode
+        except Exception:
+            return 'auto'
+
+    def _display_text(self, raw: str, item_mode: Any = None) -> str:
+        """Map a raw option label to its display text under the active mode.
+
+        Returns the label unchanged when localization is off or no translation
+        is registered; otherwise the catalog translation.
+        """
+        if not raw:
+            return raw
+        if self._effective_localize(item_mode) is False:
+            return raw
+        try:
+            from bootstack.i18n import MessageCatalog
+            return MessageCatalog.translate(raw) or raw
+        except Exception:
+            return raw
+
+    def _record_display(self, rec) -> str:
+        """The display text for one option record (honoring its localize key)."""
+        return self._display_text(rec.text, rec.extras.get('localize'))
+
+    def _rebuild_option_maps(self) -> None:
+        """Rebuild displaytext<->value lookups from the current records.
+
+        Maps are keyed on each option's *display* text (the translated label
+        when localization is active), so the entry's shown text round-trips to
+        the option value. Duplicate display texts keep the first value;
+        duplicate values keep the first text. Popup selection resolves by the
+        chosen row's record, so duplicate texts with distinct values still
+        select correctly from the list — only the `value` setter (which keys on
+        value) is affected by duplicates.
         """
         self._value_by_text: dict[str, Any] = {}
         self._text_by_value: dict[Any, str] = {}
         for rec in self._records:
-            self._value_by_text.setdefault(rec.text, rec.value)
+            display = self._record_display(rec)
+            self._value_by_text.setdefault(display, rec.value)
             try:
-                self._text_by_value.setdefault(rec.value, rec.text)
+                self._text_by_value.setdefault(rec.value, display)
             except TypeError:
                 pass  # unhashable value — no reverse map; popup selection still works
+
+    def _on_locale_changed_refresh(self, _event=None) -> None:
+        """Re-translate the displayed label on a live locale change.
+
+        Maps the currently-shown text back to its option value under the OLD
+        maps, rebuilds the maps with the new translations, then re-displays that
+        option's new label — only when it actually changed. A custom/typed value
+        (one not backed by an option, e.g. a `TimeEntry` interval) is left
+        untouched, so nothing is reformatted or re-emitted for it.
+        """
+        current_text = self.entry_widget.get()
+        value = self._value_by_text.get(current_text) if current_text else None
+        self._rebuild_option_maps()
+        if value is None:
+            return
+        new_display = self._text_by_value.get(value, current_text)
+        if new_display != current_text:
+            self._set_display_text_silently(new_display)
+
+    def _set_display_text_silently(self, text: str) -> None:
+        """Replace the entry's displayed text without emitting `<<Change>>`."""
+        is_readonly = self.entry_widget.instate(['readonly'])
+        if is_readonly:
+            self.entry_widget.state(['!readonly'])
+        # Field's value setter is programmatic (no emit); display-only here.
+        Field.value.fset(self, text)
+        if is_readonly:
+            self.entry_widget.state(['readonly'])
 
     def _resolve_display(self, value: Any) -> Any:
         """Map a value-space value to what the entry should hold.
@@ -402,6 +483,10 @@ class SelectBox(Field):
 
             for rec in recs:
                 icon, disabled = option_display(rec)
+                # Translate the row label once (honoring a per-option localize
+                # key); pass localize=False so the Button shows it verbatim and
+                # the entry/search/value all agree on the same display text.
+                display = self._record_display(rec)
                 btn_kwargs = {}
                 if icon is not None:
                     btn_kwargs['icon'] = icon
@@ -409,7 +494,8 @@ class SelectBox(Field):
                         btn_kwargs['icon_only'] = True
                 btn = Button(
                     inner_frame,
-                    text=rec.text,
+                    text=display,
+                    localize=False,
                     accent=accent,
                     variant='selectbox_item',
                     takefocus=False,
@@ -418,9 +504,10 @@ class SelectBox(Field):
                 )
                 pack_row(btn)
 
-                # Store the option's value (for selection) and text (for filtering).
+                # Store the option's value (for selection) and display text (for
+                # filtering — search matches what the user sees).
                 btn._item_value = rec.value
-                btn._item_text = rec.text
+                btn._item_text = display
                 btn._item_index = i
                 btn._item_disabled = disabled
                 # When highlighted, scroll to reveal the group's header/separator
@@ -435,7 +522,7 @@ class SelectBox(Field):
                 if disabled:
                     btn.state(['disabled'])
                 # Apply selected state if this row matches the displayed text
-                if rec.text == current_text:
+                if display == current_text:
                     btn.state(['selected'])
 
                 self._item_labels.append(btn)
@@ -850,7 +937,7 @@ class SelectBox(Field):
         """
         text = self.entry_widget.get()
         for i, rec in enumerate(self._records):
-            if rec.text == text:
+            if self._record_display(rec) == text:
                 return i
         return -1
 

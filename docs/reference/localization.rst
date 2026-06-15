@@ -199,13 +199,15 @@ proper noun, brand name, or identifier from being translated:
 
    bs.Label("Acme Corp", localize=False)   # never translated
 
-The selection groups — :class:`~bootstack.RadioGroup`,
+The selection widgets — :class:`~bootstack.Select`,
+:class:`~bootstack.SelectButton`, :class:`~bootstack.RadioGroup`,
 :class:`~bootstack.ToggleGroup`, :class:`~bootstack.ButtonGroup`,
-:class:`~bootstack.SelectButton`, :class:`~bootstack.Radio`, and
-:class:`~bootstack.RadioToggleButton` — accept ``localize=`` too. On a group it
-governs every option label (and the ``RadioGroup`` title); a single option can
-override it, either through its ``add()`` call or a ``localize`` key in the
-option's data bag:
+:class:`~bootstack.Radio`, and :class:`~bootstack.RadioToggleButton` — accept
+``localize=`` too. On a group it governs every option label (and the field
+``label`` / ``RadioGroup`` title); a single option can override it, either
+through its ``add()`` call or a ``localize`` key in the option's data bag. For a
+searchable :class:`~bootstack.Select`, search matches the displayed (translated)
+labels:
 
 .. code-block:: python
 

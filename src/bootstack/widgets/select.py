@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tkinter
-from typing import overload, Any, Callable, TYPE_CHECKING
+from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.selectbox import SelectBox as _InternalSelectBox
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
@@ -64,6 +64,13 @@ class Select(PublicWidgetBase):
         width: Width in character units.
         accent: Accent token applied to the focus ring.
         density: Padding density.
+        localize: Whether option labels (in the popup and the selected label
+            shown in the field) are translated through the catalog — `True`,
+            `False`, or `'auto'` (translate when a translation is registered,
+            otherwise show the literal). Defaults to the app's `localize_mode`.
+            Set `False` to keep proper nouns untranslated; override a single
+            option with its `localize` key. When searching is enabled, search
+            matches the displayed (translated) labels.
         parent: Explicit parent widget. If omitted, the current
             context-stack container is used.
         **kwargs: Layout placement options applied by the parent container —
@@ -89,6 +96,7 @@ class Select(PublicWidgetBase):
         width: int | None = None,
         accent: AccentToken | str | None = None,
         density: WidgetDensity | None = None,
+        localize: bool | Literal['auto'] | None = None,
         parent: Any = None,
         **kwargs: Any,
     ) -> None:
@@ -126,6 +134,8 @@ class Select(PublicWidgetBase):
             internal_kwargs["accent"] = accent
         if density is not None:
             internal_kwargs["density"] = density
+        if localize is not None:
+            internal_kwargs["localize"] = localize
 
         self._internal = _InternalSelectBox(tk_master, **internal_kwargs)
         self._attach_to_parent(layout_kw)
