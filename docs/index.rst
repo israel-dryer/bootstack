@@ -50,7 +50,7 @@ Why bootstack
 
    .. grid-item-card:: :octicon:`package;1.5em;sd-mr-1` Batteries included
 
-      60+ themed widgets — tables, trees, calendars, a syntax-highlighting code
+      50+ themed widgets — tables, trees, calendars, a syntax-highlighting code
       editor, forms with validation, and data sources — plus icons and
       localization. The pieces of a real application, already built.
 
