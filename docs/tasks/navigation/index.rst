@@ -1,5 +1,5 @@
-Navigation patterns
-====================
+Navigating Views
+================
 
 :class:`AppShell <bootstack.AppShell>` assembles a few building blocks —
 authored pages, data-bound providers, and an optional workspace rail — into the

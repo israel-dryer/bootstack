@@ -1,4 +1,4 @@
-Application Icons
+Setting App Icons
 =================
 
 An application icon identifies your app wherever the operating system shows it:

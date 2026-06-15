@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 
 from bootstack.widgets.types import IconSpec
+from bootstack.clipboard import set_clipboard
 
 
 def add_parser(subparsers: argparse._SubParsersAction) -> None:
@@ -266,7 +267,7 @@ def run_appicon() -> None:
             f'foreground = "{fg_sig()}"\n'
             f"radius = {round(radius_sig(), 3)}\n"
         )
-        app.set_clipboard(snippet)
+        set_clipboard(snippet)
         status_sig.set("Copied [build.icon] snippet to the clipboard.")
 
     _build_preview()

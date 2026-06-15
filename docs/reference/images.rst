@@ -1,4 +1,4 @@
-Images and icons
+Images and Icons
 ================
 
 The :mod:`bootstack.images` module is the framework-native way to show pictures

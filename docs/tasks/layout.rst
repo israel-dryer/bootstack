@@ -1,5 +1,5 @@
-Layout & Spacing
-================
+Arranging Widgets
+=================
 
 bootstack arranges widgets with **container** widgets. A container both *holds*
 its children and decides how they are placed; a widget is parented to the nearest

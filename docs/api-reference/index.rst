@@ -26,6 +26,7 @@ The following submodules are also public; import the names you need from each
 - ``bootstack.scheduling`` — Running work after a delay or on a repeating interval.
 - ``bootstack.shortcuts`` — Registering application keyboard shortcuts.
 - ``bootstack.store`` — A small file-backed preferences store.
+- ``bootstack.clipboard`` — Read and write the system clipboard.
 - ``bootstack.errors`` — The exception types the framework raises.
 - ``bootstack.types`` — Token and keyword types for annotating your own code.
 - ``bootstack.dialogs`` — Reusable dialog classes, when a one-shot verb isn't enough.
@@ -144,6 +145,12 @@ Services and reference
 
       A persistent, file-backed preferences store.
 
+   .. grid-item-card:: Clipboard
+      :link: clipboard
+      :link-type: doc
+
+      Read and write the system clipboard.
+
    .. grid-item-card:: Errors
       :link: errors
       :link-type: doc
@@ -173,5 +180,6 @@ Services and reference
    scheduling
    shortcuts
    store
+   clipboard
    errors
    types

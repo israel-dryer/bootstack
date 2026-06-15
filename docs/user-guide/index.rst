@@ -37,17 +37,17 @@ How-to guides
 .. grid:: 1 2 2 3
    :gutter: 3
 
+   .. grid-item-card:: :octicon:`columns;1.5em;sd-mr-1` Arranging Widgets
+      :link: /tasks/layout
+      :link-type: doc
+
+      Arrange widgets with stacks and grids; fill, expand, and anchor.
+
    .. grid-item-card:: :octicon:`pencil;1.5em;sd-mr-1` Getting Input
       :link: /tasks/getting-input
       :link-type: doc
 
       Text, numbers, dates, choices, and sliders — and binding them to state.
-
-   .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Composing Fields
-      :link: /tasks/composing-fields
-      :link-type: doc
-
-      Add icons, labels, buttons, and toggles inside a field to specialize it.
 
    .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Handling Actions
       :link: /tasks/handling-actions
@@ -55,11 +55,23 @@ How-to guides
 
       Buttons, events, debounced streams, shortcuts, and menus.
 
+   .. grid-item-card:: :octicon:`copy;1.5em;sd-mr-1` Using the Clipboard
+      :link: /tasks/clipboard
+      :link-type: doc
+
+      Read and write the system clipboard.
+
    .. grid-item-card:: :octicon:`table;1.5em;sd-mr-1` Displaying Data
       :link: /tasks/displaying-data
       :link-type: doc
 
       Labels, lists, tables, trees, and the data sources behind them.
+
+   .. grid-item-card:: :octicon:`plus-circle;1.5em;sd-mr-1` Composing Fields
+      :link: /tasks/composing-fields
+      :link-type: doc
+
+      Add icons, labels, buttons, and toggles inside a field to specialize it.
 
    .. grid-item-card:: :octicon:`checklist;1.5em;sd-mr-1` Building Forms
       :link: /tasks/building-forms
@@ -67,25 +79,19 @@ How-to guides
 
       Lay out fields and validate them before submit.
 
-   .. grid-item-card:: :octicon:`comment-discussion;1.5em;sd-mr-1` Dialogs & Alerts
+   .. grid-item-card:: :octicon:`comment-discussion;1.5em;sd-mr-1` Showing Dialogs
       :link: /tasks/dialogs
       :link-type: doc
 
       Alerts, confirmations, prompts, toasts, and custom dialogs.
 
-   .. grid-item-card:: :octicon:`arrow-switch;1.5em;sd-mr-1` Navigation Patterns
+   .. grid-item-card:: :octicon:`arrow-switch;1.5em;sd-mr-1` Navigating Views
       :link: /tasks/navigation/index
       :link-type: doc
 
       Sidebar, master–detail, and workspace navigation shapes.
 
-   .. grid-item-card:: :octicon:`columns;1.5em;sd-mr-1` Layout & Spacing
-      :link: /tasks/layout
-      :link-type: doc
-
-      Arrange widgets with stacks and grids; fill, expand, and anchor.
-
-   .. grid-item-card:: :octicon:`image;1.5em;sd-mr-1` Application Icons
+   .. grid-item-card:: :octicon:`image;1.5em;sd-mr-1` Setting App Icons
       :link: /tasks/application-icons
       :link-type: doc
 
@@ -187,14 +193,15 @@ Topics
    :caption: How-to guides
    :hidden:
 
-   /tasks/displaying-data
+   /tasks/layout
    /tasks/getting-input
-   /tasks/composing-fields
    /tasks/handling-actions
+   /tasks/clipboard
+   /tasks/displaying-data
+   /tasks/composing-fields
    /tasks/building-forms
    /tasks/dialogs
    /tasks/navigation/index
-   /tasks/layout
    /tasks/application-icons
 
 .. toctree::
