@@ -22,6 +22,17 @@ as many as you like — they are checked in order, and the first failure wins:
    name = bs.TextField(label="Name")
    name.add_validation_rule("stringLength", min=2, max=50)
 
+Because ``'required'`` is the most common rule, fields accept it as a
+``required=True`` constructor shortcut — it adds the rule and appends an asterisk
+to the label:
+
+.. code-block:: python
+
+   email = bs.TextField(label="Email", required=True)   # same as add_validation_rule("required")
+
+In a :class:`~bootstack.Form`, set ``required=True`` on the field's
+:class:`~bootstack.FieldItem` for the same effect — see :doc:`/tasks/building-forms`.
+
 Built-in rule types
 -------------------
 
