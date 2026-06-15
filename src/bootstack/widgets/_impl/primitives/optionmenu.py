@@ -204,7 +204,7 @@ class OptionMenu(MenuButton):
         key changes whenever a selection is made.
         """
         if self._bind_id is not None:
-            self.textsignal.unsubscribe(self._bind_id)
+            self._bind_id.cancel()
 
         def _on_change(text: str) -> None:
             self._sync_display()

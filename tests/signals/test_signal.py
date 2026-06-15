@@ -89,6 +89,34 @@ def test_subscribe_immediate_fires_with_current_value(app):
 
 
 @pytest.mark.gui
+def test_subscribe_returns_cancellable_handle(app):
+    from bootstack.streams import Handle
+
+    s = bs.Signal(0)
+    seen = []
+    sub = s.subscribe(seen.append)
+    assert isinstance(sub, Handle)
+
+    s.set(1)
+    sub.cancel()
+    s.set(2)            # no longer listening
+    assert seen == [1]
+
+    # idempotent
+    sub.cancel()
+
+
+@pytest.mark.gui
+def test_subscribe_handle_as_context_manager(app):
+    s = bs.Signal(0)
+    seen = []
+    with s.subscribe(seen.append):
+        s.set(1)
+    s.set(2)            # cancelled on exit
+    assert seen == [1]
+
+
+@pytest.mark.gui
 def test_subscribe_immediate_propagates_callback_error(app):
     # A failing immediate callback must surface, not be swallowed.
     s = bs.Signal(0)

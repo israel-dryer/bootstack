@@ -558,9 +558,10 @@ class Tabs(Frame):
         return self._signal.subscribe(callback)
 
     def off_tab_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from tab selection changes.
+        """Cancel a subscription created by `on_tab_changed()`.
 
         Args:
-            bind_id: ID returned by `on_tab_changed()`.
+            bind_id: The handle returned by `on_tab_changed()`.
         """
-        self._signal.unsubscribe(bind_id)
+        if bind_id is not None:
+            bind_id.cancel()

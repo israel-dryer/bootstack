@@ -369,12 +369,13 @@ class ToggleGroup(Frame):
         return self._signal.subscribe(callback)
 
     def off_changed(self, bind_id: Any) -> None:
-        """Unsubscribe from value changes.
+        """Cancel a subscription created by `on_changed()`.
 
         Args:
-            bind_id: ID returned by `on_changed()`. If None, removes all.
+            bind_id: The handle returned by `on_changed()`.
         """
-        self._signal.unsubscribe(bind_id)
+        if bind_id is not None:
+            bind_id.cancel()
 
     @configure_delegate('accent')
     def _delegate_accent(self, value=None):

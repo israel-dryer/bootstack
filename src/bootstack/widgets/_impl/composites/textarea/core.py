@@ -260,7 +260,7 @@ class _MultilineCore(tk.Frame):
     def _unbind_signal(self) -> None:
         if self._signal is not None and self._signal_trace_id is not None:
             try:
-                self._signal.unsubscribe(self._signal_trace_id)
+                self._signal_trace_id.cancel()
             except Exception:
                 pass
         self._signal = None

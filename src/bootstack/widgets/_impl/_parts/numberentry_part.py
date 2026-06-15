@@ -270,7 +270,7 @@ class NumberEntryPart(TextEntryPart):
             fid = getattr(self, '_on_input_fid', None)
             if fid:
                 try:
-                    self.textsignal.unsubscribe(fid)
+                    fid.cancel()
                 except Exception:
                     pass
 

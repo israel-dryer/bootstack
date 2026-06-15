@@ -270,7 +270,7 @@ class ValueSignalMixin:
         sub = getattr(self, "_value_sub", None)
         if sub is not None:
             try:
-                self._value_signal.unsubscribe(sub)
+                sub.cancel()
             except Exception:
                 pass
             self._value_sub = None
