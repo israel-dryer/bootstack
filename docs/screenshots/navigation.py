@@ -11,7 +11,7 @@ from bootstack.data import MemoryDataSource
 
 
 def single_tier():
-    with bs.AppShell(title="Acme Analytics", size=(820, 520)) as shell:
+    with bs.AppShell(title="Acme Analytics", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_label("Acme Analytics", font="heading-md")
         shell.commandbar.add_spacer()
@@ -35,7 +35,7 @@ def single_tier():
 
 
 def grouped_sidebar():
-    with bs.AppShell(title="Settings", size=(820, 520)) as shell:
+    with bs.AppShell(title="Settings", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_label("Settings", font="heading-md")
         shell.commandbar.add_spacer()
@@ -68,7 +68,7 @@ def master_detail_list():
         {"id": 3, "title": "Sam Okonkwo", "text": "Lunch tomorrow?", "icon": "envelope",
          "body": "Want to grab lunch tomorrow around noon?"},
     ])
-    with bs.AppShell(title="Mail", size=(820, 520)) as shell:
+    with bs.AppShell(title="Mail", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
         shell.commandbar.add_spacer()
@@ -99,7 +99,7 @@ def master_detail_tree():
         ]},
         {"label": "LICENSE", "icon": "file-earmark", "kind": "Text", "size": "1.1 KB"},
     ]
-    with bs.AppShell(title="Files", size=(820, 520)) as shell:
+    with bs.AppShell(title="Files", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_label("Project", font="heading-md")
         shell.commandbar.add_spacer()
@@ -126,7 +126,7 @@ def workspaces():
         {"id": 1, "title": "Dana Reyes", "text": "Q3 roadmap review", "icon": "envelope", "body": "Can we move it to Thursday?"},
         {"id": 2, "title": "Billing", "text": "Your receipt for June", "icon": "envelope-open", "body": "Thanks for your payment."},
     ])
-    with bs.AppShell(title="Workspace", size=(900, 560)) as shell:
+    with bs.AppShell(title="Workspace", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_spacer()
         shell.commandbar.add_button(icon="circle-half", on_click=bs.toggle_theme)
@@ -155,7 +155,7 @@ def custom_sidebar():
         {"name": "Desk Lamp", "category": "Home", "price": 39},
         {"name": "Mechanical Keyboard", "category": "Electronics", "price": 89},
     ]
-    with bs.AppShell(title="Shop", size=(820, 520)) as shell:
+    with bs.AppShell(title="Shop", size=(720, 460)) as shell:
         shell._capture_full_window = True
         shell.commandbar.add_label("Shop", font="heading-md")
         shell.commandbar.add_spacer()
