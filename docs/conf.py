@@ -219,6 +219,9 @@ html_theme_options = {
 }
 
 html_static_path = ["_static"]
+# Files copied verbatim to the site root. CNAME pins the bootstack.org custom
+# domain on GitHub Pages — without it, each deploy drops the custom domain.
+html_extra_path  = ["CNAME"]
 templates_path   = ["_templates"]
 html_css_files   = ["custom.css"]
 html_favicon     = "_static/favicon.ico"
