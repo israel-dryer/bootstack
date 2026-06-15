@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from tkinter import Widget
 from typing import Any, Callable, Literal
 
@@ -118,12 +119,13 @@ class Toolbar(Frame):
         )
         self._maximize_btn.pack(side='left', padx=2)
 
-        # Close button
+        # Close button — danger accent so it hovers red (the native convention).
         self._close_btn = Button(
             self._controls_frame,
             icon='x-lg',
             icon_only=True,
             variant='ghost',
+            accent='danger',
             density='compact',
             surface=self._surface,
             command=self._on_close,
@@ -144,22 +146,60 @@ class Toolbar(Frame):
             pass
 
     def _on_minimize(self):
-        """Handle minimize button click."""
+        """Minimize the window, keeping it recoverable from the taskbar."""
         window = self.winfo_toplevel()
-        # override_redirect windows cannot be iconified directly — temporarily
-        # lift the flag, iconify, then restore it once the window is shown again.
-        if window.overrideredirect():
-            window.overrideredirect(False)
+        if not window.overrideredirect():
             window.iconify()
-            window.bind('<Map>', self._on_restore_override_redirect, add='+')
-        else:
-            window.iconify()
+            return
+        # A borderless (override_redirect) window has no taskbar button by
+        # default, so a plain iconify() would leave it with no way back. On
+        # Windows, give it the APPWINDOW taskbar style and minimize via the Win32
+        # API — it stays borderless and the taskbar button restores it. Elsewhere,
+        # fall back to briefly restoring native decorations (which grant a taskbar
+        # button), iconify, then re-hide them once the user restores it.
+        if sys.platform == 'win32' and self._win32_minimize(window):
+            return
+        window.update_idletasks()
+        window.overrideredirect(False)
+        window.update_idletasks()
+        window.iconify()
+        window.bind('<Map>', self._on_restore_override_redirect, add='+')
 
-    def _on_restore_override_redirect(self, _event=None) -> None:
+    def _win32_minimize(self, window) -> bool:
+        """Minimize a borderless window via Win32, with a taskbar button.
+
+        Adds `WS_EX_APPWINDOW` (and drops `WS_EX_TOOLWINDOW`) so the borderless
+        window gets a taskbar button, then minimizes it. Returns True on success.
+        """
+        try:
+            from ctypes import windll
+
+            GWL_EXSTYLE = -20
+            WS_EX_APPWINDOW = 0x00040000
+            WS_EX_TOOLWINDOW = 0x00000080
+            SW_HIDE, SW_SHOW, SW_MINIMIZE = 0, 5, 6
+
+            hwnd = windll.user32.GetParent(window.winfo_id()) or window.winfo_id()
+            style = windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+            new_style = (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
+            if new_style != style:
+                windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
+                # The taskbar only re-reads the style on a re-show, so cycle the
+                # window once (a brief flash) the first time the style changes.
+                windll.user32.ShowWindow(hwnd, SW_HIDE)
+                windll.user32.ShowWindow(hwnd, SW_SHOW)
+            windll.user32.ShowWindow(hwnd, SW_MINIMIZE)
+            return True
+        except Exception:
+            return False
+
+    def _on_restore_override_redirect(self, event=None) -> None:
         """Restore override_redirect after the window is deiconified."""
         window = self.winfo_toplevel()
-        window.overrideredirect(True)
+        if event is not None and getattr(event, 'widget', window) is not window:
+            return
         window.unbind('<Map>')
+        window.overrideredirect(True)
 
     def _on_maximize(self):
         """Handle maximize/restore button click."""
@@ -180,11 +220,11 @@ class Toolbar(Frame):
         window.destroy()
 
     def _setup_drag(self):
-        """Set up window dragging bindings."""
-        self.bind('<Button-1>', self._on_drag_start, add='+')
-        self.bind('<B1-Motion>', self._on_drag_motion, add='+')
-        self._content_frame.bind('<Button-1>', self._on_drag_start, add='+')
-        self._content_frame.bind('<B1-Motion>', self._on_drag_motion, add='+')
+        """Set up window dragging (and double-click-to-maximize) bindings."""
+        for widget in (self, self._content_frame):
+            widget.bind('<Button-1>', self._on_drag_start, add='+')
+            widget.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            widget.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
     def _on_drag_start(self, event):
         """Record drag start position."""
@@ -194,6 +234,18 @@ class Toolbar(Frame):
     def _on_drag_motion(self, event):
         """Handle drag motion to move window."""
         window = self.winfo_toplevel()
+
+        # A maximized window snaps back to its normal size before it can move,
+        # re-anchoring the drag origin so the cursor keeps its grip on the bar.
+        if window.state() == 'zoomed':
+            try:
+                window.state('normal')
+            except Exception:
+                pass
+            self._sync_maximize_icon('fullscreen')
+            self._drag_start_x = event.x_root
+            self._drag_start_y = event.y_root
+            return
 
         # Calculate delta
         dx = event.x_root - self._drag_start_x
@@ -209,6 +261,20 @@ class Toolbar(Frame):
         # Update drag start for next motion
         self._drag_start_x = event.x_root
         self._drag_start_y = event.y_root
+
+    def _on_drag_double(self, _event):
+        """Double-clicking the bar toggles the window's maximized state."""
+        self._on_maximize()
+        return 'break'
+
+    def _sync_maximize_icon(self, name: str) -> None:
+        """Keep the maximize button's icon in sync with the window state."""
+        btn = getattr(self, '_maximize_btn', None)
+        if btn is not None:
+            try:
+                btn.configure(icon=name)
+            except Exception:
+                pass
 
     # --- Public API: Adding Items ---
 
@@ -287,6 +353,7 @@ class Toolbar(Frame):
         if self._draggable:
             lbl.bind('<Button-1>', self._on_drag_start, add='+')
             lbl.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            lbl.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
         return lbl
 
@@ -327,6 +394,7 @@ class Toolbar(Frame):
         if self._draggable:
             spacer.bind('<Button-1>', self._on_drag_start, add='+')
             spacer.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            spacer.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
         return spacer
 
