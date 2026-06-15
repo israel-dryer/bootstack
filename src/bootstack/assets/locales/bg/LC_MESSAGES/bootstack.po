@@ -1,10 +1,10 @@
-# Bulgarian translations for ttkbootstrap
+# Bulgarian translations for bootstack
 # Copyright (C) 2024 Israel Dryer
-# This file is distributed under the same license as the ttkbootstrap project.
+# This file is distributed under the same license as the bootstack project.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: ttkbootstrap\n"
+"Project-Id-Version: bootstack\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-01-01 12:00+0000\n"
 "PO-Revision-Date: 2024-12-12 12:00+0000\n"
