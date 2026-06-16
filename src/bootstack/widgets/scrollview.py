@@ -76,9 +76,13 @@ class ScrollView(FlexContainer):
 
         self._internal = _InternalScrollView(tk_master, **internal_kwargs)
         # The scrollable content is a vertical flex frame inside the canvas, so
-        # children flow with the Row/Column vocabulary (grow/align_self) like
-        # any other container.
-        self._content_frame = FlexFrame(self._internal.canvas, direction="vertical")
+        # children flow with the Row/Column vocabulary (grow / horizontal /
+        # vertical). It stretches children across the width by default — a scroll
+        # area fills its viewport width and scrolls overflow vertically — so
+        # content does not sit narrow against the left edge.
+        self._content_frame = FlexFrame(
+            self._internal.canvas, direction="vertical", horizontal_items="stretch"
+        )
         self._internal.add(self._content_frame)
         self._attach_to_parent(layout_kw)
 
