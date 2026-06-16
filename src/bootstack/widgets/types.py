@@ -92,6 +92,20 @@ Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw',
 Side = Literal['left', 'top', 'right', 'bottom']
 """Side placement for stack layout."""
 
+JustifyContent = Literal['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly']
+"""Main-axis distribution of a whole stack group (flexbox `justify-content`).
+`'start'`/`'center'`/`'end'` cluster the group; the `'space-*'` modes spread
+items apart. Cross-axis alignment is `align`; for a local break use a `Spacer`."""
+
+AlignItems = Literal['start', 'center', 'end', 'stretch']
+"""Cross-axis alignment of stack children (flexbox `align-items`). `'start'`
+pins to the leading cross edge, `'stretch'` fills the cross axis. Override on a
+single child with `align_self`."""
+
+JustifyItems = Literal['start', 'center', 'end', 'stretch']
+"""Horizontal in-cell alignment of every Grid child (CSS-grid `justify-items`).
+Override on a single child with `justify_self`."""
+
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
 """Layout direction."""
 

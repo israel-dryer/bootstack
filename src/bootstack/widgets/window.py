@@ -2,11 +2,13 @@
 
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
-from bootstack.widgets._impl.primitives.packframe import PackFrame
-from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
+from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
-from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
+from bootstack.widgets.types import (
+    Padding, AlignItems, JustifyContent, Anchor, SurfaceToken, WindowStyle,
+)
 
 if TYPE_CHECKING:
     from bootstack.images import AppIcon, Image
@@ -50,10 +52,10 @@ def _resolve_anchor_widget(target: Any) -> Any:
     return target
 
 
-class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
+class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
     """A secondary top-level window.
 
-    Behaves as an implicit `VStack` from the user's perspective: children
+    Behaves as an implicit `Column` from the user's perspective: children
     created inside a ``with`` block are automatically packed into its content
     frame top-to-bottom.  Call `show()` to display the window after building
     its content, or `block_until_closed()` to show it and wait for the user
@@ -85,9 +87,12 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
             Return `False` to veto; return `None` or `True` to allow.
         padding: Inner padding for the content frame.
         gap: Spacing between children.
-        fill_items: Default `fill` value for children.
-        expand_items: Default `expand` value for children.
-        anchor_items: Default anchor for children that do not fill their cell.
+        justify: Vertical distribution of the whole group of children —
+            `'start'`, `'center'`, `'end'`, or a `'space-*'` mode. Default
+            `'start'`.
+        align: Horizontal (cross-axis) alignment of children — `'start'`,
+            `'center'`, `'end'`, or `'stretch'`. Default `'start'`.
+        grow_items: When `True`, children grow equally to fill the height.
         surface: Surface token for the content frame background.
     """
 
@@ -114,9 +119,9 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
         # Content frame layout
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | None = None,
+        justify: JustifyContent = "start",
+        align: AlignItems = "start",
+        grow_items: bool = False,
         surface: SurfaceToken | str | None = None,
         **kwargs: Any,
     ) -> None:
@@ -170,29 +175,23 @@ class Window(WindowControlsMixin, ChromeHostMixin, PublicContainer):
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
             "gap": gap,
-            "fill_items": normalize_fill(fill_items),
-            "expand_items": expand_items,
-            "anchor_items": anchor_items,
+            "justify": justify,
+            "align": align,
+            "grow_items": grow_items,
         }
         if padding is not None:
             frame_kwargs["padding"] = padding
         if surface is not None:
             frame_kwargs["surface"] = surface
 
-        self._content_frame = PackFrame(self._tk_toplevel, **frame_kwargs)
+        self._content_frame = FlexFrame(self._tk_toplevel, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
 
         self._internal = self._tk_toplevel
 
-    def _child_master(self) -> Any:
+    @property
+    def _flex_frame(self) -> Any:
         return self._content_frame
-
-    def _default_layout_method(self) -> str:
-        return "pack"
-
-    def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        return ("pack", options)
 
     # ----- Lifecycle -----
 

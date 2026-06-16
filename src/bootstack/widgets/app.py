@@ -6,18 +6,20 @@ from bootstack._runtime.app import App as _InternalApp, LocalizeMode
 
 if TYPE_CHECKING:
     from bootstack.images import AppIcon, Image
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
-from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
+from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
-from bootstack.widgets.types import Padding, Fill, Anchor, SurfaceToken, WindowStyle
+from bootstack.widgets.types import (
+    Padding, AlignItems, JustifyContent, SurfaceToken, WindowStyle,
+)
 
 
-class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer):
-    """The application window. Behaves as an implicit VStack from the user's
-    perspective: accepts `padding`, `gap`, `fill_items`, `expand_items`, and
-    `anchor_items` and applies them to its internal content frame.
+class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
+    """The application window. Behaves as an implicit Column from the user's
+    perspective: accepts `padding`, `gap`, `justify`, `align`, and
+    `grow_items` and applies them to its internal content frame.
 
     Configuration is a single flat path: pass options as constructor kwargs and
     read or change them through matching `app.*` properties (e.g. `app.theme`,
@@ -56,9 +58,13 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         hdpi: Enable high-DPI awareness for the application. Default `True`.
         padding: Inner padding applied to the content frame.
         gap: Spacing between stacked children. Default `0`.
-        fill_items: Default `fill` for children that don't set their own.
-        expand_items: Default `expand` for children that don't set their own.
-        anchor_items: Default anchor for children that don't fill their cell.
+        justify: Vertical distribution of the whole group of children —
+            `'start'`, `'center'`, `'end'`, or a `'space-*'` mode. Default
+            `'start'`.
+        align: Horizontal (cross-axis) alignment of children — `'start'`,
+            `'center'`, `'end'`, or `'stretch'`. Default `'start'`.
+        grow_items: When `True`, children grow equally to fill the height.
+            Default `False`.
         surface: Background surface for the content frame.
     """
 
@@ -95,9 +101,9 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | None = None,
+        justify: JustifyContent = "start",
+        align: AlignItems = "start",
+        grow_items: bool = False,
         surface: SurfaceToken | str | None = None,
         # Extra kwargs forwarded to the internal App (icon, position, etc.)
         **app_kwargs: Any,
@@ -157,16 +163,16 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
             "gap": gap,
-            "fill_items": normalize_fill(fill_items),
-            "expand_items": expand_items,
-            "anchor_items": anchor_items,
+            "justify": justify,
+            "align": align,
+            "grow_items": grow_items,
         }
         if padding is not None:
             frame_kwargs["padding"] = padding
         if surface is not None:
             frame_kwargs["surface"] = surface
 
-        self._content_frame = PackFrame(self._tk_root, **frame_kwargs)
+        self._content_frame = FlexFrame(self._tk_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
 
         self._internal = self._tk_root
@@ -207,16 +213,10 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
     def _config_app(self) -> Any:
         return self._tk_root
 
-    def _child_master(self):
-        """Children pack into the content frame, not the Tk root."""
+    @property
+    def _flex_frame(self):
+        """Children flow into the content frame, not the Tk root."""
         return self._content_frame
-
-    def _default_layout_method(self) -> str:
-        return "pack"
-
-    def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        return ("pack", options)
 
     def run(self) -> None:
         """Show the window and start the event loop."""

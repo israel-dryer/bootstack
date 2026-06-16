@@ -4,11 +4,12 @@ import tkinter
 from typing import Any, Literal
 
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView
-from bootstack.widgets._core.container import PublicContainer, PACK_KEYS
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
+from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets.types import Padding, ScrollbarVariant
 
 
-class ScrollView(PublicContainer):
+class ScrollView(FlexContainer):
     """A canvas-based scrollable container.
 
     Place children inside the context block; they are laid out vertically
@@ -74,18 +75,16 @@ class ScrollView(PublicContainer):
             internal_kwargs["padding"] = padding
 
         self._internal = _InternalScrollView(tk_master, **internal_kwargs)
-        self._content_frame = self._internal.add()
+        # The scrollable content is a vertical flex frame inside the canvas, so
+        # children flow with the Row/Column vocabulary (grow/align_self) like
+        # any other container.
+        self._content_frame = FlexFrame(self._internal.canvas, direction="vertical")
+        self._internal.add(self._content_frame)
         self._attach_to_parent(layout_kw)
 
-    def _child_master(self) -> tkinter.Misc:
+    @property
+    def _flex_frame(self) -> Any:
         return self._content_frame
-
-    def _default_layout_method(self) -> str:
-        return "pack"
-
-    def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        return ("pack", options)
 
     # ----- Scrolling -----
 

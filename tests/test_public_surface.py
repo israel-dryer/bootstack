@@ -33,7 +33,7 @@ EXPECTED_TOPLEVEL = {
     # application & windows
     "App", "AppShell", "Window",
     # layout
-    "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
+    "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # actions
     "Button", "ButtonGroup", "MenuButton", "Toolbar", "StatusBar",

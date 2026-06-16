@@ -2,6 +2,76 @@
 
 Branch: `feat/grid-layout-engine`. Started 2026-06-16.
 
+> ## Progress log (2026-06-16)
+>
+> **Decisions locked** (maintainer): cross-axis **`align` default = `start`**;
+> **hard break** on legacy child kwargs (no shim — `fill=`/`expand=`/`anchor=`/
+> `sticky=` on a flex child raises `BootstackError` with a migration hint, so
+> nothing collapses silently); stacks **renamed `HStack`/`VStack` → `Row`/`Column`**
+> (CSS/flexbox + Bootstrap vocabulary; Flutter/Compose precedent; full word
+> `Column`, not `Col`). `Grid` keeps its name. No aliases.
+>
+> **Built + smoke-validated (engine in isolation):**
+> - `widgets/types.py`: `JustifyContent` / `AlignItems` / `JustifyItems` aliases
+>   (re-exported from `bootstack.types`).
+> - `widgets/_impl/primitives/flexframe.py` — **`FlexFrame`**, the grid-backed
+>   1-D engine. Incremental `add_child`/`remove_child` + `_relayout` that
+>   **repositions surviving children in place** (`grid_configure`, NOT
+>   forget+regrid — a blanket forget fired spurious `<Unmap>`/`<Map>` →
+>   on_detach/on_attach on every sibling on a shown window; removed children are
+>   forgotten by `remove_child` before relayout). Mirrors the validated
+>   prototype: justify phantom tracks, weighted/uniform grow, `weights=`,
+>   cross-track-always-fills, Spacer tracks, edge-aware gap. Verified on a shown
+>   window: adding/removing a child fires NO events on siblings; a widget's own
+>   detach/attach fires exactly one on_detach/on_attach; order + index restore.
+> - `widgets/stacks.py` — public **`Row` / `Column` / `Spacer`** on `FlexFrame`
+>   (own `__init__` per class for Sphinx). Hard break: `fill_items`/`expand_items`/
+>   `anchor_items` gone; new `justify`/`align`/`grow_items`/`weights`/`gap` +
+>   per-child `grow`/`align_self`.
+> - `widgets/_core/container.py` — `FLEX_CHILD_KEYS` (`grow`/`align_self`/
+>   `justify_self`/margins/`index`), `_LEGACY_CHILD_KEYS` rejection,
+>   `_flex_child_opts`, `place_flex_child` (shared helper), **`FlexContainer`**
+>   base (`_flex_frame` property → `_internal`).
+> - `widgets/_core/base.py` — `_split_layout_kwargs` recognizes `FLEX_CHILD_KEYS`;
+>   `detach`/`attach` gained a **`"flex"`** method branch (index = managed-list
+>   position; simpler than the pack ordering path).
+> - **Converted to the flex engine:** `App`, `Window` (implicit Columns —
+>   `_content_frame` is now a `FlexFrame`, params swapped to justify/align/
+>   grow_items), `Card` + `GroupBox` (vstack/hstack → flex; **grid mode still uses
+>   `GridFrame`** via a `guide_layout` branch), `ScrollView` (canvas content is a
+>   vertical `FlexFrame`). All smoke-render green; Card grid mode intact.
+> - `place_flex_child` also honors **construction-time `index=`** (insert at a
+>   slot) and the **`x=`/`y=` place-mode escape hatch** (absolute overlay inside a
+>   flex container).
+> - `tests/test_public_surface.py` updated (Row/Column/Spacer) — **161 pass**.
+> - **`tests/widgets/public/test_attach_detach.py` REWRITTEN** for Row/Column +
+>   flex (22 pass), incl. a **regression test** that adding/removing a sibling
+>   fires NO on_attach/on_detach on the other children (the `_relayout` in-place
+>   fix), plus index-at-construction, place-mode, attached=False, and the
+>   legacy-kwarg rejection. (`before=`/`after=` dropped on the flex path — `index=`
+>   only.)
+>
+> **NOT yet done (next stages, in order):**
+> 1. **2-D `Grid` vocabulary** — `sticky_items` → `justify_items`/`align_items`,
+>    per-child `justify_self`/`align_self` (GridFrame already grid-backed; needs
+>    the sticky-derivation + signature swap). Prototype `Grid2D` is the reference.
+> 2. **Dual-mode nav containers** — `PageStack`/`Tabs`/`SplitView`/`Accordion`
+>    (+ `AppShell` content host) still take `fill_items`/… and pack their page
+>    content. Convert page-content frames to `FlexFrame`.
+> 3. **Migrate ~850 call sites** (hard break) — `src/bootstack/cli/{demo,appicon,
+>    templates}` (crash until migrated; ~70 in demo.py), `docs/examples/*`,
+>    `docs/screenshots/*`, `tests/features/*`. Convert `fill=`/`expand=` →
+>    `grow=`/`align(_self)=`; `fill_items=`→ container `align=`/`grow_items`;
+>    `anchor_items=`→`align=`. **Watch data/canvas widgets** (ListView/DataTable/
+>    Tree/Gallery/Carousel/CodeEditor) — they collapse without `grow`/`align`.
+> 4. ~~Rewrite `test_attach_detach.py`~~ — **DONE** (22 pass, see above).
+> 5. **Re-point `Toolbar`/`StatusBar` `add_spacer()`** at the public `Spacer`.
+> 6. Re-shoot affected screenshots; write the `Row`/`Column`/`Spacer` layout
+>    how-to; sweep docstring `HStack`/`VStack` mentions (grid.py, container.py,
+>    content_host.py still reference them).
+>
+> Scratch: `development/flex_engine_smoke.py` (engine smoke; untracked).
+
 Replace the stack layout API (`anchor_items` / `fill_items` / `expand_items`, and
 Grid's `sticky_items`) with a flexbox/CSS-grid vocabulary — `justify` / `align` /
 `grow` plus a `Spacer()` element — and reimplement stacks on the Tk **grid**

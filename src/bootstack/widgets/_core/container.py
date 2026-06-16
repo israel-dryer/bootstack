@@ -23,6 +23,19 @@ PLACE_KEYS = frozenset({
     "anchor", "bordermode", "in_",
 })
 
+# Per-child placement keys for the flex/grid layout engine (Row/Column/Grid).
+# Collision-free by design — never bare `align`/`justify`, which would shadow
+# Label/TextField text `justify` and Snackbar `align` on every widget.
+FLEX_CHILD_KEYS = frozenset({
+    "grow", "align_self", "justify_self",
+    "margin", "margin_x", "margin_y", "index",
+})
+
+# Legacy pack/grid placement kwargs the flex engine deliberately rejects, so a
+# stale `fill=`/`expand=`/`anchor=`/`sticky=` raises a clear migration error
+# instead of silently collapsing a child (data/canvas widgets especially).
+_LEGACY_CHILD_KEYS = frozenset({"fill", "expand", "anchor", "sticky", "side"})
+
 # Presence of any of these signals "use place() instead of pack()/grid()"
 PLACE_TRIGGER_KEYS = frozenset({"x", "y", "relx", "rely", "relwidth", "relheight"})
 
@@ -200,3 +213,98 @@ class PublicContainer(PublicWidgetBase):
     def __exit__(self, exc_type, exc, tb) -> None:
         pop_container(self)
         return None
+
+
+# ---  Flex engine (Row / Column)  --------------------------------------------
+
+
+def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
+    """Raise on legacy pack/grid placement kwargs passed to a flex child."""
+    bad = _LEGACY_CHILD_KEYS & layout_kw.keys()
+    if bad:
+        from bootstack.errors import BootstackError
+
+        raise BootstackError(
+            f"{where}: {', '.join(sorted(bad))} is not a valid layout option for "
+            f"a Row/Column/Grid child. Use grow= / align_self= (and justify_self= "
+            f"in a Grid) instead — see the layout guide."
+        )
+
+
+def _flex_child_opts(child: PublicWidgetBase, layout_kw: dict) -> dict:
+    """Build the FlexFrame per-child opts dict from resolved layout kwargs.
+
+    Expects `_expand_margin` to have already converted margins to padx/pady.
+    Carries spacer metadata when `child` is a `Spacer` (duck-typed to avoid a
+    circular import).
+    """
+    opts: dict[str, Any] = {}
+    for key in ("grow", "align_self", "justify_self", "padx", "pady"):
+        if key in layout_kw:
+            opts[key] = layout_kw[key]
+    if getattr(child, "_is_spacer", False):
+        opts["_spacer"] = True
+        opts["_spacer_size"] = getattr(child, "_spacer_size", None)
+        opts["_spacer_weight"] = getattr(child, "_spacer_weight", 1)
+    return opts
+
+
+class FlexContainer(PublicContainer):
+    """Base for containers whose children flow through a `FlexFrame`.
+
+    Subclasses build a `FlexFrame` and expose it via `_flex_frame`; children
+    are added to it (re-planning the layout) and a `Placement(method="flex")`
+    is recorded for `detach`/`attach`. Defaults `_flex_frame` to `_internal`,
+    which suits the stack widgets; containers with a nested layout frame (App's
+    content frame, Card's body) override the property.
+    """
+
+    @property
+    def _flex_frame(self) -> Any:
+        return self._internal
+
+    def _child_master(self) -> tkinter.Misc:
+        return self._flex_frame
+
+    def _default_layout_method(self) -> str:
+        return "flex"
+
+    def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
+        """Place `child` into this container's flow and snapshot its placement."""
+        place_flex_child(self._flex_frame, child, layout_kw, type(self).__name__)
+
+
+def place_flex_child(
+    frame: Any, child: PublicWidgetBase, layout_kw: dict, where: str
+) -> None:
+    """Add `child` to a `FlexFrame` and record a `Placement` for detach/attach.
+
+    Shared by `FlexContainer` and the dual-mode containers (Card/GroupBox in
+    their vstack/hstack mode) so the flex placement contract lives in one place.
+    Absolute placement (`x=`/`y=`) is honored as an overlay escape hatch — the
+    child is `place`-d over the flow rather than entering it.
+    """
+    attached = layout_kw.pop("attached", True)
+
+    # Place-mode escape hatch: a child given x/y/relx/rely is positioned
+    # absolutely over the flow, not gridded into it.
+    if any(k in layout_kw for k in PLACE_TRIGGER_KEYS):
+        options = {k: v for k, v in layout_kw.items() if k in PLACE_KEYS}
+        if attached:
+            child._internal.place(in_=frame, **options)
+        child._placement = Placement("place", frame, options)
+        return
+
+    _reject_legacy_child_kwargs(layout_kw, where)
+    _expand_margin(layout_kw)
+    index = layout_kw.get("index")
+    opts = _flex_child_opts(child, layout_kw)
+    if attached:
+        frame.add_child(child._internal, opts, index=index)
+        child._placement = Placement("flex", frame, opts)
+    else:
+        # Record the slot a later attach() restores: an explicit index, else the
+        # natural append position (current child count).
+        if index is None:
+            index = len(frame._managed)
+        child._placement = Placement("flex", frame, opts, index=index)

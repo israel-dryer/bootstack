@@ -60,7 +60,7 @@ from bootstack.widgets.appshell import AppShell
 from bootstack.widgets.window import Window
 
 # ── Public widget layer ───────────────────────────────────────────────────────
-from bootstack.widgets.stacks import HStack, VStack
+from bootstack.widgets.stacks import Row, Column, Spacer
 from bootstack.widgets.grid import Grid
 from bootstack.widgets.boolean_controls import Checkbox, Switch, ToggleButton
 from bootstack.widgets.theme_toggle import ThemeToggle
@@ -129,7 +129,7 @@ __all__ = [
     # Application & windows
     "App", "AppShell", "Window",
     # Layout
-    "HStack", "VStack", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
+    "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
     "Button", "ButtonGroup", "ThemeToggle", "MenuButton", "Toolbar", "StatusBar",

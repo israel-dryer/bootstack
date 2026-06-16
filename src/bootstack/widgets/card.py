@@ -3,13 +3,13 @@ from __future__ import annotations
 import tkinter
 from typing import Any
 
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
+    PublicContainer, GRID_KEYS, place_flex_child,
 )
 from bootstack.widgets.types import (
-    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+    AccentToken, Padding, AlignItems, JustifyContent, Sticky, LayoutKind, AutoFlow,
 )
 
 
@@ -26,12 +26,14 @@ class Card(PublicContainer):
             A single value applies to all sides; `(x, y)` sets the horizontal
             and vertical amounts. Defaults to `16`.
         gap: Space in pixels between child widgets. Defaults to `0`.
-        fill_items: Default `fill` direction applied to every child.
-            Individual children can override this with their own `fill=`.
-        expand_items: When `True`, each child expands to take any extra
-            space along the pack direction. Defaults to `None` (no expand).
-        anchor_items: Default alignment anchor applied to each child when it
-            does not fill its slot.
+        justify: For `'vstack'`/`'hstack'` layout, how the whole group of
+            children is distributed along the main axis — `'start'`,
+            `'center'`, `'end'`, or a `'space-*'` mode. Defaults to `'start'`.
+        align: For `'vstack'`/`'hstack'` layout, the cross-axis alignment of
+            children — `'start'`, `'center'`, `'end'`, or `'stretch'`.
+            Override per child with `align_self`. Defaults to `'start'`.
+        grow_items: For `'vstack'`/`'hstack'` layout, when `True` every child
+            grows equally to share the main axis. Defaults to `False`.
         columns: Column definitions for `'grid'` layout. An integer sets
             the number of equal-weight columns; a list sets per-column weights
             or sizes — integers are relative weights, `'auto'` sizes to
@@ -56,9 +58,9 @@ class Card(PublicContainer):
         layout: LayoutKind = "vstack",
         padding: Padding | None = 16,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        justify: JustifyContent = "start",
+        align: AlignItems = "start",
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
         sticky_items: Sticky | str | None = None,
@@ -86,7 +88,7 @@ class Card(PublicContainer):
         effective_surface = f'{accent}[subtle]' if accent is not None else _SURFACE_STEPS.get(parent_surface, 'card')
 
         if layout in ("vstack", "hstack"):
-            self._internal = PackFrame(
+            self._internal = FlexFrame(
                 tk_master,
                 direction="vertical" if layout == "vstack" else "horizontal",
                 variant="card",
@@ -95,9 +97,9 @@ class Card(PublicContainer):
                 **({"accent": accent} if accent is not None else {}),
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                justify=justify,
+                align=align,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._internal = GridFrame(
@@ -118,9 +120,6 @@ class Card(PublicContainer):
                 f"Card layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
         self._sticky_items = sticky_items
         self._attach_to_parent(layout_kw)
 
@@ -128,19 +127,16 @@ class Card(PublicContainer):
         return self._internal
 
     def _default_layout_method(self) -> str:
-        return "grid" if self._layout == "grid" else "pack"
+        return "grid" if self._layout == "grid" else "flex"
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        if self._layout == "grid":
+            return super().guide_layout(child, **layout_kw)
+        place_flex_child(self._internal, child, layout_kw, "Card")
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        if self._layout == "grid":
-            options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
-            return ("grid", options)
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        return ("pack", options)
+        # Only reached for grid layout (vstack/hstack use the flex path above).
+        options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
+        if "sticky" not in options and self._sticky_items:
+            options["sticky"] = self._sticky_items
+        return ("grid", options)
