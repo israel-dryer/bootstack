@@ -80,3 +80,32 @@ def test_add_widget_class_inherits_bar_density_skips_unsupported_surface(app):
 def test_add_toolbar_defaults_chrome_surface(app):
     tb = app.add_toolbar()
     assert tb._internal._surface == "chrome"
+
+
+def test_macos_menu_aggregation_order_and_filter(app):
+    # The macOS native bar aggregates bridged toolbars' menus in stack order,
+    # excluding any toolbar with use_macos_menus=False. (On Windows the bridge is
+    # inactive — the aggregation model is what would feed the native bar.)
+    with app.add_toolbar() as bridged:
+        with bridged.add_menu("AggFile") as f:
+            f.add_action("X", on_click=lambda: None)
+        with bridged.add_menu("AggEdit") as e:
+            e.add_action("Y", on_click=lambda: None)
+    with app.add_toolbar(use_macos_menus=False) as unbridged:
+        with unbridged.add_menu("AggTools") as t:
+            t.add_action("Z", on_click=lambda: None)
+
+    groups = [g.text for g in app._aggregate_native_menu_model()]
+    # bridged menus appear in order...
+    assert groups.index("AggFile") < groups.index("AggEdit")
+    # ...the opted-out toolbar's menu does not.
+    assert "AggTools" not in groups
+
+
+def test_bridge_inactive_on_non_macos(app):
+    # On Windows/Linux menus render in-window — the bridge does not hide triggers.
+    with app.add_toolbar() as tb:
+        with tb.add_menu("InWindow") as m:
+            m.add_action("X", on_click=lambda: None)
+    assert not app._menus_are_native()
+    assert "InWindow" in tb._internal._menu_triggers

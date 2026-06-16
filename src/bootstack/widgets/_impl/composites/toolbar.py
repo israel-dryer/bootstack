@@ -104,6 +104,9 @@ class Toolbar(Frame):
         self._menu_triggers: dict[str, DropdownButton] = {}
         self._menu_radio_vars: dict[str, StringVar] = {}
         self._menu_rebind_pending: Any = None
+        # Optional host hook fired when this toolbar's menus change, so a window
+        # can rebuild the aggregated macOS native menu bar.
+        self._on_menu_change: Callable[[], Any] | None = None
 
     @staticmethod
     def _control_glyph(name: str) -> dict:
@@ -387,6 +390,8 @@ class Toolbar(Frame):
         item = group.items[-1]
         trigger.add_items([menu_item_to_context_item(item, self._menu_radio_vars)])
         self._schedule_menu_rebind()
+        if self._on_menu_change is not None:
+            self._on_menu_change()
 
     def _schedule_menu_rebind(self) -> None:
         """Coalesce shortcut (re)binding to idle so a built menu binds once."""

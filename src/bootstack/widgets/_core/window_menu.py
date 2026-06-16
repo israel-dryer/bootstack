@@ -285,7 +285,9 @@ class ChromeHostMixin:
 
     # ----- toolbar stack -----
 
-    def add_toolbar(self, *, divider: bool = False, **toolbar_kwargs: Any) -> Any:
+    def add_toolbar(
+        self, *, divider: bool = False, use_macos_menus: bool = True, **toolbar_kwargs: Any
+    ) -> Any:
         """Append a `Toolbar` to the window's top chrome stack and return it.
 
         Toolbars stack full-width, top-to-bottom, in the order added — fill each
@@ -299,6 +301,10 @@ class ChromeHostMixin:
 
         Args:
             divider: Draw a hairline beneath this toolbar (default `False`).
+            use_macos_menus: On macOS, bridge this toolbar's menus to the native
+                global menu bar (in-window dropdowns hide). Default `True`; set
+                `False` to keep its menus in-window even on macOS. No effect on
+                Windows/Linux.
             **toolbar_kwargs: Forwarded to `Toolbar` — e.g. `surface`, `density`,
                 `button_variant`, `show_window_controls`, `draggable`. Defaults
                 `surface='chrome'` (this is window chrome); a
@@ -326,7 +332,77 @@ class ChromeHostMixin:
             Separator(
                 stack, orient="horizontal", surface=toolbar_kwargs["surface"]
             ).pack(side="top", fill="x")
+        self._register_chrome_toolbar(tb, use_macos_menus)
         return tb
+
+    # ----- macOS native menu bridge -----
+
+    def _register_chrome_toolbar(self, tb: Any, use_macos_menus: bool) -> None:
+        """Track a chrome toolbar and, on macOS, wire its menus into the native
+        global menu bar (aggregated across all bridged toolbars)."""
+        toolbars = getattr(self, "_chrome_toolbars", None)
+        if toolbars is None:
+            toolbars = self._chrome_toolbars = []
+        toolbars.append((tb, use_macos_menus))
+        if use_macos_menus and self._menus_are_native():
+            tb._internal._on_menu_change = self._schedule_native_menu_rebuild
+            self._schedule_native_menu_rebuild()
+
+    def _menus_are_native(self) -> bool:
+        """Whether menus render in the native global bar (macOS / aqua)."""
+        root = self._menu_root()
+        try:
+            return root.tk.call("tk", "windowingsystem") == "aqua"
+        except Exception:
+            return False
+
+    def _aggregate_native_menu_model(self) -> Any:
+        """Build one `MenuModel` from every bridged chrome toolbar's menus, in
+        stack order then left-to-right within each toolbar. Also hides the
+        in-window triggers for bridged toolbars (the native bar shows them)."""
+        from bootstack.widgets._impl.composites.menu.model import MenuModel
+
+        agg = MenuModel()
+        for tb, bridge in getattr(self, "_chrome_toolbars", []):
+            if not bridge:
+                continue
+            model = tb._internal.menu_model
+            if model is None:
+                continue
+            agg.groups.extend(model.groups)
+            for trigger in tb._internal._menu_triggers.values():
+                try:
+                    trigger.pack_forget()
+                except Exception:
+                    pass
+        return agg
+
+    def _schedule_native_menu_rebuild(self) -> None:
+        root = self._menu_root()
+        pending = getattr(self, "_native_menu_pending", None)
+        if root is None:
+            self._rebuild_native_menu()
+            return
+        if pending is not None:
+            try:
+                root.after_cancel(pending)
+            except Exception:
+                pass
+        try:
+            self._native_menu_pending = root.after_idle(self._rebuild_native_menu)
+        except Exception:
+            self._rebuild_native_menu()
+
+    def _rebuild_native_menu(self) -> None:
+        from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
+
+        self._native_menu_pending = None
+        model = self._aggregate_native_menu_model()
+        renderer = getattr(self, "_native_menu_renderer", None)
+        if renderer is None:
+            self._native_menu_renderer = NativeMenuBar(self._menu_root(), model)
+        else:
+            renderer.set_model(model)
 
     def _ensure_toolbar_stack(self) -> Any:
         stack = getattr(self, "_toolbar_stack", None)
