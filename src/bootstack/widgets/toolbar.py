@@ -276,4 +276,5 @@ class Toolbar(PublicWidgetBase):
         """
         from bootstack.widgets.theme_toggle import ThemeToggle
 
+        self._apply_bar_defaults(ThemeToggle, kwargs)
         return ThemeToggle(parent=self, **kwargs)

@@ -67,12 +67,13 @@ class Toolbar(Frame):
             button_variant: Default variant for toolbar buttons. Default 'ghost'.
             density: Button density for toolbar items. 'compact' for smaller buttons,
                 'default' for standard size. Default 'default'.
-            padding: Toolbar padding. If None, uses density-based default
-                ((3, 1) for compact, 3 for default).
+            padding: Toolbar padding. If None, uses a uniform density-based
+                default (2 for compact, 3 for default) so items have even
+                breathing room on all sides.
             **kwargs: Additional arguments passed to Frame.
         """
         if padding is None:
-            padding = (3, 1) if density == 'compact' else 3
+            padding = 2 if density == 'compact' else 3
         super().__init__(master, padding=padding, **kwargs)
 
         self._show_window_controls = show_window_controls
@@ -104,6 +105,13 @@ class Toolbar(Frame):
         self._menu_radio_vars: dict[str, StringVar] = {}
         self._menu_rebind_pending: Any = None
 
+    @staticmethod
+    def _control_glyph(name: str) -> dict:
+        """A title-bar control glyph spec — a small (~14px) glyph regardless of
+        the toolbar density, for a tight native-style control rather than a
+        chunky compact-icon button (the 17px compact-icon default)."""
+        return {'name': name, 'size': 14}
+
     def _build_window_controls(self):
         """Build window control buttons (minimize, maximize, close)."""
         self._controls_frame = Frame(self)
@@ -112,7 +120,7 @@ class Toolbar(Frame):
         # Minimize button
         self._minimize_btn = Button(
             self._controls_frame,
-            icon='dash-lg',
+            icon=self._control_glyph('dash-lg'),
             icon_only=True,
             variant='ghost',
             density='compact',
@@ -124,7 +132,7 @@ class Toolbar(Frame):
         # Maximize/Restore button
         self._maximize_btn = Button(
             self._controls_frame,
-            icon='fullscreen',
+            icon=self._control_glyph('fullscreen'),
             icon_only=True,
             variant='ghost',
             density='compact',
@@ -136,7 +144,7 @@ class Toolbar(Frame):
         # Close button — danger accent so it hovers red (the native convention).
         self._close_btn = Button(
             self._controls_frame,
-            icon='x-lg',
+            icon=self._control_glyph('x-lg'),
             icon_only=True,
             variant='ghost',
             accent='danger',
@@ -223,10 +231,10 @@ class Toolbar(Frame):
             return
         if window.state() == 'zoomed':
             window.state('normal')
-            self._maximize_btn.configure(icon='fullscreen')
+            self._maximize_btn.configure(icon=self._control_glyph('fullscreen'))
         else:
             window.state('zoomed')
-            self._maximize_btn.configure(icon='fullscreen-exit')
+            self._maximize_btn.configure(icon=self._control_glyph('fullscreen-exit'))
 
     def _on_close(self):
         """Handle close button click."""
@@ -286,7 +294,7 @@ class Toolbar(Frame):
         btn = getattr(self, '_maximize_btn', None)
         if btn is not None:
             try:
-                btn.configure(icon=name)
+                btn.configure(icon=self._control_glyph(name))
             except Exception:
                 pass
 

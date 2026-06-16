@@ -301,29 +301,31 @@ class ChromeHostMixin:
             divider: Draw a hairline beneath this toolbar (default `False`).
             **toolbar_kwargs: Forwarded to `Toolbar` — e.g. `surface`, `density`,
                 `button_variant`, `show_window_controls`, `draggable`. Defaults
-                `surface='chrome'` (this is window chrome).
+                `surface='chrome'` (this is window chrome); a
+                `show_window_controls=True` toolbar (a title bar) also defaults to
+                `density='compact'`.
 
         Returns:
             The `Toolbar` for this layer.
         """
-        from bootstack.style.style_builder_base import StyleBuilderBase
         from bootstack.widgets._impl.primitives import Separator
         from bootstack.widgets.toolbar import Toolbar
 
         stack = self._ensure_toolbar_stack()
         toolbar_kwargs.setdefault("surface", "chrome")
+        # A window-controls toolbar is a title bar — default it to a thin compact
+        # strip (overridable) so it reads tight rather than a tall command bar.
+        if toolbar_kwargs.get("show_window_controls"):
+            toolbar_kwargs.setdefault("density", "compact")
         tb = Toolbar(parent=_ToolbarStackContainer(stack), **toolbar_kwargs)
         if divider:
-            # A small margin below the hairline so the next toolbar (or the
-            # content) isn't cramped right against it — the bar above already has
-            # its own bottom padding, so the gap only needs balancing below. The
-            # divider takes the bar's surface (and the stack carries it too — see
-            # `_ensure_toolbar_stack`) so the margin gap reads chrome, not the
-            # window's content surface.
-            margin = StyleBuilderBase.scale(3)
+            # A bare full-width hairline — no margin. The bar above provides any
+            # spacing through its own (chrome) padding, so nothing of the stack
+            # surface leaks below the line when this is the last band before the
+            # content (the window's content surface starts right after the line).
             Separator(
                 stack, orient="horizontal", surface=toolbar_kwargs["surface"]
-            ).pack(side="top", fill="x", pady=(0, margin))
+            ).pack(side="top", fill="x")
         return tb
 
     def _ensure_toolbar_stack(self) -> Any:

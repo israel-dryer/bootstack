@@ -308,21 +308,12 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
         undecorated: Remove OS window decorations and draw a custom border.
-            Ignored on macOS. A dedicated titlebar band appears at the top — an
-            empty command bar (the `titlebar` accessor) you fill with your own
-            content; the framework adds only the window controls and dragging.
-        window_controls: In undecorated mode, show minimize / maximize / close at
-            the right edge of the titlebar band. Ignored when decorated. Default
-            `True`.
-        draggable: In undecorated mode, let the titlebar band drag the window
-            (double-click maximizes). Ignored when decorated. Default `True`.
+            Ignored on macOS. Build the title bar yourself with
+            `add_toolbar(show_window_controls=True)`.
         menu_layout: Chrome arrangement — `'fused'` (menus and command bar share
             one row) or `'stacked'` (command bar below the menu strip).
         chrome_surface: Surface token for the chrome row — the band holding the
             menu bar and command bar. Default `'chrome'`.
-        titlebar_surface: Surface token for the undecorated titlebar band, letting
-            it read distinct from the chrome row below it. Defaults to `None`
-            (inherit `chrome_surface`). No effect when decorated.
         chrome_divider: Draw a hairline under the chrome row. Default `True`.
         show_sidebar: Render the sidebar region. Default `True`.
         sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
@@ -374,14 +365,11 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         chrome_surface: SurfaceToken | str = "chrome",
         chrome_divider: bool = True,
         # region surfaces
-        titlebar_surface: SurfaceToken | str | None = None,
         rail_surface: SurfaceToken | str = "chrome",
         sidebar_surface: SurfaceToken | str = "raised",
         statusbar_surface: SurfaceToken | str = "chrome",
         # scaffold / navigation
         undecorated: bool = False,
-        window_controls: bool = True,
-        draggable: bool = True,
         show_sidebar: bool = True,
         sidebar_mode: Literal["expanded", "compact", "hidden"] = "expanded",
         sidebar_width: int | None = None,
@@ -408,8 +396,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         init_kwargs: dict[str, Any] = {
             "title": title,
             "undecorated": undecorated,
-            "window_controls": window_controls,
-            "draggable": draggable,
             "light_theme": light_theme,
             "dark_theme": dark_theme,
             "follow_system_appearance": follow_system_appearance,
@@ -429,7 +415,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             "rail_labels": rail_labels,
             "remember_nav_state": remember_nav_state,
             "chrome_surface": chrome_surface,
-            "titlebar_surface": titlebar_surface,
             "rail_surface": rail_surface,
             "sidebar_surface": sidebar_surface,
             "statusbar_surface": statusbar_surface,
@@ -468,8 +453,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             elif icon_image is not None:
                 self._app_icon_photo = icon_image._materialize()
                 self._internal._setup_icon(self._app_icon_photo)
-
-        self._titlebar: Any = None
 
         if show_statusbar:
             # Materialize the band now so it is present from the first frame.
@@ -517,6 +500,12 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             self._chrome_shown = True
         self._chrome = self._internal.chrome
         return self._chrome
+
+    def _ensure_toolbar_stack(self) -> Any:
+        # The shell pre-builds its stacked-toolbar region as a first-class band
+        # (above the body); `add_toolbar()` mounts into it rather than the base
+        # mixin's content-frame stack.
+        return self._internal.toolbar_stack
 
     # ----- Shell-level content (delegates to the implicit default workspace) ----
 
@@ -800,35 +789,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 _show=lambda: self._internal.set_statusbar_visible(True),
             )
         return self._statusbar
-
-    @property
-    def titlebar(self) -> Any:
-        """The custom titlebar band — a `Toolbar` (undecorated mode only).
-
-        In undecorated mode the shell shows a dedicated titlebar band at the very
-        top. The framework adds only the window controls (per `window_controls`)
-        and drag behavior (per `draggable`); the band is otherwise an empty
-        command bar you fill with your own content — an app icon, a title label,
-        buttons::
-
-            shell.titlebar.add_label("My App", icon="stack")
-            shell.titlebar.add_spacer()
-            shell.titlebar.add_theme_toggle()
-
-        Raises:
-            RuntimeError: If the shell is decorated (the OS draws the title bar,
-                so there is no band to fill).
-        """
-        if not self._internal._undecorated:
-            raise RuntimeError(
-                "shell.titlebar is only available when undecorated=True "
-                "(a decorated window uses the OS title bar)"
-            )
-        if self._titlebar is None:
-            from bootstack.widgets.toolbar import Toolbar
-
-            self._titlebar = Toolbar(_toolbar=self._internal.titlebar)
-        return self._titlebar
 
     @property
     def rail(self) -> Rail:

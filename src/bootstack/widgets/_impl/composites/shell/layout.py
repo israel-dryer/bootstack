@@ -36,6 +36,7 @@ from typing import Any
 from bootstack._runtime.app import App
 from bootstack.widgets._impl.composites.toolbar import Toolbar
 from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.packframe import PackFrame
 from bootstack.widgets._impl.primitives.separator import Separator
 
 
@@ -74,13 +75,9 @@ class ShellLayout(App):
         theme: Theme name, or None for the default.
         size: Initial window size as `(width, height)`.
         undecorated: Remove OS chrome and draw a custom border (ignored on
-            macOS). A dedicated titlebar band appears at the top — an empty,
-            user-fillable toolbar (the `titlebar` accessor) onto which the
-            framework adds only the window controls and drag behavior.
-        window_controls: In undecorated mode, add minimize / maximize / close at
-            the right edge of the titlebar band. Ignored when decorated.
-        draggable: In undecorated mode, let the titlebar band drag the window
-            (double-click maximizes). Ignored when decorated.
+            macOS). Build the title bar yourself with
+            `add_toolbar(show_window_controls=True)` — the framework adds no
+            chrome of its own.
         rail_width: Width of the workspace rail (and compact sidebar) in pixels.
         sidebar_width: Width of the expanded sidebar in pixels.
         dock_width: Width of the detail/inspector dock in pixels.
@@ -94,13 +91,10 @@ class ShellLayout(App):
         theme: str | None = None,
         size: tuple[int, int] | None = None,
         undecorated: bool = False,
-        window_controls: bool = True,
-        draggable: bool = True,
         rail_width: int = DEFAULT_RAIL_WIDTH,
         sidebar_width: int = DEFAULT_SIDEBAR_WIDTH,
         dock_width: int = DEFAULT_DOCK_WIDTH,
         chrome_surface: str = "chrome",
-        titlebar_surface: str | None = None,
         rail_surface: str = RAIL_SURFACE,
         sidebar_surface: str = SIDEBAR_SURFACE,
         statusbar_surface: str = STATUSBAR_SURFACE,
@@ -111,9 +105,6 @@ class ShellLayout(App):
             undecorated = False
 
         self._chrome_surface = chrome_surface
-        # The titlebar defaults to the chrome surface, but can be given its own
-        # so the title band reads distinct from the menu / command bar below it.
-        self._titlebar_surface = titlebar_surface if titlebar_surface is not None else chrome_surface
         self._rail_surface = rail_surface
         self._sidebar_surface = sidebar_surface
         self._statusbar_surface = statusbar_surface
@@ -126,16 +117,13 @@ class ShellLayout(App):
         super().__init__(**app_kwargs)
 
         self._undecorated = undecorated
-        self._window_controls = window_controls
-        self._draggable = draggable
         self._rail_width = rail_width
         self._sidebar_width = sidebar_width
         self._dock_width = dock_width
 
-        # Visibility flags. Content is always shown; the rest are slots. In
-        # undecorated mode a dedicated titlebar band (built below) stands in for
-        # the OS title bar; the chrome band stays lazy (menus / command bar only).
-        self._show_titlebar = undecorated
+        # Visibility flags. Content is always shown; the rest are slots. The
+        # chrome band stays lazy (menus / command bar only); a custom title bar
+        # in undecorated mode is just an `add_toolbar(show_window_controls=True)`.
         self._show_chrome = False
         self._show_statusbar = False
         self._show_rail = False
@@ -168,18 +156,10 @@ class ShellLayout(App):
         # Both the chrome and status hairlines span the FULL window width (the
         # VS Code convention — the band edges run the whole way across, the rail
         # included), so they live at the window level above/below the body.
-        # Dedicated titlebar band (undecorated only) — an empty, user-fillable
-        # toolbar above the chrome onto which the framework adds only the window
-        # controls + drag (the OS title bar's job). The user packs their own
-        # content (icon, title, buttons) via the public `titlebar` accessor. The
-        # chrome band below is left to do only its own job (menus + command bar).
-        self._titlebar = Toolbar(
-            root, surface=self._titlebar_surface,
-            density="compact",  # a thin title band — minimal vertical padding
-            show_window_controls=self._window_controls,
-            draggable=self._draggable,
-        )
-        self._titlebar_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
+        # The stacked-toolbar region (the `add_toolbar()` host) sits at the very
+        # top of the shell, above the chrome band and body. Chrome-surfaced so any
+        # gap (e.g. a divider margin) reads chrome, not the content surface.
+        self._toolbar_stack = PackFrame(root, direction="vertical", surface="chrome")
         self._chrome = Frame(root, surface=self._chrome_surface)
         self._chrome_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
         self._statusbar = Toolbar(root, surface=self._statusbar_surface, draggable=False)
@@ -215,15 +195,13 @@ class ShellLayout(App):
     # ----- Layout (re-pack in canonical order on every visibility change) -----
 
     def _relayout_window(self) -> None:
-        """Re-pack the full-width titlebar / chrome / status bands and the body."""
-        for child in (self._titlebar, self._titlebar_sep, self._chrome,
-                      self._chrome_sep, self._status_sep, self._statusbar,
-                      self._body):
+        """Re-pack the full-width toolbar / chrome / status bands and the body."""
+        for child in (self._toolbar_stack, self._chrome, self._chrome_sep,
+                      self._status_sep, self._statusbar, self._body):
             child.pack_forget()
-        # Titlebar sits at the very top (undecorated only), above the chrome.
-        if self._show_titlebar:
-            self._titlebar.pack(side="top", fill="x")
-            self._titlebar_sep.pack(side="top", fill="x")
+        # The stacked-toolbar region — full width, at the very top, above the
+        # chrome band + body.
+        self._toolbar_stack.pack(side="top", fill="x")
         if self._show_chrome:
             self._chrome.pack(side="top", fill="x")
             self._chrome_sep.pack(side="top", fill="x")
@@ -301,14 +279,9 @@ class ShellLayout(App):
     # ----- Region accessors -----
 
     @property
-    def titlebar(self) -> Toolbar:
-        """The dedicated titlebar band (a toolbar; undecorated mode only).
-
-        Empty by default apart from the framework-added window controls + drag —
-        pack custom content (icon, title, buttons) into it. Present but never
-        shown when decorated.
-        """
-        return self._titlebar
+    def toolbar_stack(self) -> PackFrame:
+        """The vertical region hosting `add_toolbar()` toolbars (top of window)."""
+        return self._toolbar_stack
 
     @property
     def chrome(self) -> Frame:
