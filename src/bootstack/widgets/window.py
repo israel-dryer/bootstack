@@ -7,7 +7,7 @@ from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import (
-    Padding, AlignItems, JustifyContent, Anchor, SurfaceToken, WindowStyle,
+    Padding, HAlign, VArrange, Anchor, SurfaceToken, WindowStyle,
 )
 
 if TYPE_CHECKING:
@@ -87,11 +87,11 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
             Return `False` to veto; return `None` or `True` to allow.
         padding: Inner padding for the content frame.
         gap: Spacing between children.
-        justify: Vertical distribution of the whole group of children —
-            `'start'`, `'center'`, `'end'`, or a `'space-*'` mode. Default
-            `'start'`.
-        align: Horizontal (cross-axis) alignment of children — `'start'`,
-            `'center'`, `'end'`, or `'stretch'`. Default `'start'`.
+        horizontal_items: Horizontal alignment of children — `'left'`,
+            `'center'`, `'right'`, or `'stretch'` (fill the width). Default
+            `'left'`.
+        vertical_items: How children are arranged top to bottom — `'top'`,
+            `'center'`, `'bottom'`, or a `'space-*'` mode. Default `'top'`.
         grow_items: When `True`, children grow equally to fill the height.
         surface: Surface token for the content frame background.
     """
@@ -119,8 +119,8 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         # Content frame layout
         padding: Padding | None = None,
         gap: int = 0,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: HAlign = "left",
+        vertical_items: VArrange = "top",
         grow_items: bool = False,
         surface: SurfaceToken | str | None = None,
         **kwargs: Any,
@@ -175,8 +175,8 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
             "gap": gap,
-            "justify": justify,
-            "align": align,
+            "horizontal_items": horizontal_items,
+            "vertical_items": vertical_items,
             "grow_items": grow_items,
         }
         if padding is not None:

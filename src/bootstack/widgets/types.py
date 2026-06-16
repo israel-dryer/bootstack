@@ -92,25 +92,27 @@ Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw',
 Side = Literal['left', 'top', 'right', 'bottom']
 """Side placement for stack layout."""
 
-JustifyContent = Literal['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly']
-"""Main-axis distribution of a whole stack group (flexbox `justify-content`).
-`'start'`/`'center'`/`'end'` cluster the group; the `'space-*'` modes spread
-items apart. Cross-axis alignment is `align`; for a local break use a `Spacer`."""
+HAlign = Literal['left', 'center', 'right', 'stretch']
+"""Horizontal alignment of a widget within its slot — `'left'`, `'center'`,
+`'right'`, or `'stretch'` (fill the width)."""
 
-AlignItems = Literal['start', 'center', 'end', 'stretch']
-"""Cross-axis alignment of stack children (flexbox `align-items`). `'start'`
-pins to the leading cross edge, `'stretch'` fills the cross axis. Override on a
-single child with `align_self`."""
+VAlign = Literal['top', 'center', 'bottom', 'stretch']
+"""Vertical alignment of a widget within its slot — `'top'`, `'center'`,
+`'bottom'`, or `'stretch'` (fill the height)."""
 
-JustifyItems = Literal['start', 'center', 'end', 'stretch']
-"""Horizontal in-cell alignment of every Grid child (CSS-grid `justify-items`).
-Override on a single child with `justify_self`."""
+HArrange = Literal['left', 'center', 'right', 'space-between', 'space-around', 'space-evenly']
+"""Horizontal arrangement of a Row's children as a group — cluster them
+(`'left'`/`'center'`/`'right'`) or spread them apart with the `'space-*'` modes."""
+
+VArrange = Literal['top', 'center', 'bottom', 'space-between', 'space-around', 'space-evenly']
+"""Vertical arrangement of a Column's children as a group — cluster them
+(`'top'`/`'center'`/`'bottom'`) or spread them apart with the `'space-*'` modes."""
 
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
 """Layout direction."""
 
-LayoutKind = Literal['vstack', 'hstack', 'grid']
-"""Internal layout manager for a container — `'vstack'`/`'hstack'` pack children
+LayoutKind = Literal['column', 'row', 'grid']
+"""Internal layout manager for a container — `'column'`/`'row'` pack children
 top-to-bottom / left-to-right; `'grid'` arranges them in rows and columns."""
 
 AutoFlow = Literal['row', 'column', 'row-dense', 'column-dense', 'none']

@@ -12,14 +12,14 @@ from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
 from bootstack.widgets.types import (
-    Padding, AlignItems, JustifyContent, SurfaceToken, WindowStyle,
+    Padding, HAlign, VArrange, SurfaceToken, WindowStyle,
 )
 
 
 class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
     """The application window. Behaves as an implicit Column from the user's
-    perspective: accepts `padding`, `gap`, `justify`, `align`, and
-    `grow_items` and applies them to its internal content frame.
+    perspective: accepts `padding`, `gap`, `horizontal_items`, `vertical_items`,
+    and `grow_items` and applies them to its internal content frame.
 
     Configuration is a single flat path: pass options as constructor kwargs and
     read or change them through matching `app.*` properties (e.g. `app.theme`,
@@ -58,11 +58,11 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         hdpi: Enable high-DPI awareness for the application. Default `True`.
         padding: Inner padding applied to the content frame.
         gap: Spacing between stacked children. Default `0`.
-        justify: Vertical distribution of the whole group of children —
-            `'start'`, `'center'`, `'end'`, or a `'space-*'` mode. Default
-            `'start'`.
-        align: Horizontal (cross-axis) alignment of children — `'start'`,
-            `'center'`, `'end'`, or `'stretch'`. Default `'start'`.
+        horizontal_items: Horizontal alignment of children — `'left'`,
+            `'center'`, `'right'`, or `'stretch'` (fill the width). Default
+            `'left'`.
+        vertical_items: How children are arranged top to bottom — `'top'`,
+            `'center'`, `'bottom'`, or a `'space-*'` mode. Default `'top'`.
         grow_items: When `True`, children grow equally to fill the height.
             Default `False`.
         surface: Background surface for the content frame.
@@ -101,8 +101,8 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: HAlign = "left",
+        vertical_items: VArrange = "top",
         grow_items: bool = False,
         surface: SurfaceToken | str | None = None,
         # Extra kwargs forwarded to the internal App (icon, position, etc.)
@@ -163,8 +163,8 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         frame_kwargs: dict[str, Any] = {
             "direction": "vertical",
             "gap": gap,
-            "justify": justify,
-            "align": align,
+            "horizontal_items": horizontal_items,
+            "vertical_items": vertical_items,
             "grow_items": grow_items,
         }
         if padding is not None:

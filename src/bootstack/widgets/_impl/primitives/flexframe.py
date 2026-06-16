@@ -7,7 +7,7 @@ from typing_extensions import Unpack
 
 from bootstack.widgets._impl.primitives.frame import Frame, FrameKwargs
 from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
-from bootstack.widgets.types import AlignItems, JustifyContent, Master
+from bootstack.widgets.types import Master
 
 
 class FlexFrame(Frame):
@@ -43,8 +43,8 @@ class FlexFrame(Frame):
         master: Master = None,
         *,
         direction: str = "horizontal",
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: str = "left",
+        vertical_items: str = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -53,13 +53,24 @@ class FlexFrame(Frame):
     ) -> None:
         """Create a FlexFrame.
 
+        The public layout vocabulary is screen-axis based: `horizontal_items` and
+        `vertical_items` set how children sit on the x and y axes (values are edge
+        names — `left`/`right`/`top`/`bottom`/`center`/`stretch`, plus `space-*`
+        for the stacking axis). Internally the frame resolves which screen axis is
+        the *main* (stacking) axis and which is the *cross* axis from `direction`.
+
         Args:
             master: Parent widget. If None, uses the default root window.
             direction: Main axis — `'horizontal'` (a Row) or `'vertical'`
                 (a Column). Defaults to `'horizontal'`.
-            justify: Whole-group main-axis distribution. Defaults to `'start'`.
-            align: Cross-axis alignment applied to every child. Defaults to
-                `'start'`.
+            horizontal_items: How children are positioned on the x axis. For a
+                Row (horizontal stacks) this arranges the group
+                (`left`/`center`/`right`/`space-*`); for a Column it aligns each
+                child (`left`/`center`/`right`/`stretch`). Defaults to `'left'`.
+            vertical_items: How children are positioned on the y axis. For a
+                Column (vertical stacks) this arranges the group
+                (`top`/`center`/`bottom`/`space-*`); for a Row it aligns each
+                child (`top`/`center`/`bottom`/`stretch`). Defaults to `'top'`.
             grow_items: When True, every content child grows equally (uniform)
                 to share the main axis. Defaults to False.
             weights: Positional shorthand for per-child `grow` —
@@ -77,13 +88,13 @@ class FlexFrame(Frame):
         """
         super().__init__(master, **kwargs)
         self._direction = direction
-        self._justify = justify
-        self._align = align
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._grow_items = grow_items
         self._weights = weights
         self._gap = gap
-        # Ordered (widget, opts) entries. opts may carry: grow, align_self,
-        # padx, pady (resolved margins), and spacer metadata
+        # Ordered (widget, opts) entries. opts may carry: grow, horizontal,
+        # vertical, padx, pady (resolved margins), and spacer metadata
         # (_spacer, _spacer_size, _spacer_weight).
         self._managed: list[tuple[tk.Widget, dict[str, Any]]] = []
         # Highest main-axis track index configured on the previous relayout,
@@ -98,6 +109,40 @@ class FlexFrame(Frame):
     def _row_dir(self) -> bool:
         """True when the main axis is horizontal (columns vary)."""
         return self._direction in ("horizontal", "row")
+
+    def _main_distribution(self) -> str:
+        """Normalize the stacking-axis value to start/center/end/space-* tokens."""
+        if self._row_dir:
+            value = self._horizontal_items
+            start, end = "left", "right"
+        else:
+            value = self._vertical_items
+            start, end = "top", "bottom"
+        if value == start:
+            return "start"
+        if value == end:
+            return "end"
+        return value  # center, space-between, space-around, space-evenly
+
+    def _cross_default(self) -> str:
+        """The cross-axis (non-stacking) container alignment value."""
+        return self._vertical_items if self._row_dir else self._horizontal_items
+
+    def _cross_sticky(self, value: str) -> str:
+        """Map a cross-axis edge value to Tk sticky chars for this direction."""
+        if value == "stretch":
+            return "ns" if self._row_dir else "ew"
+        if self._row_dir:  # cross axis is vertical
+            if value == "top":
+                return "n"
+            if value == "bottom":
+                return "s"
+        else:  # cross axis is horizontal
+            if value == "left":
+                return "w"
+            if value == "right":
+                return "e"
+        return ""  # center
 
     def index_of(self, widget: tk.Widget) -> int:
         """Return the managed index of `widget`, or -1 if not managed."""
@@ -141,20 +186,20 @@ class FlexFrame(Frame):
         self._gap = value
         self._relayout()
 
-    @configure_delegate('justify')
-    def _delegate_justify(self, value=None) -> str:
-        """Get or set the main-axis distribution."""
+    @configure_delegate('horizontal_items')
+    def _delegate_horizontal_items(self, value=None) -> str:
+        """Get or set how children are positioned on the x axis."""
         if value is None:
-            return self._justify
-        self._justify = value
+            return self._horizontal_items
+        self._horizontal_items = value
         self._relayout()
 
-    @configure_delegate('align')
-    def _delegate_align(self, value=None) -> str:
-        """Get or set the cross-axis alignment default."""
+    @configure_delegate('vertical_items')
+    def _delegate_vertical_items(self, value=None) -> str:
+        """Get or set how children are positioned on the y axis."""
         if value is None:
-            return self._align
-        self._align = value
+            return self._vertical_items
+        self._vertical_items = value
         self._relayout()
 
     # ----- the planner -------------------------------------------------------
@@ -197,7 +242,7 @@ class FlexFrame(Frame):
         # The cross track always fills so align has room to work.
         cross_cfg(0, weight=1)
 
-        j = self._justify
+        j = self._main_distribution()
         per_child_grow = any(
             o.get("grow") for _, o in items if not o.get("_spacer")
         )
@@ -271,17 +316,15 @@ class FlexFrame(Frame):
             else:
                 main_cfg(idx, weight=weight)
 
-            # Cross-axis sticky from align (+ main-axis stretch when growing).
-            a = o.get("align_self") or self._align
+            # Cross-axis sticky from the child's cross alignment (+ main-axis
+            # stretch when growing). The cross axis is vertical for a Row and
+            # horizontal for a Column, so the relevant per-child key flips.
+            cross_key = "vertical" if row_dir else "horizontal"
+            cross_val = o.get(cross_key) or self._cross_default()
             sticky = ""
             if grows:
                 sticky += "ew" if row_dir else "ns"
-            if a == "stretch":
-                sticky += "ns" if row_dir else "ew"
-            elif a == "start":
-                sticky += "n" if row_dir else "w"
-            elif a == "end":
-                sticky += "s" if row_dir else "e"
+            sticky += self._cross_sticky(cross_val)
 
             # Gap (leading, between content only) + per-child margins.
             main_axis = "padx" if row_dir else "pady"

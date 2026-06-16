@@ -11,8 +11,7 @@ from bootstack.widgets._core.container import (
     _reject_legacy_child_kwargs,
 )
 from bootstack.widgets.types import (
-    AccentToken, Padding, AlignItems, JustifyContent, JustifyItems,
-    LayoutKind, AutoFlow, LocalizeMode,
+    AccentToken, Padding, LayoutKind, AutoFlow, LocalizeMode,
 )
 
 
@@ -25,20 +24,23 @@ class GroupBox(PublicContainer):
     Args:
         title: Text label embedded in the top border line. Defaults to an
             empty string (border only, no label).
-        layout: Internal layout manager. Defaults to `'vstack'`.
+        layout: Internal layout manager. Defaults to `'column'`.
         padding: Space in pixels between the border and the content. A single
             value applies to all sides; `(x, y)` sets the horizontal and
             vertical amounts. Defaults to `16`.
         accent: Color intent token applied to the border and title label.
             When omitted, the border uses the theme's default foreground color.
         gap: Space in pixels between child widgets. Defaults to `0`.
-        justify: For `'vstack'`/`'hstack'` layout, how the whole group of
-            children is distributed along the main axis — `'start'`,
-            `'center'`, `'end'`, or a `'space-*'` mode. Defaults to `'start'`.
-        align: For `'vstack'`/`'hstack'` layout, the cross-axis alignment of
-            children — `'start'`, `'center'`, `'end'`, or `'stretch'`.
-            Override per child with `align_self`. Defaults to `'start'`.
-        grow_items: For `'vstack'`/`'hstack'` layout, when `True` every child
+        horizontal_items: How children sit on the horizontal axis — edge values
+            `'left'`/`'center'`/`'right'`/`'stretch'`, plus the `'space-*'` modes
+            when horizontal is the stacking axis (`'row'`). Override per child
+            with `horizontal`. Defaults to `'stretch'` for `'grid'`, else
+            `'left'`.
+        vertical_items: How children sit on the vertical axis — edge values
+            `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus the `'space-*'` modes
+            when vertical is the stacking axis (`'column'`). Override per child
+            with `vertical`. Defaults to `'stretch'` for `'grid'`, else `'top'`.
+        grow_items: For `'column'`/`'row'` layout, when `True` every child
             grows equally to share the main axis. Defaults to `False`.
         columns: Column definitions for `'grid'` layout. An integer sets
             the number of equal-weight columns; a list sets per-column
@@ -46,12 +48,6 @@ class GroupBox(PublicContainer):
             sizes to content, `'Npx'` sets a fixed pixel width (e.g.
             `[1, 2, 'auto', '120px']`).
         rows: Row definitions for `'grid'` layout, same format as `columns`.
-        justify_items: For `'grid'` layout, horizontal in-cell alignment of
-            every child — `'stretch'`, `'start'`, `'center'`, or `'end'`.
-            Override per child with `justify_self`. Defaults to `'stretch'`.
-        align_items: For `'grid'` layout, vertical in-cell alignment of every
-            child — `'stretch'`, `'start'`, `'center'`, or `'end'`. Override
-            per child with `align_self`. Defaults to `'stretch'`.
         auto_flow: Grid auto-placement direction. Defaults to `'row'`.
         localize: Whether the title is translated through the catalog — `True`,
             `False`, or `'auto'`. Defaults to the app's `localize_mode`.
@@ -65,17 +61,15 @@ class GroupBox(PublicContainer):
         self,
         title: str = "",
         *,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = 16,
         accent: AccentToken | str | None = None,
         gap: int = 0,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
         grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        justify_items: JustifyItems = "stretch",
-        align_items: AlignItems = "stretch",
         auto_flow: AutoFlow = "row",
         localize: LocalizeMode | None = None,
         parent: Any = None,
@@ -84,6 +78,14 @@ class GroupBox(PublicContainer):
         self._parent = self._resolve_parent(parent)
         self._layout = layout
         layout_kw = self._split_layout_kwargs(kwargs)
+
+        # One horizontal_items/vertical_items pair serves both modes; the sensible
+        # default differs — grid cells fill (stretch), stacked children sit at the
+        # leading edge (left/top).
+        if horizontal_items is None:
+            horizontal_items = "stretch" if layout == "grid" else "left"
+        if vertical_items is None:
+            vertical_items = "stretch" if layout == "grid" else "top"
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -95,13 +97,13 @@ class GroupBox(PublicContainer):
 
         self._internal = _LabelFrame(tk_master, **lf_kwargs)
 
-        if layout in ("vstack", "hstack"):
+        if layout in ("column", "row"):
             self._layout_frame = FlexFrame(
                 self._internal,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 gap=gap,
-                justify=justify,
-                align=align,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
                 grow_items=grow_items,
             )
         elif layout == "grid":
@@ -114,11 +116,11 @@ class GroupBox(PublicContainer):
             )
         else:
             raise ValueError(
-                f"GroupBox layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"GroupBox layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._justify_items = justify_items
-        self._align_items = align_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._layout_frame.pack(fill="both", expand=True)
         self._attach_to_parent(layout_kw)
 
@@ -134,12 +136,12 @@ class GroupBox(PublicContainer):
         place_flex_child(self._layout_frame, child, layout_kw, "GroupBox")
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        # Only reached for grid layout (vstack/hstack use the flex path above).
+        # Only reached for grid layout (column/row use the flex path above).
         _reject_legacy_child_kwargs(layout_kw, "GroupBox")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-        ji = layout_kw.get("justify_self") or self._justify_items
-        ai = layout_kw.get("align_self") or self._align_items
-        options["sticky"] = grid_sticky(ji, ai)
+        h = layout_kw.get("horizontal") or self._horizontal_items
+        v = layout_kw.get("vertical") or self._vertical_items
+        options["sticky"] = grid_sticky(h, v)
         return ("grid", options)
 
     # ----- Properties -----

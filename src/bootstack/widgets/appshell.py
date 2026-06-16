@@ -12,7 +12,8 @@ from bootstack.widgets._impl.composites.shell.shell import Shell as _InternalShe
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
-from bootstack.widgets._core.container import PACK_KEYS, normalize_fill
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
+from bootstack.widgets._core.container import place_flex_child
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
@@ -41,26 +42,30 @@ class Page:
     def __init__(self, tk_frame: Any, scrollable: bool = False) -> None:
         self._internal = tk_frame
         self._scroll: Any = None
+        # The page content is a vertical flex frame so children flow with the
+        # Row/Column vocabulary (grow / align_self). It stretches its children
+        # across the width by default — page content almost always fills the
+        # content area — so a page's top-level container needs no align_self.
+        self._flex = FlexFrame(tk_frame, direction="vertical", horizontal_items="stretch")
+        self._flex.pack(fill="both", expand=True)
         if scrollable:
             from bootstack.widgets.scrollview import ScrollView
 
-            # The scrollview parents into this page frame (its `guide_layout`
-            # runs while `self._scroll` is still None), then claims children.
-            self._scroll = ScrollView(parent=self, fill="both", expand=True)
+            # The scrollview parents into this page (its `guide_layout` runs
+            # while `self._scroll` is still None, placing it in the flex frame),
+            # then claims subsequent children.
+            self._scroll = ScrollView(parent=self, grow=True, horizontal="stretch")
 
     def _child_master(self) -> Any:
         if self._scroll is not None:
             return self._scroll._child_master()
-        return self._internal
+        return self._flex
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
         if self._scroll is not None:
             self._scroll.guide_layout(child, **layout_kw)
             return
-        if "fill" in layout_kw:
-            layout_kw["fill"] = normalize_fill(layout_kw["fill"])
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        child._internal.pack(in_=self._internal, **options)
+        place_flex_child(self._flex, child, layout_kw, "AppShell page")
 
     def __enter__(self) -> "Page":
         push_container(self)

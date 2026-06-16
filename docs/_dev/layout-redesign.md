@@ -2,6 +2,50 @@
 
 Branch: `feat/grid-layout-engine`. Started 2026-06-16.
 
+> ## ★ FINAL VOCABULARY (locked 2026-06-16, supersedes the justify/align model below)
+>
+> After extended design discussion the public layout vocabulary is **screen-axis +
+> self/children**, NOT CSS's justify/align:
+>
+> - **Axes are fixed to the screen**, not flow: `horizontal` = x, `vertical` = y.
+>   (No main/cross; no axis-flip between Row and Column.)
+> - **Bare = self, `_items` = children.** A container is also a widget, so it sets
+>   both. `align_self`/`justify_self` are GONE.
+>   - self (any widget): **`horizontal`**, **`vertical`**, **`grow`**
+>   - children (container): **`horizontal_items`**, **`vertical_items`**, **`grow_items`**
+> - **Values are edge names** (concrete, zero-jargon, great per-axis autocomplete;
+>   RTL not a concern — not native to Tk):
+>   - horizontal: **`left` · `center` · `right` · `stretch`** (+ `space-between`/
+>     `space-around`/`space-evenly` when horizontal is the stacking axis = a Row)
+>   - vertical: **`top` · `center` · `bottom` · `stretch`** (+ `space-*` when
+>     vertical stacks = a Column)
+> - **`weights=`** stays (positional per-child `grow` shorthand).
+>
+> Engine note: FlexFrame stays main/cross internally; the public widgets pass
+> `horizontal_items`/`vertical_items` and the engine resolves screen-axis → main/
+> cross from its `direction`, and maps edge values to sticky (left→w, right→e,
+> top→n, bottom→s, stretch→full; main "start" edge = left[Row]/top[Column]).
+> Grid uses the SAME words (`horizontal_items`/`vertical_items` + per-child
+> `horizontal`/`vertical`), value set is alignment-only (no space-* per cell).
+> Why each call was made: see the conversation / memory `project_layout_redesign`.
+> **AUDIT during rename:** no widget may have a `horizontal=`/`vertical=` ctor param
+> (they become per-child layout keys). Values like `orient="horizontal"` are fine.
+>
+> **Also: `layout=` values `vstack`/`hstack` → `column`/`row`** (matching the
+> Row/Column widgets) on every dual-mode container; `LayoutKind = Literal['column',
+> 'row', 'grid']`. Dual-mode containers (Card/GroupBox/page-handles) MERGED their
+> separate flex (`justify`/`align`) and grid (`justify_items`/`align_items`) params
+> into ONE `horizontal_items`/`vertical_items` pair, defaulting `None` → `'stretch'`
+> if `layout=='grid'` else `'left'`/`'top'` (see `card.py`).
+>
+> **RENAME STATUS: DONE + verified.** types/FlexFrame/container/Row/Column/Spacer/
+> App/Window/Grid/Card/GroupBox/PageStack/Tabs/SplitView/Accordion/ListView/Tree/
+> AppShell all converted; `vstack/hstack→column/row`. `import` clean, **183 tests
+> pass** (attach/detach + surface), demo Containers/Buttons/Data pages re-render
+> correctly (`development/demo_validate.py`). 3 demo scenes converted as the
+> validation sample; the REST of `demo.py`/`appicon`/`templates` + all docs/examples/
+> screenshots still use the old `fill=`/`fill_items=` and are Stage 3.
+>
 > ## Progress log (2026-06-16)
 >
 > **Decisions locked** (maintainer): cross-axis **`align` default = `start`**;
@@ -59,9 +103,16 @@ Branch: `feat/grid-layout-engine`. Started 2026-06-16.
 >    container.py; per-child falls back to the container default per axis.
 >    `GridFrame` keeps its internal `sticky_items` param (still used by the nav
 >    containers until stage 2). `test_grid_attach_override` re-pointed off `sticky=`.
-> 2. **Dual-mode nav containers** — `PageStack`/`Tabs`/`SplitView`/`Accordion`
->    (+ `AppShell` content host) still take `fill_items`/… and pack their page
->    content. Convert page-content frames to `FlexFrame`.
+> 2. ~~Dual-mode nav containers~~ — **DONE.** `PageStack`/`Tabs`/`SplitView`/
+>    `Accordion` page-handles (`StackPage`/`TabPage`/`SplitPane`/`Expander`+
+>    `AccordionSection`) + the `AppShell` page content host all flow through
+>    `FlexFrame` (vstack/hstack) / `GridFrame` (grid) with the new vocabulary;
+>    their `add`/`insert` forwarders swapped too. `Expander`/`Accordion` self-
+>    placement `fill="x"` → `align_self="stretch"`. **Also fixed the self-placement
+>    breakage class:** `ListView`/`Tree` injected `fill="x"` when `height=` was set
+>    (would raise in a flex parent) → now `align_self="stretch"`. Verified: all 4
+>    nav containers + AppShell (incl. ListView/Tree in a page + a scrollable page)
+>    render; attach/detach 22, surface 161, all 9 shell suites pass.
 > 3. **Migrate ~850 call sites** (hard break) — `src/bootstack/cli/{demo,appicon,
 >    templates}` (crash until migrated; ~70 in demo.py), `docs/examples/*`,
 >    `docs/screenshots/*`, `tests/features/*`. Convert `fill=`/`expand=` →

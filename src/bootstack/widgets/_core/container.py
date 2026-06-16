@@ -27,7 +27,7 @@ PLACE_KEYS = frozenset({
 # Collision-free by design — never bare `align`/`justify`, which would shadow
 # Label/TextField text `justify` and Snackbar `align` on every widget.
 FLEX_CHILD_KEYS = frozenset({
-    "grow", "align_self", "justify_self",
+    "grow", "horizontal", "vertical",
     "margin", "margin_x", "margin_y", "index",
 })
 
@@ -144,7 +144,7 @@ def resolve_pack_order(order: dict, master: tkinter.Misc) -> dict:
 
 
 class PublicContainer(PublicWidgetBase):
-    """Base for public containers (HStack, VStack, Grid, App).
+    """Base for public containers (Row, Column, Grid, App).
 
     Subclasses must implement `_child_master`, `_default_layout_method`,
     and `_merge_layout_options`.
@@ -231,25 +231,26 @@ def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
         )
 
 
-def grid_sticky(justify_item: str | None, align_item: str | None) -> str:
-    """Derive a Tk `sticky` string from CSS-grid in-cell alignment values.
+def grid_sticky(horizontal: str | None, vertical: str | None) -> str:
+    """Derive a Tk `sticky` string from in-cell alignment edge values.
 
-    `justify_item` is the horizontal axis, `align_item` the vertical. `stretch`
-    fills the axis, `start`/`end` pin to an edge, and `center` (or None) leaves
-    that axis unpinned so the child sits centered in the cell.
+    `horizontal` is `left`/`center`/`right`/`stretch`, `vertical` is
+    `top`/`center`/`bottom`/`stretch`. `stretch` fills the axis, the edge values
+    pin to that edge, and `center` (or None) leaves the axis unpinned so the
+    child sits centered in the cell.
     """
     sticky = ""
-    if justify_item == "stretch":
+    if horizontal == "stretch":
         sticky += "ew"
-    elif justify_item == "start":
+    elif horizontal == "left":
         sticky += "w"
-    elif justify_item == "end":
+    elif horizontal == "right":
         sticky += "e"
-    if align_item == "stretch":
+    if vertical == "stretch":
         sticky += "ns"
-    elif align_item == "start":
+    elif vertical == "top":
         sticky += "n"
-    elif align_item == "end":
+    elif vertical == "bottom":
         sticky += "s"
     return sticky
 
@@ -262,7 +263,7 @@ def _flex_child_opts(child: PublicWidgetBase, layout_kw: dict) -> dict:
     circular import).
     """
     opts: dict[str, Any] = {}
-    for key in ("grow", "align_self", "justify_self", "padx", "pady"):
+    for key in ("grow", "horizontal", "vertical", "padx", "pady"):
         if key in layout_kw:
             opts[key] = layout_kw[key]
     if getattr(child, "_is_spacer", False):
@@ -303,7 +304,7 @@ def place_flex_child(
     """Add `child` to a `FlexFrame` and record a `Placement` for detach/attach.
 
     Shared by `FlexContainer` and the dual-mode containers (Card/GroupBox in
-    their vstack/hstack mode) so the flex placement contract lives in one place.
+    their column/row mode) so the flex placement contract lives in one place.
     Absolute placement (`x=`/`y=`) is honored as an overlay escape hatch — the
     child is `place`-d over the flow rather than entering it.
     """

@@ -88,11 +88,11 @@ def _build_icons_page():
             for name in icon_names:
                 bs.Label(name, icon=name)
 
-        with bs.GroupBox("Icon Sizes", fill="horizontal", layout="hstack", gap=16):
+        with bs.GroupBox("Icon Sizes", fill="horizontal", layout="row", gap=16):
             for size in (12, 16, 20, 24, 32, 48):
                 bs.Label(f"{size}px", icon={"name": "star-fill", "size": size})
 
-        with bs.GroupBox("Icons in Context", fill="horizontal", layout="hstack", gap=16):
+        with bs.GroupBox("Icons in Context", fill="horizontal", layout="row", gap=16):
             bs.Button("Save",     icon="save")
             bs.Button("Delete",   icon="trash",  accent="danger")
             bs.Button("Settings", icon="gear",   accent="default")
@@ -104,30 +104,30 @@ def _build_icons_page():
 
 
 def _build_buttons_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Actions", font="heading-xl")
         bs.Label("Buttons and button-like widgets for triggering actions.", accent="secondary")
 
-        with bs.GroupBox("Button — Color Variants", fill="x", expand_items=True, fill_items="x", gap=4, layout="hstack"):
+        with bs.GroupBox("Button — Color Variants", grow_items=True, gap=4, layout="row"):
             for color in ("default", "primary", "success", "warning", "danger"):
                 bs.Button(color.title(), accent=color)
 
-        with bs.GroupBox("Button — Style Variants", fill="horizontal", gap=6):
-            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+        with bs.GroupBox("Button — Style Variants", horizontal_items="stretch", gap=6):
+            with bs.Row(gap=4, grow_items=True):
                 for variant in ("solid", "outline", "ghost"):
                     bs.Button(variant.title(), accent="primary", variant=variant)
-            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+            with bs.Row(gap=4, grow_items=True):
                 bs.Button("Disabled Solid",   accent="primary",  disabled=True)
                 bs.Button("Disabled Outline", accent="default",  variant="outline", disabled=True)
 
-        with bs.GroupBox("ButtonGroup", fill="horizontal", gap=12, layout="hstack"):
+        with bs.GroupBox("ButtonGroup", gap=12, layout="row"):
             for accent, variant in [("primary", "solid"), ("danger", "outline"), ("success", "ghost")]:
                 bg = bs.ButtonGroup(accent=accent, variant=variant)
                 bg.add("Cut",   icon="scissors")
                 bg.add("Copy",  icon="copy")
                 bg.add("Paste", icon="clipboard")
 
-        with bs.GroupBox("MenuButton", fill="horizontal", layout="hstack", gap=12):
+        with bs.GroupBox("MenuButton", layout="row", gap=12):
             mb = bs.MenuButton("Actions", icon="three-dots", accent="primary")
             mb.add_item("New file", icon="file-earmark")
             mb.add_item("Open…", icon="folder2-open")
@@ -263,7 +263,7 @@ def _build_numeric_page():
         bs.Label("Numeric & Date", font="heading-xl")
         bs.Label("Numeric entries, sliders, and date/time pickers.", accent="secondary")
 
-        with bs.GroupBox("NumberField", fill="horizontal", gap=8, layout="hstack", fill_items="x", expand_items=True):
+        with bs.GroupBox("NumberField", fill="horizontal", gap=8, layout="row", fill_items="x", expand_items=True):
             bs.NumberField(label="Quantity", value=42,    min_value=0, max_value=100)
             bs.NumberField(label="Price",    value=19.99, step=0.01)
 
@@ -280,7 +280,7 @@ def _build_numeric_page():
             bs.Label("With value badge:")
             bs.Slider(value=65, show_value=True, tick_step=25, fill="horizontal")
 
-        with bs.GroupBox("DateField & TimeField", fill="x", gap=8, fill_items="x", expand_items=True, layout="hstack"):
+        with bs.GroupBox("DateField & TimeField", fill="x", gap=8, fill_items="x", expand_items=True, layout="row"):
             bs.DateField(label="Date")
             bs.TimeField(label="Time")
 
@@ -331,12 +331,12 @@ def _build_selection_page():
                 bs.SelectButton(options=["Day", "Week", "Month"], value="Week", accent="primary")
                 bs.SelectButton(options=["Light", "Dark", "System"], value="System", variant="outline")
 
-        with bs.GroupBox("ToggleButton", fill="horizontal", layout="hstack", gap=8):
+        with bs.GroupBox("ToggleButton", fill="horizontal", layout="row", gap=8):
             bs.ToggleButton("Bold", value=True)
             bs.ToggleButton("Italic")
             bs.ToggleButton("Mute", icon="volume-mute")
 
-        with bs.GroupBox("RadioToggleButton (segmented)", fill="horizontal", layout="hstack", gap=0):
+        with bs.GroupBox("RadioToggleButton (segmented)", fill="horizontal", layout="row", gap=0):
             view = Signal("grid")
             bs.RadioToggleButton("Grid",  "grid",  signal=view)
             bs.RadioToggleButton("List",  "list",  signal=view)
@@ -403,15 +403,15 @@ def _build_forms_page():
 
 
 def _build_data_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Data Display", font="heading-xl")
         bs.Label("Labels, badges, and a full-featured data table for presenting data.", accent="secondary")
 
-        with bs.GroupBox("Labels", fill="horizontal", layout="hstack", gap=4):
+        with bs.GroupBox("Labels", layout="row", gap=4):
             for color in ("primary", "secondary", "success", "warning", "danger"):
                 bs.Label(color.title(), accent=color, padding=(8, 4))
 
-        with bs.GroupBox("Badges", fill="x", gap=16, layout="hstack"):
+        with bs.GroupBox("Badges", gap=16, layout="row"):
             for color in ("primary", "secondary", "success", "warning", "danger"):
                 bs.Badge(color.title(), accent=color)
 
@@ -419,7 +419,7 @@ def _build_data_page():
             bs.Badge("99+",   accent="danger",  variant="pill")
             bs.Badge("New",   accent="success")
 
-        with bs.GroupBox("ListView", fill="horizontal"):
+        with bs.GroupBox("ListView"):
             bs.ListView(
                 items=[
                     {"id": 1, "title": "Inbox",   "text": "12 unread messages",   "icon": "inbox",        "badge": "12"},
@@ -430,10 +430,9 @@ def _build_data_page():
                 ],
                 selection_mode="single",
                 height=200,
-                fill="horizontal",
             )
 
-        with bs.GroupBox("DataTable", fill="both", expand=True):
+        with bs.GroupBox("DataTable", horizontal_items="stretch", grow=True):
             employees = [
                 {"name": "Ada Lovelace",      "role": "Staff Engineer",     "dept": "Engineering", "salary": 185000},
                 {"name": "Alan Turing",       "role": "Software Engineer",  "dept": "Engineering", "salary": 162000},
@@ -462,11 +461,10 @@ def _build_data_page():
                 allow_group=True,
                 allow_export=True,
                 page_size=8,
-                fill="both",
-                expand=True,
+                grow=True,
             )
 
-        with bs.GroupBox("Tree", fill="horizontal"):
+        with bs.GroupBox("Tree"):
             bs.Tree(
                 nodes=[
                     {
@@ -500,7 +498,6 @@ def _build_data_page():
                 selection_mode="multi",
                 show_selection_controls=True,
                 height=320,
-                fill="horizontal",
             )
 
 
@@ -545,11 +542,11 @@ def _build_progress_page():
 
 
 def _build_layout_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Layout", font="heading-xl")
         bs.Label("Containers, expandable panels, and split panes.", accent="secondary")
 
-        with bs.GroupBox("Card", fill="horizontal", layout="hstack", fill_items="x", expand_items=True, gap=16):
+        with bs.GroupBox("Card", layout="row", grow_items=True, gap=16):
             for title, body, color in [
                 ("Users",   "1,234 active", "primary"),
                 ("Revenue", "$45,678",       "success"),
@@ -559,8 +556,8 @@ def _build_layout_page():
                     bs.Label(title, accent=color, font="body[bold]")
                     bs.Label(body, font="heading-lg")
 
-        with bs.GroupBox("Accordion", fill="horizontal"):
-            acc = bs.Accordion(fill="horizontal", accent="primary")
+        with bs.GroupBox("Accordion"):
+            acc = bs.Accordion(accent="primary")
             with acc.add("Section 1", expanded=True):
                 bs.Label("Content for section one.")
             with acc.add("Section 2"):
@@ -568,26 +565,26 @@ def _build_layout_page():
             with acc.add("Section 3"):
                 bs.Label("Content for section three.")
 
-        with bs.GroupBox("SplitView", fill="both", expand=True):
-            sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
-            with sv.add(padding=10, anchor_items="center"):
+        with bs.GroupBox("SplitView", horizontal_items="stretch", grow=True):
+            sv = bs.SplitView(orient="horizontal", grow=True)
+            with sv.add(padding=10, horizontal_items="center"):
                 bs.Label("Left Pane")
                 bs.Label("Drag the sash to resize", accent="secondary", font="caption")
-            with sv.add(padding=10, anchor_items="center"):
+            with sv.add(padding=10, horizontal_items="center"):
                 bs.Label("Right Pane")
                 bs.Label("Both panes are resizable", accent="secondary", font="caption")
 
-        with bs.GroupBox("ScrollView", fill="horizontal"):
+        with bs.GroupBox("ScrollView", horizontal_items="stretch"):
             bs.Label("A fixed-height region that scrolls its overflow:", accent="secondary")
-            with bs.ScrollView(height=140, show_border=True, fill="horizontal", padding=8):
+            with bs.ScrollView(height=140, show_border=True, padding=8):
                 for i in range(20):
                     bs.Label(f"Scrollable row {i + 1}")
 
-        with bs.GroupBox("Separator", fill="horizontal", gap=8):
-            bs.Separator(fill="horizontal")
-            bs.Separator(accent="primary",  fill="horizontal")
-            bs.Separator(accent="success",  fill="horizontal")
-            bs.Separator(accent="danger",   fill="horizontal")
+        with bs.GroupBox("Separator", horizontal_items="stretch", gap=8):
+            bs.Separator()
+            bs.Separator(accent="primary")
+            bs.Separator(accent="success")
+            bs.Separator(accent="danger")
 
 
 # -- Navigation ---------------------------------------------------------------
@@ -796,13 +793,13 @@ def _build_media_page():
         bs.Label("Media", font="heading-xl")
         bs.Label("Identity badges, images, thumbnail grids, and carousels.", accent="secondary")
 
-        with bs.GroupBox("Avatar", fill="horizontal", layout="hstack", gap=12):
+        with bs.GroupBox("Avatar", fill="horizontal", layout="row", gap=12):
             bs.Avatar(name="Ada Lovelace")
             bs.Avatar(name="Grace Hopper", shape="rounded")
             bs.Avatar(initials="JS", shape="square")
             bs.Avatar(image=get_icon("person-fill", size=40))
 
-        with bs.GroupBox("Picture", fill="horizontal", layout="hstack", gap=16):
+        with bs.GroupBox("Picture", fill="horizontal", layout="row", gap=16):
             bs.Picture(photos[0]["image"], width=180, height=120, fit="cover", corner_radius=8)
             bs.Picture(photos[1]["image"], width=180, height=120, fit="contain")
             bs.Picture(photos[2]["image"], width=120, height=120, fit="cover", corner_radius=60)

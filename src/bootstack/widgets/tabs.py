@@ -5,18 +5,20 @@ from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.tabs.tabview import TabView as _InternalTabView
 from bootstack.events import TabChangeEvent, TabCloseEvent, TabRef
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.base import PublicWidgetBase, adapt_handler
-from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
+from bootstack.widgets._core.container import (
+    GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
+    _expand_margin,
+)
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.events import register_widget_events, resolve_event
 from bootstack.events import Subscription
 from bootstack._core import NavigationError
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
-    Event, AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
-    Orient,
+    Event, AccentToken, Padding, LayoutKind, AutoFlow, Orient,
 )
 
 _TABS_EVENTS: dict[str, str] = {
@@ -34,8 +36,8 @@ class TabPage:
     `select()` / `hide()` / `show()` / `remove()` to drive the tab afterward.
 
     As a context manager it accepts the same layout kwargs as the standalone
-    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
-    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
+    layout containers — `layout=`, `gap=`, `horizontal_items=`, `vertical_items=`,
+    `grow_items=`, `columns=`, `rows=`, `auto_flow=`.
     """
 
     def __init__(
@@ -44,15 +46,14 @@ class TabPage:
         *,
         key: str,
         owner: "Tabs",
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
     ) -> None:
         self._page = page_widget
@@ -60,15 +61,20 @@ class TabPage:
         self._owner = owner
         self._layout = layout
 
-        if layout in ("vstack", "hstack"):
-            self._layout_frame = PackFrame(
+        if horizontal_items is None:
+            horizontal_items = "stretch" if layout == "grid" else "left"
+        if vertical_items is None:
+            vertical_items = "stretch" if layout == "grid" else "top"
+
+        if layout in ("column", "row"):
+            self._layout_frame = FlexFrame(
                 page_widget,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
@@ -77,18 +83,15 @@ class TabPage:
                 rows=rows,
                 padding=padding,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
             raise ValueError(
-                f"TabPage layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"TabPage layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._layout_frame.pack(fill="both", expand=True)
 
     def _child_master(self) -> tkinter.Widget:
@@ -96,19 +99,15 @@ class TabPage:
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
+            _reject_legacy_child_kwargs(layout_kw, "TabPage")
+            _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
+            h = layout_kw.get("horizontal") or self._horizontal_items
+            v = layout_kw.get("vertical") or self._vertical_items
+            options["sticky"] = grid_sticky(h, v)
             child._internal.grid(in_=self._child_master(), **options)
             return
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        child._internal.pack(in_=self._child_master(), **options)
+        place_flex_child(self._layout_frame, child, layout_kw, "TabPage")
 
     # ----- Tab identity, label, and control -----
 
@@ -238,15 +237,14 @@ class Tabs(PublicWidgetBase):
         icon: str | None = None,
         closable: bool | Literal["hover"] | None = None,
         close_command: Callable[[], Any] | None = None,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
     ) -> TabPage:
         """Add a tab and return a handle for placing its children and controlling it.
@@ -257,17 +255,23 @@ class Tabs(PublicWidgetBase):
             icon: Icon name displayed on the tab.
             closable: Close-button visibility for this tab. Overrides `allow_close`.
             close_command: Called when the close button is clicked.
-            layout: Internal layout. Defaults to `'vstack'`.
+            layout: Internal layout. Defaults to `'column'`.
             padding: Space inside the page frame. Defaults to `None`.
             gap: Space between children in pixels. Defaults to `0`.
-            fill_items: Default fill direction applied to each child.
-            expand_items: Whether children expand to fill available space.
-            anchor_items: Default anchor applied to each child.
+            horizontal_items: How children sit on the horizontal axis — edge
+                values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
+                when horizontal is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'left'`.
+            vertical_items: How children sit on the vertical axis — edge values
+                `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'` when
+                vertical is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'top'`.
+            grow_items: For `'column'`/`'row'`, when `True` every child grows
+                equally to share the main axis. Defaults to `False`.
             columns: Column definitions for `'grid'` layout. An integer sets
                 the number of equal-weight columns; a list sets per-column
                 weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
             rows: Row definitions for `'grid'` layout, same format as `columns`.
-            sticky_items: Default sticky value for grid children.
             auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
@@ -286,10 +290,10 @@ class Tabs(PublicWidgetBase):
         page = TabPage(
             page_widget,
             key=key, owner=self,
-            layout=layout, padding=padding, gap=gap, fill_items=fill_items,
-            expand_items=expand_items, anchor_items=anchor_items,
-            columns=columns, rows=rows, sticky_items=sticky_items,
-            auto_flow=auto_flow,
+            layout=layout, padding=padding, gap=gap,
+            horizontal_items=horizontal_items, vertical_items=vertical_items,
+            grow_items=grow_items,
+            columns=columns, rows=rows, auto_flow=auto_flow,
         )
         self._pages[key] = page
         return page

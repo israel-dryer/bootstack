@@ -167,7 +167,7 @@ def test_attach_applies_layout_override(app, pump):
     btn = bs.Button("X", parent=col)
     pump()
     btn.detach()
-    btn.attach(align_self="stretch")
+    btn.attach(horizontal="stretch")
     pump()
     # stretch on a Column's cross (horizontal) axis spans the cell east-west.
     sticky = btn._internal.grid_info()["sticky"]

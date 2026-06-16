@@ -5,14 +5,16 @@ from typing import Any
 
 from bootstack.widgets._impl.primitives.panedwindow import PanedWindow as _InternalPanedWindow
 from bootstack.widgets._impl.primitives.frame import Frame as _InternalFrame
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.base import PublicWidgetBase
-from bootstack.widgets._core.container import PACK_KEYS, GRID_KEYS, normalize_fill
+from bootstack.widgets._core.container import (
+    GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
+    _expand_margin,
+)
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets.types import (
-    AccentToken, SurfaceToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
-    Orient,
+    AccentToken, SurfaceToken, Padding, LayoutKind, AutoFlow, Orient,
 )
 
 
@@ -24,8 +26,8 @@ class SplitPane:
     `weight` or call `remove()` to inspect, resize, or drop the pane afterward.
 
     As a context manager it accepts the same layout kwargs as the standalone
-    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
-    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
+    layout containers — `layout=`, `gap=`, `horizontal_items=`, `vertical_items=`,
+    `grow_items=`, `columns=`, `rows=`, `auto_flow=`.
     """
 
     def __init__(
@@ -35,15 +37,14 @@ class SplitPane:
         key: str,
         paned: _InternalPanedWindow,
         owner: "SplitView",
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
     ) -> None:
         self._frame = frame
@@ -52,15 +53,20 @@ class SplitPane:
         self._owner = owner
         self._layout = layout
 
-        if layout in ("vstack", "hstack"):
-            self._layout_frame = PackFrame(
+        if horizontal_items is None:
+            horizontal_items = "stretch" if layout == "grid" else "left"
+        if vertical_items is None:
+            vertical_items = "stretch" if layout == "grid" else "top"
+
+        if layout in ("column", "row"):
+            self._layout_frame = FlexFrame(
                 frame,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
@@ -69,18 +75,15 @@ class SplitPane:
                 rows=rows,
                 padding=padding,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
             raise ValueError(
-                f"SplitPane layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"SplitPane layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._layout_frame.pack(fill="both", expand=True)
 
     def _child_master(self) -> tkinter.Widget:
@@ -88,19 +91,15 @@ class SplitPane:
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
+            _reject_legacy_child_kwargs(layout_kw, "SplitPane")
+            _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
+            h = layout_kw.get("horizontal") or self._horizontal_items
+            v = layout_kw.get("vertical") or self._vertical_items
+            options["sticky"] = grid_sticky(h, v)
             child._internal.grid(in_=self._child_master(), **options)
             return
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        child._internal.pack(in_=self._child_master(), **options)
+        place_flex_child(self._layout_frame, child, layout_kw, "SplitPane")
 
     # ----- Pane identity, weight, and removal -----
 
@@ -205,15 +204,14 @@ class SplitView(PublicWidgetBase):
         *,
         key: str | None = None,
         weight: int = 1,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
     ) -> SplitPane:
         """Add a pane and return a handle for placing its children and controlling it.
@@ -224,17 +222,23 @@ class SplitView(PublicWidgetBase):
             weight: Relative size weight when the container is resized. Panes
                 with a higher weight take proportionally more space. Settable
                 afterward via the pane's `weight` property. Defaults to `1`.
-            layout: Internal pane layout. Defaults to `'vstack'`.
+            layout: Internal pane layout. Defaults to `'column'`.
             padding: Space in pixels inside the pane border. Defaults to `None`.
             gap: Space in pixels between children. Defaults to `0`.
-            fill_items: Default fill direction applied to every child.
-            expand_items: Whether children expand to consume extra space.
-            anchor_items: Default anchor applied to every child.
+            horizontal_items: How children sit on the horizontal axis — edge
+                values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
+                when horizontal is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'left'`.
+            vertical_items: How children sit on the vertical axis — edge values
+                `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'` when
+                vertical is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'top'`.
+            grow_items: For `'column'`/`'row'`, when `True` every child grows
+                equally to share the main axis. Defaults to `False`.
             columns: Column definitions for `'grid'` layout. An integer sets
                 the number of equal-weight columns; a list sets per-column
                 weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
             rows: Row definitions for `'grid'` layout, same format as `columns`.
-            sticky_items: Default sticky value for grid children.
             auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
@@ -243,10 +247,10 @@ class SplitView(PublicWidgetBase):
         """
         return self._create_pane(
             index=None, key=key, weight=weight,
-            layout=layout, padding=padding, gap=gap, fill_items=fill_items,
-            expand_items=expand_items, anchor_items=anchor_items,
-            columns=columns, rows=rows, sticky_items=sticky_items,
-            auto_flow=auto_flow,
+            layout=layout, padding=padding, gap=gap,
+            horizontal_items=horizontal_items, vertical_items=vertical_items,
+            grow_items=grow_items,
+            columns=columns, rows=rows, auto_flow=auto_flow,
         )
 
     def insert(
@@ -255,15 +259,14 @@ class SplitView(PublicWidgetBase):
         *,
         key: str | None = None,
         weight: int = 1,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
     ) -> SplitPane:
         """Add a pane at a specific position. Accepts the same options as `add()`.
@@ -274,15 +277,21 @@ class SplitView(PublicWidgetBase):
             key: Unique identifier used with `item()` and `remove()`.
                 Auto-generated if omitted.
             weight: Relative size weight. Defaults to `1`.
-            layout: Internal pane layout. Defaults to `'vstack'`.
+            layout: Internal pane layout. Defaults to `'column'`.
             padding: Space in pixels inside the pane border. Defaults to `None`.
             gap: Space in pixels between children. Defaults to `0`.
-            fill_items: Default fill direction applied to every child.
-            expand_items: Whether children expand to consume extra space.
-            anchor_items: Default anchor applied to every child.
+            horizontal_items: How children sit on the horizontal axis — edge
+                values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
+                when horizontal is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'left'`.
+            vertical_items: How children sit on the vertical axis — edge values
+                `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'` when
+                vertical is the stacking axis. Defaults to `'stretch'` for
+                `'grid'`, else `'top'`.
+            grow_items: For `'column'`/`'row'`, when `True` every child grows
+                equally to share the main axis. Defaults to `False`.
             columns: Column definitions for `'grid'` layout.
             rows: Row definitions for `'grid'` layout.
-            sticky_items: Default sticky value for grid children.
             auto_flow: Grid auto-flow direction. Defaults to `'row'`.
 
         Returns:
@@ -290,10 +299,10 @@ class SplitView(PublicWidgetBase):
         """
         return self._create_pane(
             index=index, key=key, weight=weight,
-            layout=layout, padding=padding, gap=gap, fill_items=fill_items,
-            expand_items=expand_items, anchor_items=anchor_items,
-            columns=columns, rows=rows, sticky_items=sticky_items,
-            auto_flow=auto_flow,
+            layout=layout, padding=padding, gap=gap,
+            horizontal_items=horizontal_items, vertical_items=vertical_items,
+            grow_items=grow_items,
+            columns=columns, rows=rows, auto_flow=auto_flow,
         )
 
     def move(self, key: str, index: int) -> None:

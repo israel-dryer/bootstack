@@ -7,7 +7,7 @@ from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.container import FlexContainer
 from bootstack.widgets.types import (
-    AccentToken, SurfaceToken, AlignItems, JustifyContent, Padding,
+    AccentToken, SurfaceToken, HAlign, VAlign, HArrange, VArrange, Padding,
 )
 
 
@@ -18,8 +18,8 @@ class _FlexBase(FlexContainer):
         self,
         *,
         parent: Any = None,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: str = "left",
+        vertical_items: str = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -31,14 +31,15 @@ class _FlexBase(FlexContainer):
         **kwargs: Any,
     ) -> None:
         # Shared implementation for Row/Column. Each subclass declares its own
-        # __init__ (identical signature) so Sphinx renders the params per class.
+        # __init__ so Sphinx renders the (axis-specific) params and value types
+        # per class.
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
         frame_kwargs: dict[str, Any] = {
             "direction": self._direction,
-            "justify": justify,
-            "align": align,
+            "horizontal_items": horizontal_items,
+            "vertical_items": vertical_items,
             "grow_items": grow_items,
             "weights": weights,
             "gap": gap,
@@ -62,54 +63,50 @@ class _FlexBase(FlexContainer):
 
 
 class Row(_FlexBase):
-    """Lays out children left to right along a horizontal main axis.
+    """Lays out children left to right along the horizontal axis.
 
-    Children flow in order; control their placement with the flexbox
-    vocabulary: `justify` distributes the whole group along the row,
-    `align` aligns them vertically (the cross axis), and `grow` / `weights`
-    let children share the available width. Drop a `Spacer` between children
-    to push a group aside without nesting.
+    Children flow in order. Position them on each screen axis: `horizontal_items`
+    *arranges the group* along the row (`'left'`/`'center'`/`'right'` or a
+    `'space-*'` mode), `vertical_items` *aligns* them up and down
+    (`'top'`/`'center'`/`'bottom'`/`'stretch'`), and `grow` / `weights` let
+    children share the available width. Drop a `Spacer` between children to push a
+    group aside without nesting.
 
     Example::
 
-        with bs.Row(gap=8, align="center"):
+        with bs.Row(gap=8, vertical_items="center"):
             bs.Label("Name:")
             bs.TextField(grow=1)
 
     Args:
-        justify: How the whole group is distributed along the row —
-            `'start'`, `'center'`, `'end'`, or the `'space-*'` modes. Has no
-            effect once any child grows. Defaults to `'start'`.
-        align: Vertical (cross-axis) alignment of children — `'start'`,
-            `'center'`, `'end'`, or `'stretch'`. Override per child with
-            `align_self`. Defaults to `'start'`.
+        horizontal_items: How the whole group of children is arranged along the
+            row — `'left'`, `'center'`, `'right'`, or the `'space-*'` modes. Has
+            no effect once any child grows. Defaults to `'left'`.
+        vertical_items: Vertical alignment of children — `'top'`, `'center'`,
+            `'bottom'`, or `'stretch'` (fill the row's height). Override per child
+            with `vertical`. Defaults to `'top'`.
         grow_items: When `True`, every child grows equally to fill the row.
             Defaults to `False`.
-        weights: Shorthand for setting `grow` on each child positionally —
-            `weights=[1, 2, 1]` is the same as giving the three children
-            `grow=1`, `grow=2`, `grow=1`. Like `grow`, the values are flex-grow
-            shares of the leftover width, not pixel widths. Overrides
-            `grow_items` and per-child `grow`; missing trailing entries default
-            to `0` (no grow). Defaults to `None`.
+        weights: Explicit per-child width weights (e.g. `[1, 2, 1]`) — shorthand
+            for setting `grow` on each child positionally. Overrides `grow_items`
+            and per-child `grow`. Defaults to `None`.
         gap: Spacing in pixels between adjacent children. Defaults to `0`.
-        padding: Space in pixels between the row border and its content.
-            Defaults to `None` (no padding).
-        surface: Background token. Accepts a surface token, an accent token,
-            or any token with modifiers (e.g. `'primary[subtle]'`). Defaults
-            to `None` (inherits from parent surface).
+        padding: Space in pixels between the row border and its content. Defaults
+            to `None` (no padding).
+        surface: Background token. Accepts a surface token, an accent token, or
+            any token with modifiers (e.g. `'primary[subtle]'`). Defaults to
+            `None` (inherits from parent surface).
         show_border: When `True`, draws a 1 px border around the row frame.
             Defaults to `False`.
         width: Fixed width in pixels. Disables frame propagation so children
-            cannot resize the container. Defaults to `None` (size from
-            children).
+            cannot resize the container. Defaults to `None` (size from children).
         height: Fixed height in pixels. Disables frame propagation so children
-            cannot resize the container. Defaults to `None` (size from
-            children).
+            cannot resize the container. Defaults to `None` (size from children).
         parent: Override the context-stack parent widget.
-        **kwargs: Per-child placement options — `grow` (`bool | int`:
-            `grow=True` fills the leftover main axis with weight 1, `grow=N`
-            takes N shares of it), `align_self`, `justify_self`, `margin`,
-            `index`. See :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`: `grow=True`
+            fills the leftover width with weight 1, `grow=N` takes N shares),
+            `vertical` (this child's vertical alignment: `'top'`/`'center'`/
+            `'bottom'`/`'stretch'`), `margin`, `index`. See :doc:`/tasks/layout`.
     """
     _direction = "horizontal"
 
@@ -117,8 +114,8 @@ class Row(_FlexBase):
         self,
         *,
         parent: Any = None,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: HArrange = "left",
+        vertical_items: VAlign = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -130,62 +127,59 @@ class Row(_FlexBase):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            parent=parent, justify=justify, align=align, grow_items=grow_items,
-            weights=weights, gap=gap, padding=padding, surface=surface,
-            show_border=show_border, width=width, height=height, **kwargs,
+            parent=parent, horizontal_items=horizontal_items,
+            vertical_items=vertical_items, grow_items=grow_items, weights=weights,
+            gap=gap, padding=padding, surface=surface, show_border=show_border,
+            width=width, height=height, **kwargs,
         )
 
 
 class Column(_FlexBase):
-    """Lays out children top to bottom along a vertical main axis.
+    """Lays out children top to bottom along the vertical axis.
 
-    Children flow in order; control their placement with the flexbox
-    vocabulary: `justify` distributes the whole group along the column,
-    `align` aligns them horizontally (the cross axis), and `grow` / `weights`
-    let children share the available height. Use `align='stretch'` for a
+    Children flow in order. Position them on each screen axis: `vertical_items`
+    *arranges the group* down the column (`'top'`/`'center'`/`'bottom'` or a
+    `'space-*'` mode), `horizontal_items` *aligns* them left and right
+    (`'left'`/`'center'`/`'right'`/`'stretch'`), and `grow` / `weights` let
+    children share the available height. Use `horizontal_items='stretch'` for a
     full-width form column.
 
     Example::
 
-        with bs.Column(gap=12, align="stretch", padding=16):
+        with bs.Column(gap=12, horizontal_items="stretch", padding=16):
             bs.Label("Title", font="heading-md")
             bs.TextField()
             bs.Button("Submit", accent="primary")
 
     Args:
-        justify: How the whole group is distributed down the column —
-            `'start'`, `'center'`, `'end'`, or the `'space-*'` modes. Has no
-            effect once any child grows. Defaults to `'start'`.
-        align: Horizontal (cross-axis) alignment of children — `'start'`,
-            `'center'`, `'end'`, or `'stretch'`. Override per child with
-            `align_self`. Defaults to `'start'`.
+        horizontal_items: Horizontal alignment of children — `'left'`,
+            `'center'`, `'right'`, or `'stretch'` (fill the column's width).
+            Override per child with `horizontal`. Defaults to `'left'`.
+        vertical_items: How the whole group of children is arranged down the
+            column — `'top'`, `'center'`, `'bottom'`, or the `'space-*'` modes.
+            Has no effect once any child grows. Defaults to `'top'`.
         grow_items: When `True`, every child grows equally to fill the column.
             Defaults to `False`.
-        weights: Shorthand for setting `grow` on each child positionally —
-            `weights=[1, 2, 1]` is the same as giving the three children
-            `grow=1`, `grow=2`, `grow=1`. Like `grow`, the values are flex-grow
-            shares of the leftover height, not pixel heights. Overrides
-            `grow_items` and per-child `grow`; missing trailing entries default
-            to `0` (no grow). Defaults to `None`.
+        weights: Explicit per-child height weights (e.g. `[1, 2, 1]`) — shorthand
+            for setting `grow` on each child positionally. Overrides `grow_items`
+            and per-child `grow`. Defaults to `None`.
         gap: Spacing in pixels between adjacent children. Defaults to `0`.
         padding: Space in pixels between the column border and its content.
             Defaults to `None` (no padding).
-        surface: Background token. Accepts a surface token, an accent token,
-            or any token with modifiers (e.g. `'primary[subtle]'`). Defaults
-            to `None` (inherits from parent surface).
+        surface: Background token. Accepts a surface token, an accent token, or
+            any token with modifiers (e.g. `'primary[subtle]'`). Defaults to
+            `None` (inherits from parent surface).
         show_border: When `True`, draws a 1 px border around the column frame.
             Defaults to `False`.
         width: Fixed width in pixels. Disables frame propagation so children
-            cannot resize the container. Defaults to `None` (size from
-            children).
+            cannot resize the container. Defaults to `None` (size from children).
         height: Fixed height in pixels. Disables frame propagation so children
-            cannot resize the container. Defaults to `None` (size from
-            children).
+            cannot resize the container. Defaults to `None` (size from children).
         parent: Override the context-stack parent widget.
-        **kwargs: Per-child placement options — `grow` (`bool | int`:
-            `grow=True` fills the leftover main axis with weight 1, `grow=N`
-            takes N shares of it), `align_self`, `justify_self`, `margin`,
-            `index`. See :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`: `grow=True`
+            fills the leftover height with weight 1, `grow=N` takes N shares),
+            `horizontal` (this child's horizontal alignment: `'left'`/`'center'`/
+            `'right'`/`'stretch'`), `margin`, `index`. See :doc:`/tasks/layout`.
     """
     _direction = "vertical"
 
@@ -193,8 +187,8 @@ class Column(_FlexBase):
         self,
         *,
         parent: Any = None,
-        justify: JustifyContent = "start",
-        align: AlignItems = "start",
+        horizontal_items: HAlign = "left",
+        vertical_items: VArrange = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -206,23 +200,24 @@ class Column(_FlexBase):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            parent=parent, justify=justify, align=align, grow_items=grow_items,
-            weights=weights, gap=gap, padding=padding, surface=surface,
-            show_border=show_border, width=width, height=height, **kwargs,
+            parent=parent, horizontal_items=horizontal_items,
+            vertical_items=vertical_items, grow_items=grow_items, weights=weights,
+            gap=gap, padding=padding, surface=surface, show_border=show_border,
+            width=width, height=height, **kwargs,
         )
 
 
 class Spacer(PublicWidgetBase):
     """A composable break that pushes neighbors apart in a Row or Column.
 
-    Flexible by default — it absorbs the available main-axis space, so items
+    Flexible by default — it absorbs the available stacking-axis space, so items
     before it cluster at the start and items after it at the end. `Spacer(size=N)`
     is instead a fixed N-pixel gap, and `Spacer(weight=N)` shares slack with
     other spacers in proportion to their weights.
 
-    Unlike `justify` (which distributes the *whole* group with one policy),
-    a `Spacer` is a local break at one point — use it for clustered toolbars
-    and footers without nesting::
+    Unlike `horizontal_items`/`vertical_items` (which arrange the *whole* group),
+    a `Spacer` is a local break at one point — use it for clustered toolbars and
+    footers without nesting::
 
         with bs.Row(gap=4):
             bs.Button("New"); bs.Button("Open")
@@ -232,8 +227,8 @@ class Spacer(PublicWidgetBase):
     Args:
         size: Fixed size in pixels. When set, the spacer is a rigid gap rather
             than flexible slack. Defaults to `None` (flexible).
-        weight: Relative share of the leftover main-axis space when flexible.
-            Ignored when `size` is set. Defaults to `1`.
+        weight: Relative share of the leftover space when flexible. Ignored when
+            `size` is set. Defaults to `1`.
         parent: Override the context-stack parent widget.
     """
 
