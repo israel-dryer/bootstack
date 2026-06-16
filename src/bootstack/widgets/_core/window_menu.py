@@ -179,6 +179,23 @@ class _ChromeContainer:
         self._arrange()
 
 
+class _ToolbarStackContainer:
+    """Public-container shim so an `add_toolbar()` toolbar packs into the host's
+    vertical chrome stack (full-width, top-to-bottom in creation order)."""
+
+    _auto_place = True
+
+    def __init__(self, frame: Any) -> None:
+        self._frame = frame
+
+    def _child_master(self) -> Any:
+        return self._frame
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        # Toolbars stack full-width in creation order; the stack owns the layout.
+        child._internal.pack(side="top", fill="x")
+
+
 class ChromeHostMixin:
     """Lazy `.menubar` + `.commandbar`, laid out as top chrome.
 
@@ -265,6 +282,75 @@ class ChromeHostMixin:
                 strip.pack(side="left")
             if tb_widget is not None:
                 tb_widget.pack(side="left", fill="x", expand=True)
+
+    # ----- toolbar stack -----
+
+    def add_toolbar(self, *, divider: bool = False, **toolbar_kwargs: Any) -> Any:
+        """Append a `Toolbar` to the window's top chrome stack and return it.
+
+        Toolbars stack full-width, top-to-bottom, in the order added — fill each
+        with buttons, labels, widgets, and menus (`toolbar.add_menu(...)`). The
+        returned `Toolbar` is a context manager, so the natural form reads::
+
+            with window.add_toolbar() as tb:
+                tb.add_menu("File")
+                tb.add_spacer()
+                tb.add_theme_toggle()
+
+        Args:
+            divider: Draw a hairline beneath this toolbar (default `False`).
+            **toolbar_kwargs: Forwarded to `Toolbar` — e.g. `surface`, `density`,
+                `button_variant`, `show_window_controls`, `draggable`. Defaults
+                `surface='chrome'` (this is window chrome).
+
+        Returns:
+            The `Toolbar` for this layer.
+        """
+        from bootstack.style.style_builder_base import StyleBuilderBase
+        from bootstack.widgets._impl.primitives import Separator
+        from bootstack.widgets.toolbar import Toolbar
+
+        stack = self._ensure_toolbar_stack()
+        toolbar_kwargs.setdefault("surface", "chrome")
+        tb = Toolbar(parent=_ToolbarStackContainer(stack), **toolbar_kwargs)
+        if divider:
+            # A small margin below the hairline so the next toolbar (or the
+            # content) isn't cramped right against it — the bar above already has
+            # its own bottom padding, so the gap only needs balancing below. The
+            # divider takes the bar's surface (and the stack carries it too — see
+            # `_ensure_toolbar_stack`) so the margin gap reads chrome, not the
+            # window's content surface.
+            margin = StyleBuilderBase.scale(3)
+            Separator(
+                stack, orient="horizontal", surface=toolbar_kwargs["surface"]
+            ).pack(side="top", fill="x", pady=(0, margin))
+        return tb
+
+    def _ensure_toolbar_stack(self) -> Any:
+        stack = getattr(self, "_toolbar_stack", None)
+        if stack is not None:
+            return stack
+        from bootstack.widgets._impl.primitives.packframe import PackFrame
+
+        # The stack carries the chrome surface so any gap between stacked bars
+        # (e.g. a divider's margin) reads as chrome rather than the window's
+        # content surface. Chrome-surfaced toolbars sit seamlessly on it.
+        stack = PackFrame(self._toolbar_stack_parent(), direction="vertical", surface="chrome")
+        self._mount_toolbar_stack(stack)
+        self._toolbar_stack = stack
+        return stack
+
+    def _toolbar_stack_parent(self) -> Any:
+        """Widget the chrome stack is built under (overridable by the host)."""
+        return self._menu_root()
+
+    def _mount_toolbar_stack(self, stack: Any) -> None:
+        """Pack the chrome stack at the top of the window, above the content."""
+        content = getattr(self, "_content_frame", None)
+        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if content is not None:
+            pack_kw["before"] = content
+        stack.pack(**pack_kw)
 
     @property
     def menubar(self) -> WindowMenu:

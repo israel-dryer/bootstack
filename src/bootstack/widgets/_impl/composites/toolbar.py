@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from tkinter import Widget
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
 
@@ -14,6 +14,12 @@ from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets.types import Master, SurfaceToken, WidgetDensity
+
+if TYPE_CHECKING:
+    from tkinter import StringVar
+
+    from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
+    from bootstack.widgets._impl.composites.menu.model import MenuGroup, MenuModel
 
 
 class ToolbarKwargs(TypedDict, total=False):
@@ -89,6 +95,14 @@ class Toolbar(Frame):
 
         if self._draggable:
             self._setup_drag()
+
+        # Menu state — populated lazily by add_menu(). The model is the single
+        # source of truth for this toolbar's menus (so a host can aggregate them
+        # for the macOS native bar); the triggers are the in-window dropdowns.
+        self._menu_model: MenuModel | None = None
+        self._menu_triggers: dict[str, DropdownButton] = {}
+        self._menu_radio_vars: dict[str, StringVar] = {}
+        self._menu_rebind_pending: Any = None
 
     def _build_window_controls(self):
         """Build window control buttons (minimize, maximize, close)."""
@@ -314,6 +328,82 @@ class Toolbar(Frame):
         )
         btn.pack(side='left')
         return btn
+
+    def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
+        """Add a dropdown menu (File / Edit / …) as a toolbar item.
+
+        Returns the menu's `MenuGroup` builder — add items with
+        `add_action` / `add_check` / `add_radio` / `add_separator`, ideally in a
+        `with` block. On Windows/Linux the menu renders as an in-window dropdown
+        trigger in the toolbar; the menu also feeds this toolbar's menu model so a
+        host can surface it in the macOS native menu bar.
+
+        Args:
+            text: The menu's label (e.g. `'File'`).
+            key: Optional stable identifier; defaults to `text`.
+
+        Returns:
+            The `MenuGroup` for this menu.
+        """
+        from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
+        from bootstack.widgets._impl.composites.menu.model import MenuModel
+
+        if self._menu_model is None:
+            self._menu_model = MenuModel()
+        group = self._menu_model.add_menu(text, key=key)
+
+        # A flat menu-bar-style trigger whose popdown is the themed context menu.
+        trigger = DropdownButton(
+            self._content_frame,
+            text=text,
+            items=[],
+            variant='menubar-item',
+            show_dropdown_button=False,
+            density=self._density,
+            surface=self._surface,
+        )
+        trigger.pack(side='left')
+        self._menu_triggers[group.key] = trigger
+
+        # Items are appended to the trigger as they are added to the group (the
+        # build-up case), so the `with tb.add_menu(...)` block renders live; each
+        # change also (coalesced) rebinds the model's keyboard shortcuts.
+        group.on_change = lambda g=group, t=trigger: self._on_menu_item_added(g, t)
+        return group
+
+    def _on_menu_item_added(self, group: "MenuGroup", trigger: "DropdownButton") -> None:
+        from bootstack.widgets._impl.composites.menu.render_themed import (
+            menu_item_to_context_item,
+        )
+
+        item = group.items[-1]
+        trigger.add_items([menu_item_to_context_item(item, self._menu_radio_vars)])
+        self._schedule_menu_rebind()
+
+    def _schedule_menu_rebind(self) -> None:
+        """Coalesce shortcut (re)binding to idle so a built menu binds once."""
+        if self._menu_rebind_pending is not None:
+            try:
+                self.after_cancel(self._menu_rebind_pending)
+            except Exception:
+                pass
+        try:
+            self._menu_rebind_pending = self.after_idle(self._rebind_menu_shortcuts)
+        except Exception:
+            self._rebind_menu_shortcuts()
+
+    def _rebind_menu_shortcuts(self) -> None:
+        self._menu_rebind_pending = None
+        if self._menu_model is not None:
+            try:
+                self._menu_model.bind_shortcuts(self.winfo_toplevel())
+            except Exception:
+                pass
+
+    @property
+    def menu_model(self) -> "MenuModel | None":
+        """This toolbar's menu model (or `None` if no menus were added)."""
+        return self._menu_model
 
     def add_label(
         self,

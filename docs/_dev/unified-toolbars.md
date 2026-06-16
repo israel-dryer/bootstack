@@ -112,6 +112,18 @@ macOS must render menus in the native global menu bar, not in the window. So:
 Shortcuts: the aggregated `MenuModel` binds pattern shortcuts to the host window
 (as `WindowMenu` does today), independent of rendering.
 
+### Density follows the toolbar (a docs point)
+
+`add_menu` triggers now follow the toolbar's `density` (the `menubar-item` style
+builder was previously locked to a compact image/padding/font and ignored the
+density it was given — fixed in step 2). So the toolbar's density sets the whole
+bar's feel, menus included. Because the `Toolbar` is **multi-purpose** (a menu
+bar, a command bar, a window titlebar, a secondary formatting strip), the
+toolbar **Guide must teach which density fits which usage** — e.g. `'default'`
+for a primary command bar with prominent buttons; `'compact'` for a tight menu
+bar / titlebar / formatting strip where vertical space matters. (Maintainer
+request, 2026-06-15.)
+
 ## Undecorated windows (folds in #162)
 
 `undecorated=True` only removes the OS chrome — it creates **no** toolbar. The

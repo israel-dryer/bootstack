@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
+
+if TYPE_CHECKING:
+    from bootstack.widgets._impl.composites.menu.model import MenuGroup
 
 
 class Toolbar(PublicWidgetBase):
@@ -21,8 +24,9 @@ class Toolbar(PublicWidgetBase):
         button_variant: Default variant applied to every button added via
             `add_button()`. Default `'ghost'`.
         density: Size of toolbar items. Default `'default'`.
-        surface: Background surface token. Defaults to the theme's `'chrome'`
-            surface.
+        surface: Background surface token. Defaults to `None` — the toolbar
+            inherits the base content surface (it blends into its parent). Pass
+            `'chrome'` (or another token) to tint the bar explicitly.
         padding: Inner padding in pixels — an int (all sides) or a
             `(horizontal, vertical)` tuple. Defaults to `3` for default density
             and `(3, 1)` for compact.
@@ -131,6 +135,31 @@ class Toolbar(PublicWidgetBase):
         kw.update(kwargs)
         self._internal.add_button(**kw)
 
+    def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
+        """Add a dropdown menu (File / Edit / …) as a toolbar item.
+
+        A menu is just another toolbar item. The returned builder is a context
+        manager, so the natural form reads::
+
+            with toolbar.add_menu("File") as file:
+                file.add_action("Open", shortcut="Mod+O", on_click=open_file)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+
+        On Windows/Linux the menu renders as an in-window dropdown; on macOS it
+        is bridged to the native global menu bar (when the toolbar is part of a
+        window's chrome).
+
+        Args:
+            text: The menu's label (e.g. ``'File'``).
+            key: Optional stable identifier; defaults to ``text``.
+
+        Returns:
+            The menu's `MenuGroup` builder (``add_action`` / ``add_check`` /
+            ``add_radio`` / ``add_separator``; usable as a context manager).
+        """
+        return self._internal.add_menu(text, key=key)
+
     def add_label(
         self,
         text: str | None = None,
@@ -171,12 +200,17 @@ class Toolbar(PublicWidgetBase):
     def add_widget(self, widget: Any, **kwargs: Any) -> Any:
         """Add a widget to the toolbar.
 
-        Pass a widget **class** to have the bar build it for you — `kwargs` are
-        forwarded to its constructor:
+        Pass a widget **class** to have the bar build it for you — the bar's
+        `density` and `surface` are applied (for any the class accepts) so the
+        widget matches the rest of the bar, and `kwargs` are forwarded to its
+        constructor (overriding those defaults):
 
-            bar.add_widget(bs.ThemeToggle, variant="ghost")
+            bar.add_widget(bs.ThemeToggle)
+            bar.add_widget(bs.TextField, placeholder="Search", width=24)
 
-        Or pass an existing widget **instance** — `kwargs` are pack options:
+        Or pass an existing widget **instance** — `kwargs` are pack options. (An
+        instance is built before it reaches the bar, so it does NOT inherit the
+        bar's density/surface; prefer the class form for that.)
 
             bar.add_widget(my_widget, padx=4)
 
@@ -184,10 +218,26 @@ class Toolbar(PublicWidgetBase):
             The widget (the new instance when a class is given).
         """
         if isinstance(widget, type):
+            self._apply_bar_defaults(widget, kwargs)
             return widget(parent=self, **kwargs)
         tk_widget = getattr(widget, "_internal", widget)
         self._internal.add_widget(tk_widget, **kwargs)
         return widget
+
+    def _apply_bar_defaults(self, widget_cls: type, kwargs: dict[str, Any]) -> None:
+        """Default `density`/`surface` from the bar onto a class being built, but
+        only for parameters the widget actually accepts (and not if the caller
+        already passed them)."""
+        import inspect
+
+        try:
+            params = inspect.signature(widget_cls).parameters
+        except (TypeError, ValueError):
+            return
+        if "density" in params:
+            kwargs.setdefault("density", self._internal.density)
+        if "surface" in params:
+            kwargs.setdefault("surface", self._internal._surface)
 
     # ----- Container protocol (so `parent=toolbar` works) -----
 
@@ -197,6 +247,17 @@ class Toolbar(PublicWidgetBase):
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
         # A widget created with `parent=toolbar` is packed into the bar.
         self._internal.add_widget(child._internal)
+
+    def __enter__(self) -> "Toolbar":
+        # A *scoping* context manager (like `menubar.add_menu`): `with
+        # window.add_toolbar() as tb:` reads naturally and hands back the handle,
+        # but it does NOT capture bare widgets — fill the bar with `add_button` /
+        # `add_menu` / `add_widget(Class, ...)` so each item inherits the bar's
+        # density and surface (a constructed-then-attached widget cannot).
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        return None
 
     @property
     def content(self) -> Any:
