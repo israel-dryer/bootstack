@@ -369,33 +369,45 @@ memories and git history.
 > "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
 > below is the stable-cut closeout + a fresh regression + the standing backlog.
 
-### ★ ACTIVE INITIATIVE — Layout redesign (grid engine + flexbox/CSS-grid API)
+### ★ ACTIVE INITIATIVE — Layout redesign (screen-axis vocabulary on a grid engine)
 
-> Branch **`feat/grid-layout-engine`**. Full design brief:
-> **`docs/_dev/layout-redesign.md`** (read it first). Prototype (validated, untracked
-> scratch): **`development/flexlayout_proto.py`** — run scenes with
-> `py -3.12 development/flexlayout_proto.py <scene>` (justify/grow/align/col/weights/
-> toolbars/spacer/overflow/grid/nesting). **Breaking, core-engine — land before the
-> 0.1.0 freeze.**
+> Branch **`feat/grid-layout-engine`** — `git checkout` it to continue; the engine +
+> full public surface + the gallery demo are BUILT and committed there (NOT pushed/
+> merged). Full design brief + the LOCKED vocabulary + per-decision rationale +
+> progress log: **`docs/_dev/layout-redesign.md`** on the branch (read the
+> "★ FINAL VOCABULARY" block first — the version on `main` is stale). Memories
+> `project_layout_redesign`, `feedback_layout_conversion_rules`. **Breaking, core-engine
+> — land before the 0.1.0 freeze.**
 
-Replace the stack layout API — `anchor_items`/`fill_items`/`expand_items` and Grid's
-`sticky_items` (all Tk-isms) — with a flexbox/CSS-grid vocabulary, and reimplement
-stacks on the Tk **grid** geometry manager (not pack). **Trigger:** `HStack(fill="x",
-anchor_items="e")` can't right-align a button row (`anchor_items` is cross-axis only;
-no public main-axis distribution exists). Validated model:
+Replaces the Tk pack stack layout with a **screen-axis** vocabulary on the Tk **grid**
+geometry manager. Engine + Row/Column/Grid/Card/GroupBox/nav-containers + `cli/demo.py`
+done and verified (import clean, 183 tests pass, all 18 demo pages render, `bootstack
+demo` runs).
 
-- **`justify`** (whole-group main-axis: start/center/end/space-*) · **`align`**/`align_self`
-  (cross: start/center/end/stretch) · **`grow`**/`weights=` (item growth) ·
-  **`Spacer()`**/`Spacer(size=)`/`Spacer(weight=)` (composable breaks — unifies the
-  existing `Toolbar`/`StatusBar` `add_spacer()`). 2-D **`Grid`** →
-  **`justify_items`**/**`align_items`** + weighted `columns=`/`rows=`.
-- Per-child collision-free keys are **`grow`/`align_self`/`justify_self`** (never bare
-  `align`/`justify` — would shadow text `justify` / Snackbar `align`). `push` was
-  prototyped and **dropped** (Spacer + nesting + `margin_x` cover it).
-- **★ Top migration risk:** the grid engine **silently ignores legacy `fill`/`expand`
-  child kwargs** — every such child (data/canvas widgets especially: ListView/DataTable/
-  Tree/Gallery/Carousel) must move to `grow`/`align` or it collapses. Other risks +
-  open default decisions + build sequencing are all in the brief.
+- **FINAL vocabulary (locked):** axes fixed to the SCREEN (`horizontal`=x, `vertical`=y;
+  no main/cross flip). **Bare = self, `_items` = children** (a container is also a
+  widget): self → `horizontal`/`vertical`/`grow`; container → `horizontal_items`/
+  `vertical_items`/`grow_items`. `align_self`/`justify_self` are GONE. **Edge-name
+  values:** horizontal `left`/`center`/`right`/`stretch`; vertical `top`/`center`/
+  `bottom`/`stretch`; + `space-between`/`-around`/`-evenly` on the stacking axis.
+  `HStack`/`VStack` → **`Row`/`Column`** (+ `Spacer`); `layout=` values `vstack`/`hstack`
+  → **`column`/`row`** (`LayoutKind=['column','row','grid']`). Aliases `HAlign`/`VAlign`/
+  `HArrange`/`VArrange`. `weights=` kept (positional per-child `grow` shorthand).
+- **DONE on the branch** (commits `dee25316`·`151c326f`·`a3ee4f92`·`fc704e6e`·
+  `528281d0`·`42d07159`): `FlexFrame` (axis-aware engine), container plumbing,
+  Row/Column/Spacer, Grid 2-D, App/Window/Card/GroupBox + PageStack/Tabs/SplitView/
+  Accordion + ListView/Tree/AppShell/ScrollView, and the full `cli/demo.py`.
+- **NEXT — Stage 3 (the ~850-site sweep, fresh session):** `cli/appicon.py` +
+  `cli/templates/__init__.py`, then **all `docs/examples/` + `docs/screenshots/`** +
+  re-shoot screenshots, a layout how-to/topic guide for the new vocab, and re-point
+  `Toolbar`/`StatusBar` `add_spacer()` → the public `Spacer`. **Conversion rules**
+  (memory `feedback_layout_conversion_rules`): axis-aware (`fill="x"`→`horizontal`
+  stretch in a Column, `grow` in a Row); HOIST uniform child alignment to the parent
+  `*_items`; NEVER write a default value (drop the kwarg). Data/canvas widgets
+  (ListView/Tree/DataTable/Gallery/Carousel) collapse without `grow`/`horizontal`.
+- **Bugs filed while reviewing the demo** (pre-existing, NOT from this work): #165
+  undecorated-window drag offset · #166 ContextMenu/Tooltip don't cover container
+  children · #167 Gauge theme repaint · #168 Tabs overflow.
 
 ### Toward the 0.1.0 stable release
 
