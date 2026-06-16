@@ -824,6 +824,99 @@ def _build_media_page():
 # =============================================================================
 
 
+def build_gallery_shell(shell) -> None:
+    """Populate a Widget Gallery `AppShell` (toolbar, status bar, and pages).
+
+    Shared by `run_demo()` and the docs gallery screenshot so the captured
+    gallery always matches the live demo. Pages are lazy-built on first visit.
+    """
+    with shell.add_toolbar() as bar:
+        with bar.add_menu("File") as file_menu:
+            file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+        with bar.add_menu("View") as view_menu:
+            view_menu.add_action("Toggle theme", on_click=bs.toggle_theme)
+        bar.add_spacer()
+        bar.add_theme_toggle()
+
+    shell.statusbar.add_text("Ready")
+    shell.statusbar.add_spacer()
+    shell.statusbar.add_text(f"bootstack v{bs.__version__}")
+
+    # Page registry: key → (page_frame, builder)
+    _pages: dict[str, tuple[object, object]] = {}
+
+    def _register(key, builder, *, text, icon, scrollable=False):
+        page = shell.add_page(key, text=text, icon=icon, scrollable=scrollable)
+        _pages[key] = (page, builder)
+
+    _register("home",       _build_home_page,       text="Home",        icon="house")
+
+    shell.add_separator()
+    shell.add_header("Actions")
+    _register("buttons",    _build_buttons_page,    text="Buttons",     icon="hand-index-thumb",   scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Inputs")
+    _register("text-inputs",  _build_text_inputs_page,  text="Text Inputs",  icon="input-cursor-text", scrollable=True)
+    _register("numeric",      _build_numeric_page,      text="Numeric & Date", icon="123",             scrollable=True)
+    _register("forms",        _build_forms_page,        text="Forms",        icon="journal-text",      scrollable=True)
+    _register("code-editor",  _build_code_editor_page,  text="Code Editor",  icon="code-slash",        scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Selection")
+    _register("selection",  _build_selection_page,  text="Selection",   icon="ui-checks",          scrollable=True)
+    _register("calendar",   _build_calendar_page,   text="Calendar",    icon="calendar3",          scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Data Display")
+    _register("data",       _build_data_page,       text="Data Tables", icon="table",              scrollable=True)
+    _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Media")
+    _register("media",      _build_media_page,      text="Media",       icon="images",             scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Layout")
+    _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
+    _register("navigation", _build_navigation_page, text="Navigation",  icon="window-stack",       scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Overlays & Dialogs")
+    _register("overlays",   _build_overlays_page,   text="Overlays",    icon="layers",             scrollable=True)
+    _register("dialogs",    _build_dialogs_page,    text="Dialogs",     icon="chat-square-text",   scrollable=True)
+
+    shell.add_separator()
+    shell.add_header("Design System")
+    _register("themes",     _build_theme_page,      text="Themes",      icon="palette",            scrollable=True)
+    _register("typography", _build_typography_page, text="Typography",  icon="fonts",              scrollable=True)
+    _register("icons",      _build_icons_page,      text="Icons",       icon="grid-3x3-gap",       scrollable=True)
+
+    # Lazy-build: construct page content only on first visit
+    _built: set[str] = set()
+
+    def _build_page(key: str) -> None:
+        if key in _built or key not in _pages:
+            return
+        page, builder = _pages[key]
+        with page:
+            builder()
+        _built.add(key)
+
+    # Build home page immediately; all others on first navigation
+    _build_page("home")
+
+    def _on_page_change(event) -> None:
+        # on_page_change delivers a PageChangeEvent (unpacked); .page is the
+        # key of the now-active page.
+        key = getattr(event, "page", None)
+        if key:
+            _build_page(key)
+
+    shell.on_page_change(_on_page_change)
+    shell.navigate("home")
+
+
 def run_demo():
     """Run the bootstack widget gallery as an AppShell application."""
     with bs.AppShell(
@@ -831,93 +924,7 @@ def run_demo():
         theme="bootstrap-light",
         size=(1100, 750),
     ) as shell:
-
-        with shell.add_toolbar() as bar:
-            with bar.add_menu("File") as file_menu:
-                file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-            with bar.add_menu("View") as view_menu:
-                view_menu.add_action("Toggle theme", on_click=bs.toggle_theme)
-            bar.add_spacer()
-            bar.add_theme_toggle()
-
-        shell.statusbar.add_text("Ready")
-        shell.statusbar.add_spacer()
-        shell.statusbar.add_text(f"bootstack v{bs.__version__}")
-
-        # Page registry: key → (page_frame, builder)
-        _pages: dict[str, tuple[object, object]] = {}
-
-        def _register(key, builder, *, text, icon, scrollable=False):
-            page = shell.add_page(key, text=text, icon=icon, scrollable=scrollable)
-            _pages[key] = (page, builder)
-
-        _register("home",       _build_home_page,       text="Home",        icon="house")
-
-        shell.add_separator()
-        shell.add_header("Actions")
-        _register("buttons",    _build_buttons_page,    text="Buttons",     icon="hand-index-thumb",   scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Inputs")
-        _register("text-inputs",  _build_text_inputs_page,  text="Text Inputs",  icon="input-cursor-text", scrollable=True)
-        _register("numeric",      _build_numeric_page,      text="Numeric & Date", icon="123",             scrollable=True)
-        _register("forms",        _build_forms_page,        text="Forms",        icon="journal-text",      scrollable=True)
-        _register("code-editor",  _build_code_editor_page,  text="Code Editor",  icon="code-slash",        scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Selection")
-        _register("selection",  _build_selection_page,  text="Selection",   icon="ui-checks",          scrollable=True)
-        _register("calendar",   _build_calendar_page,   text="Calendar",    icon="calendar3",          scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Data Display")
-        _register("data",       _build_data_page,       text="Data Tables", icon="table",              scrollable=True)
-        _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Media")
-        _register("media",      _build_media_page,      text="Media",       icon="images",             scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Layout")
-        _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
-        _register("navigation", _build_navigation_page, text="Navigation",  icon="window-stack",       scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Overlays & Dialogs")
-        _register("overlays",   _build_overlays_page,   text="Overlays",    icon="layers",             scrollable=True)
-        _register("dialogs",    _build_dialogs_page,    text="Dialogs",     icon="chat-square-text",   scrollable=True)
-
-        shell.add_separator()
-        shell.add_header("Design System")
-        _register("themes",     _build_theme_page,      text="Themes",      icon="palette",            scrollable=True)
-        _register("typography", _build_typography_page, text="Typography",  icon="fonts",              scrollable=True)
-        _register("icons",      _build_icons_page,      text="Icons",       icon="grid-3x3-gap",       scrollable=True)
-
-        # Lazy-build: construct page content only on first visit
-        _built: set[str] = set()
-
-        def _build_page(key: str) -> None:
-            if key in _built or key not in _pages:
-                return
-            page, builder = _pages[key]
-            with page:
-                builder()
-            _built.add(key)
-
-        # Build home page immediately; all others on first navigation
-        _build_page("home")
-
-        def _on_page_change(event) -> None:
-            # on_page_change delivers a PageChangeEvent (unpacked); .page is the
-            # key of the now-active page.
-            key = getattr(event, "page", None)
-            if key:
-                _build_page(key)
-
-        shell.on_page_change(_on_page_change)
-        shell.navigate("home")
-
+        build_gallery_shell(shell)
     shell.run()
 
 

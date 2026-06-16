@@ -1,9 +1,11 @@
 Toolbar
 =======
 
-A horizontal strip of buttons, labels, separators, and other widgets.
-Items are added left-to-right via ``add_button()``, ``add_label()``,
-``add_separator()``, ``add_spacer()``, and ``add_widget()``.
+A horizontal strip of buttons, labels, **menus**, and other widgets — the
+multi-purpose chrome primitive. Items are added left-to-right via
+``add_button()``, ``add_label()``, ``add_menu()``, ``add_separator()``,
+``add_spacer()``, and ``add_widget()``. A window's top region is a *stack* of
+toolbars you build with ``add_toolbar()`` (see :ref:`toolbars-in-a-window`).
 
 .. image:: /_static/examples/toolbar-hero-light.png
    :class: bs-screenshot-light
@@ -82,11 +84,43 @@ for the application name or section titles.
    tb.add_separator()
    tb.add_button("New", icon="file-earmark-plus")
 
+Adding menus
+~~~~~~~~~~~~
+
+A menu (File / Edit / …) is just another toolbar item. ``add_menu()`` returns a
+context-manager builder — add ``add_action`` / ``add_check`` / ``add_radio`` /
+``add_separator`` items inside the ``with`` block. A ``shortcut=`` is shown beside
+the item **and** bound for you. On Windows/Linux the menu renders as an in-window
+dropdown; on macOS it bridges to the native global menu bar.
+
+.. code-block:: python
+
+   with tb.add_menu("File") as file:
+       file.add_action("New",  shortcut="Mod+N", on_click=new_doc)
+       file.add_action("Open", shortcut="Mod+O", on_click=open_doc)
+       file.add_separator()
+       file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+   with tb.add_menu("View") as view:
+       view.add_check("Status bar", checked=True, on_click=toggle_status)
+
+Menus and command buttons can share one toolbar — that is the whole point of the
+unified toolbar.
+
 Density
 ~~~~~~~
 
-``density="compact"`` reduces padding and button size — useful for secondary
-toolbars such as a rich-text formatting strip.
+The ``Toolbar`` is multi-purpose, so the right density depends on the role:
+
+- ``"default"`` (the standalone ``bs.Toolbar`` default) — roomier buttons and
+  padding. Use it for a **primary command bar** where the buttons are the focus.
+- ``"compact"`` — a tight strip. Use it for **window chrome** (menu bars, title
+  bars), **secondary** bars (a rich-text formatting strip), or anywhere vertical
+  space is tight. Items packed on it — buttons, menu triggers, the theme toggle —
+  all follow the bar's density automatically.
+
+Window chrome added with ``add_toolbar()`` defaults to ``"compact"`` (window
+bars read as tight strips); pass ``density="default"`` for a roomier one. A
+standalone ``bs.Toolbar`` defaults to ``"default"``.
 
 .. code-block:: python
 
@@ -140,51 +174,59 @@ the background token — ``'card'`` lifts it slightly from the page background.
 Custom widgets
 ~~~~~~~~~~~~~~
 
-Use ``add_widget()`` to embed any widget (e.g. a
-:class:`Select <bootstack.widgets.select.Select>`) in the toolbar. Create the
-widget with the toolbar as its parent first.
+Use ``add_widget()`` to embed any widget (a
+:class:`Select <bootstack.widgets.select.Select>`, a
+:class:`TextField <bootstack.TextField>`, …). Pass the widget **class** and let
+the toolbar build it — it applies the bar's ``density`` and ``surface`` (for any
+the class accepts), so the widget matches the rest of the bar:
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x")
-   branch = bs.Select(
-       ["main", "dev", "feat/new-ui"],
-       parent=tb,
-   )
-   tb.add_widget(branch)
+   tb = bs.Toolbar(fill="x", density="compact")
+   tb.add_widget(bs.Select, options=["main", "dev", "feat/new-ui"], value="main")
+   tb.add_widget(bs.TextField, placeholder="Search", width=24)
+
+(An already-built *instance* — ``tb.add_widget(my_widget)`` — is added as-is and
+does **not** inherit the bar's density/surface; prefer the class form for that.)
+
+.. _toolbars-in-a-window:
 
 Toolbars in a window
 ~~~~~~~~~~~~~~~~~~~~~~
 
-A window's top chrome is a stack of toolbars, added with ``app.add_toolbar()``
-(the same on ``Window`` and ``AppShell``). Each call stacks a full-width band;
-fill it with the ``add_*`` methods, including menus via
-:meth:`add_menu <bootstack.Toolbar.add_menu>`.
+A window's top chrome is a **stack of toolbars**, added with
+``app.add_toolbar()`` (the same on ``Window`` and ``AppShell``). Each call stacks
+a new full-width band, top to bottom; ``divider=True`` draws a hairline beneath a
+band. The returned ``Toolbar`` is a *scoping* context manager — ``with
+app.add_toolbar() as bar:`` reads naturally and hands back the handle, but you
+fill the bar only through its ``add_*`` methods (so each item inherits the bar's
+density and surface).
 
 .. code-block:: python
 
    with bs.AppShell(title="My App") as shell:
-       with shell.add_toolbar() as bar:
-           with bar.add_menu("File") as file:
+       # A menu row.
+       with shell.add_toolbar() as menus:
+           with menus.add_menu("File") as file:
                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-           bar.add_spacer()
-           bar.add_theme_toggle()
+           with menus.add_menu("View") as view:
+               view.add_action("Refresh", shortcut="Mod+R", on_click=refresh)
+           menus.add_spacer()
+           menus.add_theme_toggle()
+       # A command row beneath it, separated by a hairline.
+       with shell.add_toolbar(divider=True) as commands:
+           commands.add_button("Run", icon="play", accent="primary", on_click=run)
 
-Custom titlebar
-~~~~~~~~~~~~~~~
+Window chrome defaults to ``surface='chrome'`` and ``density='compact'``; override
+either per call.
 
-In an ``undecorated`` window the OS title bar is gone — build your own as the
-first toolbar with ``show_window_controls=True`` (minimize / maximize / close on
-the right) and dragging. It defaults to a thin compact strip.
+Window controls
+~~~~~~~~~~~~~~~~
 
-.. code-block:: python
-
-   with bs.App(title="My App", undecorated=True) as app:
-       with app.add_toolbar(show_window_controls=True) as title:
-           title.add_label("My App", font="caption")
-           title.add_spacer()
-       ...
-   app.run()
+``show_window_controls=True`` adds minimize / maximize / close at the right edge
+and lets the toolbar drag the window (double-click maximizes). This is how you
+build the title bar of an **undecorated window** — see the *Undecorated window*
+section on the :doc:`App </widgets/app>` page for the full example and screenshot.
 
 Widget sizing
 ~~~~~~~~~~~~~

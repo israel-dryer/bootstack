@@ -156,6 +156,37 @@ Each toolbar takes the usual ``Toolbar`` options — ``surface`` (default
 independently. On macOS, a toolbar's menus bridge to the native global menu bar
 (opt out per toolbar with ``use_macos_menus=False``).
 
+Undecorated window
+~~~~~~~~~~~~~~~~~~~
+
+``undecorated=True`` removes the OS title bar and border (ignored on macOS), so
+you build your own title bar: make the first toolbar an
+``add_toolbar(show_window_controls=True)``. It adds minimize / maximize / close at
+the right edge, drags the window (double-click maximizes), and reads as a thin
+compact strip. The same applies to :class:`Window <bootstack.Window>` and
+:class:`AppShell <bootstack.AppShell>`.
+
+.. code-block:: python
+
+   with bs.AppShell(title="My App", size=(720, 480), undecorated=True) as shell:
+       with shell.add_toolbar(show_window_controls=True) as title:
+           title.add_label("My App", icon="stack", font="caption")
+           title.add_spacer()
+           title.add_theme_toggle()
+       with shell.add_toolbar() as bar:
+           with bar.add_menu("File") as file:
+               file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+       ...
+   shell.run()
+
+.. image:: /_static/examples/undecorated-hero-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: Undecorated window with a custom title bar — light theme
+
+.. image:: /_static/examples/undecorated-hero-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: Undecorated window with a custom title bar — dark theme
+
 See also
 --------
 
