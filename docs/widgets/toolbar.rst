@@ -153,40 +153,38 @@ widget with the toolbar as its parent first.
    )
    tb.add_widget(branch)
 
-Custom titlebar
-~~~~~~~~~~~~~~~
+Toolbars in a window
+~~~~~~~~~~~~~~~~~~~~~~
 
-Set ``show_window_controls=True`` to add minimize, maximize, and close buttons
-on the right, and ``draggable=True`` to let the user drag the window by the
-toolbar. Pair with ``undecorated=True`` on the App to remove the OS title bar.
-
-.. code-block:: python
-
-   with bs.App(title="My App", undecorated=True) as app:
-       tb = bs.Toolbar(
-           fill="x",
-           show_window_controls=True,
-           draggable=True,
-       )
-       tb.add_label("My App", font="heading-md")
-       tb.add_spacer()
-       ...
-   app.run()
-
-Toolbar inside AppShell
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-:class:`AppShell <bootstack.widgets.appshell.AppShell>` includes a built-in
-toolbar. Access it via ``shell.commandbar`` and call the same ``add_*`` methods.
-Use ``command=`` (not ``on_click=``) when calling ``add_button()`` on the
-AppShell toolbar.
+A window's top chrome is a stack of toolbars, added with ``app.add_toolbar()``
+(the same on ``Window`` and ``AppShell``). Each call stacks a full-width band;
+fill it with the ``add_*`` methods, including menus via
+:meth:`add_menu <bootstack.Toolbar.add_menu>`.
 
 .. code-block:: python
 
    with bs.AppShell(title="My App") as shell:
-       shell.commandbar.add_spacer()
-       shell.commandbar.add_theme_toggle()
+       with shell.add_toolbar() as bar:
+           with bar.add_menu("File") as file:
+               file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+           bar.add_spacer()
+           bar.add_theme_toggle()
+
+Custom titlebar
+~~~~~~~~~~~~~~~
+
+In an ``undecorated`` window the OS title bar is gone — build your own as the
+first toolbar with ``show_window_controls=True`` (minimize / maximize / close on
+the right) and dragging. It defaults to a thin compact strip.
+
+.. code-block:: python
+
+   with bs.App(title="My App", undecorated=True) as app:
+       with app.add_toolbar(show_window_controls=True) as title:
+           title.add_label("My App", font="caption")
+           title.add_spacer()
        ...
+   app.run()
 
 Widget sizing
 ~~~~~~~~~~~~~

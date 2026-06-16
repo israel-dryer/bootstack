@@ -122,84 +122,45 @@ See :doc:`/production/app-settings` for the full configuration reference — eve
 option, the locale-derived read-only properties, persisting state across
 launches with a :class:`Store <bootstack.store.Store>`, and ``App.from_store()``.
 
-Menu bar and command bar
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Toolbars
+~~~~~~~~
 
-``app.menubar`` is the application :doc:`menu bar </widgets/menubar>` (File / Edit /
-…). ``app.commandbar`` is the :class:`Toolbar <bootstack.Toolbar>` — for widgets
-that aren't menus, such as a theme toggle or a search box. Both sit in a shared
-row at the top of the window.
+The window's top region is a stack of :class:`Toolbar <bootstack.Toolbar>` bands
+you add with ``app.add_toolbar()``. A toolbar holds buttons, labels, widgets,
+**and menus** — a menu (File / Edit / …) is just another item, added with
+``toolbar.add_menu(...)``. Each ``add_toolbar()`` call stacks a new full-width
+band, top to bottom.
 
 .. code-block:: python
 
    with bs.App(title="Editor") as app:
-       with app.menubar.add_menu("File") as file:
-           file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
-
-       app.commandbar.add_spacer()                       # push trailing items right
-       app.commandbar.add_theme_toggle()
+       with app.add_toolbar() as bar:
+           with bar.add_menu("File") as file:
+               file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+           bar.add_spacer()                  # push trailing items to the right
+           bar.add_theme_toggle()
    app.run()
 
-Layout
-^^^^^^
-
-``menu_layout`` controls how the menu bar and command bar stack on Windows/Linux.
-``"fused"`` (default) puts them in one row — menus on the left, the command bar
-filling the right:
-
-.. image:: /_static/examples/menubar-fused-light.png
-   :class: bs-screenshot-light bs-window-screenshot
-   :alt: Fused menu bar and command bar (one row) — light theme
-
-.. image:: /_static/examples/menubar-fused-dark.png
-   :class: bs-screenshot-dark bs-window-screenshot
-   :alt: Fused menu bar and command bar (one row) — dark theme
-
-``"stacked"`` gives the command bar its own row beneath the menus — better when it
-carries many items:
+For a separate command row beneath the menus, just add a second toolbar:
 
 .. code-block:: python
 
-   bs.App(title="Editor", menu_layout="stacked")
+   with app.add_toolbar() as menus:
+       menus.add_menu("File")
+       menus.add_menu("Edit")
+   with app.add_toolbar(divider=True) as commands:
+       commands.add_button("Run", icon="play", accent="primary")
 
-.. image:: /_static/examples/menubar-stacked-light.png
-   :class: bs-screenshot-light bs-window-screenshot
-   :alt: Stacked menu bar and command bar (two rows) — light theme
-
-.. image:: /_static/examples/menubar-stacked-dark.png
-   :class: bs-screenshot-dark bs-window-screenshot
-   :alt: Stacked menu bar and command bar (two rows) — dark theme
-
-``menu_layout`` has no effect on macOS, where the menu bar moves to the global
-bar and only the command bar stays in the window.
-
-Surface
-^^^^^^^
-
-``chrome_surface`` recolors the whole bar — frame, menus, and command-bar buttons —
-as one unit. It takes any surface or accent token:
-``"background"`` blends the bar into the window body, the default ``"chrome"``
-keeps it distinct, and an accent like ``"primary"`` makes a branded colored bar.
-Pair it with ``chrome_divider=False`` to drop the hairline rule for a seamless
-blend.
-
-.. code-block:: python
-
-   bs.App(title="Editor", chrome_surface="background", chrome_divider=False)
-
-.. image:: /_static/examples/menubar-surface-light.png
-   :class: bs-screenshot-light bs-window-screenshot
-   :alt: Menu bar surface blended into the background — light theme
-
-.. image:: /_static/examples/menubar-surface-dark.png
-   :class: bs-screenshot-dark bs-window-screenshot
-   :alt: Menu bar surface blended into the background — dark theme
+Each toolbar takes the usual ``Toolbar`` options — ``surface`` (default
+``'chrome'``), ``density``, ``button_variant`` — so you control each band's look
+independently. On macOS, a toolbar's menus bridge to the native global menu bar
+(opt out per toolbar with ``use_macos_menus=False``).
 
 See also
 --------
 
-:class:`~bootstack.AppShell` — an ``App`` with a built-in command bar, sidebar
-navigation, and page stack: the standard desktop-app scaffold.
+:class:`~bootstack.AppShell` — an ``App`` with sidebar navigation and a page
+stack: the standard desktop-app scaffold (and the same ``add_toolbar()`` chrome).
 
 :class:`~bootstack.Window` — a secondary window opened from a running app.
 

@@ -25,9 +25,10 @@ def app():
 def appshell():
     with bs.AppShell(title="Acme", size=(720, 460)) as shell:
         shell._capture_full_window = True
-        shell.commandbar.add_label("Acme", font="heading-md")
-        shell.commandbar.add_spacer()
-        shell.commandbar.add_theme_toggle()
+        with shell.add_toolbar() as bar:
+            bar.add_label("Acme", font="heading-md")
+            bar.add_spacer()
+            bar.add_theme_toggle()
         with shell.add_page("home", text="Home", icon="house"):
             with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
                 bs.Label("Home", font="heading-lg")

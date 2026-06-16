@@ -29,9 +29,10 @@ tree_nodes = [
 ]
 
 with bs.AppShell(title="Files", size=(900, 580)) as shell:
-    shell.commandbar.add_label("Project", font="heading-md")
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        bar.add_label("Project", font="heading-md")
+        bar.add_spacer()
+        bar.add_theme_toggle()
 
     tree = shell.tree_nav(nodes=tree_nodes, placeholder="Select a file")
 

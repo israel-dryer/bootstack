@@ -90,7 +90,7 @@ record-driven sidebars (a list of messages, a tree of folders) and multi-area
 apps with their own rails, see the :doc:`/tasks/navigation/index` patterns.
 
 Because `AppShell` builds on `App`, it keeps the same window controls, the same
-`menubar` and `commandbar`, and adds a `statusbar` along the bottom. What it adds
+`add_toolbar()` chrome, and adds a `statusbar` along the bottom. What it adds
 on top is the navigation — so choose it when you need that navigation, not for a
 single-page app that `App` already handles.
 

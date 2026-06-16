@@ -57,12 +57,12 @@ below, or jump straight to a widget from the sidebar.
       :doc:`vstack` · :doc:`hstack` · :doc:`grid` · :doc:`card` · :doc:`groupbox` ·
       :doc:`separator` · :doc:`accordion` · :doc:`scrollview` · :doc:`splitview`
 
-   .. grid-item-card:: :octicon:`list-unordered;1.5em;sd-mr-1` Chrome, bars, and menus
+   .. grid-item-card:: :octicon:`list-unordered;1.5em;sd-mr-1` Toolbars and menus
 
-      Window chrome — the menu bar, command bar, status bar, and pop-up menus.
+      Window chrome — the toolbar (holding commands and menus), status bar, and
+      pop-up menus.
 
-      :doc:`menubar` · :doc:`toolbar` · :doc:`statusbar` · :doc:`menubutton` ·
-      :doc:`contextmenu`
+      :doc:`toolbar` · :doc:`statusbar` · :doc:`menubutton` · :doc:`contextmenu`
 
    .. grid-item-card:: :octicon:`arrow-switch;1.5em;sd-mr-1` Navigation
 
@@ -171,10 +171,9 @@ below, or jump straight to a widget from the sidebar.
    splitview
 
 .. toctree::
-   :caption: Chrome bars and menus
+   :caption: Toolbars and menus
    :hidden:
 
-   menubar
    toolbar
    statusbar
    menubutton

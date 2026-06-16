@@ -7,9 +7,10 @@ is the everyday "sidebar app" shape.
 import bootstack as bs
 
 with bs.AppShell(title="Acme Analytics", size=(900, 580)) as shell:
-    shell.commandbar.add_label("Acme Analytics", font="heading-md")
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        bar.add_label("Acme Analytics", font="heading-md")
+        bar.add_spacer()
+        bar.add_theme_toggle()
 
     with shell.add_page("overview", text="Overview", icon="speedometer2"):
         with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):

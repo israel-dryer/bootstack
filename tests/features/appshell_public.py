@@ -19,7 +19,8 @@ with AppShell(
         import bootstack as bs
         bs.toggle_theme()
 
-    shell.commandbar.add_button(icon="sun", command=toggle_theme)
+    with shell.add_toolbar() as bar:
+        bar.add_button(icon="sun", on_click=toggle_theme)
 
     # --- Home page ---
     with shell.add_page("home", text="Home", icon="house"):

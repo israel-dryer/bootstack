@@ -99,28 +99,25 @@ Windows/Linux and ⌘ on macOS — and bind the service to your window once:
 See :doc:`/reference/shortcuts` for the full lifecycle (display labels,
 unregistering, listing).
 
-Menus and the command bar
--------------------------
+Menus and toolbars
+------------------
 
-`App`, `AppShell`, and `Window` all carry a `menubar` and a `commandbar`. A menu
-action takes the same `on_click=` callable as a button, and a `shortcut=` that is
+`App`, `AppShell`, and `Window` all carry a top region of stacked toolbars, added
+with `add_toolbar()`. A toolbar holds buttons and **menus** alike — a menu action
+takes the same `on_click=` callable as a button, and a `shortcut=` that is
 **both** displayed beside the item **and** bound for you:
 
 .. code-block:: python
 
-   with app.menubar.add_menu("File") as file:
-       file.add_action("Save", shortcut="Mod+S", on_click=save_document)
-       file.add_action("Open…", shortcut="Mod+O", on_click=open_document)
-       file.add_separator()
-       file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
-
-The command bar is the toolbar row of quick actions:
-
-.. code-block:: python
-
-   app.commandbar.add_button("Save", icon="save", on_click=save_document)
-   app.commandbar.add_spacer()
-   app.commandbar.add_button("Settings", icon="gear", on_click=open_settings)
+   with app.add_toolbar() as bar:
+       with bar.add_menu("File") as file:
+           file.add_action("Save", shortcut="Mod+S", on_click=save_document)
+           file.add_action("Open…", shortcut="Mod+O", on_click=open_document)
+           file.add_separator()
+           file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+       bar.add_button("Save", icon="save", on_click=save_document)
+       bar.add_spacer()
+       bar.add_button("Settings", icon="gear", on_click=open_settings)
 
 See also
 --------

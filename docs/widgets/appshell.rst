@@ -1,7 +1,7 @@
 AppShell
 ========
 
-A full application scaffold: a menu / command bar across the top, a navigation
+A full application scaffold: a stack of toolbars across the top, a navigation
 sidebar on the left, and a content area that swaps as you navigate. With a single
 set of pages it is a plain sidebar app; add more than one *workspace* and a
 VS Code-style icon **rail** appears to switch between them. A full-width status
@@ -149,40 +149,32 @@ hatch when none of the providers fit. Drive the content region with
        with bs.Accordion():
            ...
 
-Command bar
-~~~~~~~~~~~
-
-``shell.commandbar`` is the built-in :class:`Toolbar <bootstack.Toolbar>`,
-in the top chrome row. Add buttons, labels, separators, and an ``add_spacer()``
-to push trailing items to the right.
-
-.. code-block:: python
-
-   shell.commandbar.add_spacer()
-   shell.commandbar.add_theme_toggle()
-   shell.commandbar.add_button(label="Save", icon="save", on_click=save)
-
-Menu bar
+Toolbars
 ~~~~~~~~
 
-``shell.menubar`` is the application :doc:`menu bar </widgets/menubar>` — the same
-API as on :class:`App <bootstack.widgets.app.App>`. It shares the top chrome row
-with the command bar on Windows/Linux and relocates to the native global menu bar
-on macOS.
+The shell's top region is a stack of :class:`Toolbar <bootstack.Toolbar>` bands,
+added with ``shell.add_toolbar()`` — the same chrome as on
+:class:`App <bootstack.widgets.app.App>`. A toolbar holds buttons, labels,
+widgets, **and menus** (``toolbar.add_menu(...)``); each ``add_toolbar()`` call
+stacks a new full-width band above the rail / sidebar / content body. On macOS a
+toolbar's menus bridge to the native global menu bar.
 
 .. code-block:: python
 
    with bs.AppShell(title="My App") as shell:
-       with shell.menubar.add_menu("File") as file:
-           file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-       ...
+       with shell.add_toolbar() as bar:
+           with bar.add_menu("File") as file:
+               file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+           bar.add_spacer()
+           bar.add_theme_toggle()
+           bar.add_button(label="Save", icon="save", on_click=save)
 
 Status bar
 ~~~~~~~~~~
 
 ``shell.statusbar`` is a full-width band along the bottom, intended for
 **passive** status — counts, sync state, a ready message. Interactive controls
-(buttons, a search box) belong on the command bar by convention; the status bar
+(buttons, a search box) belong on a toolbar by convention; the status bar
 reads best as a quiet display strip. It renders only once a segment is added, or
 when the shell is built with ``show_statusbar=True``. ``add_spacer()`` (or
 ``side="right"``) pushes following segments to the right cluster.
@@ -250,9 +242,6 @@ and the nav-item selection wash blend against these automatically.
    * - Kwarg
      - Default
      - Region
-   * - ``chrome_surface``
-     - ``'chrome'``
-     - The top menu / command-bar band.
    * - ``rail_surface``
      - ``'chrome'``
      - The workspace rail.

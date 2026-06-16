@@ -8,9 +8,10 @@ everything under a header, not loose items sprinkled among sections.
 import bootstack as bs
 
 with bs.AppShell(title="Settings", size=(860, 580)) as shell:
-    shell.commandbar.add_label("Settings", font="heading-md")
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        bar.add_label("Settings", font="heading-md")
+        bar.add_spacer()
+        bar.add_theme_toggle()
 
     shell.add_header("Account")
     with shell.add_page("profile", text="Profile", icon="person"):

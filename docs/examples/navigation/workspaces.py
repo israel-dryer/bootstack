@@ -19,8 +19,9 @@ contacts = MemoryDataSource().load([
 ])
 
 with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        bar.add_spacer()
+        bar.add_theme_toggle()
 
     # Mail — a master–detail list.
     with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:

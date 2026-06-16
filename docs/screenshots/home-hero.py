@@ -46,10 +46,11 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
                  rail_labels=True, show_sidebar=False, show_statusbar=True) as shell:
     shell._capture_full_window = True
     shell._capture_max_width = 940
-    shell.commandbar.add_label("Acme Analytics", font="heading-md")
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_button("Export", icon="download")
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        bar.add_label("Acme Analytics", font="heading-md")
+        bar.add_spacer()
+        bar.add_button("Export", icon="download")
+        bar.add_theme_toggle()
 
     shell.statusbar.add_text("Connected", icon="wifi")
     shell.statusbar.add_text("Synced 2 minutes ago", icon="arrow-repeat")
