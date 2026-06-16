@@ -42,13 +42,13 @@ radiobutton items, and separators.
 .. code-block:: python
 
    menu = bs.ContextMenu(target)
-   menu.add_item("Open",          icon="folder2-open")   # command
+   menu.add_item("Command item", icon="pencil")          # command
    menu.add_separator()
-   menu.add_check_item("Starred", value=True)            # checkbutton
+   menu.add_check_item("Check item (on)", value=True)    # checkbutton
+   menu.add_check_item("Check item (off)")
    menu.add_separator()
-   menu.add_radio_item("Low",     value="low")           # radiobutton
-   menu.add_radio_item("Medium",  value="med")
-   menu.add_radio_item("High",    value="high")
+   menu.add_radio_item("Radio item A", value="a")        # radiobutton
+   menu.add_radio_item("Radio item B", value="b")
 
 .. image:: /_static/examples/contextmenu-item-types-light.png
    :class: bs-screenshot-light
@@ -109,9 +109,11 @@ Three forms are accepted:
 .. code-block:: python
 
    menu = bs.ContextMenu(target)
-   menu.add_item("Cut",   icon="scissors",  shortcut="Mod+X")
-   menu.add_item("Copy",  icon="copy",      shortcut="Mod+C")
-   menu.add_item("Paste", icon="clipboard", shortcut="Mod+V")
+   menu.add_item("Cut",        icon="scissors",  shortcut="Mod+X")
+   menu.add_item("Copy",       icon="copy",      shortcut="Mod+C")
+   menu.add_item("Paste",      icon="clipboard", shortcut="Mod+V")
+   menu.add_separator()
+   menu.add_item("Select All",                   shortcut="Mod+A")
 
 .. image:: /_static/examples/contextmenu-shortcuts-light.png
    :class: bs-screenshot-light

@@ -99,6 +99,7 @@ Disabled
 
 .. code-block:: python
 
+   bs.Slider(60)
    bs.Slider(60, disabled=True)
 
 .. image:: /_static/examples/slider-disabled-light.png

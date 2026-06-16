@@ -24,8 +24,8 @@ cycle forward and back through the list.
 .. code-block:: python
 
    bs.SpinnerField(
-       label="Priority",
-       options=["Low", "Medium", "High", "Critical"],
+       label="Text mode",
+       options=["Small", "Medium", "Large", "X-Large"],
        value="Medium",
    )
 
@@ -38,11 +38,11 @@ for a numeric range. Only one mode should be used at a time.
 .. code-block:: python
 
    bs.SpinnerField(
-       label="Quantity",
-       value=1,
-       min_value=1,
-       max_value=99,
-       step=1,
+       label="Numeric mode",
+       value=10,
+       min_value=0,
+       max_value=100,
+       step=5,
    )
 
 .. image:: /_static/examples/spinnerfield-modes-light.png

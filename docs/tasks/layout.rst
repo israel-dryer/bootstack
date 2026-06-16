@@ -129,8 +129,24 @@ them with `row=`/`column=` and span with `rowspan=`/`columnspan=`.
        bs.Label("Name");  bs.TextField()
        bs.Label("Email"); bs.TextField()
 
-Column weights control how the spare width is shared — a fixed column, a flexible
-one, and another fixed column:
+Column weights control how the spare width is shared. A column can be an equal
+weight, content-sized (`"auto"`), a fixed pixel width (`"120px"`), or a flexible
+weight that soaks up the remaining width:
+
+.. code-block:: python
+
+   with bs.Grid(columns=[1, 1, 1], gap=8, sticky_items="ew", fill="x"):
+       for label in ("Equal", "Weight", "Columns"):
+           bs.Button(label)
+
+   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
+       bs.Button("auto")
+       bs.Button("weight=1 (fills remaining)")
+
+   with bs.Grid(columns=["120px", 1, "80px"], gap=8, sticky_items="ew", fill="x"):
+       bs.Button("120px")
+       bs.Button("weight=1")
+       bs.Button("80px")
 
 .. image:: /_static/examples/grid-columns-light.png
    :class: bs-screenshot-light

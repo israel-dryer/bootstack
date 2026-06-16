@@ -32,12 +32,21 @@ Accent colors
 
 .. code-block:: python
 
+   # Square (default)
    bs.Badge("Primary",   accent="primary")
    bs.Badge("Secondary", accent="secondary")
    bs.Badge("Info",      accent="info")
    bs.Badge("Success",   accent="success")
    bs.Badge("Warning",   accent="warning")
    bs.Badge("Danger",    accent="danger")
+
+   # Pill
+   bs.Badge("Primary",   accent="primary",   variant="pill")
+   bs.Badge("Secondary", accent="secondary", variant="pill")
+   bs.Badge("Info",      accent="info",      variant="pill")
+   bs.Badge("Success",   accent="success",   variant="pill")
+   bs.Badge("Warning",   accent="warning",   variant="pill")
+   bs.Badge("Danger",    accent="danger",    variant="pill")
 
 .. image:: /_static/examples/badge-accents-light.png
    :class: bs-screenshot-light
@@ -60,11 +69,19 @@ in a table cell, or in a sidebar item.
        bs.Label("Inbox", font="heading-md")
        bs.Badge("12", accent="primary", variant="pill")
 
+   with bs.HStack(gap=8, anchor_items="center"):
+       bs.Label("Alerts", font="heading-md")
+       bs.Badge("3", accent="danger", variant="pill")
+
    # Status in a data row
    with bs.HStack(gap=8, anchor_items="center"):
        bs.Label("Run-A15")
        bs.Badge("Complete", accent="success", variant="pill")
+
+   with bs.HStack(gap=8, anchor_items="center"):
+       bs.Label("Run-A14")
        bs.Badge("2 warnings", accent="warning")
+       bs.Badge("Fail",       accent="danger",  variant="pill")
 
 .. image:: /_static/examples/badge-context-light.png
    :class: bs-screenshot-light

@@ -37,9 +37,10 @@ button inherits the group accent unless you override it individually via
 
 .. code-block:: python
 
-   bg = bs.ButtonGroup(accent="primary")
-   bg.add("Save")
-   bg.add("Cancel")
+   for accent in ("default", "primary", "secondary", "success", "warning", "danger"):
+       bg = bs.ButtonGroup(accent=accent)
+       bg.add("Save")
+       bg.add("Cancel")
 
 .. image:: /_static/examples/buttongroup-accents-light.png
    :class: bs-screenshot-light
@@ -56,9 +57,11 @@ Use ``variant=`` to control visual weight across the whole group.
 
 .. code-block:: python
 
-   bs.ButtonGroup(accent="primary", variant="solid")    # default
-   bs.ButtonGroup(accent="primary", variant="outline")
-   bs.ButtonGroup(accent="primary", variant="ghost")
+   for variant in ("solid", "outline", "ghost"):
+       bg = bs.ButtonGroup(accent="primary", variant=variant)
+       bg.add("Save")
+       bg.add("Cancel")
+       bg.add("Reset")
 
 .. image:: /_static/examples/buttongroup-variants-light.png
    :class: bs-screenshot-light
@@ -96,11 +99,16 @@ automatically, same as for :doc:`button`.
 
 .. code-block:: python
 
-   bg = bs.ButtonGroup(variant="outline", accent="primary")
-   bg.add(icon="type-bold")
-   bg.add(icon="type-italic")
-   bg.add(icon="type-underline")
-   bg.add(icon="type-strikethrough")
+   bg1 = bs.ButtonGroup(variant="outline", accent="primary")
+   bg1.add(icon="type-bold")
+   bg1.add(icon="type-italic")
+   bg1.add(icon="type-underline")
+   bg1.add(icon="type-strikethrough")
+
+   bg2 = bs.ButtonGroup()
+   bg2.add(icon="scissors")
+   bg2.add(icon="copy")
+   bg2.add(icon="clipboard")
 
 .. image:: /_static/examples/buttongroup-icon-only-light.png
    :class: bs-screenshot-light
@@ -138,10 +146,15 @@ Use ``density='compact'`` to reduce button padding — useful inside toolbars.
 
 .. code-block:: python
 
-   bg = bs.ButtonGroup(accent="primary", density="compact")
-   bg.add("Cut",   icon="scissors")
-   bg.add("Copy",  icon="copy")
-   bg.add("Paste", icon="clipboard")
+   bg1 = bs.ButtonGroup(accent="primary")
+   bg1.add("Cut",   icon="scissors")
+   bg1.add("Copy",  icon="copy")
+   bg1.add("Paste", icon="clipboard")
+
+   bg2 = bs.ButtonGroup(accent="primary", density="compact")
+   bg2.add("Cut",   icon="scissors")
+   bg2.add("Copy",  icon="copy")
+   bg2.add("Paste", icon="clipboard")
 
 .. image:: /_static/examples/buttongroup-density-light.png
    :class: bs-screenshot-light
@@ -159,12 +172,16 @@ once. Toggle the ``disabled`` property at runtime to re-enable.
 
 .. code-block:: python
 
-   bg = bs.ButtonGroup(accent="primary", disabled=True)
-   bg.add("Save")
-   bg.add("Cancel")
+   bg1 = bs.ButtonGroup(accent="primary")
+   bg1.add("Save")
+   bg1.add("Cancel")
+
+   bg2 = bs.ButtonGroup(accent="primary", disabled=True)
+   bg2.add("Save")
+   bg2.add("Cancel")
 
    # Toggle at runtime
-   bg.disabled = False
+   bg2.disabled = False
 
 .. image:: /_static/examples/buttongroup-disabled-light.png
    :class: bs-screenshot-light

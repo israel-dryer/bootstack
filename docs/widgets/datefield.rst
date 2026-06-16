@@ -33,7 +33,6 @@ Any `ICU date format`_ pattern or named preset is accepted.
    bs.DateField(value=today, value_format="longDate")     # January 15, 2025
    bs.DateField(value=today, value_format="shortDate")    # 1/15/25
    bs.DateField(value=today, value_format="monthAndYear") # January 2025
-   bs.DateField(value=today, value_format="yyyy-MM-dd")   # 2025-01-15
 
 .. _ICU date format: https://unicode-org.github.io/icu/userguide/format_parse/datetime/
 

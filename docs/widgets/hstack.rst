@@ -76,8 +76,8 @@ making buttons or panels match the height of the tallest sibling.
 
 .. code-block:: python
 
-   with bs.HStack(gap=8, fill_items="y", height=60):
-       bs.Button("A")   # stretches to 60 px tall
+   with bs.HStack(gap=8, fill_items="y", height=150):
+       bs.Button("A")   # stretches to 150 px tall
        bs.Button("B")
        bs.Button("C")
 

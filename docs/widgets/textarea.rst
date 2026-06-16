@@ -67,10 +67,10 @@ shows scrollbars only when content overflows.
 
 .. code-block:: python
 
-   bs.TextArea(scrollbars="auto")      # default — appears on overflow
+   bs.TextArea(scrollbars="none")      # never shown
    bs.TextArea(scrollbars="vertical")  # always visible
    bs.TextArea(scrollbars="both")      # horizontal + vertical, always
-   bs.TextArea(scrollbars="none")      # never shown
+   # 'auto' (the default) shows scrollbars only when content overflows
 
 .. image:: /_static/examples/textarea-scrollbars-light.png
    :class: bs-screenshot-light

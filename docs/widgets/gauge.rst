@@ -75,10 +75,9 @@ Accent colors
 
 .. code-block:: python
 
-   bs.Gauge(value=65, accent="primary")
-   bs.Gauge(value=65, accent="success")
-   bs.Gauge(value=65, accent="warning")
-   bs.Gauge(value=65, accent="danger")
+   for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+       bs.Gauge(value=65, accent=accent, size=140, thickness=14,
+                subtitle=accent.title())
 
 .. image:: /_static/examples/gauge-accents-light.png
    :class: bs-screenshot-light
@@ -96,8 +95,11 @@ produce finer dashes:
 
 .. code-block:: python
 
-   bs.Gauge(value=55, segment_width=8,  accent="primary")   # coarse segments
-   bs.Gauge(value=55, segment_width=4,  accent="secondary") # fine segments
+   bs.Gauge(value=55, subtitle="Solid", accent="primary")           # solid arc
+   bs.Gauge(value=55, segment_width=8, subtitle="Segmented",        # coarse segments
+            accent="primary")
+   bs.Gauge(value=55, segment_width=4, subtitle="Fine segments",    # fine segments
+            accent="secondary")
 
 .. image:: /_static/examples/gauge-segments-light.png
    :class: bs-screenshot-light
@@ -114,9 +116,9 @@ Arc thickness
 
 .. code-block:: python
 
-   bs.Gauge(value=70, thickness=6,  subtitle="Thin")
-   bs.Gauge(value=70, thickness=14, subtitle="Default")
-   bs.Gauge(value=70, thickness=24, subtitle="Thick")
+   bs.Gauge(value=70, thickness=6,  subtitle="Thin",    accent="info")
+   bs.Gauge(value=70, thickness=14, subtitle="Default", accent="info")
+   bs.Gauge(value=70, thickness=24, subtitle="Thick",   accent="info")
 
 .. image:: /_static/examples/gauge-thickness-light.png
    :class: bs-screenshot-light

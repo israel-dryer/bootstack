@@ -46,8 +46,8 @@ Orientation
 
 .. code-block:: python
 
-   bs.RadioGroup(["A", "B", "C"], orient="horizontal")  # default
-   bs.RadioGroup(["A", "B", "C"], orient="vertical")
+   bs.RadioGroup(["A", "B", "C"], value="A", title="Horizontal")  # default
+   bs.RadioGroup(["A", "B", "C"], value="A", title="Vertical", orient="vertical")
 
 .. image:: /_static/examples/radiogroup-orientation-light.png
    :class: bs-screenshot-light

@@ -38,6 +38,9 @@ intent to individual buttons.
 .. code-block:: python
 
    tb.add_button("Publish", icon="cloud-upload", accent="primary", on_click=publish)
+   tb.add_button("Preview", icon="eye")
+   tb.add_button("Draft",   icon="pencil")
+   tb.add_spacer()
    tb.add_button("Discard", icon="trash", accent="danger", on_click=discard)
 
 .. image:: /_static/examples/toolbar-accents-light.png
@@ -57,10 +60,12 @@ to the right side.
 
 .. code-block:: python
 
-   tb.add_button("Bold", icon="type-bold")
+   tb.add_button("Bold",   icon="type-bold")
    tb.add_button("Italic", icon="type-italic")
    tb.add_separator()
-   tb.add_button("Align left", icon="text-left")
+   tb.add_button("Align left",   icon="text-left")
+   tb.add_button("Align center", icon="text-center")
+   tb.add_button("Align right",  icon="text-right")
    tb.add_spacer()
    tb.add_button(icon="gear")          # pinned to the right
 
@@ -128,6 +133,16 @@ standalone ``bs.Toolbar`` defaults to ``"default"``.
    tb.add_button(icon="type-bold")
    tb.add_button(icon="type-italic")
    tb.add_button(icon="type-underline")
+   tb.add_separator()
+   tb.add_button(icon="text-left")
+   tb.add_button(icon="text-center")
+   tb.add_button(icon="text-right")
+   tb.add_separator()
+   tb.add_button(icon="list-ul")
+   tb.add_button(icon="list-ol")
+   tb.add_spacer()
+   tb.add_button(icon="arrow-counterclockwise")
+   tb.add_button(icon="arrow-clockwise")
 
 .. image:: /_static/examples/toolbar-density-light.png
    :class: bs-screenshot-light
@@ -162,6 +177,8 @@ the background token — ``'card'`` lifts it slightly from the page background.
    tb.add_button("New",  icon="file-earmark-plus")
    tb.add_button("Open", icon="folder2-open")
    tb.add_button("Save", icon="floppy")
+   tb.add_spacer()
+   tb.add_button(icon="gear")
 
 .. image:: /_static/examples/toolbar-surface-light.png
    :class: bs-screenshot-light

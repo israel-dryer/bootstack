@@ -104,11 +104,15 @@ your data. Grouping is purely presentational: ``value``, ``.selection``, and
        options=[
            {"text": "Apple",    "value": "apple",    "category": "Fruit"},
            {"text": "Banana",   "value": "banana",   "category": "Fruit"},
+           {"text": "Cherry",   "value": "cherry",   "category": "Fruit"},
            {"text": "Carrot",   "value": "carrot",   "category": "Vegetable"},
+           {"text": "Broccoli", "value": "broccoli", "category": "Vegetable"},
            {"text": "Basil",    "value": "basil",    "category": "Herb"},
+           {"text": "Mint",     "value": "mint",     "category": "Herb"},
        ],
        group_by="category",
        label="Ingredient",
+       value="banana",
    )
 
 Groups appear in first-appearance order; an option that lacks the field renders

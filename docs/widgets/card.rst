@@ -26,9 +26,10 @@ and the next surface step.
 
 .. code-block:: python
 
-   with bs.Card(accent="primary", padding=16, gap=8):
-       bs.Label("Primary", accent="primary", font="heading-sm")
-       bs.Label("Card content")
+   for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+       with bs.Card(accent=accent, padding=24, gap=4):
+           bs.Label(accent.title(), accent=accent, font="heading-sm")
+           bs.Label("Card content")
 
 .. image:: /_static/examples/card-accent-light.png
    :class: bs-screenshot-light

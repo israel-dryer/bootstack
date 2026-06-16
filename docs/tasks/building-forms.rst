@@ -68,7 +68,7 @@ when they all pass — each failing field shows its own message:
 
 .. code-block:: python
 
-   form.field("email").add_validation_rule("email", message="Enter a valid email.")
+   form.field("email").add_validation_rule("email", message="Enter a valid email address.")
    form.field("first").add_validation_rule("stringLength", min=2, max=50)
 
    def submit():

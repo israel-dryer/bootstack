@@ -71,7 +71,7 @@ present.
 
    bs.Label("Home",     icon="house")
    bs.Label("Settings", icon="gear",      icon_position="right")
-   bs.Label("Alert",    icon="exclamation-triangle", accent="warning")
+   bs.Label("Warning",  icon="exclamation-triangle", accent="warning")
 
    # Icon-only — auto-detected when text is empty
    bs.Label(icon="heart-fill", accent="danger")

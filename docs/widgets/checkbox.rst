@@ -120,8 +120,8 @@ Disabled
 
 .. code-block:: python
 
-   bs.Checkbox("Cannot change", disabled=True)
-   bs.Checkbox("Locked on", value=True, disabled=True)
+   bs.Checkbox("Disabled",         disabled=True)
+   bs.Checkbox("Disabled checked", value=True, disabled=True)
 
 .. image:: /_static/examples/checkbox-disabled-light.png
    :class: bs-screenshot-light

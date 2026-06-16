@@ -51,11 +51,12 @@ for most use cases), ``'horizontal'``, or ``'both'``.
    with bs.ScrollView(scroll_direction="vertical", fill="both", expand=True):
        ...
 
-   # Horizontal — useful for wide content like a row of cards
-   with bs.ScrollView(scroll_direction="horizontal", fill="x"):
+   # Horizontal — useful for wide content like a row of buttons
+   with bs.ScrollView(scroll_direction="horizontal", fill="x",
+                      height=60, show_border=True):
        with bs.HStack(gap=8, padding=8):
-           for card in cards:
-               bs.Card(...)
+           for i in range(1, 20):
+               bs.Button(f"Section {i:02d}", variant="outline")
 
    # Both axes
    with bs.ScrollView(scroll_direction="both", fill="both", expand=True):

@@ -38,11 +38,14 @@ horizontal sash.
 
 .. code-block:: python
 
-   # Side-by-side (default)
-   sv = bs.SplitView(orient="horizontal", fill="both", expand=True)
-
-   # Stacked
+   # Stacked top-to-bottom with a horizontal sash
    sv = bs.SplitView(orient="vertical", fill="both", expand=True)
+   with sv.add(weight=1, padding=12, gap=4):
+       bs.Label("Top pane", font="heading-md")
+       bs.Label("Upper content area.")
+   with sv.add(weight=1, padding=12, gap=4):
+       bs.Label("Bottom pane", font="heading-md")
+       bs.Label("Lower content area.")
 
 .. image:: /_static/examples/splitview-vertical-light.png
    :class: bs-screenshot-light
