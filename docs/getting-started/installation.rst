@@ -24,11 +24,12 @@ Upgrade to the newest pre-release the same way:
    python -m pip install --upgrade --pre bootstack
 
 To pin an exact version — for a reproducible environment — name it directly
-(``--pre`` is then not required):
+(``--pre`` is then not required). Pick a version from the
+`release history <https://pypi.org/project/bootstack/#history>`__:
 
 .. code-block:: bash
 
-   python -m pip install bootstack==0.1.0a10
+   python -m pip install bootstack==0.1.0a11
 
 .. _checking-tk:
 
