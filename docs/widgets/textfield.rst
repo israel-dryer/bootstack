@@ -62,10 +62,10 @@ Requires localization to be enabled.
 
 .. code-block:: python
 
-   bs.TextField(value_format="#,##0.00", label="Decimal")
-   bs.TextField(value_format="percent",  label="Percent")
-   bs.TextField(value_format="currency", label="Currency")
-   bs.TextField(value_format="yyyy-MM-dd", label="Date")
+   bs.TextField(value="1234.5",     value_format="#,##0.00",  label="Decimal")
+   bs.TextField(value="0.42",       value_format="percent",   label="Percent")
+   bs.TextField(value="9.99",       value_format="currency",  label="Currency")
+   bs.TextField(value="2024-06-01", value_format="yyyy-MM-dd", label="Date")
 
 .. image:: /_static/examples/textfield-value-format-light.png
    :class: bs-screenshot-light

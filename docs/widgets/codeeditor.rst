@@ -30,10 +30,9 @@ name is accepted.
 
 .. code-block:: python
 
-   bs.CodeEditor(language="python")
-   bs.CodeEditor(language="sql")
-   bs.CodeEditor(language="javascript")
-   bs.CodeEditor(language="html")
+   bs.CodeEditor(value=python_source, language="python")
+   bs.CodeEditor(value=sql_source,    language="sql")
+   # Any Pygments lexer name works — "javascript", "html", "yaml", …
 
 .. image:: /_static/examples/codeeditor-languages-light.png
    :class: bs-screenshot-light
@@ -64,7 +63,8 @@ Read-only state
 
 .. code-block:: python
 
-   bs.CodeEditor(value=code, language="python", read_only=True)
+   bs.CodeEditor(value=code, language="python")                   # editable
+   bs.CodeEditor(value=code, language="python", read_only=True)   # read-only
 
 .. image:: /_static/examples/codeeditor-states-light.png
    :class: bs-screenshot-light

@@ -24,9 +24,10 @@ automatically inherits the accent color.
 
 .. code-block:: python
 
-   with bs.GroupBox("Primary", accent="primary", padding=20, gap=16):
-       bs.Label("Item one")
-       bs.Label("Item two")
+   for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
+       with bs.GroupBox(accent.title(), accent=accent, padding=10, gap=4):
+           bs.Label("Item one")
+           bs.Label("Item two")
 .. image:: /_static/examples/groupbox-accent-light.png
    :class: bs-screenshot-light
    :alt: GroupBox accent borders — light theme
@@ -44,18 +45,19 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
 .. code-block:: python
 
    # Default vertical stack
-   with bs.GroupBox("Details", gap=8):
+   with bs.GroupBox("VStack (default)", gap=8):
        bs.Label("First")
        bs.Label("Second")
+       bs.Label("Third")
 
    # Horizontal stack
-   with bs.GroupBox("Steps", layout="hstack", gap=12, anchor_items="center"):
+   with bs.GroupBox("HStack", layout="hstack", gap=12, anchor_items="center"):
        bs.Label("A")
        bs.Label("B")
        bs.Label("C")
 
    # Grid — two columns, key/value pairs
-   with bs.GroupBox("Info", layout="grid", columns=[1, 1], gap=8, sticky_items="ew"):
+   with bs.GroupBox("Grid", layout="grid", columns=[1, 1], gap=8, sticky_items="ew"):
        bs.Label("Name:")  ; bs.Label("Ada Lovelace")
        bs.Label("Role:")  ; bs.Label("Engineer")
 

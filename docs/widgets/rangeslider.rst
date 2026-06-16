@@ -101,6 +101,7 @@ Disabled
 
 .. code-block:: python
 
+   bs.RangeSlider(20, 80)
    bs.RangeSlider(20, 80, disabled=True)
 
 .. image:: /_static/examples/rangeslider-disabled-light.png

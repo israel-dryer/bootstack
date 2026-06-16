@@ -48,10 +48,10 @@ Use ``col_count=`` to distribute fields across multiple columns:
 
    bs.Form(
        data={
-           "street": "",
-           "city": "",
-           "state": "",
-           "zip": "",
+           "street": "123 Main St",
+           "city": "Springfield",
+           "state": "IL",
+           "zip": "62701",
        },
        col_count=2,
    )
@@ -139,7 +139,7 @@ section with its own column layout:
    bs.Form(
        items=[
            bs.GroupItem(
-               label="Personal Info",
+               label="Contact",
                col_count=2,
                items=[
                    bs.FieldItem(key="first_name", label="First Name"),

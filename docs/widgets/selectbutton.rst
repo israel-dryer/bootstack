@@ -70,9 +70,9 @@ Style variants
 
 .. code-block:: python
 
-   bs.SelectButton(["Solid"],   accent="primary", variant="solid")
-   bs.SelectButton(["Outline"], accent="primary", variant="outline")
-   bs.SelectButton(["Ghost"],   accent="primary", variant="ghost")
+   bs.SelectButton(["Solid"],   value="Solid",   accent="primary", variant="solid")
+   bs.SelectButton(["Outline"], value="Outline", accent="primary", variant="outline")
+   bs.SelectButton(["Ghost"],   value="Ghost",   accent="primary", variant="ghost")
 
 .. image:: /_static/examples/selectbutton-variants-light.png
    :class: bs-screenshot-light

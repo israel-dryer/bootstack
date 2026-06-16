@@ -118,12 +118,12 @@ title.
 .. code-block:: python
 
    acc = bs.Accordion(accent="primary")
-   with acc.add("Documents", icon="folder"):
-       bs.Label("Files here.")
+   with acc.add("Documents", icon="folder", expanded=True):
+       bs.Label("PDF reports, spreadsheets, and presentations.")
    with acc.add("Images", icon="image"):
-       bs.Label("Images here.")
+       bs.Label("Photos and exported graphics.")
    with acc.add("Music", icon="file-music"):
-       bs.Label("Music here.")
+       bs.Label("Audio files and playlists.")
 
 .. image:: /_static/examples/accordion-icons-light.png
    :class: bs-screenshot-light

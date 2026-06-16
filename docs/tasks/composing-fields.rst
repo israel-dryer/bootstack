@@ -81,7 +81,7 @@ the left for recognition, and a clear button on the right that empties the field
 
 .. code-block:: python
 
-   field = bs.TextField(placeholder="Search products...", fill="x")
+   field = bs.TextField(placeholder="Search products...", value="wireless", fill="x")
    field.insert_addon("label", "before", icon="search")
 
    def clear():
@@ -140,8 +140,8 @@ app — here, whether a width is measured in pixels or percent:
 .. code-block:: python
 
    size = bs.NumberField(value=64, label="Width", fill="x")
-   percent = bs.Signal(False)        # False -> px, True -> %
-   size.insert_addon("toggle", "after", name="unit", text="px", signal=percent)
+   percent = bs.Signal(True)         # False -> px, True -> %
+   size.insert_addon("toggle", "after", name="unit", text="%", signal=percent)
 
    def show_unit(is_percent):
        size.update_addon("unit", text="%" if is_percent else "px")

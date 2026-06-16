@@ -25,12 +25,6 @@ user dismisses it.
 
    bs.alert("File saved successfully.", title="Done")
 
-Customize the button label or add an icon:
-
-.. code-block:: python
-
-   bs.alert("Session expired.", ok_text="Sign in again", icon="exclamation-circle")
-
 .. image:: /_static/examples/message-dialogs-alert-light.png
    :class: bs-screenshot-light bs-dialog-screenshot
    :alt: Message Dialogs — alert dialog, light theme
@@ -38,6 +32,12 @@ Customize the button label or add an icon:
 .. image:: /_static/examples/message-dialogs-alert-dark.png
    :class: bs-screenshot-dark bs-dialog-screenshot
    :alt: Message Dialogs — alert dialog, dark theme
+
+Customize the button label or add an icon:
+
+.. code-block:: python
+
+   bs.alert("Session expired.", ok_text="Sign in again", icon="exclamation-circle")
 
 Alert sound
 ^^^^^^^^^^^

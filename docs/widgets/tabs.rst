@@ -46,6 +46,9 @@ Pass ``icon=`` to show an icon alongside the tab label.
    with tabs.add("files", label="Files", icon="folder"):
        bs.Label("Files")
 
+   with tabs.add("settings", label="Settings", icon="gear"):
+       bs.Label("Settings")
+
 .. image:: /_static/examples/tabs-icons-light.png
    :class: bs-screenshot-light
    :alt: Tabs with icons — light theme
@@ -64,11 +67,14 @@ right. The default is ``'horizontal'`` (tabs above content).
 
    tabs = bs.Tabs(orient="vertical", fill="both", expand=True)
 
-   with tabs.add("editor", label="Editor"):
+   with tabs.add("editor", label="Editor", icon="code-slash"):
        bs.Label("Editor panel")
 
-   with tabs.add("preview", label="Preview"):
+   with tabs.add("preview", label="Preview", icon="eye"):
        bs.Label("Preview panel")
+
+   with tabs.add("console", label="Console", icon="terminal"):
+       bs.Label("Console panel")
 
 .. image:: /_static/examples/tabs-vertical-light.png
    :class: bs-screenshot-light
@@ -102,12 +108,14 @@ argument of `add()`.
    # All tabs closable
    tabs = bs.Tabs(allow_close=True)
 
-   # Per-tab override
-   with tabs.add("pinned", label="Pinned", closable=False):
-       bs.Label("This tab cannot be closed.")
+   with tabs.add("report", label="Report.pdf"):
+       bs.Label("Annual report content.")
 
-   with tabs.add("doc", label="Document", closable=True):
-       bs.Label("Close button always visible.")
+   with tabs.add("notes", label="Notes.txt"):
+       bs.Label("Your notes.")
+
+   with tabs.add("draft", label="Draft.md"):
+       bs.Label("Work in progress.")
 
 .. image:: /_static/examples/tabs-closable-light.png
    :class: bs-screenshot-light

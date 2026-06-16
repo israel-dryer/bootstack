@@ -23,10 +23,15 @@ a `with` block — every widget built inside the block becomes a child, with no
 
    import bootstack as bs
 
-   with bs.App(title="Notes", size=(600, 400), padding=16, gap=8) as app:
-       bs.Label("Welcome to Notes", font="heading-lg")
-       bs.TextField(placeholder="Jot something down…")
-       bs.Button("Save", accent="primary", on_click=app.close)
+   with bs.App(title="Notes", size=(480, 340), padding=20, gap=10) as app:
+       bs.Label("Notes", font="heading-lg")
+       bs.Label("A single window you fill with widgets.", accent="secondary")
+       bs.TextField(placeholder="Title", fill="x")
+       bs.TextArea(value="Reach for App first — it covers anything that fits "
+                         "on one screen.", fill="both", expand=True)
+       with bs.HStack(fill="x", gap=8, anchor_items="e"):
+           bs.Button("Discard", variant="ghost")
+           bs.Button("Save", accent="primary")
 
    app.run()
 
@@ -64,15 +69,26 @@ context manager for that page's content — and pick the starting page with
 
    import bootstack as bs
 
-   with bs.AppShell(title="Tasks") as shell:
-       with shell.add_page("inbox", text="Inbox", icon="inbox"):
-           bs.Label("Inbox", font="heading-lg")
-           bs.Label("No new tasks", accent="secondary")
+   with bs.AppShell(title="Acme") as shell:
+       with shell.add_toolbar() as bar:
+           with bar.add_menu("File") as file:
+               file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+               file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+           bar.add_spacer()
+           bar.add_theme_toggle()
 
-       with shell.add_page("done", text="Completed", icon="check-circle"):
-           bs.Label("Completed", font="heading-lg")
+       with shell.add_page("home", text="Home", icon="house"):
+           bs.Label("Home", font="heading-lg")
+           bs.Label("A window with a sidebar and swappable pages.", accent="secondary")
+       with shell.add_page("reports", text="Reports", icon="bar-chart"):
+           bs.Label("Reports", font="heading-lg")
+       with shell.add_page("team", text="Team", icon="people"):
+           bs.Label("Team", font="heading-lg")
 
-       shell.navigate("inbox")
+       with shell.add_footer_page("settings", text="Settings", icon="gear"):
+           bs.Label("Settings", font="heading-lg")
+
+       shell.navigate("home")
 
    shell.run()
 

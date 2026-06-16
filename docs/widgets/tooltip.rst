@@ -54,9 +54,10 @@ Color-code tooltips by intent with ``accent=``.
 
 .. code-block:: python
 
-   bs.Tooltip(btn, "Required field", accent="danger")
-   bs.Tooltip(btn, "Saved successfully", accent="success")
-   bs.Tooltip(btn, "New in this release", accent="info")
+   bs.Tooltip(btn_p, "Primary tooltip", accent="primary")
+   bs.Tooltip(btn_s, "Success tooltip", accent="success")
+   bs.Tooltip(btn_w, "Warning tooltip", accent="warning")
+   bs.Tooltip(btn_d, "Danger tooltip",  accent="danger")
 
 .. image:: /_static/examples/tooltip-accents-light.png
    :class: bs-screenshot-light

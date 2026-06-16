@@ -34,7 +34,6 @@ Any `ICU time format`_ pattern or named preset is accepted.
    bs.TimeField(value=now, value_format="shortTime")   # 2:30 PM
    bs.TimeField(value=now, value_format="HH:mm")       # 14:30
    bs.TimeField(value=now, value_format="HH:mm:ss")    # 14:30:00
-   bs.TimeField(value=now, value_format="h:mm a")      # 2:30 PM
 
 .. _ICU time format: https://unicode-org.github.io/icu/userguide/format_parse/datetime/
 

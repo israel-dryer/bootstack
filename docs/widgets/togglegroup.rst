@@ -83,6 +83,11 @@ the widget infers this automatically, so a compact toolbar group needs no
        {"icon": "text-right",  "value": "right"},
        {"icon": "justify",     "value": "justify"},
    ], value="left")
+   bs.ToggleGroup(options=[
+       {"icon": "type-bold",      "value": "b"},
+       {"icon": "type-italic",    "value": "i"},
+       {"icon": "type-underline", "value": "u"},
+   ], mode="multi", value={"b"})
 
 .. image:: /_static/examples/togglegroup-icon_only-light.png
    :class: bs-screenshot-light
@@ -158,7 +163,6 @@ Orientation
 
 .. code-block:: python
 
-   bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="horizontal")           # default
    bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="vertical", value="Middle")
 
 .. image:: /_static/examples/togglegroup-orientation-light.png

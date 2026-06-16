@@ -61,8 +61,13 @@ Set ``required=True`` to mark the field visually.
 .. code-block:: python
 
    bs.PathField(
+       label="Source file",
+       placeholder="Select a file…",
+       message="Accepted formats: .py, .txt, .csv",
+   )
+   bs.PathField(
        label="Output directory",
-       message="Folder must be writable.",
+       placeholder="Choose output folder…",
        mode="directory",
        required=True,
    )

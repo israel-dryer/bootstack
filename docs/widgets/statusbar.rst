@@ -44,7 +44,9 @@ split the band at a chosen point.
 .. code-block:: python
 
    sb.add_text("Ready", icon="check-circle")   # left
-   sb.add_text("UTF-8", side="right")           # right cluster
+   sb.add_text("Errors: 0", icon="x-circle", side="right")   # right cluster
+   sb.add_text("Warnings: 2", icon="exclamation-triangle", side="right")
+   sb.add_text("UTF-8", side="right")
    sb.add_text("main", icon="git", side="right")
 
 .. image:: /_static/examples/statusbar-segments-light.png
@@ -94,6 +96,7 @@ quiet, recessed band; ``'card'`` lifts it from the page.
    sb = bs.StatusBar(fill="x", surface="card")
    sb.add_text("Card surface", icon="layers")
    sb.add_text("3 warnings", icon="exclamation-triangle", side="right")
+   sb.add_text("main", icon="git", side="right")
 
 .. image:: /_static/examples/statusbar-surface-light.png
    :class: bs-screenshot-light

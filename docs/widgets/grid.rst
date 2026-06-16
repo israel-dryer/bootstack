@@ -32,17 +32,21 @@ Column definitions
 
 .. code-block:: python
 
-   # Three equal columns — integer shorthand
-   bs.Grid(columns=3)
-
-   # Same, written explicitly
-   bs.Grid(columns=[1, 1, 1])
+   # Three equal-weight columns (columns=3 is the same shorthand)
+   with bs.Grid(columns=[1, 1, 1], gap=8, sticky_items="ew", fill="x"):
+       for label in ("Equal", "Weight", "Columns"):
+           bs.Button(label)
 
    # Label column sizes to content; field column takes the rest
-   bs.Grid(columns=["auto", 1])
+   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
+       bs.Button("auto")
+       bs.Button("weight=1 (fills remaining)")
 
    # Fixed sidebar, flexible content, fixed panel
-   bs.Grid(columns=["120px", 1, "80px"])
+   with bs.Grid(columns=["120px", 1, "80px"], gap=8, sticky_items="ew", fill="x"):
+       bs.Button("120px")
+       bs.Button("weight=1")
+       bs.Button("80px")
 
 .. image:: /_static/examples/grid-columns-light.png
    :class: bs-screenshot-light
@@ -80,8 +84,15 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
 
 .. code-block:: python
 
-   bs.Grid(columns=[1, 1], gap=8)            # 8 px between all cells
-   bs.Grid(columns=[1, 1], gap=(32, 8))      # 32 px between columns, 8 px between rows
+   # 8 px between all cells
+   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew"):
+       for label in ("A", "B", "C", "D"):
+           bs.Button(label)
+
+   # 32 px between columns, 8 px between rows
+   with bs.Grid(columns=[1, 1], gap=(32, 8), sticky_items="ew"):
+       for label in ("A", "B", "C", "D"):
+           bs.Button(label)
 
 .. image:: /_static/examples/grid-gap-light.png
    :class: bs-screenshot-light

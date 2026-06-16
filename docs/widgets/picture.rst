@@ -74,7 +74,9 @@ avatars and thumbnails:
 
 .. code-block:: python
 
-   bs.Picture(photo, fit="cover", width=150, height=150, corner_radius=20)
+   bs.Picture(photo, fit="cover", width=150, height=150, corner_radius=0)
+   bs.Picture(photo, fit="cover", width=150, height=150, corner_radius=16)
+   bs.Picture(photo, fit="cover", width=150, height=150, corner_radius=36)
 
 .. image:: /_static/examples/picture-corners-light.png
    :class: bs-screenshot-light

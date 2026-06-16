@@ -75,6 +75,8 @@ Accent colors
 .. code-block:: python
 
    bs.ProgressBar(value=65, accent="primary")
+   bs.ProgressBar(value=65, accent="secondary")
+   bs.ProgressBar(value=65, accent="info")
    bs.ProgressBar(value=65, accent="success")
    bs.ProgressBar(value=65, accent="warning")
    bs.ProgressBar(value=65, accent="danger")
@@ -95,14 +97,19 @@ progress indicators:
 
 .. code-block:: python
 
+   bs.ProgressBar(value=40, variant="thin")
    bs.ProgressBar(value=70, accent="primary", variant="thin")
+   bs.ProgressBar(value=90, accent="success", variant="thin")
 
 Vertical orientation
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-   bs.ProgressBar(value=60, orient="vertical")
+   bs.ProgressBar(value=25, orient="vertical")
+   bs.ProgressBar(value=50, orient="vertical")
+   bs.ProgressBar(value=75, orient="vertical")
+   bs.ProgressBar(value=100, orient="vertical")
 
 .. image:: /_static/examples/progressbar-variants-light.png
    :class: bs-screenshot-light
