@@ -94,7 +94,6 @@ class ShellLayout(App):
         rail_width: int = DEFAULT_RAIL_WIDTH,
         sidebar_width: int = DEFAULT_SIDEBAR_WIDTH,
         dock_width: int = DEFAULT_DOCK_WIDTH,
-        chrome_surface: str = "chrome",
         rail_surface: str = RAIL_SURFACE,
         sidebar_surface: str = SIDEBAR_SURFACE,
         statusbar_surface: str = STATUSBAR_SURFACE,
@@ -104,7 +103,6 @@ class ShellLayout(App):
         if sys.platform == "darwin":
             undecorated = False
 
-        self._chrome_surface = chrome_surface
         self._rail_surface = rail_surface
         self._sidebar_surface = sidebar_surface
         self._statusbar_surface = statusbar_surface
@@ -122,9 +120,9 @@ class ShellLayout(App):
         self._dock_width = dock_width
 
         # Visibility flags. Content is always shown; the rest are slots. The
-        # chrome band stays lazy (menus / command bar only); a custom title bar
-        # in undecorated mode is just an `add_toolbar(show_window_controls=True)`.
-        self._show_chrome = False
+        # window's top chrome is the `toolbar_stack` region (filled by
+        # `add_toolbar()`); a custom title bar in undecorated mode is just an
+        # `add_toolbar(show_window_controls=True)`.
         self._show_statusbar = False
         self._show_rail = False
         self._show_sidebar = True
@@ -148,20 +146,12 @@ class ShellLayout(App):
         # method; shadowing it with an attribute breaks event dispatch.
         self._region_root = root
 
-        # Full-width top and bottom bands. The menu / command bar belongs at the
-        # very top spanning the whole window width (the natural desktop place for
-        # it); the rail + sidebar + content all sit BELOW it, in the body row.
-        # The chrome band takes the chrome surface (otherwise the band shows its
-        # default content surface around a menu strip that doesn't fill the row).
-        # Both the chrome and status hairlines span the FULL window width (the
-        # VS Code convention — the band edges run the whole way across, the rail
-        # included), so they live at the window level above/below the body.
-        # The stacked-toolbar region (the `add_toolbar()` host) sits at the very
-        # top of the shell, above the chrome band and body. Chrome-surfaced so any
-        # gap (e.g. a divider margin) reads chrome, not the content surface.
+        # Full-width top and bottom bands. The window's top chrome is the
+        # stacked-toolbar region (the `add_toolbar()` host) at the very top,
+        # spanning the whole width above the rail + sidebar + content body.
+        # Chrome-surfaced so any gap (e.g. a divider margin) reads chrome, not the
+        # content surface. The status band + its hairline span the full width too.
         self._toolbar_stack = PackFrame(root, direction="vertical", surface="chrome")
-        self._chrome = Frame(root, surface=self._chrome_surface)
-        self._chrome_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
         self._statusbar = Toolbar(root, surface=self._statusbar_surface, draggable=False)
         self._status_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
 
@@ -195,16 +185,12 @@ class ShellLayout(App):
     # ----- Layout (re-pack in canonical order on every visibility change) -----
 
     def _relayout_window(self) -> None:
-        """Re-pack the full-width toolbar / chrome / status bands and the body."""
-        for child in (self._toolbar_stack, self._chrome, self._chrome_sep,
-                      self._status_sep, self._statusbar, self._body):
+        """Re-pack the full-width toolbar / status bands and the body."""
+        for child in (self._toolbar_stack, self._status_sep,
+                      self._statusbar, self._body):
             child.pack_forget()
-        # The stacked-toolbar region — full width, at the very top, above the
-        # chrome band + body.
+        # The stacked-toolbar region — full width, at the very top, above the body.
         self._toolbar_stack.pack(side="top", fill="x")
-        if self._show_chrome:
-            self._chrome.pack(side="top", fill="x")
-            self._chrome_sep.pack(side="top", fill="x")
         if self._show_statusbar:
             # Band at the very bottom; its hairline just above it (both full width).
             self._statusbar.pack(side="bottom", fill="x")
@@ -228,12 +214,6 @@ class ShellLayout(App):
             self._dock.pack(side="right", fill="y")
 
     # ----- Region visibility -----
-
-    def set_chrome_visible(self, visible: bool) -> None:
-        """Show or hide the top chrome band (and its full-width hairline)."""
-        if self._show_chrome != visible:
-            self._show_chrome = visible
-            self._relayout_window()
 
     def set_statusbar_visible(self, visible: bool) -> None:
         """Show or hide the bottom status band (and its full-width hairline)."""
@@ -284,11 +264,6 @@ class ShellLayout(App):
         return self._toolbar_stack
 
     @property
-    def chrome(self) -> Frame:
-        """The top chrome band (host for the menubar / command bar)."""
-        return self._chrome
-
-    @property
     def statusbar(self) -> Toolbar:
         """The bottom status band (a command-bar strip; passive content)."""
         return self._statusbar
@@ -329,11 +304,6 @@ class ShellLayout(App):
         return self._dock
 
     # ----- Visibility state (read-only) -----
-
-    @property
-    def chrome_visible(self) -> bool:
-        """Whether the chrome band is shown."""
-        return self._show_chrome
 
     @property
     def statusbar_visible(self) -> bool:

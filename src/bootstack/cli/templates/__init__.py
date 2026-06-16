@@ -290,20 +290,20 @@ Application settings are defined in `bootstack.toml`:
 # =============================================================================
 
 def _appshell_chrome(app_name: str) -> str:
-    """The shared menu bar, command bar, and status bar baseline for AppShell
+    """The shared toolbar (menus + commands) and status bar baseline for AppShell
     scaffolds. Delete what you do not need."""
     return f'''\
-        # --- Menu bar -------------------------------------------------------
-        with shell.menubar.add_menu("File") as file_menu:
-            file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
-        with shell.menubar.add_menu("Help") as help_menu:
-            help_menu.add_action(
-                "About",
-                on_click=lambda: bs.alert("{app_name}", title="About"),
-            )
-
-        # --- Command bar ----------------------------------------------------
-        shell.commandbar.add_theme_toggle()
+        # --- Toolbar (menus + commands) -------------------------------------
+        with shell.add_toolbar() as bar:
+            with bar.add_menu("File") as file_menu:
+                file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("Help") as help_menu:
+                help_menu.add_action(
+                    "About",
+                    on_click=lambda: bs.alert("{app_name}", title="About"),
+                )
+            bar.add_spacer()
+            bar.add_theme_toggle()
 
         # --- Status bar -----------------------------------------------------
         shell.statusbar.add_text("Ready")

@@ -832,9 +832,10 @@ def run_demo():
         size=(1100, 750),
     ) as shell:
 
-        shell.commandbar.add_label("Widget Gallery")
-        shell.commandbar.add_spacer()
-        shell.commandbar.add_theme_toggle()
+        with shell.add_toolbar() as bar:
+            bar.add_label("Widget Gallery")
+            bar.add_spacer()
+            bar.add_theme_toggle()
 
         shell.statusbar.add_text("Ready")
         shell.statusbar.add_spacer()
