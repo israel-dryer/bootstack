@@ -62,8 +62,11 @@ class FlexFrame(Frame):
                 `'start'`.
             grow_items: When True, every content child grows equally (uniform)
                 to share the main axis. Defaults to False.
-            weights: Explicit per-content-child main-axis weights. Overrides
-                `grow_items` and per-child `grow`. Defaults to None.
+            weights: Positional shorthand for per-child `grow` —
+                `weights[i]` is the flex-grow weight of content child `i`
+                (share of leftover main-axis space, not a fixed size). Overrides
+                `grow_items` and per-child `grow`; missing trailing entries are
+                0. Defaults to None.
             gap: Spacing in pixels between adjacent content children. Defaults
                 to 0.
             propagate: When False, the frame does not resize to fit its
@@ -247,21 +250,26 @@ class FlexFrame(Frame):
                 prev_content = False
                 continue
 
-            # Content child: resolve its main-axis weight.
+            # Content child: resolve its main-axis weight. `grow` is bool | int —
+            # grow=True means weight 1, grow=N sets the relative weight. Coerce
+            # bool to int so Tk's columnconfigure never sees a bool.
             weight = o.get("grow")
+            if isinstance(weight, bool):
+                weight = 1 if weight else 0
             if weight is None and self._grow_items:
                 weight = 1
             if self._weights is not None:
                 weight = (
-                    self._weights[content_seen]
+                    int(self._weights[content_seen])
                     if content_seen < len(self._weights)
                     else 0
                 )
-            grows = bool(weight)
+            weight = int(weight or 0)
+            grows = weight > 0
             if uniform_grow:
-                main_cfg(idx, weight=weight or 0, uniform="flex")
+                main_cfg(idx, weight=weight, uniform="flex")
             else:
-                main_cfg(idx, weight=weight or 0)
+                main_cfg(idx, weight=weight)
 
             # Cross-axis sticky from align (+ main-axis stretch when growing).
             a = o.get("align_self") or self._align

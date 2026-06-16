@@ -85,8 +85,12 @@ class Row(_FlexBase):
             `align_self`. Defaults to `'start'`.
         grow_items: When `True`, every child grows equally to fill the row.
             Defaults to `False`.
-        weights: Explicit per-child width weights (e.g. `[1, 2, 1]`). Overrides
-            `grow_items` and per-child `grow`. Defaults to `None`.
+        weights: Shorthand for setting `grow` on each child positionally —
+            `weights=[1, 2, 1]` is the same as giving the three children
+            `grow=1`, `grow=2`, `grow=1`. Like `grow`, the values are flex-grow
+            shares of the leftover width, not pixel widths. Overrides
+            `grow_items` and per-child `grow`; missing trailing entries default
+            to `0` (no grow). Defaults to `None`.
         gap: Spacing in pixels between adjacent children. Defaults to `0`.
         padding: Space in pixels between the row border and its content.
             Defaults to `None` (no padding).
@@ -102,9 +106,10 @@ class Row(_FlexBase):
             cannot resize the container. Defaults to `None` (size from
             children).
         parent: Override the context-stack parent widget.
-        **kwargs: Layout placement options applied by the parent container —
-            `grow`, `align_self`, `justify_self`, `margin`, `index`. See
-            :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`:
+            `grow=True` fills the leftover main axis with weight 1, `grow=N`
+            takes N shares of it), `align_self`, `justify_self`, `margin`,
+            `index`. See :doc:`/tasks/layout`.
     """
     _direction = "horizontal"
 
@@ -156,8 +161,12 @@ class Column(_FlexBase):
             `align_self`. Defaults to `'start'`.
         grow_items: When `True`, every child grows equally to fill the column.
             Defaults to `False`.
-        weights: Explicit per-child height weights (e.g. `[1, 2, 1]`). Overrides
-            `grow_items` and per-child `grow`. Defaults to `None`.
+        weights: Shorthand for setting `grow` on each child positionally —
+            `weights=[1, 2, 1]` is the same as giving the three children
+            `grow=1`, `grow=2`, `grow=1`. Like `grow`, the values are flex-grow
+            shares of the leftover height, not pixel heights. Overrides
+            `grow_items` and per-child `grow`; missing trailing entries default
+            to `0` (no grow). Defaults to `None`.
         gap: Spacing in pixels between adjacent children. Defaults to `0`.
         padding: Space in pixels between the column border and its content.
             Defaults to `None` (no padding).
@@ -173,9 +182,10 @@ class Column(_FlexBase):
             cannot resize the container. Defaults to `None` (size from
             children).
         parent: Override the context-stack parent widget.
-        **kwargs: Layout placement options applied by the parent container —
-            `grow`, `align_self`, `justify_self`, `margin`, `index`. See
-            :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`:
+            `grow=True` fills the leftover main axis with weight 1, `grow=N`
+            takes N shares of it), `align_self`, `justify_self`, `margin`,
+            `index`. See :doc:`/tasks/layout`.
     """
     _direction = "vertical"
 
