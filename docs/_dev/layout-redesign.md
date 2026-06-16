@@ -52,9 +52,13 @@ Branch: `feat/grid-layout-engine`. Started 2026-06-16.
 >   only.)
 >
 > **NOT yet done (next stages, in order):**
-> 1. **2-D `Grid` vocabulary** — `sticky_items` → `justify_items`/`align_items`,
->    per-child `justify_self`/`align_self` (GridFrame already grid-backed; needs
->    the sticky-derivation + signature swap). Prototype `Grid2D` is the reference.
+> 1. ~~2-D `Grid` vocabulary~~ — **DONE.** `Grid` + Card/GroupBox grid mode now
+>    take `justify_items`/`align_items` (default **`stretch`/`stretch`** — CSS-grid,
+>    fills cells) + per-child `justify_self`/`align_self`; `sticky_items`/`sticky`
+>    retired (a child `sticky=` raises). Derivation: `grid_sticky(ji, ai)` in
+>    container.py; per-child falls back to the container default per axis.
+>    `GridFrame` keeps its internal `sticky_items` param (still used by the nav
+>    containers until stage 2). `test_grid_attach_override` re-pointed off `sticky=`.
 > 2. **Dual-mode nav containers** — `PageStack`/`Tabs`/`SplitView`/`Accordion`
 >    (+ `AppShell` content host) still take `fill_items`/… and pack their page
 >    content. Convert page-content frames to `FlexFrame`.

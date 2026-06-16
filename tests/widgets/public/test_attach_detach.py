@@ -227,9 +227,9 @@ def test_grid_attach_override(app, pump):
     gb = bs.Button("GB", parent=grid, row=0, column=0)
     pump()
     gb.detach()
-    gb.attach(sticky="ew")
+    gb.attach(column=1)
     pump()
-    assert gb._internal.grid_info()["sticky"] == "ew"
+    assert int(gb._internal.grid_info()["column"]) == 1
 
 
 # ---------------------------------------------------------------------------

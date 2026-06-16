@@ -7,10 +7,12 @@ from bootstack.widgets._impl.primitives.labelframe import LabelFrame as _LabelFr
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    PublicContainer, GRID_KEYS, place_flex_child,
+    PublicContainer, GRID_KEYS, place_flex_child, grid_sticky,
+    _reject_legacy_child_kwargs,
 )
 from bootstack.widgets.types import (
-    AccentToken, Padding, AlignItems, JustifyContent, Sticky, LayoutKind, AutoFlow, LocalizeMode,
+    AccentToken, Padding, AlignItems, JustifyContent, JustifyItems,
+    LayoutKind, AutoFlow, LocalizeMode,
 )
 
 
@@ -44,8 +46,12 @@ class GroupBox(PublicContainer):
             sizes to content, `'Npx'` sets a fixed pixel width (e.g.
             `[1, 2, 'auto', '120px']`).
         rows: Row definitions for `'grid'` layout, same format as `columns`.
-        sticky_items: Default cell alignment for every grid child
-            (e.g. `'ew'`, `'nsew'`). Children can override this.
+        justify_items: For `'grid'` layout, horizontal in-cell alignment of
+            every child — `'stretch'`, `'start'`, `'center'`, or `'end'`.
+            Override per child with `justify_self`. Defaults to `'stretch'`.
+        align_items: For `'grid'` layout, vertical in-cell alignment of every
+            child — `'stretch'`, `'start'`, `'center'`, or `'end'`. Override
+            per child with `align_self`. Defaults to `'stretch'`.
         auto_flow: Grid auto-placement direction. Defaults to `'row'`.
         localize: Whether the title is translated through the catalog — `True`,
             `False`, or `'auto'`. Defaults to the app's `localize_mode`.
@@ -68,7 +74,8 @@ class GroupBox(PublicContainer):
         grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
+        justify_items: JustifyItems = "stretch",
+        align_items: AlignItems = "stretch",
         auto_flow: AutoFlow = "row",
         localize: LocalizeMode | None = None,
         parent: Any = None,
@@ -103,7 +110,6 @@ class GroupBox(PublicContainer):
                 columns=columns,
                 rows=rows,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
@@ -111,7 +117,8 @@ class GroupBox(PublicContainer):
                 f"GroupBox layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
             )
 
-        self._sticky_items = sticky_items
+        self._justify_items = justify_items
+        self._align_items = align_items
         self._layout_frame.pack(fill="both", expand=True)
         self._attach_to_parent(layout_kw)
 
@@ -128,9 +135,11 @@ class GroupBox(PublicContainer):
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
         # Only reached for grid layout (vstack/hstack use the flex path above).
+        _reject_legacy_child_kwargs(layout_kw, "GroupBox")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-        if "sticky" not in options and self._sticky_items:
-            options["sticky"] = self._sticky_items
+        ji = layout_kw.get("justify_self") or self._justify_items
+        ai = layout_kw.get("align_self") or self._align_items
+        options["sticky"] = grid_sticky(ji, ai)
         return ("grid", options)
 
     # ----- Properties -----

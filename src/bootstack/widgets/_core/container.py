@@ -231,6 +231,29 @@ def _reject_legacy_child_kwargs(layout_kw: dict, where: str) -> None:
         )
 
 
+def grid_sticky(justify_item: str | None, align_item: str | None) -> str:
+    """Derive a Tk `sticky` string from CSS-grid in-cell alignment values.
+
+    `justify_item` is the horizontal axis, `align_item` the vertical. `stretch`
+    fills the axis, `start`/`end` pin to an edge, and `center` (or None) leaves
+    that axis unpinned so the child sits centered in the cell.
+    """
+    sticky = ""
+    if justify_item == "stretch":
+        sticky += "ew"
+    elif justify_item == "start":
+        sticky += "w"
+    elif justify_item == "end":
+        sticky += "e"
+    if align_item == "stretch":
+        sticky += "ns"
+    elif align_item == "start":
+        sticky += "n"
+    elif align_item == "end":
+        sticky += "s"
+    return sticky
+
+
 def _flex_child_opts(child: PublicWidgetBase, layout_kw: dict) -> dict:
     """Build the FlexFrame per-child opts dict from resolved layout kwargs.
 
