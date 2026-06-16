@@ -65,10 +65,9 @@ class ChromeHostMixin:
                 `False` to keep its menus in-window even on macOS. No effect on
                 Windows/Linux.
             **toolbar_kwargs: Forwarded to `Toolbar` — e.g. `surface`, `density`,
-                `button_variant`, `show_window_controls`, `draggable`. Defaults
-                `surface='chrome'` (this is window chrome); a
-                `show_window_controls=True` toolbar (a title bar) also defaults to
-                `density='compact'`.
+                `button_variant`, `show_window_controls`, `draggable`. Window
+                chrome defaults `surface='chrome'` and `density='compact'` (a tight
+                strip); pass `density='default'` for a roomier bar.
 
         Returns:
             The `Toolbar` for this layer.
@@ -78,10 +77,9 @@ class ChromeHostMixin:
 
         stack = self._ensure_toolbar_stack()
         toolbar_kwargs.setdefault("surface", "chrome")
-        # A window-controls toolbar is a title bar — default it to a thin compact
-        # strip (overridable) so it reads tight rather than a tall command bar.
-        if toolbar_kwargs.get("show_window_controls"):
-            toolbar_kwargs.setdefault("density", "compact")
+        # Window chrome reads as a tight strip (menu bars, title bars, command
+        # bars are all compact by convention) — default to compact, overridable.
+        toolbar_kwargs.setdefault("density", "compact")
         tb = Toolbar(parent=_ToolbarStackContainer(stack), **toolbar_kwargs)
         if divider:
             # A bare full-width hairline — no margin. The bar above provides any

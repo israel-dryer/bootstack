@@ -14,8 +14,15 @@ def single_tier():
     with bs.AppShell(title="Acme Analytics", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
-            bar.add_label("Acme Analytics", font="heading-md")
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
         with shell.add_page("overview", text="Overview", icon="speedometer2"):
             with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
@@ -39,8 +46,15 @@ def grouped_sidebar():
     with bs.AppShell(title="Settings", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
-            bar.add_label("Settings", font="heading-md")
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
         shell.add_header("Account")
         with shell.add_page("profile", text="Profile", icon="person"):
@@ -73,7 +87,12 @@ def master_detail_list():
     with bs.AppShell(title="Mail", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
+            with bar.add_menu("File") as file:
+                file.add_action("New message", shortcut="Mod+N", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
+            bar.add_button(icon="archive", on_click=lambda: None)
             bar.add_spacer()
             bar.add_theme_toggle()
         shell.list_nav(inbox, chevron=True)
@@ -105,8 +124,15 @@ def master_detail_tree():
     with bs.AppShell(title="Files", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
-            bar.add_label("Project", font="heading-md")
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
         tree = shell.tree_nav(nodes=tree_nodes, placeholder="Select a file")
 
@@ -133,7 +159,15 @@ def workspaces():
     with bs.AppShell(title="Workspace", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
         with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:
             ws.list_nav(inbox, chevron=True)
@@ -163,8 +197,13 @@ def custom_sidebar():
     with bs.AppShell(title="Shop", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
-            bar.add_label("Shop", font="heading-md")
+            with bar.add_menu("File") as file:
+                file.add_action("New order", shortcut="Mod+N", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
+            bar.add_button(icon="cart", on_click=lambda: None)
             bar.add_theme_toggle()
         category = bs.Signal("All")
         max_price = bs.Signal(100)

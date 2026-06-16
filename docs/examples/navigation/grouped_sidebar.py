@@ -9,7 +9,6 @@ import bootstack as bs
 
 with bs.AppShell(title="Settings", size=(860, 580)) as shell:
     with shell.add_toolbar() as bar:
-        bar.add_label("Settings", font="heading-md")
         bar.add_spacer()
         bar.add_theme_toggle()
 

@@ -8,7 +8,6 @@ import bootstack as bs
 
 with bs.AppShell(title="Acme Analytics", size=(900, 580)) as shell:
     with shell.add_toolbar() as bar:
-        bar.add_label("Acme Analytics", font="heading-md")
         bar.add_spacer()
         bar.add_theme_toggle()
 

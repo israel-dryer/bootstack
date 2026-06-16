@@ -5,7 +5,15 @@ def hero():
     with bs.AppShell(title="My App", size=(720, 520)) as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
@@ -49,7 +57,15 @@ def compact():
     with bs.AppShell(title="My App", size=(720, 520), sidebar_mode="compact") as shell:
         shell._capture_full_window = True
         with shell.add_toolbar() as bar:
+            with bar.add_menu("File") as file:
+                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+                file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view:
+                view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
             bar.add_spacer()
+            bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):

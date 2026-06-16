@@ -18,7 +18,6 @@ PRODUCTS = [
 
 with bs.AppShell(title="Shop", size=(900, 580)) as shell:
     with shell.add_toolbar() as bar:
-        bar.add_label("Shop", font="heading-md")
         bar.add_spacer()
         bar.add_theme_toggle()
 

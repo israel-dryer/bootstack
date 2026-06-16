@@ -89,7 +89,7 @@ app.run()
   <img alt="bootstack quick start example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-light.png">
 </picture>
 
-For navigation-based apps, use `AppShell` — it gives you a command bar, sidebar, and page stack in one call:
+For navigation-based apps, use `AppShell` — it gives you stacked toolbars, a sidebar, and a page stack in one call:
 
 ```python
 import bootstack as bs

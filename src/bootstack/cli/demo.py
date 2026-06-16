@@ -833,7 +833,10 @@ def run_demo():
     ) as shell:
 
         with shell.add_toolbar() as bar:
-            bar.add_label("Widget Gallery")
+            with bar.add_menu("File") as file_menu:
+                file_menu.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+            with bar.add_menu("View") as view_menu:
+                view_menu.add_action("Toggle theme", on_click=bs.toggle_theme)
             bar.add_spacer()
             bar.add_theme_toggle()
 

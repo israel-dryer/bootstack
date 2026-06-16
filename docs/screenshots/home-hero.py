@@ -47,7 +47,13 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
     shell._capture_full_window = True
     shell._capture_max_width = 940
     with shell.add_toolbar() as bar:
-        bar.add_label("Acme Analytics", font="heading-md")
+        with bar.add_menu("File") as file:
+            file.add_action("New report", shortcut="Mod+N", on_click=lambda: None)
+            file.add_action("Export…", shortcut="Mod+E", on_click=lambda: None)
+            file.add_separator()
+            file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+        with bar.add_menu("View") as view:
+            view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
         bar.add_spacer()
         bar.add_button("Export", icon="download")
         bar.add_theme_toggle()
