@@ -17,9 +17,15 @@ PRODUCTS = [
 ]
 
 with bs.AppShell(title="Shop", size=(900, 580)) as shell:
-    shell.commandbar.add_label("Shop", font="heading-md")
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        with bar.add_menu("File") as file:
+            file.add_action("New order", shortcut="Mod+N", on_click=lambda: None)
+            file.add_separator()
+            file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+        bar.add_spacer()
+        bar.add_button(icon="search", on_click=lambda: None)
+        bar.add_button(icon="cart", on_click=lambda: None)
+        bar.add_theme_toggle()
 
     category = bs.Signal("All")
     max_price = bs.Signal(100)

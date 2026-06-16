@@ -89,7 +89,7 @@ app.run()
   <img alt="bootstack quick start example" src="https://raw.githubusercontent.com/israel-dryer/bootstack/main/assets/readme/ex-quickstart-light.png">
 </picture>
 
-For navigation-based apps, use `AppShell` — it gives you a command bar, sidebar, and page stack in one call:
+For navigation-based apps, use `AppShell` — it gives you stacked toolbars, a sidebar, and a page stack in one call:
 
 ```python
 import bootstack as bs
@@ -180,13 +180,13 @@ app.run()
 
 | Category | Widgets |
 |----------|---------|
-| **Actions** | Button, ButtonGroup, MenuButton, ContextMenu, CommandBar |
+| **Actions** | Button, ButtonGroup, MenuButton, ContextMenu, Toolbar |
 | **Inputs** | TextField, PasswordField, PathField, NumberField, SpinnerField, Slider, RangeSlider, TextArea, CodeEditor, DateField, TimeField |
 | **Selection** | Checkbox, Switch, ToggleButton, Radio, RadioGroup, ToggleGroup, Select, SelectButton, Calendar |
 | **Data Display** | Label, Badge, ListView, Tree, DataTable, ProgressBar, Gauge |
 | **Media** | Avatar, Picture, Gallery, Carousel |
 | **Layout** | VStack, HStack, Grid, Card, GroupBox, SplitView, ScrollView, Accordion, Separator |
-| **Navigation** | AppShell, CommandBar, SideNav, StatusBar, Tabs, PageStack |
+| **Navigation** | AppShell, SideNav, StatusBar, Tabs, PageStack |
 | **Dialogs** | `alert()`, `confirm()`, `ask_*()` prompts, FormDialog, FontDialog, FilterDialog |
 | **Overlays** | `toast()`, Notification, Snackbar, Tooltip |
 | **Forms** | Form, with field-level validation |

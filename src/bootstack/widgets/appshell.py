@@ -308,11 +308,8 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
         undecorated: Remove OS window decorations and draw a custom border.
-            Ignored on macOS.
-        menu_layout: Chrome arrangement — `'fused'` (menus and command bar share
-            one row) or `'stacked'` (command bar below the menu strip).
-        chrome_surface: Surface token for the top chrome row. Default `'chrome'`.
-        chrome_divider: Draw a hairline under the chrome row. Default `True`.
+            Ignored on macOS. Build the title bar yourself with
+            `add_toolbar(show_window_controls=True)`.
         show_sidebar: Render the sidebar region. Default `True`.
         sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
             `'compact'` (icon-only) applies only to a standalone static sidebar.
@@ -358,10 +355,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         resizable: tuple[bool, bool] | None = None,
         scaling: float | None = None,
         hdpi: bool = True,
-        # chrome
-        menu_layout: Literal["fused", "stacked"] = "fused",
-        chrome_surface: SurfaceToken | str = "chrome",
-        chrome_divider: bool = True,
         # region surfaces
         rail_surface: SurfaceToken | str = "chrome",
         sidebar_surface: SurfaceToken | str = "raised",
@@ -380,10 +373,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         show_statusbar: bool = False,
         **kwargs: Any,
     ) -> None:
-        self._menu_layout = menu_layout
-        self._chrome_surface = chrome_surface
-        self._chrome_divider_enabled = chrome_divider
-        self._chrome_shown = False
         self._statusbar: StatusBar | None = None
         self._rail: Rail | None = None
 
@@ -412,7 +401,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             "nav_selection": nav_selection,
             "rail_labels": rail_labels,
             "remember_nav_state": remember_nav_state,
-            "chrome_surface": chrome_surface,
             "rail_surface": rail_surface,
             "sidebar_surface": sidebar_surface,
             "statusbar_surface": statusbar_surface,
@@ -481,23 +469,18 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         except Exception:
             pass
 
-    # ----- Chrome hooks (mount menubar / command bar into the Shell's band) -----
+    # ----- Chrome hooks (mount the toolbar stack into the Shell's region) -----
 
     def _menu_root(self) -> Any:
         # The Shell is itself a Tk root (subclasses the internal App), so the
         # native menubar and shortcut bindings attach to it.
         return self._internal
 
-    def _ensure_chrome(self) -> Any:
-        # Reuse the Shell's existing chrome band region instead of building a
-        # second chrome frame — it is already arranged by the layer-1 layout.
-        # `_arrange_chrome` reads `self._chrome`, so it must be set here (the
-        # base mixin sets it when it builds its own frame; we adopt the band).
-        if not self._chrome_shown:
-            self._internal.set_chrome_visible(True)
-            self._chrome_shown = True
-        self._chrome = self._internal.chrome
-        return self._chrome
+    def _ensure_toolbar_stack(self) -> Any:
+        # The shell pre-builds its stacked-toolbar region as a first-class band
+        # (above the body); `add_toolbar()` mounts into it rather than the base
+        # mixin's content-frame stack.
+        return self._internal.toolbar_stack
 
     # ----- Shell-level content (delegates to the implicit default workspace) ----
 

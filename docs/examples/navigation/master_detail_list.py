@@ -20,9 +20,15 @@ inbox = MemoryDataSource().load([
 ])
 
 with bs.AppShell(title="Mail", size=(900, 580)) as shell:
-    shell.commandbar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
-    shell.commandbar.add_spacer()
-    shell.commandbar.add_theme_toggle()
+    with shell.add_toolbar() as bar:
+        with bar.add_menu("File") as file:
+            file.add_action("New message", shortcut="Mod+N", on_click=lambda: None)
+            file.add_separator()
+            file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
+        bar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
+        bar.add_button(icon="archive", on_click=lambda: None)
+        bar.add_spacer()
+        bar.add_theme_toggle()
 
     shell.list_nav(inbox, chevron=True)
 

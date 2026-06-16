@@ -1,7 +1,7 @@
 """Visual test for ButtonGroup, ContextMenu, MenuButton, and Toolbar."""
 from bootstack import (
     App, VStack, HStack, Label, Button, Separator,
-    ButtonGroup, ContextMenu, MenuButton, CommandBar,
+    ButtonGroup, ContextMenu, MenuButton, Toolbar,
 )
 
 
@@ -12,7 +12,7 @@ def on_select(data):
 with App(title="Action / Toolbar", minsize=(700, 500), padding=16, gap=12) as app:
 
     # --- Toolbar ---
-    tb = CommandBar(draggable=False)
+    tb = Toolbar(draggable=False)
     tb.add_button(icon="house", on_click=lambda: print("home"))
     tb.add_button(icon="folder2-open", on_click=lambda: print("open"))
     tb.add_button(icon="floppy", on_click=lambda: print("save"))

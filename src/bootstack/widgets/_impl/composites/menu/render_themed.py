@@ -17,6 +17,56 @@ from bootstack.widgets._impl.composites.menu.model import MenuItem, MenuModel
 from bootstack.widgets.types import Master, WidgetDensity
 
 
+def menu_item_to_context_item(
+    item: MenuItem, radio_vars: dict[str, StringVar]
+) -> ContextMenuItem:
+    """Translate a model `MenuItem` into a `ContextMenuItem`.
+
+    Maps the public type names to the ContextMenu backend's Tk-derived names
+    (`action`->`command`, `check`->`checkbutton`, `radio`->`radiobutton`). The
+    raw `shortcut` is forwarded for display only — actual key binding is owned by
+    `MenuModel.bind_shortcuts`. `radio_vars` holds one shared `StringVar` per
+    radio-group name so items in a group are mutually exclusive; it is mutated in
+    place as new groups are seen.
+    """
+    if item.type == "separator":
+        return ContextMenuItem("separator", key=item.key)
+
+    if item.type == "check":
+        return ContextMenuItem(
+            "checkbutton",
+            text=item.text,
+            value=item.checked,
+            command=item.on_click,
+            key=item.key,
+        )
+
+    if item.type == "radio":
+        var = radio_vars.setdefault(item.group or "", StringVar())
+        return ContextMenuItem(
+            "radiobutton",
+            text=item.text,
+            value=item.value,
+            variable=var,
+            command=item.on_click,
+            disabled=item.disabled,
+            key=item.key,
+        )
+
+    # action
+    kwargs: dict[str, Any] = {
+        "text": item.text,
+        "command": item.on_click,
+        "disabled": item.disabled,
+        "key": item.key,
+    }
+    if item.icon:
+        kwargs["icon"] = item.icon
+    if item.shortcut:
+        kwargs["shortcut"] = item.shortcut
+    return ContextMenuItem("command", **kwargs)
+
+
 class ThemedMenuBar(PackFrame):
     """Themed menu-bar strip (Windows/Linux) rendered from a `MenuModel`.
 
@@ -67,7 +117,10 @@ class ThemedMenuBar(PackFrame):
         self._radio_vars = {}
 
         for group in self._model:
-            items = [self._to_context_item(item) for item in group.items]
+            items = [
+                menu_item_to_context_item(item, self._radio_vars)
+                for item in group.items
+            ]
             trigger = DropdownButton(
                 self,
                 text=group.text,
@@ -79,48 +132,3 @@ class ThemedMenuBar(PackFrame):
             )
             trigger.pack(side="left")
             self._triggers.append(trigger)
-
-    def _to_context_item(self, item: MenuItem) -> ContextMenuItem:
-        """Translate a model `MenuItem` into a `ContextMenuItem`.
-
-        Maps the public type names to the ContextMenu backend's Tk-derived
-        names (`action`->`command`, `check`->`checkbutton`,
-        `radio`->`radiobutton`). The raw `shortcut` is forwarded for display
-        only — actual key binding is owned by `MenuModel.bind_shortcuts`.
-        """
-        if item.type == "separator":
-            return ContextMenuItem("separator", key=item.key)
-
-        if item.type == "check":
-            return ContextMenuItem(
-                "checkbutton",
-                text=item.text,
-                value=item.checked,
-                command=item.on_click,
-                key=item.key,
-            )
-
-        if item.type == "radio":
-            var = self._radio_vars.setdefault(item.group or "", StringVar())
-            return ContextMenuItem(
-                "radiobutton",
-                text=item.text,
-                value=item.value,
-                variable=var,
-                command=item.on_click,
-                disabled=item.disabled,
-                key=item.key,
-            )
-
-        # action
-        kwargs: dict[str, Any] = {
-            "text": item.text,
-            "command": item.on_click,
-            "disabled": item.disabled,
-            "key": item.key,
-        }
-        if item.icon:
-            kwargs["icon"] = item.icon
-        if item.shortcut:
-            kwargs["shortcut"] = item.shortcut
-        return ContextMenuItem("command", **kwargs)

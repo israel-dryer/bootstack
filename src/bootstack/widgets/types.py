@@ -108,7 +108,7 @@ BorderMode = Literal['inside', 'outside']
 
 ButtonVariant = Literal['default', 'solid', 'outline', 'ghost']
 """Style variant shared by the button family (Button, ButtonGroup, MenuButton,
-SelectButton, ToggleButton, ToggleGroup, CommandBar) — `'default'`, `'solid'`,
+SelectButton, ToggleButton, ToggleGroup, Toolbar) — `'default'`, `'solid'`,
 `'outline'`, or `'ghost'`."""
 
 AccordionVariant = Literal['solid', 'default']

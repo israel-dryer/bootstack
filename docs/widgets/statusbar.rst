@@ -16,7 +16,7 @@ into a left and a right cluster.
 
 By convention the status bar reads as a *quiet display strip* — for interactive
 controls (buttons, a search box) use a
-:class:`CommandBar <bootstack.CommandBar>` instead. Nothing enforces it, but the
+:class:`Toolbar <bootstack.Toolbar>` instead. Nothing enforces it, but the
 default ``'chrome'`` surface and compact density are tuned for passive status.
 
 Usage
@@ -142,7 +142,7 @@ Widget sizing
 See also
 --------
 
-:class:`CommandBar <bootstack.CommandBar>` —
+:class:`Toolbar <bootstack.Toolbar>` —
 the interactive sibling for buttons and controls in the window chrome.
 
 :class:`AppShell <bootstack.widgets.appshell.AppShell>` —

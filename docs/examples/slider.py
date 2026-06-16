@@ -9,7 +9,7 @@ Run with:
 
 import bootstack as bs
 
-with bs.App(title="Slider Demo", padding=20, gap=16) as app:
+with bs.App(title="Slider Demo", padding=20, gap=16, min_size=(400, 1)) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import sys
 from tkinter import Widget
-from typing import Any, Callable, Literal
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from typing_extensions import TypedDict, Unpack
 
@@ -13,6 +14,12 @@ from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.primitives.separator import Separator
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets.types import Master, SurfaceToken, WidgetDensity
+
+if TYPE_CHECKING:
+    from tkinter import StringVar
+
+    from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
+    from bootstack.widgets._impl.composites.menu.model import MenuGroup, MenuModel
 
 
 class ToolbarKwargs(TypedDict, total=False):
@@ -60,12 +67,13 @@ class Toolbar(Frame):
             button_variant: Default variant for toolbar buttons. Default 'ghost'.
             density: Button density for toolbar items. 'compact' for smaller buttons,
                 'default' for standard size. Default 'default'.
-            padding: Toolbar padding. If None, uses density-based default
-                ((3, 1) for compact, 3 for default).
+            padding: Toolbar padding. If None, uses a uniform density-based
+                default (2 for compact, 3 for default) so items have even
+                breathing room on all sides.
             **kwargs: Additional arguments passed to Frame.
         """
         if padding is None:
-            padding = (3, 1) if density == 'compact' else 3
+            padding = 2 if density == 'compact' else 3
         super().__init__(master, padding=padding, **kwargs)
 
         self._show_window_controls = show_window_controls
@@ -89,6 +97,24 @@ class Toolbar(Frame):
         if self._draggable:
             self._setup_drag()
 
+        # Menu state — populated lazily by add_menu(). The model is the single
+        # source of truth for this toolbar's menus (so a host can aggregate them
+        # for the macOS native bar); the triggers are the in-window dropdowns.
+        self._menu_model: MenuModel | None = None
+        self._menu_triggers: dict[str, DropdownButton] = {}
+        self._menu_radio_vars: dict[str, StringVar] = {}
+        self._menu_rebind_pending: Any = None
+        # Optional host hook fired when this toolbar's menus change, so a window
+        # can rebuild the aggregated macOS native menu bar.
+        self._on_menu_change: Callable[[], Any] | None = None
+
+    @staticmethod
+    def _control_glyph(name: str) -> dict:
+        """A title-bar control glyph spec — a small (~14px) glyph regardless of
+        the toolbar density, for a tight native-style control rather than a
+        chunky compact-icon button (the 17px compact-icon default)."""
+        return {'name': name, 'size': 14}
+
     def _build_window_controls(self):
         """Build window control buttons (minimize, maximize, close)."""
         self._controls_frame = Frame(self)
@@ -97,7 +123,7 @@ class Toolbar(Frame):
         # Minimize button
         self._minimize_btn = Button(
             self._controls_frame,
-            icon='dash-lg',
+            icon=self._control_glyph('dash-lg'),
             icon_only=True,
             variant='ghost',
             density='compact',
@@ -109,7 +135,7 @@ class Toolbar(Frame):
         # Maximize/Restore button
         self._maximize_btn = Button(
             self._controls_frame,
-            icon='fullscreen',
+            icon=self._control_glyph('fullscreen'),
             icon_only=True,
             variant='ghost',
             density='compact',
@@ -118,12 +144,13 @@ class Toolbar(Frame):
         )
         self._maximize_btn.pack(side='left', padx=2)
 
-        # Close button
+        # Close button — danger accent so it hovers red (the native convention).
         self._close_btn = Button(
             self._controls_frame,
-            icon='x-lg',
+            icon=self._control_glyph('x-lg'),
             icon_only=True,
             variant='ghost',
+            accent='danger',
             density='compact',
             surface=self._surface,
             command=self._on_close,
@@ -144,22 +171,60 @@ class Toolbar(Frame):
             pass
 
     def _on_minimize(self):
-        """Handle minimize button click."""
+        """Minimize the window, keeping it recoverable from the taskbar."""
         window = self.winfo_toplevel()
-        # override_redirect windows cannot be iconified directly — temporarily
-        # lift the flag, iconify, then restore it once the window is shown again.
-        if window.overrideredirect():
-            window.overrideredirect(False)
+        if not window.overrideredirect():
             window.iconify()
-            window.bind('<Map>', self._on_restore_override_redirect, add='+')
-        else:
-            window.iconify()
+            return
+        # A borderless (override_redirect) window has no taskbar button by
+        # default, so a plain iconify() would leave it with no way back. On
+        # Windows, give it the APPWINDOW taskbar style and minimize via the Win32
+        # API — it stays borderless and the taskbar button restores it. Elsewhere,
+        # fall back to briefly restoring native decorations (which grant a taskbar
+        # button), iconify, then re-hide them once the user restores it.
+        if sys.platform == 'win32' and self._win32_minimize(window):
+            return
+        window.update_idletasks()
+        window.overrideredirect(False)
+        window.update_idletasks()
+        window.iconify()
+        window.bind('<Map>', self._on_restore_override_redirect, add='+')
 
-    def _on_restore_override_redirect(self, _event=None) -> None:
+    def _win32_minimize(self, window) -> bool:
+        """Minimize a borderless window via Win32, with a taskbar button.
+
+        Adds `WS_EX_APPWINDOW` (and drops `WS_EX_TOOLWINDOW`) so the borderless
+        window gets a taskbar button, then minimizes it. Returns True on success.
+        """
+        try:
+            from ctypes import windll
+
+            GWL_EXSTYLE = -20
+            WS_EX_APPWINDOW = 0x00040000
+            WS_EX_TOOLWINDOW = 0x00000080
+            SW_HIDE, SW_SHOW, SW_MINIMIZE = 0, 5, 6
+
+            hwnd = windll.user32.GetParent(window.winfo_id()) or window.winfo_id()
+            style = windll.user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+            new_style = (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW
+            if new_style != style:
+                windll.user32.SetWindowLongW(hwnd, GWL_EXSTYLE, new_style)
+                # The taskbar only re-reads the style on a re-show, so cycle the
+                # window once (a brief flash) the first time the style changes.
+                windll.user32.ShowWindow(hwnd, SW_HIDE)
+                windll.user32.ShowWindow(hwnd, SW_SHOW)
+            windll.user32.ShowWindow(hwnd, SW_MINIMIZE)
+            return True
+        except Exception:
+            return False
+
+    def _on_restore_override_redirect(self, event=None) -> None:
         """Restore override_redirect after the window is deiconified."""
         window = self.winfo_toplevel()
-        window.overrideredirect(True)
+        if event is not None and getattr(event, 'widget', window) is not window:
+            return
         window.unbind('<Map>')
+        window.overrideredirect(True)
 
     def _on_maximize(self):
         """Handle maximize/restore button click."""
@@ -169,10 +234,10 @@ class Toolbar(Frame):
             return
         if window.state() == 'zoomed':
             window.state('normal')
-            self._maximize_btn.configure(icon='fullscreen')
+            self._maximize_btn.configure(icon=self._control_glyph('fullscreen'))
         else:
             window.state('zoomed')
-            self._maximize_btn.configure(icon='fullscreen-exit')
+            self._maximize_btn.configure(icon=self._control_glyph('fullscreen-exit'))
 
     def _on_close(self):
         """Handle close button click."""
@@ -180,11 +245,11 @@ class Toolbar(Frame):
         window.destroy()
 
     def _setup_drag(self):
-        """Set up window dragging bindings."""
-        self.bind('<Button-1>', self._on_drag_start, add='+')
-        self.bind('<B1-Motion>', self._on_drag_motion, add='+')
-        self._content_frame.bind('<Button-1>', self._on_drag_start, add='+')
-        self._content_frame.bind('<B1-Motion>', self._on_drag_motion, add='+')
+        """Set up window dragging (and double-click-to-maximize) bindings."""
+        for widget in (self, self._content_frame):
+            widget.bind('<Button-1>', self._on_drag_start, add='+')
+            widget.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            widget.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
     def _on_drag_start(self, event):
         """Record drag start position."""
@@ -194,6 +259,18 @@ class Toolbar(Frame):
     def _on_drag_motion(self, event):
         """Handle drag motion to move window."""
         window = self.winfo_toplevel()
+
+        # A maximized window snaps back to its normal size before it can move,
+        # re-anchoring the drag origin so the cursor keeps its grip on the bar.
+        if window.state() == 'zoomed':
+            try:
+                window.state('normal')
+            except Exception:
+                pass
+            self._sync_maximize_icon('fullscreen')
+            self._drag_start_x = event.x_root
+            self._drag_start_y = event.y_root
+            return
 
         # Calculate delta
         dx = event.x_root - self._drag_start_x
@@ -209,6 +286,20 @@ class Toolbar(Frame):
         # Update drag start for next motion
         self._drag_start_x = event.x_root
         self._drag_start_y = event.y_root
+
+    def _on_drag_double(self, _event):
+        """Double-clicking the bar toggles the window's maximized state."""
+        self._on_maximize()
+        return 'break'
+
+    def _sync_maximize_icon(self, name: str) -> None:
+        """Keep the maximize button's icon in sync with the window state."""
+        btn = getattr(self, '_maximize_btn', None)
+        if btn is not None:
+            try:
+                btn.configure(icon=self._control_glyph(name))
+            except Exception:
+                pass
 
     # --- Public API: Adding Items ---
 
@@ -249,6 +340,84 @@ class Toolbar(Frame):
         btn.pack(side='left')
         return btn
 
+    def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
+        """Add a dropdown menu (File / Edit / …) as a toolbar item.
+
+        Returns the menu's `MenuGroup` builder — add items with
+        `add_action` / `add_check` / `add_radio` / `add_separator`, ideally in a
+        `with` block. On Windows/Linux the menu renders as an in-window dropdown
+        trigger in the toolbar; the menu also feeds this toolbar's menu model so a
+        host can surface it in the macOS native menu bar.
+
+        Args:
+            text: The menu's label (e.g. `'File'`).
+            key: Optional stable identifier; defaults to `text`.
+
+        Returns:
+            The `MenuGroup` for this menu.
+        """
+        from bootstack.widgets._impl.composites.dropdownbutton import DropdownButton
+        from bootstack.widgets._impl.composites.menu.model import MenuModel
+
+        if self._menu_model is None:
+            self._menu_model = MenuModel()
+        group = self._menu_model.add_menu(text, key=key)
+
+        # A flat menu-bar-style trigger whose popdown is the themed context menu.
+        trigger = DropdownButton(
+            self._content_frame,
+            text=text,
+            items=[],
+            variant='menubar-item',
+            show_dropdown_button=False,
+            density=self._density,
+            surface=self._surface,
+        )
+        trigger.pack(side='left')
+        self._menu_triggers[group.key] = trigger
+
+        # Items are appended to the trigger as they are added to the group (the
+        # build-up case), so the `with tb.add_menu(...)` block renders live; each
+        # change also (coalesced) rebinds the model's keyboard shortcuts.
+        group.on_change = lambda g=group, t=trigger: self._on_menu_item_added(g, t)
+        return group
+
+    def _on_menu_item_added(self, group: "MenuGroup", trigger: "DropdownButton") -> None:
+        from bootstack.widgets._impl.composites.menu.render_themed import (
+            menu_item_to_context_item,
+        )
+
+        item = group.items[-1]
+        trigger.add_items([menu_item_to_context_item(item, self._menu_radio_vars)])
+        self._schedule_menu_rebind()
+        if self._on_menu_change is not None:
+            self._on_menu_change()
+
+    def _schedule_menu_rebind(self) -> None:
+        """Coalesce shortcut (re)binding to idle so a built menu binds once."""
+        if self._menu_rebind_pending is not None:
+            try:
+                self.after_cancel(self._menu_rebind_pending)
+            except Exception:
+                pass
+        try:
+            self._menu_rebind_pending = self.after_idle(self._rebind_menu_shortcuts)
+        except Exception:
+            self._rebind_menu_shortcuts()
+
+    def _rebind_menu_shortcuts(self) -> None:
+        self._menu_rebind_pending = None
+        if self._menu_model is not None:
+            try:
+                self._menu_model.bind_shortcuts(self.winfo_toplevel())
+            except Exception:
+                pass
+
+    @property
+    def menu_model(self) -> "MenuModel | None":
+        """This toolbar's menu model (or `None` if no menus were added)."""
+        return self._menu_model
+
     def add_label(
         self,
         text: str = '',
@@ -287,6 +456,7 @@ class Toolbar(Frame):
         if self._draggable:
             lbl.bind('<Button-1>', self._on_drag_start, add='+')
             lbl.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            lbl.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
         return lbl
 
@@ -327,6 +497,7 @@ class Toolbar(Frame):
         if self._draggable:
             spacer.bind('<Button-1>', self._on_drag_start, add='+')
             spacer.bind('<B1-Motion>', self._on_drag_motion, add='+')
+            spacer.bind('<Double-Button-1>', self._on_drag_double, add='+')
 
         return spacer
 

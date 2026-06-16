@@ -1,299 +1,188 @@
-"""The `menubar` / `commandbar` facade for top-level windows.
+"""The stacked-toolbar chrome host for top-level windows.
 
-`ChromeHostMixin` gives `App` / `Window` / `AppShell` a lazy `.menubar` property
-returning a `WindowMenu`. The facade owns a platform-neutral `MenuModel`,
-renders it per platform (themed in-window strip on Windows/Linux; native global
-menu bar on macOS), and binds the model's shortcuts to the host window.
-Re-renders are coalesced to idle so the natural build pattern
-(`with win.menubar.add_menu("File") as file: ...`) renders once, after all items
-are added.
+`ChromeHostMixin` gives `App` / `Window` / `AppShell` an `add_toolbar()` factory:
+the window's top region is a vertical stack of `Toolbar`s, each holding buttons,
+labels, widgets, and menus (`toolbar.add_menu(...)`). A menu is just a toolbar
+item — it renders as an in-window dropdown on Windows/Linux and bridges to the
+native global menu bar on macOS (aggregated across every bridged chrome toolbar).
 """
 from __future__ import annotations
 
 from typing import Any
 
-from bootstack.widgets._impl.composites.menu.model import MenuGroup, MenuModel
+
+class _ToolbarStackContainer:
+    """Public-container shim so an `add_toolbar()` toolbar packs into the host's
+    vertical chrome stack (full-width, top-to-bottom in creation order)."""
+
+    _auto_place = True
+
+    def __init__(self, frame: Any) -> None:
+        self._frame = frame
+
+    def _child_master(self) -> Any:
+        return self._frame
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        # Toolbars stack full-width in creation order; the stack owns the layout.
+        child._internal.pack(side="top", fill="x")
 
 
-class WindowMenu:
-    """The menu bar of a top-level window — menus only.
+class ChromeHostMixin:
+    """`add_toolbar()` — the window's top region is a stack of toolbars.
 
-    Build it imperatively with `add_menu()` or declaratively with `load()`;
-    both feed the same model. Placement and platform rendering are handled
-    internally — the menu strip sits at the top of the window on Windows/Linux
-    and relocates to the native global menu bar on macOS.
+    Each `add_toolbar()` appends a full-width `Toolbar` band; menus live on the
+    toolbars (`toolbar.add_menu(...)`). On macOS the bridged toolbars' menus are
+    aggregated into the native global menu bar; on Windows/Linux they render as
+    in-window dropdowns. `AppShell` overrides `_ensure_toolbar_stack()` to mount
+    the stack into its own region layout.
     """
 
-    def __init__(self, host: Any) -> None:
-        self._host = host
-        self._model = MenuModel()
-        self._renderer: Any = None
-        self._pending: Any = None
-
-    # ----- building -----
-
-    def add_menu(self, text: str, *, key: str | None = None) -> MenuGroup:
-        """Append a top-level menu and return it (context-manager capable).
-
-        Args:
-            text: The menu's label (e.g. `'File'`).
-            key: Optional stable identifier; defaults to `text`.
-        """
-        group = self._model.add_menu(text, key=key)
-        group.on_change = self._schedule_rebuild
-        self._schedule_rebuild()
-        return group
-
-    def load(self, spec: list[dict]) -> None:
-        """Replace the menu bar's contents from a declarative spec.
-
-        Args:
-            spec: List of group dicts — see `MenuModel.load`.
-        """
-        self._model.load(spec)
-        for group in self._model:
-            group.on_change = self._schedule_rebuild
-        self._schedule_rebuild()
-
-    def clear(self) -> None:
-        """Remove all menus and release their shortcuts."""
-        self._model.clear()
-        self._schedule_rebuild()
-
-    def refresh(self) -> None:
-        """Force an immediate re-render (normally not needed — changes coalesce)."""
-        self._rebuild()
-
-    @property
-    def model(self) -> MenuModel:
-        """The underlying menu model."""
-        return self._model
-
-    # ----- rendering -----
-
     def _menu_root(self) -> Any:
-        """The Tk root/toplevel for the native menubar + shortcut binding."""
-        return self._host._menu_root()
+        """Tk root/toplevel for the native menubar (`['menu']`) + shortcuts."""
+        return getattr(self, "_internal", None)
 
-    def _is_aqua(self) -> bool:
+    # ----- toolbar stack -----
+
+    def add_toolbar(
+        self, *, divider: bool = False, use_macos_menus: bool = True, **toolbar_kwargs: Any
+    ) -> Any:
+        """Append a `Toolbar` to the window's top chrome stack and return it.
+
+        Toolbars stack full-width, top-to-bottom, in the order added — fill each
+        with buttons, labels, widgets, and menus (`toolbar.add_menu(...)`). The
+        returned `Toolbar` is a context manager, so the natural form reads::
+
+            with window.add_toolbar() as tb:
+                tb.add_menu("File")
+                tb.add_spacer()
+                tb.add_theme_toggle()
+
+        Args:
+            divider: Draw a hairline beneath this toolbar (default `False`).
+            use_macos_menus: On macOS, bridge this toolbar's menus to the native
+                global menu bar (in-window dropdowns hide). Default `True`; set
+                `False` to keep its menus in-window even on macOS. No effect on
+                Windows/Linux.
+            **toolbar_kwargs: Forwarded to `Toolbar` — e.g. `surface`, `density`,
+                `button_variant`, `show_window_controls`, `draggable`. Window
+                chrome defaults `surface='chrome'` and `density='compact'` (a tight
+                strip); pass `density='default'` for a roomier bar.
+
+        Returns:
+            The `Toolbar` for this layer.
+        """
+        from bootstack.widgets._impl.primitives import Separator
+        from bootstack.widgets.toolbar import Toolbar
+
+        stack = self._ensure_toolbar_stack()
+        toolbar_kwargs.setdefault("surface", "chrome")
+        # Window chrome reads as a tight strip (menu bars, title bars, command
+        # bars are all compact by convention) — default to compact, overridable.
+        toolbar_kwargs.setdefault("density", "compact")
+        tb = Toolbar(parent=_ToolbarStackContainer(stack), **toolbar_kwargs)
+        if divider:
+            # A bare full-width hairline — no margin. The bar above provides any
+            # spacing through its own (chrome) padding, so nothing of the stack
+            # surface leaks below the line when this is the last band before the
+            # content (the window's content surface starts right after the line).
+            Separator(
+                stack, orient="horizontal", surface=toolbar_kwargs["surface"]
+            ).pack(side="top", fill="x")
+        self._register_chrome_toolbar(tb, use_macos_menus)
+        return tb
+
+    def _ensure_toolbar_stack(self) -> Any:
+        stack = getattr(self, "_toolbar_stack", None)
+        if stack is not None:
+            return stack
+        from bootstack.widgets._impl.primitives.packframe import PackFrame
+
+        # The stack carries the chrome surface so any gap between stacked bars
+        # (e.g. a divider's margin) reads as chrome rather than the window's
+        # content surface. Chrome-surfaced toolbars sit seamlessly on it.
+        stack = PackFrame(self._toolbar_stack_parent(), direction="vertical", surface="chrome")
+        self._mount_toolbar_stack(stack)
+        self._toolbar_stack = stack
+        return stack
+
+    def _toolbar_stack_parent(self) -> Any:
+        """Widget the chrome stack is built under (overridable by the host)."""
+        return self._menu_root()
+
+    def _mount_toolbar_stack(self, stack: Any) -> None:
+        """Pack the chrome stack at the top of the window, above the content."""
+        content = getattr(self, "_content_frame", None)
+        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
+        if content is not None:
+            pack_kw["before"] = content
+        stack.pack(**pack_kw)
+
+    # ----- macOS native menu bridge -----
+
+    def _register_chrome_toolbar(self, tb: Any, use_macos_menus: bool) -> None:
+        """Track a chrome toolbar and, on macOS, wire its menus into the native
+        global menu bar (aggregated across all bridged toolbars)."""
+        toolbars = getattr(self, "_chrome_toolbars", None)
+        if toolbars is None:
+            toolbars = self._chrome_toolbars = []
+        toolbars.append((tb, use_macos_menus))
+        if use_macos_menus and self._menus_are_native():
+            tb._internal._on_menu_change = self._schedule_native_menu_rebuild
+            self._schedule_native_menu_rebuild()
+
+    def _menus_are_native(self) -> bool:
+        """Whether menus render in the native global bar (macOS / aqua)."""
         root = self._menu_root()
         try:
             return root.tk.call("tk", "windowingsystem") == "aqua"
         except Exception:
             return False
 
-    def _schedule_rebuild(self) -> None:
-        """Coalesce re-renders onto the idle queue (a single rebuild per turn)."""
+    def _aggregate_native_menu_model(self) -> Any:
+        """Build one `MenuModel` from every bridged chrome toolbar's menus, in
+        stack order then left-to-right within each toolbar. Also hides the
+        in-window triggers for bridged toolbars (the native bar shows them)."""
+        from bootstack.widgets._impl.composites.menu.model import MenuModel
+
+        agg = MenuModel()
+        for tb, bridge in getattr(self, "_chrome_toolbars", []):
+            if not bridge:
+                continue
+            model = tb._internal.menu_model
+            if model is None:
+                continue
+            agg.groups.extend(model.groups)
+            for trigger in tb._internal._menu_triggers.values():
+                try:
+                    trigger.pack_forget()
+                except Exception:
+                    pass
+        return agg
+
+    def _schedule_native_menu_rebuild(self) -> None:
         root = self._menu_root()
+        pending = getattr(self, "_native_menu_pending", None)
         if root is None:
-            self._rebuild()
+            self._rebuild_native_menu()
             return
-        if self._pending is not None:
+        if pending is not None:
             try:
-                root.after_cancel(self._pending)
+                root.after_cancel(pending)
             except Exception:
                 pass
         try:
-            self._pending = root.after_idle(self._rebuild)
+            self._native_menu_pending = root.after_idle(self._rebuild_native_menu)
         except Exception:
-            # No event loop yet (rare) — render synchronously.
-            self._rebuild()
+            self._rebuild_native_menu()
 
-    def _rebuild(self) -> None:
-        self._pending = None
-        if self._is_aqua():
-            self._rebuild_native()
-        else:
-            self._rebuild_themed()
-        # Bind the model's pattern shortcuts to this window so keypresses fire.
-        root = self._menu_root()
-        if root is not None:
-            self._model.bind_shortcuts(root)
-
-    def _rebuild_themed(self) -> None:
-        from bootstack.widgets._impl.composites.menu.render_themed import ThemedMenuBar
-
-        parent = self._host._menu_strip_parent()
-        if parent is None:
-            return
-
-        # Empty model — tear down any existing strip and stop.
-        if len(self._model) == 0:
-            if self._renderer is not None:
-                try:
-                    self._renderer.destroy()
-                except Exception:
-                    pass
-                self._renderer = None
-                # Clear the host's stale strip reference and re-arrange the
-                # chrome (otherwise a later command-bar build packs a dead
-                # window — the strip the host still points at was destroyed).
-                self._host._place_menu_strip(None)
-            return
-
-        if self._renderer is None:
-            surface = getattr(self._host, "_chrome_surface", "chrome")
-            self._renderer = ThemedMenuBar(parent, self._model, surface=surface)
-            self._host._place_menu_strip(self._renderer)
-        else:
-            self._renderer.rebuild()
-
-    def _rebuild_native(self) -> None:
+    def _rebuild_native_menu(self) -> None:
         from bootstack.widgets._impl.composites.menu.render_native import NativeMenuBar
 
-        root = self._menu_root()
-        if root is None:
-            return
-
-        # Empty model — detach any existing menubar and stop.
-        if len(self._model) == 0:
-            if self._renderer is not None:
-                try:
-                    self._renderer.destroy()
-                except Exception:
-                    pass
-                self._renderer = None
-            return
-
-        if self._renderer is None:
-            self._renderer = NativeMenuBar(root, self._model)
+        self._native_menu_pending = None
+        model = self._aggregate_native_menu_model()
+        renderer = getattr(self, "_native_menu_renderer", None)
+        if renderer is None:
+            self._native_menu_renderer = NativeMenuBar(self._menu_root(), model)
         else:
-            self._renderer.rebuild()
-
-
-class _ChromeContainer:
-    """Minimal public-container shim so a public `CommandBar` parents into the
-    host's chrome frame. Defers all packing to the host's arranger."""
-
-    _auto_place = True
-
-    def __init__(self, frame: Any, arrange: Any) -> None:
-        self._frame = frame
-        self._arrange = arrange
-
-    def _child_master(self) -> Any:
-        return self._frame
-
-    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
-        # Don't pack here — the host arranger positions the toolbar per layout.
-        self._arrange()
-
-
-class ChromeHostMixin:
-    """Lazy `.menubar` + `.commandbar`, laid out as top chrome.
-
-    On `App`/`Window` the menu strip and the command bar share one host-owned
-    chrome row, arranged per `menu_layout`: `'fused'` (one row — menus left,
-    command bar fills right) or `'stacked'` (menu-strip row, command-bar row
-    beneath). `AppShell` overrides the placement hooks (its command bar is
-    internal and pre-placed), so it does not use the chrome row.
-    """
-
-    # ----- menu placement hooks (consumed by WindowMenu) -----
-
-    def _menu_root(self) -> Any:
-        """Tk root/toplevel for the native menubar (`['menu']`) + shortcuts."""
-        return getattr(self, "_internal", None)
-
-    def _menu_strip_parent(self) -> Any:
-        """Widget the themed menu strip is constructed under."""
-        return self._ensure_chrome()
-
-    def _place_menu_strip(self, strip: Any) -> None:
-        """Register the menu strip and (re)arrange the chrome row."""
-        self._menu_strip = strip
-        self._arrange_chrome()
-
-    # ----- chrome row -----
-
-    def _ensure_chrome(self) -> Any:
-        chrome = getattr(self, "_chrome", None)
-        if chrome is not None:
-            return chrome
-        from bootstack.widgets._impl.primitives.packframe import PackFrame
-
-        from bootstack.widgets._impl.primitives import Separator
-
-        root = self._menu_root()
-        surface = getattr(self, "_chrome_surface", "chrome")
-        chrome = PackFrame(root, direction="horizontal", surface=surface)
-        content = getattr(self, "_content_frame", None)
-        pack_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-        if content is not None:
-            pack_kw["before"] = content
-        chrome.pack(**pack_kw)
-        self._chrome = chrome
-
-        # Hairline divider between the chrome row and the content below — the
-        # native convention (Windows command bars / macOS toolbars), and it
-        # guarantees separation in themes where chrome ≈ content surface.
-        # Suppressible via chrome_divider=False (e.g. for a fully seamless blend).
-        if getattr(self, "_chrome_divider_enabled", True):
-            divider = Separator(root, orient="horizontal")
-            div_kw: dict[str, Any] = {"side": "top", "fill": "x"}
-            if content is not None:
-                div_kw["before"] = content
-            divider.pack(**div_kw)
-            self._chrome_divider = divider
-
-        return chrome
-
-    def _arrange_chrome(self) -> None:
-        """(Re)pack the menu strip + toolbar in the chrome row per `menu_layout`."""
-        chrome = getattr(self, "_chrome", None)
-        if chrome is None:
-            return
-        strip = getattr(self, "_menu_strip", None)
-        commandbar = getattr(self, "_commandbar_widget", None)
-        tb_widget = commandbar._internal if commandbar is not None else None
-        layout = getattr(self, "_menu_layout", "fused")
-
-        for widget in (strip, tb_widget):
-            if widget is not None:
-                try:
-                    widget.pack_forget()
-                except Exception:
-                    pass
-
-        if layout == "stacked":
-            if strip is not None:
-                strip.pack(side="top", fill="x")
-            if tb_widget is not None:
-                tb_widget.pack(side="top", fill="x")
-        else:  # fused: menus left, toolbar fills the rest (its spacer pushes right)
-            if strip is not None:
-                strip.pack(side="left")
-            if tb_widget is not None:
-                tb_widget.pack(side="left", fill="x", expand=True)
-
-    @property
-    def menubar(self) -> WindowMenu:
-        """The window's menu bar (menus only). Lazily created on first access."""
-        wm = getattr(self, "_window_menu", None)
-        if wm is None:
-            wm = WindowMenu(self)
-            self._window_menu = wm
-        return wm
-
-    @property
-    def commandbar(self) -> Any:
-        """The window's command bar — a `CommandBar`. Lazily created on first access.
-
-        Lives in the top chrome row (beside or below the menu bar per
-        `menu_layout`). Add buttons/labels/separators and an `add_spacer()` to
-        push trailing items (e.g. a theme toggle) to the right.
-        """
-        tb = getattr(self, "_commandbar_widget", None)
-        if tb is None:
-            from bootstack.widgets.commandbar import CommandBar
-
-            chrome = self._ensure_chrome()
-            shim = _ChromeContainer(chrome, self._arrange_chrome)
-            # Compact density so the command bar matches the (compact) menu bar
-            # height when fused; surface threaded so its ghost buttons paint the
-            # chosen chrome surface (rather than their default).
-            surface = getattr(self, "_chrome_surface", "chrome")
-            tb = CommandBar(parent=shim, density="compact", surface=surface)
-            self._commandbar_widget = tb
-            self._arrange_chrome()
-        return tb
+            renderer.set_model(model)

@@ -213,7 +213,7 @@ Widget sizing
 See also
 --------
 
-:class:`CommandBar <bootstack.CommandBar>` —
+:class:`Toolbar <bootstack.Toolbar>` —
 horizontal strip for grouping buttons and menus.
 
 :class:`SelectButton <bootstack.widgets.selectbutton.SelectButton>` —

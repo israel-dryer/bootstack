@@ -14,7 +14,7 @@ def test_region_layout_construction_and_toggles():
     shell = ShellLayout(title="Smoke")
     try:
         # Regions exist.
-        for name in ("chrome", "statusbar", "rail", "sidebar", "content", "dock"):
+        for name in ("toolbar_stack", "statusbar", "rail", "sidebar", "content", "dock"):
             assert getattr(shell, name) is not None
 
         # Guard: internal attributes must not shadow tkinter's `Misc._root()`
@@ -22,26 +22,25 @@ def test_region_layout_construction_and_toggles():
         assert shell._root() is shell
         shell.update_idletasks()
 
-        # Default visibility: content + sidebar shown; everything else hidden.
+        # Default visibility: content + sidebar shown; status/rail/dock hidden.
+        # The toolbar_stack region is always packed (empty until add_toolbar).
         assert shell.content.winfo_manager() == "pack"
         assert shell.sidebar.winfo_manager() == "pack"
-        for hidden in (shell.chrome, shell.statusbar, shell.rail, shell.dock):
+        assert shell.toolbar_stack.winfo_manager() == "pack"
+        for hidden in (shell.statusbar, shell.rail, shell.dock):
             assert hidden.winfo_manager() == ""
 
         # Reflected in the visibility properties.
         assert shell.sidebar_visible is True
         assert shell.rail_visible is False
-        assert shell.chrome_visible is False
         assert shell.statusbar_visible is False
         assert shell.dock_visible is False
 
         # Toggle each slot on.
         shell.set_rail_visible(True)
-        shell.set_chrome_visible(True)
         shell.set_statusbar_visible(True)
         shell.set_dock_visible(True)
         assert shell.rail.winfo_manager() == "pack"
-        assert shell.chrome.winfo_manager() == "pack"
         assert shell.statusbar.winfo_manager() == "pack"
         assert shell.dock.winfo_manager() == "pack"
 

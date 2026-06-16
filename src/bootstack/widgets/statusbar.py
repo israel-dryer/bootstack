@@ -16,7 +16,7 @@ class StatusBar(PublicWidgetBase):
 
     Intended for *passive* status (whether static or bound to a `Signal` for live
     updates). Interactive controls (buttons, a search box) belong on a
-    :class:`CommandBar <bootstack.CommandBar>` by convention; nothing enforces it,
+    :class:`Toolbar <bootstack.Toolbar>` by convention; nothing enforces it,
     but the status bar reads best as a quiet display strip. Segments add
     left-to-right; an `add_spacer()` (or `side='right'`) pushes the following
     segments to the right cluster.
@@ -60,7 +60,7 @@ class StatusBar(PublicWidgetBase):
             self._show = _show or (lambda: None)
             return
 
-        # Standalone: build our own bar (the CommandBar pattern).
+        # Standalone: build our own bar (the Toolbar pattern).
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None

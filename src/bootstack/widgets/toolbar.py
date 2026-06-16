@@ -1,39 +1,40 @@
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
 
+if TYPE_CHECKING:
+    from bootstack.widgets._impl.composites.menu.model import MenuGroup
 
-class CommandBar(PublicWidgetBase):
+
+class Toolbar(PublicWidgetBase):
     """A horizontal strip of buttons, labels, and other widgets.
 
-    The command bar holds an app's commands — buttons, a search box, a theme
-    toggle — as distinct from the menu bar, which holds menus. Items are added
-    left-to-right via `add_button()`, `add_label()`, `add_separator()`,
-    `add_spacer()`, and `add_widget()`. Call `add_spacer()` to push subsequent
-    items to the right side.
+    The toolbar holds an app's commands — buttons, a search box, a theme toggle.
+    Items are added left-to-right via `add_button()`, `add_label()`,
+    `add_separator()`, `add_spacer()`, and `add_widget()`. Call `add_spacer()` to
+    push subsequent items to the right side.
 
-    A command bar appears automatically at the top of `App`, `Window`, and
-    `AppShell` (via `app.commandbar`) — use this widget directly to build a
-    standalone command bar or a custom titlebar.
+    Use this widget directly to build a standalone toolbar or a custom titlebar.
 
     Args:
         button_variant: Default variant applied to every button added via
             `add_button()`. Default `'ghost'`.
-        density: Size of command-bar items. Default `'default'`.
-        surface: Background surface token. Defaults to the theme's `'chrome'`
-            surface.
+        density: Size of toolbar items. Default `'default'`.
+        surface: Background surface token. Defaults to `None` — the toolbar
+            inherits the base content surface (it blends into its parent). Pass
+            `'chrome'` (or another token) to tint the bar explicitly.
         padding: Inner padding in pixels — an int (all sides) or a
             `(horizontal, vertical)` tuple. Defaults to `3` for default density
             and `(3, 1)` for compact.
-        show_border: If `True`, draws a border around the command-bar frame.
+        show_border: If `True`, draws a border around the toolbar frame.
             Default `False`.
         show_window_controls: If `True`, adds minimize, maximize, and close
             buttons to the right side. Default `False`.
-        draggable: If `True`, clicking and dragging the command bar repositions
+        draggable: If `True`, clicking and dragging the toolbar repositions
             the window. Automatically enabled when `show_window_controls=True`.
             Default `False`.
         parent: Override the context-stack parent.
@@ -53,8 +54,16 @@ class CommandBar(PublicWidgetBase):
         show_window_controls: bool = False,
         draggable: bool = False,
         parent: Any = None,
+        _toolbar: Any = None,
         **kwargs: Any,
     ) -> None:
+        if _toolbar is not None:
+            # Adoption: wrap a pre-built internal toolbar (e.g. an AppShell's
+            # titlebar band, which already carries its window controls + drag).
+            self._internal = _toolbar
+            self._parent = None
+            return
+
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
         tk_master = self._parent._child_master() if self._parent else None
@@ -79,7 +88,7 @@ class CommandBar(PublicWidgetBase):
 
     @property
     def density(self) -> WidgetDensity:
-        """Current density setting for command-bar items."""
+        """Current density setting for toolbar items."""
         return self._internal.density
 
     @property
@@ -99,7 +108,7 @@ class CommandBar(PublicWidgetBase):
         variant: ButtonVariant | None = None,
         **kwargs: Any,
     ) -> None:
-        """Add a button to the command bar.
+        """Add a button to the toolbar.
 
         When both `label` and `icon` are given, the button shows text and icon
         side by side. When only `icon` is given, the button is icon-only.
@@ -126,6 +135,31 @@ class CommandBar(PublicWidgetBase):
         kw.update(kwargs)
         self._internal.add_button(**kw)
 
+    def add_menu(self, text: str, *, key: str | None = None) -> "MenuGroup":
+        """Add a dropdown menu (File / Edit / …) as a toolbar item.
+
+        A menu is just another toolbar item. The returned builder is a context
+        manager, so the natural form reads::
+
+            with toolbar.add_menu("File") as file:
+                file.add_action("Open", shortcut="Mod+O", on_click=open_file)
+                file.add_separator()
+                file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
+
+        On Windows/Linux the menu renders as an in-window dropdown; on macOS it
+        is bridged to the native global menu bar (when the toolbar is part of a
+        window's chrome).
+
+        Args:
+            text: The menu's label (e.g. ``'File'``).
+            key: Optional stable identifier; defaults to ``text``.
+
+        Returns:
+            The menu's `MenuGroup` builder (``add_action`` / ``add_check`` /
+            ``add_radio`` / ``add_separator``; usable as a context manager).
+        """
+        return self._internal.add_menu(text, key=key)
+
     def add_label(
         self,
         text: str | None = None,
@@ -134,7 +168,7 @@ class CommandBar(PublicWidgetBase):
         font: str | None = None,
         **kwargs: Any,
     ) -> None:
-        """Add a non-interactive label to the command bar.
+        """Add a non-interactive label to the toolbar.
 
         Args:
             text: Label text.
@@ -164,14 +198,19 @@ class CommandBar(PublicWidgetBase):
         self._internal.add_spacer()
 
     def add_widget(self, widget: Any, **kwargs: Any) -> Any:
-        """Add a widget to the command bar.
+        """Add a widget to the toolbar.
 
-        Pass a widget **class** to have the bar build it for you — `kwargs` are
-        forwarded to its constructor:
+        Pass a widget **class** to have the bar build it for you — the bar's
+        `density` and `surface` are applied (for any the class accepts) so the
+        widget matches the rest of the bar, and `kwargs` are forwarded to its
+        constructor (overriding those defaults):
 
-            bar.add_widget(bs.ThemeToggle, variant="ghost")
+            bar.add_widget(bs.ThemeToggle)
+            bar.add_widget(bs.TextField, placeholder="Search", width=24)
 
-        Or pass an existing widget **instance** — `kwargs` are pack options:
+        Or pass an existing widget **instance** — `kwargs` are pack options. (An
+        instance is built before it reaches the bar, so it does NOT inherit the
+        bar's density/surface; prefer the class form for that.)
 
             bar.add_widget(my_widget, padx=4)
 
@@ -179,19 +218,46 @@ class CommandBar(PublicWidgetBase):
             The widget (the new instance when a class is given).
         """
         if isinstance(widget, type):
+            self._apply_bar_defaults(widget, kwargs)
             return widget(parent=self, **kwargs)
         tk_widget = getattr(widget, "_internal", widget)
         self._internal.add_widget(tk_widget, **kwargs)
         return widget
 
-    # ----- Container protocol (so `parent=commandbar` works) -----
+    def _apply_bar_defaults(self, widget_cls: type, kwargs: dict[str, Any]) -> None:
+        """Default `density`/`surface` from the bar onto a class being built, but
+        only for parameters the widget actually accepts (and not if the caller
+        already passed them)."""
+        import inspect
+
+        try:
+            params = inspect.signature(widget_cls).parameters
+        except (TypeError, ValueError):
+            return
+        if "density" in params:
+            kwargs.setdefault("density", self._internal.density)
+        if "surface" in params:
+            kwargs.setdefault("surface", self._internal._surface)
+
+    # ----- Container protocol (so `parent=toolbar` works) -----
 
     def _child_master(self) -> Any:
         return self._internal.content
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
-        # A widget created with `parent=commandbar` is packed into the bar.
+        # A widget created with `parent=toolbar` is packed into the bar.
         self._internal.add_widget(child._internal)
+
+    def __enter__(self) -> "Toolbar":
+        # A *scoping* context manager (like `menubar.add_menu`): `with
+        # window.add_toolbar() as tb:` reads naturally and hands back the handle,
+        # but it does NOT capture bare widgets — fill the bar with `add_button` /
+        # `add_menu` / `add_widget(Class, ...)` so each item inherits the bar's
+        # density and surface (a constructed-then-attached widget cannot).
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        return None
 
     @property
     def content(self) -> Any:
@@ -210,4 +276,5 @@ class CommandBar(PublicWidgetBase):
         """
         from bootstack.widgets.theme_toggle import ThemeToggle
 
+        self._apply_bar_defaults(ThemeToggle, kwargs)
         return ThemeToggle(parent=self, **kwargs)

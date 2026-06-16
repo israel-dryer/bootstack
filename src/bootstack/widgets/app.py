@@ -60,18 +60,6 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         expand_items: Default `expand` for children that don't set their own.
         anchor_items: Default anchor for children that don't fill their cell.
         surface: Background surface for the content frame.
-        menu_layout: How the menu bar and toolbar stack at the top on
-            Windows/Linux — `'fused'` (one row: menus left, toolbar right) or
-            `'stacked'` (menu row above a separate toolbar row). No effect on
-            macOS (the menu bar moves to the global bar). Default `'fused'`.
-        chrome_surface: Color token for the menu bar / toolbar row, applied to
-            the bar and its buttons as one unit. `'chrome'` (default) is a
-            distinct bar; `'background'` blends it into the window body; an
-            accent token like `'primary'` makes a branded colored bar. Accepts
-            any surface or accent token (avoid `'content'`, which is treated as
-            the base surface and won't apply).
-        chrome_divider: Draw a hairline divider between the menu/toolbar row and
-            the content. Default `True`; set `False` for a seamless blend.
     """
 
     _auto_place = False  # no parent
@@ -104,10 +92,6 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         resizable: tuple[bool, bool] | None = None,
         scaling: float | None = None,
         hdpi: bool = True,
-        # chrome
-        menu_layout: Literal["fused", "stacked"] = "fused",
-        chrome_surface: SurfaceToken | str = "chrome",
-        chrome_divider: bool = True,
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
@@ -119,9 +103,6 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicContainer)
         **app_kwargs: Any,
     ) -> None:
         self._parent = None
-        self._menu_layout = menu_layout
-        self._chrome_surface = chrome_surface
-        self._chrome_divider_enabled = chrome_divider
 
         init_kwargs: dict[str, Any] = {
             "light_theme": light_theme,
