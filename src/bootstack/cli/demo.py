@@ -17,10 +17,10 @@ from bootstack.style.style import get_style
 
 
 def _build_home_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("bootstack", font="heading-xl[bold]")
         bs.Label("Modern UI framework for Python", accent="secondary")
-        with bs.GroupBox("About This Gallery", fill="horizontal"):
+        with bs.GroupBox("About This Gallery"):
             bs.Label(
                 "Browse the sidebar to explore bootstack widgets by category.\n\n"
                 "Each page demonstrates a group of related widgets with\n"
@@ -34,11 +34,11 @@ def _build_home_page():
 
 
 def _build_typography_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Typography", font="heading-xl")
         bs.Label("Semantic font tokens for consistent text styling.", accent="secondary")
 
-        with bs.GroupBox("Font Tokens", fill="horizontal", layout="grid", columns=['225px', 1], sticky_items="w"):
+        with bs.GroupBox("Font Tokens", layout="grid", columns=['225px', 1], horizontal_items="left"):
             for token, desc in [
                 ("display-xl", "Display XL"),
                 ("display-lg", "Display LG"),
@@ -57,7 +57,7 @@ def _build_typography_page():
                 bs.Label(desc, font=token)
                 bs.Label(f'font="{token}"', font="code", accent="secondary")
 
-        with bs.GroupBox("Font Modifiers", fill="horizontal", layout="grid", columns=['225px', 1], sticky_items="w"):
+        with bs.GroupBox("Font Modifiers", layout="grid", columns=['225px', 1], horizontal_items="left"):
             for token, desc in [
                 ("body[bold]",          "Bold"),
                 ("body[italic]",        "Italic"),
@@ -80,19 +80,19 @@ def _build_icons_page():
         "exclamation-triangle", "info-circle", "x-circle", "arrow-left", "arrow-right",
     ]
 
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Icons", font="heading-xl")
         bs.Label("Bootstrap Icons via the icon= parameter.", accent="secondary")
 
-        with bs.GroupBox("Common Icons", fill="horizontal", layout="grid", columns=5, gap=8, sticky_items="w"):
+        with bs.GroupBox("Common Icons", layout="grid", columns=5, gap=8, horizontal_items="left"):
             for name in icon_names:
                 bs.Label(name, icon=name)
 
-        with bs.GroupBox("Icon Sizes", fill="horizontal", layout="row", gap=16):
+        with bs.GroupBox("Icon Sizes", layout="row", gap=16, vertical_items="center"):
             for size in (12, 16, 20, 24, 32, 48):
                 bs.Label(f"{size}px", icon={"name": "star-fill", "size": size})
 
-        with bs.GroupBox("Icons in Context", fill="horizontal", layout="row", gap=16):
+        with bs.GroupBox("Icons in Context", layout="row", gap=16):
             bs.Button("Save",     icon="save")
             bs.Button("Delete",   icon="trash",  accent="danger")
             bs.Button("Settings", icon="gear",   accent="default")
@@ -120,7 +120,7 @@ def _build_buttons_page():
                 bs.Button("Disabled Solid",   accent="primary",  disabled=True)
                 bs.Button("Disabled Outline", accent="default",  variant="outline", disabled=True)
 
-        with bs.GroupBox("ButtonGroup", gap=12, layout="row"):
+        with bs.GroupBox("ButtonGroup", gap=12, layout="row", horizontal_items="space-between"):
             for accent, variant in [("primary", "solid"), ("danger", "outline"), ("success", "ghost")]:
                 bg = bs.ButtonGroup(accent=accent, variant=variant)
                 bg.add("Cut",   icon="scissors")
@@ -142,30 +142,30 @@ def _build_buttons_page():
 
 
 def _build_text_inputs_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Text Inputs", font="heading-xl")
         bs.Label("Specialized entry widgets for text, passwords, and file paths.", accent="secondary")
 
-        with bs.GroupBox("TextField", fill="horizontal", gap=6):
-            bs.TextField(label="Name",     message="Enter your full name",  fill="horizontal")
-            bs.TextField(label="Email",    message="example@email.com",     fill="horizontal")
-            bs.TextField(label="Disabled", value="Read only", disabled=True, fill="horizontal")
+        with bs.GroupBox("TextField", horizontal_items="stretch", gap=6):
+            bs.TextField(label="Name",     message="Enter your full name")
+            bs.TextField(label="Email",    message="example@email.com")
+            bs.TextField(label="Disabled", value="Read only", disabled=True)
 
-        with bs.GroupBox("PasswordField", fill="horizontal"):
-            bs.PasswordField(label="Password", message="Click the eye to toggle", fill="horizontal")
+        with bs.GroupBox("PasswordField", horizontal_items="stretch"):
+            bs.PasswordField(label="Password", message="Click the eye to toggle")
 
-        with bs.GroupBox("PathField", fill="horizontal", gap=6):
-            bs.PathField(label="File",   mode="open", message="Select a file",      fill="horizontal")
-            bs.PathField(label="Folder", mode="directory",    message="Select a directory", fill="horizontal")
+        with bs.GroupBox("PathField", horizontal_items="stretch", gap=6):
+            bs.PathField(label="File",   mode="open", message="Select a file")
+            bs.PathField(label="Folder", mode="directory",    message="Select a directory")
 
-        with bs.GroupBox("TextArea", fill="both", expand=True):
+        with bs.GroupBox("TextArea", horizontal_items="stretch", grow=True):
             bs.TextArea(
                 value=(
                     "TextArea provides a multi-line text input with\n"
                     "automatic scrollbars, undo/redo, and signal binding.\n\n"
                     "Try typing more text to see scrollbars appear!"
                 ),
-                fill="both", expand=True,
+                grow=True,
             )
 
 
@@ -213,28 +213,28 @@ _DEMO_JSON = '''\
 
 
 def _build_code_editor_page():
-    with bs.VStack(padding=20, gap=12, fill="x", fill_items="x"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Code Editor", font="heading-xl")
         bs.Label("Full-featured code editor with syntax highlighting, undo/redo, and search.", accent="secondary")
 
-        with bs.GroupBox("Python", fill="x", gap=6):
-            editor = bs.CodeEditor(_DEMO_PYTHON, language="python", height=18, fill="x")
+        with bs.GroupBox("Python", horizontal_items="stretch", gap=6):
+            editor = bs.CodeEditor(_DEMO_PYTHON, language="python", height=18)
 
             dirty_sig = Signal("clean")
             editor.on_modified(lambda e: dirty_sig.set("modified"))
             editor.mark_saved()
 
-            with bs.HStack(gap=6, anchor_items="center"):
+            with bs.Row(gap=6, vertical_items="center"):
                 bs.Label(text_signal=dirty_sig, accent="secondary")
                 bs.Button("Mark saved",  variant="outline", on_click=lambda: (editor.mark_saved(), dirty_sig.set("clean")))
                 bs.Button("Undo",        variant="outline", on_click=editor.undo)
                 bs.Button("Redo",        variant="outline", on_click=editor.redo)
                 bs.Button("Find (⌃F)",   variant="outline", on_click=editor.show_search)
 
-        with bs.GroupBox("JSON — read-only", fill="x"):
-            bs.CodeEditor(_DEMO_JSON, language="json", read_only=True, height=14, fill="x")
+        with bs.GroupBox("JSON — read-only", horizontal_items="stretch"):
+            bs.CodeEditor(_DEMO_JSON, language="json", read_only=True, height=14)
 
-        with bs.GroupBox("Language switcher", fill="x", gap=6):
+        with bs.GroupBox("Language switcher", horizontal_items="stretch", gap=6):
             _SNIPPETS = {
                 "python":     "def add(a, b):\n    return a + b\n\nresult = add(1, 2)\nprint(result)\n",
                 "json":       '{\n    "language": "json",\n    "active": true,\n    "count": 42\n}\n',
@@ -244,13 +244,13 @@ def _build_code_editor_page():
                 "javascript": "function greet(name) {\n    return `Hello, ${name}!`;\n}\n\nconsole.log(greet('world'));\n",
             }
 
-            live_editor = bs.CodeEditor(_SNIPPETS["python"], language="python", height=10, fill="x")
+            live_editor = bs.CodeEditor(_SNIPPETS["python"], language="python", height=10)
 
             def _set_lang(lang: str) -> None:
                 live_editor.language = lang
                 live_editor.value = _SNIPPETS[lang]
 
-            with bs.HStack(gap=4):
+            with bs.Row(gap=4):
                 for lang in _SNIPPETS:
                     bs.Button(lang, variant="outline", on_click=lambda l=lang: _set_lang(l))
 
@@ -259,28 +259,28 @@ def _build_code_editor_page():
 
 
 def _build_numeric_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Numeric & Date", font="heading-xl")
         bs.Label("Numeric entries, sliders, and date/time pickers.", accent="secondary")
 
-        with bs.GroupBox("NumberField", fill="horizontal", gap=8, layout="row", fill_items="x", expand_items=True):
+        with bs.GroupBox("NumberField", gap=8, layout="row", grow_items=True):
             bs.NumberField(label="Quantity", value=42,    min_value=0, max_value=100)
             bs.NumberField(label="Price",    value=19.99, step=0.01)
 
-        with bs.GroupBox("SpinnerField", fill="horizontal"):
+        with bs.GroupBox("SpinnerField", horizontal_items="stretch"):
             bs.SpinnerField(
                 label="Month",
                 options=["Jan","Feb","Mar","Apr","May","Jun", "Jul","Aug","Sep","Oct","Nov","Dec"],
-                value="Jan", fill="horizontal",
+                value="Jan",
             )
 
-        with bs.GroupBox("Slider", fill="horizontal"):
+        with bs.GroupBox("Slider", horizontal_items="stretch"):
             bs.Label("Basic:")
-            bs.Slider(value=50, fill="horizontal")
+            bs.Slider(value=50)
             bs.Label("With value badge:")
-            bs.Slider(value=65, show_value=True, tick_step=25, fill="horizontal")
+            bs.Slider(value=65, show_value=True, tick_step=25)
 
-        with bs.GroupBox("DateField & TimeField", fill="x", gap=8, fill_items="x", expand_items=True, layout="row"):
+        with bs.GroupBox("DateField & TimeField", gap=8, layout="row", grow_items=True):
             bs.DateField(label="Date")
             bs.TimeField(label="Time")
 
@@ -289,11 +289,11 @@ def _build_numeric_page():
 
 
 def _build_selection_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Selection", font="heading-xl")
         bs.Label("Checkboxes, switches, radio buttons, toggle groups, and selects.", accent="secondary")
 
-        with bs.GroupBox("Checkbox & Switch", fill="x", gap=8, layout="grid", columns=6):
+        with bs.GroupBox("Checkbox & Switch", gap=8, layout="grid", columns=6):
             bs.Checkbox("Default", accent="primary", value=True)
             bs.Checkbox("Success", accent="success", value=False)
             bs.Checkbox("Disabled", disabled=True)
@@ -301,42 +301,42 @@ def _build_selection_page():
             bs.Switch("Dark Mode",     accent="success")
             bs.Switch("Disabled",      disabled=True)
 
-        with bs.GroupBox("RadioGroup", fill="horizontal"):
+        with bs.GroupBox("RadioGroup"):
             rg = bs.RadioGroup(value="opt1", accent="primary")
             rg.add("Option 1", value="opt1")
             rg.add("Option 2", value="opt2")
             rg.add("Option 3", value="opt3")
 
-        with bs.GroupBox("ToggleGroup", fill="horizontal", gap=6, layout="grid", columns=2):
-            with bs.VStack():
+        with bs.GroupBox("ToggleGroup", gap=6, layout="grid", columns=2):
+            with bs.Column():
                 bs.Label("Single select:")
                 tg = bs.ToggleGroup(mode="single", accent="primary", variant="outline", value="B")
                 tg.add("Bold",      value="B")
                 tg.add("Italic",    value="I")
                 tg.add("Underline", value="U")
-            with bs.VStack():
+            with bs.Column():
                 bs.Label("Multi select:")
                 tg2 = bs.ToggleGroup(mode="multi", accent="success", variant="outline")
                 tg2.add("Python",     value="python")
                 tg2.add("JavaScript", value="javascript")
                 tg2.add("Rust",       value="rust")
 
-        with bs.GroupBox("Select & SelectButton", fill="horizontal", gap=8):
+        with bs.GroupBox("Select & SelectButton", horizontal_items="stretch", gap=8):
             bs.Select(
                 label="Size:",
                 options=["Small", "Medium", "Large", "Extra Large"],
-                value="Medium", fill="horizontal",
+                value="Medium",
             )
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.SelectButton(options=["Day", "Week", "Month"], value="Week", accent="primary")
                 bs.SelectButton(options=["Light", "Dark", "System"], value="System", variant="outline")
 
-        with bs.GroupBox("ToggleButton", fill="horizontal", layout="row", gap=8):
+        with bs.GroupBox("ToggleButton", layout="row", gap=8):
             bs.ToggleButton("Bold", value=True)
             bs.ToggleButton("Italic")
             bs.ToggleButton("Mute", icon="volume-mute")
 
-        with bs.GroupBox("RadioToggleButton (segmented)", fill="horizontal", layout="row", gap=0):
+        with bs.GroupBox("RadioToggleButton (segmented)", layout="row", gap=0):
             view = Signal("grid")
             bs.RadioToggleButton("Grid",  "grid",  signal=view)
             bs.RadioToggleButton("List",  "list",  signal=view)
@@ -347,22 +347,23 @@ def _build_selection_page():
 
 
 def _build_calendar_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Calendar", font="heading-xl")
         bs.Label("Interactive date picker.", accent="secondary")
 
-        with bs.GroupBox("Single Selection", fill="horizontal"):
-            bs.Calendar(accent="primary")
+        with bs.Row(gap=12):
+            with bs.GroupBox("Single Selection"):
+                bs.Calendar(accent="primary")
 
-        with bs.GroupBox("Range Selection", fill="horizontal"):
-            bs.Calendar(selection_mode="range", accent="success")
+            with bs.GroupBox("Range Selection"):
+                bs.Calendar(selection_mode="range", accent="success")
 
 
 # -- Forms --------------------------------------------------------------------
 
 
 def _build_forms_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Forms", font="heading-xl")
         bs.Label("Spec-driven form builder for consistent data-entry UIs.", accent="secondary")
 
@@ -507,25 +508,25 @@ def _build_data_page():
 def _build_progress_page():
     slider_value = Signal(65.0)
 
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Progress & Meters", font="heading-xl")
         bs.Label("Progress bars and gauges for showing values and status.", accent="secondary")
 
-        with bs.GroupBox("Slider (drag to control progress bars)", fill="horizontal"):
-            bs.Slider(min_value=0, max_value=100, signal=slider_value, fill="horizontal")
+        with bs.GroupBox("Slider (drag to control progress bars)", horizontal_items="stretch"):
+            bs.Slider(min_value=0, max_value=100, signal=slider_value)
 
-        with bs.GroupBox("RangeSlider", fill="horizontal"):
+        with bs.GroupBox("RangeSlider", horizontal_items="stretch"):
             bs.RangeSlider(low_value=25, high_value=75, min_value=0, max_value=100,
-                           show_value=True, accent="primary", fill="horizontal")
+                           show_value=True, accent="primary")
 
-        with bs.GroupBox("ProgressBar", fill="horizontal", gap=8):
-            bs.ProgressBar(signal=slider_value, max_value=100, fill="horizontal")
-            bs.ProgressBar(value=75,  max_value=100, accent="success", fill="horizontal")
-            bs.ProgressBar(value=45,  max_value=100, accent="danger",  fill="horizontal")
-            bs.ProgressBar(value=30,  max_value=100, accent="warning", fill="horizontal")
+        with bs.GroupBox("ProgressBar", horizontal_items="stretch", gap=8):
+            bs.ProgressBar(signal=slider_value, max_value=100)
+            bs.ProgressBar(value=75,  max_value=100, accent="success")
+            bs.ProgressBar(value=45,  max_value=100, accent="danger")
+            bs.ProgressBar(value=30,  max_value=100, accent="warning")
 
-        with bs.GroupBox("Gauge", fill="horizontal"):
-            with bs.HStack(gap=16, anchor_items="center"):
+        with bs.GroupBox("Gauge"):
+            with bs.Row(gap=16, vertical_items="center"):
                 for amount, label, color in [
                     (45, "CPU Usage", "primary"),
                     (78, "Memory",    "warning"),
@@ -591,12 +592,12 @@ def _build_layout_page():
 
 
 def _build_navigation_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Navigation", font="heading-xl")
         bs.Label("Tab-based navigation widgets.", accent="secondary")
 
-        with bs.GroupBox("Tabs (horizontal)", fill="both", expand=True):
-            tabs = bs.Tabs(fill="both", expand=True)
+        with bs.GroupBox("Tabs (horizontal)", horizontal_items="stretch", grow=True):
+            tabs = bs.Tabs(grow=True)
             with tabs.add("dashboard", label="Dashboard", icon="house"):
                 bs.Label("Dashboard content goes here.", padding=20)
             with tabs.add("files", label="Files", icon="folder2"):
@@ -604,20 +605,20 @@ def _build_navigation_page():
             with tabs.add("settings", label="Settings", icon="gear"):
                 bs.Label("Configure your settings.", padding=20)
 
-        with bs.GroupBox("Tabs (closable + addable)", fill="both", expand=True):
-            tabs2 = bs.Tabs(allow_close=True, allow_add=True, fill="both", expand=True)
+        with bs.GroupBox("Tabs (closable + addable)", horizontal_items="stretch", grow=True):
+            tabs2 = bs.Tabs(allow_close=True, allow_add=True, grow=True)
             with tabs2.add("doc1", label="Document 1", icon="file-text"):
                 bs.Label("Content for Document 1.", padding=20)
 
-        with bs.GroupBox("PageStack (swap content in place)", fill="both", expand=True):
-            ps = bs.PageStack(fill="both", expand=True)
+        with bs.GroupBox("PageStack (swap content in place)", horizontal_items="stretch", grow=True):
+            ps = bs.PageStack(grow=True)
             with ps.add("welcome"):
                 bs.Label("Welcome page", font="heading-md", padding=20)
             with ps.add("details"):
                 bs.Label("Details page", font="heading-md", padding=20)
             with ps.add("done"):
                 bs.Label("All done!", font="heading-md", padding=20)
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Button("Welcome", on_click=lambda: ps.navigate("welcome"))
                 bs.Button("Details", on_click=lambda: ps.navigate("details"))
                 bs.Button("Done",    on_click=lambda: ps.navigate("done"))
@@ -627,14 +628,14 @@ def _build_navigation_page():
 
 
 def _build_overlays_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Overlays", font="heading-xl")
         bs.Label("Tooltips, the toast/notification/snackbar message family, and context menus.",
                  accent="secondary")
 
-        with bs.GroupBox("Tooltip", fill="horizontal"):
+        with bs.GroupBox("Tooltip"):
             bs.Label("Hover over the buttons below:")
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 b1 = bs.Button("Default",  accent="primary")
                 b2 = bs.Button("Accented", accent="primary")
                 b3 = bs.Button("Long tip", accent="default")
@@ -644,13 +645,13 @@ def _build_overlays_page():
                            "It shows how tooltips handle multi-line content.",
                        wrap_width=200)
 
-        with bs.GroupBox("Toast", fill="horizontal"):
+        with bs.GroupBox("Toast"):
             bs.Label("Click buttons to show toast notifications:")
 
             def show_toast(title, message, accent):
                 bs.toast(message, title=title, accent=accent, duration=3000)
 
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Button("Success", accent="success",
                           on_click=lambda: show_toast("Success", "Operation completed.", "success"))
                 bs.Button("Warning", accent="warning",
@@ -658,19 +659,19 @@ def _build_overlays_page():
                 bs.Button("Error",   accent="danger",
                           on_click=lambda: show_toast("Error", "Something went wrong.", "danger"))
 
-        with bs.GroupBox("Notification & Snackbar", fill="horizontal", gap=8):
+        with bs.GroupBox("Notification & Snackbar", gap=8):
             bs.Label("Persistent corner notification, and an in-app snackbar with one action:",
                      accent="secondary")
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Button("Notification", on_click=lambda: bs.Notification(
                     "Backup complete", message="3.2 GB uploaded to the cloud.",
                     detail="just now", icon="cloud-check", accent="success").show())
                 bs.Button("Snackbar (Undo)", on_click=lambda: bs.snackbar(
                     "Conversation archived.", action="Undo"))
 
-        with bs.GroupBox("ContextMenu", fill="horizontal", gap=8):
+        with bs.GroupBox("ContextMenu", horizontal_items="stretch", gap=8):
             bs.Label("Right-click the area below:", accent="secondary")
-            target = bs.Card(padding=24, fill="horizontal", anchor_items="center")
+            target = bs.Card(padding=24, horizontal_items="center")
             with target:
                 bs.Label("Right-click me", accent="secondary")
             menu = bs.ContextMenu(target=target)
@@ -685,12 +686,12 @@ def _build_overlays_page():
 
 
 def _build_dialogs_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Dialogs", font="heading-xl")
         bs.Label("Click buttons to launch dialog types.", accent="secondary")
 
-        with bs.GroupBox("Alert & Confirm", fill="horizontal"):
-            with bs.HStack(gap=8):
+        with bs.GroupBox("Alert & Confirm"):
+            with bs.Row(gap=8):
                 bs.Button("alert()",   on_click=lambda: bs.alert("Operation complete."))
                 bs.Button("confirm()", accent="warning",
                           on_click=lambda: bs.toast(
@@ -698,13 +699,13 @@ def _build_dialogs_page():
                               title="Result", duration=2000,
                           ))
 
-        with bs.GroupBox("Input Dialogs", fill="horizontal"):
+        with bs.GroupBox("Input Dialogs"):
             def _ask(fn, *args, **kw):
                 result = fn(*args, **kw)
                 if result is not None:
                     bs.toast(str(result), title="Result", duration=2000)
 
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Button("ask_string()",
                           on_click=lambda: _ask(bs.ask_string, "Enter your name:"))
                 bs.Button("ask_integer()",
@@ -712,7 +713,7 @@ def _build_dialogs_page():
                 bs.Button("ask_date()",
                           on_click=lambda: _ask(bs.ask_date, title="Pick a date"))
 
-        with bs.GroupBox("FormDialog", fill="horizontal"):
+        with bs.GroupBox("FormDialog"):
             def _show_form():
                 dlg = FormDialog(
                     title="Settings",
@@ -733,32 +734,32 @@ def _build_dialogs_page():
 
 
 def _build_theme_page():
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Themes", font="heading-xl")
         bs.Label("Switch themes to see all widgets update in real time.", accent="secondary")
 
-        with bs.GroupBox("Theme Selector", fill="horizontal", layout="grid", columns=2):
+        with bs.GroupBox("Theme Selector", layout="grid", columns=2):
             style = get_style()
             theme_names = sorted(s["name"] for s in style.theme_provider.list_themes())
 
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Label("Theme:", width=10)
-                sel = bs.Select(options=theme_names, value=style.current_theme, fill="horizontal")
+                sel = bs.Select(options=theme_names, value=style.current_theme, grow=True)
                 sel.on_change(lambda e: sel._internal.after(0, lambda: bs.set_theme(sel.value)))
 
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Label("Quick:", width=10)
                 bs.ThemeToggle()
 
-        with bs.GroupBox("Accent Colors", fill="horizontal"):
-            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+        with bs.GroupBox("Accent Colors"):
+            with bs.Row(gap=4, grow_items=True):
                 for color in ("primary", "secondary", "info", "success", "warning", "danger"):
                     bs.Button(color.title(), accent=color)
 
-        with bs.GroupBox("Surfaces", fill="horizontal"):
-            with bs.HStack(gap=4, fill="horizontal", fill_items="horizontal", expand_items=True):
+        with bs.GroupBox("Surfaces"):
+            with bs.Row(gap=4, grow_items=True):
                 for surface in ("chrome", "content", "card", "overlay", "input"):
-                    with bs.VStack(padding=12, anchor_items="center", surface=surface):
+                    with bs.Column(padding=12, horizontal_items="center", surface=surface):
                         bs.Label(surface.title(), surface=surface)
 
 
@@ -789,31 +790,31 @@ def _build_media_page():
 
     photos = _demo_photos()
 
-    with bs.VStack(padding=20, gap=12, fill="both", expand=True, fill_items="horizontal"):
+    with bs.Column(padding=20, gap=12, grow=True, horizontal_items="stretch"):
         bs.Label("Media", font="heading-xl")
         bs.Label("Identity badges, images, thumbnail grids, and carousels.", accent="secondary")
 
-        with bs.GroupBox("Avatar", fill="horizontal", layout="row", gap=12):
+        with bs.GroupBox("Avatar", layout="row", gap=12):
             bs.Avatar(name="Ada Lovelace")
             bs.Avatar(name="Grace Hopper", shape="rounded")
             bs.Avatar(initials="JS", shape="square")
             bs.Avatar(image=get_icon("person-fill", size=40))
 
-        with bs.GroupBox("Picture", fill="horizontal", layout="row", gap=16):
+        with bs.GroupBox("Picture", layout="row", gap=16):
             bs.Picture(photos[0]["image"], width=180, height=120, fit="cover", corner_radius=8)
             bs.Picture(photos[1]["image"], width=180, height=120, fit="contain")
             bs.Picture(photos[2]["image"], width=120, height=120, fit="cover", corner_radius=60)
 
-        with bs.GroupBox("Carousel", fill="horizontal"):
+        with bs.GroupBox("Carousel", horizontal_items="stretch"):
             bs.Carousel(items=photos, image_field="image", caption_field="title",
-                        fit="cover", fill="horizontal")
+                        fit="cover")
 
         # Gallery last: it scrolls internally and swallows the wheel event, so
         # keeping it at the bottom leaves the carousel/picture rows above it as
         # places to grab and scroll the page itself.
-        with bs.GroupBox("Gallery", fill="both", expand=True):
+        with bs.GroupBox("Gallery", horizontal_items="stretch", grow=True):
             bs.Gallery(items=photos, image_field="image", caption_field="title",
-                       tile_size=(120, 120), fill="both", expand=True)
+                       tile_size=(120, 120), grow=True)
 
 
 # =============================================================================
@@ -927,7 +928,7 @@ def run_demo():
 
 def setup_demo(master):
     """Legacy entry point — the gallery now uses AppShell."""
-    with bs.VStack(parent=master, fill="both", expand=True, padding=40):
+    with bs.Column(parent=master, grow=True, horizontal_items="stretch", padding=40):
         bs.Label(
             "Use 'bootstack gallery' to launch the Widget Gallery.",
             font="heading-lg",
