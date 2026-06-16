@@ -55,6 +55,34 @@ memories and git history.
   Tabs aligned to `NavigationError`), `TTKBOOTSTRAP_DEBUG`→`BOOTSTACK_DEBUG`. (3) standing
   backlog (still open): docstring-backtick sweep. (Toast woven into the user-guide
   how-tos — **DONE**, PR #140 commit `d95d298a`.)
+- **0.1.0 API-freeze pass — breaking changes drained + ThemeToggle + media floor**
+  (this session; PRs #141–#161, all merged except #161 in review) — cleared the
+  "0.1.0 (stable) — API freeze" milestone of breaking changes ahead of the stable
+  cut: **workflow action bump** (#141, Node-24 majors) · **ttkbootstrap naming purge**
+  (#142, `chore/cleanse-ttkbootstrap` — see prerelease pointer) · **clipboard scope**
+  (#151 — moved the global clipboard helpers off `PublicWidgetBase` to a lean
+  `bootstack.clipboard` module; memory `project_clipboard_api_scope`) · **nav
+  missing-key errors** (#153 — `NavigationError` raised uniformly on a missing/
+  duplicate key across Tabs + AppShell nav) · **`Theme.from_existing(base, …)`**
+  (#156 — derive a theme/family from an existing base; required `base=`) · **Signal
+  subscribe handle** (#157 — `Signal.subscribe()` now returns a cancelable
+  `streams.Handle`, unifying with events/streams; memory
+  `project_signal_subscribe_subscription`) · **VariantToken retirement** (#158 —
+  the universal `VariantToken` is gone; each widget uses its own per-widget `variant`
+  Literal; memory `project_variant_type_revisit`). Then **`ThemeToggle`** (#159,
+  merged) — a stateless sun/moon `Button` that flips the theme on click and re-syncs
+  its icon on `<<BsThemeChanged>>` (so programmatic theme changes update it too);
+  `light_icon`/`dark_icon`/`variant`/`density`/`accent`; added to `bootstack.*`;
+  `CommandBar.add_theme_toggle()` + container protocol (`_child_master`/`guide_layout`)
+  on CommandBar & StatusBar, both `add_widget(Class, **kwargs)`-polymorphic; swept
+  hand-wired toggles across docs/examples/CLI. Last, **media min-height** (#161,
+  `feat/media-min-height`, in review) — `Gallery`/`Carousel` collapsed to ~1px in a
+  non-height-imposing parent (ScrollView/auto-fit window) because the public wrappers
+  freeze the frame with `pack_propagate(False)`; fix configures a content-derived
+  height floor on the frame itself (Carousel: `height=`/`400÷aspect_ratio`; Gallery:
+  `rows×row_h`). New params `Carousel(aspect_ratio=1.5, height=None)`, `Gallery(rows=2)`;
+  demo Media page reordered (Carousel above Gallery — Gallery swallows the wheel event).
+  Memory `project_picture_suite`.
 - **AppShell + navigation clean-slate rewrite SHIPPED** (PRs #133–#136, all merged;
   in `0.1.0a10`) — the VS Code-style **rail + swappable sidebar + content** rewrite
   landed and the public **`bs.AppShell` was swapped onto the new `Shell`** (#135),
@@ -336,10 +364,60 @@ memories and git history.
 
 ## Next up
 
-> The AppShell + navigation clean-slate rewrite that lived here is **SHIPPED**
-> (PRs #133–#138, in `0.1.0a10`) — see the pointer at the top of "Recently
-> completed". The big nav initiative is done; what remains below is the standing
-> backlog.
+> The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
+> DRAINED this session (#141/#142/#151/#153/#156/#157/#158 merged; see the
+> "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
+> below is the stable-cut closeout + a fresh regression + the standing backlog.
+
+### ★ ACTIVE INITIATIVE — Layout redesign (grid engine + flexbox/CSS-grid API)
+
+> Branch **`feat/grid-layout-engine`**. Full design brief:
+> **`docs/_dev/layout-redesign.md`** (read it first). Prototype (validated, untracked
+> scratch): **`development/flexlayout_proto.py`** — run scenes with
+> `py -3.12 development/flexlayout_proto.py <scene>` (justify/grow/align/col/weights/
+> toolbars/spacer/overflow/grid/nesting). **Breaking, core-engine — land before the
+> 0.1.0 freeze.**
+
+Replace the stack layout API — `anchor_items`/`fill_items`/`expand_items` and Grid's
+`sticky_items` (all Tk-isms) — with a flexbox/CSS-grid vocabulary, and reimplement
+stacks on the Tk **grid** geometry manager (not pack). **Trigger:** `HStack(fill="x",
+anchor_items="e")` can't right-align a button row (`anchor_items` is cross-axis only;
+no public main-axis distribution exists). Validated model:
+
+- **`justify`** (whole-group main-axis: start/center/end/space-*) · **`align`**/`align_self`
+  (cross: start/center/end/stretch) · **`grow`**/`weights=` (item growth) ·
+  **`Spacer()`**/`Spacer(size=)`/`Spacer(weight=)` (composable breaks — unifies the
+  existing `Toolbar`/`StatusBar` `add_spacer()`). 2-D **`Grid`** →
+  **`justify_items`**/**`align_items`** + weighted `columns=`/`rows=`.
+- Per-child collision-free keys are **`grow`/`align_self`/`justify_self`** (never bare
+  `align`/`justify` — would shadow text `justify` / Snackbar `align`). `push` was
+  prototyped and **dropped** (Spacer + nesting + `margin_x` cover it).
+- **★ Top migration risk:** the grid engine **silently ignores legacy `fill`/`expand`
+  child kwargs** — every such child (data/canvas widgets especially: ListView/DataTable/
+  Tree/Gallery/Carousel) must move to `grow`/`align` or it collapses. Other risks +
+  open default decisions + build sequencing are all in the brief.
+
+### Toward the 0.1.0 stable release
+
+- **★ #162 — AppShell `undecorated=True` lost window controls + chrome dragging**
+  (NEW regression, a user demonstrated it). The `Shell` rewrite builds its chrome
+  from a plain `Frame` (`shell/layout.py:154`); the OLD region-based AppShell got
+  min/max/close + window dragging for free from the internal `Toolbar`
+  (`show_window_controls=`/`draggable=`, `toolbar.py:72`). So an undecorated shell
+  is now borderless, undraggable, and uncloseable — and the `layout.py:77` docstring
+  still falsely claims undecorated "Enables window controls + dragging." **Enrich
+  AppShell:** render min/max/close at the chrome's right edge + make the chrome
+  draggable (double-click → maximize) in undecorated mode, behind PUBLIC configurable
+  options (don't hardwire); Windows/Linux only (macOS force-disables
+  `overrideredirect`; ties into `project_macos_window_chrome`). Port the old
+  `Toolbar` drag/control logic as the reference. Memory
+  `project_appshell_undecorated_controls`.
+- **#149** — final public-surface audit + **CHANGELOG** for the stable cut.
+- **#150** — test-harness stabilization (the GUI suites need one `App` per process;
+  the `.pytest_cache` perms warning on this machine is benign).
+- **#155** — Topic-guide technical-writer review pass (the `/reference/*` pages get
+  the same no-kitchen-sink edit the how-to guides already had; memory
+  `project_user_guide_fleshout`). The maintainer is comfortable with the how-tos.
 
 ### Other candidates
 
@@ -393,8 +471,8 @@ indicator) — `project_secondary_tab_variant`, a standalone item.
     when that page is built (both modules are flagged "pending" in
     `api-reference/index.rst`). STILL DEFERRED (separate initiatives): the holistic
     `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
-    SplitPane/StackPage/TabPage), a public `on_destroy` lifecycle hook, and retiring the
-    now-unused `VariantToken`.
+    SplitPane/StackPage/TabPage) and a public `on_destroy` lifecycle hook. (Retiring
+    the universal `VariantToken` is **DONE** — #158, per-widget `variant` Literals now.)
   - **Conventions (full in brief):** public type aliases render as their short NAME,
     LINKED to a `.. py:type::` entry (the linked-alias docs work — see "Linked type
     aliases" below; this REVERSES the old "literals expand inline" rule). NO
@@ -600,10 +678,9 @@ the open backlog are kept here.
 - `project_event_naming_revisit` — past-tense event names pending rename:
   `SideNav.on_pane_toggled`/`on_display_mode_changed`, `ListView.on_selection_changed`,
   `Calendar.on_date_selected`.
-- `project_signal_subscribe_subscription` — `Signal.subscribe()` returns a `str`
-  token (unlike events'/streams' cancelable handles); unify via a shared
-  cancelable-handle abstraction (not a direct reuse — `events.Subscription` is
-  Tk-binding-specific). Own branch.
+- ~~`project_signal_subscribe_subscription`~~ — **DONE (#157)**: `Signal.subscribe()`
+  now returns a cancelable `streams.Handle` (was a `str` token), unifying with
+  events/streams.
 - `project_editfilter_public_api` — `EditFilter` DEMOTED (Tk-coupled raw text
   indices/tags); investigate a de-Tkinter-ed CodeEditor extension API before any
   re-promotion. `NOTE(editfilter-public-api)` in
@@ -793,7 +870,8 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
 > block, so fixing the source is enough.)
 
 1. **Audit** — Explore agent comparing public wrapper vs `_impl/` internals.
-2. **Fix wrapper** — typed params (`AccentToken`, `VariantToken`, `WidgetDensity`);
+2. **Fix wrapper** — typed params (`AccentToken`, the widget's own per-widget
+   `variant` Literal, `WidgetDensity`);
    `@overload` event shorthands; no low-level color kwargs; layout via `**kwargs`
    + `_split_layout_kwargs`; catch-all must be `**kwargs` not `**extra_kw`.
 3. **`docs/widgets/<widget>.rst`** (NOTE: was `docs/api/` — moved 2026-06-04) —
@@ -1101,7 +1179,7 @@ src/bootstack/
     ├── _core/   public framework internals (base, container, context, events)
     ├── _impl/   internal implementation (primitives, composites, mixins)
     ├── app.py, button.py, ...  (~40 public wrapper files)
-    └── types.py AccentToken, VariantToken, WidgetDensity, SurfaceToken, etc.
+    └── types.py AccentToken, WidgetDensity, SurfaceToken, per-widget variant Literals, etc.
 ```
 
 ---
