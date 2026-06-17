@@ -85,7 +85,7 @@ def run_appicon() -> None:
                     bs.Button("Copy TOML", variant="outline", on_click=lambda: _copy_toml())
 
 
-            bs.Separator(orient="vertical", vertical="stretch")
+            bs.Divider(orient="vertical", vertical="stretch")
 
             # ── Preview ───────────────────────────────────────────────────────
             with bs.Column(padding=16, grow=True, vertical="stretch"):

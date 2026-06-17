@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Any
 
@@ -8,12 +8,13 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets.types import AccentToken, Orient
 
 
-class Separator(PublicWidgetBase):
+class Divider(PublicWidgetBase):
     """A horizontal or vertical dividing line.
 
     Renders a thin themed line that can be used to visually divide sections
     of a layout. The line color inherits from the active surface by default
-    and can be overridden with an accent token.
+    and can be overridden with an accent token. (For invisible flexible space
+    between items, use :class:`Spacer <bootstack.Spacer>` instead.)
 
     Args:
         orient: Direction of the line. Defaults to `'horizontal'`.
@@ -25,7 +26,7 @@ class Separator(PublicWidgetBase):
             fill the available space along its axis.
         parent: Override the context-stack parent widget.
         **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
+            `grow`, `horizontal`, `vertical`, `margin`, `row`, `column`.
             See :doc:`/tasks/layout`.
     """
 
@@ -56,4 +57,4 @@ class Separator(PublicWidgetBase):
         self._attach_to_parent(layout_kw)
 
 
-register_widget_events(Separator, {})
+register_widget_events(Divider, {})

@@ -132,9 +132,9 @@ class Workspace:
         """Add a plain section-label header (grouped-static)."""
         self._internal.add_header(text)
 
-    def add_separator(self) -> None:
-        """Add a separator to the sidebar."""
-        self._internal.add_separator()
+    def add_divider(self) -> None:
+        """Add a divider to the sidebar."""
+        self._internal.add_divider()
 
     def panel(self) -> Page:
         """Claim the workspace as a custom panel; return its sidebar container."""
@@ -528,9 +528,9 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         """Add a plain section-label header to the sidebar (grouped-static)."""
         self._internal.add_header(text)
 
-    def add_separator(self) -> None:
-        """Add a separator to the sidebar."""
-        self._internal.add_separator()
+    def add_divider(self) -> None:
+        """Add a divider to the sidebar."""
+        self._internal.add_divider()
 
     def panel(self) -> Page:
         """Claim the implicit workspace as a custom panel; return its container."""

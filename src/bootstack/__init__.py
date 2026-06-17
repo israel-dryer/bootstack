@@ -90,7 +90,7 @@ from bootstack.widgets.radiogroup import RadioGroup
 from bootstack.widgets.scrollview import ScrollView
 from bootstack.widgets.select import Select
 from bootstack.widgets.selectbutton import SelectButton
-from bootstack.widgets.separator import Separator
+from bootstack.widgets.divider import Divider
 from bootstack.widgets.splitview import SplitView, SplitPane
 from bootstack.widgets.slider import RangeSlider, Slider
 from bootstack.widgets.spinnerfield import SpinnerField
@@ -129,7 +129,7 @@ __all__ = [
     # Application & windows
     "App", "AppShell", "Window",
     # Layout
-    "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Separator", "ScrollView",
+    "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Divider", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",
     # Actions
     "Button", "ButtonGroup", "ThemeToggle", "MenuButton", "Toolbar", "StatusBar",

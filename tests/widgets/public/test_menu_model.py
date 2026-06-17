@@ -34,7 +34,7 @@ def test_builders_produce_typed_items():
     model = MenuModel()
     file = model.add_menu("File")
     a = file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-    file.add_separator()
+    file.add_divider()
     c = file.add_check("Word wrap", checked=True)
     r = file.add_radio("Light", value="light", group="theme")
 
@@ -77,7 +77,7 @@ def test_load_matches_imperative():
     model.load([
         {"text": "File", "items": [
             {"text": "Open", "shortcut": "Mod+O", "on_click": fn},
-            {"type": "separator"},
+            {"type": "divider"},
             {"text": "Quit", "shortcut": "Mod+Q", "on_click": fn},
         ]},
         {"text": "Edit", "items": [

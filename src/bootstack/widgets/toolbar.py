@@ -15,7 +15,7 @@ class Toolbar(PublicWidgetBase):
 
     The toolbar holds an app's commands — buttons, a search box, a theme toggle.
     Items are added left-to-right via `add_button()`, `add_label()`,
-    `add_separator()`, `add_spacer()`, and `add_widget()`. Call `add_spacer()` to
+    `add_divider()`, `add_spacer()`, and `add_widget()`. Call `add_spacer()` to
     push subsequent items to the right side.
 
     Use this widget directly to build a standalone toolbar or a custom titlebar.
@@ -143,7 +143,7 @@ class Toolbar(PublicWidgetBase):
 
             with toolbar.add_menu("File") as file:
                 file.add_action("Open", shortcut="Mod+O", on_click=open_file)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
 
         On Windows/Linux the menu renders as an in-window dropdown; on macOS it
@@ -185,11 +185,11 @@ class Toolbar(PublicWidgetBase):
         kw.update(kwargs)
         self._internal.add_label(**kw)
 
-    def add_separator(self, length: int = 16) -> None:
-        """Add a vertical separator.
+    def add_divider(self, length: int = 16) -> None:
+        """Add a vertical divider.
 
         Args:
-            length: Separator height in pixels. Defaults to ``16``.
+            length: Divider height in pixels. Defaults to ``16``.
         """
         self._internal.add_separator(length=length)
 

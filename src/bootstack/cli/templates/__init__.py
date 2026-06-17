@@ -595,7 +595,7 @@ class DetailView:
     def _build(self):
         bs.Label(self.record["title"], font="heading-lg")
         bs.Label(self.record.get("text", ""), accent="secondary")
-        bs.Separator(horizontal="stretch")
+        bs.Divider(horizontal="stretch")
         bs.Label("Detail content for this record goes here.")
 '''
 

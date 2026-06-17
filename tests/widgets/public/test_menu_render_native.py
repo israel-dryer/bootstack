@@ -33,7 +33,7 @@ def _sample_model() -> MenuModel:
     model = MenuModel()
     with model.add_menu("File") as file:
         file.add_action("Open", icon="folder2-open", shortcut="Mod+O", on_click=lambda: None)
-        file.add_separator()
+        file.add_divider()
         file.add_action("Quit", shortcut="Mod+Q", on_click=lambda: None)
     with model.add_menu("Edit") as edit:
         edit.add_action("Undo", on_click=lambda: None)

@@ -166,7 +166,7 @@ class MenuGroup:
             )
         )
 
-    def add_separator(self, *, key: str | None = None) -> MenuItem:
+    def add_divider(self, *, key: str | None = None) -> MenuItem:
         """Add a horizontal divider."""
         return self._append(MenuItem(type="separator", key=key))
 
@@ -255,8 +255,8 @@ class MenuModel:
                 f"Allowed: {', '.join(sorted(_ITEM_KEYS))}."
             )
         item_type = raw.get("type", "action")
-        if item_type == "separator":
-            group.add_separator(key=raw.get("key"))
+        if item_type in ("divider", "separator"):
+            group.add_divider(key=raw.get("key"))
         elif item_type == "check":
             group.add_check(
                 raw.get("text"),
@@ -287,7 +287,7 @@ class MenuModel:
         else:
             raise ValueError(
                 f"Unknown menu item type {item_type!r}. Use 'action', 'check', "
-                f"'radio', or 'separator'."
+                f"'radio', or 'divider'."
             )
 
     def clear(self) -> None:

@@ -15,7 +15,7 @@ _EXPORTS: dict[str, str] = {
     # Layout
     "Row": "stacks", "Column": "stacks", "Spacer": "stacks",
     "Grid": "grid", "Card": "card",
-    "GroupBox": "groupbox", "Separator": "separator", "ScrollView": "scrollview",
+    "GroupBox": "groupbox", "Divider": "divider", "ScrollView": "scrollview",
     "SplitView": "splitview", "SplitPane": "splitview",
     "Accordion": "expander", "AccordionSection": "expander",
     # Actions

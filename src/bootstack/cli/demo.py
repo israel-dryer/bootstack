@@ -131,7 +131,7 @@ def _build_buttons_page():
             mb = bs.MenuButton("Actions", icon="three-dots", accent="primary")
             mb.add_item("New file", icon="file-earmark")
             mb.add_item("Open…", icon="folder2-open")
-            mb.add_separator()
+            mb.add_divider()
             mb.add_item("Delete", icon="trash")
             mb2 = bs.MenuButton("View", icon="eye", variant="outline")
             mb2.add_item("Zoom in", icon="zoom-in")
@@ -581,11 +581,11 @@ def _build_layout_page():
                 for i in range(20):
                     bs.Label(f"Scrollable row {i + 1}")
 
-        with bs.GroupBox("Separator", horizontal_items="stretch", gap=8):
-            bs.Separator()
-            bs.Separator(accent="primary")
-            bs.Separator(accent="success")
-            bs.Separator(accent="danger")
+        with bs.GroupBox("Divider", horizontal_items="stretch", gap=8):
+            bs.Divider()
+            bs.Divider(accent="primary")
+            bs.Divider(accent="success")
+            bs.Divider(accent="danger")
 
 
 # -- Navigation ---------------------------------------------------------------
@@ -678,7 +678,7 @@ def _build_overlays_page():
             menu.add_item("Cut", icon="scissors")
             menu.add_item("Copy", icon="copy")
             menu.add_item("Paste", icon="clipboard")
-            menu.add_separator()
+            menu.add_divider()
             menu.add_item("Delete", icon="trash")
 
 
@@ -849,42 +849,42 @@ def build_gallery_shell(shell) -> None:
 
     _register("home",       _build_home_page,       text="Home",        icon="house")
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Actions")
     _register("buttons",    _build_buttons_page,    text="Buttons",     icon="hand-index-thumb",   scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Inputs")
     _register("text-inputs",  _build_text_inputs_page,  text="Text Inputs",  icon="input-cursor-text", scrollable=True)
     _register("numeric",      _build_numeric_page,      text="Numeric & Date", icon="123",             scrollable=True)
     _register("forms",        _build_forms_page,        text="Forms",        icon="journal-text",      scrollable=True)
     _register("code-editor",  _build_code_editor_page,  text="Code Editor",  icon="code-slash",        scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Selection")
     _register("selection",  _build_selection_page,  text="Selection",   icon="ui-checks",          scrollable=True)
     _register("calendar",   _build_calendar_page,   text="Calendar",    icon="calendar3",          scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Data Display")
     _register("data",       _build_data_page,       text="Data Tables", icon="table",              scrollable=True)
     _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Media")
     _register("media",      _build_media_page,      text="Media",       icon="images",             scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Layout")
     _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
     _register("navigation", _build_navigation_page, text="Navigation",  icon="window-stack",       scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Overlays & Dialogs")
     _register("overlays",   _build_overlays_page,   text="Overlays",    icon="layers",             scrollable=True)
     _register("dialogs",    _build_dialogs_page,    text="Dialogs",     icon="chat-square-text",   scrollable=True)
 
-    shell.add_separator()
+    shell.add_divider()
     shell.add_header("Design System")
     _register("themes",     _build_theme_page,      text="Themes",      icon="palette",            scrollable=True)
     _register("typography", _build_typography_page, text="Typography",  icon="fonts",              scrollable=True)
