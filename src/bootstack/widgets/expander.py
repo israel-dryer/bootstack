@@ -108,9 +108,15 @@ class Expander(PublicContainer):
         layout_kw.setdefault("horizontal", "stretch")
 
         if horizontal_items is None:
-            horizontal_items = "stretch" if layout == "grid" else "left"
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
         if vertical_items is None:
-            vertical_items = "stretch" if layout == "grid" else "top"
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -248,9 +254,15 @@ class AccordionSection:
         self._layout = layout
 
         if horizontal_items is None:
-            horizontal_items = "stretch" if layout == "grid" else "left"
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
         if vertical_items is None:
-            vertical_items = "stretch" if layout == "grid" else "top"
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
 
         content = internal_expander._content_frame
         if layout in ("column", "row"):
@@ -513,12 +525,12 @@ class Accordion(PublicWidgetBase):
             gap: Space between body children in pixels. Defaults to `0`.
             horizontal_items: How body children sit on the horizontal axis — edge
                 values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
-                when horizontal is the stacking axis. Defaults to `'stretch'` for
-                `'grid'`, else `'left'`.
+                when horizontal is the stacking axis. Defaults to `'stretch'` in grid mode,
+                `'center'` in a column and `'left'` in a row.
             vertical_items: How body children sit on the vertical axis — edge
                 values `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'`
-                when vertical is the stacking axis. Defaults to `'stretch'` for
-                `'grid'`, else `'top'`.
+                when vertical is the stacking axis. Defaults to `'stretch'` in grid mode,
+                `'center'` in a row and `'top'` in a column.
             grow_items: For `'column'`/`'row'`, when `True` every body child
                 grows equally to share the main axis. Defaults to `False`.
             columns: Column definitions for `'grid'` layout. An integer sets

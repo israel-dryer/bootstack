@@ -84,7 +84,7 @@ class Row(_FlexBase):
             no effect once any child grows. Defaults to `'left'`.
         vertical_items: Vertical alignment of children — `'top'`, `'center'`,
             `'bottom'`, or `'stretch'` (fill the row's height). Override per child
-            with `vertical`. Defaults to `'top'`.
+            with `vertical`. Defaults to `'center'`.
         grow_items: When `True`, every child grows equally to fill the row.
             Defaults to `False`.
         weights: Explicit per-child width weights (e.g. `[1, 2, 1]`) — shorthand
@@ -115,7 +115,7 @@ class Row(_FlexBase):
         *,
         parent: Any = None,
         horizontal_items: HArrange = "left",
-        vertical_items: VAlign = "top",
+        vertical_items: VAlign = "center",
         grow_items: bool = False,
         weights: list[int] | None = None,
         gap: int = 0,
@@ -154,7 +154,7 @@ class Column(_FlexBase):
     Args:
         horizontal_items: Horizontal alignment of children — `'left'`,
             `'center'`, `'right'`, or `'stretch'` (fill the column's width).
-            Override per child with `horizontal`. Defaults to `'left'`.
+            Override per child with `horizontal`. Defaults to `'center'`.
         vertical_items: How the whole group of children is arranged down the
             column — `'top'`, `'center'`, `'bottom'`, or the `'space-*'` modes.
             Has no effect once any child grows. Defaults to `'top'`.
@@ -187,7 +187,7 @@ class Column(_FlexBase):
         self,
         *,
         parent: Any = None,
-        horizontal_items: HAlign = "left",
+        horizontal_items: HAlign = "center",
         vertical_items: VArrange = "top",
         grow_items: bool = False,
         weights: list[int] | None = None,

@@ -34,12 +34,12 @@ class GroupBox(PublicContainer):
         horizontal_items: How children sit on the horizontal axis — edge values
             `'left'`/`'center'`/`'right'`/`'stretch'`, plus the `'space-*'` modes
             when horizontal is the stacking axis (`'row'`). Override per child
-            with `horizontal`. Defaults to `'stretch'` for `'grid'`, else
-            `'left'`.
+            with `horizontal`. Defaults to `'stretch'` in grid mode, `'center'` in a column
+            and `'left'` in a row.
         vertical_items: How children sit on the vertical axis — edge values
             `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus the `'space-*'` modes
             when vertical is the stacking axis (`'column'`). Override per child
-            with `vertical`. Defaults to `'stretch'` for `'grid'`, else `'top'`.
+            with `vertical`. Defaults to `'stretch'` in grid mode, `'center'` in a row and `'top'` in a column.
         grow_items: For `'column'`/`'row'` layout, when `True` every child
             grows equally to share the main axis. Defaults to `False`.
         columns: Column definitions for `'grid'` layout. An integer sets
@@ -83,9 +83,15 @@ class GroupBox(PublicContainer):
         # default differs — grid cells fill (stretch), stacked children sit at the
         # leading edge (left/top).
         if horizontal_items is None:
-            horizontal_items = "stretch" if layout == "grid" else "left"
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
         if vertical_items is None:
-            vertical_items = "stretch" if layout == "grid" else "top"
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 

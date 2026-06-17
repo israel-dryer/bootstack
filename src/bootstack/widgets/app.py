@@ -60,7 +60,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         gap: Spacing between stacked children. Default `0`.
         horizontal_items: Horizontal alignment of children — `'left'`,
             `'center'`, `'right'`, or `'stretch'` (fill the width). Default
-            `'left'`.
+            `'center'`.
         vertical_items: How children are arranged top to bottom — `'top'`,
             `'center'`, `'bottom'`, or a `'space-*'` mode. Default `'top'`.
         grow_items: When `True`, children grow equally to fill the height.
@@ -101,7 +101,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
-        horizontal_items: HAlign = "left",
+        horizontal_items: HAlign = "center",
         vertical_items: VArrange = "top",
         grow_items: bool = False,
         surface: SurfaceToken | str | None = None,
