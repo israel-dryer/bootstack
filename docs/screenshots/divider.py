@@ -2,8 +2,13 @@ import bootstack as bs
 
 
 def hero():
-    with bs.App(title="Divider", minsize=(720, 1), padding=0) as app:
-        bs.Divider(margin_y=20, horizontal="stretch")
+    with bs.App(title="Divider", minsize=(560, 1), padding=20) as app:
+        with bs.Column(gap=2, horizontal="stretch", horizontal_items="stretch"):
+            bs.Label("Account", font="heading-md")
+            bs.Label("Manage your profile and password.")
+            bs.Divider(margin_y=14)
+            bs.Label("Notifications", font="heading-md")
+            bs.Label("Choose what you get emailed about.")
     app.run()
 
 
