@@ -1,8 +1,19 @@
 name: Deploy docs
 
+# Deploy docs only on a new release, so the published site tracks the
+# released API rather than every push to `main` (especially important during
+# active pre-1.0 API development). To restore continuous docs, swap the
+# `workflow_run` trigger back to `push: branches: [main]`.
+#
+# `workflow_run` (not a `release`/tag trigger) is deliberate: a run triggered
+# this way executes in the default-branch (`main`) context, so `deploy-pages`
+# is associated with `main` and passes the `github-pages` environment's
+# branch protection. A tag-ref deployment (from a `release` trigger) is
+# rejected by that protection.
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +28,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # On a release, only build if the Release workflow actually succeeded.
+    # A manual run (workflow_dispatch) always builds.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v6
 
