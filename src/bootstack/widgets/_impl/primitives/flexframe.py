@@ -108,6 +108,10 @@ class FlexFrame(Frame):
         # Highest main-axis track index configured on the previous relayout,
         # so we can zero stale tracks when the plan shrinks.
         self._used_main_tracks = 0
+        # Count of managed children carrying `grow` or spacer metadata. Lets the
+        # append fast-path decide in O(1) whether the stack is "pure" (see
+        # `_can_append_in_place`) without rescanning every add.
+        self._flex_child_count = 0
         if propagate is not None:
             self.grid_propagate(propagate)
 
@@ -164,25 +168,100 @@ class FlexFrame(Frame):
     def add_child(
         self, widget: tk.Widget, opts: dict[str, Any], index: int | None = None
     ) -> None:
-        """Add `widget` to the flow (at `index`, else appended) and re-plan."""
+        """Add `widget` to the flow (at `index`, else appended) and re-plan.
+
+        A plain append onto a "pure" start-aligned stack grids only the new
+        child (the fast path) instead of re-planning every sibling, so building
+        an N-child stack is O(N) rather than O(N^2). Anything that can shift a
+        sibling's track — a mid-list insert, a distribution mode, or a
+        grow/spacer child — takes the full `_relayout`.
+        """
         entry = (widget, dict(opts))
-        if index is None or index >= len(self._managed):
+        appending = index is None or index >= len(self._managed)
+        new_is_flex = bool(opts.get("grow")) or bool(opts.get("_spacer"))
+        # Decide the fast path BEFORE the count reflects this child (the check
+        # asks whether the EXISTING stack is pure).
+        fast = appending and not new_is_flex and self._can_append_in_place()
+        if appending:
             self._managed.append(entry)
         else:
             self._managed.insert(max(index, 0), entry)
-        self._relayout()
+        if new_is_flex:
+            self._flex_child_count += 1
+        if fast:
+            self._grid_appended_plain(widget, opts)
+        else:
+            self._relayout()
 
     def remove_child(self, widget: tk.Widget) -> None:
         """Remove `widget` from the flow (grid-forget it) and re-plan."""
         idx = self.index_of(widget)
         if idx < 0:
             return
+        _, removed_opts = self._managed[idx]
+        if removed_opts.get("grow") or removed_opts.get("_spacer"):
+            self._flex_child_count -= 1
         try:
             tk.Grid.forget(widget)
         except tk.TclError:
             pass
         self._managed.pop(idx)
         self._relayout()
+
+    def _can_append_in_place(self) -> bool:
+        """True when appending a plain child cannot move any existing sibling.
+
+        Holds only for a start-aligned stack with no container-level growth and
+        no grow/spacer children: every child then occupies one consecutive
+        track, so a new child simply takes the next one. Any distribution mode
+        (`grow`, `weights`, `grow_items`, a `Spacer`, or a `space-*`/`center`/
+        `end` justify) interleaves phantom tracks or shifts weights and needs a
+        full re-plan. O(1) — `_flex_child_count` avoids a per-add scan.
+        """
+        return (
+            self._flex_child_count == 0
+            and not self._grow_items
+            and self._weights is None
+            and self._main_distribution() == "start"
+        )
+
+    def _grid_appended_plain(self, widget: tk.Widget, opts: dict[str, Any]) -> None:
+        """Grid a single just-appended child, leaving its siblings in place.
+
+        Valid only under `_can_append_in_place`. Mirrors the content-child arm
+        of `_relayout` for the pure case: one track per child, no growth, cross
+        sticky from the child's alignment, and a leading gap after the first.
+        """
+        row_dir = self._row_dir
+        idx = len(self._managed) - 1  # one track per child in the pure case
+        cross_cfg = self.grid_rowconfigure if row_dir else self.grid_columnconfigure
+        main_cfg = self.grid_columnconfigure if row_dir else self.grid_rowconfigure
+        cross_cfg(0, weight=1)        # cross track fills so alignment has room
+        main_cfg(idx, weight=0)
+
+        cross_key = "vertical" if row_dir else "horizontal"
+        cross_val = opts.get(cross_key) or self._cross_default()
+        sticky = self._cross_sticky(cross_val)
+
+        main_axis = "padx" if row_dir else "pady"
+        cross_axis = "pady" if row_dir else "padx"
+        lead = self._gap if idx > 0 else 0
+        trail = 0
+        margin_main = opts.get(main_axis)
+        if isinstance(margin_main, tuple):
+            lead += margin_main[0]
+            trail = margin_main[1]
+        elif margin_main is not None:
+            lead += margin_main
+        pad: dict[str, Any] = {}
+        if lead or trail:
+            pad[main_axis] = (lead, trail)
+        margin_cross = opts.get(cross_axis)
+        if margin_cross is not None:
+            pad[cross_axis] = margin_cross
+
+        self._grid_cell(widget, idx, sticky, pad)
+        self._used_main_tracks = max(self._used_main_tracks, idx)
 
     # ----- configuration delegates -------------------------------------------
 
@@ -248,6 +327,9 @@ class FlexFrame(Frame):
         # it below would raise "bad window path name". (GridFrame guards the same.)
         if any(not _alive(w) for w, _ in self._managed):
             self._managed = [e for e in self._managed if _alive(e[0])]
+            self._flex_child_count = sum(
+                1 for _, o in self._managed if o.get("grow") or o.get("_spacer")
+            )
 
         items = self._managed
         if not items:
