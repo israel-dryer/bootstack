@@ -145,7 +145,7 @@ class Image:
     GIF, BMP, TIFF, WebP, and ICO. (Animated formats load their first frame.)
     """
 
-    __slots__ = ("_pil", "_path", "_data", "_icon", "_photo", "_size")
+    __slots__ = ("_pil", "_path", "_data", "_icon", "_photo", "_icon_pil", "_size")
 
     def __init__(
         self,
@@ -160,6 +160,7 @@ class Image:
         self._data = data
         self._icon = icon
         self._photo: "_Photo | None" = None
+        self._icon_pil: "_PILImage | None" = None   # cached rendered-glyph PIL
         self._size: tuple[int, int] | None = None
 
     # =========================================================================
@@ -239,6 +240,20 @@ class Image:
 
         if self._pil is not None:
             return self._pil
+        if self._icon is not None:
+            # Render the glyph at the PIL level so icon handles work with the
+            # image-display widgets (Picture/Gallery) that fit/round/compose a
+            # PIL frame — not just the `icon=` PhotoImage path via _materialize.
+            # Cached so a recycling grid that re-resolves the same handle on
+            # every scroll doesn't re-render the glyph each time; dropped by
+            # _invalidate() on a theme change so token colors re-render.
+            if self._icon_pil is None:
+                size = self._icon.size
+                size = size if size % 2 == 0 else size + 1
+                self._icon_pil = _ImageService._render_icon(
+                    self._icon.name, size, self._resolve_icon_color()
+                )
+            return self._icon_pil
         if self._path is not None:
             return PILImage.open(self._path)
         if self._data is not None:
@@ -257,6 +272,7 @@ class Image:
     def _invalidate(self) -> None:
         """Drop the rendered image so the next bind re-renders it."""
         self._photo = None
+        self._icon_pil = None
 
     def _materialize(self, master=None) -> "_Photo":
         """Render the source to a cached display image and return it.
