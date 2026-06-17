@@ -62,9 +62,8 @@ class MainView:
             columns=["auto", 1],
             gap=10,
             padding=20,
-            sticky_items="ew",
-            fill="both",
-            expand=True,
+            grow=True,
+            horizontal="stretch",
         ) as self.root:
             self._build()
 
@@ -96,19 +95,19 @@ class MainView:
     """Main application view using a vertical stack layout."""
 
     def __init__(self, parent=None):
-        with bs.VStack(
+        with bs.Column(
             parent=parent,
             gap=10,
             padding=20,
-            fill="both",
-            expand=True,
+            grow=True,
+            horizontal="stretch",
         ) as self.root:
             self._build()
 
     def _build(self) -> None:
         bs.Label("Welcome to {app_name}", font="heading-lg")
-        self.name_field = bs.TextField(label="Name:", fill="x")
-        self.email_field = bs.TextField(label="Email:", fill="x")
+        self.name_field = bs.TextField(label="Name:", horizontal="stretch")
+        self.email_field = bs.TextField(label="Email:", horizontal="stretch")
         bs.Button("Get Started", accent="primary", on_click=self._on_submit)
 
     def _on_submit(self) -> None:
@@ -137,9 +136,8 @@ class {class_name}:
             columns=["auto", 1],
             gap=10,
             padding=20,
-            sticky_items="ew",
-            fill="both",
-            expand=True,
+            grow=True,
+            horizontal="stretch",
         ) as self.root:
             self._build()
 
@@ -161,12 +159,12 @@ class {class_name}:
     """{class_name} view."""
 
     def __init__(self, parent=None):
-        with bs.VStack(
+        with bs.Column(
             parent=parent,
             gap=10,
             padding=20,
-            fill="both",
-            expand=True,
+            grow=True,
+            horizontal="stretch",
         ) as self.root:
             self._build()
 
@@ -209,7 +207,7 @@ class {class_name}:
 
     def _build(self, frame) -> None:
         """Fill the dialog body."""
-        with bs.VStack(padding=20, gap=8, parent=frame):
+        with bs.Column(padding=20, gap=8, parent=frame):
             bs.Label("Dialog content goes here.")
 
     def show(self):
@@ -497,7 +495,7 @@ class HomePage:
     """Home page content."""
 
     def __init__(self, parent=None):
-        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
             self._build()
 
     def _build(self):
@@ -506,7 +504,7 @@ class HomePage:
             "This is your home page. Edit this file to get started.",
             wrap_width=500,
         )
-        with bs.GroupBox("Getting Started", fill="both", expand=True):
+        with bs.GroupBox("Getting Started", grow=True, horizontal="stretch"):
             bs.Label(
                 "Add your widgets here.\\n\\n"
                 "To add another page:\\n"
@@ -527,14 +525,14 @@ class SettingsPage:
     """Settings page content."""
 
     def __init__(self, parent=None):
-        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
             self._build()
 
     def _build(self):
         bs.Label("Settings", font="heading-xl[bold]")
         bs.Label("Configure your application preferences.", wrap_width=500)
-        with bs.GroupBox("Preferences", fill="both", expand=True):
-            with bs.HStack(gap=8):
+        with bs.GroupBox("Preferences", grow=True, horizontal="stretch"):
+            with bs.Row(gap=8):
                 bs.Label("Theme:")
                 bs.ThemeToggle()
 '''
@@ -550,12 +548,12 @@ class {class_name}:
     """{page_title} page content."""
 
     def __init__(self, parent=None):
-        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
             self._build()
 
     def _build(self):
         bs.Label("{page_title}", font="heading-lg")
-        with bs.GroupBox("Content", fill="both", expand=True):
+        with bs.GroupBox("Content", grow=True, horizontal="stretch"):
             pass  # Add your widgets here
 '''
 
@@ -570,12 +568,12 @@ class {class_name}:
     """{page_title} page content."""
 
     def __init__(self, parent=None):
-        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
             self._build()
 
     def _build(self):
         bs.Label("{page_title}", font="heading-lg")
-        with bs.GroupBox("Content", fill="both", expand=True):
+        with bs.GroupBox("Content", grow=True, horizontal="stretch"):
             bs.Label("Add your widgets here.")
 '''
 
@@ -591,13 +589,13 @@ class DetailView:
 
     def __init__(self, record, parent=None):
         self.record = record
-        with bs.VStack(parent=parent, padding=20, gap=12, fill="both", expand=True) as self.root:
+        with bs.Column(parent=parent, padding=20, gap=12, grow=True, horizontal="stretch") as self.root:
             self._build()
 
     def _build(self):
         bs.Label(self.record["title"], font="heading-lg")
         bs.Label(self.record.get("text", ""), accent="secondary")
-        bs.Separator(fill="x")
+        bs.Separator(horizontal="stretch")
         bs.Label("Detail content for this record goes here.")
 '''
 

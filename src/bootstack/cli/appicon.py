@@ -58,38 +58,38 @@ def run_appicon() -> None:
         dark_sig = bs.Signal(False)
         status_sig = bs.Signal("Adjust settings to see live preview")
 
-        with bs.HStack(fill='both', anchor="n", expand=True):
+        with bs.Row(grow=True, horizontal="stretch"):
 
             # ── Controls ──────────────────────────────────────────────────────
-            with bs.VStack(padding=16, gap=24, anchor_items="n", anchor="n", fill="y"):
+            with bs.Column(padding=16, gap=24, vertical="stretch", horizontal_items="stretch"):
                 bs.Label("App Icon Designer", font="heading-md")
                 bs.Label(textsignal=status_sig, font="caption", accent="muted", wrap_width=225)
 
-                gl = bs.TextField(textsignal=glyph_sig, fill="x", label="Glyph")
+                gl = bs.TextField(textsignal=glyph_sig, label="Glyph")
                 gl.insert_addon("button", "after", icon="grid-fill", on_click=lambda: _open_picker(gl))
 
-                bg = bs.TextField(textsignal=bg_sig, fill="x", label="Background color")
+                bg = bs.TextField(textsignal=bg_sig, label="Background color")
                 bg.insert_addon("button", "after", icon="palette-fill", on_click=lambda: _pick(bg_sig))
 
-                fg = bs.TextField(textsignal=fg_sig, fill="x", label="Foreground")
+                fg = bs.TextField(textsignal=fg_sig, label="Foreground")
                 fg.insert_addon("button", "after", icon="palette-fill", on_click=lambda: _pick(fg_sig))
 
-                bs.NumberField(signal=radius_sig, min_value=0.00, max_value=0.50, step=0.01, fill='x', label="Corner radius (macOS tile)")
+                bs.NumberField(signal=radius_sig, min_value=0.00, max_value=0.50, step=0.01, label="Corner radius (macOS tile)")
 
-                with bs.HStack(fill='x'):
-                    bs.Label("Preview Dark Theme", fill='x', expand=True)
-                    bs.Switch(None, signal=dark_sig, anchor="w")
+                with bs.Row():
+                    bs.Label("Preview Dark Theme", grow=True)
+                    bs.Switch(None, signal=dark_sig)
 
-                with bs.HStack(gap=6, fill="both", fill_items='x', expand_items=True, expand=True, anchor_items="s"):
+                with bs.Row(gap=6, grow=True, grow_items=True, vertical_items="bottom"):
                     bs.Button("Export…", accent="primary", on_click=lambda: _export())
                     bs.Button("Copy TOML", variant="outline", on_click=lambda: _copy_toml())
 
 
-            bs.Separator(orient="vertical", fill="y")
+            bs.Separator(orient="vertical", vertical="stretch")
 
             # ── Preview ───────────────────────────────────────────────────────
-            with bs.VStack(padding=16, fill="both", expand=True, anchor_items="center"):
-                preview = bs.Grid(rows=2, columns=1, gap=10, fill="both", expand=True)
+            with bs.Column(padding=16, grow=True, vertical="stretch"):
+                preview = bs.Grid(rows=2, columns=1, gap=10, grow=True, horizontal="stretch")
 
 
     def _current_icon() -> "AppIcon":
@@ -115,17 +115,17 @@ def run_appicon() -> None:
         icon = _current_icon()
         win_imgs: list = []
 
-        with bs.VStack(parent=preview, row=0, column=0, gap=4, anchor_items="center"):
+        with bs.Column(parent=preview, row=0, column=0, gap=4, horizontal_items="center"):
             bs.Label("Windows / Linux", font="caption", accent="muted")
-            with bs.HStack(gap=12, anchor_items="s"):
+            with bs.Row(gap=12, vertical_items="bottom"):
                 for size in _PREVIEW_SIZES:
                     tiled = _win_tiled(icon, size)
-                    with bs.VStack(gap=2):
+                    with bs.Column(gap=2):
                         img = bs.Label(image=icon.to_image(size, tiled=tiled))
-                        bs.Label(f"{size}px", font="caption", accent="muted", anchor="s")
+                        bs.Label(f"{size}px", font="caption", accent="muted", vertical="bottom")
                         win_imgs.append((size, tiled, img))
 
-        with bs.VStack(parent=preview, row=1, column=0, gap=4, anchor_items="center"):
+        with bs.Column(parent=preview, row=1, column=0, gap=4, horizontal_items="center"):
             bs.Label("macOS", font="caption", accent="muted")
             mac_img = bs.Label(image=icon.to_image(_MACOS_SIZE, tiled=True))
 
@@ -195,10 +195,10 @@ def run_appicon() -> None:
         with bs.Window(title="Choose an icon", size=(500, 500), parent=parent) as win:
             query = bs.Signal("")
             count = bs.Signal("")
-            with bs.VStack(padding=12, gap=8, fill="both", expand=True):
-                bs.TextField(textsignal=query, placeholder="Search icons…", fill="x")
+            with bs.Column(padding=12, gap=8, grow=True, horizontal="stretch"):
+                bs.TextField(textsignal=query, placeholder="Search icons…", horizontal="stretch")
                 bs.Label(textsignal=count, font="caption", accent="muted")
-                scroller = bs.ScrollView(fill="both", expand=True, height=430)
+                scroller = bs.ScrollView(grow=True, horizontal="stretch", height=430)
 
         def _choose(name: str) -> None:
             glyph_sig.set(name)
