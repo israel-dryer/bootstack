@@ -99,7 +99,7 @@ def test_create_basic_project(tmp_path: Path, container: str, simple: bool) -> N
     if container == "grid":
         assert "bs.Grid" in view_src
     else:
-        assert "bs.VStack" in view_src
+        assert "bs.Column" in view_src
 
 
 # ---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ def test_create_view(tmp_path: Path, container: str) -> None:
     classes = [n.name for n in ast.walk(mod) if isinstance(n, ast.ClassDef)]
     assert "ProfileView" in classes
     src = out.read_text(encoding="utf-8")
-    assert ("bs.Grid" if container == "grid" else "bs.VStack") in src
+    assert ("bs.Grid" if container == "grid" else "bs.Column") in src
 
 
 def test_create_dialog(tmp_path: Path) -> None:

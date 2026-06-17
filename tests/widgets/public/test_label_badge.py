@@ -6,9 +6,9 @@ import pytest
 
 @pytest.fixture
 def app_ctx():
-    from bootstack.widgets import App, VStack
+    from bootstack.widgets import App, Column
     with App() as app:
-        with VStack() as stack:
+        with Column() as stack:
             yield stack
     app._tk_root.destroy()
 
