@@ -6,7 +6,7 @@ its children and decides how they are placed; a widget is parented to the neares
 enclosing container — the `with` block it is created in. There is no `parent=`
 wiring in the common case and no manual coordinates.
 
-There are three containers:
+Three containers do most of the work:
 
 - :class:`~bootstack.Column` stacks its children top to bottom.
 - :class:`~bootstack.Row` stacks them left to right.
@@ -78,6 +78,14 @@ distribute it with ``'space-between'``, ``'space-around'``, or
        bs.Button("Cancel")
        bs.Button("Save", accent="primary")
 
+.. image:: /_static/examples/row-arrange-light.png
+   :class: bs-screenshot-light
+   :alt: The six horizontal_items modes in a Row — light theme
+
+.. image:: /_static/examples/row-arrange-dark.png
+   :class: bs-screenshot-dark
+   :alt: The six horizontal_items modes in a Row — dark theme
+
 On the **cross axis**, the ``_items`` key aligns each child — ``'center'`` (the
 default) lines up mixed-height widgets, ``'stretch'`` makes them fill, and
 ``'left'``/``'right'`` (or ``'top'``/``'bottom'``) pin to an edge:
@@ -91,17 +99,24 @@ default) lines up mixed-height widgets, ``'stretch'`` makes them fill, and
 Growing children
 ----------------
 
-``grow`` lets a child claim and fill leftover space along the stacking axis —
-the equivalent of a flexible region. ``grow=True`` takes one share; ``grow=N``
-takes ``N`` shares; ``weights=[1, 2, 1]`` on the container sets every child's
-share positionally.
+``grow`` lets a child claim and fill the leftover space along the stacking axis
+while its siblings keep their natural size — the equivalent of a flexible region.
+``grow=True`` takes one share, ``grow=N`` takes ``N`` shares.
 
 .. code-block:: python
 
-   with bs.Column(gap=8, padding=8, horizontal_items="stretch"):
-       bs.Label("Header")
-       bs.ListView(items=rows, grow=True)   # takes all leftover height
-       bs.Button("Add")                     # stays its natural size
+   with bs.Column(gap=6, height=150, horizontal_items="stretch"):
+       bs.Button("Header")
+       bs.Button("Content", grow=True)   # fills the leftover height
+       bs.Button("Footer")               # stays its natural size
+
+.. image:: /_static/examples/column-grow-light.png
+   :class: bs-screenshot-light
+   :alt: A middle child growing to fill a column — light theme
+
+.. image:: /_static/examples/column-grow-dark.png
+   :class: bs-screenshot-dark
+   :alt: A middle child growing to fill a column — dark theme
 
 .. note::
 
@@ -110,13 +125,9 @@ share positionally.
    of their own and collapse without a directive. Give them ``grow=True`` (and
    ``horizontal="stretch"`` in a Column) to claim space.
 
-.. image:: /_static/examples/row-grow-light.png
-   :class: bs-screenshot-light
-   :alt: A text field growing to fill a row — light theme
-
-.. image:: /_static/examples/row-grow-dark.png
-   :class: bs-screenshot-dark
-   :alt: A text field growing to fill a row — dark theme
+For a fixed ratio rather than a single flexible child, set ``weights=`` on the
+container instead: ``weights=[1, 2, 1]`` sizes three children 1:2:1 across the
+stacking axis.
 
 Spacer
 ------
@@ -132,6 +143,14 @@ footers, with no nesting:
        bs.Button("New"); bs.Button("Open")
        bs.Spacer()                 # everything after is pushed to the right
        bs.Button("Settings")
+
+.. image:: /_static/examples/spacer-hero-light.png
+   :class: bs-screenshot-light
+   :alt: A spacer splitting a toolbar into two groups — light theme
+
+.. image:: /_static/examples/spacer-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: A spacer splitting a toolbar into two groups — dark theme
 
 ``Spacer(size=N)`` is instead a fixed gap, and ``Spacer(weight=N)`` shares slack
 with other spacers in proportion.
