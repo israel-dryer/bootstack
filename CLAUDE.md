@@ -400,15 +400,25 @@ geometry manager. Merged to `main` via **PR #170** (the long-running
   examples/screenshots/CLI scaffold/`cli/demo.py` converted; `-W` build clean. README +
   docs-home install refreshed to the new vocabulary + `--pre`.
 
-**OPEN PRs (post-merge, in review):**
+**Shipped post-merge (all merged to `main`):**
 - **#171** `perf(layout)` — GridFrame O(N) build (gate the per-add prune scan on a
   `<Destroy>`-set flag; N=1000 grid 827ms→501ms; destroy-recreate correctness preserved).
 - **#169** `ci(docs)` — deploy docs only on a new release (`workflow_run` after the
   Release workflow; runs in the `main` context so it passes the github-pages branch
-  protection a tag-ref deploy would fail). Takes effect once merged to `main`.
+  protection a tag-ref deploy would fail). In effect now.
+- **#172** `docs` — README + docs-home refreshed to the layout vocabulary + `--pre`.
+- **#173** `refactor(cli)` + Gallery/image fixes — rebuilt `bootstack icons` on the public
+  layer (App/Row/`Gallery`, 326→94 lines, no raw Tk). Plus framework fixes (surfaced by
+  dogfooding) that benefit every scroll-query widget: icon handles render+cache to PIL so
+  Picture/Gallery can display `get_icon()` images; Gallery uniform tiles (`_fit_caption`),
+  row-fill column weighting, `_resolve_columns` off-by-one, caption scroll-binding;
+  `MemoryDataSource` filter+sort view memoization (O(1) `count`, O(window) `page_slice`).
+  This closed the last `cli/icons.py` raw-Tk follow-up.
 
 **Follow-ups (not blockers):**
-- `cli/icons.py` (the appicon designer's own UI) still uses raw Tk `.pack()` — convert.
+- **Gallery opt-in keyboard-focus ring** (future) + deferred Gallery perf (debounce the
+  `<Configure>` relayout, bounded thumbnail-PhotoImage LRU, cache `_fit_caption`). Scope to
+  keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
 - **`add_spacer()`→public `Spacer`** still deferred — entangled with
   `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
 - Demo bugs (pre-existing, NOT layout-caused): #165 undecorated-window drag offset · #166
