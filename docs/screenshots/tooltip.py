@@ -21,7 +21,7 @@ def hero():
 
 def accents():
     with bs.App(title="Tooltip — Accents", size=(520, 130), padding=24) as app:
-        with bs.HStack(gap=8, fill="x"):
+        with bs.Row(gap=8, horizontal="stretch"):
             btn_p = bs.Button("Primary")
             bs.Tooltip(btn_p, "Primary tooltip", accent="primary",
                        anchor_point="s", window_point="n")

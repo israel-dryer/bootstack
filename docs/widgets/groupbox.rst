@@ -39,25 +39,25 @@ automatically inherits the accent color.
 Layout modes
 ~~~~~~~~~~~~
 
-``layout='vstack'`` (default) stacks children vertically. ``'hstack'`` places
+``layout='column'`` (default) stacks children vertically. ``'row'`` places
 them side by side. ``'grid'`` arranges children in a column-row grid.
 
 .. code-block:: python
 
-   # Default vertical stack
-   with bs.GroupBox("VStack (default)", gap=8):
+   # Default vertical column
+   with bs.GroupBox("Column (default)", gap=8):
        bs.Label("First")
        bs.Label("Second")
        bs.Label("Third")
 
-   # Horizontal stack
-   with bs.GroupBox("HStack", layout="hstack", gap=12, anchor_items="center"):
+   # Horizontal row
+   with bs.GroupBox("Row", layout="row", gap=12, vertical_items="center"):
        bs.Label("A")
        bs.Label("B")
        bs.Label("C")
 
    # Grid — two columns, key/value pairs
-   with bs.GroupBox("Grid", layout="grid", columns=[1, 1], gap=8, sticky_items="ew"):
+   with bs.GroupBox("Grid", layout="grid", columns=[1, 1], gap=8, horizontal_items="stretch"):
        bs.Label("Name:")  ; bs.Label("Ada Lovelace")
        bs.Label("Role:")  ; bs.Label("Engineer")
 
@@ -72,12 +72,12 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
 Child defaults
 ~~~~~~~~~~~~~~
 
-Use ``fill_items``, ``expand_items``, and ``anchor_items`` to apply a uniform
-layout behavior to all children without repeating it on each widget.
+Use ``horizontal_items``, ``vertical_items``, and ``grow_items`` to apply a
+uniform layout behavior to all children without repeating it on each widget.
 
 .. code-block:: python
 
-   with bs.GroupBox("Filters", gap=8, fill_items="x"):
+   with bs.GroupBox("Filters", gap=8, horizontal_items="stretch"):
        bs.TextField()   # fills horizontally by default
        bs.TextField()
 
@@ -90,10 +90,10 @@ sections within a larger form or dashboard.
 .. code-block:: python
 
    with bs.GroupBox("Connection", accent="primary", padding=12, gap=8):
-       with bs.HStack(gap=8):
+       with bs.Row(gap=8):
            bs.Label("Host:")
            bs.Label("localhost")
-       with bs.HStack(gap=8):
+       with bs.Row(gap=8):
            bs.Label("Status:")
            bs.Label("Connected", accent="success")
 
@@ -105,8 +105,8 @@ Widget sizing
 See also
 --------
 
-:class:`VStack <bootstack.widgets.stacks.VStack>`,
-:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Column <bootstack.widgets.stacks.Column>`,
+:class:`Row <bootstack.widgets.stacks.Row>`, and
 :class:`Grid <bootstack.widgets.grid.Grid>` are the plain (no border) layout
 containers. Use ``GroupBox`` when you want a labelled border around a group
 of related content.

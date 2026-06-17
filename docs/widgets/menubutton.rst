@@ -26,7 +26,7 @@ Items can have an ``icon=`` and an ``on_click=`` callback.
    mb.add_item("Edit",      icon="pencil",  on_click=edit)
    mb.add_item("Duplicate", icon="copy",    on_click=duplicate)
    mb.add_item("Archive",   icon="archive", on_click=archive)
-   mb.add_separator()
+   mb.add_divider()
    mb.add_item("Delete",    icon="trash",   on_click=delete)
 
 Checkbox and radio items
@@ -94,7 +94,7 @@ Shortcuts are most useful when ``MenuButton`` is used in a menubar context:
    mb.add_item("New",  icon="file-earmark-plus",  shortcut="Mod+N", on_click=new_file)
    mb.add_item("Open", icon="folder2-open",       shortcut="Mod+O", on_click=open_file)
    mb.add_item("Save", icon="floppy",             shortcut="Mod+S", on_click=save_file)
-   mb.add_separator()
+   mb.add_divider()
    mb.add_item("Exit", icon="box-arrow-right", on_click=app.quit)
 
 .. image:: /_static/examples/menubutton-shortcuts-light.png

@@ -18,7 +18,7 @@ def hero():
             accent="secondary",
         )
         bs.TextField(label="Project name", value="my-app")
-        with bs.HStack(gap=8):
+        with bs.Row(gap=8):
             bs.Button("Create", accent="primary")
             bs.Button("Cancel", variant="outline")
 

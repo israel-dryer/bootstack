@@ -23,7 +23,7 @@ to place children inside that pane.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
    with sv.add():
        bs.Label("Pane 1")
    with sv.add():
@@ -39,7 +39,7 @@ horizontal sash.
 .. code-block:: python
 
    # Stacked top-to-bottom with a horizontal sash
-   sv = bs.SplitView(orient="vertical", fill="both", expand=True)
+   sv = bs.SplitView(orient="vertical", grow=True)
    with sv.add(weight=1, padding=12, gap=4):
        bs.Label("Top pane", font="heading-md")
        bs.Label("Upper content area.")
@@ -64,7 +64,7 @@ one with ``weight=1``.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
    with sv.add(weight=1):   # one third
        ...
    with sv.add(weight=2):   # two thirds
@@ -78,7 +78,7 @@ independently draggable sash.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
    with sv.add(weight=1):
        bs.Label("Left")
    with sv.add(weight=2):
@@ -97,7 +97,7 @@ runtime; for an exact sash position in pixels use ``sash_position()``.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
    with sv.add(key="sidebar", weight=1):
        bs.Label("Sidebar")
    with sv.add(key="main", weight=3):
@@ -114,20 +114,20 @@ Each pane supports an independent internal layout via ``layout=``.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
 
    # Default: children stacked top-to-bottom
-   with sv.add(layout="vstack", gap=8):
+   with sv.add(layout="column", gap=8):
        bs.Label("Row 1")
        bs.Label("Row 2")
 
    # Children placed left-to-right
-   with sv.add(layout="hstack", gap=8):
+   with sv.add(layout="row", gap=8):
        bs.Label("Col A")
        bs.Label("Col B")
 
    # Grid layout
-   with sv.add(layout="grid", columns=["auto", 1], gap=8, sticky_items="ew"):
+   with sv.add(layout="grid", columns=["auto", 1], gap=8, horizontal_items="stretch"):
        bs.Label("Name")
        bs.TextField()
 
@@ -150,7 +150,7 @@ pixels from the left (horizontal) or top (vertical) edge.
 
 .. code-block:: python
 
-   sv = bs.SplitView(fill="both", expand=True)
+   sv = bs.SplitView(grow=True)
    with sv.add(): ...
    with sv.add(): ...
 
@@ -172,8 +172,8 @@ scrollable container.
 :class:`GroupBox <bootstack.widgets.groupbox.GroupBox>` —
 framed containers for use inside panes.
 
-:class:`VStack <bootstack.widgets.stacks.VStack>`,
-:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Column <bootstack.widgets.stacks.Column>`,
+:class:`Row <bootstack.widgets.stacks.Row>`, and
 :class:`Grid <bootstack.widgets.grid.Grid>` —
 non-resizable layout containers.
 

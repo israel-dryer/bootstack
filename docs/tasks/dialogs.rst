@@ -102,7 +102,7 @@ Each button carries a `role` (`"primary"`, `"secondary"`, `"danger"`, or
    from bootstack.dialogs import Dialog, DialogButton
 
    def body(frame):
-       with bs.VStack(padding=24, gap=8, parent=frame):
+       with bs.Column(padding=24, gap=8, parent=frame):
            bs.Label("Reset all settings to their defaults?")
            bs.Label("Your data is not affected.", accent="secondary", font="caption")
 

@@ -21,7 +21,7 @@ SIMPLE = [{"id": i, "text": f"Option {i}"} for i in range(1, 10)]
 
 def hero():
     with bs.App(title="ListView", size=(400, 340), padding=20) as app:
-        bs.ListView(items=TEAM, fill="both", expand=True)
+        bs.ListView(items=TEAM, grow=True, horizontal="stretch")
     app.run()
 
 
@@ -32,7 +32,7 @@ def selection():
             selection_mode="multi",
             show_selection_controls=True,
             accent="primary",
-            fill="both", expand=True,
+            grow=True, horizontal="stretch",
         )
     for item_id in (1, 3, 5):
         lv.data_source.select(item_id)
@@ -42,13 +42,13 @@ def selection():
 
 def features():
     with bs.App(title="ListView — Features", size=(400, 340), padding=20) as app:
-        bs.ListView(items=ALERTS, show_chevron=True, allow_remove=True, fill="both", expand=True)
+        bs.ListView(items=ALERTS, show_chevron=True, allow_remove=True, grow=True, horizontal="stretch")
     app.run()
 
 
 def density():
     with bs.App(title="ListView — Density", size=(400, 340), padding=20) as app:
-        bs.ListView(items=SIMPLE, striped=True, density="compact", fill="both", expand=True)
+        bs.ListView(items=SIMPLE, striped=True, density="compact", grow=True, horizontal="stretch")
     app.run()
 
 

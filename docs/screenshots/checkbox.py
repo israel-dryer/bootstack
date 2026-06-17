@@ -3,7 +3,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="Checkbox", padding=20) as app:
-        with bs.HStack(gap=24, fill="x"):
+        with bs.Row(gap=24, horizontal="stretch"):
             bs.Checkbox("Unchecked", value=False)
             bs.Checkbox("Checked",   value=True)
 
@@ -12,7 +12,7 @@ def hero():
 
 def accents():
     with bs.App(title="Checkbox — Accents", padding=20) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
                 bs.Checkbox(accent.title(), accent=accent, value=True)
 
@@ -21,7 +21,7 @@ def accents():
 
 def tristate():
     with bs.App(title="Checkbox — Tristate", padding=20) as app:
-        with bs.HStack(gap=24, fill="x"):
+        with bs.Row(gap=24, horizontal="stretch"):
             bs.Checkbox("Indeterminate", tristate=True)
             bs.Checkbox("Checked",       tristate=True, value=True)
             bs.Checkbox("Unchecked",     tristate=True, value=False)
@@ -31,7 +31,7 @@ def tristate():
 
 def custom_icons():
     with bs.App(title="Checkbox — Custom Icons", padding=20) as app:
-        with bs.HStack(gap=24, fill="x"):
+        with bs.Row(gap=24, horizontal="stretch"):
             bs.Checkbox("Checked",
                 on_icon="check-circle-fill", off_icon="circle",
                 show_indicator=False, accent="success", value=True)
@@ -44,7 +44,7 @@ def custom_icons():
 
 def disabled():
     with bs.App(title="Checkbox — Disabled", padding=20) as app:
-        with bs.HStack(gap=24, fill="x"):
+        with bs.Row(gap=24, horizontal="stretch"):
             bs.Checkbox("Disabled",         disabled=True)
             bs.Checkbox("Disabled checked", value=True, disabled=True)
 

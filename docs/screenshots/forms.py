@@ -10,7 +10,7 @@ def hero():
                 "age":    30,
                 "active": True,
             },
-            fill="x",
+            horizontal="stretch",
         )
 
     app.run()
@@ -26,7 +26,7 @@ def columns():
                 "zip":    "62701",
             },
             col_count=2,
-            fill="x",
+            horizontal="stretch",
         )
 
     app.run()
@@ -47,7 +47,7 @@ def grouped():
                     ],
                 ),
             ],
-            fill="x",
+            horizontal="stretch",
         )
 
     app.run()
@@ -74,7 +74,7 @@ def tabbed():
                     ),
                 ]),
             ],
-            fill="x",
+            horizontal="stretch",
         )
 
     app.run()

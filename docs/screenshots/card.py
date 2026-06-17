@@ -12,7 +12,7 @@ def hero():
 
 def accent():
     with bs.App(title="Card — Accents", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12):
+        with bs.Row(gap=12):
             for a in ("primary", "secondary", "info", "success", "warning", "danger"):
                 with bs.Card(accent=a, padding=24, gap=4):
                     bs.Label(a.title(), accent=a, font="heading-sm")
@@ -22,18 +22,18 @@ def accent():
 
 def layout():
     with bs.App(title="Card — Layout Modes", padding=20) as app:
-        with bs.HStack(gap=12, anchor_items="n"):
+        with bs.Row(gap=12, vertical_items="top"):
             with bs.Card(padding=12, gap=8):
-                bs.Label("VStack (default)", font="heading-sm")
+                bs.Label("Column (default)", font="heading-sm")
                 bs.Label("First item")
                 bs.Label("Second item")
                 bs.Label("Third item")
-            with bs.Card(layout="hstack", padding=12, gap=12, anchor_items="center"):
-                bs.Label("HStack", font="heading-sm")
+            with bs.Card(layout="row", padding=12, gap=12, vertical_items="center"):
+                bs.Label("Row", font="heading-sm")
                 bs.Label("A")
                 bs.Label("B")
                 bs.Label("C")
-            with bs.Card(layout="grid", columns=[1, 1], padding=12, gap=8, sticky_items="ew"):
+            with bs.Card(layout="grid", columns=[1, 1], padding=12, gap=8, horizontal_items="stretch"):
                 bs.Label("Grid", font="heading-sm")
                 bs.Label("2 cols")
                 bs.Label("Item A")

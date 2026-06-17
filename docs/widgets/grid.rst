@@ -33,17 +33,17 @@ Column definitions
 .. code-block:: python
 
    # Three equal-weight columns (columns=3 is the same shorthand)
-   with bs.Grid(columns=[1, 1, 1], gap=8, sticky_items="ew", fill="x"):
+   with bs.Grid(columns=[1, 1, 1], gap=8, horizontal="stretch"):
        for label in ("Equal", "Weight", "Columns"):
            bs.Button(label)
 
    # Label column sizes to content; field column takes the rest
-   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
+   with bs.Grid(columns=["auto", 1], gap=8, horizontal="stretch"):
        bs.Button("auto")
        bs.Button("weight=1 (fills remaining)")
 
    # Fixed sidebar, flexible content, fixed panel
-   with bs.Grid(columns=["120px", 1, "80px"], gap=8, sticky_items="ew", fill="x"):
+   with bs.Grid(columns=["120px", 1, "80px"], gap=8, horizontal="stretch"):
        bs.Button("120px")
        bs.Button("weight=1")
        bs.Button("80px")
@@ -85,12 +85,12 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
 .. code-block:: python
 
    # 8 px between all cells
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew"):
+   with bs.Grid(columns=[1, 1], gap=8):
        for label in ("A", "B", "C", "D"):
            bs.Button(label)
 
    # 32 px between columns, 8 px between rows
-   with bs.Grid(columns=[1, 1], gap=(32, 8), sticky_items="ew"):
+   with bs.Grid(columns=[1, 1], gap=(32, 8)):
        for label in ("A", "B", "C", "D"):
            bs.Button(label)
 
@@ -102,30 +102,30 @@ a 2-tuple ``(col_gap, row_gap)`` sets them independently.
    :class: bs-screenshot-dark
    :alt: Grid gap — dark theme
 
-Child alignment — sticky_items
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In-cell alignment
+~~~~~~~~~~~~~~~~~~
 
-``sticky_items=`` controls how children fill their cell. Pass any
-combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``:
+``horizontal_items=`` and ``vertical_items=`` control how children align
+within their cell. Both default to ``'stretch'`` (the child fills the cell on
+that axis); set either to ``'left'`` / ``'center'`` / ``'right'`` or ``'top'`` /
+``'center'`` / ``'bottom'`` to place the child at its natural size instead.
 
-- ``'ew'`` — stretch horizontally, natural height (most common for forms)
-- ``'nsew'`` — stretch to fill the entire cell
-- ``''`` — center in cell at natural size
-
-Individual children can override the default with their own ``sticky=``.
+Individual children can override the defaults with their own ``horizontal=`` /
+``vertical=``.
 
 .. code-block:: python
 
    # stretch horizontally — natural height
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="ew", height=80):
+   with bs.Grid(columns=[1, 1], gap=8, vertical_items="center", height=80):
        bs.Button("A"); bs.Button("B")
 
    # center in cell at natural size
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="", height=80):
+   with bs.Grid(columns=[1, 1], gap=8,
+                horizontal_items="center", vertical_items="center", height=80):
        bs.Button("A"); bs.Button("B")
 
-   # fill the entire cell
-   with bs.Grid(columns=[1, 1], gap=8, sticky_items="nsew", height=80):
+   # fill the entire cell (the default on both axes)
+   with bs.Grid(columns=[1, 1], gap=8, height=80):
        bs.Button("A"); bs.Button("B")
 
 .. image:: /_static/examples/grid-sticky-light.png
@@ -157,7 +157,7 @@ label column and a ``1``-weight field column:
 
 .. code-block:: python
 
-   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
+   with bs.Grid(columns=["auto", 1], gap=8, horizontal="stretch"):
        bs.Label("First name")
        bs.TextField()
        bs.Label("Last name")

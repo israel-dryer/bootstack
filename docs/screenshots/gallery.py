@@ -50,7 +50,7 @@ def hero():
     with bs.App(title="Gallery", size=(620, 460), padding=16) as app:
         bs.Gallery(items=_ITEMS, image_field="image", caption_field="name",
                    tile_size=(140, 110), corner_radius=10, selection_mode="multi",
-                   fill="both", expand=True)
+                   grow=True, horizontal="stretch")
     app.run()
 
 
@@ -58,7 +58,7 @@ def selection():
     with bs.App(title="Gallery — Selection", size=(620, 460), padding=16) as app:
         g = bs.Gallery(items=_ITEMS, image_field="image", caption_field="name",
                        tile_size=(140, 110), corner_radius=10, selection_mode="multi",
-                       accent="primary", fill="both", expand=True)
+                       accent="primary", grow=True, horizontal="stretch")
         g.select_items([1, 4, 5])
     app.run()
 

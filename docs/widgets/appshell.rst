@@ -39,7 +39,7 @@ Headers, separators, and footer items
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Chunk a flat list with `add_header()` (a quiet section label) and
-`add_separator()` (a divider). Pin an item to the bottom of the sidebar with
+`add_divider()` (a divider). Pin an item to the bottom of the sidebar with
 `add_footer_page()` — handy for a Settings or Account entry.
 
 .. code-block:: python
@@ -49,7 +49,7 @@ Chunk a flat list with `add_header()` (a quiet section label) and
    with shell.add_page("inbox", text="Inbox", icon="inbox"):
        ...
 
-   shell.add_separator()
+   shell.add_divider()
    shell.add_header("Documents")
    with shell.add_page("files", text="Files", icon="folder"):
        ...
@@ -94,7 +94,7 @@ record as a dict. The first item is selected automatically.
 
        @shell.detail
        def show(record):
-           with bs.VStack(fill="both", gap=12, padding=24):
+           with bs.Column(grow=True, horizontal="stretch", gap=12, padding=24):
                bs.Label(record["title"], font="heading-lg")
                bs.Label(record["text"])
    shell.run()

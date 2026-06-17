@@ -30,7 +30,7 @@ token.
 
 .. code-block:: python
 
-   sb = bs.StatusBar(fill="x")
+   sb = bs.StatusBar(horizontal="stretch")
    sb.add_text("Ready", icon="check-circle")
    sb.add_text("Ln 12, Col 5", font="caption")
 
@@ -80,7 +80,7 @@ cluster). Useful for a slim progress indicator or a badge.
 
 .. code-block:: python
 
-   sb = bs.StatusBar(fill="x")
+   sb = bs.StatusBar(horizontal="stretch")
    sb.add_text("Syncing", icon="arrow-repeat")
    bs.ProgressBar(parent=sb, value=65)
    sb.add_text("main", icon="git", side="right")
@@ -93,7 +93,7 @@ quiet, recessed band; ``'card'`` lifts it from the page.
 
 .. code-block:: python
 
-   sb = bs.StatusBar(fill="x", surface="card")
+   sb = bs.StatusBar(horizontal="stretch", surface="card")
    sb.add_text("Card surface", icon="layers")
    sb.add_text("3 warnings", icon="exclamation-triangle", side="right")
    sb.add_text("main", icon="git", side="right")
@@ -109,17 +109,17 @@ quiet, recessed band; ``'card'`` lifts it from the page.
 Pinning to a window
 ~~~~~~~~~~~~~~~~~~~~~
 
-Use ``fill="x"`` with ``side="bottom"`` to pin a status bar to the bottom of any
-``App`` or ``Window``.
+Use ``horizontal="stretch"`` with ``side="bottom"`` to pin a status bar to the
+bottom of any ``App`` or ``Window``.
 
 .. code-block:: python
 
    with bs.App(title="My App", size=(800, 500)) as app:
-       sb = bs.StatusBar(fill="x", side="bottom")
+       sb = bs.StatusBar(horizontal="stretch", side="bottom")
        sb.add_text("Ready", icon="check-circle")
        sb.add_text("main", icon="git", side="right")
 
-       with bs.VStack(fill="both", expand=True, padding=16):
+       with bs.Column(grow=True, padding=16):
            bs.Label("Document", font="heading-lg")
    app.run()
 

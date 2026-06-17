@@ -25,7 +25,7 @@ that tab's page.
 
 .. code-block:: python
 
-   tabs = bs.Tabs(fill="both", expand=True)
+   tabs = bs.Tabs(grow=True)
 
    with tabs.add("home", label="Home"):
        bs.Label("Home page content")
@@ -65,7 +65,7 @@ right. The default is ``'horizontal'`` (tabs above content).
 
 .. code-block:: python
 
-   tabs = bs.Tabs(orient="vertical", fill="both", expand=True)
+   tabs = bs.Tabs(orient="vertical", grow=True)
 
    with tabs.add("editor", label="Editor", icon="code-slash"):
        bs.Label("Editor panel")
@@ -148,13 +148,13 @@ Page layout modes
 ~~~~~~~~~~~~~~~~~
 
 Each tab page has an independent internal layout via the ``layout=`` argument
-of `add()`. The default is ``'vstack'``.
+of `add()`. The default is ``'column'``.
 
 .. code-block:: python
 
    # Grid layout
    with tabs.add("form", label="Form", layout="grid",
-                 columns=["auto", 1], gap=8, sticky_items="ew"):
+                 columns=["auto", 1], gap=8, horizontal_items="stretch"):
        bs.Label("Username")
        bs.TextField()
        bs.Label("Password")

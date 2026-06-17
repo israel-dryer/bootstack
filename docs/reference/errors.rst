@@ -45,12 +45,12 @@ be misspelled; reach for the string form only for dynamic event names:
 Raised when a widget can't find a container to attach to — typically because it
 was created outside any ``with`` container block, or under a parent that isn't a
 layout container. The fix is structural: create the widget inside an ``App`` or a
-layout container (``VStack``, ``HStack``, ``Card``, …):
+layout container (``Column``, ``Row``, ``Card``, …):
 
 .. code-block:: python
 
    with bs.App() as app:
-       with bs.VStack():
+       with bs.Column():
            bs.Label("Inside a container — fine.")
 
    bs.Label("Created with no container")   # ParentResolutionError

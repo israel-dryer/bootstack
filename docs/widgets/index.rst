@@ -54,8 +54,8 @@ below, or jump straight to a widget from the sidebar.
 
       Arrange and group widgets — stacks, grids, cards, and resizable panes.
 
-      :doc:`vstack` · :doc:`hstack` · :doc:`grid` · :doc:`card` · :doc:`groupbox` ·
-      :doc:`separator` · :doc:`accordion` · :doc:`scrollview` · :doc:`splitview`
+      :doc:`column` · :doc:`row` · :doc:`grid` · :doc:`card` · :doc:`groupbox` ·
+      :doc:`divider` · :doc:`accordion` · :doc:`scrollview` · :doc:`splitview`
 
    .. grid-item-card:: :octicon:`list-unordered;1.5em;sd-mr-1` Toolbars and menus
 
@@ -160,11 +160,11 @@ below, or jump straight to a widget from the sidebar.
    :caption: Layout
    :hidden:
 
-   separator
+   divider
    card
    groupbox
-   vstack
-   hstack
+   column
+   row
    grid
    accordion
    scrollview

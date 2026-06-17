@@ -13,10 +13,10 @@ def app():
         a._capture_full_window = True
         bs.Label("Notes", font="heading-lg")
         bs.Label("A single window you fill with widgets.", accent="secondary")
-        bs.TextField(placeholder="Title", fill="x")
+        bs.TextField(placeholder="Title", horizontal="stretch")
         bs.TextArea(value="Reach for App first — it covers anything that fits on one screen.",
-                    fill="both", expand=True)
-        with bs.HStack(fill="x", gap=8, anchor_items="e"):
+                    grow=True, horizontal="stretch")
+        with bs.Row(horizontal="stretch", gap=8, horizontal_items="right"):
             bs.Button("Discard", variant="ghost")
             bs.Button("Save", accent="primary")
     a.run()
@@ -28,12 +28,12 @@ def appshell():
         with shell.add_toolbar() as bar:
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_spacer()
             bar.add_theme_toggle()
         with shell.add_page("home", text="Home", icon="house"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label("Home", font="heading-lg")
                 bs.Label("A window with a sidebar and swappable pages.", accent="secondary")
         with shell.add_page("reports", text="Reports", icon="bar-chart"):
@@ -50,3 +50,6 @@ SCENES = {
     "app": app,
     "appshell": appshell,
 }
+
+if __name__ == "__main__":
+    app()

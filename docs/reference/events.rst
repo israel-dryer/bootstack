@@ -368,7 +368,7 @@ children, and bindings.
 
 .. code-block:: python
 
-   panel = bs.VStack()
+   panel = bs.Column()
    ...
    panel.detach()            # hide it — frees its space
    panel.attach()            # bring it back exactly where it was
@@ -394,7 +394,7 @@ with no startup flicker:
 
 .. code-block:: python
 
-   with bs.VStack():
+   with bs.Column():
        bs.Label("Account")
        banner = bs.Label("Saved!", accent="success", attached=False)
        bs.TextField()

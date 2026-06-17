@@ -16,7 +16,7 @@ dividers add visual structure when the destinations fall into categories.
 How it works
 ------------
 
-`add_header(text)` adds a quiet, non-interactive section label; `add_separator()`
+`add_header(text)` adds a quiet, non-interactive section label; `add_divider()`
 adds a divider. The pages added after a header read as belonging to it — the
 label's color and the extra top margin carry the grouping, so the items stay
 flush (no indentation).

@@ -35,11 +35,11 @@ ORDERS = [
 
 
 def _stat(label, pct, accent):
-    with bs.VStack(fill="x", gap=3):
-        with bs.HStack(fill="x"):
+    with bs.Column(horizontal="stretch", gap=3):
+        with bs.Row(horizontal="stretch"):
             bs.Label(label, font="caption", accent="secondary")
-            bs.Label(f"{pct}%", font="caption", fill="x", expand=True, anchor="e")
-        bs.ProgressBar(value=pct, accent=accent, fill="x")
+            bs.Label(f"{pct}%", font="caption", grow=True, horizontal="right")
+        bs.ProgressBar(value=pct, accent=accent, horizontal="stretch")
 
 
 with bs.AppShell(title="Acme Analytics", size=(890, 650),
@@ -50,7 +50,7 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
         with bar.add_menu("File") as file:
             file.add_action("New report", shortcut="Mod+N", on_click=lambda: None)
             file.add_action("Export…", shortcut="Mod+E", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         with bar.add_menu("View") as view:
             view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -66,17 +66,15 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
 
     with shell.add_workspace("dashboard", text="Dashboard", icon="speedometer2") as ws:
         with ws.content:
-            with bs.VStack(fill="both", expand=True, gap=12, padding=18, anchor_items="w"):
-                with bs.Grid(columns=4, rows=[0, 1], gap=14, fill="both", expand=True,
-                             sticky_items="nsew"):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=18):
+                with bs.Grid(columns=4, rows=[0, 1], gap=14, grow=True, horizontal="stretch"):
                     for i, (label, value, delta, accent) in enumerate(KPIS):
-                        with bs.Card(accent=accent, padding=8, gap=0, row=0, column=i, anchor_items="w"):
+                        with bs.Card(accent=accent, padding=8, gap=0, row=0, column=i):
                             bs.Label(label)
                             bs.Label(value, font="display-lg")
                             bs.Label(delta, font="caption", accent="secondary")
 
-                    with bs.VStack(row=1, column=0, columnspan=3, fill="both", expand=True,
-                                   gap=6, anchor_items="w"):
+                    with bs.Column(row=1, column=0, columnspan=3, gap=6):
                         bs.DataTable(
                             columns=[
                                 {"key": "id", "text": "Order", "width": 75},
@@ -87,7 +85,7 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
                             rows=ORDERS,
                             density="compact",
                             page_size=13,
-                            fill="both", expand=True,
+                            grow=True, horizontal="stretch",
                         )
 
                     with bs.Card(row=0, column=3, rowspan=2, padding=16, gap=10):
@@ -95,19 +93,19 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
                         _stat("Monthly goal", 72, "primary")
                         _stat("New customers", 48, "info")
                         _stat("Churn", 12, "danger")
-                        with bs.VStack(fill="x", anchor_items="center", margin_y=4):
+                        with bs.Column(horizontal="stretch", horizontal_items="center", margin_y=4):
                             bs.Gauge(value=86, size=150, thickness=14, variant="semi",
                                      segment_width=4, value_suffix="%",
                                      subtitle="Satisfaction", surface="card",
                                      accent="success", margin_y=(24, 0))
-                        bs.Separator(fill="x")
+                        bs.Divider(horizontal="stretch")
                         bs.Label("Refresh rate", font="caption", accent="secondary")
-                        bs.Slider(value=60, min_value=0, max_value=100, fill="x")
+                        bs.Slider(value=60, min_value=0, max_value=100, horizontal="stretch")
                         bs.Switch("Auto-refresh", value=True)
                         bs.Switch("Email alerts", value=False)
-                        with bs.HStack(fill="x", gap=8):
+                        with bs.Row(horizontal="stretch", gap=8):
                             bs.Button("Reset", variant="ghost")
-                            bs.Button("Apply", accent="primary", fill="x", expand=True)
+                            bs.Button("Apply", accent="primary", grow=True)
 
     with shell.add_workspace("orders", text="Orders", icon="receipt") as ws:
         with ws.content:

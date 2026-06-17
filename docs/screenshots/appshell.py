@@ -8,7 +8,7 @@ def hero():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -17,10 +17,10 @@ def hero():
             bar.add_theme_toggle()
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
-            with bs.VStack(fill="x", gap=12, padding=24):
+            with bs.Column(horizontal="stretch", gap=12, padding=24):
                 bs.Label("Dashboard", font="heading-lg")
                 bs.Label("Welcome back. Here is your overview.")
-                with bs.Grid(columns=3, gap=12, fill="x", sticky_items="ew"):
+                with bs.Grid(columns=3, gap=12, horizontal="stretch", horizontal_items="stretch"):
                     with bs.Card(padding=16, gap=4):
                         bs.Label("Revenue", font="caption")
                         bs.Label("$12,400", font="heading-md")
@@ -32,20 +32,20 @@ def hero():
                         bs.Label("340", font="heading-md")
 
         with shell.add_page("inbox", text="Inbox", icon="inbox"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Inbox", font="heading-lg")
                 bs.Label("No new messages.")
 
-        shell.add_separator()
+        shell.add_divider()
         shell.add_header("Documents")
 
         with shell.add_page("files", text="Files", icon="folder"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Files", font="heading-lg")
                 bs.Label("Your documents will appear here.")
 
         with shell.add_footer_page("settings", text="Settings", icon="gear"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Settings", font="heading-lg")
                 bs.Label("Adjust your preferences.")
 
@@ -60,7 +60,7 @@ def compact():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -69,10 +69,10 @@ def compact():
             bar.add_theme_toggle()
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
-            with bs.VStack(fill="x", gap=12, padding=24):
+            with bs.Column(horizontal="stretch", gap=12, padding=24):
                 bs.Label("Dashboard", font="heading-lg")
                 bs.Label("Welcome back. Here is your overview.")
-                with bs.Grid(columns=3, gap=12, fill="x", sticky_items="ew"):
+                with bs.Grid(columns=3, gap=12, horizontal="stretch", horizontal_items="stretch"):
                     with bs.Card(padding=16, gap=4):
                         bs.Label("Revenue", font="caption")
                         bs.Label("$12,400", font="heading-md")
@@ -84,15 +84,15 @@ def compact():
                         bs.Label("340", font="heading-md")
 
         with shell.add_page("inbox", text="Inbox", icon="inbox"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Inbox", font="heading-lg")
 
         with shell.add_page("files", text="Files", icon="folder"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Files", font="heading-lg")
 
         with shell.add_footer_page("settings", text="Settings", icon="gear"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Settings", font="heading-lg")
 
         shell.navigate("dashboard")

@@ -27,7 +27,7 @@ bootstack layout or widget:
    from bootstack.dialogs import Dialog
 
    def build(frame):
-       with bs.VStack(padding=24, gap=12, parent=frame):
+       with bs.Column(padding=24, gap=12, parent=frame):
            bs.Label("New version available", font="heading-sm")
            bs.Label("bootstack 2.1.0 is ready to install.")
 

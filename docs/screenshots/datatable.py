@@ -51,7 +51,7 @@ SIZE = (820, 440)
 
 
 def _table(**kwargs):
-    opts = dict(columns=COLUMNS, rows=ROWS, striped=True, fill="both", expand=True)
+    opts = dict(columns=COLUMNS, rows=ROWS, striped=True, grow=True, horizontal="stretch")
     opts.update(kwargs)
     return bs.DataTable(**opts)
 
@@ -115,9 +115,9 @@ POPUP_WINDOW = (980, 396)   # width: right room for popdowns; height: hugs the t
 
 def export():
     with bs.App(title="Table — Export", size=POPUP_WINDOW, padding=16) as app:
-        with bs.VStack(width=TABLE_BOX[0], height=TABLE_BOX[1], anchor="nw"):
+        with bs.Column(width=TABLE_BOX[0], height=TABLE_BOX[1]):
             t = _table(selection_mode="multi", allow_export=True,
-                       fill="both", expand=True)
+                       grow=True, horizontal="stretch")
     t.select_rows([1, 2])   # menu labels read "selection (2)"
     app.tk.after(850, t._internal._export_btn.show_menu)
     app.run()
@@ -128,7 +128,7 @@ def row_menu():
     # needs vertical room to drop fully below the clicked row.
     with bs.App(title="Table — Row menu", size=(820, 600), padding=16) as app:
         t = _table(selection_mode="multi", allow_filter=True, allow_delete=True,
-                   fill="both", expand=True)
+                   grow=True, horizontal="stretch")
     iv = t._internal
 
     def open_menu():
@@ -156,7 +156,7 @@ def header_menu():
     # Tall window: the header menu (align/move/hide/group/reset/clear-sort) is
     # long, so it needs room to drop fully below the column header.
     with bs.App(title="Table — Header menu", size=(820, 600), padding=16) as app:
-        t = _table(allow_filter=True, allow_group=True, fill="both", expand=True)
+        t = _table(allow_filter=True, allow_group=True, grow=True, horizontal="stretch")
     iv = t._internal
 
     def open_menu():
@@ -180,7 +180,7 @@ def header_menu():
 
 def edit_record():
     with bs.App(title="Table — Edit record", size=(820, 600), padding=16) as app:
-        t = _table(allow_edit=True, allow_delete=True, fill="both", expand=True)
+        t = _table(allow_edit=True, allow_delete=True, grow=True, horizontal="stretch")
     iv = t._internal
 
     def open_edit():
@@ -207,7 +207,7 @@ def column_chooser():
     # Tall window: the chooser dialog drops down from the top-right button and can
     # be up to ~380px tall, so it needs vertical room below the toolbar.
     with bs.App(title="Table — Columns", size=(820, 475), padding=16) as app:
-        t = _table(show_column_chooser=True, fill="both", expand=True)
+        t = _table(show_column_chooser=True, grow=True, horizontal="stretch")
     iv = t._internal
 
     def open_chooser():

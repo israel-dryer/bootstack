@@ -3,7 +3,7 @@ Toolbar
 
 A horizontal strip of buttons, labels, **menus**, and other widgets — the
 multi-purpose chrome primitive. Items are added left-to-right via
-``add_button()``, ``add_label()``, ``add_menu()``, ``add_separator()``,
+``add_button()``, ``add_label()``, ``add_menu()``, ``add_divider()``,
 ``add_spacer()``, and ``add_widget()``. A window's top region is a *stack* of
 toolbars you build with ``add_toolbar()`` (see :ref:`toolbars-in-a-window`).
 
@@ -26,7 +26,7 @@ button. Omit ``label=`` to get an icon-only button.
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x")
+   tb = bs.Toolbar(horizontal="stretch")
 
    tb.add_button("Save", icon="floppy")           # text + icon
    tb.add_button(icon="gear")                      # icon-only
@@ -51,10 +51,10 @@ intent to individual buttons.
    :class: bs-screenshot-dark
    :alt: Toolbar accent buttons — dark theme
 
-Separators and spacers
+Dividers and spacers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-``add_separator()`` inserts a thin vertical rule between item groups.
+``add_divider()`` inserts a thin vertical rule between item groups.
 ``add_spacer()`` inserts a flexible gap that pushes everything added after it
 to the right side.
 
@@ -62,7 +62,7 @@ to the right side.
 
    tb.add_button("Bold",   icon="type-bold")
    tb.add_button("Italic", icon="type-italic")
-   tb.add_separator()
+   tb.add_divider()
    tb.add_button("Align left",   icon="text-left")
    tb.add_button("Align center", icon="text-center")
    tb.add_button("Align right",  icon="text-right")
@@ -86,7 +86,7 @@ for the application name or section titles.
 .. code-block:: python
 
    tb.add_label("My App", font="heading-md")
-   tb.add_separator()
+   tb.add_divider()
    tb.add_button("New", icon="file-earmark-plus")
 
 Adding menus
@@ -94,7 +94,7 @@ Adding menus
 
 A menu (File / Edit / …) is just another toolbar item. ``add_menu()`` returns a
 context-manager builder — add ``add_action`` / ``add_check`` / ``add_radio`` /
-``add_separator`` items inside the ``with`` block. A ``shortcut=`` is shown beside
+``add_divider`` items inside the ``with`` block. A ``shortcut=`` is shown beside
 the item **and** bound for you. On Windows/Linux the menu renders as an in-window
 dropdown; on macOS it bridges to the native global menu bar.
 
@@ -103,7 +103,7 @@ dropdown; on macOS it bridges to the native global menu bar.
    with tb.add_menu("File") as file:
        file.add_action("New",  shortcut="Mod+N", on_click=new_doc)
        file.add_action("Open", shortcut="Mod+O", on_click=open_doc)
-       file.add_separator()
+       file.add_divider()
        file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
    with tb.add_menu("View") as view:
        view.add_check("Status bar", checked=True, on_click=toggle_status)
@@ -129,15 +129,15 @@ standalone ``bs.Toolbar`` defaults to ``"default"``.
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x", density="compact")
+   tb = bs.Toolbar(horizontal="stretch", density="compact")
    tb.add_button(icon="type-bold")
    tb.add_button(icon="type-italic")
    tb.add_button(icon="type-underline")
-   tb.add_separator()
+   tb.add_divider()
    tb.add_button(icon="text-left")
    tb.add_button(icon="text-center")
    tb.add_button(icon="text-right")
-   tb.add_separator()
+   tb.add_divider()
    tb.add_button(icon="list-ul")
    tb.add_button(icon="list-ol")
    tb.add_spacer()
@@ -161,7 +161,7 @@ toolbar. Override per-button with the ``variant=`` argument on
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x", button_variant="outline")
+   tb = bs.Toolbar(horizontal="stretch", button_variant="outline")
    tb.add_button("Save", icon="floppy")        # outline
    tb.add_button("Run", variant="solid")       # override to solid
 
@@ -173,7 +173,7 @@ the background token — ``'card'`` lifts it slightly from the page background.
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x", show_border=True, surface="card")
+   tb = bs.Toolbar(horizontal="stretch", show_border=True, surface="card")
    tb.add_button("New",  icon="file-earmark-plus")
    tb.add_button("Open", icon="folder2-open")
    tb.add_button("Save", icon="floppy")
@@ -199,7 +199,7 @@ the class accepts), so the widget matches the rest of the bar:
 
 .. code-block:: python
 
-   tb = bs.Toolbar(fill="x", density="compact")
+   tb = bs.Toolbar(horizontal="stretch", density="compact")
    tb.add_widget(bs.Select, options=["main", "dev", "feat/new-ui"], value="main")
    tb.add_widget(bs.TextField, placeholder="Search", width=24)
 

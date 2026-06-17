@@ -8,7 +8,7 @@ COUNTRIES = [
 
 def hero():
     with bs.App(title="Select", size=(540, 300), padding=20) as app:
-        sel = bs.Select(COUNTRIES, label="Country", value="France", fill="x")
+        sel = bs.Select(COUNTRIES, label="Country", value="France", horizontal="stretch")
 
     app.tk.after(850, sel._internal._show_selection_options)
     app.run()
@@ -29,7 +29,7 @@ def grouping():
             group_by="category",
             label="Ingredient",
             value="banana",
-            fill="x",
+            horizontal="stretch",
         )
 
     app.tk.after(850, sel._internal._show_selection_options)
@@ -38,7 +38,7 @@ def grouping():
 
 def states():
     with bs.App(title="Select — States", padding=20) as app:
-        with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=8, horizontal="stretch", grow_items=True):
             normal = bs.Select(["A", "B", "C"], value="A", label="Normal")
             bs.Select(["A", "B", "C"], value="A", label="Read only", read_only=True)
             bs.Select(["A", "B", "C"], value="A", label="Disabled",  disabled=True)

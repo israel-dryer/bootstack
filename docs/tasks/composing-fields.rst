@@ -38,7 +38,7 @@ a price:
 
 .. code-block:: python
 
-   price = bs.NumberField(value=1499, label="Price", fill="x")
+   price = bs.NumberField(value=1499, label="Price", horizontal="stretch")
    price.insert_addon("label", "before", text="$")
    price.insert_addon("label", "after", text="USD", accent="secondary")
 
@@ -61,7 +61,7 @@ sparing you a longer caption. The call is the same on any field, text or not:
 
    import datetime
 
-   bday = bs.DateField(label="Date of birth", value=datetime.date(1990, 5, 4), fill="x")
+   bday = bs.DateField(label="Date of birth", value=datetime.date(1990, 5, 4), horizontal="stretch")
    bday.insert_addon("label", "before", icon="cake")
 
 .. image:: /_static/examples/composing-fields-birthday-light.png
@@ -81,7 +81,7 @@ the left for recognition, and a clear button on the right that empties the field
 
 .. code-block:: python
 
-   field = bs.TextField(placeholder="Search products...", value="wireless", fill="x")
+   field = bs.TextField(placeholder="Search products...", value="wireless", horizontal="stretch")
    field.insert_addon("label", "before", icon="search")
 
    def clear():
@@ -111,7 +111,7 @@ writes the field to the clipboard, so it opts back in with
 
    from bootstack.clipboard import set_clipboard
 
-   key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, fill="x")
+   key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, horizontal="stretch")
 
    def do_copy():
        set_clipboard(key.value)
@@ -139,7 +139,7 @@ app — here, whether a width is measured in pixels or percent:
 
 .. code-block:: python
 
-   size = bs.NumberField(value=64, label="Width", fill="x")
+   size = bs.NumberField(value=64, label="Width", horizontal="stretch")
    percent = bs.Signal(True)         # False -> px, True -> %
    size.insert_addon("toggle", "after", name="unit", text="%", signal=percent)
 
@@ -196,8 +196,8 @@ practical way to ship a custom input is to wrap a recipe in a function:
        return field
 
    # use it like any other field
-   with bs.VStack(gap=8):
-       query = search_field(placeholder="Search...", fill="x")
+   with bs.Column(gap=8):
+       query = search_field(placeholder="Search...", horizontal="stretch")
        bs.Button("Go", on_click=lambda: run_query(query.value))
 
 `search_field()` returns a real :class:`~bootstack.TextField`, so `.value`,

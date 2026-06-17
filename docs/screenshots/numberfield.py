@@ -3,7 +3,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="NumberField", minsize=(720, 1), padding=20, gap=12) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True, vertical_items="top"):
             field = bs.NumberField(
                 label="Quantity",
                 value=42,
@@ -21,7 +21,7 @@ def hero():
 
 def steppers():
     with bs.App(title="NumberField — Stepper Buttons", minsize=(720, 1), padding=20) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True):
             bs.NumberField(label="With steppers", value=25)
             bs.NumberField(label="No steppers",   value=25, show_steppers=False)
 
@@ -30,7 +30,7 @@ def steppers():
 
 def value_format():
     with bs.App(title="NumberField — Value Formatting", minsize=(720, 1), padding=20, gap=8) as app:
-        with bs.Grid(columns=[1, 1], gap=8, fill="x", sticky_items="ew"):
+        with bs.Grid(columns=[1, 1], gap=8, horizontal="stretch", horizontal_items="stretch"):
             bs.NumberField(1234567, value_format="#,##0",    label="Thousands",  show_steppers=False)
             bs.NumberField(3.14159, value_format="#,##0.00", label="2 decimals", show_steppers=False)
             bs.NumberField(0.75,    value_format="percent",  label="Percent",    show_steppers=False)
@@ -41,7 +41,7 @@ def value_format():
 
 def states():
     with bs.App(title="NumberField — States", minsize=(720, 1), padding=20) as app:
-        with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=8, horizontal="stretch", grow_items=True):
             normal = bs.NumberField(value=42, label="Normal")
             bs.NumberField(value=42, label="Read only", read_only=True)
             bs.NumberField(value=42, label="Disabled",  disabled=True)
@@ -52,7 +52,7 @@ def states():
 
 def validation():
     with bs.App(title="NumberField — Validation", minsize=(720, 1), padding=20) as app:
-        field = bs.NumberField(label="Age", value=150, fill="x")
+        field = bs.NumberField(label="Age", value=150, horizontal="stretch")
         field.add_validation_rule(
             "custom",
             func=lambda v: v != "" and 0 <= float(v) <= 120,

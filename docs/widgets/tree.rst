@@ -217,7 +217,7 @@ populate, so the items can depend on the node:
        menu.add_item("Rename", on_click=lambda: rename(node))
        if not node.is_leaf:
            menu.add_item("Expand all", on_click=lambda: tree.expand(node))
-       menu.add_separator()
+       menu.add_divider()
        menu.add_item("Delete", icon="trash", on_click=lambda: tree.remove(node))
 
    tree.set_context_menu(build)

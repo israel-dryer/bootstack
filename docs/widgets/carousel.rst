@@ -140,7 +140,7 @@ records, the only work is finding the activated record's slide position:
        start = next(i for i, p in enumerate(photos) if p["id"] == record["id"])
        with bs.Window(title=record["name"], size=(900, 650),
                       modal=True, center_on_parent=True) as win:
-           viewer = bs.Carousel(items=photos, index=start, fill="both", expand=True)
+           viewer = bs.Carousel(items=photos, index=start, grow=True, horizontal="stretch")
            viewer.on_item_click(lambda r: win.close())   # click the photo to close
        win.show()
 

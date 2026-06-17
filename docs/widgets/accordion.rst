@@ -58,7 +58,7 @@ times. The first section added is expanded by default.
    with acc.add("Always one open"):
        bs.Label("Cannot be the last one closed.")
 
-Separators
+Dividers
 ~~~~~~~~~~
 
 ``show_separators=True`` (default) draws a divider line between sections.
@@ -136,15 +136,15 @@ title.
 Section layout
 ~~~~~~~~~~~~~~
 
-Each section body supports the same ``layout=``, ``gap=``, ``fill_items=``,
-and other layout kwargs as a standalone
+Each section body supports the same ``layout=``, ``gap=``,
+``horizontal_items=``, and other layout kwargs as a standalone
 :class:`Expander <bootstack.widgets.expander.Expander>`.
 
 .. code-block:: python
 
    acc = bs.Accordion()
    with acc.add("Form", layout="grid", columns=["auto", 1],
-                gap=8, sticky_items="ew"):
+                gap=8, horizontal_items="stretch"):
        bs.Label("Name")
        bs.TextField()
        bs.Label("Email")
