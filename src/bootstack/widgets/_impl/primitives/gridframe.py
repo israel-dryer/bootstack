@@ -88,6 +88,11 @@ class GridFrame(Frame):
         # Track widgets hidden via grid_remove (still managed, just hidden)
         self._removed: set[tk.Widget] = set()
 
+        # Set when a managed child is destroyed out-of-band (Tk destroy()
+        # bypasses grid_forget). Gates the O(N) prune scan so a pure build —
+        # adds with no destroys — never pays for it, keeping construction O(N).
+        self._needs_prune = False
+
         # Auto-placement cursor
         self._next_row = 0
         self._next_col = 0
@@ -399,8 +404,10 @@ class GridFrame(Frame):
         """
         # Reclaim cells from any children destroyed since the last placement so
         # auto-flow positions this widget correctly (Tk destroy() bypasses
-        # grid_forget()).
-        self._prune_destroyed()
+        # grid_forget()). Only scan when a destroy actually flagged it.
+        if self._needs_prune:
+            self._prune_destroyed()
+            self._needs_prune = False
 
         # Check if widget was hidden via grid_remove and is being restored
         if widget in self._removed and not options:
@@ -444,6 +451,18 @@ class GridFrame(Frame):
             grid_options = self._build_options(row, col, rowspan, colspan, options)
             tk.Grid.configure(widget, **grid_options)
             self._managed.append((widget, options, (row, col, rowspan, colspan)))
+            # Flag a prune when this child is destroyed out-of-band, so the
+            # next placement reclaims its cell without scanning on every add.
+            widget.bind(
+                "<Destroy>",
+                lambda e, w=widget: self._flag_prune(e, w),
+                add="+",
+            )
+
+    def _flag_prune(self, event: tk.Event, widget: tk.Widget) -> None:
+        """Mark the frame for a prune when one of its managed children dies."""
+        if event.widget is widget:
+            self._needs_prune = True
 
     def _on_child_grid_forget(self, widget: tk.Widget) -> None:
         """Hook called when a child widget calls grid_forget().
