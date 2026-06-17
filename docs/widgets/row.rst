@@ -1,12 +1,9 @@
 Row
 ===
 
-A container that arranges children left to right along the horizontal axis.
-Use ``gap=`` for even spacing, ``horizontal_items=`` to arrange the whole group
-(``'left'``, ``'center'``, ``'right'``, or a ``'space-*'`` mode), ``vertical_items=``
-to align mixed-height children up and down, and ``grow`` / ``weights`` to let
-children share the available width. Drop a :class:`Spacer <bootstack.Spacer>`
-between children to push a cluster aside without nesting.
+A container that lays out its children in a single horizontal row, left to
+right. By default each child keeps its natural size and the group sits against
+the left edge.
 
 .. image:: /_static/examples/row-hero-light.png
    :class: bs-screenshot-light
@@ -52,12 +49,17 @@ Arranging the group
 edge; ``'space-between'``, ``'space-around'``, and ``'space-evenly'`` distribute
 them across the full width. (It has no effect once a child grows.)
 
+Arrangement only has room to act when the row is wider than its children, so
+these rows use ``horizontal="stretch"`` to span their parent.
+
 .. code-block:: python
 
-   with bs.Row(horizontal_items="center", show_border=True, padding=8):
+   # cluster the group at one edge
+   with bs.Row(horizontal_items="center", horizontal="stretch", show_border=True, padding=8):
        bs.Button("One"); bs.Button("Two"); bs.Button("Three")
 
-   with bs.Row(horizontal_items="space-between", show_border=True, padding=8):
+   # distribute the group across the full width
+   with bs.Row(horizontal_items="space-evenly", horizontal="stretch", show_border=True, padding=8):
        bs.Button("One"); bs.Button("Two"); bs.Button("Three")
 
 .. image:: /_static/examples/row-arrange-light.png
@@ -90,21 +92,19 @@ child fill the row height. Override a single child with ``vertical=``.
    :class: bs-screenshot-dark
    :alt: Row alignment — dark theme
 
-Growing children
-~~~~~~~~~~~~~~~~~
+Growing a child
+~~~~~~~~~~~~~~~
 
-``grow`` lets a child claim and fill the leftover width. ``grow=True`` takes a
-single share; ``weights=[1, 2, 1]`` on the row sizes children in a fixed ratio.
+``grow=True`` lets one child claim and fill the leftover width while the others
+keep their natural size. A search field between a fixed label and button is the
+classic case.
 
 .. code-block:: python
 
    with bs.Row(gap=8, vertical_items="center"):
        bs.Label("Search:")
-       bs.TextField(grow=True)          # claims the leftover width
+       bs.TextField(grow=True)          # fills the leftover width
        bs.Button("Go", accent="primary")
-
-   with bs.Row(gap=8, weights=[1, 2, 1]):
-       bs.Button("1"); bs.Button("2"); bs.Button("1")
 
 .. image:: /_static/examples/row-grow-light.png
    :class: bs-screenshot-light
@@ -113,6 +113,26 @@ single share; ``weights=[1, 2, 1]`` on the row sizes children in a fixed ratio.
 .. image:: /_static/examples/row-grow-dark.png
    :class: bs-screenshot-dark
    :alt: Row grow — dark theme
+
+Proportional widths
+~~~~~~~~~~~~~~~~~~~~
+
+``weights=`` sizes children by a fixed ratio rather than by content.
+``weights=[1, 2, 1]`` makes the middle child twice as wide as each neighbor, the
+three together filling the row.
+
+.. code-block:: python
+
+   with bs.Row(gap=8, weights=[1, 2, 1], horizontal="stretch"):
+       bs.Button("One"); bs.Button("Two"); bs.Button("Three")
+
+.. image:: /_static/examples/row-weights-light.png
+   :class: bs-screenshot-light
+   :alt: Row proportional widths — light theme
+
+.. image:: /_static/examples/row-weights-dark.png
+   :class: bs-screenshot-dark
+   :alt: Row proportional widths — dark theme
 
 Spacer
 ~~~~~~
@@ -179,18 +199,28 @@ to give the border visual clearance.
 Self-placement
 ~~~~~~~~~~~~~~~
 
-``grow``, ``horizontal``, and ``vertical`` control how the Row *itself* is
-placed within its parent — separate from how it arranges its own children. In a
-vertical parent, ``horizontal="stretch"`` makes a command-bar row span the
-window width.
+``horizontal``, ``vertical``, and ``grow`` control how the Row places *itself*
+within its parent — separate from how it arranges its own children. By default a
+Row sits at its natural width; ``horizontal="stretch"`` makes it span the parent,
+which is what lets a command bar fill the window.
 
 .. code-block:: python
 
-   # Command bar that spans the window width
-   with bs.Row(gap=8, horizontal="stretch", vertical_items="center"):
-       bs.Button("File")
-       bs.Button("Edit")
-       bs.Button("View")
+   # Natural width — sits against the left edge
+   with bs.Row(gap=8, show_border=True, padding=8):
+       bs.Button("File"); bs.Button("Edit"); bs.Button("View")
+
+   # horizontal="stretch" — spans the full window width
+   with bs.Row(gap=8, show_border=True, padding=8, horizontal="stretch"):
+       bs.Button("File"); bs.Button("Edit"); bs.Button("View")
+
+.. image:: /_static/examples/row-self-light.png
+   :class: bs-screenshot-light
+   :alt: Row self-placement — light theme
+
+.. image:: /_static/examples/row-self-dark.png
+   :class: bs-screenshot-dark
+   :alt: Row self-placement — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~~

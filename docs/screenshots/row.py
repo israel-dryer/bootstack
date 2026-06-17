@@ -23,12 +23,41 @@ def gap():
 
 
 def arrange():
-    with bs.App(title="Row — Arrange", minsize=(720, 1), padding=20) as app:
-        with bs.Column(gap=12, horizontal_items="stretch"):
-            for arrangement in ("left", "center", "right", "space-between"):
-                with bs.Row(horizontal_items=arrangement, show_border=True, padding=8):
+    modes = ("left", "center", "right", "space-between", "space-around", "space-evenly")
+    with bs.App(title="Row — Arrange", minsize=(720, 1), padding=20, gap=4) as app:
+        with bs.Column(gap=10, horizontal="stretch", horizontal_items="stretch"):
+            for mode in modes:
+                bs.Label(f"horizontal_items={mode!r}", font="caption")
+                with bs.Row(horizontal_items=mode, show_border=True, padding=8):
                     for lbl in ("One", "Two", "Three"):
                         bs.Button(lbl)
+    app.run()
+
+
+def weights():
+    with bs.App(title="Row — Weights", minsize=(720, 1), padding=20, gap=4) as app:
+        with bs.Column(gap=10, horizontal="stretch", horizontal_items="stretch"):
+            bs.Label("weights=[1, 2, 1] — the middle child is twice as wide", font="caption")
+            with bs.Row(gap=8, weights=[1, 2, 1], show_border=True, padding=8):
+                bs.Button("One")
+                bs.Button("Two")
+                bs.Button("Three")
+    app.run()
+
+
+def self_placement():
+    with bs.App(title="Row — Self", minsize=(720, 1), padding=20, gap=4) as app:
+        with bs.Column(gap=10, horizontal="stretch", horizontal_items="left"):
+            bs.Label("default — natural width, sits at the left", font="caption")
+            with bs.Row(gap=8, show_border=True, padding=8):
+                bs.Button("File")
+                bs.Button("Edit")
+                bs.Button("View")
+            bs.Label('horizontal="stretch" — spans the parent width', font="caption")
+            with bs.Row(gap=8, show_border=True, padding=8, horizontal="stretch"):
+                bs.Button("File")
+                bs.Button("Edit")
+                bs.Button("View")
     app.run()
 
 
@@ -79,6 +108,8 @@ SCENES = {
     "arrange": arrange,
     "align":   align,
     "grow":    grow,
+    "weights": weights,
+    "self":    self_placement,
     "spacer":  spacer,
     "border":  border,
 }

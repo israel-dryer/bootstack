@@ -1,13 +1,9 @@
 Column
 ======
 
-A container that arranges children top to bottom along the vertical axis.
-Use ``gap=`` for even spacing, ``vertical_items=`` to arrange the whole group
-(``'top'``, ``'center'``, ``'bottom'``, or a ``'space-*'`` mode),
-``horizontal_items=`` to align children left and right (use ``'stretch'`` for a
-full-width form column), and ``grow`` / ``weights`` to let children share the
-available height. Drop a :class:`Spacer <bootstack.Spacer>` between children to
-push a footer down without a fixed height.
+A container that lays out its children in a single vertical column, top to
+bottom. By default each child keeps its natural height and the group sits at the
+top edge.
 
 .. image:: /_static/examples/column-hero-light.png
    :class: bs-screenshot-light
@@ -78,9 +74,19 @@ Arranging the group
 edge; ``'space-between'``, ``'space-around'``, and ``'space-evenly'`` distribute
 them across the full height. (It has no effect once a child grows.)
 
+Arrangement only has room to act when the column is taller than its children, so
+these examples set a fixed ``height=``.
+
 .. code-block:: python
 
-   with bs.Column(vertical_items="space-between", height=140,
+   # cluster the group at one edge
+   with bs.Column(vertical_items="center", height=140,
+                  show_border=True, padding=8, horizontal_items="stretch"):
+       bs.Button("Header")
+       bs.Button("Footer")
+
+   # distribute the group across the full height
+   with bs.Column(vertical_items="space-evenly", height=140,
                   show_border=True, padding=8, horizontal_items="stretch"):
        bs.Button("Header")
        bs.Button("Footer")
@@ -93,12 +99,12 @@ them across the full height. (It has no effect once a child grows.)
    :class: bs-screenshot-dark
    :alt: Column arrangement — dark theme
 
-Growing children
-~~~~~~~~~~~~~~~~~
+Growing a child
+~~~~~~~~~~~~~~~
 
-``grow`` lets a child claim and fill the leftover height — useful for a content
-area between a fixed header and footer. ``weights=[1, 2, 1]`` sizes children in
-a fixed ratio.
+``grow=True`` lets one child claim and fill the leftover height while the others
+keep their natural size — ideal for a content area between a fixed header and
+footer.
 
 .. code-block:: python
 
@@ -114,6 +120,26 @@ a fixed ratio.
 .. image:: /_static/examples/column-grow-dark.png
    :class: bs-screenshot-dark
    :alt: Column grow — dark theme
+
+Proportional heights
+~~~~~~~~~~~~~~~~~~~~~
+
+``weights=`` sizes children by a fixed ratio rather than by content.
+``weights=[1, 2, 1]`` makes the middle child twice as tall as each neighbor, the
+three together filling the column.
+
+.. code-block:: python
+
+   with bs.Column(gap=8, weights=[1, 2, 1], height=220, horizontal_items="stretch"):
+       bs.Button("One"); bs.Button("Two"); bs.Button("Three")
+
+.. image:: /_static/examples/column-weights-light.png
+   :class: bs-screenshot-light
+   :alt: Column proportional heights — light theme
+
+.. image:: /_static/examples/column-weights-dark.png
+   :class: bs-screenshot-dark
+   :alt: Column proportional heights — dark theme
 
 Spacer
 ~~~~~~
@@ -170,18 +196,26 @@ to give the border visual clearance.
 Self-placement
 ~~~~~~~~~~~~~~~
 
-``grow``, ``horizontal``, and ``vertical`` control how the Column *itself* is
-placed within its parent — separate from how it arranges its own children. In a
-horizontal parent, ``grow=True`` lets a Column claim the leftover width.
+``horizontal``, ``vertical``, and ``grow`` control how the Column places *itself*
+within its parent — separate from how it arranges its own children. In a
+horizontal parent, ``grow=True`` lets a Column claim the leftover width — a fixed
+sidebar beside a growing content area.
 
 .. code-block:: python
 
-   # A sidebar column beside a growing content area
    with bs.Row(gap=12, horizontal="stretch"):
-       with bs.Column(gap=8, width=200):
+       with bs.Column(gap=8, width=180):              # fixed-width sidebar
            bs.Button("Inbox"); bs.Button("Drafts")
        with bs.Column(grow=True, horizontal_items="stretch"):
-           bs.Label("Content", font="heading-md")
+           bs.Label("Content", font="heading-md")     # claims the rest
+
+.. image:: /_static/examples/column-self-light.png
+   :class: bs-screenshot-light
+   :alt: Column self-placement — light theme
+
+.. image:: /_static/examples/column-self-dark.png
+   :class: bs-screenshot-dark
+   :alt: Column self-placement — dark theme
 
 Widget sizing
 ~~~~~~~~~~~~~~
