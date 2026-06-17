@@ -467,7 +467,13 @@ class Meter(Frame):
         value_text_color = b.color(accent_token)
         secondary_text_color = b.color(self._secondary_style or 'background[muted]')
 
-        self._image_scale = b.scale(DEFAULT_IMAGE_SCALE)
+        # Supersample factor for antialiasing: the meter is drawn at
+        # `size * image_scale` then downscaled to the gauge's *logical* size, so
+        # the extra resolution `b.scale()` adds for the display's DPI is thrown
+        # away by the downscale — pure waste that balloons the redraw on HiDPI
+        # (a 200px gauge at 2x DPI would supersample to 2400px²). Cap it at the
+        # base factor: identical output at standard DPI, ~2-4x cheaper on HiDPI.
+        self._image_scale = min(b.scale(DEFAULT_IMAGE_SCALE), DEFAULT_IMAGE_SCALE)
         self._accent_color = accent_color
         self._surface = surface  # Store resolved color
         self._trough_color = trough_color

@@ -76,6 +76,26 @@ def test_offscreen_theme_change_defers_expensive_redraw(app):
     assert calls["n"] == 1
 
 
+def test_supersample_scale_capped_on_hidpi(app):
+    # The supersample is downscaled to the gauge's logical size, so the DPI
+    # multiplier b.scale() adds is wasted; it must be capped at the base factor
+    # so a HiDPI display does not balloon the redraw.
+    import bootstack as bs
+    from bootstack.style.style import get_style
+    from bootstack.widgets._impl.composites import meter as meter_mod
+
+    g = bs.Gauge(value=50)
+    m = g._internal
+    b = get_style().style_builder
+    orig = b.scale
+    b.scale = lambda v: v * 3  # pretend a 3x HiDPI display
+    try:
+        m._resolve_meter_styles()
+        assert m._image_scale == meter_mod.DEFAULT_IMAGE_SCALE  # capped, not 18
+    finally:
+        b.scale = orig
+
+
 def test_gauge_subscribes_and_releases(app):
     import bootstack as bs
     from bootstack._core.publisher import Publisher
