@@ -10,6 +10,14 @@ from bootstack.widgets._impl.mixins.configure_mixin import configure_delegate
 from bootstack.widgets.types import Master
 
 
+def _alive(widget: tk.Widget) -> bool:
+    """True if `widget` still exists (Tk `destroy()` leaves dead references)."""
+    try:
+        return bool(widget.winfo_exists())
+    except tk.TclError:
+        return False
+
+
 class FlexFrame(Frame):
     """A grid-backed 1-D flex container (the engine behind Row and Column).
 
@@ -234,6 +242,12 @@ class FlexFrame(Frame):
         for i in range(self._used_main_tracks + 1):
             main_cfg(i, weight=0, minsize=0, uniform="")
         self._used_main_tracks = 0
+
+        # Drop children destroyed out from under us: Tk's destroy() does not route
+        # through remove_child, so a dead child lingers in _managed and re-gridding
+        # it below would raise "bad window path name". (GridFrame guards the same.)
+        if any(not _alive(w) for w, _ in self._managed):
+            self._managed = [e for e in self._managed if _alive(e[0])]
 
         items = self._managed
         if not items:
