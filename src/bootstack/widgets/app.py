@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Callable, Literal, Sequence
 
 from bootstack._runtime.app import App as _InternalApp, LocalizeMode
@@ -56,6 +57,10 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         resizable: Whether the window can be resized as `(width, height)`.
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
+        undecorated: Remove the OS title bar and border (borderless window).
+            Ignored on macOS. The app gets a built-in draggable title bar with
+            min/max/close so it stays movable and closeable; add your own with
+            `add_toolbar(show_window_controls=True)` to take over the chrome.
         padding: Inner padding applied to the content frame.
         gap: Spacing between stacked children. Default `0`.
         horizontal_items: Horizontal alignment of children — `'left'`,
@@ -98,6 +103,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         resizable: tuple[bool, bool] | None = None,
         scaling: float | None = None,
         hdpi: bool = True,
+        undecorated: bool = False,
         # Child-guidance (applied to the internal content frame)
         padding: Padding | None = None,
         gap: int = 0,
@@ -123,7 +129,11 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
             "state_path": state_path,
             "scaling": scaling,
             "hdpi": hdpi,
+            "override_redirect": undecorated,
         }
+        # overrideredirect has no effect on macOS — so the borderless treatment
+        # (custom border + title bar) is Windows/Linux only.
+        self._undecorated = undecorated and sys.platform != "darwin"
         if title is not None:
             init_kwargs["title"] = title
         if size is not None:
@@ -172,10 +182,24 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
         if surface is not None:
             frame_kwargs["surface"] = surface
 
-        self._content_frame = FlexFrame(self._tk_root, **frame_kwargs)
+        # In undecorated mode the OS border is gone; a 1px themed border frame
+        # substitutes it and hosts both the chrome stack and the content.
+        if self._undecorated:
+            from bootstack.widgets._impl.primitives.frame import Frame
+
+            self._region_root = Frame(self._tk_root, show_border=True, padding=1)
+            self._region_root.pack(fill="both", expand=True)
+        else:
+            self._region_root = self._tk_root
+
+        self._content_frame = FlexFrame(self._region_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
 
         self._internal = self._tk_root
+
+    def _toolbar_stack_parent(self) -> Any:
+        # The chrome stack lives inside the (bordered) region root, above content.
+        return getattr(self, "_region_root", self._tk_root)
 
     @classmethod
     def from_store(cls, store: Any, **overrides: Any) -> "App":
@@ -220,6 +244,7 @@ class App(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, FlexContainer):
 
     def run(self) -> None:
         """Show the window and start the event loop."""
+        self._ensure_default_titlebar()
         # Let the internal mainloop center and *then* show the window — it
         # flushes layout and applies the window style while still withdrawn, so
         # the window is fully drawn and positioned before it becomes visible.

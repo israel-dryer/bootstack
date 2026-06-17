@@ -92,6 +92,42 @@ class ChromeHostMixin:
         self._register_chrome_toolbar(tb, use_macos_menus)
         return tb
 
+    def _ensure_default_titlebar(self) -> None:
+        """Give a borderless window a movable, closeable title bar.
+
+        Batteries-included chrome for an `undecorated` window: when the OS title
+        bar is gone and the author added no chrome toolbar of their own, inject a
+        single `add_toolbar(show_window_controls=True)` band (min/max/close on the
+        right, draggable, double-click to maximize) with the window title as a
+        left label — so a borderless window is never stranded.
+
+        No-op when window controls are turned off (`window_controls=False`), when
+        the window is decorated, on macOS (where `overrideredirect` is
+        force-disabled), or when the author already built chrome with
+        `add_toolbar()`. Idempotent — the author-chrome guard makes a second call
+        a no-op. Called from the window's show/run path, after authoring.
+        """
+        import sys
+
+        if not getattr(self, "_window_controls", True):
+            return
+        if not getattr(self, "_undecorated", False):
+            return
+        if sys.platform == "darwin":
+            return
+        if getattr(self, "_chrome_toolbars", None):
+            return  # the author owns the chrome
+        tb = self.add_toolbar(show_window_controls=True)
+        root = self._menu_root()
+        title = ""
+        if root is not None:
+            try:
+                title = root.title()
+            except Exception:
+                title = ""
+        if title:
+            tb.add_label(title)
+
     def _ensure_toolbar_stack(self) -> Any:
         stack = getattr(self, "_toolbar_stack", None)
         if stack is not None:
