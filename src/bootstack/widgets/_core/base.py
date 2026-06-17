@@ -31,6 +31,34 @@ def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return _wrapped
 
 
+class _RawTkContainer:
+    """Adapts a bare Tk widget so a public widget can be parented into it.
+
+    Public widgets expect a parent that exposes `_child_master()` and
+    `guide_layout()`. A raw Tk frame — e.g. the content frame a dialog
+    `content_builder` receives — has neither, so `parent=<that frame>` wraps it
+    here. The child is packed to fill the frame; flex/grid placement kwargs do
+    not apply to a bare frame and are ignored.
+    """
+
+    __slots__ = ("_internal",)
+
+    def __init__(self, tk_widget: tkinter.Misc) -> None:
+        self._internal = tk_widget
+
+    def _child_master(self) -> tkinter.Misc:
+        return self._internal
+
+    def guide_layout(self, child: "PublicWidgetBase", **layout_kw: Any) -> None:
+        from bootstack.widgets._core.container import Placement
+
+        attached = layout_kw.pop("attached", True)
+        opts = {"fill": "both", "expand": True}
+        if attached:
+            child._internal.pack(in_=self._internal, **opts)
+        child._placement = Placement("pack", self._internal, dict(opts))
+
+
 class PublicWidgetBase:
     """Base class for every public widget.
 
@@ -50,6 +78,13 @@ class PublicWidgetBase:
         explicit_parent: "PublicWidgetBase | None",
     ) -> "PublicWidgetBase | None":
         if explicit_parent is not None:
+            # A bare Tk widget (e.g. a dialog content frame handed to a
+            # content_builder) can't host public widgets directly — wrap it so
+            # `parent=<tk frame>` works with the public API.
+            if not isinstance(explicit_parent, PublicWidgetBase) and isinstance(
+                explicit_parent, tkinter.Misc
+            ):
+                return _RawTkContainer(explicit_parent)
             return explicit_parent
         return current_container()
 
