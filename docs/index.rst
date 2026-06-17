@@ -124,11 +124,12 @@ Start here
 Install
 -------
 
-bootstack requires Python 3.12 or newer:
+bootstack requires Python 3.12 or newer. It is in pre-release, so opt in with
+``--pre``:
 
 .. code-block:: bash
 
-   pip install git+https://github.com/israel-dryer/bootstack.git
+   pip install --pre bootstack
 
 To tour everything bootstack ships without writing a line of code, launch the
 gallery:

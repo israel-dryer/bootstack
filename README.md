@@ -30,7 +30,7 @@ Most Python desktop frameworks make you fight the framework. bootstack gets out 
 
 - **30% less code** — the declarative, context-manager layout eliminates geometry calls, explicit parenting, and most of the wiring boilerplate
 - **Reads like Python** — nested `with` blocks mirror your UI structure; the code hierarchy *is* the layout
-- **Modern layout system** — `HStack`, `VStack`, and `Grid` containers handle spacing, alignment, and fill automatically; CSS conventions (`gap`, `padding`, `margin`, `fill`, `anchor`) without writing CSS
+- **Modern layout system** — `Row`, `Column`, and `Grid` containers handle spacing, alignment, and growth automatically; a screen-axis vocabulary (`gap`, `padding`, `margin`, `horizontal`, `vertical`, `grow`) without writing CSS
 - **60+ widgets out of the box** — primitives through full composites: tables, trees, calendars, date pickers, gauges, sliders, and more — including a full `CodeEditor` with syntax highlighting, line numbers, bracket matching, smart indent, and search; no external editor dependency required
 - **Reactive signals** — observable state that flows between widgets; bind once, update everywhere
 - **Event and stream pipelines** — compose, filter, debounce, and throttle UI events with a chainable stream API
@@ -109,11 +109,11 @@ shell.run()
 
 ### Layout containers
 
-`VStack`, `HStack`, and `Grid` let you describe a layout once instead of repeating geometry calls on each child:
+`Column`, `Row`, and `Grid` let you describe a layout once instead of repeating geometry calls on each child:
 
 ```python
 with bs.App(title="Sign In") as app:
-    with bs.Grid(columns=["auto", 1], gap=(12, 6), sticky_items="ew", padding=16):
+    with bs.Grid(columns=["auto", 1], gap=(12, 6), horizontal_items="stretch", padding=16):
         bs.Label("Name:")
         bs.TextField(placeholder="Full name")
         bs.Label("Email:")
@@ -165,7 +165,7 @@ app.run()
 - **Application scaffolding** — `App` for blank windows, `AppShell` for command-bar + sidebar + page-stack apps, undecorated windows with custom chrome
 - **60+ themed widgets** — primitives plus higher-level composites (DataTable, Tree, ListView, Calendar, DateField, Form, Gauge, ToggleGroup, PageStack, Carousel, Tooltip, and more)
 - **Dialogs and messages** — `alert()` / `confirm()` / `ask_*()` prompts and `FormDialog` / `FontDialog` / `FilterDialog`, plus non-blocking `toast()`, `Notification`, and `Snackbar` surfaces
-- **Layout containers** — `VStack`, `HStack`, and `Grid` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Expander`
+- **Layout containers** — `Column`, `Row`, `Grid`, and `Spacer` for declarative layouts; `Card`, `GroupBox`, `ScrollView`, `SplitView`, `Accordion`, `Divider`
 - **Design system** — semantic `accent` colors (primary, secondary, success, danger, warning, info) and `variant` tokens (solid, outline, ghost), consistent across widgets
 - **Built-in themes** — paired light/dark variants (amber, aurora, bootstrap, classic, docs, forest, ocean, rose) with runtime theme switching and a custom-theme API
 - **Reactive signals** — observable state with subscribe/set, integrates with widgets via `signal=` / `textsignal=`
@@ -185,8 +185,8 @@ app.run()
 | **Selection** | Checkbox, Switch, ToggleButton, Radio, RadioGroup, ToggleGroup, Select, SelectButton, Calendar |
 | **Data Display** | Label, Badge, ListView, Tree, DataTable, ProgressBar, Gauge |
 | **Media** | Avatar, Picture, Gallery, Carousel |
-| **Layout** | VStack, HStack, Grid, Card, GroupBox, SplitView, ScrollView, Accordion, Separator |
-| **Navigation** | AppShell, SideNav, StatusBar, Tabs, PageStack |
+| **Layout** | Column, Row, Grid, Spacer, Card, GroupBox, SplitView, ScrollView, Accordion, Divider |
+| **Navigation** | AppShell, StatusBar, Tabs, PageStack |
 | **Dialogs** | `alert()`, `confirm()`, `ask_*()` prompts, FormDialog, FontDialog, FilterDialog |
 | **Overlays** | `toast()`, Notification, Snackbar, Tooltip |
 | **Forms** | Form, with field-level validation |
