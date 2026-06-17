@@ -97,6 +97,8 @@ class Grid(PublicContainer):
             frame_kwargs["width"] = width
         if height is not None:
             frame_kwargs["height"] = height
+        if width is not None or height is not None:
+            frame_kwargs["propagate"] = False
 
         self._horizontal_items = horizontal_items
         self._vertical_items = vertical_items
