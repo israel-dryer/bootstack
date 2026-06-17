@@ -58,12 +58,12 @@ def feed() -> None:
 with bs.App(title="Observable data source", size=(560, 560), padding=16, gap=12) as app:
     bs.Label("Live feed dashboard", font="heading-md")
 
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16, vertical_items="center"):
         total = bs.Badge("0 rows", accent="primary")
         active_gauge = bs.Gauge(value=0, max_value=20, accent="success")
 
     bs.Label("Bound ListView (auto-refreshing):", font="caption")
-    bs.ListView(data_source=ds, fill="both", expand=True)
+    bs.ListView(data_source=ds, grow=True, horizontal="stretch")
 
     # Badge tracks total row count via the coarse change stream.
     total_sub = ds.on_change().map(lambda e: ds.count).listen(

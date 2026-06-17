@@ -8,7 +8,7 @@ with bs.App(title="Window demo", size=(360, 220), padding=24, gap=12) as app:
             bs.Label("Preferences", font="heading-md")
             bs.Switch("Enable notifications", value=True)
             bs.Select(label="Theme", options=["System", "Light", "Dark"], value="System")
-            with bs.HStack(gap=8):
+            with bs.Row(gap=8):
                 bs.Button("Save", accent="primary", on_click=win.close)
                 bs.Button("Cancel", variant="outline", on_click=win.close)
         win.show()

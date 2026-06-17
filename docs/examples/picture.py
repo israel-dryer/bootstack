@@ -56,25 +56,25 @@ anim = _make_gif()
 
 with bs.App(title="Picture", size=(560, 520), padding=16, gap=12) as app:
     bs.Label("Fit modes (same wide photo in a fixed square box)", font="heading-md")
-    with bs.HStack(gap=12):
+    with bs.Row(gap=12):
         for mode in ("contain", "cover", "fill"):
-            with bs.VStack(gap=4):
+            with bs.Column(gap=4):
                 bs.Picture(photo, fit=mode, width=150, height=150, surface="card")
-                bs.Label(mode, font="caption", anchor="center")
+                bs.Label(mode, font="caption", horizontal="center")
 
     bs.Separator()
 
-    with bs.HStack(gap=16):
-        with bs.VStack(gap=4):
+    with bs.Row(gap=16):
+        with bs.Column(gap=4):
             bs.Label("Rounded corners", font="heading-md")
             bs.Picture(photo, fit="cover", width=150, height=150, corner_radius=20)
-        with bs.VStack(gap=4):
+        with bs.Column(gap=4):
             bs.Label("Animated GIF (autoplay)", font="heading-md")
             bs.Picture(Image.open(anim), width=140, height=140, surface="card")
 
     bs.Separator()
 
     bs.Label("Responsive — resize the window", font="heading-md")
-    bs.Picture(photo, fit="contain", surface="card", fill="both", expand=True)
+    bs.Picture(photo, fit="contain", surface="card", grow=True, horizontal="stretch")
 
 app.run()

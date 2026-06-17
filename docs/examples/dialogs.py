@@ -3,7 +3,7 @@ import bootstack as bs
 from bootstack.dialogs import Dialog, DialogButton, FormDialog
 def show_custom():
     def build(frame):
-        with bs.VStack(padding=20, gap=8, parent=frame):
+        with bs.Column(padding=20, gap=8, parent=frame):
             bs.Label("Are you sure you want to delete 3 items?")
             bs.Label("This action cannot be undone.", font="caption")
 
@@ -28,7 +28,7 @@ with bs.App(title="Dialogs demo", size=(700, 400), padding=20, gap=16) as app:
 
     # ── Alerts and Confirmations ───────────────────────────────────────────
     bs.Label("Alerts and Confirmations", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Alert",   on_click=lambda: bs.alert("Operation completed.", title="Done", ok_text="Got it"))
         bs.Button("Confirm", on_click=lambda: bs.confirm("Overwrite file?"))
         bs.Button("Confirm (danger)", on_click=lambda: bs.confirm(
@@ -38,11 +38,11 @@ with bs.App(title="Dialogs demo", size=(700, 400), padding=20, gap=16) as app:
             confirm_role="danger",
         ))
 
-    bs.Separator(fill="x")
+    bs.Separator(horizontal="stretch")
 
     # ── Input Dialogs ──────────────────────────────────────────────────────
     bs.Label("Input Dialogs", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Text",      on_click=lambda: bs.ask_string("Enter your name:", title="Name"))
         bs.Button("Integer",   on_click=lambda: bs.ask_integer("Enter age:", min_value=0, max_value=120))
         bs.Button("Float",     on_click=lambda: bs.ask_float("Enter price:", min_value=0.0, step=0.5))
@@ -50,11 +50,11 @@ with bs.App(title="Dialogs demo", size=(700, 400), padding=20, gap=16) as app:
         bs.Button("Date range", on_click=lambda: bs.ask_date_range(title="Select Range"))
         bs.Button("From list", on_click=lambda: bs.ask_item("Select country:", ["Canada", "UK", "USA", "Other"]))
 
-    bs.Separator(fill="x")
+    bs.Separator(horizontal="stretch")
 
     # ── Custom and Form Dialogs ────────────────────────────────────────────
     bs.Label("Custom and Form Dialogs", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Custom dialog", on_click=show_custom)
         bs.Button("Form dialog",   on_click=show_form)
 

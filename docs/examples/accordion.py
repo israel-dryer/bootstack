@@ -3,7 +3,7 @@ import bootstack as bs
 with bs.App(title="Accordion", size=(680, 950), padding=20, gap=16) as app:
 
     # ── Single open (default) ─────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=0):
+    with bs.Column(gap=0, horizontal="stretch"):
         bs.Label("Single open (default)", font="heading-md")
 
     acc = bs.Accordion()
@@ -16,7 +16,7 @@ with bs.App(title="Accordion", size=(680, 950), padding=20, gap=16) as app:
         bs.Label("Third section body.")
 
     # ── Multiple open ─────────────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=0):
+    with bs.Column(gap=0, horizontal="stretch"):
         bs.Label("allow_multiple=True", font="heading-md")
 
     acc2 = bs.Accordion(allow_multiple=True)
@@ -28,14 +28,14 @@ with bs.App(title="Accordion", size=(680, 950), padding=20, gap=16) as app:
         bs.Label("C starts collapsed.")
 
     # ── Accent ────────────────────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=0):
+    with bs.Column(gap=0, horizontal="stretch"):
         bs.Label("accent=", font="heading-md")
 
     with bs.Accordion(accent='primary').add('Primary', expanded=True):
         bs.Label("All headers share the same accent selection color.")
 
     # ── Icons ────────────────────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=0):
+    with bs.Column(gap=0, horizontal="stretch"):
         bs.Label("icon=", font="heading-md")
 
     bicon = bs.Accordion(accent='info')

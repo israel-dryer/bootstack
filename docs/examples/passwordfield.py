@@ -13,7 +13,7 @@ with bs.App(title="PasswordField Demo", padding=20, gap=16) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")
-    bs.PasswordField(placeholder="Enter password…", fill="x")
+    bs.PasswordField(placeholder="Enter password…", horizontal="stretch")
 
     # Label, message, required
     bs.Label("Label, Message, Required", font="heading-sm")
@@ -22,24 +22,24 @@ with bs.App(title="PasswordField Demo", padding=20, gap=16) as app:
         placeholder="Enter password…",
         message="Must be at least 8 characters.",
         required=True,
-        fill="x",
+        horizontal="stretch",
     )
 
     # Visibility toggle
     bs.Label("Visibility Toggle", font="heading-sm")
-    with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+    with bs.Row(gap=8, horizontal="stretch", grow_items=True):
         bs.PasswordField(label="With toggle", value="secret123")
         bs.PasswordField(label="No toggle",   value="secret123", show_visibility_toggle=False)
 
     # Custom mask character
     bs.Label("Custom Mask Character", font="heading-sm")
-    with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+    with bs.Row(gap=8, horizontal="stretch", grow_items=True):
         bs.PasswordField(value="secret", label="Default (•)")
         bs.PasswordField(value="secret", label="Asterisk (*)", mask="*")
 
     # States
     bs.Label("States", font="heading-sm")
-    with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+    with bs.Row(gap=8, horizontal="stretch", grow_items=True):
         bs.PasswordField(value="secret123", label="Normal")
         bs.PasswordField(value="secret123", label="Read only", read_only=True)
         bs.PasswordField(value="secret123", label="Disabled",  disabled=True)

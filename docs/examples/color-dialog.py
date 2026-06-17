@@ -15,7 +15,7 @@ def show_custom():
 with bs.App(title="Color Dialog", size=(680, 160), padding=20, gap=16) as app:
 
     bs.Label("Color Dialog", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("ask_color()",          on_click=show_chooser)
         bs.Button("ColorChooserDialog()", on_click=show_custom)
 

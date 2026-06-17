@@ -68,8 +68,8 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
         striped=True,
         show_status_bar=True,
         page_size=10,
-        fill="both",
-        expand=True,
+        grow=True,
+        horizontal="stretch",
     )
 
     def show_selection(e):

@@ -35,33 +35,33 @@ SIMPLE = [
 ]
 
 with bs.App(title="ListView Demo", padding=20, gap=16, minsize=(800, 700)) as app:
-    with bs.Grid(columns=2, gap=20, fill="both", expand=True, sticky_items="nsew"):
+    with bs.Grid(columns=2, gap=20, grow=True, horizontal="stretch"):
 
         # Column 1: Item fields
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Item Fields", font="heading-sm")
-            bs.ListView(items=TEAM, fill="both", expand=True)
+            bs.ListView(items=TEAM, grow=True, horizontal="stretch")
 
         # Column 2: Multi-selection with controls
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Multi Selection", font="heading-sm")
             sel_list = bs.ListView(
                 items=SIMPLE,
                 selection_mode="multi",
                 show_selection_controls=True,
                 accent="primary",
-                fill="both", expand=True,
+                grow=True, horizontal="stretch",
             )
 
         # Column 3: Chevron + remove button
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Chevron + Remove", font="heading-sm")
-            bs.ListView(items=ALERTS, show_chevron=True, allow_remove=True, fill="both", expand=True)
+            bs.ListView(items=ALERTS, show_chevron=True, allow_remove=True, grow=True, horizontal="stretch")
 
         # Column 4: Compact + striped
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Compact + Striped", font="heading-sm")
-            bs.ListView(items=SIMPLE, striped=True, density="compact", fill="both", expand=True)
+            bs.ListView(items=SIMPLE, striped=True, density="compact", grow=True, horizontal="stretch")
 
 # Pre-select after window is shown so TTK renders the selected state correctly
 for item_id in (1, 3, 5):

@@ -64,37 +64,37 @@ def load_users(node):
 
 
 with bs.App(title="Tree Demo", padding=20, gap=16, minsize=(900, 640)) as app:
-    with bs.Grid(columns=2, gap=20, fill="both", expand=True, sticky_items="nsew"):
+    with bs.Grid(columns=2, gap=20, grow=True, horizontal="stretch"):
 
         # Column 1: file tree with open/closed folder icons
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Icons + Nesting", font="heading-sm")
-            bs.Tree(nodes=PROJECT, fill="both", expand=True)
+            bs.Tree(nodes=PROJECT, grow=True, horizontal="stretch")
 
         # Column 2: multi-select with tri-state cascade controls
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Multi-Select + Cascade", font="heading-sm")
             bs.Tree(
                 nodes=PROJECT,
                 selection_mode="multi",
                 show_selection_controls=True,
                 accent="primary",
-                fill="both", expand=True,
+                grow=True, horizontal="stretch",
             )
 
         # Column 3: striped + compact density (data rides in node.data)
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Striped + Compact", font="heading-sm")
             outline = bs.Tree(
                 nodes=OUTLINE, striped=True, density="compact",
-                accent="success", fill="both", expand=True,
+                accent="success", grow=True, horizontal="stretch",
             )
             outline.on_activate(lambda n: print("page", n.data.get("page")))
 
         # Column 4: lazy loading + context menu
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("Lazy Loading + Menu", font="heading-sm")
-            lazy = bs.Tree(fill="both", expand=True)
+            lazy = bs.Tree(grow=True, horizontal="stretch")
             lazy.add("Team", icon="people-fill", loader=load_users)
             lazy.add("Guests", icon="people", loader=load_users)
 

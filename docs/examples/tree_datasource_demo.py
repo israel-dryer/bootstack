@@ -87,7 +87,7 @@ with bs.App(title="Tree — lazy loading at scale", padding=16, gap=12,
         node_builder=lambda r: {"label": r["name"], "icon": ICONS.get(r["kind"], "dot")},
         order="name",
         accent="primary",
-        fill="both", expand=True,
+        grow=True, horizontal="stretch",
     )
 
     def refresh_status(*_):

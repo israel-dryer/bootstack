@@ -18,8 +18,8 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")
-    bs.Select(["Red", "Green", "Blue"], fill="x")
-    bs.Select(["Red", "Green", "Blue"], value="Green", fill="x")
+    bs.Select(["Red", "Green", "Blue"], horizontal="stretch")
+    bs.Select(["Red", "Green", "Blue"], value="Green", horizontal="stretch")
 
     # Label and message
     bs.Label("Label and Message", font="heading-sm")
@@ -27,16 +27,16 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
         ["Option A", "Option B", "Option C"],
         label="Choose an option",
         message="Select the option that best applies.",
-        fill="x",
+        horizontal="stretch",
     )
 
     # Required
     bs.Label("Required", font="heading-sm")
-    bs.Select(["Red", "Green", "Blue"], label="Color", required=True, fill="x")
+    bs.Select(["Red", "Green", "Blue"], label="Color", required=True, horizontal="stretch")
 
     # Searchable
     bs.Label("Searchable", font="heading-sm")
-    bs.Select(COUNTRIES, label="Country", searchable=True, fill="x")
+    bs.Select(COUNTRIES, label="Country", searchable=True, horizontal="stretch")
 
     # Custom values
     bs.Label("Custom Values", font="heading-sm")
@@ -44,7 +44,7 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
         ["Red", "Green", "Blue"],
         label="Color (custom allowed)",
         allow_custom_values=True,
-        fill="x",
+        horizontal="stretch",
     )
 
     # Grouping — cluster the popup under headers by an option field
@@ -59,33 +59,33 @@ with bs.App(title="Select Demo", padding=20, gap=16) as app:
         ],
         group_by="category",
         label="Ingredient",
-        fill="x",
+        horizontal="stretch",
     )
 
     # Capped popup height — long list scrolls after ~6 rows
     bs.Label("Limited Popup Height", font="heading-sm")
-    bs.Select(COUNTRIES, label="Country (max 6 visible)", max_visible_items=6, fill="x")
+    bs.Select(COUNTRIES, label="Country (max 6 visible)", max_visible_items=6, horizontal="stretch")
 
     # States
     bs.Label("States", font="heading-sm")
-    with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+    with bs.Row(gap=8, horizontal="stretch", grow_items=True):
         bs.Select(["A", "B", "C"], value="A", label="Normal")
         bs.Select(["A", "B", "C"], value="A", label="Read only",  read_only=True)
         bs.Select(["A", "B", "C"], value="A", label="Disabled",   disabled=True)
 
     # Reactive binding
     bs.Label("Reactive Binding", font="heading-sm")
-    with bs.VStack(gap=6, fill="x"):
+    with bs.Column(gap=6, horizontal="stretch", horizontal_items="stretch"):
         color = bs.Signal("Red")
-        bs.Select(["Red", "Green", "Blue"], label="Color", signal=color, fill="x")
+        bs.Select(["Red", "Green", "Blue"], label="Color", signal=color)
         color_lbl = bs.Label("Selected: Red", accent="secondary", font="caption")
         color.subscribe(lambda v: setattr(color_lbl, 'text', f"Selected: {v}"))
 
     # Runtime option updates
     bs.Label("Runtime Updates", font="heading-sm")
-    with bs.VStack(gap=6, fill="x"):
-        sel = bs.Select(["Alpha", "Beta", "Gamma"], fill="x")
-        with bs.HStack(gap=8):
+    with bs.Column(gap=6, horizontal="stretch", horizontal_items="stretch"):
+        sel = bs.Select(["Alpha", "Beta", "Gamma"])
+        with bs.Row(gap=8):
             bs.Button("Set ABC", variant="outline",
                 on_click=lambda: setattr(sel, 'options', ["A", "B", "C"]))
             bs.Button("Set 1-2-3", variant="outline",

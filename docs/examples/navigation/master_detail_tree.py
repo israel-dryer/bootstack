@@ -45,7 +45,7 @@ with bs.AppShell(title="Files", size=(900, 580)) as shell:
 
     @shell.detail
     def show(node):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
             bs.Label(node["text"], font="heading-lg")
             bs.Label(node.get("kind", ""), font="caption")
             if node.get("size"):

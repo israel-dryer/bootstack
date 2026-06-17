@@ -5,7 +5,7 @@ def show_simple():
     dlg = Dialog(
         title="Confirm deletion",
         content_builder=lambda frame: [
-            bs.VStack(padding=(24, 20), gap=8, parent=frame),
+            bs.Column(padding=(24, 20), gap=8, parent=frame),
             bs.Label("Delete 3 selected items?"),
             bs.Label("This action cannot be undone.", font="caption"),
         ],
@@ -18,7 +18,7 @@ def show_simple():
 
 def show_info():
     def build(frame):
-        with bs.VStack(padding=24, gap=12, parent=frame):
+        with bs.Column(padding=24, gap=12, parent=frame):
             bs.Label("New version available", font="heading-sm")
             bs.Label("bootstack 2.1.0 is ready to install.")
             bs.Label("Release notes: improved themes, new widgets.", font="caption")
@@ -36,7 +36,7 @@ def show_info():
 
 def show_anchored():
     def build(frame):
-        with bs.VStack(padding=16, gap=8, parent=frame):
+        with bs.Column(padding=16, gap=8, parent=frame):
             bs.Label("Saved to Documents/report.pdf")
 
     dlg = Dialog(
@@ -50,7 +50,7 @@ def show_anchored():
 with bs.App(title="Dialog", size=(680, 200), padding=20, gap=16) as app:
 
     bs.Label("Custom Dialog", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Delete confirmation", on_click=show_simple)
         bs.Button("Update notice",       on_click=show_info)
         bs.Button("Simple message",      on_click=show_anchored)

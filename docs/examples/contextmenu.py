@@ -14,7 +14,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Basic — right-click trigger
     bs.Label("Basic (right-click the card)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card:
+    with bs.Card(horizontal="stretch", padding=12) as card:
         bs.Label("Right-click anywhere in this card to open the menu.")
 
     menu = bs.ContextMenu(card, trigger="right_click")
@@ -25,7 +25,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Global on_select callback
     bs.Label("Global callback (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card2:
+    with bs.Card(horizontal="stretch", padding=12) as card2:
         bs.Label("Right-click for a menu with a shared callback.")
 
     def on_action(event):
@@ -38,7 +38,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Check and radio items
     bs.Label("Check and radio items (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card3:
+    with bs.Card(horizontal="stretch", padding=12) as card3:
         bs.Label("Right-click for a menu with toggleable and selectable items.")
 
     menu3 = bs.ContextMenu(card3)
@@ -51,7 +51,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Keyboard shortcuts
     bs.Label("Keyboard shortcuts (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card4:
+    with bs.Card(horizontal="stretch", padding=12) as card4:
         bs.Label("Shortcut labels are display-only — bind handlers separately.")
 
     menu4 = bs.ContextMenu(card4)
@@ -61,7 +61,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Disabled items
     bs.Label("Disabled items (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card5:
+    with bs.Card(horizontal="stretch", padding=12) as card5:
         bs.Label("Items can be disabled at construction.")
 
     menu5 = bs.ContextMenu(card5)
@@ -72,7 +72,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Dynamic item management
     bs.Label("Dynamic management (manual show button)", font="heading-sm")
-    with bs.HStack(gap=8, anchor_items="center"):
+    with bs.Row(gap=8, vertical_items="center"):
         menu6 = bs.ContextMenu(trigger=None)
         menu6.add_item("Option A", key="a")
         menu6.add_item("Option B", key="b")

@@ -13,14 +13,14 @@ with bs.App(title="Label Demo", padding=20, gap=16) as app:
 
     # Font tokens
     bs.Label("Font Tokens", font="heading-sm")
-    with bs.VStack(gap=4):
+    with bs.Column(gap=4):
         for token in ("heading-xl", "heading-lg", "heading-md", "heading-sm",
                       "body-lg", "body", "body-sm", "caption", "code"):
             bs.Label(token, font=token)
 
     # Font modifiers
     bs.Label("Font Modifiers", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         bs.Label("Bold",        font="body[bold]")
         bs.Label("Italic",      font="body[italic]")
         bs.Label("Bold Italic", font="body[bold][italic]")
@@ -28,13 +28,13 @@ with bs.App(title="Label Demo", padding=20, gap=16) as app:
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Label(accent.title(), accent=accent, font="body[bold]")
 
     # Icons
     bs.Label("With Icons", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         bs.Label("Home",    icon="house")
         bs.Label("Right",   icon="gear",                 icon_position="right")
         bs.Label("Warning", icon="exclamation-triangle", accent="warning")
@@ -51,7 +51,7 @@ with bs.App(title="Label Demo", padding=20, gap=16) as app:
 
     # Reactive text
     bs.Label("Reactive Text", font="heading-sm")
-    with bs.HStack(gap=12, anchor_items="center"):
+    with bs.Row(gap=12, vertical_items="center"):
         count      = bs.Signal(0)
         count_text = bs.Signal("Count: 0")
         count.subscribe(lambda v: count_text.set(f"Count: {v}"))

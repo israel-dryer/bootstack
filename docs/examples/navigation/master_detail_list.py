@@ -34,10 +34,10 @@ with bs.AppShell(title="Mail", size=(900, 580)) as shell:
 
     @shell.detail
     def read(message):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
             bs.Label(message["text"], font="heading-lg")
             bs.Label(f"From {message['title']}", font="caption")
-            bs.Separator(fill="x")
+            bs.Separator(horizontal="stretch")
             bs.Label(message["body"])
 
 shell.run()

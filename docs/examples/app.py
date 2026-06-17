@@ -14,7 +14,7 @@ with bs.App(title="Bootstack", size=(560, 400), padding=24, gap=14) as app:
         accent="secondary",
     )
     bs.TextField(label="Project name", value="my-app")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Create", accent="primary")
         bs.Button("Cancel", variant="outline", on_click=app.close)
 app.run()

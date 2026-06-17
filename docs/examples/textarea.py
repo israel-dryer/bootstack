@@ -36,7 +36,7 @@ with bs.App(title="TextArea Demo", padding=20, gap=16) as app:
 
     # Scrollbars
     bs.Label("Scrollbars", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.TextArea(label="auto",     scrollbars="auto",     height=3)
         bs.TextArea(label="vertical", scrollbars="vertical", height=3)
         bs.TextArea(label="none",     scrollbars="none",     height=3)
@@ -55,7 +55,7 @@ with bs.App(title="TextArea Demo", padding=20, gap=16) as app:
     # Undo / redo
     bs.Label("Undo / Redo", font="heading-sm")
     ta = bs.TextArea(label="Try editing, then click Undo", height=3)
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Undo", on_click=lambda: ta.undo())
         bs.Button("Redo", on_click=lambda: ta.redo())
 

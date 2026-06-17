@@ -35,13 +35,13 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         _make_file_menu(None)
         _make_view_menu(None)
 
     # Accents
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         for accent in ("primary", "secondary", "success", "warning", "danger"):
             mb = bs.MenuButton(accent.capitalize(), accent=accent)
             mb.add_item("Option A")
@@ -49,7 +49,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # Style variants
     bs.Label("Style Variants", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         for variant in ("solid", "outline", "ghost"):
             mb = bs.MenuButton(variant.capitalize(), accent="primary", variant=variant)
             mb.add_item("Option A")
@@ -57,7 +57,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # With icon
     bs.Label("With Icon", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         mb = bs.MenuButton("Share", icon="share")
         mb.add_item("Copy link",    icon="link-45deg")
         mb.add_item("Send email",   icon="envelope")
@@ -71,7 +71,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # Icon-only (inferred — no label provided)
     bs.Label("Icon-Only", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         for icon in ("three-dots", "three-dots-vertical", "grid"):
             mb = bs.MenuButton(icon=icon, show_arrow=False)
             mb.add_item("Option A")
@@ -79,7 +79,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # Density
     bs.Label("Density", font="heading-sm")
-    with bs.HStack(gap=8, anchor_items="center"):
+    with bs.Row(gap=8, vertical_items="center"):
         mb_d = bs.MenuButton("Default", density="default")
         mb_d.add_item("Option A")
         mb_d.add_item("Option B")
@@ -90,7 +90,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         mb = bs.MenuButton("Actions", disabled=True)
         mb.add_item("Option A")
 
