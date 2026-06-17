@@ -1077,7 +1077,12 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 
 ### Dialogs
 - **7 doc pages** — `dialogs.rst` is toctree-only. `ColorDropperDialog` is internal.
-- **`content_builder`** receives an internal `_Frame` — use `_Label`/`_Frame` primitives.
+- **`content_builder`** fills a PUBLIC content `Column` set as the active parent —
+  write the body parent-free (`def build(): bs.Label(...)`), like an App body;
+  `Dialog(padding=, gap=)` configures it. `def build(content)` gets an explicit
+  handle; old `def build(frame): with bs.Column(parent=frame)` still works (frame
+  is the public Column, via the `_RawTkContainer` bridge in `_resolve_parent`).
+  bootstack's own verb/Form dialogs render raw and opt out with `_raw_content=True`.
 - **`Frame.configure(surface=...)`** does NOT work at runtime — use `configure_style_options(surface=...)`.
 - **`Dialog.__init__`** is fully keyword-only; `parent=` not `master=`; `min_size=`/`max_size=`.
 - **`ButtonRole`** values: `"primary"`, `"secondary"`, `"danger"`, `"cancel"`.

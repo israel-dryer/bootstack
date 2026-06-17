@@ -19,20 +19,24 @@ Usage
 Content builder
 ~~~~~~~~~~~~~~~
 
-``content_builder`` receives an empty frame. Use it as a parent for any
-bootstack layout or widget:
+The dialog's content area is set as the active parent, so ``content_builder``
+fills it like an :class:`App <bootstack.App>` body — no ``parent=`` needed.
+``padding=`` and ``gap=`` configure the content area:
 
 .. code-block:: python
 
    from bootstack.dialogs import Dialog
 
-   def build(frame):
-       with bs.Column(padding=24, gap=12, parent=frame):
-           bs.Label("New version available", font="heading-sm")
-           bs.Label("bootstack 2.1.0 is ready to install.")
+   def build():
+       bs.Label("New version available", font="heading-sm")
+       bs.Label("bootstack 2.1.0 is ready to install.")
 
-   dlg = Dialog(title="Update", content_builder=build)
+   dlg = Dialog(title="Update", content_builder=build, padding=24, gap=12)
    dlg.show()
+
+Declare a single parameter (``def build(content):``) if you want an explicit
+handle to the content container — for example to nest a :class:`Row
+<bootstack.Row>` or pass it as a ``parent=``.
 
 Button roles
 ~~~~~~~~~~~~
