@@ -38,20 +38,30 @@ def gap():
 
 
 def sticky():
-    with bs.App(title="Grid — Sticky", padding=20, minsize=(720, 150)) as app:
-        with bs.Row(gap=16, grow=True, horizontal="stretch", grow_items=True, vertical_items="stretch"):
-            with bs.Card(padding=8, grow_items=True, horizontal_items="stretch"):
-                with bs.Grid(columns=[1, 1], gap=8, horizontal_items="stretch", height=80):
-                    bs.Button("A")
-                    bs.Button("B")
-            with bs.Card(padding=8, grow_items=True, horizontal_items="stretch"):
-                with bs.Grid(columns=[1, 1], gap=8, height=80):
-                    bs.Button("A")
-                    bs.Button("B")
-            with bs.Card(padding=8, grow_items=True, horizontal_items="stretch"):
-                with bs.Grid(columns=[1, 1], gap=8, horizontal_items="stretch", vertical_items="stretch", height=80):
-                    bs.Button("A")
-                    bs.Button("B")
+    with bs.App(title="Grid — Sticky", padding=20, gap=8, minsize=(720, 1)) as app:
+        with bs.Row(gap=16, horizontal="stretch", grow_items=True, vertical_items="top"):
+            with bs.Column(gap=4, horizontal_items="stretch"):
+                bs.Label("vertical_items='center'", font="caption")
+                with bs.Card(padding=8, horizontal_items="stretch"):
+                    with bs.Grid(columns=[1, 1], rows=[1], gap=8,
+                                 vertical_items="center", height=120, horizontal="stretch"):
+                        bs.Button("A")
+                        bs.Button("B")
+            with bs.Column(gap=4, horizontal_items="stretch"):
+                bs.Label("centered (both axes)", font="caption")
+                with bs.Card(padding=8, horizontal_items="stretch"):
+                    with bs.Grid(columns=[1, 1], rows=[1], gap=8,
+                                 horizontal_items="center", vertical_items="center",
+                                 height=120, horizontal="stretch"):
+                        bs.Button("A")
+                        bs.Button("B")
+            with bs.Column(gap=4, horizontal_items="stretch"):
+                bs.Label("stretch (default)", font="caption")
+                with bs.Card(padding=8, horizontal_items="stretch"):
+                    with bs.Grid(columns=[1, 1], rows=[1], gap=8,
+                                 height=120, horizontal="stretch"):
+                        bs.Button("A")
+                        bs.Button("B")
     app.run()
 
 

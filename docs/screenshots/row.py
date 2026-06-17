@@ -34,7 +34,7 @@ def arrange():
 
 def align():
     with bs.App(title="Row — Align", padding=20, minsize=(720, 1)) as app:
-        with bs.Row(gap=16, grow_items=True):
+        with bs.Row(gap=16, horizontal="stretch", grow_items=True):
             for alignment in ("top", "center", "bottom"):
                 with bs.Row(vertical_items=alignment, gap=8, show_border=True,
                             padding=8, height=90):
