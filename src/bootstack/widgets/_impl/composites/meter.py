@@ -163,7 +163,18 @@ class Meter(Frame):
         self._subtitle_text_id = None
 
         # update bindings
-        self._binding['<<ThemeChanged>>'] = self.bind('<<ThemeChanged>>', self._handle_theme_changed)
+        # The meter face / track / arc / text are painted imperatively onto the
+        # canvas, so they live outside the ttk style loop and must be re-resolved
+        # on a theme change. Subscribe to the STD publisher channel: it fires
+        # AFTER `_rebuild_all_styles()` (so the resolved colors are the new
+        # theme's), calls the handler directly (no virtual-event propagation to
+        # descendants), and is auto-released on `<Destroy>`. The old ttk
+        # `<<ThemeChanged>>` binding fired *before* the rebuild and raced it,
+        # leaving stale colors (#167). Same pattern as the Combobox popdown.
+        from bootstack._core.publisher import Channel, Publisher
+        name = str(self)
+        Publisher.subscribe(name=name, func=self._handle_theme_changed, channel=Channel.STD)
+        self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), add='+')
         self._binding['<<Configure>>'] = self.bind('<<Configure>>', self._handle_theme_changed)
         self._bind_interactive_events()
         self._draw_base_meter_images()
@@ -761,12 +772,15 @@ class Meter(Frame):
 
         return int(normalized * self._arc_range + self._arc_offset)
 
-    def _handle_theme_changed(self, *_):
-        # Defer until after _rebuild_all_styles() has run so b.color() returns
-        # the new theme's colors, not the previous theme's.
+    def _handle_theme_changed(self, *_, **__):
+        # Accepts both the publisher's theme/mode kwargs and a Tk event arg.
+        # Coalesce a burst of notifications into one idle repaint; the colors are
+        # already the new theme's (the STD publisher fires after the rebuild).
         self.after_idle(self._apply_theme_update)
 
     def _apply_theme_update(self):
+        if not self.winfo_exists():
+            return
         self._resolve_meter_styles()
         self._canvas.configure(background=self._surface)
         self._draw_base_meter_images()
