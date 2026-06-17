@@ -421,25 +421,35 @@ geometry manager. Merged to `main` via **PR #170** (the long-running
   keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
 - **`add_spacer()`→public `Spacer`** still deferred — entangled with
   `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
-- Demo bugs (pre-existing, NOT layout-caused): #165 undecorated-window drag offset · #166
+- Demo bugs (pre-existing, NOT layout-caused): #166
   ContextMenu/Tooltip don't cover container children · #167 Gauge theme repaint · #168
   Tabs overflow.
 
+### ✅ SHIPPED — Undecorated window controls + border + maximized-drag (#162, #165) — MERGED #175
+
+An `undecorated` `App`/`Window`/`AppShell` is no longer stranded (the `Shell`
+rewrite had dropped the controls/drag the OLD region AppShell got from the internal
+`Toolbar`). **NB the #162 plan in this handoff was STALE** — by the time it was
+tackled, the unified-toolbars sweep had already (a) implemented + then *retired* a
+dedicated titlebar band (`7dbab5a6`→`375e1458`) and (b) **removed `menubar`/
+`commandbar` framework-wide in favor of `add_toolbar()`** (`351d2409`). So the fix
+layers on `add_toolbar()`, not a band:
+- `ChromeHostMixin._ensure_default_titlebar()` (shared) — undecorated + no
+  author-added chrome toolbar → injects one `add_toolbar(show_window_controls=True)`
+  (min/max/close, draggable, dbl-click-maximize) labeled with the window title.
+  No-op when decorated / macOS / author owns chrome. Called from `App.run()` /
+  `AppShell.run()` / `Window.show()` / `Window.block_until_closed()`.
+- 1px themed **border** via a `_region_root` wrapper (mirrors `ShellLayout`).
+- **`App` gained `undecorated`** (it had none); **`Window` gained
+  `window_controls=True`** (`False` = fully chromeless splash — no controls, no
+  border). `App`/`AppShell` always get controls+border when undecorated.
+- **#165** fixed in the same PR: dragging a maximized undecorated window now restores
+  it *under the cursor* (`toolbar.py:_on_drag_motion` re-anchors on the cursor's
+  horizontal fraction). Tests: `test_undecorated_titlebar.py`, `test_toolbar_drag.py`,
+  AppShell case in `test_shell_toolbar.py`. Memory `project_undecorated_window_chrome`.
+
 ### Toward the 0.1.0 stable release
 
-- **★ #162 — AppShell `undecorated=True` lost window controls + chrome dragging**
-  (NEW regression, a user demonstrated it). The `Shell` rewrite builds its chrome
-  from a plain `Frame` (`shell/layout.py:154`); the OLD region-based AppShell got
-  min/max/close + window dragging for free from the internal `Toolbar`
-  (`show_window_controls=`/`draggable=`, `toolbar.py:72`). So an undecorated shell
-  is now borderless, undraggable, and uncloseable — and the `layout.py:77` docstring
-  still falsely claims undecorated "Enables window controls + dragging." **Enrich
-  AppShell:** render min/max/close at the chrome's right edge + make the chrome
-  draggable (double-click → maximize) in undecorated mode, behind PUBLIC configurable
-  options (don't hardwire); Windows/Linux only (macOS force-disables
-  `overrideredirect`; ties into `project_macos_window_chrome`). Port the old
-  `Toolbar` drag/control logic as the reference. Memory
-  `project_appshell_undecorated_controls`.
 - **#149** — final public-surface audit + **CHANGELOG** for the stable cut.
 - **#150** — test-harness stabilization (the GUI suites need one `App` per process;
   the `.pytest_cache` perms warning on this machine is benign).
