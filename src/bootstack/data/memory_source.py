@@ -88,6 +88,20 @@ class MemoryDataSource(BaseDataSource):
         self._id_index: Dict[Any, int] = {}
         self._filter: Optional[Condition] = None
         self._sort: List[SortKey] = []
+        # Cached filter+sort view, rebuilt lazily and busted on any structural
+        # change (see _emit). Avoids re-filtering/re-sorting all rows on every
+        # count/page_slice — the hot path while a recycling widget scrolls.
+        self._view: Optional[List[Dict[str, Any]]] = None
+
+    def _emit(self, event: "DataChangeEvent") -> None:
+        """Emit a change event, busting the cached view for structural changes.
+
+        Selection toggles a row's flag without changing which rows match or their
+        order, so they keep the cached view (and the scroll path stays fast).
+        """
+        if event.kind != "select":
+            self._view = None
+        self._hub.emit(event)
 
     def _rebuild_id_index(self) -> None:
         """Rebuild the ID-to-position index for fast lookups."""
@@ -171,7 +185,7 @@ class MemoryDataSource(BaseDataSource):
             self._data = []
             self._columns = []
             self._rebuild_id_index()
-            self._hub.emit(DataChangeEvent(kind="load"))
+            self._emit(DataChangeEvent(kind="load"))
             return self
 
         if not self._is_mapping(records[0]):
@@ -196,24 +210,30 @@ class MemoryDataSource(BaseDataSource):
         self._columns = list(self._data[0].keys())
         self._ensure_id()
         self._ensure_selected_column()
-        self._hub.emit(DataChangeEvent(kind="load"))
+        self._emit(DataChangeEvent(kind="load"))
         return self
 
     def where(self, condition: Optional[Condition] = None) -> "MemoryDataSource":
         """Filter rows by a condition built with `col` (None clears the filter)."""
         self._filter = condition
-        self._hub.emit(DataChangeEvent(kind="filter"))
+        self._emit(DataChangeEvent(kind="filter"))
         return self
 
     def order(self, *keys) -> "MemoryDataSource":
         """Sort rows by one or more keys (no arguments clears sorting)."""
         self._sort = normalize_sort_keys(keys)
-        self._hub.emit(DataChangeEvent(kind="sort"))
+        self._emit(DataChangeEvent(kind="sort"))
         return self
 
     def _filtered_sorted_rows(self) -> List[Dict[str, Any]]:
-        """Get all rows with current filter and sort applied."""
-        return self._apply_filter_and_sort(self._data)
+        """Get all rows with current filter and sort applied (cached).
+
+        The result is memoized in `self._view` and reused until a structural
+        change (load/filter/sort/insert/update/delete/move) busts it via `_emit`.
+        """
+        if self._view is None:
+            self._view = self._apply_filter_and_sort(self._data)
+        return self._view
 
     def page(self, page: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get records for specified page."""
@@ -272,7 +292,7 @@ class MemoryDataSource(BaseDataSource):
         self._data.append(r)
         self._columns = list(set(self._columns) | set(r.keys()))
         self._id_index[r[self._id_field]] = len(self._data) - 1
-        self._hub.emit(DataChangeEvent(kind="insert", id=r[self._id_field], record=dict(r)))
+        self._emit(DataChangeEvent(kind="insert", id=r[self._id_field], record=dict(r)))
         return r[self._id_field]
 
     def get(self, record_id: Any) -> Optional[Dict[str, Any]]:
@@ -291,7 +311,7 @@ class MemoryDataSource(BaseDataSource):
             return False
         self._data[idx].update(updates)
         self._columns = list(set(self._columns) | set(updates.keys()))
-        self._hub.emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
+        self._emit(DataChangeEvent(kind="update", id=record_id, record=dict(updates)))
         return True
 
     def delete(self, record_id: Any) -> bool:
@@ -301,7 +321,7 @@ class MemoryDataSource(BaseDataSource):
             return False
         self._data.pop(idx)
         self._rebuild_id_index()
-        self._hub.emit(DataChangeEvent(kind="delete", id=record_id))
+        self._emit(DataChangeEvent(kind="delete", id=record_id))
         return True
 
     def _internal_fields(self) -> "frozenset[str]":
@@ -319,14 +339,14 @@ class MemoryDataSource(BaseDataSource):
         """Mark record as selected."""
         changed = self._set_selected_flag(record_id, 1)
         if changed:
-            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+            self._emit(DataChangeEvent(kind="select", id=record_id))
         return changed
 
     def deselect(self, record_id: Any) -> bool:
         """Mark record as unselected."""
         changed = self._set_selected_flag(record_id, 0)
         if changed:
-            self._hub.emit(DataChangeEvent(kind="select", id=record_id))
+            self._emit(DataChangeEvent(kind="select", id=record_id))
         return changed
 
     def select_all(self, current_page_only: bool = False) -> int:
@@ -347,7 +367,7 @@ class MemoryDataSource(BaseDataSource):
                     r["selected"] = 1
                     count += 1
         if count:
-            self._hub.emit(DataChangeEvent(kind="select"))
+            self._emit(DataChangeEvent(kind="select"))
         return count
 
     def deselect_all(self, current_page_only: bool = False) -> int:
@@ -368,7 +388,7 @@ class MemoryDataSource(BaseDataSource):
                     r["selected"] = 0
                     count += 1
         if count:
-            self._hub.emit(DataChangeEvent(kind="select"))
+            self._emit(DataChangeEvent(kind="select"))
         return count
 
     def move(self, record_id: Any, target_index: int) -> bool:
@@ -393,7 +413,7 @@ class MemoryDataSource(BaseDataSource):
         end = max(source_index, clamped_target) + 1
         for i in range(start, end):
             self._id_index[self._data[i][self._id_field]] = i
-        self._hub.emit(DataChangeEvent(kind="move", id=record_id))
+        self._emit(DataChangeEvent(kind="move", id=record_id))
         return True
 
     def _set_selected_flag(self, record_id: Any, flag: int) -> bool:
