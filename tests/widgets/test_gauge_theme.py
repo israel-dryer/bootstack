@@ -49,6 +49,33 @@ def test_gauge_canvas_repaints_on_theme_change(app):
     assert canvas.cget("background") == light_bg
 
 
+def test_offscreen_theme_change_defers_expensive_redraw(app):
+    # A theme change while the gauge is off-screen must NOT run the expensive
+    # supersampled redraw (so toggling the theme doesn't repaint every gauge in
+    # the app); it marks the repaint pending and runs once when next viewable.
+    import bootstack as bs
+
+    g = bs.Gauge(value=50)
+    app._tk_root.update_idletasks()
+    m = g._internal
+
+    calls = {"n": 0}
+    m._draw_base_meter_images = lambda: calls.__setitem__("n", calls["n"] + 1)
+
+    # Off-screen: defer.
+    m.winfo_viewable = lambda: False
+    m._theme_update_pending = False
+    m._apply_theme_update()
+    assert m._theme_update_pending is True
+    assert calls["n"] == 0  # expensive redraw skipped while hidden
+
+    # Viewable: repaint now, clear pending.
+    m.winfo_viewable = lambda: True
+    m._apply_theme_update()
+    assert m._theme_update_pending is False
+    assert calls["n"] == 1
+
+
 def test_gauge_subscribes_and_releases(app):
     import bootstack as bs
     from bootstack._core.publisher import Publisher

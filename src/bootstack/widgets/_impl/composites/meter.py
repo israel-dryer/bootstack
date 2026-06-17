@@ -135,6 +135,9 @@ class Meter(Frame):
         self._towards_maximum = True
         self._resolve_arc_range_offset(meter_type, arc_offset, arc_range)
         self._binding = {}
+        # Set when a theme change arrives while the meter is off-screen, so the
+        # expensive supersampled redraw is deferred to the next <Map>.
+        self._theme_update_pending = False
 
         # widget variables
         self._last_changed_value = value
@@ -175,6 +178,8 @@ class Meter(Frame):
         name = str(self)
         Publisher.subscribe(name=name, func=self._handle_theme_changed, channel=Channel.STD)
         self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), add='+')
+        # A theme change that arrives while off-screen defers its redraw to here.
+        self.bind('<Map>', self._on_meter_map, add='+')
         self._binding['<<Configure>>'] = self.bind('<<Configure>>', self._handle_theme_changed)
         self._bind_interactive_events()
         self._draw_base_meter_images()
@@ -781,10 +786,30 @@ class Meter(Frame):
     def _apply_theme_update(self):
         if not self.winfo_exists():
             return
+        # Re-resolving colors is cheap; the supersampled image redraw is not. If
+        # the meter is off-screen (e.g. a non-active page), skip the redraw and
+        # mark it pending — the next <Map> repaints it once with current colors.
+        # This keeps a theme toggle from repainting every gauge in the app.
         self._resolve_meter_styles()
         self._canvas.configure(background=self._surface)
+        if not self.winfo_viewable():
+            self._theme_update_pending = True
+            return
+        self._theme_update_pending = False
         self._draw_base_meter_images()
         self._draw_meter()
+
+    def _on_meter_map(self, _event: Any = None) -> None:
+        """Repaint on map if a theme change was missed while off-screen.
+
+        Re-runs the full apply (now that the meter is viewable) so the canvas
+        background is re-configured too — not just the arc/text images — since the
+        face surface can be reset to the default when the page is re-mapped.
+        """
+        if getattr(self, '_theme_update_pending', False):
+            # Defer to idle so the repaint runs after the map cascade settles
+            # (the canvas background can be reset to the default during mapping).
+            self.after_idle(self._apply_theme_update)
 
     def _handle_interaction(self, e):
         """Handle mouse clicks/drags to update meter value in interactive mode."""
