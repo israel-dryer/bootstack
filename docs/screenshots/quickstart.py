@@ -22,11 +22,11 @@ def navigation():
     with bs.AppShell(title="My App", size=(720, 460)) as shell:
         shell._capture_full_window = True
         with shell.add_page("home", text="Home", icon="house"):
-            with bs.VStack(padding=20, gap=8):
+            with bs.Column(padding=20, gap=8):
                 bs.Label("Welcome!", font="heading-lg")
                 bs.Label("Select a page from the sidebar.", accent="secondary")
         with shell.add_page("data", text="Data", icon="table"):
-            with bs.VStack(padding=20, gap=8):
+            with bs.Column(padding=20, gap=8):
                 bs.Label("Your data goes here.", font="heading-lg")
         shell.navigate("home")
     shell.run()

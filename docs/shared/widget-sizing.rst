@@ -1,24 +1,24 @@
 All widgets accept self-placement kwargs via ``**kwargs``. The parent
-container determines which options apply — stack-based parents use stack
-kwargs, grid-based parents use grid kwargs. Unrecognised keys are
-silently ignored.
+container determines which options apply — ``Column`` / ``Row`` parents use
+the stacking kwargs below, grid-based parents use grid kwargs.
 
-Stack
-'''''
+Column and Row
+''''''''''''''
 
-Used inside ``VStack``, ``HStack``, ``App``, and other stack containers.
+Used inside ``Column``, ``Row``, ``App``, and other stacking containers.
 
 .. list-table::
    :widths: 25 75
 
-   * - ``fill``
-     - Fill direction: ``'x'``, ``'y'``, ``'both'``, or ``'none'``.
-   * - ``expand``
-     - Grow to consume extra space in the parent. ``True`` or ``False``.
-   * - ``anchor``
-     - Alignment when the widget does not fill the available slot:
-       ``'n'``, ``'s'``, ``'e'``, ``'w'``, ``'center'``, ``'nw'``,
-       etc.
+   * - ``horizontal``
+     - Horizontal placement of the widget: ``'left'``, ``'center'``,
+       ``'right'``, or ``'stretch'`` to fill the available width.
+   * - ``vertical``
+     - Vertical placement of the widget: ``'top'``, ``'center'``,
+       ``'bottom'``, or ``'stretch'`` to fill the available height.
+   * - ``grow``
+     - Claim and fill a share of the leftover space along the parent's
+       stacking axis. ``True`` or ``False``.
    * - ``margin``
      - External spacing in pixels. Accepts an integer (equal on all
        sides), a 2-tuple ``(horizontal, vertical)``, or a 4-tuple
@@ -44,10 +44,12 @@ Used inside a ``Grid`` container.
      - Zero-based row and column indices.
    * - ``rowspan`` / ``columnspan``
      - Number of rows or columns to span.
-   * - ``sticky``
-     - Alignment and fill within the grid cell. Any combination of
-       ``'n'``, ``'s'``, ``'e'``, ``'w'`` — e.g. ``'ew'`` stretches
-       horizontally, ``'nsew'`` fills the entire cell.
+   * - ``horizontal``
+     - Horizontal placement within the grid cell: ``'left'``,
+       ``'center'``, ``'right'``, or ``'stretch'`` to fill the cell width.
+   * - ``vertical``
+     - Vertical placement within the grid cell: ``'top'``, ``'center'``,
+       ``'bottom'``, or ``'stretch'`` to fill the cell height.
    * - ``margin``
      - External spacing in pixels. Accepts an integer, a 2-tuple
        ``(horizontal, vertical)``, or a 4-tuple ``(left, top, right, bottom)``.

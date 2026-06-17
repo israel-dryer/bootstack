@@ -13,24 +13,24 @@ _PHOTO = Path(__file__).parent.parent / "_static" / "examples" / "avatar-profile
 
 with bs.App(title="Avatar", padding=20, gap=16) as app:
     bs.Label("From an image", font="heading-md")
-    with bs.HStack(gap=12, anchor_items="center"):
+    with bs.Row(gap=12):
         bs.Avatar(_PHOTO, size=64, shape="circle")
         bs.Avatar(_PHOTO, size=64, shape="rounded")
         bs.Avatar(_PHOTO, size=64, shape="square")
         bs.Avatar(_PHOTO, size=40)
         bs.Avatar(_PHOTO, size=28)
 
-    bs.Separator()
+    bs.Divider()
 
     bs.Label("From initials", font="heading-md")
-    with bs.HStack(gap=12, anchor_items="center"):
+    with bs.Row(gap=12):
         bs.Avatar(name="Ada Lovelace", size=64, background="primary")
         bs.Avatar(name="Grace Hopper", size=64, background="info")
         bs.Avatar(name="Alan Turing", size=64, background="success")
         bs.Avatar(initials="JD", size=64, background="warning")
         bs.Avatar(name="Katherine Johnson", size=64, background="#7c4dff", shape="rounded")
 
-    bs.Separator()
+    bs.Divider()
 
     bs.Label("Clickable (prints to the console)", font="heading-md")
     avatar = bs.Avatar(_PHOTO, size=56)

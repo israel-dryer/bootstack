@@ -24,7 +24,7 @@ def hero():
         with shell.add_toolbar() as bar:
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -32,11 +32,11 @@ def hero():
             bar.add_button(icon="search", on_click=lambda: None)
 
         with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
-            with bs.VStack(fill="x", gap=12, padding=24):
+            with bs.Column(horizontal="stretch", gap=12, padding=24):
                 bs.Label("Dashboard", font="heading-lg")
                 bs.Label("A borderless window with a custom title bar.")
         with shell.add_page("settings", text="Settings", icon="gear"):
-            with bs.VStack(fill="x", gap=8, padding=24):
+            with bs.Column(horizontal="stretch", gap=8, padding=24):
                 bs.Label("Settings", font="heading-lg")
         shell.navigate("dashboard")
     shell.run()

@@ -14,18 +14,18 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Basic — right-click trigger
     bs.Label("Basic (right-click the card)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card:
+    with bs.Card(horizontal="stretch", padding=12) as card:
         bs.Label("Right-click anywhere in this card to open the menu.")
 
     menu = bs.ContextMenu(card, trigger="right_click")
     menu.add_item("Edit",      icon="pencil",  on_click=lambda: print("Edit"))
     menu.add_item("Duplicate", icon="copy",    on_click=lambda: print("Duplicate"))
-    menu.add_separator()
+    menu.add_divider()
     menu.add_item("Delete",    icon="trash",   on_click=lambda: print("Delete"))
 
     # Global on_select callback
     bs.Label("Global callback (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card2:
+    with bs.Card(horizontal="stretch", padding=12) as card2:
         bs.Label("Right-click for a menu with a shared callback.")
 
     def on_action(event):
@@ -38,20 +38,20 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Check and radio items
     bs.Label("Check and radio items (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card3:
+    with bs.Card(horizontal="stretch", padding=12) as card3:
         bs.Label("Right-click for a menu with toggleable and selectable items.")
 
     menu3 = bs.ContextMenu(card3)
     menu3.add_check_item("Bold",   value=True, on_click=lambda: print("Bold toggled"))
     menu3.add_check_item("Italic",             on_click=lambda: print("Italic toggled"))
-    menu3.add_separator()
+    menu3.add_divider()
     menu3.add_radio_item("Small",  value="sm", on_click=lambda: print("Small"))
     menu3.add_radio_item("Medium", value="md", on_click=lambda: print("Medium"))
     menu3.add_radio_item("Large",  value="lg", on_click=lambda: print("Large"))
 
     # Keyboard shortcuts
     bs.Label("Keyboard shortcuts (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card4:
+    with bs.Card(horizontal="stretch", padding=12) as card4:
         bs.Label("Shortcut labels are display-only — bind handlers separately.")
 
     menu4 = bs.ContextMenu(card4)
@@ -61,18 +61,18 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
 
     # Disabled items
     bs.Label("Disabled items (right-click)", font="heading-sm")
-    with bs.Card(fill="x", padding=12) as card5:
+    with bs.Card(horizontal="stretch", padding=12) as card5:
         bs.Label("Items can be disabled at construction.")
 
     menu5 = bs.ContextMenu(card5)
     menu5.add_item("Save",    icon="floppy",       on_click=lambda: print("Save"))
     menu5.add_item("Publish", icon="cloud-upload", disabled=True)
-    menu5.add_separator()
+    menu5.add_divider()
     menu5.add_item("Delete",  icon="trash",        disabled=True)
 
     # Dynamic item management
     bs.Label("Dynamic management (manual show button)", font="heading-sm")
-    with bs.HStack(gap=8, anchor_items="center"):
+    with bs.Row(gap=8, vertical_items="center"):
         menu6 = bs.ContextMenu(trigger=None)
         menu6.add_item("Option A", key="a")
         menu6.add_item("Option B", key="b")

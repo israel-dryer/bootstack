@@ -50,7 +50,7 @@ def many():
     with bs.App(title="Carousel — many slides", size=(620, 440), padding=16) as app:
         bs.Carousel(items=_MANY, image_field="image", caption_field="name",
                     fit="cover", indicator="dots", corner_radius=14,
-                    fill="both", expand=True)
+                    grow=True, horizontal="stretch")
     app.run()
 
 

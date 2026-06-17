@@ -112,6 +112,7 @@ class FontDialog:
             parent=master,
             title=title,
             content_builder=self._create_content,
+            _raw_content=True,
             buttons=[
                 DialogButton(
                     text="button.cancel",

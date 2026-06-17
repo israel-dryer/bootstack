@@ -20,14 +20,14 @@ Basic vertical scroll
 ~~~~~~~~~~~~~~~~~~~~~
 
 Children are packed top-to-bottom inside the scrollable area. Add
-``fill="both", expand=True`` to let the ScrollView fill its parent and
+``grow=True`` to let the ScrollView fill its parent and
 provide a height boundary for scrolling to begin.
 
 .. code-block:: python
 
-   with bs.VStack(fill="both", expand=True, gap=8):
+   with bs.Column(grow=True, gap=8):
        bs.Label("Log output", font="heading-md")
-       with bs.ScrollView(scroll_direction="vertical", fill="both", expand=True):
+       with bs.ScrollView(scroll_direction="vertical", grow=True, horizontal="stretch"):
            for line in log_lines:
                bs.Label(line)
 
@@ -35,7 +35,7 @@ You can also constrain the height directly with ``height=``:
 
 .. code-block:: python
 
-   with bs.ScrollView(height=200, fill="x"):
+   with bs.ScrollView(height=200, horizontal="stretch"):
        for i in range(30):
            bs.Label(f"Item {i}")
 
@@ -48,18 +48,18 @@ for most use cases), ``'horizontal'``, or ``'both'``.
 .. code-block:: python
 
    # Vertical only
-   with bs.ScrollView(scroll_direction="vertical", fill="both", expand=True):
+   with bs.ScrollView(scroll_direction="vertical", grow=True):
        ...
 
    # Horizontal — useful for wide content like a row of buttons
-   with bs.ScrollView(scroll_direction="horizontal", fill="x",
+   with bs.ScrollView(scroll_direction="horizontal", horizontal="stretch",
                       height=60, show_border=True):
-       with bs.HStack(gap=8, padding=8):
+       with bs.Row(gap=8, padding=8):
            for i in range(1, 20):
                bs.Button(f"Section {i:02d}", variant="outline")
 
    # Both axes
-   with bs.ScrollView(scroll_direction="both", fill="both", expand=True):
+   with bs.ScrollView(scroll_direction="both", grow=True):
        ...
 
 .. image:: /_static/examples/scrollview-horizontal-light.png
@@ -118,7 +118,7 @@ bar by default since it is a general-purpose container.
 
 .. code-block:: python
 
-   with bs.ScrollView(scrollbar_variant="thin", fill="both", expand=True):
+   with bs.ScrollView(scrollbar_variant="thin", grow=True):
        for i in range(30):
            bs.Label(f"Row {i:02d}")
 
@@ -139,7 +139,7 @@ the border.
 
 .. code-block:: python
 
-   with bs.ScrollView(show_border=True, padding=4, fill="both", expand=True):
+   with bs.ScrollView(show_border=True, padding=4, grow=True):
        for i in range(30):
            bs.Label(f"Row {i}")
 
@@ -150,7 +150,7 @@ Navigate content without user interaction:
 
 .. code-block:: python
 
-   sv = bs.ScrollView(fill="both", expand=True)
+   sv = bs.ScrollView(grow=True)
    with sv:
        ...
 
@@ -197,10 +197,10 @@ Widget sizing
 See also
 --------
 
-:class:`VStack <bootstack.widgets.stacks.VStack>` —
+:class:`Column <bootstack.widgets.stacks.Column>` —
 non-scrolling vertical container.
 
-:class:`HStack <bootstack.widgets.stacks.HStack>` —
+:class:`Row <bootstack.widgets.stacks.Row>` —
 non-scrolling horizontal container.
 
 :class:`Card <bootstack.widgets.card.Card>` and

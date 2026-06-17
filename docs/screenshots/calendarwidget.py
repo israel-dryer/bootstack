@@ -4,7 +4,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="Calendar", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.Calendar(value=date(2026, 5, 15))
 
     app.run()
@@ -12,7 +12,7 @@ def hero():
 
 def range_select():
     with bs.App(title="Calendar — Range", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.Calendar(
                 selection_mode="range",
                 start_date=date(2026, 5, 20),
@@ -24,7 +24,7 @@ def range_select():
 
 def week_numbers():
     with bs.App(title="Calendar — Week Numbers", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.Calendar(value=date(2026, 5, 15), show_week_numbers=True)
 
     app.run()

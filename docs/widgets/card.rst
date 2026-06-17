@@ -42,27 +42,27 @@ and the next surface step.
 Layout modes
 ~~~~~~~~~~~~
 
-``layout='vstack'`` (default) stacks children vertically. ``'hstack'`` places
+``layout='column'`` (default) stacks children vertically. ``'row'`` places
 them side by side. ``'grid'`` arranges children in a column-row grid.
 
 .. code-block:: python
 
     # Default vertical stack
     with bs.Card(padding=12, gap=8):
-        bs.Label("VStack (default)", font="heading-sm")
+        bs.Label("Column (default)", font="heading-sm")
         bs.Label("First item")
         bs.Label("Second item")
         bs.Label("Third item")
 
-    # Horizontal Stack
-    with bs.Card(layout="hstack", padding=12, gap=12, anchor_items="center"):
-        bs.Label("HStack", font="heading-sm")
+    # Horizontal row
+    with bs.Card(layout="row", padding=12, gap=12, vertical_items="center"):
+        bs.Label("Row", font="heading-sm")
         bs.Label("A")
         bs.Label("B")
         bs.Label("C")
 
     # Grid - two equally weighted columns
-    with bs.Card(layout="grid", columns=2, padding=12, gap=8, sticky_items="ew"):
+    with bs.Card(layout="grid", columns=2, padding=12, gap=8, horizontal_items="stretch"):
         bs.Label("Grid", font="heading-sm")
         bs.Label("2 cols")
         bs.Label("Item A")
@@ -81,13 +81,13 @@ them side by side. ``'grid'`` arranges children in a column-row grid.
 Child defaults
 ~~~~~~~~~~~~~~
 
-Use ``fill_items``, ``expand_items``, and ``anchor_items`` to set a default
-layout behavior for all children without repeating it on each widget.
+Use ``horizontal_items``, ``vertical_items``, and ``grow_items`` to set a
+default layout behavior for all children without repeating it on each widget.
 
 .. code-block:: python
 
-   with bs.Card(gap=8, fill_items="x"):
-       bs.TextField()   # fills horizontally — no fill="x" needed
+   with bs.Card(gap=8, horizontal_items="stretch"):
+       bs.TextField()   # fills horizontally — no horizontal="stretch" needed
        bs.TextField()
 
 Nested cards
@@ -125,8 +125,8 @@ Widget sizing
 See also
 --------
 
-:class:`VStack <bootstack.widgets.stacks.VStack>`,
-:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Column <bootstack.widgets.stacks.Column>`,
+:class:`Row <bootstack.widgets.stacks.Row>`, and
 :class:`Grid <bootstack.widgets.grid.Grid>` are the plain (no border, no
 surface) layout containers. Use ``Card`` when you want an elevated
 background and border around a group of content.

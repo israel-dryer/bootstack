@@ -13,7 +13,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         for accent in ("default", "primary", "secondary", "success", "warning", "danger"):
             bg = bs.ButtonGroup(accent=accent)
             bg.add("A")
@@ -21,7 +21,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
 
     # Style variants
     bs.Label("Style Variants", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         for variant in ("solid", "outline", "ghost"):
             bg = bs.ButtonGroup(variant=variant)
             bg.add("Save")
@@ -36,7 +36,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
 
     # Icon-only (icon_only inferred when no label is provided)
     bs.Label("Icon Only", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bg1 = bs.ButtonGroup(variant="outline", accent="primary")
         bg1.add(icon="type-bold")
         bg1.add(icon="type-italic")
@@ -57,7 +57,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
 
     # Compact density
     bs.Label("Compact Density", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bg1 = bs.ButtonGroup(accent="primary")
         bg1.add("Cut",   icon="scissors")
         bg1.add("Copy",  icon="copy")
@@ -70,7 +70,7 @@ with bs.App(title="ButtonGroup Demo", padding=20, gap=16) as app:
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bg1 = bs.ButtonGroup(accent="primary")
         bg1.add("Save")
         bg1.add("Cancel")

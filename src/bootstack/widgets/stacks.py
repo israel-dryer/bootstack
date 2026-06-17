@@ -2,43 +2,47 @@ from __future__ import annotations
 
 from typing import Any
 
-from bootstack.widgets._impl.primitives.packframe import PackFrame
-from bootstack.widgets._core.container import PublicContainer, PACK_KEYS, normalize_fill
-from bootstack.widgets.types import AccentToken, SurfaceToken, Fill, Anchor, Padding
+from bootstack.widgets._impl.primitives.frame import Frame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
+from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.container import FlexContainer
+from bootstack.widgets.types import (
+    AccentToken, SurfaceToken, HAlign, VAlign, HArrange, VArrange, Padding,
+)
 
 
-class _StackBase(PublicContainer):
+class _FlexBase(FlexContainer):
     _direction: str  # set by subclass
 
     def __init__(
         self,
         *,
         parent: Any = None,
-        # Child-guidance defaults
+        horizontal_items: str = "left",
+        vertical_items: str = "top",
+        grow_items: bool = False,
+        weights: list[int] | None = None,
         gap: int = 0,
         padding: Padding | None = None,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
-        # Frame styling
         surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
         height: int | None = None,
         **kwargs: Any,
     ) -> None:
-        # Implementation shared by HStack/VStack. Each subclass declares its own
-        # __init__ (identical signature) so Sphinx renders the params per-class
-        # under autoclass_content="class"; this body does the actual work.
+        # Shared implementation for Row/Column. Each subclass declares its own
+        # __init__ so Sphinx renders the (axis-specific) params and value types
+        # per class.
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
 
         frame_kwargs: dict[str, Any] = {
             "direction": self._direction,
+            "horizontal_items": horizontal_items,
+            "vertical_items": vertical_items,
+            "grow_items": grow_items,
+            "weights": weights,
             "gap": gap,
-            "fill_items": normalize_fill(fill_items),
-            "expand_items": expand_items,
-            "anchor_items": anchor_items,
         }
         if padding is not None:
             frame_kwargs["padding"] = padding
@@ -53,72 +57,56 @@ class _StackBase(PublicContainer):
         if width is not None or height is not None:
             frame_kwargs["propagate"] = False
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-
         tk_master = self._parent._child_master() if self._parent else None
-        self._internal = PackFrame(tk_master, **frame_kwargs)
+        self._internal = FlexFrame(tk_master, **frame_kwargs)
         self._attach_to_parent(layout_kw)
 
-    def _default_layout_method(self) -> str:
-        return "pack"
 
-    def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        return ("pack", options)
+class Row(_FlexBase):
+    """Lays out children left to right along the horizontal axis.
 
-
-class HStack(_StackBase):
-    """Horizontal stack — lays out children left-to-right with optional gap and alignment.
-
-    A lightweight container that packs children side by side using the pack
-    geometry manager. Use `gap=` to space children evenly, `anchor_items=`
-    to align them vertically, and `fill_items=` to stretch them along the
-    horizontal axis.
+    Children flow in order. Position them on each screen axis: `horizontal_items`
+    *arranges the group* along the row (`'left'`/`'center'`/`'right'` or a
+    `'space-*'` mode), `vertical_items` *aligns* them up and down
+    (`'top'`/`'center'`/`'bottom'`/`'stretch'`), and `grow` / `weights` let
+    children share the available width. Drop a `Spacer` between children to push a
+    group aside without nesting.
 
     Example::
 
-        with bs.HStack(gap=8, anchor_items="center"):
+        with bs.Row(gap=8, vertical_items="center"):
             bs.Label("Name:")
-            bs.TextField()
+            bs.TextField(grow=1)
 
     Args:
-        gap: Spacing in pixels between child widgets. Defaults to `0`.
-        padding: Space in pixels between the stack border and its content.
-            Defaults to `None` (no padding).
-        fill_items: Default `fill` direction applied to every child.
-            Individual children can override this with their own `fill=`.
-        expand_items: When `True`, each child expands to consume extra space
-            along the row. Defaults to `None`.
-        anchor_items: Default alignment anchor for children that do not fill
-            their slot.
-        surface: Background token. Accepts a surface token, an accent token,
-            or any token with modifiers (e.g. `'primary[subtle]'`). Defaults
-            to `None` (inherits from parent surface).
-        show_border: When `True`, draws a 1 px border around the stack frame.
+        horizontal_items: How the whole group of children is arranged along the
+            row — `'left'`, `'center'`, `'right'`, or the `'space-*'` modes. Has
+            no effect once any child grows. Defaults to `'left'`.
+        vertical_items: Vertical alignment of children — `'top'`, `'center'`,
+            `'bottom'`, or `'stretch'` (fill the row's height). Override per child
+            with `vertical`. Defaults to `'center'`.
+        grow_items: When `True`, every child grows equally to fill the row.
             Defaults to `False`.
-        width: Fixed width of the stack in pixels. Disables frame propagation
-            so children cannot resize the container. Setting both `width=` and
-            `height=` fully constrains the frame; when only `width=` is set,
-            height collapses to zero — pass `fill='y', expand=True` to let the
-            parent control it. Defaults to `None` (size from children).
-        height: Fixed height of the stack in pixels. Disables frame
-            propagation so children cannot resize the container. Setting both
-            `height=` and `width=` fully constrains the frame; when only
-            `height=` is set, width collapses to zero — pass
-            `fill='x', expand=True` to let the parent control it. Defaults to
-            `None` (size from children).
+        weights: Explicit per-child width weights (e.g. `[1, 2, 1]`) — shorthand
+            for setting `grow` on each child positionally. Overrides `grow_items`
+            and per-child `grow`. Defaults to `None`.
+        gap: Spacing in pixels between adjacent children. Defaults to `0`.
+        padding: Space in pixels between the row border and its content. Defaults
+            to `None` (no padding).
+        surface: Background token. Accepts a surface token, an accent token, or
+            any token with modifiers (e.g. `'primary[subtle]'`). Defaults to
+            `None` (inherits from parent surface).
+        show_border: When `True`, draws a 1 px border around the row frame.
+            Defaults to `False`.
+        width: Fixed width in pixels. Disables frame propagation so children
+            cannot resize the container. Defaults to `None` (size from children).
+        height: Fixed height in pixels. Disables frame propagation so children
+            cannot resize the container. Defaults to `None` (size from children).
         parent: Override the context-stack parent widget.
-        **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
-            See :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`: `grow=True`
+            fills the leftover width with weight 1, `grow=N` takes N shares),
+            `vertical` (this child's vertical alignment: `'top'`/`'center'`/
+            `'bottom'`/`'stretch'`), `margin`, `index`. See :doc:`/tasks/layout`.
     """
     _direction = "horizontal"
 
@@ -126,11 +114,12 @@ class HStack(_StackBase):
         self,
         *,
         parent: Any = None,
+        horizontal_items: HArrange = "left",
+        vertical_items: VAlign = "center",
+        grow_items: bool = False,
+        weights: list[int] | None = None,
         gap: int = 0,
         padding: Padding | None = None,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
         surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
@@ -138,57 +127,59 @@ class HStack(_StackBase):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            parent=parent, gap=gap, padding=padding, fill_items=fill_items,
-            expand_items=expand_items, anchor_items=anchor_items, surface=surface,
-            show_border=show_border, width=width, height=height, **kwargs,
+            parent=parent, horizontal_items=horizontal_items,
+            vertical_items=vertical_items, grow_items=grow_items, weights=weights,
+            gap=gap, padding=padding, surface=surface, show_border=show_border,
+            width=width, height=height, **kwargs,
         )
 
 
-class VStack(_StackBase):
-    """Vertical stack — lays out children top-to-bottom with optional gap and alignment.
+class Column(_FlexBase):
+    """Lays out children top to bottom along the vertical axis.
 
-    A lightweight container that packs children one above the other using the
-    pack geometry manager. Use `gap=` to space children evenly,
-    `fill_items='x'` to stretch them to the full width, and `expand=True`
-    to let the stack grow vertically in its parent.
+    Children flow in order. Position them on each screen axis: `vertical_items`
+    *arranges the group* down the column (`'top'`/`'center'`/`'bottom'` or a
+    `'space-*'` mode), `horizontal_items` *aligns* them left and right
+    (`'left'`/`'center'`/`'right'`/`'stretch'`), and `grow` / `weights` let
+    children share the available height. Use `horizontal_items='stretch'` for a
+    full-width form column.
 
     Example::
 
-        with bs.VStack(gap=12, fill_items="x", padding=16):
+        with bs.Column(gap=12, horizontal_items="stretch", padding=16):
             bs.Label("Title", font="heading-md")
             bs.TextField()
             bs.Button("Submit", accent="primary")
 
     Args:
-        gap: Spacing in pixels between child widgets. Defaults to `0`.
-        padding: Space in pixels between the stack border and its content.
-            Defaults to `None` (no padding).
-        fill_items: Default `fill` direction applied to every child.
-            Individual children can override this with their own `fill=`.
-        expand_items: When `True`, each child expands to consume extra space
-            along the column. Defaults to `None`.
-        anchor_items: Default alignment anchor for children that do not fill
-            their slot.
-        surface: Background token. Accepts a surface token, an accent token,
-            or any token with modifiers (e.g. `'primary[subtle]'`). Defaults
-            to `None` (inherits from parent surface).
-        show_border: When `True`, draws a 1 px border around the stack frame.
+        horizontal_items: Horizontal alignment of children — `'left'`,
+            `'center'`, `'right'`, or `'stretch'` (fill the column's width).
+            Override per child with `horizontal`. Defaults to `'center'`.
+        vertical_items: How the whole group of children is arranged down the
+            column — `'top'`, `'center'`, `'bottom'`, or the `'space-*'` modes.
+            Has no effect once any child grows. Defaults to `'top'`.
+        grow_items: When `True`, every child grows equally to fill the column.
             Defaults to `False`.
-        width: Fixed width of the stack in pixels. Disables frame propagation
-            so children cannot resize the container. Setting both `width=` and
-            `height=` fully constrains the frame; when only `width=` is set,
-            height collapses to zero — pass `fill='y', expand=True` to let the
-            parent control it. Defaults to `None` (size from children).
-        height: Fixed height of the stack in pixels. Disables frame
-            propagation so children cannot resize the container. Setting both
-            `height=` and `width=` fully constrains the frame; when only
-            `height=` is set, width collapses to zero — pass
-            `fill='x', expand=True` to let the parent control it. Defaults to
-            `None` (size from children).
+        weights: Explicit per-child height weights (e.g. `[1, 2, 1]`) — shorthand
+            for setting `grow` on each child positionally. Overrides `grow_items`
+            and per-child `grow`. Defaults to `None`.
+        gap: Spacing in pixels between adjacent children. Defaults to `0`.
+        padding: Space in pixels between the column border and its content.
+            Defaults to `None` (no padding).
+        surface: Background token. Accepts a surface token, an accent token, or
+            any token with modifiers (e.g. `'primary[subtle]'`). Defaults to
+            `None` (inherits from parent surface).
+        show_border: When `True`, draws a 1 px border around the column frame.
+            Defaults to `False`.
+        width: Fixed width in pixels. Disables frame propagation so children
+            cannot resize the container. Defaults to `None` (size from children).
+        height: Fixed height in pixels. Disables frame propagation so children
+            cannot resize the container. Defaults to `None` (size from children).
         parent: Override the context-stack parent widget.
-        **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
-            See :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `grow` (`bool | int`: `grow=True`
+            fills the leftover height with weight 1, `grow=N` takes N shares),
+            `horizontal` (this child's horizontal alignment: `'left'`/`'center'`/
+            `'right'`/`'stretch'`), `margin`, `index`. See :doc:`/tasks/layout`.
     """
     _direction = "vertical"
 
@@ -196,11 +187,12 @@ class VStack(_StackBase):
         self,
         *,
         parent: Any = None,
+        horizontal_items: HAlign = "center",
+        vertical_items: VArrange = "top",
+        grow_items: bool = False,
+        weights: list[int] | None = None,
         gap: int = 0,
         padding: Padding | None = None,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
         surface: SurfaceToken | AccentToken | str | None = None,
         show_border: bool = False,
         width: int | None = None,
@@ -208,7 +200,50 @@ class VStack(_StackBase):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            parent=parent, gap=gap, padding=padding, fill_items=fill_items,
-            expand_items=expand_items, anchor_items=anchor_items, surface=surface,
-            show_border=show_border, width=width, height=height, **kwargs,
+            parent=parent, horizontal_items=horizontal_items,
+            vertical_items=vertical_items, grow_items=grow_items, weights=weights,
+            gap=gap, padding=padding, surface=surface, show_border=show_border,
+            width=width, height=height, **kwargs,
         )
+
+
+class Spacer(PublicWidgetBase):
+    """A composable break that pushes neighbors apart in a Row or Column.
+
+    Flexible by default — it absorbs the available stacking-axis space, so items
+    before it cluster at the start and items after it at the end. `Spacer(size=N)`
+    is instead a fixed N-pixel gap, and `Spacer(weight=N)` shares slack with
+    other spacers in proportion to their weights.
+
+    Unlike `horizontal_items`/`vertical_items` (which arrange the *whole* group),
+    a `Spacer` is a local break at one point — use it for clustered toolbars and
+    footers without nesting::
+
+        with bs.Row(gap=4):
+            bs.Button("New"); bs.Button("Open")
+            bs.Spacer()
+            bs.Button("Settings")
+
+    Args:
+        size: Fixed size in pixels. When set, the spacer is a rigid gap rather
+            than flexible slack. Defaults to `None` (flexible).
+        weight: Relative share of the leftover space when flexible. Ignored when
+            `size` is set. Defaults to `1`.
+        parent: Override the context-stack parent widget.
+    """
+
+    _is_spacer = True
+
+    def __init__(
+        self,
+        *,
+        size: int | None = None,
+        weight: int = 1,
+        parent: Any = None,
+    ) -> None:
+        self._parent = self._resolve_parent(parent)
+        self._spacer_size = size
+        self._spacer_weight = 0 if size is not None else weight
+        tk_master = self._parent._child_master() if self._parent else None
+        self._internal = Frame(tk_master, width=1, height=1)
+        self._attach_to_parent({})

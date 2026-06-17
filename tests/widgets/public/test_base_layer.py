@@ -167,11 +167,11 @@ def test_event_enum_values_are_strings():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.gui
-def test_button_inside_hstack_placement():
-    from bootstack.widgets import App, HStack, Button
+def test_button_inside_row_placement():
+    from bootstack.widgets import App, Row, Button
 
     with App(title="Test") as app:
-        with HStack(gap=8) as row:
+        with Row(gap=8) as row:
             b1 = Button("A")
             b2 = Button("B")
 
@@ -183,11 +183,11 @@ def test_button_inside_hstack_placement():
 
 @pytest.mark.gui
 def test_explicit_parent_overrides_context_stack():
-    from bootstack.widgets import App, HStack, VStack, Button
+    from bootstack.widgets import App, Row, Column, Button
 
     with App() as app:
-        with VStack() as outer:
-            with HStack():
+        with Column() as outer:
+            with Row():
                 btn = Button("hi", parent=outer)
 
     assert btn._internal.master is outer._internal
@@ -196,11 +196,11 @@ def test_explicit_parent_overrides_context_stack():
 
 @pytest.mark.gui
 def test_button_tk_property_returns_internal():
-    from bootstack.widgets import App, VStack, Button
+    from bootstack.widgets import App, Column, Button
     import tkinter.ttk as ttk
 
     with App() as app:
-        with VStack():
+        with Column():
             btn = Button("X")
 
     assert isinstance(btn.tk, ttk.Button)
@@ -209,10 +209,10 @@ def test_button_tk_property_returns_internal():
 
 @pytest.mark.gui
 def test_button_on_unknown_event_raises():
-    from bootstack.widgets import App, VStack, Button
+    from bootstack.widgets import App, Column, Button
 
     with App() as app:
-        with VStack():
+        with Column():
             btn = Button("X")
 
     with pytest.raises(UnknownEventError):

@@ -86,6 +86,7 @@ class MessageDialog:
         self._dialog = Dialog(
             title=title,
             content_builder=self._create_content,
+            _raw_content=True,
             buttons=button_specs,
             alert=alert,
             min_size=(300, 100),

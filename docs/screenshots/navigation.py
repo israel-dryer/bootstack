@@ -17,7 +17,7 @@ def single_tier():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -25,9 +25,9 @@ def single_tier():
             bar.add_button(icon="search", on_click=lambda: None)
             bar.add_theme_toggle()
         with shell.add_page("overview", text="Overview", icon="speedometer2"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label("Overview", font="heading-lg")
-                with bs.Grid(columns=3, gap=12, fill="x", sticky_items="ew"):
+                with bs.Grid(columns=3, gap=12, horizontal="stretch", horizontal_items="stretch"):
                     for label, value in (("Revenue", "$48.2k"), ("Orders", "1,204"), ("Visitors", "18.9k")):
                         with bs.Card(padding=16, gap=4):
                             bs.Label(label, font="caption")
@@ -49,7 +49,7 @@ def grouped_sidebar():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -58,7 +58,7 @@ def grouped_sidebar():
             bar.add_theme_toggle()
         shell.add_header("Account")
         with shell.add_page("profile", text="Profile", icon="person"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
                 bs.Label("Profile", font="heading-lg")
                 bs.Label("Your name, avatar, and bio.")
         with shell.add_page("security", text="Security", icon="shield-lock"):
@@ -89,7 +89,7 @@ def master_detail_list():
         with shell.add_toolbar() as bar:
             with bar.add_menu("File") as file:
                 file.add_action("New message", shortcut="Mod+N", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_button(icon="pencil-square", label="Compose", on_click=lambda: None)
             bar.add_button(icon="archive", on_click=lambda: None)
@@ -99,10 +99,10 @@ def master_detail_list():
 
         @shell.detail
         def read(message):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label(message["text"], font="heading-lg")
                 bs.Label(f"From {message['title']}", font="caption")
-                bs.Separator(fill="x")
+                bs.Divider(horizontal="stretch")
                 bs.Label(message["body"])
     shell.run()
 
@@ -127,7 +127,7 @@ def master_detail_tree():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -138,7 +138,7 @@ def master_detail_tree():
 
         @shell.detail
         def show(node):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label(node["text"], font="heading-lg")
                 bs.Label(node.get("kind", ""), font="caption")
                 if node.get("size"):
@@ -162,7 +162,7 @@ def workspaces():
             with bar.add_menu("File") as file:
                 file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
                 file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             with bar.add_menu("View") as view:
                 view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -174,10 +174,10 @@ def workspaces():
 
             @ws.detail
             def read(message):
-                with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+                with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                     bs.Label(message["text"], font="heading-lg")
                     bs.Label(f"From {message['title']}", font="caption")
-                    bs.Separator()
+                    bs.Divider()
                     bs.Label(message["body"])
         with shell.add_workspace("calendar", text="Calendar", icon="calendar3") as ws:
             with ws.add_page("today", text="Today", icon="calendar-day"):
@@ -199,7 +199,7 @@ def custom_sidebar():
         with shell.add_toolbar() as bar:
             with bar.add_menu("File") as file:
                 file.add_action("New order", shortcut="Mod+N", on_click=lambda: None)
-                file.add_separator()
+                file.add_divider()
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_spacer()
             bar.add_button(icon="search", on_click=lambda: None)
@@ -215,14 +215,14 @@ def custom_sidebar():
             results.set("\n".join(lines) if lines else "No products match.")
 
         with shell.panel():
-            with bs.VStack(fill="x", anchor_items="w", gap=12, padding=16):
+            with bs.Column(horizontal="stretch", gap=12, padding=16):
                 bs.Label("Filters", font="heading-md")
                 bs.Label("Category", font="caption")
                 bs.SelectButton(options=["All", "Electronics", "Home"], signal=category)
                 bs.Label("Max price", font="caption")
                 bs.Slider(min_value=10, max_value=100, signal=max_price)
         with shell.content:
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
                 bs.Label("Results", font="heading-lg")
                 bs.Label(textsignal=results)
         category.subscribe(recompute)

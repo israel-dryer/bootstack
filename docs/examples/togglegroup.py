@@ -21,14 +21,14 @@ with bs.App(title="ToggleGroup Demo", padding=20, gap=16) as app:
 
     # Style variants — inactive + active per variant
     bs.Label("Style Variants", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         for variant in ("solid", "outline", "ghost"):
-            with bs.VStack(gap=4):
+            with bs.Column(gap=4):
                 bs.ToggleGroup(["Off", "On"], accent="primary", variant=variant, value="On")
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         tg = bs.ToggleGroup(value="primary")
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             tg.add(accent, accent=accent)
@@ -39,7 +39,7 @@ with bs.App(title="ToggleGroup Demo", padding=20, gap=16) as app:
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         bs.ToggleGroup(["A", "B", "C"], value="B", disabled=True)
         bs.ToggleGroup(["X", "Y", "Z"], mode="multi", value={"X", "Z"}, disabled=True)
 

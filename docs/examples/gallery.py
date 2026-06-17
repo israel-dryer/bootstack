@@ -62,8 +62,8 @@ with bs.App(title="Gallery", size=(620, 480), padding=16, gap=8) as app:
         tile_size=(140, 110),
         corner_radius=10,
         selection_mode="multi",
-        fill="both",
-        expand=True,
+        grow=True,
+        horizontal="stretch",
     )
     gallery.on_item_activate(lambda r: print("open:", r["name"]))
 

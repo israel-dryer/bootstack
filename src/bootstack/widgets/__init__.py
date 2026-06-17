@@ -13,8 +13,9 @@ _EXPORTS: dict[str, str] = {
     # Application & windows
     "App": "app", "AppShell": "appshell", "Window": "window",
     # Layout
-    "HStack": "stacks", "VStack": "stacks", "Grid": "grid", "Card": "card",
-    "GroupBox": "groupbox", "Separator": "separator", "ScrollView": "scrollview",
+    "Row": "stacks", "Column": "stacks", "Spacer": "stacks",
+    "Grid": "grid", "Card": "card",
+    "GroupBox": "groupbox", "Divider": "divider", "ScrollView": "scrollview",
     "SplitView": "splitview", "SplitPane": "splitview",
     "Accordion": "expander", "AccordionSection": "expander",
     # Actions

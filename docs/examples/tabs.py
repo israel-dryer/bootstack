@@ -3,10 +3,10 @@ import bootstack as bs
 with bs.App(title="Tabs", size=(680, 520), padding=20, gap=28) as app:
 
     # ── Horizontal (default) ──────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=6):
+    with bs.Column(horizontal="stretch", gap=6):
         bs.Label("Horizontal (default)", font="heading-md")
 
-        tabs = bs.Tabs(fill="x")
+        tabs = bs.Tabs(horizontal="stretch")
         with tabs.add("home", label="Home", padding=16, gap=8):
             bs.Label("Home", font="heading-md")
             bs.Label("Welcome to the Home tab.")
@@ -18,10 +18,10 @@ with bs.App(title="Tabs", size=(680, 520), padding=20, gap=28) as app:
             bs.Label("Adjust your preferences.")
 
     # ── Icons ─────────────────────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=6):
+    with bs.Column(horizontal="stretch", gap=6):
         bs.Label("Icons", font="heading-md")
 
-        tabs2 = bs.Tabs(fill="x")
+        tabs2 = bs.Tabs(horizontal="stretch")
         with tabs2.add("home", label="Home", icon="house", padding=16, gap=8):
             bs.Label("Home tab with icon.")
         with tabs2.add("files", label="Files", icon="folder", padding=16, gap=8):
@@ -30,10 +30,10 @@ with bs.App(title="Tabs", size=(680, 520), padding=20, gap=28) as app:
             bs.Label("Settings tab with icon.")
 
     # ── Stretch tab width ─────────────────────────────────────────────────────
-    with bs.VStack(fill="x", gap=6):
+    with bs.Column(horizontal="stretch", gap=6):
         bs.Label("tab_width='stretch'", font="heading-md")
 
-        tabs3 = bs.Tabs(tab_width="stretch", fill="x")
+        tabs3 = bs.Tabs(tab_width="stretch", horizontal="stretch")
         with tabs3.add("alpha", label="Alpha", padding=16, gap=8):
             bs.Label("Each tab shares the full bar width equally.")
         with tabs3.add("beta", label="Beta", padding=16, gap=8):

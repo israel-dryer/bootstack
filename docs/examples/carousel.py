@@ -56,8 +56,8 @@ with bs.App(title="Carousel", size=(620, 460), padding=16, gap=8) as app:
         transition="slide",
         indicator="dots",
         corner_radius=14,
-        fill="both",
-        expand=True,
+        grow=True,
+        horizontal="stretch",
     )
     carousel.on_change(lambda r: print("slide:", r["name"]))
     carousel.on_item_click(lambda r: print("clicked:", r["name"]))

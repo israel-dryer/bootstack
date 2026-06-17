@@ -29,7 +29,7 @@ def form_validation():
                              columnspan=2),
             ],
             buttons=["Cancel", {"text": "Create account", "role": "primary"}],
-            fill="both", expand=True,
+            grow=True, horizontal="stretch",
         )
         form.field("email").add_validation_rule("email", message="Enter a valid email address.")
         form.validate()

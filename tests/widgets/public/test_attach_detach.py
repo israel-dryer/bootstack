@@ -1,10 +1,12 @@
 """Tests for the public ``detach`` / ``attach`` widget API and its events.
 
 A widget placed in a layout can be pulled out (`detach`) and put back
-(`attach`) without being destroyed, across all three geometry managers
-(pack / grid / place). `attach` round-trips the original position and accepts
-layout overrides; `on_attach` / `on_detach` fire as the widget enters and
-leaves the layout.
+(`attach`) without being destroyed. Inside a `Row`/`Column` it rides the flex
+engine (`detach`/`attach` re-plan the flow); a 2-D `Grid` cell and an absolute
+`place` placement are supported too. `attach` round-trips the original position
+and accepts layout overrides; `on_attach` / `on_detach` fire as the widget
+enters and leaves the layout — and re-planning the flow when a sibling is
+added/removed must NOT churn map/unmap on the other children.
 
 All GUI work shares ONE module-scoped `App` — creating a second `App` in the
 same process crashes the ttk style engine.
@@ -45,9 +47,15 @@ def pump(app):
 
 
 def _order(container, widgets):
-    """Return the labels of `widgets` in current pack order under `container`."""
+    """Return the labels of `widgets` in current flow order under `container`.
+
+    The flex frame's managed list is the live attached-sibling order — exactly
+    what `detach`/`attach` manipulate — so it is the meaningful "what's shown,
+    in what order" for a Row/Column.
+    """
     by_tk = {w._internal: name for name, w in widgets.items()}
-    return [by_tk[s] for s in container._internal.pack_slaves() if s in by_tk]
+    managed = container._internal._managed
+    return [by_tk[w] for w, _ in managed if w in by_tk]
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +63,7 @@ def _order(container, widgets):
 # ---------------------------------------------------------------------------
 
 def test_is_attached_reflects_placement(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col)
     pump()
     assert btn.is_attached is True
@@ -76,11 +84,11 @@ def test_detach_without_placement_is_noop(app):
 
 
 # ---------------------------------------------------------------------------
-# pack — order round-trips
+# flex (Row / Column) — order round-trips
 # ---------------------------------------------------------------------------
 
-def test_pack_detach_attach_restores_order(app, pump):
-    col = bs.VStack(parent=app)
+def test_flex_detach_attach_restores_order(app, pump):
+    col = bs.Column(parent=app)
     a = bs.Button("A", parent=col)
     b = bs.Button("B", parent=col)
     c = bs.Button("C", parent=col)
@@ -97,8 +105,8 @@ def test_pack_detach_attach_restores_order(app, pump):
     assert _order(col, widgets) == ["A", "B", "C"]
 
 
-def test_pack_attach_index_moves(app, pump):
-    col = bs.VStack(parent=app)
+def test_flex_attach_index_moves(app, pump):
+    col = bs.Column(parent=app)
     a = bs.Button("A", parent=col)
     b = bs.Button("B", parent=col)
     c = bs.Button("C", parent=col)
@@ -111,27 +119,8 @@ def test_pack_attach_index_moves(app, pump):
     assert _order(col, widgets) == ["B", "C", "A"]
 
 
-def test_pack_attach_before_after(app, pump):
-    col = bs.VStack(parent=app)
-    a = bs.Button("A", parent=col)
-    b = bs.Button("B", parent=col)
-    c = bs.Button("C", parent=col)
-    widgets = {"A": a, "B": b, "C": c}
-    pump()
-
-    c.detach()
-    c.attach(before=a)
-    pump()
-    assert _order(col, widgets) == ["C", "A", "B"]
-
-    c.detach()
-    c.attach(after=a)
-    pump()
-    assert _order(col, widgets) == ["A", "C", "B"]
-
-
-def test_pack_index_at_construction(app, pump):
-    col = bs.VStack(parent=app)
+def test_flex_index_at_construction(app, pump):
+    col = bs.Column(parent=app)
     a = bs.Button("A", parent=col)
     b = bs.Button("B", parent=col)
     # Insert C at the front via the public index= knob.
@@ -142,7 +131,7 @@ def test_pack_index_at_construction(app, pump):
 
 
 def test_attach_on_attached_widget_moves(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     a = bs.Button("A", parent=col)
     b = bs.Button("B", parent=col)
     c = bs.Button("C", parent=col)
@@ -156,24 +145,37 @@ def test_attach_on_attached_widget_moves(app, pump):
     assert _order(col, widgets) == ["B", "C", "A"]
 
 
+def test_flex_works_in_a_row(app, pump):
+    row = bs.Row(parent=app)
+    a = bs.Button("A", parent=row)
+    b = bs.Button("B", parent=row)
+    widgets = {"A": a, "B": b}
+    pump()
+    assert _order(row, widgets) == ["A", "B"]
+    a.detach()
+    a.attach()
+    pump()
+    assert _order(row, widgets) == ["A", "B"]
+
+
 # ---------------------------------------------------------------------------
-# pack — overrides + idempotency
+# flex — overrides + idempotency
 # ---------------------------------------------------------------------------
 
 def test_attach_applies_layout_override(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col)
     pump()
     btn.detach()
-    btn.attach(fill="x", expand=True)
+    btn.attach(horizontal="stretch")
     pump()
-    info = btn._internal.pack_info()
-    assert info["fill"] == "x"
-    assert bool(int(info["expand"])) is True
+    # stretch on a Column's cross (horizontal) axis spans the cell east-west.
+    sticky = btn._internal.grid_info()["sticky"]
+    assert "e" in sticky and "w" in sticky
 
 
 def test_detach_is_idempotent(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col)
     pump()
     btn.detach()
@@ -191,8 +193,15 @@ def test_attach_without_placement_raises(app):
         app.attach()
 
 
+def test_legacy_child_kwarg_rejected(app):
+    # Hard break: a stale pack kwarg must raise, not silently collapse.
+    col = bs.Column(parent=app)
+    with pytest.raises(bs.errors.BootstackError):
+        bs.Button("X", parent=col, fill="x")
+
+
 # ---------------------------------------------------------------------------
-# grid
+# grid (2-D)
 # ---------------------------------------------------------------------------
 
 def test_grid_detach_attach_restores_cell(app, pump):
@@ -218,17 +227,17 @@ def test_grid_attach_override(app, pump):
     gb = bs.Button("GB", parent=grid, row=0, column=0)
     pump()
     gb.detach()
-    gb.attach(sticky="ew")
+    gb.attach(column=1)
     pump()
-    assert gb._internal.grid_info()["sticky"] == "ew"
+    assert int(gb._internal.grid_info()["column"]) == 1
 
 
 # ---------------------------------------------------------------------------
-# place
+# place — absolute overlay inside a flex container
 # ---------------------------------------------------------------------------
 
 def test_place_detach_attach_restores_coords(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     p = bs.Button("P", parent=col, x=30, y=40)
     pump()
     assert p._internal.winfo_manager() == "place"
@@ -249,14 +258,14 @@ def test_place_detach_attach_restores_coords(app, pump):
 # ---------------------------------------------------------------------------
 
 def test_attached_false_starts_detached(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col, attached=False)
     pump()
     assert btn.is_attached is False
 
 
 def test_attached_false_attaches_in_natural_slot(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     a = bs.Button("A", parent=col)
     b = bs.Button("B", parent=col, attached=False)
     c = bs.Button("C", parent=col)
@@ -281,7 +290,7 @@ def test_attached_false_grid_restores_cell(app, pump):
 
 
 def test_attached_false_place_restores(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     p = bs.Button("P", parent=col, x=10, y=20, attached=False)
     pump()
     assert p.is_attached is False
@@ -291,7 +300,7 @@ def test_attached_false_place_restores(app, pump):
 
 
 def test_attached_false_fires_no_spurious_events(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col, attached=False)
     events: list[str] = []
     btn.on_attach(lambda e: events.append("attach"))
@@ -308,7 +317,7 @@ def test_attached_false_fires_no_spurious_events(app, pump):
 # ---------------------------------------------------------------------------
 
 def test_on_attach_on_detach_fire(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col)
     pump()
 
@@ -325,7 +334,7 @@ def test_on_attach_on_detach_fire(app, pump):
 
 
 def test_on_detach_returns_subscription(app, pump):
-    col = bs.VStack(parent=app)
+    col = bs.Column(parent=app)
     btn = bs.Button("X", parent=col)
     pump()
 
@@ -342,3 +351,44 @@ def test_on_detach_returns_subscription(app, pump):
     btn.detach()
     pump()
     assert events == ["detach"], "cancelled subscription must not fire again"
+
+
+# ---------------------------------------------------------------------------
+# regression — re-planning the flow must not churn map/unmap on siblings
+# ---------------------------------------------------------------------------
+
+def test_relayout_fires_no_spurious_sibling_events(app, pump):
+    """Adding/removing a child re-plans the whole flow, but the engine must
+    reposition surviving siblings IN PLACE (grid_configure, not forget+regrid)
+    so they see no <Unmap>/<Map> — i.e. no spurious on_detach/on_attach.
+
+    Regression for the bug where the blanket grid_forget in `_relayout` fired
+    a detach+attach on every existing child whenever one child changed.
+    """
+    col = bs.Column(parent=app)
+    a = bs.Button("A", parent=col)
+    bs.Button("B", parent=col)
+    pump()
+
+    events: list[str] = []
+    a.on_attach(lambda e: events.append("attach"))
+    a.on_detach(lambda e: events.append("detach"))
+    pump()
+    events.clear()
+
+    # Add a new sibling — A must not see any map/unmap churn.
+    c = bs.Button("C", parent=col)
+    pump()
+    assert events == [], "adding a sibling churned events on an existing child"
+
+    # Remove a sibling — likewise.
+    c.detach()
+    pump()
+    assert events == [], "removing a sibling churned events on an existing child"
+
+    # Sanity: A's OWN detach/attach still fires exactly one event each.
+    a.detach()
+    pump()
+    a.attach()
+    pump()
+    assert events == ["detach", "attach"]

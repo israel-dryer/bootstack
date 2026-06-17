@@ -3,7 +3,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="PathField", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True, vertical_items="top"):
             pf = bs.PathField(
                 label="Source file",
                 message="Accepted formats: .py, .txt, .csv",
@@ -20,7 +20,7 @@ def hero():
 
 def labels():
     with bs.App(title="PathField — Labels", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True, vertical_items="top"):
             bs.PathField(
                 label="Source file",
                 placeholder="Select a file…",
@@ -37,7 +37,7 @@ def labels():
 
 def states():
     with bs.App(title="PathField — States", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=8, horizontal="stretch", grow_items=True):
             bs.PathField(value="/home/user/docs/report.pdf", label="Normal")
             bs.PathField(value="/home/user/docs/report.pdf", label="Read only", read_only=True)
             bs.PathField(value="/home/user/docs/report.pdf", label="Disabled",  disabled=True)

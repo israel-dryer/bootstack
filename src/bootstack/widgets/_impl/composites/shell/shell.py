@@ -191,9 +191,9 @@ class Shell(ShellLayout):
         """Add a plain section-label header in the implicit workspace."""
         return self._default_workspace().add_header(text)
 
-    def add_separator(self) -> Any:
-        """Add a separator to the implicit workspace."""
-        return self._default_workspace().add_separator()
+    def add_divider(self) -> Any:
+        """Add a divider to the implicit workspace."""
+        return self._default_workspace().add_divider()
 
     def panel(self) -> Any:
         """Claim the implicit workspace as a custom panel; return its container."""

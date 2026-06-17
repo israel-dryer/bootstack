@@ -15,7 +15,7 @@ def show_code():
 with bs.App(title="Font Dialog", size=(1000, 800), padding=20, gap=16) as app:
 
     bs.Label("Font Dialog", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("ask_font()",  on_click=show_font)
         bs.Button("FontDialog()", on_click=show_code)
 

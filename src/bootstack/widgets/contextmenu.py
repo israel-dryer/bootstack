@@ -21,10 +21,11 @@ _ITEM_TYPE_MAP: dict[str, str] = {
     "command":     "command",
     "check":       "checkbutton",
     "radio":       "radiobutton",
-    "separator":   "separator",
+    "divider":     "separator",
     # accept the internal names too so existing code doesn't break
     "checkbutton": "checkbutton",
     "radiobutton": "radiobutton",
+    "separator":   "separator",
 }
 
 
@@ -33,7 +34,7 @@ def _resolve_item_type(type_: str) -> str:
     if resolved is None:
         raise ValueError(
             f"Unknown item type {type_!r}. "
-            f"Use 'command', 'check', 'radio', or 'separator'."
+            f"Use 'command', 'check', 'radio', or 'divider'."
         )
     return resolved
 
@@ -250,14 +251,14 @@ class ContextMenu:
         self._internal.add_radiobutton(**kw)
         return self._internal.keys()[-1]
 
-    def add_separator(self, *, key: str | None = None) -> str:
-        """Add a horizontal separator.
+    def add_divider(self, *, key: str | None = None) -> str:
+        """Add a horizontal divider.
 
         Args:
             key: Unique string identifier. Auto-generated if omitted.
 
         Returns:
-            The key assigned to this separator.
+            The key assigned to this divider.
         """
         kw: dict[str, Any] = {}
         if key is not None:
@@ -270,7 +271,7 @@ class ContextMenu:
 
         Args:
             items: List of `ContextMenuItem` objects or item dicts. Each dict has
-                a `type` key (`'command'`, `'check'`, `'radio'`, or `'separator'`)
+                a `type` key (`'command'`, `'check'`, `'radio'`, or `'divider'`)
                 plus item kwargs such as `text`, `icon`, `value`, and `on_click`.
         """
         self._internal.add_items([_translate_item(it) for it in items])
@@ -287,7 +288,7 @@ class ContextMenu:
 
         Args:
             index: Zero-based position to insert at.
-            type: Item type — `'command'`, `'check'`, `'radio'`, or `'separator'`.
+            type: Item type — `'command'`, `'check'`, `'radio'`, or `'divider'`.
             on_click: Callback fired when the item is activated.
             **kwargs: Other item options (`text`, `icon`, `value`, `disabled`,
                 `key`, ...).

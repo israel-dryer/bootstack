@@ -53,8 +53,8 @@ def main() -> None:
             page_size=25,
             allow_export=True,
             export_formats=["csv", "json", "jsonl", "xml"],
-            fill="both",
-            expand=True,
+            grow=True,
+            horizontal="stretch",
         )
 
     app.run()

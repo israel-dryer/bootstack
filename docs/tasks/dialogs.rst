@@ -101,14 +101,15 @@ Each button carries a `role` (`"primary"`, `"secondary"`, `"danger"`, or
 
    from bootstack.dialogs import Dialog, DialogButton
 
-   def body(frame):
-       with bs.VStack(padding=24, gap=8, parent=frame):
-           bs.Label("Reset all settings to their defaults?")
-           bs.Label("Your data is not affected.", accent="secondary", font="caption")
+   # The content area is the active parent — fill it like an App body.
+   def body():
+       bs.Label("Reset all settings to their defaults?")
+       bs.Label("Your data is not affected.", accent="secondary", font="caption")
 
    dialog = Dialog(
        title="Reset settings",
        content_builder=body,
+       padding=24,
        buttons=[
            DialogButton("Cancel", role="cancel"),
            DialogButton("Reset", role="danger", result=True, default=True),

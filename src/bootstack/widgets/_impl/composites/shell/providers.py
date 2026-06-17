@@ -128,9 +128,9 @@ class StaticProvider:
         """Add a plain section-label header."""
         return self._nav.add_header(text)
 
-    def add_separator(self) -> Any:
-        """Add a separator."""
-        return self._nav.add_separator()
+    def add_divider(self) -> Any:
+        """Add a divider."""
+        return self._nav.add_divider()
 
     # ----- Provider contract -----
 

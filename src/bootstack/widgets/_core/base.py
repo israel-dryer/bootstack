@@ -31,6 +31,34 @@ def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return _wrapped
 
 
+class _RawTkContainer:
+    """Adapts a bare Tk widget so a public widget can be parented into it.
+
+    Public widgets expect a parent that exposes `_child_master()` and
+    `guide_layout()`. A raw Tk frame — e.g. the content frame a dialog
+    `content_builder` receives — has neither, so `parent=<that frame>` wraps it
+    here. The child is packed to fill the frame; flex/grid placement kwargs do
+    not apply to a bare frame and are ignored.
+    """
+
+    __slots__ = ("_internal",)
+
+    def __init__(self, tk_widget: tkinter.Misc) -> None:
+        self._internal = tk_widget
+
+    def _child_master(self) -> tkinter.Misc:
+        return self._internal
+
+    def guide_layout(self, child: "PublicWidgetBase", **layout_kw: Any) -> None:
+        from bootstack.widgets._core.container import Placement
+
+        attached = layout_kw.pop("attached", True)
+        opts = {"fill": "both", "expand": True}
+        if attached:
+            child._internal.pack(in_=self._internal, **opts)
+        child._placement = Placement("pack", self._internal, dict(opts))
+
+
 class PublicWidgetBase:
     """Base class for every public widget.
 
@@ -50,6 +78,13 @@ class PublicWidgetBase:
         explicit_parent: "PublicWidgetBase | None",
     ) -> "PublicWidgetBase | None":
         if explicit_parent is not None:
+            # A bare Tk widget (e.g. a dialog content frame handed to a
+            # content_builder) can't host public widgets directly — wrap it so
+            # `parent=<tk frame>` works with the public API.
+            if not isinstance(explicit_parent, PublicWidgetBase) and isinstance(
+                explicit_parent, tkinter.Misc
+            ):
+                return _RawTkContainer(explicit_parent)
             return explicit_parent
         return current_container()
 
@@ -57,13 +92,13 @@ class PublicWidgetBase:
     def _split_layout_kwargs(kwargs: dict) -> dict:
         """Pop and return layout kwargs from `kwargs`, mutating it in place."""
         from bootstack.widgets._core.container import (
-            PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS,
+            PACK_KEYS, GRID_KEYS, PLACE_KEYS, PLACE_TRIGGER_KEYS, FLEX_CHILD_KEYS,
         )
         place_mode = any(k in kwargs for k in PLACE_TRIGGER_KEYS)
         if place_mode:
             layout_keys = (PLACE_KEYS - {"width", "height", "anchor"}) | PLACE_TRIGGER_KEYS
         else:
-            layout_keys = PACK_KEYS | GRID_KEYS
+            layout_keys = PACK_KEYS | GRID_KEYS | FLEX_CHILD_KEYS
         layout = {k: kwargs.pop(k) for k in list(kwargs) if k in layout_keys}
         # `attached` is geometry-manager-agnostic — capture it in every mode.
         if "attached" in kwargs:
@@ -221,7 +256,13 @@ class PublicWidgetBase:
         placement = getattr(self, "_placement", None)
         if placement is None or not self.is_attached:
             return
-        if placement.method == "pack":
+        if placement.method == "flex":
+            # The FlexFrame's managed list IS the attached-sibling order, so the
+            # current managed index is the slot a plain attach() should restore.
+            idx = placement.master.index_of(self._internal)
+            placement.index = idx if idx >= 0 else None
+            placement.master.remove_child(self._internal)
+        elif placement.method == "pack":
             slaves = list(placement.master.pack_slaves())
             try:
                 placement.index = slaves.index(self._internal)
@@ -256,8 +297,8 @@ class PublicWidgetBase:
             ParentResolutionError: If the widget was never placed in a layout.
         """
         from bootstack.widgets._core.container import (
-            PACK_KEYS, GRID_KEYS, PLACE_KEYS,
-            normalize_fill, _expand_margin, resolve_pack_order,
+            PACK_KEYS, GRID_KEYS, PLACE_KEYS, FLEX_CHILD_KEYS,
+            normalize_fill, _expand_margin, _flex_child_opts, _reject_legacy_child_kwargs,
         )
 
         placement = getattr(self, "_placement", None)
@@ -273,6 +314,17 @@ class PublicWidgetBase:
 
         master = placement.master
         options = dict(placement.options)
+
+        if placement.method == "flex":
+            index = kwargs.pop("index", placement.index)
+            if kwargs:
+                _reject_legacy_child_kwargs(kwargs, type(self).__name__)
+                _expand_margin(kwargs)
+                options.update(_flex_child_opts(self, kwargs))
+            master.add_child(self._internal, options, index=index)
+            placement.options = options
+            return
+
         if kwargs:
             if "fill" in kwargs:
                 kwargs["fill"] = normalize_fill(kwargs["fill"])

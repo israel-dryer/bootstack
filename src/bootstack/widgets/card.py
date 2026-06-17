@@ -3,13 +3,14 @@ from __future__ import annotations
 import tkinter
 from typing import Any
 
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
+    PublicContainer, GRID_KEYS, place_flex_child, grid_sticky,
+    _reject_legacy_child_kwargs,
 )
 from bootstack.widgets.types import (
-    AccentToken, Padding, Fill, Anchor, Sticky, LayoutKind, AutoFlow,
+    AccentToken, Padding, LayoutKind, AutoFlow,
 )
 
 
@@ -21,25 +22,28 @@ class Card(PublicContainer):
     Children are arranged by the internal layout selected with `layout`.
 
     Args:
-        layout: Internal layout manager. Defaults to `'vstack'`.
+        layout: Internal layout manager. Defaults to `'column'`.
         padding: Space in pixels between the card border and its content.
             A single value applies to all sides; `(x, y)` sets the horizontal
             and vertical amounts. Defaults to `16`.
         gap: Space in pixels between child widgets. Defaults to `0`.
-        fill_items: Default `fill` direction applied to every child.
-            Individual children can override this with their own `fill=`.
-        expand_items: When `True`, each child expands to take any extra
-            space along the pack direction. Defaults to `None` (no expand).
-        anchor_items: Default alignment anchor applied to each child when it
-            does not fill its slot.
+        horizontal_items: How children sit on the horizontal axis — edge values
+            `'left'`/`'center'`/`'right'`/`'stretch'`, plus the `'space-*'` modes
+            when horizontal is the stacking axis (`'row'`). Override per child
+            with `horizontal`. Defaults to `'stretch'` in grid mode, `'center'` in a column
+            and `'left'` in a row.
+        vertical_items: How children sit on the vertical axis — edge values
+            `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus the `'space-*'` modes
+            when vertical is the stacking axis (`'column'`). Override per child
+            with `vertical`. Defaults to `'stretch'` in grid mode, `'center'` in a row and `'top'` in a column.
+        grow_items: For `'column'`/`'row'` layout, when `True` every child
+            grows equally to share the stacking axis. Defaults to `False`.
         columns: Column definitions for `'grid'` layout. An integer sets
             the number of equal-weight columns; a list sets per-column weights
             or sizes — integers are relative weights, `'auto'` sizes to
             content, `'Npx'` sets a fixed pixel width (e.g.
             `[1, 2, 'auto', '120px']`).
         rows: Row definitions for `'grid'` layout, same format as `columns`.
-        sticky_items: Default cell alignment applied to every grid child
-            (e.g. `'ew'`, `'nsew'`). Children can override this.
         auto_flow: Grid auto-placement direction. Defaults to `'row'`.
         accent: Color intent token applied to the card border. When set, the
             card interior uses a subtle tint of that accent. When omitted, the
@@ -53,15 +57,14 @@ class Card(PublicContainer):
     def __init__(
         self,
         *,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = 16,
         gap: int = 0,
-        fill_items: Fill | str | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | str | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | str | None = None,
         auto_flow: AutoFlow = "row",
         accent: AccentToken | str | None = None,
         parent: Any = None,
@@ -70,6 +73,20 @@ class Card(PublicContainer):
         self._parent = self._resolve_parent(parent)
         self._layout = layout
         layout_kw = self._split_layout_kwargs(kwargs)
+
+        # One horizontal_items/vertical_items pair serves both modes; the sensible
+        # default differs — grid cells fill (stretch), stacked children sit at the
+        # leading edge (left/top).
+        if horizontal_items is None:
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
+        if vertical_items is None:
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -85,19 +102,19 @@ class Card(PublicContainer):
         parent_surface = getattr(tk_master, '_surface', 'background') or 'background'
         effective_surface = f'{accent}[subtle]' if accent is not None else _SURFACE_STEPS.get(parent_surface, 'card')
 
-        if layout in ("vstack", "hstack"):
-            self._internal = PackFrame(
+        if layout in ("column", "row"):
+            self._internal = FlexFrame(
                 tk_master,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 variant="card",
                 show_border=True,
                 surface=effective_surface,
                 **({"accent": accent} if accent is not None else {}),
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._internal = GridFrame(
@@ -110,37 +127,33 @@ class Card(PublicContainer):
                 columns=columns,
                 rows=rows,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
             raise ValueError(
-                f"Card layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"Card layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._attach_to_parent(layout_kw)
 
     def _child_master(self) -> tkinter.Misc:
         return self._internal
 
     def _default_layout_method(self) -> str:
-        return "grid" if self._layout == "grid" else "pack"
+        return "grid" if self._layout == "grid" else "flex"
+
+    def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        if self._layout == "grid":
+            return super().guide_layout(child, **layout_kw)
+        place_flex_child(self._internal, child, layout_kw, "Card")
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
-        if self._layout == "grid":
-            options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
-            return ("grid", options)
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        return ("pack", options)
+        # Only reached for grid layout (column/row use the flex path above).
+        _reject_legacy_child_kwargs(layout_kw, "Card")
+        options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
+        h = layout_kw.get("horizontal") or self._horizontal_items
+        v = layout_kw.get("vertical") or self._vertical_items
+        options["sticky"] = grid_sticky(h, v)
+        return ("grid", options)

@@ -34,7 +34,7 @@ convenience (it is opened for you):
 A ``Picture`` is not a text widget with an image bolted on — it is sizing-aware,
 filling the space it is given and re-fitting the picture as that space changes.
 Give it a fixed ``width`` and ``height``, or let it fill its container with
-``fill="both", expand=True``.
+``grow=True``.
 
 Fit modes
 ~~~~~~~~~
@@ -109,8 +109,8 @@ re-fits as the container resizes:
 
 .. code-block:: python
 
-   with bs.VStack(fill="both", expand=True):
-       bs.Picture(photo, fit="contain", fill="both", expand=True)
+   with bs.Column(grow=True):
+       bs.Picture(photo, fit="contain", grow=True, horizontal="stretch")
 
 Reacting to load and errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

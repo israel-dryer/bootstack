@@ -3,12 +3,12 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="MenuButton", size=(260, 230), padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             mb1 = bs.MenuButton("Actions")
             mb1.add_item("Edit",      icon="pencil")
             mb1.add_item("Duplicate", icon="copy")
             mb1.add_item("Archive",   icon="archive")
-            mb1.add_separator()
+            mb1.add_divider()
             mb1.add_item("Delete",    icon="trash")
 
     app.tk.after(850, mb1.show_menu)
@@ -17,12 +17,12 @@ def hero():
 
 def shortcuts():
     with bs.App(title="MenuButton — Shortcuts", size=(220, 230), padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             mb1 = bs.MenuButton("File", icon="folder2")
             mb1.add_item("New",  icon="file-earmark-plus", shortcut="Mod+N")
             mb1.add_item("Open", icon="folder2-open",       shortcut="Mod+O")
             mb1.add_item("Save", icon="floppy",             shortcut="Mod+S")
-            mb1.add_separator()
+            mb1.add_divider()
             mb1.add_item("Exit", icon="box-arrow-right")
 
     app.tk.after(850, mb1.show_menu)
@@ -31,7 +31,7 @@ def shortcuts():
 
 def check_radio():
     with bs.App(title="MenuButton — Check and Radio", size=(400, 220), padding=20) as app:
-        with bs.HStack(gap=80, anchor_items="n", fill="x"):
+        with bs.Row(gap=80, vertical_items="top", horizontal="stretch"):
             mb_view = bs.MenuButton("View", icon="eye")
             mb_view.add_check_item("Show toolbar",   value=True)
             mb_view.add_check_item("Show sidebar",   value=True)
@@ -52,7 +52,7 @@ def check_radio():
 
 def variants():
     with bs.App(title="MenuButton — Variants", size=(480, 80), padding=20) as app:
-        with bs.HStack(gap=8, anchor_items="center", fill="x"):
+        with bs.Row(gap=8, vertical_items="center", horizontal="stretch"):
             for variant in ("solid", "outline", "ghost"):
                 mb = bs.MenuButton(variant.capitalize(), accent="primary", variant=variant)
                 mb.add_item("Option A")
@@ -63,7 +63,7 @@ def variants():
 
 def accents():
     with bs.App(title="MenuButton — Accents", size=(700, 80), padding=20) as app:
-        with bs.HStack(gap=8, anchor_items="center", fill="x"):
+        with bs.Row(gap=8, vertical_items="center", horizontal="stretch"):
             for accent in ("primary", "secondary", "success", "warning", "danger"):
                 mb = bs.MenuButton(accent.capitalize(), accent=accent)
                 mb.add_item("Option A")
@@ -74,7 +74,7 @@ def accents():
 
 def states():
     with bs.App(title="MenuButton — States", size=(460, 80), padding=20) as app:
-        with bs.HStack(gap=8, anchor_items="center", fill="x"):
+        with bs.Row(gap=8, vertical_items="center", horizontal="stretch"):
             mb_on = bs.MenuButton("Enabled")
             mb_on.add_item("Option A")
             mb_on.add_item("Option B")
@@ -90,7 +90,7 @@ def states():
 
 def icon_only():
     with bs.App(title="MenuButton — Icon-Only", size=(320, 80), padding=20) as app:
-        with bs.HStack(gap=8, anchor_items="center", fill="x"):
+        with bs.Row(gap=8, vertical_items="center", horizontal="stretch"):
             for icon in ("three-dots", "three-dots-vertical", "grid", "gear"):
                 mb = bs.MenuButton(icon=icon, show_arrow=False)
                 mb.add_item("Option A")

@@ -28,7 +28,7 @@ builds exactly this with an addon button:
    from bootstack.clipboard import set_clipboard
 
    key = bs.TextField(value="sk-live-7f3a9c2b", label="API key",
-                      read_only=True, fill="x")
+                      read_only=True, horizontal="stretch")
    key.insert_addon("button", "after", name="copy", icon="clipboard",
                     on_click=lambda: set_clipboard(key.value),
                     active_when_readonly=True)

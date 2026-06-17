@@ -324,6 +324,7 @@ class FilterDialog(ttk.Frame):
             parent=self._master,
             title=self._title,
             content_builder=self._build_content,
+            _raw_content=True,
             buttons=[
                 DialogButton(text="button.cancel", role="cancel", result=None),
                 DialogButton(

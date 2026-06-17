@@ -17,19 +17,19 @@ with bs.App(title="RadioGroup Demo", padding=20, gap=16) as app:
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.RadioGroup(["On"], accent=accent, value="On", title=accent.title())
 
     # Orientation
     bs.Label("Orientation", font="heading-sm")
-    with bs.HStack(gap=32):
+    with bs.Row(gap=32):
         bs.RadioGroup(["A", "B", "C"], value="A", title="Horizontal")
         bs.RadioGroup(["A", "B", "C"], value="A", title="Vertical", orient="vertical")
 
     # With title
     bs.Label("With Title", font="heading-sm")
-    with bs.HStack(gap=32):
+    with bs.Row(gap=32):
         bs.RadioGroup(
             [("Small", "s"), ("Medium", "m"), ("Large", "l")], title="Size", value="m",
         )

@@ -3,7 +3,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="SpinnerField", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True):
             sf = bs.SpinnerField(
                 label="Priority",
                 options=["Low", "Medium", "High", "Critical"],
@@ -22,7 +22,7 @@ def hero():
 
 def modes():
     with bs.App(title="SpinnerField — Modes", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True):
             bs.SpinnerField(
                 label="Text mode",
                 options=["Small", "Medium", "Large", "X-Large"],
@@ -40,7 +40,7 @@ def modes():
 
 def states():
     with bs.App(title="SpinnerField — States", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=8, fill="x", fill_items="x", expand_items=True):
+        with bs.Row(gap=8, horizontal="stretch", grow_items=True):
             bs.SpinnerField(value=5, min_value=1, max_value=10, label="Normal")
             bs.SpinnerField(value=5, min_value=1, max_value=10, label="Read only", read_only=True)
             bs.SpinnerField(value=5, min_value=1, max_value=10, label="Disabled",  disabled=True)

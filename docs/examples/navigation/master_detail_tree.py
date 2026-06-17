@@ -33,7 +33,7 @@ with bs.AppShell(title="Files", size=(900, 580)) as shell:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
             file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         with bar.add_menu("View") as view:
             view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -45,7 +45,7 @@ with bs.AppShell(title="Files", size=(900, 580)) as shell:
 
     @shell.detail
     def show(node):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
             bs.Label(node["text"], font="heading-lg")
             bs.Label(node.get("kind", ""), font="caption")
             if node.get("size"):

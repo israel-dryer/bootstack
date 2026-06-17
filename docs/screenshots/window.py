@@ -17,7 +17,7 @@ def hero():
                 bs.Label("Preferences", font="heading-md")
                 bs.Switch("Enable notifications", value=True)
                 bs.Select(label="Theme", options=["System", "Light", "Dark"], value="System")
-                with bs.HStack(gap=8):
+                with bs.Row(gap=8):
                     bs.Button("Save", accent="primary")
                     bs.Button("Cancel", variant="outline")
             win.show()

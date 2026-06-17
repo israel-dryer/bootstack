@@ -30,11 +30,11 @@ ICONS = {"team": "people-fill", "person": "person-fill"}
 
 
 with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)) as app:
-    with bs.Grid(columns=2, gap=20, fill="both", expand=True, sticky_items="nsew"):
+    with bs.Grid(columns=2, rows=[1], gap=20, grow=True, horizontal="stretch"):
 
         # In-memory source, simple field mapping. Folders (teams) get a chevron;
         # leaf people do not — decided by a batched has-children check per expand.
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("MemoryDataSource", font="heading-sm")
             mem = MemoryDataSource()
             mem.load([dict(r) for r in ORG])
@@ -43,11 +43,11 @@ with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)
                 parent_field="parent_id",
                 label_field="name",
                 order="name",
-                fill="both", expand=True,
+                grow=True, horizontal="stretch",
             )
 
         # SQLite source with a node_builder for computed labels + icons.
-        with bs.VStack(gap=6):
+        with bs.Column(gap=6):
             bs.Label("SqliteDataSource + node_builder", font="heading-sm")
             db = SqliteDataSource()
             db.load([dict(r) for r in ORG])
@@ -60,7 +60,7 @@ with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)
                 },
                 order="name",
                 accent="primary",
-                fill="both", expand=True,
+                grow=True, horizontal="stretch",
             )
             tree.on_activate(lambda n: print("activated:", n.data.get("name")))
 

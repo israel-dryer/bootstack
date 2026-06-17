@@ -397,17 +397,79 @@ demo` runs).
   `528281d0`·`42d07159`): `FlexFrame` (axis-aware engine), container plumbing,
   Row/Column/Spacer, Grid 2-D, App/Window/Card/GroupBox + PageStack/Tabs/SplitView/
   Accordion + ListView/Tree/AppShell/ScrollView, and the full `cli/demo.py`.
-- **NEXT — Stage 3 (the ~850-site sweep, fresh session):** `cli/appicon.py` +
-  `cli/templates/__init__.py`, then **all `docs/examples/` + `docs/screenshots/`** +
-  re-shoot screenshots, a layout how-to/topic guide for the new vocab, and re-point
-  `Toolbar`/`StatusBar` `add_spacer()` → the public `Spacer`. **Conversion rules**
-  (memory `feedback_layout_conversion_rules`): axis-aware (`fill="x"`→`horizontal`
-  stretch in a Column, `grow` in a Row); HOIST uniform child alignment to the parent
-  `*_items`; NEVER write a default value (drop the kwarg). Data/canvas widgets
-  (ListView/Tree/DataTable/Gallery/Carousel) collapse without `grow`/`horizontal`.
+- **Conversion rules** (memory `feedback_layout_conversion_rules`): axis-aware
+  (`fill="x"`→`horizontal` stretch in a Column, `grow` in a Row); HOIST uniform child
+  alignment to the parent `*_items`; NEVER write a default value (drop the kwarg).
+  Data/canvas widgets (ListView/Tree/DataTable/Gallery/Carousel) collapse without
+  `grow`/`horizontal`.
 - **Bugs filed while reviewing the demo** (pre-existing, NOT from this work): #165
   undecorated-window drag offset · #166 ContextMenu/Tooltip don't cover container
   children · #167 Gauge theme repaint · #168 Tabs overflow.
+
+#### ★★ SESSION 2026-06-16/17 — Stage 3 SUBSTANTIALLY DONE + 3 decisions + 2 framework fixes. PICK UP HERE.
+
+**Committed on the branch this session** (in order): `d82067ef` CLI (appicon + scaffold
+templates; `cli/icons.py` left — raw internal `.pack()`) · `cd2ab472` all ~69
+`docs/examples/` converted+verified · `42c00603` **Separator→Divider** rename ·
+`31c5d50e` **center cross-axis default** · `4936dacd` docs migration (hstack/vstack→
+**Row/Column** rename: new `row.rst`/`column.rst`/`row.py`/`column.py`, old files
+removed; full RST + screenshot-source vocab sweep; `tasks/layout.rst` rewritten;
+toctree + api-reference) · `df08ac4b` + `ecb51f11` + `3595f587` dialog fixes (below).
+
+**3 DECISIONS LOCKED this session (these SUPERSEDE the "FINAL vocabulary" block above):**
+1. **Cross-axis default = `center`, uniform across ALL stacks** (App/Window/Row/Column/
+   Card/GroupBox/page-hosts); stacking (main) axis stays start (top/left); grid stays
+   `stretch`. This REVERSES the brief's "locked top/left." Restores old pack centering
+   (App used to center its children) so re-shot screenshots match originals. Engine:
+   `stacks.py`/`app.py`/`window.py` defaults + layout-aware resolver in `card.py`/
+   `groupbox.py`/`expander.py`/`pagestack.py`/`tabs.py`/`splitview.py`. Memory
+   `project_layout_crossaxis_default`.
+2. **`bs.Separator` → `bs.Divider`** (pairs with `Spacer`). Renamed the public widget +
+   layout `add_divider()` (Toolbar/AppShell/nav) + the MENU surface (`add_divider()`,
+   item type `'divider'`). KEPT internal: ttk `Separator` primitive, `TSeparator` style,
+   `MenuItem.type=='separator'`, `tk.Menu.add_separator()`. Memory `project_divider_rename`.
+3. **Dialog `content_builder` is parent-free** — the content area is a public `Column`
+   set as the active parent, so the body is written like an App body (no `parent=`);
+   `Dialog(padding=, gap=)` configure it; arity-flexible (`def build()` / `def
+   build(content)` / old `def build(frame)` all work). bootstack's own verb/Form
+   dialogs render raw and opt out via private `_raw_content=True` (9 sites). Enabled by
+   `_RawTkContainer` in `widgets/_core/base.py` `_resolve_parent` (`df08ac4b`) — lets a
+   public widget be parented into a bare Tk frame.
+
+**Verification tooling (untracked, `development/`):** `verify_example.py` (runs an
+example headlessly, one App per subprocess; catches construction/placement CRASHES —
+does NOT trigger dialog `show()` or detect visual collapse) · `verify_screenshots.py`
+(runs each `SCENES` scene per-process). 183 tests pass; clean `-W` docs build EXCEPT
+the 36 missing `row-`/`column-`/`divider-` images (pending re-shoot).
+
+**HELD uncommitted — `docs/examples/` only** (the user is reviewing/running them; they
+have real issues). Includes the converted `.py`, the hstack/vstack/separator deletions,
+new `row.py`/`column.py`/`divider.py`, plus this session's example fixes: `column.py`/
+`row.py` (+ their screenshots) got `horizontal="stretch"` on fixed-height demos that
+were collapsing to lines; `datatable.py` → `COLUMNS: list[ColumnSpec]`; `dialog.py`/
+`dialogs.py` → parent-free. DO NOT commit `docs/examples/` until the user says so.
+
+**OPEN — resume here:**
+1. **`pagestack.py` settings grid: rows spread down the page** (last thing hit, NOT yet
+   fixed). Cause: `GridFrame` auto-weights every row not defined via `rows=` with
+   `weight=1` (pre-existing, commit `ca4e3df9`; asymmetric — columns default to 0). The
+   page uses `layout="grid"` which fills the PageStack, so the weight-1 rows divide that
+   height and spread. Trigger: the conversion dropped `sticky_items="ew"` (a non-default
+   that pinned cells horizontally only; the new default stretches both axes). DECIDE:
+   example-level fix (put a content-sized `Grid` *inside* a normal column page — RECOMMENDED)
+   vs framework-level (undefined Grid rows default `weight=0` + update `grid.py`'s
+   `height=80` demos to explicit `rows=[1]`). Watch for the same "page=grid fills→spreads"
+   in other held examples.
+2. **RE-SHOOT screenshots** (user's visual-verify step) — required for a `-W`-clean
+   build: `row`, `column`, `divider` (mandatory, new image names) + refresh `grid`/
+   `statusbar`/etc.: `py -3.12 docs/scripts/take_screenshots.py [widget]` (no arg = all).
+3. **Keep reviewing held `docs/examples/`** for the bug classes found this session:
+   collapsed fixed-size containers (need `horizontal`/`vertical="stretch"` AND a parent
+   that supplies that axis), untyped constants feeding TypedDict params (annotate),
+   lambda/raw `content_builder`s, the grid-row-spread above.
+4. **Commit `docs/examples/` + regenerated PNGs** once the user finishes review.
+5. **#5 `add_spacer()`→public `Spacer`** still deferred — entangled with
+   `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
 
 ### Toward the 0.1.0 stable release
 
@@ -1077,7 +1139,12 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 
 ### Dialogs
 - **7 doc pages** — `dialogs.rst` is toctree-only. `ColorDropperDialog` is internal.
-- **`content_builder`** receives an internal `_Frame` — use `_Label`/`_Frame` primitives.
+- **`content_builder`** fills a PUBLIC content `Column` set as the active parent —
+  write the body parent-free (`def build(): bs.Label(...)`), like an App body;
+  `Dialog(padding=, gap=)` configures it. `def build(content)` gets an explicit
+  handle; old `def build(frame): with bs.Column(parent=frame)` still works (frame
+  is the public Column, via the `_RawTkContainer` bridge in `_resolve_parent`).
+  bootstack's own verb/Form dialogs render raw and opt out with `_raw_content=True`.
 - **`Frame.configure(surface=...)`** does NOT work at runtime — use `configure_style_options(surface=...)`.
 - **`Dialog.__init__`** is fully keyword-only; `parent=` not `master=`; `min_size=`/`max_size=`.
 - **`ButtonRole`** values: `"primary"`, `"secondary"`, `"danger"`, `"cancel"`.

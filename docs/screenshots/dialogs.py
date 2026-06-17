@@ -7,10 +7,10 @@ _dlg = None
 
 with bs.App(title="My App", size=(680, 340), padding=24) as app:
 
-    with bs.VStack(fill="both", expand=True, gap=8):
+    with bs.Column(grow=True, horizontal="stretch", gap=8):
         bs.Label("Document Editor", font="heading-lg")
         bs.Label("report-q2-2026.docx")
-        bs.Separator(fill="x")
+        bs.Divider(horizontal="stretch")
         bs.Label("Last saved: 2 minutes ago", font="caption")
 
     def open_dialog():

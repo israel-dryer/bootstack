@@ -189,8 +189,8 @@ class NavPanel(Frame):
         self._main_children.append(header)
         return header
 
-    def add_separator(self) -> SideNavSeparator:
-        """Add a separator to the main area."""
+    def add_divider(self) -> SideNavSeparator:
+        """Add a divider to the main area."""
         sep = SideNavSeparator(self._main)
         if not self._compact:
             sep.pack(fill="x")

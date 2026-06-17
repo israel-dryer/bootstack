@@ -39,7 +39,7 @@ def show_dict_items():
 with bs.App(title="Filter Dialog", size=(680, 160), padding=20, gap=16) as app:
 
     bs.Label("Filter Dialog", font="heading-sm")
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Basic",            on_click=show_basic)
         bs.Button("Search and select all", on_click=show_with_search)
         bs.Button("Dict items",       on_click=show_dict_items)

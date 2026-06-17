@@ -92,11 +92,27 @@ Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw',
 Side = Literal['left', 'top', 'right', 'bottom']
 """Side placement for stack layout."""
 
+HAlign = Literal['left', 'center', 'right', 'stretch']
+"""Horizontal alignment of a widget within its slot — `'left'`, `'center'`,
+`'right'`, or `'stretch'` (fill the width)."""
+
+VAlign = Literal['top', 'center', 'bottom', 'stretch']
+"""Vertical alignment of a widget within its slot — `'top'`, `'center'`,
+`'bottom'`, or `'stretch'` (fill the height)."""
+
+HArrange = Literal['left', 'center', 'right', 'space-between', 'space-around', 'space-evenly']
+"""Horizontal arrangement of a Row's children as a group — cluster them
+(`'left'`/`'center'`/`'right'`) or spread them apart with the `'space-*'` modes."""
+
+VArrange = Literal['top', 'center', 'bottom', 'space-between', 'space-around', 'space-evenly']
+"""Vertical arrangement of a Column's children as a group — cluster them
+(`'top'`/`'center'`/`'bottom'`) or spread them apart with the `'space-*'` modes."""
+
 Direction = Literal['vertical', 'horizontal', 'row', 'column', 'row-reverse', 'column-reverse']
 """Layout direction."""
 
-LayoutKind = Literal['vstack', 'hstack', 'grid']
-"""Internal layout manager for a container — `'vstack'`/`'hstack'` pack children
+LayoutKind = Literal['column', 'row', 'grid']
+"""Internal layout manager for a container — `'column'`/`'row'` pack children
 top-to-bottom / left-to-right; `'grid'` arranges them in rows and columns."""
 
 AutoFlow = Literal['row', 'column', 'row-dense', 'column-dense', 'none']

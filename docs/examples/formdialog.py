@@ -18,7 +18,7 @@ def show_multi_col():
 
 with bs.App(title="Form Dialog", size=(680, 400), padding=20, gap=16) as app:
 
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("New Contact",      on_click=show_simple)
         bs.Button("Address (2 cols)", on_click=show_multi_col)
 

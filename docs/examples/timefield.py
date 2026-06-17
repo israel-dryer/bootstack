@@ -62,7 +62,7 @@ with bs.App(title="TimeField Demo", padding=20, gap=16) as app:
     # Validation
     bs.Label("Validation", font="heading-sm")
     validated = bs.TimeField(label="Required time", required=True)
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Validate", on_click=lambda: validated.validate())
 
 app.run()

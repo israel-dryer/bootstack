@@ -1,7 +1,8 @@
 import bootstack as bs
+from bootstack.types import ColumnSpec
 
 # Column definitions — each dict maps a display label to a record key.
-COLUMNS = [
+COLUMNS: list[ColumnSpec] = [
     {"text": "Name", "key": "name", "width": 160},
     {"text": "Department", "key": "department", "width": 130},
     {"text": "Role", "key": "role", "width": 150},
@@ -68,8 +69,8 @@ with bs.App(title="Data Table Demo", size=(980, 620), padding=16, gap=12) as app
         striped=True,
         show_status_bar=True,
         page_size=10,
-        fill="both",
-        expand=True,
+        grow=True,
+        horizontal="stretch",
     )
 
     def show_selection(e):

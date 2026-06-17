@@ -12,7 +12,7 @@ from bootstack.clipboard import set_clipboard
 
 def search():
     with bs.App(title="Search field", minsize=(560, 1), padding=20) as app:
-        field = bs.TextField(placeholder="Search products...", value="wireless", fill="x")
+        field = bs.TextField(placeholder="Search products...", value="wireless", horizontal="stretch")
         field.insert_addon("label", "before", icon="search")
 
         def clear():
@@ -24,7 +24,7 @@ def search():
 
 def amount():
     with bs.App(title="Amount field", minsize=(560, 1), padding=20) as app:
-        price = bs.NumberField(value=1499, label="Price", fill="x")
+        price = bs.NumberField(value=1499, label="Price", horizontal="stretch")
         price.insert_addon("label", "before", text="$")
         price.insert_addon("label", "after", text="USD", accent="secondary")
     app.run()
@@ -32,14 +32,14 @@ def amount():
 
 def birthday():
     with bs.App(title="Birthday picker", minsize=(560, 1), padding=20) as app:
-        bday = bs.DateField(label="Date of birth", value=datetime.date(1990, 5, 4), fill="x")
+        bday = bs.DateField(label="Date of birth", value=datetime.date(1990, 5, 4), horizontal="stretch")
         bday.insert_addon("label", "before", icon="cake")
     app.run()
 
 
 def unit():
     with bs.App(title="Unit field", minsize=(560, 1), padding=20) as app:
-        size = bs.NumberField(value=64, label="Width", fill="x")
+        size = bs.NumberField(value=64, label="Width", horizontal="stretch")
         percent = bs.Signal(True)  # False -> px, True -> %
         size.insert_addon("toggle", "after", name="unit", text="%", signal=percent)
     app.run()
@@ -47,7 +47,7 @@ def unit():
 
 def copy():
     with bs.App(title="Copy field", minsize=(560, 1), padding=20) as app:
-        key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, fill="x")
+        key = bs.TextField(value="sk-live-7f3a9c2b", label="API key", read_only=True, horizontal="stretch")
 
         def do_copy():
             set_clipboard(key.value)

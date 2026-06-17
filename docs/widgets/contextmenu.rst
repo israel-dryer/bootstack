@@ -24,13 +24,13 @@ the menu.
 
 .. code-block:: python
 
-   with bs.Card(fill="x") as card:
+   with bs.Card(horizontal="stretch") as card:
        bs.Label("Right-click here")
 
    menu = bs.ContextMenu(card)
    menu.add_item("Edit",      icon="pencil",  on_click=edit)
    menu.add_item("Duplicate", icon="copy",    on_click=duplicate)
-   menu.add_separator()
+   menu.add_divider()
    menu.add_item("Delete",    icon="trash",   on_click=delete)
 
 Item types
@@ -43,10 +43,10 @@ radiobutton items, and separators.
 
    menu = bs.ContextMenu(target)
    menu.add_item("Command item", icon="pencil")          # command
-   menu.add_separator()
+   menu.add_divider()
    menu.add_check_item("Check item (on)", value=True)    # checkbutton
    menu.add_check_item("Check item (off)")
-   menu.add_separator()
+   menu.add_divider()
    menu.add_radio_item("Radio item A", value="a")        # radiobutton
    menu.add_radio_item("Radio item B", value="b")
 
@@ -112,7 +112,7 @@ Three forms are accepted:
    menu.add_item("Cut",        icon="scissors",  shortcut="Mod+X")
    menu.add_item("Copy",       icon="copy",      shortcut="Mod+C")
    menu.add_item("Paste",      icon="clipboard", shortcut="Mod+V")
-   menu.add_separator()
+   menu.add_divider()
    menu.add_item("Select All",                   shortcut="Mod+A")
 
 .. image:: /_static/examples/contextmenu-shortcuts-light.png

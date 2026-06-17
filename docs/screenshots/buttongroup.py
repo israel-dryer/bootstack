@@ -14,7 +14,7 @@ def hero():
 def accents():
     with bs.App(title="ButtonGroup — Accents", padding=20, gap=8) as app:
         for accent in ("default", "primary", "secondary", "success", "warning", "danger"):
-            with bs.HStack(fill="x"):
+            with bs.Row(horizontal="stretch"):
                 bg = bs.ButtonGroup(accent=accent)
                 bg.add("Save")
                 bg.add("Cancel")
@@ -24,7 +24,7 @@ def accents():
 def variants():
     with bs.App(title="ButtonGroup — Variants", padding=20, gap=8) as app:
         for variant in ("solid", "outline", "ghost"):
-            with bs.HStack(fill="x"):
+            with bs.Row(horizontal="stretch"):
                 bg = bs.ButtonGroup(accent="primary", variant=variant)
                 bg.add("Save")
                 bg.add("Cancel")
@@ -34,7 +34,7 @@ def variants():
 
 def icons():
     with bs.App(title="ButtonGroup — Icons", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bg = bs.ButtonGroup(accent="primary", variant="outline")
             bg.add("Bold",      icon="type-bold")
             bg.add("Italic",    icon="type-italic")
@@ -44,14 +44,14 @@ def icons():
 
 def icon_only():
     with bs.App(title="ButtonGroup — Icon Only", padding=20, gap=8) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bg1 = bs.ButtonGroup(variant="outline", accent="primary")
             bg1.add(icon="type-bold")
             bg1.add(icon="type-italic")
             bg1.add(icon="type-underline")
             bg1.add(icon="type-strikethrough")
 
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bg2 = bs.ButtonGroup()
             bg2.add(icon="scissors")
             bg2.add(icon="copy")
@@ -61,7 +61,7 @@ def icon_only():
 
 def vertical():
     with bs.App(title="ButtonGroup — Vertical", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bg = bs.ButtonGroup("vertical", accent="primary", variant="outline")
             bg.add("Cut",   icon="scissors")
             bg.add("Copy",  icon="copy")
@@ -71,7 +71,7 @@ def vertical():
 
 def density():
     with bs.App(title="ButtonGroup — Density", padding=20) as app:
-        with bs.HStack(gap=20, fill="x"):
+        with bs.Row(gap=20, horizontal="stretch"):
             bg1 = bs.ButtonGroup(accent="primary")
             bg1.add("Cut",   icon="scissors")
             bg1.add("Copy",  icon="copy")
@@ -86,7 +86,7 @@ def density():
 
 def disabled():
     with bs.App(title="ButtonGroup — Disabled", padding=20) as app:
-        with bs.HStack(gap=20, fill="x"):
+        with bs.Row(gap=20, horizontal="stretch"):
             bg1 = bs.ButtonGroup(accent="primary")
             bg1.add("Save")
             bg1.add("Cancel")

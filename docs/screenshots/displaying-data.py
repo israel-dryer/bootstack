@@ -25,20 +25,20 @@ def _tree_nodes():
 
 def collections():
     with bs.App(title="Displaying data", size=(720, 490), padding=16, gap=20) as app:
-        with bs.HStack(fill="x", height=200, gap=16):
-            with bs.VStack(fill="both", expand=True, gap=6):
+        with bs.Row(horizontal="stretch", height=200, gap=16, grow_items=True, vertical_items="stretch"):
+            with bs.Column(gap=6):
                 bs.Label("ListView", font="caption", accent="secondary")
                 bs.ListView(
                     items=[{"id": p["id"], "title": p["name"], "text": p["dept"]} for p in PEOPLE],
                     selection_mode="single",
                     density="compact",
-                    fill="both", expand=True,
+                    grow=True, horizontal="stretch",
                 )
-            with bs.VStack(fill="both", expand=True, gap=6):
+            with bs.Column(gap=6):
                 bs.Label("Tree", font="caption", accent="secondary")
-                tree = bs.Tree(nodes=_tree_nodes(), density="compact", fill="both", expand=True)
+                tree = bs.Tree(nodes=_tree_nodes(), density="compact", grow=True, horizontal="stretch")
                 tree.expand_all()
-        with bs.VStack(fill="x", gap=6):
+        with bs.Column(horizontal="stretch", gap=6):
             bs.Label("DataTable", font="caption", accent="secondary")
             bs.DataTable(
                 columns=[
@@ -49,7 +49,7 @@ def collections():
                 density="compact",
                 page_size=4,
                 searchable=False,
-                fill="x",
+                horizontal="stretch",
             )
     app.run()
 

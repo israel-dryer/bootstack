@@ -112,14 +112,15 @@ framed and collapsible groupings. ``Accordion`` exposes its sections as
    Accordion
    AccordionSection
    Card
+   Column
+   Divider
    Grid
    GroupBox
-   HStack
+   Row
    ScrollView
-   Separator
+   Spacer
    SplitPane
    SplitView
-   VStack
 
 Navigation
 ----------
@@ -205,10 +206,12 @@ groups, and tabbed sections.
       Carousel
       Checkbox
       CodeEditor
+      Column
       ContextMenu
       ContextMenuItem
       DataTable
       DateField
+      Divider
       FieldItem
       Form
       FormItem
@@ -217,7 +220,6 @@ groups, and tabbed sections.
       Grid
       GroupBox
       GroupItem
-      HStack
       Label
       ListView
       MenuButton
@@ -232,13 +234,14 @@ groups, and tabbed sections.
       RadioGroup
       RadioToggleButton
       RangeSlider
+      Row
       ScrollView
       Select
       SelectButton
-      Separator
       Slider
       Snackbar
       snackbar
+      Spacer
       SpinnerField
       SplitPane
       SplitView
@@ -260,4 +263,3 @@ groups, and tabbed sections.
       Tooltip
       Tree
       TreeNode
-      VStack

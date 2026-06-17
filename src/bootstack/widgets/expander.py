@@ -5,10 +5,11 @@ from typing import overload, Any, Callable, Literal
 
 from bootstack.widgets._impl.composites.expander import Expander as _InternalExpander
 from bootstack.widgets._impl.composites.accordion import Accordion as _InternalAccordion
-from bootstack.widgets._impl.primitives.packframe import PackFrame
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._core.container import (
-    PublicContainer, PACK_KEYS, GRID_KEYS, normalize_fill,
+    PublicContainer, GRID_KEYS, grid_sticky, place_flex_child,
+    _reject_legacy_child_kwargs, _expand_margin,
 )
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.context import push_container, pop_container
@@ -16,8 +17,7 @@ from bootstack.widgets._core.events import register_widget_events
 from bootstack.events import AccordionChangeEvent, Subscription, ToggleEvent
 from bootstack.streams import Stream
 from bootstack.widgets.types import (
-    Event, AccentToken, Fill, Anchor, Sticky, Padding, LayoutKind, AutoFlow,
-    AccordionVariant,
+    Event, AccentToken, Padding, LayoutKind, AutoFlow, AccordionVariant,
 )
 
 _EXPANDER_EVENTS: dict[str, str] = {
@@ -39,26 +39,26 @@ class Expander(PublicContainer):
 
     Args:
         title: Header text shown in the clickable header bar.
-        layout: Internal layout for the body. One of ``'vstack'`` (default),
-            ``'hstack'``, or ``'grid'``.
+        layout: Internal layout for the body. One of ``'column'`` (default),
+            ``'row'``, or ``'grid'``.
         padding: Space between the expander border and its body content, in
             pixels. Accepts a single int or a ``(x, y)`` tuple.
         gap: Space between body children in pixels. Default ``0``.
-        fill_items: Default fill direction applied to each body child.
-            One of ``'none'``, ``'x'``, ``'y'``, ``'both'``. Default ``None``
-            (no fill applied).
-        expand_items: If ``True``, body children receive extra space along the
-            pack direction. Default ``None`` (not applied).
-        anchor_items: Default anchor applied to each body child. One of
-            ``'n'``, ``'ne'``, ``'e'``, ``'se'``, ``'s'``, ``'sw'``,
-            ``'w'``, ``'nw'``, ``'center'``. Default ``None``.
+        horizontal_items: How body children sit on the horizontal axis — edge
+            values ``'left'``/``'center'``/``'right'``/``'stretch'``, plus
+            ``'space-*'`` when horizontal is the stacking axis. Default
+            ``'stretch'`` for ``'grid'``, else ``'left'``.
+        vertical_items: How body children sit on the vertical axis — edge values
+            ``'top'``/``'center'``/``'bottom'``/``'stretch'``, plus ``'space-*'``
+            when vertical is the stacking axis. Default ``'stretch'`` for
+            ``'grid'``, else ``'top'``.
+        grow_items: For ``'column'``/``'row'``, when ``True`` every body
+            child grows equally to share the main axis. Default ``False``.
         columns: Column size definitions for ``'grid'`` layout. An integer
             creates that many equal-weight columns; a list of ints sets
             per-column weights. Default ``None``.
         rows: Row size definitions for ``'grid'`` layout. Same format as
             ``columns``. Default ``None``.
-        sticky_items: Default cell alignment for grid children. Any combination
-            of ``'n'``, ``'s'``, ``'e'``, ``'w'``. Default ``None``.
         auto_flow: Grid placement direction — ``'row'`` (default) or
             ``'column'``.
         expanded: If ``True`` (default), the body is visible on creation.
@@ -82,15 +82,14 @@ class Expander(PublicContainer):
         self,
         title: str = "",
         *,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | None = None,
         auto_flow: AutoFlow = "row",
         expanded: bool = True,
         collapsible: bool = True,
@@ -106,7 +105,18 @@ class Expander(PublicContainer):
         self._parent = self._resolve_parent(parent)
         self._layout = layout
         layout_kw = self._split_layout_kwargs(kwargs)
-        layout_kw.setdefault("fill", "x")
+        layout_kw.setdefault("horizontal", "stretch")
+
+        if horizontal_items is None:
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
+        if vertical_items is None:
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -129,15 +139,15 @@ class Expander(PublicContainer):
         self._internal = _InternalExpander(tk_master, **internal_kwargs)
 
         content = self._internal._content_frame
-        if layout in ("vstack", "hstack"):
-            self._layout_frame = PackFrame(
+        if layout in ("column", "row"):
+            self._layout_frame = FlexFrame(
                 content,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
@@ -146,41 +156,32 @@ class Expander(PublicContainer):
                 rows=rows,
                 padding=padding,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
             raise ValueError(
-                f"Expander layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"Expander layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._layout_frame.pack(fill="both", expand=True)
         self._attach_to_parent(layout_kw)
 
     def _child_master(self) -> tkinter.Misc:
         return self._layout_frame
 
-    def _default_layout_method(self) -> str:
-        return "grid" if self._layout == "grid" else "pack"
-
-    def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
+    def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
+            _reject_legacy_child_kwargs(layout_kw, "Expander")
+            _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
-            return ("grid", options)
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        return ("pack", options)
+            h = layout_kw.get("horizontal") or self._horizontal_items
+            v = layout_kw.get("vertical") or self._vertical_items
+            options["sticky"] = grid_sticky(h, v)
+            child._internal.grid(in_=self._child_master(), **options)
+            return
+        place_flex_child(self._layout_frame, child, layout_kw, "Expander")
 
     # ----- Properties -----
 
@@ -229,8 +230,8 @@ class AccordionSection:
     inspect or drive the section afterward.
 
     As a context manager it accepts the same layout kwargs as the standalone
-    layout containers — `layout=`, `gap=`, `fill_items=`, `expand_items=`,
-    `anchor_items=`, `columns=`, `rows=`, `sticky_items=`, `auto_flow=`.
+    layout containers — `layout=`, `gap=`, `horizontal_items=`, `vertical_items=`,
+    `grow_items=`, `columns=`, `rows=`, `auto_flow=`.
     """
 
     def __init__(
@@ -238,31 +239,41 @@ class AccordionSection:
         internal_expander: _InternalExpander,
         *,
         key: str,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = None,
         gap: int = 0,
-        fill_items: Fill | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | None = None,
         auto_flow: AutoFlow = "row",
     ) -> None:
         self._expander = internal_expander
         self._key = key
         self._layout = layout
 
+        if horizontal_items is None:
+            horizontal_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "column" else "left"
+            )
+        if vertical_items is None:
+            vertical_items = (
+                "stretch" if layout == "grid"
+                else "center" if layout == "row" else "top"
+            )
+
         content = internal_expander._content_frame
-        if layout in ("vstack", "hstack"):
-            self._layout_frame = PackFrame(
+        if layout in ("column", "row"):
+            self._layout_frame = FlexFrame(
                 content,
-                direction="vertical" if layout == "vstack" else "horizontal",
+                direction="vertical" if layout == "column" else "horizontal",
                 padding=padding,
                 gap=gap,
-                fill_items=normalize_fill(fill_items),
-                expand_items=expand_items,
-                anchor_items=anchor_items,
+                horizontal_items=horizontal_items,
+                vertical_items=vertical_items,
+                grow_items=grow_items,
             )
         elif layout == "grid":
             self._layout_frame = GridFrame(
@@ -271,18 +282,15 @@ class AccordionSection:
                 rows=rows,
                 padding=padding,
                 gap=gap,
-                sticky_items=sticky_items,
                 auto_flow=auto_flow,
             )
         else:
             raise ValueError(
-                f"AccordionSection layout must be 'vstack', 'hstack', or 'grid', got {layout!r}"
+                f"AccordionSection layout must be 'column', 'row', or 'grid', got {layout!r}"
             )
 
-        self._fill_items = normalize_fill(fill_items)
-        self._expand_items = expand_items
-        self._anchor_items = anchor_items
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
         self._layout_frame.pack(fill="both", expand=True)
 
     def _child_master(self) -> tkinter.Misc:
@@ -290,19 +298,15 @@ class AccordionSection:
 
     def guide_layout(self, child: PublicWidgetBase, **layout_kw: Any) -> None:
         if self._layout == "grid":
+            _reject_legacy_child_kwargs(layout_kw, "AccordionSection")
+            _expand_margin(layout_kw)
             options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-            if "sticky" not in options and self._sticky_items:
-                options["sticky"] = self._sticky_items
+            h = layout_kw.get("horizontal") or self._horizontal_items
+            v = layout_kw.get("vertical") or self._vertical_items
+            options["sticky"] = grid_sticky(h, v)
             child._internal.grid(in_=self._child_master(), **options)
             return
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
-        if "fill" not in options and self._fill_items:
-            options["fill"] = self._fill_items
-        if "expand" not in options and self._expand_items is not None:
-            options["expand"] = self._expand_items
-        if "anchor" not in options and self._anchor_items:
-            options["anchor"] = self._anchor_items
-        child._internal.pack(in_=self._child_master(), **options)
+        place_flex_child(self._layout_frame, child, layout_kw, "AccordionSection")
 
     # ----- Section identity, state, and control -----
 
@@ -387,7 +391,7 @@ class Accordion(PublicWidgetBase):
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
-        layout_kw.setdefault("fill", "x")
+        layout_kw.setdefault("horizontal", "stretch")
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -497,15 +501,14 @@ class Accordion(PublicWidgetBase):
         title: str,
         *,
         key: str | None = None,
-        layout: LayoutKind = "vstack",
+        layout: LayoutKind = "column",
         padding: Padding | None = 16,
         gap: int = 0,
-        fill_items: Fill | None = None,
-        expand_items: bool | None = None,
-        anchor_items: Anchor | None = None,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
-        sticky_items: Sticky | None = None,
         auto_flow: AutoFlow = "row",
         expanded: bool | None = None,
         icon: str | None = None,
@@ -516,22 +519,25 @@ class Accordion(PublicWidgetBase):
             title: Section header text.
             key: Unique identifier used with `item()`, `expand()`, `collapse()`,
                 and `remove()`. Auto-generated if omitted.
-            layout: Body layout. Defaults to `'vstack'`.
+            layout: Body layout. Defaults to `'column'`.
             padding: Space between the section border and its body, in pixels.
                 Defaults to `16`.
             gap: Space between body children in pixels. Defaults to `0`.
-            fill_items: Default fill direction for body children. Defaults to
-                `None`.
-            expand_items: If `True`, body children expand along the pack
-                direction. Defaults to `None`.
-            anchor_items: Default anchor for body children. Defaults to `None`.
+            horizontal_items: How body children sit on the horizontal axis — edge
+                values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
+                when horizontal is the stacking axis. Defaults to `'stretch'` in grid mode,
+                `'center'` in a column and `'left'` in a row.
+            vertical_items: How body children sit on the vertical axis — edge
+                values `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'`
+                when vertical is the stacking axis. Defaults to `'stretch'` in grid mode,
+                `'center'` in a row and `'top'` in a column.
+            grow_items: For `'column'`/`'row'`, when `True` every body child
+                grows equally to share the main axis. Defaults to `False`.
             columns: Column definitions for `'grid'` layout. An integer sets
                 the number of equal-weight columns; a list sets per-column
                 weights or sizes (e.g. `[1, 2, 'auto', '120px']`).
                 Defaults to `None`.
             rows: Row definitions for `'grid'` layout. Defaults to `None`.
-            sticky_items: Default cell alignment for grid children.
-                Defaults to `None`.
             auto_flow: Grid placement direction. Defaults to `'row'`.
             expanded: Whether the section starts expanded. Defaults to the
                 accordion's own default (collapsed when `allow_multiple=False`).
@@ -559,12 +565,11 @@ class Accordion(PublicWidgetBase):
             layout=layout,
             padding=padding,
             gap=gap,
-            fill_items=fill_items,
-            expand_items=expand_items,
-            anchor_items=anchor_items,
+            horizontal_items=horizontal_items,
+            vertical_items=vertical_items,
+            grow_items=grow_items,
             columns=columns,
             rows=rows,
-            sticky_items=sticky_items,
             auto_flow=auto_flow,
         )
         self._sections[resolved_key] = section

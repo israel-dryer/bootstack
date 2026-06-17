@@ -65,20 +65,20 @@ in a table cell, or in a sidebar item.
 .. code-block:: python
 
    # Next to a heading
-   with bs.HStack(gap=8, anchor_items="center"):
+   with bs.Row(gap=8, vertical_items="center"):
        bs.Label("Inbox", font="heading-md")
        bs.Badge("12", accent="primary", variant="pill")
 
-   with bs.HStack(gap=8, anchor_items="center"):
+   with bs.Row(gap=8, vertical_items="center"):
        bs.Label("Alerts", font="heading-md")
        bs.Badge("3", accent="danger", variant="pill")
 
    # Status in a data row
-   with bs.HStack(gap=8, anchor_items="center"):
+   with bs.Row(gap=8, vertical_items="center"):
        bs.Label("Run-A15")
        bs.Badge("Complete", accent="success", variant="pill")
 
-   with bs.HStack(gap=8, anchor_items="center"):
+   with bs.Row(gap=8, vertical_items="center"):
        bs.Label("Run-A14")
        bs.Badge("2 warnings", accent="warning")
        bs.Badge("Fail",       accent="danger",  variant="pill")

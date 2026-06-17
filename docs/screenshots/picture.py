@@ -48,22 +48,22 @@ def hero():
 
 def fit():
     with bs.App(title="Picture — Fit modes", padding=20, gap=8) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             for mode in ("contain", "cover", "fill"):
-                with bs.VStack(gap=4):
+                with bs.Column(gap=4):
                     bs.Picture(_LANDSCAPE, fit=mode, width=150, height=150, surface="card")
-                    bs.Label(mode, font="caption", anchor="center")
+                    bs.Label(mode, font="caption", horizontal="center")
     app.run()
 
 
 def corners():
     with bs.App(title="Picture — Rounded corners", padding=20, gap=8) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             for radius in (0, 16, 36):
-                with bs.VStack(gap=4):
+                with bs.Column(gap=4):
                     bs.Picture(_LANDSCAPE, fit="cover", width=150, height=150,
                                corner_radius=radius)
-                    bs.Label(f"radius={radius}", font="caption", anchor="center")
+                    bs.Label(f"radius={radius}", font="caption", horizontal="center")
     app.run()
 
 

@@ -23,7 +23,7 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
             file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         with bar.add_menu("View") as view:
             view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -37,20 +37,20 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
 
         @ws.detail
         def read(message):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label(message["text"], font="heading-lg")
                 bs.Label(f"From {message['title']}", font="caption")
-                bs.Separator()
+                bs.Divider()
                 bs.Label(message["body"])
 
     # Calendar — static pages.
     with shell.add_workspace("calendar", text="Calendar", icon="calendar3") as ws:
         with ws.add_page("today", text="Today", icon="calendar-day"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
                 bs.Label("Today", font="heading-lg")
                 bs.Label("No events.")
         with ws.add_page("week", text="Week", icon="calendar-week"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
                 bs.Label("This week", font="heading-lg")
 
     # Contacts — another list.
@@ -59,14 +59,14 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
 
         @ws.detail
         def card(person):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=12, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label(person["title"], font="heading-lg")
                 bs.Label(person["text"], font="caption")
                 bs.Label(f"Phone: {person['phone']}")
 
     with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
         with ws.add_page("general", text="General", icon="sliders"):
-            with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
                 bs.Label("Settings", font="heading-lg")
 
     # Mail is the first workspace, so it opens active with its first message

@@ -9,7 +9,7 @@ _PHOTO = Path(__file__).parent.parent / "_static" / "examples" / "avatar-profile
 
 def hero():
     with bs.App(title="Avatar", padding=20, gap=14) as app:
-        with bs.HStack(gap=12, anchor_items="center"):
+        with bs.Row(gap=12, vertical_items="center"):
             bs.Avatar(_PHOTO, size=64, shape="circle")
             bs.Avatar(_PHOTO, size=64, shape="rounded")
             bs.Avatar(name="Ada Lovelace", size=64, background="primary")
@@ -20,11 +20,11 @@ def hero():
 
 def shapes():
     with bs.App(title="Avatar — shapes", padding=20, gap=14) as app:
-        with bs.HStack(gap=16, anchor_items="center"):
+        with bs.Row(gap=16, vertical_items="center"):
             for shape in ("circle", "rounded", "square"):
-                with bs.VStack(gap=4):
+                with bs.Column(gap=4):
                     bs.Avatar(_PHOTO, size=72, shape=shape)
-                    bs.Label(shape, font="caption", anchor="center")
+                    bs.Label(shape, font="caption", horizontal="center")
     app.run()
 
 

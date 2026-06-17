@@ -11,7 +11,7 @@ def hero():
             value=TODAY,
             label="Start date",
             message="Select the project start date.",
-            fill="x",
+            horizontal="stretch",
         )
 
         def _open():
@@ -32,7 +32,7 @@ def hero():
 
 def formats():
     with bs.App(title="DateField — Formats", padding=20, gap=12, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True):
             bs.DateField(value=TODAY, label="Long date",    value_format="longDate")
             bs.DateField(value=TODAY, label="Short date",   value_format="shortDate")
             bs.DateField(value=TODAY, label="Month + year", value_format="monthAndYear")
@@ -48,14 +48,14 @@ def range_mode():
             range_end=TODAY,
             label="Date range",
             message="Select a start and end date.",
-            fill="x",
+            horizontal="stretch",
         )
     app.run()
 
 
 def states():
     with bs.App(title="DateField — States", padding=20, minsize=(720, 1)) as app:
-        with bs.HStack(gap=12, fill="x", fill_items="x", expand_items=True, anchor_items="n"):
+        with bs.Row(gap=12, horizontal="stretch", grow_items=True):
             bs.DateField(value=TODAY, label="Normal")
             bs.DateField(value=TODAY, label="Read only", read_only=True)
             bs.DateField(value=TODAY, label="Disabled",  disabled=True)

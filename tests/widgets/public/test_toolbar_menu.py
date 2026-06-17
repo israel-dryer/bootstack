@@ -33,7 +33,7 @@ def test_add_menu_builds_model_and_trigger(app):
     tb = bs.Toolbar(parent=app)
     with tb.add_menu("File") as file:
         file.add_action("New", shortcut="Mod+N", on_click=lambda: fired.append("new"))
-        file.add_separator()
+        file.add_divider()
         file.add_action("Quit", shortcut="Mod+Q", on_click=lambda: fired.append("quit"))
 
     model = tb._internal.menu_model

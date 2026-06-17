@@ -13,19 +13,19 @@ with bs.App(title="Switch Demo", padding=20, gap=16) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")
-    with bs.HStack(gap=24):
+    with bs.Row(gap=24):
         bs.Switch("Off", value=False)
         bs.Switch("On",  value=True)
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.HStack(gap=16):
+    with bs.Row(gap=16):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.Switch(accent.title(), accent=accent, value=True)
 
     # Reactive binding
     bs.Label("Reactive Binding", font="heading-sm")
-    with bs.VStack(gap=6):
+    with bs.Column(gap=6):
         dark_sig = bs.Signal(False)
         bs.Switch("Dark mode", signal=dark_sig, accent="secondary")
         status_lbl = bs.Label("Theme: light", accent="secondary", font="caption")
@@ -33,7 +33,7 @@ with bs.App(title="Switch Demo", padding=20, gap=16) as app:
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
-    with bs.HStack(gap=24):
+    with bs.Row(gap=24):
         bs.Switch("Disabled off", disabled=True, value=False)
         bs.Switch("Disabled on",  disabled=True, value=True)
 

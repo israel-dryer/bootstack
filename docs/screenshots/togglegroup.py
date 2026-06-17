@@ -3,7 +3,7 @@ import bootstack as bs
 
 def hero():
     with bs.App(title="ToggleGroup", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.ToggleGroup(["Day", "Week", "Month"], value="Week")
 
     app.run()
@@ -11,7 +11,7 @@ def hero():
 
 def multi():
     with bs.App(title="ToggleGroup — Multi", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.ToggleGroup(["Bold", "Italic", "Underline"], mode="multi", value={"Bold", "Underline"})
 
     app.run()
@@ -19,7 +19,7 @@ def multi():
 
 def variants():
     with bs.App(title="ToggleGroup — Variants", padding=20) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             for variant in ("solid", "outline", "ghost"):
                 bs.ToggleGroup(["Off", "On"], accent="primary", variant=variant, value="On")
 
@@ -28,7 +28,7 @@ def variants():
 
 def accents():
     with bs.App(title="ToggleGroup — Accents", padding=20) as app:
-        with bs.HStack(gap=8, fill="x"):
+        with bs.Row(gap=8, horizontal="stretch"):
             for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
                 bs.ToggleGroup(["Off", "On"], accent=accent, value="On")
 
@@ -37,7 +37,7 @@ def accents():
 
 def orientation():
     with bs.App(title="ToggleGroup — Orientation", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.ToggleGroup(["Top", "Middle", "Bottom"], orient="vertical", value="Middle")
 
     app.run()
@@ -45,7 +45,7 @@ def orientation():
 
 def disabled():
     with bs.App(title="ToggleGroup — Disabled", padding=20) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             bs.ToggleGroup(["A", "B", "C"], value="B", disabled=True)
             bs.ToggleGroup(["X", "Y", "Z"], mode="multi", value={"X", "Z"}, disabled=True)
 
@@ -56,7 +56,7 @@ def icon_only():
     # An option with an icon and no text renders as a bare glyph — the widget
     # infers icon-only automatically, giving a compact toolbar.
     with bs.App(title="ToggleGroup — Icon only", padding=20) as app:
-        with bs.HStack(gap=16, fill="x"):
+        with bs.Row(gap=16, horizontal="stretch"):
             bs.ToggleGroup(options=[
                 {"icon": "text-left", "value": "left"},
                 {"icon": "text-center", "value": "center"},
@@ -76,7 +76,7 @@ def option_disabled():
     # A single option disabled (greyed, non-selectable) inside an otherwise
     # enabled group — distinct from the whole-widget `disabled=`.
     with bs.App(title="ToggleGroup — Option disabled", padding=20) as app:
-        with bs.HStack(fill="x"):
+        with bs.Row(horizontal="stretch"):
             bs.ToggleGroup(options=[
                 ("Day", "day"),
                 ("Week", "week"),

@@ -143,9 +143,9 @@ class Workspace:
         """Add a plain section-label header (grouped-static)."""
         return self._ensure_static().add_header(text)
 
-    def add_separator(self) -> Any:
-        """Add a separator to the sidebar."""
-        return self._ensure_static().add_separator()
+    def add_divider(self) -> Any:
+        """Add a divider to the sidebar."""
+        return self._ensure_static().add_divider()
 
     # ----- Custom mode -----
 

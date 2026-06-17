@@ -29,7 +29,7 @@ page.
 
 .. code-block:: python
 
-   ps = bs.PageStack(fill="both", expand=True)
+   ps = bs.PageStack(grow=True)
 
    with ps.add("home"):
        bs.Label("Home page content")
@@ -71,23 +71,23 @@ Page layout modes
 ~~~~~~~~~~~~~~~~~
 
 Each page has an independent internal layout controlled by the ``layout=``
-argument of `add()`. The default is ``'vstack'`` (vertical stack).
+argument of `add()`. The default is ``'column'`` (vertical stack).
 
 .. code-block:: python
 
-   # Vertical stack (default)
-   with ps.add("home", layout="vstack", gap=8):
+   # Vertical column (default)
+   with ps.add("home", layout="column", gap=8):
        bs.Label("Row 1")
        bs.Label("Row 2")
 
-   # Horizontal stack
-   with ps.add("toolbar", layout="hstack", gap=6):
+   # Horizontal row
+   with ps.add("toolbar", layout="row", gap=6):
        bs.Button("Cut")
        bs.Button("Copy")
        bs.Button("Paste")
 
    # Grid
-   with ps.add("form", layout="grid", columns=["auto", 1], gap=8, sticky_items="ew"):
+   with ps.add("form", layout="grid", columns=["auto", 1], gap=8, horizontal_items="stretch"):
        bs.Label("Username")
        bs.TextField()
        bs.Label("Password")
@@ -156,8 +156,8 @@ resizable split container with draggable sashes.
 :class:`Accordion <bootstack.widgets.expander.Accordion>` —
 collapsible section container.
 
-:class:`VStack <bootstack.widgets.stacks.VStack>`,
-:class:`HStack <bootstack.widgets.stacks.HStack>`, and
+:class:`Column <bootstack.widgets.stacks.Column>`,
+:class:`Row <bootstack.widgets.stacks.Row>`, and
 :class:`Grid <bootstack.widgets.grid.Grid>` —
 non-navigating layout containers.
 

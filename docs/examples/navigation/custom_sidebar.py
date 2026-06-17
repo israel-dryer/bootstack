@@ -20,7 +20,7 @@ with bs.AppShell(title="Shop", size=(900, 580)) as shell:
     with shell.add_toolbar() as bar:
         with bar.add_menu("File") as file:
             file.add_action("New order", shortcut="Mod+N", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         bar.add_spacer()
         bar.add_button(icon="search", on_click=lambda: None)
@@ -42,7 +42,7 @@ with bs.AppShell(title="Shop", size=(900, 580)) as shell:
 
     # A bespoke filter sidebar — not navigation, so panel() is the right tool.
     with shell.panel():
-        with bs.VStack(fill="x", anchor_items="w", gap=12, padding=16):
+        with bs.Column(horizontal="stretch", gap=12, padding=16):
             bs.Label("Filters", font="heading-md")
             bs.Label("Category", font="caption")
             bs.SelectButton(options=["All", "Electronics", "Home"], signal=category)
@@ -51,7 +51,7 @@ with bs.AppShell(title="Shop", size=(900, 580)) as shell:
 
     # Drive the content region by hand from the filter signals.
     with shell.content:
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Results", font="heading-lg")
             bs.Label(textsignal=results)
 

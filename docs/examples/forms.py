@@ -8,7 +8,7 @@ Run with:
 """
 import bootstack as bs
 
-with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
+with bs.App(title="Form Demo", minsize=(700, 780), padding=20, gap=12) as app:
 
     # Auto-generated fields from a data dict
     bs.Label("Auto-Generated Fields", font="heading-sm")
@@ -19,7 +19,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
             "age": 30,
             "active": True,
         },
-        fill="x",
+        horizontal="stretch",
     )
 
     # Multi-column layout
@@ -32,7 +32,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
             "zip": "62701",
         },
         col_count=2,
-        fill="x",
+        horizontal="stretch",
     )
 
     # Grouped fields with GroupItem
@@ -50,7 +50,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
                 ],
             ),
         ],
-        fill="x",
+        horizontal="stretch",
     )
 
     # Tabbed layout with TabsItem
@@ -74,7 +74,7 @@ with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
                 ),
             ]),
         ],
-        fill="x",
+        horizontal="stretch",
     )
 
 app.run()

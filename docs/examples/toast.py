@@ -2,12 +2,12 @@
 import bootstack as bs
 
 
-with bs.App(title="Transient messages", size=(560, 360), padding=20, gap=12) as app:
+with bs.App(title="Transient messages", minsize=(560, 360), padding=20, gap=12) as app:
     bs.Label("Transient messages", font="heading-lg")
     bs.Label("Three surfaces, each for a different job.", accent="secondary")
 
-    with bs.GroupBox("toast() — passive, auto-dismiss", fill="x"):
-        with bs.HStack(gap=8):
+    with bs.GroupBox("toast() — passive, auto-dismiss", horizontal="stretch"):
+        with bs.Row(gap=8):
             bs.Button("Saved", accent="success",
                       on_click=lambda: bs.toast("Your changes were saved.",
                                                 icon="check-circle", accent="success"))
@@ -15,7 +15,7 @@ with bs.App(title="Transient messages", size=(560, 360), padding=20, gap=12) as 
                       on_click=lambda: bs.toast("Battery at 12%.",
                                                 icon="battery-half", accent="warning"))
 
-    with bs.GroupBox("Notification — persistent, closes on demand", fill="x"):
+    with bs.GroupBox("Notification — persistent, closes on demand", horizontal="stretch"):
         bs.Button("Notify",
                   on_click=lambda: bs.Notification(
                       "Backup complete",
@@ -23,8 +23,8 @@ with bs.App(title="Transient messages", size=(560, 360), padding=20, gap=12) as 
                       detail="just now", icon="cloud-check", accent="success",
                   ).show())
 
-    with bs.GroupBox("Snackbar — one action, window bottom edge", fill="x"):
-        with bs.HStack(gap=8):
+    with bs.GroupBox("Snackbar — one action, window bottom edge", horizontal="stretch"):
+        with bs.Row(gap=8):
             bs.Button("Archive",
                       on_click=lambda: bs.snackbar("Conversation archived.",
                                                    action="Undo",

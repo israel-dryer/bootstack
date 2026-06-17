@@ -113,7 +113,7 @@ takes the same `on_click=` callable as a button, and a `shortcut=` that is
        with bar.add_menu("File") as file:
            file.add_action("Save", shortcut="Mod+S", on_click=save_document)
            file.add_action("Open…", shortcut="Mod+O", on_click=open_document)
-           file.add_separator()
+           file.add_divider()
            file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
        bar.add_button("Save", icon="save", on_click=save_document)
        bar.add_spacer()

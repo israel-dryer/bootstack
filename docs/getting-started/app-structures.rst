@@ -26,10 +26,10 @@ a `with` block — every widget built inside the block becomes a child, with no
    with bs.App(title="Notes", size=(480, 340), padding=20, gap=10) as app:
        bs.Label("Notes", font="heading-lg")
        bs.Label("A single window you fill with widgets.", accent="secondary")
-       bs.TextField(placeholder="Title", fill="x")
+       bs.TextField(placeholder="Title", horizontal="stretch")
        bs.TextArea(value="Reach for App first — it covers anything that fits "
-                         "on one screen.", fill="both", expand=True)
-       with bs.HStack(fill="x", gap=8, anchor_items="e"):
+                         "on one screen.", grow=True, horizontal="stretch")
+       with bs.Row(gap=8, horizontal="stretch", horizontal_items="right"):
            bs.Button("Discard", variant="ghost")
            bs.Button("Save", accent="primary")
 

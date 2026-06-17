@@ -11,7 +11,7 @@ def hero():
 
 def accents():
     with bs.App(title="Label — Accents", minsize=(720, 1), padding=20) as app:
-        with bs.HStack(gap=16):
+        with bs.Row(gap=16):
             for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
                 bs.Label(accent.title(), accent=accent, font="body[bold]")
     app.run()
@@ -19,7 +19,7 @@ def accents():
 
 def icons():
     with bs.App(title="Label — Icons", minsize=(720, 1), padding=20) as app:
-        with bs.HStack(gap=16, anchor_items="center"):
+        with bs.Row(gap=16, vertical_items="center"):
             bs.Label("Home",    icon="house")
             bs.Label("Settings", icon="gear",                icon_position="right")
             bs.Label("Warning", icon="exclamation-triangle", accent="warning")

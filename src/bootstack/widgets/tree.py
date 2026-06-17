@@ -137,8 +137,8 @@ class Tree(PublicWidgetBase):
         if accent is not None:
             internal_kwargs["accent"] = accent
 
-        if height is not None and "fill" not in layout_kw:
-            layout_kw["fill"] = "x"
+        if height is not None and "horizontal" not in layout_kw:
+            layout_kw["horizontal"] = "stretch"
 
         self._internal = _InternalTreeView(tk_master, **internal_kwargs)
         # Stop the row pool from feeding back into the layout (see ListView).

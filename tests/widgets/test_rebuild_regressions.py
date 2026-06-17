@@ -64,7 +64,7 @@ def test_child_destroy_does_not_cancel_ancestor_schedule(app):
 def test_owner_destroy_still_cancels_its_jobs(app):
     # The guard must not break the intended behavior: a widget's own jobs are
     # cancelled when that widget is destroyed.
-    panel = bs.VStack(parent=app)
+    panel = bs.Column(parent=app)
     job = panel.schedule.delay(10_000, lambda: None)
     assert job in panel.schedule._jobs
     panel.destroy()

@@ -3,16 +3,21 @@ from __future__ import annotations
 from typing import Any
 
 from bootstack.widgets._impl.primitives.gridframe import GridFrame
-from bootstack.widgets._core.container import PublicContainer, GRID_KEYS
-from bootstack.widgets.types import AccentToken, SurfaceToken, Sticky, Padding, AutoFlow
+from bootstack.widgets._core.container import (
+    PublicContainer, GRID_KEYS, grid_sticky, _reject_legacy_child_kwargs,
+)
+from bootstack.widgets.types import (
+    AccentToken, SurfaceToken, HAlign, VAlign, Padding, AutoFlow,
+)
 
 
 class Grid(PublicContainer):
     """A container that arranges children in rows and columns.
 
-    Children are auto-placed left-to-right, top-to-bottom by default.
-    Column and row sizes are defined with `columns=` and `rows=`;
-    omitting them lets the grid size itself to fit its children.
+    Children are auto-placed left-to-right, top-to-bottom by default. Column and
+    row sizes are set with weighted `columns=` / `rows=`; in-cell alignment is
+    controlled with `horizontal_items` and `vertical_items`, overridable per
+    child with `horizontal` / `vertical`.
 
     Args:
         columns: Column definitions. An integer creates that many
@@ -25,10 +30,14 @@ class Grid(PublicContainer):
         gap: Space in pixels between cells. An integer applies to both
             axes; a 2-tuple `(col_gap, row_gap)` sets them
             independently. Defaults to `0`.
-        sticky_items: Default cell alignment applied to every child
-            (e.g. `'ew'`, `'nsew'`). Children can override this
-            with their own `sticky=`. Defaults to `None` (children
-            sit at their natural size in the cell).
+        horizontal_items: Horizontal in-cell alignment of every child —
+            `'stretch'` (fill the cell width), `'left'`, `'center'`, or
+            `'right'`. Override per child with `horizontal`. Defaults to
+            `'stretch'`.
+        vertical_items: Vertical in-cell alignment of every child —
+            `'stretch'` (fill the cell height), `'top'`, `'center'`, or
+            `'bottom'`. Override per child with `vertical`. Defaults to
+            `'stretch'`.
         auto_flow: Auto-placement direction. Defaults to `'row'`.
         padding: Space in pixels between the grid border and its
             content. Defaults to `None` (no padding).
@@ -39,15 +48,15 @@ class Grid(PublicContainer):
             grid. Use at least `padding=1` to give the border visual
             clearance. Defaults to `False`.
         width: Fixed width in pixels. Disables frame propagation —
-            see the note in :class:`HStack` for sizing behavior.
+            see the note in :class:`Row` for sizing behavior.
             Defaults to `None`.
         height: Fixed height in pixels. Disables frame propagation —
-            see the note in :class:`VStack` for sizing behavior.
+            see the note in :class:`Column` for sizing behavior.
             Defaults to `None`.
         parent: Override the context-stack parent widget.
-        **kwargs: Layout placement options applied by the parent container —
-            `fill`, `expand`, `anchor`, `margin`, `row`, `column`, `sticky`.
-            See :doc:`/tasks/layout`.
+        **kwargs: Per-child placement options — `row`, `column`,
+            `rowspan`, `columnspan`, `horizontal`, `vertical`,
+            `margin`. See :doc:`/tasks/layout`.
     """
 
     def __init__(
@@ -57,7 +66,8 @@ class Grid(PublicContainer):
         columns: int | list[int | str] | None = None,
         rows: int | list[int | str] | None = None,
         gap: int | tuple[int, int] = 0,
-        sticky_items: Sticky | str | None = None,
+        horizontal_items: HAlign = "stretch",
+        vertical_items: VAlign = "stretch",
         auto_flow: AutoFlow = "row",
         padding: Padding | None = None,
         surface: SurfaceToken | AccentToken | str | None = None,
@@ -73,7 +83,6 @@ class Grid(PublicContainer):
             "rows": rows,
             "columns": columns,
             "gap": gap,
-            "sticky_items": sticky_items,
             "auto_flow": auto_flow,
         }
         for k, v in {
@@ -88,8 +97,11 @@ class Grid(PublicContainer):
             frame_kwargs["width"] = width
         if height is not None:
             frame_kwargs["height"] = height
+        if width is not None or height is not None:
+            frame_kwargs["propagate"] = False
 
-        self._sticky_items = sticky_items
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
 
         tk_master = self._parent._child_master() if self._parent else None
         self._internal = GridFrame(tk_master, **frame_kwargs)
@@ -99,7 +111,11 @@ class Grid(PublicContainer):
         return "grid"
 
     def _merge_layout_options(self, child: Any, layout_kw: dict) -> tuple[str, dict]:
+        _reject_legacy_child_kwargs(layout_kw, "Grid")
         options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
-        if "sticky" not in options and self._sticky_items:
-            options["sticky"] = self._sticky_items
+        # Derive the cell sticky from per-child horizontal/vertical, each falling
+        # back to the container default for its axis.
+        h = layout_kw.get("horizontal") or self._horizontal_items
+        v = layout_kw.get("vertical") or self._vertical_items
+        options["sticky"] = grid_sticky(h, v)
         return ("grid", options)

@@ -45,7 +45,7 @@ OUTLINE = [
 
 def hero():
     with bs.App(title="Tree", size=(400, 360), padding=20) as app:
-        bs.Tree(nodes=PROJECT, show_scrollbar=False, fill="both", expand=True)
+        bs.Tree(nodes=PROJECT, show_scrollbar=False, grow=True, horizontal="stretch")
     app.run()
 
 
@@ -57,7 +57,7 @@ def selection():
             show_selection_controls=True,
             accent="primary",
             show_scrollbar=False,
-            fill="both", expand=True,
+            grow=True, horizontal="stretch",
         )
     # Select a folder so the tri-state cascade marks its children + the parent.
     for node in tree._internal._roots:
@@ -74,7 +74,7 @@ def density():
             density="compact",
             accent="success",
             show_scrollbar=False,
-            fill="both", expand=True,
+            grow=True, horizontal="stretch",
         )
     app.run()
 

@@ -13,27 +13,27 @@ with bs.App(title="Slider Demo", padding=20, gap=16, min_size=(400, 1)) as app:
 
     # Basic
     bs.Label("Basic", font="heading-sm")
-    bs.Slider(fill="x")
+    bs.Slider(horizontal="stretch")
 
     # Accent colors
     bs.Label("Accent Colors", font="heading-sm")
-    with bs.VStack(gap=6, fill="x"):
+    with bs.Column(gap=6, horizontal="stretch", horizontal_items="stretch"):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
-            bs.Slider(50, accent=accent, fill="x")
+            bs.Slider(50, accent=accent)
 
     # Value badge
     bs.Label("Value Badge", font="heading-sm")
-    bs.Slider(50, show_value=True, fill="x")
+    bs.Slider(50, show_value=True, horizontal="stretch")
 
     # Min / max labels
     bs.Label("Min / Max Labels", font="heading-sm")
-    bs.Slider(50, show_minmax=True, fill="x")
+    bs.Slider(50, show_minmax=True, horizontal="stretch")
 
     # Tick marks
     bs.Label("Tick Marks", font="heading-sm")
-    bs.Slider(50, tick_step=25, fill="x")
-    bs.Slider(50, tick_step=25, minor_ticks=4, fill="x")
-    bs.Slider(50, tick_step=25, show_value=True, show_minmax=True, fill="x")
+    bs.Slider(50, tick_step=25, horizontal="stretch")
+    bs.Slider(50, tick_step=25, minor_ticks=4, horizontal="stretch")
+    bs.Slider(50, tick_step=25, show_value=True, show_minmax=True, horizontal="stretch")
 
     # Custom tick format
     bs.Label("Custom Tick Format", font="heading-sm")
@@ -44,11 +44,11 @@ with bs.App(title="Slider Demo", padding=20, gap=16, min_size=(400, 1)) as app:
         tick_step=0.25,
         tick_format="{:.0%}",
         show_value=True,
-        fill="x",
+        horizontal="stretch",
     )
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
-    bs.Slider(30, disabled=True, fill="x")
+    bs.Slider(30, disabled=True, horizontal="stretch")
 
 app.run()

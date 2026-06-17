@@ -6,23 +6,154 @@ its children and decides how they are placed; a widget is parented to the neares
 enclosing container — the `with` block it is created in. There is no `parent=`
 wiring in the common case and no manual coordinates.
 
-There are three containers:
+Three containers do most of the work:
 
-- :class:`~bootstack.VStack` stacks its children top to bottom.
-- :class:`~bootstack.HStack` stacks them left to right.
+- :class:`~bootstack.Column` stacks its children top to bottom.
+- :class:`~bootstack.Row` stacks them left to right.
 - :class:`~bootstack.Grid` places them in rows and columns.
 
-Nest them to build any layout — a toolbar (`HStack`) above a body (`VStack`),
-a form laid out in a `Grid`, and so on.
+Nest them to build any layout — a toolbar (`Row`) above a body (`Column`), a
+form laid out in a `Grid`, and so on.
 
 .. code-block:: python
 
-   with bs.VStack(gap=8, padding=16):
+   with bs.Column(gap=8, padding=16, horizontal_items="stretch"):
        bs.Label("Name")
-       bs.TextField(fill="x")
-       with bs.HStack(gap=8):
-           bs.Button("OK", fill="x", expand=True)
+       bs.TextField()
+       with bs.Row(gap=8):
+           bs.Button("OK", grow=True)
            bs.Button("Cancel")
+
+The screen axes
+---------------
+
+Placement is described against the **screen**, not the flow direction: the
+``horizontal`` axis runs left–right and the ``vertical`` axis runs top–bottom, in
+every container. You never flip axes when you switch from a Row to a Column —
+``horizontal`` always means horizontal.
+
+Each axis takes a concrete edge value:
+
+- horizontal: ``'left'`` · ``'center'`` · ``'right'`` · ``'stretch'``
+- vertical: ``'top'`` · ``'center'`` · ``'bottom'`` · ``'stretch'``
+
+``'stretch'`` makes a child fill that axis; the edge values size it to its
+content and pin it to that edge.
+
+Self versus items
+-----------------
+
+Two layers of placement share these words, distinguished by a suffix:
+
+- **Bare** keys (``horizontal``, ``vertical``, ``grow``) place the widget
+  *itself* within its parent.
+- The **``_items``** keys (``horizontal_items``, ``vertical_items``,
+  ``grow_items``) set the default for a container's *children*. Any child
+  overrides the default with its own bare key.
+
+Because a container is also a widget, it can set both — how it sits in its parent
+and how it arranges its own children:
+
+.. code-block:: python
+
+   # This Column fills its parent's width (self), and stretches every
+   # child to its own width (items).
+   with bs.Column(horizontal="stretch", horizontal_items="stretch", gap=8):
+       bs.TextField()
+       bs.TextField()
+
+Arranging the group
+-------------------
+
+On a stack's **stacking axis** (vertical for a Column, horizontal for a Row),
+the ``_items`` key arranges the whole group: cluster it at an edge
+(``'top'``/``'center'``/``'bottom'`` or ``'left'``/``'center'``/``'right'``) or
+distribute it with ``'space-between'``, ``'space-around'``, or
+``'space-evenly'``.
+
+.. code-block:: python
+
+   # Push a group to the right end of a toolbar
+   with bs.Row(horizontal_items="right", gap=8):
+       bs.Button("Cancel")
+       bs.Button("Save", accent="primary")
+
+.. image:: /_static/examples/row-arrange-light.png
+   :class: bs-screenshot-light
+   :alt: The six horizontal_items modes in a Row — light theme
+
+.. image:: /_static/examples/row-arrange-dark.png
+   :class: bs-screenshot-dark
+   :alt: The six horizontal_items modes in a Row — dark theme
+
+On the **cross axis**, the ``_items`` key aligns each child — ``'center'`` (the
+default) lines up mixed-height widgets, ``'stretch'`` makes them fill, and
+``'left'``/``'right'`` (or ``'top'``/``'bottom'``) pin to an edge:
+
+.. code-block:: python
+
+   with bs.Row(gap=8, vertical_items="center"):   # label and field share a center line
+       bs.Label("Search:")
+       bs.TextField(grow=True)
+
+Growing children
+----------------
+
+``grow`` lets a child claim and fill the leftover space along the stacking axis
+while its siblings keep their natural size — the equivalent of a flexible region.
+``grow=True`` takes one share, ``grow=N`` takes ``N`` shares.
+
+.. code-block:: python
+
+   with bs.Column(gap=6, height=150, horizontal_items="stretch"):
+       bs.Button("Header")
+       bs.Button("Content", grow=True)   # fills the leftover height
+       bs.Button("Footer")               # stays its natural size
+
+.. image:: /_static/examples/column-grow-light.png
+   :class: bs-screenshot-light
+   :alt: A middle child growing to fill a column — light theme
+
+.. image:: /_static/examples/column-grow-dark.png
+   :class: bs-screenshot-dark
+   :alt: A middle child growing to fill a column — dark theme
+
+.. note::
+
+   **Data and canvas widgets** — ``ListView``, ``DataTable``, ``Tree``,
+   ``Gallery``, ``Carousel``, ``Picture``, ``CodeEditor`` — have no natural size
+   of their own and collapse without a directive. Give them ``grow=True`` (and
+   ``horizontal="stretch"`` in a Column) to claim space.
+
+For a fixed ratio rather than a single flexible child, set ``weights=`` on the
+container instead: ``weights=[1, 2, 1]`` sizes three children 1:2:1 across the
+stacking axis.
+
+Spacer
+------
+
+A :class:`~bootstack.Spacer` is a composable break that pushes its neighbors
+apart. Where ``horizontal_items``/``vertical_items`` move the *whole* group, a
+``Spacer`` opens a gap at *one* point — ideal for clustered toolbars and pinned
+footers, with no nesting:
+
+.. code-block:: python
+
+   with bs.Row(gap=4):
+       bs.Button("New"); bs.Button("Open")
+       bs.Spacer()                 # everything after is pushed to the right
+       bs.Button("Settings")
+
+.. image:: /_static/examples/spacer-hero-light.png
+   :class: bs-screenshot-light
+   :alt: A spacer splitting a toolbar into two groups — light theme
+
+.. image:: /_static/examples/spacer-hero-dark.png
+   :class: bs-screenshot-dark
+   :alt: A spacer splitting a toolbar into two groups — dark theme
+
+``Spacer(size=N)`` is instead a fixed gap, and ``Spacer(weight=N)`` shares slack
+with other spacers in proportion.
 
 Spacing: padding versus gap versus margin
 -----------------------------------------
@@ -38,7 +169,7 @@ fiddling:
 
 .. code-block:: python
 
-   with bs.VStack(padding=16, gap=8):     # 16px inset, 8px between rows
+   with bs.Column(padding=16, gap=8):     # 16px inset, 8px between rows
        bs.Label("Settings", font="heading-md")
        bs.Switch("Dark mode", margin_y=12)   # extra breathing room around this one
 
@@ -46,107 +177,32 @@ When a widget needs different spacing on each axis, use `margin_x` for left/righ
 and `margin_y` for top/bottom; each also accepts a `(before, after)` pair for
 asymmetric spacing.
 
-fill, expand, and anchor
-------------------------
-
-These three options decide how a child sits *within* its parent. They are the
-most common source of layout surprises, so it is worth knowing exactly what each
-one does.
-
-**fill** stretches the widget to occupy its allotted slot along an axis —
-`fill="x"` makes it as wide as the slot, `fill="y"` as tall, `fill="both"` for
-both. Without `fill`, a widget is only as big as its content.
-
-**expand** decides whether that *slot* grows to claim leftover space in the
-parent. `expand=True` shares the parent's spare room among the expanding
-children; `expand=False` (the default) keeps the slot at its natural size.
-
-The two are independent, and they are most often needed **together**. A widget
-that should soak up all remaining space needs both — `expand=True` to claim the
-space and `fill="both"` to actually occupy it:
-
-.. code-block:: python
-
-   with bs.VStack(padding=8, gap=8):
-       bs.Label("Header")
-       bs.ListView(items=rows, fill="both", expand=True)   # takes all leftover height
-       bs.Button("Add")                                    # stays its natural size
-
-`expand=True` *without* `fill` centers the widget in the enlarged slot (it claims
-the space but does not occupy it). `fill` *without* `expand` stretches the widget
-within its natural slot only. Reach for both when you want a region to grow.
-
-Below, three buttons share a fixed-height row; with `fill` on the cross axis,
-each stretches to the full row height:
-
-.. image:: /_static/examples/hstack-fill-light.png
-   :class: bs-screenshot-light
-   :alt: Buttons stretched to fill the row height — light theme
-
-.. image:: /_static/examples/hstack-fill-dark.png
-   :class: bs-screenshot-dark
-   :alt: Buttons stretched to fill the row height — dark theme
-
-**anchor** decides where the widget sits when it does *not* fill its slot —
-`anchor="w"` left, `anchor="e"` right, `anchor="center"` (the default for stacks)
-in the middle. Once a widget fills an axis, `anchor` has nothing left to do on
-that axis.
-
-.. image:: /_static/examples/vstack-alignment-light.png
-   :class: bs-screenshot-light
-   :alt: The same buttons centered versus right-anchored — light theme
-
-.. image:: /_static/examples/vstack-alignment-dark.png
-   :class: bs-screenshot-dark
-   :alt: The same buttons centered versus right-anchored — dark theme
-
-Setting defaults for all children
-----------------------------------
-
-Rather than repeat `fill=`/`expand=`/`anchor=` on every child, set the
-container-level defaults `fill_items`, `expand_items`, and `anchor_items` once.
-Any child can still override them with its own kwarg:
-
-.. code-block:: python
-
-   with bs.VStack(gap=6, fill_items="x"):    # every row fills horizontally…
-       bs.TextField()
-       bs.TextField()
-       bs.Button("Submit", fill="none", anchor="e")   # …except this one
-
 Grids
 -----
 
 :class:`~bootstack.Grid` places children in cells. The `columns=` argument sets
 the column sizing: a list of weights (`[1, 2]` makes the second column twice as
-wide), or the shorthand `columns=3` for three equal columns (`0` means size a
-column to its content). Children flow into cells automatically, or you can pin
-them with `row=`/`column=` and span with `rowspan=`/`columnspan=`.
+wide), or the shorthand `columns=3` for three equal columns (`"auto"` sizes a
+column to its content, `"120px"` fixes a pixel width). Children flow into cells
+automatically, or you can pin them with `row=`/`column=` and span with
+`rowspan=`/`columnspan=`.
 
 .. code-block:: python
 
-   with bs.Grid(columns=[0, 1], gap=8, sticky_items="ew"):
+   with bs.Grid(columns=["auto", 1], gap=8):
        bs.Label("Name");  bs.TextField()
        bs.Label("Email"); bs.TextField()
 
-Column weights control how the spare width is shared. A column can be an equal
-weight, content-sized (`"auto"`), a fixed pixel width (`"120px"`), or a flexible
-weight that soaks up the remaining width:
+In-cell alignment uses the same axis words: ``horizontal_items`` and
+``vertical_items`` set how every child sits in its cell (both default to
+``'stretch'``, so children fill their cells), overridable per child with
+``horizontal``/``vertical``.
 
 .. code-block:: python
 
-   with bs.Grid(columns=[1, 1, 1], gap=8, sticky_items="ew", fill="x"):
+   with bs.Grid(columns=[1, 1, 1], gap=8, vertical_items="center"):
        for label in ("Equal", "Weight", "Columns"):
            bs.Button(label)
-
-   with bs.Grid(columns=["auto", 1], gap=8, sticky_items="ew", fill="x"):
-       bs.Button("auto")
-       bs.Button("weight=1 (fills remaining)")
-
-   with bs.Grid(columns=["120px", 1, "80px"], gap=8, sticky_items="ew", fill="x"):
-       bs.Button("120px")
-       bs.Button("weight=1")
-       bs.Button("80px")
 
 .. image:: /_static/examples/grid-columns-light.png
    :class: bs-screenshot-light
@@ -156,45 +212,42 @@ weight that soaks up the remaining width:
    :class: bs-screenshot-dark
    :alt: Grid column weights — dark theme
 
-In a grid, `sticky` replaces `fill`/`anchor`: a string of compass directions
-that both aligns and stretches a child within its cell — `"ew"` stretches it
-horizontally, `"nsew"` fills the whole cell. Set `sticky_items` on the `Grid`
-for a default.
-
 Bordered containers
 -------------------
 
 For a visually grouped region, use :class:`~bootstack.Card` (an elevated panel)
 or :class:`~bootstack.GroupBox` (a labeled border). Both lay out their children
-like a `VStack`. Give them `padding` — a border drawn flush against its content
-looks cramped:
+like a `Column` by default (pass `layout="row"` or `layout="grid"` to switch).
+Give them `padding` — a border drawn flush against its content looks cramped:
 
 .. code-block:: python
 
-   with bs.GroupBox("Account", padding=16, gap=8):
-       bs.TextField(label="Username", fill="x")
-       bs.PasswordField(label="Password", fill="x")
+   with bs.GroupBox("Account", padding=16, gap=8, horizontal_items="stretch"):
+       bs.TextField(label="Username")
+       bs.PasswordField(label="Password")
 
 Common quirks
 -------------
 
 A handful of behaviors trip people up the first time:
 
-- **Stacks center their children by default.** A row of buttons created directly
-  in an `App` or `VStack` will appear centered with empty space beside it. Wrap
-  the row in `HStack(fill="x")` (and anchor the buttons) to left-align it — this
-  is why button rows are almost always inside their own `HStack`.
-- **Setting `width=`/`height=` on a stack collapses the other axis.** A `VStack`
-  given a fixed `height` stops stretching horizontally. Add `fill=` and
-  `expand=True` for the axis you still want to grow.
-- **`expand=True` alone looks like nothing happened.** The slot grew but the
-  widget stayed its natural size and centered. Add `fill` to make the widget
-  occupy the space you just gave it.
+- **Children center on the cross axis by default.** A Column centers its
+  children horizontally and a Row centers them vertically, so a label and a field
+  in a Row line up on a center line with no kwarg. For a full-width form column
+  set ``horizontal_items="stretch"``; to left-align, ``horizontal_items="left"``.
+  The *stacking* axis still starts at the top/left — use ``horizontal_items`` /
+  ``vertical_items`` or a ``Spacer`` to move the whole group.
+- **Data and canvas widgets collapse without `grow`.** A ``ListView`` or
+  ``Tree`` with no ``grow``/``stretch`` shrinks to nothing — give it
+  ``grow=True`` (and ``horizontal="stretch"`` in a Column).
+- **Setting `width=`/`height=` on a stack fixes that size.** Use `grow` and
+  `horizontal`/`vertical="stretch"` for the axes you still want to flex rather
+  than a hard size.
 - **A bordered container needs `padding`.** Without it, `Card` / `GroupBox` draw
   their border directly against the content.
-- **Unrecognized placement kwargs are silently ignored.** A grid option like
-  `sticky` passed to a child inside a `VStack` (which uses `fill`/`anchor`) does
-  nothing — match the option to the parent container.
+- **Legacy placement kwargs raise.** Passing `fill=`/`expand=`/`anchor=`/
+  `sticky=` to a Row/Column/Grid child raises a clear error instead of silently
+  collapsing it — use `grow` / `horizontal` / `vertical` instead.
 
 Placement options reference
 ---------------------------
@@ -207,7 +260,7 @@ ones apply depends on the parent container.
 See also
 --------
 
-- :doc:`/widgets/vstack` · :doc:`/widgets/hstack` · :doc:`/widgets/grid` — the
+- :doc:`/widgets/column` · :doc:`/widgets/row` · :doc:`/widgets/grid` — the
   container widgets.
 - :doc:`/widgets/card` · :doc:`/widgets/groupbox` — bordered containers.
 - :doc:`/getting-started/app-structures` — the top-level containers these nest in.

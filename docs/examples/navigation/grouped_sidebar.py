@@ -12,7 +12,7 @@ with bs.AppShell(title="Settings", size=(860, 580)) as shell:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
             file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         with bar.add_menu("View") as view:
             view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -22,25 +22,25 @@ with bs.AppShell(title="Settings", size=(860, 580)) as shell:
 
     shell.add_header("Account")
     with shell.add_page("profile", text="Profile", icon="person"):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Profile", font="heading-lg")
             bs.Label("Your name, avatar, and bio.")
     with shell.add_page("security", text="Security", icon="shield-lock"):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Security", font="heading-lg")
             bs.Label("Password and two-factor authentication.")
 
     shell.add_header("Notifications")
     with shell.add_page("email", text="Email", icon="envelope"):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Email notifications", font="heading-lg")
     with shell.add_page("push", text="Push", icon="bell"):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Push notifications", font="heading-lg")
 
     shell.add_header("Advanced")
     with shell.add_page("developer", text="Developer", icon="terminal"):
-        with bs.VStack(fill="both", expand=True, anchor_items="w", gap=8, padding=20):
+        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
             bs.Label("Developer options", font="heading-lg")
 
     shell.navigate("profile")

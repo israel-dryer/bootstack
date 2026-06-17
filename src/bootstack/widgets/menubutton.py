@@ -16,10 +16,11 @@ _ITEM_TYPE_MAP: dict[str, str] = {
     "command":     "command",
     "check":       "checkbutton",
     "radio":       "radiobutton",
-    "separator":   "separator",
-    # accept legacy names so existing code doesn't break
+    "divider":     "separator",
+    # accept legacy/internal names so existing code doesn't break
     "checkbutton": "checkbutton",
     "radiobutton": "radiobutton",
+    "separator":   "separator",
 }
 
 
@@ -28,7 +29,7 @@ def _resolve_item_type(type_: str) -> str:
     if resolved is None:
         raise ValueError(
             f"Unknown item type {type_!r}. "
-            f"Use 'command', 'check', 'radio', or 'separator'."
+            f"Use 'command', 'check', 'radio', or 'divider'."
         )
     return resolved
 
@@ -67,7 +68,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
         text: Button text. Defaults to an empty string.
         items: Initial list of item dicts. Each dict must have a ``type``
             key (``'command'``, ``'check'``, ``'radio'``, or
-            ``'separator'``) plus item-specific keys such as ``text``,
+            ``'divider'``) plus item-specific keys such as ``text``,
             ``icon``, ``value``, and ``on_click`` (the per-item callback).
         on_select: Callback fired when any menu item is activated. Called with
             a :class:`~bootstack.events.MenuSelectEvent` (`type`, `text`,
@@ -278,8 +279,8 @@ class MenuButton(IconProperty, PublicWidgetBase):
         result = self._internal.add_radiobutton(**kw)
         return result.key if hasattr(result, "key") else key or label
 
-    def add_separator(self, *, key: str | None = None) -> None:
-        """Add a horizontal separator to the dropdown."""
+    def add_divider(self, *, key: str | None = None) -> None:
+        """Add a horizontal divider to the dropdown."""
         kw: dict[str, Any] = {}
         if key is not None:
             kw["key"] = key
@@ -295,14 +296,14 @@ class MenuButton(IconProperty, PublicWidgetBase):
            mb.add_items([
                {"type": "command", "text": "Edit",   "icon": "pencil", "on_click": edit},
                {"type": "command", "text": "Delete", "icon": "trash",  "on_click": delete},
-               {"type": "separator"},
+               {"type": "divider"},
                {"type": "check",   "text": "Pinned", "value": True},
                {"type": "radio",   "text": "Small",  "value": "sm"},
            ])
 
         Args:
             items: List of item dicts. ``type`` accepts ``'command'``,
-                ``'check'``, ``'radio'``, or ``'separator'``; an item's
+                ``'check'``, ``'radio'``, or ``'divider'``; an item's
                 ``on_click`` key sets its per-item callback.
         """
         self._internal.add_items([_translate_item(it) for it in items])
@@ -313,7 +314,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
         Args:
             index: Zero-based position to insert at.
             type: Item type — ``'command'``, ``'check'``, ``'radio'``,
-                or ``'separator'``.
+                or ``'divider'``.
             **kwargs: Forwarded to the matching ``add_*`` method.
 
         Returns:

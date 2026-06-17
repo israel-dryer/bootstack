@@ -66,7 +66,7 @@ with bs.App(title="DateField Demo", padding=20, gap=16) as app:
     # Validation
     bs.Label("Validation", font="heading-sm")
     validated = bs.DateField(label="Required date", required=True)
-    with bs.HStack(gap=8):
+    with bs.Row(gap=8):
         bs.Button("Validate", on_click=lambda: validated.validate())
 
 app.run()
