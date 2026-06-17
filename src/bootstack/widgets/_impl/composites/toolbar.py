@@ -260,13 +260,24 @@ class Toolbar(Frame):
         """Handle drag motion to move window."""
         window = self.winfo_toplevel()
 
-        # A maximized window snaps back to its normal size before it can move,
-        # re-anchoring the drag origin so the cursor keeps its grip on the bar.
+        # A maximized window snaps back to its normal size before it can move.
+        # The grab offset was captured against the *maximized* width, so simply
+        # restoring would leave the window offset from the cursor (#165). Keep the
+        # pointer on the title bar: capture where the cursor sits over the
+        # maximized window (its horizontal fraction + vertical offset), restore,
+        # then reposition the smaller window so the cursor lands at the same spot.
         if window.state() == 'zoomed':
+            max_w = max(window.winfo_width(), 1)
+            frac_x = (event.x_root - window.winfo_rootx()) / max_w
+            offset_y = event.y_root - window.winfo_rooty()
             try:
                 window.state('normal')
             except Exception:
                 pass
+            window.update_idletasks()
+            new_x = int(event.x_root - frac_x * window.winfo_width())
+            new_y = int(event.y_root - offset_y)
+            window.geometry(f'+{new_x}+{new_y}')
             self._sync_maximize_icon('fullscreen')
             self._drag_start_x = event.x_root
             self._drag_start_y = event.y_root

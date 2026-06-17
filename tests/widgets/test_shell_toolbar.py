@@ -45,3 +45,26 @@ def test_shell_has_no_titlebar_accessor(shell):
     # The #162 titlebar band is retired — undecorated title bars are built with
     # add_toolbar(show_window_controls=True), so there is no shell.titlebar.
     assert not hasattr(shell, "titlebar")
+
+
+def test_undecorated_shell_injects_titlebar(shell):
+    # An undecorated shell with no author chrome gets a built-in window-controls
+    # title bar mounted into its own toolbar_stack region (#162). Runs last — it
+    # clears any chrome toolbars earlier tests added.
+    import sys
+
+    if sys.platform == "darwin":
+        pytest.skip("overrideredirect disabled on macOS")
+    for tb, _ in (getattr(shell, "_chrome_toolbars", None) or []):
+        try:
+            tb._internal.destroy()
+        except Exception:
+            pass
+    shell._chrome_toolbars = []
+    shell._undecorated = True
+    shell._ensure_default_titlebar()
+    bars = shell._chrome_toolbars or []
+    assert any(tb._internal.show_window_controls for tb, _ in bars)
+    # It mounted into the shell's stack region (above the body), not a base stack.
+    tb = bars[0][0]
+    assert tb._internal.winfo_parent().startswith(str(shell._internal.toolbar_stack))

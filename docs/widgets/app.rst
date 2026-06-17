@@ -159,12 +159,18 @@ independently. On macOS, a toolbar's menus bridge to the native global menu bar
 Undecorated window
 ~~~~~~~~~~~~~~~~~~~
 
-``undecorated=True`` removes the OS title bar and border (ignored on macOS), so
-you build your own title bar: make the first toolbar an
-``add_toolbar(show_window_controls=True)``. It adds minimize / maximize / close at
-the right edge, drags the window (double-click maximizes), and reads as a thin
-compact strip. The same applies to :class:`Window <bootstack.Window>` and
-:class:`AppShell <bootstack.AppShell>`.
+``undecorated=True`` removes the OS title bar and border (ignored on macOS). The
+window is not left stranded: it gets a built-in title bar with minimize /
+maximize / close at the right edge and window dragging (double-click maximizes),
+labeled with the window title. The same applies to
+:class:`Window <bootstack.Window>` and :class:`AppShell <bootstack.AppShell>`
+(:class:`Window <bootstack.Window>` can opt out with ``window_controls=False``
+for a chromeless splash or popover).
+
+To take over the chrome — add a logo, menus, a theme toggle — build your own
+title bar instead: make the first toolbar an
+``add_toolbar(show_window_controls=True)``. Adding any chrome toolbar suppresses
+the built-in one, so you keep full control of the bar's contents.
 
 .. code-block:: python
 

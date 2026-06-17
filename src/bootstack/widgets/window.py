@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
@@ -82,6 +83,14 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         center_on_screen: Center on the screen.
         topmost: Keep the window above other windows.
         undecorated: Remove OS window decorations (`overrideredirect`).
+            Ignored on macOS. Unless `window_controls=False`, the window gets a
+            built-in draggable title bar with min/max/close so it stays movable
+            and closeable; add your own with `add_toolbar(show_window_controls=True)`
+            to take over the chrome.
+        window_controls: When `undecorated`, provide a built-in title bar with
+            window controls and dragging if you add no chrome toolbar of your
+            own. Set `False` for a truly chromeless window (e.g. a splash or
+            popover). Default `True`. No effect on a decorated window.
         window_style: Windows-only window effect. None inherits the app's setting.
         on_close: Callback invoked when the user clicks the close button.
             Return `False` to veto; return `None` or `True` to allow.
@@ -114,6 +123,7 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         center_on_screen: bool = False,
         topmost: bool = False,
         undecorated: bool = False,
+        window_controls: bool = True,
         window_style: WindowStyle | str | None = None,
         on_close: Callable[[], bool | None] | None = None,
         # Content frame layout
@@ -128,6 +138,10 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         from bootstack._runtime.toplevel import Toplevel as _InternalToplevel
 
         self._parent = None
+        # overrideredirect has no effect on macOS — so the borderless treatment
+        # (custom border + title bar) is Windows/Linux only.
+        self._undecorated = undecorated and sys.platform != "darwin"
+        self._window_controls = window_controls
 
         init_kwargs: dict[str, Any] = {
             "title": title,
@@ -184,10 +198,26 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         if surface is not None:
             frame_kwargs["surface"] = surface
 
-        self._content_frame = FlexFrame(self._tk_toplevel, **frame_kwargs)
+        # In undecorated mode the OS border is gone; a 1px themed border frame
+        # substitutes it and hosts both the chrome stack and the content. A
+        # chromeless window (`window_controls=False`, e.g. a splash) keeps no
+        # border either.
+        if self._undecorated and self._window_controls:
+            from bootstack.widgets._impl.primitives.frame import Frame
+
+            self._region_root = Frame(self._tk_toplevel, show_border=True, padding=1)
+            self._region_root.pack(fill="both", expand=True)
+        else:
+            self._region_root = self._tk_toplevel
+
+        self._content_frame = FlexFrame(self._region_root, **frame_kwargs)
         self._content_frame.pack(fill="both", expand=True)
 
         self._internal = self._tk_toplevel
+
+    def _toolbar_stack_parent(self) -> Any:
+        # The chrome stack lives inside the (bordered) region root, above content.
+        return getattr(self, "_region_root", self._tk_toplevel)
 
     @property
     def _flex_frame(self) -> Any:
@@ -228,6 +258,7 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         Returns:
             `self` — allows chaining: ``win = Window(...).show()``.
         """
+        self._ensure_default_titlebar()
         if anchor_to is not None:
             from bootstack._runtime.window_utilities import WindowPositioning
 
@@ -252,6 +283,7 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
         Returns:
             The value of `result` at the time the window was closed.
         """
+        self._ensure_default_titlebar()
         return self._tk_toplevel.block_until_closed()
 
     # ----- Properties -----

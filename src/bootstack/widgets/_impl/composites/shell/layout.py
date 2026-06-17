@@ -75,9 +75,10 @@ class ShellLayout(App):
         theme: Theme name, or None for the default.
         size: Initial window size as `(width, height)`.
         undecorated: Remove OS chrome and draw a custom border (ignored on
-            macOS). Build the title bar yourself with
-            `add_toolbar(show_window_controls=True)` — the framework adds no
-            chrome of its own.
+            macOS). The public `AppShell` injects a default title bar (window
+            controls + drag) for a borderless shell unless the author adds their
+            own `add_toolbar(show_window_controls=True)`; this layer itself adds
+            no chrome.
         rail_width: Width of the workspace rail (and compact sidebar) in pixels.
         sidebar_width: Width of the expanded sidebar in pixels.
         dock_width: Width of the detail/inspector dock in pixels.

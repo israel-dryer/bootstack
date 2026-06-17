@@ -313,8 +313,9 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         scaling: Explicit UI scaling factor. When None, scaling is automatic.
         hdpi: Enable high-DPI awareness for the application. Default `True`.
         undecorated: Remove OS window decorations and draw a custom border.
-            Ignored on macOS. Build the title bar yourself with
-            `add_toolbar(show_window_controls=True)`.
+            Ignored on macOS. The shell gets a built-in draggable title bar with
+            min/max/close so it stays movable and closeable; add your own with
+            `add_toolbar(show_window_controls=True)` to take over the chrome.
         show_sidebar: Render the sidebar region. Default `True`.
         sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
             `'compact'` (icon-only) applies only to a standalone static sidebar.
@@ -380,6 +381,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     ) -> None:
         self._statusbar: StatusBar | None = None
         self._rail: Rail | None = None
+        self._undecorated = undecorated
 
         # `show_sidebar=False` is the hidden mode (the model is the truth).
         if not show_sidebar:
@@ -736,6 +738,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
 
     def run(self) -> None:
         """Show the window and start the event loop."""
+        self._ensure_default_titlebar()
         self._internal.deiconify()
         self._internal.mainloop()
 
