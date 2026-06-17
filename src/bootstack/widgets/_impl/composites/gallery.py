@@ -100,7 +100,8 @@ class GalleryTile(Frame):
         if rid != self._cur_id:
             self._cur_id = rid
             if self._caption is not None:
-                self._caption.configure(text="" if empty else str(caption_text))
+                self._caption.configure(
+                    text="" if empty else self._fit_caption(str(caption_text)))
         source = None if empty else image_source
         if source is not self._cur_src and source != self._cur_src:
             self._render_thumb(source)
@@ -108,6 +109,33 @@ class GalleryTile(Frame):
         self._canvas.itemconfigure(
             self._ring_id, state="normal" if (selected and not empty) else "hidden"
         )
+
+    def _fit_caption(self, text: str) -> str:
+        """Ellipsize `text` to the tile width so a caption never widens its tile.
+
+        Keeps every tile a uniform width — so grid columns stay put instead of
+        shifting as longer/shorter captions scroll through them.
+        """
+        if not text:
+            return text
+        avail = self._tw + 2 * _RING_PAD - 6
+        cap = self._caption
+        try:
+            font = cap.cget("font")
+            measure = lambda s: int(cap.tk.call("font", "measure", font, s))
+        except Exception:
+            return text
+        if measure(text) <= avail:
+            return text
+        ell = "…"
+        lo, hi = 0, len(text)
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if measure(text[:mid] + ell) <= avail:
+                lo = mid
+            else:
+                hi = mid - 1
+        return text[:lo] + ell if lo > 0 else ell
 
     def _render_thumb(self, source: Any) -> None:
         pil = resolve_pil(source)
@@ -188,6 +216,7 @@ class Gallery(Frame):
 
         self._tiles: list[GalleryTile] = []
         self._cols = 1
+        self._cfg_cols = 0   # highest grid column given a weight, for resetting
         self._visible_rows = 1
         self._pool_rows = 1
         self._start_row = 0
@@ -268,7 +297,12 @@ class Gallery(Frame):
         if self._columns_opt != "auto":
             return max(1, int(self._columns_opt))
         cell = self._tw + 2 * _RING_PAD
-        return max(1, (width + self._gap) // (cell + self._gap))
+        # Each tile occupies cell + gap of width — _regrid gives every tile a
+        # symmetric padx of gap//2 on both sides. So the count is
+        # width // (cell + gap); the "(n-1) gaps between items" form
+        # ((width + gap) // (cell + gap)) permits one column too many and clips
+        # the last column off the frame's right edge.
+        return max(1, width // (cell + self._gap))
 
     def _on_resize(self, event) -> None:
         self._relayout(event.width, event.height)
@@ -337,6 +371,8 @@ class Gallery(Frame):
             tile.set_ring(self._ring_photo)
             self._bind_scroll(tile)
             self._bind_scroll(tile._canvas)
+            if tile._caption is not None:
+                self._bind_scroll(tile._caption)
             self._tiles.append(tile)
         while len(self._tiles) > needed:
             tile = self._tiles.pop()
@@ -347,6 +383,16 @@ class Gallery(Frame):
 
     def _regrid(self) -> None:
         pad = self._gap // 2
+        # Weight the active columns equally so the fixed-width tiles spread to
+        # fill the row instead of left-packing with a ragged right margin (which
+        # reads as a wasted extra column). Tiles are gridded without sticky, so
+        # each stays its cell width and centers in its column. Stale columns from
+        # a wider previous layout are zeroed.
+        for c in range(self._cfg_cols):
+            self._container.grid_columnconfigure(c, weight=0, uniform="")
+        for c in range(self._cols):
+            self._container.grid_columnconfigure(c, weight=1, uniform="gallerycol")
+        self._cfg_cols = self._cols
         for i, tile in enumerate(self._tiles):
             tile.grid(row=i // self._cols, column=i % self._cols, padx=pad, pady=pad)
 
