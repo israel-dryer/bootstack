@@ -1,10 +1,10 @@
 import bootstack as bs
 
-with bs.App(title="Bootstack", size=(560, 400), padding=24, gap=14) as app:
+with bs.App(title="Bootstack", padding=24, gap=14, size=(400, 350)) as app:
     with app.add_toolbar() as bar:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: bs.toast("New"))
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=app.close)
 
     bs.Label("Welcome to bootstack", font="heading-lg")
@@ -15,6 +15,6 @@ with bs.App(title="Bootstack", size=(560, 400), padding=24, gap=14) as app:
     )
     bs.TextField(label="Project name", value="my-app")
     with bs.Row(gap=8):
-        bs.Button("Create", accent="primary")
         bs.Button("Cancel", variant="outline", on_click=app.close)
+        bs.Button("Create", accent="primary")
 app.run()

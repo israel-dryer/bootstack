@@ -63,7 +63,7 @@ with bs.App(title="CodeEditor Demo", size=(800, 700)) as app:
             dirty_sig = bs.Signal("not modified")
             editor = bs.CodeEditor(value=SAMPLE_PY, language="python", height=6)
             editor.on_modified(lambda e: dirty_sig.set("modified" if editor.is_dirty else "not modified"))
-            with bs.Row(gap=8, vertical_items="center"):
+            with bs.Row(gap=8, horizontal_items="center"):
                 bs.Button("Undo",       on_click=lambda: editor.undo())
                 bs.Button("Redo",       on_click=lambda: editor.redo())
                 bs.Button("Mark saved", on_click=lambda: editor.mark_saved())
@@ -72,7 +72,7 @@ with bs.App(title="CodeEditor Demo", size=(800, 700)) as app:
             # Search / replace
             bs.Label("Search / Replace", font="heading-sm")
             ed2 = bs.CodeEditor(value=SAMPLE_PY, language="python", height=7)
-            with bs.Row(gap=8):
+            with bs.Row(gap=8, horizontal_items="center"):
                 bs.Button("Find",    on_click=lambda: ed2.show_search())
                 bs.Button("Replace", on_click=lambda: ed2.show_replace())
 

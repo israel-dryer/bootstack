@@ -8,7 +8,7 @@ Run with:
 """
 import bootstack as bs
 
-with bs.App(title="Form Demo", size=(700, 780), padding=20, gap=12) as app:
+with bs.App(title="Form Demo", minsize=(700, 780), padding=20, gap=12) as app:
 
     # Auto-generated fields from a data dict
     bs.Label("Auto-Generated Fields", font="heading-sm")

@@ -2,7 +2,7 @@ import bootstack as bs
 
 with bs.App(title="Toolbar demo", minsize=(700, 300), padding=16) as app:
 
-    with bs.Column(grow=True, horizontal_items="stretch", gap=16):
+    with bs.Column(grow=True, horizontal="stretch", horizontal_items="stretch", gap=16):
 
         # ── Default density ────────────────────────────────────────────────
         with bs.Column(horizontal_items="stretch", padding=(16, 12, 16, 4)):
@@ -10,7 +10,7 @@ with bs.App(title="Toolbar demo", minsize=(700, 300), padding=16) as app:
 
             tb1 = bs.Toolbar(horizontal="stretch")
             tb1.add_label("Editor", font="heading-md")
-            tb1.add_separator()
+            tb1.add_divider()
             tb1.add_button("New", icon="file-earmark-plus")
             tb1.add_button("Open", icon="folder2-open")
             tb1.add_button("Save", icon="floppy")
@@ -26,11 +26,11 @@ with bs.App(title="Toolbar demo", minsize=(700, 300), padding=16) as app:
             tb2.add_button(icon="type-bold")
             tb2.add_button(icon="type-italic")
             tb2.add_button(icon="type-underline")
-            tb2.add_separator()
+            tb2.add_divider()
             tb2.add_button(icon="text-left")
             tb2.add_button(icon="text-center")
             tb2.add_button(icon="text-right")
-            tb2.add_separator()
+            tb2.add_divider()
             tb2.add_button(icon="list-ul")
             tb2.add_button(icon="list-ol")
             tb2.add_spacer()

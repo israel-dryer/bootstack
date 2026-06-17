@@ -30,7 +30,7 @@ ICONS = {"team": "people-fill", "person": "person-fill"}
 
 
 with bs.App(title="Tree — data source", padding=20, gap=16, minsize=(760, 520)) as app:
-    with bs.Grid(columns=2, gap=20, grow=True, horizontal="stretch"):
+    with bs.Grid(columns=2, rows=[1], gap=20, grow=True, horizontal="stretch"):
 
         # In-memory source, simple field mapping. Folders (teams) get a chevron;
         # leaf people do not — decided by a batched has-children check per expand.

@@ -64,7 +64,7 @@ def load_users(node):
 
 
 with bs.App(title="Tree Demo", padding=20, gap=16, minsize=(900, 640)) as app:
-    with bs.Grid(columns=2, gap=20, grow=True, horizontal="stretch"):
+    with bs.Grid(columns=2, rows=[1], gap=20, grow=True, horizontal="stretch"):
 
         # Column 1: file tree with open/closed folder icons
         with bs.Column(gap=6):

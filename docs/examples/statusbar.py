@@ -34,7 +34,7 @@ with bs.App(title="StatusBar demo", minsize=(720, 360), padding=16) as app:
             bs.Label("Embedded widget", font="heading-sm")
             sb3 = bs.StatusBar(horizontal="stretch")
             sb3.add_text("Syncing", icon="arrow-repeat")
-            bs.ProgressBar(parent=sb3, value=65)
+            sb3.add_widget(bs.ProgressBar, value=65)
             sb3.add_text("main", icon="git", side="right")
 
         # ── Surface ────────────────────────────────────────────────────────

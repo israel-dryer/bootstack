@@ -10,7 +10,7 @@ with bs.App(title="PageStack", size=(680, 500), padding=20, gap=12) as app:
         btn_settings = bs.Button("Settings")
         btn_about = bs.Button("About")
 
-    bs.Separator()
+    bs.Divider()
 
     # ── Page container ────────────────────────────────────────────────────────
     ps = bs.PageStack(grow=True, horizontal="stretch")
@@ -19,7 +19,7 @@ with bs.App(title="PageStack", size=(680, 500), padding=20, gap=12) as app:
         bs.Label("Welcome", font="heading-lg")
         bs.Label("This is the Home page.")
         bs.Label("Use the buttons above to switch pages.")
-        bs.Separator()
+        bs.Divider()
         with bs.Row(gap=8):
             bs.Button("Get Started", accent="primary")
             bs.Button("Learn More", variant="outline")

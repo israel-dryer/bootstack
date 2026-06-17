@@ -2,7 +2,7 @@
 import bootstack as bs
 
 
-with bs.App(title="Transient messages", size=(560, 360), padding=20, gap=12) as app:
+with bs.App(title="Transient messages", minsize=(560, 360), padding=20, gap=12) as app:
     bs.Label("Transient messages", font="heading-lg")
     bs.Label("Three surfaces, each for a different job.", accent="secondary")
 

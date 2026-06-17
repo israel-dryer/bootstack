@@ -9,7 +9,7 @@ with bs.App(title="SplitView", size=(680, 680), padding=20, gap=16) as app:
     sv = bs.SplitView(grow=True, horizontal="stretch")
     with sv.add(weight=1, padding=12, gap=8, horizontal_items="stretch"):
         bs.Label("Navigation", font="heading-md")
-        bs.Separator()
+        bs.Divider()
         for item in ("Home", "Documents", "Images", "Settings", "Help"):
             bs.Button(item, variant="ghost")
     with sv.add(weight=2, padding=12, gap=8):

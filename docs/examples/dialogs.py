@@ -1,11 +1,12 @@
 import bootstack as bs
 
 from bootstack.dialogs import Dialog, DialogButton, FormDialog
+
+
 def show_custom():
-    def build(frame):
-        with bs.Column(padding=20, gap=8, parent=frame):
-            bs.Label("Are you sure you want to delete 3 items?")
-            bs.Label("This action cannot be undone.", font="caption")
+    def build():
+        bs.Label("Are you sure you want to delete 3 items?")
+        bs.Label("This action cannot be undone.", font="caption")
 
     dlg = Dialog(
         title="Delete items",
@@ -38,7 +39,7 @@ with bs.App(title="Dialogs demo", size=(700, 400), padding=20, gap=16) as app:
             confirm_role="danger",
         ))
 
-    bs.Separator(horizontal="stretch")
+    bs.Divider(horizontal="stretch")
 
     # ── Input Dialogs ──────────────────────────────────────────────────────
     bs.Label("Input Dialogs", font="heading-sm")
@@ -50,7 +51,7 @@ with bs.App(title="Dialogs demo", size=(700, 400), padding=20, gap=16) as app:
         bs.Button("Date range", on_click=lambda: bs.ask_date_range(title="Select Range"))
         bs.Button("From list", on_click=lambda: bs.ask_item("Select country:", ["Canada", "UK", "USA", "Other"]))
 
-    bs.Separator(horizontal="stretch")
+    bs.Divider(horizontal="stretch")
 
     # ── Custom and Form Dialogs ────────────────────────────────────────────
     bs.Label("Custom and Form Dialogs", font="heading-sm")

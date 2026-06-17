@@ -14,7 +14,7 @@ with bs.App(title="ScrollView", size=(680, 500), padding=20, gap=16) as app:
         for i in range(1, 30):
             with bs.Row(horizontal="stretch", padding=8):
                 bs.Label(f"Row {i:02d}")
-            bs.Separator(horizontal="stretch")
+            bs.Divider(horizontal="stretch")
 
     # ── Horizontal scroll ──────────────────────────────────────────────────
     with bs.Column(horizontal="stretch", gap=0):

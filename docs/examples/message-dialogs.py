@@ -10,7 +10,7 @@ with bs.App(title="Message Dialogs", size=(680, 300), padding=20, gap=16) as app
         bs.Button("Alert (warning)", on_click=lambda: bs.alert("Disk space low.", severity="warning"))
         bs.Button("Alert (danger)",  on_click=lambda: bs.alert("Connection lost.", severity="danger"))
 
-    bs.Separator(horizontal="stretch")
+    bs.Divider(horizontal="stretch")
 
     # ── Confirm ────────────────────────────────────────────────────────────
     bs.Label("Confirm", font="heading-sm")

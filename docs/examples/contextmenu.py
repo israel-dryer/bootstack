@@ -20,7 +20,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu = bs.ContextMenu(card, trigger="right_click")
     menu.add_item("Edit",      icon="pencil",  on_click=lambda: print("Edit"))
     menu.add_item("Duplicate", icon="copy",    on_click=lambda: print("Duplicate"))
-    menu.add_separator()
+    menu.add_divider()
     menu.add_item("Delete",    icon="trash",   on_click=lambda: print("Delete"))
 
     # Global on_select callback
@@ -44,7 +44,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu3 = bs.ContextMenu(card3)
     menu3.add_check_item("Bold",   value=True, on_click=lambda: print("Bold toggled"))
     menu3.add_check_item("Italic",             on_click=lambda: print("Italic toggled"))
-    menu3.add_separator()
+    menu3.add_divider()
     menu3.add_radio_item("Small",  value="sm", on_click=lambda: print("Small"))
     menu3.add_radio_item("Medium", value="md", on_click=lambda: print("Medium"))
     menu3.add_radio_item("Large",  value="lg", on_click=lambda: print("Large"))
@@ -67,7 +67,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
     menu5 = bs.ContextMenu(card5)
     menu5.add_item("Save",    icon="floppy",       on_click=lambda: print("Save"))
     menu5.add_item("Publish", icon="cloud-upload", disabled=True)
-    menu5.add_separator()
+    menu5.add_divider()
     menu5.add_item("Delete",  icon="trash",        disabled=True)
 
     # Dynamic item management

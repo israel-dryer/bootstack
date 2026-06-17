@@ -1,7 +1,8 @@
 import bootstack as bs
+from bootstack.types import ColumnSpec
 
 # Column definitions — each dict maps a display label to a record key.
-COLUMNS = [
+COLUMNS: list[ColumnSpec] = [
     {"text": "Name", "key": "name", "width": 160},
     {"text": "Department", "key": "department", "width": 130},
     {"text": "Role", "key": "role", "width": 150},

@@ -8,7 +8,7 @@ Run with:
 
 import bootstack as bs
 
-with bs.App(title="Grid Demo", size=(720, 820), padding=20, gap=16) as app:
+with bs.App(title="Grid Demo", minsize=(720, 820), padding=20, gap=16) as app:
 
     # Column definitions
     bs.Label("Column definitions", font="heading-sm")
@@ -50,19 +50,19 @@ with bs.App(title="Grid Demo", size=(720, 820), padding=20, gap=16) as app:
     with bs.Grid(columns=[1, 1, 1], gap=(16, 0), horizontal="stretch", vertical_items="top"):
         with bs.Column(gap=4):
             bs.Label("vertical_items='center'", font="caption")
-            with bs.Grid(columns=[1, 1], gap=8, show_border=True, padding=8,
+            with bs.Grid(columns=[1, 1], rows=[1], gap=8, show_border=True, padding=8,
                          vertical_items="center", height=80, horizontal="stretch"):
                 bs.Button("A")
                 bs.Button("B")
         with bs.Column(gap=4):
             bs.Label("horizontal_items='center'", font="caption")
-            with bs.Grid(columns=[1, 1], gap=8, show_border=True, padding=8,
+            with bs.Grid(columns=[1, 1], rows=[1], gap=8, show_border=True, padding=8,
                          horizontal_items="center", vertical_items="center", height=80, horizontal="stretch"):
                 bs.Button("A")
                 bs.Button("B")
         with bs.Column(gap=4):
             bs.Label("stretch (default)", font="caption")
-            with bs.Grid(columns=[1, 1], gap=8, show_border=True, padding=8,
+            with bs.Grid(columns=[1, 1], rows=[1], gap=8, show_border=True, padding=8,
                          height=80, horizontal="stretch"):
                 bs.Button("A")
                 bs.Button("B")

@@ -15,7 +15,7 @@ def _make_file_menu(parent):
     mb.add_item("New",   icon="file-earmark-plus", shortcut="Ctrl+N")
     mb.add_item("Open",  icon="folder2-open",       shortcut="Ctrl+O")
     mb.add_item("Save",  icon="floppy",             shortcut="Ctrl+S")
-    mb.add_separator()
+    mb.add_divider()
     mb.add_item("Exit",  icon="box-arrow-right")
     return mb
 
@@ -25,7 +25,7 @@ def _make_view_menu(parent):
     mb.add_check_item("Show toolbar",  value=True)
     mb.add_check_item("Show sidebar",  value=True)
     mb.add_check_item("Show status bar")
-    mb.add_separator()
+    mb.add_divider()
     mb.add_item("Zoom in",  icon="zoom-in",  shortcut="Ctrl++")
     mb.add_item("Zoom out", icon="zoom-out", shortcut="Ctrl+-")
     return mb
@@ -66,7 +66,7 @@ with bs.App(title="MenuButton Demo", padding=20, gap=16) as app:
         mb2 = bs.MenuButton(icon="gear", show_arrow=False)
         mb2.add_item("Settings",  icon="sliders")
         mb2.add_item("Profile",   icon="person")
-        mb2.add_separator()
+        mb2.add_divider()
         mb2.add_item("Sign out",  icon="box-arrow-right", disabled=True)
 
     # Icon-only (inferred — no label provided)

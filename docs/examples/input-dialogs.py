@@ -13,7 +13,7 @@ with bs.App(title="Input Dialogs", size=(680, 250), padding=20, gap=16) as app:
             "Select country:", ["Canada", "UK", "USA", "Australia", "Other"],
         ))
 
-    bs.Separator(horizontal="stretch")
+    bs.Divider(horizontal="stretch")
 
     # ── Date ──────────────────────────────────────────────────────────────
     bs.Label("Date", font="heading-sm")

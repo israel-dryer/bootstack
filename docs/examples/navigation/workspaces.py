@@ -23,7 +23,7 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
             file.add_action("Open", shortcut="Mod+O", on_click=lambda: None)
-            file.add_separator()
+            file.add_divider()
             file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
         with bar.add_menu("View") as view:
             view.add_action("Refresh", shortcut="Mod+R", on_click=lambda: None)
@@ -40,7 +40,7 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
             with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
                 bs.Label(message["text"], font="heading-lg")
                 bs.Label(f"From {message['title']}", font="caption")
-                bs.Separator()
+                bs.Divider()
                 bs.Label(message["body"])
 
     # Calendar — static pages.

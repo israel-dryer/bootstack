@@ -35,7 +35,7 @@ SIMPLE = [
 ]
 
 with bs.App(title="ListView Demo", padding=20, gap=16, minsize=(800, 700)) as app:
-    with bs.Grid(columns=2, gap=20, grow=True, horizontal="stretch"):
+    with bs.Grid(columns=2, rows=[1], gap=20, grow=True, horizontal="stretch"):
 
         # Column 1: Item fields
         with bs.Column(gap=6):
