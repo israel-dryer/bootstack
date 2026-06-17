@@ -15,14 +15,38 @@ from typing import Any, Callable, Iterable, Literal, Mapping, Optional, Tuple, T
 from bootstack.widgets._impl.primitives.button import Button as _Button
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 from bootstack.widgets._impl.primitives.separator import Separator as _Separator
-from bootstack.widgets.types import Master, AccentToken, ButtonVariant, SurfaceToken, WindowStyle
+from bootstack.widgets.types import Master, AccentToken, ButtonVariant, Padding, SurfaceToken, WindowStyle
 from bootstack._runtime.toplevel import Toplevel
 from bootstack._runtime.window_utilities import AnchorPoint, WindowPositioning
 
 # --- Types -----------------------------------------------------------------
 
-ContentBuilder = Callable[[Widget], None]
+# Called to fill the dialog body. The dialog content area is a public container
+# pushed as the active parent, so the builder can create widgets directly (no
+# `parent=`). It is also passed the content container, so a builder that wants an
+# explicit handle can declare a single parameter (`def build(content): ...`).
+ContentBuilder = Callable[..., None]
 FooterBuilder = Callable[[Widget], None]
+
+
+def _call_builder(builder: Callable[..., None], content: Any) -> None:
+    """Call a content builder, passing the content container only if it takes one.
+
+    Supports both the idiomatic parent-free form (`def build(): ...`, run inside
+    the content container's context) and an explicit form (`def build(content):
+    ...`). Falls back to passing the argument if the signature can't be read.
+    """
+    import inspect
+
+    try:
+        params = inspect.signature(builder).parameters.values()
+        takes_arg = any(
+            p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD, p.VAR_POSITIONAL)
+            for p in params
+        )
+    except (TypeError, ValueError):
+        takes_arg = True
+    builder(content) if takes_arg else builder()
 
 ButtonRole = Literal["primary", "secondary", "danger", "cancel"]
 DialogMode = Literal["modal", "popover", "sheet"]
@@ -107,10 +131,11 @@ class Dialog:
 
     Args:
         title: Dialog window title. Defaults to `'bootstack'`.
-        content_builder: Callback to build the dialog body. Receives an internal
-            frame — place widgets into it using raw internal constructors or by
-            calling `widget._internal` directly. If `None`, the dialog has
-            no body area.
+        content_builder: Callback to build the dialog body. The content area is a
+            public container set as the active parent, so the callback creates
+            widgets directly — no `parent=` needed, like an `App` body. Declare a
+            single parameter (`def build(content): ...`) to also receive the
+            content container. If `None`, the dialog has no body area.
         footer_builder: Callback to build a fully custom footer. Replaces the
             standard button row when provided.
         buttons: List of `DialogButton` (or equivalent dicts) for the footer.
@@ -133,6 +158,9 @@ class Dialog:
             click, X button, Escape, or focus loss in popover mode). Receives
             no arguments. Useful for non-modal dialogs where `show()` does
             not block.
+        padding: Space in pixels between the dialog body edge and its content.
+            Defaults to `20`.
+        gap: Space in pixels between stacked content widgets. Defaults to `8`.
         parent: Parent window. Defaults to the active root window.
     """
 
@@ -152,7 +180,10 @@ class Dialog:
             window_style: WindowStyle | str | None = None,
             on_close: Callable[[], Any] | None = None,
             surface: SurfaceToken | str | None = None,
+            padding: Padding = 20,
+            gap: int = 8,
             parent: Master = None,
+            _raw_content: bool = False,
     ):
         import tkinter
         self._master = parent if parent else tkinter._default_root
@@ -170,9 +201,16 @@ class Dialog:
         self._window_style = window_style
         self._on_close = on_close
         self._surface = surface
+        self._content_padding = padding
+        self._content_gap = gap
+        # Internal builders (the built-in verbs, FormDialog, …) render with raw
+        # primitives and want the bare content frame; public content_builders get
+        # the parent-free public container.
+        self._raw_content = _raw_content
 
         self._toplevel: Toplevel | None = None
         self._content: _Frame | None = None
+        self._content_area: Any = None
         self._footer: _Frame | None = None
         self._border_frame: _Frame | None = None
 
@@ -336,7 +374,23 @@ class Dialog:
             self._content.pack(fill="both", side="top", expand=True)
 
         if self._content_builder:
-            self._content_builder(self._content)
+            if self._raw_content:
+                # Internal builders render with raw primitives into the frame.
+                self._content_builder(self._content)
+                return
+
+            from bootstack.widgets.stacks import Column
+
+            # Public content area the builder fills — set as the active parent so
+            # the body needs no `parent=`, like an App body. It is hosted in the
+            # content frame via the raw-Tk-parent bridge in `_resolve_parent`.
+            self._content_area = Column(
+                parent=self._content,
+                padding=self._content_padding,
+                gap=self._content_gap,
+            )
+            with self._content_area:
+                _call_builder(self._content_builder, self._content_area)
 
     def _build_footer(self):
         parent = self._border_frame if self._undecorated else self._toplevel

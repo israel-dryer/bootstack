@@ -119,6 +119,7 @@ def alert(
     dlg = Dialog(
         title=title or " ",
         content_builder=lambda f: _build_message_content(message, resolved_icon, icon_color, f),
+        _raw_content=True,
         buttons=[DialogButton(ok_text, role="secondary", result=True, default=True)],
         alert=sound,
         min_size=(400, 140),
@@ -184,6 +185,7 @@ def confirm(
     dlg = Dialog(
         title=title or " ",
         content_builder=lambda f: _build_message_content(message, resolved_icon, icon_color, f),
+        _raw_content=True,
         buttons=[
             DialogButton(cancel_text, role="cancel"),
             confirm_btn,

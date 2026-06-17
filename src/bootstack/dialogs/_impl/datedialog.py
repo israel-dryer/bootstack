@@ -250,6 +250,7 @@ class DateDialog:
         self._dialog = _ChromeDialog(
             title=title,
             content_builder=self._create_content,
+            _raw_content=True,
             buttons=[],
             footer_builder=None,
             hide_window_chrome=self._hide_window_chrome,

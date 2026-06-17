@@ -430,6 +430,7 @@ class ColorChooserDialog:
             parent=master,
             title=self._title,
             content_builder=self._build_content,
+            _raw_content=True,
             footer_builder=self._build_footer,
         )
         self._chooser: Optional[ColorChooser] = None

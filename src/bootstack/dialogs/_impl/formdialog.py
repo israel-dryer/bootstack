@@ -137,6 +137,7 @@ class FormDialog:
         self._dialog = Dialog(
             title=title,
             content_builder=self._build_form_content,
+            _raw_content=True,
             buttons=self._buttons,
             min_size=minsize,
             max_size=maxsize,
