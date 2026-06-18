@@ -39,6 +39,11 @@ _DOT_GAP = 6
 _DOTS_MAX = 8            # above this, 'dots' auto-switches to a 'count' label
 _CAPTION_INSET = 14      # caption baseline inset from the bottom
 _FRAME_MS = 16
+# Nominal stage width (px) behind the aspect-ratio height floor: with no explicit
+# `height`, the minimum stage height is `_FLOOR_STAGE_WIDTH / aspect_ratio`
+# (e.g. 400 / 1.5 ≈ 267). A floor, not a cap — `fill`/`expand` grow it past this,
+# and a larger `aspect_ratio` (wider slide) yields a shorter floor.
+_FLOOR_STAGE_WIDTH = 400
 
 
 def _hex_rgb(color: str) -> tuple[int, int, int]:
@@ -127,7 +132,7 @@ class Carousel(Frame):
         # public wrapper freezes this frame with `pack_propagate(False)`, so its
         # own configured `height` is its requested height; `fill`/`expand` still
         # grow it past this floor when the parent has room.
-        floor_h = height if height else round(400 / max(0.1, aspect_ratio))
+        floor_h = height if height else round(_FLOOR_STAGE_WIDTH / max(0.1, aspect_ratio))
         self.configure(height=floor_h)
         self._stage = Canvas(self, highlightthickness=0, bd=0, background=surface)
         self._stage.pack(fill="both", expand=True)

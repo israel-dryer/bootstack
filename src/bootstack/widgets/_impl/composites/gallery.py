@@ -34,6 +34,7 @@ OVERSCAN_ROWS = 1
 _RING_THICKNESS = 3
 _RING_GAP = 3                       # separation between the image and the ring
 _RING_PAD = _RING_GAP + _RING_THICKNESS   # margin reserved around the image
+_CAPTION_H = 24            # vertical space reserved per caption row in the height floor
 EMPTY = {"__empty__": True, "id": "__empty__"}
 
 
@@ -221,7 +222,7 @@ class Gallery(Frame):
         self._pool_rows = 1
         self._start_row = 0
         self._ring_photo: PhotoImage | None = None
-        self._row_h = self._th + 2 * _RING_PAD + (24 if caption_field else 0) + gap
+        self._row_h = self._th + 2 * _RING_PAD + (_CAPTION_H if caption_field else 0) + gap
 
         sb_surface = getattr(self, '_surface', None)
         sb_kw = {'surface': sb_surface} if sb_surface else {}
