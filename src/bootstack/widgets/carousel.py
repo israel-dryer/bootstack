@@ -52,8 +52,9 @@ class Carousel(PublicWidgetBase):
             Default `0`.
         aspect_ratio: Width-to-height ratio used to derive the carousel's minimum
             height when it sits in a container that doesn't impose one (a scroll
-            view, an auto-fit window). Default `1.5`. Ignored when `height` is
-            set. `fill`/`expand` still grow the stage past this floor.
+            view, an auto-fit window) — a larger ratio gives a wider, shorter
+            floor. Default `1.5`. Ignored when `height` is set. `fill`/`expand`
+            still grow the stage past this floor.
         height: Explicit minimum height for the slide stage, in pixels. Overrides
             `aspect_ratio`. Default `None` (derive from `aspect_ratio`).
         accent: Color intent token to brand the active indicator dot. By default
