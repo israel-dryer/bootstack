@@ -48,6 +48,10 @@ class Shell(ShellLayout):
         remember_nav_state: Persist the sidebar mode + per-workspace active page
             across sessions, restoring them on the next launch.
         nav_accent: Accent token for the active nav item.
+        nav_selection: Accented-selection treatment for the standalone primary
+            nav (the no-rail `nav-pill` default workspace) — `'ghost'` (subtle
+            wash) or `'solid'` (filled accent + on-accent text). Under-rail
+            workspace navs always use the wash.
         **kwargs: Forwarded to `ShellLayout` / `App` (widths, position, etc.).
     """
 
@@ -121,6 +125,11 @@ class Shell(ShellLayout):
         # sits under the rail -> quiet rows. (list_nav/tree keep their own row
         # language regardless; only the static provider reads this.)
         nav_variant = "nav-pill" if key == _DEFAULT_WORKSPACE else "nav-quiet"
+        # The `'solid'` (filled-accent) selection is the standalone primary nav's
+        # higher-emphasis look ONLY (the no-rail `nav-pill` default workspace). A
+        # named workspace's nav sits under the rail as quiet rows — a solid fill
+        # there would compete with the rail, so it always uses the subtle wash.
+        nav_selection = self._nav_selection if key == _DEFAULT_WORKSPACE else "ghost"
         ws = Workspace(
             key, panel, content,
             nav_accent=self._nav_accent,
@@ -129,7 +138,7 @@ class Shell(ShellLayout):
             on_first_page=self._on_first_page,
             nav_variant=nav_variant,
             nav_surface=self.sidebar_surface,
-            nav_selection=self._nav_selection,
+            nav_selection=nav_selection,
         )
         self._workspaces[key] = ws
         # The implicit default workspace never gets a rail icon (single-tier).

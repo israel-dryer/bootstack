@@ -326,6 +326,14 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             selected nav item / rail indicator picks up the theme's primary
             accent); set another accent token to retint, or `None` for a neutral
             wash.
+        nav_variant: How an accented selection reads on the standalone primary
+            nav — `'ghost'` (default) is a subtle accent wash behind full-strength
+            text; `'solid'` fills the item with the accent and uses on-accent
+            (white) text for higher emphasis. Needs `nav_accent`; with
+            `nav_accent=None` it falls back to a neutral wash. Applies only to the
+            standalone static nav (`add_page`, the no-rail single-tier sidebar);
+            under-rail workspace navs and the `list_nav` / `tree_nav` providers
+            always use the wash.
         rail_labels: Show a caption under each rail icon (widens the rail).
         remember_nav_state: Persist the sidebar mode and per-workspace active page
             across sessions. Default `False`.
@@ -373,7 +381,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         rail_width: int | None = None,
         collapsible: bool = True,
         nav_accent: AccentToken | str | None = "primary",
-        nav_selection: Literal["ghost", "solid"] = "ghost",
+        nav_variant: Literal["ghost", "solid"] = "ghost",
         rail_labels: bool = False,
         remember_nav_state: bool = False,
         show_statusbar: bool = False,
@@ -405,7 +413,9 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             "sidebar_mode": sidebar_mode,
             "collapsible": collapsible,
             "nav_accent": nav_accent,
-            "nav_selection": nav_selection,
+            # Public `nav_variant` maps to the internal selection-style chain
+            # (`nav_variant` is taken internally for the pill/quiet tier).
+            "nav_selection": nav_variant,
             "rail_labels": rail_labels,
             "remember_nav_state": remember_nav_state,
             "rail_surface": rail_surface,

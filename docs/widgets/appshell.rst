@@ -253,20 +253,22 @@ and the nav-item selection wash blend against these automatically.
      - The bottom status band.
 
 The selected nav item is **neutral** by default. Set ``nav_accent`` to tint the
-selection (and the rail's indicator) with an accent, and ``nav_selection`` to
+selection (and the rail's indicator) with an accent, and ``nav_variant`` to
 choose how the accent reads:
 
 .. code-block:: python
 
-   # subtle accent wash + accent text (the default emphasis)
+   # subtle accent wash behind full-strength text (the default emphasis)
    bs.AppShell(nav_accent="primary")
 
    # a filled accent pill with on-accent (white) text — higher emphasis
-   bs.AppShell(nav_accent="primary", nav_selection="solid")
+   bs.AppShell(nav_accent="primary", nav_variant="solid")
 
 ``nav_accent`` colors the rail indicator bar, the static nav pills/rows, and the
-``list_nav`` / ``tree_nav`` selection wash; ``nav_selection`` (``'ghost'`` default
-or ``'solid'``) applies to the static nav items.
+``list_nav`` / ``tree_nav`` selection wash. ``nav_variant`` (``'ghost'`` default
+or ``'solid'``) applies only to the **standalone** primary nav — the no-rail,
+single-tier sidebar built with ``add_page``. Under a workspace rail the sidebar
+navs always use the subtle wash (a solid fill would compete with the rail).
 
 Navigation
 ~~~~~~~~~~
