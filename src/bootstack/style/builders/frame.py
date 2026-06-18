@@ -30,7 +30,15 @@ def build_card(b: StyleBuilderTtk, ttk_style: str, accent: Optional[str] = None,
     surface_token = options.get('surface') or 'card'
     show_border = options.get('show_border', True)
     surface = b.color(surface_token)
-    stroke = b.color(accent) if (show_border and accent) else (b.color('stroke') if show_border else surface)
+    # An accented border is derived from the card's own (accent-tinted) surface
+    # rather than the full-strength accent — a soft, harmonious stroke that reads
+    # against the tinted fill without the heavy contrast of the raw accent.
+    if show_border and accent:
+        stroke = b.border(surface)
+    elif show_border:
+        stroke = b.color('stroke')
+    else:
+        stroke = surface
 
     b.configure_style(
         ttk_style,
