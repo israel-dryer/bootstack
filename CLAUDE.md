@@ -21,6 +21,24 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Undecorated window chrome + theme-repaint perf** (this session, all merged) —
+  **#162/#165** (PR #175): undecorated `App`/`Window`/`AppShell` auto-inject a
+  draggable title bar (controls) + border; `App` gained `undecorated=`, `Window`
+  gained `window_controls=`; maximized-drag re-anchors under the cursor. (The #162
+  handoff plan was stale — the dedicated band had been retired + `menubar`/
+  `commandbar` removed in favor of `add_toolbar()`.) **Theme-repaint perf**
+  (#167 → PRs #176/#178/#179/#180): canvas widgets kept the old theme's colors /
+  toggling was slow. Root causes + fixes — (a) Gauge/Meter bound the early ttk
+  `<<ThemeChanged>>` → STD publisher (post-rebuild); (b) Slider/RangeSlider +
+  window chrome bound ttk `<<ThemeChanged>>` on the **root/toplevel**, which
+  re-fires ~1400× per rebuild × instances → **gallery toggle ~2960ms → ~580ms**;
+  (c) new `Frame._enable_theme_repaint` hook gates 8 canvas widgets to on-screen
+  repaints (off-screen defers to `<Map>`) + fixed 4 widgets that self-bound
+  `<<BsThemeChanged>>` and never recolored; (d) Gauge supersample capped on HiDPI;
+  (e) calendar reuses weekday-header labels (nav 5.8→2.7ms). **RULE in gotchas.**
+  Memories `project_undecorated_window_chrome`, `reference_theme_repaint_mechanisms`.
+  **Open (#177):** migrate textarea/code-editor off the racy event; delete dead
+  `FloodGauge`.
 - **Pre-release `0.1.0a10` shipped + docs deploy fixed** (PRs #139–#140 merged;
   release built from `main`) — **Toast split** (PR #139): the kitchen-sink Toast
   became three public widgets over one engine — `toast()` (single-line, icon
@@ -1072,6 +1090,16 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
 - **`TTKWrapperBase.__init__` overwrites `self._accent`** — store accent before `super().__init__()`,
   re-assign after.
 - **`<<BsThemeChanged>>`** fires after full rebuild (use this). `<<ThemeChanged>>` fires before.
+- **Canvas/imperatively-painted widgets — theme repaint:** NEVER bind ttk
+  `<<ThemeChanged>>` on the **root/toplevel** — it re-fires **~1400× per rebuild**
+  (once per style reconfigure); root-bound × instances = thousands of redraws (was
+  the gallery's ~3s toggle lag, PR #180). Re-resolve colors via the **STD
+  `Publisher`** (fires once, after rebuild) and **gate the redraw on visibility**.
+  `Frame` subclasses: call `self._enable_theme_repaint(self._redraw)` (the shared
+  hook — subscribes, gates on `winfo_viewable()`, defers off-screen to `<Map>`,
+  releases on `<Destroy>`). Non-`Frame` (Slider/RangeSlider/chrome): publisher +
+  own gate. Memory `reference_theme_repaint_mechanisms`. STILL on the racy event
+  (#177): textarea/code-editor (leaf, low impact), dead FloodGauge.
 - **`bs.SelectButton`** — button-styled non-editable picker. Distinct from `bs.MenuButton`
   (action menu) and `bs.Select` (editable combobox).
 - **`bs.DataTable`** (renamed from `bs.Table`) — works with any
