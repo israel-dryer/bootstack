@@ -2,7 +2,7 @@
 
 This module provides a comprehensive color selection widget with multiple
 selection methods including RGB sliders, HSL controls, standard color palette,
-hex input, and screen color picker (color dropper).
+and hex input.
 """
 import tkinter
 from collections import namedtuple
@@ -19,9 +19,7 @@ from bootstack.dialogs._impl.dialog import Dialog
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
 from bootstack.style.style import get_style
-from bootstack.widgets._impl.composites.tooltip import ToolTip
 from bootstack.widgets._impl.primitives import Button, Entry, Frame, Label, Spinbox
-from .colordropper import ColorDropperDialog
 
 ttk = SimpleNamespace(
     Button=Button,
@@ -48,8 +46,6 @@ class ColorChoice(NamedTuple):
     hex: str
     """The color as a lowercase hex string, e.g. `'#ff0000'`."""
 
-PEN = '✛'
-
 
 class ColorChooser(ttk.Frame):
     """Color chooser widget — hue/saturation spectrum with luminance slider."""
@@ -60,7 +56,7 @@ class ColorChooser(ttk.Frame):
         """Create a color chooser widget.
 
         Shows a hue/saturation spectrum with a luminance slider, RGB/HSL/hex
-        numeric inputs, a live color preview, and an optional screen dropper.
+        numeric inputs, and a live color preview.
 
         Args:
             master: Parent widget.
@@ -423,9 +419,6 @@ class ColorChooserDialog:
         self.result: Optional[ColorChoice] = None
         self._emitted_result = False
 
-        self._dropper = ColorDropperDialog()
-        self._dropper.result.trace_add('write', self._trace_dropper_color)
-
         self._dialog = Dialog(
             parent=master,
             title=self._title,
@@ -441,18 +434,6 @@ class ColorChooserDialog:
         self._chooser.pack(fill=BOTH, expand=YES)
 
     def _build_footer(self, master: tkinter.Widget) -> None:
-        # color dropper (not supported on macOS)
-        winsys = ""
-        try:
-            winsys = master.tk.call("tk", "windowingsystem")
-        except Exception:
-            winsys = ""
-        if winsys != 'aqua':
-            dropper = ttk.Label(master, text=PEN, font=('-size 16'))
-            ToolTip(dropper, 'color.dropper')
-            dropper.pack(side=LEFT, padx=(0, 4))
-            dropper.bind("<Button-1>", self._on_show_color_dropper)
-
         ok = ttk.Button(
             master,
             accent='primary',
@@ -470,15 +451,6 @@ class ColorChooserDialog:
         cancel.pack(side=RIGHT)
 
     # callbacks ----------------------------------------------------------------
-    def _on_show_color_dropper(self, _: tkinter.Event) -> None:
-        self._dropper.show()
-
-    def _trace_dropper_color(self, *_: Any) -> None:
-        values = self._dropper.result.get()
-        if self._chooser:
-            self._chooser.hex.set(values[2])
-            self._chooser.sync_color_values('hex')
-
     def _on_ok(self) -> None:
         if self._chooser:
             values = self._chooser.get_variables()

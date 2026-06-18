@@ -14,7 +14,7 @@ from tkinter import Widget
 
 from bootstack.widgets._impl.primitives import Frame
 from bootstack.constants import BOTH, YES
-from bootstack.dialogs._impl.dialog import Dialog
+from bootstack.dialogs._impl.dialog import Dialog, DialogButton
 from bootstack._runtime.window_utilities import AnchorPoint
 from bootstack.widgets._impl.composites.calendar import Calendar
 
@@ -247,11 +247,26 @@ class DateDialog:
 
         self._picker: Optional[_DialogCalendar] = None
 
+        # Range mode uses an explicit OK/Cancel footer instead of committing the
+        # moment the second date is clicked; single mode keeps commit-on-select.
+        buttons: list[DialogButton] = []
+        if self._selection_mode == "range":
+            buttons = [
+                DialogButton(text="button.cancel", role="cancel", result=None),
+                DialogButton(
+                    text="button.ok",
+                    role="primary",
+                    default=True,
+                    closes=False,
+                    command=lambda dlg: self._on_confirm_range(),
+                ),
+            ]
+
         self._dialog = _ChromeDialog(
             title=title,
             content_builder=self._create_content,
             _raw_content=True,
-            buttons=[],
+            buttons=buttons,
             footer_builder=None,
             hide_window_chrome=self._hide_window_chrome,
             mode="popover" if self._close_on_click_outside else "modal",
@@ -281,31 +296,39 @@ class DateDialog:
         self._picker.on_date_selected(self._on_date_selected)
 
     def _on_date_selected(self, event: tkinter.Event) -> None:
-        """Handle <<DateSelect>> from the embedded Calendar."""
-        if not self._picker:
+        """Handle <<DateSelect>> from the embedded Calendar (single mode only).
+
+        Range mode does not commit on selection — the user confirms the range
+        with the OK button (see `_on_confirm_range`).
+        """
+        if not self._picker or self._selection_mode == "range":
             return
         trigger_reason = getattr(self._picker, "_last_trigger_reason", None)
         if trigger_reason != "select":
             return
 
         payload = getattr(event, "data", None)
+        selected = getattr(payload, "date", None)
+        selected = selected or self._picker.get()
+        if selected is None:
+            return
 
-        if self._selection_mode == "range":
-            range_data = getattr(payload, "range", None)
-            if range_data is None:
-                range_data = self._picker.get_range()
-            start, end = range_data if range_data else (None, None)
-            # Wait for both dates before confirming
-            if start is None or end is None:
-                return
-            result: date | Tuple[date, date] = (start, end)
-        else:
-            selected = getattr(payload, "date", None)
-            selected = selected or self._picker.get()
-            if selected is None:
-                return
-            result = selected
+        self._confirm(selected)
 
+    def _on_confirm_range(self) -> None:
+        """Confirm the selected range when OK is clicked.
+
+        No-op (dialog stays open) until both endpoints are selected.
+        """
+        if not self._picker:
+            return
+        start, end = self._picker.get_range()
+        if start is None or end is None:
+            return
+        self._confirm((start, end))
+
+    def _confirm(self, result: date | Tuple[date, date]) -> None:
+        """Record the result, emit, and close the dialog."""
         self._dialog.result = result
         self._emit_result(result, confirmed=True)
         if self._dialog.toplevel:

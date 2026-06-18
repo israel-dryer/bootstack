@@ -116,7 +116,8 @@ class FilterDialogContent(ttk.Frame):
         scroll_view = ScrollView(
             self,
             scroll_direction='vertical',
-            scrollbar_visibility='always'
+            scrollbar_visibility='always',
+            scrollbar_variant='thin'
         )
         scroll_view.pack(fill='both', expand=False, pady=(8, 0))
         scroll_view.configure(height=230)
