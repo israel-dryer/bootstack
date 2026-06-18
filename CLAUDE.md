@@ -462,7 +462,53 @@ memories and git history.
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
 > DRAINED this session (#141/#142/#151/#153/#156/#157/#158 merged; see the
 > "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
-> below is the stable-cut closeout + a fresh regression + the standing backlog.
+> below is the stable-cut closeout + the pre-ship polish backlog + the standing backlog.
+
+### ★ NEXT — Pre-ship polish backlog (#186–#195, filed 2026-06-18)
+
+Ten maintainer-requested items to resolve before shipping 0.1.0 — all filed as
+tracked issues this session (each issue links the relevant impl file + has detail).
+**Codebase detail already gathered** (so a fresh session can start without
+re-investigating). Grouped by rough effort:
+
+- **Quick wins:**
+  - **#190 Remove the color dropper** — delete `dialogs/_impl/colordropper.py` +
+    its hook in `colorchooser.py` + the `ColorDropperDialog` export in
+    `dialogs/_impl/__init__.py`. Internal-only (not in public surface), so clean
+    removal, no shim. ("doesn't work + not value-added.")
+  - **#193 Thin scrollbar on the filter dialog** — `dialogs/_impl/filterdialog.py`
+    value list → `scrollbar_variant='thin'` (consistent with the list widgets).
+  - **#186 Font dialog: group Family/Size in `GroupBox`es** —
+    `dialogs/_impl/fontdialog.py`, layout-only.
+- **Verify / already-partly-done (CHECK FIRST):**
+  - **#187 StatusBar.add_widget class-only?** — it ALREADY accepts BOTH a class
+    (builds it) and an instance (`widgets/statusbar.py:100`). This is a *decision*:
+    go class-only `add_widget(Class, **kwargs)` for consistency, or keep both. Ask
+    the maintainer before changing.
+  - **#189 `solid` sidebar selection variant** — the builder ALREADY has it
+    (`style/builders/sidenav.py:448,460`, `selection_style == 'solid'`). Verify it's
+    wired/exposed on the public nav (NavPanel/AppShell sidebar) + documented. NB the
+    AppShell rewrite DROPPED standalone `bs.SideNav` — clarify what "standalone
+    sidebar" means now.
+- **Styling:**
+  - **#188 Card accent border → emphasis shade** — `build_card`
+    (`style/builders/frame.py:33`): when `show_border and accent`, use
+    `{accent}_emphasis` instead of `b.color(accent)` (mirrors Toast emphasis text).
+- **Dialogs / fields:**
+  - **#194 Date range dialog: explicit Confirm button** — `dialogs/_impl/datedialog.py`
+    (`ask_date_range`); add OK/Cancel instead of commit-on-select.
+  - **#195 Input mask must not mask placeholder** — a field with `show=` (password
+    `*`/bullet) masks the PLACEHOLDER too (renders `••••`). Render placeholder
+    unmasked; mask only real input. `widgets/_impl/composites/field.py`
+    (+`textentry.py`/`passwordentry.py`).
+- **Color features (larger):**
+  - **#191 Theme colors in the color picker** — add a swatch row of the active
+    theme's semantic colors (via `get_theme_color`) to `colorchooser.py`.
+  - **#192 Color-swatch Select control** — a `Select`-style dropdown rendering color
+    swatches (inline, complements `ask_color()`). New widget or Select variant.
+
+Each is its own `fix/*` or `feat/*` branch → PR → `main` (the merged-PR-per-item
+cadence from this session). Confirm grouping/priority with the maintainer.
 
 ### ✅ SHIPPED — Layout redesign (screen-axis vocabulary on a grid engine) — MERGED #170
 
