@@ -10,7 +10,7 @@ Modules here:
 
 - `message` (MessageBox/MessageDialog): info/warning/error/question prompts
 - `query` (QueryBox/QueryDialog): collect input (string, number, date, item, …)
-- `colorchooser` / `colordropper`: color picker and screen dropper
+- `colorchooser`: color picker
 - `datedialog`: calendar date picker
 - `fontdialog`: font selection
 - `filterdialog`: multi-select filter dialog with search
@@ -19,9 +19,6 @@ Modules here:
 from .colorchooser import (
     ColorChooser,
     ColorChooserDialog,
-)
-from .colordropper import (
-    ColorDropperDialog,
 )
 from .dialog import Dialog, DialogButton
 from .filterdialog import FilterDialog
@@ -47,5 +44,4 @@ __all__ = [
     # Color tools
     "ColorChooser",
     "ColorChooserDialog",
-    "ColorDropperDialog",
 ]

@@ -111,7 +111,6 @@ API_MODULES = {
             "FontDialog": "bootstack.dialogs.fontdialog.FontDialog",
             "ColorChooser": "bootstack.dialogs.colorchooser.ColorChooser",
             "ColorChooserDialog": "bootstack.dialogs.colorchooser.ColorChooserDialog",
-            "ColorDropperDialog": "bootstack.dialogs.colordropper.ColorDropperDialog",
         },
     },
     "data": {

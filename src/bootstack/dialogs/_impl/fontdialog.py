@@ -164,15 +164,8 @@ class FontDialog:
 
     def _font_families_selector(self, master: tkinter.Misc) -> ttk.Treeview:
         """Create and populate the font family selection list."""
-        container = ttk.Frame(master)
+        container = ttk.Labelframe(master, text="font.family", padding=5)
         container.pack(fill=BOTH, expand=YES, side=LEFT)
-
-        header = ttk.Label(
-            container,
-            text="font.family",
-            font="TkHeadingFont",
-        )
-        header.pack(fill=X, pady=(0, 2), anchor=N)
 
         listbox = ttk.Treeview(
             master=container,
@@ -204,15 +197,8 @@ class FontDialog:
 
     def _font_size_selector(self, master: tkinter.Misc) -> None:
         """Create and populate the font size selection list."""
-        container = ttk.Frame(master)
+        container = ttk.Labelframe(master, text="font.size", padding=5)
         container.pack(side=LEFT, fill=Y, padx=(10, 0))
-
-        header = ttk.Label(
-            container,
-            text="font.size",
-            font="TkHeadingFont",
-        )
-        header.pack(fill=X, pady=(0, 2), anchor=N)
 
         sizes_listbox = ttk.Treeview(container, height=7, columns=[0], show="")
         sizes_listbox.column(0, width=scale_size(sizes_listbox, 48))

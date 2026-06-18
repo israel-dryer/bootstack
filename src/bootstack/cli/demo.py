@@ -733,19 +733,42 @@ def _build_dialogs_page():
                               title="Result", duration=2000,
                           ))
 
-        with bs.GroupBox("Input Dialogs"):
-            def _ask(fn, *args, **kw):
-                result = fn(*args, **kw)
-                if result is not None:
-                    bs.toast(str(result), title="Result", duration=2000)
+        def _ask(fn, *args, **kw):
+            result = fn(*args, **kw)
+            if result is not None:
+                bs.toast(str(result), title="Result", duration=2000)
 
+        with bs.GroupBox("Input Dialogs"):
             with bs.Row(gap=8):
                 bs.Button("ask_string()",
                           on_click=lambda: _ask(bs.ask_string, "Enter your name:"))
                 bs.Button("ask_integer()",
                           on_click=lambda: _ask(bs.ask_integer, "Enter age:", min_value=0, max_value=120))
+                bs.Button("ask_float()",
+                          on_click=lambda: _ask(bs.ask_float, "Enter amount:"))
+                bs.Button("ask_item()",
+                          on_click=lambda: _ask(bs.ask_item, "Pick one:",
+                                                ["Small", "Medium", "Large"]))
+
+        with bs.GroupBox("Date Dialogs"):
+            with bs.Row(gap=8):
                 bs.Button("ask_date()",
                           on_click=lambda: _ask(bs.ask_date, title="Pick a date"))
+                bs.Button("ask_date_range()",
+                          on_click=lambda: _ask(bs.ask_date_range, title="Pick a range"))
+
+        with bs.GroupBox("Pickers & Filter"):
+            with bs.Row(gap=8):
+                bs.Button("ask_color()",
+                          on_click=lambda: _ask(bs.ask_color, title="Pick a color"))
+                bs.Button("ask_font()",
+                          on_click=lambda: _ask(bs.ask_font, title="Pick a font"))
+                bs.Button("ask_filter()",
+                          on_click=lambda: _ask(
+                              bs.ask_filter,
+                              [f"Option {i:02d}" for i in range(30)],
+                              title="Filter", enable_search=True,
+                              enable_select_all=True))
 
         with bs.GroupBox("FormDialog"):
             def _show_form():
