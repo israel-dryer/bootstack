@@ -621,7 +621,7 @@ def _build_navigation_page():
 
             tabs2.on_tab_add(lambda e: _add_doc())
 
-        with bs.GroupBox("Tabs (overflow → scroll + menu, max 16)", horizontal_items="stretch", grow=True):
+        with bs.GroupBox("Tabs (overflow scrolls + menu, max 16)", horizontal_items="stretch", grow=True):
             tabs3 = bs.Tabs(allow_close="hover", allow_add=True, max_tabs=16, grow=True)
             _file_n = [0]
 

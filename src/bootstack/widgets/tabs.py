@@ -170,13 +170,10 @@ class Tabs(PublicWidgetBase):
         orient: `'horizontal'` (default, tabs above content) or `'vertical'` (tabs left).
         show_divider: Show a divider line between the tab bar and the page area.
         tab_width: Fixed tab width in pixels, `'stretch'` to fill available space, or
-            `None` (default, size to content).
-        overflow: How tabs that exceed the strip are handled. `'scroll'` (default)
-            keeps them in one scrolling line — no scrollbar, the wheel scrolls
-            along the strip, and a trailing chevron lists the off-screen tabs and
-            scrolls the chosen one into view. `'clip'` keeps the legacy behavior
-            (overflowing tabs are clipped). Works for both horizontal and vertical
-            orientations; ignored when `tab_width='stretch'`.
+            `None` (default, size to content). When tabs exceed the strip they
+            scroll — no scrollbar, the wheel scrolls along the strip, and a
+            trailing chevron lists the off-screen tabs and scrolls the chosen one
+            into view (both orientations). `'stretch'` tabs always fit.
         allow_close: Show close buttons on tabs. `True` = always, `False` = never,
             `'hover'` = on hover. Defaults to `False`.
         allow_add: Show an add-tab button that fires the `tab_add` event.
@@ -196,7 +193,6 @@ class Tabs(PublicWidgetBase):
         orient: Orient = "horizontal",
         show_divider: bool | None = None,
         tab_width: int | Literal["stretch"] | None = None,
-        overflow: Literal["scroll", "clip"] = "scroll",
         allow_close: bool | Literal["hover"] = False,
         allow_add: bool = False,
         max_tabs: int | None = None,
@@ -211,7 +207,6 @@ class Tabs(PublicWidgetBase):
 
         internal_kwargs: dict[str, Any] = {
             "orient": orient,
-            "overflow": overflow,
             "enable_closing": allow_close,
             "enable_adding": allow_add,
             "max_tabs": max_tabs,

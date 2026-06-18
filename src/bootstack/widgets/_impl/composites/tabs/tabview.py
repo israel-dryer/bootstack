@@ -37,7 +37,6 @@ class TabView(Frame):
         tab_width: None | int | Literal['stretch'] = None,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        overflow: Literal['scroll', 'clip'] = 'scroll',
         enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         max_tabs: int | None = None,
@@ -56,10 +55,6 @@ class TabView(Frame):
             tab_padding: Padding for all tabs as (horizontal, vertical).
             tab_anchor: Anchor for tab text/icon alignment. If None, defaults
                 to 'w' for vertical orientation, 'center' for horizontal.
-            overflow: How to handle tabs that exceed the strip — 'scroll'
-                (default; scrollbar-less scrolling strip with a trailing
-                overflow menu) or 'clip' (legacy clipping). Ignored when
-                `tab_width='stretch'`.
             enable_closing: Default close button visibility for all tabs.
                 True=always visible, False=hidden, 'hover'=visible on hover.
                 Can be overridden per-tab via `closable` in add().
@@ -86,7 +81,6 @@ class TabView(Frame):
             tab_width=tab_width,
             tab_padding=tab_padding,
             tab_anchor=tab_anchor,
-            overflow=overflow,
             enable_closing=enable_closing,
             enable_adding=enable_adding,
             max_tabs=max_tabs,

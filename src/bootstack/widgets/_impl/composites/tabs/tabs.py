@@ -43,7 +43,6 @@ class Tabs(Frame):
         tab_min_width: int = 80,
         tab_padding: tuple = (12, 8),
         tab_anchor: str = None,
-        overflow: Literal['scroll', 'clip'] = 'scroll',
         enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
         max_tabs: int | None = None,
@@ -72,15 +71,6 @@ class Tabs(Frame):
                 Default is (12, 8).
             tab_anchor: Anchor for tab text/icon alignment. If None, defaults
                 to 'w' for vertical orientation, 'center' for horizontal.
-            overflow: How to handle tabs that exceed the strip's length.
-                'scroll' (default) keeps the tabs in a single scrolling line
-                (no scrollbar; the wheel scrolls along the strip) with a
-                trailing chevron button that lists the off-screen tabs and
-                scrolls the chosen one into view. 'clip' keeps the legacy
-                behavior (tabs past the edge are clipped). Ignored when
-                `tab_width='stretch'` (tabs always fit). Applies to both
-                horizontal (scrolls left/right) and vertical (scrolls
-                up/down) orientations.
             enable_closing: Default close button visibility for all tabs.
                 True=always visible, False=hidden, 'hover'=visible on hover.
                 Can be overridden per-tab via `closable` in add_tab().
@@ -158,10 +148,9 @@ class Tabs(Frame):
         self._hidden: set[str] = set()
         self._counter = 0  # For auto-generating keys
 
-        # Overflow handling. Only meaningful when tabs are content-sized;
-        # 'stretch' always fits, so it disables scrolling.
-        self._overflow = overflow
-        self._scrollable = overflow == 'scroll' and tab_width != 'stretch'
+        # Tabs scroll when they exceed the strip. 'stretch' always fits, so it
+        # uses the plain non-scrolling strip instead.
+        self._scrollable = tab_width != 'stretch'
         self._axis = 'x' if orient == 'horizontal' else 'y'
         self._scroll: ScrollView | None = None
         self._strip_row: Frame | None = None
@@ -189,7 +178,7 @@ class Tabs(Frame):
             self.bind('<Destroy>', self._on_overflow_destroy, add='+')
 
     def _build_static_strip(self, orient: str, direction: str, gap: int) -> None:
-        """Build the legacy non-scrolling tab strip (tabs may clip)."""
+        """Build the plain non-scrolling strip (used when `tab_width='stretch'`)."""
         self._tab_bar = PackFrame(self, direction=direction, gap=gap)
         if orient == 'horizontal':
             self._tab_bar.pack(side='top', fill='x')

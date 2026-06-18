@@ -1,8 +1,9 @@
 """Tab overflow handling (issue #168).
 
-When tab headers exceed the strip length, `overflow='scroll'` (the default)
-hosts them in a scrollbar-less scrolling strip with a trailing chevron that
-lists the off-screen tabs. These assert the structural behavior — the scrollable
+When tab headers exceed the strip length, they are hosted in a scrollbar-less
+scrolling strip with a trailing chevron that lists the off-screen tabs (the
+plain non-scrolling strip is used only for `tab_width='stretch'`, which always
+fits). These assert the structural behavior — the scrollable
 wiring, overflow detection, the off-screen set, and scroll-into-view — for both
 orientations. Visual polish is verified by hand. One shown, module-scoped App
 (child widgets only map under a shown App; multiple Apps per process crash Tk).
@@ -54,25 +55,20 @@ def _build(app, *, orient, count, label, **kw):
     return tabs, inner
 
 
-def test_scroll_is_default_and_clip_opts_out(shown_app):
+def test_scrolling_enabled_by_default(shown_app):
     tabs, inner = _build(shown_app, orient="horizontal", count=2, label="Tab {i}")
     assert inner._scrollable is True
     assert inner._scroll is not None
     tabs.destroy()
 
-    clip, clip_inner = _build(
-        shown_app, orient="horizontal", count=2, label="Tab {i}", overflow="clip"
-    )
-    assert clip_inner._scrollable is False
-    assert clip_inner._scroll is None
-    clip.destroy()
 
-
-def test_stretch_disables_scrolling(shown_app):
+def test_stretch_uses_plain_strip(shown_app):
+    # Stretched tabs always fit, so they use the plain non-scrolling strip.
     tabs, inner = _build(
         shown_app, orient="horizontal", count=2, label="Tab {i}", tab_width="stretch"
     )
     assert inner._scrollable is False
+    assert inner._scroll is None
     tabs.destroy()
 
 
