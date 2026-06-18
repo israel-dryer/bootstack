@@ -163,6 +163,13 @@ class PageStack(Frame):
 
         # Unmount previous page
         if self._current is not None:
+            # Pre-size the target page while the current one is still mounted, so
+            # the swap doesn't briefly collapse the content area (a freshly built
+            # page is otherwise unsized at mount time and the view jumps when it
+            # settles). Only needed for a real swap — the initial mount has
+            # nothing to collapse from, and forcing layout there would serialize
+            # the first render (a visible "slow-motion" build of the page).
+            self._pages[key].update_idletasks()
             self._pages[self._current].event_generate('<<PageUnmount>>', when="tail")
             self._pages[self._current].pack_forget()
 
