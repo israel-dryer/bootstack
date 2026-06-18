@@ -21,6 +21,50 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Tab overflow handling (#168)** (this session; branch `feat/tabs-overflow`,
+  3 commits — **committed, not yet PR'd**) — tabs that exceed the strip now stay
+  in a **scrollbar-less scrolling line** (wheel scrolls along the axis; the
+  selected tab auto-scrolls into view) with a trailing **chevron overflow menu**
+  listing the off-screen tabs (with icons) that scrolls the picked one into view.
+  `⌄`/`+` are pinned outside the scroll region (`+` outermost, `⌄` next), ghost
+  buttons with a gap before them: horizontal = compact icon-only `⌄`; vertical =
+  full-width left-aligned **`⌄ More`** matching the rows + **`+ New`**.
+  **Always-on — NO `overflow=` option** (clipped tabs are never desirable; the
+  plain non-scrolling strip is kept ONLY for `tab_width='stretch'`, which always
+  fits). New **`max_tabs=`** disables the add button at the limit (re-enables on
+  removal). Axis-aware (both orientations); built on the existing `ScrollView`
+  (`scrollbar_visibility='never'`). **Three framework fixes surfaced while
+  building:** (a) **`PackFrame` skips the full forget/repack on child removal
+  when `gap==0`** (Tk keeps sibling order on its own) — kills a tab-close
+  **flash**; a win for any gap-less PackFrame. (b) **`PageStack.navigate`
+  pre-sizes the target page before a SWAP** (`update_idletasks`, guarded to
+  `self._current is not None` so the initial build — all first-mounts — isn't
+  serialized into a visible **slow-motion** render) — kills the add+select
+  content-area **jump** (a pre-existing PageStack quirk, reproduced in the old
+  non-scrolling path too). (c) **`_scroll_into_view` defers via retry** until the
+  new tab is positioned (winfo_x ready) instead of a forced synchronous flush.
+  Demo Navigation page wires `+` to add+select and showcases H/V overflow + the
+  `max_tabs` limit. Tests `tests/widgets/public/test_tabs_overflow.py` (10). The
+  `+` only fires a `tab_add` event — the app supplies the new tab (it never
+  "did nothing"; the demo simply hadn't wired a handler).
+- **ContextMenu/Tooltip cover container children (#166)** (this session; PR
+  **#183**, MERGED to `main`) — Tk events don't bubble, so a gesture bound to a
+  **container** target (e.g. a `Card`) only fired over the container's bare area,
+  never over its children. Fix = new shared helper **`propagate_target_bindings(target)`**
+  in `_runtime/utility.py`: adds the container's own **path-name bindtag** (the tag
+  `widget.bind(...)` registers under) to every descendant in the same toplevel, so the
+  trigger/hover fires anywhere inside. Inserted **after** each child's own path tag
+  (child bindings keep precedence); **idempotent**; **skips nested toplevels** (the
+  menu's own popup is parented under the target). Wired into
+  `ContextMenu._bind_trigger` (covers all platform gesture variants at once — it's
+  tag-based) + `Tooltip.__init__`. `Tooltip` also gained a **crossing-aware `<Leave>`**
+  (`_pointer_within_target` via `winfo_containing`) so moving container→child doesn't
+  flicker the tip; `<ButtonPress>` split into its own unconditional-hide handler.
+  **Limitation:** children added *after* attach aren't auto-tagged (re-attach covers
+  it). Tests `tests/widgets/public/test_overlay_container_coverage.py` (5). Memory
+  `reference_bindtags_underused` — **bindtags are underused in the architecture;
+  TODO: an eval pass to find recursive/duplicated `.bind()` a shared bindtag could
+  simplify** (a `BindtagsMixin` already exists, barely used).
 - **Theme-repaint cleanup (#177) + docstring-backtick sweep** (this session; PRs
   **#181**/**#182**, both MERGED to `main`) — **#181**
   (`fix/theme-repaint-cleanup`, closes #177): migrated the code-editor's
@@ -457,9 +501,11 @@ geometry manager. Merged to `main` via **PR #170** (the long-running
   keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
 - **`add_spacer()`→public `Spacer`** still deferred — entangled with
   `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
-- Demo bugs (pre-existing, NOT layout-caused): **#166 ContextMenu/Tooltip don't
-  cover container children — NEXT UP** · ~~#167 Gauge theme repaint~~ (resolved by
-  the theme-repaint perf work, PR #180) · #168 Tabs overflow.
+- Demo bugs (pre-existing, NOT layout-caused): ~~#166 ContextMenu/Tooltip don't
+  cover container children~~ (DONE, PR #183 — see top of "Recently completed") ·
+  ~~#167 Gauge theme repaint~~ (resolved by the theme-repaint perf work, PR #180) ·
+  ~~#168 Tabs overflow~~ (DONE, branch `feat/tabs-overflow`, 3 commits — committed,
+  not yet PR'd; see top of "Recently completed").
 
 ### ✅ SHIPPED — Undecorated window controls + border + maximized-drag (#162, #165) — MERGED #175
 
