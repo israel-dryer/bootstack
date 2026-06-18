@@ -28,9 +28,15 @@ class ContentHost:
         return self._internal
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
+        # A content/sidebar region's top-level child should fill it — otherwise a
+        # detail builder's container shrinks to its content and centers (looking
+        # like huge padding). The flex placement kwargs (`grow` / `horizontal`)
+        # don't apply to a plain region frame, so default to fill="both"/expand
+        # and let any explicit pack option override.
+        options: dict[str, Any] = {"fill": "both", "expand": True}
         if "fill" in layout_kw:
-            layout_kw["fill"] = normalize_fill(layout_kw["fill"])
-        options = {k: v for k, v in layout_kw.items() if k in PACK_KEYS}
+            options["fill"] = normalize_fill(layout_kw["fill"])
+        options.update({k: v for k, v in layout_kw.items() if k in PACK_KEYS and k != "fill"})
         child._internal.pack(in_=self._internal, **options)
 
     def __enter__(self) -> "ContentHost":

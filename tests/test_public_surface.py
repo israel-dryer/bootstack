@@ -31,7 +31,7 @@ EXPECTED_TOPLEVEL = {
     "ask_date_range", "ask_item", "ask_color", "ask_font", "ask_filter",
     "ask_save_file", "ask_open_file", "ask_open_files", "ask_directory",
     # application & windows
-    "App", "AppShell", "Window",
+    "App", "AppShell", "Workbench", "Window",
     # layout
     "Row", "Column", "Spacer", "Grid", "Card", "GroupBox", "Divider", "ScrollView",
     "SplitView", "SplitPane", "Accordion", "AccordionSection",

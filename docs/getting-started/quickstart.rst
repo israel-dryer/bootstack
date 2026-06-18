@@ -47,13 +47,12 @@ For apps with a sidebar and multiple pages, use ``AppShell``:
    import bootstack as bs
 
    with bs.AppShell(title="My App") as shell:
-       with shell.add_page("home", text="Home", icon="house"):
-           with bs.Column(padding=20, gap=8):
+       with shell.page_nav() as nav:
+           with nav.add_page("home", text="Home", icon="house", padding=20, gap=8):
                bs.Label("Welcome!", font="heading-lg")
                bs.Label("Select a page from the sidebar.", accent="secondary")
 
-       with shell.add_page("data", text="Data", icon="table"):
-           with bs.Column(padding=20, gap=8):
+           with nav.add_page("data", text="Data", icon="table", padding=20, gap=8):
                bs.Label("Your data goes here.", font="heading-lg")
 
        shell.navigate("home")
@@ -68,9 +67,10 @@ For apps with a sidebar and multiple pages, use ``AppShell``:
    :class: bs-screenshot-dark bs-window-screenshot
    :alt: An AppShell navigation window — dark theme
 
-``shell.add_page()`` returns a page container. Use it as a context manager
-to place widgets inside it. ``shell.navigate()`` sets the initially visible
-page.
+``shell.page_nav()`` declares the sidebar; ``nav.add_page()`` returns a page
+container — a column, so its ``padding`` / ``gap`` go right on the call (no inner
+wrapper). Use it as a context manager to place widgets inside it.
+``shell.navigate()`` sets the initially visible page.
 
 Reactive state
 --------------

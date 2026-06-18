@@ -20,7 +20,7 @@ def test_grouped_static_sidebar():
         header = shell.add_header("Documents")
         shell.add_page("files", text="Files", icon="folder")
         shell.add_page("photos", text="Photos", icon="image")
-        shell.add_separator()
+        shell.add_divider()
         shell.add_page("trash", text="Trash", icon="trash")
 
         nav = shell.nav

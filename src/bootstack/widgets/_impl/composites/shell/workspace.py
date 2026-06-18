@@ -122,6 +122,19 @@ class Workspace:
 
     # ----- Static content API -----
 
+    def page_nav(self, *, selection: str | None = None) -> StaticProvider:
+        """Establish the static page-list provider; return it for authoring.
+
+        Called when the page nav is declared explicitly (so its options have a
+        home), before any `add_page`. `selection` overrides the selected-item
+        treatment (`'ghost'`/`'solid'`). `'solid'` is the standalone (`nav-pill`)
+        emphasis only — under a rail (`nav-quiet`) a solid fill competes with the
+        rail, so it is forced to the wash.
+        """
+        if selection is not None:
+            self._nav_selection = selection if self._nav_variant == "nav-pill" else "ghost"
+        return self._ensure_static()
+
     def add_page(self, key: str, *, text: str = "", icon=None, footer: bool = False) -> Any:
         """Add a nav item and its page; return the page frame."""
         if not key:

@@ -1,10 +1,10 @@
 """Workspaces — multiple sections behind an icon rail (a mail + calendar suite).
 
-Each ``add_workspace`` adds a rail icon and its own sidebar, authored with the
-same page API — and each can use a *different* provider. Here Mail is a
-master–detail list, Calendar is static pages, and Contacts is another list: the
-rail appears automatically with more than one workspace. ``add_footer_workspace``
-pins Settings to the rail bottom; ``navigate(workspace, page)`` jumps to a page.
+A ``Workbench`` is the two-tier shell: each ``add_workspace`` adds a rail icon and
+its own sidebar, and each workspace is a sidebar host authored with the same front
+doors as an ``AppShell``. Here Mail is a master–detail list, Calendar is a page
+nav, and Contacts is another list. ``pin_to_footer=True`` pins Settings to the
+rail bottom; ``navigate(workspace, page)`` jumps to a page.
 """
 import bootstack as bs
 from bootstack.data import MemoryDataSource
@@ -18,7 +18,7 @@ contacts = MemoryDataSource().load([
     {"id": 2, "title": "Sam Okonkwo", "text": "sam@acme.io", "icon": "person-circle", "phone": "555-0177"},
 ])
 
-with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
+with bs.Workbench(title="Workspace", size=(980, 620)) as shell:
     with shell.add_toolbar() as bar:
         with bar.add_menu("File") as file:
             file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
@@ -37,20 +37,19 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
 
         @ws.detail
         def read(message):
-            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
+            with bs.Column(horizontal_items="left", gap=12, padding=(16, 10)):
                 bs.Label(message["text"], font="heading-lg")
                 bs.Label(f"From {message['title']}", font="caption")
                 bs.Divider()
                 bs.Label(message["body"])
 
-    # Calendar — static pages.
+    # Calendar — a page nav (authored pages).
     with shell.add_workspace("calendar", text="Calendar", icon="calendar3") as ws:
-        with ws.add_page("today", text="Today", icon="calendar-day"):
-            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+        with ws.page_nav() as nav:
+            with nav.add_page("today", text="Today", icon="calendar-day", padding=20, gap=8):
                 bs.Label("Today", font="heading-lg")
                 bs.Label("No events.")
-        with ws.add_page("week", text="Week", icon="calendar-week"):
-            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+            with nav.add_page("week", text="Week", icon="calendar-week", padding=20, gap=8):
                 bs.Label("This week", font="heading-lg")
 
     # Contacts — another list.
@@ -64,9 +63,9 @@ with bs.AppShell(title="Workspace", size=(980, 620)) as shell:
                 bs.Label(person["text"], font="caption")
                 bs.Label(f"Phone: {person['phone']}")
 
-    with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
-        with ws.add_page("general", text="General", icon="sliders"):
-            with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+    with shell.add_workspace("settings", text="Settings", icon="gear", pin_to_footer=True) as ws:
+        with ws.page_nav() as nav:
+            with nav.add_page("general", text="General", icon="sliders", padding=20, gap=8):
                 bs.Label("Settings", font="heading-lg")
 
     # Mail is the first workspace, so it opens active with its first message

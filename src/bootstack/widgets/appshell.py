@@ -10,10 +10,14 @@ if TYPE_CHECKING:
 from bootstack._runtime.app import LocalizeMode
 from bootstack.widgets._impl.composites.shell.shell import Shell as _InternalShell
 from bootstack.widgets._core.app_config import AppConfigMixin, APP_CONFIG_KWARGS
-from bootstack.widgets._core.base import PublicWidgetBase
+from bootstack.widgets._core.base import PublicWidgetBase, _RawTkContainer
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.widgets._impl.primitives.flexframe import FlexFrame
-from bootstack.widgets._core.container import place_flex_child
+from bootstack.widgets._impl.primitives.gridframe import GridFrame
+from bootstack.widgets._core.container import (
+    GRID_KEYS, grid_sticky, place_flex_child, _reject_legacy_child_kwargs,
+    _expand_margin,
+)
 from bootstack.widgets._core.context import push_container, pop_container
 from bootstack.widgets._core.window_controls import WindowControlsMixin
 from bootstack.widgets._core.window_menu import ChromeHostMixin
@@ -26,46 +30,92 @@ from bootstack.events import (
 )
 from bootstack.streams import Stream
 from bootstack.widgets.statusbar import StatusBar
-from bootstack.widgets.types import AccentToken, SurfaceToken, WidgetDensity, WindowStyle
+from bootstack.widgets.types import (
+    AccentToken, AutoFlow, LayoutKind, Padding, SurfaceToken, WidgetDensity, WindowStyle,
+)
 
 SidebarMode = Literal["expanded", "compact", "hidden"]
+NavVariant = Literal["ghost", "solid"]
 
 
 class Page:
-    """Context-manager proxy returned by `add_page()` / `panel()`.
+    """Context-manager proxy for a content page or custom sidebar container.
 
-    Pushes onto the context stack so widgets created inside
-    `with shell.add_page(...):` are automatically parented to the page. When
-    `scrollable=True`, children parent into an internal vertical `ScrollView`.
+    A page IS a layout container: it accepts the same layout kwargs as
+    `PageStack.add` (`layout` / `padding` / `gap` / `horizontal_items` /
+    `vertical_items` / `grow_items` / `columns` / `rows` / `auto_flow`), so
+    children placed inside it need no extra `Column` / `Grid` wrapper. Widgets
+    created inside `with page:` parent here automatically; `scrollable=True` wraps
+    the content in a vertical scroll area.
+
+    The column default stretches children across the width (page content fills the
+    content area), unlike a standalone `Column`.
     """
 
-    def __init__(self, tk_frame: Any, scrollable: bool = False) -> None:
+    def __init__(
+        self,
+        tk_frame: Any,
+        *,
+        scrollable: bool = False,
+        layout: LayoutKind = "column",
+        padding: Padding | None = None,
+        gap: int = 0,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        auto_flow: AutoFlow = "row",
+    ) -> None:
         self._internal = tk_frame
         self._scroll: Any = None
-        # The page content is a vertical flex frame so children flow with the
-        # Row/Column vocabulary (grow / align_self). It stretches its children
-        # across the width by default — page content almost always fills the
-        # content area — so a page's top-level container needs no align_self.
-        self._flex = FlexFrame(tk_frame, direction="vertical", horizontal_items="stretch")
-        self._flex.pack(fill="both", expand=True)
+        host = tk_frame
         if scrollable:
             from bootstack.widgets.scrollview import ScrollView
 
-            # The scrollview parents into this page (its `guide_layout` runs
-            # while `self._scroll` is still None, placing it in the flex frame),
-            # then claims subsequent children.
-            self._scroll = ScrollView(parent=self, grow=True, horizontal="stretch")
+            self._scroll = ScrollView(
+                parent=_RawTkContainer(tk_frame), scroll_direction="vertical"
+            )
+            host = self._scroll._child_master()
+
+        # Page content fills the content area, so a column stretches its children
+        # across the width by default (a standalone Column centers them).
+        if horizontal_items is None:
+            horizontal_items = "stretch" if layout in ("grid", "column") else "left"
+        if vertical_items is None:
+            vertical_items = "stretch" if layout == "grid" else "center" if layout == "row" else "top"
+        self._layout = layout
+        self._horizontal_items = horizontal_items
+        self._vertical_items = vertical_items
+
+        if layout in ("column", "row"):
+            self._layout_frame: Any = FlexFrame(
+                host, direction="vertical" if layout == "column" else "horizontal",
+                padding=padding, gap=gap, horizontal_items=horizontal_items,
+                vertical_items=vertical_items, grow_items=grow_items,
+            )
+        elif layout == "grid":
+            self._layout_frame = GridFrame(
+                host, columns=columns, rows=rows, padding=padding, gap=gap, auto_flow=auto_flow,
+            )
+        else:
+            raise ValueError(f"page layout must be 'column', 'row', or 'grid', got {layout!r}")
+        self._layout_frame.pack(fill="both", expand=True)
 
     def _child_master(self) -> Any:
-        if self._scroll is not None:
-            return self._scroll._child_master()
-        return self._flex
+        return self._layout_frame
 
     def guide_layout(self, child: Any, **layout_kw: Any) -> None:
-        if self._scroll is not None:
-            self._scroll.guide_layout(child, **layout_kw)
+        if self._layout == "grid":
+            _reject_legacy_child_kwargs(layout_kw, "AppShell page")
+            _expand_margin(layout_kw)
+            options = {k: v for k, v in layout_kw.items() if k in GRID_KEYS}
+            h = layout_kw.get("horizontal") or self._horizontal_items
+            v = layout_kw.get("vertical") or self._vertical_items
+            options["sticky"] = grid_sticky(h, v)
+            child._internal.grid(in_=self._child_master(), **options)
             return
-        place_flex_child(self._flex, child, layout_kw, "AppShell page")
+        place_flex_child(self._layout_frame, child, layout_kw, "AppShell page")
 
     def __enter__(self) -> "Page":
         push_container(self)
@@ -75,34 +125,31 @@ class Page:
         pop_container(self)
 
 
-class Workspace:
-    """Public handle for one workspace (returned by `add_workspace()`).
+class PageNav:
+    """Authorable page-list sidebar — the handle returned by `page_nav()`.
 
-    A context manager exposing the same content API the shell has — so a
-    single-tier app and a two-tier workspace are authored identically. Fill it
-    with `add_page()` (static) or one of `list_nav()` / `tree_nav()` / `panel()`,
-    then drive selection with `navigate()`.
+    A page nav is a flat list of authored nav items, each paired with a content
+    page. Author it with `add_page()` (and `add_header()` / `add_divider()` to
+    chunk the list, `add_footer_page()` to pin an item to the bottom). Use it as a
+    context manager for grouping; the items themselves are added via the handle,
+    not parented into it.
     """
 
-    def __init__(self, internal_ws: Any, shell: "AppShell") -> None:
-        self._internal = internal_ws
-        self._shell = shell
+    def __init__(self, internal_host: Any) -> None:
+        # The internal Shell (single-tier, delegates to its default workspace) or
+        # internal Workspace — both expose add_page/add_header/add_divider.
+        self._host = internal_host
 
-    @property
-    def key(self) -> str:
-        """The workspace identifier."""
-        return self._internal.key
-
-    def __enter__(self) -> "Workspace":
+    def __enter__(self) -> "PageNav":
         return self
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
-        try:
-            self._shell._internal.update_idletasks()
-        except Exception:
-            pass
-
-    # ----- Static content -----
+        upd = getattr(self._host, "update_idletasks", None)
+        if upd is not None:
+            try:
+                upd()
+            except Exception:
+                pass
 
     def add_page(
         self,
@@ -111,48 +158,87 @@ class Workspace:
         text: str = "",
         icon: str | dict | None = None,
         scrollable: bool = False,
+        pin_to_footer: bool = False,
+        layout: LayoutKind = "column",
+        padding: Padding | None = None,
+        gap: int = 0,
+        horizontal_items: str | None = None,
+        vertical_items: str | None = None,
+        grow_items: bool = False,
+        columns: int | list[int | str] | None = None,
+        rows: int | list[int | str] | None = None,
+        auto_flow: AutoFlow = "row",
     ) -> Page:
-        """Add a nav item and its page; return a context-manager page proxy."""
-        frame = self._internal.add_page(key, text=text, icon=icon)
-        return Page(frame, scrollable=scrollable)
+        """Add a nav item and its content page; return a context-manager page.
 
-    def add_footer_page(
-        self,
-        key: str,
-        *,
-        text: str = "",
-        icon: str | dict | None = None,
-        scrollable: bool = False,
-    ) -> Page:
-        """Add a nav item pinned to the sidebar footer and its page."""
-        frame = self._internal.add_footer_page(key, text=text, icon=icon)
-        return Page(frame, scrollable=scrollable)
+        The page IS a layout container — the `layout` / `padding` / `gap` /
+        `horizontal_items` / `vertical_items` / `grow_items` / `columns` / `rows` /
+        `auto_flow` kwargs configure it directly (same as `PageStack.add`), so
+        children inside the `with` block need no extra `Column` / `Grid` wrapper.
+
+        Args:
+            key: Unique identifier for the nav item and page.
+            text: Display label in the sidebar.
+            icon: Icon name or icon configuration dict.
+            scrollable: If `True`, wrap the page in a vertical `ScrollView`.
+            pin_to_footer: If `True`, pin the nav item to the bottom of the
+                sidebar (the non-scrolling footer zone) instead of the scrolling
+                main list — handy for a Settings or Account entry.
+            layout: Page layout — `'column'` (default), `'row'`, or `'grid'`.
+            padding: Space inside the page around its content.
+            gap: Space between the page's children in pixels.
+            horizontal_items: Cross/main-axis alignment of children on the x-axis.
+            vertical_items: Cross/main-axis alignment of children on the y-axis.
+            grow_items: For `'column'`/`'row'`, every child grows to share the axis.
+            columns: Column definitions for `'grid'` layout.
+            rows: Row definitions for `'grid'` layout.
+            auto_flow: Grid auto-flow direction for `'grid'` layout.
+        """
+        frame = self._host.add_page(key, text=text, icon=icon, footer=pin_to_footer)
+        return Page(
+            frame, scrollable=scrollable, layout=layout, padding=padding, gap=gap,
+            horizontal_items=horizontal_items, vertical_items=vertical_items,
+            grow_items=grow_items, columns=columns, rows=rows, auto_flow=auto_flow,
+        )
 
     def add_header(self, text: str) -> None:
-        """Add a plain section-label header (grouped-static)."""
-        self._internal.add_header(text)
+        """Add a plain section-label header that chunks the list (grouped-static)."""
+        self._host.add_header(text)
 
     def add_divider(self) -> None:
-        """Add a divider to the sidebar."""
-        self._internal.add_divider()
+        """Add a divider to the list."""
+        self._host.add_divider()
 
-    def panel(self) -> Page:
-        """Claim the workspace as a custom panel; return its sidebar container."""
-        return Page(self._internal.panel())
 
-    @property
-    def content(self) -> Page:
-        """The workspace's content region as a container for hand-driven content.
+class _SidebarHost:
+    """Mixin for anything that owns one sidebar: `AppShell` and `Workspace`.
 
-        Use with `with ws.content:` or `parent=ws.content` to place widgets
-        in the content area directly — the escape hatch for custom (`panel`) mode.
+    Exposes the four parallel provider front doors — `page_nav()` (authored
+    pages), `list_nav()` / `tree_nav()` (data-bound master-detail), and
+    `custom_nav()` (hand-built) — plus `detail()` and the `content` escape hatch.
+    A sidebar is filled by exactly one provider; the methods are mutually
+    exclusive at runtime.
+
+    Subclasses provide `_sidebar_internal()` (the internal Shell or Workspace that
+    carries the provider methods) and `_content_frame()` (the content region).
+    """
+
+    def _sidebar_internal(self) -> Any:  # pragma: no cover - overridden
+        raise NotImplementedError
+
+    def _content_frame(self) -> Any:  # pragma: no cover - overridden
+        raise NotImplementedError
+
+    def page_nav(self) -> PageNav:
+        """Declare the sidebar as an authored page list; return its handle.
+
+        Returns:
+            A `PageNav` handle — author items with `add_page()` / `add_header()` /
+            `add_divider()` / `add_footer_page()`.
         """
-        host = getattr(self, "_content_host", None)
-        if host is None:
-            host = self._content_host = Page(self._internal.content)
-        return host
-
-    # ----- Data-bound content -----
+        internal = self._sidebar_internal()
+        internal.page_nav()
+        return PageNav(internal)
 
     def list_nav(
         self,
@@ -163,12 +249,21 @@ class Workspace:
         placeholder: str = "Select an item to view",
         chevron: bool = False,
     ) -> "ListView":
-        """Fill the workspace from a `DataSource` (flat master-detail).
+        """Declare a data-bound list sidebar from a `DataSource` (flat master-detail).
 
-        Returns the `ListView` driving the sidebar — use it to read `.selection`
-        or drive selection (`select_items`).
+        Records render their `icon`/`title`/`text` in a recycling list. Pair it
+        with `@detail` to render the body for the selected record. Returns the
+        `ListView` driving the sidebar — use it to read `.selection` or drive
+        selection (`select_items`).
+
+        Args:
+            source: A `DataSource` (or `rows=`-compatible record list).
+            separator: Draw divider lines between rows. Default `False` (flush).
+            density: `'default'` (richer two-line rows) or `'compact'` (one-line).
+            placeholder: Empty-state message shown when the source has no records.
+            chevron: Add a per-row disclosure chevron. Default `False`.
         """
-        return self._internal.list_nav(
+        return self._sidebar_internal().list_nav(
             source, separator=separator, density=density,
             placeholder=placeholder, chevron=chevron,
         ).nav
@@ -184,58 +279,120 @@ class Workspace:
         density: WidgetDensity = "default",
         placeholder: str = "Select an item to view",
     ) -> "Tree":
-        """Fill the workspace from a hierarchy (tree master-detail).
+        """Declare a data-bound tree sidebar (hierarchical master-detail).
 
         Declare the hierarchy inline with `nodes=` or project a flat adjacency-list
-        `source=` (each row names its parent via `parent_field`). Returns the
-        `Tree` driving the sidebar — use it to drive the view
+        `source=` (each row names its parent via `parent_field`). Pair it with
+        `@detail` to render the body for the selected node. Returns the `Tree`
+        driving the sidebar — use it to drive the view
         (`expand`/`expand_all`/`collapse`/`select`/`find`).
+
+        Args:
+            nodes: Inline hierarchy as a node list, or `None` to use `source`.
+            source: A flat adjacency-list `DataSource`, or `None` to use `nodes`.
+            parent_field: Field naming each row's parent (for `source`).
+            label_field: Field providing each node's label.
+            icon_field: Field providing each node's icon name.
+            density: `'default'` or `'compact'`.
+            placeholder: Empty-state message shown until a node is picked.
         """
-        return self._internal.tree_nav(
+        return self._sidebar_internal().tree_nav(
             nodes=nodes, source=source, parent_field=parent_field,
             label_field=label_field, icon_field=icon_field,
             density=density, placeholder=placeholder,
         ).tree
 
-    def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
-        """Register this workspace's detail renderer (decorator).
+    def custom_nav(self) -> Page:
+        """Declare a hand-built sidebar; return its container.
 
-        Pairs with a data-bound sidebar (`list_nav` / `tree_nav`) to form a
-        master-detail view: when the selection changes, `fn` runs with the
-        selected record and rebuilds the content area. Decorate a builder that
-        creates widgets the usual way — it runs inside the content frame. The
-        first row is selected on load, so the detail is never empty on open.
+        The escape hatch when none of the providers fit — fill the returned
+        container with your own sidebar UI (e.g. a `bs.Accordion`) and drive the
+        content region yourself via `content`.
+        """
+        return Page(self._sidebar_internal().panel())
+
+    def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
+        """Register the detail-body renderer for a data-bound sidebar (decorator).
+
+        Pairs with `list_nav` / `tree_nav` to form a master-detail view: when the
+        selection changes, `fn` runs with the selected record and rebuilds the
+        content area. The first row is selected on load, so the detail is never
+        empty on open.
 
         Args:
-            fn: Builder called with the selected record — the row's `dict` (for
-                `tree_nav`, the node's record `dict`). Its return value is ignored.
+            fn: Builder called with the selected record `dict` (for `tree_nav`,
+                the node's record `dict`). Its return value is ignored.
 
         Returns:
             `fn` unchanged, so it works as a decorator.
         """
-        return self._internal.detail(fn)
+        return self._sidebar_internal().detail(fn)
 
-    # ----- Navigation -----
+    @property
+    def content(self) -> Page:
+        """The content region as a container for hand-driven content.
+
+        Use with `with host.content:` or `parent=host.content` to place widgets in
+        the content area directly — the escape hatch for `custom_nav` mode.
+        """
+        frame = self._content_frame()
+        host = getattr(self, "_content_host", None)
+        if host is None or host._internal is not frame:
+            host = self._content_host = Page(frame)
+        return host
+
+
+class Workspace(_SidebarHost):
+    """One workspace in a `Workbench` (returned by `add_workspace()`).
+
+    A sidebar host (see `_SidebarHost`) plus its own `navigate()`: declare its
+    sidebar with `page_nav()` / `list_nav()` / `tree_nav()` / `custom_nav()`,
+    exactly as you would a single-tier `AppShell`.
+    """
+
+    def __init__(self, internal_ws: Any, internal_shell: Any) -> None:
+        self._internal = internal_ws
+        self._shell_internal = internal_shell
+
+    @property
+    def key(self) -> str:
+        """The workspace identifier."""
+        return self._internal.key
+
+    def __enter__(self) -> "Workspace":
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        try:
+            self._shell_internal.update_idletasks()
+        except Exception:
+            pass
+
+    def _sidebar_internal(self) -> Any:
+        return self._internal
+
+    def _content_frame(self) -> Any:
+        return self._internal.content
 
     def navigate(self, page: str, *, data: dict | None = None) -> None:
         """Navigate to a page in this workspace."""
-        self._shell._internal.navigate(self.key, page, data=data)
+        self._shell_internal.navigate(self.key, page, data=data)
 
     @property
     def current(self) -> str | None:
         """Key of this workspace's active page, or `None`."""
-        return self._shell._internal.model.active_page(self.key)
+        return self._shell_internal.model.active_page(self.key)
 
 
 class Rail:
-    """Public handle for the workspace rail (returned by `shell.rail`).
+    """The workspace rail (returned by `workbench.rail`).
 
     The rail is mostly framework-driven; its public surface switches workspaces
     and observes changes. Methods are no-ops when the rail is not rendered (a
-    single-workspace shell).
+    single-workspace workbench).
     """
 
-    def __init__(self, shell: "AppShell") -> None:
+    def __init__(self, shell: "Workbench") -> None:
         self._shell = shell
 
     def select(self, key: str) -> None:
@@ -266,182 +423,19 @@ class Rail:
         return self._shell.on_workspace_change(handler)
 
 
-class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidgetBase):
-    """Application window with rail + swappable sidebar navigation and content.
+class _ShellBase(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidgetBase):
+    """Shared window/chrome/lifecycle scaffolding for `AppShell` and `Workbench`.
 
-    The shell is the standard desktop scaffold: an optional menu bar and command
-    bar across the top, a navigation sidebar on the left, a content area, and an
-    optional status band along the bottom. A workspace **rail** appears
-    automatically once you add more than one workspace (VS Code style); with a
-    single workspace the shell is a plain sidebar + content app.
-
-    Fill the (implicit) sidebar with `add_page()` for static authored pages, or
-    `list_nav()` / `tree_nav()` for data-bound master-detail. For a multi-section
-    app, add named `add_workspace()` workspaces — each is authored with the same
-    page API. Pages support context-manager syntax so widgets inside the `with`
-    block are parented to that page automatically.
-
-    Like `App`, configuration is a single flat path: pass options as constructor
-    kwargs and read or change them through matching `shell.*` properties (e.g.
-    `shell.theme`, `shell.locale`, `shell.sidebar_mode`).
-
-    Args:
-        title: Window title and (in undecorated mode) chrome label.
-        size: Initial window size as `(width, height)`.
-        theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
-        icon: Title-bar and taskbar icon — an icon file path, an `Image` handle,
-            or an `AppIcon`. Defaults to the bootstack icon.
-        light_theme: Theme used for the light end of system-appearance tracking
-            and `toggle_theme`.
-        dark_theme: Theme used for the dark end of system-appearance tracking
-            and `toggle_theme`.
-        follow_system_appearance: If True, switch between `light_theme` and
-            `dark_theme` to match the OS (currently effective on macOS).
-        available_themes: Theme names to expose to theme pickers.
-        locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
-        localize_mode: Localization behavior.
-        window_style: Windows-only window effect, or None to disable.
-        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
-        remember_window_state: If True, window geometry is saved and restored.
-        state_path: Optional override for the persisted window-state file.
-        on_close: Handler invoked when the user clicks the window's close button.
-            Return `False` to veto the close; `None` or `True` to allow it.
-        position: Initial window position as `(x, y)`.
-        min_size: Minimum window size as `(width, height)`.
-        max_size: Maximum window size as `(width, height)`.
-        resizable: Whether the window can be resized as `(x, y)`.
-        scaling: Explicit UI scaling factor. When None, scaling is automatic.
-        hdpi: Enable high-DPI awareness for the application. Default `True`.
-        undecorated: Remove OS window decorations and draw a custom border.
-            Ignored on macOS. The shell gets a built-in draggable title bar with
-            min/max/close so it stays movable and closeable; add your own with
-            `add_toolbar(show_window_controls=True)` to take over the chrome.
-        show_sidebar: Render the sidebar region. Default `True`.
-        sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
-            `'compact'` (icon-only) applies only to a standalone static sidebar.
-        sidebar_width: Expanded sidebar width in pixels.
-        rail_width: Workspace-rail (and compact-sidebar) width in pixels.
-        collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B. Default `True`.
-        nav_accent: Accent for the active nav item. Defaults to `'primary'` (the
-            selected nav item / rail indicator picks up the theme's primary
-            accent); set another accent token to retint, or `None` for a neutral
-            wash.
-        nav_variant: How an accented selection reads on the standalone primary
-            nav — `'ghost'` (default) is a subtle accent wash behind full-strength
-            text; `'solid'` fills the item with the accent and uses on-accent
-            (white) text for higher emphasis. Needs `nav_accent`; with
-            `nav_accent=None` it falls back to a neutral wash. Applies only to the
-            standalone static nav (`add_page`, the no-rail single-tier sidebar);
-            under-rail workspace navs and the `list_nav` / `tree_nav` providers
-            always use the wash.
-        rail_labels: Show a caption under each rail icon (widens the rail).
-        remember_nav_state: Persist the sidebar mode and per-workspace active page
-            across sessions. Default `False`.
-        show_statusbar: Force the bottom status band on (otherwise it appears once
-            a status segment is added). Default `False`.
+    Private base — NOT a public type. Holds the parts both shells share: the
+    internal-`Shell` construction, configuration (`shell.theme`, etc.), toolbar
+    chrome, the status band, sidebar visibility, and the lifecycle. Navigation
+    (sidebar hosting vs the workspace rail) lives on the concrete subclasses.
     """
 
-    def __init__(
-        self,
-        *,
-        title: str = "",
-        size: tuple[int, int] | None = None,
-        theme: str | None = None,
-        icon: "str | Image | AppIcon | None" = None,
-        # theme
-        light_theme: str = "bootstrap-light",
-        dark_theme: str = "bootstrap-dark",
-        follow_system_appearance: bool = False,
-        available_themes: Sequence[str] = (),
-        # localization
-        locale: str | None = None,
-        localize_mode: LocalizeMode = "auto",
-        # platform / window-state persistence
-        window_style: WindowStyle | str | None = "mica",
-        macos_quit_behavior: Literal["native", "classic"] = "native",
-        remember_window_state: bool = False,
-        state_path: str | None = None,
-        on_close: Callable[[], bool | None] | None = None,
-        # window placement
-        position: tuple[int, int] | None = None,
-        min_size: tuple[int, int] | None = None,
-        max_size: tuple[int, int] | None = None,
-        resizable: tuple[bool, bool] | None = None,
-        scaling: float | None = None,
-        hdpi: bool = True,
-        # region surfaces
-        rail_surface: SurfaceToken | str = "chrome",
-        sidebar_surface: SurfaceToken | str = "raised",
-        statusbar_surface: SurfaceToken | str = "chrome",
-        # scaffold / navigation
-        undecorated: bool = False,
-        show_sidebar: bool = True,
-        sidebar_mode: Literal["expanded", "compact", "hidden"] = "expanded",
-        sidebar_width: int | None = None,
-        rail_width: int | None = None,
-        collapsible: bool = True,
-        nav_accent: AccentToken | str | None = "primary",
-        nav_variant: Literal["ghost", "solid"] = "ghost",
-        rail_labels: bool = False,
-        remember_nav_state: bool = False,
-        show_statusbar: bool = False,
-        **kwargs: Any,
+    def _init_shell(
+        self, init_kwargs: dict[str, Any], *, icon: Any, show_statusbar: bool
     ) -> None:
         self._statusbar: StatusBar | None = None
-        self._rail: Rail | None = None
-        self._undecorated = undecorated
-
-        # `show_sidebar=False` is the hidden mode (the model is the truth).
-        if not show_sidebar:
-            sidebar_mode = "hidden"
-
-        init_kwargs: dict[str, Any] = {
-            "title": title,
-            "undecorated": undecorated,
-            "light_theme": light_theme,
-            "dark_theme": dark_theme,
-            "follow_system_appearance": follow_system_appearance,
-            "available_themes": available_themes,
-            "scaling": scaling,
-            "hdpi": hdpi,
-            "locale": locale,
-            "localize_mode": localize_mode,
-            "window_style": window_style,
-            "macos_quit_behavior": macos_quit_behavior,
-            "remember_window_state": remember_window_state,
-            "state_path": state_path,
-            "sidebar_mode": sidebar_mode,
-            "collapsible": collapsible,
-            "nav_accent": nav_accent,
-            # Public `nav_variant` maps to the internal selection-style chain
-            # (`nav_variant` is taken internally for the pill/quiet tier).
-            "nav_selection": nav_variant,
-            "rail_labels": rail_labels,
-            "remember_nav_state": remember_nav_state,
-            "rail_surface": rail_surface,
-            "sidebar_surface": sidebar_surface,
-            "statusbar_surface": statusbar_surface,
-        }
-        if size is not None:
-            init_kwargs["size"] = size
-        if theme is not None:
-            init_kwargs["theme"] = theme
-        if position is not None:
-            init_kwargs["position"] = position
-        if min_size is not None:
-            init_kwargs["minsize"] = min_size
-        if max_size is not None:
-            init_kwargs["maxsize"] = max_size
-        if resizable is not None:
-            init_kwargs["resizable"] = resizable
-        if on_close is not None:
-            init_kwargs["on_close"] = on_close
-        if sidebar_width is not None:
-            init_kwargs["sidebar_width"] = sidebar_width
-        if rail_width is not None:
-            init_kwargs["rail_width"] = rail_width
-        init_kwargs.update(kwargs)
-
         self._internal = _InternalShell(**init_kwargs)
 
         # Resolve the window icon AFTER the root exists (an AppIcon may resolve
@@ -462,8 +456,8 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             _ = self.statusbar
 
     @classmethod
-    def from_store(cls, store: Any, **overrides: Any) -> "AppShell":
-        """Construct an `AppShell` from a persisted `Store` (or plain dict).
+    def from_store(cls, store: Any, **overrides: Any):
+        """Construct from a persisted `Store` (or plain dict).
 
         Reads configuration from `store`, tolerantly ignoring keys that are not
         valid configuration (so version skew does not raise). Explicit keyword
@@ -477,7 +471,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     def _config_app(self) -> Any:
         return self._internal
 
-    def __enter__(self) -> "AppShell":
+    def __enter__(self):
         return self
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
@@ -498,159 +492,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         # (above the body); `add_toolbar()` mounts into it rather than the base
         # mixin's content-frame stack.
         return self._internal.toolbar_stack
-
-    # ----- Shell-level content (delegates to the implicit default workspace) ----
-
-    def add_page(
-        self,
-        key: str,
-        *,
-        text: str = "",
-        icon: str | dict | None = None,
-        scrollable: bool = False,
-    ) -> Page:
-        """Add a nav item and its page, returning a context-manager page proxy.
-
-        Args:
-            key: Unique identifier for the nav item and page.
-            text: Display label in the sidebar.
-            icon: Icon name or icon configuration dict.
-            scrollable: If `True`, wrap the page in a vertical `ScrollView`.
-
-        Returns:
-            A `Page` context manager. Use with `with` to parent child
-            widgets into the page automatically.
-        """
-        frame = self._internal.add_page(key, text=text, icon=icon)
-        return Page(frame, scrollable=scrollable)
-
-    def add_footer_page(
-        self,
-        key: str,
-        *,
-        text: str = "",
-        icon: str | dict | None = None,
-        scrollable: bool = False,
-    ) -> Page:
-        """Add a nav item pinned to the sidebar footer and its page."""
-        frame = self._internal.add_footer_page(key, text=text, icon=icon)
-        return Page(frame, scrollable=scrollable)
-
-    def add_header(self, text: str) -> None:
-        """Add a plain section-label header to the sidebar (grouped-static)."""
-        self._internal.add_header(text)
-
-    def add_divider(self) -> None:
-        """Add a divider to the sidebar."""
-        self._internal.add_divider()
-
-    def panel(self) -> Page:
-        """Claim the implicit workspace as a custom panel; return its container."""
-        return Page(self._internal.panel())
-
-    def list_nav(
-        self,
-        source: Any,
-        *,
-        separator: bool = False,
-        density: WidgetDensity = "default",
-        placeholder: str = "Select an item to view",
-        chevron: bool = False,
-    ) -> "ListView":
-        """Fill the implicit workspace from a `DataSource` (flat master-detail).
-
-        Returns the `ListView` driving the sidebar — use it to read `.selection`
-        or drive selection (`select_items`).
-        """
-        return self._internal.list_nav(
-            source, separator=separator, density=density,
-            placeholder=placeholder, chevron=chevron,
-        ).nav
-
-    def tree_nav(
-        self,
-        *,
-        nodes: list | None = None,
-        source: Any = None,
-        parent_field: str = "parent_id",
-        label_field: str = "name",
-        icon_field: str = "icon",
-        density: WidgetDensity = "default",
-        placeholder: str = "Select an item to view",
-    ) -> "Tree":
-        """Fill the implicit workspace from a hierarchy (tree master-detail).
-
-        Declare the hierarchy inline with `nodes=` or project a flat adjacency-list
-        `source=` (each row names its parent via `parent_field`). Returns the
-        `Tree` driving the sidebar — use it to drive the view
-        (`expand`/`expand_all`/`collapse`/`select`/`find`).
-        """
-        return self._internal.tree_nav(
-            nodes=nodes, source=source, parent_field=parent_field,
-            label_field=label_field, icon_field=icon_field,
-            density=density, placeholder=placeholder,
-        ).tree
-
-    def detail(self, fn: Callable[[dict], Any]) -> Callable[[dict], Any]:
-        """Register the detail renderer for the shell's data-bound sidebar (decorator).
-
-        The single-tier equivalent of `Workspace.detail`: pairs with a top-level
-        `list_nav` / `tree_nav` to form a master-detail view. When the selection
-        changes, `fn` runs with the selected record and rebuilds the content
-        area. The first row is selected on load, so the detail is never empty.
-
-        Args:
-            fn: Builder called with the selected record — the row's `dict` (for
-                `tree_nav`, the node's record `dict`). Its return value is ignored.
-
-        Returns:
-            `fn` unchanged, so it works as a decorator.
-        """
-        return self._internal.detail(fn)
-
-    # ----- Two-tier workspaces -----
-
-    def add_workspace(
-        self, key: str, *, text: str = "", icon: str | dict | None = None
-    ) -> Workspace:
-        """Add a workspace (a rail icon → its own sidebar panel + content).
-
-        Adding a second workspace reveals the rail. Mutually exclusive with the
-        shell-level page methods.
-        """
-        return Workspace(self._internal.add_workspace(key, text=text, icon=icon), self)
-
-    def add_footer_workspace(
-        self, key: str, *, text: str = "", icon: str | dict | None = None
-    ) -> Workspace:
-        """Add a workspace pinned to the bottom of the rail."""
-        return Workspace(
-            self._internal.add_footer_workspace(key, text=text, icon=icon), self
-        )
-
-    # ----- Navigation -----
-
-    def navigate(self, *keys: str, data: dict | None = None) -> None:
-        """Navigate to a page (single-tier) or a workspace + page (two-tier).
-
-        `navigate(page)` selects a page in the active workspace;
-        `navigate(workspace, page)` switches workspace and selects a page in it.
-
-        Args:
-            *keys: One key (page) or two keys (workspace, page).
-            data: Optional data dict passed to the page's change event.
-        """
-        self._internal.navigate(*keys, data=data)
-
-    @property
-    def current(self) -> str | None:
-        """Key of the active workspace's active page, or `None`."""
-        return self._internal.current_page
-
-    @property
-    def current_workspace(self) -> str | None:
-        """Key of the active workspace, or `None`."""
-        return self._internal.current_workspace
 
     # ----- Sidebar visibility / compaction -----
 
@@ -675,7 +516,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     def sidebar_mode(self, mode: SidebarMode) -> None:
         self._internal.sidebar_mode = mode
 
-    # ----- Events -----
+    # ----- Events shared by both shells -----
 
     @overload
     def on_page_change(self) -> Stream: ...
@@ -692,24 +533,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 Omit to get a composable :class:`~bootstack.streams.Stream`.
         """
         return self.on("page_change", handler)
-
-    @overload
-    def on_workspace_change(self) -> Stream: ...
-    @overload
-    def on_workspace_change(
-        self, handler: Callable[[WorkspaceChangeEvent], Any]
-    ) -> Subscription: ...
-    def on_workspace_change(
-        self, handler: Callable[[WorkspaceChangeEvent], Any] | None = None
-    ) -> Stream | Subscription:
-        """Register a callback fired when the rail switches workspace.
-
-        Args:
-            handler: Called with a
-                :class:`~bootstack.events.WorkspaceChangeEvent`. Omit to get a
-                composable :class:`~bootstack.streams.Stream`.
-        """
-        return self.on("workspace_change", handler)
 
     @overload
     def on_sidebar_toggle(self) -> Stream: ...
@@ -755,22 +578,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     # ----- Region accessors -----
 
     @property
-    def content(self) -> Page:
-        """The content region as a container for hand-driven content.
-
-        Use with `with shell.content:` or `parent=shell.content` to place
-        widgets in the content area directly — the escape hatch for custom
-        (`panel`) mode. Targets the active workspace's content frame, not the
-        layout region (which hosts the page deck).
-        """
-        ws = self._internal.workspace
-        frame = ws.content if ws is not None else self._internal.content
-        host = getattr(self, "_content_host", None)
-        if host is None or host._internal is not frame:
-            host = self._content_host = Page(frame)
-        return host
-
-    @property
     def statusbar(self) -> StatusBar:
         """The bottom status band (passive status). Lazily created on first access.
 
@@ -782,13 +589,6 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
                 _show=lambda: self._internal.set_statusbar_visible(True),
             )
         return self._statusbar
-
-    @property
-    def rail(self) -> Rail:
-        """The workspace switcher. Methods no-op when the rail is not rendered."""
-        if self._rail is None:
-            self._rail = Rail(self)
-        return self._rail
 
     @property
     def pages(self) -> Any:
@@ -806,11 +606,441 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
         return self._internal
 
 
-_APPSHELL_EVENTS = {
+def _build_init_kwargs(
+    *,
+    title: str,
+    undecorated: bool,
+    light_theme: str,
+    dark_theme: str,
+    follow_system_appearance: bool,
+    available_themes: Sequence[str],
+    scaling: float | None,
+    hdpi: bool,
+    locale: str | None,
+    localize_mode: LocalizeMode,
+    window_style: WindowStyle | str | None,
+    macos_quit_behavior: str,
+    remember_window_state: bool,
+    state_path: str | None,
+    sidebar_mode: SidebarMode,
+    collapsible: bool,
+    nav_accent: AccentToken | str | None,
+    remember_nav_state: bool,
+    sidebar_surface: SurfaceToken | str,
+    statusbar_surface: SurfaceToken | str,
+    size: tuple[int, int] | None,
+    theme: str | None,
+    position: tuple[int, int] | None,
+    min_size: tuple[int, int] | None,
+    max_size: tuple[int, int] | None,
+    resizable: tuple[bool, bool] | None,
+    on_close: Callable[[], bool | None] | None,
+    sidebar_width: int | None,
+) -> dict[str, Any]:
+    """Assemble the shared internal-`Shell` kwargs (optionals omitted when None)."""
+    kw: dict[str, Any] = {
+        "title": title,
+        "undecorated": undecorated,
+        "light_theme": light_theme,
+        "dark_theme": dark_theme,
+        "follow_system_appearance": follow_system_appearance,
+        "available_themes": available_themes,
+        "scaling": scaling,
+        "hdpi": hdpi,
+        "locale": locale,
+        "localize_mode": localize_mode,
+        "window_style": window_style,
+        "macos_quit_behavior": macos_quit_behavior,
+        "remember_window_state": remember_window_state,
+        "state_path": state_path,
+        "sidebar_mode": sidebar_mode,
+        "collapsible": collapsible,
+        "nav_accent": nav_accent,
+        "remember_nav_state": remember_nav_state,
+        "sidebar_surface": sidebar_surface,
+        "statusbar_surface": statusbar_surface,
+    }
+    if size is not None:
+        kw["size"] = size
+    if theme is not None:
+        kw["theme"] = theme
+    if position is not None:
+        kw["position"] = position
+    if min_size is not None:
+        kw["minsize"] = min_size
+    if max_size is not None:
+        kw["maxsize"] = max_size
+    if resizable is not None:
+        kw["resizable"] = resizable
+    if on_close is not None:
+        kw["on_close"] = on_close
+    if sidebar_width is not None:
+        kw["sidebar_width"] = sidebar_width
+    return kw
+
+
+class AppShell(_SidebarHost, _ShellBase):
+    """Single-tier application window: one navigation sidebar plus content.
+
+    The everyday desktop scaffold — an optional toolbar stack across the top, one
+    navigation sidebar on the left, a content area that swaps as you navigate, and
+    an optional status band along the bottom. For a multi-section app with a
+    workspace rail, use :class:`Workbench` instead.
+
+    Declare the sidebar with exactly one provider front door:
+    `page_nav()` (authored pages), `list_nav()` / `tree_nav()` (data-bound
+    master-detail), or `custom_nav()` (hand-built). Pages support context-manager
+    syntax so widgets inside the `with` block are parented automatically.
+
+    Like `App`, configuration is a single flat path: pass options as constructor
+    kwargs and read or change them through matching `shell.*` properties (e.g.
+    `shell.theme`, `shell.locale`, `shell.sidebar_mode`).
+
+    Args:
+        title: Window title and (in undecorated mode) chrome label.
+        size: Initial window size as `(width, height)`.
+        theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
+        icon: Title-bar and taskbar icon — an icon file path, an `Image` handle,
+            or an `AppIcon`. Defaults to the bootstack icon.
+        light_theme: Theme used for the light end of system-appearance tracking
+            and `toggle_theme`.
+        dark_theme: Theme used for the dark end of system-appearance tracking
+            and `toggle_theme`.
+        follow_system_appearance: If True, switch between `light_theme` and
+            `dark_theme` to match the OS (currently effective on macOS).
+        available_themes: Theme names to expose to theme pickers.
+        locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
+        localize_mode: Localization behavior.
+        window_style: Windows-only window effect, or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
+        remember_window_state: If True, window geometry is saved and restored.
+        state_path: Optional override for the persisted window-state file.
+        on_close: Handler invoked when the user clicks the window's close button.
+            Return `False` to veto the close; `None` or `True` to allow it.
+        position: Initial window position as `(x, y)`.
+        min_size: Minimum window size as `(width, height)`.
+        max_size: Maximum window size as `(width, height)`.
+        resizable: Whether the window can be resized as `(x, y)`.
+        scaling: Explicit UI scaling factor. When None, scaling is automatic.
+        hdpi: Enable high-DPI awareness for the application. Default `True`.
+        sidebar_surface: Surface token for the navigation sidebar.
+        statusbar_surface: Surface token for the bottom status band.
+        undecorated: Remove OS window decorations and draw a custom border.
+            Ignored on macOS. The shell gets a built-in draggable title bar with
+            min/max/close; add your own with `add_toolbar(show_window_controls=True)`
+            to take over the chrome.
+        show_sidebar: Render the sidebar region. Default `True`.
+        sidebar_mode: Initial sidebar mode — `'expanded'`/`'compact'`/`'hidden'`.
+            `'compact'` (icon-only) applies to an authored `page_nav` sidebar.
+        sidebar_width: Expanded sidebar width in pixels.
+        collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B. Default `True`.
+        nav_accent: Accent for the active nav item. Defaults to `'primary'`; set
+            another accent token to retint, or `None` for a neutral wash.
+        remember_nav_state: Persist the sidebar mode and active page across
+            sessions. Default `False`.
+        show_statusbar: Force the bottom status band on (otherwise it appears once
+            a status segment is added). Default `False`.
+    """
+
+    def __init__(
+        self,
+        *,
+        title: str = "",
+        size: tuple[int, int] | None = None,
+        theme: str | None = None,
+        icon: "str | Image | AppIcon | None" = None,
+        light_theme: str = "bootstrap-light",
+        dark_theme: str = "bootstrap-dark",
+        follow_system_appearance: bool = False,
+        available_themes: Sequence[str] = (),
+        locale: str | None = None,
+        localize_mode: LocalizeMode = "auto",
+        window_style: WindowStyle | str | None = "mica",
+        macos_quit_behavior: Literal["native", "classic"] = "native",
+        remember_window_state: bool = False,
+        state_path: str | None = None,
+        on_close: Callable[[], bool | None] | None = None,
+        position: tuple[int, int] | None = None,
+        min_size: tuple[int, int] | None = None,
+        max_size: tuple[int, int] | None = None,
+        resizable: tuple[bool, bool] | None = None,
+        scaling: float | None = None,
+        hdpi: bool = True,
+        sidebar_surface: SurfaceToken | str = "raised",
+        statusbar_surface: SurfaceToken | str = "chrome",
+        undecorated: bool = False,
+        show_sidebar: bool = True,
+        sidebar_mode: SidebarMode = "expanded",
+        sidebar_width: int | None = None,
+        collapsible: bool = True,
+        nav_accent: AccentToken | str | None = "primary",
+        remember_nav_state: bool = False,
+        show_statusbar: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        # `show_sidebar=False` is the hidden mode (the model is the truth).
+        if not show_sidebar:
+            sidebar_mode = "hidden"
+
+        init_kwargs = _build_init_kwargs(
+            title=title, undecorated=undecorated, light_theme=light_theme,
+            dark_theme=dark_theme, follow_system_appearance=follow_system_appearance,
+            available_themes=available_themes, scaling=scaling, hdpi=hdpi,
+            locale=locale, localize_mode=localize_mode, window_style=window_style,
+            macos_quit_behavior=macos_quit_behavior,
+            remember_window_state=remember_window_state, state_path=state_path,
+            sidebar_mode=sidebar_mode, collapsible=collapsible, nav_accent=nav_accent,
+            remember_nav_state=remember_nav_state, sidebar_surface=sidebar_surface,
+            statusbar_surface=statusbar_surface, size=size, theme=theme,
+            position=position, min_size=min_size, max_size=max_size,
+            resizable=resizable, on_close=on_close, sidebar_width=sidebar_width,
+        )
+        init_kwargs.update(kwargs)
+        self._init_shell(init_kwargs, icon=icon, show_statusbar=show_statusbar)
+
+    # ----- Sidebar hosting -----
+
+    def _sidebar_internal(self) -> Any:
+        return self._internal
+
+    def _content_frame(self) -> Any:
+        ws = self._internal.workspace
+        return ws.content if ws is not None else self._internal.content
+
+    def page_nav(self, *, variant: NavVariant = "ghost") -> PageNav:
+        """Declare the sidebar as an authored page list; return its handle.
+
+        Args:
+            variant: How an accented selection reads — `'ghost'` (default) is a
+                subtle accent wash behind full-strength text; `'solid'` fills the
+                selected item with the accent and uses on-accent (white) text for
+                higher emphasis. Needs `nav_accent`; with `nav_accent=None` it
+                falls back to a neutral wash.
+
+        Returns:
+            A `PageNav` handle — author items with `add_page()` / `add_header()` /
+            `add_divider()` / `add_footer_page()`.
+        """
+        self._internal.page_nav(selection=variant)
+        return PageNav(self._internal)
+
+    # ----- Navigation -----
+
+    def navigate(self, page: str, *, data: dict | None = None) -> None:
+        """Navigate to a page; the sidebar selection follows.
+
+        Args:
+            page: The page key to activate.
+            data: Optional data dict passed to the page's change event.
+        """
+        self._internal.navigate(page, data=data)
+
+    @property
+    def current(self) -> str | None:
+        """Key of the active page, or `None`."""
+        return self._internal.current_page
+
+
+class Workbench(_ShellBase):
+    """Two-tier application window: a workspace rail plus per-workspace sidebars.
+
+    The advanced, VS Code-style scaffold — a vertical icon **rail** of workspaces
+    down the far left, each revealing its own navigation sidebar and content. Add
+    workspaces with `add_workspace()`; each is itself a sidebar host, authored with
+    the same `page_nav()` / `list_nav()` / `tree_nav()` / `custom_nav()` front
+    doors as a single-tier :class:`AppShell`.
+
+    For a single sidebar with no rail, use :class:`AppShell` instead.
+
+    Args:
+        title: Window title and (in undecorated mode) chrome label.
+        size: Initial window size as `(width, height)`.
+        theme: Theme name to apply on startup (e.g. `'bootstrap-dark'`).
+        icon: Title-bar and taskbar icon — a path, an `Image`, or an `AppIcon`.
+        light_theme: Theme used for the light end of system-appearance tracking.
+        dark_theme: Theme used for the dark end of system-appearance tracking.
+        follow_system_appearance: If True, track the OS appearance (macOS).
+        available_themes: Theme names to expose to theme pickers.
+        locale: Locale identifier (e.g. `'en_US'`, `'de_DE'`).
+        localize_mode: Localization behavior.
+        window_style: Windows-only window effect, or None to disable.
+        macos_quit_behavior: macOS close / Cmd+Q behavior. No-op on Win/Linux.
+        remember_window_state: If True, window geometry is saved and restored.
+        state_path: Optional override for the persisted window-state file.
+        on_close: Handler invoked on the window's close button. Return `False` to
+            veto the close; `None` or `True` to allow it.
+        position: Initial window position as `(x, y)`.
+        min_size: Minimum window size as `(width, height)`.
+        max_size: Maximum window size as `(width, height)`.
+        resizable: Whether the window can be resized as `(x, y)`.
+        scaling: Explicit UI scaling factor. When None, scaling is automatic.
+        hdpi: Enable high-DPI awareness for the application. Default `True`.
+        rail_surface: Surface token for the workspace rail.
+        sidebar_surface: Surface token for the per-workspace navigation sidebar.
+        statusbar_surface: Surface token for the bottom status band.
+        undecorated: Remove OS window decorations and draw a custom border.
+        show_sidebar: Render the sidebar region. Default `True`.
+        sidebar_mode: Initial sidebar mode — `'expanded'`/`'hidden'`.
+        sidebar_width: Expanded sidebar width in pixels.
+        rail_width: Workspace-rail width in pixels.
+        rail_labels: Show a caption under each rail icon (widens the rail).
+        collapsible: Allow collapsing the sidebar; binds Ctrl/Cmd-B. Default `True`.
+        nav_accent: Accent for the active nav item and the rail indicator. Defaults
+            to `'primary'`; another token retints, or `None` for a neutral wash.
+        remember_nav_state: Persist the sidebar mode and per-workspace active page
+            across sessions. Default `False`.
+        show_statusbar: Force the bottom status band on. Default `False`.
+    """
+
+    def __init__(
+        self,
+        *,
+        title: str = "",
+        size: tuple[int, int] | None = None,
+        theme: str | None = None,
+        icon: "str | Image | AppIcon | None" = None,
+        light_theme: str = "bootstrap-light",
+        dark_theme: str = "bootstrap-dark",
+        follow_system_appearance: bool = False,
+        available_themes: Sequence[str] = (),
+        locale: str | None = None,
+        localize_mode: LocalizeMode = "auto",
+        window_style: WindowStyle | str | None = "mica",
+        macos_quit_behavior: Literal["native", "classic"] = "native",
+        remember_window_state: bool = False,
+        state_path: str | None = None,
+        on_close: Callable[[], bool | None] | None = None,
+        position: tuple[int, int] | None = None,
+        min_size: tuple[int, int] | None = None,
+        max_size: tuple[int, int] | None = None,
+        resizable: tuple[bool, bool] | None = None,
+        scaling: float | None = None,
+        hdpi: bool = True,
+        rail_surface: SurfaceToken | str = "chrome",
+        sidebar_surface: SurfaceToken | str = "raised",
+        statusbar_surface: SurfaceToken | str = "chrome",
+        undecorated: bool = False,
+        show_sidebar: bool = True,
+        sidebar_mode: SidebarMode = "expanded",
+        sidebar_width: int | None = None,
+        rail_width: int | None = None,
+        rail_labels: bool = False,
+        collapsible: bool = True,
+        nav_accent: AccentToken | str | None = "primary",
+        remember_nav_state: bool = False,
+        show_statusbar: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        self._rail: Rail | None = None
+
+        # `show_sidebar=False` is the hidden mode (the model is the truth).
+        if not show_sidebar:
+            sidebar_mode = "hidden"
+
+        init_kwargs = _build_init_kwargs(
+            title=title, undecorated=undecorated, light_theme=light_theme,
+            dark_theme=dark_theme, follow_system_appearance=follow_system_appearance,
+            available_themes=available_themes, scaling=scaling, hdpi=hdpi,
+            locale=locale, localize_mode=localize_mode, window_style=window_style,
+            macos_quit_behavior=macos_quit_behavior,
+            remember_window_state=remember_window_state, state_path=state_path,
+            sidebar_mode=sidebar_mode, collapsible=collapsible, nav_accent=nav_accent,
+            remember_nav_state=remember_nav_state, sidebar_surface=sidebar_surface,
+            statusbar_surface=statusbar_surface, size=size, theme=theme,
+            position=position, min_size=min_size, max_size=max_size,
+            resizable=resizable, on_close=on_close, sidebar_width=sidebar_width,
+        )
+        # Rail-only chrome (two-tier).
+        init_kwargs["rail_surface"] = rail_surface
+        init_kwargs["rail_labels"] = rail_labels
+        if rail_width is not None:
+            init_kwargs["rail_width"] = rail_width
+        init_kwargs.update(kwargs)
+        self._init_shell(init_kwargs, icon=icon, show_statusbar=show_statusbar)
+
+    # ----- Workspaces -----
+
+    def add_workspace(
+        self,
+        key: str,
+        *,
+        text: str = "",
+        icon: str | dict | None = None,
+        pin_to_footer: bool = False,
+    ) -> Workspace:
+        """Add a workspace — a rail icon revealing its own sidebar + content.
+
+        The rail appears once there is more than one workspace. The returned
+        `Workspace` is a sidebar host: declare its sidebar with `page_nav()` /
+        `list_nav()` / `tree_nav()` / `custom_nav()`.
+
+        Args:
+            key: Unique workspace identifier.
+            text: Tooltip / rail label for the workspace icon.
+            icon: Rail icon name or icon configuration dict.
+            pin_to_footer: If `True`, pin the rail icon to the bottom of the rail
+                (the conventional spot for Settings / Account) instead of the top
+                cluster.
+        """
+        add = self._internal.add_footer_workspace if pin_to_footer else self._internal.add_workspace
+        return Workspace(add(key, text=text, icon=icon), self._internal)
+
+    # ----- Navigation -----
+
+    def navigate(self, workspace: str, page: str, *, data: dict | None = None) -> None:
+        """Switch to `workspace` and select `page` within it.
+
+        Args:
+            workspace: The workspace key to activate.
+            page: The page key to activate within that workspace.
+            data: Optional data dict passed to the page's change event.
+        """
+        self._internal.navigate(workspace, page, data=data)
+
+    @property
+    def current(self) -> str | None:
+        """Key of the active workspace's active page, or `None`."""
+        return self._internal.current_page
+
+    @property
+    def current_workspace(self) -> str | None:
+        """Key of the active workspace, or `None`."""
+        return self._internal.current_workspace
+
+    @property
+    def rail(self) -> Rail:
+        """The workspace switcher. Methods no-op when the rail is not rendered."""
+        if self._rail is None:
+            self._rail = Rail(self)
+        return self._rail
+
+    # ----- Events -----
+
+    @overload
+    def on_workspace_change(self) -> Stream: ...
+    @overload
+    def on_workspace_change(
+        self, handler: Callable[[WorkspaceChangeEvent], Any]
+    ) -> Subscription: ...
+    def on_workspace_change(
+        self, handler: Callable[[WorkspaceChangeEvent], Any] | None = None
+    ) -> Stream | Subscription:
+        """Register a callback fired when the rail switches workspace.
+
+        Args:
+            handler: Called with a
+                :class:`~bootstack.events.WorkspaceChangeEvent`. Omit to get a
+                composable :class:`~bootstack.streams.Stream`.
+        """
+        return self.on("workspace_change", handler)
+
+
+_SHELL_EVENTS = {
     "page_change":         "<<PageChange>>",
-    "workspace_change":    "<<WorkspaceChange>>",
     "sidebar_toggle":      "<<SidebarToggle>>",
     "sidebar_mode_change": "<<SidebarModeChange>>",
 }
+_WORKBENCH_EVENTS = dict(_SHELL_EVENTS, workspace_change="<<WorkspaceChange>>")
 
-register_widget_events(AppShell, _APPSHELL_EVENTS)
+register_widget_events(AppShell, _SHELL_EVENTS)
+register_widget_events(Workbench, _WORKBENCH_EVENTS)

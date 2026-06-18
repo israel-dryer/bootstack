@@ -35,7 +35,8 @@ Declare the hierarchy inline with `nodes=` (each a `{"label", "icon",
 
    @shell.detail
    def show(node):
-       bs.Label(node["text"], font="heading-lg")
+       with bs.Column(horizontal_items="left", gap=12, padding=(16, 10)):
+           bs.Label(node["text"], font="heading-lg")
 
 For large or dynamic hierarchies, pass `source=` instead — a flat
 adjacency-list :doc:`data source </reference/data-sources>` where each row names

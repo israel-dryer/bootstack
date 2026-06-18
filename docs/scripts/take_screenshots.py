@@ -145,6 +145,7 @@ def _patch(cls):
 
 _patch(bs.App)
 _patch(bs.AppShell)
+_patch(bs.Workbench)
 
 spec = importlib.util.spec_from_file_location("_example", example)
 mod  = importlib.util.module_from_spec(spec)

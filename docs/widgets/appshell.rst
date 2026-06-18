@@ -1,11 +1,11 @@
 AppShell
 ========
 
-A full application scaffold: a stack of toolbars across the top, a navigation
-sidebar on the left, and a content area that swaps as you navigate. With a single
-set of pages it is a plain sidebar app; add more than one *workspace* and a
-VS Code-style icon **rail** appears to switch between them. A full-width status
-band can run along the bottom.
+A single-tier application scaffold: a stack of toolbars across the top, one
+navigation sidebar on the left, and a content area that swaps as you navigate. A
+full-width status band can run along the bottom. For a multi-section app with a
+VS Code-style workspace **rail**, use :class:`Workbench <bootstack.Workbench>`
+instead.
 
 .. image:: /_static/examples/appshell-hero-light.png
    :class: bs-screenshot-light bs-window-screenshot
@@ -18,48 +18,149 @@ band can run along the bottom.
 Usage
 -----
 
-Static pages
-~~~~~~~~~~~~
+Sidebars at a glance
+~~~~~~~~~~~~~~~~~~~~~~
 
-`add_page(key, text=, icon=)` registers a sidebar nav item and its content page
-together. Use the returned value as a context manager to place child widgets on
-that page. `navigate()` selects the active page (the sidebar selection follows).
+The sidebar is filled by exactly one **provider**, declared with one of four
+front doors — they are mutually exclusive (a sidebar is one of these, not a mix).
+Each is shown below; the linked guide walks through building it. The same four
+front doors work inside a :class:`Workbench <bootstack.Workbench>` workspace.
+
+.. grid:: 1 2 2 2
+   :gutter: 3
+
+   .. grid-item-card:: page_nav() — authored pages
+      :link: /tasks/navigation/single-tier
+      :link-type: doc
+
+      .. image:: /_static/examples/navigation-single-tier-light.png
+         :class: bs-screenshot-light bs-window-screenshot
+         :alt: A page-nav sidebar — light theme
+      .. image:: /_static/examples/navigation-single-tier-dark.png
+         :class: bs-screenshot-dark bs-window-screenshot
+         :alt: A page-nav sidebar — dark theme
+
+      A flat list of authored pages (`add_page` / `add_header` / `add_divider`).
+
+   .. grid-item-card:: list_nav() — master–detail list
+      :link: /tasks/navigation/master-detail-list
+      :link-type: doc
+
+      .. image:: /_static/examples/navigation-master-detail-list-light.png
+         :class: bs-screenshot-light bs-window-screenshot
+         :alt: A list-nav sidebar — light theme
+      .. image:: /_static/examples/navigation-master-detail-list-dark.png
+         :class: bs-screenshot-dark bs-window-screenshot
+         :alt: A list-nav sidebar — dark theme
+
+      A data-bound list of records driving a detail view.
+
+   .. grid-item-card:: tree_nav() — master–detail tree
+      :link: /tasks/navigation/master-detail-tree
+      :link-type: doc
+
+      .. image:: /_static/examples/navigation-master-detail-tree-light.png
+         :class: bs-screenshot-light bs-window-screenshot
+         :alt: A tree-nav sidebar — light theme
+      .. image:: /_static/examples/navigation-master-detail-tree-dark.png
+         :class: bs-screenshot-dark bs-window-screenshot
+         :alt: A tree-nav sidebar — dark theme
+
+      A data-bound hierarchy driving a detail view.
+
+   .. grid-item-card:: custom_nav() — build it yourself
+      :link: /tasks/navigation/custom-sidebar
+      :link-type: doc
+
+      .. image:: /_static/examples/navigation-custom-sidebar-light.png
+         :class: bs-screenshot-light bs-window-screenshot
+         :alt: A custom sidebar — light theme
+      .. image:: /_static/examples/navigation-custom-sidebar-dark.png
+         :class: bs-screenshot-dark bs-window-screenshot
+         :alt: A custom sidebar — dark theme
+
+      A bespoke sidebar you fill by hand — the escape hatch.
+
+Page nav
+~~~~~~~~
+
+`page_nav()` declares an authored page list and returns a handle; each
+`add_page(key, text=, icon=)` registers a sidebar item and its content page
+together. A page **is** a column, so set ``padding`` / ``gap`` (and ``layout`` /
+``columns`` …) on ``add_page`` — no inner wrapper. `navigate()` selects the active
+page (the sidebar selection follows).
 
 .. code-block:: python
 
    with bs.AppShell(title="My App") as shell:
-       with shell.add_page("dashboard", text="Dashboard", icon="house"):
-           bs.Label("Dashboard content")
-       with shell.add_page("settings", text="Settings", icon="gear"):
-           bs.Label("Settings content")
+       with shell.page_nav() as nav:
+           with nav.add_page("dashboard", text="Dashboard", icon="house", padding=24, gap=12):
+               bs.Label("Dashboard content")
+           with nav.add_page("settings", text="Settings", icon="gear", padding=24, gap=12):
+               bs.Label("Settings content")
        shell.navigate("dashboard")
    shell.run()
 
-Headers, separators, and footer items
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Headers, dividers, and footer items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Chunk a flat list with `add_header()` (a quiet section label) and
-`add_divider()` (a divider). Pin an item to the bottom of the sidebar with
-`add_footer_page()` — handy for a Settings or Account entry.
+Chunk the list with `add_header()` (a quiet section label) and `add_divider()`.
+Pin an item to the bottom of the sidebar with ``pin_to_footer=True`` — handy for a
+Settings or Account entry.
 
 .. code-block:: python
 
-   with shell.add_page("dashboard", text="Dashboard", icon="house"):
-       ...
-   with shell.add_page("inbox", text="Inbox", icon="inbox"):
-       ...
+   with shell.page_nav() as nav:
+       with nav.add_page("dashboard", text="Dashboard", icon="house"):
+           ...
+       with nav.add_page("inbox", text="Inbox", icon="inbox"):
+           ...
 
-   shell.add_divider()
-   shell.add_header("Documents")
-   with shell.add_page("files", text="Files", icon="folder"):
-       ...
+       nav.add_divider()
+       nav.add_header("Documents")
+       with nav.add_page("files", text="Files", icon="folder"):
+           ...
 
-   with shell.add_footer_page("settings", text="Settings", icon="gear"):
-       ...
+       with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
+           ...
 
 For a collapsible sub-list, compose an :class:`Accordion
-<bootstack.widgets.accordion.Accordion>` inside a custom panel (see *Custom
-panel* below) — the static sidebar itself stays flat by design.
+<bootstack.widgets.accordion.Accordion>` inside a custom sidebar (see *Custom
+sidebar* below) — the page nav itself stays flat by design.
+
+Higher-emphasis selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default the selected item gets a subtle accent **wash** (``variant="ghost"``).
+Pass ``variant="solid"`` to `page_nav()` for a filled-accent item with on-accent
+(white) text — the higher-emphasis look. (It needs ``nav_accent``; with
+``nav_accent=None`` it falls back to a neutral wash.)
+
+.. code-block:: python
+
+   with shell.page_nav(variant="solid") as nav:
+       ...
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50 50
+
+   * - ``"ghost"`` (default)
+     - ``"solid"``
+   * - .. image:: /_static/examples/appshell-selection-ghost-light.png
+          :class: bs-screenshot-light bs-window-screenshot
+          :alt: Ghost selection wash — light theme
+
+       .. image:: /_static/examples/appshell-selection-ghost-dark.png
+          :class: bs-screenshot-dark bs-window-screenshot
+          :alt: Ghost selection wash — dark theme
+     - .. image:: /_static/examples/appshell-selection-solid-light.png
+          :class: bs-screenshot-light bs-window-screenshot
+          :alt: Solid selection fill — light theme
+
+       .. image:: /_static/examples/appshell-selection-solid-dark.png
+          :class: bs-screenshot-dark bs-window-screenshot
+          :alt: Solid selection fill — dark theme
 
 Scrollable pages
 ~~~~~~~~~~~~~~~~~
@@ -68,7 +169,7 @@ Pass ``scrollable=True`` to wrap a page's content in a vertical scroll area.
 
 .. code-block:: python
 
-   with shell.add_page("log", text="Log", icon="list", scrollable=True):
+   with nav.add_page("log", text="Log", icon="list", scrollable=True, padding=16):
        for i in range(100):
            bs.Label(f"Log entry {i}")
 
@@ -99,52 +200,16 @@ record as a dict. The first item is selected automatically.
                bs.Label(record["text"])
    shell.run()
 
-A workspace is filled by exactly one provider — static `add_page` *or*
-`list_nav` *or* `tree_nav` *or* a custom `panel()`. Mixing them raises.
+Custom sidebar
+~~~~~~~~~~~~~~
 
-Workspaces (the rail)
-~~~~~~~~~~~~~~~~~~~~~~
-
-Add named *workspaces* with `add_workspace()` — each gets its own rail icon and
-its own sidebar, authored with the very same page API. The rail appears
-automatically once there is more than one workspace, so single-tier and two-tier
-apps are written the same way. `add_footer_workspace()` pins a workspace (e.g.
-Settings) to the bottom of the rail. Shell-level page methods and
-`add_workspace()` are mutually exclusive — use one style or the other.
+`custom_nav()` claims the sidebar as a blank container you fill yourself — the
+escape hatch when none of the providers fit. Drive the content region with
+``shell.content``.
 
 .. code-block:: python
 
-   with bs.AppShell(title="Console", size=(960, 600)) as shell:
-       with shell.add_workspace("acquire", text="Acquire", icon="cpu") as ws:
-           with ws.add_page("sensors", text="Sensors", icon="thermometer-half"):
-               bs.Label("Sensors", font="heading-lg")
-           ws.add_header("Hardware")
-           with ws.add_page("ports", text="Ports", icon="usb-symbol"):
-               bs.Label("Ports", font="heading-lg")
-
-       with shell.add_workspace("devices", text="Devices", icon="hdd-stack") as ws:
-           ws.list_nav(devices)
-           @ws.detail
-           def show(record):
-               bs.Label(record["title"], font="heading-lg")
-
-       with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
-           with ws.add_page("general", text="General", icon="sliders"):
-               bs.Label("Settings", font="heading-lg")
-
-       shell.navigate("acquire", "sensors")   # workspace first, then page
-   shell.run()
-
-Custom panel
-~~~~~~~~~~~~
-
-`panel()` claims the sidebar as a blank container you fill yourself — the escape
-hatch when none of the providers fit. Drive the content region with
-``shell.content`` (or a workspace's ``ws.content``).
-
-.. code-block:: python
-
-   with shell.panel():
+   with shell.custom_nav():
        bs.Label("Filters", font="heading-md")
        with bs.Accordion():
            ...
@@ -156,7 +221,7 @@ The shell's top region is a stack of :class:`Toolbar <bootstack.Toolbar>` bands,
 added with ``shell.add_toolbar()`` — the same chrome as on
 :class:`App <bootstack.widgets.app.App>`. A toolbar holds buttons, labels,
 widgets, **and menus** (``toolbar.add_menu(...)``); each ``add_toolbar()`` call
-stacks a new full-width band above the rail / sidebar / content body. On macOS a
+stacks a new full-width band above the sidebar / content body. On macOS a
 toolbar's menus bridge to the native global menu bar.
 
 .. code-block:: python
@@ -217,9 +282,9 @@ visibility directly.
    * - ``'expanded'``
      - Full-width sidebar with icons and labels (default).
    * - ``'compact'``
-     - Narrow, icon-only sidebar (a standalone static sidebar only).
+     - Narrow, icon-only sidebar (a `page_nav` sidebar only).
    * - ``'hidden'``
-     - Sidebar hidden; the rail (if present) remains as navigation.
+     - Sidebar hidden.
 
 .. code-block:: python
 
@@ -227,13 +292,24 @@ visibility directly.
    shell.sidebar_mode = "expanded"   # change it live
    shell.toggle_sidebar()
 
+In ``'compact'`` a `page_nav` sidebar collapses to an icon-only rail (the labels
+hide; footer items stay pinned):
+
+.. image:: /_static/examples/appshell-compact-light.png
+   :class: bs-screenshot-light bs-window-screenshot
+   :alt: AppShell compact (icon-only) sidebar — light theme
+
+.. image:: /_static/examples/appshell-compact-dark.png
+   :class: bs-screenshot-dark bs-window-screenshot
+   :alt: AppShell compact (icon-only) sidebar — dark theme
+
 Styling
 ~~~~~~~
 
 Each region's background is a :doc:`surface token </reference/theming>` you can
-override; the defaults give the shell its layered look (the rail and status band
-sit on the elevated ``chrome`` surface, the sidebar a step below). The dividers
-and the nav-item selection wash blend against these automatically.
+override; the defaults give the shell its layered look (the status band sits on
+the elevated ``chrome`` surface, the sidebar a step below). The dividers and the
+nav-item selection wash blend against these automatically.
 
 .. list-table::
    :header-rows: 1
@@ -242,9 +318,6 @@ and the nav-item selection wash blend against these automatically.
    * - Kwarg
      - Default
      - Region
-   * - ``rail_surface``
-     - ``'chrome'``
-     - The workspace rail.
    * - ``sidebar_surface``
      - ``'raised'``
      - The navigation sidebar.
@@ -253,35 +326,23 @@ and the nav-item selection wash blend against these automatically.
      - The bottom status band.
 
 The selected nav item is **neutral** by default. Set ``nav_accent`` to tint the
-selection (and the rail's indicator) with an accent, and ``nav_variant`` to
-choose how the accent reads:
+selection with an accent (``None`` keeps it neutral); the per-sidebar
+``page_nav(variant=...)`` then chooses how the accent reads — a subtle ``'ghost'``
+wash (default) or a filled ``'solid'`` item.
 
 .. code-block:: python
 
-   # subtle accent wash behind full-strength text (the default emphasis)
-   bs.AppShell(nav_accent="primary")
-
-   # a filled accent pill with on-accent (white) text — higher emphasis
-   bs.AppShell(nav_accent="primary", nav_variant="solid")
-
-``nav_accent`` colors the rail indicator bar, the static nav pills/rows, and the
-``list_nav`` / ``tree_nav`` selection wash. ``nav_variant`` (``'ghost'`` default
-or ``'solid'``) applies only to the **standalone** primary nav — the no-rail,
-single-tier sidebar built with ``add_page``. Under a workspace rail the sidebar
-navs always use the subtle wash (a solid fill would compete with the rail).
+   bs.AppShell(nav_accent="primary")   # accent the selection; ghost wash by default
 
 Navigation
 ~~~~~~~~~~
 
-`navigate()` switches the active page (single-tier) or workspace + page
-(two-tier). Read the current selection from ``current`` / ``current_workspace``.
+`navigate()` switches the active page; read the current page from ``current``.
 
 .. code-block:: python
 
-   shell.navigate("dashboard")          # page in the active workspace
-   shell.navigate("devices", "sensor1") # workspace, then page
-   shell.current                        # active page key
-   shell.current_workspace              # active workspace key
+   shell.navigate("dashboard")
+   shell.current               # active page key
 
 Events
 ~~~~~~
@@ -298,8 +359,6 @@ composable :class:`Stream <bootstack.streams.Stream>`).
      - Handler receives
    * - ``on_page_change``
      - :class:`~bootstack.events.PageChangeEvent`
-   * - ``on_workspace_change``
-     - :class:`~bootstack.events.WorkspaceChangeEvent`
    * - ``on_sidebar_toggle``
      - :class:`~bootstack.events.PaneToggleEvent`
    * - ``on_sidebar_mode_change``
@@ -308,7 +367,6 @@ composable :class:`Stream <bootstack.streams.Stream>`).
 .. code-block:: python
 
    shell.on_page_change(lambda e: print("now on:", e.page))
-   shell.on_workspace_change().listen(lambda e: print("workspace:", e.workspace))
 
 Theme, locale, and configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -364,6 +422,9 @@ Window options
 
 See also
 --------
+
+:class:`Workbench <bootstack.Workbench>` —
+the two-tier shell: a workspace rail plus per-workspace sidebars.
 
 :class:`PageStack <bootstack.widgets.pagestack.PageStack>` —
 page navigation without a built-in sidebar.

@@ -16,15 +16,15 @@ of the built-in providers fit.
 How it works
 ------------
 
-`panel()` claims the sidebar as a blank container and returns it as a context
+`custom_nav()` claims the sidebar as a blank container and returns it as a context
 manager — fill it with any widgets. You then drive the content area yourself
 through `shell.content` (also a container), typically by binding widgets to a
 :class:`Signal <bootstack.Signal>`. Nothing is added or collapsed automatically —
-the panel is yours to fill and manage.
+the sidebar is yours to fill and manage.
 
 .. code-block:: python
 
-   with shell.panel():
+   with shell.custom_nav():
        bs.Label("Filters", font="heading-md")
        bs.SelectButton(options=["All", "Electronics", "Home"], signal=category)
 
@@ -45,7 +45,7 @@ Example
 When to use
 -----------
 
-Reach for a custom sidebar only when `add_page`, `list_nav`, and `tree_nav`
+Reach for a custom sidebar only when `page_nav`, `list_nav`, and `tree_nav`
 genuinely can't express what you need — a sidebar that isn't a navigation list.
 If you want collapsible sections of *navigation*, prefer a
 :doc:`grouped sidebar <grouped-sidebar>` (or an

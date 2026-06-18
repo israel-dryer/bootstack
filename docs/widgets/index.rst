@@ -13,7 +13,7 @@ below, or jump straight to a widget from the sidebar.
       The top-level window — a plain window, a navigation shell, or a secondary
       window.
 
-      :doc:`app` · :doc:`appshell` · :doc:`window`
+      :doc:`app` · :doc:`appshell` · :doc:`workbench` · :doc:`window`
 
    .. grid-item-card:: :octicon:`zap;1.5em;sd-mr-1` Actions
 
@@ -97,6 +97,7 @@ below, or jump straight to a widget from the sidebar.
 
    app
    appshell
+   workbench
    window
 
 .. toctree::

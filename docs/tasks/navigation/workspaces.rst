@@ -1,5 +1,5 @@
-Workspaces (rail)
-=================
+Workspaces
+==========
 
 Several distinct areas behind a VS Code-style icon **rail** — a mail + calendar +
 contacts suite, an IDE, a creative tool. Each area is a *workspace* with its own
@@ -16,23 +16,26 @@ sidebar, and each can use a different navigation pattern.
 How it works
 ------------
 
+The two-tier shell is :class:`Workbench <bootstack.Workbench>`.
 `add_workspace(key, *, text, icon)` adds a rail icon and returns a workspace that
-exposes the **same content API the shell has** — `add_page`, `list_nav`,
-`tree_nav`, `@detail`, headers, and `panel`. So a single-tier app and a workspace
-are authored identically; the rail appears automatically once there is more than
-one workspace. `add_footer_workspace()` pins one (Settings, Account) to the rail
-bottom.
+exposes the **same sidebar front doors as a single-tier app** — `page_nav`,
+`list_nav`, `tree_nav`, and `custom_nav`. So a workspace is authored just like an
+:class:`AppShell <bootstack.AppShell>`; the rail appears once there is more than
+one workspace. `pin_to_footer=True` pins a workspace (Settings, Account) to the
+rail bottom.
 
 .. code-block:: python
 
-   with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:
-       ws.list_nav(inbox)
-       @ws.detail
-       def read(message): ...
+   with bs.Workbench(title="Suite") as shell:
+       with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:
+           ws.list_nav(inbox)
+           @ws.detail
+           def read(message): ...
 
-   with shell.add_workspace("calendar", text="Calendar", icon="calendar3") as ws:
-       with ws.add_page("today", text="Today", icon="calendar-day"):
-           ...
+       with shell.add_workspace("calendar", text="Calendar", icon="calendar3") as ws:
+           with ws.page_nav() as nav:
+               with nav.add_page("today", text="Today", icon="calendar-day", padding=20):
+                   ...
 
 Clicking the active rail icon hides the sidebar; clicking a different one
 switches workspace and shows it (the VS Code gesture). `navigate(workspace, page)`
@@ -49,8 +52,7 @@ Example
 When to use
 -----------
 
-Use workspaces when the app has several distinct areas, each warranting its own
+Use a `Workbench` when the app has several distinct areas, each warranting its own
 sidebar — especially when those areas want *different* navigation shapes (a list
-here, authored pages there). With a single area, skip the rail and author pages at
-the shell level (a :doc:`single-tier app <single-tier>`); the two styles are
-mutually exclusive.
+here, authored pages there). With a single area, skip the rail and use a
+:doc:`single-tier app <single-tier>` (`AppShell`) instead.

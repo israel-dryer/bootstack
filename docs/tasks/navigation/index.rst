@@ -1,14 +1,17 @@
 Navigating Views
 ================
 
-:class:`AppShell <bootstack.AppShell>` assembles a few building blocks —
-authored pages, data-bound providers, and an optional workspace rail — into the
-navigation shape your app needs. This is a catalog of the common shapes: find the
-one that matches what you're building, then copy its worked example.
+:class:`AppShell <bootstack.AppShell>` (one navigation sidebar) and
+:class:`Workbench <bootstack.Workbench>` (a rail of workspaces, each with its own
+sidebar) assemble a few building blocks — authored pages, data-bound providers, a
+custom panel — into the navigation shape your app needs. This is a catalog of the
+common shapes: find the one that matches what you're building, then copy its
+worked example.
 
-Every pattern is authored with the same small API, so you can start simple and
-grow: a flat list of pages becomes a grouped one becomes a multi-section app with
-a rail, without rewriting what you have.
+Every sidebar is declared with the same small set of front doors — `page_nav`,
+`list_nav`, `tree_nav`, `custom_nav` — whether it's a single-tier ``AppShell`` or
+one workspace inside a ``Workbench``, so the patterns compose the same way at
+either tier.
 
 .. grid:: 1 2 2 2
    :gutter: 3
@@ -41,12 +44,12 @@ a rail, without rewriting what you have.
       A hierarchy drives a detail view — the file explorer. Use when records nest
       under parents.
 
-   .. grid-item-card:: Workspaces (rail)
+   .. grid-item-card:: Workspaces
       :link: workspaces
       :link-type: doc
 
-      Multiple sections behind an icon rail — a mail + calendar suite. Use when
-      the app has distinct areas, each with its own sidebar.
+      Multiple sections behind an icon rail (a ``Workbench``) — a mail + calendar
+      suite. Use when the app has distinct areas, each with its own sidebar.
 
    .. grid-item-card:: Custom sidebar
       :link: custom-sidebar

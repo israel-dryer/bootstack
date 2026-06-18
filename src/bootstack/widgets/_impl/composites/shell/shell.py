@@ -204,6 +204,10 @@ class Shell(ShellLayout):
         """Add a divider to the implicit workspace."""
         return self._default_workspace().add_divider()
 
+    def page_nav(self, *, selection: str | None = None) -> Any:
+        """Establish the implicit workspace's static page-list provider."""
+        return self._default_workspace().page_nav(selection=selection)
+
     def panel(self) -> Any:
         """Claim the implicit workspace as a custom panel; return its container."""
         return self._default_workspace().panel()

@@ -52,7 +52,7 @@ def test_single_tier_navigation_cascade():
 
         # Static nav extras: headers, separators, footer pages.
         shell.add_header("Documents")
-        shell.add_separator()
+        shell.add_divider()
         shell.add_page("files", text="Files", icon="folder")
         shell.add_footer_page("settings", text="Settings", icon="gear")
         assert "files" in shell.nav.item_keys()

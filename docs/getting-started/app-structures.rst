@@ -60,10 +60,11 @@ AppShell — sidebar navigation
 ------------------------------
 
 When your app has several distinct destinations, reach for `AppShell`. It is an
-`App` with a built-in sidebar and a content area that swaps as the user
-navigates. You register each destination with `add_page()` — which returns a
-context manager for that page's content — and pick the starting page with
-`navigate()`.
+`App` with a built-in navigation sidebar and a content area that swaps as the user
+navigates. Declare the sidebar with `page_nav()`, register each destination with
+`add_page()` — which returns a context manager for that page's content (a page is
+a column, so set its `padding` / `gap` right there) — and pick the starting page
+with `navigate()`.
 
 .. code-block:: python
 
@@ -73,20 +74,22 @@ context manager for that page's content — and pick the starting page with
        with shell.add_toolbar() as bar:
            with bar.add_menu("File") as file:
                file.add_action("New", shortcut="Mod+N", on_click=lambda: None)
+               file.add_divider()
                file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
            bar.add_spacer()
            bar.add_theme_toggle()
 
-       with shell.add_page("home", text="Home", icon="house"):
-           bs.Label("Home", font="heading-lg")
-           bs.Label("A window with a sidebar and swappable pages.", accent="secondary")
-       with shell.add_page("reports", text="Reports", icon="bar-chart"):
-           bs.Label("Reports", font="heading-lg")
-       with shell.add_page("team", text="Team", icon="people"):
-           bs.Label("Team", font="heading-lg")
+       with shell.page_nav() as nav:
+           with nav.add_page("home", text="Home", icon="house", gap=12, padding=20):
+               bs.Label("Home", font="heading-lg")
+               bs.Label("A window with a sidebar and swappable pages.", accent="secondary")
+           with nav.add_page("reports", text="Reports", icon="bar-chart", padding=20):
+               bs.Label("Reports", font="heading-lg")
+           with nav.add_page("team", text="Team", icon="people", padding=20):
+               bs.Label("Team", font="heading-lg")
 
-       with shell.add_footer_page("settings", text="Settings", icon="gear"):
-           bs.Label("Settings", font="heading-lg")
+           with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True, padding=20):
+               bs.Label("Settings", font="heading-lg")
 
        shell.navigate("home")
 
@@ -100,10 +103,11 @@ context manager for that page's content — and pick the starting page with
    :class: bs-screenshot-dark bs-window-screenshot
    :alt: An AppShell with a sidebar — dark theme
 
-`add_footer_page()` pins an item (Settings, Account) to the bottom of the
-sidebar; `add_header()` adds a section label above a group of items. For
+`pin_to_footer=True` pins an item (Settings, Account) to the bottom of the
+sidebar; `nav.add_header()` adds a section label above a group of items. For
 record-driven sidebars (a list of messages, a tree of folders) and multi-area
-apps with their own rails, see the :doc:`/tasks/navigation/index` patterns.
+apps with their own rails (`Workbench`), see the
+:doc:`/tasks/navigation/index` patterns.
 
 Because `AppShell` builds on `App`, it keeps the same window controls, the same
 `add_toolbar()` chrome, and adds a `statusbar` along the bottom. What it adds

@@ -4,8 +4,9 @@ Application
 .. currentmodule:: bootstack
 
 The application object and top-level windows. ``App`` is the root of a simple
-app; ``AppShell`` adds a command bar, navigation pane, and paged content. ``Window``
-opens a secondary top-level window.
+happ; ``AppShell`` adds a toolbar stack, one navigation sidebar, and paged content;
+``Workbench`` is the two-tier variant with a workspace rail. ``Window`` opens a
+secondary top-level window.
 
 .. autosummary::
    :toctree: generated
@@ -24,9 +25,17 @@ opens a secondary top-level window.
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: workbench
+
+   Workbench
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
    :template: toplevel
 
    Window
 
-The :class:`AppShell <bootstack.AppShell>` reference also documents its returned
-handles (``Workspace``, ``Page``, ``Rail``) in a *Supporting classes* section.
+The :class:`AppShell <bootstack.AppShell>` reference documents its ``PageNav`` and
+``Page`` handles, and :class:`Workbench <bootstack.Workbench>` its ``Workspace``
+and ``Rail`` handles, each in a *Supporting classes* section.
