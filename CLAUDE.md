@@ -21,7 +21,25 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Undecorated window chrome + theme-repaint perf** (this session, all merged) —
+- **Theme-repaint cleanup (#177) + docstring-backtick sweep** (this session; PRs
+  **#181**/**#182**, both MERGED to `main`) — **#181**
+  (`fix/theme-repaint-cleanup`, closes #177): migrated the code-editor's
+  `StyleRegistry`/`SearchOverlay`/`IndentGuides` off the racy ttk `<<ThemeChanged>>`
+  (fires mid-rebuild → stale colors) onto **`<<BsThemeChanged>>`** (fires once,
+  post-rebuild) — the pattern `pygments_highlighter`/`sidebar` already use; kept the
+  deliberate `<<EditorBgChanged>>` notify. Cleanup uses the repaint-hook convention
+  (**NO `is self` guard, idempotent unbind on any `<Destroy>`**) — GOTCHA: in this
+  widget tree a container's OWN `<Destroy>` is not delivered to its instance binding
+  (only a descendant's is), so an `is self` guard silently skips cleanup. Also
+  deleted dead **`FloodGauge`** (zero imports) + its `tools/gen_api_docs.py` entry.
+  **#182** (`chore/docstring-backticks`): swept **754** RST double-backtick literals
+  → single backticks across **43** `src/` files. Reusable approach: a Python regex
+  matching **runs of exactly two backticks** (`(?<!`)``(?!`)`) — leaves ```` ``` ````
+  fences AND `:class:`/`:doc:`/`:ref:` cross-ref roles intact (roles are DELIBERATE
+  links, not stray); byte-safe write preserves CRLF+BOM. **NB ripgrep/Grep can't do
+  this** (Rust regex has no lookbehind → silently 0 matches); use Python. Verified
+  warning-free `-W` docs build. Memory `project_docstring_backticks`.
+- **Undecorated window chrome + theme-repaint perf** (prior session, all merged) —
   **#162/#165** (PR #175): undecorated `App`/`Window`/`AppShell` auto-inject a
   draggable title bar (controls) + border; `App` gained `undecorated=`, `Window`
   gained `window_controls=`; maximized-drag re-anchors under the cursor. (The #162
@@ -37,8 +55,8 @@ memories and git history.
   `<<BsThemeChanged>>` and never recolored; (d) Gauge supersample capped on HiDPI;
   (e) calendar reuses weekday-header labels (nav 5.8→2.7ms). **RULE in gotchas.**
   Memories `project_undecorated_window_chrome`, `reference_theme_repaint_mechanisms`.
-  **Open (#177):** migrate textarea/code-editor off the racy event; delete dead
-  `FloodGauge`.
+  **#177 DONE (PR #181):** textarea/code-editor migrated off the racy
+  event + dead `FloodGauge` deleted — see the top entry.
 - **Pre-release `0.1.0a10` shipped + docs deploy fixed** (PRs #139–#140 merged;
   release built from `main`) — **Toast split** (PR #139): the kitchen-sink Toast
   became three public widgets over one engine — `toast()` (single-line, icon
@@ -70,9 +88,9 @@ memories and git history.
   `style_builder_*.py`, `Bootstyle`→`StyleResolver`, `BootstyleBuilder*`→`StyleBuilder*`,
   dead dash-string parser + `bootstyle` config-key path deleted, exceptions unified onto
   the public `bootstack.errors.BootstackError` (Navigation/Theme/StyleBuilder now public;
-  Tabs aligned to `NavigationError`), `TTKBOOTSTRAP_DEBUG`→`BOOTSTACK_DEBUG`. (3) standing
-  backlog (still open): docstring-backtick sweep. (Toast woven into the user-guide
-  how-tos — **DONE**, PR #140 commit `d95d298a`.)
+  Tabs aligned to `NavigationError`), `TTKBOOTSTRAP_DEBUG`→`BOOTSTACK_DEBUG`. (3)
+  docstring-backtick sweep — **DONE (PR #182)**, see top entry. (Toast
+  woven into the user-guide how-tos — **DONE**, PR #140 commit `d95d298a`.)
 - **0.1.0 API-freeze pass — breaking changes drained + ThemeToggle + media floor**
   (this session; PRs #141–#161, all merged except #161 in review) — cleared the
   "0.1.0 (stable) — API freeze" milestone of breaking changes ahead of the stable
@@ -439,9 +457,9 @@ geometry manager. Merged to `main` via **PR #170** (the long-running
   keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
 - **`add_spacer()`→public `Spacer`** still deferred — entangled with
   `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
-- Demo bugs (pre-existing, NOT layout-caused): #166
-  ContextMenu/Tooltip don't cover container children · #167 Gauge theme repaint · #168
-  Tabs overflow.
+- Demo bugs (pre-existing, NOT layout-caused): **#166 ContextMenu/Tooltip don't
+  cover container children — NEXT UP** · ~~#167 Gauge theme repaint~~ (resolved by
+  the theme-repaint perf work, PR #180) · #168 Tabs overflow.
 
 ### ✅ SHIPPED — Undecorated window controls + border + maximized-drag (#162, #165) — MERGED #175
 
@@ -484,9 +502,9 @@ layers on `add_toolbar()`, not a band:
   written and substantial. Remaining is only opportunistic: a review pass on
   `installation`/`quickstart` and enrichment of any still-thin page. Memory
   `project_docs_site_fleshout`.
-- **Docstring-backtick sweep** — many `src/` files still use RST double-backticks;
-  the convention is Google + SINGLE backticks (de-risked — `default_role="code"` is
-  set). Memory `project_docstring_backticks`.
+- ~~**Docstring-backtick sweep**~~ — **DONE (PR #182):** 754 RST
+  double-backticks → single across 43 `src/` files. Convention is Google + SINGLE
+  backticks. Memory `project_docstring_backticks`.
 - **Code-review follow-ups #4–#10** — cleanup/altitude items recorded in
   `docs/_dev/widget-api-audit.md` (SelectButton stale value after `options=`; screenshot
   Win64 HWND hardening; group/window/date duplication; Calendar batch-redraw).
@@ -729,8 +747,9 @@ the open backlog are kept here.
 
 - `project_capabilities_relevance` — `_core/capabilities` may be redundant now the
   public layer abstracts Tk; still imported by data/i18n/mixins.
-- `project_docstring_backticks` — ~77 files use RST double-backticks; convention is
-  Google + SINGLE backticks. (Stage 4 set `default_role="code"`, de-risking the sweep.)
+- `project_docstring_backticks` — **DONE (PR #182):** swept to single backticks
+  (`default_role="code"` makes them render as inline code). Convention is Google +
+  SINGLE backticks; RST cross-ref roles (`:class:`/`:doc:`/`:ref:`) are kept (deliberate).
 - `project_event_naming_revisit` — past-tense event names pending rename:
   `SideNav.on_pane_toggled`/`on_display_mode_changed`, `ListView.on_selection_changed`,
   `Calendar.on_date_selected`.
@@ -1098,8 +1117,9 @@ Path is file-relative from `docs/api/`. Omit from dialog pages.
   `Frame` subclasses: call `self._enable_theme_repaint(self._redraw)` (the shared
   hook — subscribes, gates on `winfo_viewable()`, defers off-screen to `<Map>`,
   releases on `<Destroy>`). Non-`Frame` (Slider/RangeSlider/chrome): publisher +
-  own gate. Memory `reference_theme_repaint_mechanisms`. STILL on the racy event
-  (#177): textarea/code-editor (leaf, low impact), dead FloodGauge.
+  own gate. Memory `reference_theme_repaint_mechanisms`. **#177 DONE (PR #181):**
+  textarea/code-editor (`StyleRegistry`/`SearchOverlay`/`IndentGuides`) migrated onto
+  `<<BsThemeChanged>>`; dead `FloodGauge` deleted. Nothing left on the racy event.
 - **`bs.SelectButton`** — button-styled non-editable picker. Distinct from `bs.MenuButton`
   (action menu) and `bs.Select` (editable combobox).
 - **`bs.DataTable`** (renamed from `bs.Table`) — works with any
