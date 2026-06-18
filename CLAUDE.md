@@ -21,6 +21,21 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Gallery/Carousel height-floor cleanup (#160)** (this session; PR **#185**,
+  MERGED to `main`) — closed out #160 (Gallery/Carousel collapse to ~0 height in a
+  non-expanding/scrollable parent). The floor itself shipped in **PR #161** and is
+  **sound** (`pack_propagate(False)` on the frame + `configure(height=floor)`, inner
+  canvas `fill="both", expand=True` → a true minimum `grow`/`expand` still grows
+  past) — left untouched. This PR added the **regression test the issue asked for**
+  (`tests/widgets/public/test_media_height_floor.py`, 8: non-zero floor reqheight —
+  Gallery `360`, Carousel `267`; no collapse inside a `ScrollView`; floor-is-a
+  -minimum-not-a-freeze via the expand-packed inner canvas; `rows`/`height`/
+  `aspect_ratio` move the floor) + **hardened two magic numbers** into named
+  constants (`carousel._FLOOR_STAGE_WIDTH=400`, `gallery._CAPTION_H=24`;
+  value-preserving) + clarified the `aspect_ratio` docstring (larger ratio →
+  shorter floor). **Deliberately NOT changed:** the Gallery `rows=` vs Carousel
+  `aspect_ratio=`/`height=` API asymmetry (each is the natural knob; a unified
+  `min_height=` would be scope creep). Memory `project_picture_suite`.
 - **Tab overflow handling (#168)** (this session; PR **#184**, MERGED to `main`)
   — tabs that exceed the strip now stay
   in a **scrollbar-less scrolling line** (wheel scrolls along the axis; the
@@ -448,49 +463,6 @@ memories and git history.
 > DRAINED this session (#141/#142/#151/#153/#156/#157/#158 merged; see the
 > "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
 > below is the stable-cut closeout + a fresh regression + the standing backlog.
-
-### ★ NEXT — #160 Gallery/Carousel height-floor cleanup
-
-**Issue #160** (Gallery/Carousel collapse to zero height in non-expanding/
-scrollable containers) was **fixed by PR #161** ("fix(media): give Gallery/Carousel
-a requested-height floor", MERGED) — but the **issue is still OPEN** and wants
-cleanup + the regression test it asked for. (NB: `(#160)` appears in some old
-localization commit messages — that's stale numbering noise; #160 IS the
-Gallery/Carousel issue, confirmed via `gh issue view 160`.)
-
-**The fix is SOUND — do NOT rewrite it.** Recon (Explore agent, this session)
-confirmed the mechanism is a true *minimum*, not a hard freeze: the public
-wrappers call **`pack_propagate(False)`** then **`self.configure(height=floor)`** on
-the outer frame; the inner canvas packs `fill="both", expand=True` *inside* that
-frame, so `grow=True`/`expand` still grows it past the floor (the parent's
-grid/pack honors `fill`/`expand` and allocates more, the canvas fills it). Verified
-in the demo Media page (`scrollable=True`, both `grow=True`).
-- **Floors:** Gallery (`gallery.py` impl ~L224/240) `rows × _row_h`, where
-  `_row_h = tile_h + 2*ring_pad + (24 if caption else 0) + gap`; param `rows: int = 2`.
-  Carousel (`carousel.py` impl ~L130) `height if height else round(400 / aspect_ratio)`;
-  params `aspect_ratio: float = 1.5`, `height: int | None = None`.
-
-**Cleanup scope (tests + docs + minor hardening; NOT a behavior fix):**
-1. **Add the regression test the issue asks for** — Gallery AND Carousel in a
-   **non-expanding parent** (a `ScrollView`/auto-fit window, `scrollable=True`) report
-   `winfo_height() > 1` (don't collapse), AND still grow past the floor under
-   `grow=True`. None exists today (only the public-surface import guard). Use the
-   one-shown-module-App GUI fixture pattern (see `test_tabs_overflow.py` /
-   `test_datatable.py`). This is the load-bearing deliverable to close #160.
-2. **Document the magic `400`** in `carousel.py` (the assumed stage width behind
-   `400/aspect_ratio`) + state in the docstring that `aspect_ratio` is W:H so
-   lower ratio → taller (currently counterintuitive/undocumented).
-3. **Harden the hardcoded `24`px caption allowance** in Gallery's `_row_h` — at
-   least pull it to a named constant (`_CAPTION_H = 24`); consider theme/font-aware
-   (measure a Label) — optional.
-4. **API symmetry (judgment call, maybe defer):** Gallery is row-based (`rows=`),
-   Carousel is aspect/pixel-based (`aspect_ratio=`/`height=`). Consider a shared
-   `min_height=` (explicit px) on both, with Gallery keeping `rows=` as the
-   ergonomic alias. Discuss before doing — could be scope creep; the maintainer may
-   prefer to just test+doc and close.
-5. **Close #160** once the regression test is in.
-- Floors are **bake-time only** (no live `rows`/`height` setter) — fine; note it,
-  don't necessarily fix. Memory `project_picture_suite`. Start a `fix/*` branch.
 
 ### ✅ SHIPPED — Layout redesign (screen-axis vocabulary on a grid engine) — MERGED #170
 
