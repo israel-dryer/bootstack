@@ -21,6 +21,33 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Navigation API reshape — `AppShell` + `Workbench` (#200)** (this session; PR
+  **#202**, MERGED to `main`) — split the one polymorphic `AppShell` into two
+  honest classes along the **topology** axis: **`bs.AppShell`** = single-tier
+  *sidebar host*; new **`bs.Workbench`** = two-tier *workspace host*
+  (`add_workspace` + rail). Shared **`_SidebarHost`** mixin (on `AppShell` +
+  `Workspace`); a private **`_ShellBase`** carries window/chrome/lifecycle. The
+  **provider** axis is four parallel front doors — **`page_nav()`** (authored
+  pages), **`list_nav()`** / **`tree_nav()`** (data-bound master-detail),
+  **`custom_nav()`** (renamed from `panel()`); one per sidebar, only `page_nav`
+  authored (`add_page`/`add_header`/`add_divider`). Provider options live on the
+  provider: **`page_nav(variant='ghost'|'solid')`** (standalone-only; forced to the
+  wash under a rail) and the full `PageStack.add` **layout kwargs on `add_page`**
+  (a page IS a column — no inner wrapper). Footer = **`pin_to_footer=`** flag
+  (dropped `add_footer_page`/`add_footer_workspace`). Shell kwargs keep only app-wide
+  chrome (`nav_accent`, surfaces, `rail_*`). **Framework fix surfaced in review:
+  `ContentHost` now FILLS its child** — master-detail/custom content was shrinking
+  and centering (the apparent "extra padding"); detail panes left-aligned at
+  `padding=(16, 10)`. Internal `Shell`/`Workspace` keep `add_page`/`add_workspace`/
+  `panel`/`nav_selection` (public layer is the rename boundary). Built `Workbench`
+  doc page + screenshot scenes; AppShell page gained a "Sidebars at a glance" card
+  grid + ghost/solid + compact shots; Workbench compact is **not** a mode (rail is
+  the icon tier → sidebar is expanded/hidden, documented). **#189 nav_variant
+  (PR #199, MERGED) was folded in** — `nav_variant` ctor kwarg → `page_nav(variant=)`;
+  its `test_nav_selection.py` removed (superseded by `test_appshell_reshape.py`).
+  Tests: `test_appshell_reshape.py` (6) + `test_workbench.py` (2). Memory
+  `project_navigation_api_reshape`. **Follow-up: #201** (expandable menu group for
+  the single-tier page nav — future).
 - **Gallery/Carousel height-floor cleanup (#160)** (this session; PR **#185**,
   MERGED to `main`) — closed out #160 (Gallery/Carousel collapse to ~0 height in a
   non-expanding/scrollable parent). The floor itself shipped in **PR #161** and is
@@ -468,16 +495,15 @@ memories and git history.
 
 Ten maintainer-requested items to resolve before shipping 0.1.0 — all filed as
 tracked issues (each issue links the relevant impl file + has detail).
-**Six of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
-#188 (PR **#198**) — all merged to `main`. **Four remain** (each its own
-`fix/*`/`feat/*` branch → PR → `main`):
+**Seven of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
+#188 (PR **#198**), **#189 (PR #199 → folded into the nav reshape PR #202)** — all
+merged to `main`. **Three remain** (each its own `fix/*`/`feat/*` branch → PR → `main`):
 
-- **#189 `solid` sidebar selection variant (VERIFY-FIRST — likely next)** — the
-  builder ALREADY has it (`style/builders/sidenav.py:448,460`,
-  `selection_style == 'solid'`). Verify it's wired/exposed on the public nav
-  (NavPanel/AppShell sidebar) + documented. NB the AppShell rewrite DROPPED
-  standalone `bs.SideNav` — clarify what "standalone sidebar" means now (the
-  AppShell sidebar is the surface). May be small or doc-only.
+- **#189 `solid` sidebar selection variant — DONE.** Shipped as **`nav_variant`**
+  on `AppShell` (PR #199, gated to the standalone nav), then **superseded by the
+  navigation reshape (#200, PR #202)**: the variant now lives on
+  **`page_nav(variant='ghost'|'solid')`**, standalone-only. See the reshape pointer
+  at the top of "Recently completed".
 - **#187 StatusBar.add_widget class-only? (DECISION — needs maintainer)** — it
   ALREADY accepts BOTH a class (builds it) and an instance (`widgets/statusbar.py:100`).
   Decision: go class-only `add_widget(Class, **kwargs)` for consistency, or keep
