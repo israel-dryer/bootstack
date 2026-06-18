@@ -196,8 +196,8 @@ class PygmentsHighlighter(EditFilter):
             if notify:
                 # Notify extensions that the editor background changed so they
                 # can re-calibrate colors.  Only fire on deliberate style
-                # application (attach / set_language), not on every
-                # <<ThemeChanged>> — extensions already receive that event
+                # application (attach / set_language), not on every theme
+                # rebuild — extensions already react to <<BsThemeChanged>>
                 # directly and cascading it causes unnecessary repaints.
                 core.text.event_generate("<<EditorBgChanged>>", when="tail")
         except Exception:
