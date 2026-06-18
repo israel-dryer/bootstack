@@ -277,7 +277,7 @@ class Image:
     def _materialize(self, master=None) -> "_Photo":
         """Render the source to a cached display image and return it.
 
-        The ``master`` is accepted for interface symmetry; the backing service
+        The `master` is accepted for interface symmetry; the backing service
         renders against the default application root, which exists by the time a
         handle is bound to a widget.
         """

@@ -56,9 +56,9 @@ class LocalizedTextSpec(LocalizedSpec):
     def resolve(self, locale: str) -> str:
         """Resolve to translated text using MessageCatalog.
 
-        Looks the key up in the catalog, then applies Python ``str.format``
+        Looks the key up in the catalog, then applies Python `str.format`
         interpolation with any positional/keyword arguments — so placeholders use
-        ``{0}`` / ``{name}`` style.
+        `{0}` / `{name}` style.
 
         Args:
             locale: The locale code (unused, MessageCatalog uses its own state).

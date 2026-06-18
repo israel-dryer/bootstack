@@ -1,7 +1,7 @@
 """Public helpers for extending the runtime translation catalog.
 
-Widget text is localized automatically: in the default ``localize_mode="auto"``,
-a plain string such as ``bs.Label("Save")`` is translated through the catalog
+Widget text is localized automatically: in the default `localize_mode="auto"`,
+a plain string such as `bs.Label("Save")` is translated through the catalog
 when a translation is registered for the current locale, and left as-is
 otherwise. These functions register your own strings so that auto-localization
 (and the explicit :func:`~bootstack.i18n.L` spec) can resolve them.
@@ -25,7 +25,7 @@ __all__ = ["add_translation", "add_translations", "load_po", "load_translations"
 def _resolve_asset(path: Union[str, PathLike[str]]) -> Path:
     """Resolve a project asset path in both a dev run and a packaged build.
 
-    A relative path is tried under the PyInstaller bundle (``sys._MEIPASS``)
+    A relative path is tried under the PyInstaller bundle (`sys._MEIPASS`)
     first, then relative to the working directory (the dev case).
     """
     p = Path(path)

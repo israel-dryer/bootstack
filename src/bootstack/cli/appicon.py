@@ -2,7 +2,7 @@
 
 Launches a small bootstack app that previews an `AppIcon` live as you adjust the
 glyph, colors, and corner radius, then exports it (`.ico`/`.icns`/`.png`) or
-copies a ready-to-paste ``[build.icon]`` snippet for ``bootstack.toml``.
+copies a ready-to-paste `[build.icon]` snippet for `bootstack.toml`.
 """
 from __future__ import annotations
 

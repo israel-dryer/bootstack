@@ -87,7 +87,7 @@ Fill = Literal['none', 'x', 'y', 'both', 'horizontal', 'vertical', 'all']
 aliases for `'x'`/`'y'`/`'both'`."""
 
 Sticky = Literal['n', 's', 'e', 'w', 'ns', 'ew', 'nsew', 'ne', 'nw', 'se', 'sw', 'nse', 'nsw', 'new', 'sew', '']
-"""Cell alignment for Grid layout. Any combination of ``'n'``, ``'s'``, ``'e'``, ``'w'``."""
+"""Cell alignment for Grid layout. Any combination of `'n'`, `'s'`, `'e'`, `'w'`."""
 
 Side = Literal['left', 'top', 'right', 'bottom']
 """Side placement for stack layout."""

@@ -1,7 +1,7 @@
 """Cross-platform keyboard shortcuts — the public home for the shortcut service.
 
-Register named shortcuts with platform-agnostic patterns (``Mod+S`` becomes
-``Ctrl+S`` on Windows/Linux and ``⌘S`` on macOS), bind them to an app, and let
+Register named shortcuts with platform-agnostic patterns (`Mod+S` becomes
+`Ctrl+S` on Windows/Linux and `⌘S` on macOS), bind them to an app, and let
 menus display the resolved shortcut text automatically.
 
 Usage::

@@ -476,10 +476,10 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             override_redirect: If `True`, creates a window without standard
                 decorations (title bar, borders, etc.).
             center_on_screen: If True (default), center the app window on
-                the screen when ``mainloop()`` starts.
+                the screen when `mainloop()` starts.
             on_close: Callback invoked when the user clicks the close button.
-                Return ``False`` to veto the close; return ``None`` or ``True``
-                to allow it. Equivalent to calling ``add_close_handler(fn)``
+                Return `False` to veto the close; return `None` or `True`
+                to allow it. Equivalent to calling `add_close_handler(fn)`
                 after construction.
             **kwargs: Additional keyword arguments to pass to the
                 underlying `tkinter.Tk` constructor.

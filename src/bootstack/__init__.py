@@ -11,9 +11,9 @@ Example:
     app.run()
     ```
 
-The top-level ``bootstack`` namespace holds what you *compose a UI* with: every
-widget, ``App``/``AppShell``/``Window``, ``Signal``, the dialog verbs
-(``alert``/``confirm``/``ask_*``/``toast``), and ``set_theme``/``toggle_theme``.
+The top-level `bootstack` namespace holds what you *compose a UI* with: every
+widget, `App`/`AppShell`/`Window`, `Signal`, the dialog verbs
+(`alert`/`confirm`/`ask_*`/`toast`), and `set_theme`/`toggle_theme`.
 Framework primitives you reference *by type to configure behavior* live in
 submodules — for example::
 

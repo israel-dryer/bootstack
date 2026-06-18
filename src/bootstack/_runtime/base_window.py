@@ -342,9 +342,9 @@ class BaseWindow:
     def _close_dispatch(self) -> None:
         """WM_DELETE_WINDOW handler that runs registered close handlers.
 
-        Runs each handler in registration order. If any returns ``False`` the
-        close is vetoed and the window stays open. If all pass (return ``None``
-        or ``True``), ``_do_close()`` is called to perform the actual close.
+        Runs each handler in registration order. If any returns `False` the
+        close is vetoed and the window stays open. If all pass (return `None`
+        or `True`), `_do_close()` is called to perform the actual close.
         """
         for handler in list(getattr(self, '_close_handlers', [])):
             try:
@@ -359,7 +359,7 @@ class BaseWindow:
         """Perform the default close action.
 
         Subclasses may override this to change what happens after all handlers
-        pass. The default is ``self.destroy()``.
+        pass. The default is `self.destroy()`.
         """
         try:
             self.destroy()
@@ -370,8 +370,8 @@ class BaseWindow:
         """Close the window programmatically, bypassing the close handlers.
 
         This is the uniform close contract every top-level window honors. It
-        performs the default close action directly (``_do_close()``), so the
-        veto handlers registered with ``add_close_handler()`` — which guard the
+        performs the default close action directly (`_do_close()`), so the
+        veto handlers registered with `add_close_handler()` — which guard the
         user clicking the window's close button — are not run. The application
         root overrides this to quit its event loop instead.
         """
@@ -380,13 +380,13 @@ class BaseWindow:
     def add_close_handler(self, callback: Callable[[], bool | None]) -> None:
         """Register a callback invoked when the window's close button is clicked.
 
-        Handlers are called in registration order. Return ``False`` from a
-        handler to veto the close; return ``None`` or ``True`` to allow it.
+        Handlers are called in registration order. Return `False` from a
+        handler to veto the close; return `None` or `True` to allow it.
         All handlers that pass are run before the window closes.
 
         Args:
             callback: Called with no arguments when close is requested.
-                Return ``False`` to cancel the close, ``None`` or ``True`` to proceed.
+                Return `False` to cancel the close, `None` or `True` to proceed.
         """
         self._init_close_handlers()
         self._close_handlers.append(callback)
@@ -645,12 +645,12 @@ class BaseWindow:
     def on_close(self, handler: Callable[[], bool | None]) -> None:
         """Register a handler for the window close button.
 
-        Equivalent to ``add_close_handler(handler)``. Handlers are called in
-        registration order; return ``False`` to veto the close.
+        Equivalent to `add_close_handler(handler)`. Handlers are called in
+        registration order; return `False` to veto the close.
 
         Args:
             handler: Called with no arguments when close is requested.
-                Return ``False`` to cancel, ``None`` or ``True`` to proceed.
+                Return `False` to cancel, `None` or `True` to proceed.
         """
         self.add_close_handler(handler)
 

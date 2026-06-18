@@ -25,13 +25,13 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
 
     """A themed horizontal or vertical slider widget.
 
-    Replaces ``ttk.Scale`` with full theming support, optional tick marks,
+    Replaces `ttk.Scale` with full theming support, optional tick marks,
     value badge, min/max labels, and reactive signal/variable
     binding.
 
-    The current value is accessible via the ``value`` property, ``get()`` /
-    ``set()`` methods, ``configure(value=x)``, or a bound ``variable`` /
-    ``signal``.
+    The current value is accessible via the `value` property, `get()` /
+    `set()` methods, `configure(value=x)`, or a bound `variable` /
+    `signal`.
     """
 
     def __init__(
@@ -61,22 +61,22 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             master: Parent widget.
             minvalue: Minimum value of the slider range.
             maxvalue: Maximum value of the slider range.
-            value: Initial value. Ignored when ``variable`` or ``signal`` is provided.
-            orient: Orientation — ``'horizontal'`` or ``'vertical'``.
+            value: Initial value. Ignored when `variable` or `signal` is provided.
+            orient: Orientation — `'horizontal'` or `'vertical'`.
             accent: Accent token controlling fill, handle, and focus ring color.
             surface: Surface token for trough and background color context.
             variable: Tkinter DoubleVar to bind to the slider value.
                 See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             signal: Reactive Signal linked to the slider value.
-            state: Widget state — ``'normal'`` or ``'disabled'``.
+            state: Widget state — `'normal'` or `'disabled'`.
             show_value: Show a floating badge above (horizontal) or beside
                 (vertical) the handle displaying the current value.
-            show_minmax: Show ``minvalue`` and ``maxvalue`` labels at the
-                track ends. Redundant when ``tick_interval`` is set.
-            tick_interval: Spacing between major tick marks. ``None`` disables ticks.
+            show_minmax: Show `minvalue` and `maxvalue` labels at the
+                track ends. Redundant when `tick_interval` is set.
+            tick_interval: Spacing between major tick marks. `None` disables ticks.
             minor_ticks: Number of minor tick marks between each major tick.
             tick_labels: Show numeric labels at major tick positions.
-            tick_format: Format string for tick and badge labels (e.g. ``"{:.1f}°C"``).
+            tick_format: Format string for tick and badge labels (e.g. `"{:.1f}°C"`).
         """
         self._minvalue = float(minvalue)
         self._maxvalue = float(maxvalue)
@@ -612,11 +612,11 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._var.set(max(self._minvalue, min(self._maxvalue, float(value))))
 
     def on_changed(self, callback: Callable[[SliderEvent], None]) -> str:
-        """Register a callback for ``<<Change>>`` events.
+        """Register a callback for `<<Change>>` events.
 
         Args:
-            callback: Called with a Tkinter event; ``event.value`` is
-                the current value and ``event.prev_value`` is the
+            callback: Called with a Tkinter event; `event.value` is
+                the current value and `event.prev_value` is the
                 value before the change.
 
         Returns:
@@ -625,7 +625,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         return self.bind("<<Change>>", callback, add="+")
 
     def off_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+        """Unsubscribe from `<<Change>>`.
 
         Args:
             bind_id: ID returned by `on_changed()`. If None, removes all.
@@ -633,13 +633,13 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self.unbind("<<Change>>", bind_id)
 
     def on_commit(self, callback: Callable[[SliderCommitEvent], None]) -> str:
-        """Register a callback for ``<<Commit>>`` events.
+        """Register a callback for `<<Commit>>` events.
 
         Fires on mouse release and keyboard commit, not continuously during drag.
         Use for expensive downstream operations.
 
         Args:
-            callback: Called with a Tkinter event; ``event.value`` is
+            callback: Called with a Tkinter event; `event.value` is
                 the committed value.
 
         Returns:
@@ -648,7 +648,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         return self.bind("<<Commit>>", callback, add="+")
 
     def off_commit(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Commit>>``.
+        """Unsubscribe from `<<Commit>>`.
 
         Args:
             bind_id: ID returned by `on_commit()`. If None, removes all.

@@ -69,9 +69,9 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             window_style: Windows-only pywinstyles effect. Options include
                 'mica', 'acrylic', 'aero', 'transparent', 'win7', etc.
                 Defaults to 'mica'. Set to None to disable.
-            modal: Modality level. ``False`` (default) — non-modal. ``True`` or
-                ``"window"`` — window-level modal: grabs input from parent only.
-                ``"app"`` — app-level modal: grabs input from all windows.
+            modal: Modality level. `False` (default) — non-modal. `True` or
+                `"window"` — window-level modal: grabs input from parent only.
+                `"app"` — app-level modal: grabs input from all windows.
                 When modal is truthy and `transient` is not set, a transient
                 parent is inferred from `master` or the current app.
             center_on_parent: If True, center this window over its transient
@@ -81,8 +81,8 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
             center_on_screen: If True, center this window on the screen.
                 Ignored when `position` or `center_on_parent` is given.
             on_close: Callback invoked when the user clicks the close button.
-                Return ``False`` to veto the close; return ``None`` or ``True``
-                to allow it. Equivalent to calling ``add_close_handler(fn)``
+                Return `False` to veto the close; return `None` or `True`
+                to allow it. Equivalent to calling `add_close_handler(fn)`
                 after construction.
             **kwargs: Other keyword arguments passed to `tkinter.Toplevel`.
         """
@@ -220,8 +220,8 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
     def result(self) -> Any:
         """Value set by the window's content before it closes.
 
-        Defaults to ``None``. Set this attribute before calling
-        ``destroy()`` to return a value from ``block_until_closed()``.
+        Defaults to `None`. Set this attribute before calling
+        `destroy()` to return a value from `block_until_closed()`.
 
         See [block_until_closed()][bootstack.Toplevel.block_until_closed].
         """
@@ -234,18 +234,18 @@ class Toplevel(BaseWindow, WidgetCapabilitiesMixin, tkinter.Toplevel):
     def block_until_closed(self) -> Any:
         """Show this window and block until it is destroyed.
 
-        Calls ``show()`` to make the window visible, then enters a nested
-        event loop via ``wait_window()`` that blocks until the window is
-        destroyed. Returns ``self.result``.
+        Calls `show()` to make the window visible, then enters a nested
+        event loop via `wait_window()` that blocks until the window is
+        destroyed. Returns `self.result`.
 
-        Set ``self.result`` (or ``self.result = value``) before calling
-        ``destroy()`` to pass a return value back to the caller.
+        Set `self.result` (or `self.result = value`) before calling
+        `destroy()` to pass a return value back to the caller.
 
         Returns:
-            The value of ``self.result`` at the time the window was destroyed.
+            The value of `self.result` at the time the window was destroyed.
 
         Note:
-            Do not call this from within an existing ``block_until_closed()``
+            Do not call this from within an existing `block_until_closed()`
             chain unless you understand the implications of nested event loops.
         """
         self.show()

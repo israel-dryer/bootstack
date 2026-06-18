@@ -459,7 +459,7 @@ class Font:
     """
     Resolves a font token string to a live Tk font object.
 
-    Accepts the same token syntax as the ``font=`` argument on any widget:
+    Accepts the same token syntax as the `font=` argument on any widget:
       Font("body[bold]")
       Font("heading-lg[+1][italic]")
       Font("[16][bold]")            # default token + size/mods
@@ -467,8 +467,8 @@ class Font:
     Use it for text measurement or to pass a resolved font to a raw Tk widget.
 
     Args:
-        value: Font token string (e.g. ``'body[bold]'``, ``'heading-md[italic]'``).
-        default_token: Token to use when ``value`` has no token prefix. Defaults to ``'body'``.
+        value: Font token string (e.g. `'body[bold]'`, `'heading-md[italic]'`).
+        default_token: Token to use when `value` has no token prefix. Defaults to `'body'`.
     """
 
     __slots__ = ("spec", "_tkfont")

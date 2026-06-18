@@ -68,7 +68,7 @@ def _make_track(
 ) -> PhotoImage | None:
     """Render a slider track (trough + fill region) as a PhotoImage.
 
-    When ``vertical=True`` the image is rotated 90° CCW so the fill region
+    When `vertical=True` the image is rotated 90° CCW so the fill region
     appears at the bottom of the returned (tall) image.
     """
     if track_w < 1:
@@ -93,10 +93,10 @@ def _make_track(
 
 
 def get_widget_bg(widget: object) -> str | None:
-    """Return a widget's rendered background as a ``#rrggbb`` hex string.
+    """Return a widget's rendered background as a `#rrggbb` hex string.
 
-    Tries ``cget('background')`` first (tk widgets), then falls back to the
-    ttk Style lookup (ttk widgets). Returns ``None`` when neither works.
+    Tries `cget('background')` first (tk widgets), then falls back to the
+    ttk Style lookup (ttk widgets). Returns `None` when neither works.
     """
     if widget is None:
         return None
@@ -129,11 +129,11 @@ def resolve_colors(accent: str, surface: str, bg_override: str | None = None) ->
     """Resolve all slider colors from theme tokens.
 
     Args:
-        accent: Accent token (e.g., ``'primary'``, ``'success'``).
-        surface: Surface token (e.g., ``'content'``, ``'card'``).
-        bg_override: Explicit hex background color (``'#rrggbb'``) to use
+        accent: Accent token (e.g., `'primary'`, `'success'`).
+        surface: Surface token (e.g., `'content'`, `'card'`).
+        bg_override: Explicit hex background color (`'#rrggbb'`) to use
             instead of the theme default. Pass the result of
-            ``get_widget_bg(master)`` to make the slider blend with its
+            `get_widget_bg(master)` to make the slider blend with its
             container surface.
 
     Returns:

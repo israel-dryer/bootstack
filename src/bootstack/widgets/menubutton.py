@@ -60,29 +60,29 @@ _RESERVED_INTERNAL_KEYS = frozenset({
 class MenuButton(IconProperty, PublicWidgetBase):
     """A button that opens a dropdown menu when clicked.
 
-    Items are added at construction via ``items=`` or dynamically with
-    ``add_item()``. The ``on_select`` callback fires for every item click,
-    receiving a dict with ``type``, ``text``, and ``value`` keys.
+    Items are added at construction via `items=` or dynamically with
+    `add_item()`. The `on_select` callback fires for every item click,
+    receiving a dict with `type`, `text`, and `value` keys.
 
     Args:
         text: Button text. Defaults to an empty string.
-        items: Initial list of item dicts. Each dict must have a ``type``
-            key (``'command'``, ``'check'``, ``'radio'``, or
-            ``'divider'``) plus item-specific keys such as ``text``,
-            ``icon``, ``value``, and ``on_click`` (the per-item callback).
+        items: Initial list of item dicts. Each dict must have a `type`
+            key (`'command'`, `'check'`, `'radio'`, or
+            `'divider'`) plus item-specific keys such as `text`,
+            `icon`, `value`, and `on_click` (the per-item callback).
         on_select: Callback fired when any menu item is activated. Called with
             a :class:`~bootstack.events.MenuSelectEvent` (`type`, `text`,
             `value` of the activated item).
         icon: Icon name shown on the button face.
-        icon_only: If ``True``, hides the label and shows only the icon.
-            Inferred automatically when ``icon=`` is set and ``label`` is
-            empty. Defaults to ``False``.
-        show_arrow: If ``True`` (default), shows the dropdown chevron arrow.
-            Pass ``False`` to hide it (useful when the icon implies the action).
-        menu_options: Extra options forwarded to the underlying ``ContextMenu``
-            at construction (e.g. ``{'anchor': 'se', 'offset': 4}``).
-        disabled: If ``True``, button is shown but non-interactive. Defaults
-            to ``False``.
+        icon_only: If `True`, hides the label and shows only the icon.
+            Inferred automatically when `icon=` is set and `label` is
+            empty. Defaults to `False`.
+        show_arrow: If `True` (default), shows the dropdown chevron arrow.
+            Pass `False` to hide it (useful when the icon implies the action).
+        menu_options: Extra options forwarded to the underlying `ContextMenu`
+            at construction (e.g. `{'anchor': 'se', 'offset': 4}`).
+        disabled: If `True`, button is shown but non-interactive. Defaults
+            to `False`.
         accent: Color intent token. Defaults to the theme default.
         variant: Style variant. Default `'ghost'`.
         density: Layout density.
@@ -182,7 +182,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
             on_click: Callback fired when the item is clicked.
             icon: Icon name shown beside the label.
             shortcut: Keyboard shortcut hint displayed on the right. Accepts a
-                modifier pattern (``"Mod+S"`` → ``"Ctrl+S"`` / ``"⌘S"``), a
+                modifier pattern (`"Mod+S"` → `"Ctrl+S"` / `"⌘S"`), a
                 registered shortcut key name, or a literal display string.
             disabled: If True, item is shown but non-interactive.
             key: Unique string key. Auto-generated if omitted.
@@ -240,21 +240,21 @@ class MenuButton(IconProperty, PublicWidgetBase):
     ) -> str:
         """Add a radio-button item to the dropdown.
 
-        All radio items in a ``MenuButton`` share one group variable
-        automatically. Pass ``selected=True`` on the item that should be
+        All radio items in a `MenuButton` share one group variable
+        automatically. Pass `selected=True` on the item that should be
         pre-selected on first open.
 
         Note:
             Values are stored as strings internally. Pass string values
-            (e.g. ``value="100%"``) for predictable comparisons when reading
-            the group selection via ``menu``.
+            (e.g. `value="100%"`) for predictable comparisons when reading
+            the group selection via `menu`.
 
         Args:
             label: Item label text.
             value: Value associated with this radio item. Stored as a string
-                internally; defaults to ``label`` when omitted.
-            selected: If ``True``, this item is the initial selection.
-                Defaults to ``False``.
+                internally; defaults to `label` when omitted.
+            selected: If `True`, this item is the initial selection.
+                Defaults to `False`.
             on_click: Callback fired on selection.
             key: Unique string key. Auto-generated if omitted.
 
@@ -289,7 +289,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
     def add_items(self, items: list[Any]) -> None:
         """Add multiple items at once from a list of item dicts.
 
-        Each dict must have a ``type`` key plus item-specific keys:
+        Each dict must have a `type` key plus item-specific keys:
 
         .. code-block:: python
 
@@ -302,9 +302,9 @@ class MenuButton(IconProperty, PublicWidgetBase):
            ])
 
         Args:
-            items: List of item dicts. ``type`` accepts ``'command'``,
-                ``'check'``, ``'radio'``, or ``'divider'``; an item's
-                ``on_click`` key sets its per-item callback.
+            items: List of item dicts. `type` accepts `'command'`,
+                `'check'`, `'radio'`, or `'divider'`; an item's
+                `on_click` key sets its per-item callback.
         """
         self._internal.add_items([_translate_item(it) for it in items])
 
@@ -313,9 +313,9 @@ class MenuButton(IconProperty, PublicWidgetBase):
 
         Args:
             index: Zero-based position to insert at.
-            type: Item type — ``'command'``, ``'check'``, ``'radio'``,
-                or ``'divider'``.
-            **kwargs: Forwarded to the matching ``add_*`` method.
+            type: Item type — `'command'`, `'check'`, `'radio'`,
+                or `'divider'`.
+            **kwargs: Forwarded to the matching `add_*` method.
 
         Returns:
             The key assigned to the new item.
@@ -338,7 +338,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
         """Reconfigure a dropdown item after creation.
 
         Args:
-            key: Key returned by an ``add_*`` method.
+            key: Key returned by an `add_*` method.
             **kwargs: Options forwarded to the item's configure method.
         """
         self._internal.configure_item(key, **kwargs)
@@ -347,7 +347,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
         """Remove a dropdown item by key.
 
         Args:
-            key: Key returned by an ``add_*`` method.
+            key: Key returned by an `add_*` method.
         """
         self._internal.remove_item(key)
 
@@ -363,10 +363,10 @@ class MenuButton(IconProperty, PublicWidgetBase):
     # ----- Properties -----
 
     def item(self, key: str) -> Any:
-        """Return the item object for ``key``.
+        """Return the item object for `key`.
 
         Args:
-            key: Key returned by an ``add_*`` method.
+            key: Key returned by an `add_*` method.
         """
         return self._internal.context_menu.item(key)
 
@@ -382,7 +382,7 @@ class MenuButton(IconProperty, PublicWidgetBase):
 
     @property
     def menu(self) -> Any:
-        """The underlying ``ContextMenu`` — for advanced programmatic access."""
+        """The underlying `ContextMenu` — for advanced programmatic access."""
         return self._internal.context_menu
 
     @property

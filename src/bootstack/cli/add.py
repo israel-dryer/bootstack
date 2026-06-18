@@ -261,8 +261,8 @@ def run_add_i18n(args: argparse.Namespace) -> None:
     """Add internationalization support to the project.
 
     By default this scaffolds a Python translations module (the simplest path -
-    no tooling, bundled with your code). With ``--po`` it scaffolds ``.po``
-    catalog files in ``assets/`` for a file-based workflow.
+    no tooling, bundled with your code). With `--po` it scaffolds `.po`
+    catalog files in `assets/` for a file-based workflow.
     """
     languages = args.languages
 

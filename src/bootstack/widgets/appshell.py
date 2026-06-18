@@ -35,7 +35,7 @@ class Page:
     """Context-manager proxy returned by `add_page()` / `panel()`.
 
     Pushes onto the context stack so widgets created inside
-    ``with shell.add_page(...):`` are automatically parented to the page. When
+    `with shell.add_page(...):` are automatically parented to the page. When
     `scrollable=True`, children parent into an internal vertical `ScrollView`.
     """
 
@@ -144,7 +144,7 @@ class Workspace:
     def content(self) -> Page:
         """The workspace's content region as a container for hand-driven content.
 
-        Use with ``with ws.content:`` or ``parent=ws.content`` to place widgets
+        Use with `with ws.content:` or `parent=ws.content` to place widgets
         in the content area directly — the escape hatch for custom (`panel`) mode.
         """
         host = getattr(self, "_content_host", None)
@@ -278,7 +278,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     Fill the (implicit) sidebar with `add_page()` for static authored pages, or
     `list_nav()` / `tree_nav()` for data-bound master-detail. For a multi-section
     app, add named `add_workspace()` workspaces — each is authored with the same
-    page API. Pages support context-manager syntax so widgets inside the ``with``
+    page API. Pages support context-manager syntax so widgets inside the `with`
     block are parented to that page automatically.
 
     Like `App`, configuration is a single flat path: pass options as constructor
@@ -508,7 +508,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
             scrollable: If `True`, wrap the page in a vertical `ScrollView`.
 
         Returns:
-            A `Page` context manager. Use with ``with`` to parent child
+            A `Page` context manager. Use with `with` to parent child
             widgets into the page automatically.
         """
         frame = self._internal.add_page(key, text=text, icon=icon)
@@ -748,7 +748,7 @@ class AppShell(AppConfigMixin, WindowControlsMixin, ChromeHostMixin, PublicWidge
     def content(self) -> Page:
         """The content region as a container for hand-driven content.
 
-        Use with ``with shell.content:`` or ``parent=shell.content`` to place
+        Use with `with shell.content:` or `parent=shell.content` to place
         widgets in the content area directly — the escape hatch for custom
         (`panel`) mode. Targets the active workspace's content frame, not the
         layout region (which hosts the page deck).

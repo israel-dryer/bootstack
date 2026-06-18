@@ -187,7 +187,7 @@ def write_json(path: "str | Path", records: "Iterable[Record]", config: "Optiona
 def write_xml(path: "str | Path", records: "Iterable[Record]", config: "Optional[FileSourceConfig]" = None) -> None:
     """Write records as XML, streaming one record element at a time.
 
-    Each record becomes a ``<record>`` element (or ``config.xml_record_tag``) whose
+    Each record becomes a `<record>` element (or `config.xml_record_tag`) whose
     child elements are the record's fields.
     """
     record_tag = getattr(config, "xml_record_tag", None) or "record"

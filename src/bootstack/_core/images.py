@@ -354,9 +354,9 @@ class _ImageService:
         LANCZOS blur at non-integer DPI scale factors (e.g., 125%, 150%).
 
         Args:
-            name: Bootstrap icon name (e.g., ``"house"``, ``"arrow-right-fill"``).
+            name: Bootstrap icon name (e.g., `"house"`, `"arrow-right-fill"`).
             size: Requested pixel size. Snapped to the nearest even integer.
-            color: Foreground color as a hex string (e.g., ``"#ffffff"``).
+            color: Foreground color as a hex string (e.g., `"#ffffff"`).
 
         Returns:
             A cached Tk-compatible PhotoImage for the icon.

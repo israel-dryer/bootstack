@@ -1,8 +1,8 @@
 """Widget package for bootstack.
 
 Public widgets are lazily importable from this package — e.g.
-``from bootstack.widgets import Button`` — mirroring the canonical
-``import bootstack as bs; bs.Button`` access. Resolution is lazy (PEP 562)
+`from bootstack.widgets import Button` — mirroring the canonical
+`import bootstack as bs; bs.Button` access. Resolution is lazy (PEP 562)
 so importing the package does not eagerly pull in every widget module.
 """
 from typing import Any

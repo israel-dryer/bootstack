@@ -23,7 +23,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
     Args:
         text: Text displayed on the button.
         on_click: Called with no arguments when the button is clicked.
-            Equivalent to subscribing to the ``'click'`` event.
+            Equivalent to subscribing to the `'click'` event.
         accent: Color intent token. Defaults to the theme's default button color.
         variant: Visual weight token. Default `'solid'`.
         icon: Bootstrap Icons name (e.g. `'save'`, `'trash'`) — see the full

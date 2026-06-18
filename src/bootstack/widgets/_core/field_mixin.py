@@ -167,21 +167,21 @@ class FieldAddonMixin:
         """Add a validation rule to the field.
 
         Rules run automatically on blur or key events depending on the rule
-        type, or manually via ``validate()``. Multiple rules can be added;
+        type, or manually via `validate()`. Multiple rules can be added;
         they are evaluated in order and stop at the first failure.
 
         Args:
             rule_type: The kind of validation rule to apply.
             **kwargs: Rule-specific options:
 
-                - ``message`` *(all rules)* — override the default error message.
-                - ``trigger`` *(all rules)* — when to run: ``'always'`` (key and
-                  blur), ``'key'``, ``'blur'``, or ``'manual'``. Each rule type
+                - `message` *(all rules)* — override the default error message.
+                - `trigger` *(all rules)* — when to run: `'always'` (key and
+                  blur), `'key'`, `'blur'`, or `'manual'`. Each rule type
                   has its own sensible default (see the Validation reference).
-                - ``min``, ``max`` *(stringLength)* — minimum/maximum character count.
-                - ``pattern`` *(pattern)* — regex string the value must match.
-                - ``other_field`` *(compare)* — field whose value must match.
-                - ``func`` *(custom)* — callable ``(value: str) -> bool``.
+                - `min`, `max` *(stringLength)* — minimum/maximum character count.
+                - `pattern` *(pattern)* — regex string the value must match.
+                - `other_field` *(compare)* — field whose value must match.
+                - `func` *(custom)* — callable `(value: str) -> bool`.
 
         Example::
 

@@ -24,12 +24,12 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
     """A themed two-handle range slider widget.
 
     Provides a low-value and high-value handle that define a selected range
-    within ``[minvalue, maxvalue]``.  Both handles are keyboard-accessible
-    and cycle with ``Tab``.
+    within `[minvalue, maxvalue]`.  Both handles are keyboard-accessible
+    and cycle with `Tab`.
 
-    Current range is accessible via ``lovalue`` / ``hivalue`` properties,
-    ``get_lo()`` / ``get_hi()`` / ``set_lo()`` / ``set_hi()`` methods, or
-    bound ``lo_variable`` / ``hi_variable`` / ``lo_signal`` / ``hi_signal``.
+    Current range is accessible via `lovalue` / `hivalue` properties,
+    `get_lo()` / `get_hi()` / `set_lo()` / `set_hi()` methods, or
+    bound `lo_variable` / `hi_variable` / `lo_signal` / `hi_signal`.
     """
 
     def __init__(
@@ -61,11 +61,11 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             master: Parent widget.
             minvalue: Minimum bound of the slider range.
             maxvalue: Maximum bound of the slider range.
-            lovalue: Initial low-handle value. Ignored when ``lo_variable``
-                or ``lo_signal`` is provided.
-            hivalue: Initial high-handle value. Ignored when ``hi_variable``
-                or ``hi_signal`` is provided.
-            orient: Orientation — ``'horizontal'`` or ``'vertical'``.
+            lovalue: Initial low-handle value. Ignored when `lo_variable`
+                or `lo_signal` is provided.
+            hivalue: Initial high-handle value. Ignored when `hi_variable`
+                or `hi_signal` is provided.
+            orient: Orientation — `'horizontal'` or `'vertical'`.
             accent: Accent token controlling fill, handles, and focus ring color.
             surface: Surface token for trough and background color context.
             lo_variable: Tkinter DoubleVar bound to the low-handle value.
@@ -74,13 +74,13 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
                 See [tkinter Variables](https://docs.python.org/3/library/tkinter.html#tkinter-variables).
             lo_signal: Reactive Signal linked to the low-handle value.
             hi_signal: Reactive Signal linked to the high-handle value.
-            state: Widget state — ``'normal'`` or ``'disabled'``.
+            state: Widget state — `'normal'` or `'disabled'`.
             show_value: Show floating badges above/beside each handle displaying
                 their current values.
-            tick_interval: Spacing between major tick marks. ``None`` disables ticks.
+            tick_interval: Spacing between major tick marks. `None` disables ticks.
             minor_ticks: Number of minor tick marks between each major tick.
             tick_labels: Show numeric labels at major tick positions.
-            tick_format: Format string for tick and badge labels (e.g. ``"{:.1f}°C"``).
+            tick_format: Format string for tick and badge labels (e.g. `"{:.1f}°C"`).
         """
         self._minvalue = float(minvalue)
         self._maxvalue = float(maxvalue)
@@ -715,12 +715,12 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self._hi_var.set(min(self._maxvalue, max(float(value), self._lo_var.get())))
 
     def on_changed(self, callback: Callable[[RangeSliderEvent], None]) -> str:
-        """Register a callback for ``<<Change>>`` events.
+        """Register a callback for `<<Change>>` events.
 
         Args:
-            callback: Called with a Tkinter event; ``event.low_value``
-                and ``event.high_value`` are the current handle values;
-                ``event.prev_low_value`` and ``event.prev_high_value``
+            callback: Called with a Tkinter event; `event.low_value`
+                and `event.high_value` are the current handle values;
+                `event.prev_low_value` and `event.prev_high_value`
                 are the values before the change.
 
         Returns:
@@ -729,7 +729,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         return self.bind("<<Change>>", callback, add="+")
 
     def off_changed(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Change>>``.
+        """Unsubscribe from `<<Change>>`.
 
         Args:
             bind_id: ID returned by `on_changed()`. If None, removes all.
@@ -737,14 +737,14 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self.unbind("<<Change>>", bind_id)
 
     def on_commit(self, callback: Callable[[RangeSliderCommitEvent], None]) -> str:
-        """Register a callback for ``<<Commit>>`` events.
+        """Register a callback for `<<Commit>>` events.
 
         Fires on mouse release and keyboard commit. Use for expensive
         downstream operations.
 
         Args:
-            callback: Called with a Tkinter event; ``event.low_value``
-                and ``event.high_value`` are the committed values.
+            callback: Called with a Tkinter event; `event.low_value`
+                and `event.high_value` are the committed values.
 
         Returns:
             Bind ID — pass to `off_commit()` to unsubscribe.
@@ -752,7 +752,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         return self.bind("<<Commit>>", callback, add="+")
 
     def off_commit(self, bind_id: str | None = None) -> None:
-        """Unsubscribe from ``<<Commit>>``.
+        """Unsubscribe from `<<Commit>>`.
 
         Args:
             bind_id: ID returned by `on_commit()`. If None, removes all.

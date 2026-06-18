@@ -1,12 +1,12 @@
 """Internal Picture composite — a canvas-backed image display.
 
 Renders a single image (or an animated sequence) into a themed canvas, fitting
-it to the canvas's allocated size with a CSS ``object-fit``-style policy. The
+it to the canvas's allocated size with a CSS `object-fit`-style policy. The
 public `bootstack.Picture` wrapper drives this; nothing here is public.
 
 The canvas (not a Label) is the backing widget on purpose: it does not
 shrink-wrap to the image, it reports its allocated pixel size through
-``<Configure>``, and it letterboxes cleanly behind a fitted image.
+`<Configure>`, and it letterboxes cleanly behind a fitted image.
 """
 
 from __future__ import annotations
