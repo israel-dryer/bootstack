@@ -69,7 +69,9 @@ class ContextMenu:
 
     Args:
         target: Widget the menu attaches to for positioning and auto-trigger
-            binding. Accepts any bootstack widget. If omitted, call
+            binding. Accepts any bootstack widget. When the target is a
+            container, the trigger fires anywhere inside it, including over its
+            children present at attach time. If omitted, call
             `show(position=(x, y))` manually.
         min_width: Minimum menu width in pixels. Default `150`.
         width: Fixed menu width in pixels. Defaults to auto (uses `min_width`).
