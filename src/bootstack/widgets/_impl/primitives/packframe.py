@@ -219,6 +219,9 @@ class PackFrame(Frame):
         tk.Pack.forget(widget)
         self._managed.pop(idx)
 
-        # Only repack if we removed something that affects gaps (not the last item)
-        if idx < len(self._managed):
+        # Only repack if we removed something that affects gaps (not the last
+        # item). With no gap, Tk preserves the order of the remaining children
+        # on its own, so a full forget/repack is pure churn (it briefly clears
+        # the whole row — a visible flash) and is skipped.
+        if self._gap and idx < len(self._managed):
             self._repack_all()

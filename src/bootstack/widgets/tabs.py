@@ -170,10 +170,16 @@ class Tabs(PublicWidgetBase):
         orient: `'horizontal'` (default, tabs above content) or `'vertical'` (tabs left).
         show_divider: Show a divider line between the tab bar and the page area.
         tab_width: Fixed tab width in pixels, `'stretch'` to fill available space, or
-            `None` (default, size to content).
+            `None` (default, size to content). When tabs exceed the strip they
+            scroll — no scrollbar, the wheel scrolls along the strip, and a
+            trailing chevron lists the off-screen tabs and scrolls the chosen one
+            into view (both orientations). `'stretch'` tabs always fit.
         allow_close: Show close buttons on tabs. `True` = always, `False` = never,
             `'hover'` = on hover. Defaults to `False`.
         allow_add: Show an add-tab button that fires the `tab_add` event.
+        max_tabs: Maximum number of tabs. When reached, the add button is
+            disabled (and re-enabled when a tab is removed). `None` (default)
+            means no limit. Pairs with `allow_add`.
         accent: Accent token for the tab bar. Defaults to the theme accent.
         parent: Override the context-stack parent.
         **kwargs: Layout placement options applied by the parent container —
@@ -189,6 +195,7 @@ class Tabs(PublicWidgetBase):
         tab_width: int | Literal["stretch"] | None = None,
         allow_close: bool | Literal["hover"] = False,
         allow_add: bool = False,
+        max_tabs: int | None = None,
         accent: AccentToken | str | None = None,
         parent: Any = None,
         **kwargs: Any,
@@ -202,6 +209,7 @@ class Tabs(PublicWidgetBase):
             "orient": orient,
             "enable_closing": allow_close,
             "enable_adding": allow_add,
+            "max_tabs": max_tabs,
         }
         if show_divider is not None:
             internal_kwargs["show_divider"] = show_divider

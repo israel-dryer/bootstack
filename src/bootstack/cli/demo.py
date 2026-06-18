@@ -607,8 +607,42 @@ def _build_navigation_page():
 
         with bs.GroupBox("Tabs (closable + addable)", horizontal_items="stretch", grow=True):
             tabs2 = bs.Tabs(allow_close=True, allow_add=True, grow=True)
+            _doc_n = [1]
             with tabs2.add("doc1", label="Document 1", icon="file-text"):
                 bs.Label("Content for Document 1.", padding=20)
+
+            def _add_doc():
+                _doc_n[0] += 1
+                n = _doc_n[0]
+                page = tabs2.add(f"doc{n}", label=f"Document {n}", icon="file-text")
+                with page:
+                    bs.Label(f"Content for Document {n}.", padding=20)
+                page.select()  # newly added tab becomes active (and scrolls into view)
+
+            tabs2.on_tab_add(lambda e: _add_doc())
+
+        with bs.GroupBox("Tabs (overflow scrolls + menu, max 16)", horizontal_items="stretch", grow=True):
+            tabs3 = bs.Tabs(allow_close="hover", allow_add=True, max_tabs=16, grow=True)
+            _file_n = [0]
+
+            def _add_file(select=True):
+                _file_n[0] += 1
+                n = _file_n[0]
+                page = tabs3.add(f"file{n}", label=f"source-file-{n}.py", icon="file-earmark-code")
+                with page:
+                    bs.Label(f"Contents of source-file-{n}.py", padding=20)
+                if select:
+                    page.select()
+
+            for _ in range(12):
+                _add_file(select=False)
+            tabs3.on_tab_add(lambda e: _add_file())
+
+        with bs.GroupBox("Tabs (vertical overflow)", horizontal_items="stretch", grow=True):
+            tabs4 = bs.Tabs(orient="vertical", grow=True)
+            for n in range(1, 13):
+                with tabs4.add(f"sec{n}", label=f"Section {n}", icon="bookmark"):
+                    bs.Label(f"Section {n} body", padding=20)
 
         with bs.GroupBox("PageStack (swap content in place)", horizontal_items="stretch", grow=True):
             ps = bs.PageStack(grow=True)

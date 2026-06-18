@@ -39,6 +39,7 @@ class TabView(Frame):
         tab_anchor: str = None,
         enable_closing: bool | Literal['hover'] = False,
         enable_adding: bool = False,
+        max_tabs: int | None = None,
         accent: str = None,
         **kwargs: Unpack[FrameKwargs]
     ):
@@ -58,6 +59,8 @@ class TabView(Frame):
                 True=always visible, False=hidden, 'hover'=visible on hover.
                 Can be overridden per-tab via `closable` in add().
             enable_adding: If True, shows an "add" button that fires `<<TabAdd>>`.
+            max_tabs: Maximum tab count; the add button disables at the limit.
+                None (default) means no limit.
             accent: Accent token for styling.
             **kwargs: Additional arguments passed to Frame.
         """
@@ -80,6 +83,7 @@ class TabView(Frame):
             tab_anchor=tab_anchor,
             enable_closing=enable_closing,
             enable_adding=enable_adding,
+            max_tabs=max_tabs,
             variable=self._tab_variable,
             accent=accent,
         )
