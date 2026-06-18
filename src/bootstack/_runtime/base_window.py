@@ -196,9 +196,24 @@ class BaseWindow:
             pywinstyles.apply_style(self, window_style)
             self._window_style_applied = True
             self.after(0, self._update_chrome_color)
-            self.bind('<<ThemeChanged>>', lambda e: self.after(0, self._update_chrome_color), add='+')
+            self.bind('<<ThemeChanged>>', self._schedule_chrome_update, add='+')
         except Exception:
             pass
+
+    def _schedule_chrome_update(self, _event=None) -> None:
+        """Coalesce chrome re-tinting on theme change.
+
+        The toplevel receives `<<ThemeChanged>>` ~1400x per theme rebuild (once
+        per ttk style reconfigure). Cancel any pending update and schedule a
+        single one so the (DWM) chrome repaint runs once, not hundreds of times.
+        """
+        pending = getattr(self, '_chrome_update_after', None)
+        if pending is not None:
+            try:
+                self.after_cancel(pending)
+            except Exception:
+                pass
+        self._chrome_update_after = self.after(0, self._update_chrome_color)
 
     def _update_chrome_color(self) -> None:
         if getattr(self, '_updating_chrome', False):
@@ -208,10 +223,15 @@ class BaseWindow:
             import pywinstyles
             from bootstack.style.style import get_theme_provider
             color = get_theme_provider().colors['chrome']
-            pywinstyles.change_header_color(self, color)
-            # Match the window border to the chrome too, so it honors the theme
-            # (otherwise Windows leaves a light default border in dark mode).
-            pywinstyles.change_border_color(self, color)
+            # The DWM header/border calls are expensive (~100ms each); skip them
+            # when the chrome color is unchanged (redundant theme events, or a
+            # theme switch that keeps the same chrome).
+            if getattr(self, '_chrome_color_applied', None) != color:
+                self._chrome_color_applied = color
+                pywinstyles.change_header_color(self, color)
+                # Match the window border to the chrome too, so it honors the
+                # theme (otherwise Windows leaves a light border in dark mode).
+                pywinstyles.change_border_color(self, color)
         except Exception:
             pass
         finally:

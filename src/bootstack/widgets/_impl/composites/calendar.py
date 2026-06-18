@@ -651,31 +651,46 @@ class Calendar(ttk.Frame):
             if header:
                 header.pack_forget()
 
-        # Weekday header per month
+        # Weekday header per month — labels are created ONCE and reused (text +
+        # grid updated on redraw), not destroyed and recreated every draw. The
+        # only thing that changes across draws is the column text (locale / week
+        # start) and, if it toggles, the week-number column.
         weekdays_frame: ttk.Frame | None = view.get("weekdays")
         if weekdays_frame is None:
             weekdays_frame = ttk.Frame(parent)
             weekdays_frame.pack(fill=X)
             view["weekdays"] = weekdays_frame
-        else:
-            for child in weekdays_frame.winfo_children():
-                child.destroy()
+            view["weekday_labels"] = []
+            view["weeknum_header"] = None
 
         col_offset = 1 if self._show_week_numbers else 0
         if self._show_week_numbers:
-            weekdays_frame.columnconfigure(0, weight=1, uniform="cal")
-            ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5, surface="background[+1]", font='caption[bold]').grid(
-                row=0, column=0, sticky=NSEW)
+            wn_header = view.get("weeknum_header")
+            if wn_header is None:
+                weekdays_frame.columnconfigure(0, weight=1, uniform="cal")
+                wn_header = ttk.Label(weekdays_frame, text="#", anchor=CENTER, padding=5,
+                                      surface="background[+1]", font='caption[bold]')
+                view["weeknum_header"] = wn_header
+            wn_header.grid(row=0, column=0, sticky=NSEW)
+        elif view.get("weeknum_header") is not None:
+            view["weeknum_header"].grid_remove()
+
+        header_labels: list[ttk.Label] = view["weekday_labels"]
         for i, col in enumerate(self._header_columns()):
             weekdays_frame.columnconfigure(i + col_offset, weight=1, uniform="cal")
-            ttk.Label(
-                master=weekdays_frame,
-                text=col,
-                anchor=CENTER,
-                padding=5,
-                accent="muted",
-                font='caption[bold]',
-            ).grid(row=0, column=i + col_offset, sticky=NSEW)
+            if i < len(header_labels):
+                lbl = header_labels[i]
+            else:
+                lbl = ttk.Label(
+                    master=weekdays_frame,
+                    anchor=CENTER,
+                    padding=5,
+                    accent="muted",
+                    font='caption[bold]',
+                )
+                header_labels.append(lbl)
+            lbl.configure(text=col)
+            lbl.grid(row=0, column=i + col_offset, sticky=NSEW)
 
         # Grid reused
         grid: ttk.Frame | None = view.get("grid")

@@ -157,12 +157,10 @@ class ListView(Frame):
         # Bind events
         self.bind('<Configure>', self._on_resize, add='+')
         # The striped row surface is applied imperatively at pool-creation time,
-        # so it must be re-resolved on theme change. `<<BsThemeChanged>>` fires on
-        # the root (virtual events don't reach descendants), so bind there and
-        # release on destroy — the same pattern as the image theme-follow helper.
-        self._theme_root = self.winfo_toplevel()
-        self._theme_bind_id = self._theme_root.bind(
-            '<<BsThemeChanged>>', self._on_theme_changed, add='+')
+        # so it must be re-resolved on theme change — gated to on-screen by the
+        # Frame base hook (an off-screen list defers its per-row repaint to <Map>)
+        # and released on destroy automatically.
+        self._enable_theme_repaint(self._on_theme_changed)
         self._bind_scroll_events(self)
         self._bind_scroll_events(self._container)
 
@@ -221,13 +219,8 @@ class ListView(Frame):
         """Cancel the data-source subscription when the widget is destroyed."""
         if event is not None and getattr(event, 'widget', None) is not self:
             return
-        bind_id = getattr(self, '_theme_bind_id', None)
-        if bind_id:
-            try:
-                self._theme_root.unbind('<<BsThemeChanged>>', bind_id)
-            except Exception:
-                pass
-            self._theme_bind_id = None
+        # The theme subscription is released by the Frame base hook's own
+        # <Destroy> handler (publisher unsubscribe).
         sub = self._change_sub
         self._change_sub = None
         if sub is not None:

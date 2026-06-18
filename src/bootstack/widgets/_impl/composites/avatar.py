@@ -70,7 +70,7 @@ class Avatar(Frame):
                               background=self._surface_color())
         self._canvas.pack()
         self._canvas.bind("<Button-1>", self._forward_click)
-        self.bind("<<BsThemeChanged>>", self._on_theme, add="+")
+        self._enable_theme_repaint(self._on_theme)
 
         self._render()
 

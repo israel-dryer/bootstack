@@ -254,7 +254,10 @@ class Gallery(Frame):
             except Exception:
                 self._change_sub = None
         self.bind("<Destroy>", self._on_destroy, add="+")
-        self.bind("<<BsThemeChanged>>", self._on_theme, add="+")
+        # Tile surfaces + the accent ring are painted imperatively, so re-resolve
+        # on a theme change — gated to on-screen by the Frame base hook (an
+        # off-screen gallery defers its thumbnail-grid repaint to <Map>).
+        self._enable_theme_repaint(self._on_theme)
         # First render is driven by the container's <Configure> (bound above);
         # no init timer needed.
 

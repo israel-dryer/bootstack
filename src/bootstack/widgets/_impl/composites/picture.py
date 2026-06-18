@@ -87,7 +87,7 @@ class Picture(Frame):
         self._canvas.pack(fill="both", expand=True)
         self._canvas.bind("<Configure>", self._on_configure)
         self._canvas.bind("<Button-1>", self._forward_click)
-        self.bind("<<BsThemeChanged>>", self._on_theme_changed, add="+")
+        self._enable_theme_repaint(self._on_theme_changed)
 
         # Defer the initial load to idle so the constructor returns first: the
         # caller can bind on_load/on_error before the <<PictureLoad>> fires.
