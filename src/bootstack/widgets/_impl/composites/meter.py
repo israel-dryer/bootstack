@@ -135,9 +135,6 @@ class Meter(Frame):
         self._towards_maximum = True
         self._resolve_arc_range_offset(meter_type, arc_offset, arc_range)
         self._binding = {}
-        # Set when a theme change arrives while the meter is off-screen, so the
-        # expensive supersampled redraw is deferred to the next <Map>.
-        self._theme_update_pending = False
 
         # widget variables
         self._last_changed_value = value
@@ -165,22 +162,13 @@ class Meter(Frame):
         self._suffix_text_id = None
         self._subtitle_text_id = None
 
-        # update bindings
         # The meter face / track / arc / text are painted imperatively onto the
-        # canvas, so they live outside the ttk style loop and must be re-resolved
-        # on a theme change. Subscribe to the STD publisher channel: it fires
-        # AFTER `_rebuild_all_styles()` (so the resolved colors are the new
-        # theme's), calls the handler directly (no virtual-event propagation to
-        # descendants), and is auto-released on `<Destroy>`. The old ttk
-        # `<<ThemeChanged>>` binding fired *before* the rebuild and raced it,
-        # leaving stale colors (#167). Same pattern as the Combobox popdown.
-        from bootstack._core.publisher import Channel, Publisher
-        name = str(self)
-        Publisher.subscribe(name=name, func=self._handle_theme_changed, channel=Channel.STD)
-        self.bind('<Destroy>', lambda _e, n=name: Publisher.unsubscribe(n), add='+')
-        # A theme change that arrives while off-screen defers its redraw to here.
-        self.bind('<Map>', self._on_meter_map, add='+')
-        self._binding['<<Configure>>'] = self.bind('<<Configure>>', self._handle_theme_changed)
+        # canvas (outside the ttk style loop), so re-resolve + redraw on a theme
+        # change. The Frame base hook gates this to on-screen: an off-screen meter
+        # defers its (supersampled, expensive) redraw to the next <Map>, so a
+        # theme toggle repaints only visible gauges (#167 fixed the timing; this
+        # keeps it cheap with many gauges across pages).
+        self._enable_theme_repaint(self._repaint_theme)
         self._bind_interactive_events()
         self._draw_base_meter_images()
         self._draw_meter()
@@ -467,7 +455,13 @@ class Meter(Frame):
         value_text_color = b.color(accent_token)
         secondary_text_color = b.color(self._secondary_style or 'background[muted]')
 
-        self._image_scale = b.scale(DEFAULT_IMAGE_SCALE)
+        # Supersample factor for antialiasing: the meter is drawn at
+        # `size * image_scale` then downscaled to the gauge's *logical* size, so
+        # the extra resolution `b.scale()` adds for the display's DPI is thrown
+        # away by the downscale — pure waste that balloons the redraw on HiDPI
+        # (a 200px gauge at 2x DPI would supersample to 2400px²). Cap it at the
+        # base factor: identical output at standard DPI, ~2-4x cheaper on HiDPI.
+        self._image_scale = min(b.scale(DEFAULT_IMAGE_SCALE), DEFAULT_IMAGE_SCALE)
         self._accent_color = accent_color
         self._surface = surface  # Store resolved color
         self._trough_color = trough_color
@@ -777,39 +771,17 @@ class Meter(Frame):
 
         return int(normalized * self._arc_range + self._arc_offset)
 
-    def _handle_theme_changed(self, *_, **__):
-        # Accepts both the publisher's theme/mode kwargs and a Tk event arg.
-        # Coalesce a burst of notifications into one idle repaint; the colors are
-        # already the new theme's (the STD publisher fires after the rebuild).
-        self.after_idle(self._apply_theme_update)
+    def _repaint_theme(self):
+        """Re-resolve theme colors and repaint the canvas (face + arcs + text).
 
-    def _apply_theme_update(self):
-        if not self.winfo_exists():
-            return
-        # Re-resolving colors is cheap; the supersampled image redraw is not. If
-        # the meter is off-screen (e.g. a non-active page), skip the redraw and
-        # mark it pending — the next <Map> repaints it once with current colors.
-        # This keeps a theme toggle from repainting every gauge in the app.
+        Invoked by the Frame base hook only while on screen; an off-screen meter
+        defers this to its next `<Map>`. Reconfigures the canvas background too,
+        since the face surface can be reset to the default during a re-map.
+        """
         self._resolve_meter_styles()
         self._canvas.configure(background=self._surface)
-        if not self.winfo_viewable():
-            self._theme_update_pending = True
-            return
-        self._theme_update_pending = False
         self._draw_base_meter_images()
         self._draw_meter()
-
-    def _on_meter_map(self, _event: Any = None) -> None:
-        """Repaint on map if a theme change was missed while off-screen.
-
-        Re-runs the full apply (now that the meter is viewable) so the canvas
-        background is re-configured too — not just the arc/text images — since the
-        face surface can be reset to the default when the page is re-mapped.
-        """
-        if getattr(self, '_theme_update_pending', False):
-            # Defer to idle so the repaint runs after the map cascade settles
-            # (the canvas background can be reset to the default during mapping).
-            self.after_idle(self._apply_theme_update)
 
     def _handle_interaction(self, e):
         """Handle mouse clicks/drags to update meter value in interactive mode."""

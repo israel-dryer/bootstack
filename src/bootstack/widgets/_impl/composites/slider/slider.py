@@ -268,9 +268,15 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._canvas.bind("<Configure>", self._on_configure)
 
         self._var.trace_add("write", self._on_var_write)
-        root = self.nametowidget(".")
-        _tid = root.bind("<<ThemeChanged>>", lambda e: self._on_theme_changed(), add="+")
-        self.bind("<Destroy>", lambda e, r=root, b=_tid: r.unbind("<<ThemeChanged>>", b), add="+")
+        # Re-resolve the track/handle colors on a theme change. Subscribe to the
+        # STD publisher (fires ONCE, after the rebuild) — NOT the ttk
+        # `<<ThemeChanged>>`, which re-fires per style reconfigure during the
+        # rebuild (×N styles × every slider on screen → thousands of redraws).
+        from bootstack._core.publisher import Channel, Publisher
+        name = str(self)
+        Publisher.subscribe(name=name, func=lambda *_a, **_k: self._on_theme_changed(),
+                            channel=Channel.STD)
+        self.bind("<Destroy>", lambda e, n=name: Publisher.unsubscribe(n), add="+")
         self.bind("<Map>", lambda e: self._on_map(), add="+")
 
     # ------------------------------------------------------------------

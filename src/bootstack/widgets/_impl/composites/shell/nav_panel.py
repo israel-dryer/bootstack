@@ -105,7 +105,7 @@ class NavPanel(Frame):
         self._main = self._scroll.add(surface=surface)
         self._updating_overflow = False
         self._paint_canvas_surface()
-        self.bind("<<BsThemeChanged>>", lambda _e: self._paint_canvas_surface(), add="+")
+        self._enable_theme_repaint(self._paint_canvas_surface)
         # Re-evaluate the gutter/bar + footer divider whenever the content height
         # or viewport changes (items added/removed, sidebar resized, compaction).
         self._scroll.canvas.bind("<Configure>", lambda _e: self._update_overflow_state(), add="+")
