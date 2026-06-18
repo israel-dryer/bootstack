@@ -9,7 +9,7 @@ ignored (guide count will be zero for tab-indented lines).
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textarea.filter import EditFilter
 from bootstack.widgets._impl.composites.textarea.decoration import Position, RangeDecoration
@@ -42,6 +42,8 @@ class IndentGuides(EditFilter):
         self._core: _MultilineCore | None = None
         self._after_id: str | None = None
         self._tab_width = tab_width
+        self._theme_root: Any = None
+        self._theme_bind_id: str | None = None
 
     # ── EditFilter protocol ───────────────────────────────────────────────
 
@@ -49,12 +51,25 @@ class IndentGuides(EditFilter):
         self._core = core
         core.register_layer(_LAYER, priority=0)
         self._apply_guide_style(core)
-        core.text.bind("<<ThemeChanged>>",   self._on_theme_changed, add="+")
         core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
+        # Recalibrate guide color after a theme rebuild. Bind <<BsThemeChanged>>
+        # on the root — fired ONCE by bootstack after the full rebuild (correct
+        # colors) — NOT the ttk <<ThemeChanged>>, which fires mid-rebuild.
+        self._theme_root = core.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            "<<BsThemeChanged>>", self._on_theme_changed, add="+"
+        )
         self._schedule()
 
     def detach(self, core: _MultilineCore) -> None:
         self._cancel()
+        if self._theme_bind_id is not None and self._theme_root is not None:
+            try:
+                self._theme_root.unbind("<<BsThemeChanged>>", self._theme_bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
+            self._theme_root = None
         if self._core is not None:
             core.clear_decorations(_LAYER)
         self._core = None

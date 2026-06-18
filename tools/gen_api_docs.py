@@ -76,7 +76,6 @@ API_MODULES = {
             "DropdownButton": "bootstack.widgets.composites.dropdownbutton.DropdownButton",
             "Field": "bootstack.widgets.composites.field.Field",
             "FieldOptions": "bootstack.widgets.composites.field.FieldOptions",
-            "FloodGauge": "bootstack.widgets.composites.floodgauge.FloodGauge",
             "Form": "bootstack.widgets.composites.form.Form",
             "LabeledScale": "bootstack.widgets.composites.labeledscale.LabeledScale",
             "Meter": "bootstack.widgets.composites.meter.Meter",

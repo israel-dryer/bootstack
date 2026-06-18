@@ -1,7 +1,7 @@
 ﻿"""StyleRegistry — manages named styles and their Tk tag configurations.
 
 Styles are defined once with semantic tokens (theme colors, font tokens).
-On <<ThemeChanged>>, all configured tags are reconfigured automatically.
+On <<BsThemeChanged>>, all configured tags are reconfigured automatically.
 Each (layer, style) pair gets its own Tk tag: `bs::{layer}::{style}`.
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ class StyleRegistry:
 
     Styles are defined with semantic attributes (theme tokens, font tokens).
     The registry resolves tokens to concrete colors/fonts at configure time
-    and reconfigures on `<<ThemeChanged>>`.
+    and reconfigures on `<<BsThemeChanged>>`.
     """
 
     def __init__(self, core: _MultilineCore) -> None:
@@ -29,7 +29,29 @@ class StyleRegistry:
         # set of "layer::style" tag names already configured on the Text widget
         self._configured: set[str] = set()
 
-        self._text.bind("<<ThemeChanged>>", self._on_theme_changed, add="+")
+        # Reconfigure tags after a theme rebuild. Bind <<BsThemeChanged>> on the
+        # root — bootstack fires it ONCE after the full rebuild, so resolved
+        # colors are the new theme's. NOT the ttk <<ThemeChanged>>, which fires
+        # mid-rebuild (stale colors) and re-fires per style reconfigure.
+        self._theme_root = self._text.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            "<<BsThemeChanged>>", self._on_theme_changed, add="+"
+        )
+        # Release the root binding when the editor is torn down. Fire on any
+        # descendant <Destroy> (the unbind is idempotent), matching the
+        # repaint-hook convention — a guarded `is self` check is unreliable here
+        # because the container's own <Destroy> is not delivered to this binding.
+        self._text.bind("<Destroy>", lambda _e: self.destroy(), add="+")
+
+    def destroy(self) -> None:
+        """Release the theme-change binding (idempotent)."""
+        if self._theme_bind_id is not None and self._theme_root is not None:
+            try:
+                self._theme_root.unbind("<<BsThemeChanged>>", self._theme_bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
+            self._theme_root = None
 
     # ── public API ────────────────────────────────────────────────────────
 

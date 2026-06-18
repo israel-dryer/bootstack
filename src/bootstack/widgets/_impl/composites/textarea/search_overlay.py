@@ -148,8 +148,16 @@ class SearchOverlay(PackFrame):
             core.text.bind("<Command-H>", self._on_ctrl_h, add="+")
         core.text.bind("<Escape>",     self._on_editor_escape, add="+")
         core.text.bind("<<Change>>",   self._on_content_changed, add="+")
-        core.text.bind("<<ThemeChanged>>",    self._on_theme_changed, add="+")
         core.text.bind("<<EditorBgChanged>>", self._on_theme_changed, add="+")
+
+        # Re-sync highlight colors after a theme rebuild. Bind <<BsThemeChanged>>
+        # on the root — fired ONCE by bootstack after the full rebuild (correct
+        # colors) — NOT the ttk <<ThemeChanged>>, which fires mid-rebuild.
+        self._theme_root = core.winfo_toplevel()
+        self._theme_bind_id = self._theme_root.bind(
+            "<<BsThemeChanged>>", self._on_theme_changed, add="+"
+        )
+        self.bind("<Destroy>", self._on_destroy, add="+")
 
         # Measure find-row-only height for initial place() sizing.
         self.update_idletasks()
@@ -385,6 +393,19 @@ class SearchOverlay(PackFrame):
 
     def _on_theme_changed(self, _event=None) -> None:
         self._sync_colors()
+
+    def _on_destroy(self, event=None) -> None:
+        # Fire on any descendant <Destroy> — the unbind is idempotent. A guarded
+        # `is self` check is unreliable here (the container's own <Destroy> is
+        # not delivered to this binding), and the overlay never destroys its own
+        # children mid-life, so an early unbind is safe.
+        if self._theme_bind_id is not None and self._theme_root is not None:
+            try:
+                self._theme_root.unbind("<<BsThemeChanged>>", self._theme_bind_id)
+            except Exception:
+                pass
+            self._theme_bind_id = None
+            self._theme_root = None
 
     def _sync_colors(self) -> None:
         if self._syncing_colors:
