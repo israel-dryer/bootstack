@@ -42,8 +42,8 @@ def _stat(label, pct, accent):
         bs.ProgressBar(value=pct, accent=accent, horizontal="stretch")
 
 
-with bs.AppShell(title="Acme Analytics", size=(890, 650),
-                 rail_labels=True, show_sidebar=False, show_statusbar=True) as shell:
+with bs.Workbench(title="Acme Analytics", size=(890, 650),
+                  rail_labels=True, show_sidebar=False, show_statusbar=True) as shell:
     shell._capture_full_window = True
     shell._capture_max_width = 940
     with shell.add_toolbar() as bar:
@@ -113,7 +113,7 @@ with bs.AppShell(title="Acme Analytics", size=(890, 650),
     with shell.add_workspace("reports", text="Reports", icon="file-earmark-text") as ws:
         with ws.content:
             bs.Label("Reports", font="heading-lg")
-    with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
+    with shell.add_workspace("settings", text="Settings", icon="gear", pin_to_footer=True) as ws:
         with ws.content:
             bs.Label("Settings", font="heading-lg")
 

@@ -12,15 +12,12 @@
 Supporting classes
 ------------------
 
-Opaque handles returned by ``AppShell``'s methods and properties — you obtain
-them from the shell rather than constructing them directly. (The status band is a
-standalone widget; see :class:`~bootstack.StatusBar`.)
+Opaque handles returned by ``AppShell``'s methods — you obtain them from the shell
+rather than constructing them directly. (The status band is a standalone widget;
+see :class:`~bootstack.StatusBar`.)
 
-.. autoclass:: bootstack.widgets.appshell.Workspace
+.. autoclass:: bootstack.widgets.appshell.PageNav
    :members:
 
 .. autoclass:: bootstack.widgets.appshell.Page
-   :members:
-
-.. autoclass:: bootstack.widgets.appshell.Rail
    :members:

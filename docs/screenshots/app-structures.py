@@ -32,16 +32,16 @@ def appshell():
                 file.add_action("Quit", shortcut="Mod+Q", on_click=shell.close)
             bar.add_spacer()
             bar.add_theme_toggle()
-        with shell.add_page("home", text="Home", icon="house"):
-            with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
+        with shell.page_nav() as nav:
+            with nav.add_page("home", text="Home", icon="house", gap=12, padding=20):
                 bs.Label("Home", font="heading-lg")
                 bs.Label("A window with a sidebar and swappable pages.", accent="secondary")
-        with shell.add_page("reports", text="Reports", icon="bar-chart"):
-            bs.Label("Reports", font="heading-lg")
-        with shell.add_page("team", text="Team", icon="people"):
-            bs.Label("Team", font="heading-lg")
-        with shell.add_footer_page("settings", text="Settings", icon="gear"):
-            bs.Label("Settings", font="heading-lg")
+            with nav.add_page("reports", text="Reports", icon="bar-chart", padding=20):
+                bs.Label("Reports", font="heading-lg")
+            with nav.add_page("team", text="Team", icon="people", padding=20):
+                bs.Label("Team", font="heading-lg")
+            with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True, padding=20):
+                bs.Label("Settings", font="heading-lg")
         shell.navigate("home")
     shell.run()
 
@@ -52,4 +52,4 @@ SCENES = {
 }
 
 if __name__ == "__main__":
-    app()
+    appshell()

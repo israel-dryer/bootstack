@@ -1,8 +1,9 @@
 """Single-tier app — a flat list of top-level destinations (an analytics dashboard).
 
-Each ``add_page`` registers a sidebar item and its content together; the first
-``navigate`` picks the starting page. With one set of pages no rail appears — this
-is the everyday "sidebar app" shape.
+``page_nav()`` declares the sidebar as an authored page list; each
+``nav.add_page`` registers a sidebar item and its content together. A page IS a
+column, so set ``padding`` / ``gap`` on ``add_page`` and drop the inner wrapper.
+The first ``navigate`` picks the starting page; with one sidebar no rail appears.
 """
 import bootstack as bs
 
@@ -19,8 +20,8 @@ with bs.AppShell(title="Acme Analytics", size=(900, 580)) as shell:
         bar.add_button(icon="search", on_click=lambda: None)
         bar.add_theme_toggle()
 
-    with shell.add_page("overview", text="Overview", icon="speedometer2"):
-        with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
+    with shell.page_nav() as nav:
+        with nav.add_page("overview", text="Overview", icon="speedometer2", padding=20, gap=12):
             bs.Label("Overview", font="heading-lg")
             with bs.Grid(columns=3, gap=12, horizontal="stretch"):
                 for label, value in (("Revenue", "$48.2k"), ("Orders", "1,204"), ("Visitors", "18.9k")):
@@ -28,18 +29,15 @@ with bs.AppShell(title="Acme Analytics", size=(900, 580)) as shell:
                         bs.Label(label, font="caption")
                         bs.Label(value, font="heading-md")
 
-    with shell.add_page("reports", text="Reports", icon="bar-chart"):
-        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+        with nav.add_page("reports", text="Reports", icon="bar-chart", padding=20, gap=8):
             bs.Label("Reports", font="heading-lg")
             bs.Label("Build and schedule reports.")
 
-    with shell.add_page("customers", text="Customers", icon="people"):
-        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+        with nav.add_page("customers", text="Customers", icon="people", padding=20, gap=8):
             bs.Label("Customers", font="heading-lg")
             bs.Label("1,204 active accounts.")
 
-    with shell.add_footer_page("settings", text="Settings", icon="gear"):
-        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+        with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True, padding=20, gap=8):
             bs.Label("Settings", font="heading-lg")
 
     shell.navigate("overview")

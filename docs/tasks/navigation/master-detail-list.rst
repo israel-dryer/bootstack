@@ -28,8 +28,9 @@ selected automatically, so the detail view is never empty on open.
 
    @shell.detail
    def read(message):
-       bs.Label(message["text"], font="heading-lg")
-       bs.Label(message["body"])
+       with bs.Column(horizontal_items="left", gap=12, padding=(16, 10)):
+           bs.Label(message["text"], font="heading-lg")
+           bs.Label(message["body"])
 
 The list stays in sync with its source — adding, removing, or editing records
 updates the sidebar (and re-renders the open detail) automatically.

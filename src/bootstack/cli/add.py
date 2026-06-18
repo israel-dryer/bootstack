@@ -205,12 +205,13 @@ def run_add_page(args: argparse.Namespace) -> None:
     print(f"Created page: {file_path.relative_to(project_root)}")
     print()
     print("This created the file only - it is NOT yet shown in the sidebar.")
-    print("To register it with the AppShell, paste these lines into main.py:")
+    print("To register it with the AppShell, paste these lines into main.py")
+    print("inside your shell.page_nav() block:")
     print()
     import_module = f"{module_name}.pages" if module_name else "<module>.pages"
     print(f"  from {import_module}.{file_path.stem} import {class_name}")
     scrollable_arg = ", scrollable=True" if scrollable else ""
-    print(f'  with shell.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg}):')
+    print(f'  with nav.add_page("<id>", text="<Label>", icon="<icon>"{scrollable_arg}):')
     print(f"      {class_name}()")
 
 

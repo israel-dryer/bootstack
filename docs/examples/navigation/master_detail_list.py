@@ -34,7 +34,7 @@ with bs.AppShell(title="Mail", size=(900, 580)) as shell:
 
     @shell.detail
     def read(message):
-        with bs.Column(grow=True, horizontal="stretch", gap=12, padding=20):
+        with bs.Column(horizontal_items="left", gap=12, padding=(16, 10)):
             bs.Label(message["text"], font="heading-lg")
             bs.Label(f"From {message['title']}", font="caption")
             bs.Divider(horizontal="stretch")

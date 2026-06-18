@@ -1,10 +1,10 @@
 """Custom sidebar — a bespoke sidebar the providers can't express (search filters).
 
-``panel()`` claims the sidebar as a blank container you fill with any widgets, and
-you drive the content area yourself via ``shell.content``. A faceted filter
+``custom_nav()`` claims the sidebar as a blank container you fill with any widgets,
+and you drive the content area yourself via ``shell.content``. A faceted filter
 sidebar — category, price, rating — feeding a results area is the classic case:
-it isn't navigation, so none of the nav providers fit. Reach for ``panel()`` only
-when ``add_page`` / ``list_nav`` / ``tree_nav`` cannot express your sidebar.
+it isn't navigation, so none of the nav providers fit. Reach for ``custom_nav()``
+only when ``page_nav`` / ``list_nav`` / ``tree_nav`` cannot express your sidebar.
 """
 import bootstack as bs
 
@@ -40,9 +40,9 @@ with bs.AppShell(title="Shop", size=(900, 580)) as shell:
         lines = [f"{p['name']} — ${p['price']}" for p in matches]
         results.set("\n".join(lines) if lines else "No products match.")
 
-    # A bespoke filter sidebar — not navigation, so panel() is the right tool.
-    with shell.panel():
-        with bs.Column(horizontal="stretch", gap=12, padding=16):
+    # A bespoke filter sidebar — not navigation, so custom_nav() is the right tool.
+    with shell.custom_nav():
+        with bs.Column(horizontal_items="left", gap=12, padding=(16, 10)):
             bs.Label("Filters", font="heading-md")
             bs.Label("Category", font="caption")
             bs.SelectButton(options=["All", "Electronics", "Home"], signal=category)
@@ -51,7 +51,7 @@ with bs.AppShell(title="Shop", size=(900, 580)) as shell:
 
     # Drive the content region by hand from the filter signals.
     with shell.content:
-        with bs.Column(grow=True, horizontal="stretch", gap=8, padding=20):
+        with bs.Column(horizontal_items="left", gap=8, padding=(16, 10)):
             bs.Label("Results", font="heading-lg")
             bs.Label(textsignal=results)
 

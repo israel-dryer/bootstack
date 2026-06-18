@@ -16,15 +16,18 @@ single set of pages, no workspace rail appears.
 How it works
 ------------
 
-`add_page(key, *, text, icon)` registers a sidebar item and its content page
-together, and returns a context manager — widgets created inside the `with`
-block are parented to that page. `add_footer_page()` pins an item (Settings,
+`page_nav()` declares the sidebar as an authored page list and returns a handle;
+each `add_page(key, *, text, icon)` registers a sidebar item and its content page
+together, and returns a context manager — widgets inside the `with` block are
+parented to that page. A page **is** a column, so set `padding` / `gap` on
+`add_page` (no inner wrapper). `pin_to_footer=True` pins an item (Settings,
 Account) to the bottom of the sidebar. `navigate(key)` selects the starting page.
 
 .. code-block:: python
 
-   with shell.add_page("overview", text="Overview", icon="speedometer2"):
-       bs.Label("Overview", font="heading-lg")
+   with shell.page_nav() as nav:
+       with nav.add_page("overview", text="Overview", icon="speedometer2", padding=20):
+           bs.Label("Overview", font="heading-lg")
    shell.navigate("overview")
 
 Example

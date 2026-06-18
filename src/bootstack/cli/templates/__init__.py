@@ -332,11 +332,12 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: a flat sidebar of pages ----------------------------
-        with shell.add_page("home", text="Home", icon="house"):
-            HomePage()
+        with shell.page_nav() as nav:
+            with nav.add_page("home", text="Home", icon="house"):
+                HomePage()
 
-        with shell.add_footer_page("settings", text="Settings", icon="gear"):
-            SettingsPage()
+            with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
+                SettingsPage()
 
         shell.navigate("home")
 
@@ -373,18 +374,19 @@ def main() -> None:
     ) as shell:
 {chrome}
         # --- Navigation: pages grouped under section headers ----------------
-        shell.add_header("Workspace")
-        with shell.add_page("home", text="Home", icon="house"):
-            HomePage()
-        with shell.add_page("reports", text="Reports", icon="bar-chart"):
-            ReportsPage()
+        with shell.page_nav() as nav:
+            nav.add_header("Workspace")
+            with nav.add_page("home", text="Home", icon="house"):
+                HomePage()
+            with nav.add_page("reports", text="Reports", icon="bar-chart"):
+                ReportsPage()
 
-        shell.add_header("Account")
-        with shell.add_page("profile", text="Profile", icon="person"):
-            ProfilePage()
+            nav.add_header("Account")
+            with nav.add_page("profile", text="Profile", icon="person"):
+                ProfilePage()
 
-        with shell.add_footer_page("settings", text="Settings", icon="gear"):
-            SettingsPage()
+            with nav.add_page("settings", text="Settings", icon="gear", pin_to_footer=True):
+                SettingsPage()
 
         shell.navigate("home")
 
@@ -456,7 +458,7 @@ from {module_name}.pages.settings_page import SettingsPage
 
 def main() -> None:
     """Application entry point."""
-    with bs.AppShell(
+    with bs.Workbench(
         title="{app_name}",
         theme="{theme}",
         size=(1000, 650),
@@ -466,16 +468,19 @@ def main() -> None:
 {chrome}
         # --- Navigation: a labeled rail of workspaces -----------------------
         with shell.add_workspace("home", text="Home", icon="house") as ws:
-            with ws.add_page("overview", text="Overview", icon="speedometer2"):
-                HomePage()
+            with ws.page_nav() as nav:
+                with nav.add_page("overview", text="Overview", icon="speedometer2"):
+                    HomePage()
 
         with shell.add_workspace("reports", text="Reports", icon="bar-chart") as ws:
-            with ws.add_page("monthly", text="Monthly", icon="calendar3"):
-                ReportsPage()
+            with ws.page_nav() as nav:
+                with nav.add_page("monthly", text="Monthly", icon="calendar3"):
+                    ReportsPage()
 
-        with shell.add_footer_workspace("settings", text="Settings", icon="gear") as ws:
-            with ws.add_page("general", text="General", icon="sliders"):
-                SettingsPage()
+        with shell.add_workspace("settings", text="Settings", icon="gear", pin_to_footer=True) as ws:
+            with ws.page_nav() as nav:
+                with nav.add_page("general", text="General", icon="sliders"):
+                    SettingsPage()
 
     shell.run()
 
@@ -509,8 +514,8 @@ class HomePage:
                 "Add your widgets here.\\n\\n"
                 "To add another page:\\n"
                 "  1. Run \\'bootstack add page <Name>\\' to generate the file.\\n"
-                "  2. In main.py, add a \\'with shell.add_page(...):\\' block\\n"
-                "     and instantiate your page class inside it."
+                "  2. In main.py, add a \\'with nav.add_page(...):\\' block inside\\n"
+                "     your \\'shell.page_nav()\\' and instantiate the page class in it."
             )
 '''
 
@@ -623,9 +628,9 @@ bootstack run
 # Scaffold a new page
 bootstack add page DashboardPage
 
-# Then wire it up in main.py:
+# Then wire it up in main.py, inside your shell.page_nav() block:
 #   from {module_name}.pages.dashboard_page import DashboardPage
-#   with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
+#   with nav.add_page("dashboard", text="Dashboard", icon="speedometer2"):
 #       DashboardPage()
 ```
 

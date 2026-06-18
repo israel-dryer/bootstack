@@ -900,49 +900,52 @@ def build_gallery_shell(shell) -> None:
     # Page registry: key → (page_frame, builder)
     _pages: dict[str, tuple[object, object]] = {}
 
+    # A single-tier page nav with the higher-emphasis solid selection.
+    nav = shell.page_nav(variant="solid")
+
     def _register(key, builder, *, text, icon, scrollable=False):
-        page = shell.add_page(key, text=text, icon=icon, scrollable=scrollable)
+        page = nav.add_page(key, text=text, icon=icon, scrollable=scrollable)
         _pages[key] = (page, builder)
 
     _register("home",       _build_home_page,       text="Home",        icon="house")
 
-    shell.add_divider()
-    shell.add_header("Actions")
+    nav.add_divider()
+    nav.add_header("Actions")
     _register("buttons",    _build_buttons_page,    text="Buttons",     icon="hand-index-thumb",   scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Inputs")
+    nav.add_divider()
+    nav.add_header("Inputs")
     _register("text-inputs",  _build_text_inputs_page,  text="Text Inputs",  icon="input-cursor-text", scrollable=True)
     _register("numeric",      _build_numeric_page,      text="Numeric & Date", icon="123",             scrollable=True)
     _register("forms",        _build_forms_page,        text="Forms",        icon="journal-text",      scrollable=True)
     _register("code-editor",  _build_code_editor_page,  text="Code Editor",  icon="code-slash",        scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Selection")
+    nav.add_divider()
+    nav.add_header("Selection")
     _register("selection",  _build_selection_page,  text="Selection",   icon="ui-checks",          scrollable=True)
     _register("calendar",   _build_calendar_page,   text="Calendar",    icon="calendar3",          scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Data Display")
+    nav.add_divider()
+    nav.add_header("Data Display")
     _register("data",       _build_data_page,       text="Data Tables", icon="table",              scrollable=True)
     _register("progress",   _build_progress_page,   text="Progress",    icon="speedometer2",       scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Media")
+    nav.add_divider()
+    nav.add_header("Media")
     _register("media",      _build_media_page,      text="Media",       icon="images",             scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Layout")
+    nav.add_divider()
+    nav.add_header("Layout")
     _register("layout",     _build_layout_page,     text="Containers",  icon="layout-wtf",         scrollable=True)
     _register("navigation", _build_navigation_page, text="Navigation",  icon="window-stack",       scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Overlays & Dialogs")
+    nav.add_divider()
+    nav.add_header("Overlays & Dialogs")
     _register("overlays",   _build_overlays_page,   text="Overlays",    icon="layers",             scrollable=True)
     _register("dialogs",    _build_dialogs_page,    text="Dialogs",     icon="chat-square-text",   scrollable=True)
 
-    shell.add_divider()
-    shell.add_header("Design System")
+    nav.add_divider()
+    nav.add_header("Design System")
     _register("themes",     _build_theme_page,      text="Themes",      icon="palette",            scrollable=True)
     _register("typography", _build_typography_page, text="Typography",  icon="fonts",              scrollable=True)
     _register("icons",      _build_icons_page,      text="Icons",       icon="grid-3x3-gap",       scrollable=True)

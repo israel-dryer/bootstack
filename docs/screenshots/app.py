@@ -26,3 +26,6 @@ def hero():
 
 
 SCENES = {"hero": hero}
+
+if __name__ == '__main__':
+    hero()

@@ -31,12 +31,11 @@ def hero():
             bar.add_spacer()
             bar.add_button(icon="search", on_click=lambda: None)
 
-        with shell.add_page("dashboard", text="Dashboard", icon="speedometer2"):
-            with bs.Column(horizontal="stretch", gap=12, padding=24):
+        with shell.page_nav() as nav:
+            with nav.add_page("dashboard", text="Dashboard", icon="speedometer2", gap=12, padding=24):
                 bs.Label("Dashboard", font="heading-lg")
                 bs.Label("A borderless window with a custom title bar.")
-        with shell.add_page("settings", text="Settings", icon="gear"):
-            with bs.Column(horizontal="stretch", gap=8, padding=24):
+            with nav.add_page("settings", text="Settings", icon="gear", gap=8, padding=24):
                 bs.Label("Settings", font="heading-lg")
         shell.navigate("dashboard")
     shell.run()

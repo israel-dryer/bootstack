@@ -16,19 +16,20 @@ dividers add visual structure when the destinations fall into categories.
 How it works
 ------------
 
-`add_header(text)` adds a quiet, non-interactive section label; `add_divider()`
-adds a divider. The pages added after a header read as belonging to it — the
-label's color and the extra top margin carry the grouping, so the items stay
-flush (no indentation).
+On the `page_nav()` handle, `add_header(text)` adds a quiet, non-interactive
+section label and `add_divider()` adds a divider. The pages added after a header
+read as belonging to it — the label's color and the extra top margin carry the
+grouping, so the items stay flush (no indentation).
 
 .. code-block:: python
 
-   shell.add_header("Account")
-   with shell.add_page("profile", text="Profile", icon="person"):
-       ...
-   shell.add_header("Notifications")
-   with shell.add_page("email", text="Email", icon="envelope"):
-       ...
+   with shell.page_nav() as nav:
+       nav.add_header("Account")
+       with nav.add_page("profile", text="Profile", icon="person"):
+           ...
+       nav.add_header("Notifications")
+       with nav.add_page("email", text="Email", icon="envelope"):
+           ...
 
 Group **consistently** — put everything under headers, rather than sprinkling
 loose top-level items among sections. A pinned footer item is the conventional
