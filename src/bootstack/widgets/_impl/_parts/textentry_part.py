@@ -107,6 +107,9 @@ class TextEntryPart(ValidationMixin, Entry):
         # so the Signal is never set to the placeholder text
         if placeholder:
             self._default_fg = self.cget("foreground")
+            # remember any masking char so the placeholder can render unmasked
+            # (a password '•'/'*' mask must not turn the placeholder into bullets)
+            self._show_char = self.cget("show")
             if not self.textsignal():
                 self._show_placeholder()
             self.bind('<FocusIn>', self._on_focus_in_placeholder, add=True)
@@ -115,6 +118,9 @@ class TextEntryPart(ValidationMixin, Entry):
     def _show_placeholder(self) -> None:
         self._showing_placeholder = True
         self.configure(textvariable='')
+        # render the placeholder unmasked even when an input mask is active
+        if getattr(self, '_show_char', ''):
+            self.configure(show='')
         self.insert(0, self._placeholder_text)
         self.configure(foreground='grey')
 
@@ -122,6 +128,9 @@ class TextEntryPart(ValidationMixin, Entry):
         self._showing_placeholder = False
         self.delete(0, 'end')
         self.configure(textvariable=self.textsignal.var)
+        # restore the input mask now that real input is shown
+        if getattr(self, '_show_char', ''):
+            self.configure(show=self._show_char)
         self.configure(foreground=self._default_fg)
 
     def _on_focus_in_placeholder(self, _event) -> None:
