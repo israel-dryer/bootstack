@@ -2497,7 +2497,7 @@ class TableView(Frame):
         Records are projected to the exported columns (what the table shows) and
         streamed through `bootstack.data.writers`, so the export carries the same
         columns as CSV/XLSX. (For the full record set, use
-        ``table.data_source.save(path)``.)
+        `table.data_source.save(path)`.)
         """
         from bootstack.data.writers import write_records
 

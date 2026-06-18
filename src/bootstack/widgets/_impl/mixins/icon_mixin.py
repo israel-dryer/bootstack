@@ -27,7 +27,7 @@ class IconMixin:
                 current value.
 
         Returns:
-            Current icon value when querying (``value`` is None), otherwise
+            Current icon value when querying (`value` is None), otherwise
             the result of rebuilding the widget style.
         """
         if value is None:
@@ -40,15 +40,15 @@ class IconMixin:
     def _delegate_icon_only(self, value: Any = None) -> Any:
         """Get or set icon-only display mode.
 
-        When ``True``, removes the extra padding reserved for text so the
+        When `True`, removes the extra padding reserved for text so the
         icon fills the available space without a label gap.
 
         Args:
-            value: ``True`` to enable icon-only mode, ``False`` to disable,
+            value: `True` to enable icon-only mode, `False` to disable,
                 or None to query the current value.
 
         Returns:
-            Current ``icon_only`` value when querying, otherwise the result
+            Current `icon_only` value when querying, otherwise the result
             of rebuilding the widget style.
         """
         if value is None:

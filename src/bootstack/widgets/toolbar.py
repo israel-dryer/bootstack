@@ -151,12 +151,12 @@ class Toolbar(PublicWidgetBase):
         window's chrome).
 
         Args:
-            text: The menu's label (e.g. ``'File'``).
-            key: Optional stable identifier; defaults to ``text``.
+            text: The menu's label (e.g. `'File'`).
+            key: Optional stable identifier; defaults to `text`.
 
         Returns:
-            The menu's `MenuGroup` builder (``add_action`` / ``add_check`` /
-            ``add_radio`` / ``add_separator``; usable as a context manager).
+            The menu's `MenuGroup` builder (`add_action` / `add_check` /
+            `add_radio` / `add_separator`; usable as a context manager).
         """
         return self._internal.add_menu(text, key=key)
 
@@ -173,7 +173,7 @@ class Toolbar(PublicWidgetBase):
         Args:
             text: Label text.
             icon: Icon name displayed alongside the text.
-            font: Font token, e.g. ``'heading-md'`` or ``'caption'``.
+            font: Font token, e.g. `'heading-md'` or `'caption'`.
         """
         kw: dict[str, Any] = {}
         if text is not None:
@@ -189,7 +189,7 @@ class Toolbar(PublicWidgetBase):
         """Add a vertical divider.
 
         Args:
-            length: Divider height in pixels. Defaults to ``16``.
+            length: Divider height in pixels. Defaults to `16`.
         """
         self._internal.add_separator(length=length)
 

@@ -169,7 +169,7 @@ class ButtonGroup(PublicWidgetBase):
 
         Args:
             key: Key returned by `add()`.
-            option: Option name to query (e.g. ``'text'``, ``'state'``).
+            option: Option name to query (e.g. `'text'`, `'state'`).
         """
         return self._internal.configure_item(key, option)
 

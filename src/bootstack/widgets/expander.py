@@ -39,40 +39,40 @@ class Expander(PublicContainer):
 
     Args:
         title: Header text shown in the clickable header bar.
-        layout: Internal layout for the body. One of ``'column'`` (default),
-            ``'row'``, or ``'grid'``.
+        layout: Internal layout for the body. One of `'column'` (default),
+            `'row'`, or `'grid'`.
         padding: Space between the expander border and its body content, in
-            pixels. Accepts a single int or a ``(x, y)`` tuple.
-        gap: Space between body children in pixels. Default ``0``.
+            pixels. Accepts a single int or a `(x, y)` tuple.
+        gap: Space between body children in pixels. Default `0`.
         horizontal_items: How body children sit on the horizontal axis — edge
-            values ``'left'``/``'center'``/``'right'``/``'stretch'``, plus
-            ``'space-*'`` when horizontal is the stacking axis. Default
-            ``'stretch'`` for ``'grid'``, else ``'left'``.
+            values `'left'`/`'center'`/`'right'`/`'stretch'`, plus
+            `'space-*'` when horizontal is the stacking axis. Default
+            `'stretch'` for `'grid'`, else `'left'`.
         vertical_items: How body children sit on the vertical axis — edge values
-            ``'top'``/``'center'``/``'bottom'``/``'stretch'``, plus ``'space-*'``
-            when vertical is the stacking axis. Default ``'stretch'`` for
-            ``'grid'``, else ``'top'``.
-        grow_items: For ``'column'``/``'row'``, when ``True`` every body
-            child grows equally to share the main axis. Default ``False``.
-        columns: Column size definitions for ``'grid'`` layout. An integer
+            `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'`
+            when vertical is the stacking axis. Default `'stretch'` for
+            `'grid'`, else `'top'`.
+        grow_items: For `'column'`/`'row'`, when `True` every body
+            child grows equally to share the main axis. Default `False`.
+        columns: Column size definitions for `'grid'` layout. An integer
             creates that many equal-weight columns; a list of ints sets
-            per-column weights. Default ``None``.
-        rows: Row size definitions for ``'grid'`` layout. Same format as
-            ``columns``. Default ``None``.
-        auto_flow: Grid placement direction — ``'row'`` (default) or
-            ``'column'``.
-        expanded: If ``True`` (default), the body is visible on creation.
-        collapsible: If ``True`` (default), clicking the header toggles the
-            body. If ``False``, the chevron is hidden and the body stays open.
-        show_border: If ``True``, draws a border around the entire widget.
-            Default ``False``.
+            per-column weights. Default `None`.
+        rows: Row size definitions for `'grid'` layout. Same format as
+            `columns`. Default `None`.
+        auto_flow: Grid placement direction — `'row'` (default) or
+            `'column'`.
+        expanded: If `True` (default), the body is visible on creation.
+        collapsible: If `True` (default), clicking the header toggles the
+            body. If `False`, the chevron is hidden and the body stays open.
+        show_border: If `True`, draws a border around the entire widget.
+            Default `False`.
         variant: Header style. Defaults to `None` (the default header reads
             as a ghost/transparent bar).
         icon: Icon name or spec displayed to the left of the title.
         icon_position: Side on which the collapse chevron appears —
-            ``'after'`` (default, right of title) or ``'before'`` (left).
-        highlight: If ``True``, the header shows a selected visual state while
-            the body is expanded. Default ``False``.
+            `'after'` (default, right of title) or `'before'` (left).
+        highlight: If `True`, the header shows a selected visual state while
+            the body is expanded. Default `False`.
         accent: Color intent token for the header. Defaults to `None`
             (theme default).
         parent: Explicit parent container. Omit to use the current context.
@@ -488,11 +488,11 @@ class Accordion(PublicWidgetBase):
     def on_change(self, handler: Callable[[AccordionChangeEvent], Any] | None = None) -> Stream | Subscription:
         """Register a callback fired when any section expands or collapses.
 
-        The handler receives an `AccordionChangeEvent`; ``e.expanded`` is the
+        The handler receives an `AccordionChangeEvent`; `e.expanded` is the
         tuple of currently expanded sections.
 
         Returns:
-            ``Subscription`` (with handler) or ``Stream`` (without handler).
+            `Subscription` (with handler) or `Stream` (without handler).
         """
         return self.on("change", handler)
 

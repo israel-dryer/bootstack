@@ -98,8 +98,8 @@ class Composite:
         """Remove a widget from state synchronization.
 
         Call this before destroying a registered child so that later state
-        updates do not touch a dead widget (which raises ``TclError: invalid
-        command name``).
+        updates do not touch a dead widget (which raises `TclError: invalid
+        command name`).
 
         Args:
             widget: A previously registered widget.

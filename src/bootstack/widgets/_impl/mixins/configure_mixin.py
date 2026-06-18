@@ -65,7 +65,7 @@ class ConfigureDelegationMixin:
         """Query the delegate handler for `key`.
 
         Returns:
-            A ``(handled, value)`` tuple. ``handled`` is False if no handler
+            A `(handled, value)` tuple. `handled` is False if no handler
             exists for the key.
         """
         method_name = self._configure_delegate_map.get(key)
@@ -82,9 +82,9 @@ class ConfigureDelegationMixin:
         """Set one or more widget options, or query the current value of a named option.
 
         Args:
-            cnf: Option name to query (e.g. ``'accent'``), a dict of options to
+            cnf: Option name to query (e.g. `'accent'`), a dict of options to
                 set, or None when passing options as keyword arguments.
-            **kwargs: Option names and values to set (e.g. ``accent='primary'``).
+            **kwargs: Option names and values to set (e.g. `accent='primary'`).
         """
         if kwargs:
             for _k in list(kwargs.keys()):
@@ -103,14 +103,14 @@ class ConfigureDelegationMixin:
     config = configure
 
     def __setitem__(self, key: str, value: Any) -> None:
-        """Set a configuration option using ``widget[key] = value`` syntax."""
+        """Set a configuration option using `widget[key] = value` syntax."""
         if key in self._configure_delegate_map:
             self._config_delegate_set(key, value)
             return
         return super().__setitem__(key, value)
 
     def __getitem__(self, key: str) -> Any:
-        """Return the current value of a configuration option using ``widget[key]`` syntax."""
+        """Return the current value of a configuration option using `widget[key]` syntax."""
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:
@@ -121,7 +121,7 @@ class ConfigureDelegationMixin:
         """Return the current value of a configuration option.
 
         Args:
-            key: Option name, e.g. ``'accent'``, ``'icon'``.
+            key: Option name, e.g. `'accent'`, `'icon'`.
         """
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
@@ -150,13 +150,13 @@ class CustomConfigMixin(ConfigureDelegationMixin):
         """Set one or more widget options, or query the current value of a named option.
 
         Args:
-            cnf: Option name to query (e.g. ``'accent'``), a dict of options to
+            cnf: Option name to query (e.g. `'accent'`), a dict of options to
                 set, or None when passing options as keyword arguments.
-            **kwargs: Option names and values to set (e.g. ``accent='primary'``).
+            **kwargs: Option names and values to set (e.g. `accent='primary'`).
 
         Returns:
-            When ``cnf`` is None, a dict of all options in tkinter tuple format.
-            When ``cnf`` is a string, a ``(name, dbName, dbClass, default, current)``
+            When `cnf` is None, a dict of all options in tkinter tuple format.
+            When `cnf` is a string, a `(name, dbName, dbClass, default, current)`
             tuple. None when setting options.
         """
         if isinstance(cnf, dict):
@@ -186,14 +186,14 @@ class CustomConfigMixin(ConfigureDelegationMixin):
     config = configure
 
     def __setitem__(self, key: str, value: Any) -> None:
-        """Set an option using ``obj[key] = value`` syntax."""
+        """Set an option using `obj[key] = value` syntax."""
         if key in self._configure_delegate_map:
             if self._config_delegate_set(key, value):
                 return
         self._custom_config_store[key] = value
 
     def __getitem__(self, key: str) -> Any:
-        """Return an option value using ``obj[key]`` syntax."""
+        """Return an option value using `obj[key]` syntax."""
         if key in self._configure_delegate_map:
             handled, value = self._config_delegate_get(key)
             if handled:

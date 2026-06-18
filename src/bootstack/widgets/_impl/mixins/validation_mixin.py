@@ -34,7 +34,7 @@ class ValidationMixin(Widget):
         """Set up validation state before the widget is fully initialized.
 
         Initialises the rule list, debounce tracking, and optional convenience
-        callbacks. Binds ``<<KeyRelease>>`` and ``<<FocusOut>>`` to trigger
+        callbacks. Binds `<<KeyRelease>>` and `<<FocusOut>>` to trigger
         debounced validation automatically.
         """
         # Validation rules

@@ -12,9 +12,9 @@ store, never written back. Save changes by exporting to a new file.
 Working store (where the ingested data lives):
     - default: a temporary on-disk SQLite file, removed on `close()` — bounded
       memory even for millions of rows.
-    - ``cache="path.db"``: a named, persistent store. Edits survive restarts, and
+    - `cache="path.db"`: a named, persistent store. Edits survive restarts, and
       re-opening skips re-ingest while the cache is newer than the source file.
-    - ``cache=":memory:"``: an in-memory store — compact, but RAM-bound.
+    - `cache=":memory:"`: an in-memory store — compact, but RAM-bound.
 
 Transformation pipeline (applied per record during ingest):
     column selection / renames / default values / type conversions / per-column
@@ -160,7 +160,7 @@ class FileDataSource(SqliteDataSource):
         cache: Working store location. None (default) uses a temporary on-disk
             file removed on `close()`. A path names a persistent store whose data
             survives restarts (and is reused without re-ingest while it is newer
-            than the source). ``":memory:"`` keeps the store in memory.
+            than the source). `":memory:"` keeps the store in memory.
         id_field: Record field used as the stable row identity.
 
     Attributes:

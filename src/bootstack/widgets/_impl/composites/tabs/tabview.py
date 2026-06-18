@@ -319,7 +319,7 @@ class TabView(Frame):
         """Hide a tab without removing it from the registry.
 
         The tab disappears from the bar but remains registered. Restore it
-        with ``show_tab()``. If the hidden tab was selected, the next
+        with `show_tab()`. If the hidden tab was selected, the next
         available visible tab is selected automatically.
 
         Args:
@@ -362,7 +362,7 @@ class TabView(Frame):
     def forget_tab(self, key: str) -> None:
         """Remove a tab and its page entirely.
 
-        Unlike ``hide_tab()``, the tab is unregistered and cannot be restored.
+        Unlike `hide_tab()`, the tab is unregistered and cannot be restored.
         If the removed tab was selected, the next available tab is selected.
 
         Args:
@@ -396,7 +396,7 @@ class TabView(Frame):
     def remove(self, key: str) -> None:
         """Remove a tab and its associated page.
 
-        Alias for ``forget_tab()``.
+        Alias for `forget_tab()`.
 
         Args:
             key: The identifier of the tab/page to remove.
@@ -495,7 +495,7 @@ class TabView(Frame):
     def keys(self) -> tuple[str, ...]:
         """Get all tab keys.
 
-        Alias for ``tab_keys()``.
+        Alias for `tab_keys()`.
 
         Returns:
             A tuple of all tab keys in the order they were added.
@@ -566,8 +566,8 @@ class TabView(Frame):
 
         Args:
             callback: Receives a `TabChangeEvent` payload with attributes
-                ``current`` (`TabRef`), ``previous`` (`TabRef | None`),
-                ``reason`` (`ChangeReason`), and ``via`` (`ChangeMethod`).
+                `current` (`TabRef`), `previous` (`TabRef | None`),
+                `reason` (`ChangeReason`), and `via` (`ChangeMethod`).
 
         Returns:
             Bind ID — pass to `off_tab_changed()` to unsubscribe.
@@ -589,7 +589,7 @@ class TabView(Frame):
 
         Args:
             callback: Receives a `TabActivateEvent` payload with attributes
-                ``key`` and ``text``.
+                `key` and `text`.
 
         Returns:
             Bind ID — pass to `off_tab_activated()` to unsubscribe.
@@ -611,7 +611,7 @@ class TabView(Frame):
 
         Args:
             callback: Receives a `TabDeactivateEvent` payload with attributes
-                ``key`` and ``text``.
+                `key` and `text`.
 
         Returns:
             Bind ID — pass to `off_tab_deactivated()` to unsubscribe.

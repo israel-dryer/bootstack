@@ -57,7 +57,7 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
     """A secondary top-level window.
 
     Behaves as an implicit `Column` from the user's perspective: children
-    created inside a ``with`` block are automatically packed into its content
+    created inside a `with` block are automatically packed into its content
     frame top-to-bottom.  Call `show()` to display the window after building
     its content, or `block_until_closed()` to show it and wait for the user
     to close it.
@@ -256,7 +256,7 @@ class Window(WindowControlsMixin, ChromeHostMixin, FlexContainer):
                 off-screen. Defaults to `True`.
 
         Returns:
-            `self` — allows chaining: ``win = Window(...).show()``.
+            `self` — allows chaining: `win = Window(...).show()`.
         """
         self._ensure_default_titlebar()
         if anchor_to is not None:

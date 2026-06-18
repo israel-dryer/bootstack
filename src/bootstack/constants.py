@@ -4,7 +4,7 @@ This module provides symbolic string constants for use with tkinter geometry
 managers, widget states, and other APIs that accept fixed string values.
 
 Type aliases (Literal types for type checking) live in
-``bootstack.widgets.types`` and are re-exported here for convenience.
+`bootstack.widgets.types` and are re-exported here for convenience.
 
 Example::
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import Final, Literal
 
-# Re-export type aliases from widgets.types so ``from bootstack.constants import *``
+# Re-export type aliases from widgets.types so `from bootstack.constants import *`
 # continues to work as before.
 from bootstack.widgets.types import (
     Anchor,
@@ -44,18 +44,18 @@ TkBoolean = Literal[0, 1, True, False]
 """Tk-style boolean: 0/1 or True/False."""
 
 State = Literal['normal', 'disabled', 'active', 'hidden', 'readonly']
-"""Full widget state set including ``'hidden'`` (Canvas) and ``'readonly'`` (ttk).
-For ttk widget construction kwargs prefer ``WidgetState`` from ``bootstack.widgets.types``.
+"""Full widget state set including `'hidden'` (Canvas) and `'readonly'` (ttk).
+For ttk widget construction kwargs prefer `WidgetState` from `bootstack.widgets.types`.
 """
 
 MenuItemType = Literal['cascade', 'checkbutton', 'command', 'radiobutton', 'separator']
-"""Menu item type for ``tk.Menu.add_*`` calls."""
+"""Menu item type for `tk.Menu.add_*` calls."""
 
 ActiveStyle = Literal['none', 'dotbox', 'underline']
-"""Active-item highlight style for ``tk.Listbox``."""
+"""Active-item highlight style for `tk.Listbox`."""
 
 PieStyle = Literal['pieslice', 'chord', 'arc']
-"""Arc/pie style for ``Canvas.create_arc``."""
+"""Arc/pie style for `Canvas.create_arc`."""
 
 LineCap = Literal['butt', 'projecting', 'round']
 """Line cap style for Canvas lines."""
@@ -67,7 +67,7 @@ IndexPos = Literal['first', 'last']
 """Named index positions used by several widget methods."""
 
 ViewArg = Literal['moveto', 'scroll', 'units', 'pages']
-"""Arguments accepted by ``xview()`` / ``yview()`` scroll methods."""
+"""Arguments accepted by `xview()` / `yview()` scroll methods."""
 
 TtkTheme = Literal['clam', 'alt', 'default']
 """Built-in base ttk theme names."""
@@ -79,10 +79,10 @@ Align = Literal['baseline']
 """Text alignment for embedded windows/images in the Text widget."""
 
 Wrap = Literal['none', 'char', 'word']
-"""Text wrapping mode for the ``tk.Text`` widget."""
+"""Text wrapping mode for the `tk.Text` widget."""
 
 SelectMode = Literal['single', 'browse', 'multiple', 'extended']
-"""Item selection mode for ``tk.Listbox``."""
+"""Item selection mode for `tk.Listbox`."""
 
 ProgressMode = Literal['determinate', 'indeterminate']
 """Progress mode for the Progressbar widget."""

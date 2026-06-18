@@ -21,10 +21,10 @@ class StatusBar(PublicWidgetBase):
     left-to-right; an `add_spacer()` (or `side='right'`) pushes the following
     segments to the right cluster.
 
-    Use it standalone — ``bs.StatusBar(fill="x", side="bottom")`` pins one to the
+    Use it standalone — `bs.StatusBar(fill="x", side="bottom")` pins one to the
     bottom of any `App`/`Window` — or read `shell.statusbar` for the one built
     into an :class:`AppShell <bootstack.AppShell>`. Create custom widgets with
-    ``parent=statusbar`` (they add to the left cluster automatically) or pass a
+    `parent=statusbar` (they add to the left cluster automatically) or pass a
     pre-parented widget to `add_widget()`.
 
     Args:

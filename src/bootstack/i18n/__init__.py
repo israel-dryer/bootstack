@@ -1,8 +1,8 @@
 """Localization for bootstack.
 
-Public API: ``L`` (lazy translated text) and ``LV`` (lazy locale-formatted
-value), used wherever a widget takes text. ``MessageCatalog`` (the gettext /
-Tcl-msgcat bridge) and ``IntlFormatter`` (the Babel value formatter) are the
+Public API: `L` (lazy translated text) and `LV` (lazy locale-formatted
+value), used wherever a widget takes text. `MessageCatalog` (the gettext /
+Tcl-msgcat bridge) and `IntlFormatter` (the Babel value formatter) are the
 internal engines behind them — importable for internal use but not part of the
 public API.
 """

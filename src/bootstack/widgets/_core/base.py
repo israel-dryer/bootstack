@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 def adapt_handler(handler: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """Wrap a public handler so it receives a bootstack event, not a raw one.
 
-    Data-carrying events (emitted with ``data=<payload>``) deliver the payload
+    Data-carrying events (emitted with `data=<payload>`) deliver the payload
     object directly — the handler argument *is* the payload. Native/context
     events carry no payload, so the raw toolkit event is curated into a clean
     :class:`~bootstack.events.Event` first.

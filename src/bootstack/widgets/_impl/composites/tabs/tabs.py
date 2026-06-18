@@ -384,7 +384,7 @@ class Tabs(Frame):
     def hide(self, key: str) -> None:
         """Hide a tab without removing it from the registry.
 
-        The tab disappears from the bar but can be restored with ``show()``.
+        The tab disappears from the bar but can be restored with `show()`.
 
         Args:
             key: Key of the tab to hide.
