@@ -17,6 +17,9 @@ class Tooltip:
 
     Args:
         target: Widget to attach the tooltip to. Accepts any bootstack widget.
+            When the target is a container, the tooltip shows while hovering
+            anywhere inside it, including over its children present at attach
+            time.
         text: Tooltip text content. Defaults to `''`.
         delay: Milliseconds before the tooltip appears on mouse enter. Defaults
             to `250`.

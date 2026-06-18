@@ -1697,7 +1697,7 @@ class ContextMenu:
 
     def _bind_trigger(self, target: Misc, trigger: str) -> None:
         """Bind `target`'s activation event to show this menu at the click."""
-        from bootstack._runtime.utility import bind_right_click
+        from bootstack._runtime.utility import bind_right_click, propagate_target_bindings
 
         def show_at(event):
             self.show(position=(event.x_root, event.y_root))
@@ -1718,6 +1718,10 @@ class ContextMenu:
                 f"Unknown trigger {trigger!r}. Use 'right-click', 'click', "
                 f"'double-click', 'shift-click', 'ctrl-click', or 'manual'."
             )
+
+        # Tk events don't bubble, so a gesture over the target's children would
+        # otherwise never reach this binding. Extend it across the subtree.
+        propagate_target_bindings(target)
 
     # ── Public API stubs ──────────────────────────────────────────────────────
     # Explicit method definitions so griffe and IDEs can see the API.

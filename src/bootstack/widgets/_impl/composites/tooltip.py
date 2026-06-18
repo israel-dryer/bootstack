@@ -116,7 +116,13 @@ class ToolTip:
         self._widget.bind("<Enter>", self._on_enter)
         self._widget.bind("<Leave>", self._on_leave)
         self._widget.bind("<Motion>", self._move_tip)
-        self._widget.bind("<ButtonPress>", self._on_leave)
+        self._widget.bind("<ButtonPress>", self._on_button_press)
+
+        # Tk events don't bubble, so hovering a child of a container target
+        # would otherwise never reach these bindings. Extend them across the
+        # subtree so the tip shows anywhere inside the container.
+        from bootstack._runtime.utility import propagate_target_bindings
+        propagate_target_bindings(self._widget)
 
     def destroy(self) -> None:
         """Cleanup tooltip resources and unbind all event handlers.
@@ -137,9 +143,36 @@ class ToolTip:
         self._schedule()
 
     def _on_leave(self, _) -> None:
-        """Handle mouse leave event by canceling and hiding tooltip."""
+        """Handle mouse leave event by canceling and hiding tooltip.
+
+        When the target is a container, crossing from the container onto one of
+        its children fires a `<Leave>` on the container even though the pointer
+        is still inside it. Keep the tip in that case so it doesn't flicker as
+        the pointer moves over child widgets.
+        """
+        if self._pointer_within_target():
+            return
         self._unschedule()
         self._hide_tip()
+
+    def _on_button_press(self, _) -> None:
+        """Hide the tooltip on any button press inside the target subtree."""
+        self._unschedule()
+        self._hide_tip()
+
+    def _pointer_within_target(self) -> bool:
+        """Return True if the pointer is over the target or one of its children."""
+        try:
+            x = self._widget.winfo_pointerx()
+            y = self._widget.winfo_pointery()
+            under = self._widget.winfo_containing(x, y)
+        except tk.TclError:
+            return False
+        if under is None:
+            return False
+        target_path = str(self._widget)
+        under_path = str(under)
+        return under_path == target_path or under_path.startswith(target_path + ".")
 
     def _schedule(self) -> None:
         """Schedule the tooltip to appear after the configured delay."""

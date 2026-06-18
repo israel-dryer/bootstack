@@ -356,6 +356,51 @@ def bind_right_click(widget, handler, add: str | bool = '+'):
         widget.bind('<Control-Button-1>', handler, add=add)
 
 
+def propagate_target_bindings(target) -> None:
+    """Make events on `target`'s descendants also fire `target`'s own bindings.
+
+    Tk events do not bubble up the widget hierarchy — the widget directly under
+    the pointer receives the event — so a gesture (right-click, hover, ...) bound
+    to a *container* never fires when the pointer is over one of the container's
+    children. This adds the container's own bindtag (its Tk path name, the tag
+    that `widget.bind(...)` registers under) to every descendant in the same
+    toplevel, so the container's binding fires for events anywhere inside it.
+
+    The tag is inserted just after each descendant's own path-name tag, so the
+    child's own bindings still take precedence. The call is idempotent, so it is
+    safe to run again after the container gains new children. Nested toplevels
+    (popups, menus, dialogs parented to the target) are skipped.
+
+    Args:
+        target: The container widget whose bindings should cover its descendants.
+    """
+    try:
+        tag = str(target)
+        top = str(target.winfo_toplevel())
+    except Exception:
+        return
+
+    def visit(widget):
+        try:
+            children = widget.winfo_children()
+        except Exception:
+            return
+        for child in children:
+            try:
+                # Don't cross into nested toplevels (the menu/tooltip popup
+                # itself is parented to the target and would be walked here).
+                if str(child.winfo_toplevel()) != top:
+                    continue
+                tags = list(child.bindtags())
+                if tag not in tags:
+                    child.bindtags([tags[0], tag, *tags[1:]] if tags else [tag])
+            except Exception:
+                continue
+            visit(child)
+
+    visit(target)
+
+
 def clamp(value, min_val, max_val):
     """Return a value that is bounded by a minimum and maximum.
 
