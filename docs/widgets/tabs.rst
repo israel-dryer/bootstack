@@ -144,6 +144,37 @@ programmatically.
 
    tabs.on_tab_add(add_tab)
 
+Overflow
+~~~~~~~~
+
+When the tabs exceed the strip, ``overflow='scroll'`` (the default) keeps them in
+a single scrolling line — there is no scrollbar; the mouse wheel scrolls along
+the strip, and selecting a tab scrolls it into view. A trailing chevron button
+appears only while tabs overflow: it lists the off-screen tabs and scrolls the
+one you pick into view. This works the same in both orientations — horizontal
+scrolls left and right, vertical scrolls up and down.
+
+.. code-block:: python
+
+   tabs = bs.Tabs(allow_add=True)          # overflow='scroll' by default
+   for i in range(20):
+       with tabs.add(f"file{i}", label=f"source-file-{i}.py", icon="file-earmark-code"):
+           bs.Label(f"Contents of source-file-{i}.py")
+
+Pass ``overflow='clip'`` to keep the older behavior, where tabs past the edge are
+clipped. Overflow scrolling does not apply when ``tab_width='stretch'`` — stretched
+tabs always fit.
+
+Limiting the tab count
+~~~~~~~~~~~~~~~~~~~~~~~
+
+``max_tabs=`` caps how many tabs can be open. When the count reaches the limit the
+add button is disabled; it re-enables when a tab is removed.
+
+.. code-block:: python
+
+   tabs = bs.Tabs(allow_add=True, max_tabs=8)
+
 Page layout modes
 ~~~~~~~~~~~~~~~~~
 
