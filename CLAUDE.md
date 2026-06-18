@@ -21,8 +21,8 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Tab overflow handling (#168)** (this session; branch `feat/tabs-overflow`,
-  3 commits — **committed, not yet PR'd**) — tabs that exceed the strip now stay
+- **Tab overflow handling (#168)** (this session; PR **#184**, MERGED to `main`)
+  — tabs that exceed the strip now stay
   in a **scrollbar-less scrolling line** (wheel scrolls along the axis; the
   selected tab auto-scrolls into view) with a trailing **chevron overflow menu**
   listing the off-screen tabs (with icons) that scrolls the picked one into view.
@@ -449,6 +449,49 @@ memories and git history.
 > "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
 > below is the stable-cut closeout + a fresh regression + the standing backlog.
 
+### ★ NEXT — #160 Gallery/Carousel height-floor cleanup
+
+**Issue #160** (Gallery/Carousel collapse to zero height in non-expanding/
+scrollable containers) was **fixed by PR #161** ("fix(media): give Gallery/Carousel
+a requested-height floor", MERGED) — but the **issue is still OPEN** and wants
+cleanup + the regression test it asked for. (NB: `(#160)` appears in some old
+localization commit messages — that's stale numbering noise; #160 IS the
+Gallery/Carousel issue, confirmed via `gh issue view 160`.)
+
+**The fix is SOUND — do NOT rewrite it.** Recon (Explore agent, this session)
+confirmed the mechanism is a true *minimum*, not a hard freeze: the public
+wrappers call **`pack_propagate(False)`** then **`self.configure(height=floor)`** on
+the outer frame; the inner canvas packs `fill="both", expand=True` *inside* that
+frame, so `grow=True`/`expand` still grows it past the floor (the parent's
+grid/pack honors `fill`/`expand` and allocates more, the canvas fills it). Verified
+in the demo Media page (`scrollable=True`, both `grow=True`).
+- **Floors:** Gallery (`gallery.py` impl ~L224/240) `rows × _row_h`, where
+  `_row_h = tile_h + 2*ring_pad + (24 if caption else 0) + gap`; param `rows: int = 2`.
+  Carousel (`carousel.py` impl ~L130) `height if height else round(400 / aspect_ratio)`;
+  params `aspect_ratio: float = 1.5`, `height: int | None = None`.
+
+**Cleanup scope (tests + docs + minor hardening; NOT a behavior fix):**
+1. **Add the regression test the issue asks for** — Gallery AND Carousel in a
+   **non-expanding parent** (a `ScrollView`/auto-fit window, `scrollable=True`) report
+   `winfo_height() > 1` (don't collapse), AND still grow past the floor under
+   `grow=True`. None exists today (only the public-surface import guard). Use the
+   one-shown-module-App GUI fixture pattern (see `test_tabs_overflow.py` /
+   `test_datatable.py`). This is the load-bearing deliverable to close #160.
+2. **Document the magic `400`** in `carousel.py` (the assumed stage width behind
+   `400/aspect_ratio`) + state in the docstring that `aspect_ratio` is W:H so
+   lower ratio → taller (currently counterintuitive/undocumented).
+3. **Harden the hardcoded `24`px caption allowance** in Gallery's `_row_h` — at
+   least pull it to a named constant (`_CAPTION_H = 24`); consider theme/font-aware
+   (measure a Label) — optional.
+4. **API symmetry (judgment call, maybe defer):** Gallery is row-based (`rows=`),
+   Carousel is aspect/pixel-based (`aspect_ratio=`/`height=`). Consider a shared
+   `min_height=` (explicit px) on both, with Gallery keeping `rows=` as the
+   ergonomic alias. Discuss before doing — could be scope creep; the maintainer may
+   prefer to just test+doc and close.
+5. **Close #160** once the regression test is in.
+- Floors are **bake-time only** (no live `rows`/`height` setter) — fine; note it,
+  don't necessarily fix. Memory `project_picture_suite`. Start a `fix/*` branch.
+
 ### ✅ SHIPPED — Layout redesign (screen-axis vocabulary on a grid engine) — MERGED #170
 
 Replaced the Tk pack stack layout with a **screen-axis** vocabulary on the Tk **grid**
@@ -504,8 +547,7 @@ geometry manager. Merged to `main` via **PR #170** (the long-running
 - Demo bugs (pre-existing, NOT layout-caused): ~~#166 ContextMenu/Tooltip don't
   cover container children~~ (DONE, PR #183 — see top of "Recently completed") ·
   ~~#167 Gauge theme repaint~~ (resolved by the theme-repaint perf work, PR #180) ·
-  ~~#168 Tabs overflow~~ (DONE, branch `feat/tabs-overflow`, 3 commits — committed,
-  not yet PR'd; see top of "Recently completed").
+  ~~#168 Tabs overflow~~ (DONE, PR #184, MERGED; see top of "Recently completed").
 
 ### ✅ SHIPPED — Undecorated window controls + border + maximized-drag (#162, #165) — MERGED #175
 
