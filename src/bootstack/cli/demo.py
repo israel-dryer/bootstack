@@ -978,6 +978,7 @@ def run_demo():
         title="Widget Gallery",
         theme="bootstrap-light",
         size=(1100, 750),
+        nav_variant="solid"
     ) as shell:
         build_gallery_shell(shell)
     shell.run()
