@@ -94,6 +94,9 @@ class PasswordEntry(Field):
 
     def _hide_password(self, _):
         """Hide the password by restoring character masking."""
+        # leave an unmasked placeholder alone — it is not real input to mask
+        if getattr(self.entry_widget, '_showing_placeholder', False):
+            return
         self.entry_widget['show'] = self._show_indicator
 
     # ------ Configuration Delegates ------
@@ -127,5 +130,8 @@ class PasswordEntry(Field):
 
     def hide(self) -> None:
         """Restore character masking."""
+        # leave an unmasked placeholder alone — it is not real input to mask
+        if getattr(self.entry_widget, '_showing_placeholder', False):
+            return
         self.entry_widget['show'] = self._show_indicator
 
