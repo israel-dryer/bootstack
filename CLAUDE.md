@@ -21,6 +21,35 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Field validation redesign** (PR **#218**, MERGED) — started as a `TextField`
+  review (audit→fix→test→docs), surfaced that validation was **fundamentally
+  broken for typed fields**, and turned into a 4-phase rebuild. **Phase 1:**
+  validation now runs against the field's **typed value** via one resolver
+  (`TextEntryPart._get_validation_value` = `_parse_or_none(get())`;
+  `NumberEntryPart` override coerces to its numeric type) — all 7 field wrappers
+  route through it (was 4 passing the raw datum → `TypeError`, 2 passing text);
+  `add_validation_rule` guards the silent `ValidationRule`-object double-wrap with
+  a `TypeError`. **Phase 2:** type-aware rule taxonomy — text-rules
+  (`stringLength`/`pattern`/`email`) vs value-rules; new **`range`** rule
+  (number/date/time bounds with a message, vs silent `min_value`/`max_value`
+  clamping); an inapplicable rule is **rejected at attach time** with
+  `BootstackError`, keyed off a per-wrapper `_VALIDATION_KIND` class attr
+  (`number`/`date`/`time`; `text` default); redundant date/time
+  `add_validation_rule` overrides removed (they bypassed the guard). **Phase 3:**
+  reactive validity surface — the engine owns `_valid_signal`/`_error_signal`
+  (source of truth, set via `_set_validity` on every run); public **`field.valid`**
+  / **`field.error`** Signals (`bs.Label(textsignal=field.error)`); the Field
+  message label is now bound to the error signal (imperative `_show_error`/
+  `_clear_error` gone); `Form.validate()` routed through the entry's validator.
+  **Phase 4:** `docs/reference/validation.rst` rewritten (typed-value model,
+  `range`, type-aware behavior, reactive signals); api-ref `RuleType` += `range`.
+  Brief `docs/_dev/field-validation-system.md`; memory
+  `project_field_validation_redesign`. Tests `test_field_validation_typed.py`
+  (27). **Follow-ups:** **#216** (`NumberField(value=None)` crashes at
+  construction — `float('')`, pre-existing) · **#217** (deferred 3b: reactive
+  `Form.valid`/`Form.errors` computed aggregate + stream-based triggers — additive,
+  not correctness). NB the **string-only `add_validation_rule`** decision is locked
+  (a `ValidationRule` object carries no info the string form lacks).
 - **Slider/RangeSlider review** (PR **#212**, MERGED) — value clamps to range, disabled
   honored on every key (incl. Home/End), Home/End emit `<<Commit>>`, tightening the range
   re-clamps the value(s); widget pages gained Events + Keyboard sections + value/min-max
