@@ -44,6 +44,10 @@ class Slider(PublicWidgetBase):
             positions. Defaults to `True`.
         tick_format: Python format string applied to tick and badge labels.
             Defaults to `'{:.0f}'`.
+        step: Snap increment. When set, click/drag values snap to multiples of
+            `step` (measured from `min_value`) and the arrow keys move by `step`.
+            `None` (the default) leaves the value continuous. Independent of
+            `tick_step`, which only places tick marks.
         accent: Accent token controlling the fill, handle, and focus ring
             color. Defaults to `'primary'`.
         disabled: If `True`, slider is non-interactive. Defaults to
@@ -69,6 +73,7 @@ class Slider(PublicWidgetBase):
         minor_ticks: int = 0,
         tick_labels: bool = True,
         tick_format: str = "{:.0f}",
+        step: float | None = None,
         accent: AccentToken | str | None = None,
         disabled: bool = False,
         parent: Any = None,
@@ -89,6 +94,7 @@ class Slider(PublicWidgetBase):
             "minor_ticks":  minor_ticks,
             "tick_labels":  tick_labels,
             "tick_format":  tick_format,
+            "step":         step,
         }
         if signal is not None:
             internal_kwargs["signal"] = signal
@@ -135,6 +141,15 @@ class Slider(PublicWidgetBase):
     @max_value.setter
     def max_value(self, v: float) -> None:
         self._internal.configure(maxvalue=float(v))
+
+    @property
+    def step(self) -> float | None:
+        """Snap increment, or `None` when the value is continuous."""
+        return self._internal._step_size
+
+    @step.setter
+    def step(self, v: float | None) -> None:
+        self._internal.configure(step=v)
 
     @property
     def disabled(self) -> bool:
@@ -211,6 +226,10 @@ class RangeSlider(PublicWidgetBase):
             positions. Defaults to `True`.
         tick_format: Python format string applied to tick and badge labels.
             Defaults to `'{:.0f}'`.
+        step: Snap increment. When set, handle values snap to multiples of
+            `step` (measured from `min_value`) and the arrow keys move by `step`.
+            `None` (the default) leaves the values continuous. Independent of
+            `tick_step`, which only places tick marks.
         accent: Accent token controlling the fill, handles, and focus ring
             color. Defaults to `'primary'`.
         disabled: If `True`, slider is non-interactive. Defaults to
@@ -237,6 +256,7 @@ class RangeSlider(PublicWidgetBase):
         minor_ticks: int = 0,
         tick_labels: bool = True,
         tick_format: str = "{:.0f}",
+        step: float | None = None,
         accent: AccentToken | str | None = None,
         disabled: bool = False,
         parent: Any = None,
@@ -257,6 +277,7 @@ class RangeSlider(PublicWidgetBase):
             "minor_ticks":   minor_ticks,
             "tick_labels":   tick_labels,
             "tick_format":   tick_format,
+            "step":          step,
         }
         if low_signal is not None:
             internal_kwargs["lo_signal"] = low_signal
@@ -325,6 +346,15 @@ class RangeSlider(PublicWidgetBase):
     @max_value.setter
     def max_value(self, v: float) -> None:
         self._internal.configure(maxvalue=float(v))
+
+    @property
+    def step(self) -> float | None:
+        """Snap increment, or `None` when the values are continuous."""
+        return self._internal._step_size
+
+    @step.setter
+    def step(self, v: float | None) -> None:
+        self._internal.configure(step=v)
 
     @property
     def disabled(self) -> bool:

@@ -58,6 +58,12 @@ subdivisions between them.
    :class: bs-screenshot-dark
    :alt: RangeSlider tick marks — dark theme
 
+.. note::
+
+   ``tick_step`` only *draws* the marks — the handles still move continuously.
+   To make the handles snap to those increments, use ``step=`` (see
+   `Snapping to steps`_).
+
 Accent colors
 ~~~~~~~~~~~~~
 
@@ -104,6 +110,22 @@ Access both handles at once via ``.value``, or individually via
    rs.low_value  = 30     # move low handle (clamped to [min, high])
    rs.high_value = 70     # move high handle (clamped to [low, max])
 
+Snapping to steps
+~~~~~~~~~~~~~~~~~
+
+Set ``step=`` to constrain both handles to discrete increments. Click and drag
+values snap to the nearest multiple of ``step`` (measured from ``min_value``),
+and the arrow keys move by ``step``. It is independent of ``tick_step`` — set
+both for a stepped range with matching marks, or ``step`` alone to snap without
+drawing ticks.
+
+.. code-block:: python
+
+   # Both handles snap to 0, 5, 10, … 100
+   bs.RangeSlider(20, 80, min_value=0, max_value=100, step=5, tick_step=5)
+
+When the range is not an even multiple of ``step``, the maximum stays reachable.
+
 Events
 ~~~~~~
 
@@ -133,8 +155,9 @@ Keyboard
 ~~~~~~~~
 
 When focused, ``Tab`` switches between the low and high handle. The active
-handle responds to the arrow keys (±1), ``Shift`` + arrow (±10), and ``Home`` /
-``End`` (minimum / maximum). Every keyboard change also emits ``on_commit``.
+handle responds to the arrow keys (±1, or ±``step`` when ``step`` is set),
+``Shift`` + arrow (a larger jump), and ``Home`` / ``End`` (minimum / maximum).
+Every keyboard change also emits ``on_commit``.
 
 Disabled
 ~~~~~~~~

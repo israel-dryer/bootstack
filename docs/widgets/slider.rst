@@ -78,6 +78,11 @@ track ends.
    :class: bs-screenshot-dark
    :alt: Slider min/max labels — dark theme
 
+.. note::
+
+   When ``tick_step`` is set with labels, the range ends are already labeled —
+   ``show_minmax`` is mainly for a slider without tick marks.
+
 Tick marks
 ~~~~~~~~~~
 
@@ -98,6 +103,28 @@ subdivisions between them. ``tick_labels=False`` hides the numeric labels.
 .. image:: /_static/examples/slider-ticks-dark.png
    :class: bs-screenshot-dark
    :alt: Slider tick marks — dark theme
+
+.. note::
+
+   ``tick_step`` only *draws* the marks — the value still moves continuously.
+   To make the slider snap to those increments, use ``step=`` (see
+   `Snapping to steps`_).
+
+Snapping to steps
+~~~~~~~~~~~~~~~~~
+
+Set ``step=`` to constrain the value to discrete increments. Click and drag
+values snap to the nearest multiple of ``step`` (measured from ``min_value``),
+and the arrow keys move by ``step``. It is independent of ``tick_step`` — set
+both for a stepped slider with matching marks, or ``step`` alone to snap without
+drawing ticks.
+
+.. code-block:: python
+
+   # Only 0, 5, 10, … 100 — with ticks drawn at the same increments
+   bs.Slider(50, min_value=0, max_value=100, step=5, tick_step=5)
+
+When the range is not an even multiple of ``step``, the maximum stays reachable.
 
 Reactive binding
 ~~~~~~~~~~~~~~~~
@@ -137,9 +164,9 @@ holds the current value.
 Keyboard
 ~~~~~~~~
 
-When focused, the slider responds to the arrow keys (±1), ``Shift`` + arrow
-(±10), and ``Home`` / ``End`` (minimum / maximum). Every keyboard change also
-emits ``on_commit``.
+When focused, the slider responds to the arrow keys (±1, or ±``step`` when
+``step`` is set), ``Shift`` + arrow (a larger jump), and ``Home`` / ``End``
+(minimum / maximum). Every keyboard change also emits ``on_commit``.
 
 Disabled
 ~~~~~~~~

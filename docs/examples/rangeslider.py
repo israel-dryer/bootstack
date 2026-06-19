@@ -1,7 +1,7 @@
 """RangeSlider — full feature demo.
 
 Demonstrates basic usage, value badges, tick marks, accent colors,
-and disabled state.
+step snapping, and disabled state.
 
 Run with:
     python docs/examples/rangeslider.py
@@ -29,6 +29,10 @@ with bs.App(title="RangeSlider Demo", padding=20, gap=16, minsize=(400, 200)) as
     with bs.Column(gap=6, horizontal="stretch", horizontal_items="stretch"):
         for accent in ("primary", "secondary", "info", "success", "warning", "danger"):
             bs.RangeSlider(20, 80, accent=accent)
+
+    # Step snapping (both handles snap to 0, 5, 10, … 100)
+    bs.Label("Step Snapping", font="heading-sm")
+    bs.RangeSlider(20, 80, step=5, tick_step=5, horizontal="stretch")
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")
