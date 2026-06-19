@@ -5,6 +5,47 @@ from bootstack.validation.types import RuleTriggerType, RuleType
 from bootstack.validation.validation_result import ValidationResult
 
 
+# Rules that operate on a text value; meaningless on a typed (number/date/time)
+# value. The field rejects these at attach time when it does not hold text.
+TEXT_RULES = frozenset({"stringLength", "pattern", "email"})
+
+# Rules that operate on an orderable typed value (number, date, or time).
+ORDERED_RULES = frozenset({"range"})
+
+
+def rule_applies_to_kind(rule_type: str, kind: str) -> bool:
+    """Whether a rule type can validate a field holding the given value kind.
+
+    Args:
+        rule_type: The rule name (e.g. `'stringLength'`, `'range'`).
+        kind: The field's value kind — `'text'`, `'number'`, `'date'`, or
+            `'time'`.
+
+    Returns:
+        `True` if the rule applies. Text rules apply only to text fields;
+        `'range'` applies only to ordered (number/date/time) fields; the
+        remaining rules (`'required'`, `'compare'`, `'custom'`) apply to any.
+    """
+    if rule_type in TEXT_RULES:
+        return kind == "text"
+    if rule_type in ORDERED_RULES:
+        return kind in ("number", "date", "time")
+    return True
+
+
+def _as_text(value: object) -> str:
+    """Coerce a value to text for the string rules.
+
+    The string rules (`stringLength`, `pattern`, `email`) operate on text. When
+    one is applied to a typed value (a number or date), coerce rather than crash;
+    the rule taxonomy rejects that misuse at attach time, this is the last-ditch
+    guard. `None` (an empty field) becomes the empty string.
+    """
+    if isinstance(value, str):
+        return value
+    return "" if value is None else str(value)
+
+
 class ValidationRule:
     """A single validation rule that can be applied to a string value.
 
@@ -64,16 +105,31 @@ class ValidationRule:
             return ValidationResult(True, "")
 
         elif self.type == "email":
-            if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", _as_text(value)):
                 return ValidationResult(False, msg)
         elif self.type == "stringLength":
             min_len = self.params.get("min", 0)
             max_len = self.params.get("max", float("inf"))
-            if not (min_len <= len(value) <= max_len):
+            if not (min_len <= len(_as_text(value)) <= max_len):
                 return ValidationResult(False, msg)
         elif self.type == "pattern":
             pattern = self.params.get("pattern", "")
-            if not re.match(pattern, value):
+            if not re.match(pattern, _as_text(value)):
+                return ValidationResult(False, msg)
+        elif self.type == "range":
+            # Bounds on an ordered value (number/date/time). An empty field is
+            # not out of range — use 'required' for presence.
+            if value is None or value == "":
+                return ValidationResult(True)
+            lo = self.params.get("min")
+            hi = self.params.get("max")
+            try:
+                if lo is not None and value < lo:
+                    return ValidationResult(False, msg)
+                if hi is not None and value > hi:
+                    return ValidationResult(False, msg)
+            except TypeError:
+                # Incomparable types (e.g. a string bound against a number).
                 return ValidationResult(False, msg)
         elif self.type == "compare":
             if value != self._read_other(self.params.get("other_field")):
@@ -120,6 +176,16 @@ class ValidationRule:
             return f"Enter between {min_len} and {max_len} characters."
         elif self.type == "pattern":
             return "Value does not match the required pattern."
+        elif self.type == "range":
+            lo = self.params.get("min")
+            hi = self.params.get("max")
+            if lo is not None and hi is not None:
+                return f"Enter a value between {lo} and {hi}."
+            if lo is not None:
+                return f"Enter a value of at least {lo}."
+            if hi is not None:
+                return f"Enter a value of at most {hi}."
+            return "Value is out of range."
         elif self.type == "compare":
             return "Values do not match."
         elif self.type == "custom":
@@ -130,7 +196,7 @@ class ValidationRule:
         """Return the default trigger policy for this rule type."""
         if self.type == "required":
             return "always"
-        elif self.type in {"stringLength", "compare"}:
+        elif self.type in {"stringLength", "compare", "range"}:
             return "blur"
         elif self.type in {"email", "pattern"}:
             return "always"

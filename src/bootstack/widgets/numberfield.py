@@ -97,6 +97,8 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    _VALIDATION_KIND = "number"
+
     def __init__(
         self,
         value: int | float = 0,
@@ -258,9 +260,8 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         Returns:
             `True` if all rules pass, `False` otherwise.
         """
-        return self._internal._entry.validate(
-            self._internal._entry.value(), trigger="manual"
-        )
+        entry = self._internal._entry
+        return entry.validate(entry._get_validation_value(), trigger="manual")
 
     def focus(self) -> None:
         """Give keyboard focus to this field."""

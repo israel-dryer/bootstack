@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tkinter
 from typing import overload, Any, Callable, Literal, TYPE_CHECKING
 
 from bootstack.widgets._impl.composites.textentry import TextEntry as _InternalTextEntry
@@ -12,6 +11,8 @@ from bootstack.streams import Stream
 from bootstack.widgets.types import AccentToken, Event, Justify, WidgetDensity
 
 if TYPE_CHECKING:
+    import tkinter
+
     from bootstack.signals import Signal
 
 # Events that fire on the inner entry part, not the outer Frame.
@@ -210,14 +211,18 @@ class TextField(FieldAddonMixin, PublicWidgetBase):
     # ----- Methods -----
 
     def validate(self) -> bool:
-        """Run validation rules against the current value.
+        """Run validation rules against the current input text.
+
+        Validates what the user currently sees and is typing — the field's
+        display `text`, not its last-committed `value`. This matches the
+        automatic blur/key validation, so a manual check and an on-blur check
+        agree on the same input.
 
         Returns:
             `True` if all rules pass, `False` otherwise.
         """
-        return self._internal._entry.validate(
-            self._internal._entry.value(), trigger="manual"
-        )
+        entry = self._internal._entry
+        return entry.validate(entry._get_validation_value(), trigger="manual")
 
     def focus(self) -> None:
         """Give keyboard focus to this field."""

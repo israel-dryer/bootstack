@@ -12,6 +12,7 @@ from tkinter.ttk import Widget
 from typing import Any, Callable
 
 from bootstack.events import ValidationEvent
+from bootstack.signals import Signal
 from bootstack.validation import ValidationRule
 from bootstack.validation.types import RuleTriggerType, RuleType, ValidationOptions
 
@@ -49,7 +50,18 @@ class ValidationMixin(Widget):
         self._on_validated_command: Callable | None = None
 
         super().__init__(*args, **kwargs)  # next in MRO must be a Tk/ttk widget
+
+        # Reactive validity state — the source of truth for the field's display
+        # and for form-level aggregation. Updated on every validation run.
+        self._valid_signal: Signal = Signal(True)
+        self._error_signal: Signal = Signal("")
+
         self._setup_validation_binds()
+
+    def _set_validity(self, is_valid: bool, message: str) -> None:
+        """Update the reactive validity signals (the source of truth)."""
+        self._error_signal.set("" if is_valid else message)
+        self._valid_signal.set(is_valid)
 
     # ---------------- Public API ----------------
 
@@ -107,14 +119,16 @@ class ValidationMixin(Widget):
             result = rule.validate(value)
 
             if not result.is_valid:
-                # Emit invalid and validated events with data
+                # Update validity state, then emit invalid + validated events.
+                self._set_validity(False, result.message)
                 payload = ValidationEvent(value=value, is_valid=False, message=result.message)
                 self.event_generate(self.EVENT_INVALID, data=payload)
                 self.event_generate(self.EVENT_VALIDATED, data=payload)
                 return False
 
         if ran_rule:
-            # Emit valid and validated events with data
+            # Update validity state, then emit valid + validated events.
+            self._set_validity(True, "")
             payload = ValidationEvent(value=value, is_valid=True, message="")
             self.event_generate(self.EVENT_VALID, data=payload)
             self.event_generate(self.EVENT_VALIDATED, data=payload)
