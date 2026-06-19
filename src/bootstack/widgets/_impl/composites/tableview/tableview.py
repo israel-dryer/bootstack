@@ -427,6 +427,10 @@ class TableView(Frame):
         self._alignment_sample: list[dict] | None = None
         self._row_map: dict[str, dict] = {}
         self._row_menu: ContextMenu | None = None
+        # The row a right-click context menu targets. Right-click never changes
+        # the selection (that is a left-click affordance), so the row menu acts
+        # on this clicked row instead — see `_context_iids`.
+        self._context_iid: str | None = None
         self._display_columns: list[int] = []
         self._header_menu: ContextMenu | None = None
         self._header_menu_col: int | None = None
@@ -1298,6 +1302,14 @@ class TableView(Frame):
         return records
 
     def _refresh_tree(self, records: list[dict]) -> None:
+        # Preserve the selection across the rebuild for rows that remain visible.
+        # Selection is view/page-scoped: a sort keeps every row (selection fully
+        # preserved), a search keeps the still-matching rows, and rows no longer
+        # shown drop out. Captured by record id since the row handles are rebuilt.
+        prev_selected_ids = {
+            self._record_id(self._row_map[iid])
+            for iid in self._tree.selection() if iid in self._row_map
+        }
         self._tree.delete(*self._tree.get_children())
         self._row_map.clear()
         if not self._column_keys and records:
@@ -1309,6 +1321,11 @@ class TableView(Frame):
         else:
             self._render_flat(records)
         self._apply_row_alternation()
+        if prev_selected_ids:
+            restore = [iid for iid, rec in self._row_map.items()
+                       if self._record_id(rec) in prev_selected_ids]
+            if restore:
+                self._tree.selection_set(restore)
         self._update_selection_markers()
 
     def _append_tree(self, records: list[dict]) -> None:
@@ -1565,6 +1582,15 @@ class TableView(Frame):
         self._update_footer_visibility()
 
     # ------------------------------------------------------------------ Row context menu
+    def _dismiss_context_menus(self) -> None:
+        """Hide any open built-in row/header context menu (idempotent)."""
+        for menu in (self._row_menu, self._header_menu):
+            if menu is not None:
+                try:
+                    menu.hide()
+                except Exception:
+                    pass
+
     def _ensure_row_menu(self) -> None:
         if not self._row_context_enabled():
             return
@@ -1607,13 +1633,13 @@ class TableView(Frame):
             col_idx = int(col_id.strip("#")) - 1
         except Exception:
             col_idx = 0
-        if iid:
-            if iid not in self._tree.selection():
-                self._tree.selection_set(iid)
-            rec = self._row_map.get(iid, {})
-            self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
-        if not self._tree.selection():
-            return
+        # Right-click does not alter the selection (left-click owns that); it
+        # only records which row the menu targets and opens the menu there.
+        self._context_iid = iid or None
+        if not iid:
+            return  # empty space or a group-header row — no row menu
+        rec = self._row_map.get(iid, {})
+        self.event_generate("<<RowRightClick>>", data=RowEvent(record=self._public_record(rec), id=self._record_id(rec)))
         self._row_menu_col = col_idx
         self._ensure_row_menu()
         self._row_menu.show(position=(event.x_root, event.y_root))
@@ -1781,8 +1807,24 @@ class TableView(Frame):
             )
         return items
 
+    def _context_iids(self) -> tuple[str, ...]:
+        """Row id(s) a row-menu command acts on.
+
+        The menu targets the right-clicked row. When that row is part of the
+        current (left-click) selection, the whole selection is the target — the
+        intuitive multi-select behavior — otherwise just the clicked row. Either
+        way the selection itself is left unchanged.
+        """
+        clicked = self._context_iid
+        selection = tuple(self._tree.selection())
+        if clicked and clicked in selection:
+            return selection
+        if clicked:
+            return (clicked,)
+        return selection
+
     def _filter_by_value(self) -> None:
-        selection = self._tree.selection()
+        selection = self._context_iids()
         if not selection:
             return
         iid = selection[0]
@@ -1797,7 +1839,7 @@ class TableView(Frame):
         self._apply_where()
 
     def _sort_selection(self, ascending: bool) -> None:
-        selection = self._tree.selection()
+        selection = self._context_iids()
         if not selection:
             return
         iid = selection[0]
@@ -1832,7 +1874,7 @@ class TableView(Frame):
             self._move_row_absolute(len(children) - 1)
 
     def _move_row_relative(self, delta: int) -> None:
-        sel = list(self._tree.selection())
+        sel = list(self._context_iids())
         if not sel:
             return
         target_iid = sel[0]
@@ -1851,7 +1893,7 @@ class TableView(Frame):
             self.event_generate("<<RowsMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _move_row_absolute(self, new_idx: int) -> None:
-        sel = list(self._tree.selection())
+        sel = list(self._context_iids())
         if not sel:
             return
         target_iid = sel[0]
@@ -1864,14 +1906,14 @@ class TableView(Frame):
             self.event_generate("<<RowsMove>>", data=RowsEvent(records=[self._public_record(rec)]))
 
     def _hide_selection(self) -> None:
-        sel = list(self._tree.selection())
+        sel = list(self._context_iids())
         for iid in sel:
             self._tree.delete(iid)
             self._row_map.pop(iid, None)
 
     def _edit_selected_row(self) -> None:
-        """Open the form dialog for the first selected row."""
-        sel = list(self._tree.selection())
+        """Open the form dialog for the right-clicked row."""
+        sel = list(self._context_iids())
         if not sel:
             return
         iid = sel[0]
@@ -1879,8 +1921,8 @@ class TableView(Frame):
         self._open_form_dialog(rec)
 
     def _delete_selected_row(self) -> None:
-        """Delete the first selected row from the datasource."""
-        sel = list(self._tree.selection())
+        """Delete the right-clicked row from the datasource."""
+        sel = list(self._context_iids())
         if not sel:
             return
         iid = sel[0]
@@ -2729,6 +2771,11 @@ class TableView(Frame):
 
     def _on_header_click(self, event):
         """Handle left-click: header sorting, or toggle-select with checkboxes."""
+        # A left-click on the tree dismisses an open context menu. Do it
+        # explicitly: the toggle-select and group-row branches below return
+        # 'break', which stops the event before it reaches the window-level
+        # outside-click handler that would otherwise close the menu.
+        self._dismiss_context_menus()
         region = self._tree.identify_region(event.x, event.y)
         if region == "heading":
             if self._sorting == 'none':
