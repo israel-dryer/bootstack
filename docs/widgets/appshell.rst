@@ -224,6 +224,10 @@ widgets, **and menus** (``toolbar.add_menu(...)``); each ``add_toolbar()`` call
 stacks a new full-width band above the sidebar / content body. On macOS a
 toolbar's menus bridge to the native global menu bar.
 
+The shell always draws a quiet hairline between the chrome stack and the
+workspace below it, so a single toolbar needs no divider of its own. Reserve
+``add_toolbar(divider=True)`` for separating one stacked band from the next.
+
 .. code-block:: python
 
    with bs.AppShell(title="My App") as shell:

@@ -155,6 +155,12 @@ class ShellLayout(App):
         self._toolbar_stack = PackFrame(root, direction="vertical", surface="chrome")
         self._statusbar = Toolbar(root, surface=self._statusbar_surface, draggable=False)
         self._status_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
+        # A persistent hairline at the top edge of the body (above the rail +
+        # sidebar + content), derived against the content surface. This is the
+        # always-on boundary between the window's top chrome and the workspace,
+        # regardless of whether any toolbar is present. Stacked toolbars can still
+        # add their own dividers (`add_toolbar(divider=True)`) to separate bars.
+        self._body_sep = Separator(root, orient="horizontal", border_strength=DIVIDER_BORDER_STRENGTH)
 
         # Body row + its slots.
         self._body = Frame(root)
@@ -187,11 +193,13 @@ class ShellLayout(App):
 
     def _relayout_window(self) -> None:
         """Re-pack the full-width toolbar / status bands and the body."""
-        for child in (self._toolbar_stack, self._status_sep,
+        for child in (self._toolbar_stack, self._body_sep, self._status_sep,
                       self._statusbar, self._body):
             child.pack_forget()
         # The stacked-toolbar region — full width, at the very top, above the body.
         self._toolbar_stack.pack(side="top", fill="x")
+        # Persistent boundary between the top chrome and the workspace below it.
+        self._body_sep.pack(side="top", fill="x")
         if self._show_statusbar:
             # Band at the very bottom; its hairline just above it (both full width).
             self._statusbar.pack(side="bottom", fill="x")
