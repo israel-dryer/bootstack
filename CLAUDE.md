@@ -21,6 +21,11 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Slider/RangeSlider review** (PR **#212**, MERGED) — value clamps to range, disabled
+  honored on every key (incl. Home/End), Home/End emit `<<Commit>>`, tightening the range
+  re-clamps the value(s); widget pages gained Events + Keyboard sections + value/min-max
+  screenshots. (The `fix/slider-review` branch is merged — stale.) `step=` follow-up
+  (#213/#210) and the Tab focus-trap (#211) are under "Next up".
 - **Shell chrome divider + context-menu / DataTable interaction fixes** (this
   session; PRs **#206** and **#209**, both MERGED to `main`) — two batches from
   dogfooding the AppShell + DataTable demos:
@@ -119,441 +124,103 @@ memories and git history.
   AppShell page's "Sidebar visibility" section (the user-facing control,
   cross-linked). StatusBar deliberately **not** given the method (scope creep — a
   hamburger belongs in a toolbar).
-- **Gallery/Carousel height-floor cleanup (#160)** (this session; PR **#185**,
-  MERGED to `main`) — closed out #160 (Gallery/Carousel collapse to ~0 height in a
-  non-expanding/scrollable parent). The floor itself shipped in **PR #161** and is
-  **sound** (`pack_propagate(False)` on the frame + `configure(height=floor)`, inner
-  canvas `fill="both", expand=True` → a true minimum `grow`/`expand` still grows
-  past) — left untouched. This PR added the **regression test the issue asked for**
-  (`tests/widgets/public/test_media_height_floor.py`, 8: non-zero floor reqheight —
-  Gallery `360`, Carousel `267`; no collapse inside a `ScrollView`; floor-is-a
-  -minimum-not-a-freeze via the expand-packed inner canvas; `rows`/`height`/
-  `aspect_ratio` move the floor) + **hardened two magic numbers** into named
-  constants (`carousel._FLOOR_STAGE_WIDTH=400`, `gallery._CAPTION_H=24`;
-  value-preserving) + clarified the `aspect_ratio` docstring (larger ratio →
-  shorter floor). **Deliberately NOT changed:** the Gallery `rows=` vs Carousel
-  `aspect_ratio=`/`height=` API asymmetry (each is the natural knob; a unified
-  `min_height=` would be scope creep). Memory `project_picture_suite`.
-- **Tab overflow handling (#168)** (this session; PR **#184**, MERGED to `main`)
-  — tabs that exceed the strip now stay
-  in a **scrollbar-less scrolling line** (wheel scrolls along the axis; the
-  selected tab auto-scrolls into view) with a trailing **chevron overflow menu**
-  listing the off-screen tabs (with icons) that scrolls the picked one into view.
-  `⌄`/`+` are pinned outside the scroll region (`+` outermost, `⌄` next), ghost
-  buttons with a gap before them: horizontal = compact icon-only `⌄`; vertical =
-  full-width left-aligned **`⌄ More`** matching the rows + **`+ New`**.
-  **Always-on — NO `overflow=` option** (clipped tabs are never desirable; the
-  plain non-scrolling strip is kept ONLY for `tab_width='stretch'`, which always
-  fits). New **`max_tabs=`** disables the add button at the limit (re-enables on
-  removal). Axis-aware (both orientations); built on the existing `ScrollView`
-  (`scrollbar_visibility='never'`). **Three framework fixes surfaced while
-  building:** (a) **`PackFrame` skips the full forget/repack on child removal
-  when `gap==0`** (Tk keeps sibling order on its own) — kills a tab-close
-  **flash**; a win for any gap-less PackFrame. (b) **`PageStack.navigate`
-  pre-sizes the target page before a SWAP** (`update_idletasks`, guarded to
-  `self._current is not None` so the initial build — all first-mounts — isn't
-  serialized into a visible **slow-motion** render) — kills the add+select
-  content-area **jump** (a pre-existing PageStack quirk, reproduced in the old
-  non-scrolling path too). (c) **`_scroll_into_view` defers via retry** until the
-  new tab is positioned (winfo_x ready) instead of a forced synchronous flush.
-  Demo Navigation page wires `+` to add+select and showcases H/V overflow + the
-  `max_tabs` limit. Tests `tests/widgets/public/test_tabs_overflow.py` (10). The
-  `+` only fires a `tab_add` event — the app supplies the new tab (it never
-  "did nothing"; the demo simply hadn't wired a handler).
-- **ContextMenu/Tooltip cover container children (#166)** (this session; PR
-  **#183**, MERGED to `main`) — Tk events don't bubble, so a gesture bound to a
-  **container** target (e.g. a `Card`) only fired over the container's bare area,
-  never over its children. Fix = new shared helper **`propagate_target_bindings(target)`**
-  in `_runtime/utility.py`: adds the container's own **path-name bindtag** (the tag
-  `widget.bind(...)` registers under) to every descendant in the same toplevel, so the
-  trigger/hover fires anywhere inside. Inserted **after** each child's own path tag
-  (child bindings keep precedence); **idempotent**; **skips nested toplevels** (the
-  menu's own popup is parented under the target). Wired into
-  `ContextMenu._bind_trigger` (covers all platform gesture variants at once — it's
-  tag-based) + `Tooltip.__init__`. `Tooltip` also gained a **crossing-aware `<Leave>`**
-  (`_pointer_within_target` via `winfo_containing`) so moving container→child doesn't
-  flicker the tip; `<ButtonPress>` split into its own unconditional-hide handler.
-  **Limitation:** children added *after* attach aren't auto-tagged (re-attach covers
-  it). Tests `tests/widgets/public/test_overlay_container_coverage.py` (5). Memory
-  `reference_bindtags_underused` — **bindtags are underused in the architecture;
-  TODO: an eval pass to find recursive/duplicated `.bind()` a shared bindtag could
-  simplify** (a `BindtagsMixin` already exists, barely used).
-- **Theme-repaint cleanup (#177) + docstring-backtick sweep** (this session; PRs
-  **#181**/**#182**, both MERGED to `main`) — **#181**
-  (`fix/theme-repaint-cleanup`, closes #177): migrated the code-editor's
-  `StyleRegistry`/`SearchOverlay`/`IndentGuides` off the racy ttk `<<ThemeChanged>>`
-  (fires mid-rebuild → stale colors) onto **`<<BsThemeChanged>>`** (fires once,
-  post-rebuild) — the pattern `pygments_highlighter`/`sidebar` already use; kept the
-  deliberate `<<EditorBgChanged>>` notify. Cleanup uses the repaint-hook convention
-  (**NO `is self` guard, idempotent unbind on any `<Destroy>`**) — GOTCHA: in this
-  widget tree a container's OWN `<Destroy>` is not delivered to its instance binding
-  (only a descendant's is), so an `is self` guard silently skips cleanup. Also
-  deleted dead **`FloodGauge`** (zero imports) + its `tools/gen_api_docs.py` entry.
-  **#182** (`chore/docstring-backticks`): swept **754** RST double-backtick literals
-  → single backticks across **43** `src/` files. Reusable approach: a Python regex
-  matching **runs of exactly two backticks** (`(?<!`)``(?!`)`) — leaves ```` ``` ````
-  fences AND `:class:`/`:doc:`/`:ref:` cross-ref roles intact (roles are DELIBERATE
-  links, not stray); byte-safe write preserves CRLF+BOM. **NB ripgrep/Grep can't do
-  this** (Rust regex has no lookbehind → silently 0 matches); use Python. Verified
-  warning-free `-W` docs build. Memory `project_docstring_backticks`.
-- **Undecorated window chrome + theme-repaint perf** (prior session, all merged) —
-  **#162/#165** (PR #175): undecorated `App`/`Window`/`AppShell` auto-inject a
-  draggable title bar (controls) + border; `App` gained `undecorated=`, `Window`
-  gained `window_controls=`; maximized-drag re-anchors under the cursor. (The #162
-  handoff plan was stale — the dedicated band had been retired + `menubar`/
-  `commandbar` removed in favor of `add_toolbar()`.) **Theme-repaint perf**
-  (#167 → PRs #176/#178/#179/#180): canvas widgets kept the old theme's colors /
-  toggling was slow. Root causes + fixes — (a) Gauge/Meter bound the early ttk
-  `<<ThemeChanged>>` → STD publisher (post-rebuild); (b) Slider/RangeSlider +
-  window chrome bound ttk `<<ThemeChanged>>` on the **root/toplevel**, which
-  re-fires ~1400× per rebuild × instances → **gallery toggle ~2960ms → ~580ms**;
-  (c) new `Frame._enable_theme_repaint` hook gates 8 canvas widgets to on-screen
-  repaints (off-screen defers to `<Map>`) + fixed 4 widgets that self-bound
-  `<<BsThemeChanged>>` and never recolored; (d) Gauge supersample capped on HiDPI;
-  (e) calendar reuses weekday-header labels (nav 5.8→2.7ms). **RULE in gotchas.**
-  Memories `project_undecorated_window_chrome`, `reference_theme_repaint_mechanisms`.
-  **#177 DONE (PR #181):** textarea/code-editor migrated off the racy
-  event + dead `FloodGauge` deleted — see the top entry.
-- **Pre-release `0.1.0a10` shipped + docs deploy fixed** (PRs #139–#140 merged;
-  release built from `main`) — **Toast split** (PR #139): the kitchen-sink Toast
-  became three public widgets over one engine — `toast()` (single-line, icon
-  opt-in, corner-stacked on the current monitor), `Notification` (titled card),
-  `Snackbar`/`snackbar()` (neutral surface, window-bottom anchored, accent only on
-  the action); emphasis-shade text (`{accent}_emphasis`), `on_color` light-mode
-  contrast fix (info cyan → black text). **Pre-release readiness** (PR #140): full
-  **gallery/demo-app widget coverage** (Media/MenuButton/SelectButton/ToggleButton/
-  RadioToggleButton/RangeSlider/ListView/ScrollView/PageStack/Notification/Snackbar/
-  ContextMenu/shell chrome) + a **`ToggleButton(icon=)`** framework add (fallback for
-  both states; `on_icon`/`off_icon` override); `installation.rst` rewrite (`pip
-  install --pre`, Tk-install checks, version pin); a **pre-release announcement
-  banner** (conf.py `html_theme_options`); **README** refresh (banner, `--pre`,
-  hero swap, Table→DataTable / Toolbar→CommandBar fixes); `requirements.txt` /
-  `requirements-dev.txt` / `pyproject.toml` deps + description sync; app-settings
-  doc review. Release via `bump-my-version` (a9→**a10**, tag `v0.1.0a10`) → PyPI
-  trusted-publish + GitHub Release (both ✓). **Docs deploy fix** (commit `5959e7b3`,
-  direct to `main`): `docs/CNAME` (`bootstack.org`) had been deleted in `13c01d4d`
-  (old mkdocs copied `docs/` to the site root; **Sphinx does not**) — restored it +
-  `html_extra_path = ["CNAME"]`; also reverted the docs trigger `tags:v*`→`branches:
-  [main]` because the `github-pages` environment protection **rejects tag
-  deployments**. `bootstack.org` now serves HTTP 200 with the CNAME at root.
-  Memory `project_prerelease_readiness`, `project_toast_notification_split`.
-  **FOLLOW-UPS:** (1) workflow action versions bumped to the Node-24 majors ahead of
-  the 2026-06-16 cutoff — **DONE**, PR #141 (`checkout@v6`/`setup-python@v6`/
-  `upload-artifact@v7`/`download-artifact@v8`/`upload-pages-artifact@v5`/
-  `deploy-pages@v5`/`action-gh-release@v3`). (2) legacy ttkbootstrap naming purge —
-  **DONE** (branch `chore/cleanse-ttkbootstrap`): `bootstyle*.py`→`style_resolver.py`/
-  `style_builder_*.py`, `Bootstyle`→`StyleResolver`, `BootstyleBuilder*`→`StyleBuilder*`,
-  dead dash-string parser + `bootstyle` config-key path deleted, exceptions unified onto
-  the public `bootstack.errors.BootstackError` (Navigation/Theme/StyleBuilder now public;
-  Tabs aligned to `NavigationError`), `TTKBOOTSTRAP_DEBUG`→`BOOTSTACK_DEBUG`. (3)
-  docstring-backtick sweep — **DONE (PR #182)**, see top entry. (Toast
-  woven into the user-guide how-tos — **DONE**, PR #140 commit `d95d298a`.)
-- **0.1.0 API-freeze pass — breaking changes drained + ThemeToggle + media floor**
-  (this session; PRs #141–#161, all merged except #161 in review) — cleared the
-  "0.1.0 (stable) — API freeze" milestone of breaking changes ahead of the stable
-  cut: **workflow action bump** (#141, Node-24 majors) · **ttkbootstrap naming purge**
-  (#142, `chore/cleanse-ttkbootstrap` — see prerelease pointer) · **clipboard scope**
-  (#151 — moved the global clipboard helpers off `PublicWidgetBase` to a lean
-  `bootstack.clipboard` module; memory `project_clipboard_api_scope`) · **nav
-  missing-key errors** (#153 — `NavigationError` raised uniformly on a missing/
-  duplicate key across Tabs + AppShell nav) · **`Theme.from_existing(base, …)`**
-  (#156 — derive a theme/family from an existing base; required `base=`) · **Signal
-  subscribe handle** (#157 — `Signal.subscribe()` now returns a cancelable
-  `streams.Handle`, unifying with events/streams; memory
-  `project_signal_subscribe_subscription`) · **VariantToken retirement** (#158 —
-  the universal `VariantToken` is gone; each widget uses its own per-widget `variant`
-  Literal; memory `project_variant_type_revisit`). Then **`ThemeToggle`** (#159,
-  merged) — a stateless sun/moon `Button` that flips the theme on click and re-syncs
-  its icon on `<<BsThemeChanged>>` (so programmatic theme changes update it too);
-  `light_icon`/`dark_icon`/`variant`/`density`/`accent`; added to `bootstack.*`;
-  `CommandBar.add_theme_toggle()` + container protocol (`_child_master`/`guide_layout`)
-  on CommandBar & StatusBar, both `add_widget(Class, **kwargs)`-polymorphic; swept
-  hand-wired toggles across docs/examples/CLI. Last, **media min-height** (#161,
-  `feat/media-min-height`, in review) — `Gallery`/`Carousel` collapsed to ~1px in a
-  non-height-imposing parent (ScrollView/auto-fit window) because the public wrappers
-  freeze the frame with `pack_propagate(False)`; fix configures a content-derived
-  height floor on the frame itself (Carousel: `height=`/`400÷aspect_ratio`; Gallery:
-  `rows×row_h`). New params `Carousel(aspect_ratio=1.5, height=None)`, `Gallery(rows=2)`;
-  demo Media page reordered (Carousel above Gallery — Gallery swallows the wheel event).
-  Memory `project_picture_suite`.
-- **AppShell + navigation clean-slate rewrite SHIPPED** (PRs #133–#136, all merged;
-  in `0.1.0a10`) — the VS Code-style **rail + swappable sidebar + content** rewrite
-  landed and the public **`bs.AppShell` was swapped onto the new `Shell`** (#135),
-  **dropping the standalone `bs.SideNav`** (`SideNavHeader`/`SideNavSeparator` stay,
-  used by `NavPanel`). Sidebar = three shapes: flat-static (`add_page`) ·
-  grouped-static (`add_header` muted label) · data-bound (`list_nav`/`tree_nav`); the
-  Revision-3 accordion was built then **cut** (spec Revision 4). Scrollable `NavPanel`
-  (footer pinned, overflow-gated thin scrollbar), neutral selection + `accent_selection`
-  opt-in, pixel-ellipsis truncation. Statusbar + menubar/command bar wired + styled;
-  `Workspace` context-manager; public façade (`commandbar`/`nav`/`pages` + window
-  controls). **Companions in the same release:** **theme/Bootstrap-alignment v2**
-  (#137 — v2 theme-family model, Bootstrap-aligned colors, color-independent sidebar
-  selection, accent defaults) · **thin-scrollbar public exposure** (#138 —
-  `ScrollbarVariant` alias, list widgets default to thin) · **nav-patterns docs**
-  (#136 — standalone `StatusBar` guide + AppShell nav-pattern articles). Spec
-  `docs/_dev/appshell-navigation-spec.md` (Revision 4). Memories
-  `project_appshell_sidenav_refactor`, `project_theme_bootstrap_alignment`,
+- **Gallery/Carousel height-floor cleanup (#160)** (PR **#185**, MERGED) — added the
+  regression test + hardened two magic numbers into named constants; the floor itself
+  shipped in #161. Memory `project_picture_suite`.
+- **Tab overflow handling (#168)** (PR **#184**, MERGED) — clipped tabs scroll (wheel +
+  selected-tab auto-scroll) with a trailing chevron overflow menu; `max_tabs=`; always-on
+  (plain strip kept only for `tab_width='stretch'`). Three framework fixes: PackFrame
+  no-repack when `gap==0`, PageStack pre-size-on-swap, deferred `_scroll_into_view`.
+- **ContextMenu/Tooltip cover container children (#166)** (PR **#183**, MERGED) —
+  `propagate_target_bindings()` adds the container's path bindtag to every descendant so
+  the gesture fires anywhere inside. Memory `reference_bindtags_underused`.
+- **Theme-repaint cleanup (#177) + docstring-backtick sweep** (PRs **#181**/**#182**,
+  MERGED) — code-editor `StyleRegistry`/`SearchOverlay`/`IndentGuides` migrated onto
+  `<<BsThemeChanged>>`; dead `FloodGauge` deleted; 754 RST double→single backticks across
+  43 `src/` files. Memory `project_docstring_backticks`.
+- **Undecorated window chrome (#162/#165) + theme-repaint perf (#167)** (PRs #175/#176/
+  #178/#179/#180, MERGED) — undecorated App/Window/AppShell auto-inject titlebar+border;
+  canvas widgets re-resolve colors via the STD publisher (post-rebuild), gated on
+  visibility (gallery toggle ~2960ms→~580ms). Memories `project_undecorated_window_chrome`,
+  `reference_theme_repaint_mechanisms`.
+- **Pre-release `0.1.0a10` shipped + docs deploy fixed** (PRs #139/#140, MERGED) — Toast
+  split into `toast()`/`Notification`/`Snackbar`; gallery/demo widget coverage; released to
+  PyPI + GitHub Release; docs-deploy fixed (restored `docs/CNAME` + `html_extra_path`).
+  Memories `project_prerelease_readiness`, `project_toast_notification_split`.
+- **0.1.0 API-freeze pass — breaking changes drained + ThemeToggle + media floor** (PRs
+  #141–#161, MERGED) — workflow action bump (#141), ttkbootstrap naming purge (#142),
+  clipboard scope (#151), nav missing-key errors (#153), `Theme.from_existing` (#156),
+  `Signal.subscribe` cancelable handle (#157), VariantToken retirement (#158), `ThemeToggle`
+  (#159), media min-height floor (#161). Memories `project_clipboard_api_scope`,
+  `project_variant_type_revisit`, `project_picture_suite`.
+- **AppShell + navigation clean-slate rewrite** (PRs #133–#136, MERGED; later split into
+  AppShell + Workbench by #200/#202 — see top) — VS Code-style rail + swappable sidebar +
+  content; `bs.AppShell` swapped onto the new `Shell`, standalone `bs.SideNav` dropped.
+  Companions: theme/Bootstrap-alignment v2 (#137), thin-scrollbar exposure (#138),
+  nav-patterns docs (#136). Spec `docs/_dev/appshell-navigation-spec.md` (Revision 4).
+  Memories `project_appshell_sidenav_refactor`, `project_theme_bootstrap_alignment`,
   `project_thin_scrollbar_initiative`, `project_nav_patterns_section`.
-- **Media widget suite — Picture / Gallery / Carousel / Avatar** (PRs #126–#132,
-  all merged) — a family of media-display widgets built on the public `Image`
-  handle, in a new **Media** docs category. **`Picture`** (#126) is the display
-  atom: object-fit modes (`contain`/`cover`/`fill`/`none`/`scale-down`),
-  responsive resize, antialiased rounded corners, animated-GIF playback (via
-  `Schedule`), typed `on_load`/`on_error` + `on_click`; the shared
-  `widgets/_impl/composites/_image_fit.py` helper (fit/round/`resolve_pil`) was
-  extracted here. **`Gallery`** (#127) is a **record-native recycling thumbnail
-  grid** (reuses `items=`/`data_source=`, the universal `.selection`,
-  `select_items`/…; `image_field`/`caption_field`; responsive auto-columns;
-  accent selection ring). **`Carousel`** (#128) is a one-at-a-time stepper —
-  slide/fade transitions (own canvas, two-image `canvas.move` / `Image.blend`),
-  `corner_radius` rounds the **container** (a fixed corner-mask), **neutral** dots
-  auto-switching to a count past 8 slides, `data_source`/`reload`,
-  `on_change`/`on_item_click`. **`Avatar`** (#132) is an image-or-initials
-  identity badge (circle/rounded/square; initials via Tk text in the app UI font;
-  image-load fallback). Plus: an **image-subsystem review** (#129 — fixed a
-  Gallery global-cache leak, added Gallery theme handling, Carousel
-  parity/edge-cases); the **`on_select` rename** (#130 — `on_selection_changed`
-  (ListView/DataTable/Tree) + `on_date_selected` (Calendar) → `on_select`,
-  present-tense convention); and **theme-aware demo videos** (#131 — PageStack +
-  Carousel heroes are now `bs-video-light/dark` MP4s, with a `.gitignore`
-  exception). Memories: `project_picture_suite`, `project_avatar_widget`,
-  `project_doc_demo_videos`, `project_image_subsystem_review`,
-  `project_event_naming_revisit`. Brief `docs/_dev/picture-suite.md`. **Deferred**
-  (in the brief/memories): `Image.from_url()` + async/off-thread load (Phase 1.5),
-  a silent video source via `bootstack[video]` (Phase 2), a splash screen, an
-  `_ImageService._cache` LRU cap, animated-GIF carousel slides, more demo videos
-  (Toast/Tooltip/Tabs/Accordion are the Tier-1 candidates).
-- **Public Image/Icon API + AppIcon + field signals + toml cleanup** (PR #125,
-  merged; reviewed) — new public
-  **`bootstack.images`**: a toolkit-free **`Image`** handle (`open`/`from_bytes`/`from_pil`,
-  lazy materialize, theme-following), **`get_icon`/`list_icons`**, and **`AppIcon`** (a
-  glyph on a rounded tile) that **`App`/`Window` accept as `icon=`** and that exports
-  **`.ico`/`.icns`/`.png`** via `save()` for packaging. Live **`icon`/`image` property
-  setters** on Label/Button/MenuButton/SelectButton; the icon **spec** `{name,size,color}`
-  is public via `bootstack.types` (**`Icon`/`IconSpec`**, color resolves theme tokens).
-  **AppIcon render** is the hard-won part: size-aware `shape="auto"` (glyph-only at small
-  title-bar sizes, **tile** from taskbar size up), **integer-ratio tile supersampling**,
-  glyph drawn at **native display size + pixel-aligned** (`_render_icon(align=)`),
-  size-dependent padding, and **DPI-matched sizes baked into the `.ico`** (the small-size
-  crispness fix — true per-size sharpness still needs hand-drawn grid-aligned art).
-  Ships the **`bootstack appicon`** GUI designer and **`[build.icon]`** glyph generation.
-  Also: **`Window(parent=)`** + anchored **`Window.show(anchor_to=, anchor_point=, …)`**;
-  **reveal-after-settle** window show (no open-time shift); **typed `signal=`** on
-  Number/Date/Time fields (binds the parsed value, not text; committed separately);
-  **`bootstack.toml` scoped to a build/scaffold manifest** (runtime **`[settings]`**
-  removed — runtime config is `App()` kwargs + `Store`); framework lifecycle fixes
-  (scheduler descendant-destroy guard, grid prune-on-destroy, clipboard helpers); public
-  **file-dialog verbs** (`ask_save_file`/`ask_open_file`/`ask_open_files`/`ask_directory`).
-  Docs: `reference/images` guide, `api-reference/images`, the **Application Icons** how-to
-  (`tasks/application-icons` — runtime-vs-build-icon distinction + glyph/color tips). A
-  **pre-commit review (5 agents)** found+fixed 2 HIGH (field-Signal leak; Signal type-
-  mismatch crash) + 2 MEDIUM (image-clear theme-binding leak; `show()` alpha-not-in-finally)
-  + nits. Memories `project_image_icon_public_api`, `project_field_value_signal_dtype`,
-  `project_app_settings_flattening`. Follow-up: a `Picture` display widget
-  (animated GIF / splash) on a separate branch.
-- **Menu bar + command bar** (PR #124, merged) — cross-platform **`app.menubar`**
-  (also `window.menubar` / `shell.menubar`): a single-layer menu model with two
-  renderers — a themed in-window strip on **Win/Linux** and the **native global menu
-  bar** (`NSMenu`) on **macOS** — behind one API. Build imperatively
-  (`with app.menubar.add_menu("File") as f: f.add_action(...)`) or declaratively
-  (`app.menubar.load([...])`); item types `action`/`check`/`radio`/`separator`;
-  `shortcut=` displays AND binds (patterns auto-register via the `Shortcuts` service;
-  macOS uses word-form accelerators). Plus **`app.commandbar`** (the widget renamed
-  `Toolbar`→**`CommandBar`**) sharing the top chrome row, with **`menu_layout`**
-  (`'fused'` default/`'stacked'`), **`chrome_surface`** (blend via `'background'` /
-  brand via an accent — NOT `'content'`, see memory), **`chrome_divider`**. **Breaking
-  (pre-release):** legacy region-bar **`bs.MenuBar` REMOVED**; **`Toolbar`→`CommandBar`**;
-  accessors **`app.menu`→`app.menubar`**, **`app.toolbar`→`app.commandbar`**
-  (`shell.toolbar`→`shell.commandbar`); `MenuManager`/`create_menu` retired;
-  `MenuHostMixin`→`ChromeHostMixin`. **macOS menus are text-only** (icons mismatch the
-  system hover foreground). Internal composite + ttk style stay `Toolbar`. Tests under
-  `tests/widgets/public/test_menu_*` + `test_window_chrome` (run GUI modules one at a
-  time — one `App` per process). Memory `project_menu_redesign`; brief
-  `docs/_dev/menu-redesign.md`. Follow-up: `project_macos_window_chrome` /
-  `docs/_dev/macos-window-chrome.md` (native window chrome — not started).
-- **Widget detach/attach** (PR #123, merged) — public **`detach()` / `attach()` /
-  `is_attached`** on every widget: pull a placed widget out of its layout and put it
-  back **without destroying it**, across all three geometry managers (pack/grid/place).
-  Revives the deferred `<Map>`/`<Unmap>` lifecycle as **`on_attach` / `on_detach`** (now
-  earned by a real control pair; they propagate through ancestors). `guide_layout` records
-  a **`Placement(method, master, options, index)`** snapshot on each child
-  (`widgets/_core/container.py`); `is_attached` is backed by `winfo_manager()` (no flag).
-  **pack ordering:** `detach()` snapshots the index among currently-attached siblings,
-  `attach()` translates via new `resolve_pack_order` → `before=slaves[index]`; new public
-  **`index=`** pack knob (works at construction too), `before=`/`after=` accept public refs.
-  **grid gotcha:** uses `grid_forget` + full reconstruct from stored options — `grid_remove`'s
-  "remembered" state rejects an explicit re-grid. Also shipped **`attached=False`** ctor arg
-  (build a widget hidden in place — records placement, skips mapping, no flicker; a later
-  `attach()` lands it in its declared slot). **Docs:** new "Detaching and reattaching" section
-  in `reference/events.rst`; the inert placement API is **hidden on the top-level window
-  classes** (App/AppShell/Window are `_auto_place=False`, never placed → detach no-ops,
-  attach raises) via a shared `_templates/autosummary/toplevel.rst` excluding the 5 members.
-  Tests `test_attach_detach.py` (20 cases; ONE module-scoped App — multi-App-per-process
-  crashes). Memories `project_widget_attach_detach`; backlog `project_inherited_base_api_docs`
-  (every widget page repeats the inherited base surface — consolidate onto one shared page).
-- **Select grouping + popup height cap** (PR #122, merged) — the LAST piece of the
-  option-databag orbit. Opt-in **`Select(group_by="field")`** clusters the popup
-  under **bold, verbatim** section headers + separators (none above the top group;
-  leading dividers suppressed during search). **Key design (maintainer-chosen over a
-  reserved `"group"` key):** `group_by` NAMES any field already in the option's flat
-  record (a bag key, or `text`/`value`) — like `Tree(parent_field=)` / pandas
-  `groupby`, reusing data the options carry instead of duplicating it. Nothing is
-  reserved; `normalize_option` is untouched. **Presentational only** —
-  `value`/`.selection`/`.options` unaffected; the field rides in the bag. Clusters by
-  first-appearance order; an option missing the field renders headerless. Also shipped
-  **`max_visible_items=N`** (cap the popup at ~N rows before it scrolls); both have
-  symmetric read/write props. New `cluster_records`/`record_field` in
-  `widgets/_core/options.py`; the search filter was extracted to a testable
-  `_apply_search_filter`. Fixes found along the way: popup auto-scrolled past the first
-  header on open (render-order-aware highlight + a header-reveal scroll) and a negative
-  popup geometry when opened before layout (width clamp). DEFERRED: a `group_by`
-  callable + grouping for SelectButton/RadioGroup/ToggleGroup (Select-only this pass).
-  Tests in `test_select_options.py`; Select guide + example + screenshots updated.
+- **Media widget suite — Picture / Gallery / Carousel / Avatar** (PRs #126–#132, MERGED) —
+  media-display widgets on the public `Image` handle: Picture (fit modes, animated GIF),
+  Gallery (record-native thumbnail grid), Carousel (one-at-a-time stepper), Avatar
+  (image-or-initials). Plus `on_select` rename (#130) + theme-aware demo videos (#131).
+  Memories `project_picture_suite`, `project_avatar_widget`, `project_doc_demo_videos`.
+- **Public Image/Icon API + AppIcon + field signals** (PR #125, MERGED) — `bootstack.images`
+  (`Image` handle, `get_icon`/`list_icons`, `AppIcon` → `.ico`/`.icns`/`.png`); `App`/`Window`
+  `icon=`; live `icon`/`image` setters; typed `signal=` on Number/Date/Time fields;
+  `bootstack.toml` scoped to build/scaffold; public file-dialog verbs; ships `bootstack appicon`.
+  Memories `project_image_icon_public_api`, `project_field_value_signal_dtype`.
+- **Menu bar + command bar** (PR #124, MERGED) — cross-platform `app.menubar` (themed strip on
+  Win/Linux, native `NSMenu` on macOS); `Toolbar`→`CommandBar`; legacy `bs.MenuBar` removed;
+  `app.menu`→`app.menubar`, `app.toolbar`→`app.commandbar`. Memory `project_menu_redesign`;
+  follow-up `project_macos_window_chrome`.
+- **Widget detach/attach** (PR #123, MERGED) — `detach()`/`attach()`/`is_attached` across
+  pack/grid/place; `on_attach`/`on_detach`; `attached=False` ctor; new `index=` pack knob.
+  Memory `project_widget_attach_detach`; backlog `project_inherited_base_api_docs`.
+- **Select grouping + popup height cap** (PR #122, MERGED) — `Select(group_by="field")` clusters
+  the popup under verbatim headers (names any bag field, presentational only); `max_visible_items=N`.
   Memory `project_select_options_databag`.
-- **Universal `.selection` on the record-native widgets** (PR #120, merged) —
-  extends the option family's polymorphic `.selection` accessor (PRs #114–#118) to
-  **ListView / DataTable / Tree**, which carried records but exposed them under
-  divergent names of divergent kinds (`get_selected()` method / `selected_rows` /
-  `selected_nodes`). **Breaking, clean break (no shim):** those three are GONE;
-  `.selection` is now universal and **polymorphic by `selection_mode`** — single →
-  `dict | None` (Tree: `TreeNode | None`), multi → `list[dict]` (Tree:
-  `list[TreeNode]`), none → `None`. ListView/DataTable return record dicts (the
-  bag, indexed by key); Tree returns node **handles** (bag at `node.data`). Each
-  wrapper stores `self._selection_mode` and collapses the internal's always-list to
-  the singular shape. **Behavior note:** DataTable defaults to
-  `selection_mode='single'`, so `table.selection` is a `dict | None` by default (the
-  old `selected_rows` was always a list). Also closed the symmetric **write-side
-  gap**: new **`ListView.select_items(ids)` / `deselect_items(ids)`** (by record id,
-  single-mode replace / multi-mode add) mirroring `DataTable.select_rows` /
-  `deselect_rows` — ListView previously had only `select_all`/`clear_selection`.
-  Both wrap source mutations in `_silence_source()` and emit ONE `<<SelectionChange>>`
-  (a single-mode replace does `deselect_all()` + `select()` but must not double-fire
-  — regression-tested). Verb+noun naming stays per-widget vocabulary (rows/items/
-  nodes) **by design** — not a divergence to reconcile. Tree needed nothing
-  (`select(node)`/`deselect(node)` is the right node-handle primitive). Tests in
-  `test_listview.py`/`test_datatable.py`/`test_tree.py`; guides updated. Memory
-  `project_option_databag`; brief `docs/_dev/option-databag.md`.
-- **Field value/text/label contract + selection data bag** (PRs #113–#116, all
-  merged) — a framework-wide field-widget contract and a shared, extensible option
-  shape, built across four PRs:
-  - **#113** code-review follow-ups #4–#10 (SelectButton value reconcile, ctypes HWND
-    types, shared `SelectionGroupMixin`, uniform `BaseWindow.close`, shared
-    `coerce_date`, Calendar redraw coalescing).
-  - **#114** the **value/text/label** model: `label` = caption beside a control,
-    `text` = formatted display (new public **read-only `.text`** across the field
-    family — TextField/NumberField/…/Select/CodeEditor), `value` = raw datum.
-    LOAD-BEARING RULE: **never derive value from text** (doing so broke
-    `TimeField.value` → returned the formatted string instead of `datetime.time`;
-    `SelectBox.value` now defers to `Field.value` and the option map only layers on
-    for *decoupled* options). Shared `Option = str | tuple | OptionDict` shape +
-    `normalize_option`; `SelectBox.strict_value` flag (public `Select` strict,
-    embedded SelectBoxes lenient). Catalog is `.options` (`.texts`/`.values` dropped).
-  - **#115** `.text` (selected label) on RadioGroup/ToggleGroup (mirrors `value`:
-    str | set in multi); `text_for(value)` on the internal composites.
-  - **#116** the **option data bag**: `normalize_option` no longer rejects unknown
-    dict keys (recognized = `text`/`value`/`icon`/`disabled`; everything else is
-    carried data); a universal polymorphic **`.selection`** accessor returns the
-    selected option's full record dict (`dict | None`, or `list[dict]` for
-    ToggleGroup multi). RadioGroup/ToggleGroup keep records via `SelectionGroupMixin`.
-  Memories `project_field_value_text_model`, `project_option_databag`. Briefs:
-  `docs/_dev/option-databag.md` (+ the value/text model in the memory).
-- **Widget API gap audit + documentation** (PR #111, merged; review follow-ups
-  #4–#10 shipped in PR #113) — audited
-  all ~49 public widgets vs their `_impl/` internals for unexposed capability and fixed
-  the high-value gaps: widget lifecycle (`destroy`/`on_destroy` on `PublicWidgetBase`,
-  `<Destroy>` mapping); a `WindowControlsMixin` (`close`/`show`/`hide`/`minimize`/
-  `maximize`/`set_fullscreen`/`set_topmost`/`on_close`) on App/AppShell/Window — **AppShell
-  is now a `PublicWidgetBase`**, Window gained a live `title`; RadioGroup/ToggleGroup
-  management (`remove`/`configure_item`/`__len__`/`__contains__`, RadioGroup live `title`);
-  live properties (Gauge `min/max_value`, SelectButton `options`, Calendar/DateField date
-  constraints — internal `set_*` mutators); §2c/§2d param + kwargs-leak fixes; 3 behavioral
-  bugs (RangeSlider low/high clamp, NumberField `clear()`→`None`, Form `field_variable()`
-  removed). Plus dark-mode window-border theming (`change_border_color`) and the new
-  **Application** widget category with full-window DWM screenshots (`bs-window-screenshot`
-  CSS; `take_screenshots.py` `_capture_full_window`). A high-effort `/code-review` fixed 3
-  more correctness bugs. Brief: `docs/_dev/widget-api-audit.md`. DEFERRED (recorded in the
-  brief): Toolbar/MenuBar return-handle rework + AppShell façades, option-databag
-  enumerators, review follow-ups #4–#10. Memories `project_widget_attach_detach`,
-  `project_docs_site_fleshout`.
-- **Linked type aliases + widget-API consistency** (merged to `main` this session
-  via rebase) — public type aliases now render as their short NAME, **linked** to a
-  `.. py:type::` entry on the API-ref page, framework-wide (was: inline-expanded
-  Literals, or empty `autosummary` summaries). The recipe, after a long debugging arc:
-  (1) **source consistency** — promote recurring inline Literals to named aliases
-  (`Orient` reused; new `IconPosition`/`SelectionMode`/`ExportScope`/`ExportFormat`;
-  `ButtonVariant` for the whole button family — which fixed Button/ButtonGroup *missing*
-  `'default'`); export `AccordionVariant`/`Region`/`ThemeMode`/`SeverityToken`. (2)
-  **conf.py** — DROP `sphinx_autodoc_typehints` (it printed alias values as inert text,
-  blocking linking) → core autodoc; `autodoc_type_aliases` maps each alias to its FQN;
-  `python_use_unqualified_type_names = True` (short display, keeps link); and a 4-line
-  `TypeAliasForwardRef.__init__` patch giving it `__module__`/`__qualname__` (Sphinx
-  9.1 leaked its `repr` when the alias was nested in a union — this was the one real
-  Sphinx gap). 6 API-ref pages converted to `py:type` catalogs. Verify: `-W` clean +
-  `python_use_unqualified_type_names` keeps names short + grep built pages for
-  `TypeAliasForwardRef` (must be 0). Memory `project_enum_option_typing`.
-  Widget-API fixes bundled in: MenuButton/ContextMenu `command` Tk-leak (item dicts now
-  take clean `on_click`, translated); MenuButton/ToggleButton button text `label`→`text`
-  (controls keep `label`); `ColumnSpec.editor` `str`→`EditorType`; ContextMenu
-  completeness pass (+7 positioning/sizing params, +4 item methods). DEFERRED: rename the
-  menu item *type* `'command'`→`'action'` (Tk-ism, but a deliberate public name).
-- **Unified data bag** (PR #92) — undisplayed/non-scalar fields carried across
-  Tree/DataTable/ListView; SQLite hides non-scalars in a `_bs_data` JSON column;
-  `bs.SerializationError` on non-JSON values. Memory `project_data_bag`.
-- **Large-file streaming** (PRs #93–#96) — chunked `load()`; pluggable
-  reader/writer registries (CSV/TSV/JSON/JSONL/XML built in; Parquet/Feather/HDF5
-  via extras); `FileDataSource` ingests a file into a SQLite working store; source
-  `save()` + DataTable `export_formats`. Memory `project_file_source_streaming`
-  (deferred: background ingest, keyset pagination, auto-index).
-- **Tree public-API modernization** (PR #91) — recycle-view canvas Tree, `TreeNode`
-  handles (icon+label rows). Memories `project_tree_row_model`,
-  `reference_listrow_button_focus_stick`, `reference_treeview_perrow_indicator_state`.
-- **Icon rendering + DataTable polish** — ink-metric icon renderer; `Table`→
-  `DataTable` rename + DataSource decoupling. Memories `project_icon_rendering`,
-  `project_table_datasource_coupling`.
-- **Tree data-source backing** (PR #97) — `Tree(data_source=, parent_field=, ...)`
-  projects a flat adjacency-list source as a lazy hierarchy (per-node loaders via
-  `src._query`, batched has-children chevrons; mutually exclusive with `nodes=`).
-  Impl `widgets/_impl/composites/tree/source_binding.py`. Memory
-  `project_tree_datasource_backing` (deferred: child pagination, tree filtering,
-  auto-refresh, native protocol, doc page).
-- **SqliteDataSource schema inference** (PR #98) — `load()` samples leading rows
-  (`_SCHEMA_SAMPLE_SIZE=1000`) to infer column types, fixing the
-  TEXT-affinity-from-leading-NULL bug surfaced by Tree backing. Tests
-  `tests/data/test_schema_inference.py`. (`_ensure_table` still infers from one
-  record — inherent.)
-- **Signal runtime cleanup** (`feat/signal-cleanup`) — `signal()` is the single
-  getter; removed `.get()` + the `__getattr__` Tk proxy; `set()` widens int→float;
-  `subscribe(immediate=)` propagates errors. `is_signal()` now duck-types on
-  `var`/`subscribe`/`set`/callable. Memory `reference_signal_duck_typing`.
-- **Preferences store `bs.Store`** (`feat/store`) — public dict-like JSON
-  file-backed prefs store; write-through atomic saves, JSON-only values, no App
-  required; lives at `<config>/<app>/<name>.json` via shared `_core/paths.py`.
+- **Universal `.selection` on ListView/DataTable/Tree** (PR #120, MERGED) — polymorphic by
+  `selection_mode` (dict/list, TreeNode handles); replaced `get_selected()`/`selected_rows`/
+  `selected_nodes` (clean break); `ListView.select_items`/`deselect_items`. Memory `project_option_databag`.
+- **Field value/text/label contract + option data bag** (PRs #113–#116, MERGED) — `label`=caption,
+  `text`=formatted display (public read-only), `value`=raw datum (never derived from text); shared
+  `Option = str | tuple | OptionDict` + `normalize_option` with a data bag; `.selection` accessor.
+  Memories `project_field_value_text_model`, `project_option_databag`.
+- **Widget API gap audit + documentation** (PR #111, MERGED) — audited ~49 widgets vs their
+  `_impl/` internals; added lifecycle (`destroy`/`on_destroy`), `WindowControlsMixin` on
+  App/AppShell/Window (AppShell is now a `PublicWidgetBase`), group management, live properties;
+  new **Application** widget category with full-window screenshots. Brief `docs/_dev/widget-api-audit.md`.
+- **Linked type aliases + widget-API consistency** (MERGED) — public aliases render as their
+  short NAME, linked to a `.. py:type::` entry (dropped `sphinx_autodoc_typehints`;
+  `autodoc_type_aliases` FQN map; `python_use_unqualified_type_names`; a `TypeAliasForwardRef`
+  patch). Memories `project_enum_option_typing`, `reference_typed_alias_linking`.
+- **Unified data bag** (PR #92) — non-scalar fields carried across Tree/DataTable/ListView
+  (SQLite `_bs_data` JSON column; `bs.SerializationError` on non-JSON). Memory `project_data_bag`.
+- **Large-file streaming** (PRs #93–#96) — chunked `load()`; pluggable reader/writer registries;
+  `FileDataSource` → SQLite working store; `export_formats`. Memory `project_file_source_streaming`.
+- **Tree public-API modernization** (PR #91) — recycle-view canvas Tree, `TreeNode` handles.
+  Memories `project_tree_row_model`, `reference_treeview_perrow_indicator_state`.
+- **Icon rendering + DataTable polish** — ink-metric icon renderer; `Table`→`DataTable` +
+  DataSource decoupling. Memories `project_icon_rendering`, `project_table_datasource_coupling`.
+- **Tree data-source backing** (PR #97) — `Tree(data_source=, parent_field=)` lazy hierarchy
+  from a flat adjacency-list source. Memory `project_tree_datasource_backing`.
+- **SqliteDataSource schema inference** (PR #98) — `load()` samples leading rows to infer column
+  types (fixes the TEXT-affinity-from-leading-NULL bug).
+- **Signal runtime cleanup** — `signal()` single getter; `is_signal()` duck-types. Memory
+  `reference_signal_duck_typing`.
+- **Preferences store `bs.Store`** — dict-like JSON file-backed prefs; shared `_core/paths.py`.
   Memory `project_persistent_kv_store`.
-- **AppSettings flattening** (PR #101) — all settings are flat `App(...)`/
-  `AppShell(...)` kwargs; `settings=`/`AppSettings`/`app.settings` GONE (raises
-  `TypeError`); symmetric `app.*` properties via `AppConfigMixin`; `from_store` +
-  `Store.update(**kwargs)`. See the "FLAT kwargs" gotcha. Memory
-  `project_app_settings_flattening`.
-- **Reference docs review pass** (PR #103) — enriched `docs/reference/*` + new
-  `localization.rst`; implemented the `compare` validation rule, made
-  `Form.validate()` run ALL rules on submit, fixed two `IntlFormatter` bugs. Tests
-  `tests/test_validation_rules.py`, `tests/test_intl_format.py`.
-- **Top-level namespace curation + dialogs restructure** (PR #104) — top-level
-  `bootstack` slimmed to the compose surface (~85 names); primitives moved to
-  submodules; dialog classes → `bootstack.dialogs`; clean break. See the "Public
-  namespace is CURATED" gotcha. Memory `project_toplevel_api_surface`.
-- **Docs build warnings cleanup + global-items/verb audit** (PR #106) — clean-build
-  39 warnings+1 error → 0 (attribute docstrings; colon-on-first-line root cause —
-  see Code standards; docutils nits); renamed `supported_extensions`→
-  `supported_read_extensions`; demoted internal style accessors. Keep clean-build
-  warning-free.
-- **API Reference restructure — Stages 1–3** (PR #107 + `feat/api-reference-stage2`,
-  merged) — Diátaxis split: narrative (Widgets + Guides) + unified by-module **API
-  Reference** (autosummary mirroring each `__all__`). All 10 subsystem API-ref pages
-  built (each the autodoc home); all 11 `reference/*` pages converted to Guides.
-  Templates + recipe locked in "## API Reference & Guide page pattern" below. Brief:
-  `docs/_dev/api-reference-restructure.md`; memory `project_api_reference_restructure`.
-  **NEXT: Stage 4 (in progress — see below).**
+- **AppSettings flattening** (PR #101) — flat `App()`/`AppShell()` kwargs; `settings=`/`AppSettings`
+  gone. See the "FLAT kwargs" gotcha. Memory `project_app_settings_flattening`.
+- **Reference docs review pass** (PR #103) — enriched `docs/reference/*` + `localization.rst`;
+  `compare` rule; `Form.validate()` runs all rules.
+- **Top-level namespace curation + dialogs restructure** (PR #104) — `bootstack` slimmed to the
+  compose surface (~85 names); dialog classes → `bootstack.dialogs`. Memory `project_toplevel_api_surface`.
+- **Docs build warnings cleanup** (PR #106) — clean-build 40→0; keep it warning-free.
+- **API Reference restructure — Stages 1–3** (PR #107) — Diátaxis split: narrative (Widgets +
+  Guides) + by-module API Reference; templates/recipe in "## API Reference & Guide page pattern".
+  Memory `project_api_reference_restructure`. (Stage 4 homing DONE — see "History".)
 
 ## Next up
 
@@ -566,10 +233,10 @@ memories and git history.
 
 Ten maintainer-requested items to resolve before shipping 0.1.0 — all filed as
 tracked issues (each issue links the relevant impl file + has detail).
-**Eight of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
+**Nine of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
 #188 (PR **#198**), **#189 (PR #199 → folded into the nav reshape PR #202)**, **#187
-(PR #203)** — all merged to `main`. **Two remain** (each its own `fix/*`/`feat/*`
-branch → PR → `main`):
+(PR #203)**, **#191 (PR #204 — themed color tab + `ask_color(value=)` rename)** — all
+merged to `main`. **One remains** (its own `feat/*` branch → PR → `main`):
 
 - **#189 `solid` sidebar selection variant — DONE.** Shipped as **`nav_variant`**
   on `AppShell` (PR #199, gated to the standalone nav), then **superseded by the
@@ -592,10 +259,6 @@ branch → PR → `main`):
   type"** section (`SearchField(bs.TextField)` via `insert_addon`, justified by exactly
   this change — a container can only build your field if it's a class). Test
   `tests/widgets/public/test_statusbar.py` (3).
-- **#191 Theme colors in the color picker (feature)** — add a swatch row of the
-  active theme's semantic colors (via `get_theme_color`) to
-  `dialogs/_impl/colorchooser.py`. NB the color dropper was removed in #190, so the
-  footer is OK/Cancel-only now.
 - **#192 Color-swatch Select control (feature, larger)** — a `Select`-style
   dropdown rendering color swatches inline (complements `ask_color()`). New widget
   or Select variant — lock shape/naming with the maintainer first.
@@ -609,85 +272,37 @@ border now **`b.border(surface)`** (a soft stroke derived from the card's own
 `{accent}[subtle]` tinted surface), NOT `{accent}_emphasis` (the issue's original
 suggestion — rejected as too strong on review). Test `test_card_border.py`.
 
-### ✅ SHIPPED — Layout redesign (screen-axis vocabulary on a grid engine) — MERGED #170
+### Slider follow-ups
 
-Replaced the Tk pack stack layout with a **screen-axis** vocabulary on the Tk **grid**
-geometry manager. Merged to `main` via **PR #170** (the long-running
-`feat/grid-layout-engine`). Memories `project_layout_redesign`,
-`feedback_layout_conversion_rules`, `project_layout_crossaxis_default`,
-`project_divider_rename`, `project_dialog_content_builder_native`.
+- **PR #213 (OPEN)** — slider `step=` value snapping + keyboard increment (closes **#210**).
+- Open issues: **#210** (the `step=` feature, PR #213) · **#211** (RangeSlider `<Tab>` is a
+  keyboard focus-trap — can't Tab out).
 
-- **Vocabulary (shipped):** axes fixed to the SCREEN (`horizontal`=x, `vertical`=y; no
-  main/cross flip). **Bare = self, `_items` = children** (a container is also a widget):
-  self → `horizontal`/`vertical`/`grow`; container → `horizontal_items`/`vertical_items`/
-  `grow_items`. Edge-name values (`left`/`center`/`right`/`stretch`; `top`/`center`/
-  `bottom`/`stretch`) + `space-between`/`-around`/`-evenly` on the stacking axis.
-  `HStack`/`VStack`→**`Row`/`Column`**; `Separator`→**`Divider`**; new **`Spacer`**;
-  `layout=` values `column`/`row`/`grid`. `weights=` kept (positional `grow` shorthand).
-- **Cross-axis default = `center`**, uniform across all stacks; the stacking (main) axis
-  starts top/left; grid stays `stretch`. **Legacy child kwargs (`fill`/`expand`/`anchor`/
-  `sticky`) now RAISE** a clear error instead of silently collapsing a child.
-- **Conversion rules** (memory `feedback_layout_conversion_rules`): axis-aware
-  (`fill="x"`→`horizontal` stretch in a Column, `grow` in a Row); HOIST uniform child
-  alignment to the parent `*_items`; NEVER write a default. Data/canvas widgets
-  (ListView/Tree/DataTable/Gallery/Carousel) collapse without `grow`/`stretch`.
-- **Engine fixes shipped in #170:** undefined grid rows default `weight=0` (no more rows
-  spreading down a `layout="grid"` page); `Grid` honors `width=`/`height=` (propagation
-  bug); `FlexFrame` prunes children destroyed out-of-band (no more `bad window path
-  name`); O(1) append fast-path for plain stacks (build O(N²)→O(N), N=1000 ~7.4s→~0.5s).
-- **Docs shipped:** Row/Column guides rewritten for teaching quality, new **Spacer**
-  page, Divider hero redesigned, `tasks/layout.rst` ("Arranging Widgets") tightened, all
-  examples/screenshots/CLI scaffold/`cli/demo.py` converted; `-W` build clean. README +
-  docs-home install refreshed to the new vocabulary + `--pre`.
+### ✅ SHIPPED — Layout redesign (screen-axis grid engine) — MERGED #170
 
-**Shipped post-merge (all merged to `main`):**
-- **#171** `perf(layout)` — GridFrame O(N) build (gate the per-add prune scan on a
-  `<Destroy>`-set flag; N=1000 grid 827ms→501ms; destroy-recreate correctness preserved).
-- **#169** `ci(docs)` — deploy docs only on a new release (`workflow_run` after the
-  Release workflow; runs in the `main` context so it passes the github-pages branch
-  protection a tag-ref deploy would fail). In effect now.
-- **#172** `docs` — README + docs-home refreshed to the layout vocabulary + `--pre`.
-- **#173** `refactor(cli)` + Gallery/image fixes — rebuilt `bootstack icons` on the public
-  layer (App/Row/`Gallery`, 326→94 lines, no raw Tk). Plus framework fixes (surfaced by
-  dogfooding) that benefit every scroll-query widget: icon handles render+cache to PIL so
-  Picture/Gallery can display `get_icon()` images; Gallery uniform tiles (`_fit_caption`),
-  row-fill column weighting, `_resolve_columns` off-by-one, caption scroll-binding;
-  `MemoryDataSource` filter+sort view memoization (O(1) `count`, O(window) `page_slice`).
-  This closed the last `cli/icons.py` raw-Tk follow-up.
+Replaced the Tk pack stack with a **screen-axis** vocabulary on the Tk grid manager:
+`horizontal`/`vertical`/`grow` (bare = self, `*_items` = children); edge-name values
+(`left`/`center`/`right`/`stretch`) + `space-between`/`-around`/`-evenly`; `HStack`/`VStack`
+→ `Row`/`Column`, `Separator`→`Divider`, new `Spacer`; **cross-axis default `center`**;
+legacy `fill`/`expand`/`anchor`/`sticky` now RAISE. Post-merge: #171 (GridFrame O(N) build),
+#169 (deploy docs on release only), #172 (README/docs-home refresh), #173 (CLI icons on the
+public layer + Gallery/MemoryDataSource fixes). Memories `project_layout_redesign`,
+`feedback_layout_conversion_rules`, `project_layout_crossaxis_default`, `project_divider_rename`,
+`project_dialog_content_builder_native`.
 
-**Follow-ups (not blockers):**
-- **Gallery opt-in keyboard-focus ring** (future) + deferred Gallery perf (debounce the
-  `<Configure>` relayout, bounded thumbnail-PhotoImage LRU, cache `_fit_caption`). Scope to
-  keyboard focus, NOT hover. Memory `project_gallery_focus_ring`.
-- **`add_spacer()`→public `Spacer`** still deferred — entangled with
-  `feat/unified-toolbars` (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
-- Demo bugs (pre-existing, NOT layout-caused): ~~#166 ContextMenu/Tooltip don't
-  cover container children~~ (DONE, PR #183 — see top of "Recently completed") ·
-  ~~#167 Gauge theme repaint~~ (resolved by the theme-repaint perf work, PR #180) ·
-  ~~#168 Tabs overflow~~ (DONE, PR #184, MERGED; see top of "Recently completed").
+**Live follow-ups (not blockers):**
+- **Gallery opt-in keyboard-focus ring** (future) + deferred Gallery perf (debounce
+  `<Configure>`, bounded thumbnail-PhotoImage LRU, cache `_fit_caption`). Scope to keyboard
+  focus, NOT hover. Memory `project_gallery_focus_ring`.
+- **`add_spacer()`→public `Spacer`** still deferred — entangled with `feat/unified-toolbars`
+  (internal `Toolbar` is pack-based). Memory `project_unified_toolbars`.
 
-### ✅ SHIPPED — Undecorated window controls + border + maximized-drag (#162, #165) — MERGED #175
+### ✅ SHIPPED — Undecorated window controls + border + maximized-drag — MERGED #175
 
-An `undecorated` `App`/`Window`/`AppShell` is no longer stranded (the `Shell`
-rewrite had dropped the controls/drag the OLD region AppShell got from the internal
-`Toolbar`). **NB the #162 plan in this handoff was STALE** — by the time it was
-tackled, the unified-toolbars sweep had already (a) implemented + then *retired* a
-dedicated titlebar band (`7dbab5a6`→`375e1458`) and (b) **removed `menubar`/
-`commandbar` framework-wide in favor of `add_toolbar()`** (`351d2409`). So the fix
-layers on `add_toolbar()`, not a band:
-- `ChromeHostMixin._ensure_default_titlebar()` (shared) — undecorated + no
-  author-added chrome toolbar → injects one `add_toolbar(show_window_controls=True)`
-  (min/max/close, draggable, dbl-click-maximize) labeled with the window title.
-  No-op when decorated / macOS / author owns chrome. Called from `App.run()` /
-  `AppShell.run()` / `Window.show()` / `Window.block_until_closed()`.
-- 1px themed **border** via a `_region_root` wrapper (mirrors `ShellLayout`).
-- **`App` gained `undecorated`** (it had none); **`Window` gained
-  `window_controls=True`** (`False` = fully chromeless splash — no controls, no
-  border). `App`/`AppShell` always get controls+border when undecorated.
-- **#165** fixed in the same PR: dragging a maximized undecorated window now restores
-  it *under the cursor* (`toolbar.py:_on_drag_motion` re-anchors on the cursor's
-  horizontal fraction). Tests: `test_undecorated_titlebar.py`, `test_toolbar_drag.py`,
-  AppShell case in `test_shell_toolbar.py`. Memory `project_undecorated_window_chrome`.
+Undecorated `App`/`Window`/`AppShell` auto-inject a draggable titlebar (min/max/close) +
+1px border via `ChromeHostMixin._ensure_default_titlebar()` (layers on `add_toolbar()`, not
+a dedicated band); `App` gained `undecorated=`, `Window` gained `window_controls=`; #165
+maximized-drag re-anchors under the cursor. Memory `project_undecorated_window_chrome`.
 
 ### Toward the 0.1.0 stable release
 
@@ -720,163 +335,23 @@ indicator) — `project_secondary_tab_variant`, a standalone item.
 
 ### History — done initiatives
 
-- **✅ DONE — Public-API typing sweep** (branch `feat/api-reference-widgets`, NOT
-  pushed). Grew out of Stage 4's "clean up each widget's API as it is homed". Goes
-  widget-by-widget in Stage-4 batch order fixing param TYPES + docstrings. **ALL widget
-  batches complete** (Application → Overlays/Forms/Dialogs). **DECISION (2026-06-09):
-  the standalone sweep is finished; any remaining/future typing now folds into the
-  Stage-4 API-Reference *homing* below — each module gets typed at the moment it is
-  homed, not in a separate pass.** Full brief + per-widget checklist + every convention:
-  `docs/_dev/typing-review.md`.
-  - **DONE:** Application (App/AppShell/Window), Actions (Button/ButtonGroup), Menus &
-    Toolbars (Toolbar/MenuButton/MenuBar/ContextMenu), Label, Inputs (all 11 — committed
-    `4a9609ff`), Selection (all 10 — Checkbox/Switch/ToggleButton/ToggleGroup/Radio/
-    RadioToggleButton/RadioGroup/Select/SelectButton/Calendar), Data Display (all 7 —
-    Label/Badge/ProgressBar/Gauge/ListView/DataTable/Tree). Selection included a
-    maintainer-approved STRUCTURAL cleanup: removed dead `variant` (Switch/Checkbox) +
-    unsupported `density` (Checkbox/Switch/Radio) via per-subclass `__init__`s + an
-    `_internal_options` engine that rejects unknown kwargs. **Layout** (all 9 —
-    committed `5fbbc0a7`: Separator/Card/GroupBox/VStack/HStack/Grid/ScrollView/
-    Accordion/SplitView; added `LayoutKind`/`AutoFlow` aliases; enriched
-    `AccordionSection` + full `SplitView` pane management + dropped the broken
-    `min_size=`; HStack/VStack own `__init__` so params render). **Navigation** (all 3
-    — committed `22baa3c7`: PageStack/Tabs/SideNav; enriched `StackPage`/`TabPage`
-    handles; `item()`/`items()` return handles, not leaked internals).
-    **Overlays/Forms/Dialogs** (final batch — committed `aee08c78`: Tooltip/Toast/Form +
-    the dialog verbs/classes). **FOLD INTO HOMING (not done in the sweep):** convert
-    `ColorChoice`/`FontChoice` from bare `namedtuple`s → typed `NamedTuple`s with field
-    docstrings + single-backtick prose when the `bootstack.dialogs` API-Reference page is
-    built; surface the `bootstack.types` aliases (`LayoutKind`/`AutoFlow`/`Padding`/…)
-    when that page is built (both modules are flagged "pending" in
-    `api-reference/index.rst`). STILL DEFERRED (separate initiatives): the holistic
-    `guide_layout`→`_guide_layout` demotion on the 4 handle classes (AccordionSection/
-    SplitPane/StackPage/TabPage) and a public `on_destroy` lifecycle hook. (Retiring
-    the universal `VariantToken` is **DONE** — #158, per-widget `variant` Literals now.)
-  - **Conventions (full in brief):** public type aliases render as their short NAME,
-    LINKED to a `.. py:type::` entry (the linked-alias docs work — see "Linked type
-    aliases" below; this REVERSES the old "literals expand inline" rule). NO
-    `_drop_overloads_field` hook and NO `sphinx_autodoc_typehints` anymore (core
-    autodoc renders overloads natively). Under-typed `Any`/`str` →
-    real types; per-widget `variant` Literals **sourced from `style/builders/`** (NOT
-    docstrings — they under-report, e.g. MenuButton/Toolbar have a `'default'` variant);
-    `accent`/`surface` = `Token | str | None`; `padding` → `Padding`; closed sets →
-    `Literal`. THIN docstrings (drop value enumerations the type shows; keep the
-    default). `on_*` overloads: document `handler` + `:class:`-link the payload. Open
-    sets with an authority → curated examples + `str` + a `:doc:`/`:ref:` link:
-    `**kwargs`→`/tasks/layout`, `value_format`→`/reference/localization` (`:ref:`
-    `value-formats`), `font`→`/reference/typography`, `window_style`/`language`/`theme`→
-    pywinstyles/Pygments.
-  - **New this session:** public aliases `Padding`/`WindowStyle` (`bootstack.types`),
-    `RuleType` (`bootstack.validation`); `AccentToken` trimmed to the 6 semantic accents;
-    `Fill` widened to its real set. `MenuSelectEvent` payload — MenuButton/ContextMenu
-    `on_select` now typed (was a raw dict). CodeEditor `on_change`/`on_input` now emit
-    typed `ChangeEvent`/`InputEvent` (was a raw `{op,index}` dict). Gauge `value_format`→
-    `value_template`. New `docs/tasks/layout.rst` (placement-options page) + enriched
-    `reference/localization.rst` formats section. Memories: `project_enum_option_typing`
-    (the hub), `project_variant_type_revisit` (now covers accent + variant per-widget),
-    `project_show_indicator_removal` (deferred behavior change), `project_image_icon_public_api`.
-  - **Data Display batch (this session):** `accent`→`AccentToken|str|None` everywhere;
-    removed `internal_kwargs.update(kwargs)` leaks (`**kwargs` is layout-only); documented
-    `**kwargs`; promoted under-typed params (ProgressBar `signal`→`Signal`; ListView/Tree
-    `data_source`→`DataSourceProtocol`; ListView `items`→`list[dict]`; Tree `nodes`→
-    `list[str|dict]`, `order`→`str|Column|SortKey|Sequence|None`; DataTable
-    `export_formats`→`list[Literal[...]]`); completed `on_*` payload docs. **TreeNode**
-    (public) got typed annotations + attribute docstrings for its 9 `__slots__` fields.
-    **CRITICAL convention learned (maintainer review):** with `autodoc_typehints="description"`,
-    the rendered param type comes from the **IMPL signature**, not the `@overload`s (those
-    are stripped) — so `on_*`/`on` IMPLS must be typed `handler: Callable[[Payload],Any]|None
-    =None) -> Stream|Subscription`, AND every public `@property` + method needs a docstring,
-    or they render bare. Swept this gap across ALL prior batches too (an AST scan found +
-    fixed: DateField/TimeField `disabled`/`read_only`, Radio `disabled`; the generic `.on()`
-    impl on 10 input/select widgets). Remaining gap (FLAGGED, not an on_*): `guide_layout`
-    on the page-frame handles (AccordionSection/StackPage/SplitPane/TabPage) — likely
-    DEMOTE to `_guide_layout` (internal layout hook) rather than document. Internal-only
-    `Spinbox`/`Expander` props left as-is.
-  - **Tree feature (this session, maintainer-requested):** `Tree.find(matcher)` +
-    `find_all(matcher)` — `matcher` is a predicate OR a `col(...)` condition; a condition
-    pushes down to a data-source-backed tree (reaching unexpanded branches) and loads the
-    path to each hit non-destructively. `filter()`/`search()` view-pruning DEFERRED (open
-    decisions in memory). Memory `project_tree_find_filter`; tests in `test_tree.py`.
-  - **Verify each batch:** `python -m pytest tests/test_public_surface.py -q` + a CLEAN
-    build — build to a FRESH temp dir when `docs/_build` is locked by an open browser:
-    `sphinx-build -b html docs /tmp/bsdocs -W --keep-going` (must be warning-free).
-    **Also run the doc-gap AST scan** (undocumented public props/methods + untyped `on_*`
-    impls) per batch — see the convention above.
-- **★ API Reference restructure — Stage 4 *homing* (docs), IN PROGRESS** (the autosummary
-  homing thread — interleaved with the typing sweep above; NOT yet advanced this session).
-  Branch **`feat/api-reference-widgets`** (off main; Stages 1–3 merged to main).
-  Building the single top-level `bootstack` category-grouped API page + converting
-  widget guides to table-only summaries, **cleaning up each widget's public API as it
-  is homed** (per-widget recipe under "## Widget documentation pattern"). Within-group
-  entries are **alphabetical** (lookup layer; Guides keep curated order).
-  **DONE so far (committed on the branch — NOT pushed/PR'd yet):**
-  - Foundation: top-level `api-reference/bootstack.rst`; relocated re-exports
-    `Signal`/`set_theme`/`toggle_theme` up (subsystem pages table-link via `~bootstack.X`).
-  - Batch 1 — Application (App/AppShell/Window) + Actions (Button/ButtonGroup) +
-    full **App/AppShell/Window constructor curation** (dropped `app_author`/`app_version`/
-    `inherit_surface_color`[hardwired]/`name`/`mainloop`; demoted `localize_mode`/
-    `macos_quit_behavior`/`state_path`/`available_themes` → construction-only; promoted
-    `position`/`min_size`/`max_size`/`resizable`/`hdpi`/`scaling`; removed the `tk.Tk`
-    docstring leak; fleshed out `emit`). Memories `project_window_api_hardening`.
-  - Batch 2 — Inputs (11) + Selection (10, incl `Radio`/`RadioToggleButton` first home).
-    Completed the typed-payload `on_*` audit for boolean/selection controls (`on_change`
-    → `ChangeEvent(value, prev_value)`; `on_check`/`on_uncheck` stay data-free `Event`).
-    Memory `project_typed_event_payloads`.
-  - Set **`default_role = "code"`** (single backticks → inline code, colon-safe) +
-    converted the 6 Selection widgets' docstrings double→single — de-risks the
-    framework-wide `project_docstring_backticks` sweep (now safe everywhere).
-  **✅ Batch 3 — Data Display DONE** (uncommitted on the branch): homed Label/Badge/
-  ProgressBar/Gauge/ListView/DataTable/Tree/TreeNode (Data Display section on
-  `bootstack.rst`, alphabetical); 7 guides converted bottom-`autoclass`→table-only API
-  section; **`ColumnSpec`/`EditorType`/`FormOptions` defs relocated to `widgets/types.py`
-  + re-exported from `bootstack.types`** (`EditorType` dropped from top-level `__all__`,
-  the only one there). `ExportJob` kept local in `datatable.py` (return-handle Protocol,
-  prose-only in guide — maintainer call 2026-06-09). `on_*` payloads were already typed
-  in the typing sweep (`a6d6d496`) — audit confirmed clean.
-  **✅ Batch 4 — Layout + Navigation DONE**, then **the whole API-Reference IA was
-  RE-CUT** to a semantic-category structure (2026-06-09, with the maintainer) —
-  see the new "## IA re-cut" section + the deletions list in
-  `docs/_dev/api-reference-restructure.md`. In brief: the single `bootstack` page is
-  GONE; the reference is now **one page per CONCEPT** (Application · Widgets ·
-  Reactivity · Events · Data · Validation · Theming · Localization · Scheduling ·
-  Shortcuts · Storage · Errors — build-flow order, flat 2-level, collapsed by
-  default via `show_nav_level:1`), groups may **cross namespaces** (Reactivity =
-  Signal+streams; Theming = top-level verbs + `bootstack.style`), **stub titles show
-  the FULL path** (all 5 templates flipped to `{{ fullname }}`), and the landing is a
-  pandas-style public-contract + submodule list + `sphinx-design` card grid (secondary
-  TOC removed). `api-overview` RETIRED (folded into the landing). All clean-build
-  warning-free; uncommitted until the "IA restructure" commit.
-  **✅ IA migration COMPLETE** (2026-06-09) — every public name is now homed: added
-  the **Dialogs** group (verbs at `bootstack.*`, classes at `bootstack.dialogs.*`; gave
-  `bootstack.dialogs` an `__all__`) + the **Types** group (`bootstack.types.__all__`),
-  homed Menus/Overlays/Forms into **Widgets**, converted the ~13 remaining guides to
-  table-only, converted `ColorChoice`/`FontChoice` → typed `NamedTuple`s, enriched the
-  4 Form item dataclasses, and added `autosummary_filename_map` for the `Toast`/`toast`
-  case collision. **All 14 reference groups built, clean-build warning-free.**
-  **NEXT (Stage 4 done; this is the follow-on):** flesh out widget Guides
-  with examples (**API Reference is a last resort; Guides carry teaching**). `EditFilter`
-  already demoted (memory `project_editfilter_public_api`). **Full brief + decisions in
-  `docs/_dev/api-reference-restructure.md`**; memory `project_api_reference_restructure`.
-- **Public Image/Icon API** (initiative, designed 2026-06-08) — three stacked
-  pieces: `Image` (Tk-free image handle; re-promote, internal since PR #104),
-  `get_icon(name, ...) -> Image` (public factory over the internal font-glyph
-  renderer), and `AppIcon(icon=, background=, foreground=)` (generates the
-  platform app-icon assets — `.ico`/`.png` — for `App`/`Window`). `App`/`Window`
-  `icon=` (type `str | AppIcon | Image`) is DEFERRED to this. Memory
-  `project_image_icon_public_api`.
-- **Decoupled option shape for the selection family** (initiative, designed
-  2026-06-09) — let `Select`/`SelectButton` options carry a value distinct from
-  their label, via ONE shared `Option = str | tuple[str, Any] | OptionDict` shape
-  (dict = the extensible "data bag" member: `{"text", "value", …icon/disabled}`)
-  normalized once and consumed by all four selection widgets (RadioGroup/ToggleGroup
-  already do `(label,value)` tuples — fold them into the shared normalizer + widen to
-  the dict). Bulk of the work is giving the entry-backed `SelectBox` a real text↔value
-  map (search-on-text, value-space `value`, custom-value semantics). Full brief +
-  open decisions (`text` vs `label` key; `.options` return shape; unknown-value setter
-  behavior): `docs/_dev/select-options-databag.md`. Behavior feature — do AFTER the
-  typing sweep's Data Display batch; lock shape/naming before touching internals.
-- **Deferred file-streaming items** — background/progressive ingest, keyset
-  pagination, auto-index (memory `project_file_source_streaming`).
+- **Public-API typing sweep — DONE** (branch `feat/api-reference-widgets`, merged via
+  PR #109). All widget batches typed (Application → Overlays/Forms/Dialogs): real param
+  types, per-widget `variant` Literals sourced from `style/builders/`, typed `on_*`
+  payloads (impl signature, not `@overload`), thin docstrings, every public prop/method
+  documented. Conventions live in the "API Reference & Guide page pattern" section +
+  `docs/_dev/typing-review.md`. Memories `project_enum_option_typing`,
+  `project_typed_event_payloads`, `project_variant_type_revisit`. Also shipped here:
+  `Tree.find`/`find_all` (predicate or `col(...)` condition; memory `project_tree_find_filter`).
+- **API Reference restructure — Stage 4 homing — DONE (PR #109).** The IA was re-cut to a
+  semantic-category structure: one page per CONCEPT (Application · Widgets · Reactivity ·
+  Events · Data · Validation · Theming · Localization · Scheduling · Shortcuts · Storage ·
+  Errors), full-path stub titles, pandas-style card landing; every public name homed,
+  guides converted to table-only API sections. Brief `docs/_dev/api-reference-restructure.md`;
+  memory `project_api_reference_restructure`. **NEXT (follow-on): flesh out widget Guides
+  with examples — the API Reference is a last resort; Guides carry teaching.**
+- **Deferred file-streaming items** — background/progressive ingest, keyset pagination,
+  auto-index (memory `project_file_source_streaming`).
 
 ## Carryover (deferred)
 
@@ -1127,14 +602,36 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
 
 ---
 
+## Reviewing a widget + docs standards (read first)
+
+**Before any widget review or widget-docs work, read
+`docs/_dev/widget-review-and-docs-standards.md`** — the consolidated checklist.
+It is the single source of truth for both halves; the highlights:
+
+- **A review is audit → fix → test → document → file follow-ups**, not a
+  read-through. Audit the public wrapper vs `_impl` for correctness bugs AND
+  unexposed capability. Recurring bug classes: value clamping (setters + re-clamp
+  on range change), disabled state honored on *every* input path (incl. Home/End),
+  event consistency (keyboard jumps commit like a drag-release), no Tab focus-trap.
+  Then API hygiene (typed params, `on_*` payload audit, drop dead kwargs,
+  live-vs-construction props). **File additive features / out-of-scope bugs as
+  tracked issues — don't scope-creep the review branch.**
+- **Docs: the Guide teaches; the API Reference is a last resort.** **Lead with the
+  mental model** (foundational concept up front, not buried later). **No
+  kitchen-sink — one idea per paragraph, scannable**, teach the decisions not every
+  kwarg. Examples are **tight, API-verified, with the relevant import on first
+  use** (and they must run). Use a `.. note::` for an **adjacent-but-distinct topic**
+  (placed by the relevant screenshot, linking the other section) rather than inline
+  prose — keep each topic its own section/TOC entry. Document the **Events** (change
+  vs commit — public, not an impl detail) and **Keyboard** behavior of interactive
+  widgets. **One screenshot per visually-distinct usage section**, not just the hero;
+  a behavioral-only feature (e.g. step snapping) gets prose, no screenshot.
+  Sentence-case section headers; Title Case page title.
+- Verify: GUI test files run **one per process** (#150); `tests/test_public_surface.py`
+  green; examples run; clean `-W` docs build; held for user test + per-commit approval.
+
 ## Widget documentation pattern (established — follow exactly)
 
-> ⚠ Stage 4 of the API Reference restructure will modify this pattern: the bottom
-> `autoclass` gets DROPPED (the autodoc home moves to the single top-level
-> `bootstack` API Reference page) and replaced with a table-only `autosummary`
-> summary + cross-links, per the Guide-page recipe above. Until then, in-flight
-> widget pages keep the autoclass.
->
 > ⚠ **Migrating a widget = also clean up its public API** (the maintainer's
 > standing pattern, memory `feedback_cleanup_api_while_documenting`). When you home
 > a widget into the API Reference, audit it the way `App`/`AppShell`/`Window` were:
@@ -1156,7 +653,8 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
    + `_split_layout_kwargs`; catch-all must be `**kwargs` not `**extra_kw`.
 3. **`docs/widgets/<widget>.rst`** (NOTE: was `docs/api/` — moved 2026-06-04) —
    intro sentence → hero screenshot → Usage sections (code block then screenshot)
-   → Widget sizing include → See also → API autoclass → Full Example
+   → Widget sizing include → See also → table-only `autosummary` API section +
+   cross-links (NO bottom `autoclass`, per the Guide-page recipe) → Full Example
    literalinclude. No intro code block above hero.
 4. **`docs/examples/<widget>.py`** — runnable visual-states-only demo. No
    `app.tk.after()`, no screenshot scaffolding, no `fill="x"` in RST snippets.
@@ -1168,7 +666,7 @@ home moves — fix the link or add a `nitpick_ignore_regex`.
    Outputs: `docs/_static/examples/<widget>-<scene>-light/dark.png`
 7. **Wire** into the matching `:caption:` toctree in `docs/widgets/index.rst`
    (category landing pages are retired — captions group the widgets now).
-8. **Commit** on `feat/docs-api-improvements`.
+8. **Commit** on a dedicated `feat/*`/`docs/*` branch.
 
 ### Screenshot image pattern
 
