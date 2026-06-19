@@ -26,4 +26,4 @@ The rule names accepted by ``ValidationRule`` and a field's
 .. py:type:: RuleType
 
    A built-in validation rule name — `'required'`, `'email'`, `'pattern'`,
-   `'stringLength'`, `'custom'`, `'compare'`.
+   `'stringLength'`, `'range'`, `'custom'`, `'compare'`.

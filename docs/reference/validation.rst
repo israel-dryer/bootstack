@@ -4,8 +4,21 @@ Validation
 Input fields can check what the user types against a set of rules. A rule has a
 type (``'required'``, ``'email'``, …), an optional custom message, and a
 *trigger* that decides when it runs. Rules run in the order you add them and stop
-at the first failure, and the field emits ``valid`` / ``invalid`` events you can
-listen to. The same rule engine also works standalone, with no widget attached.
+at the first failure. The same rule engine also works standalone, with no widget
+attached.
+
+Rules validate the field's **typed value** — a ``custom`` rule on a
+:class:`~bootstack.NumberField` receives a number, on a
+:class:`~bootstack.DateField` a ``date``. So the rule *kind* matches the value
+kind: the text rules (``'stringLength'``, ``'pattern'``, ``'email'``) apply to
+text fields, ``'range'`` applies to numeric and date/time fields, and the rest
+(``'required'``, ``'compare'``, ``'custom'``) apply anywhere. Attaching a rule to
+a field whose value it can't validate raises an error, so the mismatch surfaces
+when you write the code, not when the user types.
+
+A field's validity is **reactive state** you can read, bind, or subscribe to
+(``field.valid`` / ``field.error``), and it still emits ``valid`` / ``invalid``
+events.
 
 Adding rules to a field
 -----------------------
@@ -48,13 +61,17 @@ Built-in rule types
      - is not empty or whitespace.
    * - ``'email'``
      - —
-     - looks like an email address.
+     - looks like an email address. *(text fields)*
    * - ``'stringLength'``
      - ``min``, ``max``
-     - has a length within the given bounds.
+     - has a length within the given bounds. *(text fields)*
    * - ``'pattern'``
      - ``pattern`` (regex)
-     - matches the regular expression.
+     - matches the regular expression. *(text fields)*
+   * - ``'range'``
+     - ``min``, ``max``
+     - falls within the given bounds — a number, or a ``date``/``time``.
+       *(numeric and date/time fields)*
    * - ``'compare'``
      - ``other_field``
      - equals another field's value (confirm-password, etc.).
@@ -65,11 +82,41 @@ Built-in rule types
 Every rule also accepts ``message`` (override the default text) and ``trigger``
 (see below).
 
+Numeric and date bounds
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A ``'range'`` rule bounds an ordered value — a number, a ``date``, or a
+``time`` — with ``min`` and/or ``max``. Unlike a field's ``min_value`` /
+``max_value`` (which *clamp* the input silently), a rule *reports* an
+out-of-range value with a message:
+
+.. code-block:: python
+
+   age = bs.NumberField(label="Age")
+   age.add_validation_rule("range", min=18, message="You must be 18 or older.")
+
+   import datetime
+   start = bs.DateField(label="Start date")
+   start.add_validation_rule("range", min=datetime.date.today())
+
+An empty field is not out of range — pair ``'range'`` with ``'required'`` if the
+field must also be filled in.
+
+.. note::
+
+   ``'range'`` is for numeric and date/time fields; ``'stringLength'`` bounds the
+   length of a **text** field. Each rule applies only where it makes sense, so
+   ``age.add_validation_rule("stringLength", …)`` raises rather than silently
+   measuring the number's digits.
+
 Custom rules
 ~~~~~~~~~~~~
 
-A ``'custom'`` rule runs any predicate that takes the value and returns a bool.
-Pair it with a ``message`` so the user knows what went wrong:
+A ``'custom'`` rule runs any predicate that takes the field's typed value and
+returns a bool — a string for a text field, a number for a
+:class:`~bootstack.NumberField`, a ``date`` for a
+:class:`~bootstack.DateField`. Pair it with a ``message`` so the user knows what
+went wrong:
 
 .. code-block:: python
 
@@ -78,6 +125,13 @@ Pair it with a ``message`` so the user knows what went wrong:
        "custom",
        func=lambda v: v.isdigit() and len(v) == 6,
        message="The code is 6 digits.",
+   )
+
+   amount = bs.NumberField(label="Amount")
+   amount.add_validation_rule(            # v is a number here, not text
+       "custom",
+       func=lambda v: v % 5 == 0,
+       message="Enter a multiple of 5.",
    )
 
 Confirming a second field
@@ -125,8 +179,9 @@ has a sensible default, which you can override per rule:
    * - ``'key'``
      - only as the user types.
    * - ``'blur'``
-     - only when the field loses focus. Default for ``'stringLength'`` and
-       ``'compare'`` — they read better once the user has finished a field.
+     - only when the field loses focus. Default for ``'stringLength'``,
+       ``'range'``, and ``'compare'`` — they read better once the user has
+       finished a field.
    * - ``'manual'``
      - never automatically — only when you call ``validate()`` yourself.
        Default for ``'custom'``.
@@ -142,23 +197,36 @@ check a length rule live:
 Reacting to validation
 ----------------------
 
-Run every rule on demand with ``validate()`` (regardless of trigger); it returns
-``True`` when they all pass. Listen for outcomes with ``on_valid`` /
-``on_invalid`` — both receive a :class:`ValidationEvent
-<bootstack.events.ValidationEvent>` carrying ``value``, ``is_valid``, and
-``message``:
+A field's validity is reactive state. ``field.error`` is a ``Signal[str]`` — the
+current message, or ``""`` when valid — and ``field.valid`` is a ``Signal[bool]``.
+Bind the error straight to a label and it keeps itself in sync:
 
 .. code-block:: python
 
-   status = bs.Label("", accent="danger")
+   email = bs.TextField(label="Email")
+   email.add_validation_rule("email", message="Enter a valid email.")
 
-   def show(e):
-       status.text = e.message      # "" when valid
+   bs.Label(textsignal=email.error, accent="danger")   # shows and clears itself
 
-   email.on_invalid(show)
-   email.on_valid(show)
+Read either signal on demand by calling it (``email.valid()``), or ``subscribe``
+to run code on each change. The field already shows its own message below the
+input, so binding ``error`` is for surfacing the state somewhere else (a summary,
+a submit button's enabled state).
 
-   if email.validate():             # runs every rule, returns True if all pass
+For a one-off reaction, the ``on_valid`` / ``on_invalid`` events still fire — each
+receives a :class:`ValidationEvent <bootstack.events.ValidationEvent>` carrying
+``value``, ``is_valid``, and ``message``:
+
+.. code-block:: python
+
+   email.on_invalid(lambda e: toast(e.message))
+
+Run every rule on demand with ``validate()`` (regardless of trigger); it returns
+``True`` when they all pass:
+
+.. code-block:: python
+
+   if email.validate():
        submit()
 
 Validating a whole form before submit
