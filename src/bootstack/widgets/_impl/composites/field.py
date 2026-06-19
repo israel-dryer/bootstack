@@ -228,8 +228,10 @@ class Field(EntryMixin, Frame):
         if self._show_messages:
             self._message_lbl.pack(side='top', fill='x', padx=4)
 
-        self._entry.bind('<<Invalid>>', self._show_error, add=True)
-        self._entry.bind('<<Valid>>', self._clear_error, add=True)
+        # The message label follows the entry's reactive error signal: a
+        # non-empty error shows in danger, an empty one restores the static
+        # helper message.
+        self._entry._error_signal.subscribe(self._on_validation_message)
 
         # bind focus styling to the field frame
         self._entry.bind('<FocusIn>', lambda _: self._field.state(['focus']), add=True)
@@ -619,16 +621,20 @@ class Field(EntryMixin, Frame):
             self._show_messages = True
             self._message_lbl.pack(side='top', fill='x', padx=4)
 
-    def _show_error(self, event: Any) -> None:
-        """Display a validation error message below the input field."""
-        self._message_lbl['text'] = event.data.message
-        self._message_lbl['accent'] = "danger"
-        self._message_lbl.pack(side='top', after=self._field, padx=4)
+    def _on_validation_message(self, message: str) -> None:
+        """React to the entry's error signal — show the error or restore helper text.
 
-    def _clear_error(self, _: Any) -> None:
-        """Clear the error message and restore the original message text."""
-        self._message_lbl['text'] = self._message_text or ''
-        self._message_lbl['accent'] = "secondary"
+        Args:
+            message: The current validation error, or an empty string when the
+                field is valid.
+        """
+        if message:
+            self._message_lbl['text'] = message
+            self._message_lbl['accent'] = "danger"
+            self._message_lbl.pack(side='top', after=self._field, padx=4)
+        else:
+            self._message_lbl['text'] = self._message_text or ''
+            self._message_lbl['accent'] = "secondary"
 
     def _set_addons_state(self, disabled: bool) -> None:
         """Configure addon widgets based on whether the entry is interactive."""

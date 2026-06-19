@@ -8,7 +8,6 @@ from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Text, Variable
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TYPE_CHECKING
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
-from bootstack.events import ValidationEvent
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton
 from bootstack.widgets._impl.primitives.switch import Switch
@@ -25,7 +24,6 @@ from bootstack.widgets._impl.composites.slider.slider import Slider
 from bootstack.widgets._impl.composites.selectbox import SelectBox
 from bootstack.widgets._impl.primitives.spinbox import Spinbox
 from bootstack.widgets._impl.composites.textentry import TextEntry
-from bootstack.widgets._impl.mixins.validation_mixin import ValidationMixin
 from bootstack.widgets.types import EditorType, Master
 
 if TYPE_CHECKING:
@@ -278,32 +276,13 @@ class Form(Frame):
 
         def _validate_field(widget: Field) -> bool:
             entry = getattr(widget, "_entry", widget)
-            rules = getattr(entry, "_rules", [])
-            if not rules:
+            if not getattr(entry, "_rules", None):
                 return True
-            value = widget.value
-            is_valid = True
-            # An explicit form.validate() is a manual action, so run every rule
-            # regardless of its auto-trigger (matching a field's own validate()).
-            for rule in rules:
-                result = rule.validate(value)
-                if not result.is_valid:
-                    is_valid = False
-                    payload = ValidationEvent(value=value, is_valid=False, message=result.message)
-                    try:
-                        entry.event_generate(ValidationMixin.EVENT_INVALID, data=payload)
-                        entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
-                    except Exception:
-                        pass
-                    break
-            if is_valid:
-                payload = ValidationEvent(value=value, is_valid=True, message="")
-                try:
-                    entry.event_generate(ValidationMixin.EVENT_VALID, data=payload)
-                    entry.event_generate(ValidationMixin.EVENT_VALIDATED, data=payload)
-                except Exception:
-                    pass
-            return is_valid
+            # Delegate to the entry's own validator. An explicit form.validate()
+            # is a manual action, so the "manual" trigger runs every rule; the
+            # entry validates its typed value, updates the field's reactive
+            # validity signals, and emits the validation events.
+            return entry.validate(entry._get_validation_value(), trigger="manual")
 
         for widget in self._widgets.values():
             if isinstance(widget, Field):

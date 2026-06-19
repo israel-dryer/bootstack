@@ -170,6 +170,25 @@ class FieldAddonMixin:
         """
         return self._internal.get()
 
+    @property
+    def valid(self) -> "Signal":
+        """Reactive `Signal[bool]` — whether the field currently passes validation.
+
+        Call it to read the current state (`field.valid()`), `subscribe` to
+        react, or bind it. Updated on every validation run — a blur, a keystroke
+        (for key-triggered rules), or a manual `validate()`.
+        """
+        return self._internal._entry._valid_signal
+
+    @property
+    def error(self) -> "Signal":
+        """Reactive `Signal[str]` — the current validation error, `''` when valid.
+
+        Bind it to surface the message anywhere, for example
+        `bs.Label(textsignal=field.error)`.
+        """
+        return self._internal._entry._error_signal
+
     def add_validation_rule(self, rule_type: RuleType, **kwargs: Any) -> None:
         """Add a validation rule to the field.
 

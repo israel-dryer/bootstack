@@ -188,3 +188,79 @@ def test_applicable_rule_attaches_cleanly(app, factory, rule, kwargs):
     field = factory()
     app._tk_root.update_idletasks()
     field.add_validation_rule(rule, **kwargs)  # no exception
+
+
+# --- Phase 3: reactive validity surface ---
+
+
+def test_valid_and_error_signals_track_validation(app):
+    tf = bs.TextField(value="ab", message="helper")
+    tf.add_validation_rule("stringLength", min=3, message="need 3+")
+    app._tk_root.update_idletasks()
+
+    assert tf.valid() is True  # nothing run yet
+    assert tf.error() == ""
+
+    assert tf.validate() is False
+    app._tk_root.update_idletasks()
+    assert tf.valid() is False
+    assert tf.error() == "need 3+"
+
+    tf.value = "abcd"
+    app._tk_root.update_idletasks()
+    assert tf.validate() is True
+    app._tk_root.update_idletasks()
+    assert tf.valid() is True
+    assert tf.error() == ""
+
+
+def test_error_signal_is_subscribable(app):
+    tf = bs.TextField(value="x")
+    tf.add_validation_rule("stringLength", min=3, message="too short")
+    app._tk_root.update_idletasks()
+    seen = []
+    tf.error.subscribe(seen.append)
+    tf.validate()
+    app._tk_root.update_idletasks()
+    assert seen == ["too short"]
+
+
+def test_error_signal_binds_to_a_label(app):
+    tf = bs.TextField(value="x")
+    tf.add_validation_rule("stringLength", min=3, message="too short")
+    app._tk_root.update_idletasks()
+    lbl = bs.Label(textsignal=tf.error)
+    tf.validate()
+    app._tk_root.update_idletasks()
+    assert lbl.text == "too short"
+
+
+def test_on_invalid_event_still_fires(app):
+    # The event API stays alongside the signals.
+    tf = bs.TextField(value="x")
+    tf.add_validation_rule("stringLength", min=3, message="too short")
+    app._tk_root.update_idletasks()
+    fired = []
+    tf.on_invalid(lambda e: fired.append(e.message))
+    tf.validate()
+    app._tk_root.update_idletasks()
+    assert fired == ["too short"]
+
+
+def test_form_validate_updates_field_validity_signal(app):
+    # Regression: the message label follows the error signal, so a form-level
+    # validate must update it (not just emit events).
+    form = bs.Form(items=[bs.FieldItem(key="name", label="Name", required=True)])
+    app._tk_root.update_idletasks()
+    entry = form.field("name")._entry
+
+    assert form.validate() is False
+    app._tk_root.update_idletasks()
+    assert entry._error_signal() == "This field is required."
+    assert entry._valid_signal() is False
+
+    form.field("name").value = "Alice"
+    app._tk_root.update_idletasks()
+    assert form.validate() is True
+    app._tk_root.update_idletasks()
+    assert entry._error_signal() == ""

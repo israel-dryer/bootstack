@@ -190,7 +190,15 @@ no second object-taking door.
 2. **Rule taxonomy** — value-rule vs text-rule split; `range` rule; attach-time
    dtype rejection.
 3. **Reactive surface** — `valid`/`error` signals; declarative message label;
-   `Form` aggregates; events become derived.
+   `Form` aggregates; events become derived. **DONE (field-level):** the engine
+   owns `_valid_signal`/`_error_signal` (source of truth, set on every run);
+   `field.valid`/`field.error` expose them; the message label is bound to the
+   error signal (imperative `_show_error`/`_clear_error` gone); `Form.validate()`
+   now routes through the entry's validator (typed value + signal update).
+   **Deferred to 3b:** a reactive `Form.valid`/`Form.errors` *computed* aggregate
+   over the field signals, and the stream-based trigger mechanism (the current
+   `_setup_validation_binds`/`after()` debounce works and is not Tk-coupled, so
+   rewriting it as streams is internal churn — done only if it earns its risk).
 4. **Docs + tests** — per-widget validation sections; validation topic-guide
    rewrite; headless rule tests + GUI delivery tests (one App per process, #150).
 
