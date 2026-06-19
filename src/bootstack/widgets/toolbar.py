@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
 
+from bootstack.errors import BootstackError
 from bootstack.widgets._impl.composites.toolbar import Toolbar as _InternalToolbar
 from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets.types import AccentToken, WidgetDensity, SurfaceToken, ButtonVariant
@@ -55,8 +56,13 @@ class Toolbar(PublicWidgetBase):
         draggable: bool = False,
         parent: Any = None,
         _toolbar: Any = None,
+        _host: Any = None,
         **kwargs: Any,
     ) -> None:
+        # The chrome host (App/Window/AppShell) that owns this bar, when built via
+        # `host.add_toolbar()`. Lets shell-aware conveniences (add_sidebar_toggle)
+        # reach the sidebar; None for a standalone bar.
+        self._host = _host
         if _toolbar is not None:
             # Adoption: wrap a pre-built internal toolbar (e.g. an AppShell's
             # titlebar band, which already carries its window controls + drag).
@@ -277,3 +283,42 @@ class Toolbar(PublicWidgetBase):
 
         self._apply_bar_defaults(ThemeToggle, kwargs)
         return ThemeToggle(parent=self, **kwargs)
+
+    def add_sidebar_toggle(self, **kwargs: Any) -> Any:
+        """Add a hamburger button that collapses/expands the AppShell sidebar.
+
+        Only meaningful on a toolbar built into an `AppShell` (via
+        `shell.add_toolbar()`); raises on an `App`/`Window` toolbar, which has no
+        sidebar. Place it wherever you like in the bar.
+
+        Args:
+            **kwargs: Forwarded to the toggle button — e.g. `collapse`
+                (`'hidden'`/`'compact'`), `icon`, `expand_icon`, `collapse_icon`,
+                `variant`, `density`, `accent`.
+
+        Returns:
+            The created sidebar-toggle button.
+        """
+        from bootstack.widgets.sidebar_toggle import SidebarToggle
+
+        shell = self._sidebar_host()
+        self._apply_bar_defaults(SidebarToggle, kwargs)
+        return SidebarToggle(shell=shell, parent=self, **kwargs)
+
+    def _sidebar_host(self) -> Any:
+        """Return the owning `AppShell`, or raise if this bar has no sidebar.
+
+        Restricted to `AppShell` — the single-tier sidebar host. A `Workbench`
+        (two-tier, rail + per-workspace sidebars) inherits the shell sidebar
+        methods but is intentionally not supported here.
+        """
+        from bootstack.widgets.appshell import AppShell
+
+        host = getattr(self, "_host", None)
+        if not isinstance(host, AppShell):
+            raise BootstackError(
+                "add_sidebar_toggle() requires a toolbar built on an AppShell "
+                "(via shell.add_toolbar()); it is not supported on a Workbench or "
+                "a plain App/Window."
+            )
+        return host

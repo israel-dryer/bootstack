@@ -273,6 +273,21 @@ live. ``Ctrl/Cmd-B`` toggles it (when ``collapsible=True``), and the explicit
 ``toggle_sidebar()`` / ``show_sidebar()`` / ``hide_sidebar()`` verbs control
 visibility directly.
 
+To give users a visible control, add a **hamburger toggle** to a toolbar with
+``add_sidebar_toggle()`` (place it wherever you like — conventionally leftmost):
+
+.. code-block:: python
+
+   with shell.add_toolbar() as bar:
+       bar.add_sidebar_toggle()          # collapses to the icon rail by default
+       bar.add_spacer()
+       bar.add_theme_toggle()
+
+By default it shrinks the sidebar to the icon rail (falling back to hidden for a
+data-bound sidebar that can't show icons); pass ``collapse="hidden"`` to always
+fully hide. See :doc:`Toolbar </widgets/toolbar>` for the collapse modes and the
+icon customization (a single glyph, or a stateful open/closed pair).
+
 .. list-table::
    :header-rows: 1
    :widths: 20 80

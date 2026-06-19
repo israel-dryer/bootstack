@@ -80,7 +80,7 @@ class ChromeHostMixin:
         # Window chrome reads as a tight strip (menu bars, title bars, command
         # bars are all compact by convention) — default to compact, overridable.
         toolbar_kwargs.setdefault("density", "compact")
-        tb = Toolbar(parent=_ToolbarStackContainer(stack), **toolbar_kwargs)
+        tb = Toolbar(parent=_ToolbarStackContainer(stack), _host=self, **toolbar_kwargs)
         if divider:
             # A bare full-width hairline — no margin. The bar above provides any
             # spacing through its own (chrome) padding, so nothing of the stack

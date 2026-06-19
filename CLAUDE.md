@@ -46,8 +46,38 @@ memories and git history.
   (PR #199, MERGED) was folded in** — `nav_variant` ctor kwarg → `page_nav(variant=)`;
   its `test_nav_selection.py` removed (superseded by `test_appshell_reshape.py`).
   Tests: `test_appshell_reshape.py` (6) + `test_workbench.py` (2). Memory
-  `project_navigation_api_reshape`. **Follow-up: #201** (expandable menu group for
-  the single-tier page nav — future).
+  `project_navigation_api_reshape`. **Follow-up: #201 — SHIPPED (sidebar
+  hamburger, see top of this list).**
+- **Sidebar hamburger toggle — `Toolbar.add_sidebar_toggle()` (#201)** (this
+  session; on `feat/nav-expandable-group`) — #201 was filed as an *expandable
+  sub-item nav group*, but the maintainer **reinterpreted it** as a built-in
+  **hamburger that collapses/expands the AppShell sidebar** (the accordion-style
+  sub-items stay parked per the nav-spec Revision-4 cut — compose `bs.Accordion`
+  in a `custom_nav`). The collapse machinery already existed (`toggle_sidebar()`/
+  `show_sidebar()`/`hide_sidebar()`/`sidebar_mode`, Ctrl-B); what was missing was
+  a control. Modeled on `ThemeToggle`/`add_theme_toggle()` but **NOT standalone**
+  (a sidebar toggle is meaningless outside one shell): an internal
+  `SidebarToggle(Button)` (`widgets/sidebar_toggle.py`, **not** in `bs.*`) built by
+  **`Toolbar.add_sidebar_toggle(**kwargs)`**, which wires it to the owning shell.
+  **AppShell-only** — the guard is `isinstance(host, AppShell)` (a `_SidebarHost`;
+  `Workbench` inherits `toggle_sidebar` from `_ShellBase` so a `hasattr` check is
+  too loose), raising `BootstackError` on `Workbench`/`App`/`Window`. Enabler:
+  `add_toolbar()` (ChromeHostMixin) now passes `_host=self` into the `Toolbar`;
+  `Toolbar.__init__` stores `self._host`. **Author places it wherever they want in
+  the bar — no auto-injection.** `collapse='compact'` is the **default** (the
+  desktop/Fluent convention: shrink to the icon rail, reusing the shell's
+  `_can_compact_active()` so it **falls back to hidden** for non-compactable
+  data-bound navs); `collapse='hidden'` always fully hides. **Mode-dependent
+  default icon** (`icon=None` resolves to `layout-sidebar` for compact, `list` for
+  hidden); single steady glyph unless the author passes a stateful pair
+  (`collapse_icon` shown while expanded, `expand_icon` while collapsed, each
+  falling back to `icon`). A ~6px toggle-vs-rail offset in compact is **left as-is
+  by decision** (only visible compacted; aligning would couple toolbar padding to
+  rail width). Tests `tests/widgets/public/test_sidebar_toggle.py` (8). Docs:
+  "Sidebar toggle" section in `docs/widgets/toolbar.rst` (full detail) + the
+  AppShell page's "Sidebar visibility" section (the user-facing control,
+  cross-linked). StatusBar deliberately **not** given the method (scope creep — a
+  hamburger belongs in a toolbar).
 - **Gallery/Carousel height-floor cleanup (#160)** (this session; PR **#185**,
   MERGED to `main`) — closed out #160 (Gallery/Carousel collapse to ~0 height in a
   non-expanding/scrollable parent). The floor itself shipped in **PR #161** and is
