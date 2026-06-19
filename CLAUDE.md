@@ -495,20 +495,32 @@ memories and git history.
 
 Ten maintainer-requested items to resolve before shipping 0.1.0 — all filed as
 tracked issues (each issue links the relevant impl file + has detail).
-**Seven of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
-#188 (PR **#198**), **#189 (PR #199 → folded into the nav reshape PR #202)** — all
-merged to `main`. **Three remain** (each its own `fix/*`/`feat/*` branch → PR → `main`):
+**Eight of ten SHIPPED:** #186/#190/#193/#194 (PR **#196**), #195 (PR **#197**),
+#188 (PR **#198**), **#189 (PR #199 → folded into the nav reshape PR #202)**, **#187
+(PR #203)** — all merged to `main`. **Two remain** (each its own `fix/*`/`feat/*`
+branch → PR → `main`):
 
 - **#189 `solid` sidebar selection variant — DONE.** Shipped as **`nav_variant`**
   on `AppShell` (PR #199, gated to the standalone nav), then **superseded by the
   navigation reshape (#200, PR #202)**: the variant now lives on
   **`page_nav(variant='ghost'|'solid')`**, standalone-only. See the reshape pointer
   at the top of "Recently completed".
-- **#187 StatusBar.add_widget class-only? (DECISION — needs maintainer)** — it
-  ALREADY accepts BOTH a class (builds it) and an instance (`widgets/statusbar.py:100`).
-  Decision: go class-only `add_widget(Class, **kwargs)` for consistency, or keep
-  both. Ask before changing. (CommandBar's `add_widget` is the polymorphic sibling
-  to align with.)
+- **#187 StatusBar.add_widget class-only? — DONE (PR #203, MERGED).** Decision:
+  **class-only** on BOTH `Toolbar` AND `StatusBar` (`add_widget(WidgetClass, **kwargs)`).
+  The two were ALREADY polymorphic in lockstep (not StatusBar-only), so class-only on
+  both keeps them consistent while dropping the redundant instance branch (couldn't
+  inherit bar density/surface; required a manual attach). No flexibility lost — a
+  self-built widget drops in via the container protocol (`parent=bar`, auto-attaches).
+  `StatusBar` gained the `_apply_bar_defaults` helper it lacked. **NB the public param
+  is annotated `widget_cls: Any` not `: type`** — the bare builtin `type` renders an
+  ambiguous `ref.python` cross-ref under `python_use_unqualified_type_names` (collides
+  with the many `.type` attrs); the precise `: type` stays only on the private
+  `_apply_bar_defaults` (not rendered). Also fixed a stale `StatusBar(fill="x",
+  side="bottom")` docstring (would raise under the grid engine) → `horizontal="stretch"`,
+  and enriched `docs/tasks/composing-fields.rst` with a **"Subclassing for a reusable
+  type"** section (`SearchField(bs.TextField)` via `insert_addon`, justified by exactly
+  this change — a container can only build your field if it's a class). Test
+  `tests/widgets/public/test_statusbar.py` (3).
 - **#191 Theme colors in the color picker (feature)** — add a swatch row of the
   active theme's semantic colors (via `get_theme_color`) to
   `dialogs/_impl/colorchooser.py`. NB the color dropper was removed in #190, so the
