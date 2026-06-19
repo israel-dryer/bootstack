@@ -29,7 +29,7 @@ with bs.App(title="ContextMenu Demo", padding=20, gap=16) as app:
         bs.Label("Right-click for a menu with a shared callback.")
 
     def on_action(event):
-        print("selected:", event["text"])
+        print("selected:", event.text)
 
     menu2 = bs.ContextMenu(card2, on_select=on_action)
     menu2.add_item("Archive")

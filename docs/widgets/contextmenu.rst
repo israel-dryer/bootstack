@@ -62,12 +62,13 @@ Global callback
 ~~~~~~~~~~~~~~~
 
 Pass ``on_select=`` to register a single handler for all item activations.
-The callback receives a dict with ``'type'``, ``'text'``, and ``'value'`` keys.
+The callback receives a :class:`~bootstack.events.MenuSelectEvent` with
+``type``, ``text``, and ``value`` attributes.
 
 .. code-block:: python
 
    def on_action(event):
-       print("selected:", event["text"])
+       print("selected:", event.text)
 
    menu = bs.ContextMenu(card, on_select=on_action)
    menu.add_item("Archive")
