@@ -873,3 +873,6 @@ msgstr "Помощ"
 
 msgid "Documentation"
 msgstr "Документация"
+
+msgid "color.custom"
+msgstr "Разширени"

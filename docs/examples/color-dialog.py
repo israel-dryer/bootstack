@@ -2,12 +2,12 @@ import bootstack as bs
 
 from bootstack.dialogs import ColorChooserDialog
 def show_chooser():
-    result = bs.ask_color(title="Choose Color", color="#0070C0")
+    result = bs.ask_color(title="Choose Color", value="#0070C0")
     if result:
         print(f"Selected: hex={result.hex}  rgb={result.rgb}  hsl={result.hsl}")
 
 def show_custom():
-    dlg = ColorChooserDialog(title="Background Color", color="#00B050")
+    dlg = ColorChooserDialog(title="Background Color", value="#00B050")
     dlg.show()
     if dlg.result:
         print(f"hex={dlg.result.hex}")

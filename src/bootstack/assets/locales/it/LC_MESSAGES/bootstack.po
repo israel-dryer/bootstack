@@ -839,3 +839,6 @@ msgstr "Novembre"
 
 msgid "month.december"
 msgstr "Dicembre"
+
+msgid "color.custom"
+msgstr "Avanzato"
