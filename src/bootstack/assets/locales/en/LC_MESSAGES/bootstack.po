@@ -873,3 +873,6 @@ msgstr "Help"
 
 msgid "Documentation"
 msgstr "Documentation"
+
+msgid "color.custom"
+msgstr "Custom"

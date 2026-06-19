@@ -18,8 +18,21 @@ from bootstack._core.colorutils import HEX, HSL, HUE, LUM, RGB, SAT
 from bootstack.dialogs._impl.dialog import Dialog
 from bootstack.i18n import MessageCatalog
 from bootstack._runtime import utility
-from bootstack.style.style import get_style
+from bootstack.style.style import get_style, get_theme_color
+from bootstack.widgets._impl.composites.tabs.tabview import TabView
 from bootstack.widgets._impl.primitives import Button, Entry, Frame, Label, Spinbox
+
+# Theme-color families shown on the "Themed" tab, in display order. Each is a
+# semantic color the active theme exposes as a full light-to-dark band; `gray`
+# is the neutral ramp for surface/text picks. (`secondary` is intentionally
+# omitted — it is a flat token with no band.)
+THEMED_FAMILIES: Tuple[str, ...] = (
+    "primary", "success", "info", "warning", "danger", "gray",
+)
+# Band stops sampled per family, light to dark — rendered as one gradient row.
+THEMED_SHADES: Tuple[int, ...] = (
+    50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
+)
 
 ttk = SimpleNamespace(
     Button=Button,
@@ -69,6 +82,9 @@ class ColorChooser(ttk.Frame):
         self.bframe = ttk.Frame(self, padding=(5, 0, 5, 5))
         self.bframe.pack(fill=X)
 
+        self.notebook = TabView(self.tframe)
+        self.notebook.pack(fill=BOTH)
+
         self.style = ttk.use_style()
         self.colors = self.style.colors
         fallback_bg = (
@@ -96,11 +112,20 @@ class ColorChooser(ttk.Frame):
         self.spectrum_width = utility.scale_size(self, 530)
         self.spectrum_point = utility.scale_size(self, 12)
 
-        # build widgets
-        self.color_spectrum = self.create_spectrum(self.tframe)
+        # build widgets — the themed swatches and the spectrum each get a tab
+        # (themed first); the luminance scale, preview, and numeric inputs stay
+        # shared below both tabs (so switching tabs doesn't shift the layout).
+        themed_page = self.notebook.add('themed', text='color.themed')
+        self.themed_swatches = self.create_swatches(themed_page)
+        self.themed_swatches.pack(fill=BOTH, expand=YES)
+
+        custom_page = self.notebook.add('custom', text='color.custom')
+        self.color_spectrum = self.create_spectrum(custom_page)
         self.color_spectrum.pack(fill=X, side=TOP)
+
         self.luminance_scale = self.create_luminance_scale(self.tframe)
         self.luminance_scale.pack(fill=X)
+
         preview_frame = self.create_preview(self.bframe)
         preview_frame.pack(side=LEFT, fill=BOTH, expand=YES, padx=(0, 5))
         self.color_entries = self.create_value_inputs(self.bframe)
@@ -143,6 +168,50 @@ class ColorChooser(ttk.Frame):
         self.color_spectrum.tag_lower('spectrum-indicator')
 
     # widget builder methods
+    def create_swatches(self, master: tkinter.Misc) -> ttk.Frame:
+        """Create a grid of the active theme's color bands.
+
+        Each row is one semantic color family rendered as a light-to-dark
+        gradient of its band stops; clicking any swatch loads that exact
+        on-theme color into the chooser.
+        """
+        gap = utility.scale_size(self, 1)
+        n_cols = len(THEMED_SHADES)
+        n_rows = len(THEMED_FAMILIES)
+
+        # Distribute leftover pixels so the grid sums to EXACTLY the spectrum
+        # width/height — otherwise integer rounding leaves the themed page a few
+        # pixels off and switching tabs shifts the layout.
+        avail_w = self.spectrum_width - gap * (n_cols - 1)
+        base_w, extra_w = divmod(avail_w, n_cols)
+        col_widths = [base_w + (1 if j < extra_w else 0) for j in range(n_cols)]
+        avail_h = self.spectrum_height - gap * (n_rows - 1)
+        base_h, extra_h = divmod(avail_h, n_rows)
+
+        container = ttk.Frame(master)
+        for i, family in enumerate(THEMED_FAMILIES):
+            row_height = base_h + (1 if i < extra_h else 0)
+            row_frame = ttk.Frame(container)
+            for j, shade in enumerate(THEMED_SHADES):
+                token = f"{family}[{shade}]"
+                hexcolor = get_theme_color(token)
+                swatch = ttk.Frame(
+                    row_frame,
+                    surface=token,
+                    width=col_widths[j],
+                    height=row_height,
+                )
+                swatch.bind(
+                    '<Button-1>',
+                    lambda _e, hx=hexcolor: self.on_press_swatch(hx),
+                    add="+",
+                )
+                # Left-pad only, so the inter-swatch gap is exactly `gap` (a
+                # symmetric padx would double it and widen the page).
+                swatch.pack(side=LEFT, padx=(gap if j > 0 else 0, 0))
+            row_frame.pack(fill=X, pady=(gap if i > 0 else 0, 0))
+        return container
+
     def create_preview(self, master: tkinter.Misc) -> ttk.Frame:
         """Create the preview swatches for the original and new colors."""
         container = ttk.Frame(master)
@@ -380,6 +449,13 @@ class ColorChooser(ttk.Frame):
             self.sync_color_values(model)
             self.update_luminance_scale()
             self.update_spectrum_indicator()
+
+    def on_press_swatch(self, hexcolor: str) -> None:
+        """Update widget colors when a themed swatch is clicked."""
+        self.hex.set(hexcolor)
+        self.sync_color_values(HEX)
+        self.update_luminance_scale()
+        self.update_spectrum_indicator()
 
     def on_spectrum_interaction(self, event: tkinter.Event) -> None:
         """Update widget colors when the color spectrum canvas is pressed"""

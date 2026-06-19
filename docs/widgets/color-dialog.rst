@@ -18,12 +18,12 @@ Usage
 Convenience function
 ~~~~~~~~~~~~~~~~~~~~
 
-``bs.ask_color()`` is the one-liner shorthand. Pass ``color=`` to pre-select an
+``bs.ask_color()`` is the one-liner shorthand. Pass ``value=`` to pre-select an
 initial color (any CSS hex string):
 
 .. code-block:: python
 
-   result = bs.ask_color(title="Background Color", color="#1a1a2e")
+   result = bs.ask_color(title="Background Color", value="#1a1a2e")
    if result:
        apply_background(result.hex)
 
@@ -54,7 +54,7 @@ or show the same dialog multiple times:
 
    from bootstack.dialogs import ColorChooserDialog
 
-   dlg = ColorChooserDialog(title="Pick a color", color="#ff0000")
+   dlg = ColorChooserDialog(title="Pick a color", value="#ff0000")
    dlg.show()
 
    if dlg.result:
@@ -63,10 +63,20 @@ or show the same dialog multiple times:
 Chooser layout
 ~~~~~~~~~~~~~~
 
-The dialog shows a hue/saturation spectrum with a luminance slider below it.
-Numeric fields on the right allow direct entry in RGB, HSL, or hex notation.
-A dropper button (Windows/Linux only) lets the user sample any pixel on the
-desktop.
+The chooser has two tabs. **Themed** shows the active theme's color families
+(primary, success, info, warning, danger, and a neutral gray) as light-to-dark
+bands — click any swatch to pick an on-theme color. **Custom** shows a
+hue/saturation field for picking any color freely. Both tabs share the luminance
+slider, live preview, and the numeric fields on the right, which allow direct
+entry in RGB, HSL, or hex notation.
+
+.. image:: /_static/examples/color-dialog-custom-light.png
+   :class: bs-screenshot-light bs-dialog-screenshot
+   :alt: Color Dialog custom tab — light theme
+
+.. image:: /_static/examples/color-dialog-custom-dark.png
+   :class: bs-screenshot-dark bs-dialog-screenshot
+   :alt: Color Dialog custom tab — dark theme
 
 See also
 --------

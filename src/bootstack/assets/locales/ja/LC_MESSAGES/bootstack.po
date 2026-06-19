@@ -912,3 +912,6 @@ msgstr "11月"
 
 msgid "month.december"
 msgstr "12月"
+
+msgid "color.custom"
+msgstr "詳細設定"

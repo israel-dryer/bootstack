@@ -525,17 +525,16 @@ class FormDialog:
 # ---------------------------------------------------------------------------
 
 class ColorChooserDialog:
-    """A dialog for choosing a color using a hue/saturation spectrum.
+    """A dialog for choosing a color.
 
-    The chooser shows a full-spectrum canvas with a luminance slider below it.
+    The chooser has two tabs: a *Themed* tab of the active theme's color bands,
+    and a *Custom* tab with a hue/saturation spectrum and luminance slider.
     Numeric fields on the right allow direct entry in RGB, HSL, or hex notation.
-    A screen dropper (unavailable on macOS) lets the user sample any pixel
-    on the desktop.
 
     Args:
         title: Dialog window title. Defaults to the localized "Color" string.
-        color: Initial color as a hex string (e.g. `'#ff0000'`). Defaults to
-            the current theme background color.
+        value: Pre-selected color as a hex string (e.g. `'#ff0000'`). Defaults
+            to the current theme background color.
         parent: Parent widget. Defaults to the active root window.
     """
 
@@ -543,13 +542,13 @@ class ColorChooserDialog:
         self,
         *,
         title: str = "",
-        color: str | None = None,
+        value: str | None = None,
         parent: Any = None,
     ) -> None:
         self._internal = _InternalColorChooserDialog(
             master=parent,
             title=title or "color.chooser",
-            initial_color=color,
+            initial_color=value,
         )
 
     def show(
@@ -732,22 +731,22 @@ class FilterDialog:
 def ask_color(
     *,
     title: str = "",
-    color: str | None = None,
+    value: str | None = None,
     parent: Any = None,
 ) -> ColorChoice | None:
     """Show a color chooser dialog.
 
     Args:
         title: Dialog window title.
-        color: Initial color as a hex string (e.g. `'#ff0000'`). Defaults to
-            the current theme background color.
+        value: Pre-selected color as a hex string (e.g. `'#ff0000'`). Defaults
+            to the current theme background color.
         parent: Parent widget. Defaults to the active root window.
 
     Returns:
         A `ColorChoice` with `rgb`, `hsl`, and `hex` attributes, or
         `None` if canceled.
     """
-    dlg = ColorChooserDialog(title=title, color=color, parent=parent)
+    dlg = ColorChooserDialog(title=title, value=value, parent=parent)
     dlg.show()
     return dlg.result
 
