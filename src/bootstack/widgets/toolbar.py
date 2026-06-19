@@ -197,32 +197,31 @@ class Toolbar(PublicWidgetBase):
         """Add a flexible spacer that pushes subsequent items to the right."""
         self._internal.add_spacer()
 
-    def add_widget(self, widget: Any, **kwargs: Any) -> Any:
-        """Add a widget to the toolbar.
+    def add_widget(self, widget_cls: Any, **kwargs: Any) -> Any:
+        """Build a widget on the toolbar from its class.
 
-        Pass a widget **class** to have the bar build it for you — the bar's
-        `density` and `surface` are applied (for any the class accepts) so the
-        widget matches the rest of the bar, and `kwargs` are forwarded to its
-        constructor (overriding those defaults):
+        Pass a widget **class** — the bar builds it, applying its own `density`
+        and `surface` (for any the class accepts) so the widget matches the rest
+        of the bar, and forwarding `kwargs` to the constructor (overriding those
+        defaults):
 
             bar.add_widget(bs.ThemeToggle)
             bar.add_widget(bs.TextField, placeholder="Search", width=24)
 
-        Or pass an existing widget **instance** — `kwargs` are pack options. (An
-        instance is built before it reaches the bar, so it does NOT inherit the
-        bar's density/surface; prefer the class form for that.)
+        To add a widget you have already built yourself, parent it onto the bar
+        directly — it attaches automatically and keeps whatever you configured:
 
-            bar.add_widget(my_widget, padx=4)
+            bs.MyCustomWidget(parent=bar)
+
+        Args:
+            widget_cls: The widget class to build on the bar.
+            **kwargs: Constructor arguments for the widget.
 
         Returns:
-            The widget (the new instance when a class is given).
+            The new widget instance.
         """
-        if isinstance(widget, type):
-            self._apply_bar_defaults(widget, kwargs)
-            return widget(parent=self, **kwargs)
-        tk_widget = getattr(widget, "_internal", widget)
-        self._internal.add_widget(tk_widget, **kwargs)
-        return widget
+        self._apply_bar_defaults(widget_cls, kwargs)
+        return widget_cls(parent=self, **kwargs)
 
     def _apply_bar_defaults(self, widget_cls: type, kwargs: dict[str, Any]) -> None:
         """Default `density`/`surface` from the bar onto a class being built, but

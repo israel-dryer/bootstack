@@ -203,8 +203,9 @@ the class accepts), so the widget matches the rest of the bar:
    tb.add_widget(bs.Select, options=["main", "dev", "feat/new-ui"], value="main")
    tb.add_widget(bs.TextField, placeholder="Search", width=24)
 
-(An already-built *instance* — ``tb.add_widget(my_widget)`` — is added as-is and
-does **not** inherit the bar's density/surface; prefer the class form for that.)
+To add a widget you have already built yourself, parent it onto the bar directly
+— ``bs.MyCustomWidget(parent=tb)`` — and it attaches automatically, keeping
+whatever you configured.
 
 .. _toolbars-in-a-window:
 
