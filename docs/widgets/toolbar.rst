@@ -246,6 +246,42 @@ and lets the toolbar drag the window (double-click maximizes). This is how you
 build the title bar of an **undecorated window** — see the *Undecorated window*
 section on the :doc:`App </widgets/app>` page for the full example and screenshot.
 
+Sidebar toggle
+~~~~~~~~~~~~~~
+
+On a toolbar built into an :class:`AppShell <bootstack.AppShell>`,
+``add_sidebar_toggle()`` adds a hamburger button that collapses and expands the
+shell's sidebar. Place it wherever you like in the bar (conventionally
+leftmost). It is AppShell-only — calling it on a plain ``App``/``Window`` (or a
+``Workbench``) raises.
+
+.. code-block:: python
+
+   with shell.add_toolbar() as bar:
+       bar.add_sidebar_toggle()                 # leftmost hamburger
+       bar.add_spacer()
+       bar.add_theme_toggle()
+
+By default (``collapse="compact"``) it shrinks the sidebar to an **icon rail**
+when that sidebar can show icons (a static ``page_nav``) and falls back to fully
+**hiding** it when it can't (a data-bound ``list_nav`` / ``tree_nav``) — the
+standard desktop behavior. Pass ``collapse="hidden"`` to always fully hide.
+
+The glyph defaults by mode — a panel icon (``layout-sidebar``) for ``compact``, a
+hamburger (``list``) for ``hidden`` — and a single icon is shown in both the open
+and collapsed states. For a **stateful** button that swaps as the sidebar opens
+and closes, pass an open/closed pair: ``collapse_icon`` is shown while the
+sidebar is expanded (click to collapse) and ``expand_icon`` while it is collapsed
+(click to expand); each falls back to ``icon``.
+
+.. code-block:: python
+
+   # A stateful toggle that flips its chevron with the sidebar state.
+   bar.add_sidebar_toggle(
+       collapse_icon="chevron-double-left",   # shown while open
+       expand_icon="chevron-double-right",    # shown while collapsed
+   )
+
 Widget sizing
 ~~~~~~~~~~~~~
 
