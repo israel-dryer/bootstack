@@ -263,8 +263,8 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self.bind("<Up>",          lambda e: self._step(+STEP))
         self.bind("<Shift-Left>",  lambda e: self._step(-STEP_LARGE))
         self.bind("<Shift-Right>", lambda e: self._step(+STEP_LARGE))
-        self.bind("<Home>",        lambda e: self._var.set(self._minvalue))
-        self.bind("<End>",         lambda e: self._var.set(self._maxvalue))
+        self.bind("<Home>",        lambda e: self._jump(self._minvalue))
+        self.bind("<End>",         lambda e: self._jump(self._maxvalue))
         self._canvas.bind("<Configure>", self._on_configure)
 
         self._var.trace_add("write", self._on_var_write)
@@ -560,6 +560,23 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._var.set(new)
         self.event_generate("<<Commit>>", data=SliderCommitEvent(value=new))
 
+    def _jump(self, value: float) -> None:
+        """Keyboard jump (Home/End) — set then commit, like _step does."""
+        if self._state == "disabled":
+            return
+        new = max(self._minvalue, min(self._maxvalue, float(value)))
+        self._var.set(new)
+        self.event_generate("<<Commit>>", data=SliderCommitEvent(value=new))
+
+    def _reclamp(self) -> None:
+        """Pull the current value back into [min, max] after a range change."""
+        cur = self._var.get()
+        clamped = max(self._minvalue, min(self._maxvalue, cur))
+        if clamped != cur:
+            self._var.set(clamped)   # trace fires _sync + <<Change>>
+        else:
+            self._sync()
+
     def _on_map(self) -> None:
         if getattr(self, '_theme_update_pending', False):
             self._on_theme_changed()
@@ -679,7 +696,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             return self._minvalue
         self._minvalue = float(value)
         self._setup_ticks()
-        self._sync()
+        self._reclamp()
 
     @configure_delegate('maxvalue')
     def _delegate_maxvalue(self, value=None):
@@ -687,7 +704,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             return self._maxvalue
         self._maxvalue = float(value)
         self._setup_ticks()
-        self._sync()
+        self._reclamp()
 
     @configure_delegate('accent')
     def _delegate_accent(self, value=None):
