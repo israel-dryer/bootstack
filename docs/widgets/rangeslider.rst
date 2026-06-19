@@ -154,10 +154,13 @@ handle values.
 Keyboard
 ~~~~~~~~
 
-When focused, ``Tab`` switches between the low and high handle. The active
-handle responds to the arrow keys (±1, or ±``step`` when ``step`` is set),
+The slider is a single tab stop — ``Tab`` moves focus in, then on out to the next
+control; focus is never trapped. The **active handle** (shown with a focus ring)
+responds to the along-track arrow keys (±1, or ±``step`` when ``step`` is set),
 ``Shift`` + arrow (a larger jump), and ``Home`` / ``End`` (minimum / maximum).
-Every keyboard change also emits ``on_commit``.
+The **cross-axis** arrows switch which handle is active — ``Up`` / ``Down`` for a
+horizontal slider, ``Left`` / ``Right`` for a vertical one. Every keyboard change
+also emits ``on_commit``.
 
 Disabled
 ~~~~~~~~

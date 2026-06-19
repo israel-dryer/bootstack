@@ -27,6 +27,32 @@ LABEL_FONT_SIZE = 9
 STEP = 1
 STEP_LARGE = 10
 
+# Keyboard focus ring (RangeSlider: a halo around the active handle)
+FOCUS_RING_GAP = 2    # gap between the handle edge and the ring
+FOCUS_RING_W = 2      # ring stroke width
+HALO_PAD = FOCUS_RING_GAP + FOCUS_RING_W   # ring overhang beyond the handle,
+                                           # reserved on every side so it can't clip
+
+
+def _make_focus_ring(diameter: int, color: str, width: int = FOCUS_RING_W) -> PhotoImage:
+    """Render a smooth anti-aliased ring (transparent center) as a PhotoImage —
+    the keyboard focus halo drawn around the active handle.
+
+    Drawn as a filled outer disc with the center punched out (an annulus) at 4x
+    and LANCZOS-downsampled, which anti-aliases far better than a thin outline
+    stroke at the target size.
+    """
+    scale = 4
+    s = diameter * scale
+    margin = scale                       # 1px transparent margin so the outer edge
+                                         # isn't clipped at the image boundary
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.ellipse([margin, margin, s - 1 - margin, s - 1 - margin], fill=color)
+    inset = margin + width * scale       # ring thickness = width (post-downsample)
+    d.ellipse([inset, inset, s - 1 - inset, s - 1 - inset], fill=(0, 0, 0, 0))
+    return PhotoImage(image=img.resize((diameter, diameter), Image.Resampling.LANCZOS))
+
 
 def _make_badge(width: int, height: int, bg_color: str) -> PhotoImage:
     """Render an anti-aliased pill badge background as a PhotoImage."""
