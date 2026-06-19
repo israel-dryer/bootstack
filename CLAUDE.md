@@ -21,6 +21,47 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Shell chrome divider + context-menu / DataTable interaction fixes** (this
+  session; PRs **#206** and **#209**, both MERGED to `main`) — two batches from
+  dogfooding the AppShell + DataTable demos:
+  - **#206 — persistent chrome→content border + softer inter-toolbar divider**
+    (`fix/shell-content-border`). The chrome→workspace boundary is now owned by
+    **`ShellLayout`** (a content-surfaced `_body_sep` at the soft
+    `DIVIDER_BORDER_STRENGTH=0.90`, always packed between the chrome stack and the
+    body, mirroring the bottom `_status_sep`) — authors no longer rely on
+    `add_toolbar(divider=True)` for it, and the stroke matches the rail/sidebar/
+    status dividers instead of reading heavy (the original complaint). The
+    per-toolbar `add_toolbar(divider=True)` hairline was **softened to 0.90 + kept
+    chrome-surfaced** (was the default heavy blend) so an inter-bar divider matches;
+    it's now reserved for separating stacked bars. `appshell.rst` notes the
+    auto-boundary. Plain `App`/`Window` keep `divider=` as their chrome separator
+    (no shell layout, no auto border).
+  - **#209 — context-menu dismissal + DataTable right-click/selection + FormDialog
+    action result** (`fix/contextmenu-outside-dismiss`). (a) **ContextMenu**: the
+    overrideredirect popup's outside-dismiss now watches **all mouse buttons**
+    (was `<Button-1>` only — a right-click to open another menu slipped past it);
+    a one-shot **`_suppress_next_outside`** guard set in `show()` kills the
+    reopen-race that widening introduced (right-click another row reopens, doesn't
+    self-dismiss); and **`hide()` now runs BEFORE an item's handler** (a modal
+    handler was blocking with the menu still visible). (b) **DataTable**:
+    right-click **no longer changes the selection** (it set `_context_iid`; the
+    row-menu commands target it via new **`_context_iids()`** = clicked row, or the
+    whole selection when the click is inside a multi-selection); a left-click on a
+    checkbox/group table now **dismisses an open menu through the `'break'`** path
+    (`_dismiss_context_menus()` at the top of `_on_header_click`, since the tree's
+    `'break'` stopped the toplevel outside handler); and **selection survives a
+    `_refresh_tree` rebuild** for still-visible rows (sort keeps all, search narrows
+    — was a full clear on every search/sort/page). (c) **FormDialog**: `show()` was
+    overwriting `result` with form data for any non-cancel close, discarding a
+    custom button's `result` — so the edit dialog's **Delete** (`{"result":
+    "delete"}`) returned data instead of `"delete"` and the row was updated, never
+    deleted; new **`_resolve_result()`** maps submit buttons→form data, action
+    buttons→their result, cancel→None. (d) **Docs**: fixed stale `event["text"]`
+    dict-subscript in ContextMenu/MenuButton examples+guides (`on_select` gets a
+    `MenuSelectEvent` dataclass → `event.text`). **Follow-up issues filed:**
+    **#207** (general grab-based dismiss so user-attached menus also dismiss when a
+    host widget returns `'break'`) · **#208** (persist DataTable selection by record
+    id across pages — the "keep visible matches" interim shipped here).
 - **Navigation API reshape — `AppShell` + `Workbench` (#200)** (this session; PR
   **#202**, MERGED to `main`) — split the one polymorphic `AppShell` into two
   honest classes along the **topology** axis: **`bs.AppShell`** = single-tier
