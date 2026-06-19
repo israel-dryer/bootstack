@@ -157,9 +157,14 @@ class _ToplevelContextMenu(CustomConfigMixin):
         self._hide_on_outside_click = hide_on_outside_click
         self._density = density
         self._command = command
-        self._click_handler_id = None
+        self._click_handler_ids: list[tuple[str, str]] = []
         self._click_binding_root = None
         self._click_bind_after_id = None
+        # One-shot guard: the click that (re)opens the menu reaches the
+        # already-bound outside handler on the same event (the trigger binding
+        # fires `show()` before the toplevel's outside handler). Without this
+        # the reopen click would immediately dismiss the menu it just opened.
+        self._suppress_next_outside = False
 
         # Create toplevel window. This backend is selected on Win/Linux only;
         # Aqua dispatches to `_NativeContextMenu` to avoid the key-window
@@ -629,9 +634,22 @@ class _ToplevelContextMenu(CustomConfigMixin):
         # Start with no item highlighted (keyboard nav will highlight on first arrow key)
         self._highlighted_index = -1
 
+        # Ignore the outside click that triggered this (re)open. It is consumed
+        # synchronously by the already-bound handler on the same event; the idle
+        # callback clears it so a genuine later outside click still dismisses.
+        self._suppress_next_outside = True
+        try:
+            self._toplevel.after_idle(self._clear_suppress_outside)
+        except TclError:
+            self._suppress_next_outside = False
+
         # Setup click outside handler if enabled
         if self._hide_on_outside_click:
             self._setup_click_outside_handler()
+
+    def _clear_suppress_outside(self) -> None:
+        """Drop the one-shot outside-click guard set on show()."""
+        self._suppress_next_outside = False
 
     def _setup_keyboard_bindings(self) -> None:
         """Setup keyboard navigation bindings on the toplevel."""
@@ -744,6 +762,11 @@ class _ToplevelContextMenu(CustomConfigMixin):
             'value': value
         }
 
+        # Hide the menu before running any handler. A handler may open a modal
+        # dialog (which blocks here until it is closed), so hiding afterward
+        # would leave the menu visible for the whole dialog interaction.
+        self.hide()
+
         # Call registered callback
         if self._command:
             self._command(data)
@@ -751,9 +774,6 @@ class _ToplevelContextMenu(CustomConfigMixin):
         # Execute item command
         if command:
             command()
-
-        # Hide menu after item click
-        self.hide()
 
     def _compute_position(self, position: tuple[int, int] | None) -> tuple[int, int] | None:
         """Compute screen coordinates for the menu based on anchor/attach/offset."""
@@ -820,6 +840,12 @@ class _ToplevelContextMenu(CustomConfigMixin):
             if not self._toplevel.winfo_viewable():
                 return
 
+            # Swallow the click that just (re)opened this menu so it doesn't
+            # dismiss it on the very same event.
+            if self._suppress_next_outside:
+                self._suppress_next_outside = False
+                return
+
             # Check if click is inside the menu
             try:
                 x, y = event.x_root, event.y_root
@@ -848,7 +874,13 @@ class _ToplevelContextMenu(CustomConfigMixin):
                 root = self._get_binding_root()
                 if root and root.winfo_exists():
                     self._click_binding_root = root
-                    self._click_handler_id = root.bind('<Button-1>', on_click, add='+')
+                    # Watch every mouse button. A menu is opened with a
+                    # right-click, so right-clicking outside (e.g. to open a
+                    # different menu) must dismiss this one too — a left-click-only
+                    # handler misses that gesture and leaves both menus open.
+                    for seq in ('<Button-1>', '<Button-2>', '<Button-3>'):
+                        handler_id = root.bind(seq, on_click, add='+')
+                        self._click_handler_ids.append((seq, handler_id))
 
         # Delay binding to avoid capturing the click that shows the menu
         self._cancel_click_outside_after()
@@ -865,17 +897,18 @@ class _ToplevelContextMenu(CustomConfigMixin):
         return None
 
     def _unbind_click_outside_handler(self) -> None:
-        """Remove the click-outside binding if present."""
-        if not self._click_handler_id or not self._click_binding_root:
+        """Remove the click-outside bindings if present."""
+        if not self._click_handler_ids or not self._click_binding_root:
             return
 
         try:
             if self._click_binding_root.winfo_exists():
-                self._click_binding_root.unbind('<Button-1>', self._click_handler_id)
+                for seq, handler_id in self._click_handler_ids:
+                    self._click_binding_root.unbind(seq, handler_id)
         except TclError:
             pass
         finally:
-            self._click_handler_id = None
+            self._click_handler_ids = []
             self._click_binding_root = None
 
     def _cancel_click_outside_after(self) -> None:
