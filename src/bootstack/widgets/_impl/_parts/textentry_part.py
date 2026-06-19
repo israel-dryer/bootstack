@@ -279,6 +279,21 @@ class TextEntryPart(ValidationMixin, Entry):
             self.textsignal.set(formatted_text)
             return None
 
+    def _get_validation_value(self):
+        """Return the current input parsed to its typed value, for validation.
+
+        Validation runs against the field's typed value — the string itself for
+        a text field, a `date`/`time` for a date or time field — parsed from
+        what is currently shown, not the raw display text and not the
+        last-committed value. This keeps a manual `validate()`, the automatic
+        blur/key validation, and a form-level validate in agreement on the same
+        live, typed input.
+        """
+        try:
+            return self._parse_or_none(self.get())
+        except Exception:
+            return self.get()
+
     def text(self, value=None):
         """Get or set the raw display text without committing.
 

@@ -65,13 +65,12 @@ with bs.App(title="TextField Demo", padding=20, gap=16) as app:
 
     # Validation
     bs.Label("Validation", font="heading-sm")
-    from bootstack.validation import ValidationRule
     vf = bs.TextField(label="Min 3 characters", placeholder="Enter text…", horizontal="stretch")
-    vf.add_validation_rule(ValidationRule(
+    vf.add_validation_rule(
         "stringLength",
         message="Must be at least 3 characters.",
         min=3,
         trigger="blur",
-    ))
+    )
 
 app.run()

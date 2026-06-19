@@ -190,6 +190,13 @@ class FieldAddonMixin:
             field.add_validation_rule("email", message="Enter a valid email.")
             field.add_validation_rule("custom", func=lambda v: v.isdigit())
         """
+        if not isinstance(rule_type, str):
+            raise TypeError(
+                f"add_validation_rule() takes a rule-type string (e.g. "
+                f"'stringLength'), not a {type(rule_type).__name__} object. Pass "
+                f"the rule's options as keyword arguments: "
+                f"field.add_validation_rule('stringLength', min=3)."
+            )
         self._internal.add_validation_rule(rule_type, **kwargs)
 
 

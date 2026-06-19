@@ -259,6 +259,27 @@ class NumberEntryPart(TextEntryPart):
 
         return self
 
+    def _get_validation_value(self):
+        """Return the current input coerced to its numeric type, for validation.
+
+        A plain numeric field parses to a string when no display format is set,
+        so coerce it the same way the public value does — validation rules and a
+        `custom` func receive a real `int`/`float` (or `None` for empty/invalid
+        input), never the display string.
+        """
+        text = self.get()
+        try:
+            raw = self._parse_or_none(text)
+        except Exception:
+            raw = text
+        if raw is None or raw == "":
+            return None
+        try:
+            number = float(raw)
+        except (TypeError, ValueError):
+            return None
+        return int(round(number)) if self._num_type is int else number
+
     def _normalize_display_from_value(self):
         """Update display text from internal value without triggering input events."""
         # Format the value

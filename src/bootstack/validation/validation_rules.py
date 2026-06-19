@@ -5,6 +5,19 @@ from bootstack.validation.types import RuleTriggerType, RuleType
 from bootstack.validation.validation_result import ValidationResult
 
 
+def _as_text(value: object) -> str:
+    """Coerce a value to text for the string rules.
+
+    The string rules (`stringLength`, `pattern`, `email`) operate on text. When
+    one is applied to a typed value (a number or date), coerce rather than crash;
+    the rule taxonomy rejects that misuse at attach time, this is the last-ditch
+    guard. `None` (an empty field) becomes the empty string.
+    """
+    if isinstance(value, str):
+        return value
+    return "" if value is None else str(value)
+
+
 class ValidationRule:
     """A single validation rule that can be applied to a string value.
 
@@ -64,16 +77,16 @@ class ValidationRule:
             return ValidationResult(True, "")
 
         elif self.type == "email":
-            if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", _as_text(value)):
                 return ValidationResult(False, msg)
         elif self.type == "stringLength":
             min_len = self.params.get("min", 0)
             max_len = self.params.get("max", float("inf"))
-            if not (min_len <= len(value) <= max_len):
+            if not (min_len <= len(_as_text(value)) <= max_len):
                 return ValidationResult(False, msg)
         elif self.type == "pattern":
             pattern = self.params.get("pattern", "")
-            if not re.match(pattern, value):
+            if not re.match(pattern, _as_text(value)):
                 return ValidationResult(False, msg)
         elif self.type == "compare":
             if value != self._read_other(self.params.get("other_field")):
