@@ -10,6 +10,11 @@ from __future__ import annotations
 
 from typing import Any
 
+# Softness for a chrome divider, matching the shell's region dividers: the stroke
+# blends close to its surface for a quiet hairline rather than the default
+# separator border (which blends harder toward the semantic border color).
+_CHROME_DIVIDER_BORDER_STRENGTH = 0.90
+
 
 class _ToolbarStackContainer:
     """Public-container shim so an `add_toolbar()` toolbar packs into the host's
@@ -87,7 +92,8 @@ class ChromeHostMixin:
             # surface leaks below the line when this is the last band before the
             # content (the window's content surface starts right after the line).
             Separator(
-                stack, orient="horizontal", surface=toolbar_kwargs["surface"]
+                stack, orient="horizontal", surface=toolbar_kwargs["surface"],
+                border_strength=_CHROME_DIVIDER_BORDER_STRENGTH,
             ).pack(side="top", fill="x")
         self._register_chrome_toolbar(tb, use_macos_menus)
         return tb
