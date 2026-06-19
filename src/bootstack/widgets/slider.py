@@ -109,7 +109,9 @@ class Slider(PublicWidgetBase):
 
     @value.setter
     def value(self, v: float) -> None:
-        self._internal._signal.set(float(v))
+        # Route through set() so the value is clamped to [min, max] — a bare
+        # signal write would store an out-of-range value the getter reads back.
+        self._internal.set(float(v))
 
     @property
     def signal(self) -> "Signal[float]":

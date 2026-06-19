@@ -21,10 +21,17 @@ def accents():
     app.run()
 
 
+def value():
+    with bs.App(title="RangeSlider — Value Badges", minsize=(720, 1), padding=20) as app:
+        bs.RangeSlider(20, 80, show_value=True, horizontal="stretch", margin_y=10)
+
+    app.run()
+
+
 def ticks():
     with bs.App(title="RangeSlider — Tick Marks", minsize=(720, 1), padding=20) as app:
         bs.RangeSlider(20, 80, tick_step=20, horizontal="stretch", margin_y=10)
-        bs.RangeSlider(20, 80, tick_step=20, minor_ticks=4, show_value=True, horizontal="stretch", margin_y=10)
+        bs.RangeSlider(20, 80, tick_step=20, minor_ticks=4, horizontal="stretch", margin_y=10)
 
     app.run()
 
@@ -40,6 +47,7 @@ def disabled():
 SCENES = {
     "hero":     hero,
     "accents":  accents,
+    "value":    value,
     "ticks":    ticks,
     "disabled": disabled,
 }

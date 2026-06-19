@@ -21,11 +21,25 @@ def accents():
     app.run()
 
 
+def value():
+    with bs.App(title="Slider — Value Badge", minsize=(720, 1), padding=20) as app:
+        bs.Slider(50, show_value=True, horizontal="stretch", margin_y=10)
+
+    app.run()
+
+
+def minmax():
+    with bs.App(title="Slider — Min/Max Labels", minsize=(720, 1), padding=20) as app:
+        bs.Slider(50, show_minmax=True, horizontal="stretch", margin_y=10)
+
+    app.run()
+
+
 def ticks():
     with bs.App(title="Slider — Tick Marks", minsize=(720, 1), padding=20) as app:
         bs.Slider(50, tick_step=25, horizontal="stretch", margin_y=10)
         bs.Slider(50, tick_step=25, minor_ticks=4, horizontal="stretch", margin_y=10)
-        bs.Slider(0.5, min_value=0, max_value=1, tick_step=0.25, tick_format="{:.0%}", show_value=True, horizontal="stretch", margin_y=10)
+        bs.Slider(0.5, min_value=0, max_value=1, tick_step=0.25, tick_format="{:.0%}", horizontal="stretch", margin_y=10)
 
     app.run()
 
@@ -41,6 +55,8 @@ def disabled():
 SCENES = {
     "hero":     hero,
     "accents":  accents,
+    "value":    value,
+    "minmax":   minmax,
     "ticks":    ticks,
     "disabled": disabled,
 }

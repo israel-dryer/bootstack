@@ -260,8 +260,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self.bind("<Up>",          lambda e: self._step(+STEP))
         self.bind("<Shift-Left>",  lambda e: self._step(-STEP_LARGE))
         self.bind("<Shift-Right>", lambda e: self._step(+STEP_LARGE))
-        self.bind("<Home>",        lambda e: self._set_focused(self._minvalue))
-        self.bind("<End>",         lambda e: self._set_focused(self._maxvalue))
+        self.bind("<Home>",        lambda e: self._jump(self._minvalue))
+        self.bind("<End>",         lambda e: self._jump(self._maxvalue))
         self.bind("<Tab>",         self._cycle_handle)
         self._canvas.bind("<Configure>", self._on_configure)
 
@@ -599,6 +599,33 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         else:
             self._hi_var.set(max(value, self._lo_var.get()))
 
+    def _jump(self, value: float) -> None:
+        """Keyboard jump (Home/End) — move the focused handle then commit."""
+        if self._state == "disabled":
+            return
+        self._set_focused(value)
+        self.event_generate("<<Commit>>", data=RangeSliderCommitEvent(
+            low_value=self._lo_var.get(),
+            high_value=self._hi_var.get(),
+        ))
+
+    def _reclamp(self) -> None:
+        """Pull both handles back into [min, max] (and lo <= hi) after a range
+        change, emitting <<Change>> only for handles that actually move."""
+        lo, hi = self._lo_var.get(), self._hi_var.get()
+        nlo = max(self._minvalue, min(lo, self._maxvalue))
+        nhi = max(self._minvalue, min(hi, self._maxvalue))
+        nlo = min(nlo, nhi)
+        changed = False
+        if nlo != lo:
+            self._lo_var.set(nlo)   # trace fires _sync + <<Change>>
+            changed = True
+        if nhi != hi:
+            self._hi_var.set(nhi)
+            changed = True
+        if not changed:
+            self._sync()
+
     def _cycle_handle(self, event: tk.Event) -> str:
         self._focus_handle = "hi" if self._focus_handle == "lo" else "lo"
         return "break"
@@ -781,7 +808,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             return self._minvalue
         self._minvalue = float(value)
         self._setup_ticks()
-        self._sync()
+        self._reclamp()
 
     @configure_delegate('maxvalue')
     def _delegate_maxvalue(self, value=None):
@@ -789,7 +816,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             return self._maxvalue
         self._maxvalue = float(value)
         self._setup_ticks()
-        self._sync()
+        self._reclamp()
 
     @configure_delegate('accent')
     def _delegate_accent(self, value=None):
