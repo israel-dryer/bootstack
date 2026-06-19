@@ -26,7 +26,9 @@ class FormDialog:
     dialogs for data entry with automatic field generation or explicit layouts.
 
     Attributes:
-        result: The form data returned after closing (dict), or None if cancelled.
+        result: After closing — the entered form data (dict) for a submit
+            button (ok/submit/save), the button's own result value for a custom
+            action button (e.g. "delete"), or None if cancelled.
         form: The embedded Form widget instance, accessible for advanced usage.
 
     Args:
@@ -204,11 +206,27 @@ class FormDialog:
             auto_flip=auto_flip
         )
 
-        # Transfer the result from dialog to FormDialog
-        if self._dialog.result is not None:
-            self.result = self.form.data if self.form else None
-        else:
-            self.result = None
+        # Transfer the result from dialog to FormDialog.
+        self.result = self._resolve_result(self._dialog.result)
+
+    # Submit-style button results that mean "return the entered form data".
+    _DATA_RESULTS = frozenset({"ok", "submit", "save"})
+
+    def _resolve_result(self, dialog_result: Any) -> Any:
+        """Map the closing button's dialog result to the FormDialog result.
+
+        A data-submit button (ok / submit / save) yields the entered form data;
+        a custom action button (e.g. a `'delete'` result) yields its own result
+        value so callers can tell the action apart from the data. A cancel /
+        unset result (`None`) yields `None`.
+        """
+        if dialog_result is None:
+            return None
+        if isinstance(dialog_result, str) and dialog_result.lower() in self._DATA_RESULTS:
+            return self.form.data if self.form else None
+        # A non-cancel button with no explicit result already carries the form
+        # data (set in `_wrap_button_commands`); anything else is an action token.
+        return dialog_result
 
 
     def _build_form_content(self, parent):
