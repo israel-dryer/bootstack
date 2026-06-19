@@ -21,11 +21,12 @@ class StatusBar(PublicWidgetBase):
     left-to-right; an `add_spacer()` (or `side='right'`) pushes the following
     segments to the right cluster.
 
-    Use it standalone — `bs.StatusBar(fill="x", side="bottom")` pins one to the
-    bottom of any `App`/`Window` — or read `shell.statusbar` for the one built
-    into an :class:`AppShell <bootstack.AppShell>`. Create custom widgets with
-    `parent=statusbar` (they add to the left cluster automatically) or pass a
-    pre-parented widget to `add_widget()`.
+    Use it standalone — `bs.StatusBar(horizontal="stretch")` spans the bottom of
+    any `App`/`Window` (place it last and let the content above `grow`) — or read
+    `shell.statusbar` for the one built
+    into an :class:`AppShell <bootstack.AppShell>`. Add widgets by class with
+    `add_widget()`, or create custom widgets with `parent=statusbar` (they add to
+    the left cluster automatically).
 
     Args:
         surface: Background surface token. Defaults to the theme's `'chrome'`
@@ -97,31 +98,50 @@ class StatusBar(PublicWidgetBase):
             self._internal.add_spacer()
             self._has_right_spacer = True
 
-    def add_widget(self, widget: Any, *, side: Literal["left", "right"] = "left", **kwargs: Any) -> Any:
-        """Add a widget to the left or right cluster.
+    def add_widget(
+        self, widget_cls: Any, *, side: Literal["left", "right"] = "left", **kwargs: Any
+    ) -> Any:
+        """Build a widget on the left or right cluster from its class.
 
-        Pass a widget **class** to have the bar build it (`kwargs` go to its
-        constructor), or an existing widget **instance**:
+        Pass a widget **class** — the bar builds it, applying its own `density`
+        and `surface` (for any the class accepts) so the widget matches the band,
+        and forwarding `kwargs` to the constructor:
 
             status.add_widget(bs.ThemeToggle, side="right")
-            status.add_widget(my_label)
+            status.add_widget(bs.ProgressBar, value=65)
+
+        To add a widget you have already built yourself, parent it onto the bar
+        directly (it lands in the left cluster):
+
+            bs.MyCustomWidget(parent=status)
 
         Args:
-            widget: A widget class or instance.
+            widget_cls: The widget class to build on the band.
             side: `'left'` (default) or `'right'` (after the spacer).
-            **kwargs: Constructor arguments, used only when `widget` is a class.
+            **kwargs: Constructor arguments for the widget.
 
         Returns:
-            The widget (the new instance when a class is given).
+            The new widget instance.
         """
         if side == "right":
             self._ensure_right()
-        if isinstance(widget, type):
-            return widget(parent=self, **kwargs)
-        tk_widget = getattr(widget, "_internal", widget)
-        self._internal.add_widget(tk_widget)
-        self._show()
-        return widget
+        self._apply_bar_defaults(widget_cls, kwargs)
+        return widget_cls(parent=self, **kwargs)
+
+    def _apply_bar_defaults(self, widget_cls: type, kwargs: dict[str, Any]) -> None:
+        """Default `density`/`surface` from the band onto a class being built, but
+        only for parameters the widget actually accepts (and not if the caller
+        already passed them)."""
+        import inspect
+
+        try:
+            params = inspect.signature(widget_cls).parameters
+        except (TypeError, ValueError):
+            return
+        if "density" in params:
+            kwargs.setdefault("density", self._internal.density)
+        if "surface" in params:
+            kwargs.setdefault("surface", self._internal._surface)
 
     def add_text(
         self,

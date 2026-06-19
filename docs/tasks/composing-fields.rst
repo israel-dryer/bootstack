@@ -179,9 +179,8 @@ when you need a widget directly.
 Reusable fields
 ---------------
 
-bootstack has no public base class for authoring an entirely new field *type* —
-but you rarely need one. A configured field is an ordinary object, so the
-practical way to ship a custom input is to wrap a recipe in a function:
+A configured field is an ordinary object, so the simplest way to ship a custom
+input is to wrap a recipe in a function:
 
 .. code-block:: python
 
@@ -203,6 +202,41 @@ practical way to ship a custom input is to wrap a recipe in a function:
 `search_field()` returns a real :class:`~bootstack.TextField`, so `.value`,
 validation, and signal binding all work on it exactly as they would on a plain
 field. Call it wherever you would build one.
+
+Subclassing for a reusable type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you want a named field *type* — one you instantiate by class, or hand to a
+container that builds widgets for you — subclass the field instead of wrapping
+it in a function:
+
+.. code-block:: python
+
+   class SearchField(bs.TextField):
+       def __init__(self, *, on_search=None, **kwargs):
+           kwargs.setdefault("placeholder", "Search")
+           super().__init__(**kwargs)
+           self.insert_addon("label", "before", icon="search")
+           self.insert_addon("button", "after", icon="x-lg", on_click=self.clear)
+           if on_search:
+               self.on_submit(lambda e: on_search(self.value))
+
+`SearchField` is a real :class:`~bootstack.TextField`, so everything a field
+offers — `.value`, validation, signal binding — carries over unchanged.
+
+The reason to reach for a subclass over a function is when something needs the
+*class*, not a built instance. A :class:`~bootstack.Toolbar` or
+:class:`~bootstack.StatusBar` builds the widgets you add to it — you give
+:meth:`~bootstack.Toolbar.add_widget` the class and the bar constructs it,
+applying its own density and surface:
+
+.. code-block:: python
+
+   with app.add_toolbar() as tb:
+       tb.add_widget(SearchField, on_search=run_query)
+
+A function recipe can't drop in there (it returns an already-built field the bar
+can't restyle); a subclass can.
 
 See also
 --------

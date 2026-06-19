@@ -74,9 +74,9 @@ running count or sync state.
 Embedding widgets
 ~~~~~~~~~~~~~~~~~~~
 
-Create any widget with ``parent=statusbar`` to add it to the left cluster, or
-pass a pre-parented widget to ``add_widget()`` (with ``side=`` to choose the
-cluster). Useful for a slim progress indicator or a badge.
+Pass a widget **class** to ``add_widget()`` (with ``side=`` to choose the
+cluster) and the band builds it, or create any widget with ``parent=statusbar``
+to add it to the left cluster. Useful for a slim progress indicator or a badge.
 
 .. code-block:: python
 
