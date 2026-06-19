@@ -10,11 +10,12 @@ from bootstack.widgets.types import Master, Orient, AccentToken, SurfaceToken, W
 from bootstack.signals import Signal
 from bootstack.events import RangeSliderEvent, RangeSliderCommitEvent
 from ._shared import (
-    HL, HANDLE_SIZE, TRACK_H,
+    HL, HANDLE_SIZE, TRACK_H, HALO_PAD,
     BADGE_H, BADGE_PAD_X, BADGE_GAP, BADGE_FONT_SIZE,
     TICK_GAP, MAJOR_TICK_H, MINOR_TICK_H, LABEL_GAP, LABEL_FONT_SIZE,
     STEP, STEP_LARGE,
-    _make_badge, _make_handle, _make_track, resolve_colors, get_widget_bg,
+    _make_badge, _make_handle, _make_track, _make_focus_ring,
+    resolve_colors, get_widget_bg,
 )
 
 
@@ -24,8 +25,10 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
     """A themed two-handle range slider widget.
 
     Provides a low-value and high-value handle that define a selected range
-    within `[minvalue, maxvalue]`.  Both handles are keyboard-accessible
-    and cycle with `Tab`.
+    within `[minvalue, maxvalue]`.  Keyboard model: the slider is a single tab
+    stop (`Tab` moves focus in, then straight out — never trapped). The
+    primary-axis arrows move the active handle; the cross-axis arrows switch
+    which handle is active, and the active handle shows a focus ring.
 
     Current range is accessible via `lovalue` / `hivalue` properties,
     `get_lo()` / `get_hi()` / `set_lo()` / `set_hi()` methods, or
@@ -114,7 +117,9 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         else:
             self._badge_zone = 0
         self._tick_zone = self._calc_tick_zone()
-        cross_size = self._badge_zone + self._handle_size + self._tick_zone
+        # Reserve HALO_PAD on each side of the handle band so the keyboard focus
+        # ring (a halo just outside the active handle) is never clipped.
+        cross_size = self._badge_zone + HALO_PAD + self._handle_size + HALO_PAD + self._tick_zone
 
         # Variable / signal binding for lo and hi — always create a Signal so
         # callers get a clean reactive API; derive the tk.DoubleVar from it.
@@ -163,6 +168,9 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         # Drag / keyboard focus state
         self._dragging: str | None = None   # "lo" | "hi" | None
         self._focus_handle = "lo"
+        self._kbd_focused = False   # True while the widget holds keyboard focus
+                                    # (gates the active-handle focus ring; set
+                                    # before the first _render_handles below)
 
         kw.setdefault('bd', 0)
         kw.setdefault('relief', 'flat')
@@ -204,7 +212,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             )
             self._canvas.place(x=0, y=0, relheight=1, width=cross_size)
 
-        self._track_center = self._badge_zone + self._handle_size // 2
+        self._track_center = self._badge_zone + HALO_PAD + self._handle_size // 2
 
         if self._orient == "horizontal":
             self._track_item = self._canvas.create_image(0, self._track_center, anchor="w")
@@ -214,6 +222,14 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             self._track_item = self._canvas.create_image(self._track_center, 0, anchor="n")
             self._handle_lo_item = self._canvas.create_image(self._track_center, 0, anchor="center")
             self._handle_hi_item = self._canvas.create_image(self._track_center, 0, anchor="center")
+
+        # Keyboard focus halo — drawn around the active handle, above both handles
+        # (its center is transparent, so the handle still shows through). Hidden
+        # until the widget takes keyboard focus.
+        self._focus_ring_diam = self._handle_size + 2 * HALO_PAD
+        self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, self._colors['focus'])
+        self._focus_ring_item = self._canvas.create_image(
+            0, 0, anchor="center", image=self._focus_ring_photo, state="hidden")
 
         # Badge items — PIL image background + text items on top
         self._badge_lo_item: int | None = None
@@ -261,15 +277,27 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
 
         self.bind("<FocusIn>",     self._on_focus_in)
         self.bind("<FocusOut>",    self._on_focus_out)
-        self.bind("<Left>",        lambda e: self._step(-self._kbd_step))
-        self.bind("<Right>",       lambda e: self._step(+self._kbd_step))
-        self.bind("<Down>",        lambda e: self._step(-self._kbd_step))
-        self.bind("<Up>",          lambda e: self._step(+self._kbd_step))
-        self.bind("<Shift-Left>",  lambda e: self._step(-self._kbd_step_large))
-        self.bind("<Shift-Right>", lambda e: self._step(+self._kbd_step_large))
-        self.bind("<Home>",        lambda e: self._jump(self._minvalue))
-        self.bind("<End>",         lambda e: self._jump(self._maxvalue))
-        self.bind("<Tab>",         self._cycle_handle)
+        # Keyboard model: the slider is a SINGLE tab stop. We bind NO <Tab>, so
+        # Tk's normal focus traversal moves focus in and straight back out — focus
+        # is never trapped. The primary-axis arrows move the active handle; the
+        # cross-axis arrows switch which handle is active (a two-handle slider needs
+        # a switch gesture, and Tab is reserved for leaving the widget).
+        self.bind("<Home>", lambda e: self._jump(self._minvalue))
+        self.bind("<End>",  lambda e: self._jump(self._maxvalue))
+        if self._orient == "horizontal":
+            self.bind("<Left>",        lambda e: self._step(-self._kbd_step))
+            self.bind("<Right>",       lambda e: self._step(+self._kbd_step))
+            self.bind("<Shift-Left>",  lambda e: self._step(-self._kbd_step_large))
+            self.bind("<Shift-Right>", lambda e: self._step(+self._kbd_step_large))
+            self.bind("<Down>",        lambda e: self._select_handle("lo"))
+            self.bind("<Up>",          lambda e: self._select_handle("hi"))
+        else:
+            self.bind("<Down>",        lambda e: self._step(-self._kbd_step))
+            self.bind("<Up>",          lambda e: self._step(+self._kbd_step))
+            self.bind("<Shift-Down>",  lambda e: self._step(-self._kbd_step_large))
+            self.bind("<Shift-Up>",    lambda e: self._step(+self._kbd_step_large))
+            self.bind("<Left>",        lambda e: self._select_handle("lo"))
+            self.bind("<Right>",       lambda e: self._select_handle("hi"))
         self._canvas.bind("<Configure>", self._on_configure)
 
         self._lo_var.trace_add("write", self._on_lo_write)
@@ -307,13 +335,15 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         return max(font.measure(t) for t in candidates) + 4
 
     def _track_range(self) -> tuple[int, int]:
-        half = self._handle_size // 2
+        # Inset by the handle half-width PLUS the focus-ring overhang so the halo
+        # stays inside the canvas even with a handle at the extreme min/max.
+        edge = self._handle_size // 2 + HALO_PAD
         if self._orient == "horizontal":
             w = self._cw if self._cw > 0 else max(1, self._canvas.winfo_width())
-            return half, max(half + 1, w - half - 1)
+            return edge, max(edge + 1, w - edge - 1)
         else:
             h = self.winfo_height() - 2 * HL
-            return half, max(half + 1, h - half - 1)
+            return edge, max(edge + 1, h - edge - 1)
 
     def _value_to_pos(self, val: float) -> int:
         start, end = self._track_range()
@@ -363,6 +393,24 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self._handle_hi_photo = _make_handle(fill, colors['ring'], colors['handle_border'])
         self._canvas.itemconfig(self._handle_lo_item, image=self._handle_lo_photo)
         self._canvas.itemconfig(self._handle_hi_item, image=self._handle_hi_photo)
+
+    def _update_focus_ring(self) -> None:
+        """Position the focus halo over the active handle when the widget holds
+        keyboard focus; hide it otherwise."""
+        item = getattr(self, "_focus_ring_item", None)
+        if item is None:
+            return
+        if not self._kbd_focused or self._state == "disabled":
+            self._canvas.itemconfigure(item, state="hidden")
+            return
+        val = self._lo_var.get() if self._focus_handle == "lo" else self._hi_var.get()
+        pos = self._value_to_pos(val)
+        if self._orient == "horizontal":
+            self._canvas.coords(item, pos, self._track_center)
+        else:
+            self._canvas.coords(item, self._track_center, pos)
+        self._canvas.itemconfigure(item, state="normal")
+        self._canvas.tag_raise(item)   # keep the halo above the handles
 
     def _update_badge_colors(self, colors: dict[str, str]) -> None:
         bg = colors['badge_bg']
@@ -424,6 +472,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             self._canvas.coords(self._handle_hi_item, self._track_center, hi_pos)
             if self._show_value:
                 self._update_badges_v(lo_pos, hi_pos, lo_val, hi_val)
+
+        self._update_focus_ring()   # keep the halo on the active handle
 
     def _update_badges_h(self, lo_x: int, hi_x: int, lo_val: float, hi_val: float) -> None:
         if self._badge_lo_item is None:
@@ -553,10 +603,14 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         if self._mouse_pressed:
             self._mouse_pressed = False
             return
-        self.configure(highlightcolor=self._colors['focus'])
+        self._kbd_focused = True
+        # The per-handle halo is the focus indicator — no whole-widget frame ring
+        # (that would be redundant with the halo).
+        self._update_focus_ring()
 
     def _on_focus_out(self, _event: tk.Event) -> None:
-        self.configure(highlightcolor=self._colors['bg'])
+        self._kbd_focused = False
+        self._update_focus_ring()
 
     def _on_canvas_click(self, event: tk.Event) -> None:
         if self._state == "disabled":
@@ -646,8 +700,16 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         if not changed:
             self._sync()
 
-    def _cycle_handle(self, event: tk.Event) -> str:
-        self._focus_handle = "hi" if self._focus_handle == "lo" else "lo"
+    def _select_handle(self, which: str) -> str:
+        """Make `which` ('lo'|'hi') the active handle (cross-axis arrow keys).
+
+        Re-renders so the focus ring moves to the newly active handle. Returns
+        `'break'` so the arrow press isn't reinterpreted by any default binding.
+        """
+        if self._state == "disabled":
+            return "break"
+        self._focus_handle = which
+        self._update_focus_ring()
         return "break"
 
     def _on_lo_write(self, *_: Any) -> None:
@@ -694,8 +756,11 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self._canvas.configure(bg=colors['bg'])
         self._render_handles(colors)
         self._update_badge_colors(colors)
+        # Recolor the focus halo to the new theme's focus color.
+        self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, colors['focus'])
+        self._canvas.itemconfig(self._focus_ring_item, image=self._focus_ring_photo)
         self._setup_ticks()
-        self._sync()
+        self._sync()   # _sync repositions/shows the halo as needed
 
     # ------------------------------------------------------------------
     # Public API

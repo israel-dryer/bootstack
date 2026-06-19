@@ -10,11 +10,12 @@ from bootstack.widgets.types import Master, Orient, AccentToken, SurfaceToken, W
 from bootstack.signals import Signal
 from bootstack.events import SliderEvent, SliderCommitEvent
 from ._shared import (
-    HL, HANDLE_SIZE, TRACK_H,
+    HL, HANDLE_SIZE, TRACK_H, HALO_PAD,
     BADGE_H, BADGE_PAD_X, BADGE_GAP, BADGE_FONT_SIZE,
     TICK_GAP, MAJOR_TICK_H, MINOR_TICK_H, LABEL_GAP, LABEL_FONT_SIZE,
     STEP, STEP_LARGE,
-    _make_badge, _make_handle, _make_track, resolve_colors, get_widget_bg,
+    _make_badge, _make_handle, _make_track, _make_focus_ring,
+    resolve_colors, get_widget_bg,
 )
 
 
@@ -114,7 +115,9 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         else:
             self._badge_zone = 0
         self._tick_zone = self._calc_tick_zone()
-        cross_size = self._badge_zone + self._handle_size + self._tick_zone
+        # Reserve HALO_PAD on each side of the handle band so the keyboard focus
+        # ring (a halo just outside the handle) is never clipped.
+        cross_size = self._badge_zone + HALO_PAD + self._handle_size + HALO_PAD + self._tick_zone
 
         # Variable / signal binding — always create a Signal so callers get a
         # clean reactive API; derive the tk.DoubleVar from it.
@@ -193,7 +196,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
             self._canvas.place(x=0, y=0, relheight=1, width=cross_size)
 
         # Center of the track in the cross axis (y for horizontal, x for vertical)
-        self._track_center = self._badge_zone + self._handle_size // 2
+        self._track_center = self._badge_zone + HALO_PAD + self._handle_size // 2
 
         # Canvas items — track must be below handle in z-order
         if self._orient == "horizontal":
@@ -202,6 +205,13 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         else:
             self._track_item = self._canvas.create_image(self._track_center, 0, anchor="n")
             self._handle_item = self._canvas.create_image(self._track_center, 0, anchor="center")
+
+        # Keyboard focus halo — drawn around the handle (transparent center), above
+        # it in z-order; hidden until the widget takes keyboard focus.
+        self._focus_ring_diam = self._handle_size + 2 * HALO_PAD
+        self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, self._colors['focus'])
+        self._focus_ring_item = self._canvas.create_image(
+            0, 0, anchor="center", image=self._focus_ring_photo, state="hidden")
 
         # Badge items — PIL image background + text item on top
         self._badge_item: int | None = None
@@ -251,6 +261,7 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
 
         # Keyboard-vs-mouse focus tracking (ring only on Tab navigation)
         self._mouse_pressed = False
+        self._kbd_focused = False   # True while the widget holds keyboard focus
 
         # Input bindings
         self._canvas.bind("<Button-1>", self._on_click)
@@ -314,16 +325,16 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
 
     def _track_range(self) -> tuple[int, int]:
         """Return (start, end) handle travel range in canvas coords (main axis)."""
-        half = self._handle_size // 2
+        # Inset by the handle half-width PLUS the focus-ring overhang so the halo
+        # stays inside the canvas even with the handle at the extreme min/max.
+        edge = self._handle_size // 2 + HALO_PAD
         if self._orient == "horizontal":
             # _cw is the canvas's exact allocated width (from canvas <Configure>).
-            # Subtract an extra pixel so the handle image (half px on each side)
-            # never reaches the canvas boundary.
             w = self._cw if self._cw > 0 else max(1, self._canvas.winfo_width())
-            return half, max(half + 1, w - half - 1)
+            return edge, max(edge + 1, w - edge - 1)
         else:
             h = self.winfo_height() - 2 * HL
-            return half, max(half + 1, h - half - 1)
+            return edge, max(edge + 1, h - edge - 1)
 
     def _value_to_pos(self, val: float) -> int:
         """Map a value to a canvas pixel position along the main axis."""
@@ -369,6 +380,23 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         fill = colors['handle_disabled'] if self._state == "disabled" else colors['handle']
         self._handle_photo = _make_handle(fill, colors['ring'], colors['handle_border'])
         self._canvas.itemconfig(self._handle_item, image=self._handle_photo)
+
+    def _update_focus_ring(self) -> None:
+        """Position the focus halo over the handle when the widget holds keyboard
+        focus; hide it otherwise."""
+        item = getattr(self, "_focus_ring_item", None)
+        if item is None:
+            return
+        if not self._kbd_focused or self._state == "disabled":
+            self._canvas.itemconfigure(item, state="hidden")
+            return
+        pos = self._value_to_pos(self._var.get())
+        if self._orient == "horizontal":
+            self._canvas.coords(item, pos, self._track_center)
+        else:
+            self._canvas.coords(item, self._track_center, pos)
+        self._canvas.itemconfigure(item, state="normal")
+        self._canvas.tag_raise(item)
 
     def _update_badge_colors(self, colors: dict[str, str]) -> None:
         if self._badge_item is not None:
@@ -422,6 +450,8 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
                 label_x = self._track_center + self._handle_size // 2 + TICK_GAP + LABEL_GAP
                 self._canvas.coords(self._minlabel_item, label_x, end)
                 self._canvas.coords(self._maxlabel_item, label_x, start)
+
+        self._update_focus_ring()   # keep the halo on the handle
 
     def _update_badge_h(self, handle_x: int, val: float) -> None:
         if self._badge_item is None:
@@ -552,10 +582,13 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         if self._mouse_pressed:
             self._mouse_pressed = False
             return
-        self.configure(highlightcolor=self._colors['focus'])
+        self._kbd_focused = True
+        # The handle halo is the focus indicator — no whole-widget frame ring.
+        self._update_focus_ring()
 
     def _on_focus_out(self, _event: tk.Event) -> None:
-        self.configure(highlightcolor=self._colors['bg'])
+        self._kbd_focused = False
+        self._update_focus_ring()
 
     def _on_click(self, event: tk.Event) -> None:
         if self._state == "disabled":
@@ -618,12 +651,15 @@ class Slider(ConfigureDelegationMixin, tk.Frame):
         self._canvas.configure(bg=colors['bg'])
         self._render_handle(colors)
         self._update_badge_colors(colors)
+        # Recolor the focus halo to the new theme's focus color.
+        self._focus_ring_photo = _make_focus_ring(self._focus_ring_diam, colors['focus'])
+        self._canvas.itemconfig(self._focus_ring_item, image=self._focus_ring_photo)
         if self._minlabel_item is not None:
             self._canvas.itemconfig(self._minlabel_item, fill=colors['tick'])
         if self._maxlabel_item is not None:
             self._canvas.itemconfig(self._maxlabel_item, fill=colors['tick'])
         self._setup_ticks()
-        self._sync()
+        self._sync()   # _sync repositions/shows the halo as needed
 
     # ------------------------------------------------------------------
     # Public API
