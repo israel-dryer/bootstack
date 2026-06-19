@@ -52,6 +52,14 @@ above the handle.
 
    bs.Slider(50, show_value=True)
 
+.. image:: /_static/examples/slider-value-light.png
+   :class: bs-screenshot-light
+   :alt: Slider value badge — light theme
+
+.. image:: /_static/examples/slider-value-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider value badge — dark theme
+
 Min / max labels
 ~~~~~~~~~~~~~~~~
 
@@ -61,6 +69,14 @@ track ends.
 .. code-block:: python
 
    bs.Slider(50, show_minmax=True)
+
+.. image:: /_static/examples/slider-minmax-light.png
+   :class: bs-screenshot-light
+   :alt: Slider min/max labels — light theme
+
+.. image:: /_static/examples/slider-minmax-dark.png
+   :class: bs-screenshot-dark
+   :alt: Slider min/max labels — dark theme
 
 Tick marks
 ~~~~~~~~~~
@@ -73,7 +89,7 @@ subdivisions between them. ``tick_labels=False`` hides the numeric labels.
 
    bs.Slider(50, tick_step=25)
    bs.Slider(50, tick_step=25, minor_ticks=4)
-   bs.Slider(0.5, min_value=0, max_value=1, tick_step=0.25, tick_format="{:.0%}", show_value=True)
+   bs.Slider(0.5, min_value=0, max_value=1, tick_step=0.25, tick_format="{:.0%}")
 
 .. image:: /_static/examples/slider-ticks-light.png
    :class: bs-screenshot-light
@@ -93,6 +109,37 @@ Bind a ``Signal[float]`` with ``signal=``. The slider and signal stay in sync.
    volume = bs.Signal(50.0)
    bs.Slider(signal=volume)
    volume.subscribe(lambda v: update_volume(v))
+
+Events
+~~~~~~
+
+``on_change`` fires continuously as the handle moves; ``on_commit`` fires once
+when the handle is released or moved by keyboard. Reach for ``on_commit`` when
+the work behind the slider is expensive — a network call, a recompute, a redraw.
+
+.. code-block:: python
+
+   s = bs.Slider(50, min_value=0, max_value=100)
+
+   # Fires continuously during a drag — keep this cheap
+   s.on_change(lambda e: preview(e.value))
+
+   # Fires once, on release or keyboard commit
+   s.on_commit(lambda e: apply(e.value))
+
+   # As a Stream
+   s.on_change().debounce(150).listen(lambda e: save(e.value))
+
+The handler receives a :class:`~bootstack.events.SliderEvent` (``on_change``)
+or :class:`~bootstack.events.SliderCommitEvent` (``on_commit``); ``event.value``
+holds the current value.
+
+Keyboard
+~~~~~~~~
+
+When focused, the slider responds to the arrow keys (±1), ``Shift`` + arrow
+(±10), and ``Home`` / ``End`` (minimum / maximum). Every keyboard change also
+emits ``on_commit``.
 
 Disabled
 ~~~~~~~~
