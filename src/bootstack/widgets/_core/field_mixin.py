@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Any, Callable, Literal, TYPE_CHECKING
 
+from bootstack.errors import BootstackError
 from bootstack.validation import RuleType
+from bootstack.validation.validation_rules import rule_applies_to_kind
 from bootstack.widgets.types import AccentToken
 
 if TYPE_CHECKING:
@@ -15,6 +17,11 @@ class FieldAddonMixin:
     Requires the inheriting class to have `self._internal` pointing to a
     `Field`-based composite that implements `insert_addon` / `addons`.
     """
+
+    #: The kind of value this field holds, used to reject inapplicable
+    #: validation rules at attach time. Text fields keep the default; typed
+    #: field wrappers override it (`'number'`, `'date'`, `'time'`).
+    _VALIDATION_KIND: str = "text"
 
     _ADDON_TYPES = {
         "button":  "bootstack.widgets._impl.primitives.button::Button",
@@ -170,6 +177,12 @@ class FieldAddonMixin:
         type, or manually via `validate()`. Multiple rules can be added;
         they are evaluated in order and stop at the first failure.
 
+        Rules validate the field's **typed value** — a `custom` rule on a
+        numeric field receives a number, on a date field a `date`. Text rules
+        (`stringLength`, `pattern`, `email`) apply only to text fields; `range`
+        applies only to numeric/date/time fields. Attaching a rule to a field
+        whose value kind it cannot validate raises `BootstackError`.
+
         Args:
             rule_type: The kind of validation rule to apply.
             **kwargs: Rule-specific options:
@@ -179,9 +192,12 @@ class FieldAddonMixin:
                   blur), `'key'`, `'blur'`, or `'manual'`. Each rule type
                   has its own sensible default (see the Validation reference).
                 - `min`, `max` *(stringLength)* — minimum/maximum character count.
+                - `min`, `max` *(range)* — lower/upper bound for the typed value
+                  (numbers, or `date`/`time` objects).
                 - `pattern` *(pattern)* — regex string the value must match.
                 - `other_field` *(compare)* — field whose value must match.
-                - `func` *(custom)* — callable `(value: str) -> bool`.
+                - `func` *(custom)* — callable `(value) -> bool` receiving the
+                  field's typed value.
 
         Example::
 
@@ -189,6 +205,8 @@ class FieldAddonMixin:
             field.add_validation_rule("stringLength", min=3, max=50)
             field.add_validation_rule("email", message="Enter a valid email.")
             field.add_validation_rule("custom", func=lambda v: v.isdigit())
+
+            age.add_validation_rule("range", min=18, message="Must be 18+.")
         """
         if not isinstance(rule_type, str):
             raise TypeError(
@@ -196,6 +214,16 @@ class FieldAddonMixin:
                 f"'stringLength'), not a {type(rule_type).__name__} object. Pass "
                 f"the rule's options as keyword arguments: "
                 f"field.add_validation_rule('stringLength', min=3)."
+            )
+        kind = self._VALIDATION_KIND
+        if not rule_applies_to_kind(rule_type, kind):
+            if kind == "text":
+                hint = "'stringLength' bounds text length."
+            else:
+                hint = f"'range' or 'custom' validates {kind} values."
+            raise BootstackError(
+                f"the {rule_type!r} rule does not apply to a {kind} field "
+                f"({type(self).__name__}). {hint}"
             )
         self._internal.add_validation_rule(rule_type, **kwargs)
 

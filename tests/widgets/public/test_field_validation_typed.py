@@ -36,12 +36,13 @@ def app():
             pass
 
 
-def test_numberfield_string_rule_does_not_crash(app):
-    # Was a hard TypeError: len() on a float / re.match on a float.
-    nf = bs.NumberField(value=1234.5, value_format="#,##0.00")
-    nf.add_validation_rule("stringLength", min=3, max=20, trigger="manual")
-    app._tk_root.update_idletasks()
-    assert nf.validate() is True  # no exception
+def test_string_rule_is_crash_safe_on_typed_value():
+    # Fields reject text rules on typed values at attach time (see the
+    # rejection test below), but the rule itself must still never crash if
+    # handed a non-string — the original bug was len()/re.match on a float.
+    assert ValidationRule("stringLength", min=3).validate(1234.5).is_valid in (True, False)
+    assert ValidationRule("pattern", pattern=r"\d+").validate(1234).is_valid in (True, False)
+    assert ValidationRule("email").validate(None).is_valid in (True, False)
 
 
 def test_numberfield_custom_rule_receives_number(app):
@@ -120,3 +121,70 @@ def test_add_validation_rule_rejects_rule_object(app):
     tf = bs.TextField()
     with pytest.raises(TypeError):
         tf.add_validation_rule(ValidationRule("stringLength", min=3))
+
+
+# --- Phase 2: range rule + attach-time dtype rejection ---
+
+
+def test_range_rule_on_numberfield(app):
+    nf = bs.NumberField(value=25)
+    nf.add_validation_rule("range", min=18, message="must be 18+")
+    app._tk_root.update_idletasks()
+    assert nf.validate() is True
+    nf.value = 10
+    app._tk_root.update_idletasks()
+    assert nf.validate() is False
+
+
+def test_range_rule_on_datefield_with_date_bounds(app):
+    df = bs.DateField(value="2024-06-01")
+    df.add_validation_rule(
+        "range", min=datetime.date(2024, 1, 1), max=datetime.date(2024, 12, 31)
+    )
+    app._tk_root.update_idletasks()
+    assert df.validate() is True
+
+
+def test_range_rule_empty_field_is_not_out_of_range(app):
+    # An empty field passes range; use 'required' to demand presence.
+    nf = bs.NumberField(value=5)
+    nf.add_validation_rule("range", min=1)
+    nf.clear()
+    app._tk_root.update_idletasks()
+    assert nf.validate() is True
+
+
+@pytest.mark.parametrize(
+    "factory, rule",
+    [
+        (lambda: bs.NumberField(value=1), "stringLength"),
+        (lambda: bs.NumberField(value=1), "email"),
+        (lambda: bs.NumberField(value=1), "pattern"),
+        (lambda: bs.DateField(value="2024-01-01"), "email"),
+        (lambda: bs.TextField(), "range"),
+    ],
+)
+def test_inapplicable_rule_rejected_at_attach(app, factory, rule):
+    from bootstack.errors import BootstackError
+
+    field = factory()
+    app._tk_root.update_idletasks()
+    with pytest.raises(BootstackError):
+        field.add_validation_rule(rule)
+
+
+@pytest.mark.parametrize(
+    "factory, rule, kwargs",
+    [
+        (lambda: bs.TextField(), "stringLength", {"min": 3}),
+        (lambda: bs.TextField(), "email", {}),
+        (lambda: bs.NumberField(value=1), "range", {"min": 0}),
+        (lambda: bs.NumberField(value=1), "custom", {"func": lambda v: v > 0}),
+        (lambda: bs.DateField(value="2024-01-01"), "required", {}),
+        (lambda: bs.TimeField(value="08:30"), "required", {}),
+    ],
+)
+def test_applicable_rule_attaches_cleanly(app, factory, rule, kwargs):
+    field = factory()
+    app._tk_root.update_idletasks()
+    field.add_validation_rule(rule, **kwargs)  # no exception

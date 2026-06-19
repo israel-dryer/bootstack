@@ -97,6 +97,8 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             See :doc:`/tasks/layout`.
     """
 
+    _VALIDATION_KIND = "number"
+
     def __init__(
         self,
         value: int | float = 0,
