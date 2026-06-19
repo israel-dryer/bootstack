@@ -1,7 +1,7 @@
 """Slider — full feature demo.
 
 Demonstrates accent colors, value badge, min/max labels, tick marks,
-custom tick format, and disabled state.
+custom tick format, step snapping, and disabled state.
 
 Run with:
     python docs/examples/slider.py
@@ -46,6 +46,10 @@ with bs.App(title="Slider Demo", padding=20, gap=16, min_size=(400, 1)) as app:
         show_value=True,
         horizontal="stretch",
     )
+
+    # Step snapping (only 0, 5, 10, … 100)
+    bs.Label("Step Snapping", font="heading-sm")
+    bs.Slider(50, step=5, tick_step=5, horizontal="stretch")
 
     # Disabled
     bs.Label("Disabled", font="heading-sm")

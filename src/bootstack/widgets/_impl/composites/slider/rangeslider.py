@@ -53,6 +53,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         minor_ticks: int = 0,
         tick_labels: bool = True,
         tick_format: str = "{:.0f}",
+        step: float | None = None,
         **kw: Any,
     ) -> None:
         """Create a RangeSlider widget.
@@ -81,9 +82,15 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             minor_ticks: Number of minor tick marks between each major tick.
             tick_labels: Show numeric labels at major tick positions.
             tick_format: Format string for tick and badge labels (e.g. `"{:.1f}°C"`).
+            step: Snap increment. When set, handle values snap to multiples of
+                `step` (measured from `minvalue`) and arrow keys move by `step`.
+                `None` leaves the values continuous. Independent of `tick_interval`.
         """
         self._minvalue = float(minvalue)
         self._maxvalue = float(maxvalue)
+        self._step_size = float(step) if step else None
+        self._kbd_step = self._step_size if self._step_size else float(STEP)
+        self._kbd_step_large = self._step_size * 10 if self._step_size else float(STEP_LARGE)
         self._orient = orient
         self._accent = accent
         self._surface = surface
@@ -120,7 +127,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             lo_variable.trace_add(
                 "write", lambda *_: self._lo_signal.var.set(lo_variable.get()))
         else:
-            self._lo_signal = Signal(float(lovalue))
+            self._lo_signal = Signal(self._snap(float(lovalue)))
         self._lo_var = self._lo_signal.var
 
         if hi_signal is not None:
@@ -132,7 +139,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
             hi_variable.trace_add(
                 "write", lambda *_: self._hi_signal.var.set(hi_variable.get()))
         else:
-            self._hi_signal = Signal(float(hivalue))
+            self._hi_signal = Signal(self._snap(float(hivalue)))
         self._hi_var = self._hi_signal.var
 
         self._prev_lovalue: float = self._lo_var.get()
@@ -254,12 +261,12 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
 
         self.bind("<FocusIn>",     self._on_focus_in)
         self.bind("<FocusOut>",    self._on_focus_out)
-        self.bind("<Left>",        lambda e: self._step(-STEP))
-        self.bind("<Right>",       lambda e: self._step(+STEP))
-        self.bind("<Down>",        lambda e: self._step(-STEP))
-        self.bind("<Up>",          lambda e: self._step(+STEP))
-        self.bind("<Shift-Left>",  lambda e: self._step(-STEP_LARGE))
-        self.bind("<Shift-Right>", lambda e: self._step(+STEP_LARGE))
+        self.bind("<Left>",        lambda e: self._step(-self._kbd_step))
+        self.bind("<Right>",       lambda e: self._step(+self._kbd_step))
+        self.bind("<Down>",        lambda e: self._step(-self._kbd_step))
+        self.bind("<Up>",          lambda e: self._step(+self._kbd_step))
+        self.bind("<Shift-Left>",  lambda e: self._step(-self._kbd_step_large))
+        self.bind("<Shift-Right>", lambda e: self._step(+self._kbd_step_large))
         self.bind("<Home>",        lambda e: self._jump(self._minvalue))
         self.bind("<End>",         lambda e: self._jump(self._maxvalue))
         self.bind("<Tab>",         self._cycle_handle)
@@ -332,6 +339,19 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         if self._orient == "horizontal":
             return event.x
         return event.y
+
+    def _snap(self, v: float) -> float:
+        """Clamp `v` to [min, max] and, when `step` is set, snap it to the
+        nearest grid point (measured from `minvalue`). `maxvalue` stays reachable
+        even when the range is not an exact multiple of `step`."""
+        v = max(self._minvalue, min(self._maxvalue, float(v)))
+        if not self._step_size:
+            return v
+        grid = self._minvalue + round((v - self._minvalue) / self._step_size) * self._step_size
+        grid = max(self._minvalue, min(self._maxvalue, grid))
+        if abs(v - self._maxvalue) < abs(v - grid):
+            return self._maxvalue
+        return grid
 
     # ------------------------------------------------------------------
     # Rendering helpers
@@ -575,7 +595,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         ))
 
     def _move(self, pos: int) -> None:
-        value = self._pos_to_value(pos)
+        value = self._snap(self._pos_to_value(pos))
         if self._dragging == "lo":
             self._lo_var.set(max(self._minvalue, min(value, self._hi_var.get())))
         else:
@@ -593,7 +613,7 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         ))
 
     def _set_focused(self, value: float) -> None:
-        value = max(self._minvalue, min(self._maxvalue, value))
+        value = self._snap(value)
         if self._focus_handle == "lo":
             self._lo_var.set(min(value, self._hi_var.get()))
         else:
@@ -613,8 +633,8 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         """Pull both handles back into [min, max] (and lo <= hi) after a range
         change, emitting <<Change>> only for handles that actually move."""
         lo, hi = self._lo_var.get(), self._hi_var.get()
-        nlo = max(self._minvalue, min(lo, self._maxvalue))
-        nhi = max(self._minvalue, min(hi, self._maxvalue))
+        nlo = self._snap(lo)
+        nhi = self._snap(hi)
         nlo = min(nlo, nhi)
         changed = False
         if nlo != lo:
@@ -726,20 +746,22 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         return self._hi_var.get()
 
     def set_lo(self, value: float) -> None:
-        """Set the low handle to a new value, clamped to [minvalue, hivalue].
+        """Set the low handle to a new value, clamped to [minvalue, hivalue] and
+        snapped to the step grid when `step` is set.
 
         Args:
             value: New low-handle value.
         """
-        self._lo_var.set(max(self._minvalue, min(float(value), self._hi_var.get())))
+        self._lo_var.set(min(self._snap(value), self._hi_var.get()))
 
     def set_hi(self, value: float) -> None:
-        """Set the high handle to a new value, clamped to [lovalue, maxvalue].
+        """Set the high handle to a new value, clamped to [lovalue, maxvalue] and
+        snapped to the step grid when `step` is set.
 
         Args:
             value: New high-handle value.
         """
-        self._hi_var.set(min(self._maxvalue, max(float(value), self._lo_var.get())))
+        self._hi_var.set(max(self._snap(value), self._lo_var.get()))
 
     def on_changed(self, callback: Callable[[RangeSliderEvent], None]) -> str:
         """Register a callback for `<<Change>>` events.
@@ -817,6 +839,15 @@ class RangeSlider(ConfigureDelegationMixin, tk.Frame):
         self._maxvalue = float(value)
         self._setup_ticks()
         self._reclamp()
+
+    @configure_delegate('step')
+    def _delegate_step(self, value=None):
+        if value is None:
+            return self._step_size
+        self._step_size = float(value) if value else None
+        self._kbd_step = self._step_size if self._step_size else float(STEP)
+        self._kbd_step_large = self._step_size * 10 if self._step_size else float(STEP_LARGE)
+        self._reclamp()   # re-snap both handles onto the new grid
 
     @configure_delegate('accent')
     def _delegate_accent(self, value=None):
