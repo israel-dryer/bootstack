@@ -101,6 +101,14 @@ class SpinnerEntry(Field):
         self._increment = increment
         self._wrap = wrap
 
+    def step(self, n: int = 1) -> None:
+        """Step the value by `n` increments (positive) or decrements (negative).
+
+        Args:
+            n: Number of steps. Positive steps up, negative steps down.
+        """
+        self.entry_widget.step(n)
+
     @property
     def values(self) -> list[str]:
         """Get the list of valid values (text mode only)."""

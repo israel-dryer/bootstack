@@ -189,6 +189,22 @@ to surface it:
    The full rule taxonomy and aggregating a whole form's validity live in the
    :doc:`Validation </reference/validation>` guide.
 
+Programmatic stepping
+~~~~~~~~~~~~~~~~~~~~~
+
+Call ``increment()`` and ``decrement()`` to step the value in code — the same
+as pressing the spin buttons. They work in both modes and honor the field's
+bounds and ``wrap`` setting.
+
+.. code-block:: python
+
+   field = bs.SpinnerField(value=10, min_value=0, max_value=100, step=5)
+   field.increment()    # → 15
+   field.decrement(2)   # → 5
+
+   picker = bs.SpinnerField(value="Low", options=["Low", "Medium", "High"])
+   picker.increment()   # → "Medium"
+
 Keyboard
 ~~~~~~~~
 
