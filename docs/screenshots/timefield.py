@@ -44,9 +44,23 @@ def states():
     app.run()
 
 
+def validation():
+    with bs.App(title="TimeField — Validation", padding=20, minsize=(720, 1)) as app:
+        field = bs.TimeField(value=datetime.time(20, 0), label="Appointment", horizontal="stretch")
+        field.add_validation_rule(
+            "range",
+            min=datetime.time(9, 0), max=datetime.time(17, 0),
+            message="Choose a time between 9 AM and 5 PM.",
+            trigger="blur",
+        )
+        app.tk.after(500, field.validate)
+    app.run()
+
+
 SCENES = {
-    "hero":      hero,
-    "formats":   formats,
-    "intervals": intervals,
-    "states":    states,
+    "hero":       hero,
+    "formats":    formats,
+    "intervals":  intervals,
+    "states":     states,
+    "validation": validation,
 }

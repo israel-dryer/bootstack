@@ -12,6 +12,12 @@ can type a custom time or select from the dropdown.
    :class: bs-screenshot-dark
    :alt: TimeField — dark theme
 
+A time field reads and writes a real ``time`` through ``field.value`` — or
+``None`` when empty. The user types a time (``'14:30'`` or ``'2:30 PM'``) or picks
+one from the dropdown; ``value_format`` controls only how it is displayed, and
+``min_time`` / ``max_time`` limit which times the dropdown offers. The field
+starts empty — pass ``value=`` to seed a starting time.
+
 Usage
 -----
 
@@ -102,7 +108,51 @@ dropdown selection, or ``value=`` assignment.
 .. code-block:: python
 
    tf = bs.TimeField(label="Start time")
-   tf.on_change(lambda e: print("Selected:", tf.value))
+   tf.on_change(lambda e: print("Selected:", e.value))
+
+Validation
+~~~~~~~~~~
+
+Attach rules with ``add_validation_rule()``; they validate the field's **typed
+value** — a ``time``, or ``None`` when empty. The ``range`` rule checks time
+bounds with a message. This is distinct from ``min_time`` / ``max_time``, which
+limit the *dropdown*: a rule also catches an out-of-range time the user **types**,
+and surfaces a message.
+
+.. code-block:: python
+
+   import datetime
+
+   field = bs.TimeField(label="Appointment")
+   field.add_validation_rule(
+       "range",
+       min=datetime.time(9, 0), max=datetime.time(17, 0),
+       message="Choose a time between 9 AM and 5 PM.",
+       trigger="blur",
+   )
+
+   is_valid = field.validate()   # run every rule on demand
+
+.. image:: /_static/examples/timefield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: TimeField validation — light theme
+
+.. image:: /_static/examples/timefield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: TimeField validation — dark theme
+
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error straight to a label and it keeps itself in sync:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy, the ``range`` rule, and aggregating a whole form's
+   validity live in the :doc:`Validation </reference/validation>` guide.
 
 States
 ~~~~~~
@@ -130,6 +180,10 @@ See also
 --------
 
 * :doc:`datefield` — date input with calendar picker
+* :doc:`textfield` — plain single-line text input
+* :doc:`Validation </reference/validation>` — the full rule set and form-level validity
+* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field
+* :doc:`Signals </reference/signals>` — reactive binding for fields
 
 API
 ---
