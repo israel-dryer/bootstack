@@ -170,6 +170,55 @@ class SpinnerEntryPart(ValidationMixin, Spinbox):
             self.event_generate('<<Change>>', data=data)
             self._prev_changed_value = self._value
 
+    def step(self, n: int = 1) -> None:
+        """Step the value by `n` positions (negative steps down).
+
+        A thin abstraction over the native spinbox: fires its own
+        `<<Increment>>` / `<<Decrement>>` virtual events `n` times (the same
+        events its arrow buttons and Up/Down keys generate), so the spinbox
+        handles bounds, wrapping, and the text-vs-numeric mode itself. The
+        stepped text is then committed so the parsed value and a `<<Change>>`
+        event reflect the step. No-op when disabled or read-only.
+
+        Args:
+            n: Number of steps. Positive steps up, negative steps down.
+        """
+        states = self.state()
+        if 'disabled' in states or 'readonly' in states:
+            return
+
+        prev_value = self._value
+        event = '<<Increment>>' if n >= 0 else '<<Decrement>>'
+
+        # A programmatic step is a value change, not typed input — silence the
+        # per-keystroke <<Input>> while the native spinbox rewrites the display
+        # text, then re-subscribe (mirrors NumberEntryPart's silenced stepping).
+        fid = getattr(self, '_on_input_fid', None)
+        if fid:
+            try:
+                fid.cancel()
+            except TclError:
+                pass
+            self._on_input_fid = None
+        try:
+            for _ in range(abs(n)):
+                # `when='now'` delivers synchronously so commit() below sees
+                # the stepped text immediately.
+                self.event_generate(event, when='now')
+            self.commit()
+        finally:
+            self._prev_change_text = self.textsignal()
+            if fid:
+                self._on_input_fid = self.textsignal.subscribe(self._handle_change)
+
+        if self._value != prev_value:
+            self._prev_changed_value = self._value
+            self.event_generate('<<Change>>', data=ChangeEvent(
+                value=self._value,
+                prev_value=prev_value,
+                text=self.textsignal(),
+            ))
+
     def _parse_or_none(self, s: str):
         """Parse string using value_format, returning None on empty/invalid input."""
         # If a non-string is passed (e.g., datetime/date), assume it's already parsed

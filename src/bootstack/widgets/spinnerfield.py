@@ -217,6 +217,30 @@ class SpinnerField(FieldAddonMixin, PublicWidgetBase):
 
     # ----- Methods -----
 
+    def increment(self, steps: int = 1) -> None:
+        """Step the value up by `steps` positions.
+
+        In numeric mode this adds `steps` × the step size; in text mode it
+        advances `steps` positions through `options`. Honors the field's
+        bounds and `wrap` setting.
+
+        Args:
+            steps: Number of steps to increment. Defaults to `1`.
+        """
+        self._internal.step(steps)
+
+    def decrement(self, steps: int = 1) -> None:
+        """Step the value down by `steps` positions.
+
+        In numeric mode this subtracts `steps` × the step size; in text mode it
+        moves back `steps` positions through `options`. Honors the field's
+        bounds and `wrap` setting.
+
+        Args:
+            steps: Number of steps to decrement. Defaults to `1`.
+        """
+        self._internal.step(-steps)
+
     def focus(self) -> None:
         """Give keyboard focus to this field."""
         self._entry_widget().focus_set()
