@@ -70,8 +70,12 @@ consistent.
 
    ``textsignal=`` is for widgets that carry text
    (:class:`~bootstack.TextField`, :class:`~bootstack.TextArea`). ``signal=`` is
-   for boolean and numeric widgets (:class:`~bootstack.Checkbox`,
-   :class:`~bootstack.Slider`, :class:`~bootstack.Switch`).
+   for widgets that carry a typed value — boolean, numeric, date, and time
+   (:class:`~bootstack.Checkbox`, :class:`~bootstack.Slider`,
+   :class:`~bootstack.NumberField`, :class:`~bootstack.DateField`,
+   :class:`~bootstack.TimeField`). A value-bound signal carries the typed value
+   itself: a :class:`~bootstack.DateField` ``signal=`` reads back a ``date``, not
+   a string.
 
 Reacting to changes
 -------------------

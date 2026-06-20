@@ -45,8 +45,6 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         signal: Reactive `Signal` two-way bound to the field's `date` value (not
             its text). When given, it seeds the initial value. This is the usual
             way to bind a date field.
-        textsignal: Reactive `Signal[str]` bound to the field's raw text rather
-            than its date value. Niche; prefer `signal`.
         show_picker_button: Show the calendar icon button. Default `True`.
         picker_title: Title of the picker dialog.
         picker_first_weekday: First day of week in the picker (0=Mon … 6=Sun).
@@ -80,7 +78,6 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         value_format: str = "longDate",
         label: str | None = None,
         message: str | None = None,
-        textsignal: "Signal[str] | None" = None,
         show_picker_button: bool = True,
         picker_title: str | None = None,
         picker_first_weekday: int = 6,
@@ -100,6 +97,12 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if "textsignal" in kwargs:
+            raise TypeError(
+                "DateField does not accept 'textsignal=' — a date field binds its "
+                "date value. Use signal= with a date-typed Signal "
+                "(e.g. Signal(date.today()))."
+            )
 
         tk_master = self._parent._child_master() if self._parent else None
 
@@ -115,8 +118,6 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["label"] = label
         if message is not None:
             internal_kwargs["message"] = message
-        if textsignal is not None:
-            internal_kwargs["textsignal"] = textsignal
         if picker_title is not None:
             internal_kwargs["picker_title"] = picker_title
         if range_start is not None:
@@ -199,6 +200,7 @@ class DateField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     @value.setter
     def value(self, v: "date | str | None") -> None:
         self._internal.value = v
+        self._sync_value_set(self._internal.value)
 
     @property
     def disabled(self) -> bool:

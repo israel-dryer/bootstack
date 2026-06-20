@@ -62,9 +62,6 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             fractional values, so they bind cleanly; an `int`-typed `Signal(0)`
             holds whole numbers only. When given, it seeds the initial value.
             This is the usual way to bind a number field.
-        textsignal: Reactive `Signal[str]` bound to the field's raw text (rather
-            than its numeric value). Niche; prefer `signal`. The signal must be
-            typed as `str` — initialize with `Signal("0")`, not `Signal(0)`.
         label: Label displayed above the field.
         message: Hint or helper text displayed below the field.
         min_value: Minimum allowed value (inclusive). No lower bound if omitted.
@@ -104,7 +101,6 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         value: int | float = 0,
         *,
         signal: "Signal | None" = None,
-        textsignal: "Signal | None" = None,
         value_format: str | None = None,
         label: str | None = None,
         message: str | None = None,
@@ -126,6 +122,12 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if "textsignal" in kwargs:
+            raise TypeError(
+                "NumberField does not accept 'textsignal=' — a number field binds "
+                "its numeric value. Use signal= with a number-typed Signal "
+                "(e.g. Signal(0) or Signal(0.0))."
+            )
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
@@ -135,8 +137,6 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         }
         if wrap:
             internal_kwargs["wrap"] = True
-        if textsignal is not None:
-            internal_kwargs["textsignal"] = textsignal
         if value_format is not None:
             internal_kwargs["value_format"] = value_format
         if label is not None:
@@ -217,6 +217,7 @@ class NumberField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     @value.setter
     def value(self, v: int | float) -> None:
         self._internal.value = v
+        self._sync_value_set(v)
 
     @property
     def read_only(self) -> bool:

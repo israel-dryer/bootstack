@@ -44,11 +44,12 @@ with bs.App(title="DateField Demo", padding=20, gap=16) as app:
         max_date=today + timedelta(days=30),
     )
 
-    # Reactive binding
+    # Reactive binding — the signal carries the date object
     bs.Label("Reactive Binding", font="heading-sm")
-    date_sig = bs.Signal("")
-    df = bs.DateField(label="Pick a date", textsignal=date_sig)
-    bs.Label(textsignal=date_sig, accent="secondary")
+    date_sig = bs.Signal(today)
+    bs.DateField(label="Pick a date", signal=date_sig)
+    date_text = date_sig.map(lambda d: d.strftime("%B %d, %Y") if d else "")
+    bs.Label(textsignal=date_text, accent="secondary")
 
     # States
     bs.Label("States", font="heading-sm")

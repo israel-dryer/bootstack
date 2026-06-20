@@ -89,6 +89,53 @@ def test_typed_fields_signal_binds_value_not_text(app):
     assert isinstance(tf.value, datetime.time)
 
 
+def test_datetime_signal_reads_back_object_not_string(app):
+    # #227: a date/time signal used to land in a StringVar and read back its
+    # string form. It must round-trip the object — both directly and via a field.
+    import datetime
+
+    dsig = bs.Signal(datetime.date(2024, 1, 2))
+    assert dsig() == datetime.date(2024, 1, 2)
+    assert type(dsig()) is datetime.date          # not str
+
+    df = bs.DateField(signal=dsig)
+    app._tk_root.update_idletasks()
+
+    # field -> signal on a *programmatic* value set (was only firing on commit)
+    df.value = datetime.date(2030, 3, 4)
+    app._tk_root.update_idletasks()
+    assert dsig() == datetime.date(2030, 3, 4)
+    assert type(dsig()) is datetime.date
+
+    # a subscriber receives the object, not a string
+    seen = []
+    dsig.subscribe(lambda v: seen.append(v))
+    df.value = datetime.date(2031, 5, 6)
+    app._tk_root.update_idletasks()
+    assert seen == [datetime.date(2031, 5, 6)]
+
+    # TimeField, same contract
+    tsig = bs.Signal(datetime.time(9, 30))
+    tf = bs.TimeField(signal=tsig)
+    app._tk_root.update_idletasks()
+    tf.value = datetime.time(14, 45)
+    app._tk_root.update_idletasks()
+    assert tsig() == datetime.time(14, 45)
+    assert type(tsig()) is datetime.time
+
+
+@pytest.mark.parametrize("name, make", [
+    ("NumberField", lambda: bs.NumberField(textsignal=bs.Signal("0"))),
+    ("DateField", lambda: bs.DateField(textsignal=bs.Signal(""))),
+    ("TimeField", lambda: bs.TimeField(textsignal=bs.Signal(""))),
+])
+def test_typed_fields_reject_textsignal(app, name, make):
+    # A typed field binds its value via signal=; textsignal= is removed and must
+    # fail loudly (not be silently swallowed by **kwargs).
+    with pytest.raises(TypeError, match="textsignal"):
+        make()
+
+
 def test_value_signal_unsubscribes_on_destroy(app):
     # A Signal usually outlives the widgets bound to it; destroying a bound field
     # must release its subscription so the field is not pinned in memory.

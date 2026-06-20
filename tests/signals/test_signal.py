@@ -79,6 +79,39 @@ def test_set_widens_int_to_float(app):
 
 
 @pytest.mark.gui
+def test_object_signal_round_trips_date(app):
+    # #227: an object value (date/time/etc.) used to fall into a StringVar and
+    # read back its string form. It must round-trip the Python object.
+    import datetime
+
+    d = datetime.date(2025, 1, 15)
+    s = bs.Signal(d)
+    assert s() == d
+    assert type(s()) is datetime.date          # not str
+
+    seen = []
+    s.subscribe(seen.append)
+    d2 = datetime.date(2025, 2, 20)
+    s.set(d2)
+    assert s() == d2
+    assert type(s()) is datetime.date
+    assert seen == [d2]                          # subscriber got the object
+
+    # setting an equal object is a no-op (no re-notify)
+    s.set(datetime.date(2025, 2, 20))
+    assert seen == [d2]
+
+
+@pytest.mark.gui
+def test_object_signal_rejects_wrong_type(app):
+    import datetime
+
+    s = bs.Signal(datetime.date(2025, 1, 1))
+    with pytest.raises(TypeError):
+        s.set("2025-01-01")
+
+
+@pytest.mark.gui
 def test_subscribe_immediate_fires_with_current_value(app):
     s = bs.Signal(1)
     seen = []

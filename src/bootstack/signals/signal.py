@@ -90,6 +90,11 @@ class Signal(Generic[T]):
         self._name = name or f"SIG{next(self._cnt)}"
         self._type: Type[T] = type(value)
         self._master: tk.Misc | None = master
+        # An object-typed signal (e.g. a date/time, or any custom object) has no
+        # native Tk variable that round-trips it — a StringVar would hand back the
+        # string form. In that case the cached Python value is the source of truth
+        # and the backing variable serves only as the write-trace notification bus.
+        self._object_mode = not self._is_tk_native(value)
         self._var = self._create_variable(value)
         self._trace = _SignalTrace(self._var)
         # Map fid -> callback to allow multiple subscriptions of same function
@@ -98,6 +103,17 @@ class Signal(Generic[T]):
         self._callback_index: dict[Callable[[T], Any], set[str]] = {}
         # Cache last known value for robustness when Tcl variable is torn down
         self._last: T = value
+
+    @staticmethod
+    def _is_tk_native(value: Any) -> bool:
+        """Whether a value maps to a Tk variable that round-trips it losslessly.
+
+        Booleans, ints, floats, strings, and sets each have a backing Tk
+        variable that returns the same Python type on read. Any other value
+        (a `date`, `time`, or arbitrary object) does not, so it is held as a
+        Python object instead.
+        """
+        return isinstance(value, (bool, int, float, str, set))
 
     def _create_variable(self, value: T) -> tk.Variable:
         if isinstance(value, bool):
@@ -118,6 +134,10 @@ class Signal(Generic[T]):
         Returns:
             The current typed value.
         """
+        if self._object_mode:
+            # The Python object is authoritative; the backing var only holds a
+            # string rendering used to drive write traces.
+            return self._last
         try:
             value = self._var.get()
             self._last = value  # cache last good value
@@ -165,6 +185,9 @@ class Signal(Generic[T]):
         self = cls.__new__(cls)  # bypass __init__
         self._name = name or getattr(tk_var, "_name", str(tk_var))
         self._type = py_type  # type: ignore[assignment]
+        # Wrapping an existing Tk variable: it always round-trips its own native
+        # type, so object mode never applies here.
+        self._object_mode = False
         self._var = tk_var
         self._trace = _SignalTrace(self._var)
         self._subscribers = {}
@@ -210,6 +233,18 @@ class Signal(Generic[T]):
                 raise TypeError(
                     f"Expected {self._type.__name__}, got {type(value).__name__}"
                 )
+        if self._object_mode:
+            # Reduce redundant updates by comparing the Python objects, not the
+            # var's string form. Writing the string form fires write traces, so
+            # subscribers are notified with the real object via `__call__`.
+            if self._last == value:
+                return
+            self._last = value
+            try:
+                self._var.set(str(value))
+            except tk.TclError:
+                pass
+            return
         # Reduce redundant updates if value unchanged
         try:
             current = self._var.get()

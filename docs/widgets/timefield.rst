@@ -90,14 +90,21 @@ Use ``min_time=`` and ``max_time=`` to limit which times appear in the dropdown.
 Reactive binding
 ~~~~~~~~~~~~~~~~
 
-Pass a ``Signal[str]`` via ``textsignal=`` to keep the field text in sync with
-application state.
+Pass a ``Signal`` via ``signal=`` to two-way bind the field's ``time`` value to
+application state. The signal carries the ``time`` object itself — not its text —
+so reading it back gives you a ``time``. Seed it with a ``time`` to set the
+initial value.
 
 .. code-block:: python
 
-   time_sig = bs.Signal("")
-   bs.TimeField(label="Pick a time", textsignal=time_sig)
-   bs.Label(textsignal=time_sig, accent="secondary")
+   from datetime import time
+
+   time_sig = bs.Signal(time(9, 0))
+   bs.TimeField(label="Pick a time", signal=time_sig)
+
+   # Derive a text signal for display
+   time_text = time_sig.map(lambda t: t.strftime("%I:%M %p") if t else "")
+   bs.Label(textsignal=time_text, accent="secondary")
 
 Handling changes
 ~~~~~~~~~~~~~~~~
