@@ -160,6 +160,15 @@ class TextArea(GridFrame):
         else:
             self._core.grid(row=1, column=0, sticky="nsew")
 
+        # ── Tab moves focus (not a keyboard trap) ─────────────────────────
+        # A multi-line tk.Text inserts a literal tab on <Tab> and keeps focus,
+        # which traps keyboard users in a form field. Rebind Tab/Shift-Tab to
+        # move focus like every other field. (CodeEditor keeps Tab for indent —
+        # it is a separate composite and is unaffected.)
+        self._core.text.bind("<Tab>", self._focus_next, add="+")
+        self._core.text.bind("<Shift-Tab>", self._focus_prev, add="+")
+        self._core.text.bind("<ISO_Left_Tab>", self._focus_prev, add="+")
+
         # ── message label (row 2) ─────────────────────────────────────────
         self._message_lbl = Label(self, text=message or "", font="caption",
                                   accent="secondary")
@@ -222,18 +231,38 @@ class TextArea(GridFrame):
 
     def _show_placeholder(self) -> None:
         self._showing_placeholder = True
+        was_read_only = self._core._read_only
         self._core.text.configure(state=tk.NORMAL)
         self._core.text.insert("1.0", self._placeholder_text)
         self._core.text.configure(foreground="grey")
+        # Restore read-only state — showing a placeholder must not silently make
+        # a read-only field editable.
+        if was_read_only:
+            self._core.text.configure(state=tk.DISABLED)
 
     def _hide_placeholder(self) -> None:
         self._showing_placeholder = False
+        was_read_only = self._core._read_only
+        if was_read_only:
+            self._core.text.configure(state=tk.NORMAL)
         self._core.text.delete("1.0", tk.END)
         self._core.text.configure(foreground=self._default_fg)
+        if was_read_only:
+            self._core.text.configure(state=tk.DISABLED)
 
     def _on_focus_in_placeholder(self, _event: tk.Event) -> None:
         if self._showing_placeholder:
             self._hide_placeholder()
+
+    # ── focus traversal ───────────────────────────────────────────────────
+
+    def _focus_next(self, event: tk.Event) -> str:
+        event.widget.tk_focusNext().focus_set()
+        return "break"
+
+    def _focus_prev(self, event: tk.Event) -> str:
+        event.widget.tk_focusPrev().focus_set()
+        return "break"
 
     # ── message / error area ──────────────────────────────────────────────
 

@@ -246,6 +246,32 @@ class _MultilineCore(tk.Frame):
         if was_disabled:
             self.text.configure(state=tk.DISABLED)
 
+    @property
+    def read_only(self) -> bool:
+        """Whether the text is visible but not editable."""
+        return self._read_only
+
+    @read_only.setter
+    def read_only(self, value: bool) -> None:
+        # Keep the flag and the widget state in lockstep: the value/insert
+        # setters consult `_read_only` to know whether to lift the disabled
+        # state for a programmatic write.
+        self._read_only = bool(value)
+        self.text.configure(state=tk.DISABLED if self._read_only else tk.NORMAL)
+
+    def insert(self, index: str, text: str) -> None:
+        """Insert text at `index`, applying even when read-only.
+
+        Read-only blocks *user* edits, not programmatic ones, so this lifts the
+        disabled state for the write and restores it (matching the value setter).
+        """
+        was_disabled = self._read_only
+        if was_disabled:
+            self.text.configure(state=tk.NORMAL)
+        self.text.insert(index, text)
+        if was_disabled:
+            self.text.configure(state=tk.DISABLED)
+
     def bind_signal(self, signal) -> None:
         """Bind a Signal[str] — updates the text when the signal changes."""
         if self._signal is not None:

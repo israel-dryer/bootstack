@@ -4,6 +4,12 @@ TextArea
 A multi-line text input with optional label, placeholder, scrollbars, and
 undo/redo support.
 
+The content is the ``value`` (read or set it directly, or bind a ``Signal`` with
+``textsignal=``). Listen as the user types with ``on_input``, or once they leave
+the field with ``on_change`` — that input-vs-commit choice is the main decision
+you make. Everything else (validation, undo/redo, dirty tracking) layers on top
+for richer editor-like fields.
+
 .. image:: /_static/examples/textarea-hero-light.png
    :class: bs-screenshot-light
    :alt: TextArea — light theme
@@ -127,6 +133,29 @@ commit-on-blur behaviour (fires when the user leaves the field).
    # As a debounced Stream
    ta.on_input().debounce(500).listen(lambda e: autosave(ta.value))
 
+.. note::
+
+   ``on_input`` fires on every edit (it runs often — keep the handler cheap or
+   ``debounce`` it); ``on_change`` fires once on blur. See
+   :doc:`/reference/events` for the full event model.
+
+Validation
+~~~~~~~~~~
+
+Mark the field ``required``, cap its length with ``max_length``, or attach rules
+with ``add_validation_rule()``; ``validate()`` runs them and the error shows
+below the field. Listen with ``on_valid`` / ``on_invalid``.
+
+.. code-block:: python
+
+   ta = bs.TextArea(label="Bio", required=True, max_length=200)
+   ta.add_validation_rule("stringLength", min=20, message="At least 20 characters.")
+
+   ta.on_invalid(lambda e: print("invalid:", e))
+   ta.validate()
+
+See :doc:`/reference/validation` for the full rule set and the typed-value model.
+
 Undo and redo
 ~~~~~~~~~~~~~
 
@@ -152,6 +181,16 @@ Use it to show unsaved-change indicators.
 
    # After saving
    ta.mark_saved()
+
+Keyboard
+~~~~~~~~
+
+- **Tab / Shift+Tab** — move focus to the next/previous widget. A TextArea is a
+  form field, so Tab leaves it rather than inserting a tab character (use
+  :doc:`codeeditor` when you want Tab to indent).
+- **Ctrl+Z / Ctrl+Y** — undo / redo the last edit.
+- Standard text editing and selection (arrows, Home/End, Shift+arrows) apply
+  within the field.
 
 Widget sizing
 ~~~~~~~~~~~~~
