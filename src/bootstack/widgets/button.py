@@ -128,11 +128,8 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
     @property
     def text(self) -> str:
         """The button's text."""
-        # Read through the bound variable when present: with a textsignal/
-        # textvariable, ttk's `text` option no longer tracks the displayed text.
-        textvar = getattr(self._internal, "_textvariable", None)
-        if textvar is not None:
-            return str(textvar.get())
+        # cget('text') reliably reflects a bound textvariable too (ttk keeps the
+        # option synced from the variable), so this is the live value either way.
         return str(self._internal.cget("text"))
 
     @text.setter
