@@ -11,6 +11,13 @@ Masked text input for password entry with an optional visibility toggle.
    :class: bs-screenshot-dark
    :alt: PasswordField demo — dark theme
 
+A password field is a single-line text input that masks what the user types.
+Read or set the secret through ``field.value`` — always the unmasked string — or
+bind it with ``textsignal=``. Users can briefly reveal the input by holding the
+eye toggle, and you can drive masking from code with ``reveal()`` / ``hide()``.
+Validation runs against the typed value, exactly like a plain
+:doc:`text field <textfield>`.
+
 Usage
 -----
 
@@ -154,6 +161,21 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
    :class: bs-screenshot-dark
    :alt: PasswordField validation — dark theme
 
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error to a label and it keeps itself in sync, or gate the submit button off
+``field.valid``:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy (``stringLength``, ``pattern``, ``custom``, …) and
+   aggregating a whole form's validity live in the
+   :doc:`Validation </reference/validation>` guide.
+
 Widget sizing
 ~~~~~~~~~~~~~
 
@@ -164,6 +186,9 @@ See also
 
 * :doc:`textfield` — plain text input
 * :doc:`numberfield` — numeric input with optional range constraints
+* :doc:`Validation </reference/validation>` — the full rule set and form-level validity
+* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field, and reusable field types
+* :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``
 
 API
 ---
