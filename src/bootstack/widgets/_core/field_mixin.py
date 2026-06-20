@@ -298,6 +298,24 @@ class ValueSignalMixin:
         self.on_change(_to_signal)
         self.on_destroy(lambda _e: self._release_value_signal())
 
+    def _sync_value_set(self, value: Any) -> None:
+        """Push a programmatic `field.value = …` to the bound signal.
+
+        The `on_change`-driven sync only fires on a user commit, so a
+        programmatic value set would otherwise leave the signal stale. Call this
+        from the wrapper's `value` setter. A no-op when no signal is bound, while
+        a signal↔field sync is in flight, or for an empty value.
+        """
+        if getattr(self, "_value_signal", None) is None:
+            return
+        if getattr(self, "_value_syncing", False) or value is None:
+            return
+        self._value_syncing = True
+        try:
+            self._push_to_signal(self.value)
+        finally:
+            self._value_syncing = False
+
     def _push_to_signal(self, value: Any) -> None:
         """Write `value` to the bound signal, reconciling numeric types.
 

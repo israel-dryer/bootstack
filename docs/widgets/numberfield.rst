@@ -149,7 +149,8 @@ float-typed ``Signal(0.0)`` when the field accepts decimals.
    qty.set(5)            # updates the field
    field.value          # 5  (a number, never a string)
 
-``textsignal=`` binds the raw display text instead — niche; prefer ``signal``.
+A number field binds its numeric value, so ``signal=`` is the only binding it
+takes — pass a number-typed ``Signal``, never a string.
 
 Validation
 ~~~~~~~~~~

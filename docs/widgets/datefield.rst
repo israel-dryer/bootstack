@@ -106,14 +106,21 @@ the picker opens):
 Reactive binding
 ~~~~~~~~~~~~~~~~
 
-Pass a ``Signal[str]`` via ``textsignal=`` to keep the field text in sync with
-application state.
+Pass a ``Signal`` via ``signal=`` to two-way bind the field's ``date`` value to
+application state. The signal carries the ``date`` object itself — not its text —
+so reading it back gives you a ``date``. Seed it with a ``date`` to set the
+initial value.
 
 .. code-block:: python
 
-   date_sig = bs.Signal("")
-   bs.DateField(label="Pick a date", textsignal=date_sig)
-   bs.Label(textsignal=date_sig, accent="secondary")
+   from datetime import date
+
+   date_sig = bs.Signal(date.today())
+   bs.DateField(label="Pick a date", signal=date_sig)
+
+   # Derive a text signal for display
+   date_text = date_sig.map(lambda d: d.strftime("%B %d, %Y") if d else "")
+   bs.Label(textsignal=date_text, accent="secondary")
 
 Handling changes
 ~~~~~~~~~~~~~~~~

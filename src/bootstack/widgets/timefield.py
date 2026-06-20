@@ -50,8 +50,6 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         signal: Reactive `Signal` two-way bound to the field's `time` value (not
             its text). When given, it seeds the initial value. This is the usual
             way to bind a time field.
-        textsignal: Reactive `Signal[str]` bound to the field text. The
-            field value and signal stay in sync automatically.
         required: If `True`, field cannot be left empty.
         disabled: If `True`, field is non-interactive.
         read_only: If `True`, free-text entry is blocked; user must pick
@@ -78,7 +76,6 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
         max_time: datetime.time | str | None = None,
         label: str | None = None,
         message: str | None = None,
-        textsignal: "Signal[str] | None" = None,
         required: bool = False,
         disabled: bool = False,
         read_only: bool = False,
@@ -90,6 +87,12 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     ) -> None:
         self._parent = self._resolve_parent(parent)
         layout_kw = self._split_layout_kwargs(kwargs)
+        if "textsignal" in kwargs:
+            raise TypeError(
+                "TimeField does not accept 'textsignal=' — a time field binds its "
+                "time value. Use signal= with a time-typed Signal "
+                "(e.g. Signal(time(9, 0)))."
+            )
         tk_master = self._parent._child_master() if self._parent else None
 
         internal_kwargs: dict[str, Any] = {
@@ -106,8 +109,6 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
             internal_kwargs["label"] = label
         if message is not None:
             internal_kwargs["message"] = message
-        if textsignal is not None:
-            internal_kwargs["textsignal"] = textsignal
         if required:
             internal_kwargs["required"] = True
         if disabled:
@@ -175,6 +176,7 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
     @value.setter
     def value(self, v: "datetime.time | str | None") -> None:
         self._internal.value = v
+        self._sync_value_set(self._internal.value)
 
     @property
     def disabled(self) -> bool:

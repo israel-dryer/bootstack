@@ -40,11 +40,12 @@ with bs.App(title="TimeField Demo", padding=20, gap=16) as app:
         interval=30,
     )
 
-    # Reactive binding
+    # Reactive binding — the signal carries the time object
     bs.Label("Reactive Binding", font="heading-sm")
-    time_sig = bs.Signal("")
-    bs.TimeField(label="Pick a time", textsignal=time_sig)
-    bs.Label(textsignal=time_sig, accent="secondary")
+    time_sig = bs.Signal(now)
+    bs.TimeField(label="Pick a time", signal=time_sig)
+    time_text = time_sig.map(lambda t: t.strftime("%I:%M %p") if t else "")
+    bs.Label(textsignal=time_text, accent="secondary")
 
     # States
     bs.Label("States", font="heading-sm")
