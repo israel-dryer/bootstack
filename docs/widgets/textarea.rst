@@ -160,7 +160,8 @@ Undo and redo
 ~~~~~~~~~~~~~
 
 TextArea maintains a built-in undo/redo stack. Call ``undo()`` and ``redo()``
-programmatically, or let the user use Ctrl+Z / Ctrl+Y.
+programmatically, or let the user use the platform's standard undo/redo
+shortcuts (Ctrl+Z / Ctrl+Y on Windows and Linux, ⌘Z / ⌘⇧Z on macOS).
 
 .. code-block:: python
 
@@ -188,7 +189,8 @@ Keyboard
 - **Tab / Shift+Tab** — move focus to the next/previous widget. A TextArea is a
   form field, so Tab leaves it rather than inserting a tab character (use
   :doc:`codeeditor` when you want Tab to indent).
-- **Ctrl+Z / Ctrl+Y** — undo / redo the last edit.
+- **Undo / redo** — the platform's standard shortcuts (Ctrl+Z / Ctrl+Y on
+  Windows and Linux, ⌘Z / ⌘⇧Z on macOS).
 - Standard text editing and selection (arrows, Home/End, Shift+arrows) apply
   within the field.
 

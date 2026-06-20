@@ -118,9 +118,14 @@ class _MultilineCore(tk.Frame):
         if read_only:
             self.text.configure(state=tk.DISABLED)
 
-        # Keyboard undo/redo (Ctrl+Z / Ctrl+Shift+Z)
-        self.text.bind("<Control-z>", lambda e: (self._undo_manager.undo(), "break")[1], add="+")
-        self.text.bind("<Control-Z>", lambda e: (self._undo_manager.redo(), "break")[1], add="+")
+        # Keyboard undo/redo: drive our UndoManager from Tk's platform-aware
+        # <<Undo>>/<<Redo>> virtual events rather than hardcoding keys, so the
+        # native per-OS shortcut applies (Ctrl+Z / Ctrl+Y on Windows & Linux,
+        # Cmd+Z / Cmd+Shift+Z on macOS). undo=False means Tk's own handlers for
+        # these events no-op; the widget-level binding runs first and "break"
+        # suppresses the (empty) class handler.
+        self.text.bind("<<Undo>>", lambda e: (self._undo_manager.undo(), "break")[1], add="+")
+        self.text.bind("<<Redo>>", lambda e: (self._undo_manager.redo(), "break")[1], add="+")
 
         # <<Modified>> still fires from Tk's edit_modified flag (independent
         # of the undo stack) — enrich with is_dirty payload.
