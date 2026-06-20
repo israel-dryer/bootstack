@@ -33,7 +33,7 @@ def validation():
     with bs.App(title="TextField — Validation", minsize=(720, 1), padding=20) as app:
         field = bs.TextField(label="Username", value="ab", horizontal="stretch")
         field.add_validation_rule("stringLength", message="Must be at least 3 characters.", min=3, trigger="blur")
-        app.tk.after(500, lambda: field.validate("blur"))
+        app.tk.after(500, field.validate)
 
     app.run()
 
