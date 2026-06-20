@@ -255,6 +255,36 @@ comprehension first if you want *every* field to display its error at once:
    if all(results):
        save(...)
 
+A :class:`Form <bootstack.Form>` aggregates this for you. ``form.valid`` is a
+reactive ``Signal[bool]`` AND-ed over its fields' own ``valid`` signals, so a
+submit button can react to it directly — no manual list to keep in sync:
+
+.. code-block:: python
+
+   form = bs.Form(items=[
+       {"key": "email", "required": True},
+       {"key": "password", "dtype": "password", "required": True},
+   ])
+   submit = bs.Button("Create account", on_click=on_submit)
+
+   def gate(ok):
+       submit.disabled = not ok
+
+   form.valid.subscribe(gate)
+
+A field is valid until proven otherwise, so ``form.valid()`` reads ``True`` before
+any rule has run — call ``form.validate()`` to force a full pass (for example, to
+gate the button's initial state, or in ``on_submit``). ``form.errors`` is a live
+dict of the failing fields keyed by field key, handy for a summary:
+
+.. code-block:: python
+
+   def on_submit():
+       if not form.validate():
+           toast(f"{len(form.errors)} field(s) need attention")
+           return
+       save(form.value)
+
 Standalone rules
 ----------------
 
