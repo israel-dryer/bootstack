@@ -12,6 +12,14 @@ of values or a numeric range.
    :class: bs-screenshot-dark
    :alt: SpinnerField — dark theme
 
+A spinner steps through a fixed set of values with up/down buttons (or the arrow
+keys), in one of two modes: pass ``options=`` to cycle a list of strings, or
+``min_value`` / ``max_value`` / ``step`` for a numeric range — not both.
+``field.value`` is the current string (text mode) or number (numeric mode), and
+``textsignal=`` binds the displayed text. For free numeric entry without a fixed
+step reach for :doc:`NumberField <numberfield>`; for a long list,
+:doc:`Select <select>`.
+
 Usage
 -----
 
@@ -157,6 +165,40 @@ button click, keyboard arrow key, or direct text entry.
    # As a Stream (composable)
    sf.on_change().listen(handle_change)
 
+Validation
+~~~~~~~~~~
+
+A spinner constrains its own values — the list, or the numeric range — so
+validation is usually just ``required`` for a mandatory choice. Attach rules with
+``add_validation_rule()``; they run against the field's text value.
+
+.. code-block:: python
+
+   field = bs.SpinnerField(label="Size", options=["S", "M", "L"], required=True)
+
+Validity is reactive state — ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (``""`` when valid). Bind the error to a label
+to surface it:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy and aggregating a whole form's validity live in the
+   :doc:`Validation </reference/validation>` guide.
+
+Keyboard
+~~~~~~~~
+
+- **Up / Down** — step to the next or previous value (the same as the spin
+  buttons).
+- **Mouse wheel** — step while the field is focused.
+
+Stepping stops at the first and last value, or wraps around when ``wrap=True``.
+It does nothing while the field is read-only or disabled.
+
 Widget sizing
 ~~~~~~~~~~~~~
 
@@ -167,6 +209,8 @@ See also
 
 * :doc:`numberfield` — numeric-only input with stepper buttons
 * :doc:`select` — dropdown picker for longer lists
+* :doc:`Validation </reference/validation>` — the full rule set and form-level validity
+* :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``
 
 API
 ---
