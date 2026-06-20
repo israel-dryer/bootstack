@@ -90,8 +90,15 @@ class NumberEntryPart(TextEntryPart):
             **kwargs
         )
 
-        # Apply bounds to initial value
-        if self._value is not None:
+        # Apply bounds to the initial value. An empty/blank field has no numeric
+        # value — it arrives here as '' (a number field with no format stores its
+        # text verbatim) — so normalize it to None and skip bounds, mirroring how
+        # clear()/commit represent an empty field. (Without this, float('') raises
+        # at construction for NumberField(value=None) or value="".)
+        if self._value is None or self._value == "":
+            self._value = None
+            self._prev_changed_value = None
+        else:
             self._value = self._apply_bounds(float(self._value))
             if self._num_type is int:
                 self._value = int(round(self._value))
