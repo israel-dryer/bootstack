@@ -195,10 +195,16 @@ no second object-taking door.
    `field.valid`/`field.error` expose them; the message label is bound to the
    error signal (imperative `_show_error`/`_clear_error` gone); `Form.validate()`
    now routes through the entry's validator (typed value + signal update).
-   **Deferred to 3b:** a reactive `Form.valid`/`Form.errors` *computed* aggregate
-   over the field signals, and the stream-based trigger mechanism (the current
-   `_setup_validation_binds`/`after()` debounce works and is not Tk-coupled, so
-   rewriting it as streams is internal churn — done only if it earns its risk).
+   **3b part 1 DONE (#217):** reactive `Form.valid` (a `Signal[bool]` AND-ed over
+   the member fields' `valid` signals, recomputed by subscribing to each field's
+   `_valid_signal`) + `Form.errors` (a live `dict[str, str]` read from the fields'
+   `error` signals). Lives on the internal `Form` composite, surfaced on the
+   public `Form`; a submit button binds `form.valid` directly. **3b part 2
+   DEFERRED (not done):** the stream-based trigger mechanism. Re-evaluated under
+   the issue's own bar ("only if it earns its keep") — the current
+   `_setup_validation_binds`/`after()` debounce works, is NOT Tk-`validatecommand`-
+   coupled, and a rewrite onto `on_input().map(parse).debounce(ms)` is pure
+   internal churn with real regression risk and no user-facing change. Left as-is.
 4. **Docs + tests** — per-widget validation sections; validation topic-guide
    rewrite; headless rule tests + GUI delivery tests (one App per process, #150).
 

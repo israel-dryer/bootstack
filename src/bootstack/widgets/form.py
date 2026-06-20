@@ -11,6 +11,7 @@ from bootstack.widgets._core.base import PublicWidgetBase
 from bootstack.widgets._core.events import register_widget_events
 from bootstack.streams import Stream
 from bootstack.events import Subscription
+from bootstack.signals import Signal
 from bootstack.widgets.types import AccentToken
 
 if TYPE_CHECKING:
@@ -110,6 +111,36 @@ class Form(PublicWidgetBase):
     def validate(self) -> bool:
         """Run validation rules; returns True if all fields pass."""
         return self._internal.validate()
+
+    @property
+    def valid(self) -> Signal:
+        """Reactive `Signal[bool]` — `True` when every field passes validation.
+
+        AND-ed over the fields' own `valid` signals and recomputed whenever any
+        field's validity changes, so a submit button can react to it directly::
+
+            form = bs.Form(items=[...])
+            submit = bs.Button("Save", on_click=save)
+
+            def gate(ok):
+                submit.disabled = not ok
+
+            form.valid.subscribe(gate)
+
+        A field is valid until proven otherwise, so this reads `True` before any
+        rule has run — call `validate()` to force a full pass (for example, to
+        gate the submit button's initial state).
+        """
+        return self._internal.valid
+
+    @property
+    def errors(self) -> dict[str, str]:
+        """Current validation errors keyed by field key; empty when all valid.
+
+        Read live from the fields' `error` signals, so it always reflects the
+        latest validation run.
+        """
+        return self._internal.errors
 
     # ----- Field access -----
 

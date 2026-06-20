@@ -8,6 +8,7 @@ from tkinter import BooleanVar, DoubleVar, IntVar, StringVar, Text, Variable
 from typing import Any, Callable, Iterable, Literal, Mapping, Sequence, TYPE_CHECKING
 
 from bootstack.constants import DEFAULT_MIN_COL_WIDTH
+from bootstack.signals import Signal
 from bootstack.widgets._impl.primitives.button import Button
 from bootstack.widgets._impl.primitives.checkbutton import CheckButton
 from bootstack.widgets._impl.primitives.switch import Switch
@@ -264,10 +265,66 @@ class Form(Frame):
             footer.columnconfigure(0, weight=1)
             self._build_buttons(footer, buttons)
 
+        # Reactive form-level validity aggregate. AND of the member fields'
+        # `valid` signals; recomputed whenever any field's validity changes.
+        self._valid_signal: Signal = Signal(True)
+        self._validity_entries: list[Any] = []
+        self._register_validity_aggregate()
+
     @property
     def data(self) -> dict[str, Any]:
         """Current data backing the form."""
         return dict(self._collect_data())
+
+    @property
+    def valid(self) -> Signal:
+        """Reactive `Signal[bool]` — True when every field passes validation.
+
+        AND-ed over the member fields' reactive `valid` signals and recomputed
+        whenever any field's validity changes (a blur, a key for key-triggered
+        rules, or a manual validate). A field is valid until proven otherwise,
+        so this reads `True` before any rule has run — call `validate()` to force
+        a full pass (for example, to gate a submit button's initial state).
+        """
+        return self._valid_signal
+
+    @property
+    def errors(self) -> dict[str, str]:
+        """Current validation errors keyed by field key; empty when all valid.
+
+        Read live from the fields' reactive `error` signals, so it always
+        reflects the latest validation run.
+        """
+        out: dict[str, str] = {}
+        for key, widget in self._widgets.items():
+            entry = self._validity_entry(widget)
+            if entry is not None and not entry._valid_signal():
+                out[key] = entry._error_signal()
+        return out
+
+    @staticmethod
+    def _validity_entry(widget: Any) -> Any | None:
+        """Return a field's validation-bearing entry, or None if it has none."""
+        if not isinstance(widget, Field):
+            return None
+        entry = getattr(widget, "_entry", None)
+        if entry is not None and hasattr(entry, "_valid_signal"):
+            return entry
+        return None
+
+    def _register_validity_aggregate(self) -> None:
+        """Subscribe each field's validity signal into the form `valid` aggregate."""
+        for widget in self._widgets.values():
+            entry = self._validity_entry(widget)
+            if entry is not None:
+                self._validity_entries.append(entry)
+                entry._valid_signal.subscribe(lambda *_: self._recompute_validity())
+        self._recompute_validity()
+
+    def _recompute_validity(self) -> None:
+        """Recompute the form `valid` aggregate from its fields' signals."""
+        # Signal.set dedupes unchanged values, so this won't re-notify needlessly.
+        self._valid_signal.set(all(e._valid_signal() for e in self._validity_entries))
 
     def validate(self) -> bool:
         """Run validation rules on all field widgets; returns True if all pass."""
