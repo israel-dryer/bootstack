@@ -4,6 +4,13 @@ ButtonGroup
 A row (or column) of visually-connected buttons sharing a common accent and
 variant. Buttons are added one at a time via ``add()``.
 
+Think of a ButtonGroup as a set of related *actions* with one shared style and
+one shared click handler: each button carries a ``key``, and ``on_click()`` on
+the group reports which key was pressed — so you handle the whole cluster in one
+place instead of wiring each button separately. Reach for :doc:`togglegroup`
+instead when the buttons represent a *selection* to remember rather than actions
+to fire.
+
 .. image:: /_static/examples/buttongroup-hero-light.png
    :class: bs-screenshot-light
    :alt: ButtonGroup — light theme
@@ -191,32 +198,43 @@ once. Toggle the ``disabled`` property at runtime to re-enable.
    :class: bs-screenshot-dark
    :alt: ButtonGroup disabled — dark theme
 
-Handling clicks
-~~~~~~~~~~~~~~~
+Events
+~~~~~~
 
-Use ``on_click()`` on the group to handle any button press in one place.
-The handler receives a :class:`ButtonGroupClickEvent
-<bootstack.events.ButtonGroupClickEvent>` with ``key``, ``text``, and ``icon``
-for the clicked button.
+Use ``on_click()`` on the group to handle any button press in one place — the
+handler receives a :class:`ButtonGroupClickEvent
+<bootstack.events.ButtonGroupClickEvent>` with the ``key``, ``text``, and
+``icon`` of the button that fired. A disabled button never fires.
 
 .. code-block:: python
 
    bg = bs.ButtonGroup(accent="primary")
    bg.add("Save",   icon="save",  key="save")
-   bg.add("Cancel", icon="x-lg", key="cancel")
+   bg.add("Cancel", icon="x-lg",  key="cancel")
    bg.add("Delete", icon="trash", key="delete")
 
    def handle_click(e):
        print(e.key, e.text, e.icon)
 
-   bg.on_click(handle_click)
-
-   # As a subscription (cancellable)
+   # Subscription (cancellable)
    sub = bg.on_click(handle_click)
    sub.cancel()
 
-   # As a Stream (composable)
-   bg.on_click().listen(handle_click)
+   # Stream (composable) — e.g. only the "delete" key
+   bg.on_click().filter(lambda e: e.key == "delete").listen(handle_click)
+
+.. note::
+
+   See :doc:`/tasks/handling-actions` for routing actions across a screen and
+   :doc:`/reference/events` for the event model behind ``on_click``.
+
+Keyboard
+~~~~~~~~
+
+- **Tab / Shift+Tab** — move focus between the buttons in the group (disabled
+  buttons are skipped).
+- **Space / Return** — activate the focused button, firing ``on_click`` exactly
+  as a mouse click does.
 
 Managing items
 ~~~~~~~~~~~~~~

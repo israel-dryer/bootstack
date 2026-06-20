@@ -366,6 +366,6 @@ class ButtonGroup(Frame):
         for widget in self._widgets.values():
             try:
                 widget.configure(state=value)
-            except:
+            except Exception:
                 # Widget doesn't support state configuration
                 pass
