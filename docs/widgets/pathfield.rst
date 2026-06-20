@@ -42,6 +42,16 @@ clicked. The default is ``'open'``.
    bs.PathField(mode="save")           # save-file dialog
    bs.PathField(mode="directory")      # directory picker
 
+``mode`` and the other dialog options (``dialog_title``, ``start_dir``,
+``file_filters``, ``default_extension``, ``default_filename``) are also live
+properties — assign to them to reconfigure the picker after construction:
+
+.. code-block:: python
+
+   pf = bs.PathField(mode="open")
+   pf.mode = "save"                 # switch the dialog the button opens
+   pf.start_dir = last_used_folder  # open where the user last browsed
+
 File filters
 ~~~~~~~~~~~~
 
