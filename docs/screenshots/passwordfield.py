@@ -47,7 +47,7 @@ def validation():
             min=8,
             trigger="blur",
         )
-        app.tk.after(500, lambda: field.validate("blur"))
+        app.tk.after(500, field.validate)
 
     app.run()
 
