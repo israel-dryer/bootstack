@@ -79,11 +79,16 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         if icon is not None and not text:
             icon_only = True
 
-        internal_kwargs: dict[str, Any] = {"text": text}
+        # The internal command is always our dispatcher so that a click —
+        # whether by mouse, keyboard (Space/Return), or click()/invoke() — runs
+        # the on_click= callback AND emits <<Click>> for on_click() subscribers,
+        # consistently and only when the button is enabled (ttk gates the
+        # command on state, unlike a raw <Button-1> binding).
+        self._on_click_cmd = on_click
+
+        internal_kwargs: dict[str, Any] = {"text": text, "command": self._dispatch_click}
         if not icon_only:
             internal_kwargs["compound"] = icon_position
-        if on_click is not None:
-            internal_kwargs["command"] = on_click
         if accent is not None:
             internal_kwargs["accent"] = accent
         if variant is not None:
@@ -123,16 +128,28 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
     @property
     def text(self) -> str:
         """The button's text."""
+        # Read through the bound variable when present: with a textsignal/
+        # textvariable, ttk's `text` option no longer tracks the displayed text.
+        textvar = getattr(self._internal, "_textvariable", None)
+        if textvar is not None:
+            return str(textvar.get())
         return str(self._internal.cget("text"))
 
     @text.setter
     def text(self, value: str) -> None:
-        self._internal.configure(text=value)
+        # When a textsignal/textvariable owns the text, ttk ignores the `text`
+        # option — write through the variable instead (which also keeps the
+        # bound signal in sync). Falls back to the option when unbound.
+        textvar = getattr(self._internal, "_textvariable", None)
+        if textvar is not None:
+            textvar.set(value)
+        else:
+            self._internal.configure(text=value)
 
     @property
     def disabled(self) -> bool:
         """Whether the button is non-interactive."""
-        return str(self._internal.cget("state")) == "disabled"
+        return self._internal.instate(("disabled",))
 
     @disabled.setter
     def disabled(self, value: bool) -> None:
@@ -141,8 +158,26 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
     # ----- Methods -----
 
     def click(self) -> None:
-        """Programmatically invoke the button's command."""
+        """Programmatically activate the button.
+
+        Runs the same path as a real click: the `on_click=` callback and any
+        `on_click()` handlers both fire. Does nothing while the button is
+        disabled.
+        """
         self._internal.invoke()
+
+    def _dispatch_click(self) -> None:
+        """ttk command target — runs on every activation, never while disabled.
+
+        Fires on mouse release over the button, keyboard Space/Return, and
+        `click()`/`invoke()`. Runs the constructor `on_click=` callback, then
+        emits `<<Click>>` so `on_click()` subscribers see the same activation.
+        """
+        if self._on_click_cmd is not None:
+            self._on_click_cmd()
+        # `when='now'` delivers to subscribers synchronously, so a click()/invoke()
+        # notifies handlers before it returns (matches the on_click= callback).
+        self._internal.event_generate("<<Click>>", when="now")
 
     # ----- Events -----
 
@@ -156,14 +191,17 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         Called with no handler, returns a composable `Stream`. Called with a
         handler, binds it immediately and returns a `Subscription`.
 
-        For a simple click action prefer the `on_click=` constructor argument,
-        which takes a no-argument callback. This method's handler receives the
-        curated `Event` (pointer position, modifier keys), consistent with every
-        other `on_*` shorthand.
+        Fires on activation — a mouse release over the button, a keyboard
+        Space/Return while focused, or :meth:`click`/`invoke` — and never while
+        the button is disabled, matching the `on_click=` constructor argument.
+        For a simple no-argument action prefer that constructor argument; use
+        this method (or its `Stream`) to compose the click event.
 
         Args:
-            handler: Called with the click :class:`~bootstack.events.Event`
-                (pointer position, modifier keys). Omit to get a composable
+            handler: Called with the click :class:`~bootstack.events.Event`.
+                The event marks the activation; because keyboard and
+                programmatic activations carry no pointer, treat position and
+                modifier fields as unset. Omit the handler to get a composable
                 :class:`~bootstack.streams.Stream`.
 
         Returns:
@@ -173,4 +211,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
         return self.on("click", handler)
 
 
-register_widget_events(Button, {})
+# "click" resolves to the <<Click>> virtual event emitted by the command
+# dispatcher (see _dispatch_click) rather than the global <Button-1> mapping, so
+# both the handler and Stream forms fire on activation and honor disabled state.
+register_widget_events(Button, {"click": "<<Click>>"})

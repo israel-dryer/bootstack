@@ -4,6 +4,11 @@ Button
 A clickable action trigger. Accepts the button text as the first positional
 argument.
 
+A button does one thing: it runs an action when activated. Wire that action with
+``on_click=`` and shape the rest with two independent knobs — ``accent=`` for
+*intent* (the semantic color) and ``variant=`` for *weight* (how much it stands
+out). Everything else on the page is a refinement of those three ideas.
+
 .. image:: /_static/examples/button-hero-light.png
    :class: bs-screenshot-light
    :alt: Button — light theme
@@ -204,35 +209,75 @@ automatically.
 Custom image
 ~~~~~~~~~~~~
 
-Besides Bootstrap Icon names, ``image=`` accepts an image handle for custom
-artwork (logos, embedded resources). The public image-handle API is being
-finalized for an upcoming release; until then, prefer icon names for button
-artwork.
-
-Handling clicks
-~~~~~~~~~~~~~~~
-
-Pass a callable to ``on_click=`` at construction, or call ``.on_click()``
-afterwards. The callback receives no arguments.
+For artwork beyond the Bootstrap Icons set — a logo, an embedded resource —
+pass an :class:`Image <bootstack.images.Image>` handle to ``image=``. Reach for
+``icon=`` for standard glyphs and ``image=`` for custom pictures.
 
 .. code-block:: python
 
-   # At construction
+   from bootstack.images import Image
+
+   bs.Button("Open", image=Image.open("logo.png"))
+
+The handle is also a live property — assigning ``button.image`` swaps the
+picture in place. See :doc:`/widgets/picture` and the
+:class:`Image <bootstack.images.Image>` reference for the full image API.
+
+Events
+~~~~~~
+
+A button fires on **activation** — a mouse release over it, ``Space``/``Return``
+while it has keyboard focus, or a programmatic :meth:`click`. A disabled button
+never fires on any of those paths. The simplest form is the ``on_click=``
+constructor callback, which takes **no arguments**:
+
+.. code-block:: python
+
    bs.Button("Save",   accent="primary", on_click=handle_save)
    bs.Button("Cancel", on_click=lambda: print("Cancelled"))
 
-   # As a subscription (cancellable)
+Use the ``on_click()`` method when you need a cancellable subscription or want to
+compose the event as a :class:`~bootstack.streams.Stream`. Its handler receives
+the activation :class:`~bootstack.events.Event`:
+
+.. code-block:: python
+
+   # Cancellable subscription
    btn = bs.Button("Save", accent="primary")
-   sub = btn.on_click(handle_save)
+   sub = btn.on_click(lambda event: handle_save())
    sub.cancel()  # unsubscribe
 
-   # As a Stream (composable)
-   btn.on_click().debounce(300).listen(lambda: handle_save())
+   # Composable Stream — e.g. ignore rapid double-clicks
+   btn.on_click().debounce(300).listen(lambda event: handle_save())
+
+.. note::
+
+   Because keyboard and programmatic activations carry no pointer, treat the
+   event's position and modifier fields as unset — use ``on_click=`` (or ignore
+   the argument) unless you specifically need a mouse-only gesture. See
+   :doc:`/tasks/handling-actions` for wiring actions across widgets and
+   :doc:`/reference/events` for the full event model.
+
+Keyboard
+~~~~~~~~
+
+- **Tab / Shift+Tab** — move focus to or from the button.
+- **Space / Return** — activate the focused button, firing the click exactly as a
+  mouse release does. A disabled button is skipped in the focus order.
 
 Widget sizing
 ~~~~~~~~~~~~~
 
 .. include:: ../shared/widget-sizing.rst
+
+See also
+--------
+
+* :doc:`menubutton` — a button that opens a menu of actions
+* :doc:`buttongroup` — a row of related buttons sharing one style
+* :doc:`togglebutton` — a button that holds an on/off state
+* :doc:`/tasks/handling-actions` — wiring actions and shortcuts across widgets
+* :doc:`/reference/events` — the event model behind ``on_click``
 
 API
 ---
