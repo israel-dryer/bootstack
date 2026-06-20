@@ -13,6 +13,12 @@ updated and a ``change`` event fires.
    :class: bs-screenshot-dark
    :alt: PathField — dark theme
 
+A path field is a text input with a browse button. ``field.value`` is the
+selected path as a string — the user types it or picks it from a native dialog,
+and ``mode`` chooses which dialog opens (open a file, open many, save, or pick a
+directory). ``on_change`` fires after a pick or a manual edit; in
+``'open_multiple'`` mode the raw tuple of paths is on ``field.dialog_result``.
+
 Usage
 -----
 
@@ -135,6 +141,46 @@ text portion directly and leaves the field.
 For ``'open_multiple'`` mode, the raw tuple of paths is available on
 ``pf.dialog_result`` after the dialog closes.
 
+Validation
+~~~~~~~~~~
+
+A path field validates like any text field — rules run against the path
+**string**. Attach them with ``add_validation_rule()`` (for example a ``custom``
+rule that checks the extension, or ``required`` for a mandatory path):
+
+.. code-block:: python
+
+   field = bs.PathField(label="Data file")
+   field.add_validation_rule(
+       "custom",
+       func=lambda path: bool(path) and path.endswith(".csv"),
+       message="Choose a .csv file.",
+       trigger="blur",
+   )
+
+   is_valid = field.validate()   # run every rule on demand
+
+.. image:: /_static/examples/pathfield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: PathField validation — light theme
+
+.. image:: /_static/examples/pathfield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: PathField validation — dark theme
+
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error straight to a label and it keeps itself in sync:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy and aggregating a whole form's validity live in the
+   :doc:`Validation </reference/validation>` guide.
+
 Widget sizing
 ~~~~~~~~~~~~~
 
@@ -145,6 +191,9 @@ See also
 
 * :doc:`textfield` — plain single-line text input
 * :doc:`numberfield` — numeric-only input with stepper
+* :doc:`Validation </reference/validation>` — the full rule set and form-level validity
+* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field
+* :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``
 
 API
 ---
