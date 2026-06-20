@@ -16,6 +16,7 @@ from bootstack.widgets._impl.primitives.checkbutton import CheckButton
 from bootstack.widgets._impl.primitives.checktoggle import CheckToggle
 from bootstack.widgets._impl.mixins import configure_delegate
 from bootstack.widgets._impl.mixins.entry_mixin import EntryMixin
+from bootstack._runtime.utility import scale_padding_floor
 from bootstack.widgets._impl._parts.numberentry_part import NumberEntryPart
 from bootstack.widgets._impl._parts.textentry_part import TextEntryPart
 from bootstack.widgets._impl._parts.spinnerentry_part import SpinnerEntryPart
@@ -205,7 +206,10 @@ class Field(EntryMixin, Frame):
         )
         self._message_lbl = Label(self, localize=self._localize, text=message or '', font="caption", accent="secondary")
 
-        field_padding = 5
+        # The TField frame draws the visible border via a nine-patch whose border
+        # slice scales with DPI; this gap must grow with it, or at high DPI the
+        # entry overpaints the border slice and the resting border vanishes (#90).
+        field_padding = scale_padding_floor(5)
         self._field = Frame(self, accent=self._accent, padding=field_padding, ttk_class="TField", style_options={'density': self._density})
 
         if kind == "numeric":

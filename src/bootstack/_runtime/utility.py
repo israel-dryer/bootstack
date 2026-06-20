@@ -226,6 +226,27 @@ def get_image_name(image):
     return image._PhotoImage__photo.name
 
 
+def scale_padding_floor(base: int) -> int:
+    """Scale a padding value up for DPI, never dropping below `base`.
+
+    Used for the fixed gap between a nine-patch border (whose border slice grows
+    with DPI) and the widget packed inside it. If the gap does not grow with the
+    border, at high DPI the inner widget overpaints the now-thicker border slice
+    and the resting border disappears (#90).
+
+    Rounds rather than truncates so intermediate scales (e.g. 1.5x) do not lose a
+    pixel and clip the rounded corners, and floors at `base` so low DPI keeps its
+    tuned spacing.
+
+    Args:
+        base: The baseline padding in pixels at standard DPI.
+
+    Returns:
+        The DPI-scaled padding, at least `base`.
+    """
+    return max(base, round(base * _ScalingState.get_ui_scale()))
+
+
 def scale_size(widget=None, size=None):
     """Scale the size based on the scaling factor of tkinter.
     This is used most frequently to adjust the assets for
