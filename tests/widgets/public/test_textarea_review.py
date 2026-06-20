@@ -85,3 +85,17 @@ def test_tab_moves_focus_instead_of_inserting_tab(app):
     app._tk_root.update_idletasks()
     assert ta.value == "x"  # no tab character was inserted
     assert "\t" not in ta.value
+
+
+# ----- undo/redo bound to native virtual events -----
+
+def test_undo_redo_use_native_virtual_events(app):
+    # Drive the custom UndoManager from Tk's platform-aware <<Undo>>/<<Redo>>
+    # events so the OS-native shortcut applies (Ctrl+Z / Ctrl+Y on Windows),
+    # rather than hardcoding keys.
+    ta = bs.TextArea(value="x")
+    tw = ta._internal._core.text
+    assert tw.bind("<<Undo>>")  # bound
+    assert tw.bind("<<Redo>>")  # bound
+    # The old hardcoded redo key (Ctrl+Shift+Z) is no longer bound directly.
+    assert not tw.bind("<Control-Z>")
