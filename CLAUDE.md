@@ -21,6 +21,26 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Widget-review initiative — Button · ButtonGroup · TextArea** (this session;
+  all MERGED). Began the "finish reviewing the interactive widgets" sweep
+  (audit→fix→test→docs→follow-ups, one PR each). **Button** (#243; walk-backs
+  #244): activation-based `on_click` (class map → `<<Click>>` from a command
+  dispatcher → fires on mouse/keyboard/`click()`, honors disabled, Stream-composes)
+  + `text` setter routes through the bound var; **walked back** an over-eager
+  `disabled`/`text` getter change (only broke via an internal side-hack — test
+  public paths, not pokes). **ButtonGroup** (#245): no correctness bugs (disabled
+  propagation + `on_click` verified); docs (Events/Keyboard) + bare-`except` fix;
+  `accent/variant/density/orient` kept construction-only (not runtime needs).
+  **TextArea** (#247): read-only state desync (broke programmatic `value=`/`insert`),
+  placeholder flipping read-only off, and a **Tab focus-trap** all fixed; docs got
+  Validation+Keyboard sections. Native-bindings follow-up (#248): undo/redo now use
+  Tk's `<<Undo>>`/`<<Redo>>` virtual events (platform-correct keys; CodeEditor
+  benefits too). Swept the rest for hardcoded-key reinventions — none others (custom
+  shortcuts are intentional). Memories `project_button_review`,
+  `project_widget_review_initiative`, `feedback_live_properties_runtime_need`,
+  `feedback_prefer_native_bindings_dont_undo_conventions`. Also this session:
+  **#234 SpinnerField parity** (#241, increment/decrement methods only),
+  **#222 CLOSED won't-do** (live placeholder/mask).
 - **Typed-signal round-trip + high-DPI border fix** (this session; PRs **#238** +
   **#239**, both MERGED). Two field follow-ups closed end-to-end:
   - **#227 — `Signal` now round-trips object values** (PR **#238**). `Signal` chose
@@ -326,21 +346,44 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session.** The field-family work is fully drained (reviews +
-> validation rebuild + #227 typed-signal round-trip + #90 high-DPI border, all
-> merged). Two clear directions, pick by maintainer appetite:
+> ⏭ **START HERE next session.** Active initiative: **finish reviewing the
+> interactive widgets** (audit→fix→test→docs→file-follow-ups, one PR each — the
+> same cadence as the field family). Coverage map + full state in memory
+> `project_widget_review_initiative`. Done this session: **Button** (#243 + #244
+> walk-backs), **ButtonGroup** (#245), **TextArea** (#247 + #248 native undo/redo).
 >
-> 1. **Finish the small field follow-ups** — **#222** (TextField live
->    `placeholder`/`mask` props; additive, low-risk, **ready to build, no decision
->    needed**) and a **decision on #234** (SpinnerField parity — may be won't-do).
->    See "Field-family review follow-ups" below.
-> 2. **Pivot to the 0.1.0 stable closeout** — **#149** (public-surface audit +
->    CHANGELOG; the actual ship gate), **#150** (test-harness one-App-per-process),
->    **#155** (topic-guide writer pass). See "Toward the 0.1.0 stable release".
+> **NEXT widget = CodeEditor** (most complex). Going in: **keep Tab-as-indent**
+> (intentional — do NOT apply TextArea's Tab-moves-focus fix); **check whether it
+> carries form-validation surface** (`required`/`add_validation_rule`/`on_valid`/
+> `.valid`/`.error`) that does NOT belong — CodeEditor is **not** a form field
+> (maintainer call); audit find/replace + smart-indent; apply the native-bindings
+> lens (`feedback_prefer_native_bindings_dont_undo_conventions`).
 >
-> Recommendation: knock out **#222** (quick win), make the **#234** call, then start
-> **#149**. The last remaining *feature* in the pre-ship backlog is **#192**
-> (color-swatch Select) — needs a shape/naming decision first.
+> **Remaining after CodeEditor:** ScrollView, SplitView, Tooltip, Toolbar,
+> StatusBar. (Display/layout widgets — Label/Badge/ProgressBar/Gauge/Card/GroupBox/
+> Divider/Spacer/Row/Column/Grid/ThemeToggle — need NO behavior review.)
+>
+> **Open follow-ups filed this session:** **#242** (text setter dead with bound
+> `textsignal` — family-wide, confirmed on Label) · **#246** (reactive
+> `.valid`/`.error` parity for **TextArea only**; CodeEditor excluded) · **#207**
+> (context-menu outside-dismiss vs `"break"`) **DEFERRED** with full analysis.
+> **Decisions:** **#222 CLOSED won't-do** (live placeholder/mask not a runtime
+> need); **#234 DONE** (#241, SpinnerField increment/decrement only).
+>
+> **Two standing principles reinforced** (now in memory, apply in every review):
+> live properties only for *legitimate runtime needs*
+> (`feedback_live_properties_runtime_need`); prefer Tk native/virtual-event
+> bindings and don't undo an existing convention without a clear reason
+> (`feedback_prefer_native_bindings_dont_undo_conventions`).
+>
+> **Alternative track** if pausing widget reviews: the **0.1.0 stable closeout** —
+> **#149** (public-surface audit + CHANGELOG; the ship gate), **#150** (test-harness
+> one-App-per-process), **#155** (topic-guide writer pass). Last pre-ship *feature*
+> is **#192** (color-swatch Select) — needs a shape/naming decision first.
+>
+> **Process reminders:** a fix pushed AFTER its PR merged is **stranded** — verify
+> it's actually in `main` (bit us on #243→#244). Test PUBLIC paths, not internal
+> side-hacks. Run GUI test files one-per-process (#150).
 
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
 > DRAINED (#141/#142/#151/#153/#156/#157/#158 merged; see the "0.1.0 API-freeze
