@@ -181,11 +181,13 @@ class TextArea(PublicWidgetBase):
     @property
     def read_only(self) -> bool:
         """Whether the text area is visible but not editable."""
-        return self._internal._core.text.cget("state") == "disabled"
+        return self._internal._core.read_only
 
     @read_only.setter
     def read_only(self, v: bool) -> None:
-        self._internal._core.text.configure(state="disabled" if v else "normal")
+        # Delegate to the core property so its `_read_only` flag stays in sync —
+        # the value/insert setters rely on it to apply programmatic writes.
+        self._internal._core.read_only = v
 
     @property
     def is_dirty(self) -> bool:
@@ -230,7 +232,7 @@ class TextArea(PublicWidgetBase):
             index: Target text position, e.g. `'end'` or `'1.0'`.
             text: Text to insert.
         """
-        self._internal._core.text.insert(index, text)
+        self._internal._core.insert(index, text)
 
     def select_all(self) -> None:
         """Select all text content."""
