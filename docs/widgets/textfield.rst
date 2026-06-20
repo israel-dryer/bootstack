@@ -12,6 +12,14 @@ validation, and reactive signal binding.
    :class: bs-screenshot-dark
    :alt: TextField demo — dark theme
 
+A field keeps three things distinct: the ``label`` beside it, the ``value`` you
+read and write in code, and the display ``text`` the user sees. Read the current
+input with ``field.value``, or bind a :doc:`Signal </reference/signals>` with
+``textsignal=`` to keep a variable and the field in lockstep. Input events fire in
+two beats — ``on_input`` on every keystroke, ``on_change`` once the value is
+committed (on blur or Enter) — so you choose live feedback or settled value per
+handler.
+
 Usage
 -----
 
@@ -125,6 +133,19 @@ typing, not just field exit.
    # Or as a debounced Stream
    field.on_input().debounce(300).listen(lambda e: search(field.value))
 
+Committed changes
+~~~~~~~~~~~~~~~~~
+
+``on_change()`` fires once the value is *committed* — when the field loses focus
+or the user presses Enter — not on every keystroke. Reach for it when the work
+is expensive or should run on the settled value (saving, recomputing a total).
+The handler receives a :class:`~bootstack.events.ChangeEvent` with the parsed
+``value`` and the previous one.
+
+.. code-block:: python
+
+   bs.TextField(label="Display name").on_change(lambda e: save(e.value))
+
 Submit on Enter
 ~~~~~~~~~~~~~~~
 
@@ -137,7 +158,8 @@ Validation
 ~~~~~~~~~~
 
 Attach rules with ``add_validation_rule()``. Rules run on the configured
-trigger (``'blur'``, ``'key'``, or ``'manual'``).
+trigger (``'blur'``, ``'key'``, or ``'manual'``), and validate the field's
+**typed value** — for a plain text field that is the string itself.
 
 .. code-block:: python
 
@@ -149,8 +171,7 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
        trigger="blur",
    )
 
-   # Explicit validation check
-   is_valid = field.validate()
+   is_valid = field.validate()   # run every rule on demand
 
 .. image:: /_static/examples/textfield-validation-light.png
    :class: bs-screenshot-light
@@ -160,10 +181,38 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
    :class: bs-screenshot-dark
    :alt: TextField validation — dark theme
 
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error straight to a label and it keeps itself in sync, or drive a submit
+button off ``field.valid``:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   This is the field-level slice. The rule taxonomy (text rules vs value rules),
+   the ``range`` rule, ``compare`` and ``custom`` rules, how the typed value is
+   resolved, and aggregating a whole form's validity all live in the
+   :doc:`Validation </reference/validation>` guide.
+
 Widget sizing
 ~~~~~~~~~~~~~
 
 .. include:: ../shared/widget-sizing.rst
+
+See also
+--------
+
+- :doc:`Validation </reference/validation>` — the full rule set, typed-value model,
+  and form-level validity.
+- :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a
+  field, and subclass it into a reusable type.
+- :doc:`/widgets/passwordfield` — a text field with a built-in mask and reveal toggle.
+- :doc:`/widgets/numberfield`, :doc:`/widgets/datefield` — typed siblings for numeric
+  and date input.
+- :doc:`Signals </reference/signals>` — the reactive binding behind ``textsignal=``.
 
 API
 ---
