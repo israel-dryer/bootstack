@@ -138,6 +138,33 @@ to "Snapping to steps" (`tick_step` *draws* marks vs `step` *snaps* the value);
 the min/max-labels section notes that `show_minmax` is redundant when tick labels
 are shown.
 
+### Cross-reference the how-to and topic guides
+
+A widget page is a node in a web, not an island. When a section touches a subject
+that has its **own** how-to (`/tasks/*`) or topic guide (`/reference/*`), link out
+to it with a `:doc:` role rather than re-teaching (or worse, half-teaching) the
+subject inline — the widget page shows *this widget's* slice; the guide carries
+the full model.
+
+- **Where to link:** inline at the first mention (`:doc:`/`:ref:`), or in the
+  page's **See also** list, or both. A short section on a deep subject (a widget's
+  *Validation* section, a field's *Events* section) should almost always point at
+  the subject's guide.
+- **When it's appropriate:** the section's subject is a cross-cutting subsystem
+  with a dedicated guide — validation, events, data sources, layout, theming,
+  signals, localization, navigation. If the reader's natural next question is
+  "how does *X* work in general?", there should be a link to X's guide right there.
+- **Both directions:** the guide should also reach back to representative widgets
+  (it usually does via *See also*) — but the widget→guide link is the one most
+  often missing.
+
+Motivating gap (found 2026-06-19): the form **field-items** documentation has a
+*Validation* section that never `:doc:`-links the validation topic guide
+(`/reference/validation`) — so a reader hits the field-level slice with no pointer
+to the typed-value model, rule taxonomy, `range`, or the reactive
+`field.valid`/`form.valid` surface. Fix that class of omission whenever a widget's
+validation (or events/data/layout/…) section is reviewed.
+
 ### Events sections
 
 Document the **change-vs-commit** split for interactive widgets — `on_change`
@@ -201,6 +228,7 @@ Scene workflow (full detail in `CLAUDE.md` → "Widget documentation pattern"):
 - [ ] One screenshot per visually-distinct usage section (behavioral-only → prose)
 - [ ] Events + Keyboard sections present for interactive widgets
 - [ ] Adjacent topics are `.. note::` annotations, each topic its own section
+- [ ] Sections on cross-cutting subjects (validation/events/data/layout/…) `:doc:`-link the matching how-to or topic guide
 - [ ] Examples tight + API-verified, with the relevant import on first use; they run
 - [ ] Title casing two-tier; H1 == card == sidenav
 - [ ] Clean `-W` build; single backticks; American English
