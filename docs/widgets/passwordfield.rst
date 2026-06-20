@@ -69,6 +69,10 @@ Disable it with ``show_visibility_toggle=False``.
    :class: bs-screenshot-dark
    :alt: PasswordField visibility toggle — dark theme
 
+The toggle stays usable on a **read-only** field — revealing only unmasks the
+text, it never changes the value (handy for a generated secret shown for the user
+to peek at and copy). A fully ``disabled`` field dims it along with everything else.
+
 Programmatic reveal / hide
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
