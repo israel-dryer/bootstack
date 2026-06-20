@@ -62,9 +62,22 @@ def states():
     app.run()
 
 
+def validation():
+    with bs.App(title="DateField — Validation", padding=20, minsize=(720, 1)) as app:
+        field = bs.DateField(value=date(2030, 1, 1), label="Appointment", horizontal="stretch")
+        field.add_validation_rule(
+            "range", max=TODAY,
+            message="The date can't be in the future.",
+            trigger="blur",
+        )
+        app.tk.after(500, field.validate)
+    app.run()
+
+
 SCENES = {
-    "hero":     hero,
-    "formats":  formats,
-    "range":    range_mode,
-    "states":   states,
+    "hero":       hero,
+    "formats":    formats,
+    "range":      range_mode,
+    "states":     states,
+    "validation": validation,
 }

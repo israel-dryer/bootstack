@@ -12,6 +12,13 @@ calendar picker button. Supports single-date and date-range selection modes.
    :class: bs-screenshot-dark
    :alt: DateField — dark theme
 
+A date field reads and writes a real ``date`` through
+``field.value`` — ``None`` when empty, or a ``(start, end)`` tuple in range mode —
+never a string. Users type a date or pick one from the calendar button;
+``value_format`` controls only how it is displayed. Restrict what the picker
+offers with ``min_date`` / ``max_date`` / ``disabled_dates``, and validate the
+chosen date with rules.
+
 Usage
 -----
 
@@ -117,7 +124,50 @@ input, picker selection, or ``value=`` assignment.
 .. code-block:: python
 
    df = bs.DateField(label="Appointment")
-   df.on_change(lambda e: print("Selected:", df.value))
+   df.on_change(lambda e: print("Selected:", e.value))
+
+Validation
+~~~~~~~~~~
+
+Attach rules with ``add_validation_rule()``; they validate the field's **typed
+value** — a ``date``, or ``None`` when empty. The ``range`` rule
+checks date bounds with a message. This is distinct from ``min_date`` /
+``max_date``, which restrict what the *picker* offers: a rule also catches an
+out-of-range date the user **types**, and surfaces a message.
+
+.. code-block:: python
+
+   from datetime import date
+
+   field = bs.DateField(label="Appointment")
+   field.add_validation_rule(
+       "range", max=date.today(),
+       message="The date can't be in the future.",
+       trigger="blur",
+   )
+
+   is_valid = field.validate()   # run every rule on demand
+
+.. image:: /_static/examples/datefield-validation-light.png
+   :class: bs-screenshot-light
+   :alt: DateField validation — light theme
+
+.. image:: /_static/examples/datefield-validation-dark.png
+   :class: bs-screenshot-dark
+   :alt: DateField validation — dark theme
+
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error straight to a label and it keeps itself in sync:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy, the ``range`` rule, and aggregating a whole form's
+   validity live in the :doc:`Validation </reference/validation>` guide.
 
 States
 ~~~~~~
@@ -146,6 +196,9 @@ See also
 
 * :doc:`timefield` — time input with clock picker
 * :doc:`textfield` — plain single-line text input
+* :doc:`Validation </reference/validation>` — the full rule set and form-level validity
+* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field
+* :doc:`Signals </reference/signals>` — reactive binding for fields
 
 API
 ---
