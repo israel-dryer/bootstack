@@ -44,8 +44,22 @@ def states():
     app.run()
 
 
+def validation():
+    with bs.App(title="PathField — Validation", padding=20, minsize=(720, 1)) as app:
+        field = bs.PathField(value="/home/user/notes.txt", label="Data file", horizontal="stretch")
+        field.add_validation_rule(
+            "custom",
+            func=lambda path: bool(path) and path.endswith(".csv"),
+            message="Choose a .csv file.",
+            trigger="blur",
+        )
+        app.tk.after(500, field.validate)
+    app.run()
+
+
 SCENES = {
-    "hero":   hero,
-    "labels": labels,
-    "states": states,
+    "hero":       hero,
+    "labels":     labels,
+    "states":     states,
+    "validation": validation,
 }
