@@ -10,6 +10,7 @@ from bootstack.widgets._impl.primitives.gridframe import GridFrame
 from bootstack.widgets._impl.primitives.label import Label
 from bootstack.widgets._impl.composites.textarea.core import _MultilineCore, ScrollbarMode
 from bootstack.widgets.types import Master, AccentToken
+from bootstack._runtime.utility import scale_padding_floor
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -119,8 +120,10 @@ class TextArea(GridFrame):
 
         # ── core (row 1) ──────────────────────────────────────────────────
         if show_border:
+            # Padding must grow with the DPI-scaled TField border slice, else the
+            # text core overpaints the border at high DPI (#90, same as Field).
             self._field_frame = Frame(
-                self, accent=accent, padding=5, ttk_class="TField",
+                self, accent=accent, padding=scale_padding_floor(5), ttk_class="TField",
             )
             self._field_frame.grid(row=1, column=0, sticky="nsew")
             core_parent = self._field_frame
