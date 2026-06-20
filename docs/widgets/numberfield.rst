@@ -12,6 +12,13 @@ mouse-wheel stepping.
    :class: bs-screenshot-dark
    :alt: NumberField demo — dark theme
 
+A number field reads and writes a real ``int`` or ``float`` through
+``field.value`` — or ``None`` when empty — never a string. Bind a
+:doc:`Signal </reference/signals>` with ``signal=`` to keep a typed variable in
+lockstep. Type into it, press the ±steppers, or step with the arrow keys and
+mouse wheel; ``min_value``/``max_value`` clamp the result, while ``value_format``
+changes only how the number is displayed.
+
 Usage
 -----
 
@@ -131,30 +138,37 @@ States
 Reactive binding
 ~~~~~~~~~~~~~~~~
 
-Bind a ``Signal`` with ``textsignal=``. The field and signal stay in sync
-automatically. Initialize the signal with a string value, not a number.
+Bind a ``Signal`` with ``signal=`` to keep a typed numeric variable and the field
+in sync. The signal carries the parsed ``int``/``float``, not the text — use a
+float-typed ``Signal(0.0)`` when the field accepts decimals.
 
 .. code-block:: python
 
-   qty = bs.Signal("1")
-   bs.NumberField(label="Quantity", textsignal=qty, min_value=1)
-   bs.Label(textsignal=qty, accent="secondary")
+   qty = bs.Signal(1)                       # int-typed; Signal(0.0) for decimals
+   field = bs.NumberField(label="Quantity", signal=qty, min_value=1)
+   qty.set(5)            # updates the field
+   field.value          # 5  (a number, never a string)
+
+``textsignal=`` binds the raw display text instead — niche; prefer ``signal``.
 
 Validation
 ~~~~~~~~~~
 
-Attach rules with ``add_validation_rule()``. Rules run on the configured
-trigger (``'blur'``, ``'key'``, or ``'manual'``).
+Attach rules with ``add_validation_rule()``; they validate the field's **typed
+value** — a number, or ``None`` when empty. The ``range`` rule checks numeric
+bounds with a message (distinct from the silent clamping of ``min_value`` /
+``max_value``):
 
 .. code-block:: python
 
    field = bs.NumberField(label="Age")
    field.add_validation_rule(
-       "custom",
-       func=lambda v: v != "" and 0 <= float(v) <= 120,
+       "range", min=0, max=120,
        message="Age must be between 0 and 120.",
        trigger="blur",
    )
+
+   is_valid = field.validate()   # run every rule on demand
 
 .. image:: /_static/examples/numberfield-validation-light.png
    :class: bs-screenshot-light
@@ -163,6 +177,30 @@ trigger (``'blur'``, ``'key'``, or ``'manual'``).
 .. image:: /_static/examples/numberfield-validation-dark.png
    :class: bs-screenshot-dark
    :alt: NumberField validation — dark theme
+
+Validity is reactive state. ``field.valid`` is a ``Signal[bool]`` and
+``field.error`` a ``Signal[str]`` (the current message, ``""`` when valid) — bind
+the error straight to a label and it keeps itself in sync:
+
+.. code-block:: python
+
+   bs.Label(textsignal=field.error, accent="danger")   # shows and clears itself
+
+.. note::
+
+   The full rule taxonomy, the ``range`` rule, ``custom`` rules (whose ``func``
+   receives the typed number, not text), and aggregating a whole form's validity
+   live in the :doc:`Validation </reference/validation>` guide.
+
+Keyboard
+~~~~~~~~
+
+- **Up / Down** — step the value by ``step`` (commits like a stepper press).
+- **Mouse wheel** — step up or down while the field is focused.
+- **Enter** — commit the current input and fire ``on_submit``.
+
+Stepping past a bound clamps to it, or wraps to the opposite bound when
+``wrap=True``. Stepping does nothing while the field is read-only or disabled.
 
 Widget sizing
 ~~~~~~~~~~~~~
@@ -173,8 +211,10 @@ See also
 --------
 
 * :doc:`textfield` — plain text input
-* :doc:`passwordfield` — masked password input
 * :doc:`slider` — drag-to-set numeric value
+* :doc:`Validation </reference/validation>` — the full rule set, typed-value model, and form validity
+* :doc:`Composing Fields </tasks/composing-fields>` — add buttons or icons inside a field, and reusable field types
+* :doc:`Signals </reference/signals>` — the reactive binding behind ``signal=``
 
 API
 ---

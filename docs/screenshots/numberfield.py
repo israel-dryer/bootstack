@@ -54,12 +54,11 @@ def validation():
     with bs.App(title="NumberField — Validation", minsize=(720, 1), padding=20) as app:
         field = bs.NumberField(label="Age", value=150, horizontal="stretch")
         field.add_validation_rule(
-            "custom",
-            func=lambda v: v != "" and 0 <= float(v) <= 120,
+            "range", min=0, max=120,
             message="Age must be between 0 and 120.",
             trigger="blur",
         )
-        app.tk.after(500, lambda: field.validate("blur"))
+        app.tk.after(500, field.validate)
 
     app.run()
 
