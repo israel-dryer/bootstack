@@ -21,6 +21,46 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Field-family widget reviews + validation follow-ons** (this session; all
+  MERGED) — closed out the `TextField` review that spawned the validation rebuild,
+  then reviewed the whole **field family** one PR each (audit→fix→test→docs→
+  file-follow-ups). **Validation follow-ons first:** **#216** (PR **#219**) —
+  `NumberField(value=None)`/`value=""` crashed at construction (`float('')`; an
+  empty number field stores `''`, the guard only checked `is not None`) → normalize
+  empty→`None`, skip bounds. **#217 part 1** (PR **#220**) — reactive **`Form.valid`**
+  (`Signal[bool]` AND-ed over the member fields' `valid` signals via subscriptions)
+  + **`Form.errors`** (live `dict[str,str]` from the fields' `error` signals), on
+  internal+public `Form`; a submit button binds `form.valid`. **#217 part 2
+  (stream-based triggers) DEFERRED** — re-evaluated as pure internal churn (current
+  `_setup_validation_binds`/`after()` works, not Tk-coupled). **Docs cross-ref rule**
+  (PR **#221**) — added to `docs/_dev/widget-review-and-docs-standards.md`: a widget
+  section on a cross-cutting subject (validation/events/data/layout/…) must
+  `:doc:`-link the matching how-to/topic guide (the field-items *Validation* gap was
+  the trigger). **Then the 7 reviews:** TextField (#223), NumberField (#224),
+  PasswordField (#225 docs + **#229** read-only-reveal fix), DateField (#228),
+  TimeField (#230), PathField (#231), SpinnerField (#233). **Pattern:** NO wrapper
+  had correctness bugs (every audit-agent "critical" claim died under adversarial
+  verification — e.g. the "addon-state bypass" was false: `configure(state=)` routes
+  through `Field._delegate_state` which syncs addons; "`.text` needs a setter"
+  contradicts the locked read-only value/text contract). The yield was **docs** —
+  every page lacked the `/reference/validation` cross-link, the reactive
+  `field.valid`/`field.error` surface, and a fleshed See-also; each got a
+  mental-model lead, Date/Time/Path gained full Validation sections. **Two real code
+  changes (decided with maintainer):** PasswordField reveal toggle now `active_when_
+  readonly=True` (#229 — the flag postdates the widget; revealing only flips the mask
+  char, safe under read-only); **TimeField now starts EMPTY** (#230 — was
+  `datetime.now().time()` in `timeentry.py`, the only field not starting empty, which
+  silently **defeated `required=True`**; pre-release clean break). **Systemic bug
+  fixed across the family:** validation screenshot scenes called `field.validate("blur")`
+  but public `validate()` takes **no** arg (raised in the `after()` tick → error never
+  rendered); fixed to `field.validate()` + regenerated. **Open follow-ups (additive,
+  not bugs):** **#227** (`Signal` is StringVar-backed for objects → `Date/TimeField`
+  `signal=` reads back a *string*, and field→signal doesn't fire on programmatic
+  `.value=`; so Date/Time docs keep `textsignal=`; NumberField unaffected) · **#232**
+  (PathField dialog-config options as live properties) · **#234** (SpinnerField↔
+  NumberField parity: increment/decrement, live min/max/step). Memory
+  `project_field_family_review`. **Process gotcha:** a fix pushed to a branch AFTER
+  its PR merged is stranded — cherry-pick onto a fresh branch (bit us with #225→#229).
 - **Field validation redesign** (PR **#218**, MERGED) — started as a `TextField`
   review (audit→fix→test→docs), surfaced that validation was **fundamentally
   broken for typed fields**, and turned into a 4-phase rebuild. **Phase 1:**
@@ -45,11 +85,11 @@ memories and git history.
   `range`, type-aware behavior, reactive signals); api-ref `RuleType` += `range`.
   Brief `docs/_dev/field-validation-system.md`; memory
   `project_field_validation_redesign`. Tests `test_field_validation_typed.py`
-  (27). **Follow-ups:** **#216** (`NumberField(value=None)` crashes at
-  construction — `float('')`, pre-existing) · **#217** (deferred 3b: reactive
-  `Form.valid`/`Form.errors` computed aggregate + stream-based triggers — additive,
-  not correctness). NB the **string-only `add_validation_rule`** decision is locked
-  (a `ValidationRule` object carries no info the string form lacks).
+  (27). **Follow-ups BOTH DONE this session** (see the field-family entry above):
+  **#216** (PR #219) NumberField empty-construction crash · **#217 part 1** (PR #220)
+  reactive `Form.valid`/`Form.errors` (part 2 stream-triggers deferred). NB the
+  **string-only `add_validation_rule`** decision is locked (a `ValidationRule` object
+  carries no info the string form lacks).
 - **Slider/RangeSlider review** (PR **#212**, MERGED) — value clamps to range, disabled
   honored on every key (incl. Home/End), Home/End emit `<<Commit>>`, tightening the range
   re-clamps the value(s); widget pages gained Events + Keyboard sections + value/min-max
@@ -301,11 +341,29 @@ border now **`b.border(surface)`** (a soft stroke derived from the card's own
 `{accent}[subtle]` tinted surface), NOT `{accent}_emphasis` (the issue's original
 suggestion — rejected as too strong on review). Test `test_card_border.py`.
 
-### Slider follow-ups
+### Field-family review follow-ups (filed this session — OPEN)
 
-- **PR #213 (OPEN)** — slider `step=` value snapping + keyboard increment (closes **#210**).
-- Open issues: **#210** (the `step=` feature, PR #213) · **#211** (RangeSlider `<Tab>` is a
-  keyboard focus-trap — can't Tab out).
+The field family is fully reviewed (see the top "Recently completed" entry). These
+additive follow-ups remain — none is a correctness bug:
+
+- **#227 — `Signal` can't round-trip object values** (date/time). `Signal` picks its
+  Tk var from the *initial* value's type, so a `date`/`time` lands in a StringVar →
+  `Date/TimeField` `signal=` reads back a **string**, and field→signal doesn't fire
+  on a programmatic `.value=`. So Date/Time docs deliberately keep `textsignal=`.
+  Real fix = a type-aware/codec Signal (relates to the deferred dtype/codec field
+  model). NumberField is unaffected (int/float are native Signal types).
+- **#232 — PathField dialog-config options as live properties** (`mode`,
+  `start_dir`, `file_filters`, `dialog_title`, `default_extension`/`_filename`) —
+  construction-only on the wrapper though `PathEntry` supports them live via
+  `@configure_delegate`.
+- **#234 — SpinnerField↔NumberField parity** — live `min_value`/`max_value`/`step`
+  props, `increment()`/`decrement()` methods, `on_increment`/`on_decrement` events.
+  May be won't-do (SpinnerField is intentionally simpler) — decide first.
+
+### Slider follow-ups — DONE
+
+Slider `step=` snapping (#210, PR #213) and the RangeSlider `<Tab>` focus-trap
+(#211, PR #215) both MERGED. Nothing open here.
 
 ### ✅ SHIPPED — Layout redesign (screen-axis grid engine) — MERGED #170
 
