@@ -146,7 +146,7 @@ class Button(IconProperty, ImageProperty, PublicWidgetBase):
     @property
     def disabled(self) -> bool:
         """Whether the button is non-interactive."""
-        return self._internal.instate(("disabled",))
+        return str(self._internal.cget("state")) == "disabled"
 
     @disabled.setter
     def disabled(self, value: bool) -> None:

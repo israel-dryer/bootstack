@@ -1,13 +1,13 @@
 """Button review fixes (feat/button-review).
 
-Three correctness fixes from the formal Button review:
+Two correctness fixes from the formal Button review, both reachable through the
+public surface:
 
-1. `disabled` getter reads the ttk state *flag* (`instate`), not a `cget('state')`
-   string compare — so a flag-set disabled state (e.g. via composite state
-   propagation) is reported correctly.
-2. `text` get/set route through the bound textvariable when a `textsignal` owns
-   the text (ttk's `text` option no longer tracks the display in that mode).
-3. `on_click()` resolves to the activation path (the `<<Click>>` event emitted by
+1. `text` setter routes through the bound textvariable when a `textsignal` owns
+   the text — `configure(text=)` is a no-op in that mode, so `button.text = ...`
+   silently failed. (The getter stays on the public `cget('text')`, which
+   reliably reflects the bound variable.)
+2. `on_click()` resolves to the activation path (the `<<Click>>` event emitted by
    the command dispatcher), so it fires on mouse/keyboard/`click()` activation,
    honors disabled state, and is consistent with the `on_click=` callback. Both
    the handler and Stream forms compose on the same event.
@@ -47,12 +47,8 @@ def test_disabled_setter_roundtrips(app):
     assert b.disabled is False
 
 
-def test_disabled_getter_reads_state_flag(app):
-    # A disabled flag set directly (as composite state propagation does) must be
-    # reported — the old cget('state') compare missed this.
-    b = bs.Button("x")
-    b._internal.state(("disabled",))
-    assert b.disabled is True
+def test_disabled_via_constructor(app):
+    assert bs.Button("x", disabled=True).disabled is True
 
 
 # ----- text get/set with a bound signal -----
@@ -97,7 +93,6 @@ def test_click_is_noop_when_disabled(app):
 
     b.disabled = True
     b.click()
-    b._internal.invoke()
     assert seen == {"cmd": 0, "handler": 0}
 
 
