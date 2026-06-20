@@ -36,8 +36,8 @@ class TimeField(ValueSignalMixin, FieldAddonMixin, PublicWidgetBase):
 
     Args:
         value: Initial time value — a `datetime.time` object or a time
-            string (e.g. `'14:30'` or `'2:30 PM'`). Defaults to the current
-            time.
+            string (e.g. `'14:30'` or `'2:30 PM'`). Empty by default; pass a
+            value to seed a starting time.
         value_format: Format applied to the displayed time — a named preset
             (e.g. `'shortTime'`, `'longTime'`) or a custom pattern (e.g.
             `'HH:mm'`, `'h:mm a'`). Default `'shortTime'`. See

@@ -41,7 +41,7 @@ class TimeEntry(SelectBox):
         """Args:
             master: Parent widget. If None, uses the default root window.
             value: Initial time value to display. Can be a time object or string.
-                Default is current time.
+                Empty by default.
             value_format: Time format pattern for parsing and displaying times.
                 Default is "shortTime" (e.g., "3:30 PM"). Common formats:
                 "shortTime" (3:30 PM), "longTime" (3:30:45 PM PST),
@@ -76,16 +76,20 @@ class TimeEntry(SelectBox):
         self._min_time = self._parse_time(min_time) if min_time else datetime.time(0, 0)
         self._max_time = self._parse_time(max_time) if max_time else datetime.time(23, 59)
 
-        # Default to current time if not provided
-        if value is None:
-            value = datetime.datetime.now().time()
-
-        # Normalize value to a time object using our own parser (avoids dateparser
-        # mis-reading "08:30" as "August 30"), then format it with the same
-        # IntlFormatter used to build items so the strings compare equal.
-        formatter = IntlFormatter(locale=self._locale)
-        time_val = self._parse_time(value) if isinstance(value, str) else value
-        formatted_value = formatter.format(time_val, value_format)
+        # An empty field stays empty — consistent with the other field widgets,
+        # so `required=` meaningfully demands input (was: defaulted to the current
+        # time, which silently pre-filled and defeated `required`). Pass an
+        # explicit `value=` to seed a starting time.
+        if value is None or value == "":
+            formatted_value = ""
+        else:
+            # Normalize value to a time object using our own parser (avoids
+            # dateparser mis-reading "08:30" as "August 30"), then format it with
+            # the same IntlFormatter used to build items so the strings compare
+            # equal.
+            formatter = IntlFormatter(locale=self._locale)
+            time_val = self._parse_time(value) if isinstance(value, str) else value
+            formatted_value = formatter.format(time_val, value_format)
 
         # Generate time intervals for dropdown
         items = self._generate_time_intervals()
