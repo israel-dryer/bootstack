@@ -21,6 +21,39 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Typed-signal round-trip + high-DPI border fix** (this session; PRs **#238** +
+  **#239**, both MERGED). Two field follow-ups closed end-to-end:
+  - **#227 — `Signal` now round-trips object values** (PR **#238**). `Signal` chose
+    its Tk var from the initial value's type, so a `date`/`time`/object landed in a
+    StringVar and `sig()` read back the **string**. Fix = an **object mode** for
+    non-Tk-native values (anything not `bool`/`int`/`float`/`str`/`set`): the cached
+    Python object is the source of truth (`__call__` returns it), the StringVar is
+    just the write-trace bus (`set()` dedupes on the object, writes `str(value)` to
+    notify). **Native signals are byte-for-byte unchanged** (branch only activates for
+    objects → zero regression). Also fixed: `ValueSignalMixin._sync_value_set()`
+    (called from each field's `value` setter) pushes a **programmatic** `field.value=`
+    to the bound signal (was on_change-only). **`textsignal=` REMOVED from
+    `NumberField`/`DateField`/`TimeField`** (typed fields bind via `signal=`; guarded
+    with a `TypeError` since `**kwargs` would silently swallow it) — Date/Time docs
+    now feature typed `signal=` with a `.map()`-derived text signal for display. This
+    also resolved **#237** (the user report that kicked it off). Escape-hatch caveat:
+    `sig.var`/`sig.tk` returns the backing StringVar (string form); `sig()` is the
+    supported path. Memory `project_field_value_signal_dtype`.
+  - **#90 — high-DPI entry border washout** (PR **#239**). On high-DPI the resting
+    (unfocused) field border vanished (focus border fine; `hdpi=False` fixed it). The
+    visible border is a **`ttk_class="TField"` nine-patch whose slice scales with
+    DPI**, but the gap to the inner widget was a **hardcoded `padding=5`** — at high
+    DPI the slice outgrows the gap and the child **overpaints** the border. Fix =
+    **`scale_padding_floor(base)`** (`_runtime/utility.py` =
+    `max(base, round(base*ui_scale))`): **round** not truncate (1.5x kept clipping the
+    rounded corners with `int()`), **floor** at base (low DPI keeps tuned spacing).
+    Applied at both TField sites — the `Field` composite (all 7 field widgets) **and**
+    `TextArea`/`CodeEditor`. **Not** the image/LANCZOS path (probe proved the image
+    keeps full contrast; the cap idea was a dead end). **`show_border` widgets**
+    (context menus/toasts/snackbars/tooltips/Select popup) use a fixed ttk relief
+    border, **unaffected**. Repro without 4K hardware via `App(scaling=2.667)` (the
+    washout is driven by the scale *number*). Memory
+    `reference_hidpi_ninepatch_border_padding`.
 - **Field-family widget reviews + validation follow-ons** (this session; all
   MERGED) — closed out the `TextField` review that spawned the validation rebuild,
   then reviewed the whole **field family** one PR each (audit→fix→test→docs→
@@ -293,10 +326,26 @@ memories and git history.
 
 ## Next up
 
+> ⏭ **START HERE next session.** The field-family work is fully drained (reviews +
+> validation rebuild + #227 typed-signal round-trip + #90 high-DPI border, all
+> merged). Two clear directions, pick by maintainer appetite:
+>
+> 1. **Finish the small field follow-ups** — **#222** (TextField live
+>    `placeholder`/`mask` props; additive, low-risk, **ready to build, no decision
+>    needed**) and a **decision on #234** (SpinnerField parity — may be won't-do).
+>    See "Field-family review follow-ups" below.
+> 2. **Pivot to the 0.1.0 stable closeout** — **#149** (public-surface audit +
+>    CHANGELOG; the actual ship gate), **#150** (test-harness one-App-per-process),
+>    **#155** (topic-guide writer pass). See "Toward the 0.1.0 stable release".
+>
+> Recommendation: knock out **#222** (quick win), make the **#234** call, then start
+> **#149**. The last remaining *feature* in the pre-ship backlog is **#192**
+> (color-swatch Select) — needs a shape/naming decision first.
+
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
-> DRAINED this session (#141/#142/#151/#153/#156/#157/#158 merged; see the
-> "0.1.0 API-freeze pass" pointer at the top of "Recently completed"). What's left
-> below is the stable-cut closeout + the pre-ship polish backlog + the standing backlog.
+> DRAINED (#141/#142/#151/#153/#156/#157/#158 merged; see the "0.1.0 API-freeze
+> pass" pointer in "Recently completed"). What's left below is the stable-cut
+> closeout + the pre-ship polish backlog + the standing backlog.
 
 ### ★ NEXT — Pre-ship polish backlog (#186–#195, filed 2026-06-18)
 
@@ -341,24 +390,24 @@ border now **`b.border(surface)`** (a soft stroke derived from the card's own
 `{accent}[subtle]` tinted surface), NOT `{accent}_emphasis` (the issue's original
 suggestion — rejected as too strong on review). Test `test_card_border.py`.
 
-### Field-family review follow-ups (filed this session — OPEN)
+### Field-family review follow-ups
 
-The field family is fully reviewed (see the top "Recently completed" entry). These
-additive follow-ups remain — none is a correctness bug:
+The field family is fully reviewed (see the top "Recently completed" entries).
+**#227 (DONE, PR #238 — object-mode Signal) and #232 (DONE — PathField live dialog
+props) are merged; #237/#217 closed.** Two additive follow-ups remain OPEN — neither
+is a correctness bug:
 
-- **#227 — `Signal` can't round-trip object values** (date/time). `Signal` picks its
-  Tk var from the *initial* value's type, so a `date`/`time` lands in a StringVar →
-  `Date/TimeField` `signal=` reads back a **string**, and field→signal doesn't fire
-  on a programmatic `.value=`. So Date/Time docs deliberately keep `textsignal=`.
-  Real fix = a type-aware/codec Signal (relates to the deferred dtype/codec field
-  model). NumberField is unaffected (int/float are native Signal types).
-- **#232 — PathField dialog-config options as live properties** (`mode`,
-  `start_dir`, `file_filters`, `dialog_title`, `default_extension`/`_filename`) —
-  construction-only on the wrapper though `PathEntry` supports them live via
-  `@configure_delegate`.
-- **#234 — SpinnerField↔NumberField parity** — live `min_value`/`max_value`/`step`
-  props, `increment()`/`decrement()` methods, `on_increment`/`on_decrement` events.
-  May be won't-do (SpinnerField is intentionally simpler) — decide first.
+- **#222 — TextField live properties** (OPEN, ready to build). Expose `placeholder`
+  / `mask` (high value — runtime UX toggles) and `allow_blank` / `value_format`
+  (lower — the configure-delegate already works imperatively) as live get/set
+  properties. The underlying `TextEntryPart` already supports them
+  (`_placeholder_text`/`_show_char`/`_delegate_allow_blank`/`_delegate_value_format`).
+  Explicitly **NOT** a `.text` setter (read-only by the value/text contract — write
+  through `.value`). Clean, low-risk, no decision needed.
+- **#234 — SpinnerField↔NumberField parity** (OPEN, decision-gated) — live
+  `min_value`/`max_value`/`step` props, `increment()`/`decrement()` methods,
+  `on_increment`/`on_decrement` events. **May be won't-do** (SpinnerField is
+  intentionally simpler) — get the maintainer's call before any code.
 
 ### Slider follow-ups — DONE
 
