@@ -180,6 +180,62 @@ class PathField(FieldAddonMixin, PublicWidgetBase):
         """Raw result from the most recent dialog (string or tuple of strings)."""
         return self._internal.dialog_result
 
+    # ----- Live dialog configuration -----
+
+    @property
+    def mode(self) -> Literal["open", "open_multiple", "save", "directory"]:
+        """Which native dialog the browse button opens."""
+        return self._internal.cget("mode")
+
+    @mode.setter
+    def mode(self, v: Literal["open", "open_multiple", "save", "directory"]) -> None:
+        self._internal.configure(mode=v)
+
+    @property
+    def dialog_title(self) -> str | None:
+        """Title shown in the native picker window."""
+        return self._internal.cget("dialog_title")
+
+    @dialog_title.setter
+    def dialog_title(self, v: str | None) -> None:
+        self._internal.configure(dialog_title=v)
+
+    @property
+    def start_dir(self) -> str | None:
+        """Directory the dialog opens in."""
+        return self._internal.cget("start_dir")
+
+    @start_dir.setter
+    def start_dir(self, v: str | None) -> None:
+        self._internal.configure(start_dir=v)
+
+    @property
+    def file_filters(self) -> "list[tuple[str, str]] | None":
+        """File-type filters, e.g. `[('Images', '*.png *.jpg')]`. Not used for `'directory'` mode."""
+        return self._internal.cget("file_filters")
+
+    @file_filters.setter
+    def file_filters(self, v: "list[tuple[str, str]] | None") -> None:
+        self._internal.configure(file_filters=v)
+
+    @property
+    def default_extension(self) -> str | None:
+        """Extension appended automatically when omitted (`'save'` mode only)."""
+        return self._internal.cget("default_extension")
+
+    @default_extension.setter
+    def default_extension(self, v: str | None) -> None:
+        self._internal.configure(default_extension=v)
+
+    @property
+    def default_filename(self) -> str | None:
+        """Suggested filename pre-filled in the dialog (`'save'` mode only)."""
+        return self._internal.cget("default_filename")
+
+    @default_filename.setter
+    def default_filename(self, v: str | None) -> None:
+        self._internal.configure(default_filename=v)
+
     @property
     def signal(self) -> "Signal[str] | None":
         """The reactive `Signal` bound to this field, or `None`."""
