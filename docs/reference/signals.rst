@@ -77,6 +77,37 @@ consistent.
    itself: a :class:`~bootstack.DateField` ``signal=`` reads back a ``date``, not
    a string.
 
+Typed value signals
+-------------------
+
+A signal is not limited to text. ``signal=`` binds the widget's *typed* value, so
+a date, time, or number round-trips as itself — never as a string. Bind a
+``Signal`` holding a ``date`` to a :class:`~bootstack.DateField`, and reading the
+signal back gives you a ``date``:
+
+.. code-block:: python
+
+   from datetime import date, timedelta
+
+   with bs.App(gap=8) as app:
+       due = bs.Signal(date(2026, 1, 15))
+
+       bs.DateField(signal=due)
+       bs.Button("Next day", on_click=lambda: due.set(due() + timedelta(days=1)))
+   app.run()
+
+   due()              # datetime.date(2026, 1, 15) — a date, not "2026-01-15"
+
+To show a typed value *as text* — a caption or summary label — derive a text
+signal with ``map()`` and bind it with ``textsignal=``:
+
+.. code-block:: python
+
+   due = bs.Signal(date(2026, 1, 15))
+   due_text = due.map(lambda d: d.strftime("%b %d, %Y"))
+
+   bs.Label(textsignal=due_text)      # "Jan 15, 2026", re-derived on every change
+
 Reacting to changes
 -------------------
 

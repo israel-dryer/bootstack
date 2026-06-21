@@ -152,6 +152,8 @@ applies everywhere the token is used:
 
 .. code-block:: python
 
+   from bootstack.style import update_font_token
+
    update_font_token("body", size=12)              # larger default text
    update_font_token("code", family="JetBrains Mono")
    update_font_token("caption", slant="italic")
@@ -164,6 +166,8 @@ system and emoji fonts — ready to populate a font picker or to validate input
 before calling ``set_font_family``:
 
 .. code-block:: python
+
+   from bootstack.style import get_font_families
 
    with bs.App() as app:
        families = get_font_families()
