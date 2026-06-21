@@ -1,6 +1,5 @@
 ﻿from __future__ import annotations
 
-import tkinter
 from typing import Any, Literal
 
 from bootstack.widgets._impl.composites.scrollview import ScrollView as _InternalScrollView

@@ -104,10 +104,17 @@ resort.** A user should be able to build real things from the Guide alone.
 
 ### Lead with the mental model
 
-Open the page with the foundational concept — how to *think about* the widget —
-before any options or variations. Don't bury the mental model in a later section;
-a reader who gets the model up front can follow everything after it. State what
-the widget *is* and the one idea that makes it click, then build outward.
+Teach the foundational concept — how to *think about* the widget — before any
+options or variations. Don't bury the mental model in a later section; a reader
+who gets the model up front can follow everything after it.
+
+**Where it goes matters.** The page **intro** (the paragraph above the hero) is
+*definitional* — it states plainly *what the widget is* (and does), nothing more.
+The mental model / teaching — the one idea that makes it click, the key gotcha —
+leads the **first usage section**, not the intro. Don't put teaching prose in the
+intro paragraph; that is the usage body's job. (Maintainer feedback,
+2026-06-20: a "the one thing to get right…" lead in the ScrollView *intro* was
+moved down into its first usage section.)
 
 ### No kitchen-sink
 
