@@ -15,6 +15,11 @@ yes/no decisions. Both are one-liners — no setup required.
 Usage
 -----
 
+Both are blocking one-liners — call one, and it opens a modal, waits, and
+returns: ``alert()`` returns nothing, ``confirm()`` returns ``True``/``False``.
+To collect a *value*, see :doc:`input dialogs <input-dialogs>`; for anything
+custom, a :doc:`Dialog <dialog>`.
+
 Alert
 ~~~~~
 

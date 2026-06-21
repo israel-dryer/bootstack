@@ -1,15 +1,7 @@
 Tree
 ====
 
-Tree displays nested data as expandable rows. Reach for it when the *hierarchy
-itself* is the point — file trees, document outlines, settings navigation,
-grouped pickers. For flat records with columns, sorting, filtering, and paging,
-use :doc:`datatable` instead.
-
-Every node is an object *handle*: ``add()`` returns a ``TreeNode`` that you hold
-and pass back to ``expand()``, ``select()``, ``remove()``, and the rest — there
-are no string ids to track. A node shows an icon and a label, knows its place in
-the hierarchy, and carries an open-ended ``data`` bag for your own attributes.
+Tree displays nested data as expandable rows.
 
 .. image:: /_static/examples/tree-hero-light.png
    :class: bs-screenshot-light
@@ -21,6 +13,13 @@ the hierarchy, and carries an open-ended ``data`` bag for your own attributes.
 
 Usage
 -----
+
+Reach for a tree when the *hierarchy itself* is the point — file trees, outlines,
+settings navigation, grouped pickers; use a :doc:`datatable` for flat records with
+columns, sorting, and paging. Every node is an object *handle*: ``add()`` returns
+a ``TreeNode`` you hold and pass back to ``expand()``, ``select()``, ``remove()``
+— there are no string ids to track. Each node also carries an open-ended ``data``
+bag for your own attributes.
 
 Building the tree
 ~~~~~~~~~~~~~~~~~

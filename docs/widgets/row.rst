@@ -16,6 +16,11 @@ the left edge.
 Usage
 -----
 
+A row lays its children out left to right. By default they keep their natural
+size — use ``gap=`` to space them, ``vertical_items=`` to align them on the cross
+axis, and a child's ``grow=True`` (or a :doc:`Spacer <spacer>`) to fill the
+leftover width.
+
 Gap
 ~~~
 
@@ -202,7 +207,7 @@ Self-placement
 ``horizontal``, ``vertical``, and ``grow`` control how the Row places *itself*
 within its parent — separate from how it arranges its own children. By default a
 Row sits at its natural width; ``horizontal="stretch"`` makes it span the parent,
-which is what lets a command bar fill the window.
+which is what lets a toolbar fill the window.
 
 .. code-block:: python
 

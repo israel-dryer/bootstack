@@ -14,6 +14,10 @@ A button that opens a dropdown menu when clicked.
 Usage
 -----
 
+A menu button opens a dropdown of *actions* when clicked. It is for commands, not
+selection — reach for a :doc:`selectbutton` or :doc:`select` when you need to pick
+and remember a value.
+
 Basic
 ~~~~~
 

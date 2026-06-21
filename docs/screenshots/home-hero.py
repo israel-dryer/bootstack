@@ -42,7 +42,7 @@ def _stat(label, pct, accent):
         bs.ProgressBar(value=pct, accent=accent, horizontal="stretch")
 
 
-with bs.Workbench(title="Acme Analytics", size=(890, 650),
+with bs.Workbench(title="Acme Analytics", minsize=(890, 500),
                   rail_labels=True, show_sidebar=False, show_statusbar=True) as shell:
     shell._capture_full_window = True
     shell._capture_max_width = 940
@@ -84,7 +84,7 @@ with bs.Workbench(title="Acme Analytics", size=(890, 650),
                             ],
                             rows=ORDERS,
                             density="compact",
-                            page_size=13,
+                            page_size=15,
                             grow=True, horizontal="stretch",
                         )
 

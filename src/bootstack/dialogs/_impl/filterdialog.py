@@ -15,6 +15,7 @@ from bootstack.widgets._impl.composites.textentry import TextEntry
 from bootstack._runtime.app import Window
 from bootstack.dialogs._impl.dialog import Dialog, DialogButton
 from bootstack.widgets._impl.composites.scrollview import ScrollView
+from bootstack.widgets._impl.primitives.flexframe import FlexFrame
 from bootstack._runtime.window_utilities import AnchorPoint
 
 ttk = SimpleNamespace(
@@ -122,13 +123,14 @@ class FilterDialogContent(ttk.Frame):
         scroll_view.pack(fill='both', expand=False, pady=(8, 0))
         scroll_view.configure(height=230)
 
-        self._scroll_container = ttk.Frame(scroll_view.canvas)
+        # Managed flex content frame — the same one the public ScrollView uses
+        # (direction='vertical', horizontal_items='stretch'), so rows fill the
+        # viewport width and the canvas sizing is handled for us. Replaces the old
+        # raw frame, which hand-rolled the width-stretch and clipped at the edge.
+        self._scroll_container = FlexFrame(
+            scroll_view.canvas, direction='vertical', horizontal_items='stretch'
+        )
         scroll_view.add(self._scroll_container)
-
-        # Stretch container frame to canvas width for full-width checkboxes
-        def _configure_scroll_width(event):
-            scroll_view.canvas.itemconfig(scroll_view._window_id, width=event.width)
-        scroll_view.canvas.bind('<Configure>', _configure_scroll_width)
 
         # Add item checkboxes
         for item in self._items:
@@ -137,7 +139,7 @@ class FilterDialogContent(ttk.Frame):
             if not item['selected']:
                 cb.invoke()
             cb['command'] = lambda value=item['value']: self._on_item_clicked(value)
-            cb.pack(fill='x', padx=8, pady=8)
+            self._scroll_container.add_child(cb, {'padx': 8, 'pady': 8})
             self._check_buttons[item['text']] = cb
 
     def _handle_select_all(self):
@@ -153,11 +155,12 @@ class FilterDialogContent(ttk.Frame):
         """Filter visible checkboxes based on search text."""
         self._filter = (event.data.text or '').lower()
 
+        # Re-flow only the matching rows, in their original order.
+        for cb in self._check_buttons.values():
+            self._scroll_container.remove_child(cb)
         for key, cb in self._check_buttons.items():
             if self._filter in key.lower():
-                cb.pack(fill='x', padx=8, pady=8)
-            else:
-                cb.pack_forget()
+                self._scroll_container.add_child(cb, {'padx': 8, 'pady': 8})
 
     def _on_item_clicked(self, value):
         """Update selected items list when a checkbox is clicked."""

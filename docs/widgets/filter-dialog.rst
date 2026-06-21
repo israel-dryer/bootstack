@@ -15,6 +15,10 @@ Filter Dialog
 Usage
 -----
 
+Reach for the ``ask_filter()`` verb by default — it covers the one-shot case. Drop
+to the ``FilterDialog`` object only when you need to reuse the dialog or open it
+repeatedly.
+
 Basic usage
 ~~~~~~~~~~~
 

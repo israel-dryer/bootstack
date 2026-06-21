@@ -16,6 +16,10 @@ prefix/suffix formatting, and an interactive drag mode.
 Usage
 -----
 
+A gauge draws a ``value`` within a ``min_value``/``max_value`` range as a circular
+arc, with optional center text. It is a display by default; pass
+``interactive=True`` to let the user set the value by dragging the arc.
+
 Variants
 ~~~~~~~~
 

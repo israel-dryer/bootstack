@@ -15,6 +15,10 @@ Font Dialog
 Usage
 -----
 
+Reach for the ``ask_font()`` verb by default — it covers the one-shot case. Drop
+to the ``FontDialog`` object only when you need to reuse the selector or open it
+repeatedly.
+
 Convenience function
 ~~~~~~~~~~~~~~~~~~~~
 

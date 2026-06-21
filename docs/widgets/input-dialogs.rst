@@ -15,6 +15,11 @@ a modal dialog, waits for input, and returns the value (or ``None`` if canceled)
 Usage
 -----
 
+Each ``ask_*`` opens a modal, blocks, and returns the entered value (or ``None``
+on cancel) — ``ask_string`` / ``ask_integer`` / ``ask_date`` and friends, one per
+common type. For a yes/no or a bare message, see :doc:`message dialogs
+<message-dialogs>`; for several fields at once, a :doc:`FormDialog <formdialog>`.
+
 Ask for text
 ~~~~~~~~~~~~
 

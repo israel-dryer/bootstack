@@ -6,6 +6,16 @@ It shows a sun in light mode and a moon in dark mode, calls ``toggle_theme`` on
 click, and its icon follows the active theme — so it stays correct when the theme
 is changed elsewhere too.
 
+Usage
+-----
+
+It is a plain button — a stateless action whose icon merely reflects the current
+theme — so there is no toggle state to keep in sync (just the sun/moon glyph) and
+no risk of looping.
+
+Basic
+~~~~~
+
 .. code-block:: python
 
    import bootstack as bs
@@ -14,14 +24,18 @@ is changed elsewhere too.
        bs.ThemeToggle()
    app.run()
 
-It is a plain button — a stateless action whose icon merely reflects the current
-theme — so there is no toggle state to keep in sync (just the sun/moon glyph) and
-no risk of looping. It takes the button ``variant`` (default ``'ghost'``) and
-``density``:
+Variant and density
+~~~~~~~~~~~~~~~~~~~~~
+
+``ThemeToggle`` takes the button ``variant`` (default ``'ghost'``) and
+``density``.
 
 .. code-block:: python
 
    bs.ThemeToggle(variant="outline", density="compact")
+
+Custom icons
+~~~~~~~~~~~~
 
 Override the icons with any `Bootstrap Icons <https://icons.getbootstrap.com/>`_
 names:

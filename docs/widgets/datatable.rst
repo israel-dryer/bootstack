@@ -16,6 +16,10 @@ default — supply ``rows=`` to pre-load data, or pass any shared ``data_source=
 Usage
 -----
 
+A data table binds to a data source and renders it as a sortable, filterable,
+paged grid — you define the ``columns=`` and the table manages the rest. For a
+hierarchy reach for a :doc:`tree`; for a simple scrolling list, a :doc:`listview`.
+
 Columns and rows
 ~~~~~~~~~~~~~~~~
 
@@ -324,7 +328,7 @@ source:
 
 * **Double-click a row** — opens its edit dialog (the primary edit gesture;
   needs ``allow_edit``).
-* **Command bar buttons** — Add, Edit, and Delete.
+* **Toolbar buttons** — Add, Edit, and Delete.
 * **Row right-click menu** — Edit and Delete entries.
 
 .. code-block:: python

@@ -6,9 +6,6 @@ focus-on-one counterpart to :doc:`Gallery <gallery>` — it steps through a
 collection of image records one slide at a time, with overlaid chevrons, a slide
 indicator, an optional caption, transitions, and autoplay.
 
-It pairs naturally with `Gallery.on_item_activate` to open a full-size pop-up
-viewer: a `Carousel` over the same `items`, starting at the activated slide.
-
 .. raw:: html
 
    <video class="bs-video-light" autoplay loop muted playsinline controls
@@ -22,6 +19,11 @@ viewer: a `Carousel` over the same `items`, starting at the activated slide.
 
 Usage
 -----
+
+Like a :doc:`Gallery <gallery>`, a carousel is record-native — give it the same
+``items=`` or ``data_source=`` records. It pairs naturally with
+``Gallery.on_item_activate`` to open a full-size pop-up viewer: a carousel over
+the same items, starting at the activated slide.
 
 Slides
 ~~~~~~

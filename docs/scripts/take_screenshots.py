@@ -68,10 +68,11 @@ def _patch(cls):
             # chrome) rather than just the content area.
             target = getattr(self, '_capture_target', None)
             full = getattr(self, '_capture_full_window', False)
-            if full:
-                # Whole OS window via DWM extended frame bounds — the exact
-                # VISIBLE rect (no drop-shadow margin), so there is no desktop
-                # bleed to clean up beyond the docs' CSS border.
+            if full or target is not None:
+                # Whole OS window (a dialog/Window target, or the app itself) via
+                # DWM extended frame bounds — the exact VISIBLE rect (no drop-shadow
+                # margin). inset=2 cuts just inside the native frame so the docs'
+                # single CSS border replaces it (no native + CSS double border).
                 win = target if target is not None else self.tk
                 win.update_idletasks()
                 import ctypes
@@ -94,20 +95,6 @@ def _patch(cls):
                 w, h = rect.right - rect.left, rect.bottom - rect.top
                 inset = 2  # cut just inside the native window border; the docs
                            # add a clean CSS border/radius around the image
-            elif target is not None:
-                target.update_idletasks()
-                import re
-                m = re.match(r'(\d+)x(\d+)\+(-?\d+)\+(-?\d+)', target.geometry())
-                rx = target.winfo_rootx()
-                ry = target.winfo_rooty()
-                cw = target.winfo_width()
-                ch = target.winfo_height()
-                gy = int(m.group(4)) if m else ry
-                title_h = ry - gy
-                pad = 10  # breathing room outside the dialog window
-                x, y = rx - pad, gy - pad
-                w, h = cw + pad * 2, ch + title_h + pad * 2
-                inset = 0
             else:
                 x = self.tk.winfo_rootx()
                 y = self.tk.winfo_rooty()

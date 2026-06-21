@@ -16,6 +16,12 @@ to define the footer.
 Usage
 -----
 
+Reach for ``Dialog`` when no built-in fits — it is a blank modal you fill with a
+``content_builder=`` body and a ``buttons=`` footer, and ``show()`` blocks until
+it returns a result. For the common cases, prefer the verb dialogs
+(:doc:`alert/confirm <message-dialogs>`, :doc:`ask_* <input-dialogs>`) or a
+:doc:`FormDialog <formdialog>`.
+
 Content builder
 ~~~~~~~~~~~~~~~
 

@@ -20,6 +20,11 @@ navigation is tracked automatically.
 Usage
 -----
 
+A page stack shows one page at a time and remembers where you have been — add
+pages with ``.add()``, switch with ``navigate(key)``, and step through history
+with back and forward. Reach for it for wizard or drill-down flows; :doc:`Tabs
+<tabs>` when the user picks views directly.
+
 Adding pages
 ~~~~~~~~~~~~
 

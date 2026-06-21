@@ -16,6 +16,11 @@ look familiar from HTML ``<fieldset>`` and desktop dialog panels.
 Usage
 -----
 
+A group box is a layout container with a titled border — the same
+``layout=``/``gap=``/``padding=`` as a :doc:`Column <column>`, framed with a
+caption set into the top edge. Reach for it to label a group of fields; an
+unlabelled :doc:`card` when you just need a surface.
+
 Accent borders
 ~~~~~~~~~~~~~~
 

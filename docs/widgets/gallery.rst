@@ -1,12 +1,7 @@
 Gallery
 =======
 
-A scrollable, selectable grid of image thumbnails. `Gallery` displays a
-collection of image records as a reflowing grid, recycling tiles so it stays
-efficient for large collections. It is record-native — populate it with `items=`
-or a `data_source=` and read the chosen tile(s) back through `selection`, the
-same model :doc:`ListView <listview>`, :doc:`DataTable <datatable>`, and
-:doc:`Tree <tree>` share.
+A scrollable, selectable grid of image thumbnails.
 
 .. image:: /_static/examples/gallery-hero-light.png
    :class: bs-screenshot-light
@@ -18,6 +13,11 @@ same model :doc:`ListView <listview>`, :doc:`DataTable <datatable>`, and
 
 Usage
 -----
+
+Gallery recycles its tiles, so it stays efficient over large collections. It is
+record-native — populate it with ``items=`` or a ``data_source=`` and read the
+chosen tile(s) back through ``.selection``, the same model :doc:`ListView
+<listview>`, :doc:`DataTable <datatable>`, and :doc:`Tree <tree>` share.
 
 Populating the grid
 ~~~~~~~~~~~~~~~~~~~

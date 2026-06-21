@@ -101,12 +101,10 @@ html[data-theme="dark"] .bd-content img.bs-screenshot-light {
     border-radius: 0 !important;
     filter: none !important;
 }
-html[data-theme="dark"] .bd-content img.bs-window-screenshot {
-    border-radius: 6px !important;   /* windows keep their rounded corners */
+html[data-theme="dark"] .bd-content img.bs-window-screenshot,
+html[data-theme="dark"] .bd-content img.bs-dialog-screenshot {
+    border-radius: 6px !important;   /* windows and dialogs keep rounded corners */
 }
-
-/* Dialog screenshots — no additional effects; the captured window chrome speaks for itself. */
-.bs-dialog-screenshot {}
 
 /* Hidden autosummary block used only to generate stubs + drive an
    alphabetical sidebar (see api-reference/widgets.rst). */
@@ -118,12 +116,14 @@ html[data-theme="dark"] .bd-content img.bs-window-screenshot {
    cropped during capture, so draw a clean border in its place. Use the theme's
    own border token so the frame follows light/dark automatically; the 6px
    radius from the base rule rounds it off. */
-.bs-window-screenshot {
+.bs-window-screenshot,
+.bs-dialog-screenshot {
     border-radius: 6px;
     border: 1px solid var(--pst-color-border);
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
 }
-html[data-theme="dark"] .bs-window-screenshot {
+html[data-theme="dark"] .bs-window-screenshot,
+html[data-theme="dark"] .bs-dialog-screenshot {
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
 }
 

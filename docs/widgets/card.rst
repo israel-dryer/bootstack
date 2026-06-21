@@ -17,6 +17,10 @@ visually distinct without runaway drift.
 Usage
 -----
 
+A card is a layout container with a raised, bordered surface — it takes the same
+``layout=``, ``gap=``, and ``padding=`` as a :doc:`Column <column>`. Add an
+``accent=`` to tint the border when a card needs emphasis.
+
 Accents
 ~~~~~~~
 

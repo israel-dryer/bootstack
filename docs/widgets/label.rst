@@ -15,6 +15,10 @@ colors. The display text is the first positional argument.
 Usage
 -----
 
+A label is static, display-only text — pass the text as the first argument, then
+shape it with a ``font=`` token, an ``icon=``, and an ``accent=`` color. Bind a
+:class:`Signal <bootstack.Signal>` with ``textsignal=`` to update it live.
+
 Font tokens
 ~~~~~~~~~~~
 

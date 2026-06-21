@@ -17,6 +17,10 @@ instead.)
 Usage
 -----
 
+A divider is a one-line visual separator — drop it between items in a
+:doc:`Row <row>` or :doc:`Column <column>` and it stretches across the layout.
+Set ``orient=`` for a vertical rule between side-by-side content.
+
 Orientation
 ~~~~~~~~~~~
 

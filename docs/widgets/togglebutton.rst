@@ -14,6 +14,11 @@ A button that stays pressed when active — command-bar-style toggle.
 Usage
 -----
 
+A toggle button is a boolean control styled as a button that stays pressed when
+active — ``.value`` is its on/off state and ``on_change`` fires when it flips.
+Reach for it in a toolbar (bold, italic); a :doc:`checkbox` or :doc:`switch`
+reads better in a form.
+
 Basic
 ~~~~~
 
@@ -95,7 +100,7 @@ Icon only
 ~~~~~~~~~
 
 Set ``icon_only=True`` to show just the icon with no label text. Useful for
-compact command bars.
+compact toolbars.
 
 .. code-block:: python
 

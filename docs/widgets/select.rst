@@ -14,6 +14,9 @@ A single-selection dropdown field with optional search filtering.
 Usage
 -----
 
+A select is a single-choice dropdown — ``.value`` is the chosen option's value,
+and typing filters the list.
+
 Basic
 ~~~~~
 

@@ -16,6 +16,11 @@ dialog. Pass ``data=`` to generate fields automatically from a dict, or
 Usage
 -----
 
+A ``FormDialog`` is a :doc:`Form <forms>` wrapped in a modal :doc:`dialog <dialog>`
+with submit and cancel wired up — pass ``data=`` to generate fields from a dict or
+``items=`` for an explicit layout, and ``show()`` returns the entered values (or
+``None`` on cancel).
+
 Auto-generated fields
 ~~~~~~~~~~~~~~~~~~~~~
 

@@ -15,6 +15,10 @@ Color Dialog
 Usage
 -----
 
+Reach for the ``ask_color()`` verb by default — it covers the one-shot case. Drop
+to the ``ColorChooserDialog`` object only when you need to reuse the chooser or
+open it repeatedly.
+
 Convenience function
 ~~~~~~~~~~~~~~~~~~~~
 
