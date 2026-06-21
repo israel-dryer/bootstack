@@ -141,10 +141,8 @@ def workspaces():
         {"id": 1, "title": "Dana Reyes", "text": "Q3 roadmap review", "icon": "envelope", "body": "Can we move it to Thursday?"},
         {"id": 2, "title": "Billing", "text": "Your receipt for June", "icon": "envelope-open", "body": "Thanks for your payment."},
     ])
-    with bs.Workbench(title="Workspace", size=(960, 600)) as shell:
+    with bs.Workbench(title="Workspace", size=(720, 460)) as shell:
         shell._capture_full_window = True
-        shell._capture_max_width = 940   # render large (like the home hero), then
-                                         # display sharp instead of upscaling a 720 shot
         _menu_toolbar(shell)
         with shell.add_workspace("mail", text="Mail", icon="envelope") as ws:
             ws.list_nav(inbox, chevron=True)
@@ -218,6 +216,3 @@ SCENES = {
     "workspaces": workspaces,
     "custom-sidebar": custom_sidebar,
 }
-
-if __name__ == '__main__':
-    workspaces()
