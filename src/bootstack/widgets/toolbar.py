@@ -124,8 +124,8 @@ class Toolbar(PublicWidgetBase):
             icon: Icon name. When provided without `label`, renders icon-only.
             on_click: Callback fired when the button is clicked.
             accent: Color intent override.
-            variant: Variant override. When omitted, falls back to the command
-                bar's `button_variant` (default `'ghost'`).
+            variant: Variant override. When omitted, falls back to the toolbar's
+                `button_variant` (default `'ghost'`).
         """
         kw: dict[str, Any] = {}
         if label is not None:
@@ -162,7 +162,7 @@ class Toolbar(PublicWidgetBase):
 
         Returns:
             The menu's `MenuGroup` builder (`add_action` / `add_check` /
-            `add_radio` / `add_separator`; usable as a context manager).
+            `add_radio` / `add_divider`; usable as a context manager).
         """
         return self._internal.add_menu(text, key=key)
 

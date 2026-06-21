@@ -18,6 +18,12 @@ toolbars you build with ``add_toolbar()`` (see :ref:`toolbars-in-a-window`).
 Usage
 -----
 
+Build a toolbar by adding items left to right — each ``add_*`` call appends one.
+``add_spacer()`` splits the bar: items added before it stay on the left, and
+everything after it is pushed to the right edge. The same widget serves as a
+standalone strip and as the building block of a window's chrome — a *stack* of
+toolbars (see `Toolbars in a window`_).
+
 Adding buttons
 ~~~~~~~~~~~~~~
 

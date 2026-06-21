@@ -108,6 +108,9 @@ class Toolbar(Frame):
         # can rebuild the aggregated macOS native menu bar.
         self._on_menu_change: Callable[[], Any] | None = None
 
+        # Cancel a pending menu-shortcut rebind if the bar is destroyed first.
+        self.bind("<Destroy>", self._on_destroy, add="+")
+
     @staticmethod
     def _control_glyph(name: str) -> dict:
         """A title-bar control glyph spec — a small (~14px) glyph regardless of
@@ -355,7 +358,7 @@ class Toolbar(Frame):
         """Add a dropdown menu (File / Edit / …) as a toolbar item.
 
         Returns the menu's `MenuGroup` builder — add items with
-        `add_action` / `add_check` / `add_radio` / `add_separator`, ideally in a
+        `add_action` / `add_check` / `add_radio` / `add_divider`, ideally in a
         `with` block. On Windows/Linux the menu renders as an in-window dropdown
         trigger in the toolbar; the menu also feeds this toolbar's menu model so a
         host can surface it in the macOS native menu bar.
@@ -423,6 +426,20 @@ class Toolbar(Frame):
                 self._menu_model.bind_shortcuts(self.winfo_toplevel())
             except Exception:
                 pass
+
+    def _on_destroy(self, event: Any) -> None:
+        """Cancel a pending menu-shortcut rebind when the toolbar is destroyed.
+
+        `<Destroy>` propagates up from descendants, so act only for the bar itself.
+        """
+        if event.widget is not self:
+            return
+        if self._menu_rebind_pending is not None:
+            try:
+                self.after_cancel(self._menu_rebind_pending)
+            except Exception:
+                pass
+            self._menu_rebind_pending = None
 
     @property
     def menu_model(self) -> "MenuModel | None":
