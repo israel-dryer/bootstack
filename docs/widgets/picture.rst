@@ -1,11 +1,7 @@
 Picture
 =======
 
-Displays an image, scaled to fit the space it is given. ``Picture`` is the
-display widget for pictures — the counterpart to an :class:`Image
-<bootstack.images.Image>`, which is only a source handle. Hand it an image and it
-renders the picture into a resizable area with a chosen fit policy, rounded
-corners, and — for animated GIF or WebP sources — automatic playback.
+Displays an image, scaled to fit the space it is given.
 
 .. image:: /_static/examples/picture-hero-light.png
    :class: bs-screenshot-light
@@ -17,6 +13,12 @@ corners, and — for animated GIF or WebP sources — automatic playback.
 
 Usage
 -----
+
+``Picture`` is the *display* widget — the counterpart to an :class:`Image
+<bootstack.images.Image>`, which is only a source handle. Hand it an image (a
+handle, a file path, or a PIL image) and it renders into a resizable area with a
+chosen ``fit`` policy, rounded corners, and automatic playback for animated GIF or
+WebP sources.
 
 Showing an image
 ~~~~~~~~~~~~~~~~

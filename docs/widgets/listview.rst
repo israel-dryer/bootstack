@@ -15,6 +15,10 @@ visible rows are rendered, making it suitable for thousands of records.
 Usage
 -----
 
+A list view shows records (each a plain ``dict``) as rows, rendering only the
+visible ones so it stays fast over thousands of items. Read or react to the chosen
+rows through ``.selection`` and ``on_select``.
+
 Item fields
 ~~~~~~~~~~~
 

@@ -14,6 +14,10 @@ An inline calendar for single-date or date-range selection.
 Usage
 -----
 
+A calendar picks a single date or a range inline — ``.value`` is a ``date`` (or a
+``(start, end)`` tuple in range mode), and ``on_select`` fires on selection. For a
+compact field that opens a calendar on demand, reach for a :doc:`datefield`.
+
 Basic
 ~~~~~
 
