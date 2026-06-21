@@ -1,14 +1,14 @@
 All widgets accept self-placement kwargs via ``**kwargs``. The parent
 container determines which options apply — ``Column`` / ``Row`` parents use
-the stacking kwargs below, grid-based parents use grid kwargs.
+the layout kwargs below, grid-based parents use grid kwargs.
 
-Column (vertical stacks)
+Column (vertical layout)
 ''''''''''''''''''''''''
 
-Used inside a ``Column``, ``App``, or any other vertical stack. Children stack
-top-to-bottom, so ``horizontal`` aligns each child across the band and ``grow``
-shares the vertical space. (``vertical`` does not apply — the stacking order sets
-the top-to-bottom position.)
+Used inside a ``Column``, ``App``, or any other container with a column layout.
+Children are arranged top-to-bottom, so ``horizontal`` aligns each child across
+the width and ``grow`` shares the vertical space. (``vertical`` does not apply —
+the order of the children sets their top-to-bottom position.)
 
 .. list-table::
    :widths: 25 75
@@ -17,8 +17,8 @@ the top-to-bottom position.)
      - Cross-axis placement of the widget: ``'left'``, ``'center'``,
        ``'right'``, or ``'stretch'`` to fill the available width.
    * - ``grow``
-     - Claim and fill a share of the leftover **vertical** space (the stacking
-       axis). ``True`` or ``False``.
+     - Claim and fill a share of the leftover **vertical** space (the layout
+       direction). ``True`` or ``False``.
    * - ``margin``
      - External spacing in pixels. Accepts an integer (equal on all
        sides), a 2-tuple ``(horizontal, vertical)``, or a 4-tuple
@@ -32,13 +32,13 @@ the top-to-bottom position.)
        or a 2-tuple ``(top, bottom)`` for asymmetric spacing. Overrides
        the vertical component of ``margin=``.
 
-Row (horizontal stacks)
+Row (horizontal layout)
 '''''''''''''''''''''''
 
-Used inside a ``Row`` or any other horizontal stack. Children stack
-left-to-right, so ``vertical`` aligns each child across the band and ``grow``
-shares the horizontal space. (``horizontal`` does not apply — the stacking order
-sets the left-to-right position.)
+Used inside a ``Row`` or any other container with a row layout. Children are
+arranged left-to-right, so ``vertical`` aligns each child across the height and
+``grow`` shares the horizontal space. (``horizontal`` does not apply — the order
+of the children sets their left-to-right position.)
 
 .. list-table::
    :widths: 25 75
@@ -47,8 +47,8 @@ sets the left-to-right position.)
      - Cross-axis placement of the widget: ``'top'``, ``'center'``,
        ``'bottom'``, or ``'stretch'`` to fill the available height.
    * - ``grow``
-     - Claim and fill a share of the leftover **horizontal** space (the stacking
-       axis). ``True`` or ``False``.
+     - Claim and fill a share of the leftover **horizontal** space (the layout
+       direction). ``True`` or ``False``.
    * - ``margin``
      - External spacing in pixels. Accepts an integer (equal on all
        sides), a 2-tuple ``(horizontal, vertical)``, or a 4-tuple
