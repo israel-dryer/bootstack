@@ -16,6 +16,11 @@ switch between pages by clicking tabs or calling `select()`.
 Usage
 -----
 
+Tabs show one page at a time in a fixed area — add each with ``.add(key, label=)``
+and fill the returned page, then switch by clicking a tab or calling
+``select(key)``. Reach for tabs when only one view should show at once; an
+:doc:`Accordion <accordion>` when sections expand inline.
+
 Adding tabs
 ~~~~~~~~~~~
 

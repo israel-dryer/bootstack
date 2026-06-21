@@ -16,6 +16,11 @@ top edge.
 Usage
 -----
 
+A column lays its children out top to bottom. By default they keep their natural
+height — use ``gap=`` to space them, ``horizontal_items=`` to align them on the
+cross axis, and a child's ``grow=True`` (or a :doc:`Spacer <spacer>`) to fill the
+leftover height.
+
 Gap
 ~~~
 

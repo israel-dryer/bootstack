@@ -17,6 +17,11 @@ size itself to fit its content.
 Usage
 -----
 
+A grid is the two-dimensional layout: children auto-flow into cells
+left-to-right and top-to-bottom, or you pin one to an exact ``row=`` / ``column=``
+(spanning with ``rowspan=`` / ``columnspan=``). Reach for it to align content into
+a table; a :doc:`Row <row>` or :doc:`Column <column>` for a single axis.
+
 Column definitions
 ~~~~~~~~~~~~~~~~~~
 

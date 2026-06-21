@@ -14,9 +14,15 @@ the start and items after it cluster at the end.
    :class: bs-screenshot-dark
    :alt: Spacer — dark theme
 
+Usage
+-----
+
 Where ``horizontal_items`` / ``vertical_items`` arrange the *whole* group, a
 Spacer opens a gap at a *single* point — drop one into a toolbar to send the
 trailing buttons to the far edge, no nesting required.
+
+Pushing items apart
+~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -26,9 +32,6 @@ trailing buttons to the far edge, no nesting required.
        bs.Spacer()                       # everything after is pushed right
        bs.Button("Settings")
        bs.Button("Profile")
-
-Usage
------
 
 Fixed gaps
 ~~~~~~~~~~

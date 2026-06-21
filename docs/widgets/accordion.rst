@@ -15,6 +15,10 @@ Each section is a collapsible panel added via ``add()``.
 Usage
 -----
 
+An accordion stacks collapsible sections inline, each added with ``add(title)``.
+Reach for it to let users expand sections in place within a scrolling page; use
+:doc:`Tabs <tabs>` when the views should swap in a fixed area instead.
+
 Basic accordion
 ~~~~~~~~~~~~~~~
 

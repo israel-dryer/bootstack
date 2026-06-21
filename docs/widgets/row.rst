@@ -16,6 +16,11 @@ the left edge.
 Usage
 -----
 
+A row lays its children out left to right. By default they keep their natural
+size — use ``gap=`` to space them, ``vertical_items=`` to align them on the cross
+axis, and a child's ``grow=True`` (or a :doc:`Spacer <spacer>`) to fill the
+leftover width.
+
 Gap
 ~~~
 
