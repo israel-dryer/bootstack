@@ -21,6 +21,22 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
+- **Pre-release `0.1.0a12` shipped + demo rebuild + CONTRIBUTING + Topic-guide
+  review** (2026-06-21; all MERGED). Cut **`0.1.0a12`** to PyPI + GitHub Release
+  (`bump-my-version bump pre_n` → push `main` + tag → `release.yml` → `docs.yml`).
+  Landed in it: the **Topic-guide technical-writer review** (#155, PR **#268** —
+  verified all 12 `docs/reference/*` against the standard; the assessment agents
+  **over-flagged**, only **2 real fixes** came out: a typed-signal section in
+  `signals`, two missing imports in `typography`; the other 10 already met it —
+  *adversarially verify agent claims*); the **hero-first demo rebuild** (#269, PR
+  **#270** — `cli/demo.py` 995→564 lines, 18→12 hero pages, fixed the
+  `AppShell(nav_variant=)` launch crash, the "broken demo"); the **README** refresh
+  (centered screenshots, fixed the broken `shell.add_page` example, stale 8→real 10
+  theme list, +Workbench/Window/ThemeToggle, +`appicon`/`promote` CLI, demoted
+  `add i18n`, re-shot gallery + hero); and **`CONTRIBUTING.md`** (PR **#271** — dev
+  setup + feature-branch→`main` PR flow + localization-review section reusing #17's
+  language; **closed the localization issue fan-out** #17/#19–#37). Verified
+  pre-ship: CLI + all 6 templates scaffold/build/`add`/`doctor`/`icons`/`appicon`.
 - **Docs lead-in + screenshot-refresh pass — PR #266 (MERGED)** + the
   **interactive-widget review initiative COMPLETE.** All interactive widgets are
   now reviewed (Button #243/#244, ButtonGroup #245, TextArea #247/#248, CodeEditor,
@@ -370,50 +386,44 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session.** **Next pre-release gate = two items** (the
-> maintainer's last asks before the next pre-release): **#155** (topic-guide
-> technical-writer review) and **fixing the broken demo** (the gallery demo —
-> parked work was on local `fix/gallery-demo`; `src/bootstack/cli/demo.py` also
-> carries uncommitted local edits). Everything else below is shipped.
+> ⏭ **START HERE next session.** **Pre-release `0.1.0a12` SHIPPED** (PyPI + GitHub
+> Release `v0.1.0a12`, 2026-06-21; docs deployed). It carried the whole session:
+> the **interactive-widget review initiative** (COMPLETE — Button/ButtonGroup/
+> TextArea/CodeEditor/ScrollView/SplitView/Tooltip/Toolbar/StatusBar all reviewed +
+> merged), the **Topic-guide review** (#155, PR #268 — only 2 real fixes; the
+> guides were already mostly to standard), the **dialog + screenshot refresh** (PR
+> #266 — dialogs captured like app windows, filter-dialog rebuilt on a managed
+> `FlexFrame`, Row/Column widget-sizing split), the **hero-first demo rebuild**
+> (#269, PR #270 — 995→564 lines, fixed the `nav_variant=` launch crash), the
+> **README** content/staleness fixes (stale theme list, broken AppShell example,
+> table additions), and **CONTRIBUTING.md** (PR #271 — consolidated and **closed**
+> the localization issue fan-out #17/#19–#37). CLI + all 6 templates verified green
+> pre-ship (scaffold/build/`add`/`doctor`/`icons`/`appicon`).
 >
-> **#155 setup (active):** review the **12** remaining Topic guides under
-> `docs/reference/` (`theming` ✅ is the exemplar/done) against the editorial
-> standard — mental-model-first, no kitchen-sink, scannable, API-verified examples,
-> sentence-case headers / Title-case page title. By git history, recently-rewritten
-> pages (`validation` 06-19, `signals` 06-20, `events` 06-16) may already be close;
-> older-form pages (`scheduling`/`shortcuts` 06-08 sweep, `streams` 06-09,
-> `store`/`images`/`localization` 06-15, `data-sources`/`typography` 06-10, `errors`)
-> likely need the pass — but **none have had the deliberate #155 review**. Run an
-> assessment first (Explore per cluster → per-page meets-it/needs-work verdict),
-> then edit on a dedicated branch. Memory `project_user_guide_fleshout` (note its
-> phase tracking is stale — there is **no** `feat/user-guide-fleshout` branch).
+> **NOW: the road to 0.1.0 STABLE.** Two ship gates + a cleanup backlog from the
+> reviews + one decision-gated feature. The 17 open issues, organized:
 >
-> **DONE this session (all merged to `main`):** the **interactive-widget review
-> initiative is COMPLETE** — Button (#243/#244), ButtonGroup (#245), TextArea
-> (#247/#248), plus CodeEditor, ScrollView, SplitView, Tooltip, Toolbar, StatusBar
-> all reviewed + merged. Then a **docs lead-in + screenshot-refresh pass** (PR
-> **#266**, MERGED): ~45 widget pages got a Usage mental-model lead-in; the
-> widget-sizing include was split **Row vs Column** (they don't share cross-axis
-> options); **dialogs now capture like app windows** (DWM-bounds + `inset=2`, single
-> CSS border + shadow — no native/CSS double border); two **broken dialog scenes**
-> (`message-dialogs`, `dialog`) fixed (they parented raw tk into the public-Column
-> content area); the **filter-dialog list rebuilt on the managed `FlexFrame`
-> content** like the public ScrollView (deformation fix — dropped the raw
-> `ttk.Frame` + a redundant racing `<Configure>` binding); stale screenshots
-> regenerated (app/window/appshell/workbench/card/home-hero/navigation); workbench
-> hero image wired in. **Filed #267** — DPI-aware icon sizing (icons render soft at
-> fractional DPI; sizes are hardcoded with **no `ui_scale`**; rail worst at 28px;
-> its own branch when picked up).
+> **Ship gates (the stable cut):**
+> - **#149** — final public-surface audit + lock + **CHANGELOG** (the ship gate).
+> - **#150** — stabilize the test harness (GUI one-App-per-process; flaky tests).
 >
-> **After the gate (remaining 0.1.0 stable closeout):** **#149** (public-surface
-> audit + CHANGELOG — the ship gate), **#150** (test-harness one-App-per-process),
-> last pre-ship *feature* **#192** (color-swatch Select — needs a shape/naming
-> decision first).
+> **Widget-review cleanup backlog** (additive fixes/features surfaced during the
+> interactive-widget reviews — group sensibly, one PR each):
+> - **Text widgets:** **#242** (`.text` setter dead when a `textsignal` is bound —
+>   family-wide), **#250** (Pythonic `(row, column)` position model vs Tk
+>   `"line.column"`), **#246** (TextArea/CodeEditor reactive `.valid`/`.error`),
+>   **#251** (CodeEditor selection API), **#252** (CodeEditor block indent/dedent).
+> - **ScrollView:** **#254** (`on_scroll` + position getter), **#255** (keyboard scroll).
+> - **Toolbar:** **#262** (return handles from `add_button`/`add_label`), **#263**
+>   (bar density/surface skipped for `**kwargs`-only widgets).
+> - **Other:** **#260** (Tooltip: children added after attach not covered), **#258**
+>   (SplitView `on_sash_moved`), **#208** (DataTable: persist selection by record id
+>   across search/sort/page), **#207** (ContextMenu outside-dismiss vs a
+>   `'break'`-returning target — DEFERRED, analysis on the issue), **#267** (DPI-aware
+>   icon sizing — own branch; also why the README's "DPI-scaled" icon claim was softened).
 >
-> **Open follow-ups still open:** **#242** (text setter dead with bound
-> `textsignal` — family-wide) · **#246** (reactive `.valid`/`.error` for **TextArea
-> only**) · **#207** (context-menu outside-dismiss vs `"break"`, DEFERRED) ·
-> **#267** (DPI icons).
+> **Pre-ship feature (decision-gated):** **#192** — color-swatch Select control;
+> lock shape/naming with the maintainer before any code.
 >
 > **Standing principles** (apply in every review): live properties only for
 > *legitimate runtime needs* (`feedback_live_properties_runtime_need`); prefer Tk
@@ -421,8 +431,12 @@ memories and git history.
 > (`feedback_prefer_native_bindings_dont_undo_conventions`).
 >
 > **Process reminders:** a fix pushed AFTER its PR merged is **stranded** — verify
-> it's actually in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI test
-> files one-per-process (#150). Hold commits until the user tests; per-commit approval.
+> it's in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI test files
+> one-per-process (#150). Hold commits until the user tests; per-commit approval.
+> **Release flow:** `bump-my-version bump pre_n` (edits pyproject + commits +
+> tags) → push `main` + the `v*` tag → `release.yml` builds + publishes to PyPI +
+> creates the GitHub Release → `docs.yml` deploys. There is **no `development`
+> branch** (CONTRIBUTING.md and the localization workflow target `main`).
 
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
 > DRAINED (#141/#142/#151/#153/#156/#157/#158 merged; see the "0.1.0 API-freeze
