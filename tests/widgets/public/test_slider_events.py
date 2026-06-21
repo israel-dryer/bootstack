@@ -19,31 +19,6 @@ from bootstack.events import (
 )
 
 
-@pytest.fixture(scope="module")
-def shown_app():
-    """A single shown App for the module (one Tk root → avoids multi-root churn).
-
-    Widgets created in a test auto-place into this App's container and are
-    mapped once the loop is pumped, so virtual events are delivered.
-    """
-    app = bs.App()
-    app.__enter__()            # push container (App hides the window)
-    root = app._tk_root
-    root.deiconify()           # show, so child widgets get mapped
-    root.update_idletasks()
-    try:
-        yield app
-    finally:
-        try:
-            app.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 def _pump(app) -> None:
     root = app._tk_root
     root.update_idletasks()

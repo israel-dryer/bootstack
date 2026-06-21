@@ -11,21 +11,6 @@ import pytest
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def app():
-    import bootstack as bs
-
-    app = bs.App()
-    app._tk_root.withdraw()
-    try:
-        yield app
-    finally:
-        try:
-            app._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_add_widget_builds_class_and_returns_instance(app):
     import bootstack as bs
 

@@ -30,27 +30,6 @@ PROJECT = [
 ]
 
 
-@pytest.fixture(scope="module")
-def shown_app():
-    """A single shown App so child widgets get mapped and styles build."""
-    app = bs.App()
-    app.__enter__()
-    root = app._tk_root
-    root.deiconify()
-    root.update_idletasks()
-    try:
-        yield app
-    finally:
-        try:
-            app.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 def _pump(app) -> None:
     root = app._tk_root
     root.update_idletasks()

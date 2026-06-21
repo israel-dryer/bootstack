@@ -169,6 +169,21 @@ class Typography:
         cls._override_tk_fonts()
 
     @classmethod
+    def reset(cls) -> None:
+        """Forget the Tk-bound named-font cache and root reference.
+
+        The cached named fonts (`body`, `heading-lg`, ...) and the derived
+        fonts (`body[bold]`, ...) are `TkFont`s bound to the root that created
+        them; once that root is destroyed they are stale, and their finalizers
+        would later run against a foreign interpreter. Clearing them lets the
+        next `initialize()` rebuild against a fresh root. Called from
+        App.destroy so a subsequent App starts clean.
+        """
+        cls._root = None
+        cls._named_fonts = {}
+        _DERIVED_FONTS.clear()
+
+    @classmethod
     def use_fonts(cls, fonts: FontTokens) -> None:
         cls._fonts = fonts
         cls._ensure_named_token_fonts()

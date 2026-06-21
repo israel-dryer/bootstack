@@ -12,20 +12,6 @@ import bootstack as bs
 from bootstack.errors import NavigationError
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-
-
 def test_tabs_missing_key_raises(app):
     t = bs.Tabs()
     t.add("a", label="A")

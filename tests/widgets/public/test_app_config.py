@@ -11,6 +11,8 @@ import pytest
 
 import bootstack as bs
 
+pytestmark = pytest.mark.isolated
+
 
 @pytest.fixture
 def make_app():

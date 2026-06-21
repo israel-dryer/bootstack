@@ -13,23 +13,6 @@ import pytest
 import bootstack as bs
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_no_tab_binding_means_single_tab_stop(app):
     """No instance <Tab> / <<PrevWindow>> binding → Tk traverses focus straight
     through; the widget can never trap focus."""

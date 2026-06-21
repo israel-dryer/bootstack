@@ -14,21 +14,6 @@ import pytest
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def app():
-    import bootstack as bs
-
-    app = bs.App()
-    app._tk_root.withdraw()
-    try:
-        yield app
-    finally:
-        try:
-            app._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_right_side_inserts_spacer_once(app):
     import bootstack as bs
 

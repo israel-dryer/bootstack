@@ -205,6 +205,17 @@ def uninstall_visual_focus() -> None:
     _installed = False
 
 
+def reset_visual_focus_root() -> None:
+    """Forget the cached root reference without un-patching `bind_all`.
+
+    `_root_ref` is captured lazily from the first root that binds. After that
+    root is destroyed the reference is stale; clearing it lets the next root
+    re-bind. The `bind_all` patch (installed once at import) stays in place.
+    """
+    global _root_ref
+    _root_ref = None
+
+
 def is_keyboard_focus(widget: tk.Misc) -> bool:
     """Check if a widget currently has keyboard-initiated focus.
 
@@ -224,5 +235,6 @@ def is_keyboard_focus(widget: tk.Misc) -> bool:
 __all__ = [
     'install_visual_focus',
     'uninstall_visual_focus',
+    'reset_visual_focus_root',
     'is_keyboard_focus',
 ]

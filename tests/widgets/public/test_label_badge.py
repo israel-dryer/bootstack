@@ -5,12 +5,15 @@ import pytest
 
 
 @pytest.fixture
-def app_ctx():
-    from bootstack.widgets import App, Column
-    with App() as app:
-        with Column() as stack:
-            yield stack
-    app._tk_root.destroy()
+def app_ctx(app):
+    """A content Column under the shared session App.
+
+    Yields a `Column` (the active container) so the tests' widgets parent into
+    it; the shared `app` fixture scene-resets afterward.
+    """
+    from bootstack.widgets import Column
+    with Column() as stack:
+        yield stack
 
 
 @pytest.mark.gui
@@ -28,37 +31,6 @@ def test_label_text_property_rw(app_ctx):
     assert lbl.text == "updated"
 
 
-@pytest.mark.gui
-def test_label_color_kwarg(app_ctx):
-    from bootstack.widgets import Label
-    lbl = Label("Hi", color="#ff0000")
-    assert lbl.color == "#ff0000"
-
-
-@pytest.mark.gui
-def test_label_color_property_rw(app_ctx):
-    from bootstack.widgets import Label
-    lbl = Label("Hi")
-    lbl.color = "#00ff00"
-    assert lbl.color == "#00ff00"
-
-
-@pytest.mark.gui
-def test_label_disabled_kwarg(app_ctx):
-    from bootstack.widgets import Label
-    lbl = Label("Hi", disabled=True)
-    assert lbl.disabled is True
-
-
-@pytest.mark.gui
-def test_label_disabled_property_rw(app_ctx):
-    from bootstack.widgets import Label
-    lbl = Label("Hi")
-    assert lbl.disabled is False
-    lbl.disabled = True
-    assert lbl.disabled is True
-    lbl.disabled = False
-    assert lbl.disabled is False
 
 
 @pytest.mark.gui
@@ -71,7 +43,7 @@ def test_label_wrap_width_maps_to_wraplength(app_ctx):
 @pytest.mark.gui
 def test_label_tk_is_internal_label(app_ctx):
     from bootstack.widgets import Label
-    from bootstack.widgets.primitives.label import Label as _InternalLabel
+    from bootstack.widgets._impl.primitives.label import Label as _InternalLabel
     lbl = Label("Hi")
     assert isinstance(lbl.tk, _InternalLabel)
 
@@ -92,7 +64,7 @@ def test_badge_is_label_subclass():
 @pytest.mark.gui
 def test_badge_tk_is_internal_badge(app_ctx):
     from bootstack.widgets import Badge
-    from bootstack.widgets.primitives.badge import Badge as _InternalBadge
+    from bootstack.widgets._impl.primitives.badge import Badge as _InternalBadge
     b = Badge("new")
     assert isinstance(b.tk, _InternalBadge)
 

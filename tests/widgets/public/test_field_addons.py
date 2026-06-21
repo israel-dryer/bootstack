@@ -8,26 +8,6 @@ import pytest
 import bootstack as bs
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    root = a._tk_root
-    root.deiconify()
-    root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 pytestmark = pytest.mark.gui
 
 

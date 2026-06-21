@@ -14,21 +14,6 @@ from bootstack.widgets._impl.composites.contextmenu import _NativeContextMenu
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def app():
-    import bootstack as bs
-
-    app = bs.App()
-    app._tk_root.withdraw()
-    try:
-        yield app
-    finally:
-        try:
-            app._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def test_backend_has_no_menu_manager(app):
     cm = _NativeContextMenu(master=app._tk_root)
     assert not hasattr(cm, "_mgr")

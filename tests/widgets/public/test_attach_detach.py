@@ -21,20 +21,11 @@ from bootstack.errors import ParentResolutionError
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def app():
-    """A single shown App shared by every test in this module."""
-    a = bs.App()
-    a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
-    a._tk_root.update()
-    try:
-        yield a
-    finally:
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
+@pytest.fixture
+def app(shown_app):
+    """attach/detach drives `<Map>`/`<Unmap>` events (on_attach/on_detach),
+    which only fire when the root is mapped — so use the shown shared app."""
+    return shown_app
 
 
 @pytest.fixture

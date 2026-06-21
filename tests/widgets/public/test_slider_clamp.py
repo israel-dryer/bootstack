@@ -12,23 +12,6 @@ import pytest
 import bootstack as bs
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 # --- Slider --------------------------------------------------------------
 
 def test_slider_value_setter_clamps_high(app):

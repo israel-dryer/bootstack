@@ -15,6 +15,8 @@ import inspect
 import pytest
 
 import bootstack as bs
+
+pytestmark = pytest.mark.isolated
 from bootstack.errors import BootstackError
 from bootstack.widgets.sidebar_toggle import SidebarToggle
 

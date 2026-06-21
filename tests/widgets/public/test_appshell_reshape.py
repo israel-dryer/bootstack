@@ -17,6 +17,8 @@ import inspect
 import pytest
 
 import bootstack as bs
+
+pytestmark = pytest.mark.isolated
 from bootstack.widgets.appshell import AppShell, PageNav, Workbench, Workspace
 from bootstack.style.builders.sidenav import _selection_colors
 from bootstack.style.style_builder_ttk import StyleBuilderTtk

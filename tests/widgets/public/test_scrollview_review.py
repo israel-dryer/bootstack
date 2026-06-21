@@ -19,25 +19,6 @@ from bootstack.widgets._impl.composites.scrollview import ScrollView as _ISV
 from bootstack.widgets._impl.primitives.frame import Frame as _Frame
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App()
-    a.__enter__()
-    a._tk_root.deiconify()
-    a._tk_root.update_idletasks()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            a._tk_root.destroy()
-        except Exception:
-            pass
-
-
 # ----- the double-fire fix -----
 
 def test_configure_handler_fires_once_per_resize(app):
@@ -95,7 +76,10 @@ def test_horizontal_mode_ignores_vertical_wheel(app):
 
 # ----- canvas background tracks the theme -----
 
-def test_canvas_background_tracks_theme_toggle(app):
+def test_canvas_background_tracks_theme_toggle(shown_app):
+    # The canvas theme-repaint is gated on winfo_viewable(), so the root must be
+    # mapped — use the shown shared app.
+    app = shown_app
     sv = bs.ScrollView(height=120)
     with sv:
         bs.Label("x")

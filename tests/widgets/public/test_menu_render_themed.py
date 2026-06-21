@@ -14,21 +14,6 @@ from bootstack.widgets._impl.composites.menu.render_themed import ThemedMenuBar
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def app():
-    import bootstack as bs
-
-    app = bs.App()
-    app._tk_root.withdraw()
-    try:
-        yield app
-    finally:
-        try:
-            app._tk_root.destroy()
-        except Exception:
-            pass
-
-
 def _sample_model() -> MenuModel:
     model = MenuModel()
     with model.add_menu("File") as file:

@@ -453,6 +453,21 @@ def get_style(master: Master = None) -> Style:
         return Style(master)
 
 
+def reset_style() -> None:
+    """Drop the process-wide Style singleton.
+
+    The Style singleton is a `ttk.Style` bound to the Tk root that created it.
+    Once that root is destroyed its interpreter is gone, so the singleton can no
+    longer be used — a fresh App must rebuild Style against the new root. Call
+    this after destroying the root (App.destroy does) so the next
+    `get_style()`/`Style()` constructs cleanly instead of reusing a dead
+    instance (whose `theme_use` would fail, e.g. "named font body does not
+    already exist").
+    """
+    global _style_instance
+    _style_instance = None
+
+
 def get_style_builder() -> StyleBuilderTtk:
     """Return the style builder for the currently active theme.
 

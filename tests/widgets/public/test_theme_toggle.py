@@ -14,20 +14,6 @@ SUN = "sun-fill"
 MOON = "moon-stars-fill"
 
 
-@pytest.fixture(scope="module")
-def app():
-    a = bs.App(theme="bootstrap-light")
-    a.__enter__()
-    a._tk_root.update()
-    try:
-        yield a
-    finally:
-        try:
-            a.__exit__(None, None, None)
-        except Exception:
-            pass
-
-
 def _flush(app):
     app._tk_root.update()
 

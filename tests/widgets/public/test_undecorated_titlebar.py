@@ -12,7 +12,7 @@ import sys
 
 import pytest
 
-pytestmark = pytest.mark.gui
+pytestmark = [pytest.mark.gui, pytest.mark.isolated]
 
 _NOT_MAC = sys.platform != "darwin"
 _skip_mac = pytest.mark.skipif(not _NOT_MAC, reason="overrideredirect disabled on macOS")

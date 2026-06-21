@@ -19,27 +19,6 @@ import bootstack as bs
 pytestmark = pytest.mark.gui
 
 
-@pytest.fixture(scope="module")
-def shown_app():
-    app = bs.App()
-    app.__enter__()
-    root = app._tk_root
-    root.geometry("440x640")
-    root.deiconify()
-    root.update_idletasks()
-    try:
-        yield app
-    finally:
-        try:
-            app.__exit__(None, None, None)
-        except Exception:
-            pass
-        try:
-            root.destroy()
-        except Exception:
-            pass
-
-
 def _pump(app):
     app._tk_root.update_idletasks()
     app._tk_root.update()

@@ -675,6 +675,32 @@ class App(BaseWindow, WidgetCapabilitiesMixin, tkinter.Tk):
             except tkinter.TclError:
                 pass
         clear_current_app(self)
+        # Drop every process-wide cache that holds a Tk object bound to THIS
+        # root's interpreter — the Style singleton, the named/derived font
+        # caches, the nine-patch PhotoImage cache, and the visual-focus root
+        # ref. This must happen *before* super().destroy(): those cached
+        # PhotoImage/TkFont objects run `image delete`/`font delete` in their
+        # finalizers, and if they outlive the interpreter that owns them the
+        # call lands on a foreign/dead interpreter — a native crash in ttk
+        # element_create on the *next* root (the C layer, so Python can't catch
+        # it). Releasing + gc.collect() while this root is still alive lets the
+        # finalizers run cleanly. Only when no other App is live (single-App is
+        # the norm; this also lets the GUI test suite run module-after-module in
+        # one process, and fixes reopen-an-app-after-close in production).
+        if not has_current_app():
+            try:
+                import gc
+                from bootstack.style.style import reset_style
+                from bootstack.style.typography import Typography
+                from bootstack._core.images import _ImageService
+                from bootstack._runtime.visual_focus import reset_visual_focus_root
+                reset_style()
+                Typography.reset()
+                _ImageService.clear_cache()
+                reset_visual_focus_root()
+                gc.collect()
+            except Exception:
+                pass
         super().destroy()
 
     # ----- Window state persistence ------------------------------------------

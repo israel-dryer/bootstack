@@ -129,9 +129,10 @@ search = "version = \"{current_version}\""
 replace = "version = \"{new_version}\""
 
 [tool.pytest.ini_options]
-testpaths = ["tests/cli", "tests/widgets/public"]
+testpaths = ["tests/cli", "tests/widgets/public", "tests/data"]
 markers = [
     "gui: requires a Tk display (deselect with -m 'not gui')",
+    "isolated: constructs its own Tk root (App/AppShell/Window kwargs); must run in a dedicated process. Run the suite via `python tests/run_gui.py`, which executes the shared-root suite once and each isolated module in its own process.",
 ]
 
 [tool.ruff.lint]
