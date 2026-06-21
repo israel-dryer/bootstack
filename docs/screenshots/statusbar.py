@@ -38,8 +38,18 @@ def surface():
     app.run()
 
 
+def embedding():
+    with bs.App(title="StatusBar — Embedding", minsize=(720, 1), padding=0) as app:
+        sb = bs.StatusBar(horizontal="stretch")
+        sb.add_text("Syncing", icon="arrow-repeat")
+        bs.ProgressBar(parent=sb, value=65)
+        sb.add_text("main", icon="git", side="right")
+    app.run()
+
+
 SCENES = {
-    "hero":     hero,
-    "segments": segments,
-    "surface":  surface,
+    "hero":      hero,
+    "segments":  segments,
+    "surface":   surface,
+    "embedding": embedding,
 }

@@ -2,9 +2,7 @@ StatusBar
 =========
 
 A horizontal band of passive status segments — counts, sync state, cursor
-position, a ready message. Segments are added left-to-right via ``add_text()``
-and ``add_widget()``; an ``add_spacer()`` (or ``side="right"``) splits the band
-into a left and a right cluster.
+position, a ready message.
 
 .. image:: /_static/examples/statusbar-hero-light.png
    :class: bs-screenshot-light bs-window-screenshot
@@ -14,13 +12,15 @@ into a left and a right cluster.
    :class: bs-screenshot-dark bs-window-screenshot
    :alt: StatusBar at the bottom of an app window — dark theme
 
+Usage
+-----
+
 By convention the status bar reads as a *quiet display strip* — for interactive
 controls (buttons, a search box) use a
 :class:`Toolbar <bootstack.Toolbar>` instead. Nothing enforces it, but the
 default ``'chrome'`` surface and compact density are tuned for passive status.
-
-Usage
------
+Segments add left-to-right; an ``add_spacer()`` (or ``side="right"``) splits the
+band into a left and a right cluster.
 
 Text segments
 ~~~~~~~~~~~~~~
@@ -84,6 +84,24 @@ to add it to the left cluster. Useful for a slim progress indicator or a badge.
    sb.add_text("Syncing", icon="arrow-repeat")
    bs.ProgressBar(parent=sb, value=65)
    sb.add_text("main", icon="git", side="right")
+
+.. image:: /_static/examples/statusbar-embedding-light.png
+   :class: bs-screenshot-light
+   :alt: StatusBar with an inline progress bar — light theme
+
+.. image:: /_static/examples/statusbar-embedding-dark.png
+   :class: bs-screenshot-dark
+   :alt: StatusBar with an inline progress bar — dark theme
+
+Clearing segments
+~~~~~~~~~~~~~~~~~~
+
+``clear()`` removes every segment, resetting the band to empty — useful when you
+rebuild the status from scratch.
+
+.. code-block:: python
+
+   sb.clear()
 
 Surface
 ~~~~~~~
@@ -149,7 +167,7 @@ See also
 the interactive sibling for buttons and controls in the window chrome.
 
 :class:`AppShell <bootstack.widgets.appshell.AppShell>` —
-full application scaffold with a built-in status bar, command bar, and sidebar.
+full application scaffold with a built-in status bar, toolbars, and sidebar.
 
 API
 ---
