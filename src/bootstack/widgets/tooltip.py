@@ -69,6 +69,16 @@ class Tooltip:
 
         self._internal = _InternalToolTip(tk_widget, **internal_kwargs)
 
+    @property
+    def text(self) -> str:
+        """The tooltip text. Assign to change it — a visible tooltip updates
+        immediately, and the next hover shows the new text."""
+        return self._internal._text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self._internal.text = value
+
     def destroy(self) -> None:
         """Remove the tooltip and unbind all event handlers."""
         self._internal.destroy()

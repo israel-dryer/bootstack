@@ -15,6 +15,11 @@ follow the mouse or anchor to a specific edge of the target.
 Usage
 -----
 
+A tooltip is an *attachment*, not a placed widget: create it once on a target and
+it manages its own hover, show, and hide. Keep a reference only if you want to
+update its ``text`` or ``destroy()`` it later. Positioning follows the mouse by
+default, or pins to an edge of the target with ``anchor_point``.
+
 Basic
 ~~~~~
 
@@ -46,6 +51,14 @@ opposite of ``anchor_point``.
 
    # To the right
    bs.Tooltip(btn, "Anchored right", anchor_point="e", window_point="w")
+
+.. image:: /_static/examples/tooltip-anchor-light.png
+   :class: bs-screenshot-light
+   :alt: Tooltips anchored above, below, and to the right — light theme
+
+.. image:: /_static/examples/tooltip-anchor-dark.png
+   :class: bs-screenshot-dark
+   :alt: Tooltips anchored above, below, and to the right — dark theme
 
 Accent colors
 ~~~~~~~~~~~~~
@@ -106,6 +119,19 @@ axis, or ``False`` to disable it entirely.
    bs.Tooltip(btn, "Never flips", auto_flip=False)
    bs.Tooltip(btn, "Flips vertically only", auto_flip="vertical")
 
+Updating the text
+~~~~~~~~~~~~~~~~~
+
+``text`` is a live property. Keep a reference to the tooltip and assign a new
+value to change it — a visible tooltip updates immediately, and the next hover
+shows the new text.
+
+.. code-block:: python
+
+   tip = bs.Tooltip(save_btn, "Not saved")
+   # … after saving …
+   tip.text = "All changes saved"
+
 Removing a tooltip
 ~~~~~~~~~~~~~~~~~~
 
@@ -118,10 +144,13 @@ the target widget.
    # … later …
    tip.destroy()
 
-Widget sizing
-~~~~~~~~~~~~~
+See also
+--------
 
-.. include:: ../shared/widget-sizing.rst
+:doc:`contextmenu` — a popup attached to a widget, opened on right-click rather
+than hover.
+
+:doc:`toast` — transient corner notifications for status and feedback.
 
 API
 ---

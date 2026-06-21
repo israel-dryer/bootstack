@@ -47,7 +47,38 @@ def accents():
     app.run()
 
 
+def anchor():
+    # One button with tooltips pinned on three sides, all forced on screen at
+    # once for the screenshot. auto_flip=False keeps each one exactly where it
+    # is anchored; the button is centered so every tip lands in the window.
+    with bs.App(title="Tooltip — Anchors", size=(540, 230), padding=24,
+                vertical_items="center") as app:
+        btn = bs.Button("More info", accent="primary")
+        tips = [
+            bs.Tooltip(btn, "Anchored above", auto_flip=False,
+                       anchor_point="n", window_point="s"),
+            bs.Tooltip(btn, "Anchored below", auto_flip=False,
+                       anchor_point="s", window_point="n"),
+            bs.Tooltip(btn, "Anchored to the right", auto_flip=False,
+                       anchor_point="e", window_point="w"),
+        ]
+
+        def trigger():
+            for t in tips:
+                t._internal._show_tip()
+
+        def ensure_topmost():
+            for t in tips:
+                if t._internal._toplevel:
+                    t._internal._toplevel.attributes('-topmost', True)
+
+        app.tk.after(600, trigger)
+        app.tk.after(900, ensure_topmost)
+    app.run()
+
+
 SCENES = {
     "hero":    hero,
     "accents": accents,
+    "anchor":  anchor,
 }
