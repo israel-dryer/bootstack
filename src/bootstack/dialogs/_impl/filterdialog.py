@@ -125,11 +125,6 @@ class FilterDialogContent(ttk.Frame):
         self._scroll_container = ttk.Frame(scroll_view.canvas)
         scroll_view.add(self._scroll_container)
 
-        # Stretch container frame to canvas width for full-width checkboxes
-        def _configure_scroll_width(event):
-            scroll_view.canvas.itemconfig(scroll_view._window_id, width=event.width)
-        scroll_view.canvas.bind('<Configure>', _configure_scroll_width)
-
         # Add item checkboxes
         for item in self._items:
             cb = ttk.Checkbutton(self._scroll_container, text=item['text'])
