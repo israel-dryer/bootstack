@@ -21,7 +21,31 @@ Go from nothing to something fast. The user should never need to `import tkinter
 Pointers only — these shipped; rationale, detail, and gotchas live in the linked
 memories and git history.
 
-- **Widget-review initiative — Button · ButtonGroup · TextArea** (this session;
+- **Docs lead-in + screenshot-refresh pass — PR #266 (MERGED)** + the
+  **interactive-widget review initiative COMPLETE.** All interactive widgets are
+  now reviewed (Button #243/#244, ButtonGroup #245, TextArea #247/#248, CodeEditor,
+  ScrollView, SplitView, Tooltip, Toolbar, StatusBar — each its own merged PR). Then
+  **PR #266**: ~45 widget pages got a Usage **mental-model lead-in** (intro stays
+  definitional; teaching leads the Usage section; no bare Usage); the widget-sizing
+  include split **Row vs Column** (different cross-axis options — Column uses
+  `horizontal` for cross-align + `grow` fills vertical, Row the mirror); **dialogs
+  now capture like app windows** — routed the dialog target through the App/Window
+  DWM-extended-bounds + `inset=2` path so the native frame is cropped and a **single
+  CSS border + shadow** replaces it (`.bs-dialog-screenshot` shares the
+  `.bs-window-screenshot` rule; no native/CSS double border); two **broken dialog
+  scenes** (`message-dialogs`, `dialog`) fixed — they parented raw tk primitives
+  into the dialog's now-public-`Column` content area (rewritten with public widgets);
+  the **filter-dialog value list rebuilt on the managed `FlexFrame` content** the
+  public ScrollView uses (dropped the legacy raw `ttk.Frame`-in-canvas + a redundant
+  racing `<Configure>` width binding — fixed the clipped/deformed list); stale
+  screenshots regenerated (app/window/appshell/workbench/card/home-hero/navigation)
+  and the **workbench hero image** wired into its page. **Filed #267** — DPI-aware
+  icon sizing (icons render soft at fractional DPI: sizes hardcoded, **no `ui_scale`**
+  multiplier anywhere; rail worst at 28px; own branch). Investigation gotcha: the
+  workspaces nav shot's softness is the **icon DPI issue (#267)**, not capture width
+  — the Workbench renders the same 720px as the AppShell scenes, native capture, no
+  downscale (a `_capture_max_width`/size bump was tried and **reverted**).
+- **Widget-review initiative — Button · ButtonGroup · TextArea** (prior session;
   all MERGED). Began the "finish reviewing the interactive widgets" sweep
   (audit→fix→test→docs→follow-ups, one PR each). **Button** (#243; walk-backs
   #244): activation-based `on_click` (class map → `<<Click>>` from a command
@@ -346,44 +370,59 @@ memories and git history.
 
 ## Next up
 
-> ⏭ **START HERE next session.** Active initiative: **finish reviewing the
-> interactive widgets** (audit→fix→test→docs→file-follow-ups, one PR each — the
-> same cadence as the field family). Coverage map + full state in memory
-> `project_widget_review_initiative`. Done this session: **Button** (#243 + #244
-> walk-backs), **ButtonGroup** (#245), **TextArea** (#247 + #248 native undo/redo).
+> ⏭ **START HERE next session.** **Next pre-release gate = two items** (the
+> maintainer's last asks before the next pre-release): **#155** (topic-guide
+> technical-writer review) and **fixing the broken demo** (the gallery demo —
+> parked work was on local `fix/gallery-demo`; `src/bootstack/cli/demo.py` also
+> carries uncommitted local edits). Everything else below is shipped.
 >
-> **NEXT widget = CodeEditor** (most complex). Going in: **keep Tab-as-indent**
-> (intentional — do NOT apply TextArea's Tab-moves-focus fix); **check whether it
-> carries form-validation surface** (`required`/`add_validation_rule`/`on_valid`/
-> `.valid`/`.error`) that does NOT belong — CodeEditor is **not** a form field
-> (maintainer call); audit find/replace + smart-indent; apply the native-bindings
-> lens (`feedback_prefer_native_bindings_dont_undo_conventions`).
+> **#155 setup (active):** review the **12** remaining Topic guides under
+> `docs/reference/` (`theming` ✅ is the exemplar/done) against the editorial
+> standard — mental-model-first, no kitchen-sink, scannable, API-verified examples,
+> sentence-case headers / Title-case page title. By git history, recently-rewritten
+> pages (`validation` 06-19, `signals` 06-20, `events` 06-16) may already be close;
+> older-form pages (`scheduling`/`shortcuts` 06-08 sweep, `streams` 06-09,
+> `store`/`images`/`localization` 06-15, `data-sources`/`typography` 06-10, `errors`)
+> likely need the pass — but **none have had the deliberate #155 review**. Run an
+> assessment first (Explore per cluster → per-page meets-it/needs-work verdict),
+> then edit on a dedicated branch. Memory `project_user_guide_fleshout` (note its
+> phase tracking is stale — there is **no** `feat/user-guide-fleshout` branch).
 >
-> **Remaining after CodeEditor:** ScrollView, SplitView, Tooltip, Toolbar,
-> StatusBar. (Display/layout widgets — Label/Badge/ProgressBar/Gauge/Card/GroupBox/
-> Divider/Spacer/Row/Column/Grid/ThemeToggle — need NO behavior review.)
+> **DONE this session (all merged to `main`):** the **interactive-widget review
+> initiative is COMPLETE** — Button (#243/#244), ButtonGroup (#245), TextArea
+> (#247/#248), plus CodeEditor, ScrollView, SplitView, Tooltip, Toolbar, StatusBar
+> all reviewed + merged. Then a **docs lead-in + screenshot-refresh pass** (PR
+> **#266**, MERGED): ~45 widget pages got a Usage mental-model lead-in; the
+> widget-sizing include was split **Row vs Column** (they don't share cross-axis
+> options); **dialogs now capture like app windows** (DWM-bounds + `inset=2`, single
+> CSS border + shadow — no native/CSS double border); two **broken dialog scenes**
+> (`message-dialogs`, `dialog`) fixed (they parented raw tk into the public-Column
+> content area); the **filter-dialog list rebuilt on the managed `FlexFrame`
+> content** like the public ScrollView (deformation fix — dropped the raw
+> `ttk.Frame` + a redundant racing `<Configure>` binding); stale screenshots
+> regenerated (app/window/appshell/workbench/card/home-hero/navigation); workbench
+> hero image wired in. **Filed #267** — DPI-aware icon sizing (icons render soft at
+> fractional DPI; sizes are hardcoded with **no `ui_scale`**; rail worst at 28px;
+> its own branch when picked up).
 >
-> **Open follow-ups filed this session:** **#242** (text setter dead with bound
-> `textsignal` — family-wide, confirmed on Label) · **#246** (reactive
-> `.valid`/`.error` parity for **TextArea only**; CodeEditor excluded) · **#207**
-> (context-menu outside-dismiss vs `"break"`) **DEFERRED** with full analysis.
-> **Decisions:** **#222 CLOSED won't-do** (live placeholder/mask not a runtime
-> need); **#234 DONE** (#241, SpinnerField increment/decrement only).
+> **After the gate (remaining 0.1.0 stable closeout):** **#149** (public-surface
+> audit + CHANGELOG — the ship gate), **#150** (test-harness one-App-per-process),
+> last pre-ship *feature* **#192** (color-swatch Select — needs a shape/naming
+> decision first).
 >
-> **Two standing principles reinforced** (now in memory, apply in every review):
-> live properties only for *legitimate runtime needs*
-> (`feedback_live_properties_runtime_need`); prefer Tk native/virtual-event
-> bindings and don't undo an existing convention without a clear reason
+> **Open follow-ups still open:** **#242** (text setter dead with bound
+> `textsignal` — family-wide) · **#246** (reactive `.valid`/`.error` for **TextArea
+> only**) · **#207** (context-menu outside-dismiss vs `"break"`, DEFERRED) ·
+> **#267** (DPI icons).
+>
+> **Standing principles** (apply in every review): live properties only for
+> *legitimate runtime needs* (`feedback_live_properties_runtime_need`); prefer Tk
+> native/virtual-event bindings, don't undo a convention without reason
 > (`feedback_prefer_native_bindings_dont_undo_conventions`).
 >
-> **Alternative track** if pausing widget reviews: the **0.1.0 stable closeout** —
-> **#149** (public-surface audit + CHANGELOG; the ship gate), **#150** (test-harness
-> one-App-per-process), **#155** (topic-guide writer pass). Last pre-ship *feature*
-> is **#192** (color-swatch Select) — needs a shape/naming decision first.
->
 > **Process reminders:** a fix pushed AFTER its PR merged is **stranded** — verify
-> it's actually in `main` (bit us on #243→#244). Test PUBLIC paths, not internal
-> side-hacks. Run GUI test files one-per-process (#150).
+> it's actually in `main`. Test PUBLIC paths, not internal side-hacks. Run GUI test
+> files one-per-process (#150). Hold commits until the user tests; per-commit approval.
 
 > The big breaking changes for the **0.1.0 (stable) — API freeze** milestone are
 > DRAINED (#141/#142/#151/#153/#156/#157/#158 merged; see the "0.1.0 API-freeze
