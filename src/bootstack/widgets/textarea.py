@@ -222,17 +222,27 @@ class TextArea(PublicWidgetBase):
         """
         self._internal.add_validation_rule(rule_type, **kwargs)
 
-    def insert(self, index: str, text: str) -> None:
-        """Insert `text` at `index`.
+    def insert(self, text: str) -> None:
+        """Insert `text` at the cursor.
 
-        `index` is a text position: `'end'` for the end of the content, or a
-        `'line.column'` string such as `'1.0'` (line 1, column 0).
+        Read-only blocks *user* edits, not programmatic ones: this applies
+        even when `read_only=True`, leaving the area read-only afterward.
 
         Args:
-            index: Target text position, e.g. `'end'` or `'1.0'`.
-            text: Text to insert.
+            text: Text to insert at the current cursor position.
         """
-        self._internal._core.insert(index, text)
+        self._internal._core.insert("insert", text)
+
+    def append(self, text: str) -> None:
+        """Append `text` to the end of the content.
+
+        Applies even when `read_only=True`, leaving the area read-only
+        afterward.
+
+        Args:
+            text: Text to add at the end of the content.
+        """
+        self._internal._core.insert("end-1c", text)
 
     def select_all(self) -> None:
         """Select all text content."""

@@ -217,11 +217,11 @@ class CodeEditor(PublicWidgetBase):
 
     @property
     def cursor_position(self) -> tuple[int, int]:
-        """The insertion cursor position as a 1-indexed `(line, column)` tuple.
+        """The insertion cursor as a 1-indexed `(line, col)` tuple.
 
-        Line 1, column 1 is the start of the content. Read it in an
-        `on_cursor_move` handler to drive a status-bar readout. Read-only —
-        use `goto_line()` to move the cursor.
+        `(1, 1)` is the start of the content — the same coordinates `insert()`
+        and `goto()` accept. Read it in an `on_cursor_move` handler to drive a
+        status-bar readout. Read-only — use `goto()` to move the cursor.
         """
         idx = self._internal._core.text.index("insert")
         line, col = idx.split(".")
@@ -271,20 +271,41 @@ class CodeEditor(PublicWidgetBase):
         """Clear all text content."""
         self._internal.value = ""
 
-    def insert(self, index: str, text: str) -> None:
-        """Insert `text` at `index`.
+    def insert(self, text: str, line: int | None = None, col: int | None = None) -> None:
+        """Insert `text` at a position, defaulting to the cursor.
 
-        `index` is a text position: `'end'` for the end of the content, or a
-        `'line.column'` string such as `'1.0'` (line 1, column 0).
+        With no `line`/`col`, inserts at the current cursor. Pass `line` to
+        insert at the start of that line, or `line` and `col` together for an
+        exact position. Both are 1-indexed — `(1, 1)` is the start of the
+        content, the same coordinates `cursor_position` reports and `goto()`
+        accepts.
 
         Read-only blocks *user* edits, not programmatic ones: this applies even
         when `read_only=True`, leaving the editor read-only afterward.
 
         Args:
-            index: Target text position, e.g. `'end'` or `'1.0'`.
             text: Text to insert.
+            line: 1-indexed line, or `None` to use the cursor's line. Defaults
+                to `None`.
+            col: 1-indexed column, or `None` for the start of the line.
+                Defaults to `None`.
         """
+        if line is None:
+            index = "insert"
+        else:
+            index = f"{line}.{(col or 1) - 1}"
         self._internal._core.insert(index, text)
+
+    def append(self, text: str) -> None:
+        """Append `text` to the end of the content.
+
+        Applies even when `read_only=True`, leaving the editor read-only
+        afterward.
+
+        Args:
+            text: Text to add at the end of the content.
+        """
+        self._internal._core.insert("end-1c", text)
 
     def select_all(self) -> None:
         """Select all text content."""
@@ -297,14 +318,20 @@ class CodeEditor(PublicWidgetBase):
         """Move keyboard focus to the editor."""
         self._internal.focus_set()
 
-    def goto_line(self, n: int) -> None:
-        """Move the cursor to the start of line `n` and scroll it into view.
+    def goto(self, line: int, col: int = 1) -> None:
+        """Move the cursor to a position and scroll it into view.
+
+        Both are 1-indexed — `(1, 1)` is the start of the content, the same
+        coordinates `cursor_position` reports and `insert()` accepts. Omit
+        `col` to land at the start of the line.
 
         Args:
-            n: 1-indexed line number.
+            line: 1-indexed line number.
+            col: 1-indexed column, or omit for the start of the line. Defaults
+                to 1.
         """
         self._internal.focus_set()
-        self._internal.goto_line(n)
+        self._internal.goto(line, col)
 
     def undo(self) -> None:
         """Undo the last edit."""
@@ -321,7 +348,7 @@ class CodeEditor(PublicWidgetBase):
         Usage::
 
             with editor.undo_block():
-                editor.insert("1.0", "# header\\n")
+                editor.insert("# header\\n", 1, 1)
                 editor.value = new_content
         """
         self._internal.undo_block_start()

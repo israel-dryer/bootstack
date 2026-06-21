@@ -135,27 +135,37 @@ tuple — to drive a status-bar readout.
 Text positions
 ~~~~~~~~~~~~~~
 
-Methods that take a position — ``insert()`` and ``goto_line()`` — address it
-two ways:
-
-* ``"end"`` — just past the last character.
-* ``"line.column"`` — a line and column, for example ``"1.0"`` for the very
-  start or ``"3.4"`` for line 3 just after its fourth character. **Lines are
-  1-indexed; columns are 0-indexed**, so column ``0`` is the start of a line.
+Positions are **1-indexed** ``line`` and ``col`` numbers — ``(1, 1)`` is the
+start of the content. The same coordinates flow through every position method:
+``insert()`` accepts them, ``cursor_position`` reports them, and ``goto()`` moves
+to them. Omit ``col`` to mean the start of the line. Most edits need no position
+at all — ``insert()`` defaults to the cursor, and ``append()`` adds to the end.
 
 .. code-block:: python
 
-   editor.insert("end", "\n# appended")   # add a trailing line
-   editor.insert("1.0", "#!/usr/bin/env python\n")  # prepend a shebang
-   editor.goto_line(42)                   # jump to line 42 (1-indexed)
+   editor.insert("snippet")               # at the cursor (the common case)
+   editor.append("\n# appended")          # add a trailing line
+   editor.insert("#!/usr/bin/env python\n", 1, 1)  # prepend at the start
+   editor.insert(">>> ", 3)               # at the start of line 3
+   editor.goto(42)                        # jump to the start of line 42
+   editor.goto(42, 8)                      # jump to line 42, column 8
 
-.. note::
+   line, col = editor.cursor_position     # e.g. (42, 8) for a status bar
 
-   ``cursor_position`` reports a **1-indexed** ``(line, column)`` tuple — column
-   ``1`` is the start of a line — because it is meant for a status-bar readout
-   (``Ln 1, Col 1``). That display convention differs from the **0-indexed**
-   column in a ``"line.column"`` address: the cursor at the very start reads
-   ``(1, 1)`` but is inserted at by ``"1.0"``.
+For a live readout, drive a :class:`~bootstack.Signal` from the
+``on_cursor_move`` event stream. ``cursor_position`` is a point-in-time tuple,
+so map the stream — not the property — and read the position inside the map:
+
+.. code-block:: python
+
+   status = bs.Signal("Ln 1, Col 1")
+   bs.Label(textsignal=status)
+
+   (
+       editor.on_cursor_move()
+           .map(lambda e: "Ln {}, Col {}".format(*editor.cursor_position))
+           .listen(status.set)
+   )
 
 Undo and redo
 ~~~~~~~~~~~~~
@@ -171,7 +181,7 @@ group multiple programmatic edits into a single undo step.
 
    # Group edits into one undo step
    with editor.undo_block():
-       editor.insert("1.0", "# Auto-generated\\n")
+       editor.insert("# Auto-generated\\n", 1, 1)
        editor.value = reformatted
 
 Dirty tracking

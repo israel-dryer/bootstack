@@ -225,13 +225,14 @@ class CodeEditor(Frame):
         """End a compound undo block."""
         self._core.undo_block_stop()
 
-    def goto_line(self, n: int) -> None:
-        """Move the cursor to the start of line *n* and scroll it into view.
+    def goto(self, line: int, col: int = 1) -> None:
+        """Move the cursor to a 1-indexed *(line, col)* and scroll it into view.
 
         Args:
-            n: 1-indexed line number.
+            line: 1-indexed line number.
+            col: 1-indexed column. Defaults to 1 (the start of the line).
         """
-        idx = f"{n}.0"
+        idx = f"{line}.{col - 1}"
         try:
             self._core.text.mark_set("insert", idx)
             self._core.text.see(idx)

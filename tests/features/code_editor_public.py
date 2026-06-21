@@ -75,7 +75,7 @@ with App(title="CodeEditor — public layer", minsize=(780, 640), padding=16, ga
         Button("Mark saved", variant="outline",
                on_click=lambda: (py_editor.mark_saved(), _refresh_dirty()))
         Button("Goto line 5", variant="outline",
-               on_click=lambda: py_editor.goto_line(5))
+               on_click=lambda: py_editor.goto(5))
         Button("Select all", variant="outline",
                on_click=lambda: py_editor.select_all())
         Button("Clear", variant="outline",

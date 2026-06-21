@@ -42,7 +42,7 @@ def app():
 
 def test_insert_applies_when_read_only_via_constructor(app):
     ed = bs.CodeEditor(value="abc", read_only=True)
-    ed.insert("end", "XYZ")
+    ed.append("XYZ")
     assert ed.value == "abcXYZ"
     assert ed.read_only is True  # still read-only after the programmatic insert
 
@@ -50,7 +50,7 @@ def test_insert_applies_when_read_only_via_constructor(app):
 def test_insert_applies_when_read_only_via_property(app):
     ed = bs.CodeEditor(value="abc")
     ed.read_only = True
-    ed.insert("end", "XYZ")
+    ed.append("XYZ")
     assert ed.value == "abcXYZ"
     assert ed.read_only is True
 
@@ -92,10 +92,16 @@ def test_cursor_position_mid(app):
     assert ed.cursor_position == (3, 6)  # column is 1-indexed for display
 
 
-def test_cursor_position_tracks_goto_line(app):
+def test_cursor_position_tracks_goto(app):
     ed = bs.CodeEditor(value="a\nb\nc")
-    ed.goto_line(2)
-    assert ed.cursor_position == (2, 1)
+    ed.goto(2)
+    assert ed.cursor_position == (2, 1)  # col defaults to the start of the line
+
+
+def test_goto_with_column(app):
+    ed = bs.CodeEditor(value="one\ntwo\nthree")
+    ed.goto(3, 4)  # line 3, col 4 (1-indexed)
+    assert ed.cursor_position == (3, 4)
 
 
 # ----- undo/redo bound to native virtual events -----
@@ -129,3 +135,44 @@ def test_return_replicates_indentation(app):
     ed._internal._smart_indent._on_return(None)
     tw.insert("insert", "X")
     assert ed.value == "    indented\n    X"
+
+
+# ----- position model: insert(text, line, col) + append (1-indexed, #250) -----
+
+def test_insert_at_cursor(app):
+    ed = bs.CodeEditor(value="abc")
+    ed._internal._core.text.mark_set("insert", "1.1")  # between a and b
+    ed.insert("Z")
+    assert ed.value == "aZbc"
+
+
+def test_insert_at_line_start(app):
+    ed = bs.CodeEditor(value="one\ntwo\nthree")
+    ed.insert(">>", 2)  # start of line 2
+    assert ed.value == "one\n>>two\nthree"
+
+
+def test_insert_at_line_and_col(app):
+    ed = bs.CodeEditor(value="one\ntwo\nthree")
+    ed.insert("X", 2, 2)  # line 2, col 2 (1-indexed) -> before 'w'
+    assert ed.value == "one\ntXwo\nthree"
+
+
+def test_insert_at_origin(app):
+    ed = bs.CodeEditor(value="abc")
+    ed.insert("# ", 1, 1)  # (1, 1) is the content start
+    assert ed.value == "# abc"
+
+
+def test_append(app):
+    ed = bs.CodeEditor(value="abc")
+    ed.append("\nmore")
+    assert ed.value == "abc\nmore"
+
+
+def test_append_round_trips_with_cursor_position(app):
+    # The coordinates insert/append produce read back through cursor_position.
+    ed = bs.CodeEditor(value="one\ntwo")
+    ed.insert("X", 1, 1)
+    ed._internal._core.text.mark_set("insert", "1.1")
+    assert ed.cursor_position == (1, 2)
