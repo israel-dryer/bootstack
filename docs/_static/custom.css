@@ -101,16 +101,14 @@ html[data-theme="dark"] .bd-content img.bs-screenshot-light {
     border-radius: 0 !important;
     filter: none !important;
 }
-html[data-theme="dark"] .bd-content img.bs-window-screenshot,
-html[data-theme="dark"] .bd-content img.bs-dialog-screenshot {
-    border-radius: 6px !important;   /* windows and dialogs keep rounded corners */
+html[data-theme="dark"] .bd-content img.bs-window-screenshot {
+    border-radius: 6px !important;   /* windows keep their rounded corners */
 }
 
-/* Dialog screenshots — float the captured dialog off the page with a drop
-   shadow so it reads as a modal popping over content (the window treatment,
-   minus the drawn border: the dialog capture already carries its own chrome). */
+/* Dialog screenshots — float the captured dialog off the page with a drop shadow
+   so it reads as a modal popping over content. No border-radius: the dialog's own
+   square corners would otherwise be clipped by a rounded image. */
 .bs-dialog-screenshot {
-    border-radius: 6px;
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.16);
 }
 html[data-theme="dark"] .bs-dialog-screenshot {
