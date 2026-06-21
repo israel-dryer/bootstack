@@ -202,7 +202,7 @@ Self-placement
 ``horizontal``, ``vertical``, and ``grow`` control how the Row places *itself*
 within its parent — separate from how it arranges its own children. By default a
 Row sits at its natural width; ``horizontal="stretch"`` makes it span the parent,
-which is what lets a command bar fill the window.
+which is what lets a toolbar fill the window.
 
 .. code-block:: python
 

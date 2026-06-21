@@ -2,8 +2,7 @@ Accordion
 =========
 
 A list of collapsible sections, optionally limited to one open at a time.
-Each section is an :class:`Expander <bootstack.widgets.expander.Expander>`
-added via ``add()``.
+Each section is a collapsible panel added via ``add()``.
 
 .. image:: /_static/examples/accordion-hero-light.png
    :class: bs-screenshot-light
@@ -138,7 +137,7 @@ Section layout
 
 Each section body supports the same ``layout=``, ``gap=``,
 ``horizontal_items=``, and other layout kwargs as a standalone
-:class:`Expander <bootstack.widgets.expander.Expander>`.
+:class:`Column <bootstack.widgets.stacks.Column>`.
 
 .. code-block:: python
 

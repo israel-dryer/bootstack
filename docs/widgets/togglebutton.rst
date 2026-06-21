@@ -95,7 +95,7 @@ Icon only
 ~~~~~~~~~
 
 Set ``icon_only=True`` to show just the icon with no label text. Useful for
-compact command bars.
+compact toolbars.
 
 .. code-block:: python
 

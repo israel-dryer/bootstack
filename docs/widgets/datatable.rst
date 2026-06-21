@@ -324,7 +324,7 @@ source:
 
 * **Double-click a row** — opens its edit dialog (the primary edit gesture;
   needs ``allow_edit``).
-* **Command bar buttons** — Add, Edit, and Delete.
+* **Toolbar buttons** — Add, Edit, and Delete.
 * **Row right-click menu** — Edit and Delete entries.
 
 .. code-block:: python
