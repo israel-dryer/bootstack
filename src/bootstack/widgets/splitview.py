@@ -117,7 +117,8 @@ class SplitPane:
     @property
     def weight(self) -> int:
         """Relative resize weight — panes with a higher weight take proportionally
-        more space when the container grows. Assigning a new value resizes live.
+        more space when the container grows. A pane with `weight=0` keeps its size
+        and does not grow (a fixed pane). Assigning a new value resizes live.
         """
         return int(self._paned.pane(self._frame, "weight"))
 
@@ -143,8 +144,9 @@ class SplitView(PublicWidgetBase):
     Add panes with `.add()` and place children inside each pane using the
     returned `SplitPane` handle. Sashes between panes can be dragged at runtime
     to resize them. Panes are addressable by key — enumerate them with `panes`,
-    look one up with `item()`, insert one at a position with `insert()`, reorder
-    with `move()`, and drop one with `remove()`.
+    look one up with `item()`, place a new one next to another with
+    `add(before=)` / `add(after=)`, reorder with `move()`, and drop one with
+    `remove()`.
 
     Args:
         orient: Pane arrangement — `'horizontal'` (side-by-side) or
@@ -207,8 +209,10 @@ class SplitView(PublicWidgetBase):
 
     def add(
         self,
-        *,
         key: str | None = None,
+        *,
+        before: str | None = None,
+        after: str | None = None,
         weight: int = 1,
         layout: LayoutKind = "column",
         padding: Padding | None = None,
@@ -222,9 +226,15 @@ class SplitView(PublicWidgetBase):
     ) -> SplitPane:
         """Add a pane and return a handle for placing its children and controlling it.
 
+        Panes are appended in order by default. Pass `before=` or `after=` (the
+        key of an existing pane) to place the new pane next to another one.
+
         Args:
-            key: Unique identifier used with `item()` and `remove()`.
-                Auto-generated if omitted.
+            key: Unique identifier for the pane, used with `item()`, `move()`,
+                and `remove()`. Auto-generated when omitted.
+            before: Place the new pane immediately before the pane with this key.
+            after: Place the new pane immediately after the pane with this key.
+                Mutually exclusive with `before`; omit both to append at the end.
             weight: Relative size weight when the container is resized. Panes
                 with a higher weight take proportionally more space. Settable
                 afterward via the pane's `weight` property. Defaults to `1`.
@@ -250,59 +260,12 @@ class SplitView(PublicWidgetBase):
         Returns:
             `SplitPane` — use as a context manager to place children, and as a
             handle to read/set `weight` or `remove()` the pane.
+
+        Raises:
+            KeyError: If `before`/`after` names a pane that does not exist.
+            ValueError: If both `before` and `after` are given.
         """
-        return self._create_pane(
-            index=None, key=key, weight=weight,
-            layout=layout, padding=padding, gap=gap,
-            horizontal_items=horizontal_items, vertical_items=vertical_items,
-            grow_items=grow_items,
-            columns=columns, rows=rows, auto_flow=auto_flow,
-        )
-
-    def insert(
-        self,
-        index: int,
-        *,
-        key: str | None = None,
-        weight: int = 1,
-        layout: LayoutKind = "column",
-        padding: Padding | None = None,
-        gap: int = 0,
-        horizontal_items: str | None = None,
-        vertical_items: str | None = None,
-        grow_items: bool = False,
-        columns: int | list[int | str] | None = None,
-        rows: int | list[int | str] | None = None,
-        auto_flow: AutoFlow = "row",
-    ) -> SplitPane:
-        """Add a pane at a specific position. Accepts the same options as `add()`.
-
-        Args:
-            index: Zero-based position to insert the new pane at. Existing panes
-                at or after this position shift toward the end.
-            key: Unique identifier used with `item()` and `remove()`.
-                Auto-generated if omitted.
-            weight: Relative size weight. Defaults to `1`.
-            layout: Internal pane layout. Defaults to `'column'`.
-            padding: Space in pixels inside the pane border. Defaults to `None`.
-            gap: Space in pixels between children. Defaults to `0`.
-            horizontal_items: How children sit on the horizontal axis — edge
-                values `'left'`/`'center'`/`'right'`/`'stretch'`, plus `'space-*'`
-                when horizontal is the stacking axis. Defaults to `'stretch'` in grid mode,
-                `'center'` in a column and `'left'` in a row.
-            vertical_items: How children sit on the vertical axis — edge values
-                `'top'`/`'center'`/`'bottom'`/`'stretch'`, plus `'space-*'` when
-                vertical is the stacking axis. Defaults to `'stretch'` in grid mode,
-                `'center'` in a row and `'top'` in a column.
-            grow_items: For `'column'`/`'row'`, when `True` every child grows
-                equally to share the main axis. Defaults to `False`.
-            columns: Column definitions for `'grid'` layout.
-            rows: Row definitions for `'grid'` layout.
-            auto_flow: Grid auto-flow direction. Defaults to `'row'`.
-
-        Returns:
-            `SplitPane` — same handle returned by `add()`.
-        """
+        index = self._resolve_placement(before, after)
         return self._create_pane(
             index=index, key=key, weight=weight,
             layout=layout, padding=padding, gap=gap,
@@ -311,16 +274,55 @@ class SplitView(PublicWidgetBase):
             columns=columns, rows=rows, auto_flow=auto_flow,
         )
 
-    def move(self, key: str, index: int) -> None:
-        """Move an existing pane to a new position.
+    def move(self, key: str, *, before: str | None = None, after: str | None = None) -> None:
+        """Move an existing pane next to another pane.
 
         Args:
             key: The key of the pane to move.
-            index: Zero-based target position.
+            before: Move it immediately before the pane with this key.
+            after: Move it immediately after the pane with this key. Pass
+                exactly one of `before` or `after`.
+
+        Raises:
+            KeyError: If `key`, `before`, or `after` names a pane that does
+                not exist.
+            ValueError: If not exactly one of `before`/`after` is given, or if
+                the anchor is the pane being moved.
         """
-        pane = self._panes[key]
-        self._internal.insert(index, pane._frame)
+        if key not in self._panes:
+            raise KeyError(f"no pane with key {key!r}")
+        if (before is None) == (after is None):
+            raise ValueError("pass exactly one of before= or after=")
+        anchor = before if before is not None else after
+        if anchor == key:
+            raise ValueError(f"cannot move pane {key!r} relative to itself")
+        # The target index is computed against the order with the moved pane
+        # removed, which is how ttk's insert(pos, existing) re-seats it.
+        order = [k for k in self._panes if k != key]
+        if anchor not in order:
+            raise KeyError(f"no pane with key {anchor!r}")
+        pos = order.index(anchor)
+        index = pos if before is not None else pos + 1
+        self._internal.insert(index, self._panes[key]._frame)
         self._resync_order()
+
+    def _resolve_placement(self, before: str | None, after: str | None) -> int | None:
+        """Translate a `before=`/`after=` key into an insertion index for a new pane.
+
+        Returns `None` to append (the default, and the case where the anchor is
+        the last pane — ttk cannot target the slot past the final pane).
+        """
+        if before is not None and after is not None:
+            raise ValueError("pass only one of before= or after=, not both")
+        if before is None and after is None:
+            return None
+        anchor = before if before is not None else after
+        order = list(self._panes)
+        if anchor not in order:
+            raise KeyError(f"no pane with key {anchor!r}")
+        pos = order.index(anchor)
+        index = pos if before is not None else pos + 1
+        return index if index < len(order) else None
 
     def _create_pane(self, *, index: int | None, key: str | None, weight: int, **layout_kw: Any) -> SplitPane:
         if key is None:
@@ -394,13 +396,28 @@ class SplitView(PublicWidgetBase):
         """Get or set the position of a sash.
 
         Args:
-            index: Zero-based sash index.
+            index: Zero-based sash index. A split view with `n` panes has
+                `n - 1` sashes.
             position: New position in pixels. If `None`, returns the
                 current position.
 
         Returns:
             Current sash position in pixels when `position` is `None`.
+
+        Raises:
+            IndexError: If `index` does not refer to an existing sash.
         """
+        n_sashes = max(0, len(self._internal.panes()) - 1)
+        if not 0 <= index < n_sashes:
+            if n_sashes == 0:
+                raise IndexError(
+                    f"sash index {index} out of range: this split view has no "
+                    f"sashes yet (add at least two panes)"
+                )
+            raise IndexError(
+                f"sash index {index} out of range: valid sash indices are "
+                f"0..{n_sashes - 1}"
+            )
         if position is None:
             return self._internal.sashpos(index)
         self._internal.sashpos(index, position)

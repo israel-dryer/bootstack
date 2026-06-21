@@ -15,10 +15,15 @@ can be moved at runtime to redistribute space.
 Usage
 -----
 
+A SplitView arranges its panes along one axis with a draggable sash between each
+pair. ``weight`` sets how panes share space; drag a sash (or call
+``sash_position``) to override. Panes are addressed by key — give each one a name
+to look it up, reorder it, or remove it at runtime.
+
 Basic split
 ~~~~~~~~~~~
 
-Call `.add()` once per pane. Use the returned value as a context manager
+Call ``add()`` once per pane. Use the returned value as a context manager
 to place children inside that pane.
 
 .. code-block:: python
@@ -73,7 +78,7 @@ one with ``weight=1``.
 Three or more panes
 ~~~~~~~~~~~~~~~~~~~
 
-Call `.add()` for each pane. Each pair of adjacent panes gets its own
+Call ``add()`` for each pane. Each pair of adjacent panes gets its own
 independently draggable sash.
 
 .. code-block:: python
@@ -89,23 +94,29 @@ independently draggable sash.
 Managing panes
 ~~~~~~~~~~~~~~
 
-`add()` returns a :class:`SplitPane <bootstack.widgets.splitview.SplitPane>`
-handle. Give it a ``key=`` to address the pane later — look one up with
-``item()``, enumerate them all with ``panes``, and drop one with ``remove()``.
-The pane's ``weight`` is a live property, so you can re-balance the split at
-runtime; for an exact sash position in pixels use ``sash_position()``.
+``add()`` returns a :class:`SplitPane <bootstack.widgets.splitview.SplitPane>`
+handle. Pass the pane's key as the first argument to address it later — look one
+up with ``item()``, enumerate them all with ``panes``, place a new pane next to
+another with ``before=`` / ``after=``, reorder an existing one with ``move()``,
+and drop one with ``remove()``. The pane's ``weight`` is a live property, so you
+can re-balance the split at runtime; for an exact sash position in pixels use
+``sash_position()``.
 
 .. code-block:: python
 
    sv = bs.SplitView(grow=True)
-   with sv.add(key="sidebar", weight=1):
+   with sv.add("sidebar", weight=1):
        bs.Label("Sidebar")
-   with sv.add(key="main", weight=3):
+   with sv.add("main", weight=3):
        bs.Label("Main")
 
-   sv.item("sidebar").weight = 2     # re-balance live
-   sv.sash_position(0, 200)          # or place the sash exactly
-   sv.remove("sidebar")              # drop a pane (and its content)
+   with sv.add("preview", after="main"):   # place by key, never an index
+       bs.Label("Preview")
+
+   sv.move("preview", before="sidebar")    # reorder by key
+   sv.item("sidebar").weight = 2           # re-balance live
+   sv.sash_position(0, 200)                # place the first sash exactly
+   sv.remove("preview")                    # drop a pane (and its content)
 
 Pane layout
 ~~~~~~~~~~~
