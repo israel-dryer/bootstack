@@ -16,8 +16,7 @@ Usage
 
 A select button is a single-choice value picker styled as a button that shows the
 current selection — like a :doc:`select` without the editable text field.
-``.value`` is the chosen option's value (``on_change`` fires on change), and
-options can be ``(text, value)`` pairs when the label differs from the value.
+``.value`` is the chosen option's value, and ``on_change`` fires on change.
 
 Basic
 ~~~~~

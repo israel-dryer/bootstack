@@ -15,9 +15,7 @@ Usage
 -----
 
 A radio group is a single-choice control — exactly one option is selected, and
-``.value`` is that option's value (``on_change`` fires when it changes). Options
-can be plain strings, or ``(text, value)`` pairs when the label shown should
-differ from the value stored.
+``.value`` is that option's value, with ``on_change`` firing when it changes.
 
 Basic
 ~~~~~

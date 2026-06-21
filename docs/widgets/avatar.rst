@@ -3,8 +3,7 @@ Avatar
 
 A small identity badge — a person's picture, or their initials on a filled tile
 when there's no image. It's a circle by default, with rounded-square and square
-options. `Avatar` builds on the same image pipeline as :doc:`Picture <picture>`:
-the image is scaled to cover the badge and clipped to its shape.
+options.
 
 .. image:: /_static/examples/avatar-hero-light.png
    :class: bs-screenshot-light
@@ -17,11 +16,15 @@ the image is scaled to cover the badge and clipped to its shape.
 Usage
 -----
 
+An image fills the avatar's shape edge to edge — scaled to *cover* it and the
+overflow cropped, never letterboxed (the same image pipeline as
+:doc:`Picture <picture>`).
+
 From an image
 ~~~~~~~~~~~~~
 
 Pass an :class:`Image <bootstack.images.Image>` handle, a file path, or a PIL
-image. It is scaled to cover the square and clipped to the shape:
+image:
 
 .. code-block:: python
 

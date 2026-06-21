@@ -1,8 +1,7 @@
 Badge
 =====
 
-A compact styled chip for status indicators, counts, and tags. Inherits all
-``Label`` kwargs but renders with a fixed pill or square shape.
+A compact styled chip for status indicators, counts, and tags.
 
 .. image:: /_static/examples/badge-hero-light.png
    :class: bs-screenshot-light
@@ -14,6 +13,10 @@ A compact styled chip for status indicators, counts, and tags. Inherits all
 
 Usage
 -----
+
+A badge is a :doc:`Label <label>` with a fixed pill or square shape — it takes all
+the same kwargs (``text``, ``icon``, ``font``, ``accent``), and ``accent=`` colors
+it by status.
 
 Variants
 ~~~~~~~~

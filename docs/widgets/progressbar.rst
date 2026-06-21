@@ -16,6 +16,11 @@ operations whose duration is unknown.
 Usage
 -----
 
+The main decision is ``mode``: **determinate** fill tracks a known ``value``
+(``0`` to ``max_value``), while **indeterminate** animates continuously for work
+of unknown length. Bind ``value`` to a :class:`Signal <bootstack.Signal>` with
+``signal=`` to drive the fill live.
+
 Determinate progress
 ~~~~~~~~~~~~~~~~~~~~
 
