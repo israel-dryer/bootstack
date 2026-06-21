@@ -225,6 +225,12 @@ bootstack build                             # Package for distribution
 Full documentation — guides, the widget catalog, and the API reference — lives at
 **[bootstack.org](https://bootstack.org)**.
 
+## Contributing
+
+Contributions are welcome — code, bug reports, and especially **translations**.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, the pull-request
+workflow, and how to review the bundled language catalogs.
+
 ## Links
 
 - **GitHub**: https://github.com/israel-dryer/bootstack
